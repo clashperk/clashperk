@@ -1,3 +1,3 @@
-# 👑 Clash of Clans Discord Bot
+# 👑 ClashPerks - Clash of Clans Discord Bot
 
 ## Coming Soon
