@@ -1,5 +1,5 @@
 const { Listener } = require('discord-akairo');
-const Logger = require('../utils/logger');
+const Logger = require('../../utils/logger');
 
 class ReadyListener extends Listener {
 	constructor() {
