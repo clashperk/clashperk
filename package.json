@@ -14,10 +14,15 @@
     "discord.js": "discordjs/discord.js",
     "eslint": "^6.0.0",
     "eslint-config-aqua": "^6.0.0",
+    "fs": "^0.0.1-security",
     "moment": "^2.24.0",
     "moment-duration-format": "^2.3.2",
     "node-fetch": "^2.6.0",
+    "path": "^0.12.7",
+    "pg": "^7.11.0",
     "request": "^2.88.0",
-    "request-promise": "^4.2.4"
+    "request-promise": "^4.2.4",
+    "sequelize": "^5.8.12",
+    "util": "^0.12.0"
   }
 }
