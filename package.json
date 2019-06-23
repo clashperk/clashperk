@@ -1,0 +1,23 @@
+{
+  "name": "clashperks",
+  "version": "1.0.0",
+  "author": "Suvajit (esuvajit@gmail.com)",
+  "license": "MIT",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "eslint ./",
+    "lint": "eslint --fix src/"
+  },
+  "dependencies": {
+    "discord-akairo": "discord-akairo/discord-akairo",
+    "discord.js": "discordjs/discord.js",
+    "eslint": "^6.0.0",
+    "eslint-config-aqua": "^6.0.0",
+    "moment": "^2.24.0",
+    "moment-duration-format": "^2.3.2",
+    "node-fetch": "^2.6.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4"
+  }
+}
