@@ -1,4 +1,5 @@
 const { Listener } = require('discord-akairo');
+const Logger = require('../utils/logger');
 
 class ReadyListener extends Listener {
 	constructor() {
@@ -10,7 +11,7 @@ class ReadyListener extends Listener {
 	}
 
 	async exec() {
-		console.log(`READY ${this.client.user.tag} (${this.client.user.id})`);
+		Logger.info(`${this.client.user.tag} (${this.client.user.id})`, { level: 'READY' });
 	}
 }
 

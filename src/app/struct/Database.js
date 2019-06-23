@@ -1,6 +1,7 @@
 const path = require('path');
 const readdir = require('util').promisify(require('fs').readdir);
 const Sequelize = require('sequelize');
+const Logger = require('../utils/logger');
 
 const db = new Sequelize(process.env.POSTGRES, { logging: false });
 
@@ -12,11 +13,11 @@ class Database {
 	static async authenticate() {
 		try {
 			await db.authenticate();
-			console.log('DATABASE INSTANCE CONNECTED');
+			Logger.info('DATABASE INSTANCE CONNECTED', { level: 'POSTGRES' });
 			await this.loadModels(path.join(__dirname, '..', 'models'));
 		} catch (err) {
-			console.error('UNABLE TO CONNECT TO THE DATABASE INSTANCE');
-			console.log('RECONNECTING AGAIN IN 5 SECONDS');
+			Logger.error('UNABLE TO CONNECT TO THE DATABASE INSTANCE', { level: 'POSTGRES' });
+			Logger.info('RECONNECTING AGAIN IN 5 SECONDS', { level: 'POSTGRES' });
 			setTimeout(this.authenticate.bind(this), 5000);
 		}
 	}
