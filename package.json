@@ -12,6 +12,7 @@
   "dependencies": {
     "@sentry/node": "^5.4.3",
     "chalk": "^2.4.2",
+    "dblapi.js": "^2.3.0",
     "discord-akairo": "discord-akairo/discord-akairo",
     "discord.js": "discordjs/discord.js",
     "dotenv": "^8.0.0",
@@ -25,6 +26,7 @@
     "path": "^0.12.7",
     "pg": "^7.11.0",
     "querystring": "^0.2.0",
+    "request": "^2.88.0",
     "sequelize": "^5.8.12",
     "shelljs": "^0.8.3",
     "util": "^0.12.0"

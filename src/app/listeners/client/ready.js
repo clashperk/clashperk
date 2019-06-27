@@ -12,7 +12,9 @@ class ReadyListener extends Listener {
 
 	async exec() {
 		Logger.info(`${this.client.user.tag} (${this.client.user.id})`, { level: 'READY' });
+
 		this.client.tracker.init();
+		// this.client.postStats.init();
 	}
 }
 

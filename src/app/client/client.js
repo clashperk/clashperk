@@ -4,9 +4,8 @@ const Settings = require('../models/Settings');
 const path = require('path');
 const Database = require('../struct/Database');
 const Tracker = require('../struct/Tracker');
-const { Util } = require('discord.js');
 const fetch = require('node-fetch');
-const Clans = require('../models/Clans');
+const PostStats = require('../struct/PostStats');
 
 class Client extends AkairoClient {
 	constructor(config) {
@@ -43,6 +42,8 @@ class Client extends AkairoClient {
 		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
 		this.settings = new SettingsProvider(Settings);
+
+		this.postStats = new PostStats(this);
 
 		this.tracker = new Tracker(this);
 

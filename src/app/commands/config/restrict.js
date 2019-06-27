@@ -20,7 +20,7 @@ class RestrictCommand extends Command {
 				}
 			],
 			description: {
-				content: 'Restricts or unrestricts someone from using commands on the server.',
+				content: 'Restricts or unrestricts someone from using sensitive commands.',
 				usage: '<user>',
 				examples: ['@BadPerson', 'someone#1234']
 			}
