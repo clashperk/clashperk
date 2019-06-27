@@ -95,7 +95,7 @@ class MembersTHCommand extends Command {
 				}
 			}));
 		}
-		return message.channel.send(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`, {
+		return message.channel.send({
 			embed: {
 				color: 0x5970c1,
 				description: result
