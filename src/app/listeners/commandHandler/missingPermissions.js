@@ -22,8 +22,8 @@ class MissingPermissionsListener extends Listener {
 			}
 		}[type];
 
-		const tag = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
-		Logger.log(`=> ${command.id} ~ ${type}Permissions`, { tag });
+		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
+		Logger.log(`=> ${command.id} ~ ${type}Permissions`, { level });
 
 		if (!text) return;
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
