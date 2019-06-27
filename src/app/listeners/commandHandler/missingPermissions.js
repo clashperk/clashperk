@@ -1,5 +1,5 @@
 const { Listener } = require('discord-akairo');
-const Logger = require('../../util/Logger');
+const Logger = require('../../util/logger');
 
 class MissingPermissionsListener extends Listener {
 	constructor() {

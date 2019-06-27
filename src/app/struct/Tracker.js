@@ -120,7 +120,7 @@ class Tracker {
 						method: 'GET',
 						headers: {
 							Accept: 'application/json',
-							authorization: `Bearer ${process.env.CLASH_API}`,
+							authorization: `Bearer ${process.env.TRACKER_API}`,
 							'cache-control': 'no-cache'
 						}
 					});
