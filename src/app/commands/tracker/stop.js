@@ -15,7 +15,7 @@ class StopCommand extends Command {
 			},
 			args: [
 				{
-					id: 'tag',
+					id: 'clan',
 					type: async (msg, phrase) => {
 						if (!phrase) return null;
 						const tag = `#${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;

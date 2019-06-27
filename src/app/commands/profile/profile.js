@@ -188,6 +188,16 @@ class ProfileCommand extends Command {
 		], true);
 		embed.addField('Friend in Need', `${FINEmoji[FriendinNeedStars]} ${FriendinNeed}`, true);
 
+		if (data.clan) {
+			const role = data.role.replace(/admin/g, 'Elder')
+				.replace(/coLeader/g, 'Co-Leader')
+				.replace(/member/g, 'Member')
+				.replace(/leader/g, 'Leader');
+			embed.addField('Clan', [
+				`<:clans:534765878118449152> ${role} of **${data.clan.name}** [${data.clan.tag}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.clan.tag.replace(/#/g, '')})`
+			]);
+		}
+
 		let heroLevels = '';
 		data.heroes.forEach(hero => {
 			if (hero.village === 'home') {
@@ -199,16 +209,6 @@ class ProfileCommand extends Command {
 			}
 		});
 		if (heroLevels) embed.addField('Heroes', heroLevels);
-
-		if (data.clan) {
-			const role = data.role.replace(/admin/g, 'Elder')
-				.replace(/coLeader/g, 'Co-Leader')
-				.replace(/member/g, 'Member')
-				.replace(/leader/g, 'Leader');
-			embed.addField('Clan', [
-				`<:clans:534765878118449152> ${role} of **${data.clan.name}** [${data.clan.tag}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.clan.tag.replace(/#/g, '')})`
-			], true);
-		}
 
 		return message.util.send({ embed });
 	}

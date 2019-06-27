@@ -4,7 +4,7 @@ const Profile = require('../../models/Profile');
 class LinkPlayerCommand extends Command {
 	constructor() {
 		super('link-player', {
-			aliases: ['link-profile', 'save-profile'],
+			aliases: ['link-profile', 'save-profile', 'link-player'],
 			category: 'profile',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],

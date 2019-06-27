@@ -47,7 +47,7 @@ class ClanCommand extends Command {
 			.addField('War Log', data.isWarLogPublic ? 'Public' : 'Private', true)
 			.addField('War Wins', data.warWins, true)
 			.addField('Win Streak', data.warWinStreak, true)
-			.addField('War Frequency', data.warFrequency, true)
+			.addField('War Frequency', data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase()), true)
 			.addField('Location', data.location ? data.location.name : 'None', true)
 			.addField('Description', data.description ? data.description : '\u200b');
 
