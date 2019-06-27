@@ -41,7 +41,6 @@ class MembersLeagueCommand extends Command {
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
-			cooldown: 20000,
 			args: [
 				{
 					id: 'data',
