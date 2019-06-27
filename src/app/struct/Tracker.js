@@ -76,16 +76,16 @@ class Tracker {
 		let league;
 
 		for (const member of clan.memberList) {
-			if (member.tag in donateList) {
+			if (`${channel.id}${member.tag}` in donateList) {
 				clanInfo = `${clan.name} (${clan.tag})`;
 				badge = clan.badgeUrls.large;
 				members = clan.members;
 				league = leagueStrings[member.league.id];
-				const donations = member.donations - donateList[member.tag].donations;
+				const donations = member.donations - donateList[`${channel.id}${member.tag}`].donations;
 				if (donations) {
 					donated += `${league} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
-				const receives = member.donationsReceived - donateList[member.tag].donationsReceived;
+				const receives = member.donationsReceived - donateList[`${channel.id}${member.tag}`].donationsReceived;
 				if (receives) {
 					received += `${league} **${member.name}** (${member.tag}) : ${receives} \n`;
 				}
@@ -110,7 +110,7 @@ class Tracker {
 		}
 
 		for (const member of clan.memberList) {
-			donateList[member.tag] = member;
+			donateList[`${channel.id}${member.tag}`] = member;
 		}
 	}
 
