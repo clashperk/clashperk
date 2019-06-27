@@ -6,8 +6,14 @@ class MembersCommand extends Command {
 			aliases: ['members'],
 			category: 'lookup',
 			description: {
-				content: 'Displays a list of clan members.',
-				usage: '<tag>'
+				content: 'List of clan members (--th to view th levels).',
+				usage: '<tag> [th] [th level]',
+				examples: [
+					'#8QU8J9LP',
+					'#8QU8J9LP th',
+					'#8QU8J9LP th 10',
+					'#8QU8J9LP th 9'
+				]
 			},
 			args: [
 				{

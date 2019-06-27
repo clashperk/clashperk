@@ -40,21 +40,31 @@ class GuideCommand extends Command {
 				'This command requires the `Manage Guild` permission to be usable.'
 			])
 			.addField('Lookup', [
-				`To view tracking details & settings on your server, use the \`${prefix}settings\` command.`,
+				`To view tracking details & settings on your server, use the \`${prefix}tracking\` command.`,
 				`To view details of a player, use the \`${prefix}player <tag>\` command.`,
 				`To view details of a clan, use the \`${prefix}clan <tag>\` command.`,
 				`To search clans by name, use the \`${prefix}clansearch <name>\` command.`,
 				`To view details of of your TH compositions, use the \`${prefix}th-compo <tag>\` command.`,
-				`To view last 10 war log of your clan, use the \`${prefix}warlog <tag>\` command.`
+				`To view last 10 war log of your clan, use the \`${prefix}warlog <tag>\` command.`,
+				'',
+				`To view the list of your members, use the \`${prefix}members <tag>\` command.`,
+				`To short by TH level, \`${prefix}members <tag> th\` command.`,
+				`To view specific town hall, \`${prefix}members <tag> th <th level>\` command.`,
+				`Example: \`${prefix}members #8QU8J9LP th 10\` - only TH 10's will be displayed.`
+
 			])
 			.addField('Profile', [
 				`To link player to discord, use the \`${prefix}link-player <tag> [optional member]\` command.`,
-				`To link clan to discord, use the \`${prefix}link-player <tag> [optional member]\` command.`
+				`To link clan to discord, use the \`${prefix}link-player <tag> [optional member]\` command.`,
+				`To view info about your profile use the \`${prefix}profile [optional member]\` command.`,
+				`To view info about your clan use the \`${prefix}myclan [optional member]\` command.`
 			])
 			.addField('Other', [
 				`Use the \`${prefix}restrict <user>\` to disallow someone from using the clash commands on your server.`,
 				'This command requires the `Manage Guild` permission to be usable.',
 				'You can use it again on the same user to remove them from the blacklist.',
+				'',
+				`To view settings of your guild, use the \`${prefix}settings\` command.`,
 				'',
 				`Use the \`${prefix}prefix <prefix>\` command to change prefix.`,
 				'This command requires the `Manage Guild` permission to be usable.',
