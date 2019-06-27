@@ -14,7 +14,7 @@ class CommandBlockedListener extends Listener {
 		const text = {
 			owner: () => 'You must be the owner to use this command.',
 			guild: () => 'You must be in a guild to use this command.',
-			guildblacklist: () => 'You can\'t use this command because you have been blacklisted.'
+			restrict: () => 'You can\'t use this command because you have been restricted.'
 		}[reason];
 
 		const tag = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
@@ -22,7 +22,7 @@ class CommandBlockedListener extends Listener {
 
 		if (!text) return;
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
-			message.reply(text());
+			return message.reply(text());
 		}
 	}
 }
