@@ -1,0 +1,46 @@
+const { Listener } = require('discord-akairo');
+const Clans = require('../../models/Clans');
+const Logger = require('../../util/logger');
+
+class GuildDeleteListener extends Listener {
+	constructor() {
+		super('guildDelete', {
+			emitter: 'client',
+			event: 'guildDelete',
+			category: 'client'
+		});
+	}
+
+	async exec(guild) {
+		Logger.log(`${guild.name} (${guild.id})`, { level: 'GUILD_DELETE' });
+
+		const clans = await Clans.findAll({ where: { guild: guild.id } });
+		for (const clan of clans) {
+			this.client.tracker.delete(guild.id, clan.tag);
+		}
+
+		await Clans.destroy({ where: { guild: guild.id } });
+		this.client.settings.clear(guild);
+
+		await guild.members.fetch();
+		const clientLog = this.client.settings.get('global', 'clientLog', undefined);
+		if (clientLog && this.client.channels.has(clientLog)) {
+			this.client.channels.get(clientLog).send({
+				embed: {
+					author: {
+						name: `${guild.name} (${guild.id})`,
+						icon_url: guild.iconURL()
+					},
+					title: `\\👑 ${guild.owner.user.tag} (${guild.owner.user.id})`,
+					footer: {
+						text: `${guild.memberCount} members`,
+						icon_url: guild.owner.user.displayAvatarURL()
+					},
+					timestamp: new Date(),
+					color: 0xeb3508
+				}
+			});
+		}
+	}
+}
+module.exports = GuildDeleteListener;
