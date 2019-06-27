@@ -82,6 +82,12 @@ class Client extends AkairoClient {
 			return data;
 		});
 
+		setInterval(() => {
+			for (const guild of this.guilds.values()) {
+				guild.presences.clear();
+			}
+		}, 1000);
+
 		this.setup();
 	}
 
