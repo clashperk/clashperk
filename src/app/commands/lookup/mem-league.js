@@ -64,8 +64,7 @@ class MembersLeagueCommand extends Command {
 		}
 
 		const split = stripIndent`<:clans:534765878118449152> **${data.name} (${data.tag})**
-
-		${members}`;
+		\n${members}`;
 
 		const result = this.break(split);
 		await msg.edit(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`);
