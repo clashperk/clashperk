@@ -5,7 +5,7 @@ const { MessageEmbed } = require('discord.js');
 class TrackingCommand extends Command {
 	constructor() {
 		super('tracking', {
-			aliases: ['tracking', 'show-clans', 'show-tracking'],
+			aliases: ['tracking', 'show-clans', 'show-tracking', 'clans'],
 			category: 'tracker',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],

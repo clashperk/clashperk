@@ -35,7 +35,7 @@ const leagueStrings = {
 };
 
 class Tracker {
-	constructor(client, { checkRate = 2 * 60 * 1000 } = {}) {
+	constructor(client, { checkRate = 5 * 60 * 1000 } = {}) {
 		this.client = client;
 		this.checkRate = checkRate;
 		this.cached = new Map();
@@ -102,7 +102,11 @@ class Tracker {
 			if (donated) embed.addField('Donated', `${donated}`);
 			if (received) embed.addField('Received', `${received}`);
 
-			channel.send({ embed });
+			try {
+				channel.send({ embed });
+			} catch (error) {
+				Logger.error(error.toString(), { level: 'TRACKER MESSAGE' });
+			}
 		}
 
 		for (const member of clan.memberList) {
@@ -131,7 +135,7 @@ class Tracker {
 
 					this.track(data, channel, clan.color);
 
-					Logger.info(`tag: ${clan.tag}, guild: ${channel.guild.name}, channel: ${channel.name}`, { level: 'Tracking Started' });
+					// Logger.info(`tag: ${clan.tag}, guild: ${channel.guild.name}, channel: ${channel.name}`, { level: 'Tracking Started' });
 				} else {
 					Logger.warn(`guild: ${channel.guild.name}, channel: ${channel.name}`, { level: 'Missing Permission' });
 				}
@@ -140,7 +144,7 @@ class Tracker {
 				this.cached.delete(`${clan.guild}${clan.tag}`);
 			}
 
-			await this.delay(200);
+			await this.delay(100);
 		}
 	}
 
