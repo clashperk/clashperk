@@ -82,7 +82,7 @@ class MembersTHCommand extends Command {
 		}
 
 		const split = stripIndent`<:clans:534765878118449152> **${data.name} (${data.tag})**
-		\n${TH12} ${TH11} ${TH10} ${TH09} ${TH08} ${TH07} ${TH06} ${TH05} ${TH04} ${TH03} ${TH02} ${TH01}`;
+		\n${TH12}${TH11}${TH10}${TH09}${TH08}${TH07}${TH06}${TH05}${TH04}${TH03}${TH02}${TH01}`;
 
 		const result = this.break(split);
 		await msg.edit(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`);
