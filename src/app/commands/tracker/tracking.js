@@ -10,7 +10,7 @@ class TrackingCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Shows all tracking details of your guild.'
+				content: 'Shows all tracking details.'
 			}
 		});
 	}

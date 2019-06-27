@@ -6,7 +6,7 @@ class InviteCommand extends Command {
 			aliases: ['invite'],
 			category: 'util',
 			clientPermissions: ['EMBED_LINKS'],
-			description: { content: 'Gets the bot invite link.' }
+			description: { content: 'Displays the bot invite link.' }
 		});
 	}
 

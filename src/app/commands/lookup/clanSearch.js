@@ -18,7 +18,7 @@ class ClanSearchCommand extends Command {
 			aliases: ['clan-search'],
 			category: 'lookup',
 			description: {
-				content: 'Clash of Clans clan search lookup command.',
+				content: 'Clash of Clans clan search command.',
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
