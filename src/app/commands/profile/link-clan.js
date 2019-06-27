@@ -9,7 +9,7 @@ class LinkClanCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
 			description: {
-				content: 'Saves a player to your discord account.',
+				content: 'Saves a clan to your discord account.',
 				usage: '<tag> [member]',
 				examples: ['#9Q92C8R20', '#9Q92C8R20 Suvajit']
 			},

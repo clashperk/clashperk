@@ -29,7 +29,7 @@ class InviteCommand extends Command {
 
 	async exec(message) {
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1).setAuthor(this.client.user.username, this.client.user.displayAvatarURL())
+			.setColor(0x5970c1)
 			.setDescription([
 				`**[Invite Me](${await this.fetchInvite()})**`,
 				'**[Official Discord](https://discord.gg/8NP2XNV)**'

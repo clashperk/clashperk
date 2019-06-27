@@ -43,11 +43,16 @@ class GuideCommand extends Command {
 				`To view tracking details & settings on your server, use the \`${prefix}settings\` command.`,
 				`To view details of a player, use the \`${prefix}player <tag>\` command.`,
 				`To view details of a clan, use the \`${prefix}clan <tag>\` command.`,
-				`To view details of of your clan weight, use the \`${prefix}clan-weight <tag>\` command.`,
+				`To search clans by name, use the \`${prefix}clansearch <name>\` command.`,
+				`To view details of of your TH compositions, use the \`${prefix}th-compo <tag>\` command.`,
 				`To view last 10 war log of your clan, use the \`${prefix}warlog <tag>\` command.`
 			])
+			.addField('Profile', [
+				`To link player to discord, use the \`${prefix}link-player <tag> [optional member]\` command.`,
+				`To link clan to discord, use the \`${prefix}link-player <tag> [optional member]\` command.`
+			])
 			.addField('Other', [
-				`Use the \`${prefix}blacklist <user>\` to disallow someone from using the clash commands on your server.`,
+				`Use the \`${prefix}restrict <user>\` to disallow someone from using the clash commands on your server.`,
 				'This command requires the `Manage Guild` permission to be usable.',
 				'You can use it again on the same user to remove them from the blacklist.',
 				'',
