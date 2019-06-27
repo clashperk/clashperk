@@ -77,7 +77,8 @@ class HelpCommand extends Command {
 				tracker: 'Tracker',
 				lookup: 'Lookup',
 				profile: 'Profile',
-				fun: 'Fun'
+				fun: 'Fun',
+				config: 'Config'
 			}[category.id];
 
 			if (title) embed.addField(title, `${category.filter(cmd => cmd.aliases.length > 0).map(cmd => `**\`${prefix}${cmd.aliases[0]}\`** - ${cmd.description.content.toLowerCase()}`).join('\n')}`);

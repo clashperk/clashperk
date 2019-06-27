@@ -4,7 +4,7 @@ class PrefixCommand extends Command {
 	constructor() {
 		super('prefix', {
 			aliases: ['prefix'],
-			category: 'util',
+			category: 'config',
 			channel: 'guild',
 			quoted: false,
 			userPermissions: ['MANAGE_GUILD'],
