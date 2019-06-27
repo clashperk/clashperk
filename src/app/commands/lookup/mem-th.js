@@ -46,7 +46,6 @@ class MembersTHCommand extends Command {
 	}
 
 	async exec(message, { data, th }) {
-		console.log(th);
 		const msg = await message.channel.send('**Making list of your clan members... <a:loading:538989228403458089>**');
 		let TH12 = '';
 		let TH11 = '';

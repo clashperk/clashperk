@@ -19,20 +19,23 @@ class MembersCommand extends Command {
 				{
 					id: 'type',
 					match: 'flag',
-					flag: ['--th', '-th', 'th']
+					flag: ['--th', '-th', 'th'],
+					default: null
 				},
 				{
 					id: 'name',
-					match: 'rest'
+					match: 'rest',
+					default: ''
 				}
 			]
 		});
 	}
 
 	exec(message, { name, type }) {
+		type = type ? 'th' : 'league';
 		const command = {
-			true: this.handler.modules.get('members-th'),
-			false: this.handler.modules.get('members-league')
+			th: this.handler.modules.get('members-th'),
+			league: this.handler.modules.get('members-league')
 		}[type];
 		return this.handler.handleDirectCommand(message, name, command, true);
 	}
