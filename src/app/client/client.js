@@ -1,8 +1,12 @@
-const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } = require('discord-akairo');
+const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
 const SettingsProvider = require('../struct/SettingsProviders');
 const Settings = require('../models/Settings');
 const path = require('path');
 const Database = require('../struct/Database');
+const Tracker = require('../struct/Tracker');
+const { Util } = require('discord.js');
+const fetch = require('node-fetch');
+const Clans = require('../models/Clans');
 
 class Client extends AkairoClient {
 	constructor(config) {
@@ -34,11 +38,48 @@ class Client extends AkairoClient {
 			}
 		});
 
-		this.inhibitorHandler = new InhibitorHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
+		this.inhibitorHandler = new InhibitorHandler(this, { directory: path.join(__dirname, '..', 'inhibitors') });
 
-		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'inhibitors') });
+		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
 		this.settings = new SettingsProvider(Settings);
+
+		this.tracker = new Tracker(this);
+
+		const STATUS = {
+			400: 'client provided incorrect parameters for the request.',
+			403: 'access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
+			404: 'invalid tag, resource was not found.',
+			429: 'request was throttled, because amount of requests was above the threshold defined for the used API token.',
+			500: 'unknown error happened when handling the request.',
+			503: 'service is temprorarily unavailable because of maintenance.'
+		};
+
+		this.commandHandler.resolver.addType('player', async (msg, phrase) => {
+			if (!phrase) return null;
+			phrase = `#${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(phrase)}`;
+			const res = await fetch(uri, {
+				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			});
+
+			if (!res.ok) return Flag.fail(STATUS[res.status]);
+			const data = await res.json();
+			return data;
+		});
+
+		this.commandHandler.resolver.addType('clan', async (msg, phrase) => {
+			if (!phrase) return null;
+			const tag = `#${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
+			const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`;
+			const res = await fetch(uri, {
+				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			});
+
+			if (!res.ok) return Flag.fail(STATUS[res.status]);
+			const data = await res.json();
+			return data;
+		});
 
 		this.setup();
 	}
