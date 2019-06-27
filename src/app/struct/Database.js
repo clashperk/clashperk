@@ -1,7 +1,7 @@
 const path = require('path');
 const readdir = require('util').promisify(require('fs').readdir);
 const Sequelize = require('sequelize');
-const Logger = require('../utils/logger');
+const Logger = require('../util/logger');
 
 const db = new Sequelize(process.env.POSTGRES, { logging: false });
 
