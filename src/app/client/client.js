@@ -10,6 +10,9 @@ const PostStats = require('../struct/PostStats');
 class Client extends AkairoClient {
 	constructor(config) {
 		super({ ownerID: config.owner }, {
+			messageCacheMaxSize: 50,
+			messageCacheLifetime: 300,
+			messageSweepInterval: 300,
 			disableEveryone: true,
 			disabledEvents: ['TYPING_START']
 		});
@@ -86,7 +89,7 @@ class Client extends AkairoClient {
 			for (const guild of this.guilds.values()) {
 				guild.presences.clear();
 			}
-		}, 1000);
+		}, 900);
 
 		this.setup();
 	}
