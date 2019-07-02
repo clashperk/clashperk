@@ -43,4 +43,5 @@ class GuildDeleteListener extends Listener {
 		}
 	}
 }
+
 module.exports = GuildDeleteListener;
