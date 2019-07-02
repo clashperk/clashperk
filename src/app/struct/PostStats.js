@@ -16,6 +16,9 @@ class PostStats {
 
 	async post() {
 		// https://discordbots.org
+		dbl.on('error', error => {
+			Logger.error(error.toString(), { level: 'POST STATS (discordbots.org)' });
+		});
 		dbl.postStats(this.client.guilds.size);
 
 		// https://discord.bots.gg
@@ -31,7 +34,7 @@ class PostStats {
 			}
 		};
 		request(options, (error, response, body) => {
-			if (error) Logger.warn(error, { tag: 'ROUTES' });
+			if (error) Logger.warn(error.toString(), { tag: 'POST STATS (discord.bots.gg)' });
 		});
 
 
@@ -49,7 +52,7 @@ class PostStats {
 			}
 		};
 		request(opt, (error, response, body) => {
-			if (error) Logger.warn(error, { tag: 'ROUTES' });
+			if (error) Logger.warn(error.toString(), { tag: 'POST STATS (discordbotlist.com)' });
 		});
 	}
 }
