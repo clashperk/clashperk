@@ -135,13 +135,13 @@ class Tracker {
 
 					this.track(data, channel, clan.color);
 
-					// Logger.info(`tag: ${clan.tag}, guild: ${channel.guild.name}, channel: ${channel.name}`, { level: 'Tracking Started' });
+					// Logger.info(`Guild: ${channel.guild.name}`, { level: 'Tracking Started' });
 				} else {
-					Logger.warn(`guild: ${channel.guild.name}, channel: ${channel.name}`, { level: 'Missing Permission' });
+					// Logger.warn(`Guild: ${channel.guild.name}`, { level: 'Missing Permission' });
 				}
 			} else {
-				Logger.warn(`channel: ${clan.channel}`, { level: 'Missing Channel' });
-				this.cached.delete(`${clan.guild}${clan.tag}`);
+				Logger.warn(`Channel: ${clan.channel}`, { level: 'Missing Channel' });
+				this.delete(clan.guild, clan.tag);
 			}
 
 			await this.delay(100);
