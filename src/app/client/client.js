@@ -14,7 +14,22 @@ class Client extends AkairoClient {
 			messageCacheLifetime: 300,
 			messageSweepInterval: 300,
 			disableEveryone: true,
-			disabledEvents: ['TYPING_START']
+			disabledEvents: [
+				'TYPING_START',
+				'CHANNEL_PINS_UPDATE',
+				'GUILD_EMOJIS_UPDATE',
+				'GUILD_INTEGRATIONS_UPDATE',
+				'GUILD_MEMBERS_CHUNK',
+				'MESSAGE_DELETE',
+				'MESSAGE_DELETE_BULK',
+				'MESSAGE_REACTION_REMOVE',
+				'MESSAGE_REACTION_REMOVE_ALL',
+				'PRESENCE_UPDATE',
+				'VOICE_SERVER_UPDATE',
+				'VOICE_STATE_UPDATE',
+				'WEBHOOKS_UPDATE',
+				'USER_UPDATE'
+			]
 		});
 
 		this.commandHandler = new CommandHandler(this, {
