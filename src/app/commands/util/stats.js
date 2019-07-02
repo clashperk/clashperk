@@ -32,8 +32,7 @@ class StatsCommand extends Command {
 			.addField('Channels', this.client.channels.size, true)
 			.addField('Users', this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0), true);
 		if (isOwner) {
-			const clans = await Clans.findAll({ where: { tracking: true } });
-			embed.addField('Clans in DB', clans.length, true);
+			embed.addField('Clans in DB', await Clans.count(), true);
 		}
 		embed.addField('Version', version, true)
 			.addField('Node.Js', process.version, true)
