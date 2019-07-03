@@ -27,11 +27,13 @@ class StartCommand extends Command {
 				{
 					id: 'channel',
 					type: 'textChannel',
+					unordered: true,
 					default: message => message.channel
 				},
 				{
 					id: 'color',
 					type: 'color',
+					unordered: true,
 					default: '#5970C1'
 				}
 			]
