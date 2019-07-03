@@ -34,7 +34,7 @@ class StatsCommand extends Command {
 		if (isOwner) {
 			embed.addField('Clans in DB', await Clans.count(), true);
 		}
-		embed.addField('Version', version, true)
+		embed.addField('Version', `v${version}`, true)
 			.addField('Node.Js', process.version, true)
 			.setFooter(`© 2018 - 2019 ${this.client.users.get(this.client.ownerID).tag}`, this.client.users.get(this.client.ownerID).displayAvatarURL());
 

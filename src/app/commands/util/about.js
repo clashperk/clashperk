@@ -3,7 +3,7 @@ const { Command } = require('discord-akairo');
 class AboutCommand extends Command {
 	constructor() {
 		super('about', {
-			aliases: ['about', 'info'],
+			aliases: ['about', 'info', 'donate', 'patreon'],
 			category: 'util',
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows information about the bot.' }
@@ -12,20 +12,16 @@ class AboutCommand extends Command {
 
 	exec(message) {
 		const owner = this.client.users.get(this.client.ownerID);
-		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-			.setAuthor('About ClashPerk', this.client.user.displayAvatarURL())
-			.addField('Developer', `**[${owner.tag}](https://github.com/esuvajit)**`)
-			.addField('Library', '[discord.js-](https://discord.js.org)[akairo](https://discord-akairo.github.io/#/)')
-			.addField('Database', '[PostgreSQL](https://www.postgresql.org/)')
-			.addField('Host', '[Google Cloud Platform](https://console.cloud.google.com)')
-			.addField('Support', [
-				'If you are struggling with any feature/command, if you find any bug or have any good idea of new feature/command, dm me or join my [Discord](https://discord.gg/8NP2XNV)',
-				'',
-				'Help me to keep this bot alive. Support ClashPerk on **[Patreon](https://www.patreon.com/bePatron?u=14584309)**',
-				'',
-				`Use \`${prefix}stats\` for statistics and \`${prefix}invite\` for an invite link.`
+			.setAuthor(`About ${this.client.user.username}`, this.client.user.displayAvatarURL())
+			.addField('Developer', `**[${owner.tag}](https://github.com/esuvajit)**`, true)
+			.addField('Library', '[discord.js#master](https://discord.js.org)', true)
+			.addField('Support', '[Official Discord](https://discord.gg/8NP2XNV)', true)
+			.addField('Host', '[Google Cloud](https://console.cloud.google.com)', true)
+			.addField('Donate', [
+				'Help me to keep this bot alive.',
+				'Support ClashPerk on **[Patreon](https://www.patreon.com/bePatron?u=14584309)**'
 			])
 			.setFooter(`© 2018 - 2019 ${owner.tag}`, owner.displayAvatarURL());
 		return message.util.send({ embed });
