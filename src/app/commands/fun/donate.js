@@ -7,14 +7,14 @@ class DonateCommand extends Command {
 			category: 'other',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Gives you the link to support/doante for ClashPerks.'
+				content: 'Gives you the link to support/doante for ClashPerk.'
 			}
 		});
 	}
 
 	exec(message) {
 		return message.util.send([
-			'**Help me to keep this bot alive. Support ClashPerks on patreon**',
+			'**Help me to keep this bot alive. Support ClashPerk on patreon**',
 			'https://www.patreon.com/suvajit'
 		]);
 	}

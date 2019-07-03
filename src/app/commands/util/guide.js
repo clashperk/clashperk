@@ -16,7 +16,7 @@ class GuideCommand extends Command {
 			.setColor(0x5970c1)
 			.setTitle('Guide')
 			.addField('Setup', [
-				'Clashperks requires the following permissions to be usable:',
+				'ClashPerk requires the following permissions to be usable:',
 				'- `Read Messages`',
 				'- `Add Reactions`',
 				'- `Read Message History`',
@@ -70,8 +70,8 @@ class GuideCommand extends Command {
 				'This command requires the `Manage Guild` permission to be usable.',
 				'You can also mention the bot to use commands.',
 				'',
-				`For more information about ClashPerks, check out \`${prefix}about\` and \`${prefix}stats\`.`,
-				`Invite ClashPerks to your server with \`${prefix}invite\`.`
+				`For more information about ClashPerk, check out \`${prefix}about\` and \`${prefix}stats\`.`,
+				`Invite ClashPerk to your server with \`${prefix}invite\`.`
 			]);
 
 		return message.util.send({ embed });

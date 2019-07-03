@@ -7,14 +7,14 @@ class VoteCommand extends Command {
 			category: 'fun',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Gives you the link to vote for ClashPerks.'
+				content: 'Gives you the link to vote for ClashPerk.'
 			}
 		});
 	}
 
 	exec(message) {
 		return message.util.send([
-			'**If you want to support ClashPerks, you can vote for the bot under this link.**',
+			'**If you want to support ClashPerk, you can vote for the bot under this link.**',
 			'https://discordbots.org/bot/526971716711350273/vote'
 		]);
 	}

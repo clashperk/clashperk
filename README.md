@@ -1,4 +1,4 @@
-# ClashPerks
+# ClashPerk
 
 ### Tracks your clan donation and shows you information about clans, players and clan wars.
 
