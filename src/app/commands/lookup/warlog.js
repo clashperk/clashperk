@@ -84,7 +84,7 @@ class WarlogCommand extends Command {
 				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
-				embed.addField(`**${++index}.** ${result === 'Win war' ? '\\✅' : '\\❌'} ${result} against **${opp_name} (${opp_tag})**`, [
+				embed.addField(`**${++index}.** ${result === 'Win war' ? '\\✔️' : '\\❌'} ${result} against **${opp_name} (${opp_tag})**`, [
 					`\\⭐ ${our_stars} / ${opp_stars} \\🔥 ${our_destruct}% / ${opp_destruct}% \\⚔ ${our_attacks} `,
 					`\\🆚 ${size} vs ${size} \\⏲ ${time} ago`
 				]);
