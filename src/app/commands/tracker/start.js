@@ -18,7 +18,7 @@ class StartCommand extends Command {
 			args: [
 				{
 					id: 'data',
-					type: 'string',
+					type: 'clan',
 					unordered: true,
 					prompt: {
 						start: 'what clan do you want to track donations?',
