@@ -112,8 +112,7 @@ class ProfileCommand extends Command {
 			.setAuthor(`${member.user.tag} (${member.user.id})`, member.user.displayAvatarURL())
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`)
-			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`)
-			.setTimestamp();
+			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`);
 
 		embed.addField('Town Hall', `${TownHallEmoji[data.townHallLevel]} ${data.townHallLevel}`, true);
 		embed.addField('Current League', [

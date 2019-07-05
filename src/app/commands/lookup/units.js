@@ -76,8 +76,7 @@ class UnitsCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.league ? data.league.iconUrls.small : null, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`)
-			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`)
-			.setTimestamp();
+			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`);
 
 		let troopLevels = '';
 		data.troops.forEach(troop => {

@@ -55,7 +55,6 @@ class MembersLeagueCommand extends Command {
 	}
 
 	async exec(message, { data, rank }) {
-		const msg = await message.channel.send('**Making list of your clan members... <a:loading:538989228403458089>**');
 		let members = '';
 
 		for (const member of data.memberList) {
@@ -66,7 +65,6 @@ class MembersLeagueCommand extends Command {
 		\n${members}`;
 
 		const result = this.break(split);
-		await msg.delete();
 		const time = `*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`;
 		if (Array.isArray(result)) {
 			return result.map(async res => message.channel.send(result[0] === res ? time : '', {
