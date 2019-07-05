@@ -7,7 +7,6 @@ class PrefixCommand extends Command {
 			category: 'config',
 			channel: 'guild',
 			quoted: false,
-			userPermissions: ['MANAGE_GUILD'],
 			args: [
 				{
 					id: 'prefix',
@@ -27,7 +26,9 @@ class PrefixCommand extends Command {
 	}
 
 	exec(message, { prefix }) {
-		if (!prefix) return message.util.send(`The current prefix for this guild is: \`${this.handler.prefix(message)}\``);
+		if (!prefix && !message.member.permissions.has('MANAGE_GUILD')) {
+			return message.util.send(`The current prefix for this guild is \`${this.handler.prefix(message)}\``);
+		}
 		this.client.settings.set(message.guild, 'prefix', prefix);
 		if (prefix === this.handler.prefix(message)) {
 			return message.util.reply(`the prefix has been reset to \`${prefix}\``);
