@@ -62,10 +62,11 @@ class MembersLeagueCommand extends Command {
 			members += `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}\n`;
 		}
 
-		const split = stripIndent`<:clans:534765878118449152> **${data.name} (${data.tag})**
+		const split = stripIndent`<:clans:534765878118449152> **${data.name} (${data.tag}) ~ ${data.members}/50**
 		\n${members}`;
 
 		const result = this.break(split);
+		await msg.delete();
 		const time = `*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`;
 		if (Array.isArray(result)) {
 			return result.map(async res => message.channel.send(result[0] === res ? time : '', {

@@ -81,20 +81,21 @@ class MembersTHCommand extends Command {
 			if ((!th || th === 1) && TownHAll === 1) TH01 += `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}\n`;
 		}
 
-		const split = stripIndent`<:clans:534765878118449152> **${data.name} (${data.tag})**
+		const split = stripIndent`<:clans:534765878118449152> **${data.name} (${data.tag}) ~ ${data.members}/50**
 		\n${TH12}${TH11}${TH10}${TH09}${TH08}${TH07}${TH06}${TH05}${TH04}${TH03}${TH02}${TH01}`;
 
 		const result = this.break(split);
-		await msg.edit(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`);
+		await msg.delete();
+		const time = `*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`;
 		if (Array.isArray(result)) {
-			return result.map(async res => message.channel.send({
+			return result.map(async res => message.channel.send(result[0] === res ? time : '', {
 				embed: {
 					color: 0x5970c1,
 					description: res
 				}
 			}));
 		}
-		return message.channel.send({
+		return message.channel.send(time, {
 			embed: {
 				color: 0x5970c1,
 				description: result
