@@ -14,8 +14,8 @@ class ReadyListener extends Listener {
 		Logger.info(`${this.client.user.tag} (${this.client.user.id})`, { level: 'READY' });
 
 		if (this.client.user.id === process.env.CLIENT_ID) {
-			this.client.postStats.init();
 			this.client.firebase.init();
+			this.client.postStats.init();
 		}
 
 		this.client.tracker.init();

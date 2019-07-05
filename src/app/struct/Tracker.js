@@ -142,6 +142,7 @@ class Tracker {
 			} else {
 				Logger.warn(`Channel: ${clan.channel}`, { level: 'Missing Channel' });
 				this.delete(clan.guild, clan.tag);
+				await Clans.destroy({ where: { channel: clan.channel } });
 			}
 
 			await this.delay(100);
