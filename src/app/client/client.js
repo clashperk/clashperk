@@ -6,6 +6,7 @@ const Database = require('../struct/Database');
 const Tracker = require('../struct/Tracker');
 const fetch = require('node-fetch');
 const PostStats = require('../struct/PostStats');
+const Firebase = require('../struct/Firebase');
 
 class Client extends AkairoClient {
 	constructor(config) {
@@ -64,6 +65,8 @@ class Client extends AkairoClient {
 		this.postStats = new PostStats(this);
 
 		this.tracker = new Tracker(this);
+
+		this.firebase = new Firebase(this);
 
 		const STATUS = {
 			400: 'client provided incorrect parameters for the request.',

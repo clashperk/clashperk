@@ -12,6 +12,8 @@ class CommandStartedListener extends Listener {
 	}
 
 	async exec(message, command, args) {
+		this.client.firebase.commandcounter();
+
 		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		Logger.log(`${command.id}`, { level });
 
