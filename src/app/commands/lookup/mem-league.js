@@ -66,16 +66,16 @@ class MembersLeagueCommand extends Command {
 		\n${members}`;
 
 		const result = this.break(split);
-		await msg.edit(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`);
+		const time = `*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`;
 		if (Array.isArray(result)) {
-			return result.map(async res => message.channel.send({
+			return result.map(async res => message.channel.send(result[0] ? time : '', {
 				embed: {
 					color: 0x5970c1,
 					description: res
 				}
 			}));
 		}
-		return message.channel.send({
+		return message.channel.send(time, {
 			embed: {
 				color: 0x5970c1,
 				description: result
