@@ -32,7 +32,7 @@ class ClanBadgeCommand extends Command {
 			.setImage(data.badgeUrls.large);
 		if (data.clanLevel >= 21) {
 			embed.setDescription([
-				'*Clash of Clans API does not provide actual image for level 21+ clans. #Blame_Clash_of_Clans*'
+				'*Clash of Clans API does not provide actual image for level 21+ clans. #Blame_Supercell*'
 			]);
 		}
 		return message.util.send({ embed });
