@@ -68,7 +68,7 @@ class MembersLeagueCommand extends Command {
 		const result = this.break(split);
 		const time = `*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`;
 		if (Array.isArray(result)) {
-			return result.map(async res => message.channel.send(result[0] ? time : '', {
+			return result.map(async res => message.channel.send(result[0] === res ? time : '', {
 				embed: {
 					color: 0x5970c1,
 					description: res
