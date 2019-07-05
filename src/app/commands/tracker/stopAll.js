@@ -46,7 +46,7 @@ class StopAllCommand extends Command {
 
 		return message.util.send({
 			embed: {
-				title: 'Successfully deleted all clans',
+				title: 'Successfully deleted.',
 				color: 5861569
 			}
 		});
