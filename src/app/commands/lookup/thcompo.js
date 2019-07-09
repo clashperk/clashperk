@@ -19,7 +19,7 @@ const TownHallEmoji = {
 class ThCompoCommand extends Command {
 	constructor() {
 		super('th-compo', {
-			aliases: ['th-compo'],
+			aliases: ['th-compo', 'compo'],
 			category: 'lookup',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
@@ -27,7 +27,7 @@ class ThCompoCommand extends Command {
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
-			cooldown: 20000,
+			cooldown: 15000,
 			args: [
 				{
 					id: 'data',
