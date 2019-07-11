@@ -17,7 +17,7 @@ class CooldownListener extends Listener {
 		Logger.log(`=> ${command.id} ~ ${time}`, { level });
 
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
-			return message.reply(`You can use that command again in ${time} seconds.`);
+			return message.reply(`You can use that command again in ${time}.`);
 		}
 	}
 }
