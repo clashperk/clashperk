@@ -1,5 +1,6 @@
 const { Listener } = require('discord-akairo');
 const Logger = require('../../util/logger');
+const ms = require('ms');
 
 class CooldownListener extends Listener {
 	constructor() {
@@ -11,7 +12,7 @@ class CooldownListener extends Listener {
 	}
 
 	exec(message, command, remaining) {
-		const time = remaining / 1000;
+		const time = ms(remaining, { long: true });
 		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		Logger.log(`=> ${command.id} ~ ${time}`, { level });
 
