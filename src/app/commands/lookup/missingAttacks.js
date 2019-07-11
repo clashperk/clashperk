@@ -52,6 +52,11 @@ class MissingAttacksCommand extends Command {
 			return message.util.send({ embed });
 		}
 
+		if (body.state === 'notInWar') {
+			embed.setDescription('Clan is not in war.');
+			return message.util.send({ embed });
+		}
+
 		let missing = '';
 		for (const member of this.short(body.clan.members)) {
 			if (member.attacks && member.attacks.length === 2) continue;
