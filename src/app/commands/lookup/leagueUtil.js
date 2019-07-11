@@ -1,4 +1,6 @@
 const { Command } = require('discord-akairo');
+const { Util } = require('discord.js');
+const { stripIndent } = require('common-tags');
 
 const leagueStrings = {
 	29000000: '<:no_league:524912313531367424>',
@@ -31,7 +33,7 @@ const leagueStrings = {
 
 class MembersLeagueCommand extends Command {
 	constructor() {
-		super('members-league', {
+		super('members-league-dec', {
 			category: 'lookup',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
@@ -52,28 +54,37 @@ class MembersLeagueCommand extends Command {
 		});
 	}
 
-	async exec(message, { data }) {
-		const first = this.paginate(data.memberList, 0, 32);
-		const second = this.paginate(data.memberList, 32, 35);
-		const third = this.paginate(data.memberList, 35, 50);
+	async exec(message, { data, rank }) {
+		let members = '';
 
-		const embed = this.client.util.embed().setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
-			.setDescription(first.items.map(member => `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}`).join('\n'));
-		if (data.members > 32) {
-			embed.addField(second.items.map(member => `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}`).join('\n'), [
-				third.items.length ? third.items.map(member => `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}`).join('\n') : '\u200b'
-			]);
+		for (const member of data.memberList) {
+			members += `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}\n`;
 		}
 
-		return message.util.send({ embed });
+		const split = stripIndent`<:clans:534765878118449152> **${data.name} (${data.tag}) ~ ${data.members}/50**
+		\n${members}`;
+
+		const result = this.break(split);
+		const time = `*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`;
+		if (Array.isArray(result)) {
+			return result.map(async res => message.channel.send(result[0] === res ? time : '', {
+				embed: {
+					color: 0x5970c1,
+					description: res
+				}
+			}));
+		}
+		return message.channel.send(time, {
+			embed: {
+				color: 0x5970c1,
+				description: result
+			}
+		});
 	}
 
-	paginate(items, start, end) {
-		return {
-			items: items.slice(start, end)
-		};
+	break(data) {
+		return Util.splitMessage(data, { maxLength: 1900 });
 	}
 }
 
-module.exports = MembersLeagueCommand;
+// module.exports = MembersLeagueCommand;
