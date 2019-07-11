@@ -8,7 +8,7 @@ class CurrentWarCommand extends Command {
 	constructor() {
 		super('current-war', {
 			aliases: ['current-war'],
-			category: 'lookup',
+			category: 'beta',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Clash of Clans war log lookup command.',
@@ -40,13 +40,19 @@ class CurrentWarCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}`;
-		const body = await fetch(`${uri}/warlog?limit=10`,
+		const body = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar`,
 			{
 				method: 'GET', headers: {
 					Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}`
 				}
 			}).then(res => res.json());
+
+		let m = '';
+		for (const member of body.members) {
+			m += `${member.name} ${member.tag}`;
+		}
+		embed.setDescription(m);
+		return message.util.send({ embed });
 	}
 }
 
