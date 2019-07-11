@@ -15,14 +15,14 @@ class SetCommand extends Command {
 
 	*args() {
 		const type = yield {
-			type: ['log', 'owner']
+			type: ['log', 'beta']
 		};
 		const data = yield {
 			type: (msg, id) => {
 				if (!id) return null;
 				const resolver = this.handler.resolver.type({
 					log: 'textChannel',
-					owner: 'user'
+					beta: 'user'
 				}[type]);
 				return resolver(msg, id);
 			}
@@ -38,13 +38,26 @@ class SetCommand extends Command {
 			this.client.settings.set('global', 'clientLog', data.id);
 		}
 
-		if (type === 'owner') {
-			this.client.settings.set('global', 'owners', data.id);
+		if (type === 'beta') {
+			const beta = this.client.settings.get('global', 'beta', []);
+			if (beta.includes(data.id)) {
+				const index = beta.indexOf(data.id);
+				beta.splice(index, 1);
+				if (beta.length === 0) this.client.settings.delete('global', 'beta');
+				else this.client.settings.set('global', 'beta', beta);
+
+				return message.util.send(`${data.tag}, has been removed from beta.`);
+			}
+
+			beta.push(data.id);
+			this.client.settings.set('global', 'beta', beta);
+
+			return message.util.send(`${data.tag}, has been add to beta.`);
 		}
 
 		return message.util.reply({
 			log: `client log channel set to ${data}`,
-			owner: `added new owner ${data.tag}`
+			beta: `added new beta user **${data.tag}**`
 		}[type]);
 	}
 }

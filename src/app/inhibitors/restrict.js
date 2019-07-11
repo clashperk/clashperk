@@ -9,7 +9,7 @@ class RestrictInhibitor extends Inhibitor {
 
 	exec(message) {
 		const categoryID = ['tracker', 'profile', 'config'];
-		if (message.util.parsed && message.util.parsed.command && !categoryID.includes(message.util.parsed.command.categoryID)) return false;
+		if (message.util.parsed && message.util.parsed.command && !categoryID.includes(message.util.parsed.command.categoryID) && this.client.isOwner(message.author.id)) return false;
 		const restrict = this.client.settings.get(message.guild, 'restrict', []);
 		return restrict.includes(message.author.id);
 	}

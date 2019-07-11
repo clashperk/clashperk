@@ -6,6 +6,7 @@ class MemeCommand extends Command {
 	constructor() {
 		super('meme', {
 			aliases: ['meme', 'memes'],
+			clientPermissions: ['EMBED_LINKS'],
 			category: 'fun',
 			description: {
 				content: 'Receives random Clash of Clans memes.'
