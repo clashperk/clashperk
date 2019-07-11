@@ -65,7 +65,7 @@ class MembersTHCommand extends Command {
 		const embed = this.client.util.embed().setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
 			.setDescription(first.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n'));
-		if ((th && filter.length > 32) || data.members > 32) {
+		if ((th && filter.length > 32) || (!th && data.members > 32)) {
 			embed.addField(second.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n'), [
 				third.items.length ? third.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n') : '\u200b'
 			]);
