@@ -57,10 +57,11 @@ class MembersTHCommand extends Command {
 			array.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel });
 		}
 
-		const filter = array.filter(arr => arr.townHallLevel === th);
-		const first = this.paginate(th ? filter : array, 0, 32);
-		const second = this.paginate(th ? filter : array, 32, 35);
-		const third = this.paginate(th ? filter : array, 35, 50);
+		const items = this.short(array);
+		const filter = items.filter(arr => arr.townHallLevel === th);
+		const first = this.paginate(th ? filter : items, 0, 32);
+		const second = this.paginate(th ? filter : items, 32, 35);
+		const third = this.paginate(th ? filter : items, 35, 50);
 
 		const embed = this.client.util.embed().setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
@@ -79,6 +80,10 @@ class MembersTHCommand extends Command {
 		return {
 			items: items.slice(start, end)
 		};
+	}
+
+	short(items) {
+		return items.sort((a, b) => a.townHallLevel - b.townHallLevel);
 	}
 }
 
