@@ -10,7 +10,7 @@ class PrefixCommand extends Command {
 			args: [
 				{
 					id: 'prefix',
-					type: Argument.validate('string', (_, p) => !/\s/.test(p) && p.length <= 3),
+					type: Argument.validate('string', (msg, p) => !/\s/.test(p) && p.length <= 3),
 					prompt: {
 						retry: 'please provide a prefix without spaces and less than 3 characters.',
 						optional: true
@@ -26,8 +26,14 @@ class PrefixCommand extends Command {
 	}
 
 	exec(message, { prefix }) {
-		if (!prefix && !message.member.permissions.has('MANAGE_GUILD')) {
+		if (!prefix) {
 			return message.util.send(`The current prefix for this guild is \`${this.handler.prefix(message)}\``);
+		}
+		if (prefix && !message.member.permissions.has('MANAGE_GUILD')) {
+			return message.util.send([
+				`The current prefix for this guild is \`${this.handler.prefix(message)}\``,
+				'You are missing `Manage Server` to change the prefix.'
+			]);
 		}
 		this.client.settings.set(message.guild, 'prefix', prefix);
 		if (prefix === this.handler.prefix(message)) {
