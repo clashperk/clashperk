@@ -19,7 +19,7 @@ class AddNoteCommand extends Command {
 				},
 				{
 					id: 'note',
-					match: 'content',
+					match: 'rest',
 					prompt: {
 						start: 'what would you like add?'
 					}

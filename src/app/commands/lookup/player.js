@@ -188,7 +188,7 @@ class PlayerCommand extends Command {
 		const note = await Notes.findOne({ where: { guild: message.guild.id, tag: data.tag } });
 		if (beta.includes(message.author.id) && note) {
 			embed.addField('Note', [
-				`<@${note.user}> created on ${moment(note.createdAt).format('MMMM D, YYYY')}`,
+				`**${this.client.users.get(beta.user).tag || 'Unknown#0000'}** created on **${moment(note.createdAt).format('MMMM D, YYYY, hh:mm')}**`,
 				'',
 				note.note
 			]);
