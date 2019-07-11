@@ -36,7 +36,7 @@ class MembersCommand extends Command {
 			true: this.handler.modules.get('members-th'),
 			false: this.handler.modules.get('members-league')
 		}[type];
-		return this.handler.handleDirectCommand(message, name, command, true);
+		return this.handler.handleDirectCommand(message, name, command, false);
 	}
 }
 
