@@ -8,12 +8,12 @@ class MissingAttacksCommand extends Command {
 	constructor() {
 		super('missing-attacks', {
 			aliases: ['missing', 'missing-attacks'],
-			category: 'beta',
+			category: 'lookup',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Shows info about missing attacks.',
 				usage: '<tag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				examples: ['#8QU8J9LP', '8QU8J9LP']
 			},
 			args: [
 				{
@@ -36,7 +36,7 @@ class MissingAttacksCommand extends Command {
 			.setThumbnail(data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
-			embed.setDescription('War log is Private');
+			embed.setDescription('War Log Is Private');
 			return message.util.send({ embed });
 		}
 
@@ -48,12 +48,12 @@ class MissingAttacksCommand extends Command {
 			}).then(res => res.json());
 
 		if (body.state === 'preparation') {
-			embed.setDescription('War has not started yet.');
+			embed.setDescription('Preparation Day');
 			return message.util.send({ embed });
 		}
 
 		if (body.state === 'notInWar') {
-			embed.setDescription('Clan is not in war.');
+			embed.setDescription('Not In War');
 			return message.util.send({ embed });
 		}
 
@@ -68,7 +68,7 @@ class MissingAttacksCommand extends Command {
 			missing
 		]);
 		const endTime = new Date(moment(body.endTime).toDate()).getTime();
-		embed.setFooter(`Ends in ${moment.duration(Date.now() - endTime).format('D [days], H [hours] m [minutes]')}`);
+		embed.setFooter(`Ends in ${moment.duration(endTime - Date.now()).format('D [days], H [hours] m [minutes]')}`);
 
 		return message.util.send({ embed });
 	}

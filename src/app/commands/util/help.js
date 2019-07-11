@@ -77,7 +77,7 @@ class HelpCommand extends Command {
 				tracker: 'Tracker',
 				lookup: 'Lookup',
 				profile: 'Profile',
-				fun: 'Fun',
+				other: 'Other',
 				config: 'Config'
 			}[category.id];
 

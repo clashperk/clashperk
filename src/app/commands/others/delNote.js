@@ -5,9 +5,14 @@ class DeleteNoteCommand extends Command {
 	constructor() {
 		super('del-note', {
 			aliases: ['del-note', 'delete-note'],
-			category: 'beta',
+			category: 'other',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
+			description: {
+				content: 'Deletes note for a player.',
+				usage: '<tag>',
+				examples: ['#9Q92C8R20']
+			},
 			args: [
 				{
 					id: 'data',

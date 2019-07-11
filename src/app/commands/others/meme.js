@@ -7,7 +7,7 @@ class MemeCommand extends Command {
 		super('meme', {
 			aliases: ['meme', 'memes'],
 			clientPermissions: ['EMBED_LINKS'],
-			category: 'fun',
+			category: 'other',
 			description: {
 				content: 'Receives random Clash of Clans memes.'
 			}

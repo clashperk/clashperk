@@ -5,7 +5,7 @@ class FactsCommand extends Command {
 	constructor() {
 		super('facts', {
 			aliases: ['facts', 'fact'],
-			category: 'fun',
+			category: 'other',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Displays random Clash of Clans facts.'

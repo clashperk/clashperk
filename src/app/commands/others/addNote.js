@@ -5,9 +5,14 @@ class AddNoteCommand extends Command {
 	constructor() {
 		super('add-note', {
 			aliases: ['add-note', 'note'],
-			category: 'beta',
+			category: 'other',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
+			description: {
+				content: 'Adds a short note for a player.',
+				usage: '<#tag> <note>',
+				examples: ['#9Q92C8R20 Hopper']
+			},
 			args: [
 				{
 					id: 'data',

@@ -13,7 +13,7 @@ class WarlogCommand extends Command {
 			description: {
 				content: 'Clash of Clans war log lookup command.',
 				usage: '<tag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				examples: ['#8QU8J9LP', '8QU8J9LP']
 			},
 			args: [
 				{
@@ -36,7 +36,7 @@ class WarlogCommand extends Command {
 			.setThumbnail(data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
-			embed.setDescription('War log is Private');
+			embed.setDescription('War Log Is Private');
 			return message.util.send({ embed });
 		}
 

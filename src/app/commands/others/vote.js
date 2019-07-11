@@ -4,7 +4,7 @@ class VoteCommand extends Command {
 	constructor() {
 		super('vote', {
 			aliases: ['vote'],
-			category: 'fun',
+			category: 'other',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Gives you the link to vote for ClashPerk.'

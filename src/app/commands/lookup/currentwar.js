@@ -13,7 +13,7 @@ class CurrentWarCommand extends Command {
 			description: {
 				content: 'Shows info about currentwar.',
 				usage: '<tag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				examples: ['#8QU8J9LP', '8QU8J9LP']
 			},
 			args: [
 				{
