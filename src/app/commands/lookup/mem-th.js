@@ -83,7 +83,7 @@ class MembersTHCommand extends Command {
 	}
 
 	short(items) {
-		return items.sort((a, b) => a.townHallLevel - b.townHallLevel);
+		return items.sort((a, b) => b.townHallLevel - a.townHallLevel);
 	}
 }
 
