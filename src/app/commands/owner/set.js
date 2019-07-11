@@ -36,6 +36,7 @@ class SetCommand extends Command {
 
 		if (type === 'log') {
 			this.client.settings.set('global', 'clientLog', data.id);
+			return message.util.reply(`client log channel set to ${data}`);
 		}
 
 		if (type === 'beta') {
@@ -46,19 +47,14 @@ class SetCommand extends Command {
 				if (beta.length === 0) this.client.settings.delete('global', 'beta');
 				else this.client.settings.set('global', 'beta', beta);
 
-				return message.util.send(`${data.tag}, has been removed from beta.`);
+				return message.util.send(`${data.tag} has been removed from beta.`);
 			}
 
 			beta.push(data.id);
 			this.client.settings.set('global', 'beta', beta);
 
-			return message.util.send(`${data.tag}, has been add to beta.`);
+			return message.util.send(`${data.tag} has been add to beta.`);
 		}
-
-		return message.util.reply({
-			log: `client log channel set to ${data}`,
-			beta: `added new beta user **${data.tag}**`
-		}[type]);
 	}
 }
 
