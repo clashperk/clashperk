@@ -36,7 +36,7 @@ class StatsCommand extends Command {
 		}
 		embed.addField('Version', `v${version}`, true)
 			.addField('Node.Js', process.version, true)
-			.setFooter(`© 2018 - 2019 ${this.client.users.get(this.client.ownerID).tag}`, this.client.users.get(this.client.ownerID).displayAvatarURL());
+			.setFooter(`© 2019 ${this.client.users.get(this.client.ownerID).tag}`, this.client.users.get(this.client.ownerID).displayAvatarURL());
 
 		if (message.channel.type === 'dm' || !message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
 			return message.util.send({ embed });

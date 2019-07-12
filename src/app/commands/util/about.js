@@ -23,7 +23,7 @@ class AboutCommand extends Command {
 				'Help me to keep this bot alive.',
 				'Support ClashPerk on **[Patreon](https://www.patreon.com/bePatron?u=14584309)**'
 			])
-			.setFooter(`© 2018 - 2019 ${owner.tag}`, owner.displayAvatarURL());
+			.setFooter(`© 2019 ${owner.tag}`, owner.displayAvatarURL());
 		return message.util.send({ embed });
 	}
 }
