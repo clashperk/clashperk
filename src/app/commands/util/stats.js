@@ -27,7 +27,7 @@ class StatsCommand extends Command {
 		if (isOwner) {
 			embed.addField('Free Memory', `${Math.round(os.freemem())} MB`, true);
 		}
-		embed.addField('Uptime', moment.duration(this.client.uptime).format('M [months], W [weeks], D [days], H [hrs], m [mins], s [secs]'), true)
+		embed.addField('Uptime', moment.duration(this.client.uptime).format('D [days], H [hrs], m [mins], s [secs]'), true)
 			.addField('Servers', this.client.guilds.size, true)
 			.addField('Channels', this.client.channels.size, true)
 			.addField('Users', this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0), true);
