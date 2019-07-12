@@ -16,8 +16,8 @@ class PingCommand extends Command {
 		// eslint-disable-next-line max-len
 		const latency = (msg.editedTimestamp || msg.createdTimestamp) - (message.editedTimestamp || message.createdTimestamp);
 		return message.util.send([
-			`Gateway Ping~ \`${latency.toString()}ms\``,
-			`API Ping~ \`${Math.round(this.client.ws.ping).toString()}ms\``
+			`**Gateway Ping~ ${latency.toString()}ms**`,
+			`**API Ping~ ${Math.round(this.client.ws.ping).toString()}ms**`
 		]);
 	}
 }
