@@ -5,6 +5,7 @@ const { MessageEmbed } = require('discord.js');
 const os = require('os-utils');
 const { version } = require('../../../../package.json');
 const Clans = require('../../models/Clans');
+const Accounts = require('../../models/Profile');
 
 class StatsCommand extends Command {
 	constructor() {
@@ -29,10 +30,10 @@ class StatsCommand extends Command {
 		}
 		embed.addField('Uptime', moment.duration(this.client.uptime).format('D [days], H [hrs], m [mins], s [secs]'), true)
 			.addField('Servers', this.client.guilds.size, true)
-			.addField('Channels', this.client.channels.size, true)
 			.addField('Users', this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0), true);
 		if (isOwner) {
-			embed.addField('Clans in DB', await Clans.count(), true);
+			embed.addField('Clans', await Clans.count(), true)
+				.addField('Accounts', await Accounts.count(), true);
 		}
 		embed.addField('Version', `v${version}`, true)
 			.addField('Node.Js', process.version, true)

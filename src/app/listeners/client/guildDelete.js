@@ -22,7 +22,7 @@ class GuildDeleteListener extends Listener {
 		await Clans.destroy({ where: { guild: guild.id } });
 		this.client.settings.clear(guild);
 
-		await guild.members.fetch();
+		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
 		const clientLog = this.client.settings.get('global', 'clientLog', undefined);
 		if (clientLog && this.client.channels.has(clientLog)) {
 			this.client.channels.get(clientLog).send({
@@ -31,10 +31,10 @@ class GuildDeleteListener extends Listener {
 						name: `${guild.name} (${guild.id})`,
 						icon_url: guild.iconURL()
 					},
-					title: `\\👑 ${guild.owner.user.tag} (${guild.owner.user.id})`,
+					title: `\\👑 ${user.tag} (${user.id})`,
 					footer: {
 						text: `${guild.memberCount} members`,
-						icon_url: guild.owner.user.displayAvatarURL()
+						icon_url: user.displayAvatarURL()
 					},
 					timestamp: new Date(),
 					color: 0xeb3508

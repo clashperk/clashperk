@@ -12,8 +12,7 @@ class GuildCreateListener extends Listener {
 
 	async exec(guild) {
 		Logger.log(`${guild.name} (${guild.id})`, { level: 'GUILD_CREATE' });
-
-		await guild.fetch();
+		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
 
 		const clientLog = this.client.settings.get('global', 'clientLog', undefined);
 		if (clientLog && this.client.channels.has(clientLog)) {
@@ -23,10 +22,10 @@ class GuildCreateListener extends Listener {
 						name: `${guild.name} (${guild.id})`,
 						icon_url: guild.iconURL()
 					},
-					title: `\\👑 ${guild.owner.user.tag} (${guild.owner.user.id})`,
+					title: `\\👑 ${user.tag} (${user.id})`,
 					footer: {
 						text: `${guild.memberCount} members`,
-						icon_url: guild.owner.user.displayAvatarURL()
+						icon_url: user.displayAvatarURL()
 					},
 					timestamp: new Date(),
 					color: 0x38d863
