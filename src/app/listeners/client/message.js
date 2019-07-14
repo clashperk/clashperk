@@ -10,8 +10,10 @@ class MessageListener extends Listener {
 	}
 
 	async exec(message) {
-		if (message.mentions.has(this.client.user.id) && /^<@!?(\d+)>$/.test(message) && message.channel.permissionsFor(message.channel.guild.me).has(['SEND_MESSAGES'], false)) {
-			return message.channel.send(`**Current prefix for this guild is \`${this.client.commandHandler.prefix(message)}\`\u200b**`);
+		if (message.mentions.has(this.client.user.id) && /^<@!?(\d+)>$/.test(message)) {
+			try {
+				return message.channel.send(`**Current prefix for this guild is \`${this.client.commandHandler.prefix(message)}\`\u200b**`);
+			} catch {}
 		}
 	}
 }
