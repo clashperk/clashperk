@@ -37,7 +37,7 @@ class Firebase {
 
 	async post() {
 		firebaseApp.database().ref(process.env.FIREBASE_DB).update({
-			uptime: moment.duration(this.client.uptime).format('M [months], W [weeks], D [days], H [hrs], m [mins], s [secs]'),
+			uptime: moment.duration(this.client.uptime).format('D [days], H [hrs], m [mins], s [secs]'),
 			users: this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0),
 			guilds: this.client.guilds.size,
 			channels: this.client.channels.size
