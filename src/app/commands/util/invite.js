@@ -20,7 +20,8 @@ class InviteCommand extends Command {
 			'EMBED_LINKS',
 			'ATTACH_FILES',
 			'READ_MESSAGE_HISTORY',
-			'USE_EXTERNAL_EMOJIS'
+			'USE_EXTERNAL_EMOJIS',
+			'MANAGE_MESSAGES'
 		]);
 
 		this.invite = invite;
