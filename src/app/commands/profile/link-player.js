@@ -48,7 +48,9 @@ class LinkPlayerCommand extends Command {
 			guild: message.guild.id,
 			user: member.id,
 			tag: data.tag,
-			name: data.name
+			name: data.name,
+			clan_tag: data.clan ? data.clan.tag : null,
+			clan_name: data.clan ? data.clan.name : null
 		});
 
 		return message.util.send(`Successfully linked **${member.user.tag}** to *${data.name} (${data.tag})*`);

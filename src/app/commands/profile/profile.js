@@ -99,7 +99,7 @@ class ProfileCommand extends Command {
 			}
 		});
 
-		if (!profile && !profile.tag) return message.util.reply(`couldn\'t find a player linked to ${member.user.tag}`);
+		if (!profile || !profile.tag) return message.util.reply(`couldn\'t find a player linked to ${member.user.tag}`);
 
 		const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(profile.tag)}`;
 		const res = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` } });
