@@ -41,7 +41,7 @@ class MyClanCommand extends Command {
 			}
 		});
 
-		if (!profile || !profile.clan_tag) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
+		if (!profile || (profile && !profile.clan_tag)) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
 
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(profile.clan_tag)}`;
 		const res = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` } });
