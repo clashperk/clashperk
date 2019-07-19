@@ -77,7 +77,7 @@ class Tracker {
 
 		for (const member of clan.memberList) {
 			if (`${channel.id}${member.tag}` in donateList) {
-				clanInfo = `${clan.name} (${clan.tag}) ~ ${clan.members}/50`;
+				clanInfo = `${clan.name} (${clan.tag})`;
 				badge = clan.badgeUrls.large;
 				members = clan.members;
 				league = leagueStrings[member.league.id];
@@ -97,7 +97,7 @@ class Tracker {
 				.setColor(isNaN(color) ? String(color) : Number(color))
 				.setAuthor(clanInfo, badge)
 				.setThumbnail(badge)
-				.setFooter('\u200b', this.client.user.displayAvatarURL())
+				.setFooter(`${members}/50`, this.client.user.displayAvatarURL())
 				.setTimestamp();
 			if (donated) embed.addField('Donated', `${donated}`);
 			if (received) embed.addField('Received', `${received}`);
