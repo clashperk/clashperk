@@ -15,23 +15,28 @@ class SetCommand extends Command {
 
 	*args() {
 		const type = yield {
-			type: ['log', 'beta']
+			type: ['log', 'beta', 'limit']
 		};
 		const data = yield {
 			type: (msg, id) => {
 				if (!id) return null;
 				const resolver = this.handler.resolver.type({
 					log: 'textChannel',
-					beta: 'user'
+					beta: 'user',
+					limit: 'guild'
 				}[type]);
 				return resolver(msg, id);
 			}
 		};
+		const num = yield {
+			type: 'number',
+			default: 10
+		};
 
-		return { type, data };
+		return { type, data, num };
 	}
 
-	exec(message, { type, data }) {
+	exec(message, { type, data, num }) {
 		if (!type || !data) return;
 
 		if (type === 'log') {
@@ -54,6 +59,12 @@ class SetCommand extends Command {
 			this.client.settings.set('global', 'beta', beta);
 
 			return message.util.send(`${data.tag} has been add to beta.`);
+		}
+
+		if (type === 'limit') {
+			if (!data) return message.util.send('**Invalid Guild**');
+			this.client.settings.set(data, 'clanLimit', num);
+			return message.util.send(`Clan limit set to **${num}** for **${data.name}**`);
 		}
 	}
 }
