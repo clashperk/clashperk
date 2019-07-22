@@ -19,7 +19,7 @@ class StartCommand extends Command {
 				{
 					id: 'data',
 					type: 'clan',
-					unordered: false,
+					unordered: false, index: 0,
 					prompt: {
 						start: 'what clan do you want to track donations?',
 						retry: (msg, { failure }) => failure.value
