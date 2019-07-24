@@ -21,7 +21,7 @@ class TimeCommand extends Command {
 
 	exec(message, { tz }) {
 		const time = moment.utc();
-		const d = time.tz(tz).format('DD-MM-YYY ha z');
+		const d = time.tz(tz).format('DD-MM-YYYY ha z');
 		return message.util.send(d);
 	}
 }
