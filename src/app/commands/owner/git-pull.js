@@ -4,7 +4,7 @@ const shell = require('shelljs');
 class GitPullCommand extends Command {
 	constructor() {
 		super('git-pull', {
-			aliases: ['git-pull', 'git-init', 'sync'],
+			aliases: ['git-pull', 'git-init', 'fetch'],
 			category: 'owner',
 			ownerOnly: true,
 			description: {

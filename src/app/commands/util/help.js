@@ -28,6 +28,7 @@ class HelpCommand extends Command {
 		const description = Object.assign({
 			content: 'No description available.',
 			usage: '',
+			image: '',
 			examples: [],
 			fields: []
 		}, command.description);
@@ -35,6 +36,7 @@ class HelpCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setTitle(`\`${prefix}${command.aliases[0]} ${description.usage}\``)
+			.setImage(description.image)
 			.addField('Description', description.content);
 
 		for (const field of description.fields) embed.addField(field.name, field.value);
