@@ -33,13 +33,13 @@ class EventCommand extends Command {
 		const event = await Events.findOne({ where: { guild: message.guild.id } });
 		if (!event) return message.util.send('**No Event Set!**');
 		const utcTime = moment.utc(event.time);
-		const date = utcTime.tz(event.timezone).format('D MMMM YYYY, hh:mm A z');
+		const date = utcTime.tz(user.timezone).format('D MMMM YYYY, hh:mm A z');
 
 		const embed = this.client.util.embed()
+			.setColor(0x5970c1)
 			.setAuthor('Event')
-			.addField(`${event.timezone.replace(/\//g, ', ').replace(/_/g, ' ')} Time`, date)
-			.addField('UTC Time', utcTime.format('D MMMM YYYY, hh:mm A z'))
-			.setTimestamp();
+			.addField(`${user.timezone.replace(/\//g, ', ').replace(/_/g, ' ')} Time`, date)
+			.addField('UTC Time', moment.utc(utcTime.tz(user.timezone).format()).format('D MMMM YYYY, hh:mm A z'));
 		if (event.name) embed.setDescription(event.name);
 		return message.util.send({ embed });
 	}
