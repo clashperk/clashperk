@@ -16,14 +16,6 @@ class EventCommand extends Command {
 		});
 	}
 
-	userPermissions(message) {
-		if (message.guild.id === '600794042472595516') {
-			if (message.channel.id !== '600804546314371072' && (!message.member.roles.has('600804761045958666') || !message.member.permissions.has('MANAGE_GUILD'))) return 'MANAGE GUILD';
-			return null;
-		}
-		return null;
-	}
-
 	async exec(message) {
 		const user = await TimeZone.findOne({ where: { guild: message.guild.id, user: message.author.id } });
 		if (!user) {
