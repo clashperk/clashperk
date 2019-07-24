@@ -8,7 +8,7 @@ class SetEventCommand extends Command {
 		super('set-event', {
 			aliases: ['set-event'],
 			category: 'owner',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES'],
 			description: {
 				content: 'Sets events.',
 				usage: '<time> <event mame>',

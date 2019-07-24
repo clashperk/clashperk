@@ -8,7 +8,7 @@ class EventCommand extends Command {
 		super('sync', {
 			aliases: ['event', 'sync'],
 			category: 'owner',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES'],
 			description: {
 				content: 'Shows you the current event according to your TimeZone.',
 				examples: ['']

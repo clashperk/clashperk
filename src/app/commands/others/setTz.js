@@ -7,7 +7,7 @@ class SetTZCommand extends Command {
 		super('set-timezone', {
 			aliases: ['set-tz', 'set-timezone'],
 			category: 'owner',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES'],
 			description: {
 				content: 'Visit <https://momentjs.com/timezone/> and locate yourself then type `set-tz <timezone name>` (timezone name is case sensitive).',
 				usage: '<timezone name>',
