@@ -9,8 +9,8 @@ class BetaInhibitor extends Inhibitor {
 
 	exec(message, command) {
 		if (!['set-events', 'sync'].includes(command.id)) return false;
-		if (message.guild.id !== '500004711005683717') return false;
-		if (message.guild.id === '500004711005683717' && message.channel.id !== '599154177028915225') return message.author.id;
+		if (message.guild.id !== '600794042472595516') return false;
+		if (message.guild.id === '600794042472595516' && message.channel.id !== '600804546314371072') return message.author.id;
 	}
 }
 
