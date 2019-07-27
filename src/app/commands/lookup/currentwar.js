@@ -31,7 +31,7 @@ class CurrentWarCommand extends Command {
 	async exec(message, { data }) {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag}) ↗`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 			.setThumbnail(data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
@@ -58,7 +58,9 @@ class CurrentWarCommand extends Command {
 				.addField('War State', 'Battle Day')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
-					`\\⭐ ${body.clan.stars} / ${body.opponent.stars} \\🔥 ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}% \\⚔ ${body.clan.attacks} / ${body.opponent.attacks}`
+					`\\⭐ ${body.clan.stars} / ${body.opponent.stars}`,
+					`\\🔥 ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+					`<:attacks:534757491775504425> ${body.clan.attacks} / ${body.opponent.attacks}`
 				])
 				.addField('End Time', moment.duration(new Date(moment(body.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
 		} else if (body.state === 'warEnded') {
@@ -66,7 +68,9 @@ class CurrentWarCommand extends Command {
 				.addField('War State', 'War Ended')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
-					`\\⭐ ${body.clan.stars} / ${body.opponent.stars} \\🔥 ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}% \\⚔ ${body.clan.attacks} / ${body.opponent.attacks}`
+					`\\⭐ ${body.clan.stars} / ${body.opponent.stars}`,
+					`\\🔥 ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+					`<:attacks:534757491775504425> ${body.clan.attacks} / ${body.opponent.attacks}`
 				])
 				.addField('War Ended', moment.duration(Date.now() - new Date(moment(body.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
 		}
