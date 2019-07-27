@@ -49,26 +49,26 @@ class CurrentWarCommand extends Command {
 		if (body.state === 'notInWar') {
 			embed.setDescription('Not In War');
 		} else if (body.state === 'preparation') {
-			embed.addField(`Preparation day against **${body.opponent.name} ${body.opponent.tag}**`, body.opponent.description)
+			embed.setDescription(`Preparation day against **${body.opponent.name} ${body.opponent.tag}**`)
 				.addField('War State', 'Preparation Day')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
-				.addField('Start Time', moment.duration(new Date(body.startTime) - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
+				.addField('Start Time', moment.duration(new Date(moment(body.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
 		} else if (body.state === 'inWar') {
-			embed.addField(`Battle day against **${body.opponent.name} ${body.opponent.tag}**`, body.opponent.description)
+			embed.setDescription(`Battle day against **${body.opponent.name} ${body.opponent.tag}**`)
 				.addField('War State', 'Battle Day')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
 					`\\⭐ ${body.clan.stars} / ${body.opponent.stars} \\🔥 ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}% \\⚔ ${body.clan.attacks} / ${body.opponent.attacks}`
 				])
-				.addField('End Time', moment.duration(new Date(body.endTime) - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
+				.addField('End Time', moment.duration(new Date(moment(body.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
 		} else if (body.state === 'warEnded') {
-			embed.addField(`War ended against **${body.opponent.name} ${body.opponent.tag}**`, body.opponent.description)
+			embed.setDescription(`War ended against **${body.opponent.name} ${body.opponent.tag}**`)
 				.addField('War State', 'War Ended')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
 					`\\⭐ ${body.clan.stars} / ${body.opponent.stars} \\🔥 ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}% \\⚔ ${body.clan.attacks} / ${body.opponent.attacks}`
 				])
-				.addField('Ended', moment.duration(Date.now() - new Date(body.endTime)).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
+				.addField('War Ended', moment.duration(Date.now() - new Date(moment(body.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
 		}
 		return message.util.send({ embed });
 	}
