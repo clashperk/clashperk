@@ -18,7 +18,7 @@ class GitPullCommand extends Command {
 		return message.channel.send([
 			`${stderr}`,
 			`${stdout}`,
-			`code ${code}`
+			`Code ${code}`
 		], { code: true, split: true });
 	}
 }
