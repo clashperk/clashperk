@@ -4,7 +4,7 @@ const shell = require('shelljs');
 class GitPullCommand extends Command {
 	constructor() {
 		super('git-pull', {
-			aliases: ['git-pull', 'git-init', 'fetch'],
+			aliases: ['git-pull', 'git-init', 'pull', 'sync'],
 			category: 'owner',
 			ownerOnly: true,
 			description: {
@@ -18,7 +18,7 @@ class GitPullCommand extends Command {
 		return message.channel.send([
 			`${stderr}`,
 			`${stdout}`,
-			`Process exited with code ${code}`
+			`code ${code}`
 		], { code: true, split: true });
 	}
 }
