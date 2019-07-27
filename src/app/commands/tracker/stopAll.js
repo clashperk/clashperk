@@ -23,7 +23,7 @@ class StopAllCommand extends Command {
 				return false;
 			},
 			prompt: {
-				start: 'Are you sure you want to stop all? (Y/N)',
+				start: 'are you sure you want to stop all? (Y/N)',
 				retry: ''
 			}
 		};
@@ -36,7 +36,7 @@ class StopAllCommand extends Command {
 		}
 		const clans = await Clans.findAll({ where: { guild: message.guild.id } });
 
-		if (!clans) return message.util.reply('no clans found!');
+		if (!clans) return message.util.reply(`no clans found! ${this.client.emojis.get('545968755423838209')}`);
 
 		for (const clan of clans) {
 			this.client.tracker.delete(message.guild.id, clan.tag);
@@ -46,7 +46,7 @@ class StopAllCommand extends Command {
 
 		return message.util.send({
 			embed: {
-				title: 'Successfully deleted.',
+				title: `Successfully deleted ${clans.length} clans ${this.client.emojis.get('545874377523068930')}`,
 				color: 5861569
 			}
 		});
