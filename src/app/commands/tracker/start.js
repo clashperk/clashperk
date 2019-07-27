@@ -44,7 +44,6 @@ class StartCommand extends Command {
 	}
 
 	async exec(message, { data, channel, color }) {
-		console.log({ data, channel: channel.name, color });
 		if (!data) return message.util.reply('invalid tag, resource was not found.');
 		const clans = await Clans.findAll({ where: { guild: message.guild.id } });
 		const limit = this.client.settings.get(message.guild, 'clanLimit', 10);

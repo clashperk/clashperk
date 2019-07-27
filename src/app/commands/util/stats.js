@@ -19,22 +19,17 @@ class StatsCommand extends Command {
 	}
 
 	async exec(message) {
-		const isOwner = this.client.isOwner(message.author.id);
-
-		const embed = new MessageEmbed().setColor(0x5970c1)
+		const embed = new MessageEmbed()
+			.setColor(0x5970c1)
 			.setAuthor(`${this.client.user.username} Statistics`, this.client.user.displayAvatarURL())
-			.addField('Memory Usage', `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`, true);
-		if (isOwner) {
-			embed.addField('Free Memory', `${Math.round(os.freemem())} MB`, true);
-		}
-		embed.addField('Uptime', moment.duration(this.client.uptime).format('D [days], H [hrs], m [mins], s [secs]'), true)
+			.addField('Memory Usage', `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`, true)
+			.addField('Free Memory', `${Math.round(os.freemem())} MB`, true)
+			.addField('Uptime', moment.duration(this.client.uptime).format('D [days], H [hrs], m [mins], s [secs]'), true)
 			.addField('Servers', this.client.guilds.size, true)
 			.addField('Users', this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0), true)
-			.addField('Channels', this.client.channels.filter(c => c.type === 'text').size, true);
-		if (isOwner) {
-			embed.addField('Clans in DB', await Clans.count(), true);
-		}
-		embed.addField('Version', `v${version}`, true)
+			.addField('Channels', this.client.channels.filter(c => c.type === 'text').size, true)
+			.addField('Clans in DB', await Clans.count(), true)
+			.addField('Version', `v${version}`, true)
 			.addField('Node.Js', process.version, true)
 			.setFooter(`© 2019 ${this.client.users.get(this.client.ownerID).tag}`, this.client.users.get(this.client.ownerID).displayAvatarURL());
 
