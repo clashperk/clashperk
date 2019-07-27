@@ -8,7 +8,7 @@ class CurrentWarCommand extends Command {
 	constructor() {
 		super('current-war', {
 			aliases: ['current-war', 'war'],
-			category: 'beta',
+			category: 'lookup',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Shows info about currentwar.',
@@ -21,7 +21,7 @@ class CurrentWarCommand extends Command {
 					type: 'clan',
 					prompt: {
 						start: 'what would you like to search for?',
-						retry: (message, { failure }) => failure.value
+						retry: (msg, { failure }) => failure.value
 					}
 				}
 			]
@@ -49,12 +49,12 @@ class CurrentWarCommand extends Command {
 		if (body.state === 'notInWar') {
 			embed.setDescription('Not In War');
 		} else if (body.state === 'preparation') {
-			embed.setDescription(`Preparation day against **${body.opponent.name} ${body.opponent.tag}**`)
+			embed.setDescription(`Preparation day against **${body.opponent.name} (${body.opponent.tag})**`)
 				.addField('War State', 'Preparation Day')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('Start Time', moment.duration(new Date(moment(body.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
 		} else if (body.state === 'inWar') {
-			embed.setDescription(`Battle day against **${body.opponent.name} ${body.opponent.tag}**`)
+			embed.setDescription(`Battle day against **${body.opponent.name} (${body.opponent.tag})**`)
 				.addField('War State', 'Battle Day')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
@@ -62,7 +62,7 @@ class CurrentWarCommand extends Command {
 				])
 				.addField('End Time', moment.duration(new Date(moment(body.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
 		} else if (body.state === 'warEnded') {
-			embed.setDescription(`War ended against **${body.opponent.name} ${body.opponent.tag}**`)
+			embed.setDescription(`War ended against **${body.opponent.name} (${body.opponent.tag})**`)
 				.addField('War State', 'War Ended')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [

@@ -41,15 +41,12 @@ class MembersTHCommand extends Command {
 				}
 			]
 		});
-
-		this.cache = new Map();
 	}
 
 	async exec(message, { data, th }) {
 		await message.util.send('**Making list of your clan members... <a:loading:538989228403458089>**');
 
-		this.cache.set(`${message.author.id}${data.tag}`, []);
-		const array = this.cache.get(`${message.author.id}${data.tag}`);
+		const array = [];
 		for (const tag of data.memberList.map(member => member.tag)) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const res = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` } });
@@ -57,13 +54,14 @@ class MembersTHCommand extends Command {
 			array.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel });
 		}
 
-		const items = this.short(array);
+		const items = this.sort(array);
 		const filter = items.filter(arr => arr.townHallLevel === th);
 		const first = this.paginate(th ? filter : items, 0, 32);
 		const second = this.paginate(th ? filter : items, 32, 35);
 		const third = this.paginate(th ? filter : items, 35, 50);
 
-		const embed = this.client.util.embed().setColor(0x5970c1)
+		const embed = this.client.util.embed()
+			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 		if (first.items.length) embed.setDescription(first.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n'));
 		if (second.items.length) {
@@ -72,17 +70,14 @@ class MembersTHCommand extends Command {
 			]);
 		}
 
-		this.cache.delete(`${message.author.id}${data.tag}`);
 		return message.util.send(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`, { embed });
 	}
 
 	paginate(items, start, end) {
-		return {
-			items: items.slice(start, end)
-		};
+		return { items: items.slice(start, end) };
 	}
 
-	short(items) {
+	sort(items) {
 		return items.sort((a, b) => b.townHallLevel - a.townHallLevel);
 	}
 }

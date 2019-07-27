@@ -70,9 +70,7 @@ class MembersLeagueCommand extends Command {
 	}
 
 	paginate(items, start, end) {
-		return {
-			items: items.slice(start, end)
-		};
+		return { items: items.slice(start, end) };
 	}
 }
 
