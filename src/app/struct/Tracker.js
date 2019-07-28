@@ -1,5 +1,5 @@
 const Logger = require('../util/logger');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, Util } = require('discord.js');
 const fetch = require('node-fetch');
 const Clans = require('../models/Clans');
 
@@ -99,8 +99,12 @@ class Tracker {
 				.setThumbnail(badge)
 				.setFooter(`${members}/50`, this.client.user.displayAvatarURL())
 				.setTimestamp();
-			if (donated) embed.addField('Donated', `${donated}`);
-			if (received) embed.addField('Received', `${received}`);
+			donated = this.split(donated);
+			received = this.split(received);
+			if (Array.isArray(donated)) return donated.map(async res => embed.addField('Donated', res));
+			else if (donated) embed.addField('Donated', `${donated}`);
+			if (Array.isArray(received)) return received.map(async res => embed.addField('Received', res));
+			else if (received) embed.addField('Received', `${received}`);
 
 			try {
 				channel.send({ embed });
@@ -112,6 +116,10 @@ class Tracker {
 		for (const member of clan.memberList) {
 			donateList[`${channel.id}${member.tag}`] = member;
 		}
+	}
+
+	split(content) {
+		return Util.splitMessage(content, { maxLength: 1024 });
 	}
 
 	async start() {
