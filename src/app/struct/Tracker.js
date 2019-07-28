@@ -99,12 +99,15 @@ class Tracker {
 				.setThumbnail(badge)
 				.setFooter(`${members}/50`, this.client.user.displayAvatarURL())
 				.setTimestamp();
-			donated = this.split(donated);
+			if (donated) embed.addField('Donated', `${donated.substring(0, 1024)}`);
+			if (received) embed.addField('Received', `${received.substring(0, 1024)}`);
+
+			/* donated = this.split(donated);
 			received = this.split(received);
 			if (Array.isArray(donated)) return donated.map(async res => embed.addField('Donated', res));
-			else if (donated) embed.addField('Donated', `${donated}`);
+			else if (donated) embed.addField('Donated', `${donated.substring(0, 1020)}`);
 			if (Array.isArray(received)) return received.map(async res => embed.addField('Received', res));
-			else if (received) embed.addField('Received', `${received}`);
+			else if (received) embed.addField('Received', `${received.substring(0, 1020)}`);*/
 
 			try {
 				channel.send({ embed });
