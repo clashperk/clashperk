@@ -55,19 +55,19 @@ class CwlRosterComamnd extends Command {
 		const embed = this.client.util.embed()
 			.setAuthor(body.season);
 
-		let TH12 = 0;
-		let TH11 = 0;
-		let TH10 = 0;
-		let TH09 = 0;
-		let TH08 = 0;
-		let TH07 = 0;
-		let TH06 = 0;
-		let TH05 = 0;
-		let TH04 = 0;
-		let TH03 = 0;
-		let TH02 = 0;
-		let TH01 = 0;
 		for (const clan of body.clans) {
+			let TH12 = 0;
+			let TH11 = 0;
+			let TH10 = 0;
+			let TH09 = 0;
+			let TH08 = 0;
+			let TH07 = 0;
+			let TH06 = 0;
+			let TH05 = 0;
+			let TH04 = 0;
+			let TH03 = 0;
+			let TH02 = 0;
+			let TH01 = 0;
 			for (const member of clan.members) {
 				const TownHAll = member.townHallLevel;
 
