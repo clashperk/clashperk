@@ -1,5 +1,7 @@
 const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
+const moment = require('moment');
+const { oneLine } = require('common-tags');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -53,7 +55,17 @@ class CwlRosterComamnd extends Command {
 		const body = await res.json();
 
 		const embed = this.client.util.embed()
-			.setAuthor(body.season);
+			.setColor(0x5970c1);
+
+		if (data.isWarLogPublic === false) {
+			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+				.setThumbnail(data.badgeUrls.medium)
+				.setDescription('War log is Private');
+			return message.util.send({ embed });
+		}
+
+		embed.setFooter(`Season ${moment(body.season).format('MMMM, YYYY')}`)
+			.setAuthor('CWL Roster');
 
 		for (const clan of body.clans) {
 			let TH12 = 0;
@@ -85,8 +97,18 @@ class CwlRosterComamnd extends Command {
 				if (TownHAll === 1) TH01++;
 			}
 			embed.addField(`${clan.name} (${clan.tag})`, [
-				TH12,
-				TH11
+				oneLine`
+                ${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12} `} ` : ''}
+				${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`} ` : ''}
+				${TH10 > 0 ? `${TownHallEmoji[10]} ${TH10 < 10 ? `0${TH10}` : `${TH10}`} ` : ''}
+				${TH09 > 0 ? `${TownHallEmoji[9]} ${TH09 < 10 ? `0${TH09}` : `${TH09}`} ` : ''}
+				${TH08 > 0 ? `${TownHallEmoji[8]} ${TH08 < 10 ? `0${TH08}` : `${TH08}`} ` : ''}
+				${TH07 > 0 ? `${TownHallEmoji[7]} ${TH07 < 10 ? `0${TH07}` : `${TH07}`} ` : ''}
+				${TH06 > 0 ? `${TownHallEmoji[6]} ${TH06 < 10 ? `0${TH06}` : `${TH06}`} ` : ''}
+				${TH05 > 0 ? `${TownHallEmoji[5]} ${TH05 < 10 ? `0${TH05}` : `${TH05}`} ` : ''}
+				${TH04 > 0 ? `${TownHallEmoji[4]} ${TH04 < 10 ? `0${TH04}` : `${TH04}`} ` : ''}
+				${TH03 > 0 ? `${TownHallEmoji[3]} ${TH03 < 10 ? `0${TH03}` : `${TH03}`} ` : ''}
+				${TH02 > 0 ? `${TownHallEmoji[2]} ${TH02 < 10 ? `0${TH02}` : `${TH02}`} ` : ''}`
 			]);
 		}
 
