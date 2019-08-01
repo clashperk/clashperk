@@ -57,7 +57,8 @@ class CwlComamnd extends Command {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const res = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` } });
 			const member = await res.json();
-			memberList.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel, hero: member.achievements.filter(a => a.village === 'home').map(hero => `${HeroEmojis[hero.name]} ${hero.level}`) });
+			console.log(member.heroes.filter(a => a.village === 'home').map(hero => `${HeroEmojis[hero.name]} ${hero.level}`));
+			memberList.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel, hero: member.heroes.filter(a => a.village === 'home').map(hero => `${HeroEmojis[hero.name]} ${hero.level}`) });
 		}
 
 
@@ -66,8 +67,10 @@ class CwlComamnd extends Command {
 		for (const member of memberList) {
 			if (members.find(m => m.tag === member.tag)) {
 				mem += `${TownHallEmoji[member.townHallLevel]} ${member.name} ${member.tag} ${member.hero} \n`;
+				console.log(`${TownHallEmoji[member.townHallLevel]} ${member.name} ${member.tag} ${member.hero}`);
 			}
 		}
+		console.log(mem);
 		return message.channel.send(mem, { split: true });
 	}
 }
