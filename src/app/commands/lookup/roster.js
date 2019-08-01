@@ -28,11 +28,11 @@ class CwlRosterComamnd extends Command {
 	constructor() {
 		super('cwl-roster', {
 			aliases: ['roster', 'cwl-roster'],
-			category: 'beta',
+			category: 'lookup',
 			description: {
-				content: '',
-				usage: '',
-				examples: []
+				content: 'Shows cwl roster & number of th level for each clan.',
+				usage: '<#clan tag>',
+				examples: ['#8QU8J9LP']
 			},
 			args: [
 				{
@@ -67,6 +67,7 @@ class CwlRosterComamnd extends Command {
 		embed.setFooter(`Season ${moment(body.season).format('MMMM, YYYY')}`)
 			.setAuthor('CWL Roster');
 
+		let index = 0;
 		for (const clan of body.clans) {
 			let TH12 = 0;
 			let TH11 = 0;
@@ -96,7 +97,7 @@ class CwlRosterComamnd extends Command {
 				if (TownHAll === 2) TH02++;
 				if (TownHAll === 1) TH01++;
 			}
-			embed.addField(`${clan.name} (${clan.tag})`, [
+			embed.addField(`${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
 				oneLine`
                 ${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12} `} ` : ''}
 				${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`} ` : ''}
@@ -112,7 +113,7 @@ class CwlRosterComamnd extends Command {
 			]);
 		}
 
-		return message.channel.send({ embed });
+		return message.util.send({ embed });
 	}
 }
 

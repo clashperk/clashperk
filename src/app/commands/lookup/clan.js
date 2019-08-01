@@ -9,7 +9,7 @@ class ClanCommand extends Command {
 			description: {
 				content: 'Clash of Clans clan lookup command.',
 				usage: '<tag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				examples: ['#8QU8J9LP', '8QU8J9LP']
 			},
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			args: [
