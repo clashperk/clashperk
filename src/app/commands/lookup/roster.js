@@ -64,7 +64,7 @@ class CwlRosterComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		embed.setFooter(`Season ${moment(body.season).format('MMMM, YYYY')}`)
+		embed.setFooter(`Season ${moment(body.season).format('MMMM YYYY')}`)
 			.setAuthor('CWL Roster');
 
 		let index = 0;
