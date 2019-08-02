@@ -1,13 +1,27 @@
 const path = require('path');
 const readdir = require('util').promisify(require('fs').readdir);
+const firebase = require('firebase-admin');
 const Sequelize = require('sequelize');
 const Logger = require('../util/logger');
 
 const db = new Sequelize(process.env.POSTGRES, { logging: false });
 
+const firebaseApp = firebase.initializeApp({
+	credential: firebase.credential.cert({
+		projectId: process.env.PROJECT_ID,
+		clientEmail: process.env.CLIENT_EMAIL,
+		privateKey: process.env.PRIVATE_KEY.replace(/\\n/g, '\n')
+	}),
+	databaseURL: process.env.FIREBASE_DBURL
+});
+
 class Database {
 	static get db() {
 		return db;
+	}
+
+	static get firebaseApp() {
+		return firebaseApp;
 	}
 
 	static async authenticate() {

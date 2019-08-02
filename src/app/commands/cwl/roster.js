@@ -17,18 +17,11 @@ const TownHallEmoji = {
 	12: '<:townhall12:534745574981894154>'
 };
 
-const HeroEmojis = {
-	'Barbarian King': '<:barbarianking:524939911581663242>',
-	'Archer Queen': '<:archerqueen:524939902408720394>',
-	'Grand Warden': '<:grandwarden:524939931303411722>',
-	'Battle Machine': '<:warmachine:524939920943349781>'
-};
-
 class CwlRosterComamnd extends Command {
 	constructor() {
 		super('cwl-roster', {
 			aliases: ['roster', 'cwl-roster'],
-			category: 'lookup',
+			category: 'cwl',
 			description: {
 				content: 'Shows cwl roster & number of th level for each clan.',
 				usage: '<#clan tag>',

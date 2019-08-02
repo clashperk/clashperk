@@ -76,6 +76,7 @@ class HelpCommand extends Command {
 		for (const category of this.handler.categories.values()) {
 			const title = {
 				util: 'Util',
+				cwl: 'CWL',
 				tracker: 'Tracker',
 				lookup: 'Lookup',
 				profile: 'Profile',
