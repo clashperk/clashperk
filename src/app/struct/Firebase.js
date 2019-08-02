@@ -11,7 +11,7 @@ class Firebase {
 
 	async init() {
 		await this.stats();
-		this.client.setInterval(this.post.stats(this), this.checkRate);
+		this.client.setInterval(this.stats.bind(this), this.checkRate);
 	}
 
 	async commandcounter() {
