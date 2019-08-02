@@ -12,10 +12,7 @@ class CommandStartedListener extends Listener {
 	}
 
 	async exec(message, command, args) {
-		this.client.firebase.commandcounter();
-		this.client.firebase.users(message.author.id);
-		this.client.firebase.commands(command.id);
-		if (message.guild) this.client.firebase.guilds(message.guild.id);
+		this.counter(message, command);
 
 		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		Logger.log(`${command.id}`, { level });
@@ -47,6 +44,14 @@ class CommandStartedListener extends Listener {
 				args
 			}
 		});
+	}
+
+	counter(message, command) {
+		if (this.client.isOwner(message.author.id)) return;
+		this.client.firebase.commandcounter();
+		this.client.firebase.users(message.author.id);
+		this.client.firebase.commands(command.id);
+		if (message.guild) this.client.firebase.guilds(message.guild.id);
 	}
 }
 
