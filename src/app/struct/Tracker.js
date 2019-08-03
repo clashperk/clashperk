@@ -102,13 +102,6 @@ class Tracker {
 			if (donated) embed.addField('Donated', `${donated.substring(0, 1024)}`);
 			if (received) embed.addField('Received', `${received.substring(0, 1024)}`);
 
-			/* donated = this.split(donated);
-			received = this.split(received);
-			if (Array.isArray(donated)) return donated.map(async res => embed.addField('Donated', res));
-			else if (donated) embed.addField('Donated', `${donated.substring(0, 1020)}`);
-			if (Array.isArray(received)) return received.map(async res => embed.addField('Received', res));
-			else if (received) embed.addField('Received', `${received.substring(0, 1020)}`);*/
-
 			try {
 				channel.send({ embed });
 			} catch (error) {
@@ -119,10 +112,6 @@ class Tracker {
 		for (const member of clan.memberList) {
 			donateList[`${channel.id}${member.tag}`] = member;
 		}
-	}
-
-	split(content) {
-		return Util.splitMessage(content, { maxLength: 1024 });
 	}
 
 	async start() {
@@ -145,10 +134,6 @@ class Tracker {
 					const data = await res.json();
 
 					this.track(data, channel, clan.color);
-
-					// Logger.info(`Guild: ${channel.guild.name}`, { level: 'Tracking Started' });
-				} else {
-					// Logger.warn(`Guild: ${channel.guild.name}`, { level: 'Missing Permission' });
 				}
 			} else {
 				Logger.warn(`Channel: ${clan.channel}`, { level: 'Missing Channel' });

@@ -11,7 +11,7 @@ class GuideCommand extends Command {
 	}
 
 	async exec(message) {
-		return message.util.send('https://clashperk.github.io/');
+		return message.util.send('https://clashperk.xyz/');
 	}
 }
 

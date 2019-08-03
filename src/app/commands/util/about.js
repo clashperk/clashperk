@@ -18,6 +18,7 @@ class AboutCommand extends Command {
 			.addField('Developer', `**[${owner.tag}](https://github.com/esuvajit)**`, true)
 			.addField('Library', '[discord.js#master](https://discord.js.org)', true)
 			.addField('Support', '[Official Discord](https://discord.gg/8NP2XNV)', true)
+			.addField('Website', '[Guide](https://clashperk.xyz)')
 			.addField('Host', '[Google Cloud](https://console.cloud.google.com)', true)
 			.addField('Donate', [
 				'Help me to keep this bot alive.',

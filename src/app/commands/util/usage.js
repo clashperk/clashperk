@@ -30,7 +30,7 @@ class UsageCommand extends Command {
 				guilds.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.guilds.get(id).name}\` **\`${uses}x\`**`).join('\n')
 			])
 			.addField('Commands', [
-				commands.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.commandHandler.modules.get(id).aliases[0]}\` **\`${uses}x\`**`).join('\n')
+				commands.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '')}\` **\`${uses}x\`**`).join('\n')
 			]);
 
 		return message.util.send({ embed });
