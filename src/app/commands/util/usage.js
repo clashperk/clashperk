@@ -16,12 +16,13 @@ class UsageCommand extends Command {
 	async exec(message) {
 		const guilds = await this.guilds();
 		const users = await this.users();
-		const commands = await this.commands();
+		const { commands, total } = await this.commands();
 
 		const embed = this.client.util.embed()
 			.setAuthor(`${this.client.user.username} Usage  Statistics`, this.client.user.displayAvatarURL())
 			.setColor(0x5970c1)
-			.setTitle(`${await this.commandsTotal()}x commands used`)
+			.setFooter('Since August 1, 2019')
+			.setTitle(`${total}x commands used`)
 			.addField('Users', [
 				users.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.users.get(id).tag}\` **\`${uses}x\`**`).join('\n')
 			])
@@ -68,7 +69,7 @@ class UsageCommand extends Command {
 			commands.push({ uses: value, id: key });
 		}
 
-		return this.sort(commands);
+		return { commands: this.sort(commands), total: this.total(commands) };
 	}
 
 	async commandsTotal() {
@@ -80,6 +81,10 @@ class UsageCommand extends Command {
 
 	sort(items) {
 		return items.sort((a, b) => b.uses - a.uses);
+	}
+
+	total(items) {
+		return items.reduce((previous, currrent) => currrent.uses + previous, 0);
 	}
 }
 
