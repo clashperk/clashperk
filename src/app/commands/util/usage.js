@@ -23,13 +23,13 @@ class UsageCommand extends Command {
 			.setColor(0x5970c1)
 			.addField('Commands Ran', `${await this.commandsTotal()}x`)
 			.addField('Top Users', [
-				users.splice(0, 10).map(({ id, uses }, index) => `**${++index}.** ${this.client.users.get(id).tag} **${uses}x**`).join('\n')
+				users.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.users.get(id).tag}\` **\`${uses}x\`**`).join('\n')
 			])
 			.addField('Top Servers', [
-				guilds.splice(0, 10).map(({ id, uses }, index) => `**${++index}.** ${this.client.guilds.get(id).name} **${uses}x**`).join('\n')
+				guilds.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.guilds.get(id).name}\` **\`${uses}x\`**`).join('\n')
 			])
 			.addField('Top commands', [
-				commands.splice(0, 10).map(({ id, uses }, index) => `**${++index}.** ${this.client.commandHandler.modules.get(id).aliases[0]} **${uses}x**`).join('\n')
+				commands.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.commandHandler.modules.get(id).aliases[0]}\` **\`${uses}x\`**`).join('\n')
 			]);
 
 		return message.util.send({ embed });
