@@ -21,14 +21,14 @@ class UsageCommand extends Command {
 		const embed = this.client.util.embed()
 			.setAuthor(`${this.client.user.username} Usage  Statistics`, this.client.user.displayAvatarURL())
 			.setColor(0x5970c1)
-			.addField('Commands Ran', `${await this.commandsTotal()}x`)
-			.addField('Top Users', [
+			.addField('**COMMANDS RAN**', `**\`${await this.commandsTotal()}x\`**`)
+			.addField('**TOP USERS**', [
 				users.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.users.get(id).tag}\` **\`${uses}x\`**`).join('\n')
 			])
-			.addField('Top Servers', [
+			.addField('**TOP SERVERS**', [
 				guilds.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.guilds.get(id).name}\` **\`${uses}x\`**`).join('\n')
 			])
-			.addField('Top commands', [
+			.addField('**TOP COMMANDS**', [
 				commands.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.commandHandler.modules.get(id).aliases[0]}\` **\`${uses}x\`**`).join('\n')
 			]);
 
