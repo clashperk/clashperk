@@ -52,6 +52,7 @@ class Tracker {
 	async load() {
 		for (const { tag, guild, channel, color } of Object.values(this.firebase.once('value').then(snap => snap.val()))) {
 			this.add(tag, guild, channel, color, false);
+			console.log({ tag, guild, channel, color });
 		}
 	}
 
