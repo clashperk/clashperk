@@ -32,19 +32,21 @@ class UnlinkCommand extends Command {
 	}
 
 	async exec(message, { type, member }) {
-		const profile = await firebaseApp.database()
+		const object = await firebaseApp.database()
 			.ref('profiles')
 			.child(message.guild.id)
 			.child(member.id);
 
+		const profile = await object.once('value').then(snap => snap.val());
+
 		if (type === 'profile') {
 			if (!profile || (profile && !profile.tag)) return message.util.reply(`couldn\'t find a player linked to ${member.user.tag}`);
-			await profile.update({ tag: null });
+			await object.update({ tag: null });
 		}
 
 		if (type === 'clan') {
 			if (!profile || (profile && !profile.clan_tag)) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
-			await profile.update({ clan_tag: null });
+			await object.update({ clan_tag: null });
 		}
 
 		return message.util.send(`successfully unlinked your ${type}`);
