@@ -1,5 +1,4 @@
 const { Command } = require('discord-akairo');
-const Profile = require('../../models/Profile');
 const { firebaseApp } = require('../../struct/Database');
 
 class LinkClanCommand extends Command {
