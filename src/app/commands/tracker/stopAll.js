@@ -34,14 +34,7 @@ class StopAllCommand extends Command {
 		if (!confirm) {
 			return message.util.reply('command has been cancelled.');
 		}
-		const object = await firebaseApp.database()
-			.ref()
-			.child('clans')
-			.orderByChild('guild')
-			.equalTo(message.guild.id)
-			.once('value')
-			.then(snap => snap.val());
-		const clans = this.values(object);
+		const clans = await this.client.tracker.clans(message.guild.id);
 
 		if (!clans.length) return message.util.reply(`no clans found! ${this.client.emojis.get('545968755423838209')}`);
 
@@ -55,11 +48,6 @@ class StopAllCommand extends Command {
 				color: 5861569
 			}
 		});
-	}
-
-	values(object) {
-		if (!object) return Object.values({});
-		return Object.values(object);
 	}
 }
 

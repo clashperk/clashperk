@@ -73,8 +73,8 @@ class Tracker {
 		if (db) return this.firebase.child(`${guild}${tag.replace(/#/g, '@')}`).remove();
 	}
 
-	async clans(guild, total = true) {
-		if (total) {
+	async clans(guild) {
+		if (guild) {
 			const object = await firebaseApp.database()
 				.ref()
 				.child('clans')

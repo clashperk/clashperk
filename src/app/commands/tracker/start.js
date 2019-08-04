@@ -43,7 +43,7 @@ class StartCommand extends Command {
 	}
 
 	async exec(message, { data, channel, color }) {
-		const clans = await this.client.tracker.clans(message.guild.id, false);
+		const clans = await this.client.tracker.clans(message.guild.id);
 		const limit = this.client.settings.get(message.guild, 'clanLimit', 10);
 		if (clans.length >= limit) {
 			return message.util.send([
