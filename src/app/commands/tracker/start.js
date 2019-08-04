@@ -1,6 +1,5 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const { firebaseApp } = require('../../struct/Database');
 
 class StartCommand extends Command {
 	constructor() {
