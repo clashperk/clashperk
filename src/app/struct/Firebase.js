@@ -94,6 +94,45 @@ class Firebase {
 			if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
 		});
 	}
+
+	async test() {
+		// A post entry.
+		const postData = {
+			author: 'username',
+			uid: 1,
+			body: 2,
+			title: 3,
+			starCount: 0,
+			authorPic: 'picture'
+		};
+
+		// Get a key for a new Post.
+		const newPostKey = firebaseApp.database().ref().child('posts')
+			.push().key;
+
+		// Write the new post's data simultaneously in the posts list and the user's post list.
+		const updates = {};
+		updates[`/posts/${newPostKey}`] = postData;
+
+		firebaseApp.database().ref().update(updates);
+		const twoRef = await firebaseApp.database().ref().child('posts')
+			.orderByChild('title')
+			.equalTo(300);
+		const g = await twoRef.once('value').then(snap => snap.val());
+		/* console.log(g);
+		for (const key of Object.keys(g)) {
+			console.log({ key });
+			firebaseApp.database().ref('posts').child(key)
+				.update({ starCount: 100 });
+		}*/
+		return JSON.stringify(g);
+	}
+
+	async g(tag, guild, channel, color) {
+		const db = await firebaseApp.database();
+		const object = await db.ref('clans').child(`${guild}${tag.replace(/#/g, '@')}`);
+		return object.update({ tag, guild, channel, color });
+	}
 }
 
 module.exports = Firebase;

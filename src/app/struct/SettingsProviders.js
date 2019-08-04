@@ -1,12 +1,9 @@
 const { Guild } = require('discord.js');
-const { SequelizeProvider } = require('discord-akairo');
+const FirebaseProvider = require('./FirebaseProvider');
 
-class SettingsProvider extends SequelizeProvider {
-	constructor(table) {
-		super(table, {
-			idColumn: 'guild',
-			dataColumn: 'settings'
-		});
+class SettingsProvider extends FirebaseProvider {
+	constructor(database) {
+		super(database, {});
 	}
 
 	get(guild, key, defaultValue) {

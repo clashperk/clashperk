@@ -1,5 +1,6 @@
 const Logger = require('../util/logger');
-const { MessageEmbed, Util } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
+const { firebaseApp } = require('./Database');
 const fetch = require('node-fetch');
 const Clans = require('../models/Clans');
 
@@ -39,6 +40,7 @@ class Tracker {
 		this.client = client;
 		this.checkRate = checkRate;
 		this.cached = new Map();
+		this.firebase = firebaseApp.database().ref('clans');
 	}
 
 	async init() {
@@ -48,12 +50,12 @@ class Tracker {
 	}
 
 	async load() {
-		for (const data of await Clans.findAll({ where: { tracking: true } })) {
-			this.add(data.tag, data.guild, data.channel, data.color);
+		for (const { tag, guild, channel, color } of Object.values(this.firebase.once('value').then(snap => snap.val()))) {
+			this.add(tag, guild, channel, color, false);
 		}
 	}
 
-	add(tag, guild, channel, color) {
+	async add(tag, guild, channel, color, db = false, name, user, createdAt = new Date()) {
 		const data = {
 			channel,
 			tag,
@@ -61,10 +63,14 @@ class Tracker {
 			guild
 		};
 		this.cached.set(`${guild}${tag}`, data);
+
+		if (db) return this.firebase.child(`${guild}${tag.replace(/#/g, '@')}`).update({ tag, name, guild, channel, color, user, createdAt });
 	}
 
-	delete(guild, tag) {
+	async delete(guild, tag, db = false) {
 		this.cached.delete(`${guild}${tag}`);
+
+		if (db) return this.firebase.child(`${guild}${tag.replace(/#/g, '@')}`).remove();
 	}
 
 	track(clan, channel, color) {
@@ -138,9 +144,6 @@ class Tracker {
 			} else {
 				Logger.warn(`Channel: ${clan.channel}`, { level: 'Missing Channel' });
 				this.delete(clan.guild, clan.tag);
-				if (this.client.user.id === process.env.CLIENT_ID) {
-					await Clans.destroy({ where: { channel: clan.channel } });
-				}
 			}
 
 			await this.delay(100);

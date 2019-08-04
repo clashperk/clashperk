@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Clans = require('../../models/Clans');
+const { firebaseApp } = require('../../struct/Database');
 
 class StopAllCommand extends Command {
 	constructor() {
@@ -34,15 +34,20 @@ class StopAllCommand extends Command {
 		if (!confirm) {
 			return message.util.reply('command has been cancelled.');
 		}
-		const clans = await Clans.findAll({ where: { guild: message.guild.id } });
+		const object = await firebaseApp.database()
+			.ref()
+			.child('clans')
+			.orderByChild('guild')
+			.equalTo(message.guild.id)
+			.once('value')
+			.then(snap => snap.val());
+		const clans = Object.values(object ? object : {});
 
-		if (!clans) return message.util.reply(`no clans found! ${this.client.emojis.get('545968755423838209')}`);
+		if (!clans.length) return message.util.reply(`no clans found! ${this.client.emojis.get('545968755423838209')}`);
 
 		for (const clan of clans) {
-			this.client.tracker.delete(message.guild.id, clan.tag);
+			this.client.tracker.delete(message.guild.id, clan.tag, true);
 		}
-
-		await Clans.destroy({ where: { guild: message.guild.id } });
 
 		return message.util.send({
 			embed: {
