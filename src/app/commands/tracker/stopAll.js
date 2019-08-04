@@ -41,7 +41,7 @@ class StopAllCommand extends Command {
 			.equalTo(message.guild.id)
 			.once('value')
 			.then(snap => snap.val());
-		const clans = Object.values(object ? object : {});
+		const clans = this.values(object);
 
 		if (!clans.length) return message.util.reply(`no clans found! ${this.client.emojis.get('545968755423838209')}`);
 
@@ -55,6 +55,11 @@ class StopAllCommand extends Command {
 				color: 5861569
 			}
 		});
+	}
+
+	values(object) {
+		if (!object) return Object.values({});
+		return Object.values(object);
 	}
 }
 

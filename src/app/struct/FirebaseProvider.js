@@ -7,10 +7,15 @@ class FirebaseProvider extends Provider {
 	}
 
 	async init() {
-		const data = await this.database.once('value').then(snap => snap.val());
-		for (const [key, value] of Object.entries(data)) {
+		const object = await this.database.once('value').then(snap => snap.val());
+		for (const [key, value] of this.entries(object)) {
 			this.items.set(key, value);
 		}
+	}
+
+	entries(object) {
+		if (!object) return Object.entries({});
+		return Object.entries(object);
 	}
 
 	get(id, key, defaultValue) {

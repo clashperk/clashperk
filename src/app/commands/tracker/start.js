@@ -44,15 +44,7 @@ class StartCommand extends Command {
 	}
 
 	async exec(message, { data, channel, color }) {
-		const object = await firebaseApp.database()
-			.ref()
-			.child('clans')
-			.orderByChild('guild')
-			.equalTo(message.guild.id)
-			.once('value')
-			.then(snap => snap.val());
-
-		const clans = Object.values(object ? object : {});
+		const clans = await this.client.tracker.clans(message.guild.id, false);
 		const limit = this.client.settings.get(message.guild, 'clanLimit', 10);
 		if (clans.length >= limit) {
 			return message.util.send([

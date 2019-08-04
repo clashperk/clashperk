@@ -1,5 +1,4 @@
 const { Command } = require('discord-akairo');
-const Clans = require('../../models/Clans');
 const { firebaseApp } = require('../../struct/Database');
 const { MessageEmbed } = require('discord.js');
 
@@ -37,7 +36,7 @@ class TrackingCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL());
-		const data = Object.values(object ? object : {});
+		const data = this.values(object);
 
 		if (data.length) {
 			embed.setDescription([
@@ -46,6 +45,11 @@ class TrackingCommand extends Command {
 		}
 		embed.setFooter(`Tracking ${data.length} ${data.length > 1 || data.length === 0 ? 'clans' : 'clan'}`);
 		return message.util.send({ embed });
+	}
+
+	values(object) {
+		if (!object) return Object.values({});
+		return Object.values(object);
 	}
 }
 

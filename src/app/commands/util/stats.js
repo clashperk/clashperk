@@ -4,7 +4,6 @@ require('moment-duration-format');
 const { MessageEmbed } = require('discord.js');
 const os = require('os-utils');
 const { version } = require('../../../../package.json');
-const Clans = require('../../models/Clans');
 
 class StatsCommand extends Command {
 	constructor() {
@@ -19,6 +18,7 @@ class StatsCommand extends Command {
 	}
 
 	async exec(message) {
+		const clans = await this.client.tracker.clans();
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${this.client.user.username} Statistics`, this.client.user.displayAvatarURL())
@@ -28,7 +28,7 @@ class StatsCommand extends Command {
 			.addField('Servers', this.client.guilds.size, true)
 			.addField('Users', this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0), true)
 			.addField('Channels', this.client.channels.filter(c => c.type === 'text').size, true)
-			.addField('Clans in DB', await Clans.count(), true)
+			.addField('Clans in DB', clans.length, true)
 			.addField('Version', `v${version}`, true)
 			.addField('Node.Js', process.version, true)
 			.setFooter(`© 2019 ${this.client.users.get(this.client.ownerID).tag}`, this.client.users.get(this.client.ownerID).displayAvatarURL());

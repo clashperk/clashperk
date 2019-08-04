@@ -2,7 +2,6 @@ const Logger = require('../util/logger');
 const { MessageEmbed } = require('discord.js');
 const { firebaseApp } = require('./Database');
 const fetch = require('node-fetch');
-const Clans = require('../models/Clans');
 
 const donateList = [];
 
@@ -51,9 +50,8 @@ class Tracker {
 
 	async load() {
 		const object = await this.firebase.once('value').then(snap => snap.val());
-		for (const { tag, guild, channel, color } of Object.values(object ? object : {})) {
+		for (const { tag, guild, channel, color } of this.values(object)) {
 			this.add(tag, guild, channel, color, false);
-			console.log({ tag, guild, channel, color });
 		}
 	}
 
@@ -73,6 +71,26 @@ class Tracker {
 		this.cached.delete(`${guild}${tag}`);
 
 		if (db) return this.firebase.child(`${guild}${tag.replace(/#/g, '@')}`).remove();
+	}
+
+	async clans(guild, total = true) {
+		if (total) {
+			const object = await firebaseApp.database()
+				.ref()
+				.child('clans')
+				.orderByChild('guild')
+				.equalTo(guild)
+				.once('value')
+				.then(snap => snap.val());
+			return this.values(object);
+		}
+		const object = await this.firebase.once('value').then(snap => snap.val());
+		return this.values(object);
+	}
+
+	values(object) {
+		if (!object) return Object.values({});
+		return Object.values(object);
 	}
 
 	track(clan, channel, color) {
