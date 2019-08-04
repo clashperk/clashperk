@@ -37,7 +37,7 @@ class AddNoteCommand extends Command {
 	async exec(message, { data, note }) {
 		if (note.length > 900) return message.util.send('note has limit of 1000 characters!');
 		await firebaseApp.database()
-			.ref('profiles')
+			.ref('notes')
 			.child(message.guild.id)
 			.child(data.tag.replace(/#/g, '@'))
 			.update({ user: message.author.id, tag: data.tag, note, guild: message.guild.id });

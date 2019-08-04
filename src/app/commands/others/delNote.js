@@ -29,7 +29,7 @@ class DeleteNoteCommand extends Command {
 
 	async exec(message, { data }) {
 		const object = await firebaseApp.database()
-			.ref('profiles')
+			.ref('notes')
 			.child(message.guild.id)
 			.child(data.tag.replace(/#/g, '@'));
 		const note = await object.once('value').then(snap => snap.val());

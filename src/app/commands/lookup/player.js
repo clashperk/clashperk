@@ -2,6 +2,7 @@ const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const Notes = require('../../models/Notes');
 const moment = require('moment');
+const { firebaseApp } = require('../../struct/Database');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -183,6 +184,21 @@ class PlayerCommand extends Command {
 			}
 		});
 		if (heroLevels) embed.addField('Heroes', heroLevels);
+
+		const note = await firebaseApp.database()
+			.ref('notes')
+			.child(message.guild.id)
+			.child(data.tag.replace(/#/g, '@'))
+			.once('value')
+			.then(snap => snap.val());
+		if (note) {
+			const user = this.client.users.get(note.user);
+			embed.addField('Note', [
+				note.note,
+				'',
+				`**${user ? user.tag : note.user}** created on **${moment(note.createdAt).format('MMMM D, YYYY, hh:mm')}**`
+			]);
+		}
 
 		return message.util.send({ embed });
 	}
