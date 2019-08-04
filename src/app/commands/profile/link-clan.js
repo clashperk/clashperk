@@ -36,7 +36,7 @@ class LinkClanCommand extends Command {
 		await firebaseApp.database()
 			.ref('profiles')
 			.child(message.guild.id)
-			.child(message.author.id)
+			.child(member.id)
 			.update({
 				guild: message.guild.id,
 				user: member.id,
