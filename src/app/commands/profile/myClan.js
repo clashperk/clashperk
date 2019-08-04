@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
-const Profile = require('../../models/Profile');
+const { firebaseApp } = require('../../struct/Database');
 
 const STATUS = {
 	400: 'client provided incorrect parameters for the request.',
@@ -34,12 +34,12 @@ class MyClanCommand extends Command {
 	}
 
 	async exec(message, { member }) {
-		const profile = await Profile.findOne({
-			where: {
-				guild: message.guild.id,
-				user: member.id
-			}
-		});
+		const profile = await firebaseApp.database()
+			.ref('profiles')
+			.child(message.guild.id)
+			.child(member.id)
+			.once('value')
+			.then(snap => snap.val());
 
 		if (!profile || (profile && !profile.clan_tag)) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
 

@@ -1,7 +1,7 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
-const Profile = require('../../models/Profile');
+const { firebaseApp } = require('../../struct/Database');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -92,12 +92,12 @@ class ProfileCommand extends Command {
 	}
 
 	async exec(message, { member }) {
-		const profile = await Profile.findOne({
-			where: {
-				guild: message.guild.id,
-				user: member.id
-			}
-		});
+		const profile = await firebaseApp.database()
+			.ref('profiles')
+			.child(message.guild.id)
+			.child(member.id)
+			.once('value')
+			.then(snap => snap.val());
 
 		if (!profile || (profile && !profile.tag)) return message.util.reply(`couldn\'t find a player linked to ${member.user.tag}`);
 

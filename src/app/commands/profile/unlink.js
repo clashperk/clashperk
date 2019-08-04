@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Profile = require('../../models/Profile');
+const { firebaseApp } = require('../../struct/Database');
 
 class UnlinkCommand extends Command {
 	constructor() {
@@ -32,12 +32,10 @@ class UnlinkCommand extends Command {
 	}
 
 	async exec(message, { type, member }) {
-		const profile = await Profile.findOne({
-			where: {
-				guild: message.guild.id,
-				user: member.id
-			}
-		});
+		const profile = await firebaseApp.database()
+			.ref('profiles')
+			.child(message.guild.id)
+			.child(member.id);
 
 		if (type === 'profile') {
 			if (!profile || (profile && !profile.tag)) return message.util.reply(`couldn\'t find a player linked to ${member.user.tag}`);
