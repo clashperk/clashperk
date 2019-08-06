@@ -1,6 +1,5 @@
 const { Command } = require('discord-akairo');
-const Notes = require('../../models/Notes');
-const { firebaseApp } = require('../../struct/Database');
+const Notes = require('../../model/Notes');
 
 class DeleteNoteCommand extends Command {
 	constructor() {
@@ -28,15 +27,10 @@ class DeleteNoteCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		const object = await firebaseApp.database()
-			.ref('notes')
-			.child(message.guild.id)
-			.child(data.tag.replace(/#/g, '@'));
-		const note = await object.once('value').then(snap => snap.val());
+		const note = await Notes.destroy(message.guild.id, data.tag);
 		if (!note) {
 			return message.util.send(`Could not find any note for ${data.name} (${data.tag})`);
 		}
-		await object.remove();
 		return message.util.send(`Note deleted for **${data.name} (${data.tag})**`);
 	}
 }

@@ -6,7 +6,7 @@ const Tracker = require('../struct/Tracker');
 const fetch = require('node-fetch');
 const PostStats = require('../struct/PostStats');
 const Firebase = require('../struct/Firebase');
-const { firebaseApp } = require('../struct/Database');
+const { firebase } = require('../struct/Database');
 
 class Client extends AkairoClient {
 	constructor(config) {
@@ -60,7 +60,7 @@ class Client extends AkairoClient {
 
 		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
-		this.settings = new SettingsProvider(firebaseApp.database().ref('settings'));
+		this.settings = new SettingsProvider(firebase.ref('settings'));
 
 		this.postStats = new PostStats(this);
 

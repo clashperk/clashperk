@@ -20,8 +20,8 @@ class Database {
 		return db;
 	}
 
-	static get firebaseApp() {
-		return firebaseApp;
+	static get firebase() {
+		return firebaseApp.database();
 	}
 
 	static async authenticate() {

@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firebaseApp } = require('../../struct/Database');
+const Clans = require('../../model/Clans');
 
 class StopAllCommand extends Command {
 	constructor() {
@@ -34,12 +34,13 @@ class StopAllCommand extends Command {
 		if (!confirm) {
 			return message.util.reply('command has been cancelled.');
 		}
-		const clans = await this.client.tracker.clans(message.guild.id);
+		const clans = await Clans.findAll(message.guild.id);
 
 		if (!clans.length) return message.util.reply(`no clans found! ${this.client.emojis.get('545968755423838209')}`);
 
 		for (const clan of clans) {
-			this.client.tracker.delete(message.guild.id, clan.tag, true);
+			this.client.tracker.delete(message.guild.id, clan.tag);
+			Clans.destroy(message.guild.id, clan.tag);
 		}
 
 		return message.util.send({

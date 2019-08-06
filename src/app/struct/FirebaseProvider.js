@@ -1,7 +1,7 @@
 const { Provider } = require('discord-akairo');
 
 class FirebaseProvider extends Provider {
-	constructor(database) {
+	constructor(database, {} = {}) {
 		super();
 		this.database = database;
 	}

@@ -2,8 +2,8 @@ const { Guild } = require('discord.js');
 const FirebaseProvider = require('./FirebaseProvider');
 
 class SettingsProvider extends FirebaseProvider {
-	constructor(database) {
-		super(database, {});
+	constructor(database, {} = {}) {
+		super(database);
 	}
 
 	get(guild, key, defaultValue) {

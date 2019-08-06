@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firebaseApp } = require('../../struct/Database');
+const Profile = require('../../model/Profile');
 
 class UnlinkCommand extends Command {
 	constructor() {
@@ -32,24 +32,17 @@ class UnlinkCommand extends Command {
 	}
 
 	async exec(message, { type, member }) {
-		const object = await firebaseApp.database()
-			.ref('profiles')
-			.child(message.guild.id)
-			.child(member.id);
-
-		const profile = await object.once('value').then(snap => snap.val());
+		const profile = await Profile.destroy(message.guild.id, member.id, type);
 
 		if (type === 'profile') {
 			if (!profile || (profile && !profile.tag)) return message.util.reply(`couldn\'t find a player linked to ${member.user.tag}`);
-			await object.update({ tag: null });
 		}
 
 		if (type === 'clan') {
 			if (!profile || (profile && !profile.clan_tag)) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
-			await object.update({ clan_tag: null });
 		}
 
-		return message.util.send(`successfully unlinked your ${type}`);
+		return message.util.reply(`successfully unlinked your ${type}`);
 	}
 }
 module.exports = UnlinkCommand;

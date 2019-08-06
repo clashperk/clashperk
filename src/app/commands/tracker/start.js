@@ -1,5 +1,6 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
+const Clans = require('../../model/Clans');
 
 class StartCommand extends Command {
 	constructor() {
@@ -43,7 +44,7 @@ class StartCommand extends Command {
 	}
 
 	async exec(message, { data, channel, color }) {
-		const clans = await this.client.tracker.clans(message.guild.id);
+		const clans = await Clans.findAll(message.guild.id);
 		const limit = this.client.settings.get(message.guild, 'clanLimit', 10);
 		if (clans.length >= limit) {
 			return message.util.send([
@@ -52,7 +53,8 @@ class StartCommand extends Command {
 			]);
 		}
 
-		this.client.tracker.add(data.tag, message.guild.id, channel.id, color, true, data.name, message.author.tag, new Date());
+		this.client.tracker.add(data.tag, message.guild.id, channel.id, color);
+		Clans.create(data.tag, data.name, message.guild.id, channel.id, color, message.author.tag, new Date());
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)

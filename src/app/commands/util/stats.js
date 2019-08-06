@@ -4,6 +4,7 @@ require('moment-duration-format');
 const { MessageEmbed } = require('discord.js');
 const os = require('os-utils');
 const { version } = require('../../../../package.json');
+const Clans = require('../../model/Clans');
 
 class StatsCommand extends Command {
 	constructor() {
@@ -18,7 +19,7 @@ class StatsCommand extends Command {
 	}
 
 	async exec(message) {
-		const clans = await this.client.tracker.clans();
+		const clans = await Clans.findAll();
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${this.client.user.username} Statistics`, this.client.user.displayAvatarURL())

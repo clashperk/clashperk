@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firebaseApp } = require('../../struct/Database');
+const Profile = require('../../model/Profile');
 
 class LinkPlayerCommand extends Command {
 	constructor() {
@@ -32,18 +32,7 @@ class LinkPlayerCommand extends Command {
 	}
 
 	async exec(message, { data, member }) {
-		await firebaseApp.database()
-			.ref('profiles')
-			.child(message.guild.id)
-			.child(member.id)
-			.update({
-				guild: message.guild.id,
-				user: member.id,
-				tag: data.tag,
-				name: data.name,
-				clan_tag: data.clan ? data.clan.tag : null,
-				clan_name: data.clan ? data.clan.name : null
-			});
+		await Profile.create(message.guild.id, member.id, data, 'clan');
 
 		return message.util.send(`Successfully linked **${member.user.tag}** to *${data.name} (${data.tag})*`);
 	}

@@ -1,6 +1,6 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const { firebaseApp } = require('../../struct/Database');
+const Clans = require('../../model/Clans');
 
 class EditCommand extends Command {
 	constructor() {
@@ -23,11 +23,7 @@ class EditCommand extends Command {
 			type: async (msg, phrase) => {
 				if (!phrase) return null;
 				const tag = `@${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-				const data = await firebaseApp.database()
-					.ref('clans')
-					.child(`${msg.guild.id}${tag}`)
-					.once('value')
-					.then(snap => snap.val());
+				const data = await Clans.findOne(msg.guild.id, tag);
 				if (!data) return null;
 				return data;
 			},
@@ -70,7 +66,8 @@ class EditCommand extends Command {
 	}
 
 	async exec(message, { clan, color }) {
-		this.client.tracker.add(clan.tag, message.guild.id, clan.channel, color, true, clan.name, message.author.tag);
+		this.client.tracker.add(clan.tag, message.guild.id, clan.channel, color);
+		Clans.update(clan.tag, clan.name, message.guild.id, clan.channel, color, message.author.tag, new Date());
 		return message.util.send(`Color updated for **${clan.name} (${clan.tag})**`);
 	}
 }

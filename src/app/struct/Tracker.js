@@ -1,6 +1,6 @@
 const Logger = require('../util/logger');
 const { MessageEmbed } = require('discord.js');
-const { firebaseApp } = require('./Database');
+const Clans = require('../model/Clans');
 const fetch = require('node-fetch');
 
 const donateList = [];
@@ -39,7 +39,6 @@ class Tracker {
 		this.client = client;
 		this.checkRate = checkRate;
 		this.cached = new Map();
-		this.firebase = firebaseApp.database().ref('clans');
 	}
 
 	async init() {
@@ -49,13 +48,13 @@ class Tracker {
 	}
 
 	async load() {
-		const object = await this.firebase.once('value').then(snap => snap.val());
-		for (const { tag, guild, channel, color } of this.values(object)) {
-			this.add(tag, guild, channel, color, false);
+		for (const { tag, guild, channel, color } of await Clans.findAll()) {
+			if (!this.client.channels.has(channel)) continue;
+			this.add(tag, guild, channel, color);
 		}
 	}
 
-	async add(tag, guild, channel, color, db = false, name, user, createdAt = new Date()) {
+	async add(tag, guild, channel, color) {
 		const data = {
 			channel,
 			tag,
@@ -63,34 +62,10 @@ class Tracker {
 			guild
 		};
 		this.cached.set(`${guild}${tag}`, data);
-
-		if (db) return this.firebase.child(`${guild}${tag.replace(/#/g, '@')}`).update({ tag, name, guild, channel, color, user, createdAt });
 	}
 
-	async delete(guild, tag, db = false) {
+	async delete(guild, tag) {
 		this.cached.delete(`${guild}${tag}`);
-
-		if (db) return this.firebase.child(`${guild}${tag.replace(/#/g, '@')}`).remove();
-	}
-
-	async clans(guild) {
-		if (guild) {
-			const object = await firebaseApp.database()
-				.ref()
-				.child('clans')
-				.orderByChild('guild')
-				.equalTo(guild)
-				.once('value')
-				.then(snap => snap.val());
-			return this.values(object);
-		}
-		const object = await this.firebase.once('value').then(snap => snap.val());
-		return this.values(object);
-	}
-
-	values(object) {
-		if (!object) return Object.values({});
-		return Object.values(object);
 	}
 
 	track(clan, channel, color) {

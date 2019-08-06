@@ -1,6 +1,5 @@
 const { Command } = require('discord-akairo');
-const Notes = require('../../models/Notes');
-const { firebaseApp } = require('../../struct/Database');
+const Notes = require('../../model/Notes');
 
 class AddNoteCommand extends Command {
 	constructor() {
@@ -36,11 +35,7 @@ class AddNoteCommand extends Command {
 
 	async exec(message, { data, note }) {
 		if (note.length > 900) return message.util.send('note has limit of 1000 characters!');
-		await firebaseApp.database()
-			.ref('notes')
-			.child(message.guild.id)
-			.child(data.tag.replace(/#/g, '@'))
-			.update({ user: message.author.id, tag: data.tag, note, guild: message.guild.id });
+		await Notes.create(message.guild.id, message.author.id, data.tag, note);
 		return message.util.send(`Note created for **${data.name} (${data.tag})**`);
 	}
 }
