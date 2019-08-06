@@ -33,7 +33,6 @@ class TrackingCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL());
 		const clans = await Clans.findAll(message.guild.id);
-		console.log(clans);
 
 		if (clans.length) {
 			embed.setDescription([
