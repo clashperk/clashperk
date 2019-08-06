@@ -18,9 +18,8 @@ class ReadyListener extends Listener {
 		if (this.client.user.id === process.env.CLIENT_ID) {
 			this.client.firebase.init();
 			this.client.postStats.init();
+			this.client.tracker.init();
 		}
-
-		this.client.tracker.init();
 	}
 }
 

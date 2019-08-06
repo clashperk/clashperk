@@ -1,6 +1,6 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const Clans = require('../../models/Clans');
+const Clans = require('../../model/Clans');
 
 class StartCommand extends Command {
 	constructor() {

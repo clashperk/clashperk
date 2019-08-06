@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Profile = require('../../models/Profile');
+const Profile = require('../../model/Profile');
 
 class UnlinkCommand extends Command {
 	constructor() {

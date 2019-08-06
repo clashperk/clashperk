@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Notes = require('../../models/Notes');
+const Notes = require('../../model/Notes');
 
 class AddNoteCommand extends Command {
 	constructor() {

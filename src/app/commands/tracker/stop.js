@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Clans = require('../../models/Clans');
+const Clans = require('../../model/Clans');
 
 class StopCommand extends Command {
 	constructor() {
