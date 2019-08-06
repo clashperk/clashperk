@@ -1,6 +1,6 @@
 const { Command } = require('discord-akairo');
-const Clans = require('../../models/Clans');
 const { MessageEmbed } = require('discord.js');
+const Clans = require('../../model/Clans');
 
 class TrackingCommand extends Command {
 	constructor() {
@@ -29,19 +29,18 @@ class TrackingCommand extends Command {
 	}
 
 	async exec(message, { guild }) {
-		const data = await Clans.findAll({ where: { guild: guild.id } });
-		if (data) {
-			const embed = new MessageEmbed()
-				.setColor(0x5970c1)
-				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL());
-			if (data.length) {
-				embed.setDescription([
-					data.map(({ name, tag, channel }, index) => `**${++index}.** ${name} (${tag}) => <#${channel}>`).join('\n')
-				]);
-			}
-			embed.setFooter(`Tracking ${data.length} ${data.length > 1 || data.length === 0 ? 'clans' : 'clan'}`);
-			return message.util.send({ embed });
+		const embed = new MessageEmbed()
+			.setColor(0x5970c1)
+			.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL());
+		const clans = await Clans.findAll(message.guild.id);
+
+		if (clans.length) {
+			embed.setDescription([
+				clans.map(({ name, tag, channel }, index) => `**${++index}.** ${name} (${tag}) => <#${channel}>`).join('\n')
+			]);
 		}
+		embed.setFooter(`Tracking ${clans.length} ${clans.length > 1 || clans.length === 0 ? 'clans' : 'clan'}`);
+		return message.util.send({ embed });
 	}
 }
 

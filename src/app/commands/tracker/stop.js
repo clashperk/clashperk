@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Clans = require('../../models/Clans');
+const Clans = require('../../model/Clans');
 
 class StopCommand extends Command {
 	constructor() {
@@ -18,8 +18,8 @@ class StopCommand extends Command {
 					id: 'clan',
 					type: async (msg, phrase) => {
 						if (!phrase) return null;
-						const tag = `#${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-						const data = await Clans.findOne({ where: { guild: msg.guild.id, tag } });
+						const tag = `@${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
+						const data = await Clans.findOne(msg.guild.id, tag);
 						if (!data) return null;
 						return data;
 					},
@@ -34,7 +34,7 @@ class StopCommand extends Command {
 
 	async exec(message, { clan }) {
 		this.client.tracker.delete(message.guild.id, clan.tag);
-		await clan.destroy();
+		Clans.destroy(message.guild.id, clan.tag);
 		return message.util.send({
 			embed: {
 				title: `Successfully deleted **${clan.name} (${clan.tag})**`,

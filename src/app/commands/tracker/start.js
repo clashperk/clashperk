@@ -1,6 +1,6 @@
 const { Command } = require('discord-akairo');
-const Clans = require('../../models/Clans');
 const { MessageEmbed } = require('discord.js');
+const Clans = require('../../model/Clans');
 
 class StartCommand extends Command {
 	constructor() {
@@ -44,7 +44,7 @@ class StartCommand extends Command {
 	}
 
 	async exec(message, { data, channel, color }) {
-		const clans = await Clans.findAll({ where: { guild: message.guild.id } });
+		const clans = await Clans.findAll(message.guild.id);
 		const limit = this.client.settings.get(message.guild, 'clanLimit', 10);
 		if (clans.length >= limit) {
 			return message.util.send([
@@ -52,30 +52,9 @@ class StartCommand extends Command {
 				`If you need more, please contact **${this.client.users.get(this.client.ownerID).tag}**`
 			]);
 		}
-		const clan = await Clans.findOne({
-			where: {
-				guild: message.guild.id, tag: data.tag
-			}
-		});
-
-		if (clan) {
-			await clan.update({
-				channel: channel.id,
-				color,
-				user: message.author.tag
-			});
-		} else {
-			await Clans.create({
-				tag: data.tag,
-				name: data.name,
-				color,
-				user: message.author.tag,
-				channel: channel.id,
-				guild: message.guild.id
-			});
-		}
 
 		this.client.tracker.add(data.tag, message.guild.id, channel.id, color);
+		Clans.create(data.tag, data.name, message.guild.id, channel.id, color, message.author.tag, new Date());
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)

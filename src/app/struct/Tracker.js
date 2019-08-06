@@ -1,7 +1,7 @@
 const Logger = require('../util/logger');
-const { MessageEmbed, Util } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
+const Clans = require('../model/Clans');
 const fetch = require('node-fetch');
-const Clans = require('../models/Clans');
 
 const donateList = [];
 
@@ -48,12 +48,13 @@ class Tracker {
 	}
 
 	async load() {
-		for (const data of await Clans.findAll({ where: { tracking: true } })) {
-			this.add(data.tag, data.guild, data.channel, data.color);
+		for (const { tag, guild, channel, color } of await Clans.findAll()) {
+			if (!this.client.channels.has(channel)) continue;
+			this.add(tag, guild, channel, color);
 		}
 	}
 
-	add(tag, guild, channel, color) {
+	async add(tag, guild, channel, color) {
 		const data = {
 			channel,
 			tag,
@@ -63,7 +64,7 @@ class Tracker {
 		this.cached.set(`${guild}${tag}`, data);
 	}
 
-	delete(guild, tag) {
+	async delete(guild, tag) {
 		this.cached.delete(`${guild}${tag}`);
 	}
 
@@ -138,9 +139,6 @@ class Tracker {
 			} else {
 				Logger.warn(`Channel: ${clan.channel}`, { level: 'Missing Channel' });
 				this.delete(clan.guild, clan.tag);
-				if (this.client.user.id === process.env.CLIENT_ID) {
-					await Clans.destroy({ where: { channel: clan.channel } });
-				}
 			}
 
 			await this.delay(100);

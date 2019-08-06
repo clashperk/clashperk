@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const Notes = require('../../models/Notes');
 const moment = require('moment');
+const Notes = require('../../model/Notes');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -183,8 +183,7 @@ class PlayerCommand extends Command {
 			}
 		});
 		if (heroLevels) embed.addField('Heroes', heroLevels);
-
-		const note = await Notes.findOne({ where: { guild: message.guild.id, tag: data.tag } });
+		const note = await Notes.findOne(message.guild.id, data.tag);
 		if (note) {
 			const user = this.client.users.get(note.user);
 			embed.addField('Note', [

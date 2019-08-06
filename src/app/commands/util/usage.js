@@ -24,13 +24,13 @@ class UsageCommand extends Command {
 			.setFooter('Since August 1, 2019')
 			.setTitle(`${total}x commands used`)
 			.addField('Users', [
-				users.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.users.get(id).tag}\` **\`${uses}x\`**`).join('\n')
+				`\u200b${users.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.users.get(id).tag}\` \u200b\`${uses}x\``).join('\n')}`
 			])
 			.addField('Servers', [
-				guilds.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.guilds.get(id).name}\` **\`${uses}x\`**`).join('\n')
+				`\u200b${guilds.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.guilds.get(id).name}\` \u200b\`${uses}x\``).join('\n')}`
 			])
 			.addField('Commands', [
-				commands.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '')}\` **\`${uses}x\`**`).join('\n')
+				`\u200b${commands.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '')}\` \u200b\`${uses}x\``).join('\n')}`
 			]);
 
 		return message.util.send({ embed });
