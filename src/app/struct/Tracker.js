@@ -1,6 +1,6 @@
 const Logger = require('../util/logger');
 const { MessageEmbed } = require('discord.js');
-const Clans = require('../model/Clans');
+const Clans = require('../models/Clans');
 const fetch = require('node-fetch');
 
 const donateList = [];

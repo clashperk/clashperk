@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
-const Profile = require('../../model/Profile');
+const Profile = require('../../models/Profile');
 
 const STATUS = {
 	400: 'client provided incorrect parameters for the request.',

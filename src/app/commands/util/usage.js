@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firebaseApp } = require('../../struct/Database');
+const { firebase } = require('../../struct/Database');
 
 class UsageCommand extends Command {
 	constructor() {
@@ -37,7 +37,7 @@ class UsageCommand extends Command {
 	}
 
 	async users() {
-		const ref = await firebaseApp.database().ref('users');
+		const ref = await firebase.ref('users');
 		const data = await ref.once('value').then(snap => snap.val());
 		const users = [];
 		for (const [key, value] of Object.entries(data)) {
@@ -49,7 +49,7 @@ class UsageCommand extends Command {
 	}
 
 	async guilds() {
-		const ref = await firebaseApp.database().ref('guilds');
+		const ref = await firebase.ref('guilds');
 		const data = await ref.once('value').then(snap => snap.val());
 		const guilds = [];
 		for (const [key, value] of Object.entries(data)) {
@@ -61,7 +61,7 @@ class UsageCommand extends Command {
 	}
 
 	async commands() {
-		const ref = await firebaseApp.database().ref('commands');
+		const ref = await firebase.ref('commands');
 		const data = await ref.once('value').then(snap => snap.val());
 		const commands = [];
 		for (const [key, value] of Object.entries(data)) {
@@ -73,7 +73,7 @@ class UsageCommand extends Command {
 	}
 
 	async commandsTotal() {
-		const ref = await firebaseApp.database().ref('stats');
+		const ref = await firebase.ref('stats');
 		const data = await ref.once('value').then(snap => snap.val());
 
 		return data ? data.commands_used : 0;

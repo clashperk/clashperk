@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const moment = require('moment');
-const Notes = require('../../model/Notes');
+const Notes = require('../../models/Notes');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',

@@ -1,7 +1,6 @@
 const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
 const SettingsProvider = require('../struct/SettingsProviders');
 const path = require('path');
-const Database = require('../struct/Database');
 const Tracker = require('../struct/Tracker');
 const fetch = require('node-fetch');
 const PostStats = require('../struct/PostStats');
@@ -127,7 +126,6 @@ class Client extends AkairoClient {
 	}
 
 	async start(token) {
-		await Database.authenticate();
 		await this.settings.init();
 		return this.login(token);
 	}
