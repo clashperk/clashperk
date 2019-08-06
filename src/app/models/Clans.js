@@ -16,7 +16,7 @@ class Clans {
 		return firebase.ref('clans').child(`${guild}@${tag.replace(/#/g, '')}`).update({ tag, name, guild, channel, color, user, updatedAt });
 	}
 
-	static destroy(tag, guild) {
+	static destroy(guild, tag) {
 		return firebase.ref('clans').child(`${guild}@${tag.replace(/#/g, '')}`).remove();
 	}
 
