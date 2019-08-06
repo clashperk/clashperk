@@ -20,7 +20,7 @@ class ReadyListener extends Listener {
 			this.client.postStats.init();
 		}
 
-		// this.client.tracker.init();
+		this.client.tracker.init();
 	}
 }
 

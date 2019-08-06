@@ -1,5 +1,5 @@
 const Logger = require('../util/logger');
-const { firebaseApp } = require('./Database');
+const { firebase } = require('./Database');
 const moment = require('moment');
 require('moment-duration-format');
 
@@ -15,9 +15,9 @@ class Firebase {
 	}
 
 	async commandcounter() {
-		const ref = await firebaseApp.database().ref('stats');
+		const ref = await firebase.ref('stats');
 		const msg = await ref.once('value').then(snap => snap.val());
-		firebaseApp.database().ref('stats').update({
+		firebase.ref('stats').update({
 			commands_used: msg.commands_used + 1
 		}, error => {
 			if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
@@ -25,16 +25,16 @@ class Firebase {
 	}
 
 	async commands(command) {
-		const ref = await firebaseApp.database().ref('commands');
+		const ref = await firebase.ref('commands');
 		const data = await ref.once('value').then(snap => snap.val());
 		if (!data[command]) {
-			firebaseApp.database().ref('commands').update({
+			firebase.ref('commands').update({
 				[command]: 1
 			}, error => {
 				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
 			});
 		} else {
-			firebaseApp.database().ref('commands').update({
+			firebase.ref('commands').update({
 				[command]: data[command] + 1
 			}, error => {
 				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
@@ -45,16 +45,16 @@ class Firebase {
 	}
 
 	async users(user) {
-		const ref = await firebaseApp.database().ref('users');
+		const ref = await firebase.ref('users');
 		const data = await ref.once('value').then(snap => snap.val());
 		if (!data[user]) {
-			firebaseApp.database().ref('users').update({
+			firebase.ref('users').update({
 				[user]: 1
 			}, error => {
 				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
 			});
 		} else {
-			firebaseApp.database().ref('users').update({
+			firebase.ref('users').update({
 				[user]: data[user] + 1
 			}, error => {
 				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
@@ -65,16 +65,16 @@ class Firebase {
 	}
 
 	async guilds(guild) {
-		const ref = await firebaseApp.database().ref('guilds');
+		const ref = await firebase.ref('guilds');
 		const data = await ref.once('value').then(snap => snap.val());
 		if (!data[guild]) {
-			firebaseApp.database().ref('guilds').update({
+			firebase.ref('guilds').update({
 				[guild]: 1
 			}, error => {
 				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
 			});
 		} else {
-			firebaseApp.database().ref('guilds').update({
+			firebase.ref('guilds').update({
 				[guild]: data[guild] + 1
 			}, error => {
 				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
@@ -85,7 +85,7 @@ class Firebase {
 	}
 
 	async stats() {
-		firebaseApp.database().ref('stats').update({
+		firebase.ref('stats').update({
 			uptime: moment.duration(this.client.uptime).format('D [days], H [hrs], m [mins], s [secs]'),
 			users: this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0),
 			guilds: this.client.guilds.size,
@@ -107,29 +107,29 @@ class Firebase {
 		};
 
 		// Get a key for a new Post.
-		const newPostKey = firebaseApp.database().ref().child('posts')
+		const newPostKey = firebase.ref().child('posts')
 			.push().key;
 
 		// Write the new post's data simultaneously in the posts list and the user's post list.
 		const updates = {};
 		updates[`/posts/${newPostKey}`] = postData;
 
-		firebaseApp.database().ref().update(updates);
-		const twoRef = await firebaseApp.database().ref().child('posts')
+		firebase.ref().update(updates);
+		const twoRef = await firebase.ref().child('posts')
 			.orderByChild('title')
 			.equalTo(300);
 		const g = await twoRef.once('value').then(snap => snap.val());
 		/* console.log(g);
 		for (const key of Object.keys(g)) {
 			console.log({ key });
-			firebaseApp.database().ref('posts').child(key)
+			firebase.ref('posts').child(key)
 				.update({ starCount: 100 });
 		}*/
 		return JSON.stringify(g);
 	}
 
 	async g(tag, guild, channel, color) {
-		const db = await firebaseApp.database();
+		const db = await firebase;
 		const object = await db.ref('clans').child(`${guild}${tag.replace(/#/g, '@')}`);
 		return object.update({ tag, guild, channel, color });
 	}
