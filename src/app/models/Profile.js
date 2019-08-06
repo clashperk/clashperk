@@ -1,39 +1,44 @@
-const { db } = require('../struct/Database');
-const Sequelize = require('sequelize');
+const { firebase } = require('../struct/Database');
 
-const Profile = db.define('profile', {
-	user: {
-		type: Sequelize.STRING,
-		allowNull: false
-	},
-	guild: {
-		type: Sequelize.STRING,
-		allowNull: false
-	},
-	tag: {
-		type: Sequelize.STRING,
-		allowNull: true
-	},
-	name: {
-		type: Sequelize.STRING,
-		allowNull: true
-	},
-	clan_tag: {
-		type: Sequelize.STRING,
-		allowNull: true
-	},
-	clan_name: {
-		type: Sequelize.STRING,
-		allowNull: true
-	},
-	createdAt: {
-		type: Sequelize.DATE,
-		defaultValue: Sequelize.NOW
-	},
-	updatedAt: {
-		type: Sequelize.DATE,
-		defaultValue: Sequelize.NOW
+class Profile {
+	static async create(guild, user, data, option) {
+		if (option === 'clan') {
+			return firebase.ref('profile')
+				.child(guild)
+				.child(user)
+				.update({ guild, user, clan_tag: data.tag, clan_name: data.name });
+		}
+
+		if (option === 'profile') {
+			return firebase.ref('profile')
+				.child(guild)
+				.child(user)
+				.update({ guild, user, tag: data.tag, name: data.name });
+		}
 	}
-});
 
+	static async destroy(guild, user, option) {
+		const object = await firebase.ref('profile')
+			.child(guild)
+			.child(user);
+		const data = await object.once('value').then(snap => snap.val());
+
+		if (option === 'clan') {
+			await object.update({ clan_name: null, clan_tag: null });
+		}
+		if (option === 'profile') {
+			await object.update({ tag: null, name: null });
+		}
+
+		return data;
+	}
+
+	static async findOne(guild, user) {
+		return firebase.ref('profile')
+			.child(guild)
+			.child(user)
+			.once('value')
+			.then(snap => snap.val());
+	}
+}
 module.exports = Profile;

@@ -1,7 +1,7 @@
 const { Command, Argument } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
-const Profile = require('../../model/Profile');
+const Profile = require('../../models/Profile');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',

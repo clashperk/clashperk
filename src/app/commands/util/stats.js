@@ -4,7 +4,7 @@ require('moment-duration-format');
 const { MessageEmbed } = require('discord.js');
 const os = require('os-utils');
 const { version } = require('../../../../package.json');
-const Clans = require('../../model/Clans');
+const Clans = require('../../models/Clans');
 
 class StatsCommand extends Command {
 	constructor() {

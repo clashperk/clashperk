@@ -6,7 +6,6 @@ const fetch = require('node-fetch');
 const PostStats = require('../struct/PostStats');
 const Firebase = require('../struct/Firebase');
 const { firebase } = require('../struct/Database');
-const Database = require('../struct/Database');
 
 class Client extends AkairoClient {
 	constructor(config) {
@@ -127,7 +126,6 @@ class Client extends AkairoClient {
 	}
 
 	async start(token) {
-		await Database.authenticate();
 		await this.settings.init();
 		return this.login(token);
 	}
