@@ -32,7 +32,7 @@ class LinkPlayerCommand extends Command {
 	}
 
 	async exec(message, { data, member }) {
-		await Profile.create(message.guild.id, member.id, data, 'clan');
+		await Profile.create(message.guild.id, member.id, data, 'profile');
 
 		return message.util.send(`Successfully linked **${member.user.tag}** to *${data.name} (${data.tag})*`);
 	}
