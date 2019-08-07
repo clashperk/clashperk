@@ -14,13 +14,10 @@ class GuildDeleteListener extends Listener {
 	async exec(guild) {
 		Logger.log(`${guild.name} (${guild.id})`, { level: 'GUILD_DELETE' });
 
-		const clans = await Clans.findAll({ where: { guild: guild.id } });
+		const clans = await Clans.findAll(guild);
 		for (const clan of clans) {
 			this.client.tracker.delete(guild.id, clan.tag);
 		}
-
-		await Clans.destroy({ where: { guild: guild.id } });
-		this.client.settings.clear(guild);
 
 		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
 		const clientLog = this.client.settings.get('global', 'clientLog', undefined);

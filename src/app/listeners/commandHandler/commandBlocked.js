@@ -12,10 +12,8 @@ class CommandBlockedListener extends Listener {
 
 	exec(message, command, reason) {
 		const text = {
-			owner: () => 'you must be the owner to use this command.',
 			guild: () => 'you must be in a guild to use this command.',
-			restrict: () => 'you can\'t use this command because you have been restricted.',
-			beta: () => 'contact bot owner to use beta commands.'
+			restrict: () => 'you can\'t use this command because you have been restricted.'
 		}[reason];
 
 		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;

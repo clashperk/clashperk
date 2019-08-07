@@ -15,7 +15,7 @@ class AboutCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`About ${this.client.user.username}`, this.client.user.displayAvatarURL())
-			.addField('Developer', `**[${owner.tag}](https://github.com/esuvajit)**`, true)
+			.addField('Developer', `**[${owner.tag}](https://github.com/csuvajit)**`, true)
 			.addField('Library', '[discord.js#master](https://discord.js.org)', true)
 			.addField('Support', '[Official Discord](https://discord.gg/8NP2XNV)', true)
 			.addField('Website', '[Guide](https://clashperk.xyz)', true)
