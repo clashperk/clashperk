@@ -14,29 +14,26 @@ class GuildDeleteListener extends Listener {
 	async exec(guild) {
 		Logger.log(`${guild.name} (${guild.id})`, { level: 'GUILD_DELETE' });
 
+		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
+		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'webhook', undefined)).catch(() => null);
+		if (webhook) {
+			const embed = this.client.util.embed()
+				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL())
+				.setTitle(`${this.client.emojis.get('609254782808621066')} ${user.tag} (${user.id})`)
+				.setFooter(`${guild.memberCount} members`, user.displayAvatarURL())
+				.setColor(0xeb3508)
+				.setTimestamp();
+
+			webhook.send({
+				embeds: [embed],
+				username: this.client.user.username,
+				avatarURL: this.client.user.displayAvatarURL()
+			});
+		}
+
 		const clans = await Clans.findAll(guild.id);
 		for (const clan of clans) {
 			this.client.tracker.delete(guild.id, clan.tag);
-		}
-
-		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
-		const clientLog = this.client.settings.get('global', 'clientLog', undefined);
-		if (clientLog && this.client.channels.has(clientLog)) {
-			this.client.channels.get(clientLog).send({
-				embed: {
-					author: {
-						name: `${guild.name} (${guild.id})`,
-						icon_url: guild.iconURL()
-					},
-					title: `\\👑 ${user.tag} (${user.id})`,
-					footer: {
-						text: `${guild.memberCount} members`,
-						icon_url: user.displayAvatarURL()
-					},
-					timestamp: new Date(),
-					color: 0xeb3508
-				}
-			});
 		}
 	}
 }

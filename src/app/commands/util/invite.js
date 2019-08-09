@@ -33,7 +33,7 @@ class InviteCommand extends Command {
 			.setColor(0x5970c1)
 			.setDescription([
 				`**[Invite Me](${await this.fetchInvite()})**`,
-				'**[Official Discord](https://discord.gg/8NP2XNV)**'
+				'**[Official Discord](https://discord.gg/ppuppun)**'
 			]);
 		return message.util.send({ embed });
 	}

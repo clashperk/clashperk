@@ -3,7 +3,7 @@ const { Command } = require('discord-akairo');
 class AboutCommand extends Command {
 	constructor() {
 		super('about', {
-			aliases: ['about', 'info', 'donate', 'patreon'],
+			aliases: ['about', 'info', 'donate', 'patreon', 'support'],
 			category: 'util',
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows information about the bot.' }
@@ -17,7 +17,7 @@ class AboutCommand extends Command {
 			.setAuthor(`About ${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.addField('Developer', `**[${owner.tag}](https://github.com/csuvajit)**`, true)
 			.addField('Library', '[discord.js#master](https://discord.js.org)', true)
-			.addField('Support', '[Official Discord](https://discord.gg/8NP2XNV)', true)
+			.addField('Support', '[Official Discord](https://discord.gg/ppuppun)', true)
 			.addField('Website', '[Guide](https://clashperk.xyz)', true)
 			.addField('Host', '[Google Cloud](https://console.cloud.google.com)', true)
 			.addField('Donate', [
