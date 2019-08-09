@@ -21,7 +21,7 @@ class SetCommand extends Command {
 			type: (msg, id) => {
 				if (!id) return null;
 				const resolver = this.handler.resolver.type({
-					log: 'webhook',
+					log: 'string',
 					beta: 'user',
 					limit: 'guild'
 				}[type]);
@@ -40,8 +40,10 @@ class SetCommand extends Command {
 		if (!type || !data) return;
 
 		if (type === 'log') {
-			this.client.settings.set('global', 'webhook', data.id);
-			return message.util.reply(`client webhook set to ${data.name}`);
+			const webhook = this.client.fetchWebhook(data).catch(() => null);
+			if (!webhook) return;
+			this.client.settings.set('global', 'webhook', webhook.id);
+			return message.util.reply(`client webhook set to ${webhook.name}`);
 		}
 
 		if (type === 'beta') {
