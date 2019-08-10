@@ -46,7 +46,11 @@ class ErrorListener extends Listener {
 		captureException(error);
 
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
-			return message.channel.send(error.toString(), { code: true });
+			return message.channel.send([
+				`${this.client.emojis.get('545968755423838209')} Something went wrong, report us!`,
+				`${this.client.emojis.get('609271613740941313')} https://discord.gg/ppuppun`,
+				`\`\`\`${error.toString()}\`\`\``
+			]);
 		}
 	}
 }
