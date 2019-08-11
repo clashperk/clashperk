@@ -36,11 +36,11 @@ class SetCommand extends Command {
 		return { type, data, num };
 	}
 
-	exec(message, { type, data, num }) {
+	async exec(message, { type, data, num }) {
 		if (!type || !data) return;
 
 		if (type === 'log') {
-			const webhook = this.client.fetchWebhook(data).catch(() => null);
+			const webhook = await this.client.fetchWebhook(data).catch(() => null);
 			if (!webhook) return;
 			this.client.settings.set('global', 'webhook', webhook.id);
 			return message.util.reply(`client webhook set to ${webhook.name}`);
