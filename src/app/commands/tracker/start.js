@@ -47,10 +47,14 @@ class StartCommand extends Command {
 		const clans = await Clans.findAll({ where: { guild: message.guild.id } });
 		const limit = this.client.settings.get(message.guild, 'clanLimit', 3);
 		if (clans.length >= limit) {
-			return message.util.send([
-				`You are already tracking ${clans.length} clans on this server!`,
-				`If you need more, please contact **${this.client.users.get(this.client.ownerID).tag}**`
-			]);
+			const embed = this.client.util.embed()
+				.setDescription([
+					'**You have reached to the Maximum Limit**',
+					'',
+					'**[Buy ClashPerk Premium](https://www.patreon.com/bePatron?u=14584309)**'
+				])
+				.setColor(5861569);
+			return message.util.send({ embed });
 		}
 		const clan = await Clans.findOne({
 			where: {
