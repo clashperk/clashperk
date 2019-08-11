@@ -20,7 +20,7 @@ class MigrationCommand extends Command {
 	}
 
 	async exec(message) {
-		const clans = await firebase.ref('clans').once('value').then(snap => snap.val());
+		/* const clans = await firebase.ref('clans').once('value').then(snap => snap.val());
 		for (const data of this.values(clans)) {
 			await Clans.create({
 				guild: data.guild, channel: data.channel, tag: data.tag, name: data.name,
@@ -49,7 +49,7 @@ class MigrationCommand extends Command {
 				settings: value
 			});
 		}
-		await console.log(JSON.stringify(await Settings.findAll()));
+		await console.log(JSON.stringify(await Settings.findAll()));*/
 
 		const notes = await firebase.ref('notes').once('value').then(snap => snap.val());
 		for (const value of Object.values(notes)) {
@@ -59,7 +59,7 @@ class MigrationCommand extends Command {
 					createdAt: data.createdAt, updatedAt: data.updatedAt,
 					guild: data.guild,
 					note: data.note,
-					tag: data.name,
+					tag: data.tag,
 					user: data.user
 				});
 			}
