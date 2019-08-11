@@ -45,7 +45,7 @@ class StartCommand extends Command {
 
 	async exec(message, { data, channel, color }) {
 		const clans = await Clans.findAll({ where: { guild: message.guild.id } });
-		const limit = this.client.settings.get(message.guild, 'clanLimit', 10);
+		const limit = this.client.settings.get(message.guild, 'clanLimit', 3);
 		if (clans.length >= limit) {
 			return message.util.send([
 				`You are already tracking ${clans.length} clans on this server!`,

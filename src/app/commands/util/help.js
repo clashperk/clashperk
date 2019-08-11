@@ -13,7 +13,7 @@ class HelpCommand extends Command {
 				}
 			],
 			description: {
-				content: 'Displays a list of commands or information about a command.',
+				content: 'Displays a list of commands or info about a command.',
 				usage: '[command]',
 				examples: ['', 'start']
 			}
@@ -69,7 +69,8 @@ class HelpCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.addField('Command List', [
-				`To view details for a command, do \`${prefix}help <command>\``
+				`To view details for a command, do \`${prefix}help <command>\``,
+				'Official Discord: https://discord.gg/ppuppun'
 			]);
 
 		for (const category of this.handler.categories.values()) {

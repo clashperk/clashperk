@@ -28,6 +28,7 @@ class RestrictCommand extends Command {
 	}
 
 	async exec(message, { member }) {
+		if (member.id === message.author.id) return;
 		const restrict = this.client.settings.get(message.guild, 'restrict', []);
 
 		if (restrict.includes(member.id)) {

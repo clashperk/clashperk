@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firebaseApp } = require('../../struct/Database');
+const { firebase } = require('../../struct/Database');
 
 class UsageCommand extends Command {
 	constructor() {
@@ -24,20 +24,20 @@ class UsageCommand extends Command {
 			.setFooter('Since August 1, 2019')
 			.setTitle(`${total}x commands used`)
 			.addField('Users', [
-				users.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.users.get(id).tag}\` **\`${uses}x\`**`).join('\n')
+				`\u200b${users.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.users.get(id).tag}\` \u200b\`${uses}x\``).join('\n')}`
 			])
 			.addField('Servers', [
-				guilds.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.guilds.get(id).name}\` **\`${uses}x\`**`).join('\n')
+				`\u200b${guilds.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.guilds.get(id).name}\` \u200b\`${uses}x\``).join('\n')}`
 			])
 			.addField('Commands', [
-				commands.splice(0, 10).map(({ id, uses }, index) => `**\`${++index}.\`** \`${this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '')}\` **\`${uses}x\`**`).join('\n')
+				`\u200b${commands.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '')}\` \u200b\`${uses}x\``).join('\n')}`
 			]);
 
 		return message.util.send({ embed });
 	}
 
 	async users() {
-		const ref = await firebaseApp.database().ref('users');
+		const ref = await firebase.ref('users');
 		const data = await ref.once('value').then(snap => snap.val());
 		const users = [];
 		for (const [key, value] of Object.entries(data)) {
@@ -49,7 +49,7 @@ class UsageCommand extends Command {
 	}
 
 	async guilds() {
-		const ref = await firebaseApp.database().ref('guilds');
+		const ref = await firebase.ref('guilds');
 		const data = await ref.once('value').then(snap => snap.val());
 		const guilds = [];
 		for (const [key, value] of Object.entries(data)) {
@@ -61,7 +61,7 @@ class UsageCommand extends Command {
 	}
 
 	async commands() {
-		const ref = await firebaseApp.database().ref('commands');
+		const ref = await firebase.ref('commands');
 		const data = await ref.once('value').then(snap => snap.val());
 		const commands = [];
 		for (const [key, value] of Object.entries(data)) {
@@ -73,7 +73,7 @@ class UsageCommand extends Command {
 	}
 
 	async commandsTotal() {
-		const ref = await firebaseApp.database().ref('stats');
+		const ref = await firebase.ref('stats');
 		const data = await ref.once('value').then(snap => snap.val());
 
 		return data ? data.commands_used : 0;

@@ -1,8 +1,8 @@
+const firebase = require('firebase-admin');
+const Logger = require('../util/logger');
 const path = require('path');
 const readdir = require('util').promisify(require('fs').readdir);
-const firebase = require('firebase-admin');
 const Sequelize = require('sequelize');
-const Logger = require('../util/logger');
 
 const db = new Sequelize(process.env.POSTGRES, { logging: false });
 
@@ -20,8 +20,8 @@ class Database {
 		return db;
 	}
 
-	static get firebaseApp() {
-		return firebaseApp;
+	static get firebase() {
+		return firebaseApp.database();
 	}
 
 	static async authenticate() {

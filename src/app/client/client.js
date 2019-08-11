@@ -60,14 +60,6 @@ class Client extends AkairoClient {
 
 		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
-		this.settings = new SettingsProvider(Settings);
-
-		this.postStats = new PostStats(this);
-
-		this.tracker = new Tracker(this);
-
-		this.firebase = new Firebase(this);
-
 		const STATUS = {
 			400: 'client provided incorrect parameters for the request.',
 			403: 'access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
@@ -108,11 +100,9 @@ class Client extends AkairoClient {
 				guild.presences.clear();
 			}
 		}, 900);
-
-		this.setup();
 	}
 
-	setup() {
+	async init() {
 		this.commandHandler.useInhibitorHandler(this.inhibitorHandler);
 		this.commandHandler.useListenerHandler(this.listenerHandler);
 		this.listenerHandler.setEmitters({
@@ -124,11 +114,18 @@ class Client extends AkairoClient {
 		this.commandHandler.loadAll();
 		this.inhibitorHandler.loadAll();
 		this.listenerHandler.loadAll();
+
+		this.settings = new SettingsProvider(Settings);
+		this.postStats = new PostStats(this);
+		this.tracker = new Tracker(this);
+		this.firebase = new Firebase(this);
+
+		await Database.authenticate();
+		await this.settings.init();
 	}
 
 	async start(token) {
-		await Database.authenticate();
-		await this.settings.init();
+		await this.init();
 		return this.login(token);
 	}
 }

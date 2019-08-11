@@ -184,13 +184,13 @@ class PlayerCommand extends Command {
 		});
 		if (heroLevels) embed.addField('Heroes', heroLevels);
 
-		const note = await Notes.findOne({ where: { guild: message.guild.id, tag: data.tag } });
-		if (note) {
-			const user = this.client.users.get(note.user);
+		const playerNote = await Notes.findOne({ where: { guild: message.guild.id, tag: data.tag } });
+		if (playerNote) {
+			const user = this.client.users.get(playerNote.user);
 			embed.addField('Note', [
-				note.note,
+				playerNote.note,
 				'',
-				`**${user ? user.tag : note.user}** created on **${moment(note.createdAt).format('MMMM D, YYYY, hh:mm')}**`
+				`**${user ? user.tag : playerNote.user}** created on **${moment(playerNote.createdAt).format('MMMM D, YYYY, hh:mm')}**`
 			]);
 		}
 

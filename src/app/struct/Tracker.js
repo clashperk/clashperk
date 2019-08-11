@@ -1,5 +1,5 @@
 const Logger = require('../util/logger');
-const { MessageEmbed, Util } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const Clans = require('../models/Clans');
 
@@ -94,7 +94,7 @@ class Tracker {
 
 		if (donated !== '' || received !== '') {
 			const embed = new MessageEmbed()
-				.setColor(isNaN(color) ? String(color) : Number(color))
+				.setColor(color)
 				.setAuthor(clanInfo, badge)
 				.setThumbnail(badge)
 				.setFooter(`${members}/50`, this.client.user.displayAvatarURL())

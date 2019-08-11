@@ -27,8 +27,8 @@ const Clans = db.define('clans', {
 		defaultValue: true
 	},
 	color: {
-		type: Sequelize.STRING,
-		defaultValue: '#5970C1'
+		type: Sequelize.INTEGER,
+		defaultValue: 5861569
 	},
 	createdAt: {
 		type: Sequelize.DATE,
