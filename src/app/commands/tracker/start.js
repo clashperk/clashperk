@@ -37,7 +37,7 @@ class StartCommand extends Command {
 		const color = yield {
 			type: 'color',
 			unordered: [1, 2],
-			default: '#5970C1'
+			default: 5861569
 		};
 
 		return { data, channel, color };
