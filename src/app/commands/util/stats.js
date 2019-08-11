@@ -23,7 +23,9 @@ class StatsCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${this.client.user.username} Statistics`, this.client.user.displayAvatarURL())
 			.addField('Memory Usage', `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`, true)
-			.addField('Free Memory', `${Math.round(os.freemem())} MB`, true)
+			.addField('Free Memory', [
+				os.freemem() > 1024 ? `${(os.freemem() / 1024).toFixed(2)} GB` : `${Math.round(os.freemem())} MB`
+			], true)
 			.addField('Uptime', moment.duration(this.client.uptime).format('D [days], H [hrs], m [mins], s [secs]'), true)
 			.addField('Servers', this.client.guilds.size, true)
 			.addField('Users', this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0), true)
