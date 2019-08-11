@@ -34,7 +34,12 @@ class MyClanCommand extends Command {
 	}
 
 	async exec(message, { member }) {
-		const profile = await Profile.findOne(message.guild.id, member.id);
+		const profile = await Profile.findOne({
+			where: {
+				guild: message.guild.id,
+				user: member.id
+			}
+		});
 
 		if (!profile || (profile && !profile.clan_tag)) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
 

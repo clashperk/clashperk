@@ -32,17 +32,24 @@ class UnlinkCommand extends Command {
 	}
 
 	async exec(message, { type, member }) {
-		const profile = await Profile.destroy(message.guild.id, member.id, type);
+		const profile = await Profile.findOne({
+			where: {
+				guild: message.guild.id,
+				user: member.id
+			}
+		});
 
 		if (type === 'profile') {
 			if (!profile || (profile && !profile.tag)) return message.util.reply(`couldn\'t find a player linked to ${member.user.tag}`);
+			await profile.update({ tag: null });
 		}
 
 		if (type === 'clan') {
 			if (!profile || (profile && !profile.clan_tag)) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
+			await profile.update({ clan_tag: null });
 		}
 
-		return message.util.reply(`successfully unlinked your ${type}`);
+		return message.util.send(`successfully unlinked your ${type}`);
 	}
 }
 module.exports = UnlinkCommand;

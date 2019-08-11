@@ -27,10 +27,11 @@ class DeleteNoteCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		const note = await Notes.destroy(message.guild.id, data.tag);
+		const note = await Notes.findOne({ where: { guild: message.guild.id, tag: data.tag } });
 		if (!note) {
 			return message.util.send(`Could not find any note for ${data.name} (${data.tag})`);
 		}
+		await note.destroy();
 		return message.util.send(`Note deleted for **${data.name} (${data.tag})**`);
 	}
 }

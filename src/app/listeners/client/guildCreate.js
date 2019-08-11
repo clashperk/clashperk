@@ -1,4 +1,5 @@
 const { Listener } = require('discord-akairo');
+const Clans = require('../../models/Clans');
 const Logger = require('../../util/logger');
 
 class GuildCreateListener extends Listener {
@@ -27,5 +28,4 @@ class GuildCreateListener extends Listener {
 		}
 	}
 }
-
 module.exports = GuildCreateListener;

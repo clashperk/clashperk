@@ -1,4 +1,4 @@
-const { Command, Argument } = require('discord-akairo');
+const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const Profile = require('../../models/Profile');
@@ -92,7 +92,12 @@ class ProfileCommand extends Command {
 	}
 
 	async exec(message, { member }) {
-		const profile = await Profile.findOne(message.guild.id, member.id);
+		const profile = await Profile.findOne({
+			where: {
+				guild: message.guild.id,
+				user: member.id
+			}
+		});
 
 		if (!profile || (profile && !profile.tag)) return message.util.reply(`couldn\'t find a player linked to ${member.user.tag}`);
 

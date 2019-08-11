@@ -1,11 +1,12 @@
 const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
 const SettingsProvider = require('../struct/SettingsProviders');
+const Settings = require('../models/Settings');
 const path = require('path');
+const Database = require('../struct/Database');
 const Tracker = require('../struct/Tracker');
 const fetch = require('node-fetch');
 const PostStats = require('../struct/PostStats');
 const Firebase = require('../struct/Firebase');
-const { firebase } = require('../struct/Database');
 
 class Client extends AkairoClient {
 	constructor(config) {
@@ -114,10 +115,12 @@ class Client extends AkairoClient {
 		this.inhibitorHandler.loadAll();
 		this.listenerHandler.loadAll();
 
-		this.settings = new SettingsProvider(firebase.ref('settings'));
+		this.settings = new SettingsProvider(Settings);
 		this.postStats = new PostStats(this);
 		this.tracker = new Tracker(this);
 		this.firebase = new Firebase(this);
+
+		await Database.authenticate();
 		await this.settings.init();
 	}
 

@@ -35,7 +35,17 @@ class AddNoteCommand extends Command {
 
 	async exec(message, { data, note }) {
 		if (note.length > 900) return message.util.send('note has limit of 1000 characters!');
-		await Notes.create(message.guild.id, message.author.id, data.tag, note);
+		const previous = await Notes.findOne({ where: { guild: message.guild.id, tag: data.tag } });
+		if (previous) {
+			await previous.update({ user: message.author.id, tag: data.tag });
+			return message.util.send(`Note updated for ${data.name} (${data.tag})`);
+		}
+		await Notes.create({
+			guild: message.guild.id,
+			user: message.author.id,
+			tag: data.tag,
+			note
+		});
 		return message.util.send(`Note created for **${data.name} (${data.tag})**`);
 	}
 }
