@@ -27,7 +27,7 @@ class ThCompoCommand extends Command {
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
-			cooldown: 30000,
+			cooldown: 20000,
 			args: [
 				{
 					id: 'data',
