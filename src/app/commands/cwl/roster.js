@@ -23,7 +23,7 @@ class CwlRosterComamnd extends Command {
 			aliases: ['roster', 'cwl-roster'],
 			category: 'cwl',
 			description: {
-				content: 'Shows cwl roster & number of th level for each clan.',
+				content: 'Shows cwl roster & total number of th for each clan.',
 				usage: '<#clan tag>',
 				examples: ['#8QU8J9LP']
 			},

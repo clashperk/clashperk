@@ -75,4 +75,4 @@ class CwlComamnd extends Command {
 	}
 }
 
-module.exports = CwlComamnd;
+// module.exports = CwlComamnd;
