@@ -27,7 +27,6 @@ class ThCompoCommand extends Command {
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
-			cooldown: 20000,
 			args: [
 				{
 					id: 'data',
@@ -41,8 +40,12 @@ class ThCompoCommand extends Command {
 		});
 	}
 
+	cooldown(message) {
+		return 20000;
+	}
+
 	async exec(message, { data }) {
-		const send = await message.channel.send('**Calculating TH compositions of your clan... <a:loading:538989228403458089>**');
+		await message.util.send('**Calculating TH compositions of your clan... <a:loading:538989228403458089>**');
 		let TH12 = 0;
 		let TH11 = 0;
 		let TH10 = 0;
@@ -102,7 +105,7 @@ class ThCompoCommand extends Command {
 			)
 			.setFooter(`Avg: ${AVG.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/539370925515210763.png');
 
-		return send.edit(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`, { embed });
+		return message.util.send(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`, { embed });
 	}
 }
 
