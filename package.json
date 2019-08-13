@@ -6,6 +6,7 @@
   "description": "Clash of Clans Discord Bot",
   "main": "src/index.js",
   "scripts": {
+    "start": "node src/index.js",
     "test": "eslint ./",
     "lint": "eslint --fix src/"
   },
