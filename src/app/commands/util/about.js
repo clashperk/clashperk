@@ -20,7 +20,7 @@ class AboutCommand extends Command {
 			.addField('Support', '[Official Discord](https://discord.gg/ppuppun)', true)
 			.addField('Website', '[Guide](https://clashperk.xyz)', true)
 			.addField('Host', '[Google Cloud](https://console.cloud.google.com)', true)
-			.addField('Donate', '**[Patreon](https://www.patreon.com/bePatron?u=14584309)**')
+			.addField('Donate', '**[Patreon](https://www.patreon.com/bePatron?u=14584309)**', true)
 			.setFooter(`© 2019 ${owner.tag}`, owner.displayAvatarURL());
 		return message.util.send({ embed });
 	}

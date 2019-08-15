@@ -5,6 +5,8 @@ const path = require('path');
 const Database = require('../struct/Database');
 const Tracker = require('../struct/Tracker');
 const fetch = require('node-fetch');
+const Patrons = require('../struct/Patrons');
+const Voter = require('../struct/Voter');
 const PostStats = require('../struct/PostStats');
 const Firebase = require('../struct/Firebase');
 
@@ -42,7 +44,7 @@ class Client extends AkairoClient {
 			commandUtilLifetime: 3e5,
 			commandUtilSweepInterval: 3e5,
 			handleEdits: true,
-			defaultCooldown: 5000,
+			defaultCooldown: 3000,
 			argumentDefaults: {
 				prompt: {
 					modifyStart: (msg, text) => text && `${msg.author}, ${text} \n\nType \`cancel\` to cancel this command.`,
@@ -119,9 +121,13 @@ class Client extends AkairoClient {
 		this.postStats = new PostStats(this);
 		this.tracker = new Tracker(this);
 		this.firebase = new Firebase(this);
+		this.patron = new Patrons(this);
+		this.voter = new Voter(this);
 
 		await Database.authenticate();
+		await this.voter.init();
 		await this.settings.init();
+		await this.patron.init();
 	}
 
 	async start(token) {

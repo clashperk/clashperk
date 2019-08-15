@@ -33,6 +33,11 @@ class AddNoteCommand extends Command {
 		});
 	}
 
+	cooldown(message) {
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		return 3000;
+	}
+
 	async exec(message, { data, note }) {
 		if (note.length > 900) return message.util.send('note has limit of 1000 characters!');
 		const previous = await Notes.findOne({ where: { guild: message.guild.id, tag: data.tag } });

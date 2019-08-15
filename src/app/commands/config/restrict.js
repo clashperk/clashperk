@@ -27,6 +27,11 @@ class RestrictCommand extends Command {
 		});
 	}
 
+	cooldown(message) {
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		return 3000;
+	}
+
 	async exec(message, { member }) {
 		if (member.id === message.author.id) return;
 		const restrict = this.client.settings.get(message.guild, 'restrict', []);

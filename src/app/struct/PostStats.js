@@ -1,5 +1,3 @@
-const DBL = require('dblapi.js');
-const dbl = new DBL(process.env.DBL);
 const request = require('request');
 const Logger = require('../util/logger');
 
@@ -16,13 +14,22 @@ class PostStats {
 
 	async post() {
 		// https://discordbots.org
-		dbl.on('error', error => {
-			Logger.error(error.toString(), { level: 'POST STATS (discordbots.org)' });
+		request({
+			headers: {
+				Authorization: process.env.DBL,
+				'Content-Type': 'application/json'
+			},
+			url: `https://discordbots.org/api/bots/${this.client.user.id}/stats`,
+			method: 'POST',
+			form: {
+				server_count: this.client.guilds.size
+			}
+		}, (error, response, body) => {
+			if (error) Logger.warn(error.toString(), { tag: 'POST STATS (discord.bots.gg)' });
 		});
-		dbl.postStats(this.client.guilds.size);
 
 		// https://discord.bots.gg
-		const options = {
+		request({
 			headers: {
 				'Content-Type': 'application/json',
 				Authorization: process.env.DISCORD_BOTS_GG
@@ -32,14 +39,13 @@ class PostStats {
 			json: {
 				guildCount: this.client.guilds.size
 			}
-		};
-		request(options, (error, response, body) => {
+		}, (error, response, body) => {
 			if (error) Logger.warn(error.toString(), { tag: 'POST STATS (discord.bots.gg)' });
 		});
 
 
 		// https://discordbotlist.com
-		const opt = {
+		request({
 			headers: {
 				'Content-Type': 'application/json',
 				Authorization: `Bot ${process.env.DISCORD_BOT_LIST}`
@@ -50,8 +56,7 @@ class PostStats {
 				guilds: this.client.guilds.size,
 				users: this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0)
 			}
-		};
-		request(opt, (error, response, body) => {
+		}, (error, response, body) => {
 			if (error) Logger.warn(error.toString(), { tag: 'POST STATS (discordbotlist.com)' });
 		});
 	}

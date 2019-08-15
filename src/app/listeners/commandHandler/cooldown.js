@@ -22,15 +22,19 @@ class CooldownListener extends Listener {
 			const embed = this.client.util.embed()
 				.setAuthor('Slow it down!')
 				.setColor(0x5970c1)
-				.setFooter('ClashPerk Premium')
 				.setDescription([
 					`You'll be able to use this command again in **${time}**`,
-					`The default cooldown is ${ms(cooldown, { long: true })}, but [donators](https://www.patreon.com/bePatron?u=14584309) only need to wait 1 sec!`,
+					`The default cooldown is ${ms(cooldown, { long: true })}, but [voters](https://discordbots.org/bot/526971716711350273/vote) and [donators](https://www.patreon.com/bePatron?u=14584309) only need to wait ${this.default(command)} sec!`,
 					'',
 					'While you wait, go [vote us](https://discordbots.org/bot/526971716711350273/vote) and check out our [Patreon](https://www.patreon.com/bePatron?u=14584309)'
 				]);
 			return message.channel.send({ embed });
 		}
+	}
+
+	default(command) {
+		if (['start', 'th-compo', 'members-th'].includes(command.id)) return 3;
+		return 1;
 	}
 }
 

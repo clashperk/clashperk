@@ -5,6 +5,7 @@ class MembersCommand extends Command {
 		super('members', {
 			aliases: ['members'],
 			category: 'lookup',
+			cooldown: 0,
 			description: {
 				content: 'List of clan members (--th to view th levels).',
 				usage: '<tag> [th] [th level]',

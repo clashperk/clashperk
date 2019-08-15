@@ -43,10 +43,15 @@ class StartCommand extends Command {
 		return { data, channel, color };
 	}
 
+	cooldown(message) {
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 3000;
+		return 20000;
+	}
+
 	async exec(message, { data, channel, color }) {
-		const clans = await Clans.findAll({ where: { guild: message.guild.id } });
-		const limit = this.client.settings.get(message.guild, 'clanLimit', 3);
-		if (clans.length >= limit) {
+		const clans = await Clans.count({ where: { guild: message.guild.id } });
+		const limit = this.client.patron.guilds.get(message.guild, 'clanLimit', 3);
+		if (clans >= limit) {
 			const embed = this.client.util.embed()
 				.setDescription([
 					'**You have reached to the Maximum Limit**',
@@ -56,6 +61,7 @@ class StartCommand extends Command {
 				.setColor(5861569);
 			return message.util.send({ embed });
 		}
+
 		const clan = await Clans.findOne({
 			where: {
 				guild: message.guild.id, tag: data.tag

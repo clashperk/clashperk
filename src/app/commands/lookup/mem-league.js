@@ -52,6 +52,11 @@ class MembersLeagueCommand extends Command {
 		});
 	}
 
+	cooldown(message) {
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		return 3000;
+	}
+
 	async exec(message, { data }) {
 		const first = this.paginate(data.memberList, 0, 32);
 		const second = this.paginate(data.memberList, 32, 35);

@@ -26,6 +26,11 @@ class DeleteNoteCommand extends Command {
 		});
 	}
 
+	cooldown(message) {
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		return 3000;
+	}
+
 	async exec(message, { data }) {
 		const note = await Notes.findOne({ where: { guild: message.guild.id, tag: data.tag } });
 		if (!note) {

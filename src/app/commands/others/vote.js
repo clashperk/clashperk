@@ -12,7 +12,13 @@ class VoteCommand extends Command {
 		});
 	}
 
+	cooldown(message) {
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		return 3000;
+	}
+
 	exec(message) {
+		this.client.voter.fetchVote(message.author.id);
 		return message.util.send([
 			'**If you want to support ClashPerk, vote for the bot under this link.**',
 			'https://discordbots.org/bot/526971716711350273/vote'

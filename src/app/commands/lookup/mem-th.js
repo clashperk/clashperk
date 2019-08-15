@@ -25,7 +25,6 @@ class MembersTHCommand extends Command {
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
-			cooldown: 20000,
 			args: [
 				{
 					id: 'data',
@@ -41,6 +40,11 @@ class MembersTHCommand extends Command {
 				}
 			]
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 3000;
+		return 20000;
 	}
 
 	async exec(message, { data, th }) {
