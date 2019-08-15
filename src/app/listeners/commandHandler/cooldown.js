@@ -16,7 +16,7 @@ class CooldownListener extends Listener {
 		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		Logger.log(`=> ${command.id} ~ ${time}`, { level });
 
-		const cooldown = typeof command.cooldown === 'function' ? command.cooldown(message) : command.cooldown;
+		const cooldown = typeof command.cooldown === 'function' ? command.cooldown(message) : command.cooldown ? command.cooldown : this.handler.defaultCooldown;
 
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
 			const embed = this.client.util.embed()

@@ -12,7 +12,6 @@ class ErrorListener extends Listener {
 	}
 
 	exec(error, message, command) {
-		console.log(error);
 		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		Logger.error(`${command.id} ~ ${error}`, { level });
 
