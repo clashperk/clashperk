@@ -1,7 +1,7 @@
 const Guilds = require('../models/Guilds');
 const Users = require('../models/Users');
 const PatronUsers = require('../struct/PatronUsers');
-const PatronGuilds = require('../struct/PatronUsers');
+const PatronGuilds = require('../struct/PatronGuilds');
 
 class Patron {
 	constructor(client, {} = {}) {
