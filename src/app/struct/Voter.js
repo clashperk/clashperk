@@ -46,7 +46,7 @@ class Voter {
 			if ((Date.now() - new Date(Number(snapshot.key))) >= 4.32e+7) return;
 			this.store.set(data.user, snapshot.key);
 			if (data.type === 'upvote' && (Date.now() - new Date(Number(snapshot.key))) <= 10000) {
-				this.webhook(snapshot.key, data.id);
+				this.webhook(snapshot.key, data.user);
 				Logger.info(`${snapshot.key} ${JSON.stringify(data)}`, { level: 'UPVOTE' });
 			}
 		});
