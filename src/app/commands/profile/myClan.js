@@ -64,7 +64,7 @@ class MyClanCommand extends Command {
 		}
 
 		const embed = new MessageEmbed()
-			.setAuthor(`${member.user.tag} (${member.user.id})`, member.user.displayAvatarURL())
+			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 			.setColor(0x5970c1)

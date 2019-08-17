@@ -114,7 +114,7 @@ class ProfileCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
-			.setAuthor(`${member.user.tag} (${member.user.id})`, member.user.displayAvatarURL())
+			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`)
 			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`);
