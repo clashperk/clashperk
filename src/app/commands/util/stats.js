@@ -11,16 +11,12 @@ class StatsCommand extends Command {
 		super('stats', {
 			aliases: ['stats', 'bot-info'],
 			category: 'util',
+			cooldown: 1000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Displays statistics about the bot.'
 			}
 		});
-	}
-
-	cooldown(message) {
-		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
-		return 3000;
 	}
 
 	async exec(message) {

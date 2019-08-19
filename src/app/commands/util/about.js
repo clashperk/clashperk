@@ -5,6 +5,7 @@ class AboutCommand extends Command {
 		super('about', {
 			aliases: ['about', 'info', 'donate', 'patreon', 'support'],
 			category: 'util',
+			cooldown: 1000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows information about the bot.' }
 		});

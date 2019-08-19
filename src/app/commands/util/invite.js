@@ -5,6 +5,7 @@ class InviteCommand extends Command {
 		super('invite', {
 			aliases: ['invite'],
 			category: 'util',
+			cooldown: 1000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Displays the bot invite link.' }
 		});
@@ -26,11 +27,6 @@ class InviteCommand extends Command {
 
 		this.invite = invite;
 		return invite;
-	}
-
-	cooldown(message) {
-		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
-		return 3000;
 	}
 
 	async exec(message) {

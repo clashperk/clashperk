@@ -18,6 +18,8 @@ class CooldownListener extends Listener {
 
 		const cooldown = typeof command.cooldown === 'function' ? command.cooldown(message) : command.cooldown ? command.cooldown : this.client.commandHandler.defaultCooldown;
 
+		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true && cooldown <= 1000) return message.channel.send('**You are being Rate Limited!**');
+
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
 			const embed = this.client.util.embed()
 				.setAuthor('Slow it down!')

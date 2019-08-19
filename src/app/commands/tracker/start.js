@@ -50,13 +50,13 @@ class StartCommand extends Command {
 
 	async exec(message, { data, channel, color }) {
 		const clans = await Clans.count({ where: { guild: message.guild.id } });
-		const limit = this.client.patron.guilds.get(message.guild, 'clanLimit', 5);
+		const limit = this.client.patron.guilds.get(message.guild, 'clanLimit', 10);
 		if (clans >= limit) {
 			const embed = this.client.util.embed()
 				.setDescription([
 					'**You have reached to the Maximum Limit**',
 					'',
-					'**[Buy ClashPerk Premium](https://www.patreon.com/bePatron?u=14584309)**'
+					'**[Official Discord](https://discord.gg/ppuppun)**'
 				])
 				.setColor(5861569);
 			return message.util.send({ embed });

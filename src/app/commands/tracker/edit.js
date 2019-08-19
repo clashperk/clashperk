@@ -65,6 +65,11 @@ class EditCommand extends Command {
 		return { clan, color, confirm };
 	}
 
+	cooldown(message) {
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		return 3000;
+	}
+
 	async exec(message, { clan, color }) {
 		await clan.update({ color });
 		this.client.tracker.add(clan.tag, message.guild.id, clan.channel, color);

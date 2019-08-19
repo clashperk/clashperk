@@ -6,6 +6,7 @@ class HelpCommand extends Command {
 			aliases: ['help', 'commands'],
 			category: 'util',
 			clientPermissions: ['EMBED_LINKS'],
+			cooldown: 1000,
 			args: [
 				{
 					id: 'command',
@@ -18,11 +19,6 @@ class HelpCommand extends Command {
 				examples: ['', 'start']
 			}
 		});
-	}
-
-	cooldown(message) {
-		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
-		return 3000;
 	}
 
 	exec(message, { command }) {
