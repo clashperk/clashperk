@@ -44,9 +44,8 @@ class Voter {
 		firebase.ref('votes').on('child_added', snapshot => {
 			const data = snapshot.val();
 			if ((Date.now() - new Date(Number(snapshot.key))) >= 4.32e+7) return;
-			this.store.set(data.user, snapshot.key);
-			if (data.type === 'upvote' && (Date.now() - new Date(Number(snapshot.key))) <= 10000) {
-				this.webhook(snapshot.key, data.user);
+			if (data.type === 'upvote') this.store.set(data.user, snapshot.key);
+			if (data.type === 'upvote' && (Date.now() - new Date(Number(snapshot.key))) <= 60000) {
 				Logger.info(`${snapshot.key} ${JSON.stringify(data)}`, { level: 'UPVOTE' });
 			}
 		});
