@@ -52,7 +52,7 @@ class Client extends AkairoClient {
 					timeout: msg => `${msg.author}, time ran out, command has been cancelled.`,
 					ended: msg => `${msg.author}, too many retries, command has been cancelled.`,
 					cancel: msg => `${msg.author}, command has been cancelled.`,
-					retries: 2,
+					retries: 1,
 					time: 30000
 				}
 			}
@@ -63,6 +63,7 @@ class Client extends AkairoClient {
 		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
 		const STATUS = {
+			0: 'service is temprorarily unavailable.',
 			400: 'client provided incorrect parameters for the request.',
 			403: 'access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
 			404: 'invalid tag, resource was not found.',
@@ -76,8 +77,10 @@ class Client extends AkairoClient {
 			phrase = `#${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(phrase)}`;
 			const res = await fetch(uri, {
-				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
-			});
+				method: 'GET', timeout: 3000, headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			}).catch(() => null);
+
+			if (!res) return Flag.fail(STATUS[0]);
 
 			if (!res.ok) return Flag.fail(STATUS[res.status]);
 			const data = await res.json();
@@ -89,8 +92,10 @@ class Client extends AkairoClient {
 			const tag = `#${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
 			const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`;
 			const res = await fetch(uri, {
-				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
-			});
+				method: 'GET', timeout: 3000, headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			}).catch(() => null);
+
+			if (!res) return Flag.fail(STATUS[0]);
 
 			if (!res.ok) return Flag.fail(STATUS[res.status]);
 			const data = await res.json();
