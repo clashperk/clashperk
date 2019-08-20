@@ -62,6 +62,17 @@ class StartCommand extends Command {
 			return message.util.send({ embed });
 		}
 
+		if (clans >= 10 && !this.client.voter.isVoter(message.author.id)) {
+			const embed = this.client.util.embed()
+				.setDescription([
+					'**You have not Voted!**',
+					'',
+					'**[Vote ClashPerk](https://discordbots.org/bot/526971716711350273/vote)**'
+				])
+				.setColor(5861569);
+			return message.util.send({ embed });
+		}
+
 		const clan = await Clans.findOne({
 			where: {
 				guild: message.guild.id, tag: data.tag
