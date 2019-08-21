@@ -109,7 +109,7 @@ class Voter {
 			.setColor(0x38d863)
 			.setAuthor(`${user.tag}`, user.displayAvatarURL())
 			.setFooter(`Received ${data.earnedXP} XP`)
-			.setkey(Number(key));
+			.setTimestamp(Number(key));
 		return webhook.send({ embeds: [embed] });
 	}
 
