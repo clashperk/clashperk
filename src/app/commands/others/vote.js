@@ -7,7 +7,7 @@ class VoteCommand extends Command {
 			category: 'other',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Gives you the link to vote for ClashPerk.'
+				content: 'Gives you the link to [vote](https://discordbots.org/bot/526971716711350273/vote) for ClashPerk.'
 			}
 		});
 	}
