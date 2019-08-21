@@ -13,7 +13,7 @@ class ReadyListener extends Listener {
 	async exec() {
 		Logger.info(`${this.client.user.tag} (${this.client.user.id})`, { level: 'READY' });
 
-		// this.client.user.setActivity(`@${this.client.user.username} help`);
+		this.voter.init();
 
 		if (this.client.user.id === process.env.CLIENT_ID) {
 			this.client.firebase.init();

@@ -130,7 +130,6 @@ class Client extends AkairoClient {
 		this.voter = new Voter(this);
 
 		await Database.authenticate();
-		await this.voter.init();
 		await this.settings.init();
 		await this.patron.init();
 	}
