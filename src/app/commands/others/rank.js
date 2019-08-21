@@ -1,0 +1,45 @@
+const { Command } = require('discord-akairo');
+
+class RankCommand extends Command {
+	constructor() {
+		super('rank', {
+			aliases: ['rank'],
+			category: 'other',
+			clientPermissions: ['EMBED_LINKS'],
+			description: {
+				content: 'Gives you the link to vote for ClashPerk.'
+			},
+			args: [
+				{
+					id: 'member',
+					type: 'member',
+					default: message => message.member
+				}
+			]
+		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		return 3000;
+	}
+
+	async exec(message, { member }) {
+		if (member.user.bot) {
+			const embed = this.client.util.embed()
+				.setAuthor(member.user.tag, member.user.displayAvatarURL())
+				.setColor(0x5970c1)
+				.setTitle('🏷️ Bots aren\'t invited to Rank Party!');
+			return message.util.send({ embed });
+		}
+		const data = await this.client.voter.get(member.id);
+		const embed = this.client.util.embed()
+			.setAuthor(member.user.tag, member.user.displayAvatarURL())
+			.setColor(0x5970c1)
+			.setTitle(`🏷️ Level ${data.level}`)
+			.setFooter(`🔥 ${data.progress_bar}`);
+		return message.util.send({ embed });
+	}
+}
+
+module.exports = RankCommand;
