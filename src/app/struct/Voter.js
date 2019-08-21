@@ -95,7 +95,7 @@ class Voter {
 	async webhook(key, data) {
 		if (data.webhook_triggered) return;
 
-		const webhook = await this.client.fetchWebhook('611546405277794314').catch(() => null);
+		const webhook = await this.client.fetchWebhook('609244252823748608').catch(() => null);
 		if (!webhook) return Logger.error('Webhook Not Found', { level: 'VOTING WEBHOOK' });
 
 		const user = await this.client.users.fetch(data.user).catch(() => null);
