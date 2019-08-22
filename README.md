@@ -1,18 +1,10 @@
-# ClashPerk
+# ClashPerk [DEPRECATED] <img src="https://i.imgur.com/3Wn8fek.png" width="25%" align="right"></a>
 
-### Tracks your clan donation and shows you information about clans, players and clan wars.
+#### Discord assistant for donation tracking, searching players and clans, current war status, war log, clan war league roster, and much more. For support and questions, join our [Official Discord](https://discord.gg/ppuppun)
 
-## Goals
+## License
 
-- [x] Tracks Donations
-- [ ] Announce Wars
-- [x] Shows players, clans and clan war info.
-- [x] Support Server
-- [ ] Website
-
-# License
-
-> Copyright (c) 2018 - 2019 Suvajit
+> Copyright (c) 2019 SUVAJIT
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy
 > of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +15,3 @@
 >
 > The above copyright notice and this permission notice shall be included in all
 > copies or substantial portions of the Software.
->
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-> AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-> LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-> OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-> SOFTWARE.
