@@ -78,7 +78,7 @@ class Voter {
 	}
 
 	getLevel(xp) {
-		return Math.round(Math.sqrt(Math.floor(xp / 25)));
+		return Math.floor(Math.sqrt(Math.floor(xp / 25)));
 	}
 
 	incoming() {
