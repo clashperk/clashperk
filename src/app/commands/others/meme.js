@@ -22,7 +22,7 @@ class MemeCommand extends Command {
 	async exec(message) {
 		const image = Math.floor(Math.random() * 13) + 1;
 		try {
-			const res = await fetch('https://api.imgur.com/3/gallery/r/ClashOfClansMemes/all', { method: 'GET', headers: { Authorization: `Client-ID ${process.env.IMGUR}` } });
+			const res = await fetch('https://api.imgur.com/3/gallery/r/ClashOfClans/all', { method: 'GET', headers: { Authorization: `Client-ID ${process.env.IMGUR}` } });
 			const data = await res.json();
 			const embed = new MessageEmbed()
 				.setColor(0x5970c1)
