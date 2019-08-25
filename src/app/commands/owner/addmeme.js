@@ -9,7 +9,8 @@ class AddMemeCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			category: 'owner',
 			description: {
-				content: 'Receives random Clash of Clans memes.'
+				content: 'Add meme by url or upload.',
+				usage: '<"title"> <url/upload>'
 			},
 			args: [
 				{
@@ -40,7 +41,6 @@ class AddMemeCommand extends Command {
 
 	async exec(message, { url, title }) {
 		if (message.guild.id !== '524672414261444623') return;
-		// if (!['.png', '.jpg', '.jpeg', '.gif'].includes(path.parse(url.parse(url).path).ext)) return;
 
 		request({
 			url: 'https://api.imgur.com/3/upload',
@@ -63,7 +63,7 @@ class AddMemeCommand extends Command {
 				const embed = this.client.util.embed()
 					.setColor(0x10ffc1)
 					.setAuthor(title)
-					.setTitle(body.data.link)
+					.setTitle(body.data.id)
 					.setURL(body.data.link)
 					.setThumbnail(body.data.link)
 					.setFooter(body.data.deletehash)
