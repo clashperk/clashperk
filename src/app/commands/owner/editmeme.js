@@ -8,6 +8,7 @@ class EditMemeCommand extends Command {
 			aliases: ['edit-meme'],
 			clientPermissions: ['EMBED_LINKS'],
 			category: 'owner',
+			channel: 'guild',
 			description: {
 				content: 'Edits memes by ID.',
 				usage: '<id>'
@@ -55,8 +56,8 @@ class EditMemeCommand extends Command {
 				await firebase.ref('memes').child(data.id).update({ discord_user_id: message.author.id, title });
 				const embed = this.client.util.embed()
 					.setColor(0x10ffc1)
-					.setAuthor(title)
-					.setTitle(data.id)
+					.setAuthor(message.author.tag, message.author.displayAvatarURL())
+					.setTitle(`${title} - ${data.id}`)
 					.setURL(data.link)
 					.setThumbnail(data.link)
 					.setFooter(data.deletehash)

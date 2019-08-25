@@ -8,6 +8,7 @@ class DeleteMemeCommand extends Command {
 			aliases: ['del-meme'],
 			clientPermissions: ['EMBED_LINKS'],
 			category: 'owner',
+			channel: 'guild',
 			description: {
 				content: 'Deletes meme by ID.',
 				usage: '<id>'

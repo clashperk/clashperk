@@ -59,14 +59,15 @@ class AddMemeCommand extends Command {
 			}
 			if (response.statusCode === 200) {
 				const author = { discord_user_id: message.author.id };
-				await firebase.ref('memes').child(body.data.id).update(Object.assign(author, body));
+				const parsed = JSON.parse(body);
+				await firebase.ref('memes').child(parsed.data.id).update(Object.assign(author, parsed.data));
 				const embed = this.client.util.embed()
 					.setColor(0x10ffc1)
-					.setAuthor(title)
-					.setTitle(body.data.id)
-					.setURL(body.data.link)
-					.setThumbnail(body.data.link)
-					.setFooter(body.data.deletehash)
+					.setAuthor(message.author.tag, message.author.displayAvatarURL())
+					.setTitle(`${title} - ${parsed.data.id}`)
+					.setURL(parsed.data.link)
+					.setThumbnail(parsed.data.link)
+					.setFooter(parsed.data.deletehash)
 					.setTimestamp();
 				return message.util.send({ embed });
 			}
