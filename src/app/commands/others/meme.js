@@ -20,19 +20,18 @@ class MemeCommand extends Command {
 	}
 
 	async exec(message) {
-		const image = Math.floor(Math.random() * 13) + 1;
-		try {
-			const res = await fetch('https://api.imgur.com/3/gallery/r/ClashOfClans/all', { method: 'GET', headers: { Authorization: `Client-ID ${process.env.IMGUR}` } });
-			const data = await res.json();
-			const embed = new MessageEmbed()
-				.setColor(0x5970c1)
-				.setTitle(data.data[image].title.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase()))
-				.setURL(data.data[image].link)
-				.setImage(data.data[image].link);
-			return message.channel.send({ embed });
-		} catch (err) {
-			return this.handler.handleDirectCommand(message, '', this.handler.modules.get('meme'), true);
-		}
+		const album = this.client.settings.get('global', 'albumID', process.env.ALBUM_ID);
+		const res = await fetch(`https://api.imgur.com/3/album/${album}/images`, {
+			method: 'GET', headers: { Authorization: `Client-ID ${process.env.IMGUR}` }
+		});
+		const body = await res.json();
+		const image = Math.floor(Math.random() * body.data.length);
+		const embed = new MessageEmbed()
+			.setColor(0x5970c1)
+			.setTitle(body.data[image].title.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase()))
+			.setURL(body.data[image].link)
+			.setImage(body.data[image].link);
+		return message.util.send({ embed });
 	}
 }
 
