@@ -64,11 +64,10 @@ class AddMemeCommand extends Command {
 				const embed = this.client.util.embed()
 					.setColor(0x10ffc1)
 					.setAuthor(message.author.tag, message.author.displayAvatarURL())
-					.setTitle(`${title} - ${parsed.data.id}`)
+					.setTitle(title)
 					.setURL(parsed.data.link)
 					.setThumbnail(parsed.data.link)
-					.setFooter(parsed.data.deletehash)
-					.setTimestamp();
+					.setFooter(parsed.data.id);
 				return message.util.send({ embed });
 			}
 			return message.util.send(JSON.stringify(body), { code: 'json' });

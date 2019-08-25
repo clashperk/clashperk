@@ -15,18 +15,19 @@ class DeleteMemeCommand extends Command {
 			},
 			args: [
 				{
-					id: 'id',
+					id: 'data',
 					type: async (msg, id) => {
 						if (!id) return null;
 						const data = await firebase.ref('memes')
 							.child(id)
 							.once('value')
-							.then(snap => snap.val());
-						if (!data) return null;
-						return data.deletehash;
+							.then(snap => snap.val())
+							.catch(() => null);
+						return data;
 					},
 					prompt: {
-						start: 'what is the id of the image?'
+						start: 'what is the id of the image?',
+						retry: 'ID not found! Please provide a valid ID.'
 					}
 				}
 			]
@@ -43,13 +44,13 @@ class DeleteMemeCommand extends Command {
 		}, async (error, response, body) => {
 			if (error) {
 				console.error(error);
-				return message.util.send(JSON.stringify(error), { code: 'json' });
+				return message.util.send(error, { code: 'json' });
 			}
 			if (response.statusCode === 200) {
 				await firebase.ref('memes').child(data.id).remove();
-				return message.util.send(JSON.stringify(body), { code: 'json' });
+				return message.util.send(body, { code: 'json' });
 			}
-			return message.util.send(JSON.stringify(body), { code: 'json' });
+			return message.util.send(body, { code: 'json' });
 		});
 	}
 }

@@ -50,21 +50,20 @@ class EditMemeCommand extends Command {
 		}, async (error, response, body) => {
 			if (error) {
 				console.error(error);
-				return message.util.send(JSON.stringify(error), { code: 'json' });
+				return message.util.send(error, { code: 'json' });
 			}
 			if (response.statusCode === 200) {
 				await firebase.ref('memes').child(data.id).update({ discord_user_id: message.author.id, title });
 				const embed = this.client.util.embed()
 					.setColor(0x10ffc1)
 					.setAuthor(message.author.tag, message.author.displayAvatarURL())
-					.setTitle(`${title} - ${data.id}`)
+					.setTitle(title)
 					.setURL(data.link)
 					.setThumbnail(data.link)
-					.setFooter(data.deletehash)
-					.setTimestamp();
+					.setFooter(data.id);
 				return message.util.send({ embed });
 			}
-			return message.util.send(JSON.stringify(body), { code: 'json' });
+			return message.util.send(body, { code: 'json' });
 		});
 	}
 }
