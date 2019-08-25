@@ -55,7 +55,7 @@ class AddMemeCommand extends Command {
 		}, async (error, response, body) => {
 			if (error) {
 				console.error(error);
-				return message.util.send(JSON.stringify(error), { code: 'json' });
+				return message.util.send(error, { code: 'json' });
 			}
 			if (response.statusCode === 200) {
 				const author = { discord_user_id: message.author.id };
@@ -70,7 +70,7 @@ class AddMemeCommand extends Command {
 					.setFooter(parsed.data.id);
 				return message.util.send({ embed });
 			}
-			return message.util.send(JSON.stringify(body), { code: 'json' });
+			return message.util.send(body, { code: 'json' });
 		});
 	}
 }
