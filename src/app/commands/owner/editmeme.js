@@ -15,7 +15,7 @@ class EditMemeCommand extends Command {
 			},
 			args: [
 				{
-					id: 'id',
+					id: 'data',
 					type: async (msg, id) => {
 						if (!id) return null;
 						const data = await firebase.ref('memes')
