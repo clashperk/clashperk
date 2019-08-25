@@ -26,7 +26,8 @@ class EditMemeCommand extends Command {
 						return data;
 					},
 					prompt: {
-						start: 'what is the id of the image?'
+						start: 'what is the id of the image?',
+						retry: 'ID not found! Please provide a valid ID.'
 					}
 				},
 				{
@@ -46,7 +47,8 @@ class EditMemeCommand extends Command {
 		request({
 			url: `https://api.imgur.com/3/image/${data.deletehash}`,
 			method: 'POST',
-			headers: { Authorization: `Client-ID ${process.env.IMGUR}` }
+			headers: { Authorization: `Client-ID ${process.env.IMGUR}` },
+			form: { title }
 		}, async (error, response, body) => {
 			if (error) {
 				console.error(error);
