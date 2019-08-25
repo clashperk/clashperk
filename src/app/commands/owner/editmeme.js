@@ -31,7 +31,7 @@ class EditMemeCommand extends Command {
 					}
 				},
 				{
-					id: 'tilte',
+					id: 'title',
 					match: 'rest',
 					prompt: {
 						start: 'what is the new title?'
