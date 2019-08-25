@@ -21,8 +21,8 @@ class EditMemeCommand extends Command {
 						const data = await firebase.ref('memes')
 							.child(id)
 							.once('value')
-							.then(snap => snap.val());
-						if (!data) return null;
+							.then(snap => snap.val())
+							.catch(() => null);
 						return data;
 					},
 					prompt: {
