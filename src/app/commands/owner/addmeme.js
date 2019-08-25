@@ -28,7 +28,7 @@ class AddMemeCommand extends Command {
 						return resolver(msg, str.replace(/<(.+)>/g, '$1'));
 					}, msg => {
 						if (!msg.attachments.size) return null;
-						return msg.attachments.first().url;
+						return { href: msg.attachments.first().url };
 					}),
 					prompt: {
 						start: 'what would you like to post?',
@@ -48,7 +48,7 @@ class AddMemeCommand extends Command {
 			headers: { Authorization: `Client-ID ${process.env.IMGUR}` },
 			form: {
 				type: 'url',
-				image: url,
+				image: url.href,
 				title,
 				album: this.client.settings.get('global', 'deletehash', process.env.IMGUR_DELETEHASH)
 			}
