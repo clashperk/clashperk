@@ -141,7 +141,7 @@ class Client extends AkairoClient {
 	async start(token) {
 		await this.init();
 		await this.login(token);
-		await this.run();
+		this.run();
 	}
 }
 

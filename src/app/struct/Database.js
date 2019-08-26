@@ -31,8 +31,8 @@ class Database {
 			await this.loadModels(path.join(__dirname, '..', 'models'));
 		} catch (err) {
 			Logger.error('UNABLE TO CONNECT TO THE DATABASE INSTANCE', { level: 'POSTGRES' });
-			Logger.info('RECONNECTING AGAIN IN 5 SECONDS', { level: 'POSTGRES' });
-			setTimeout(this.authenticate.bind(this), 5000);
+			Logger.info('RECONNECTING AGAIN IN 10 SECONDS', { level: 'POSTGRES' });
+			setTimeout(this.authenticate.bind(this), 10000);
 		}
 	}
 

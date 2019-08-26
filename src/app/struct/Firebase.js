@@ -4,7 +4,7 @@ const moment = require('moment');
 require('moment-duration-format');
 
 class Firebase {
-	constructor(client, { checkRate = 5 * 60 * 1000 } = {}) {
+	constructor(client, { checkRate = 10000 } = {}) {
 		this.client = client;
 		this.checkRate = checkRate;
 	}
@@ -87,7 +87,7 @@ class Firebase {
 	async stats() {
 		firebase.ref('stats').update({
 			uptime: moment.duration(this.client.uptime).format('D [days], H [hrs], m [mins], s [secs]'),
-			users: this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0),
+			users: this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0) || this.client.user.size,
 			guilds: this.client.guilds.size,
 			channels: this.client.channels.size
 		}, error => {
