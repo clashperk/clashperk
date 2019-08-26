@@ -47,6 +47,7 @@ class CommandStartedListener extends Listener {
 	}
 
 	counter(message, command) {
+		if (command.category.id === 'owner') return;
 		if (this.client.isOwner(message.author.id)) return;
 		this.client.firebase.commandcounter();
 		this.client.firebase.users(message.author.id);

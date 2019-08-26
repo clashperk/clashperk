@@ -59,11 +59,10 @@ class Client extends AkairoClient {
 		});
 
 		this.inhibitorHandler = new InhibitorHandler(this, { directory: path.join(__dirname, '..', 'inhibitors') });
-
 		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
 		const STATUS = {
-			0: 'service is temprorarily unavailable.',
+			100: 'service is temprorarily unavailable.',
 			400: 'client provided incorrect parameters for the request.',
 			403: 'access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
 			404: 'invalid tag, resource was not found.',
@@ -72,31 +71,27 @@ class Client extends AkairoClient {
 			503: 'service is temprorarily unavailable because of maintenance.'
 		};
 
-		this.commandHandler.resolver.addType('player', async (msg, phrase) => {
-			if (!phrase) return null;
-			phrase = `#${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(phrase)}`;
-			const res = await fetch(uri, {
+		this.commandHandler.resolver.addType('player', async (msg, str) => {
+			if (!str) return null;
+			const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
+			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET', timeout: 3000, headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).catch(() => null);
 
-			if (!res) return Flag.fail(STATUS[0]);
-
+			if (!res) return Flag.fail(STATUS[100]);
 			if (!res.ok) return Flag.fail(STATUS[res.status]);
 			const data = await res.json();
 			return data;
 		});
 
-		this.commandHandler.resolver.addType('clan', async (msg, phrase) => {
-			if (!phrase) return null;
-			const tag = `#${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-			const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`;
-			const res = await fetch(uri, {
+		this.commandHandler.resolver.addType('clan', async (msg, str) => {
+			if (!str) return null;
+			const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
+			const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`, {
 				method: 'GET', timeout: 3000, headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).catch(() => null);
 
-			if (!res) return Flag.fail(STATUS[0]);
-
+			if (!res) return Flag.fail(STATUS[100]);
 			if (!res.ok) return Flag.fail(STATUS[res.status]);
 			const data = await res.json();
 			return data;
@@ -134,9 +129,19 @@ class Client extends AkairoClient {
 		await this.patron.init();
 	}
 
+	async run() {
+		if (this.user.id === process.env.CLIENT_ID) {
+			this.firebase.init();
+			this.postStats.init();
+			this.tracker.init();
+			this.voter.init();
+		}
+	}
+
 	async start(token) {
 		await this.init();
-		return this.login(token);
+		await this.login(token);
+		await this.run();
 	}
 }
 

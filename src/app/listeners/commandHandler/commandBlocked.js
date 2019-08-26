@@ -16,7 +16,7 @@ class CommandBlockedListener extends Listener {
 			restrict: () => 'you can\'t use this command because you have been restricted.'
 		}[reason];
 
-		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
+		const level = message.guild ? `${message.guild.name}/${message.channel.id}/${message.author.tag}` : `${message.author.tag}`;
 		Logger.log(`=> ${command.id} ~ ${reason}`, { level });
 
 		if (!text) return;
