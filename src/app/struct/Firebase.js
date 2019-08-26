@@ -87,7 +87,7 @@ class Firebase {
 	async stats() {
 		firebase.ref('stats').update({
 			uptime: moment.duration(this.client.uptime).format('D [days], H [hrs], m [mins], s [secs]'),
-			users: this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0) || this.client.user.size,
+			users: this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0) || this.client.users.size,
 			guilds: this.client.guilds.size,
 			channels: this.client.channels.size
 		}, error => {
