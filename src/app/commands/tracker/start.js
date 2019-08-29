@@ -62,7 +62,7 @@ class StartCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		if (clans >= 3 && (!this.client.voter.isVoter(message.author.id) || !this.client.patron.user.get(message.author, 'patron', false))) {
+		if (clans >= 3 && (!this.client.voter.isVoter(message.author.id) || !this.client.patron.users.get(message.author, 'patron', false))) {
 			const embed = this.client.util.embed()
 				.setDescription([
 					'**You have not Voted!**',
