@@ -36,8 +36,8 @@ class RankCommand extends Command {
 		const embed = this.client.util.embed()
 			.setAuthor(member.user.tag, member.user.displayAvatarURL())
 			.setColor(0x5970c1)
-			.setTitle(`🏷️ Level ${data.level}`)
-			.setFooter(`🔥 ${data.progress_bar}`);
+			.setDescription(`[${data.left.join('')}](${message.url.replace(message.id, '')})${data.right.join('')} \`${data.progress} XP\``)
+			.setTitle(`🏷️ Level ${data.level}`);
 		return message.util.send({ embed });
 	}
 }

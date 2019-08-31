@@ -10,6 +10,12 @@ class Voter {
 		this.timeout = timeout;
 	}
 
+	init() {
+		this.incoming();
+		this.clear();
+		setInterval(this.clear.bind(this), this.timeout);
+	}
+
 	isVoter(user) {
 		if (this.store.has(user)) return true;
 		return false;
@@ -35,12 +41,6 @@ class Voter {
 		return false;
 	}
 
-	init() {
-		this.incoming();
-		this.clear();
-		setInterval(this.clear.bind(this), this.timeout);
-	}
-
 	async count() {
 		const object = await firebase.ref('votes').once('value').then(snap => snap.val());
 		for (const [key, value] of Object.entries(object)) {
@@ -59,26 +59,87 @@ class Voter {
 			.child(user)
 			.once('value')
 			.then(snap => snap.val());
-		if (!data) return { level: 0, xp: 0, oldXP: 0, nextXP: 25, progress: 0, progress_bar: '●━━━━━━━━━━━━━━ 0/25 XP' };
+		if (!data) return { level: 0, progress: '0/100', left: Array(0).fill('▬'), right: Array(14).fill('▬') };
 
-		const xp = this.getXP(data.xp);
-		const level = this.getLevel(data.xp);
+		const xp = Math.floor(data.xp);
+		const { level, remaining } = this.getLevel(xp);
 
-		const oldXP = Math.floor((level / 0.2) ** 2);
-		const nextXP = Math.floor(((level + 1) / 0.2) ** 2);
-		const progress = Math.round(((xp - oldXP) / (nextXP - oldXP)) * 14);
-		const bar = '━━━━━━━━━━━━━━'.split('');
-		const XPs = `${xp >= 1000 ? `${(xp / 1000).toFixed(2)}K` : xp}/${nextXP >= 1000 ? `${(nextXP / 1000).toFixed(2)}K` : nextXP}`;
-		const progress_bar = `${bar.splice(0, progress).join('')}●${bar.splice(progress - 14).join('')} ${XPs} XP`;
-		return { xp, level, oldXP, nextXP, progress, progress_bar };
+		const nextXP = this.nextXP(level);
+		const bar = Math.floor((remaining / nextXP) * 14);
+		const { left, right } = this.progress(bar);
+		const progress = `${remaining >= 1000 ? `${(remaining / 1000).toFixed(2)}K` : remaining}/${nextXP >= 1000 ? `${(nextXP / 1000).toFixed(2)}K` : nextXP}`;
+
+		return { level, progress, left, right };
 	}
 
-	getXP(xp) {
-		return Math.floor(xp);
+	async board() {
+		const data = await firebase.ref('ranks')
+			.once('value')
+			.then(snap => snap.val());
+		const leaderboard = [];
+		for (const [key, value] of this.entries(data)) {
+			if (!this.client.users.has(key)) continue;
+			const { level } = this.getLevel(value.xp);
+			leaderboard.push({ user: key, xp: value.xp, level });
+			if (leaderboard.length === 10) break;
+		}
+
+		return this.sort(leaderboard);
+	}
+
+	async leaderboard() {
+		const embed = new MessageEmbed()
+			.setColor(0x5970c1)
+			.setAuthor('Leaderboard');
+		let index = 0;
+		for (const { user, level, xp } of await this.board()) {
+			embed.addField(`**${++index}**. ${this.client.users.get(user).tag}`, [
+				`${Array(4).fill('\u200b').join(' ')} 🏷️\`LEVEL ${level}\` \\🔥\`EXP ${xp}\``
+			]);
+		}
+
+		return embed;
+	}
+
+	sort(items) {
+		return items.sort((a, b) => b.xp - a.xp);
+	}
+
+	entries(object) {
+		if (!object) return [];
+		return Object.entries(object);
+	}
+
+	progress(num) {
+		return { left: Array(num).fill('▬'), right: Array(14 - num).fill('▬') };
+	}
+
+	oldXP(level) {
+		return Math.floor((5 * (level ** 2)) + (50 * level) + 100);
+	}
+
+	nextXP(level) {
+		return Math.floor((5 * (level ** 2)) + (50 * level) + 100);
+	}
+
+	lvlByXP(xp) {
+		const sqrt = Math.sqrt((50 * 50) - (4 * 5 * (100 - xp)));
+		return Math.floor((-50 + sqrt) / (2 * 5));
 	}
 
 	getLevel(xp) {
-		return Math.floor(Math.sqrt(Math.floor(xp / 25)));
+		let level = 0;
+		for (let i = 0; i <= Infinity; i++) {
+			if ((5 * (i ** 2)) + (50 * i) + 100 > xp) break;
+			xp -= (5 * (i ** 2)) + (50 * i) + 100;
+			level++;
+		}
+
+		return { level, remaining: Math.floor(xp) };
+	}
+
+	getRandom(max, min) {
+		return Math.floor(Math.random() * (max - min)) + Math.floor(min);
 	}
 
 	incoming() {
@@ -117,10 +178,6 @@ class Voter {
 		for (const [key, value] of this.store.entries()) {
 			if ((Date.now() - new Date(Number(value))) >= 4.32e+7) return this.store.delete(key);
 		}
-	}
-
-	getRandom(max, min) {
-		return Math.floor(Math.random() * (max - min)) + Math.floor(min);
 	}
 }
 
