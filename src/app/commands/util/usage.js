@@ -25,13 +25,13 @@ class UsageCommand extends Command {
 			.setFooter('Since August 1, 2019')
 			.setTitle(`${total}x commands used`)
 			.addField('Users', [
-				`\u200b${users.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.users.get(id).tag}\` \u200b\`${uses}x\``).join('\n')}`
+				`\u200b${users.map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.users.get(id).tag}\` \u200b\`${uses}x\``).join('\n')}`
 			])
 			.addField('Servers', [
-				`\u200b${guilds.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.guilds.get(id).name}\` \u200b\`${uses}x\``).join('\n')}`
+				`\u200b${guilds.map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.guilds.get(id).name}\` \u200b\`${uses}x\``).join('\n')}`
 			])
 			.addField('Commands', [
-				`\u200b${commands.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '')}\` \u200b\`${uses}x\``).join('\n')}`
+				`\u200b${commands.map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '')}\` \u200b\`${uses}x\``).join('\n')}`
 			]);
 
 		return message.util.send({ embed });
@@ -44,6 +44,7 @@ class UsageCommand extends Command {
 		for (const [key, value] of Object.entries(data)) {
 			if (!this.client.users.has(key)) continue;
 			users.push({ uses: value, id: key });
+			if (users.length === 10) break;
 		}
 
 		return this.sort(users);
@@ -56,6 +57,7 @@ class UsageCommand extends Command {
 		for (const [key, value] of Object.entries(data)) {
 			if (!this.client.guilds.has(key)) continue;
 			guilds.push({ uses: value, id: key });
+			if (guilds.length === 10) break;
 		}
 
 		return this.sort(guilds);
@@ -68,6 +70,7 @@ class UsageCommand extends Command {
 		for (const [key, value] of Object.entries(data)) {
 			if (!this.client.commandHandler.modules.get(key) || !this.client.commandHandler.modules.get(key).aliases.length) continue;
 			commands.push({ uses: value, id: key });
+			if (commands.length === 10) break;
 		}
 
 		return { commands: this.sort(commands), total: this.total(commands) };
