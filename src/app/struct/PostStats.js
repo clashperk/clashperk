@@ -25,7 +25,7 @@ class PostStats {
 				server_count: this.client.guilds.size
 			}
 		}, (error, response, body) => {
-			if (error) Logger.warn(error.toString(), { tag: 'POST STATS (discord.bots.gg)' });
+			if (error) Logger.error(error.toString(), { level: 'https://discord.bots.gg' });
 		});
 
 		// https://discord.bots.gg
@@ -40,7 +40,7 @@ class PostStats {
 				guildCount: this.client.guilds.size
 			}
 		}, (error, response, body) => {
-			if (error) Logger.warn(error.toString(), { tag: 'POST STATS (discord.bots.gg)' });
+			if (error) Logger.error(error, { level: 'https://discord.bots.gg' });
 		});
 
 
@@ -57,7 +57,7 @@ class PostStats {
 				users: this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0)
 			}
 		}, (error, response, body) => {
-			if (error) Logger.warn(error.toString(), { tag: 'POST STATS (discordbotlist.com)' });
+			if (error) Logger.error(error, { level: 'https://discordbotlist.com' });
 		});
 	}
 }
