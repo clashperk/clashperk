@@ -4,10 +4,11 @@ const Logger = require('../util/logger');
 const { MessageEmbed } = require('discord.js');
 
 class Voter {
-	constructor(client, { timeout = 30 * 60 * 1000 } = {}) {
+	constructor(client, { timeout = 30 * 60 * 1000, webhook = '611560024895913985' } = {}) {
 		this.client = client;
 		this.store = new Map();
 		this.timeout = timeout;
+		this.webhook = webhook;
 	}
 
 	init() {
@@ -148,15 +149,15 @@ class Voter {
 			if ((Date.now() - new Date(Number(snapshot.key))) >= 4.32e+7) return;
 			if (data.type === 'upvote') {
 				this.store.set(data.user, snapshot.key);
-				this.webhook(snapshot.key, data);
+				this.send(snapshot.key, data);
 			}
 		});
 	}
 
-	async webhook(key, data) {
+	async send(key, data) {
 		if (data.webhook_triggered) return;
 
-		const webhook = await this.client.fetchWebhook('611560024895913985').catch(() => null);
+		const webhook = await this.client.fetchWebhook(this.webhook).catch(() => null);
 		if (!webhook) return Logger.error('Webhook Not Found', { level: 'VOTING WEBHOOK' });
 
 		const user = await this.client.users.fetch(data.user).catch(() => null);
