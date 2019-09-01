@@ -3,7 +3,7 @@ const Logger = require('../util/logger');
 const Users = require('../models/Users');
 const PatronUsers = require('../struct/PatronUsers');
 const PatronGuilds = require('../struct/PatronGuilds');
-const { firebase } = require('../struct/Database');
+const { firebase, firestore } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 
 class Patron {
@@ -52,10 +52,22 @@ class Patron {
 		if (user) Logger.info(user.tag, { level: 'PATRON' });
 
 		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
+		await firestore.collection('patreon')
+			.doc(patron_user.id)
+			.update({
+				patron: {
+					name: patron_user.attributes.full_name,
+					id: patron_user.id
+				},
+				discord: {
+					id: discord_id
+				},
+				createdAt: attributes.pledge_relationship_start || new Date()
+			}, { merge: true });
 
 		const embed = new MessageEmbed()
 			.setColor(0xf96854)
-			.setTimestamp();
+			.setTimestamp(attributes.pledge_relationship_start);
 		if (user) embed.setAuthor(`${user.tag} (${user.id})`, user.displayAvatarURL());
 		embed.addField('Patron', `${patron_user.attributes.full_name} (${patron_user.id})`)
 			.addField('Entitled Amount', [
@@ -79,6 +91,18 @@ class Patron {
 		if (user) Logger.info(user.tag, { level: 'PATRON' });
 
 		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
+		await firestore.collection('petreon')
+			.doc(patron_user.id)
+			.update({
+				patron: {
+					user: patron_user.attributes.full_name,
+					id: patron_user.id
+				},
+				discord: {
+					id: discord_id
+				},
+				createdAt: patron_user.pledge_relationship_start || new Date()
+			}, { merge: true });
 
 		const embed = new MessageEmbed()
 			.setColor(0x38d863)

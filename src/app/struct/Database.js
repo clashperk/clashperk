@@ -24,6 +24,10 @@ class Database {
 		return firebaseApp.database();
 	}
 
+	static get firestore() {
+		return firebaseApp.firestore();
+	}
+
 	static async authenticate() {
 		try {
 			await db.authenticate();
