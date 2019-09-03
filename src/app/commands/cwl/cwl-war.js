@@ -75,7 +75,8 @@ class CwlWarComamnd extends Command {
 						`${data.clan.name}`,
 						`${this.count(data.clan.members)}`,
 						'',
-						`${data.opponent.name}``${this.count(data.opponent.name)}`
+                        `${data.opponent.name}`,
+                        `${this.count(data.opponent.name)}`
 					]);
 			}
 		}
