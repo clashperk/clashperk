@@ -75,7 +75,7 @@ class CwlWarComamnd extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1);
 		const rounds = round ? body.rounds[round - 1].warTags : body.rounds.filter(d => !d.warTags.includes('#0')).pop().warTags;
-		for (const tag of body.rounds.filter(d => !d.warTags.includes('#0')).pop().warTags) {
+		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			});
