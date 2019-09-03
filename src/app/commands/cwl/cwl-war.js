@@ -70,7 +70,6 @@ class CwlWarComamnd extends Command {
 			});
 			const data = await res.json();
 			if ((data.clan && data.clan.tag === clantag) || (data.opponent && data.opponent.tag === clantag)) {
-				console.log('00', await this.count(data.clan.members));
 				new Date(moment(data.warStartTime).toDate()).getTime();
 				embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
 					.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
@@ -78,10 +77,10 @@ class CwlWarComamnd extends Command {
 					.addField('Team Size', `${data.teamSize} vs ${data.teamSize}`)
 					.addField('Rosters', [
 						`${data.clan.name}`,
-						`${await this.count(data.clan.members)}`,
+						await this.count(data.clan.members),
 						'',
 						`${data.opponent.name}`,
-						`${await this.count(data.opponent.name)}`
+						await this.count(data.opponent.name)
 					]);
 			}
 		}
@@ -102,10 +101,9 @@ class CwlWarComamnd extends Command {
 		let TH02 = 0;
 		let TH01 = 0;
 		for (const member of members) {
-            console.log(member)
-			const TownHAll = member.townHallLevel;
-			if (TownHAll === 12) TH12++;
-			if (TownHAll === 11) TH11++;
+            const TownHAll = member.townhallLevel;
+			if (TownHAll === 12) ++TH12;
+			if (TownHAll === 11) ++TH11;
 			if (TownHAll === 10) TH10++;
 			if (TownHAll === 9) TH09++;
 			if (TownHAll === 8) TH08++;
@@ -116,7 +114,7 @@ class CwlWarComamnd extends Command {
 			if (TownHAll === 3) TH03++;
 			if (TownHAll === 2) TH02++;
 			if (TownHAll === 1) TH01++;
-		}
+        }
 		const data = oneLine`
             ${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12} `} ` : ''}
             ${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`} ` : ''}
@@ -130,7 +128,6 @@ class CwlWarComamnd extends Command {
             ${TH03 > 0 ? `${TownHallEmoji[3]} ${TH03 < 10 ? `0${TH03}` : `${TH03}`} ` : ''}
             ${TH02 > 0 ? `${TownHallEmoji[2]} ${TH02 < 10 ? `0${TH02}` : `${TH02}`} ` : ''}
             ${TH01 > 0 ? `${TownHallEmoji[1]} ${TH01 < 10 ? `0${TH01}` : `${TH01}`} ` : ''}`;
-		console.log('data', TH12, TH11, TH10);
 		return data;
 	}
 }
