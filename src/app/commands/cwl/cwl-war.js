@@ -61,18 +61,19 @@ class CwlWarComamnd extends Command {
 		return this.rounds(message, body, data.tag, embed);
 	}
 
-	async rounds(message, body, clantag, oldembed) {
-        let embed;
+	async rounds(message, body, clantag) {
+        const embed = new MessageEmbed()
+            .setColor(0x5970c1);
 		for (const tag of body.rounds.filter(d => !d.warTags.includes('#0')).pop().warTags) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			});
-			const data = await res.json();
+            const data = await res.json();
+            console.log(this.count(data.clan.members))
 			if ((data.clan && data.clan.tag === clantag) || (data.opponent && data.opponent.tag === clantag)) {
-                console.log(data)
                 new Date(moment(data.warStartTime).toDate()).getTime();
-                embed = new MessageEmbed(oldembed)
-				    .addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
+                embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+                    .addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
 					.addField('State', data.state)
 					.addField('Team Size', `${data.teamSize} vs ${data.teamSize}`)
 					.addField('Rosters', [
