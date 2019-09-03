@@ -61,15 +61,18 @@ class CwlWarComamnd extends Command {
 		return this.rounds(message, body, embed);
 	}
 
-	async rounds(message, body, embed) {
+	async rounds(message, body, oldembed) {
+        let embed;
 		for (const tag of body.rounds.filter(d => !d.warTags.includes('#0')).pop().warTags) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			});
 			const data = await res.json();
 			if ((data.clan && data.clan.tag === data.tag) || (data.opponent && data.opponent.tag === data.tag)) {
-				new Date(moment(data.warStartTime).toDate()).getTime();
-				embed.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
+                console.log(data)
+                new Date(moment(data.warStartTime).toDate()).getTime();
+                embed = new MessageEmbed(oldembed)
+				    .addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
 					.addField('State', data.state)
 					.addField('Team Size', `${data.teamSize} vs ${data.teamSize}`)
 					.addField('Rosters', [
