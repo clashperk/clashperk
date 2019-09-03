@@ -42,6 +42,7 @@ class CwlWarComamnd extends Command {
 	}
 
 	async exec(message, { data }) {
+        await message.util.send('**Fetching data... <a:loading:538989228403458089>**')
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
 			method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
@@ -70,17 +71,17 @@ class CwlWarComamnd extends Command {
 			});
 			const data = await res.json();
 			if ((data.clan && data.clan.tag === clantag) || (data.opponent && data.opponent.tag === clantag)) {
-				new Date(moment(data.warStartTime).toDate()).getTime();
+				// new Date(moment(data.warStartTime).toDate()).getTime();
 				embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
 					.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
 					.addField('State', data.state)
 					.addField('Team Size', `${data.teamSize} vs ${data.teamSize}`)
 					.addField('Rosters', [
-						`${data.clan.name}`,
+						`**${data.clan.name}**`,
 						await this.count(data.clan.members),
 						'',
-						`${data.opponent.name}`,
-						await this.count(data.opponent.name)
+						`**${data.opponent.name}**`,
+						await this.count(data.opponent.members)
 					]);
 			}
 		}
