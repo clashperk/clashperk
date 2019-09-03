@@ -62,26 +62,26 @@ class CwlWarComamnd extends Command {
 	}
 
 	async rounds(message, body, clantag) {
-        const embed = new MessageEmbed()
-            .setColor(0x5970c1);
+		const embed = new MessageEmbed()
+			.setColor(0x5970c1);
 		for (const tag of body.rounds.filter(d => !d.warTags.includes('#0')).pop().warTags) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			});
-            const data = await res.json();
+			const data = await res.json();
 			if ((data.clan && data.clan.tag === clantag) || (data.opponent && data.opponent.tag === clantag)) {
-                console.log('00', await this.count(data.clan.members))
-                new Date(moment(data.warStartTime).toDate()).getTime();
-                embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
-                    .addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
+				console.log('00', await this.count(data.clan.members));
+				new Date(moment(data.warStartTime).toDate()).getTime();
+				embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
+					.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
 					.addField('State', data.state)
 					.addField('Team Size', `${data.teamSize} vs ${data.teamSize}`)
 					.addField('Rosters', [
 						`${data.clan.name}`,
 						`${await this.count(data.clan.members)}`,
 						'',
-                        `${data.opponent.name}`,
-                        `${await this.count(data.opponent.name)}`
+						`${data.opponent.name}`,
+						`${await this.count(data.opponent.name)}`
 					]);
 			}
 		}
@@ -100,7 +100,7 @@ class CwlWarComamnd extends Command {
 		let TH04 = 0;
 		let TH03 = 0;
 		let TH02 = 0;
-        let TH01 = 0;
+		let TH01 = 0;
 		for (const member of members) {
 			const TownHAll = member.townHallLevel;
 			if (TownHAll === 12) TH12++;
@@ -129,8 +129,8 @@ class CwlWarComamnd extends Command {
             ${TH03 > 0 ? `${TownHallEmoji[3]} ${TH03 < 10 ? `0${TH03}` : `${TH03}`} ` : ''}
             ${TH02 > 0 ? `${TownHallEmoji[2]} ${TH02 < 10 ? `0${TH02}` : `${TH02}`} ` : ''}
             ${TH01 > 0 ? `${TownHallEmoji[1]} ${TH01 < 10 ? `0${TH01}` : `${TH01}`} ` : ''}`;
-        console.log('data', data);
-        return data;
+		console.log('data', TH12, TH11, TH10);
+		return data;
 	}
 }
 
