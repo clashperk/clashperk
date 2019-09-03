@@ -1,4 +1,4 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 const fetch = require('node-fetch');
 const moment = require('moment');
 const { oneLine } = require('common-tags');
@@ -24,25 +24,34 @@ class CwlWarComamnd extends Command {
 			aliases: ['cwl-war'],
 			category: 'cwl',
 			description: {
-				content: '',
-				usage: '',
-				examples: []
+				content: 'Shows info about current cwl war.',
+				usage: '<tag>',
+				examples: ['#8QU8J9LP']
 			},
-			args: [
-				{
-					id: 'data',
-					type: 'clan',
-					prompt: {
-						start: 'what would you like to search for?',
-						retry: (msg, { failure }) => failure.value
-					}
-				}
-			]
+			optionFlags: ['--round', '-r']
 		});
 	}
 
-	async exec(message, { data }) {
-        await message.util.send('**Fetching data... <a:loading:538989228403458089>**')
+	*args() {
+		const round = yield {
+			match: 'option',
+			flag: ['--round', '-r'],
+			type: Argument.range('integer', 1, 8, true)
+		};
+
+		const data = yield {
+			type: 'clan',
+			prompt: {
+				start: 'what would you like to search for?',
+				retry: (msg, { failure }) => failure.value
+			}
+		};
+
+		return { data, round };
+	}
+
+	async exec(message, { data, round }) {
+		await message.util.send('**Fetching data... <a:loading:538989228403458089>**');
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
 			method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
@@ -59,30 +68,56 @@ class CwlWarComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data.tag, embed);
+		return this.rounds(message, body, data.tag, round);
 	}
 
-	async rounds(message, body, clantag) {
+	async rounds(message, body, clantag, round) {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1);
+		const rounds = round ? body.rounds[round - 1].warTags : body.rounds.filter(d => !d.warTags.includes('#0')).pop().warTags;
 		for (const tag of body.rounds.filter(d => !d.warTags.includes('#0')).pop().warTags) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			});
 			const data = await res.json();
 			if ((data.clan && data.clan.tag === clantag) || (data.opponent && data.opponent.tag === clantag)) {
-				// new Date(moment(data.warStartTime).toDate()).getTime();
 				embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
 					.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
 					.addField('State', data.state)
-					.addField('Team Size', `${data.teamSize} vs ${data.teamSize}`)
-					.addField('Rosters', [
-						`**${data.clan.name}**`,
-						await this.count(data.clan.members),
-						'',
-						`**${data.opponent.name}**`,
-						await this.count(data.opponent.members)
-					]);
+					.addField('Team Size', `${data.teamSize} vs ${data.teamSize}`);
+				if (data.state === 'warEnded') {
+					const end = new Date(moment(data.endTime).toDate()).getTime();
+					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+						.addField('Stats', [
+							`**${data.clan.name}**`,
+							`\\⭐ ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% \\⚔ ${data.clan.attacks}`,
+							'',
+							`**${data.opponent.name}**`,
+							`\\⭐ ${data.opponent.stars} \\🔥 ${data.opponent.destructionPercentage.toFixed(2)}% \\⚔ ${data.opponent.attacks}`
+						]);
+				}
+				if (data.state === 'inWar') {
+					const started = new Date(moment(data.startTime).toDate()).getTime();
+					embed.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+						.addField('Stats', [
+							`**${data.clan.name}**`,
+							`\\⭐ ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% \\⚔ ${data.clan.attacks}`,
+							'',
+							`**${data.opponent.name}**`,
+							`\\⭐ ${data.opponent.stars} \\🔥 ${data.opponent.destructionPercentage.toFixed(2)}% \\⚔ ${data.opponent.attacks}`
+						]);
+				}
+				if (data.state === 'preparation') {
+					const start = new Date(moment(data.startTime).toDate()).getTime();
+					embed.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
+				}
+				embed.addField('Rosters', [
+					`**${data.clan.name}**`,
+					await this.count(data.clan.members),
+					'',
+					`**${data.opponent.name}**`,
+					await this.count(data.opponent.members)
+				]);
 			}
 		}
 		return message.util.send({ embed });
@@ -102,7 +137,7 @@ class CwlWarComamnd extends Command {
 		let TH02 = 0;
 		let TH01 = 0;
 		for (const member of members) {
-            const TownHAll = member.townhallLevel;
+			const TownHAll = member.townhallLevel;
 			if (TownHAll === 12) ++TH12;
 			if (TownHAll === 11) ++TH11;
 			if (TownHAll === 10) TH10++;
@@ -115,7 +150,7 @@ class CwlWarComamnd extends Command {
 			if (TownHAll === 3) TH03++;
 			if (TownHAll === 2) TH02++;
 			if (TownHAll === 1) TH01++;
-        }
+		}
 		const data = oneLine`
             ${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12} `} ` : ''}
             ${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`} ` : ''}
