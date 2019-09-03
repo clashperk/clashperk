@@ -2,6 +2,7 @@ const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
 const moment = require('moment');
 const { oneLine } = require('common-tags');
+const { MessageEmbed } = require('discord.js');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -80,7 +81,6 @@ class CwlWarComamnd extends Command {
 					]);
 			}
 		}
-		embed = this.client.util.embed(embed);
 		return message.util.send({ embed });
 	}
 
