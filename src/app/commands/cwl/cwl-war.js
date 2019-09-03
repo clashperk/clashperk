@@ -69,10 +69,10 @@ class CwlWarComamnd extends Command {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			});
             const data = await res.json();
-            console.log(this.count(data.clan.members))
+            console.log('00', this.count(data.clan.members))
 			if ((data.clan && data.clan.tag === clantag) || (data.opponent && data.opponent.tag === clantag)) {
                 new Date(moment(data.warStartTime).toDate()).getTime();
-                embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+                embed.setAuthor(`${data.name} (${data.tag})`, data.clan.badgeUrls.medium)
                     .addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
 					.addField('State', data.state)
 					.addField('Team Size', `${data.teamSize} vs ${data.teamSize}`)
@@ -100,7 +100,8 @@ class CwlWarComamnd extends Command {
 		let TH04 = 0;
 		let TH03 = 0;
 		let TH02 = 0;
-		let TH01 = 0;
+        let TH01 = 0;
+        console.log(members)
 		for (const member of members) {
 			const TownHAll = member.townHallLevel;
 			if (TownHAll === 12) TH12++;
