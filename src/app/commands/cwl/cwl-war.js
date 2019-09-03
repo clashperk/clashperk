@@ -102,6 +102,7 @@ class CwlWarComamnd extends Command {
 		let TH02 = 0;
 		let TH01 = 0;
 		for (const member of members) {
+            console.log(member)
 			const TownHAll = member.townHallLevel;
 			if (TownHAll === 12) TH12++;
 			if (TownHAll === 11) TH11++;
