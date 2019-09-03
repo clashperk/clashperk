@@ -69,10 +69,10 @@ class CwlWarComamnd extends Command {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			});
             const data = await res.json();
-            console.log('00', await this.count(data.clan.members))
 			if ((data.clan && data.clan.tag === clantag) || (data.opponent && data.opponent.tag === clantag)) {
+                console.log('00', await this.count(data.clan.members))
                 new Date(moment(data.warStartTime).toDate()).getTime();
-                embed.setAuthor(`${data.name} (${data.tag})`, data.clan.badgeUrls.medium)
+                embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
                     .addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
 					.addField('State', data.state)
 					.addField('Team Size', `${data.teamSize} vs ${data.teamSize}`)
@@ -116,7 +116,7 @@ class CwlWarComamnd extends Command {
 			if (TownHAll === 2) TH02++;
 			if (TownHAll === 1) TH01++;
 		}
-		return oneLine`
+		const data = oneLine`
             ${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12} `} ` : ''}
             ${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`} ` : ''}
             ${TH10 > 0 ? `${TownHallEmoji[10]} ${TH10 < 10 ? `0${TH10}` : `${TH10}`} ` : ''}
@@ -129,6 +129,8 @@ class CwlWarComamnd extends Command {
             ${TH03 > 0 ? `${TownHallEmoji[3]} ${TH03 < 10 ? `0${TH03}` : `${TH03}`} ` : ''}
             ${TH02 > 0 ? `${TownHallEmoji[2]} ${TH02 < 10 ? `0${TH02}` : `${TH02}`} ` : ''}
             ${TH01 > 0 ? `${TownHallEmoji[1]} ${TH01 < 10 ? `0${TH01}` : `${TH01}`} ` : ''}`;
+        console.log('data', data);
+        return data;
 	}
 }
 
