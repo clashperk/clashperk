@@ -8,20 +8,11 @@ class PingCommand extends Command {
 			cooldown: 1000,
 			description: {
 				content: 'Pings me!'
-			},
-			args: [
-				{
-					id: 'member',
-					type: (msg, str) => {
-						const resolver = this.handler.resolver.type('guildMember')(msg, str);
-						console.log(resolver);
-					}
-				}
-			]
+			}
 		});
 	}
 
-	async exec(message, { member }) {
+	async exec(message) {
 		const msg = await message.util.send('Pinging~');
 		// eslint-disable-next-line max-len
 		const latency = (msg.editedTimestamp || msg.createdTimestamp) - (message.editedTimestamp || message.createdTimestamp);
