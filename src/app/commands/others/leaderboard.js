@@ -29,8 +29,8 @@ class LeaderboardCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor('Leaderboard');
-		let index = 0;
 		const leaderboard = await this.leaderboard(page);
+		let index = (leaderboard.page - 1) * 10;
 		for (const { user, level, xp } of leaderboard.items) {
 			embed.addField(`**${++index}**. ${this.client.users.get(user).tag}`, [
 				`${Array(4).fill('\u200b').join(' ')} 🏷️\`LEVEL ${level}\` \\🔥\`EXP ${xp}\``
