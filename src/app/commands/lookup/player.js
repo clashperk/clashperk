@@ -85,7 +85,7 @@ class PlayerCommand extends Command {
 							.then(snap => snap.data());
 						if (!data) return null;
 						if (!data[msg.guild.id]) return null;
-						return fetch.player(data);
+						return fetch.player(data[msg.guild.id].tag);
 					},
 					prompt: {
 						start: 'what would you like to search for?',
