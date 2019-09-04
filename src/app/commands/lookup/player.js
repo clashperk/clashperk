@@ -89,7 +89,7 @@ class PlayerCommand extends Command {
 					},
 					prompt: {
 						start: 'what would you like to search for?',
-						retry: (msg, { failure }) => failure.value
+						retry: 'what would you like to search for?'
 					}
 				}
 			]
