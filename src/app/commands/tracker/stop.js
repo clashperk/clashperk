@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Clans = require('../../models/Clans');
+const { firestore } = require('../../struct/Database');
 
 class StopCommand extends Command {
 	constructor() {
@@ -16,12 +16,13 @@ class StopCommand extends Command {
 			args: [
 				{
 					id: 'clan',
-					type: async (msg, phrase) => {
-						if (!phrase) return null;
-						const tag = `#${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-						const data = await Clans.findOne({ where: { guild: msg.guild.id, tag } });
+					type: async (msg, str) => {
+						if (!str) return null;
+						const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
+						const ref = await firestore.collection('tracking_clans').doc(`${msg.guild.id}${tag}`);
+						const data = await ref.get().then(snap => snap.data());
 						if (!data) return null;
-						return data;
+						return { name: data.name, tag: data.tag, ref };
 					},
 					prompt: {
 						start: 'what is the clan tag?',
@@ -39,7 +40,7 @@ class StopCommand extends Command {
 
 	async exec(message, { clan }) {
 		this.client.tracker.delete(message.guild.id, clan.tag);
-		await clan.destroy();
+		await clan.ref.delete();
 		return message.util.send({
 			embed: {
 				title: `Successfully deleted **${clan.name} (${clan.tag})**`,

@@ -11,7 +11,8 @@ class ErrorListener extends Listener {
 		});
 	}
 
-	exec(error, message, command) {
+	async exec(error, message, command) {
+		console.log(error);
 		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		Logger.error(`${command.id} ~ ${error}`, { level });
 
@@ -46,12 +47,27 @@ class ErrorListener extends Listener {
 		captureException(error);
 
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
-			return message.channel.send([
+			await message.channel.send([
 				`${this.client.emojis.get('545968755423838209')} Something went wrong, report us!`,
 				`${this.client.emojis.get('609271613740941313')} https://discord.gg/ppuppun`,
 				`\`\`\`${error.toString()}\`\`\``
 			]);
 		}
+
+		const webhook = await this.client.fetchWebhook('618710060973031424').catch(() => null);
+		if (!webhook) return Logger.log('WEBHOOK NOT FOUND');
+
+		const embed = this.client.util.embed()
+			.setTimestamp()
+			.setColor(0xf30c11)
+			.setAuthor('ClashPerk - Error');
+		if (message.guild) embed.addField('Guild', `${message.guild.name} (${message.guild.id})`);
+		if (message.author) embed.addField('Author', `${message.author.tag} (${message.author.id})`);
+		if (command) embed.addField('Command', `\`${command.id}\``);
+		if (message) embed.addField('Message', [`ID: ${message.id}`, `Content: \`${message.content}\``]);
+		embed.addField('Error', `\`\`\`js\n${error}\n\`\`\``);
+
+		return webhook.send({ embeds: [embed] });
 	}
 }
 

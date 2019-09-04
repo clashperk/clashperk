@@ -1,6 +1,6 @@
 const env = require('dotenv');
 env.config();
-const Client = require('./app/client/client');
+const Client = require('./app/client/ClashPerk');
 const Logger = require('./app/util/logger');
 const Sentry = require('@sentry/node');
 const { name: environment, version: release } = require('../package.json');

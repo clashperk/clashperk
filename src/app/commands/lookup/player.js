@@ -2,6 +2,7 @@ const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const Notes = require('../../models/Notes');
 const moment = require('moment');
+const { firestore } = require('../../struct/Database');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -143,17 +144,26 @@ class PlayerCommand extends Command {
 		});
 		if (heroLevels) embed.addField('Heroes', heroLevels);
 
-		const playerNote = await Notes.findOne({ where: { guild: message.guild.id, tag: data.tag } });
-		if (playerNote) {
-			const user = this.client.users.get(playerNote.user);
+
+		const body = await this.note(message, data.tag);
+		if (body) {
+			const user = this.client.users.get(body.user);
 			embed.addField('Note', [
-				playerNote.note,
+				body.note,
 				'',
-				`**${user ? user.tag : playerNote.user}** created on **${moment(playerNote.createdAt).format('MMMM D, YYYY, hh:mm')}**`
+				`**${user ? user.tag : body.user}** created on **${moment(body.createdAt).format('MMMM D, YYYY, hh:mm')}**`
 			]);
 		}
 
 		return message.util.send({ embed });
+	}
+
+	async note(message, tag) {
+		const data = await firestore.collection('player_notes')
+			.doc(`${message.guild.id}${tag}`)
+			.get()
+			.then(snap => snap.data());
+		return data;
 	}
 
 	bestTrophies(data) {

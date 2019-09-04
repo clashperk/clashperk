@@ -1,5 +1,6 @@
 const { Command } = require('discord-akairo');
-const Profile = require('../../models/Profile');
+const { firestore } = require('../../struct/Database');
+const firebase = require('firebase-admin');
 
 class UnlinkCommand extends Command {
 	constructor() {
@@ -37,24 +38,55 @@ class UnlinkCommand extends Command {
 	}
 
 	async exec(message, { type, member }) {
-		const profile = await Profile.findOne({
-			where: {
-				guild: message.guild.id,
-				user: member.id
-			}
-		});
-
 		if (type === 'profile') {
-			if (!profile || (profile && !profile.tag)) return message.util.reply(`couldn\'t find a player linked to ${member.user.tag}`);
-			await profile.update({ tag: null });
+			const deleted = await this.delPlayer(message, member);
+			if (!deleted) return message.util.reply(`couldn\'t find a player linked to ${member.user.tag}`);
 		}
 
 		if (type === 'clan') {
-			if (!profile || (profile && !profile.clan_tag)) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
-			await profile.update({ clan_tag: null });
+			const deleted = await this.delClan(message, member);
+			if (!deleted) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
 		}
 
 		return message.util.send(`successfully unlinked your ${type}`);
+	}
+
+	async delPlayer(message, member) {
+		const batch = firestore.batch();
+		const deleted = await firestore.collection('linked_players')
+			.doc(member.id)
+			.get()
+			.then(snap => {
+				const data = snap.data();
+				if (data && data[message.guild.id]) {
+					batch.update(snap.ref, {
+						[message.guild.id]: firebase.firestore.FieldValue.delete()
+					}, { merge: true });
+					batch.commit();
+					return true;
+				}
+				return false;
+			});
+		return deleted;
+	}
+
+	async delClan(message, member) {
+		const batch = firestore.batch();
+		const deleted = await firestore.collection('linked_clans')
+			.doc(member.id)
+			.get()
+			.then(snap => {
+				const data = snap.data();
+				if (data && data[message.guild.id]) {
+					batch.update(snap.ref, {
+						[message.guild.id]: firebase.firestore.FieldValue.delete()
+					}, { merge: true });
+					batch.commit();
+					return true;
+				}
+				return false;
+			});
+		return deleted;
 	}
 }
 module.exports = UnlinkCommand;

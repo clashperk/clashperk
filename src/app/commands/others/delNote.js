@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Notes = require('../../models/Notes');
+const { firestore } = require('../../struct/Database');
 
 class DeleteNoteCommand extends Command {
 	constructor() {
@@ -32,11 +32,10 @@ class DeleteNoteCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		const note = await Notes.findOne({ where: { guild: message.guild.id, tag: data.tag } });
-		if (!note) {
-			return message.util.send(`Could not find any note for ${data.name} (${data.tag})`);
-		}
-		await note.destroy();
+		await firestore.collection('player_notes')
+			.doc(`${message.guild.id}${data.tag}`)
+			.delete();
+
 		return message.util.send(`Note deleted for **${data.name} (${data.tag})**`);
 	}
 }

@@ -32,6 +32,11 @@ class CwlWarComamnd extends Command {
 		});
 	}
 
+	cooldown(message) {
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 2000;
+		return 15000;
+	}
+
 	*args() {
 		const round = yield {
 			match: 'option',
@@ -84,7 +89,7 @@ class CwlWarComamnd extends Command {
 				embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
 					.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
 					.addField('State', data.state)
-					.addField('Team Size', `${data.teamSize} vs ${data.teamSize}`);
+					.addField('Team Size', `${data.teamSize}`);
 				if (data.state === 'warEnded') {
 					const end = new Date(moment(data.endTime).toDate()).getTime();
 					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)

@@ -1,5 +1,4 @@
 const { Command } = require('discord-akairo');
-const Logger = require('../../util/logger');
 
 class ReloadCommand extends Command {
 	constructor() {

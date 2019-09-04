@@ -1,6 +1,6 @@
 const { Listener } = require('discord-akairo');
-const Clans = require('../../models/Clans');
 const Logger = require('../../util/logger');
+const { firestore } = require('../../struct/Database');
 
 class GuildDeleteListener extends Listener {
 	constructor() {
@@ -14,11 +14,7 @@ class GuildDeleteListener extends Listener {
 	async exec(guild) {
 		Logger.log(`${guild.name} (${guild.id})`, { level: 'GUILD_DELETE' });
 
-		for (const { id, tag } of await Clans.findAll({ where: { guild: guild.id } })) {
-			this.client.tracker.delete(id, tag);
-		}
-
-		await Clans.destroy({ where: { guild: guild.id } });
+		await this.delete(guild);
 
 		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
 		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'webhook', undefined)).catch(() => null);
@@ -32,6 +28,21 @@ class GuildDeleteListener extends Listener {
 
 			return webhook.send({ embeds: [embed] });
 		}
+	}
+
+	async delete(guild) {
+		const batch = firestore.batch();
+		const deleted = await firestore.collection('tracking_clans')
+			.where('guild', '==', guild.id)
+			.get()
+			.then(snapstot => {
+				snapstot.forEach(doc => {
+					this.client.tracker.delete(guild.id, doc.data().tag);
+					batch.delete(doc.ref);
+				});
+				return batch.commit() && snapstot.size;
+			});
+		return deleted;
 	}
 }
 

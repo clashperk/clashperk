@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Notes = require('../../models/Notes');
+const { firestore } = require('../../struct/Database');
 
 class AddNoteCommand extends Command {
 	constructor() {
@@ -23,7 +23,7 @@ class AddNoteCommand extends Command {
 					}
 				},
 				{
-					id: 'note',
+					id: 'text',
 					match: 'rest',
 					prompt: {
 						start: 'what would you like add?'
@@ -38,19 +38,18 @@ class AddNoteCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, note }) {
-		if (note.length > 900) return message.util.send('note has limit of 1000 characters!');
-		const previous = await Notes.findOne({ where: { guild: message.guild.id, tag: data.tag } });
-		if (previous) {
-			await previous.update({ user: message.author.id, tag: data.tag });
-			return message.util.send(`Note updated for ${data.name} (${data.tag})`);
-		}
-		await Notes.create({
-			guild: message.guild.id,
-			user: message.author.id,
-			tag: data.tag,
-			note
-		});
+	async exec(message, { data, text }) {
+		if (text.length > 900) return message.util.send('note has limit of 1000 characters!');
+		await firestore.collection('player_notes')
+			.doc(`${message.guild.id}${data.tag}`)
+			.update({
+				guild: message.guild.id,
+				user: message.author.id,
+				tag: data.tag,
+				note: text,
+				createdAt: new Date()
+			});
+
 		return message.util.send(`Note created for **${data.name} (${data.tag})**`);
 	}
 }

@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Profile = require('../../models/Profile');
+const { firestore } = require('../../struct/Database');
 
 class LinkPlayerCommand extends Command {
 	constructor() {
@@ -37,24 +37,17 @@ class LinkPlayerCommand extends Command {
 	}
 
 	async exec(message, { data, member }) {
-		const profile = await Profile.findOne({
-			where: {
-				guild: member.guild.id,
-				user: member.id
-			}
-		});
-
-		if (profile) {
-			await profile.update({ tag: data.tag, name: data.name });
-			return message.util.send(`Successfully linked **${member.user.tag}** to *${data.name} (${data.tag})*`);
-		}
-
-		await Profile.create({
-			guild: message.guild.id,
-			user: member.id,
-			tag: data.tag,
-			name: data.name
-		});
+		await firestore.collection('linked_players')
+			.doc(member.id)
+			.update({
+				[message.guild.id]: {
+					guild: message.guild.id,
+					user: member.id,
+					tag: data.tag,
+					name: data.name,
+					createdAt: new Date()
+				}
+			}, { merge: true });
 
 		return message.util.send(`Successfully linked **${member.user.tag}** to *${data.name} (${data.tag})*`);
 	}

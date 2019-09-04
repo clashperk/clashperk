@@ -1,4 +1,4 @@
-const { Command, Argument } = require('discord-akairo');
+const { Command } = require('discord-akairo');
 const request = require('request');
 const { firebase } = require('../../struct/Database');
 

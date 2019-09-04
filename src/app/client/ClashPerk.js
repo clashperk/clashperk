@@ -1,6 +1,6 @@
 const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
-const SettingsProvider = require('../struct/SettingsProviders');
-const Settings = require('../models/Settings');
+const Settings = require('../struct/SettingsProvider');
+const { firestore } = require('../struct/Database');
 const path = require('path');
 const Database = require('../struct/Database');
 const Tracker = require('../struct/Tracker');
@@ -10,7 +10,7 @@ const Voter = require('../struct/Voter');
 const PostStats = require('../struct/PostStats');
 const Firebase = require('../struct/Firebase');
 
-class Client extends AkairoClient {
+class ClashPerk extends AkairoClient {
 	constructor(config) {
 		super({ ownerID: config.owner }, {
 			messageCacheMaxSize: 50,
@@ -38,7 +38,7 @@ class Client extends AkairoClient {
 		this.commandHandler = new CommandHandler(this, {
 			directory: path.join(__dirname, '..', 'commands'),
 			aliasReplacement: /-/g,
-			prefix: message => this.settings.get(message.guild, 'prefix', '*'),
+			prefix: message => this.settings.get(message.guild, 'prefix', 'cp!'),
 			allowMention: true,
 			commandUtil: true,
 			commandUtilLifetime: 3e5,
@@ -117,7 +117,7 @@ class Client extends AkairoClient {
 		this.inhibitorHandler.loadAll();
 		this.listenerHandler.loadAll();
 
-		this.settings = new SettingsProvider(Settings);
+		this.settings = new Settings(firestore.collection('settings'));
 		this.postStats = new PostStats(this);
 		this.tracker = new Tracker(this);
 		this.firebase = new Firebase(this);
@@ -145,4 +145,4 @@ class Client extends AkairoClient {
 	}
 }
 
-module.exports = Client;
+module.exports = ClashPerk;

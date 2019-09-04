@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Clans = require('../../models/Clans');
+const { firestore } = require('../../struct/Database');
 
 class StopAllCommand extends Command {
 	constructor() {
@@ -39,22 +39,31 @@ class StopAllCommand extends Command {
 		if (!confirm) {
 			return message.util.reply('command has been cancelled.');
 		}
-		const clans = await Clans.findAll({ where: { guild: message.guild.id } });
+		const clans = await this.delete(message);
 
 		if (!clans) return message.util.reply(`no clans found! ${this.client.emojis.get('545968755423838209')}`);
 
-		for (const clan of clans) {
-			this.client.tracker.delete(message.guild.id, clan.tag);
-		}
-
-		await Clans.destroy({ where: { guild: message.guild.id } });
-
 		return message.util.send({
 			embed: {
-				title: `Successfully deleted ${clans.length} clans ${this.client.emojis.get('545874377523068930')}`,
+				title: `Successfully deleted ${clans} clans ${this.client.emojis.get('545874377523068930')}`,
 				color: 5861569
 			}
 		});
+	}
+
+	async delete(message) {
+		const batch = firestore.batch();
+		const clans = await firestore.collection('tracking_clans')
+			.where('guild', '==', message.guild.id)
+			.get()
+			.then(snapshot => {
+				snapshot.forEach(doc => {
+					this.client.tracker.delete(message.guild.id, doc.data().tag);
+					batch.delete(doc.ref);
+				});
+				return batch.commit() && snapshot.size;
+			});
+		return clans;
 	}
 }
 

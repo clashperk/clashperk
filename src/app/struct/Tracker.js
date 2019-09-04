@@ -1,7 +1,7 @@
 const Logger = require('../util/logger');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
-const Clans = require('../models/Clans');
+const { firestore } = require('../struct/Database');
 
 const donateList = [];
 
@@ -48,9 +48,14 @@ class Tracker {
 	}
 
 	async load() {
-		for (const data of await Clans.findAll({ where: { tracking: true } })) {
-			this.add(data.tag, data.guild, data.channel, data.color);
-		}
+		await firestore.collection('tracking_clans')
+			.get()
+			.then(snapshot => {
+				snapshot.forEach(doc => {
+					const data = doc.data();
+					this.add(data.tag, data.guild, data.channel, data.color);
+				});
+			});
 	}
 
 	add(tag, guild, channel, color) {
@@ -65,9 +70,10 @@ class Tracker {
 
 	delete(guild, tag) {
 		this.cached.delete(`${guild}${tag}`);
+		delete donateList[`${guild}${tag}`];
 	}
 
-	track(clan, channel, color) {
+	track(clan, color, channel, guild) {
 		let donated = '';
 		let received = '';
 		let clanInfo;
@@ -76,18 +82,18 @@ class Tracker {
 		let league;
 
 		for (const member of clan.memberList) {
-			if (`${channel.id}${member.tag}` in donateList) {
+			if (`${guild}${member.tag}` in donateList) {
 				clanInfo = `${clan.name} (${clan.tag})`;
 				badge = clan.badgeUrls.large;
 				members = clan.members;
 				league = leagueStrings[member.league.id];
-				const donations = member.donations - donateList[`${channel.id}${member.tag}`].donations;
+				const donations = member.donations - donateList[`${guild}${member.tag}`].donations;
 				if (donations) {
-					donated += `${league} **${member.name}** (${member.tag}) : ${donations} \n`;
+					donated += `${league} **${member.name}** (${member.tag}) : ${Math.abs(donations)} \n`;
 				}
-				const receives = member.donationsReceived - donateList[`${channel.id}${member.tag}`].donationsReceived;
+				const receives = member.donationsReceived - donateList[`${guild}${member.tag}`].donationsReceived;
 				if (receives) {
-					received += `${league} **${member.name}** (${member.tag}) : ${receives} \n`;
+					received += `${league} **${member.name}** (${member.tag}) : ${Math.abs(receives)} \n`;
 				}
 			}
 		}
@@ -110,7 +116,7 @@ class Tracker {
 		}
 
 		for (const member of clan.memberList) {
-			donateList[`${channel.id}${member.tag}`] = member;
+			donateList[`${guild}${member.tag}`] = member;
 		}
 	}
 
@@ -118,7 +124,7 @@ class Tracker {
 		for (const clan of this.cached.values()) {
 			if (this.client.channels.has(clan.channel)) {
 				const channel = this.client.channels.get(clan.channel);
-
+				// check client permissions
 				if (channel.permissionsFor(channel.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'], false)) {
 					const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(clan.tag)}`, {
 						method: 'GET',
@@ -126,20 +132,22 @@ class Tracker {
 							Accept: 'application/json',
 							authorization: `Bearer ${process.env.TRACKER_API}`,
 							'cache-control': 'no-cache'
-						}
-					});
+						},
+						timeout: 3000
+					}).catch(() => null);
 
+					if (!res) continue;
 					if (!res.ok) continue;
 
 					const data = await res.json();
 
-					this.track(data, channel, clan.color);
+					this.track(data, clan.color, channel, clan.guild);
 				}
 			} else {
 				Logger.warn(`Channel: ${clan.channel}`, { level: 'Missing Channel' });
 				this.delete(clan.guild, clan.tag);
 				if (this.client.user.id === process.env.CLIENT_ID) {
-					await Clans.destroy({ where: { channel: clan.channel } });
+					await firestore.collection('tracking_clans').doc(`${clan.guild}${clan.tag}`).delete();
 				}
 			}
 

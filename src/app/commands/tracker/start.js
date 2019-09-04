@@ -1,6 +1,6 @@
 const { Command } = require('discord-akairo');
-const Clans = require('../../models/Clans');
 const { MessageEmbed } = require('discord.js');
+const { firestore } = require('../../struct/Database');
 
 class StartCommand extends Command {
 	constructor() {
@@ -49,14 +49,14 @@ class StartCommand extends Command {
 	}
 
 	async exec(message, { data, channel, color }) {
-		const clans = await Clans.count({ where: { guild: message.guild.id } });
+		const clans = await this.count(message);
 		const limit = this.client.patron.guilds.get(message.guild, 'clanLimit', 5);
 		if (clans >= limit) {
 			const embed = this.client.util.embed()
 				.setDescription([
 					'**You have reached to the Maximum Limit**',
 					'',
-					'**[Official Discord](https://discord.gg/ppuppun)**'
+					'**[Buy ClashPerk Premium](https://patreon.com/clashperk)**'
 				])
 				.setColor(5861569);
 			return message.util.send({ embed });
@@ -73,28 +73,17 @@ class StartCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const clan = await Clans.findOne({
-			where: {
-				guild: message.guild.id, tag: data.tag
-			}
-		});
-
-		if (clan) {
-			await clan.update({
-				channel: channel.id,
-				color,
-				user: message.author.tag
-			});
-		} else {
-			await Clans.create({
+		await firestore.collection('tracking_clans')
+			.doc(`${message.guild.id}${data.tag}`)
+			.update({
 				tag: data.tag,
 				name: data.name,
 				color,
-				user: message.author.tag,
+				user: message.author.id,
 				channel: channel.id,
-				guild: message.guild.id
-			});
-		}
+				guild: message.guild.id,
+				createdAt: new Date()
+			}, { merge: true });
 
 		this.client.tracker.add(data.tag, message.guild.id, channel.id, color);
 
@@ -103,6 +92,14 @@ class StartCommand extends Command {
 			.setDescription(`Started tracking in ${channel} (${channel.id})`)
 			.setColor(color);
 		return message.util.send({ embed });
+	}
+
+	async count(message) {
+		const clans = await firestore.collection('tracking_clans')
+			.where('guild', '==', message.guild.id)
+			.get()
+			.then(snap => snap.size);
+		return clans;
 	}
 }
 

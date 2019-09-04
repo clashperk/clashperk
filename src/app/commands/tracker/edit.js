@@ -1,6 +1,6 @@
 const { Command } = require('discord-akairo');
-const { MessageEmbed, Flag } = require('discord.js');
-const Clans = require('../../models/Clans');
+const { MessageEmbed } = require('discord.js');
+const { firestore } = require('../../struct/Database');
 
 class EditCommand extends Command {
 	constructor() {
@@ -20,12 +20,13 @@ class EditCommand extends Command {
 
 	*args() {
 		const clan = yield {
-			type: async (msg, phrase) => {
-				if (!phrase) return null;
-				const tag = `#${phrase.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-				const data = await Clans.findOne({ where: { guild: msg.guild.id, tag } });
+			type: async (msg, str) => {
+				if (!str) return null;
+				const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
+				const ref = await firestore.collection('tracking_clans').doc(`${msg.guild.id}${tag}`);
+				const data = await ref.get().then(snap => snap.data());
 				if (!data) return null;
-				return data;
+				return { name: data.name, tag: data.tag, ref };
 			},
 			prompt: {
 				start: 'what is the clan tag?',
@@ -71,7 +72,7 @@ class EditCommand extends Command {
 	}
 
 	async exec(message, { clan, color }) {
-		await clan.update({ color });
+		await clan.ref.update({ color }, { merge: true });
 		this.client.tracker.add(clan.tag, message.guild.id, clan.channel, color);
 		return message.util.send(`Color updated for **${clan.name} (${clan.tag})**`);
 	}

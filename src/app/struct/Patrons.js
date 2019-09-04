@@ -1,8 +1,5 @@
-const Guilds = require('../models/Guilds');
 const Logger = require('../util/logger');
-const Users = require('../models/Users');
-const PatronUsers = require('../struct/PatronUsers');
-const PatronGuilds = require('../struct/PatronGuilds');
+const { Users, Guilds } = require('./PatreonProvider');
 const { firebase, firestore } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 
@@ -10,8 +7,8 @@ class Patron {
 	constructor(client, { webhook = '612211124556791808' } = {}) {
 		this.client = client;
 		this.webhook = webhook;
-		this.users = new PatronUsers(Users);
-		this.guilds = new PatronGuilds(Guilds);
+		this.users = new Users(firestore.collection('patron_users'));
+		this.guilds = new Guilds(firestore.collection('patron_guilds'));
 	}
 
 	async init() {

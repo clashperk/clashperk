@@ -1,6 +1,6 @@
 const { Command } = require('discord-akairo');
-const Clans = require('../../models/Clans');
 const { MessageEmbed } = require('discord.js');
+const { firestore } = require('../../struct/Database');
 
 class TrackingCommand extends Command {
 	constructor() {
@@ -34,7 +34,7 @@ class TrackingCommand extends Command {
 	}
 
 	async exec(message, { guild }) {
-		const data = await Clans.findAll({ where: { guild: guild.id } });
+		const data = await this.findAll(guild);
 		if (data) {
 			const embed = new MessageEmbed()
 				.setColor(0x5970c1)
@@ -47,6 +47,19 @@ class TrackingCommand extends Command {
 			embed.setFooter(`Tracking ${data.length} ${data.length > 1 || data.length === 0 ? 'clans' : 'clan'}`);
 			return message.util.send({ embed });
 		}
+	}
+
+	async findAll(guild) {
+		const clans = [];
+		await firestore.collection('tracking_clans')
+			.where('guild', '==', guild.id)
+			.get()
+			.then(snapshot => {
+				snapshot.forEach(doc => {
+					clans.push(doc.data());
+				});
+			});
+		return clans;
 	}
 }
 

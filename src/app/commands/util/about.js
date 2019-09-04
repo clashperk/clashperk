@@ -16,12 +16,12 @@ class AboutCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`About ${this.client.user.username}`, this.client.user.displayAvatarURL())
-			.addField('Developer', `**[${owner.tag}](https://github.com/csuvajit)**`, true)
+			.addField('Developer', `[${owner.tag}](https://github.com/csuvajit)`, true)
 			.addField('Library', '[discord.js#master](https://discord.js.org)', true)
 			.addField('Support', '[Official Discord](https://discord.gg/ppuppun)', true)
 			.addField('Website', '[Guide](https://clashperk.xyz)', true)
 			.addField('Host', '[Google Cloud](https://console.cloud.google.com)', true)
-			.addField('Donate', '**[Patreon](https://www.patreon.com/bePatron?u=14584309)**', true)
+			.addField('Donate', '[Patreon](https://www.patreon.com/bePatron?u=14584309)', true)
 			.setFooter(`© 2019 ${owner.tag}`, owner.displayAvatarURL());
 		return message.util.send({ embed });
 	}

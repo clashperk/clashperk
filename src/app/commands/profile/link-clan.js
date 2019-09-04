@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const Profile = require('../../models/Profile');
+const { firestore } = require('../../struct/Database');
 
 class LinkClanCommand extends Command {
 	constructor() {
@@ -37,27 +37,20 @@ class LinkClanCommand extends Command {
 	}
 
 	async exec(message, { data, member }) {
-		const profile = await Profile.findOne({
-			where: {
-				guild: member.guild.id,
-				user: member.id
-			}
-		});
-
-		if (profile) {
-			await profile.update({ clan_tag: data.tag, clan_name: data.name });
-			return message.util.send(`Successfully linked **${member.user.tag}** to *${data.name} (${data.tag})*`);
-		}
-
-		await Profile.create({
-			guild: message.guild.id,
-			user: member.id,
-			clan_tag: data.tag,
-			clan_name: data.name
-		});
+		await firestore.collection('linked_clans')
+			.doc(member.id)
+			.update({
+				[message.guild.id]: {
+					guild: message.guild.id,
+					user: member.id,
+					tag: data.tag,
+					name: data.name,
+					createdAt: new Date()
+				}
+			}, { merge: true });
 
 		return message.util.send(`Successfully linked **${member.user.tag}** to *${data.name} (${data.tag})*`);
 	}
 }
-
+// firebase.firestore.FieldValue.arrayUnion(message.guild.id)
 module.exports = LinkClanCommand;

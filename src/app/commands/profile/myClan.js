@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
-const Profile = require('../../models/Profile');
+const { firestore } = require('../../struct/Database');
 
 const STATUS = {
 	400: 'client provided incorrect parameters for the request.',
@@ -39,16 +39,10 @@ class MyClanCommand extends Command {
 	}
 
 	async exec(message, { member }) {
-		const profile = await Profile.findOne({
-			where: {
-				guild: message.guild.id,
-				user: member.id
-			}
-		});
+		const snap = await this.get(message, member);
+		if (!snap) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
 
-		if (!profile || (profile && !profile.clan_tag)) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
-
-		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(profile.clan_tag)}`;
+		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(snap.tag)}`;
 		const res = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` } });
 		const data = await res.json();
 
@@ -82,6 +76,14 @@ class MyClanCommand extends Command {
 			.addField('Description', data.description ? data.description : '\u200b');
 
 		return message.util.send({ embed });
+	}
+
+	async get(message, member) {
+		const data = await firestore.collection('linked_clans')
+			.doc(member.id)
+			.get()
+			.then(snap => snap.data());
+		return data && data[message.guild.id] ? data[message.guild.id] : null;
 	}
 }
 
