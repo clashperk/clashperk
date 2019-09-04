@@ -12,9 +12,9 @@ class ErrorListener extends Listener {
 	}
 
 	async exec(error, message, command) {
-		console.log(error);
 		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		Logger.error(`${command.id} ~ ${error}`, { level });
+		Logger.stacktrace(error);
 
 		addBreadcrumb({
 			message: 'command_errored',
@@ -64,7 +64,7 @@ class ErrorListener extends Listener {
 		if (message.guild) embed.addField('Guild', `${message.guild.name} (${message.guild.id})`);
 		if (message.author) embed.addField('Author', `${message.author.tag} (${message.author.id})`);
 		if (command) embed.addField('Command', `\`${command.id}\``);
-		if (message) embed.addField('Message', [`ID: ${message.id}`, `Content: \`${message.content}\``]);
+		if (message) embed.addField(`Message (${message.id})`, `\`${message.content}\``);
 		embed.addField('Error', `\`\`\`js\n${error}\n\`\`\``);
 
 		return webhook.send({ embeds: [embed] });
