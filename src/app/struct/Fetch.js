@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const { STATUS } = require('../util/constants');
+const { status } = require('../util/constants');
 
 class Fetch {
 	static async player(str) {
@@ -8,8 +8,8 @@ class Fetch {
 			method: 'GET', timeout: 3000, headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 		}).catch(() => null);
 
-		if (!res) return { status: 504, error: STATUS[504] };
-		if (!res.ok) return { status: res.status || 504, error: STATUS[res.status || 504] };
+		if (!res) return { status: 504, error: status(504) };
+		if (!res.ok) return { status: res.status || 504, error: status(res.status || 504) };
 		const data = await res.json();
 		return this.assign(200, data);
 	}
@@ -20,8 +20,8 @@ class Fetch {
 			method: 'GET', timeout: 3000, headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 		}).catch(() => null);
 
-		if (!res) return { status: 504, error: STATUS[504] };
-		if (!res.ok) return { status: res.status || 504, error: STATUS[res.status || 504] };
+		if (!res) return { status: 504, error: status(504) };
+		if (!res.ok) return { status: res.status || 504, error: status(res.status || 504) };
 		const data = await res.json();
 		return this.assign(200, data);
 	}

@@ -72,7 +72,7 @@ const STATUS = {
 class ProfileCommand extends Command {
 	constructor() {
 		super('profile', {
-			aliases: ['profile'],
+			aliases: ['profile', 'myplayer'],
 			category: 'profile',
 			channel: 'guild',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],

@@ -1,7 +1,8 @@
 const { Command, Flag, Argument } = require('discord-akairo');
-const fetch = require('../../struct/Fetch');
+const Fetch = require('../../struct/Fetch');
+const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
-const { reply } = require('../../util/constants');
+const { geterror, fetcherror } = require('../../util/constants');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -36,8 +37,8 @@ class MembersTHCommand extends Command {
 				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
 				if (!resolver && !str) return null;
 				if (!resolver && str) {
-					return fetch.clan(str).then(data => {
-						if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+					return Fetch.clan(str).then(data => {
+						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 						return data;
 					});
 				}
@@ -45,10 +46,10 @@ class MembersTHCommand extends Command {
 					.doc(resolver.id)
 					.get()
 					.then(snap => snap.data());
-				if (!data) return msg.util.send({ embed: reply(msg, resolver, 'clan') }) && Flag.cancel();
-				if (!data[msg.guild.id]) return msg.util.send({ embed: reply(msg, resolver, 'clan') }) && Flag.cancel();
-				return fetch.clan(data[msg.guild.id].tag).then(data => {
-					if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+				if (!data) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
+				if (!data[msg.guild.id]) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
+				return Fetch.clan(data[msg.guild.id].tag).then(data => {
+					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 					return data;
 				});
 			},

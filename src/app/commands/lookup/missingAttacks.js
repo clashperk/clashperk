@@ -5,7 +5,7 @@ const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const moment = require('moment');
 require('moment-duration-format');
-const { reply } = require('../../util/constants');
+const { geterror, fetcherror } = require('../../util/constants');
 
 class MissingAttacksCommand extends Command {
 	constructor() {
@@ -28,7 +28,7 @@ class MissingAttacksCommand extends Command {
 				if (!resolver && !str) return null;
 				if (!resolver && str) {
 					return Fetch.clan(str).then(data => {
-						if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 						return data;
 					});
 				}
@@ -36,10 +36,10 @@ class MissingAttacksCommand extends Command {
 					.doc(resolver.id)
 					.get()
 					.then(snap => snap.data());
-				if (!data) return msg.util.send({ embed: reply(msg, resolver, 'clan') }) && Flag.cancel();
-				if (!data[msg.guild.id]) return msg.util.send({ embed: reply(msg, resolver, 'clan') }) && Flag.cancel();
+				if (!data) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
+				if (!data[msg.guild.id]) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
 				return Fetch.clan(data[msg.guild.id].tag).then(data => {
-					if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 					return data;
 				});
 			},

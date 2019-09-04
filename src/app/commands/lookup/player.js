@@ -3,7 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const moment = require('moment');
 const { firestore } = require('../../struct/Database');
 const Fetch = require('../../struct/Fetch');
-const { reply } = require('../../util/constants');
+const { geterror, fetcherror } = require('../../util/constants');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -83,7 +83,7 @@ class PlayerCommand extends Command {
 				if (!resolver && !str) return null;
 				if (!resolver && str) {
 					return Fetch.player(str).then(data => {
-						if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 						return data;
 					});
 				}
@@ -91,10 +91,10 @@ class PlayerCommand extends Command {
 					.doc(resolver.id)
 					.get()
 					.then(snap => snap.data());
-				if (!data) return msg.util.send({ embed: reply(msg, resolver, 'player') }) && Flag.cancel();
-				if (!data[msg.guild.id]) return msg.util.send({ embed: reply(msg, resolver, 'clan') }) && Flag.cancel();
+				if (!data) return msg.util.send({ embed: geterror(resolver, 'player') }) && Flag.cancel();
+				if (!data[msg.guild.id]) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
 				return Fetch.player(data[msg.guild.id].tag).then(data => {
-					if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 					return data;
 				});
 			},
@@ -112,7 +112,7 @@ class PlayerCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		if (data.status !== 200) return message.util.reply(`${data.error}`);
+		if (data.status !== 200) return message.util.send({ embed: fetcherror(data.status) });
 
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
