@@ -14,8 +14,9 @@ module.exports = {
 	reply: (message, member, type) => {
 		const embed = new MessageEmbed()
 			.setAuthor('Error')
+			.setColor(0xf30c11)
 			.setDescription([
-				`Could not find a ${type} linked to **${member.user.tag}!**`,
+				`Couldn't find a ${type} linked to **${member.user.tag}!**`,
 				`Either provide a tag or link a ${type} to your Discord.`
 			]);
 		return embed;

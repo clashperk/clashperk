@@ -2,6 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
+const { reply } = require('../../util/constants');
 
 const HeroEmojis = {
 	'Barbarian King': '<:barbarianking:524939911581663242>',
@@ -79,8 +80,8 @@ class UnitsCommand extends Command {
 					.doc(resolver.id)
 					.get()
 					.then(snap => snap.data());
-				if (!data) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
-				if (!data[msg.guild.id]) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
+				if (!data) return msg.util.send({ embed: reply(msg, resolver, 'player') }) && Flag.cancel();
+				if (!data[msg.guild.id]) return msg.util.send({ embed: reply(msg, resolver, 'clan') }) && Flag.cancel();
 				return Fetch.player(data[msg.guild.id].tag).then(data => {
 					if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
 					return data;

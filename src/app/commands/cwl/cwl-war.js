@@ -1,8 +1,10 @@
-const { Command, Argument } = require('discord-akairo');
+const { Command, Argument, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const moment = require('moment');
 const { oneLine } = require('common-tags');
 const { MessageEmbed } = require('discord.js');
+const { reply } = require('../../util/constants');
+const { firestore } = require('../../struct/Database');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -45,10 +47,29 @@ class CwlWarComamnd extends Command {
 		};
 
 		const data = yield {
-			type: 'clan',
+			type: async (msg, str) => {
+				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
+				if (!resolver && !str) return null;
+				if (!resolver && str) {
+					return fetch.clan(str).then(data => {
+						if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+						return data;
+					});
+				}
+				const data = await firestore.collection('linked_clans')
+					.doc(resolver.id)
+					.get()
+					.then(snap => snap.data());
+				if (!data) return msg.util.send({ embed: reply(msg, resolver, 'clan') }) && Flag.cancel();
+				if (!data[msg.guild.id]) return msg.util.send({ embed: reply(msg, resolver, 'clan') }) && Flag.cancel();
+				return fetch.clan(data[msg.guild.id].tag).then(data => {
+					if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+					return data;
+				});
+			},
 			prompt: {
 				start: 'what would you like to search for?',
-				retry: (msg, { failure }) => failure.value
+				retry: 'what would you like to search for?'
 			}
 		};
 

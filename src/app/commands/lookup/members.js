@@ -1,4 +1,4 @@
-const { Command, Flag } = require('discord-akairo');
+const { Command } = require('discord-akairo');
 
 class MembersCommand extends Command {
 	constructor() {
