@@ -73,10 +73,6 @@ class Voter {
 		return { level, progress, left, right };
 	}
 
-	sort(items) {
-		return items.sort((a, b) => b.xp - a.xp);
-	}
-
 	entries(object) {
 		if (!object) return [];
 		return Object.entries(object);

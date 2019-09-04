@@ -50,6 +50,10 @@ class LeaderboardCommand extends Command {
 		if (!object) return [];
 		return Object.entries(object);
 	}
+
+	sort(items) {
+		return items.sort((a, b) => b.xp - a.xp);
+	}
 }
 
 module.exports = LeaderboardCommand;
