@@ -71,29 +71,30 @@ class PlayerCommand extends Command {
 				content: 'Clash of clans player lookup commnad.',
 				usage: '<#tag>',
 				examples: ['#9Q92C8R20']
-			},
-			args: [
-				{
-					id: 'data',
-					type: async (msg, str) => {
-						const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
-						if (!resolver && !str) return null;
-						if (!resolver && str) return fetch.player(str);
-						const data = await firestore.collection('linked_players')
-							.doc(resolver.id)
-							.get()
-							.then(snap => snap.data());
-						if (!data) return null;
-						if (!data[msg.guild.id]) return null;
-						return fetch.player(data[msg.guild.id].tag);
-					},
-					prompt: {
-						start: 'what would you like to search for?',
-						retry: 'what would you like to search for?'
-					}
-				}
-			]
+			}
 		});
+	}
+
+	*args() {
+		const data = yield {
+			type: async (msg, str) => {
+				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
+				if (!resolver && !str) return null;
+				if (!resolver && str) return fetch.player(str);
+				const data = await firestore.collection('linked_players')
+					.doc(resolver.id)
+					.get()
+					.then(snap => snap.data());
+				if (!data) return null;
+				if (!data[msg.guild.id]) return null;
+				return fetch.player(data[msg.guild.id].tag);
+			},
+			prompt: {
+				start: 'what would you like to search for?',
+				retry: 'what would you like to search for?'
+			}
+		};
+		return { data };
 	}
 
 	cooldown(message) {
