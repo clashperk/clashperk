@@ -1,6 +1,6 @@
 module.exports = {
 	STATUS: {
-		100: 'service is temprorarily unavailable.',
+		504: 'service is temprorarily unavailable.',
 		400: 'client provided incorrect parameters for the request.',
 		403: 'access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
 		404: 'invalid tag, resource was not found.',

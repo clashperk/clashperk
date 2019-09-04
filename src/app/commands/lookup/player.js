@@ -2,6 +2,7 @@ const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const moment = require('moment');
 const { firestore } = require('../../struct/Database');
+const fetch = require('../../struct/Fetch');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -73,8 +74,18 @@ class PlayerCommand extends Command {
 			},
 			args: [
 				{
-					id: 'data',
-					type: 'player',
+					id: 'player',
+					type: async (msg, str) => {
+						const resolver = this.handler.resolver.type('guildMember')(msg, str);
+						if (!resolver && str) return fetch.player(str);
+						const data = await firestore.collection('linked_players')
+							.doc(resolver.id)
+							.get()
+							.then(snap => snap.data());
+						if (!data) return null;
+						if (!data[msg.guild.id]) return null;
+						return fetch.player(data);
+					},
 					prompt: {
 						start: 'what would you like to search for?',
 						retry: (msg, { failure }) => failure.value
@@ -90,6 +101,8 @@ class PlayerCommand extends Command {
 	}
 
 	async exec(message, { data }) {
+		if (data.status !== 200) return message.util.reply(`${data.error}`);
+
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.league ? data.league.iconUrls.small : null, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`)

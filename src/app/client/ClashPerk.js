@@ -70,6 +70,15 @@ class ClashPerk extends AkairoClient {
 			503: 'service is temprorarily unavailable because of maintenance.'
 		};
 
+		this.commandHandler.resolver.addType('guildMember', (msg, str) => {
+			if (!str) return null;
+			const mention = str.match(/<@!?(\d{17,19})>/);
+			const id = str.match(/^\d+$/);
+			if (id) return msg.guild.members.get(id[0]) || null;
+			if (mention) return msg.guild.members.get(mention[1]) || null;
+			return null;
+		});
+
 		this.commandHandler.resolver.addType('player', async (msg, str) => {
 			if (!str) return null;
 			const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
