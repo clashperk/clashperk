@@ -9,7 +9,14 @@ class LeaderboardCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Shows the leaderboard ([vote](https://discordbots.org/bot/526971716711350273/vote) based).'
-			}
+			},
+			args: [
+				{
+					id: 'page',
+					type: 'number',
+					default: 1
+				}
+			]
 		});
 	}
 
@@ -18,21 +25,22 @@ class LeaderboardCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message) {
+	async exec(message, { page }) {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor('Leaderboard');
 		let index = 0;
-		for (const { user, level, xp } of await this.leaderboard()) {
+		const leaderboard = await this.leaderboard(page);
+		for (const { user, level, xp } of leaderboard.items) {
 			embed.addField(`**${++index}**. ${this.client.users.get(user).tag}`, [
 				`${Array(4).fill('\u200b').join(' ')} 🏷️\`LEVEL ${level}\` \\🔥\`EXP ${xp}\``
 			]);
 		}
-
+		embed.setFooter(`Page ${leaderboard.page}/${leaderboard.maxPage}`);
 		return message.util.send({ embed });
 	}
 
-	async leaderboard() {
+	async leaderboard(page) {
 		const data = await firebase.ref('ranks')
 			.once('value')
 			.then(snap => snap.val());
@@ -43,7 +51,7 @@ class LeaderboardCommand extends Command {
 			leaderboard.push({ user: key, xp: value.xp, level });
 		}
 
-		return this.sort(leaderboard).splice(0, 10);
+		return this.paginate(this.sort(leaderboard), page);
 	}
 
 	entries(object) {
@@ -53,6 +61,18 @@ class LeaderboardCommand extends Command {
 
 	sort(items) {
 		return items.sort((a, b) => b.xp - a.xp);
+	}
+
+	paginate(items, page = 1, pageLength = 10) {
+		const maxPage = Math.ceil(items.length / pageLength);
+		if (page < 1) page = 1;
+		if (page > maxPage) page = maxPage;
+		const startIndex = (page - 1) * pageLength;
+
+		return {
+			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
+			page, maxPage, pageLength
+		};
 	}
 }
 
