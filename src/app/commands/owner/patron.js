@@ -56,7 +56,7 @@ class PatronCommand extends Command {
 			const embed = this.client.util.embed()
 				.setAuthor('Patron')
 				.setDescription(user.tag);
-			return message.util.reply({ embed });
+			return message.util.send({ embed });
 		}
 
 		if (type === 'guild') {
