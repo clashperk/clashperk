@@ -53,7 +53,11 @@ class LinkPlayerCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x10ffc1)
 			.addField(`Linked **${member.user.tag}** to ${data.name} (${data.tag})`, [
-				`Try \`${prefix}player\`, \`${prefix}player @${member.user.username}\` and \`${prefix}units\` to check it out.`
+				'You\'ve successfully linked. Now enjoy arguments free commands!',
+				'',
+				'Examples',
+				`_${prefix}player, ${prefix}profile, ${prefix}units_`,
+				`_${prefix}player <user>, ${prefix}units <user> etc_`
 			])
 			.setThumbnail(member.user.displayAvatarURL());
 		return message.util.send({ embed });
