@@ -90,8 +90,8 @@ class PlayerCommand extends Command {
 					.doc(resolver.id)
 					.get()
 					.then(snap => snap.data());
-				if (!data) return null;
-				if (!data[msg.guild.id]) return null;
+				if (!data) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
+				if (!data[msg.guild.id]) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
 				return fetch.player(data[msg.guild.id].tag);
 			},
 			prompt: {
