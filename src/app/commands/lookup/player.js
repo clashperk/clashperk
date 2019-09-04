@@ -1,6 +1,5 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const Notes = require('../../models/Notes');
 const moment = require('moment');
 const { firestore } = require('../../struct/Database');
 

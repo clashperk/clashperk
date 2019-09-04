@@ -2,7 +2,6 @@ const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } 
 const Settings = require('../struct/SettingsProvider');
 const { firestore } = require('../struct/Database');
 const path = require('path');
-const Database = require('../struct/Database');
 const Tracker = require('../struct/Tracker');
 const fetch = require('node-fetch');
 const Patrons = require('../struct/Patrons');
@@ -124,7 +123,6 @@ class ClashPerk extends AkairoClient {
 		this.patron = new Patrons(this);
 		this.voter = new Voter(this);
 
-		await Database.authenticate();
 		await this.settings.init();
 		await this.patron.init();
 	}
