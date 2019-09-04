@@ -1,5 +1,7 @@
-const { Command } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
+const Fetch = require('../../struct/Fetch');
+const { firestore } = require('../../struct/Database');
 
 const HeroEmojis = {
 	'Barbarian King': '<:barbarianking:524939911581663242>',
@@ -58,18 +60,38 @@ class UnitsCommand extends Command {
 				content: 'Shows troops and spells of a player.',
 				usage: '<#tag>',
 				examples: ['#9Q92C8R20']
-			},
-			args: [
-				{
-					id: 'data',
-					type: 'player',
-					prompt: {
-						start: 'what would you like to search for?',
-						retry: (message, { failure }) => failure.value
-					}
-				}
-			]
+			}
 		});
+	}
+
+	*args() {
+		const data = yield {
+			type: async (msg, str) => {
+				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
+				if (!resolver && !str) return null;
+				if (!resolver && str) {
+					return Fetch.player(str).then(data => {
+						if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+						return data;
+					});
+				}
+				const data = await firestore.collection('linked_players')
+					.doc(resolver.id)
+					.get()
+					.then(snap => snap.data());
+				if (!data) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
+				if (!data[msg.guild.id]) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
+				return Fetch.player(data[msg.guild.id].tag).then(data => {
+					if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+					return data;
+				});
+			},
+			prompt: {
+				start: 'what would you like to search for?',
+				retry: 'what would you like to search for?'
+			}
+		};
+		return { data };
 	}
 
 	cooldown(message) {

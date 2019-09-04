@@ -2,7 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const moment = require('moment');
 const { firestore } = require('../../struct/Database');
-const fetch = require('../../struct/Fetch');
+const Fetch = require('../../struct/Fetch');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -81,7 +81,7 @@ class PlayerCommand extends Command {
 				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
 				if (!resolver && !str) return null;
 				if (!resolver && str) {
-					return fetch.player(str).then(data => {
+					return Fetch.player(str).then(data => {
 						if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
 						return data;
 					});
@@ -92,7 +92,10 @@ class PlayerCommand extends Command {
 					.then(snap => snap.data());
 				if (!data) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
 				if (!data[msg.guild.id]) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
-				return fetch.player(data[msg.guild.id].tag);
+				return Fetch.player(data[msg.guild.id].tag).then(data => {
+					if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+					return data;
+				});
 			},
 			prompt: {
 				start: 'what would you like to search for?',

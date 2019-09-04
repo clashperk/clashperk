@@ -1,6 +1,8 @@
-const { Command } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
+const Fetch = require('../../struct/Fetch');
+const { firestore } = require('../../struct/Database');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -26,18 +28,38 @@ class ThCompoCommand extends Command {
 				content: 'Calculates TH compositions of a clan.',
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
-			},
-			args: [
-				{
-					id: 'data',
-					type: 'clan',
-					prompt: {
-						start: 'what would you like to search for?',
-						retry: (msg, { failure }) => failure.value
-					}
-				}
-			]
+			}
 		});
+	}
+
+	*args() {
+		const data = yield {
+			type: async (msg, str) => {
+				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
+				if (!resolver && !str) return null;
+				if (!resolver && str) {
+					return Fetch.clan(str).then(data => {
+						if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+						return data;
+					});
+				}
+				const data = await firestore.collection('linked_clans')
+					.doc(resolver.id)
+					.get()
+					.then(snap => snap.data());
+				if (!data) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
+				if (!data[msg.guild.id]) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
+				return Fetch.clan(data[msg.guild.id].tag).then(data => {
+					if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+					return data;
+				});
+			},
+			prompt: {
+				start: 'what would you like to search for?',
+				retry: 'what would you like to search for?'
+			}
+		};
+		return { data };
 	}
 
 	cooldown(message) {
