@@ -73,35 +73,6 @@ class Voter {
 		return { level, progress, left, right };
 	}
 
-	async board() {
-		const data = await firebase.ref('ranks')
-			.once('value')
-			.then(snap => snap.val());
-		const leaderboard = [];
-		for (const [key, value] of this.entries(data)) {
-			if (!this.client.users.has(key)) continue;
-			const { level } = this.getLevel(value.xp);
-			leaderboard.push({ user: key, xp: value.xp, level });
-			if (leaderboard.length === 10) break;
-		}
-
-		return this.sort(leaderboard);
-	}
-
-	async leaderboard() {
-		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
-			.setAuthor('Leaderboard');
-		let index = 0;
-		for (const { user, level, xp } of await this.board()) {
-			embed.addField(`**${++index}**. ${this.client.users.get(user).tag}`, [
-				`${Array(4).fill('\u200b').join(' ')} 🏷️\`LEVEL ${level}\` \\🔥\`EXP ${xp}\``
-			]);
-		}
-
-		return embed;
-	}
-
 	sort(items) {
 		return items.sort((a, b) => b.xp - a.xp);
 	}
