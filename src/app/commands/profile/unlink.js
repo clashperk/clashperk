@@ -48,7 +48,10 @@ class UnlinkCommand extends Command {
 			if (!deleted) return message.util.reply(`couldn\'t find a clan linked to ${member.user.tag}`);
 		}
 
-		return message.util.send(`successfully unlinked your ${type}`);
+		const embed = this.client.util.embed()
+			.setColor(0x10ffc1)
+			.setAuthor('Successfully Deleted');
+		return message.util.send({ embed });
 	}
 
 	async delPlayer(message, member) {

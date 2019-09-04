@@ -49,7 +49,14 @@ class LinkPlayerCommand extends Command {
 				}
 			}, { merge: true });
 
-		return message.util.send(`Successfully linked **${member.user.tag}** to *${data.name} (${data.tag})*`);
+		const prefix = this.handler.prefix(message);
+		const embed = this.client.util.embed()
+			.setColor(0x10ffc1)
+			.addField(`Linked **${member.user.tag}** to ${data.name} (${data.tag})`, [
+				`Try \`${prefix}player\`, \`${prefix}player @${member.user.username}\` and \`${prefix}units\` to check it out.`
+			])
+			.setThumbnail(member.user.displayAvatarURL());
+		return message.util.send({ embed });
 	}
 }
 
