@@ -28,17 +28,7 @@ class CwlRosterComamnd extends Command {
 				content: 'Shows cwl roster & total number of th for each clan.',
 				usage: '<#clan tag>',
 				examples: ['#8QU8J9LP']
-			},
-			args: [
-				{
-					id: 'data',
-					type: 'clan',
-					prompt: {
-						start: 'what would you like to search for?',
-						retry: (msg, { failure }) => failure.value
-					}
-				}
-			]
+			}
 		});
 	}
 
