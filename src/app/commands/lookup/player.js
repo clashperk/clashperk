@@ -1,4 +1,4 @@
-const { Command } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const moment = require('moment');
 const { firestore } = require('../../struct/Database');
@@ -80,7 +80,11 @@ class PlayerCommand extends Command {
 			type: async (msg, str) => {
 				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
 				if (!resolver && !str) return null;
-				if (!resolver && str) return fetch.player(str);
+				if (!resolver && str) {
+					return fetch.player(str).then(data => {
+						if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+					});
+				}
 				const data = await firestore.collection('linked_players')
 					.doc(resolver.id)
 					.get()
