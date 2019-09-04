@@ -56,8 +56,8 @@ class LinkPlayerCommand extends Command {
 				'You\'ve successfully linked. Now enjoy arguments free commands!',
 				'',
 				'Examples',
-				`_${prefix}player, ${prefix}profile, ${prefix}units_`,
-				`_${prefix}player <user>, ${prefix}units <user> etc_`
+				`_\`${prefix}player\`, \`${prefix}profile\`, \`${prefix}units\`_`,
+				`_\`${prefix}player <user>\`, \`${prefix}units <user>\`_`
 			])
 			.setThumbnail(member.user.displayAvatarURL());
 		return message.util.send({ embed });

@@ -49,15 +49,15 @@ class LinkClanCommand extends Command {
 				}
 			}, { merge: true });
 
+		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
 			.setColor(0x10ffc1)
 			.addField(`Linked **${member.user.tag}** to ${data.name} (${data.tag})`, [
-				'\u200b',
 				'You\'ve successfully linked. Now enjoy arguments free commands!',
 				'',
-				'Usage',
-				'`clan`, `myclan`, `warlog`, `thcompo`, `currentwar`, `roster`',
-				'`cwlwar`, `clan <user>`, `warlog <user>` etc'
+				'Examples',
+				`\`${prefix}clan\`, \`${prefix}myclan\`, \`${prefix}warlog\`, \`${prefix}thcompo\`, \`${prefix}currentwar\`, \`${prefix}roster\``,
+				`\`${prefix}cwlwar <user>\`, \`${prefix}clan <user>\`, \`${prefix}warlog <user>\` \`etc\``
 			])
 			.setThumbnail(member.user.displayAvatarURL());
 		return message.util.send({ embed });
