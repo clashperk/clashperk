@@ -83,6 +83,7 @@ class PlayerCommand extends Command {
 				if (!resolver && str) {
 					return fetch.player(str).then(data => {
 						if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
+						return data;
 					});
 				}
 				const data = await firestore.collection('linked_players')
