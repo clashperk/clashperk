@@ -57,7 +57,7 @@ class LinkClanCommand extends Command {
 				'',
 				'Examples',
 				`\`${prefix}clan\`, \`${prefix}myclan\`, \`${prefix}warlog\`, \`${prefix}thcompo\`, \`${prefix}currentwar\`, \`${prefix}roster\``,
-				`\`${prefix}cwlwar <user>\`, \`${prefix}clan <user>\`, \`${prefix}warlog <user>\` \`etc\``
+				`\`${prefix}cwlwar <user>\`, \`${prefix}clan <user>\`, \`${prefix}warlog <user>\` \u200b\`etc\``
 			])
 			.setThumbnail(member.user.displayAvatarURL());
 		return message.util.send({ embed });
