@@ -32,8 +32,8 @@ class ClanBadgeCommand extends Command {
 					.doc(resolver.id)
 					.get()
 					.then(snap => snap.data());
-				if (!data) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
-				if (!data[msg.guild.id]) return msg.util.reply(`could not find any player linked to **${resolver.user.tag}!**`) && Flag.cancel();
+				if (!data) return msg.util.reply([`could not find any clan linked to **${resolver.user.tag}!**`]) && Flag.cancel();
+				if (!data[msg.guild.id]) return msg.util.reply(`could not find any clan linked to **${resolver.user.tag}!**`) && Flag.cancel();
 				return Fetch.clan(data[msg.guild.id].tag).then(data => {
 					if (data.status !== 200) return msg.util.reply(`${data.error}`) && Flag.cancel();
 					return data;
