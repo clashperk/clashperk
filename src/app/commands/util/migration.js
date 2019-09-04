@@ -20,9 +20,10 @@ class MigrationCommand extends Command {
 	}
 
 	async exec() {
-		// await this.settings();
+		await this.settings();
 		await this.clans();
 		await this.notes();
+		await this.profile();
 	}
 
 	async clans() {
