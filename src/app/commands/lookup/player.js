@@ -74,10 +74,11 @@ class PlayerCommand extends Command {
 			},
 			args: [
 				{
-					id: 'player',
+					id: 'data',
 					type: async (msg, str) => {
 						const resolver = this.handler.resolver.type('guildMember')(msg, str);
 						if (!resolver && str) return fetch.player(str);
+						console.log(resolver, resolver.id);
 						const data = await firestore.collection('linked_players')
 							.doc(resolver.id)
 							.get()
