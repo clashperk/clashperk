@@ -65,7 +65,7 @@ class StartCommand extends Command {
 		if (clans >= 3 && !this.client.voter.isVoter(message.author.id)) {
 			const embed = this.client.util.embed()
 				.setDescription([
-					'**You have not Voted!**',
+					'**Not Voted!**',
 					'',
 					'**[Vote ClashPerk](https://discordbots.org/bot/526971716711350273/vote)**'
 				])
