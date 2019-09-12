@@ -112,8 +112,6 @@ class ThCompCommand extends Command {
 			if (TownHAll === 3) TH03++;
 			if (TownHAll === 2) TH02++;
 			if (TownHAll === 1) TH01++;
-
-			await this.delay(100);
 		}
 
 		// eslint-disable-next-line
