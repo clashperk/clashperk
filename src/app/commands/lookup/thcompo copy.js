@@ -92,7 +92,7 @@ class ThCompCommand extends Command {
 		let TH02 = 0;
 		let TH01 = 0;
 
-		for (const tag of data.memberList.slice(10).map(member => member.tag)) {
+		for (const tag of data.memberList.map(member => member.tag)) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const res = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[Math.floor(Math.random() * 5)]}` } });
 			const member = await res.json();
@@ -112,6 +112,8 @@ class ThCompCommand extends Command {
 			if (TownHAll === 3) TH03++;
 			if (TownHAll === 2) TH02++;
 			if (TownHAll === 1) TH01++;
+
+			this.delay(100);
 		}
 
 		// eslint-disable-next-line
@@ -140,6 +142,10 @@ class ThCompCommand extends Command {
 			.setFooter(`Avg: ${AVG.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/539370925515210763.png');
 
 		return message.util.send(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`, { embed });
+	}
+
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
 	}
 }
 
