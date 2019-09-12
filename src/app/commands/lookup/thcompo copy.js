@@ -94,14 +94,13 @@ class ThCompCommand extends Command {
 		let TH01 = 0;
 
 		const array = await Promise.all([
-			this.one(data.memberList.slice(0, 10)),
-			this.two(data.memberList.slice(10, 20)),
-			this.three(data.memberList.slice(20, 30)),
-			this.four(data.memberList.slice(30, 40)),
-			this.five(data.memberList.slice(40, 50))
+			this.one(data.memberList.slice(0, 10).map(m => m.tag), collection),
+			this.two(data.memberList.slice(10, 20).map(m => m.tag), collection),
+			this.three(data.memberList.slice(20, 30).map(m => m.tag), collection),
+			this.four(data.memberList.slice(30, 40).map(m => m.tag), collection),
+			this.five(data.memberList.slice(40, 50).map(m => m.tag), collection)
 		]);
 
-		console.log(data.memberList.map(m => m.tag).slice(10));
 		for (const member of array) {
 			// const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			// const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[0]}` } }).then(res => res.json());
