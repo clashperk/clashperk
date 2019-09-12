@@ -79,7 +79,7 @@ class ThCompCommand extends Command {
 
 	async exec(message, { data }) {
 		await message.util.send('**Calculating TH compositions of your clan... <a:loading:538989228403458089>**');
-		const collection = [];
+		const collection = {};
 		let TH12 = 0;
 		let TH11 = 0;
 		let TH10 = 0;
@@ -152,51 +152,51 @@ class ThCompCommand extends Command {
 		return message.util.send(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`, { embed });
 	}
 
-	async one(items, collection) {
+	async one(items, collection = {}) {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[0]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection = { name: member.name, tag: member.tag, townHallLevel: member.townHallLevel };
 			console.log(member.name, 'API1');
 		}
 		return collection;
 	}
 
-	async two(items, collection) {
+	async two(items, collection = {}) {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[1]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection = { name: member.name, tag: member.tag, townHallLevel: member.townHallLevel };
 			console.log(member.name, 'API2');
 		}
 		return collection;
 	}
 
-	async three(items, collection) {
+	async three(items, collection = {}) {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[2]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection = { name: member.name, tag: member.tag, townHallLevel: member.townHallLevel };
 			console.log(member.name, 'API3');
 		}
 		return collection;
 	}
 
-	async four(items, collection) {
+	async four(items, collection = {}) {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[3]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection = { name: member.name, tag: member.tag, townHallLevel: member.townHallLevel };
 			console.log(member.name, 'API4');
 		}
 		return collection;
 	}
 
-	async five(items, collection) {
+	async five(items, collection = {}) {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[4]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection = { name: member.name, tag: member.tag, townHallLevel: member.townHallLevel };
 			console.log(member.name, 'API5');
 		}
 		return collection;
