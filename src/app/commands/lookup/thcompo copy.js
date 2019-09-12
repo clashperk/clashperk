@@ -92,6 +92,7 @@ class ThCompCommand extends Command {
 		let TH02 = 0;
 		let TH01 = 0;
 
+		console.log(data.memberList.slice(10), '\n', data.memberList.slice(10).map(m => m.tag));
 		for (const tag of data.memberList.map(member => member.tag)) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[0]}` } }).then(res => res.json());
