@@ -15,8 +15,8 @@ class RestrictCommand extends Command {
 					match: 'content',
 					type: 'member',
 					prompt: {
-						start: 'which user do you want to restrict or unrestrict?',
-						retry: 'please provide a valid user.'
+						start: 'Which user do you want to restrict or unrestrict?',
+						retry: 'Please provide a valid member!'
 					}
 				}
 			],

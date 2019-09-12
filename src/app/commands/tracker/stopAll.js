@@ -23,7 +23,7 @@ class StopAllCommand extends Command {
 				return false;
 			},
 			prompt: {
-				start: 'are you sure you want to stop all? (Y/N)',
+				start: 'Are you sure you want to stop all? (Y/N)',
 				retry: ''
 			}
 		};

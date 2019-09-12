@@ -8,6 +8,7 @@ const Patrons = require('../struct/Patrons');
 const Voter = require('../struct/Voter');
 const PostStats = require('../struct/PostStats');
 const Firebase = require('../struct/Firebase');
+const { MessageEmbed } = require('discord.js');
 
 class ClashPerk extends AkairoClient {
 	constructor(config) {
@@ -46,11 +47,23 @@ class ClashPerk extends AkairoClient {
 			defaultCooldown: 3000,
 			argumentDefaults: {
 				prompt: {
-					modifyStart: (msg, text) => text && `${msg.author}, ${text} \n\nType \`cancel\` to cancel this command.`,
-					modifyRetry: (msg, text) => text && `${msg.author}, ${text} \n\nType \`cancel\` to cancel this command.`,
-					timeout: msg => `${msg.author}, time ran out, command has been cancelled.`,
-					ended: msg => `${msg.author}, too many retries, command has been cancelled.`,
-					cancel: msg => `${msg.author}, command has been cancelled.`,
+					modifyStart: (msg, txt) => new MessageEmbed()
+						.setColor(3093046)
+						.setAuthor(txt)
+						.setFooter('Type `cancel` to cancel the command.'),
+					modifyRetry: (msg, txt) => new MessageEmbed()
+						.setColor(3093046)
+						.setAuthor(txt)
+						.setFooter('Type `cancel` to cancel the command.'),
+					timeout: new MessageEmbed()
+						.setColor(3093046)
+						.setAuthor('Time ran out, command has been cancelled!'),
+					ended: new MessageEmbed()
+						.setColor(3093046)
+						.setAuthor('Too many retries, command has been cancelled!'),
+					cancel: new MessageEmbed()
+						.setColor(3093046)
+						.setAuthor('Command has been cancelled!'),
 					retries: 1,
 					time: 30000
 				}

@@ -1,6 +1,8 @@
-const { Command } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { firestore } = require('../../struct/Database');
+const { fetcherror } = require('../../util/constants');
+const Fetch = require('../../struct/Fetch');
 
 class StartCommand extends Command {
 	constructor() {
@@ -20,7 +22,11 @@ class StartCommand extends Command {
 
 	*args() {
 		const data = yield {
-			type: 'clan',
+			type: async (msg, tag) => {
+				const data = await Fetch.clan(tag);
+				if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
+				return data;
+			},
 			unordered: false,
 			prompt: {
 				start: 'what clan do you want to track donations?',

@@ -18,7 +18,7 @@ class LinkPlayerCommand extends Command {
 					id: 'data',
 					type: 'player',
 					prompt: {
-						start: 'what would you like to search for?',
+						start: 'What would you like to search for?',
 						retry: (msg, { failure }) => failure.value
 					}
 				},

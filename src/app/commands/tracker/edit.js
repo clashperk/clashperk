@@ -29,15 +29,15 @@ class EditCommand extends Command {
 				return { name: data.name, tag: data.tag, ref };
 			},
 			prompt: {
-				start: 'what is the clan tag?',
-				retry: (msg, { phrase }) => `clan tag *${phrase}* not found!`
+				start: 'What is the clan tag?',
+				retry: (msg, { phrase }) => `Clan tag \`${phrase}\` not found!`
 			}
 		};
 		const color = yield {
 			type: 'color',
 			prompt: {
-				start: 'what\'s the color you want to apply to this clan?',
-				retry: 'please provide a valid hex color.'
+				start: 'What\'s the color you want to apply to this clan?',
+				retry: 'Please provide a valid hex color!'
 			}
 		};
 		const confirm = yield {
@@ -59,7 +59,7 @@ class EditCommand extends Command {
 				},
 				time: 10000,
 				retries: 0,
-				ended: message => `${message.author}, command has been cancelled.`
+				ended: new MessageEmbed().setAuthor('Command has been cancelled.').setColor(3093046)
 			}
 		};
 

@@ -25,8 +25,8 @@ class StopCommand extends Command {
 						return { name: data.name, tag: data.tag, ref };
 					},
 					prompt: {
-						start: 'what is the clan tag?',
-						retry: (msg, { phrase }) => `clan tag *${phrase}* not found!`
+						start: 'What is the clan tag?',
+						retry: (msg, { phrase }) => `Clan tag \`${phrase}\` not found!`
 					}
 				}
 			]
