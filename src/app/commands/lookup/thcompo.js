@@ -5,6 +5,14 @@ const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
 
+const API = [
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImIzYTdkMDcxLTM0M2UtNDA2Yy04MDQ0LWFmNDk0NmQ1OGVhNSIsImlhdCI6MTU2ODMwNjEwNSwic3ViIjoiZGV2ZWxvcGVyLzNiZTY0NzFkLWM1ODAtNjIyMy0xOWNhLTRkY2ZmNzhiMDBiNCIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.OWvKCU1bdNx0to3d316jsH2xwfZ8mKfnZypNetsBakbhrwOiiWojkAWiKd2iM0Bdqx7cIXTlJgZptpx-YKyWgw',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImRjYzA1ZWU0LWFjZWMtNGY5My1hZWNiLWJjOTU1YThiYmUxMiIsImlhdCI6MTU2ODMwNjExMywic3ViIjoiZGV2ZWxvcGVyLzNiZTY0NzFkLWM1ODAtNjIyMy0xOWNhLTRkY2ZmNzhiMDBiNCIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.N75KyVEJSwOPLoKtXjkhQ1v38LQMIhj8LA6hQqMLHT2ctTHN5ipI73s01Yzibhg59jeipMDLC6fLlH4x155lTA',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjI0NmFlYzU1LTgxZWYtNDNlOS05MzkxLThlNGVhYTlkOTAyZSIsImlhdCI6MTU2ODMwNjEyMiwic3ViIjoiZGV2ZWxvcGVyLzNiZTY0NzFkLWM1ODAtNjIyMy0xOWNhLTRkY2ZmNzhiMDBiNCIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.xr2AStr1a1n9R56BFA1TAn8qgEYGraX23ZmOxV3xJKb2zVZyGT4fSeVrKWDIie682dO_MnYQE8rlTXPmepgYIg',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjM1ZTE3OWU2LWViZWEtNGMxYS05NzlkLTQ4MjM3NTkzNzcwMyIsImlhdCI6MTU2ODMwNjEzMywic3ViIjoiZGV2ZWxvcGVyLzNiZTY0NzFkLWM1ODAtNjIyMy0xOWNhLTRkY2ZmNzhiMDBiNCIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.jNDGf9xsDjKZYHMIGAMU4APdMm1WtX3FjoxCT6Mpc2RoxqICDyeBjrZyWGgeZ1woif4yUxAl0ZK9njhdLD9h_w',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjRkM2EyMWQ1LWNmODYtNDVkOS04OWFhLWRjYTI1MDliODc1YSIsImlhdCI6MTU2ODMwNjE0MSwic3ViIjoiZGV2ZWxvcGVyLzNiZTY0NzFkLWM1ODAtNjIyMy0xOWNhLTRkY2ZmNzhiMDBiNCIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.O3gLGXp8p3br0JGEHl_DGUZM0DVWF2FOH81unCZ79FvjW8catobY8JbPV8bD0X8TzrgsQX-8UexCMSXtVV8miw'
+];
+
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
 	3: '<:townhall3:534745539510534144>',
@@ -83,28 +91,32 @@ class ThCompoCommand extends Command {
 		let TH02 = 0;
 		let TH01 = 0;
 
-		for (const tag of data.memberList.map(member => member.tag)) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const res = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` } });
-			const member = await res.json();
+		const object_array = await Promise.all([
+			this.one(data.memberList.slice(0, 10).map(m => m.tag)),
+			this.two(data.memberList.slice(10, 20).map(m => m.tag)),
+			this.three(data.memberList.slice(20, 30).map(m => m.tag)),
+			this.four(data.memberList.slice(30, 40).map(m => m.tag)),
+			this.five(data.memberList.slice(40, 50).map(m => m.tag))
+		]);
 
-			const TownHAll = member.townHallLevel;
-
-			if (TownHAll === 12) TH12++;
-			if (TownHAll === 11) TH11++;
-			if (TownHAll === 10) TH10++;
-			if (TownHAll === 9) TH09++;
-			if (TownHAll === 8) TH08++;
-			if (TownHAll === 7) TH07++;
-			if (TownHAll === 6) TH06++;
-			if (TownHAll === 5) TH05++;
-			if (TownHAll === 4) TH04++;
-			if (TownHAll === 3) TH03++;
-			if (TownHAll === 2) TH02++;
-			if (TownHAll === 1) TH01++;
+		for (const array of object_array) {
+			for (const member of array) {
+				const TownHAll = member.townHallLevel;
+				if (TownHAll === 12) TH12++;
+				if (TownHAll === 11) TH11++;
+				if (TownHAll === 10) TH10++;
+				if (TownHAll === 9) TH09++;
+				if (TownHAll === 8) TH08++;
+				if (TownHAll === 7) TH07++;
+				if (TownHAll === 6) TH06++;
+				if (TownHAll === 5) TH05++;
+				if (TownHAll === 4) TH04++;
+				if (TownHAll === 3) TH03++;
+				if (TownHAll === 2) TH02++;
+				if (TownHAll === 1) TH01++;
+			}
 		}
 
-		// eslint-disable-next-line
 		const math = (TH12 * 12) + (TH11 * 11) + (TH10 * 10) + (TH09 * 9) + (TH08 * 8) + (TH07 * 7) + (TH06 * 6) + (TH05 * 5) + (TH04 * 4) + (TH03 * 3) + (TH02 * 2) + Number(TH01);
 		const total = TH12 + TH11 + TH10 + TH09 + TH08 + TH07 + TH06 + TH05 + TH04 + TH03 + TH02 + TH01;
 		const AVG = math / total || 0;
@@ -113,7 +125,6 @@ class ThCompoCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setColor(0x5970c1)
 			.setThumbnail(data.badgeUrls.small)
-
 			.setDescription(
 				`${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12}`}\n` : ''}` +
                 `${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`}\n` : ''}` +
@@ -130,6 +141,51 @@ class ThCompoCommand extends Command {
 			.setFooter(`Avg: ${AVG.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/539370925515210763.png');
 
 		return message.util.send(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`, { embed });
+	}
+
+	async one(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[0]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async two(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[1]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async three(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[2]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async four(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[3]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async five(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[4]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
 	}
 }
 
