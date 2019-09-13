@@ -71,6 +71,16 @@ class CwlMembersComamnd extends Command {
 		const res = await fetch(uri, {
 			method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 		});
+
+		if (!res.ok) {
+			const embed = this.client.util.embed()
+				.setColor(3093046)
+				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+				.setThumbnail(data.badgeUrls.medium)
+				.setDescription('CLAN IS NOT IN CWL');
+			return message.util.send({ embed });
+		}
+
 		const clan = await res.json();
 
 		const memberList = [];

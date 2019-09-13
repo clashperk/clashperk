@@ -22,12 +22,7 @@ class StartCommand extends Command {
 
 	*args() {
 		const data = yield {
-			type: async (msg, tag) => {
-				if (!tag) return null;
-				const data = await Fetch.clan(tag);
-				if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-				return data;
-			},
+			type: 'clan',
 			unordered: false,
 			prompt: {
 				start: 'What clan do you want to track donations?',
