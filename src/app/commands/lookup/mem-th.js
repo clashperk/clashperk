@@ -124,7 +124,8 @@ class MembersTHCommand extends Command {
 			]);
 		}
 
-		return message.util.send(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`, { embed });
+		const diff = process.hrtime(hrStart);
+		return message.util.send(`*\u200b**Executed in ${diff[0].toFixed(2)} sec**\u200b*`, { embed });
 	}
 
 	paginate(items, start, end) {
