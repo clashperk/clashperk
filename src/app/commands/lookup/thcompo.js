@@ -83,6 +83,7 @@ class ThCompoCommand extends Command {
 
 	async exec(message, { data }) {
 		await message.util.send('**Calculating TH compositions of your clan... <a:loading:538989228403458089>**');
+		const hrStart = process.hrtime();
 		let TH12 = 0;
 		let TH11 = 0;
 		let TH10 = 0;
@@ -150,7 +151,8 @@ class ThCompoCommand extends Command {
 			)
 			.setFooter(`Avg: ${AVG.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/539370925515210763.png');
 
-		return message.util.send(`*\u200b**Executed in ${((Date.now() - message.createdTimestamp) / 1000).toFixed(2)} sec**\u200b*`, { embed });
+		const diff = process.hrtime(hrStart);
+		return message.util.send(`*\u200b**Executed in ${diff[0].toFixed(2)} sec**\u200b*`, { embed });
 	}
 
 	async one(items, collection = []) {
