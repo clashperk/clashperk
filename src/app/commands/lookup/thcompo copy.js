@@ -93,7 +93,7 @@ class ThCompCommand extends Command {
 		let TH02 = 0;
 		let TH01 = 0;
 
-		const array = await Promise.all([
+		const object_array = await Promise.all([
 			this.one(data.memberList.slice(0, 10).map(m => m.tag), collection),
 			this.two(data.memberList.slice(10, 20).map(m => m.tag), collection),
 			this.three(data.memberList.slice(20, 30).map(m => m.tag), collection),
@@ -101,27 +101,28 @@ class ThCompCommand extends Command {
 			this.five(data.memberList.slice(40, 50).map(m => m.tag), collection)
 		]);
 
-		console.log(array);
+		console.log(object_array);
 
-		for (const member of array) {
+		for (const array of object_array) {
 			// const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			// const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[0]}` } }).then(res => res.json());
+			for (const member of array) {
+				const TownHAll = member.townHallLevel;
+				console.log(member.name, member.tag);
 
-			const TownHAll = member.townHallLevel;
-			console.log(member.name, member.tag);
-
-			if (TownHAll === 12) TH12++;
-			if (TownHAll === 11) TH11++;
-			if (TownHAll === 10) TH10++;
-			if (TownHAll === 9) TH09++;
-			if (TownHAll === 8) TH08++;
-			if (TownHAll === 7) TH07++;
-			if (TownHAll === 6) TH06++;
-			if (TownHAll === 5) TH05++;
-			if (TownHAll === 4) TH04++;
-			if (TownHAll === 3) TH03++;
-			if (TownHAll === 2) TH02++;
-			if (TownHAll === 1) TH01++;
+				if (TownHAll === 12) TH12++;
+				if (TownHAll === 11) TH11++;
+				if (TownHAll === 10) TH10++;
+				if (TownHAll === 9) TH09++;
+				if (TownHAll === 8) TH08++;
+				if (TownHAll === 7) TH07++;
+				if (TownHAll === 6) TH06++;
+				if (TownHAll === 5) TH05++;
+				if (TownHAll === 4) TH04++;
+				if (TownHAll === 3) TH03++;
+				if (TownHAll === 2) TH02++;
+				if (TownHAll === 1) TH01++;
+			}
 		}
 
 		// eslint-disable-next-line
