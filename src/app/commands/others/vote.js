@@ -20,7 +20,7 @@ class VoteCommand extends Command {
 	exec(message) {
 		this.client.voter.fetchVote(message.author.id);
 		return message.util.send([
-			'**If you want to support ClashPerk, vote for the bot under this link.**',
+			'**Thanks for voting in advance!**',
 			'https://discordbots.org/bot/526971716711350273/vote'
 		]);
 	}
