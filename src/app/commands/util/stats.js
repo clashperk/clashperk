@@ -20,9 +20,9 @@ class StatsCommand extends Command {
 	}
 
 	async exec(message) {
-		const embed = new MessageEmbed()
+		const embed = new MessageEmbed().setTitle('Stats')
 			.setColor(0x5970c1)
-			.setAuthor(`${this.client.user.username} Statistics`, this.client.user.displayAvatarURL())
+			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.addField('Memory Usage', `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`, true)
 			.addField('Free Memory', [
 				os.freemem() > 1024 ? `${(os.freemem() / 1024).toFixed(2)} GB` : `${Math.round(os.freemem())} MB`
@@ -33,7 +33,7 @@ class StatsCommand extends Command {
 			.addField('Channels', this.client.channels.filter(c => c.type === 'text').size, true)
 			.addField('Clans in DB', await this.count(), true)
 			.addField('Version', 'v1.1.7', true)
-			.addField('Node.Js', process.version, true)
+			.addField('Node.JS', process.version, true)
 			.setFooter(`© 2019 ${this.client.users.get(this.client.ownerID).tag}`, this.client.users.get(this.client.ownerID).displayAvatarURL());
 
 		if (message.channel.type === 'dm' || !message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
