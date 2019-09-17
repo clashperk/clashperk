@@ -1,7 +1,7 @@
 {
   "name": "clashperk",
   "version": "1.1.7",
-  "author": "Suvajit (esuvajit@gmail.com)",
+  "author": "SUVAJIT (suvajit.me@gmail.com)",
   "license": "MIT",
   "description": "Clash of Clans Discord Bot",
   "main": "src/index.js",
