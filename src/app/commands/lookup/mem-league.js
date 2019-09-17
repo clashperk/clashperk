@@ -85,7 +85,8 @@ class MembersLeagueCommand extends Command {
 		const second = this.paginate(data.memberList, 32, 35);
 		const third = this.paginate(data.memberList, 35, 50);
 
-		const embed = this.client.util.embed().setColor(0x5970c1)
+		const embed = this.client.util.embed()
+			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
 			.setDescription(first.items.map(member => `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}`).join('\n'));
 		if (data.members > 32) {
