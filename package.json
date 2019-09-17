@@ -7,7 +7,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "eslint ./",
+    "test": "eslint src/",
     "lint": "eslint --fix src/"
   },
   "dependencies": {
