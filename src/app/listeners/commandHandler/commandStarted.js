@@ -1,6 +1,6 @@
 const { Listener } = require('discord-akairo');
 const Logger = require('../../util/logger');
-const { addBreadcrumb, Severity } = require('@sentry/node');
+const { addBreadcrumb, Severity, setContext } = require('@sentry/node');
 
 class CommandStartedListener extends Listener {
 	constructor() {
@@ -30,6 +30,32 @@ class CommandStartedListener extends Listener {
 					? {
 						id: message.guild.id,
 						name: message.guild.name
+					}
+					: null,
+				command: {
+					id: command.id,
+					aliases: command.aliases,
+					category: command.category.id
+				},
+				message: {
+					id: message.id,
+					content: message.content
+				},
+				args
+			}
+		});
+
+		setContext('command_started', {
+			user: {
+				id: message.author.id,
+				username: message.author.tag
+			},
+			extra: {
+				guild: message.guild
+					? {
+						id: message.guild.id,
+						name: message.guild.name,
+						channel_id: message.channel.id
 					}
 					: null,
 				command: {

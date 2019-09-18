@@ -1,6 +1,6 @@
 const { Listener } = require('discord-akairo');
 const Logger = require('../../util/logger');
-const { addBreadcrumb, Severity, captureException } = require('@sentry/node');
+const { addBreadcrumb, Severity, captureException, setContext } = require('@sentry/node');
 
 class ErrorListener extends Listener {
 	constructor() {
@@ -44,6 +44,32 @@ class ErrorListener extends Listener {
 				}
 			}
 		});
+
+		setContext('command_started', {
+			user: {
+				id: message.author.id,
+				username: message.author.tag
+			},
+			extra: {
+				guild: message.guild
+					? {
+						id: message.guild.id,
+						name: message.guild.name,
+						channel_id: message.channel.id
+					}
+					: null,
+				command: {
+					id: command.id,
+					aliases: command.aliases,
+					category: command.category.id
+				},
+				message: {
+					id: message.id,
+					content: message.content
+				}
+			}
+		});
+
 		captureException(error);
 
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {

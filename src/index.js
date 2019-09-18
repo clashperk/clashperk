@@ -1,14 +1,19 @@
 const env = require('dotenv');
 env.config();
+
 const Client = require('./app/client/ClashPerk');
 const Logger = require('./app/util/logger');
 const Sentry = require('@sentry/node');
-const { name: environment, version: release } = require('../package.json');
+const package = require('../package.json');
 
 const client = new Client({ owner: process.env.OWNER });
 
 if (process.env.SENTRY) {
-	Sentry.init({ dsn: process.env.SENTRY, environment, release });
+	Sentry.init({
+		dsn: process.env.SENTRY,
+		environment: package.name,
+		release: package.version
+	});
 }
 
 client.on('error', error => Logger.error(error, { level: 'CLIENT ERROR' }));
