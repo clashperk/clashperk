@@ -74,13 +74,13 @@ class ClashPerk extends AkairoClient {
 		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
 		const STATUS = {
-			100: 'service is temprorarily unavailable.',
-			400: 'client provided incorrect parameters for the request.',
-			403: 'access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
-			404: 'invalid tag, resource was not found.',
-			429: 'request was throttled, because amount of requests was above the threshold defined for the used API token.',
-			500: 'unknown error happened when handling the request.',
-			503: 'service is temprorarily unavailable because of maintenance.'
+			100: 'Service is temprorarily unavailable.',
+			400: 'Client provided incorrect parameters for the request.',
+			403: 'Access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
+			404: 'Invalid tag, resource was not found.',
+			429: 'Request was throttled, because amount of requests was above the threshold defined for the used API token.',
+			500: 'Unknown error happened when handling the request.',
+			503: 'Service is temprorarily unavailable because of maintenance.'
 		};
 
 		this.commandHandler.resolver.addType('guildMember', (msg, str) => {

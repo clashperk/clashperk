@@ -56,8 +56,8 @@ class CwlRosterComamnd extends Command {
 				});
 			},
 			prompt: {
-				start: 'what would you like to search for?',
-				retry: 'what would you like to search for?'
+				start: 'What would you like to search for?',
+				retry: 'What would you like to search for?'
 			}
 		};
 		return { data };
