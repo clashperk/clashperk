@@ -74,7 +74,13 @@ class EditCommand extends Command {
 	async exec(message, { clan, color }) {
 		await clan.ref.update({ color }, { merge: true });
 		this.client.tracker.add(clan.tag, message.guild.id, clan.channel, color);
-		return message.util.send(`Color updated for **${clan.name} (${clan.tag})**`);
+		return message.util.send({
+			embed: {
+				author: { name: 'Embed Color Update' },
+				description: `${clan.name} (${clan.tag})`,
+				color
+			}
+		});
 	}
 }
 

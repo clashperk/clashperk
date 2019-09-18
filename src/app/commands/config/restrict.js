@@ -9,22 +9,22 @@ class RestrictCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			quoted: false,
+			description: {
+				content: 'Restricts or unrestricts someone from using commands.',
+				usage: '<member>',
+				examples: ['@Suvajit', '444432489818357760']
+			},
 			args: [
 				{
 					id: 'member',
 					match: 'content',
-					type: 'member',
+					type: 'guildMember',
 					prompt: {
 						start: 'Which user do you want to restrict or unrestrict?',
 						retry: 'Please provide a valid member!'
 					}
 				}
-			],
-			description: {
-				content: 'Restricts or unrestricts someone from using sensitive commands.',
-				usage: '<user>',
-				examples: ['@BadPerson', 'someone#1234']
-			}
+			]
 		});
 	}
 
@@ -37,12 +37,22 @@ class RestrictCommand extends Command {
 			restrict.splice(index, 1);
 			await this.client.settings.set(message.guild, 'restrict', restrict);
 
-			return message.util.send(`**${member.user.tag}** has been removed from the restriction.`);
+			return message.util.send({
+				embed: {
+					description: `**${member.user.tag}** has been removed from the restriction.`,
+					color: 3093046
+				}
+			});
 		}
 		restrict.push(member.id);
 		await this.client.settings.set(message.guild, 'restrict', restrict);
 
-		return message.util.send(`**${member.user.tag}** has been restricted from using sensitive commands.`);
+		return message.util.send({
+			embed: {
+				description: `**${member.user.tag}** has been restricted.`,
+				color: 3093046
+			}
+		});
 	}
 }
 

@@ -19,8 +19,8 @@ class UnlinkCommand extends Command {
 					id: 'type',
 					type: ['profile', 'clan'],
 					prompt: {
-						start: 'what would you like to unlnk? (`profile` or `clan`)',
-						retry: 'please provide a valid input (`profile` or `clan`).'
+						start: 'What would you like to unlink? (`profile` or `clan`)',
+						retry: 'Please provide a valid input (`profile` or `clan`).'
 					}
 				},
 				{
