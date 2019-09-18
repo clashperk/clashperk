@@ -41,11 +41,9 @@ class StopAllCommand extends Command {
 		}
 		const clans = await this.delete(message);
 
-		if (!clans) return message.util.reply(`no clans found! ${this.client.emojis.get('545968755423838209')}`);
-
 		return message.util.send({
 			embed: {
-				title: `Successfully deleted ${clans} clans ${this.client.emojis.get('545874377523068930')}`,
+				title: `Successfully deleted ${clans} clan${clans === 1 ? '' : 's'}`,
 				color: 5861569
 			}
 		});

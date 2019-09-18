@@ -8,21 +8,21 @@ class PrefixCommand extends Command {
 			cooldown: 1000,
 			channel: 'guild',
 			quoted: false,
+			description: {
+				content: 'Displays or changes the prefix of the guild.',
+				usage: '<prefix>',
+				examples: ['!', '?']
+			},
 			args: [
 				{
 					id: 'prefix',
 					type: Argument.validate('string', (msg, p) => !/\s/.test(p) && p.length <= 3),
 					prompt: {
-						retry: 'Please provide a prefix without spaces and less than 3 characters!',
+						retry: 'Please provide a prefix without spaces and less than 3 characters.',
 						optional: true
 					}
 				}
-			],
-			description: {
-				content: 'Displays or changes the prefix of the guild.',
-				usage: '<prefix>',
-				examples: ['!', '?']
-			}
+			]
 		});
 	}
 
