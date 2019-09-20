@@ -12,11 +12,6 @@ class CommandStartedListener extends Listener {
 	}
 
 	async exec(message, command, args) {
-		this.counter(message, command);
-
-		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
-		Logger.log(`${command.id}`, { level });
-
 		addBreadcrumb({
 			message: 'command_started',
 			category: command.category.id,
@@ -70,6 +65,10 @@ class CommandStartedListener extends Listener {
 				args
 			}
 		});
+
+		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
+		Logger.log(`${command.id}`, { level });
+		this.counter(message, command);
 	}
 
 	counter(message, command) {
