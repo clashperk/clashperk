@@ -107,16 +107,19 @@ class UnitsCommand extends Command {
 			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`);
 
 		let troopLevels = '';
+let index = 0;
 		data.troops.forEach(troop => {
+index++
 			if (troop.village === 'home') {
 				if (troop.level === troop.maxLevel) {
 					troopLevels += `${TroopEmojis[troop.name]} **${troop.level}**\u2002\u2002`;
 				} else {
 					troopLevels += `${TroopEmojis[troop.name]} ${troop.level}\u2002\u2002`;
 				}
+if (index === 4) { troopLevels += '#'; count = 0; }
 			}
 		});
-		if (troopLevels) embed.addField('Troops', troopLevels);
+		if (troopLevels) embed.addField('Troops', troopLevels.split('#').join('\n'));
 
 		let spellLevels = '';
 		data.spells.forEach(spell => {
