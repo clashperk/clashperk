@@ -152,7 +152,9 @@ class ThCompoCommand extends Command {
 			.setFooter(`Avg: ${AVG.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/539370925515210763.png');
 
 		const diff = process.hrtime(hrStart);
-		return message.util.send(`*\u200b**Executed in ${diff[0].toFixed(2)} sec**\u200b*`, { embed });
+		const sec = diff[0] >= 0 ? `${diff[0].toFixed(2)} sec` : null;
+		const ms = diff[0] <= 0 ? `${(diff[1] / 1000000).toFixed(2)} ms` : null;
+		return message.util.send(`*\u200b**Executed in ${sec || ms}**\u200b*`, { embed });
 	}
 
 	async one(items, collection = []) {
