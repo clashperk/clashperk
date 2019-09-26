@@ -109,12 +109,12 @@ class UnitsCommand extends Command {
 		let troopLevels = '';
 let index = 0;
 		data.troops.forEach(troop => {
-index++
 			if (troop.village === 'home') {
+index++;
 				if (troop.level === troop.maxLevel) {
-					troopLevels += `${TroopEmojis[troop.name]} **${troop.level}**\u2002\u2002`;
+					troopLevels += `${TroopEmojis[troop.name]}**${troop.level}**\u2002\u2002`;
 				} else {
-					troopLevels += `${TroopEmojis[troop.name]} ${troop.level}\u2002\u2002`;
+					troopLevels += `${TroopEmojis[troop.name]}${troop.level}\u2002\u2002`;
 				}
 if (index === 4) { troopLevels += '#'; index = 0; }
 			}
@@ -125,13 +125,15 @@ if (index === 4) { troopLevels += '#'; index = 0; }
 		data.spells.forEach(spell => {
 			if (spell.village === 'home') {
 				if (spell.level === spell.maxLevel) {
+index++;
 					spellLevels += `${SpellEmojis[spell.name]} **${spell.level}**\u2002\u2002`;
 				} else {
 					spellLevels += `${SpellEmojis[spell.name]} ${spell.level}\u2002\u2002`;
 				}
+if (index === 4) { spellLevels += '#'; index = 0; }
 			}
 		});
-		if (spellLevels) embed.addField('Spells', spellLevels);
+		if (spellLevels) embed.addField('Spells', spellLevels.split('#').join('\n'));
 
 		let heroLevels = '';
 		data.heroes.forEach(hero => {
