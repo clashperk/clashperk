@@ -112,9 +112,9 @@ let index = 0;
 			if (troop.village === 'home') {
 index++;
 				if (troop.level === troop.maxLevel) {
-					troopLevels += `${TroopEmojis[troop.name]}**${troop.level}**\u2002\u2002`;
+					troopLevels += `${TroopEmojis[troop.name]} **${troop.level}**\u2002\u2002`;
 				} else {
-					troopLevels += `${TroopEmojis[troop.name]}${troop.level}\u2002\u2002`;
+					troopLevels += `${TroopEmojis[troop.name]} ${troop.level}\u2002\u2002`;
 				}
 if (index === 4) { troopLevels += '#'; index = 0; }
 			}
