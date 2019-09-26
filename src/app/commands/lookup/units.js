@@ -124,8 +124,8 @@ if (index === 4) { troopLevels += '#'; index = 0; }
 		let spellLevels = '';
 		data.spells.forEach(spell => {
 			if (spell.village === 'home') {
-				if (spell.level === spell.maxLevel) {
 index++;
+				if (spell.level === spell.maxLevel) {
 					spellLevels += `${SpellEmojis[spell.name]} **${spell.level}**\u2002\u2002`;
 				} else {
 					spellLevels += `${SpellEmojis[spell.name]} ${spell.level}\u2002\u2002`;
