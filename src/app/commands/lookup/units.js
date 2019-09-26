@@ -116,7 +116,7 @@ index++
 				} else {
 					troopLevels += `${TroopEmojis[troop.name]} ${troop.level}\u2002\u2002`;
 				}
-if (index === 4) { troopLevels += '#'; count = 0; }
+if (index === 4) { troopLevels += '#'; index = 0; }
 			}
 		});
 		if (troopLevels) embed.addField('Troops', troopLevels.split('#').join('\n'));
