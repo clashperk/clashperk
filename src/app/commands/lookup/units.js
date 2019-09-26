@@ -122,6 +122,7 @@ if (index === 4) { troopLevels += '#'; index = 0; }
 		if (troopLevels) embed.addField('Troops', troopLevels.split('#').join('\n'));
 
 		let spellLevels = '';
+index = 0;
 		data.spells.forEach(spell => {
 			if (spell.village === 'home') {
 index++;
