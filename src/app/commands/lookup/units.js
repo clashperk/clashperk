@@ -31,10 +31,22 @@ const TroopEmojis = {
 	'Baby Dragon': '<:babydragon:524921039004631050>',
 	'Miner': '<:miner:524921087461425162>',
 	'Electro Dragon': '<:electrodragon:524921092213833750>',
-	'Ice Golem': '<:Ice_Golem_info:524937758159142922>',
+	'Ice Golem': '<:ice_golem:627156215394467851>',
 	'Battle Blimp': '<:battleblimp:524921096345092126>',
 	'Wall Wrecker': '<:wallwrecker:524921096655339520>',
 	'Stone Slammer': '<:Stone_Slammer_info:524937839457337374>'
+};
+const BuilderTroops = {
+	'Night Witch': '<:night_witch:627148850800492574>',
+	'Baby Dragon': '<:baby_dragon:627148415473680415>',
+	'Drop Ship': '<:drop_ship:627151120896098345>',
+	'Cannon Cart': '<:cannon_cart:627148662547677204>',
+	'Super P.E.K.K.A': '<:supper_pekka:627149954917466142>',
+	'Bomber': '<:bomber:627148263233159188>',
+	'Boxer Giant': '<:boxer_giant:627148013512556544>',
+	'Beta Minion': '<:beta_minion:627148135373864960>',
+	'Sneaky Archer': '<:skeaky_archer:627147702584606722>',
+	'Raged Barbarian': '<:raged_barbarian:627147507717111808>'
 };
 const SpellEmojis = {
 	'Lightning Spell': '<:lightning:524921197369229342>',
@@ -49,7 +61,6 @@ const SpellEmojis = {
 	'Skeleton Spell': '<:skeleton:524921203975127049>',
 	'Bat Spell': '<:Bat_Spell_info:524937829122441227>'
 };
-
 
 class UnitsCommand extends Command {
 	constructor() {
@@ -106,44 +117,66 @@ class UnitsCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.league ? data.league.iconUrls.small : null, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`)
 			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`);
 
+		let index = 0;
 		let troopLevels = '';
-let index = 0;
 		data.troops.forEach(troop => {
 			if (troop.village === 'home') {
-index++;
+				index++;
 				if (troop.level === troop.maxLevel) {
 					troopLevels += `${TroopEmojis[troop.name]} **\`${troop.level}\`**\u2002\u2002`;
 				} else {
 					troopLevels += `${TroopEmojis[troop.name]} \`${troop.level}\`\u2002\u2002`;
 				}
-if (index === 4) { troopLevels += '#'; index = 0; }
+				if (index === 4) {
+					troopLevels += '#';
+					index = 0;
+				}
 			}
 		});
 		if (troopLevels) embed.addField('Troops', troopLevels.split('#').join('\n'));
 
+		let builderTroops = '';
+		index = 0;
+		data.troops.forEach(troop => {
+			if (troop.village === 'builderBase') {
+				index++;
+				if (troop.level === troop.maxLevel) {
+					builderTroops += `${BuilderTroops[troop.name]} **\`${troop.level}\`**\u2002\u2002`;
+				} else {
+					builderTroops += `${BuilderTroops[troop.name]} \`${troop.level}\`\u2002\u2002`;
+				}
+				if (index === 4) {
+					builderTroops += '#';
+					index = 0;
+				}
+			}
+		});
+		if (builderTroops) embed.addField('Builder Base Troops', builderTroops.split('#').join('\n'));
+
 		let spellLevels = '';
-index = 0;
+		index = 0;
 		data.spells.forEach(spell => {
 			if (spell.village === 'home') {
-index++;
+				index++;
 				if (spell.level === spell.maxLevel) {
 					spellLevels += `${SpellEmojis[spell.name]} **\`${spell.level}\`**\u2002\u2002`;
 				} else {
 					spellLevels += `${SpellEmojis[spell.name]} \`${spell.level}\`\u2002\u2002`;
 				}
-if (index === 4) { spellLevels += '#'; index = 0; }
+				if (index === 4) {
+					spellLevels += '#';
+					index = 0;
+				}
 			}
 		});
 		if (spellLevels) embed.addField('Spells', spellLevels.split('#').join('\n'));
 
 		let heroLevels = '';
 		data.heroes.forEach(hero => {
-			if (hero.village === 'home') {
-				if (hero.level === hero.maxLevel) {
-					heroLevels += `${HeroEmojis[hero.name]} **${hero.level}**\u2002\u2002`;
-				} else {
-					heroLevels += `${HeroEmojis[hero.name]} ${hero.level}\u2002\u2002`;
-				}
+			if (hero.level === hero.maxLevel) {
+				heroLevels += `${HeroEmojis[hero.name]} **${hero.level}**\u2002\u2002`;
+			} else {
+				heroLevels += `${HeroEmojis[hero.name]} ${hero.level}\u2002\u2002`;
 			}
 		});
 		if (heroLevels) embed.addField('Heroes', heroLevels);
