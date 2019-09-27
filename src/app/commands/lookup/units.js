@@ -123,9 +123,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					troopLevels += `${TroopEmojis[troop.name]} **\`${troop.level}${troop.level > 9 ? '' : ' \u200b'}\`**\u2002\u2002`;
+					troopLevels += `${TroopEmojis[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002\u2002`;
 				} else {
-					troopLevels += `${TroopEmojis[troop.name]} \`${troop.level}${troop.level > 9 ? '' : ' \u200b'}\`\u2002\u2002`;
+					troopLevels += `${TroopEmojis[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002\u2002`;
 				}
 				if (index === 4) {
 					troopLevels += '#';
@@ -141,7 +141,7 @@ class UnitsCommand extends Command {
 			if (troop.village === 'builderBase') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					builderTroops += `${BuilderTroops[troop.name]} **\`${troop.level}${troop.level > 9 ? '' : ' \u200b'}\`**\u2002\u2002`;
+					builderTroops += `${BuilderTroops[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002\u2002`;
 				} else {
 					builderTroops += `${BuilderTroops[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002\u2002`;
 				}
@@ -159,9 +159,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					spellLevels += `${SpellEmojis[spell.name]} **\`${spell.level}${spell.level > 9 ? '' : ' \u200b'}\`**\u2002\u2002`;
+					spellLevels += `${SpellEmojis[spell.name]} **\`${spell.level > 9 ? '' : '\u200b '}${spell.level}\`**\u2002\u2002`;
 				} else {
-					spellLevels += `${SpellEmojis[spell.name]} \`${spell.level}${spell.level > 9 ? '' : ' \u200b'}\`\u2002\u2002`;
+					spellLevels += `${SpellEmojis[spell.name]} \`${spell.level > 9 ? '' : '\u200b '}${spell.level}\`\u2002\u2002`;
 				}
 				if (index === 4) {
 					spellLevels += '#';
@@ -174,9 +174,9 @@ class UnitsCommand extends Command {
 		let heroLevels = '';
 		data.heroes.forEach(hero => {
 			if (hero.level === hero.maxLevel) {
-				heroLevels += `${HeroEmojis[hero.name]} **\`${hero.level}${hero.level > 9 ? '' : ' \u200b'}\`**\u2002\u2002`;
+				heroLevels += `${HeroEmojis[hero.name]} **\`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`**\u2002\u2002`;
 			} else {
-				heroLevels += `${HeroEmojis[hero.name]} \`${hero.level}${hero.level > 9 ? '' : ' \u200b'}\`\u2002\u2002`;
+				heroLevels += `${HeroEmojis[hero.name]} \`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`\u2002\u2002`;
 			}
 		});
 		if (heroLevels) embed.addField('Heroes', heroLevels);
