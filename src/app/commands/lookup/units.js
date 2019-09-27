@@ -143,7 +143,7 @@ class UnitsCommand extends Command {
 				if (troop.level === troop.maxLevel) {
 					builderTroops += `${BuilderTroops[troop.name]} **\`${troop.level}${troop.level > 9 ? '' : ' \u200b'}\`**\u2002\u2002`;
 				} else {
-					builderTroops += `${BuilderTroops[troop.name]} \`${troop.level}${troop.level > 9 ? '' : ' \u200b'}\`\u2002\u2002`;
+					builderTroops += `${BuilderTroops[troop.name]} \`${troop.level > 9 ? '' : ' \u200b'}${troop.level}\`\u2002\u2002`;
 				}
 				if (index === 4) {
 					builderTroops += '#';
