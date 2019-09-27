@@ -174,9 +174,9 @@ class UnitsCommand extends Command {
 		let heroLevels = '';
 		data.heroes.forEach(hero => {
 			if (hero.level === hero.maxLevel) {
-				heroLevels += `${HeroEmojis[hero.name]}**\`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`**\u2002\u2002`;
+				heroLevels += `${HeroEmojis[hero.name]} **\`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`**\u2002\u2002`;
 			} else {
-				heroLevels += `${HeroEmojis[hero.name]}\`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`\u2002\u2002`;
+				heroLevels += `${HeroEmojis[hero.name]} \`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`\u2002\u2002`;
 			}
 		});
 		if (heroLevels) embed.addField('Heroes', heroLevels);
