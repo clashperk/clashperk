@@ -2,7 +2,7 @@ const { Command } = require('discord-akairo');
 const moment = require('moment');
 require('moment-duration-format');
 const { MessageEmbed } = require('discord.js');
-const os = require('os-utils');
+const os = require('os');
 const { version } = require('../../../../package.json');
 const { firestore } = require('../../struct/Database');
 
