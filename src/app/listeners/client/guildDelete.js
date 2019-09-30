@@ -31,16 +31,16 @@ class GuildDeleteListener extends Listener {
 	}
 
 	async delete(guild) {
-		const batch = firestore.batch();
+		// const batch = firestore.batch();
 		const deleted = await firestore.collection('tracking_clans')
 			.where('guild', '==', guild.id)
 			.get()
 			.then(snapstot => {
 				snapstot.forEach(doc => {
 					this.client.tracker.delete(guild.id, doc.data().tag);
-					batch.delete(doc.ref);
+					// batch.delete(doc.ref);
 				});
-				return batch.commit() && snapstot.size;
+				// return batch.commit() && snapstot.size;
 			});
 		return deleted;
 	}

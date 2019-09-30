@@ -53,9 +53,12 @@ class Tracker {
 			.then(snapshot => {
 				snapshot.forEach(doc => {
 					const data = doc.data();
-					this.add(data.tag, data.guild, data.channel, data.color);
+					if (this.client.guilds.has(data.guild)) {
+						this.add(data.tag, data.guild, data.channel, data.color);
+					}
 				});
 			});
+		return true;
 	}
 
 	add(tag, guild, channel, color) {
