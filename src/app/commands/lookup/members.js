@@ -19,7 +19,7 @@ class MembersCommand extends Command {
 			args: [
 				{
 					id: 'num',
-					match: 'option',
+					match: 'flag',
 					flag: ['--th', '-th', 'th']
 				},
 				{
@@ -38,7 +38,6 @@ class MembersCommand extends Command {
 		} else {
 			command = this.handler.modules.get('members-league');
 		}
-		console.log(command);
 		return this.handler.handleDirectCommand(message, type ? `${num} ${name}` : name, command, false);
 	}
 }
