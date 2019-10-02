@@ -25,7 +25,7 @@ class StatsCommand extends Command {
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.addField('Memory Usage', `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`, true)
 			.addField('Free Memory', [
-				os.freemem() > 1024 ? `${(os.freemem() / 1024).toFixed(2)} GB` : `${Math.round(os.freemem())} MB`
+				this.freemem() > 1024 ? `${(this.freemem() / 1024).toFixed(2)} GB` : `${Math.round(this.freemem())} MB`
 			], true)
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }), true)
 			.addField('Servers', this.client.guilds.size, true)
@@ -53,6 +53,10 @@ class StatsCommand extends Command {
 		}
 		react.first().message.delete();
 		return message;
+	}
+
+	freemem() {
+		return os.freemem() / (1024 * 1024);
 	}
 
 	async count() {
