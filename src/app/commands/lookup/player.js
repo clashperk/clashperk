@@ -55,7 +55,7 @@ const leagueStrings = {
 	29000025: '<:legend:524089797023760388>'
 };
 
-const FINEmoji = {
+const StarEmoji = {
 	0: '\u200b',
 	1: '<:1star:534763506227085322>',
 	2: '<:2star:534763506185142272>',
@@ -132,19 +132,22 @@ class PlayerCommand extends Command {
 		embed.addField('War Stars', `<:warstars:534759020309774337> ${data.warStars}`, true);
 		embed.addField('Attacks/Defenses', `<:attacks:534757491775504425> ${data.attackWins} <:defense:534757493029732363> ${data.defenseWins}`, true);
 
-		let FriendinNeed = '';
-		let FriendinNeedStars = '';
-		data.achievements.forEach(achievement => {
-			if (achievement.name === 'Friend in Need') {
-				FriendinNeed = achievement.value;
-				FriendinNeedStars = achievement.stars;
-			}
-		});
-
 		embed.addField('Donations/Receives', [
 			`<:donates:534758602691575838> ${data.donations} <:receives:534758309060804608> ${data.donationsReceived}`
 		], true);
-		embed.addField('Friend in Need', `${FINEmoji[FriendinNeedStars]} ${FriendinNeed}`, true);
+
+		data.achievements.forEach(achievement => {
+			if (achievement.name === 'Friend in Need') {
+				embed.addField('Friend in Need', `${StarEmoji[achievement.stars]} ${achievement.value}`, true);
+			}
+			if (achievement.name === 'Games Champion') {
+				embed.addField('Clan Games Points', `${StarEmoji[achievement.stars]} ${achievement.value}`, true);
+			}
+			if (achievement.name === 'War League Legend') {
+				embed.addField('CWL Stars', `${StarEmoji[achievement.stars]} ${achievement.value}`, true);
+			}
+		});
+
 		if (data.clan) {
 			const role = data.role.replace(/admin/g, 'Elder')
 				.replace(/coLeader/g, 'Co-Leader')
