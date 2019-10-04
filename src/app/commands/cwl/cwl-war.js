@@ -95,19 +95,38 @@ class CwlWarComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data.tag, round);
+		return this.rounds(message, body, data, round);
 	}
 
-	async rounds(message, body, clantag, round) {
+	async rounds(message, body, clan, round) {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1);
 		const rounds = round ? body.rounds[round - 1].warTags : body.rounds.filter(d => !d.warTags.includes('#0')).pop().warTags;
+		const availableRounds = body.rounds.filter(r => !r.warTags.includes('#0')).length;
+		if (round && round > availableRounds) {
+			embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`)
+				.setThumbnail(clan.badgeUrls.medium)
+				.setDescription([
+					'This round is not available yet!',
+					'',
+					'Available Rounds',
+					Array(availableRounds)
+						.fill(0)
+						.map((x, i) => `${i + 1} ✔`)
+						.join('\n'),
+					Array(7 - availableRounds)
+						.fill(0)
+						.map((x, i) => `${i + availableRounds} ❌`)
+						.join('\n')
+				]);
+			return message.util.send({ embed });
+		}
 		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			});
 			const data = await res.json();
-			if ((data.clan && data.clan.tag === clantag) || (data.opponent && data.opponent.tag === clantag)) {
+			if ((data.clan && data.clan.tag === clan.tag) || (data.opponent && data.opponent.tag === clan.tag)) {
 				embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
 					.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
 					.addField('State', data.state)
