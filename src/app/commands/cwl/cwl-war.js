@@ -113,7 +113,7 @@ class CwlWarComamnd extends Command {
 		const availableRounds = body.rounds.filter(r => !r.warTags.includes('#0')).length;
 		if (round && round > availableRounds) {
 			embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`)
-				.setThumbnail(clan.badgeUrls.medium)
+				//.setThumbnail(clan.badgeUrls.medium)
 				.setDescription([
 					'This round is not available yet!',
 					'',
