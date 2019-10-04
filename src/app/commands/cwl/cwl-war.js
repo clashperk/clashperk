@@ -28,8 +28,16 @@ class CwlWarComamnd extends Command {
 			category: 'cwl',
 			description: {
 				content: 'Shows info about current cwl war.',
-				usage: '<tag>',
-				examples: ['#8QU8J9LP']
+				usage: '<tag> [--round/-r] [round]',
+				examples: ['#8QU8J9LP', '#8QU8J9LP -r 5', '#8QU8J9LP --round 4'],
+				fields: [
+					{
+						name: 'Flags',
+						value: [
+							'`--round <num>` or `-r <num>` to see specific round.'
+						]
+					}
+				]
 			},
 			optionFlags: ['--round', '-r']
 		});
