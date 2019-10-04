@@ -122,9 +122,9 @@ class CwlWarComamnd extends Command {
 						.fill(0)
 						.map((x, i) => `${i + 1} <:green_tick:545874377523068930>`)
 						.join('\n'),
-					Array(8 - availableRounds)
+					Array(7 - availableRounds)
 						.fill(0)
-						.map((x, i) => `${i + availableRounds} <:red_tick:545968755423838209>`)
+						.map((x, i) => `${i + availableRounds + 1} <:red_tick:545968755423838209>`)
 						.join('\n')
 				]);
 			return message.util.send({ embed });
