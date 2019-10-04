@@ -117,14 +117,14 @@ class CwlWarComamnd extends Command {
 				.setDescription([
 					'This round is not available yet!',
 					'',
-					'Available Rounds',
+					'**Available Rounds**', '',
 					Array(availableRounds)
 						.fill(0)
-						.map((x, i) => `${i + 1} <:green_tick:545874377523068930>`)
+						.map((x, i) => `**\`${i + 1}\`** <:green_tick:545874377523068930>`)
 						.join('\n'),
-					Array(7 - availableRounds)
+					Array(body.rounds.length - availableRounds)
 						.fill(0)
-						.map((x, i) => `${i + availableRounds + 1} <:red_tick:545968755423838209>`)
+						.map((x, i) => `**\`${i + availableRounds + 1}\`** <:red_tick:545968755423838209>`)
 						.join('\n')
 				]);
 			return message.util.send({ embed });
