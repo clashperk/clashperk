@@ -120,7 +120,7 @@ class CwlAttacksComamnd extends Command {
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.short(clanMembers)) {
 						if (!member.attacks) continue;
-						missing += `**${member.mapPosition}.** ${member.name} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
+						missing += `${member.name} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
 					}
 
 					embed.addField('State', 'In War')
