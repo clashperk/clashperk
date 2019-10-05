@@ -147,7 +147,7 @@ class CwlMissingComamnd extends Command {
 
 					embed.addField('State', 'In War')
 						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-						.addField('Missing Attacks', missing)
+						.setDescription(['Missing Attacks', '', missing])
 						.addField('Stats', [
 							`**${data.clan.name}**`,
 							`\\⭐ ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% \\⚔ ${data.clan.attacks}`,
