@@ -142,7 +142,7 @@ class CwlMissingComamnd extends Command {
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.short(clanMembers)) {
 						if (member.attacks && member.attacks.length === 1) continue;
-						missing += `**${member.mapPosition}.** ${member.name} ${member.tag} ~ ${member.attacks ? 2 - member.attacks.length : 2} \n`;
+						missing += `**${member.mapPosition}.** ${member.name} ${member.tag} \n`;
 					}
 
 					embed.addField('State', 'In War')
