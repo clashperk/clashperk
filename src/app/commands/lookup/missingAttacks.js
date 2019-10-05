@@ -15,8 +15,12 @@ class MissingAttacksCommand extends Command {
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Shows info about missing attacks.',
-				usage: '<tag>',
-				examples: ['#8QU8J9LP', '8QU8J9LP']
+				usage: '<tag> [--cwl/cwl]',
+				examples: ['#8QU8J9LP', '8QU8J9LP --cwl', '#8QU8J9LP cwl'],
+				fields: [{
+					name: 'Flags',
+					value: ['`--cwl` or `cwl` for cwl missing attacks.']
+				}]
 			},
 			flags: ['--cwl', '-cwl', 'cwl']
 		});
