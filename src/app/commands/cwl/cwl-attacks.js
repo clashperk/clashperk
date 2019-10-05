@@ -2,24 +2,9 @@ const { Command, Argument, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const Fetch = require('../../struct/Fetch');
 const moment = require('moment');
-const { oneLine } = require('common-tags');
 const { MessageEmbed } = require('discord.js');
 const { geterror, fetcherror } = require('../../util/constants');
 const { firestore } = require('../../struct/Database');
-
-const TownHallEmoji = {
-	2: '<:townhall2:534745498561806357>',
-	3: '<:townhall3:534745539510534144>',
-	4: '<:townhall4:534745571798286346>',
-	5: '<:townhall5:534745574251954176>',
-	6: '<:townhall6:534745574738624524>',
-	7: '<:townhall7:534745575732805670>',
-	8: '<:townhall8:534745576802353152>',
-	9: '<:townhall9:534745577033039882>',
-	10: '<:townhall10:534745575757709332>',
-	11: '<:townhall11:534745577599270923>',
-	12: '<:townhall12:534745574981894154>'
-};
 
 class CwlAttacksComamnd extends Command {
 	constructor() {
@@ -27,9 +12,9 @@ class CwlAttacksComamnd extends Command {
 			aliases: ['cwl-attacks'],
 			category: 'cwl',
 			description: {
-				content: 'Shows info about current cwl war.',
-				usage: '<tag> [--round/-r] [round]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP -r 5', '#8QU8J9LP --round 4'],
+				content: 'Shows attacks of current cwl.',
+				usage: '<tag>',
+				examples: ['#8QU8J9LP'],
 				fields: [
 					{
 						name: 'Flags',
@@ -38,8 +23,7 @@ class CwlAttacksComamnd extends Command {
 						]
 					}
 				]
-			},
-			optionFlags: ['--round', '-r']
+			}
 		});
 	}
 
@@ -49,12 +33,6 @@ class CwlAttacksComamnd extends Command {
 	}
 
 	*args() {
-		const round = yield {
-			match: 'option',
-			flag: ['--round', '-r'],
-			type: Argument.range('integer', 1, 7, true)
-		};
-
 		const data = yield {
 			type: async (msg, str) => {
 				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
@@ -82,10 +60,10 @@ class CwlAttacksComamnd extends Command {
 			}
 		};
 
-		return { data, round };
+		return { data };
 	}
 
-	async exec(message, { data, round }) {
+	async exec(message, { data }) {
 		await message.util.send('**Fetching data... <a:loading:538989228403458089>**');
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
@@ -142,7 +120,7 @@ class CwlAttacksComamnd extends Command {
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.short(clanMembers)) {
 						if (!member.attacks) continue;
-						missing += `**${member.mapPosition}.** ${member.name} ${member.tag} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage.toFixed(2)}% \n`;
+						missing += `**${member.mapPosition}.** ${member.name} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage.toFixed(2)}% \n`;
 					}
 
 					embed.addField('State', 'In War')
