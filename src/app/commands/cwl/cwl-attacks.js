@@ -100,8 +100,7 @@ class CwlAttacksComamnd extends Command {
 			const data = await res.json();
 			if ((data.clan && data.clan.tag === clan.tag) || (data.opponent && data.opponent.tag === clan.tag)) {
 				embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
-					.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`)
-					.addField('Team Size', `${data.teamSize}`);
+					.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`);
 				if (data.state === 'warEnded') {
 					const end = new Date(moment(data.endTime).toDate()).getTime();
 					embed.addField('State', 'War Ended')
@@ -123,9 +122,8 @@ class CwlAttacksComamnd extends Command {
 						missing += `${member.name} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
 					}
 
-					embed.addField('State', 'In War')
+					embed.addField('Attacks', `${missing}\u200b`)
 						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-						.addField('Attacks', missing)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
 							`\\⭐ ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% \\⚔ ${data.clan.attacks}`,
