@@ -99,9 +99,11 @@ class CwlMissingComamnd extends Command {
 			});
 			const data = await res.json();
 			if ((data.clan && data.clan.tag === clan.tag) || (data.opponent && data.opponent.tag === clan.tag)) {
+				const myclan = data.clan.tag === clan.tag ? data.clan : data.opponent;
+				const oppclan = data.clan.tag === clan.tag ? data.opponent : data.clan;
+				embed.setAuthor(`${myclan.name} (${myclan.tag})`, myclan.badgeUrls.medium);
 				if (data.state === 'warEnded') {
-					embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
-						.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`);
+					embed.addField('War Against', `${oppclan.name} (${oppclan.tag})`);
 					const end = new Date(moment(data.endTime).toDate()).getTime();
 					embed.addField('State', 'War Ended')
 						.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
@@ -116,9 +118,6 @@ class CwlMissingComamnd extends Command {
 				if (data.state === 'inWar') {
 					const started = new Date(moment(data.startTime).toDate()).getTime();
 					let missing = '';
-					const myclan = data.clan.tag === clan.tag ? data.clan : data.opponent;
-					const oppclan = data.clan.tag === clan.tag ? data.opponent : data.clan;
-					embed.setAuthor(`${myclan.name} (${myclan.tag})`, myclan.badgeUrls.medium);
 					for (const member of this.short(myclan.members)) {
 						if (member.attacks && member.attacks.length === 1) continue;
 						missing += `${member.mapPosition}. ${member.name} \n`;
@@ -140,8 +139,7 @@ class CwlMissingComamnd extends Command {
 						]);
 				}
 				if (data.state === 'preparation') {
-					embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
-						.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`);
+					embed.addField('War Against', `${oppclan.name} (${oppclan.tag})`);
 					const start = new Date(moment(data.startTime).toDate()).getTime();
 					embed.addField('State', 'Preparation Day')
 						.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);

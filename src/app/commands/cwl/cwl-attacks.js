@@ -99,8 +99,10 @@ class CwlAttacksComamnd extends Command {
 			});
 			const data = await res.json();
 			if ((data.clan && data.clan.tag === clan.tag) || (data.opponent && data.opponent.tag === clan.tag)) {
-				embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
-					.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`);
+				const myclan = data.clan.tag === clan.tag ? data.clan : data.opponent;
+				const oppclan = data.clan.tag === clan.tag ? data.opponent : data.clan;
+				embed.setAuthor(`${myclan.name} (${myclan.tag})`, myclan.badgeUrls.medium)
+					.addField('War Against', `${oppclan.name} (${oppclan.tag})`);
 				if (data.state === 'warEnded') {
 					const end = new Date(moment(data.endTime).toDate()).getTime();
 					embed.addField('State', 'War Ended')
