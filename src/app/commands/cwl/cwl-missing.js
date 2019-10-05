@@ -117,7 +117,7 @@ class CwlMissingComamnd extends Command {
 					const started = new Date(moment(data.startTime).toDate()).getTime();
 					let missing = '';
 					const myclan = data.clan.tag === clan.tag ? data.clan : data.opponent;
-					const oppclan = data.clan.tag === clan.tag ? data.oppclan : data.clan;
+					const oppclan = data.clan.tag === clan.tag ? data.opponent : data.clan;
 					embed.setAuthor(`${myclan.name} (${myclan.tag})`, myclan.badgeUrls.medium);
 					for (const member of this.short(myclan.members)) {
 						if (member.attacks && member.attacks.length === 1) continue;
