@@ -52,7 +52,7 @@ class CwlWarComamnd extends Command {
 		const round = yield {
 			match: 'option',
 			flag: ['--round', '-r'],
-			type: Argument.range('integer', 1, 7, true)
+			type: Argument.range('integer', 1, Infinity, true)
 		};
 
 		const data = yield {
