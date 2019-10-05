@@ -114,7 +114,7 @@ class CwlAttacksComamnd extends Command {
 			return message.util.send({ embed });
 		}
 		const rounds = round
-			? body.rounds[round - 1]
+			? body.rounds[round - 1].warTags
 			: body.rounds.filter(d => !d.warTags.includes('#0'))
 				.slice(-2)
 				.reverse()
