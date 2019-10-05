@@ -127,6 +127,7 @@ class CwlMissingComamnd extends Command {
 						'**War Against**',
 						`${oppclan.name} (${oppclan.tag})`,
 						'',
+						'**Missing Attacks**',
 						missing || '\u200b'
 					]);
 					embed.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
