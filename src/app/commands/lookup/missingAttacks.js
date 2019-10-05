@@ -65,7 +65,7 @@ class MissingAttacksCommand extends Command {
 
 	async exec(message, { data, cwl }) {
 		if (cwl) {
-			const command = this.client.commandHandler.modules.get('play');
+			const command = this.client.commandHandler.modules.get('cwl-missing');
 			return this.client.commandHandler.runCommand(message, command, { data });
 		}
 		const embed = new MessageEmbed()
