@@ -23,7 +23,8 @@ class CwlAttacksComamnd extends Command {
 						]
 					}
 				]
-			}
+			},
+			optionFlags: ['--round', '-r']
 		});
 	}
 
@@ -33,6 +34,12 @@ class CwlAttacksComamnd extends Command {
 	}
 
 	*args() {
+		const round = yield {
+			match: 'option',
+			flag: ['--round', '-r'],
+			type: Argument.range('integer', 1, Infinity, true)
+		};
+
 		const data = yield {
 			type: async (msg, str) => {
 				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
@@ -60,10 +67,10 @@ class CwlAttacksComamnd extends Command {
 			}
 		};
 
-		return { data };
+		return { data, round };
 	}
 
-	async exec(message, { data }) {
+	async exec(message, { data, round }) {
 		await message.util.send('**Fetching data... <a:loading:538989228403458089>**');
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
@@ -81,17 +88,38 @@ class CwlAttacksComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data);
+		return this.rounds(message, body, data, round);
 	}
 
-	async rounds(message, body, clan) {
+	async rounds(message, body, clan, round) {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1);
-		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'))
-			.slice(-2)
-			.reverse()
-			.pop()
-			.warTags;
+		const availableRounds = body.rounds.filter(r => !r.warTags.includes('#0')).length;
+		if (round && round > availableRounds) {
+			embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`)
+				.setDescription([
+					'This round is not available yet!',
+					'',
+					'**Available Rounds**',
+					'',
+					Array(availableRounds)
+						.fill(0)
+						.map((x, i) => `**\`${i + 1}\`** <:green_tick:545874377523068930>`)
+						.join('\n'),
+					Array(body.rounds.length - availableRounds)
+						.fill(0)
+						.map((x, i) => `**\`${i + availableRounds + 1}\`** <:red_tick:545968755423838209>`)
+						.join('\n')
+				]);
+			return message.util.send({ embed });
+		}
+		const rounds = round
+			? body.rounds[round - 1]
+			: body.rounds.filter(d => !d.warTags.includes('#0'))
+				.slice(-2)
+				.reverse()
+				.pop()
+				.warTags;
 
 		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
@@ -105,8 +133,16 @@ class CwlAttacksComamnd extends Command {
 					.addField('War Against', `${oppclan.name} (${oppclan.tag})`);
 				if (data.state === 'warEnded') {
 					const end = new Date(moment(data.endTime).toDate()).getTime();
-					embed.addField('State', 'War Ended')
-						.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+					embed.addField('State', 'War Ended');
+					let missing = '';
+					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
+					for (const member of this.short(clanMembers)) {
+						if (!member.attacks) continue;
+						missing += `${member.mapPosition}. ${member.name} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
+					}
+
+					embed.addField('Attacks', `${missing || 'Nobody Attacked Yet'}`);
+					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
 							`\\⭐ ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% \\⚔ ${data.clan.attacks}`,
@@ -116,6 +152,7 @@ class CwlAttacksComamnd extends Command {
 						]);
 				}
 				if (data.state === 'inWar') {
+					embed.addField('State', 'In War');
 					const started = new Date(moment(data.startTime).toDate()).getTime();
 					let missing = '';
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
