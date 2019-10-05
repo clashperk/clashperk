@@ -21,10 +21,10 @@ const TownHallEmoji = {
 	12: '<:townhall12:534745574981894154>'
 };
 
-class CwlMissingComamnd extends Command {
+class CwlAttacksComamnd extends Command {
 	constructor() {
-		super('cwl-missing', {
-			aliases: ['cwl-missing'],
+		super('cwl-attacks', {
+			aliases: ['cwl-attacks'],
 			category: 'cwl',
 			description: {
 				content: 'Shows info about current cwl war.',
@@ -141,13 +141,13 @@ class CwlMissingComamnd extends Command {
 					let missing = '';
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.short(clanMembers)) {
-						if (member.attacks && member.attacks.length === 1) continue;
-						missing += `**${member.mapPosition}.** ${member.name} ${member.tag} \n`;
+						if (!member.attacks) continue;
+						missing += `**${member.mapPosition}.** ${member.name} ${member.tag} \\⭐ ${member.attacks.stars} \\🔥 ${member.attacks.destructionPercentage}% \n`;
 					}
 
 					embed.addField('State', 'In War')
 						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-						.setDescription(['Missing Attacks', '', missing])
+						.addField('Attacks', missing)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
 							`\\⭐ ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% \\⚔ ${data.clan.attacks}`,
@@ -171,4 +171,4 @@ class CwlMissingComamnd extends Command {
 	}
 }
 
-module.exports = CwlMissingComamnd;
+module.exports = CwlAttacksComamnd;
