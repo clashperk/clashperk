@@ -21,10 +21,10 @@ const TownHallEmoji = {
 	12: '<:townhall12:534745574981894154>'
 };
 
-class CwlWarComamnd extends Command {
+class CwlMissingComamnd extends Command {
 	constructor() {
-		super('cwl-war', {
-			aliases: ['cwl-war'],
+		super('cwl-missing', {
+			aliases: ['cwl-missing'],
 			category: 'cwl',
 			description: {
 				content: 'Shows info about current cwl war.',
@@ -103,32 +103,18 @@ class CwlWarComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data, round);
+		return this.rounds(message, body, data);
 	}
 
-	async rounds(message, body, clan, round) {
+	async rounds(message, body, clan) {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1);
-		const rounds = round ? body.rounds[round - 1].warTags : body.rounds.filter(d => !d.warTags.includes('#0')).pop().warTags;
-		const availableRounds = body.rounds.filter(r => !r.warTags.includes('#0')).length;
-		if (round && round > availableRounds) {
-			embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`)
-				.setDescription([
-					'This round is not available yet!',
-					'',
-					'**Available Rounds**',
-					'',
-					Array(availableRounds)
-						.fill(0)
-						.map((x, i) => `**\`${i + 1}\`** <:green_tick:545874377523068930>`)
-						.join('\n'),
-					Array(body.rounds.length - availableRounds)
-						.fill(0)
-						.map((x, i) => `**\`${i + availableRounds + 1}\`** <:red_tick:545968755423838209>`)
-						.join('\n')
-				]);
-			return message.util.send({ embed });
-		}
+		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'))
+			.slice(-2)
+			.reverse()
+			.pop()
+			.warTags;
+
 		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
@@ -152,8 +138,16 @@ class CwlWarComamnd extends Command {
 				}
 				if (data.state === 'inWar') {
 					const started = new Date(moment(data.startTime).toDate()).getTime();
+					let missing = '';
+					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
+					for (const member of this.short(clanMembers)) {
+						if (member.attacks && member.attacks.length === 1) continue;
+						missing += `**${member.mapPosition}.** ${member.name} ${member.tag} ~ ${member.attacks ? 2 - member.attacks.length : 2} \n`;
+					}
+
 					embed.addField('State', 'In War')
 						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+						.addField('Missing Attacks', missing)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
 							`\\⭐ ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% \\⚔ ${data.clan.attacks}`,
@@ -167,61 +161,14 @@ class CwlWarComamnd extends Command {
 					embed.addField('State', 'Preparation Day')
 						.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
 				}
-				embed.addField('Rosters', [
-					`**${data.clan.name}**`,
-					await this.count(data.clan.members),
-					'',
-					`**${data.opponent.name}**`,
-					await this.count(data.opponent.members)
-				]);
 			}
 		}
 		return message.util.send({ embed });
 	}
 
-	async count(members) {
-		let TH12 = 0;
-		let TH11 = 0;
-		let TH10 = 0;
-		let TH09 = 0;
-		let TH08 = 0;
-		let TH07 = 0;
-		let TH06 = 0;
-		let TH05 = 0;
-		let TH04 = 0;
-		let TH03 = 0;
-		let TH02 = 0;
-		let TH01 = 0;
-		for (const member of members) {
-			const TownHAll = member.townhallLevel;
-			if (TownHAll === 12) ++TH12;
-			if (TownHAll === 11) ++TH11;
-			if (TownHAll === 10) TH10++;
-			if (TownHAll === 9) TH09++;
-			if (TownHAll === 8) TH08++;
-			if (TownHAll === 7) TH07++;
-			if (TownHAll === 6) TH06++;
-			if (TownHAll === 5) TH05++;
-			if (TownHAll === 4) TH04++;
-			if (TownHAll === 3) TH03++;
-			if (TownHAll === 2) TH02++;
-			if (TownHAll === 1) TH01++;
-		}
-		const data = oneLine`
-            ${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12} `} ` : ''}
-            ${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`} ` : ''}
-            ${TH10 > 0 ? `${TownHallEmoji[10]} ${TH10 < 10 ? `0${TH10}` : `${TH10}`} ` : ''}
-            ${TH09 > 0 ? `${TownHallEmoji[9]} ${TH09 < 10 ? `0${TH09}` : `${TH09}`} ` : ''}
-            ${TH08 > 0 ? `${TownHallEmoji[8]} ${TH08 < 10 ? `0${TH08}` : `${TH08}`} ` : ''}
-            ${TH07 > 0 ? `${TownHallEmoji[7]} ${TH07 < 10 ? `0${TH07}` : `${TH07}`} ` : ''}
-            ${TH06 > 0 ? `${TownHallEmoji[6]} ${TH06 < 10 ? `0${TH06}` : `${TH06}`} ` : ''}
-            ${TH05 > 0 ? `${TownHallEmoji[5]} ${TH05 < 10 ? `0${TH05}` : `${TH05}`} ` : ''}
-            ${TH04 > 0 ? `${TownHallEmoji[4]} ${TH04 < 10 ? `0${TH04}` : `${TH04}`} ` : ''}
-            ${TH03 > 0 ? `${TownHallEmoji[3]} ${TH03 < 10 ? `0${TH03}` : `${TH03}`} ` : ''}
-            ${TH02 > 0 ? `${TownHallEmoji[2]} ${TH02 < 10 ? `0${TH02}` : `${TH02}`} ` : ''}
-            ${TH01 > 0 ? `${TownHallEmoji[1]} ${TH01 < 10 ? `0${TH01}` : `${TH01}`} ` : ''}`;
-		return data;
+	short(items) {
+		return items.sort((a, b) => a.mapPosition - b.mapPosition);
 	}
 }
 
-module.exports = CwlWarComamnd;
+module.exports = CwlMissingComamnd;
