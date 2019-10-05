@@ -109,7 +109,6 @@ class CwlWarComamnd extends Command {
 	async rounds(message, body, clan, round) {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1);
-		const rounds = round ? body.rounds[round - 1].warTags : body.rounds.filter(d => !d.warTags.includes('#0')).pop().warTags;
 		const availableRounds = body.rounds.filter(r => !r.warTags.includes('#0')).length;
 		if (round && round > availableRounds) {
 			embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`)
@@ -129,6 +128,8 @@ class CwlWarComamnd extends Command {
 				]);
 			return message.util.send({ embed });
 		}
+
+		const rounds = round ? body.rounds[round - 1].warTags : body.rounds.filter(d => !d.warTags.includes('#0')).pop().warTags;
 		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
