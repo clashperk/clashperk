@@ -122,7 +122,7 @@ class CwlAttacksComamnd extends Command {
 						missing += `${member.name} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
 					}
 
-					embed.addField('Attacks', `${missing}\u200b`)
+					embed.addField('Attacks', `${missing || '\u200b'}`)
 						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
