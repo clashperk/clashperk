@@ -175,6 +175,7 @@ class CwlWarComamnd extends Command {
 					`**${data.opponent.name}**`,
 					await this.count(data.opponent.members)
 				]);
+				embed.setFooter(`Round #${round || availableRounds}`);
 			}
 		}
 		return message.util.send({ embed });
