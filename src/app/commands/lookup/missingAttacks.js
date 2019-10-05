@@ -17,7 +17,8 @@ class MissingAttacksCommand extends Command {
 				content: 'Shows info about missing attacks.',
 				usage: '<tag>',
 				examples: ['#8QU8J9LP', '8QU8J9LP']
-			}
+			},
+			flags: ['--cwl', '-cwl', 'cwl']
 		});
 	}
 
@@ -48,7 +49,13 @@ class MissingAttacksCommand extends Command {
 				retry: 'what would you like to search for?'
 			}
 		};
-		return { data };
+
+		const cwl = yield {
+			match: 'flag',
+			flag: ['--cwl', '-cwl', 'cwl']
+		};
+
+		return { data, cwl };
 	}
 
 	cooldown(message) {
@@ -56,7 +63,11 @@ class MissingAttacksCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data }) {
+	async exec(message, { data, cwl }) {
+		if (cwl) {
+			const command = this.client.commandHandler.modules.get('play');
+			return this.client.commandHandler.runCommand(message, command, { data });
+		}
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ↗`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)

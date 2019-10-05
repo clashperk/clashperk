@@ -6,13 +6,13 @@ const { MessageEmbed } = require('discord.js');
 const { geterror, fetcherror } = require('../../util/constants');
 const { firestore } = require('../../struct/Database');
 
-class CwlAttacksComamnd extends Command {
+class CwlMissingComamnd extends Command {
 	constructor() {
-		super('cwl-attacks', {
-			aliases: ['cwl-attacks'],
+		super('cwl-missing', {
+			aliases: ['cwl-missing'],
 			category: 'cwl',
 			description: {
-				content: 'Shows attacks of current cwl.',
+				content: 'Shows missing attacks of current cwl.',
 				usage: '<tag>',
 				examples: ['#8QU8J9LP'],
 				fields: [
@@ -99,9 +99,9 @@ class CwlAttacksComamnd extends Command {
 			});
 			const data = await res.json();
 			if ((data.clan && data.clan.tag === clan.tag) || (data.opponent && data.opponent.tag === clan.tag)) {
-				embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
-					.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`);
 				if (data.state === 'warEnded') {
+					embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
+						.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`);
 					const end = new Date(moment(data.endTime).toDate()).getTime();
 					embed.addField('State', 'War Ended')
 						.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
@@ -116,14 +116,21 @@ class CwlAttacksComamnd extends Command {
 				if (data.state === 'inWar') {
 					const started = new Date(moment(data.startTime).toDate()).getTime();
 					let missing = '';
-					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
-					for (const member of this.short(clanMembers)) {
-						if (!member.attacks) continue;
-						missing += `${member.mapPosition}. ${member.name} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
+					const myclan = data.clan.tag === clan.tag ? data.clan : data.opponent;
+					const oppclan = data.clan.tag === clan.tag ? data.oppclan : data.clan;
+					embed.setAuthor(`${myclan.name} (${myclan.tag})`, myclan.badgeUrls.medium);
+					for (const member of this.short(myclan.members)) {
+						if (member.attacks && member.attacks.length === 1) continue;
+						missing += `${member.mapPosition}. ${member.name} \n`;
 					}
 
-					embed.addField('Attacks', `${missing || 'Nobody Attacked Yet'}`)
-						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+					embed.setDescription([
+						'**War Against**',
+						`${oppclan.name} (${oppclan.tag})`,
+						'',
+						missing || '\u200b'
+					]);
+					embed.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
 							`\\⭐ ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% \\⚔ ${data.clan.attacks}`,
@@ -133,6 +140,8 @@ class CwlAttacksComamnd extends Command {
 						]);
 				}
 				if (data.state === 'preparation') {
+					embed.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badgeUrls.medium)
+						.addField('War Against', `${data.opponent.name} (${data.opponent.tag})`);
 					const start = new Date(moment(data.startTime).toDate()).getTime();
 					embed.addField('State', 'Preparation Day')
 						.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
@@ -147,4 +156,4 @@ class CwlAttacksComamnd extends Command {
 	}
 }
 
-module.exports = CwlAttacksComamnd;
+module.exports = CwlMissingComamnd;
