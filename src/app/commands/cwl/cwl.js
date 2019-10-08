@@ -83,8 +83,8 @@ class CwlComamnd extends Command {
 		const result = this.split(members);
 		console.log(result.length);
 		if (Array.isArray(result)) {
-			embed.setDescription(result[0])
-				.addField(result[1]);
+			embed.setDescription([result[0], result[1]])
+				.addField('\u200b', result[2]);
 		}
 
 		return message.channel.send({ embed });
@@ -100,7 +100,7 @@ class CwlComamnd extends Command {
 	}
 
 	split(content) {
-		return Util.splitMessage(content, { maxLength: 2084 });
+		return Util.splitMessage(content, { maxLength: 1024 });
 	}
 }
 
