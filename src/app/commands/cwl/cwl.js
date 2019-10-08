@@ -25,12 +25,13 @@ const HeroEmojis = {
 class CwlComamnd extends Command {
 	constructor() {
 		super('cwl', {
-			aliases: ['cwl'],
-			category: 'beta',
+			aliases: ['cwl-warmap'],
+			category: 'owner',
+			ownerOnly: true,
 			description: {
-				content: '',
-				usage: '',
-				examples: []
+				content: 'CWL warmap command.',
+				usage: '<tag>',
+				examples: ['']
 			},
 			args: [
 				{
@@ -45,6 +46,11 @@ class CwlComamnd extends Command {
 		});
 	}
 
+	cooldown(message) {
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 2000;
+		return 15000;
+	}
+
 	async exec(message, { data }) {
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
@@ -53,26 +59,26 @@ class CwlComamnd extends Command {
 		const clan = await res.json();
 
 		const memberList = [];
-		for (const tag of data.memberList.map(member => member.tag)) {
+		for (const { tag, mapPosition } of clan.clans.find(clan => clan.tag === data.tag).members) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const res = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` } });
 			const member = await res.json();
-			console.log(member.heroes.filter(a => a.village === 'home').map(hero => `${HeroEmojis[hero.name]} ${hero.level}`));
-			memberList.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel, hero: member.heroes.filter(a => a.village === 'home').map(hero => `${HeroEmojis[hero.name]} ${hero.level}`) });
+			memberList.push({
+				mapPosition,
+				tag: member.tag,
+				name: member.name,
+				townHallLevel: member.townHallLevel,
+				hero: member.heroes.filter(a => a.village === 'home').map(hero => `${HeroEmojis[hero.name]} ${hero.level}`)
+			});
 		}
 
 
-		const members = clan.clans.find(clan => clan.tag === data.tag).members;
-		let mem = '';
+		let members = '';
 		for (const member of memberList) {
-			if (members.find(m => m.tag === member.tag)) {
-				mem += `${TownHallEmoji[member.townHallLevel]} ${member.name} ${member.tag} ${member.hero} \n`;
-				console.log(`${TownHallEmoji[member.townHallLevel]} ${member.name} ${member.tag} ${member.hero}`);
-			}
+			members += `${TownHallEmoji[member.townHallLevel]} ${member.name} ${member.tag} ${member.hero} \n`;
 		}
-		console.log(mem);
-		return message.channel.send(mem, { split: true });
+		return message.channel.send(members, { split: true });
 	}
 }
 
-// module.exports = CwlComamnd;
+module.exports = CwlComamnd;
