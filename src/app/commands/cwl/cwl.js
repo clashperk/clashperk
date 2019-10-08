@@ -71,12 +71,35 @@ class CwlComamnd extends Command {
 			});
 		}
 
+		const chunk = 10;
+		const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
+		const array = [];
+		for (let i = 0; i < arr.length; i += chunk) {
+			array.push(arr.slice(i, i + chunk));
+		}
 
 		let members = '';
-		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
+		/* for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
 			members += `${TownHallEmoji[member.townHallLevel]} ${member.name}\n${member.hero} \n`;
+		}*/
+
+		const embed = this.client.util.embed();
+		for (const chunk of this.chunk(memberList.sort((a, b) => b.townHallLevel - a.townHallLevel))) {
+			for (const member of chunk) {
+				members += `${TownHallEmoji[member.townHallLevel]} ${member.name}\n${member.hero} \n`;
+			}
+			embed.addField('\u200b', members);
 		}
 		return message.channel.send(members, { split: true });
+	}
+
+	chunk(items = []) {
+		const chunk = 10;
+		const array = [];
+		for (let i = 0; i < items.length; i += chunk) {
+			array.push(items.slice(i, i + chunk));
+		}
+		return array;
 	}
 }
 
