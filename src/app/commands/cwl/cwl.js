@@ -90,7 +90,7 @@ class CwlComamnd extends Command {
 			}
 			embed.addField('\u200b', members);
 		}
-		return message.channel.send(members, { split: true });
+		return message.channel.send({ embed });
 	}
 
 	chunk(items = []) {
