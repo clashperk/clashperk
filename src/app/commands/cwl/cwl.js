@@ -59,12 +59,11 @@ class CwlComamnd extends Command {
 		const clan = await res.json();
 
 		const memberList = [];
-		for (const { tag, mapPosition } of clan.clans.find(clan => clan.tag === data.tag).members) {
+		for (const { tag } of clan.clans.find(clan => clan.tag === data.tag).members) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const res = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` } });
 			const member = await res.json();
 			memberList.push({
-				mapPosition,
 				tag: member.tag,
 				name: member.name,
 				townHallLevel: member.townHallLevel,
@@ -75,7 +74,7 @@ class CwlComamnd extends Command {
 
 		let members = '';
 		for (const member of memberList) {
-			members += `**${member.mapPosition}.** ${member.name}\n\u200b \u200b${TownHallEmoji[member.townHallLevel]} ${member.hero} \n`;
+			members += `${member.name}\n\u200b \u200b${TownHallEmoji[member.townHallLevel]} ${member.hero} \n`;
 		}
 		return message.channel.send(members, { split: true });
 	}
