@@ -1,5 +1,6 @@
 const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
+const { Util } = require('discord.js');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -71,25 +72,21 @@ class CwlComamnd extends Command {
 			});
 		}
 
-		const chunk = 10;
-		const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31];
-		const array = [];
-		for (let i = 0; i < arr.length; i += chunk) {
-			array.push(arr.slice(i, i + chunk));
-		}
-
 		let members = '';
-		/* for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
-			members += `${TownHallEmoji[member.townHallLevel]} ${member.name}\n${member.hero} \n`;
-		}*/
-
+		// let index = 0;
 		const embed = this.client.util.embed();
-		for (const chunk of this.chunk(memberList.sort((a, b) => b.townHallLevel - a.townHallLevel))) {
-			for (const member of chunk) {
-				members += `${TownHallEmoji[member.townHallLevel]} ${member.name}\n${member.hero} \n`;
-			}
-			embed.addField('\u200b', members);
+
+		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
+			members += `${TownHallEmoji[member.townHallLevel]} ${member.name}\n${member.hero} \n`;
 		}
+
+		const result = this.split(members);
+		console.log(result.length);
+		if (Array.isArray(result)) {
+			embed.setDescription(result[0])
+				.addField(result[1]);
+		}
+
 		return message.channel.send({ embed });
 	}
 
@@ -100,6 +97,10 @@ class CwlComamnd extends Command {
 			array.push(items.slice(i, i + chunk));
 		}
 		return array;
+	}
+
+	split(content) {
+		return Util.splitMessage(content, { maxLength: 2084 });
 	}
 }
 
