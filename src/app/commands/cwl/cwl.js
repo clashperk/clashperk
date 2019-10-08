@@ -75,7 +75,7 @@ class CwlComamnd extends Command {
 
 		let members = '';
 		for (const member of memberList) {
-			members += `${TownHallEmoji[member.townHallLevel]} ${member.name} ${member.tag} ${member.hero} \n`;
+			members += `**${member.mapPosition}.** ${member.name}\n\u200b \u200b${TownHallEmoji[member.townHallLevel]} ${member.hero} \n`;
 		}
 		return message.channel.send(members, { split: true });
 	}
