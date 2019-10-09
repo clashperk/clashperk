@@ -74,19 +74,21 @@ class CwlComamnd extends Command {
 		}
 
 		let members = '';
-		const embed = this.client.util.embed()
-			.setTitle(stripIndent`${heroes[0]}  ${heroes[1]}  ${heroes[2]}  ${heroes[3]}    '\u200b`);
+		const embed = this.client.util.embed();
+		// .setTitle(stripIndent`${heroes[0]}  ${heroes[1]}  ${heroes[2]}  ${heroes[3]}    \u200b`);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
 			members += stripIndent`${this.padStart(member.townHallLevel)}  ${member.heroes.map(x => this.padStart(x.level)).join('  ')}  ${member.name}`;
 			members += '\n';
 		}
 
-		console.log(members.length);
-
+		const header = stripIndent`TH  BK  AQ  GW  PLAYER`;
 		const result = this.split(members);
 		if (Array.isArray(result)) {
-			embed.setDescription(`\`\`\`js\n${result[0]}\n\`\`\``);
+			embed.setDescription([
+				`\`\`\`\n${header}\n\`\`\``,
+				`\`\`\`js\n${result[0]}\n\`\`\``
+			]);
 		}
 
 		return message.channel.send({ embed });
