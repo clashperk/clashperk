@@ -78,7 +78,7 @@ class CwlComamnd extends Command {
 		// .setTitle(stripIndent`${heroes[0]}  ${heroes[1]}  ${heroes[2]}  ${heroes[3]}    \u200b`);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
-			members += stripIndent`${this.padStart(member.townHallLevel)}  ${member.heroes.map(x => this.padStart(x.level)).join('  ')}  ${member.name}`;
+			members += stripIndent`${this.padStart(member.townHallLevel)}  ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join('  ')}  ${member.name}`;
 			members += '\n';
 		}
 
@@ -86,7 +86,7 @@ class CwlComamnd extends Command {
 		const result = this.split(members);
 		if (Array.isArray(result)) {
 			embed.setDescription([
-				`\`\`\`js\n${header}\n${result[0]}\n\`\`\``
+				`**\`\`\`css\n${header}\`\`\`**\u200b\`\`\`json\n${result[0]}\n\`\`\``
 			]);
 		}
 
@@ -100,6 +100,14 @@ class CwlComamnd extends Command {
 			array.push(items.slice(i, i + chunk));
 		}
 		return array;
+	}
+
+	heroes(items) {
+		return Object.assign([
+			{ level: '00' },
+			{ level: '00' },
+			{ level: '00' }
+		], items);
 	}
 
 	padStart(number) {
