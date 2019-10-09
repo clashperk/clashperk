@@ -142,7 +142,7 @@ class CwlComamnd extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[0]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
@@ -151,7 +151,7 @@ class CwlComamnd extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[1]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
@@ -160,7 +160,7 @@ class CwlComamnd extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[2]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
@@ -169,7 +169,7 @@ class CwlComamnd extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[3]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
@@ -178,7 +178,7 @@ class CwlComamnd extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[4]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
@@ -187,7 +187,7 @@ class CwlComamnd extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[5]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
@@ -196,7 +196,7 @@ class CwlComamnd extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[6]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
@@ -205,7 +205,7 @@ class CwlComamnd extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[7]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
@@ -214,7 +214,7 @@ class CwlComamnd extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[8]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
@@ -223,7 +223,7 @@ class CwlComamnd extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[9]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
