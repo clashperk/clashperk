@@ -81,15 +81,15 @@ class CwlComamnd extends Command {
 			members += stripIndents`${TownHallEmoji[member.townHallLevel]}  ${member.heroes.map(x => x.level).join('  ')}  ${member.name} \n`;
 		}
 
-		console.log(members);
+		console.log(members.length);
 
-		const result = this.split(members);
+		/* const result = this.split(members);
 		if (Array.isArray(result)) {
 			embed.setDescription([result[0], result[1]])
 				.addField('\u200b', result[2]);
-		}
+		}*/
 
-		return message.channel.send({ embed });
+		return message.channel.send(members, { split: true });
 	}
 
 	chunk(items = []) {
