@@ -15,91 +15,57 @@ class Firebase {
 	}
 
 	async commandcounter() {
-		const ref = await firebase.ref('stats');
-		const data = await ref.once('value').then(snap => snap.val());
-		if (data && data.commands_used) {
-			firebase.ref('stats').update({
-				commands_used: data.commands_used + 1
+		return firebase.ref('stats')
+			.child('commands_used')
+			.transaction(usage => {
+				if (usage === null) return 1;
+				return usage + 1;
 			}, error => {
-				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
+				if (error) Logger.error(error, { level: 'FIREBASE' });
 			});
-		} else {
-			firebase.ref('stats').update({
-				commands_used: 1
-			}, error => {
-				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
-			});
-		}
 	}
 
 	async commands(command) {
-		const ref = await firebase.ref('commands');
-		const data = await ref.once('value').then(snap => snap.val());
-		if (data && data[command]) {
-			firebase.ref('commands').update({
-				[command]: data[command] + 1
+		return firebase.ref('commands')
+			.child(command)
+			.transaction(usage => {
+				if (usage === null) return 1;
+				return usage + 1;
 			}, error => {
-				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
+				if (error) Logger.error(error, { level: 'FIREBASE' });
 			});
-		} else {
-			firebase.ref('commands').update({
-				[command]: 1
-			}, error => {
-				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
-			});
-		}
-
-		return data ? data[command] : 1;
 	}
 
 	async users(user) {
-		const ref = await firebase.ref('users');
-		const data = await ref.once('value').then(snap => snap.val());
-		if (data && data[user]) {
-			firebase.ref('users').update({
-				[user]: data[user] + 1
+		return firebase.ref('users')
+			.child(user)
+			.transaction(usage => {
+				if (usage === null) return 1;
+				return usage + 1;
 			}, error => {
-				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
+				if (error) Logger.error(error, { level: 'FIREBASE' });
 			});
-		} else {
-			firebase.ref('users').update({
-				[user]: 1
-			}, error => {
-				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
-			});
-		}
-
-		return data ? data[user] : 1;
 	}
 
 	async guilds(guild) {
-		const ref = await firebase.ref('guilds');
-		const data = await ref.once('value').then(snap => snap.val());
-		if (data && data[guild]) {
-			firebase.ref('guilds').update({
-				[guild]: data[guild] + 1
+		return firebase.ref('guilds')
+			.child(guild)
+			.transaction(usage => {
+				if (usage === null) return 1;
+				return usage + 1;
 			}, error => {
-				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
+				if (error) Logger.error(error, { level: 'FIREBASE' });
 			});
-		} else {
-			firebase.ref('guilds').update({
-				[guild]: 1
-			}, error => {
-				if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
-			});
-		}
-
-		return data ? data[guild] : 1;
 	}
 
 	async stats() {
-		firebase.ref('stats').update({
+		return firebase.ref('stats').update({
 			uptime: moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }),
 			users: this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0) || this.client.users.size,
 			guilds: this.client.guilds.size,
 			channels: this.client.channels.size
 		}, error => {
-			if (error) Logger.error(error.toString(), { level: 'FIREBASE' });
+			if (error) Logger.error(error, { level: 'FIREBASE' });
 		});
 	}
 }
