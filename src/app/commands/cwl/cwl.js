@@ -18,6 +18,7 @@ const TownHallEmoji = {
 };
 
 const heroes = [
+	'<:townhall:631389478568591370>',
 	'<:barbarianking:524939911581663242>',
 	'<:archerqueen:524939902408720394>',
 	'<:grandwarden:524939931303411722>'
@@ -75,7 +76,7 @@ class CwlComamnd extends Command {
 		let members = '';
 		// let index = 0;
 		const embed = this.client.util.embed()
-			.setTitle(stripIndent`#     ${heroes[0]}    ${heroes[1]}    ${heroes[2]}`);
+			.setTitle(stripIndent`${heroes[0]}    ${heroes[1]}    ${heroes[2]}    ${heroes[3]}`);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
 			members += stripIndent`${TownHallEmoji[member.townHallLevel]}    ${member.heroes.map(x => x.level).join('  \u200b  ')}    ${member.name}`;
