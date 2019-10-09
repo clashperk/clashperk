@@ -1,6 +1,7 @@
 const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
 const { Util } = require('discord.js');
+const { stripIndents, stripIndent } = require('common-tags');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -16,12 +17,11 @@ const TownHallEmoji = {
 	12: '<:townhall12:534745574981894154>'
 };
 
-const HeroEmojis = {
-	'Barbarian King': '<:barbarianking:524939911581663242>',
-	'Archer Queen': '<:archerqueen:524939902408720394>',
-	'Grand Warden': '<:grandwarden:524939931303411722>',
-	'Battle Machine': '<:warmachine:524939920943349781>'
-};
+const heroes = [
+	'<:barbarianking:524939911581663242>',
+	'<:archerqueen:524939902408720394>',
+	'<:grandwarden:524939931303411722>'
+];
 
 class CwlComamnd extends Command {
 	constructor() {
@@ -68,16 +68,17 @@ class CwlComamnd extends Command {
 				tag: member.tag,
 				name: member.name,
 				townHallLevel: member.townHallLevel,
-				hero: member.heroes.filter(a => a.village === 'home').map(hero => `${HeroEmojis[hero.name]} ${hero.level}`)
+				heroes: member.heroes.filter(a => a.village === 'home')
 			});
 		}
 
 		let members = '';
 		// let index = 0;
-		const embed = this.client.util.embed();
+		const embed = this.client.util.embed()
+			.setTitle(stripIndent`#  ${heroes[0]}  ${heroes[1]}  ${heroes[2]}`);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
-			members += `${TownHallEmoji[member.townHallLevel]} ${member.name}\n${member.hero} \n`;
+			members += stripIndents`${TownHallEmoji[member.townHallLevel]}  ${this.heroLevel(member.heroes).map(x => x).join('  ')}  ${member.name}\n`;
 		}
 
 		const result = this.split(members);
@@ -97,6 +98,15 @@ class CwlComamnd extends Command {
 			array.push(items.slice(i, i + chunk));
 		}
 		return array;
+	}
+
+	heroLevel(items = []) {
+		const source = items.reduce((a, b) => {
+			if (b < 10) b = b.toString().padStart(2, 0);
+			a.push(b);
+			return a;
+		}, []);
+		return Object.assign(Array(3).fill('00'), source);
 	}
 
 	split(content) {
