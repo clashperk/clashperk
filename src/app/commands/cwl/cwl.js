@@ -1,27 +1,19 @@
 const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
 const { Util } = require('discord.js');
-const { stripIndents, stripIndent } = require('common-tags');
+const { stripIndent } = require('common-tags');
 
-const TownHallEmoji = {
-	2: '<:townhall2:534745498561806357>',
-	3: '<:townhall3:534745539510534144>',
-	4: '<:townhall4:534745571798286346>',
-	5: '<:townhall5:534745574251954176>',
-	6: '<:townhall6:534745574738624524>',
-	7: '<:townhall7:534745575732805670>',
-	8: '<:townhall8:534745576802353152>',
-	9: '<:townhall9:534745577033039882>',
-	10: '<:townhall10:534745575757709332>',
-	11: '<:townhall11:534745577599270923>',
-	12: '<:townhall12:534745574981894154>'
-};
-
-const heroes = [
-	'<:townhall:631389478568591370>',
-	'<:barbarianking:524939911581663242>',
-	'<:archerqueen:524939902408720394>',
-	'<:grandwarden:524939931303411722>'
+const API = [
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImIzYTdkMDcxLTM0M2UtNDA2Yy04MDQ0LWFmNDk0NmQ1OGVhNSIsImlhdCI6MTU2ODMwNjEwNSwic3ViIjoiZGV2ZWxvcGVyLzNiZTY0NzFkLWM1ODAtNjIyMy0xOWNhLTRkY2ZmNzhiMDBiNCIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.OWvKCU1bdNx0to3d316jsH2xwfZ8mKfnZypNetsBakbhrwOiiWojkAWiKd2iM0Bdqx7cIXTlJgZptpx-YKyWgw',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImRjYzA1ZWU0LWFjZWMtNGY5My1hZWNiLWJjOTU1YThiYmUxMiIsImlhdCI6MTU2ODMwNjExMywic3ViIjoiZGV2ZWxvcGVyLzNiZTY0NzFkLWM1ODAtNjIyMy0xOWNhLTRkY2ZmNzhiMDBiNCIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.N75KyVEJSwOPLoKtXjkhQ1v38LQMIhj8LA6hQqMLHT2ctTHN5ipI73s01Yzibhg59jeipMDLC6fLlH4x155lTA',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjI0NmFlYzU1LTgxZWYtNDNlOS05MzkxLThlNGVhYTlkOTAyZSIsImlhdCI6MTU2ODMwNjEyMiwic3ViIjoiZGV2ZWxvcGVyLzNiZTY0NzFkLWM1ODAtNjIyMy0xOWNhLTRkY2ZmNzhiMDBiNCIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.xr2AStr1a1n9R56BFA1TAn8qgEYGraX23ZmOxV3xJKb2zVZyGT4fSeVrKWDIie682dO_MnYQE8rlTXPmepgYIg',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjM1ZTE3OWU2LWViZWEtNGMxYS05NzlkLTQ4MjM3NTkzNzcwMyIsImlhdCI6MTU2ODMwNjEzMywic3ViIjoiZGV2ZWxvcGVyLzNiZTY0NzFkLWM1ODAtNjIyMy0xOWNhLTRkY2ZmNzhiMDBiNCIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.jNDGf9xsDjKZYHMIGAMU4APdMm1WtX3FjoxCT6Mpc2RoxqICDyeBjrZyWGgeZ1woif4yUxAl0ZK9njhdLD9h_w',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjRkM2EyMWQ1LWNmODYtNDVkOS04OWFhLWRjYTI1MDliODc1YSIsImlhdCI6MTU2ODMwNjE0MSwic3ViIjoiZGV2ZWxvcGVyLzNiZTY0NzFkLWM1ODAtNjIyMy0xOWNhLTRkY2ZmNzhiMDBiNCIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.O3gLGXp8p3br0JGEHl_DGUZM0DVWF2FOH81unCZ79FvjW8catobY8JbPV8bD0X8TzrgsQX-8UexCMSXtVV8miw',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjQ0NGFjMDdmLWY0NmYtNDBiYS1iYjllLTRkNmFlYjQ5MzYwNCIsImlhdCI6MTU2ODM0Njc2Mywic3ViIjoiZGV2ZWxvcGVyL2ZiMjgwMWUyLTA5ZGUtYjU0OC05ZWEwLTkzMDExYzY1YmUyYiIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.SeHrl1cNjeXj7YNFRydDYH8waM7H1ZJP4kVtkAe9fsomhZLWaDAQMuS4Dr8_WFFFsqYNlUVG-BP9gnQMrqJ8Hw',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjM0NDhlNThmLTc4ODYtNGE0Yy1hYTM3LWNiZWFjNzc0MDkzYiIsImlhdCI6MTU2ODM0Njc3MCwic3ViIjoiZGV2ZWxvcGVyL2ZiMjgwMWUyLTA5ZGUtYjU0OC05ZWEwLTkzMDExYzY1YmUyYiIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.5cGkrmcG5op7bpmvqBNjXl7eQAbdjgxtEEqEvto2eXgniIgWXdkRqJUGDP4UVyclR7fIfrH1fNTUtQvoYv-VaQ',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjZiNTk0MTJlLTViNTUtNDQwNS04ZjUxLTUxNTczYjE0ZDBjNiIsImlhdCI6MTU2ODM0Njc4MCwic3ViIjoiZGV2ZWxvcGVyL2ZiMjgwMWUyLTA5ZGUtYjU0OC05ZWEwLTkzMDExYzY1YmUyYiIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.uBYFzBZ77aPlVtQlRoAwRFW4SOBPEdu39yg8qsQtHnwBacMbMjEQK1QwzB96vgX5sgses67P6J6MABu8MUXbzw',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6IjY4ZWJmYTBjLWMxOWYtNGI2MC05ZTJhLWVhMGYxYzVjZjBkMyIsImlhdCI6MTU2ODM0Njc5NCwic3ViIjoiZGV2ZWxvcGVyL2ZiMjgwMWUyLTA5ZGUtYjU0OC05ZWEwLTkzMDExYzY1YmUyYiIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.-PLch4MzuPXEfWItC91ar3hq8ke_wqvTQfeYRvBsAJpVUuh0jxtO5_RUdx9SF9yShCwItpuRI0fC3jnvbQUL6g',
+	'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6ImVkMjQ0NDJhLTA3OGUtNGJiMC1iMWE0LTIyZTc3YmZkOWIyMiIsImlhdCI6MTU2ODM0NjgwMSwic3ViIjoiZGV2ZWxvcGVyL2ZiMjgwMWUyLTA5ZGUtYjU0OC05ZWEwLTkzMDExYzY1YmUyYiIsInNjb3BlcyI6WyJjbGFzaCJdLCJsaW1pdHMiOlt7InRpZXIiOiJkZXZlbG9wZXIvc2lsdmVyIiwidHlwZSI6InRocm90dGxpbmcifSx7ImNpZHJzIjpbIjM0LjY3LjI0Mi40NSJdLCJ0eXBlIjoiY2xpZW50In1dfQ.46CiAxuj2qBclTPeh3s54TfhRIIQy4IOdVO96VH6fU0ng3XAFLC1sqPQPnGeX3tj_4O9gwooYUB1KMEXheBaFA'
 ];
 
 class CwlComamnd extends Command {
@@ -58,24 +50,52 @@ class CwlComamnd extends Command {
 		const res = await fetch(uri, {
 			method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 		});
+
+		if (!res.ok) {
+			const embed = this.client.util.embed()
+				.setColor(3093046)
+				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+				.setThumbnail(data.badgeUrls.medium)
+				.setDescription('CLAN IS NOT IN CWL');
+			return message.util.send({ embed });
+		}
+
 		const clan = await res.json();
 
+		const clanMembers = clan.clans.find(clan => clan.tag === data.tag).members;
+		const object_array = await Promise.all([
+			this.one(clanMembers.slice(0, 5).map(m => m.tag)),
+			this.two(clanMembers.slice(5, 10).map(m => m.tag)),
+			this.three(clanMembers.slice(10, 15).map(m => m.tag)),
+			this.four(clanMembers.slice(15, 20).map(m => m.tag)),
+			this.five(clanMembers.slice(20, 25).map(m => m.tag)),
+			this.six(clanMembers.slice(25, 30).map(m => m.tag)),
+			this.seven(clanMembers.slice(30, 35).map(m => m.tag)),
+			this.eight(clanMembers.slice(35, 40).map(m => m.tag)),
+			this.nine(clanMembers.slice(40, 45).map(m => m.tag)),
+			this.ten(clanMembers.slice(45, 50).map(m => m.tag))
+		]);
+
 		const memberList = [];
-		for (const { tag } of clan.clans.find(clan => clan.tag === data.tag).members) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const res = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` } });
-			const member = await res.json();
-			memberList.push({
-				tag: member.tag,
-				name: member.name,
-				townHallLevel: member.townHallLevel,
-				heroes: member.heroes.filter(a => a.village === 'home')
-			});
+		/* [[1, 4], [2], [3]].reduce((a, b) => {
+			a.push(...b);
+			return a;
+		}, []);*/
+		for (const array of object_array) {
+			for (const member of array) {
+				memberList.push({
+					tag: member.tag,
+					name: member.name,
+					townHallLevel: member.townHallLevel,
+					heroes: member.heroes.filter(a => a.village === 'home')
+				});
+			}
 		}
 
 		let members = '';
-		const embed = this.client.util.embed();
-		// .setTitle(stripIndent`${heroes[0]}  ${heroes[1]}  ${heroes[2]}  ${heroes[3]}    \u200b`);
+		const embed = this.client.util.embed()
+			.setColor(3093046)
+			.setAuthor(`${data.name} (${data.tag}) ~ ${memberList.length}`, data.badgeUrls.medium);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
 			members += stripIndent`${this.padStart(member.townHallLevel)}  ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join('  ')}  ${member.name}`;
@@ -86,15 +106,15 @@ class CwlComamnd extends Command {
 		const result = this.split(members);
 		if (Array.isArray(result)) {
 			embed.setDescription([
-				`**\`\`\`js\n${header}**\n${result[0]}\n\`\`\``
+				`\`\`\`json\n${header}\n${result[0]}\n\`\`\``
 			]);
 		}
 
-		return message.channel.send({ embed });
+		return message.util.send({ embed });
 	}
 
 	chunk(items = []) {
-		const chunk = 10;
+		const chunk = 5;
 		const array = [];
 		for (let i = 0; i < items.length; i += chunk) {
 			array.push(items.slice(i, i + chunk));
@@ -116,6 +136,96 @@ class CwlComamnd extends Command {
 
 	split(content) {
 		return Util.splitMessage(content, { maxLength: 2048 });
+	}
+
+	async one(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[0]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async two(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[1]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async three(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[2]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async four(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[3]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async five(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[4]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async six(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[5]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async seven(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[6]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async eight(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[7]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async nine(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[8]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
+	}
+
+	async ten(items, collection = []) {
+		for (const tag of items) {
+			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
+			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[9]}` } }).then(res => res.json());
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+		}
+		return collection;
 	}
 }
 
