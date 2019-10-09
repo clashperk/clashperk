@@ -107,9 +107,7 @@ class CwlComamnd extends Command {
 	heroLevel(items = []) {
 		for (let i = 0; i < items.length; i++) {
 			if (items[i].level < 10) {
-				Object.assign({
-					level: items[i].level.toString().padStart(2, 0)
-				}, items);
+				items[i].level.toString().padStart(2, 0);
 			}
 		}
 		console.log(items);
