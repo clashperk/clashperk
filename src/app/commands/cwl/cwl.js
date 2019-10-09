@@ -94,7 +94,7 @@ class CwlComamnd extends Command {
 
 		let members = '';
 		const embed = this.client.util.embed()
-			.setColor(3093046)
+			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${memberList.length}`, data.badgeUrls.medium);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
@@ -106,7 +106,7 @@ class CwlComamnd extends Command {
 		const result = this.split(members);
 		if (Array.isArray(result)) {
 			embed.setDescription([
-				`\`\`\`json\n${header}\n${result[0]}\n\`\`\``
+				`\`\`\`json\n${header}\n\n${result[0]}\n\`\`\``
 			]);
 		}
 
