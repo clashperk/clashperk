@@ -103,8 +103,9 @@ class CwlComamnd extends Command {
 
 	heroLevel(items = []) {
 		const source = items.reduce((a, b) => {
-			if (b < 10) b = b.toString().padStart(2, 0);
-			a.push(b);
+			let x;
+			if (b.level < 10) x = b.level.toString().padStart(2, 0);
+			a.push(x);
 			return a;
 		}, []);
 		return Object.assign(Array(3).fill('00'), source);
