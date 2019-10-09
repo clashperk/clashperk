@@ -74,12 +74,11 @@ class CwlComamnd extends Command {
 		}
 
 		let members = '';
-		// let index = 0;
 		const embed = this.client.util.embed()
 			.setTitle(stripIndent`${heroes[0]}    ${heroes[1]}    ${heroes[2]}    ${heroes[3]}    PLAYER`);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
-			members += stripIndent`\`${this.padStart(member.townHallLevel).includes('1') ? '\u200b ' : ''}    ${member.heroes.map(x => this.padStart(x.level).includes('1') ? '\u200b ' : '').join('  \u200b  ')}    \`${member.name}`;
+			members += stripIndent`\`${this.padStart(member.townHallLevel)}    ${member.heroes.map(x => this.padStart(x.level)).join('  \u200b  ')}    \`${member.name}`;
 			members += '\n';
 		}
 
