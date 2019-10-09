@@ -29,12 +29,12 @@ class StatsCommand extends Command {
 			], true)
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }), true)
 			.addField('Servers', this.client.guilds.size, true)
-			.addField('Users', this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0), true)
-			.addField('Channels', this.client.channels.filter(c => c.type === 'text').size, true)
+			.addField('Users', this.client.users.size, true)
+			.addField('Channels', this.client.channels.size, true)
 			.addField('Clans in DB', await this.count(), true)
 			.addField('Version', `v${version}`, true)
 			.addField('Node.JS', process.version, true)
-			.setFooter(`© 2019 ${this.client.users.get(this.client.ownerID).tag}`, this.client.users.get(this.client.ownerID).displayAvatarURL());
+			.setFooter(`© ${new Date().getFullYear()} ${this.owner.tag}`, this.owner.displayAvatarURL());
 
 		if (message.channel.type === 'dm' || !message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
 			return message.util.send({ embed });
@@ -53,6 +53,10 @@ class StatsCommand extends Command {
 		}
 		react.first().message.delete();
 		return message;
+	}
+
+	get owner() {
+		return this.client.users.get(this.client.ownerID);
 	}
 
 	freemem() {
