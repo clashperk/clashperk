@@ -78,7 +78,7 @@ class CwlComamnd extends Command {
 			.setTitle(stripIndent`#  ${heroes[0]}  ${heroes[1]}  ${heroes[2]}`);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
-			members += stripIndents`${TownHallEmoji[member.townHallLevel]}  ${this.heroLevel(member.heroes).map(x => x).join('  ')}  ${member.name} \n`;
+			members += stripIndents`${TownHallEmoji[member.townHallLevel]}  ${member.heroes.map(x => x.level).join('  ')}  ${member.name} \n`;
 		}
 
 		console.log(members);
