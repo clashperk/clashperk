@@ -86,7 +86,7 @@ class CwlComamnd extends Command {
 		const result = this.split(members);
 		if (Array.isArray(result)) {
 			embed.setDescription([
-				`**\`\`\`css\n${header}\`\`\`**\u200b\`\`\`json\n${result[0]}\n\`\`\``
+				`**\`\`\`js\n${header}**\n${result[0]}\n\`\`\``
 			]);
 		}
 
