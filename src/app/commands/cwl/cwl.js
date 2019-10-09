@@ -75,10 +75,10 @@ class CwlComamnd extends Command {
 		let members = '';
 		// let index = 0;
 		const embed = this.client.util.embed()
-			.setTitle(stripIndent`#  ${heroes[0]}  ${heroes[1]}  ${heroes[2]}`);
+			.setTitle(stripIndent`#     ${heroes[0]}    ${heroes[1]}    ${heroes[2]}`);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
-			members += stripIndent`${TownHallEmoji[member.townHallLevel]}  ${member.heroes.map(x => x.level).join('  ')}  ${member.name}`;
+			members += stripIndent`${TownHallEmoji[member.townHallLevel]}    ${member.heroes.map(x => x.level).join(stripIndent`    `)}    ${member.name}`;
 			members += '\n';
 		}
 
