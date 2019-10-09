@@ -108,7 +108,7 @@ class CwlComamnd extends Command {
 		for (let { level } of items) {
 			if (level < 10) level = level.toString().padStart(2, 0);
 		}
-		console.log(items.level);
+		console.log(items);
 		return Object.assign([
 			{ level: '00' },
 			{ level: '00' },
