@@ -77,7 +77,7 @@ class CwlComamnd extends Command {
 		const embed = this.client.util.embed()
 			.setTitle(stripIndent`#  ${heroes[0]}  ${heroes[1]}  ${heroes[2]}`);
 
-		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
+		for (const member of memberList.slice(0, 20).sort((a, b) => b.townHallLevel - a.townHallLevel)) {
 			members += stripIndents`${TownHallEmoji[member.townHallLevel]}  ${member.heroes.map(x => x.level).join('  ')}  ${member.name} \n`;
 		}
 
@@ -89,7 +89,7 @@ class CwlComamnd extends Command {
 				.addField('\u200b', result[2]);
 		}*/
 
-		return message.channel.send(members, { split: true });
+		return message.channel.send(members);
 	}
 
 	chunk(items = []) {
