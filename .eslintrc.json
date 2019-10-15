@@ -1,5 +1,5 @@
 {
-    "extends": "aqua/node",
+    "extends": "mars/node",
     "rules": {
         "max-len": "off",
         "no-confusing-arrow": "off",
