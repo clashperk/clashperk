@@ -18,7 +18,7 @@
     "discord.js": "discordjs/discord.js",
     "dotenv": "^8.0.0",
     "eslint": "^6.0.0",
-    "eslint-config-aqua": "^6.0.0",
+    "eslint-config-mars": "^1.0.3",
     "firebase-admin": "^8.2.0",
     "moment": "^2.24.0",
     "moment-duration-format": "^2.3.2",
