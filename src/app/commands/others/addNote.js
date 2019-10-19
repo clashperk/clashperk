@@ -42,13 +42,13 @@ class AddNoteCommand extends Command {
 		if (text.length > 900) return message.util.send('note has limit of 1000 characters!');
 		await firestore.collection('player_notes')
 			.doc(`${message.guild.id}${data.tag}`)
-			.update({
+			.set({
 				guild: message.guild.id,
 				user: message.author.id,
 				tag: data.tag,
 				note: text,
 				createdAt: new Date()
-			});
+			}, { merge: true });
 
 		return message.util.send(`Note created for **${data.name} (${data.tag})**`);
 	}
