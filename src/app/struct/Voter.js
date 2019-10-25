@@ -96,14 +96,15 @@ class Voter {
 	}
 
 	getLevel(xp) {
+		const levels_xp = Array(200).fill(0).map((x, i) => (5 * (i ** 2)) + (50 * i) + 100);
+		let remaining_xp = Number(xp);
 		let level = 0;
-		for (let i = 0; i <= Infinity; i++) {
-			if ((5 * (i ** 2)) + (50 * i) + 100 > xp) break;
-			xp -= (5 * (i ** 2)) + (50 * i) + 100;
-			level++;
+		while (remaining_xp >= levels_xp[level]) {
+			remaining_xp -= levels_xp[level];
+			level += 1;
 		}
 
-		return { level, remaining: Math.floor(xp) };
+		return { level, remaining: Math.floor(remaining_xp) };
 	}
 
 	getRandom(max, min) {
