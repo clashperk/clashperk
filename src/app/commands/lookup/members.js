@@ -39,7 +39,7 @@ class MembersCommand extends Command {
 		} else {
 			command = this.handler.modules.get('members-league');
 		}
-		return this.handler.handleDirectCommand(message, `${num ? num : ''} ${name}`, command, false);
+		return this.handler.handleDirectCommand(message, `${num ? num : ''} ${name ? name : ''}`, command, false);
 	}
 }
 
