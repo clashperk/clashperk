@@ -101,7 +101,6 @@ class MembersCommand extends Command {
 					return data;
 				});
 			},
-			unordered: true,
 			prompt: {
 				start: 'what would you like to search for?',
 				retry: 'what would you like to search for?'
@@ -127,7 +126,7 @@ class MembersCommand extends Command {
 
 	cooldown(message) {
 		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 3000;
-		return 20000;
+		return 15000;
 	}
 
 	async exec(message, { data, flag, th }) {
