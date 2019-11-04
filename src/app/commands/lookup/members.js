@@ -108,7 +108,7 @@ class MembersCommand extends Command {
 		};
 
 		const flag = yield {
-			match: 'option',
+			match: 'flag',
 			flag: ['--th', '-th', 'th']
 		};
 
