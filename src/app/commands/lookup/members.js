@@ -103,7 +103,7 @@ class MembersCommand extends Command {
 
 	exec(message, { args, flag }) {
 		if (flag) {
-			args = args.split(' ').fiter(arg => arg.length).reverse();
+			args = args.split(' ').filter(arg => arg.length).reverse();
 			return this.handler.handleDirectCommand(message, args, this.handler.modules.get('members-th'), false);
 		}
 		return this.handler.handleDirectCommand(message, args, this.handler.modules.get('members-league'), false);
