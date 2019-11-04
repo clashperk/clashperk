@@ -80,6 +80,11 @@ class MembersCommand extends Command {
 	}
 
 	*args() {
+		const flag = yield {
+			match: 'flag',
+			flag: ['--th', '-th', 'th']
+		};
+
 		const data = yield {
 			type: async (msg, str) => {
 				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
@@ -101,21 +106,18 @@ class MembersCommand extends Command {
 					return data;
 				});
 			},
+			unordered: true,
 			prompt: {
 				start: 'what would you like to search for?',
 				retry: 'what would you like to search for?'
 			}
 		};
 
-		const flag = yield {
-			match: 'flag',
-			flag: ['--th', '-th', 'th']
-		};
-
 		const th = yield (
 			// eslint-disable-next-line multiline-ternary
 			flag ? {
-				type: Argument.range('integer', 1, 12, true)
+				type: Argument.range('integer', 1, 12, true),
+				unordered: true
 			} : {
 				match: 'none'
 			}
