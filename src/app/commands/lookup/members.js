@@ -32,6 +32,7 @@ class MembersCommand extends Command {
 	}
 
 	exec(message, { name, num: type, num }) {
+		console.log(name, num);
 		let command;
 		if (type) {
 			command = this.handler.modules.get('members-th');
