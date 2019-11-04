@@ -85,212 +85,27 @@ class MembersCommand extends Command {
 			flag: ['--th', '-th', 'th']
 		};
 
-		const data = yield {
-			type: async (msg, str) => {
-				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
-				if (!resolver && !str) return null;
-				if (!resolver && str) {
-					return Fetch.clan(str).then(data => {
-						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-						return data;
-					});
-				}
-				const data = await firestore.collection('linked_clans')
-					.doc(resolver.id)
-					.get()
-					.then(snap => snap.data());
-				if (!data) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				if (!data[msg.guild.id]) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				return Fetch.clan(data[msg.guild.id].tag).then(data => {
-					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-					return data;
-				});
-			},
-			unordered: true,
-			prompt: {
-				start: 'what would you like to search for?',
-				retry: 'what would you like to search for?'
-			}
-		};
-
-		const th = yield (
+		const args = yield (
 			// eslint-disable-next-line multiline-ternary
 			flag ? {
-				type: Argument.range('integer', 1, 12, true),
-				unordered: true
+				match: 'content',
+				type: 'string',
+				default: ''
 			} : {
-				match: 'none'
+				match: 'content',
+				type: 'string',
+				default: ''
 			}
 		);
 
-		return { data, flag, th };
+		return { args, flag };
 	}
 
-	cooldown(message) {
-		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 3000;
-		return 15000;
-	}
-
-	async exec(message, { data, flag, th }) {
-		if (!flag) return this.leagueOnly(message, { data });
-		await message.util.send('**Making list of your clan members... <a:loading:538989228403458089>**');
-		const hrStart = process.hrtime();
-
-		const object_array = await Promise.all([
-			this.one(data.memberList.slice(0, 5).map(m => m.tag)),
-			this.two(data.memberList.slice(5, 10).map(m => m.tag)),
-			this.three(data.memberList.slice(10, 15).map(m => m.tag)),
-			this.four(data.memberList.slice(15, 20).map(m => m.tag)),
-			this.five(data.memberList.slice(20, 25).map(m => m.tag)),
-			this.six(data.memberList.slice(25, 30).map(m => m.tag)),
-			this.seven(data.memberList.slice(30, 35).map(m => m.tag)),
-			this.eight(data.memberList.slice(35, 40).map(m => m.tag)),
-			this.nine(data.memberList.slice(40, 45).map(m => m.tag)),
-			this.ten(data.memberList.slice(45, 50).map(m => m.tag))
-		]);
-
-		const array = [];
-		for (const arr of object_array) {
-			for (const member of arr) {
-				array.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel });
-			}
+	exec(message, { args, flag }) {
+		if (flag) {
+			return this.handler.handleDirectCommand(message, args, this.handler.modules.get('members-th'), false);
 		}
-
-		const items = this.sort(array);
-		const filter = items.filter(arr => arr.townHallLevel === th);
-		const first = this.paginate(th ? filter : items, 0, 32);
-		const second = this.paginate(th ? filter : items, 32, 35);
-		const third = this.paginate(th ? filter : items, 35, 50);
-
-		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
-		if (first.items.length) embed.setDescription(first.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n'));
-		if (second.items.length) {
-			embed.addField(second.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n'), [
-				third.items.length ? third.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n') : '\u200b'
-			]);
-		}
-
-		const diff = process.hrtime(hrStart);
-		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
-		return message.util.send(`*\u200b**Executed in ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**\u200b*`, { embed });
-	}
-
-	async leagueOnly(message, { data }) {
-		const first = this.paginate(data.memberList, 0, 32);
-		const second = this.paginate(data.memberList, 32, 35);
-		const third = this.paginate(data.memberList, 35, 50);
-
-		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
-			.setDescription(first.items.map(member => `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}`).join('\n'));
-		if (data.members > 32) {
-			embed.addField(second.items.map(member => `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}`).join('\n'), [
-				third.items.length ? third.items.map(member => `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}`).join('\n') : '\u200b'
-			]);
-		}
-
-		return message.util.send({ embed });
-	}
-
-	paginate(items, start, end) {
-		return { items: items.slice(start, end) };
-	}
-
-	sort(items) {
-		return items.sort((a, b) => b.townHallLevel - a.townHallLevel);
-	}
-
-	async one(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[0]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
-		}
-		return collection;
-	}
-
-	async two(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[1]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
-		}
-		return collection;
-	}
-
-	async three(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[2]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
-		}
-		return collection;
-	}
-
-	async four(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[3]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
-		}
-		return collection;
-	}
-
-	async five(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[4]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
-		}
-		return collection;
-	}
-
-	async six(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[5]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
-		}
-		return collection;
-	}
-
-	async seven(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[6]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
-		}
-		return collection;
-	}
-
-	async eight(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[7]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
-		}
-		return collection;
-	}
-
-	async nine(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[8]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
-		}
-		return collection;
-	}
-
-	async ten(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[9]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
-		}
-		return collection;
+		return this.handler.handleDirectCommand(message, args, this.handler.modules.get('members-league'), false);
 	}
 }
 

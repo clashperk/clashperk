@@ -45,10 +45,6 @@ class MembersTHCommand extends Command {
 	}
 
 	*args() {
-		const th = yield {
-			type: Argument.range('integer', 1, 12, true)
-		};
-
 		const data = yield {
 			type: async (msg, str) => {
 				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
@@ -70,10 +66,16 @@ class MembersTHCommand extends Command {
 					return data;
 				});
 			},
+			unordered: true,
 			prompt: {
 				start: 'what would you like to search for?',
 				retry: 'what would you like to search for?'
 			}
+		};
+
+		const th = yield {
+			type: Argument.range('integer', 1, 12, true),
+			unordered: true
 		};
 
 		return { data, th };
