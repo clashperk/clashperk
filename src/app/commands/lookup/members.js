@@ -75,18 +75,11 @@ class MembersCommand extends Command {
 					'#8QU8J9LP -th 9'
 				]
 			},
-			optionFlags: ['--th', '-th', 'th']
+			flags: ['--th', '-th', 'th']
 		});
 	}
 
 	*args() {
-		const th = yield {
-			match: 'option',
-			flag: ['--th', '-th', 'th'],
-			type: Argument.range('integer', 1, 12, true),
-			unordered: true
-		};
-
 		const data = yield {
 			type: async (msg, str) => {
 				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
@@ -115,7 +108,21 @@ class MembersCommand extends Command {
 			}
 		};
 
-		return { data, th };
+		const flag = yield {
+			match: 'option',
+			flag: ['--th', '-th', 'th']
+		};
+
+		const th = yield (
+			// eslint-disable-next-line multiline-ternary
+			flag ? {
+				type: Argument.range('integer', 1, 12, true)
+			} : {
+				match: 'none'
+			}
+		);
+
+		return { data, flag, th };
 	}
 
 	cooldown(message) {
@@ -123,9 +130,8 @@ class MembersCommand extends Command {
 		return 20000;
 	}
 
-	async exec(message, { data, th }) {
-		console.log(th);
-		if (!th) return this.leagueOnly(message, { data });
+	async exec(message, { data, flag, th }) {
+		if (!flag) return this.leagueOnly(message, { data });
 		await message.util.send('**Making list of your clan members... <a:loading:538989228403458089>**');
 		const hrStart = process.hrtime();
 
