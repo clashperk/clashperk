@@ -88,7 +88,7 @@ class MembersCommand extends Command {
 		const args = yield (
 			// eslint-disable-next-line multiline-ternary
 			flag ? {
-				match: 'rest',
+				match: 'content',
 				type: 'string',
 				default: ''
 			} : {
@@ -103,10 +103,6 @@ class MembersCommand extends Command {
 
 	exec(message, { args, flag }) {
 		if (flag) {
-			args = args.split(' ')
-				.filter(arg => arg.length)
-				.reverse()
-				.join(' ');
 			return this.handler.handleDirectCommand(message, args, this.handler.modules.get('members-th'), false);
 		}
 		return this.handler.handleDirectCommand(message, args, this.handler.modules.get('members-league'), false);

@@ -40,12 +40,15 @@ class MembersTHCommand extends Command {
 				content: 'Displays a list of clan members.',
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
-			}
+			},
+			optionFlags: ['--th', '-th', 'th']
 		});
 	}
 
 	*args() {
 		const th = yield {
+			match: 'option',
+			flag: ['--th', '-th', 'th'],
 			type: Argument.range('integer', 1, 12, true)
 		};
 
