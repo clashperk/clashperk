@@ -22,7 +22,7 @@ class UsageCommand extends Command {
 		const embed = this.client.util.embed()
 			.setAuthor(`${this.client.user.username} Usage  Statistics`, this.client.user.displayAvatarURL())
 			.setColor(0x5970c1)
-			.setFooter('Since August 1, 2019')
+			.setFooter('Since August 2019')
 			.setTitle(`${total}x commands used`)
 			.addField('Users', [
 				`\u200b${users.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.users.get(id).tag}\` \u200b\`${uses}x\``).join('\n')}`
