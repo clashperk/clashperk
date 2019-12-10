@@ -18,7 +18,8 @@ const TownHallEmoji = {
 	9: '<:townhall9:534745577033039882>',
 	10: '<:townhall10:534745575757709332>',
 	11: '<:townhall11:534745577599270923>',
-	12: '<:townhall12:534745574981894154>'
+	12: '<:townhall12:534745574981894154>',
+	13: '<:townhall13:653959735124426814>'
 };
 
 class CwlWarComamnd extends Command {
@@ -190,6 +191,7 @@ class CwlWarComamnd extends Command {
 	}
 
 	async count(members) {
+		let TH13 = 0;
 		let TH12 = 0;
 		let TH11 = 0;
 		let TH10 = 0;
@@ -204,8 +206,9 @@ class CwlWarComamnd extends Command {
 		let TH01 = 0;
 		for (const member of members) {
 			const TownHAll = member.townhallLevel;
-			if (TownHAll === 12) ++TH12;
-			if (TownHAll === 11) ++TH11;
+			if (TownHAll === 13) TH13++;
+			if (TownHAll === 12) TH12++;
+			if (TownHAll === 11) TH11++;
 			if (TownHAll === 10) TH10++;
 			if (TownHAll === 9) TH09++;
 			if (TownHAll === 8) TH08++;
@@ -218,6 +221,7 @@ class CwlWarComamnd extends Command {
 			if (TownHAll === 1) TH01++;
 		}
 		const data = oneLine`
+			${TH13 > 0 ? `${TownHallEmoji[13]} ${TH13 < 10 ? `0${TH13}` : `${TH13} `} ` : ''}
             ${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12} `} ` : ''}
             ${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`} ` : ''}
             ${TH10 > 0 ? `${TownHallEmoji[10]} ${TH10 < 10 ? `0${TH10}` : `${TH10}`} ` : ''}

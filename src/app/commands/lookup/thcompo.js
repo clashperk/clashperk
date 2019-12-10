@@ -29,7 +29,8 @@ const TownHallEmoji = {
 	9: '<:townhall9:534745577033039882>',
 	10: '<:townhall10:534745575757709332>',
 	11: '<:townhall11:534745577599270923>',
-	12: '<:townhall12:534745574981894154>'
+	12: '<:townhall12:534745574981894154>',
+	13: '<:townhall13:653959735124426814>'
 };
 
 class ThCompoCommand extends Command {
@@ -84,6 +85,7 @@ class ThCompoCommand extends Command {
 	async exec(message, { data }) {
 		await message.util.send('**Calculating TH compositions of your clan... <a:loading:538989228403458089>**');
 		const hrStart = process.hrtime();
+		let TH13 = 0;
 		let TH12 = 0;
 		let TH11 = 0;
 		let TH10 = 0;
@@ -113,6 +115,7 @@ class ThCompoCommand extends Command {
 		for (const array of object_array) {
 			for (const member of array) {
 				const TownHAll = member.townHallLevel;
+				if (TownHAll === 13) TH13++;
 				if (TownHAll === 12) TH12++;
 				if (TownHAll === 11) TH11++;
 				if (TownHAll === 10) TH10++;
@@ -128,8 +131,8 @@ class ThCompoCommand extends Command {
 			}
 		}
 
-		const math = (TH12 * 12) + (TH11 * 11) + (TH10 * 10) + (TH09 * 9) + (TH08 * 8) + (TH07 * 7) + (TH06 * 6) + (TH05 * 5) + (TH04 * 4) + (TH03 * 3) + (TH02 * 2) + Number(TH01);
-		const total = TH12 + TH11 + TH10 + TH09 + TH08 + TH07 + TH06 + TH05 + TH04 + TH03 + TH02 + TH01;
+		const math = (TH13 * 13) + (TH12 * 12) + (TH11 * 11) + (TH10 * 10) + (TH09 * 9) + (TH08 * 8) + (TH07 * 7) + (TH06 * 6) + (TH05 * 5) + (TH04 * 4) + (TH03 * 3) + (TH02 * 2) + Number(TH01);
+		const total = TH13 + TH12 + TH11 + TH10 + TH09 + TH08 + TH07 + TH06 + TH05 + TH04 + TH03 + TH02 + TH01;
 		const AVG = math / total || 0;
 
 		const embed = new MessageEmbed()
@@ -137,6 +140,7 @@ class ThCompoCommand extends Command {
 			.setColor(0x5970c1)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription(
+				`${TH13 > 0 ? `${TownHallEmoji[13]} ${TH13 < 10 ? `0${TH13}` : `${TH13}`}\n` : ''}` +
 				`${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12}`}\n` : ''}` +
                 `${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`}\n` : ''}` +
                 `${TH10 > 0 ? `${TownHallEmoji[10]} ${TH10 < 10 ? `0${TH10}` : `${TH10}`}\n` : ''}` +
