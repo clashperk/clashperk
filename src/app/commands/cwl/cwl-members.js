@@ -126,7 +126,7 @@ class CwlMembersComamnd extends Command {
 			members += '\n';
 		}
 
-		const header = stripIndent`TH  BK  AQ  GW  PLAYER`;
+		const header = stripIndent`TH  BK  AQ  GW  RC  PLAYER`;
 		const result = this.split(members);
 		if (Array.isArray(result)) {
 			embed.setDescription([
@@ -148,6 +148,7 @@ class CwlMembersComamnd extends Command {
 
 	heroes(items) {
 		return Object.assign([
+			{ level: '00' },
 			{ level: '00' },
 			{ level: '00' },
 			{ level: '00' }

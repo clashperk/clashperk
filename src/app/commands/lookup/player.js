@@ -24,7 +24,8 @@ const HeroEmojis = {
 	'Barbarian King': '<:barbarianking:524939911581663242>',
 	'Archer Queen': '<:archerqueen:524939902408720394>',
 	'Grand Warden': '<:grandwarden:524939931303411722>',
-	'Battle Machine': '<:warmachine:524939920943349781>'
+	'Battle Machine': '<:warmachine:524939920943349781>',
+	'Royal Champion': '<:royal_champion:653967122166185995>'
 };
 
 const leagueStrings = {

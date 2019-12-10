@@ -91,6 +91,7 @@ class CwlRosterComamnd extends Command {
 
 		let index = 0;
 		for (const clan of body.clans) {
+			let TH13 = 0;
 			let TH12 = 0;
 			let TH11 = 0;
 			let TH10 = 0;
@@ -105,7 +106,7 @@ class CwlRosterComamnd extends Command {
 			let TH01 = 0;
 			for (const member of clan.members) {
 				const TownHAll = member.townHallLevel;
-
+				if (TownHAll === 13) TH13++;
 				if (TownHAll === 12) TH12++;
 				if (TownHAll === 11) TH11++;
 				if (TownHAll === 10) TH10++;
@@ -121,7 +122,8 @@ class CwlRosterComamnd extends Command {
 			}
 			embed.addField(`${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
 				oneLine`
-                ${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12} `} ` : ''}
+				${TH13 > 0 ? `${TownHallEmoji[13]} ${TH13 < 10 ? `0${TH13}` : `${TH13} `} ` : ''}
+				${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12} `} ` : ''}
 				${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`} ` : ''}
 				${TH10 > 0 ? `${TownHallEmoji[10]} ${TH10 < 10 ? `0${TH10}` : `${TH10}`} ` : ''}
 				${TH09 > 0 ? `${TownHallEmoji[9]} ${TH09 < 10 ? `0${TH09}` : `${TH09}`} ` : ''}

@@ -21,6 +21,7 @@ const TroopEmojis = {
 	'Healer': '<:healer:524921090196242432>',
 	'Dragon': '<:dragonc:524921090884108288>',
 	'P.E.K.K.A': '<:pekka:524921093753012227>',
+	'Yeti': '<:yeti:653963810482290719>',
 	'Minion': '<:minion:524921093132255232>',
 	'Hog Rider': '<:hogrider:524921085561667584>',
 	'Valkyrie': '<:valkyrie:524921093031723019>',
