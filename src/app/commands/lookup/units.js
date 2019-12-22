@@ -47,7 +47,8 @@ const BuilderTroops = {
 	'Boxer Giant': '<:boxer_giant:627148013512556544>',
 	'Beta Minion': '<:beta_minion:627148135373864960>',
 	'Sneaky Archer': '<:skeaky_archer:627147702584606722>',
-	'Raged Barbarian': '<:raged_barbarian:627147507717111808>'
+	'Raged Barbarian': '<:raged_barbarian:627147507717111808>',
+	'Hog Glider': '<:hog_glider:658297486120583199>'
 };
 const SpellEmojis = {
 	'Lightning Spell': '<:lightning:524921197369229342>',
