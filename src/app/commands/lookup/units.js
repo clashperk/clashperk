@@ -35,8 +35,10 @@ const TroopEmojis = {
 	'Ice Golem': '<:ice_golem:627156215394467851>',
 	'Battle Blimp': '<:battleblimp:524921096345092126>',
 	'Wall Wrecker': '<:wallwrecker:524921096655339520>',
-	'Stone Slammer': '<:Stone_Slammer_info:524937839457337374>'
+	'Stone Slammer': '<:Stone_Slammer_info:524937839457337374>',
+	'Siege Barracks': '<:siege_barracks:658299037476454411>'
 };
+
 const BuilderTroops = {
 	'Night Witch': '<:night_witch:627148850800492574>',
 	'Baby Dragon': '<:baby_dragon:627148415473680415>',
@@ -50,6 +52,7 @@ const BuilderTroops = {
 	'Raged Barbarian': '<:raged_barbarian:627147507717111808>',
 	'Hog Glider': '<:hog_glider:658297486120583199>'
 };
+
 const SpellEmojis = {
 	'Lightning Spell': '<:lightning:524921197369229342>',
 	'Healing Spell': '<:healing:524921190834503723>',
