@@ -50,7 +50,7 @@ class MembersTHCommand extends Command {
 		const th = yield {
 			match: 'option',
 			flag: ['--th', '-th', 'th'],
-			type: Argument.range('integer', 1, 12, true)
+			type: Argument.range('integer', 1, 13, true)
 		};
 
 		const data = yield {
