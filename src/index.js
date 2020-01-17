@@ -1,5 +1,7 @@
 const env = require('dotenv');
 env.config();
+const api = require('../auth');
+api.config();
 
 const Client = require('./app/client/ClashPerk');
 const Logger = require('./app/util/logger');
