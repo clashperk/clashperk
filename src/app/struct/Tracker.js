@@ -150,7 +150,7 @@ class Tracker {
 				Logger.warn(`Channel: ${clan.channel}`, { level: 'Missing Channel' });
 				this.delete(clan.guild, clan.tag);
 				if (this.client.user.id === process.env.CLIENT_ID) {
-					await firestore.collection('tracking_clans').doc(`${clan.guild}${clan.tag}`).delete();
+					// await firestore.collection('tracking_clans').doc(`${clan.guild}${clan.tag}`).delete();
 				}
 			}
 
