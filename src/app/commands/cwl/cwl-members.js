@@ -6,7 +6,7 @@ const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
 
-const API = process.env.APIS;
+const API = process.env.APIS.split(',');
 
 class CwlMembersComamnd extends Command {
 	constructor() {

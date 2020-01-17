@@ -19,7 +19,7 @@ const TownHallEmoji = {
 	13: '<:townhall13:653959735124426814>'
 };
 
-const API = process.env.APIS;
+const API = process.env.APIS.split(',');
 
 class MembersTHCommand extends Command {
 	constructor() {

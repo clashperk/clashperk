@@ -5,7 +5,7 @@ const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
 
-const API = process.env.APIS;
+const API = process.env.APIS.split(',').split(',');
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
