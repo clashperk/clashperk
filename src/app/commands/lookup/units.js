@@ -139,7 +139,7 @@ class UnitsCommand extends Command {
 				}
 			}
 		});
-		if (troopLevels) embed.addField('Troops', troopLevels.split('#').join('\n'));
+		if (troopLevels) embed.setDescription(['**Troops**', troopLevels.split('#').join('\n')]);
 
 		let builderTroops = '';
 		index = 0;
