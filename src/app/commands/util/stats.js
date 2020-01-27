@@ -32,7 +32,7 @@ class StatsCommand extends Command {
 			.addField('Users', this.client.users.size, true)
 			.addField('Channels', this.client.channels.size, true)
 			.addField('Clans in DB', await this.count(), true)
-			.addField('Version', 'v1.2.0', true)
+			.addField('Version', `v${version}`, true)
 			.addField('Node.JS', process.version, true)
 			.setFooter(`© ${new Date().getFullYear()} ${this.owner.tag}`, this.owner.displayAvatarURL());
 
