@@ -1,8 +1,6 @@
-const { Command, Flag } = require('discord-akairo');
+const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { firestore } = require('../../struct/Database');
-const { fetcherror } = require('../../util/constants');
-const Fetch = require('../../struct/Fetch');
 
 class StartCommand extends Command {
 	constructor() {
@@ -64,7 +62,7 @@ class StartCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		if (clans >= 3 && !this.client.voter.isVoter(message.author.id)) {
+		if (clans >= 1 && !this.client.voter.isVoter(message.author.id)) {
 			const embed = this.client.util.embed()
 				.setDescription([
 					'**Not Voted!**',
