@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 const { firestore } = require('../struct/Database');
 
 const donateList = [];
+const memberList = [];
 
 const leagueStrings = {
 	29000000: '<:no_league:524912313531367424>',
@@ -123,6 +124,25 @@ class Tracker {
 		}
 	}
 
+	memberLog(clan, color, channel, guild) {
+		if (guild !== '609250675431309313') return;
+		for (const member of clan.memberList) {
+			if (member.tag in memberList === false && memberList.length) {
+				console.log(member.tag)
+			}
+		}
+
+		for (const member of memberList) {
+			if (member.tag in clan.memberList.map(m => m.tag) === false) {
+				console.log(member.tag)
+			}
+		}
+
+		for (const member of clan.memberList) {
+			donateList[member.tag] = member;
+		}
+	}
+
 	async start() {
 		for (const clan of this.cached.values()) {
 			if (this.client.channels.has(clan.channel)) {
@@ -145,6 +165,7 @@ class Tracker {
 					const data = await res.json();
 
 					this.track(data, clan.color, channel, clan.guild);
+					this.memberLog(data, clan.color, channel, clan.guild);
 				}
 			} else {
 				Logger.warn(`Channel: ${clan.channel}`, { level: 'Missing Channel' });
