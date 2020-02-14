@@ -168,7 +168,7 @@ class Tracker {
 					const data = await res.json();
 
 					this.track(data, clan.color, channel, clan.guild);
-					this.memberLog(data, clan.color, channel, clan.guild);
+					// this.memberLog(data, clan.color, channel, clan.guild);
 				}
 			} else {
 				Logger.warn(`Channel: ${clan.channel}`, { level: 'Missing Channel' });
