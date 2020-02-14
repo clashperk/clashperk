@@ -127,19 +127,20 @@ class Tracker {
 	memberLog(clan, color, channel, guild) {
 		if (guild !== '609250675431309313') return;
 		for (const member of clan.memberList) {
-			if (member.tag in memberList === false && memberList.length) {
-				console.log(member.tag)
+			if (member.tag in memberList.map(m => m.tag) === false && memberList.length) {
+				console.log(member.tag, 'Joined')
 			}
 		}
 
 		for (const member of memberList) {
 			if (member.tag in clan.memberList.map(m => m.tag) === false) {
-				console.log(member.tag)
+				console.log(member.tag, 'Left')
 			}
 		}
 
+		memberList = [];
 		for (const member of clan.memberList) {
-			memberList[member.tag] = member;
+			memberList.push(member);
 		}
 
 		console.log(memberList);
