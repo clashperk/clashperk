@@ -139,8 +139,10 @@ class Tracker {
 		}
 
 		for (const member of clan.memberList) {
-			donateList[member.tag] = member;
+			memberList[member.tag] = member;
 		}
+
+		console.log(memberList);
 	}
 
 	async start() {
