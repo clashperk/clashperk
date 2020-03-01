@@ -56,7 +56,7 @@ class StatsCommand extends Command {
 	}
 
 	get owner() {
-		return this.client.users.get(this.client.ownerID);
+		return this.client.users.cache.get(this.client.ownerID);
 	}
 
 	freemem() {

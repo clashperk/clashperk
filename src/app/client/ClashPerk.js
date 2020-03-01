@@ -87,8 +87,8 @@ class ClashPerk extends AkairoClient {
 			if (!str) return null;
 			const mention = str.match(/<@!?(\d{17,19})>/);
 			const id = str.match(/^\d+$/);
-			if (id) return msg.guild.members.get(id[0]) || null;
-			if (mention) return msg.guild.members.get(mention[1]) || null;
+			if (id) return msg.guild.members.cache.get(id[0]) || null;
+			if (mention) return msg.guild.members.cache.get(mention[1]) || null;
 			return null;
 		});
 

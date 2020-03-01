@@ -148,8 +148,8 @@ class Tracker {
 
 	async start() {
 		for (const clan of this.cached.values()) {
-			if (this.client.channels.has(clan.channel)) {
-				const channel = this.client.channels.get(clan.channel);
+			if (this.client.channels.cache.has(clan.channel)) {
+				const channel = this.client.channels.cache.get(clan.channel);
 				// check client permissions
 				if (channel.permissionsFor(channel.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'], false)) {
 					const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(clan.tag)}`, {

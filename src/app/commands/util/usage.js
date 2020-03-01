@@ -25,7 +25,7 @@ class UsageCommand extends Command {
 			.setFooter('Since August 2019')
 			.setTitle(`${total}x commands used`)
 			.addField('Users', [
-				`\u200b${users.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.users.get(id).tag}\` \u200b\`${uses}x\``).join('\n')}`
+				`\u200b${users.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.users.cache.get(id).tag}\` \u200b\`${uses}x\``).join('\n')}`
 			])
 			.addField('Servers', [
 				`\u200b${guilds.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.guilds.get(id).name}\` \u200b\`${uses}x\``).join('\n')}`

@@ -175,7 +175,7 @@ class PlayerCommand extends Command {
 
 		const body = await this.note(message, data.tag);
 		if (body) {
-			const user = this.client.users.get(body.user);
+			const user = this.client.users.cache.get(body.user);
 			embed.addField('Note', [
 				body.note,
 				'',

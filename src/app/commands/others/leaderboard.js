@@ -32,7 +32,7 @@ class LeaderboardCommand extends Command {
 		const leaderboard = await this.leaderboard(page);
 		let index = (leaderboard.page - 1) * 10;
 		for (const { user, level, xp } of leaderboard.items) {
-			embed.addField(`**${++index}**. ${this.client.users.get(user).tag}`, [
+			embed.addField(`**${++index}**. ${this.client.users.cache.get(user).tag}`, [
 				`${Array(4).fill('\u200b').join(' ')} 🏷️\`LEVEL ${level}\` \\🔥\`EXP ${xp}\``
 			]);
 		}
