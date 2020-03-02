@@ -1,5 +1,5 @@
-const api = require('../auth');
-api.config();
+require('../auth').config();
+require('dotenv').config();
 
 const Client = require('./app/client/ClashPerk');
 const Sentry = require('@sentry/node');
