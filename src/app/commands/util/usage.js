@@ -28,7 +28,7 @@ class UsageCommand extends Command {
 				`\u200b${users.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.users.cache.get(id).tag}\` \u200b\`${uses}x\``).join('\n')}`
 			])
 			.addField('Servers', [
-				`\u200b${guilds.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.guilds.get(id).name}\` \u200b\`${uses}x\``).join('\n')}`
+				`\u200b${guilds.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.guilds.cache.get(id).name}\` \u200b\`${uses}x\``).join('\n')}`
 			])
 			.addField('Commands', [
 				`\u200b${commands.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '')}\` \u200b\`${uses}x\``).join('\n')}`
@@ -42,7 +42,7 @@ class UsageCommand extends Command {
 		const data = await ref.once('value').then(snap => snap.val());
 		const users = [];
 		for (const [key, value] of Object.entries(data)) {
-			if (!this.client.users.has(key)) continue;
+			if (!this.client.users.cache.has(key)) continue;
 			users.push({ uses: value, id: key });
 		}
 
@@ -54,7 +54,7 @@ class UsageCommand extends Command {
 		const data = await ref.once('value').then(snap => snap.val());
 		const guilds = [];
 		for (const [key, value] of Object.entries(data)) {
-			if (!this.client.guilds.has(key)) continue;
+			if (!this.client.guilds.cache.has(key)) continue;
 			guilds.push({ uses: value, id: key });
 		}
 

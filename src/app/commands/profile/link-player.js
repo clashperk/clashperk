@@ -24,7 +24,7 @@ class LinkPlayerCommand extends Command {
 				},
 				{
 					id: 'member',
-					type: 'member',
+					type: 'guildMember',
 					default: message => message.member
 				}
 			]

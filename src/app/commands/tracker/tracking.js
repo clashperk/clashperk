@@ -18,7 +18,7 @@ class TrackingCommand extends Command {
 					type: (msg, id) => {
 						if (!id) return null;
 						if (!this.client.isOwner(msg.author.id)) return null;
-						const guild = this.client.guilds.get(id);
+						const guild = this.client.guilds.cache.get(id);
 						if (!guild) return null;
 						return guild;
 					},
