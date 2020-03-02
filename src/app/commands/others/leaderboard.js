@@ -46,7 +46,7 @@ class LeaderboardCommand extends Command {
 			.then(snap => snap.val());
 		const leaderboard = [];
 		for (const [key, value] of this.entries(data)) {
-			if (!this.client.users.has(key)) continue;
+			if (!this.client.users.cache.has(key)) continue;
 			const { level } = this.client.voter.getLevel(value.xp);
 			leaderboard.push({ user: key, xp: value.xp, level });
 		}
