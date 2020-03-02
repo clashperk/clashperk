@@ -118,7 +118,9 @@ class PlayerCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag})`, data.league ? data.league.iconUrls.small : null, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`)
+			.setAuthor(`${data.name} (${data.tag})`, data.league ? data.league.iconUrls.small : null)
+			.setTitle('Open In Game')
+			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`)
 			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`);
 
 		embed.addField('Town Hall', `${TownHallEmoji[data.townHallLevel]} ${data.townHallLevel}`, true);

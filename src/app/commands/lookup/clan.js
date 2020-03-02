@@ -64,7 +64,9 @@ class ClanCommand extends Command {
 		}
 
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+			.setTitle('Open In Game')
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 			.setColor(0x5970c1)
 			.setThumbnail(data.badgeUrls.medium)
 			.addField('Level', data.clanLevel, true)
