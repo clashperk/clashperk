@@ -2,6 +2,7 @@ const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } 
 const Settings = require('../struct/SettingsProvider');
 const { firestore } = require('../struct/Database');
 const path = require('path');
+const Logger = require('../util/logger');
 const Tracker = require('../struct/Tracker');
 const fetch = require('node-fetch');
 const Patrons = require('../struct/Patrons');
@@ -34,6 +35,8 @@ class ClashPerk extends AkairoClient {
 				'USER_UPDATE'
 			]
 		});
+
+		this.logger = new Logger();
 
 		this.commandHandler = new CommandHandler(this, {
 			directory: path.join(__dirname, '..', 'commands'),

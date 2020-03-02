@@ -3,31 +3,31 @@ const moment = require('moment');
 const { inspect } = require('util');
 
 class Logger {
-	static log(message, { color = 'grey', level = 'Log' } = {}) {
-		this.write(message, { color, level });
+	constructor(client) {
+		this.client = client;
 	}
 
-	static info(message, { color = 'green', level = 'Info' } = {}) {
-		this.write(message, { color, level });
+	debug(message, { color = 'yellow', tag = '[DEBUG]', label } = {}) {
+		this.constructor.write(message, { color, tag, label });
 	}
 
-	static error(message, { color = 'red', level = 'Error' } = {}) {
-		this.write(message, { color, level, error: true });
+	info(message, { color = 'cyan', tag = '[INFO]', label } = {}) {
+		this.constructor.write(message, { color, tag, label });
 	}
 
-	static stacktrace(message, { color = 'red', level = 'Error' } = {}) {
-		this.write(message, { color, level, error: true });
+	error(message, { color = 'red', tag = '[ERROR]', label } = {}) {
+		this.constructor.write(message, { color, tag, label, error: true });
 	}
 
-	static warn(message, { color = 'yellow', level = 'Warn' } = {}) {
-		this.write(message, { color, level });
+	warn(message, { color = 'magenta', tag = '[WARN]', label } = {}) {
+		this.constructor.write(message, { color, tag, label });
 	}
 
-	static write(message, { color = 'grey', level = 'Log', error = false } = {}) {
+	static write(message, { color, tag, label = 'UNKNOWN', error = false } = {}) {
 		const timestamp = chalk.cyan(moment().format('DD-MM-YYYY kk:mm:ss'));
-		const content = chalk[color](this.clean(message));
+		const content = this.clean(message);
 		const stream = error ? process.stderr : process.stdout;
-		stream.write(`[${timestamp}] [${chalk.bold(level)}]: ${content}\n`);
+		stream.write(`[${timestamp}] ${chalk[color].bold(tag)} » [${label}] » ${content}\n`);
 	}
 
 	static clean(item) {
