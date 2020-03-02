@@ -1,5 +1,4 @@
 const { Listener } = require('discord-akairo');
-const Logger = require('../../util/logger');
 const { firestore } = require('../../struct/Database');
 
 class GuildCreateListener extends Listener {
@@ -12,7 +11,7 @@ class GuildCreateListener extends Listener {
 	}
 
 	async exec(guild) {
-		Logger.log(`${guild.name} (${guild.id})`, { level: 'GUILD_CREATE' });
+		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
 
 		await this.restore(guild);
 

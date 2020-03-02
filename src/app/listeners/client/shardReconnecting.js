@@ -1,5 +1,4 @@
 const { Listener } = require('discord-akairo');
-const Logger = require('../../util/logger');
 
 class ShardReconnectListener extends Listener {
 	constructor() {
@@ -11,7 +10,7 @@ class ShardReconnectListener extends Listener {
 	}
 
 	exec(id) {
-		Logger.info(`Shard ${id} Reconnecting`, { level: 'SHARD RECONNECTING' });
+		this.client.logger.info(`Shard ${id} Reconnecting`, { label: 'SHARD RECONNECTING' });
 	}
 }
 

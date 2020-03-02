@@ -1,4 +1,3 @@
-const Logger = require('../util/logger');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const { firestore } = require('../struct/Database');
@@ -115,7 +114,7 @@ class Tracker {
 			try {
 				channel.send({ embed });
 			} catch (error) {
-				Logger.error(error.toString(), { level: 'TRACKER MESSAGE' });
+				this.client.logger.error(error.toString(), { label: 'TRACKER MESSAGE' });
 			}
 		}
 
@@ -128,13 +127,13 @@ class Tracker {
 		if (guild !== '609250675431309313') return;
 		for (const member of clan.memberList) {
 			if (member.tag in memberList.map(m => m.tag) === false && memberList.length) {
-				console.log(member.tag, 'Joined')
+				console.log(member.tag, 'Joined');
 			}
 		}
 
 		for (const member of memberList) {
 			if (member.tag in clan.memberList.map(m => m.tag) === false) {
-				console.log(member.tag, 'Left')
+				console.log(member.tag, 'Left');
 			}
 		}
 
@@ -171,7 +170,7 @@ class Tracker {
 					// this.memberLog(data, clan.color, channel, clan.guild);
 				}
 			} else {
-				Logger.warn(`Channel: ${clan.channel}`, { level: 'Missing Channel' });
+				this.client.logger.warn(`Channel: ${clan.channel}`, { label: 'Missing Channel' });
 				this.delete(clan.guild, clan.tag);
 			}
 

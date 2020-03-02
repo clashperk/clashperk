@@ -1,6 +1,5 @@
 const fetch = require('node-fetch');
 const { firebase } = require('../struct/Database');
-const Logger = require('../util/logger');
 const { MessageEmbed } = require('discord.js');
 
 class Voter {
@@ -126,12 +125,12 @@ class Voter {
 		if (data.webhook_triggered) return;
 
 		const webhook = await this.client.fetchWebhook(this.webhook).catch(() => null);
-		if (!webhook) return Logger.error('Webhook Not Found', { level: 'VOTING WEBHOOK' });
+		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING WEBHOOK' });
 
 		const user = await this.client.users.fetch(data.user).catch(() => null);
-		if (!user) return Logger.error('User Not Found', { level: 'VOTER' });
+		if (!user) return this.client.logger.error('User Not Found', { label: 'VOTER' });
 
-		Logger.info(`${user.tag}/${data.earnedXP}`, { level: 'VOTER' });
+		this.client.logger.info(`${user.tag}/${data.earnedXP}`, { label: 'VOTER' });
 
 		await firebase.ref('votes').child(key).update({ webhook_triggered: true });
 

@@ -1,5 +1,4 @@
 const { Listener } = require('discord-akairo');
-const Logger = require('../../util/logger');
 
 class MissingPermissionsListener extends Listener {
 	constructor() {
@@ -22,8 +21,8 @@ class MissingPermissionsListener extends Listener {
 			}
 		}[type];
 
-		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
-		Logger.log(`=> ${command.id} ~ ${type}Permissions`, { level });
+		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
+		this.client.logger.debug(`${command.id} ~ ${type}Permissions`, { label });
 
 		if (!text) return;
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {

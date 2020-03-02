@@ -1,5 +1,4 @@
 const { Listener } = require('discord-akairo');
-const Logger = require('../../util/logger');
 const { addBreadcrumb, Severity, captureException, setContext } = require('@sentry/node');
 
 class ErrorListener extends Listener {
@@ -68,9 +67,8 @@ class ErrorListener extends Listener {
 
 		captureException(error);
 
-		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
-		Logger.error(`${command.id} ~ ${error}`, { level });
-		Logger.stacktrace(error);
+		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
+		this.client.logger.error(`${command.id} ~ ${error}`, { label });
 
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
 			await message.channel.send([

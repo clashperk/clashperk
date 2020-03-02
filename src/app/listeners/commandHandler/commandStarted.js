@@ -1,5 +1,4 @@
 const { Listener } = require('discord-akairo');
-const Logger = require('../../util/logger');
 const { addBreadcrumb, Severity, setContext } = require('@sentry/node');
 
 class CommandStartedListener extends Listener {
@@ -66,8 +65,8 @@ class CommandStartedListener extends Listener {
 			}
 		});
 
-		const level = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
-		Logger.log(`${command.id}`, { level });
+		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
+		this.client.logger.debug(`${command.id}`, { label });
 		this.counter(message, command);
 	}
 

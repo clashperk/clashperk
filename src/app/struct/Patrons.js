@@ -1,4 +1,3 @@
-const Logger = require('../util/logger');
 const { Users, Guilds } = require('./PatreonProvider');
 const { firebase, firestore } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
@@ -44,9 +43,9 @@ class Patron {
 		if (attributes.currently_entitled_amount_cents === 0) return;
 
 		const webhook = await this.client.fetchWebhook(this.webhook).catch(() => null);
-		if (!webhook) return Logger.error('Webhook Not Found', { level: 'VOTING HOOK' });
+		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
 		const user = await this.client.users.fetch(discord_id).catch(() => null);
-		if (user) Logger.info(user.tag, { level: 'PATRON' });
+		if (user) this.client.logger.info(user.tag, { label: 'PATRON' });
 
 		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
 		await firestore.collection('patreon')
@@ -83,9 +82,9 @@ class Patron {
 		const { attributes } = body.data;
 
 		const webhook = await this.client.fetchWebhook(this.webhook).catch(() => null);
-		if (!webhook) return Logger.error('Webhook Not Found', { level: 'VOTING HOOK' });
+		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
 		const user = await this.client.users.fetch(discord_id).catch(() => null);
-		if (user) Logger.info(user.tag, { level: 'PATRON' });
+		if (user) this.client.logger.info(user.tag, { label: 'PATRON' });
 
 		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
 		await firestore.collection('petreon')
@@ -122,9 +121,9 @@ class Patron {
 		const { attributes } = body.data;
 
 		const webhook = await this.client.fetchWebhook(this.webhook).catch(() => null);
-		if (!webhook) return Logger.error('Webhook Not Found', { level: 'VOTING HOOK' });
+		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
 		const user = await this.client.users.fetch(discord_id).catch(() => null);
-		if (user) Logger.info(user.tag, { level: 'PATRON' });
+		if (user) this.client.logger.info(user.tag, { label: 'PATRON' });
 
 		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
 

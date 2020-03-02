@@ -1,4 +1,3 @@
-const Logger = require('../util/logger');
 const { firebase } = require('./Database');
 const moment = require('moment');
 require('moment-duration-format');
@@ -21,7 +20,7 @@ class Firebase {
 				if (usage === null) return 1;
 				return usage + 1;
 			}, error => {
-				if (error) Logger.error(error, { level: 'FIREBASE' });
+				if (error) this.client.logger.error(error, { label: 'FIREBASE' });
 			});
 	}
 
@@ -32,7 +31,7 @@ class Firebase {
 				if (usage === null) return 1;
 				return usage + 1;
 			}, error => {
-				if (error) Logger.error(error, { level: 'FIREBASE' });
+				if (error) this.client.logger.error(error, { label: 'FIREBASE' });
 			});
 	}
 
@@ -43,7 +42,7 @@ class Firebase {
 				if (usage === null) return 1;
 				return usage + 1;
 			}, error => {
-				if (error) Logger.error(error, { level: 'FIREBASE' });
+				if (error) this.client.logger.error(error, { label: 'FIREBASE' });
 			});
 	}
 
@@ -54,7 +53,7 @@ class Firebase {
 				if (usage === null) return 1;
 				return usage + 1;
 			}, error => {
-				if (error) Logger.error(error, { level: 'FIREBASE' });
+				if (error) this.client.logger.error(error, { label: 'FIREBASE' });
 			});
 	}
 
@@ -65,7 +64,7 @@ class Firebase {
 			guilds: this.client.guilds.size,
 			channels: this.client.channels.size
 		}, error => {
-			if (error) Logger.error(error, { level: 'FIREBASE' });
+			if (error) this.client.logger.error(error, { label: 'FIREBASE' });
 		});
 	}
 }

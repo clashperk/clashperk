@@ -1,5 +1,4 @@
 const { Listener } = require('discord-akairo');
-const Logger = require('../../util/logger');
 
 class ShardDisconnectListener extends Listener {
 	constructor() {
@@ -11,7 +10,7 @@ class ShardDisconnectListener extends Listener {
 	}
 
 	exec(event, id) {
-		Logger.warn(`Shard ${id} disconnected (${event.code})`, { level: 'SHARD DISCONNECTED' });
+		this.client.logger.warn(`Shard ${id} disconnected (${event.code})`, { label: 'SHARD DISCONNECTED' });
 	}
 }
 
