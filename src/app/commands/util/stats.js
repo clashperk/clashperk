@@ -28,7 +28,7 @@ class StatsCommand extends Command {
 				this.freemem() > 1024 ? `${(this.freemem() / 1024).toFixed(2)} GB` : `${Math.round(this.freemem())} MB`
 			], true)
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }), true)
-			.addField('Servers', this.client.guilds.size, true)
+			.addField('Servers', this.client.guilds.cache.size, true)
 			.addField('Users', this.client.users.size, true)
 			.addField('Channels', this.client.channels.size, true)
 			.addField('Clans in DB', await this.count(), true)

@@ -21,7 +21,7 @@ class PostStats {
 			url: `https://discordbots.org/api/bots/${this.client.user.id}/stats`,
 			method: 'POST',
 			form: {
-				server_count: this.client.guilds.size
+				server_count: this.client.guilds.cache.size
 			}
 		}, (error, response, body) => {
 			if (error) this.client.logger.error(error.toString(), { level: 'https://discord.bots.gg' });
@@ -36,7 +36,7 @@ class PostStats {
 			url: `https://discord.bots.gg/api/v1/bots/${this.client.user.id}/stats`,
 			method: 'POST',
 			json: {
-				guildCount: this.client.guilds.size
+				guildCount: this.client.guilds.cache.size
 			}
 		}, (error, response, body) => {
 			if (error) this.client.logger.error(error, { level: 'https://discord.bots.gg' });
@@ -52,8 +52,8 @@ class PostStats {
 			url: `https://discordbotlist.com/api/bots/${this.client.user.id}/stats`,
 			method: 'POST',
 			json: {
-				guilds: this.client.guilds.size,
-				users: this.client.guilds.reduce((prev, guild) => guild.memberCount + prev, 0)
+				guilds: this.client.guilds.cache.size,
+				users: this.client.guilds.cache.reduce((prev, guild) => guild.memberCount + prev, 0)
 			}
 		}, (error, response, body) => {
 			if (error) this.client.logger.error(error, { level: 'https://discordbotlist.com' });

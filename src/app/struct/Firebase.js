@@ -61,7 +61,7 @@ class Firebase {
 		return firebase.ref('stats').update({
 			uptime: moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }),
 			users: this.client.guilds.cache.reduce((prev, guild) => guild.memberCount + prev, 0) || this.client.users.size,
-			guilds: this.client.guilds.size,
+			guilds: this.client.guilds.cache.size,
 			channels: this.client.channels.size
 		}, error => {
 			if (error) this.client.logger.error(error, { label: 'FIREBASE' });
