@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const Manager = require('./Shard');
+const Manager = require('./shard');
 
 const ShardingManager = new Manager();
 
