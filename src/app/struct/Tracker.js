@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const { firestore } = require('../struct/Database');
 
 const donateList = [];
-const memberSet = new Set([]);
+let memberList = [];
 
 const leagueStrings = {
 	29000000: '<:no_league:524912313531367424>',
@@ -127,21 +127,24 @@ class Tracker {
 	}
 
 	memberLog(clan, channel) {
-		const currentMemberSet = new Set(clan.memberList.map(m => m.tag));
+		const currentMemberList = clan.memberList.map(m => m.tag);
+		const currentMemberSet = new Set(currentMemberList);
+		const memberSet = new Set(memberList);
 
 		if (memberSet.size && currentMemberSet.size) {
-			console.log(`Left: ${currentMemberSet.filter(x => !memberSet.has(x))}`);
+			console.log(`Left: ${currentMemberList.filter(x => !memberSet.has(x))}`);
 			channel.send(`Left: ${currentMemberSet.filter(x => !memberSet.has(x)).join(' ')}`);
 		}
 
 
 		if (currentMemberSet.size && memberSet.size) {
-			console.log(`Joined: ${memberSet.filter(x => !currentMemberSet.has(x))}`);
-			channel.send(`Joined: ${memberSet.filter(x => !currentMemberSet.has(x)).join(' ')}`);
+			console.log(`Joined: ${memberList.filter(x => !currentMemberSet.has(x))}`);
+			channel.send(`Joined: ${memberList.filter(x => !currentMemberSet.has(x)).join(' ')}`);
 		}
 
+		memberList = [];
+		memberList = currentMemberList;
 		memberSet.clear();
-		memberSet.add(clan.memberList.map(m => m.tag));
 	}
 
 	async start_() {
