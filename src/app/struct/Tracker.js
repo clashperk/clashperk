@@ -131,7 +131,7 @@ class Tracker {
 	}
 
 	async memberLog(clan, color, channel) {
-		console.log('Init');
+		console.log('Init', channel.name);
 		const currentMemberList = clan.memberList.map(m => m.tag);
 
 		const currentMemberSet = new Set(currentMemberList);
@@ -154,6 +154,9 @@ class Tracker {
 				await channel.send({ embed });
 			}
 		}
+
+		// a delay of 200 ms
+		await this.delay(200);
 
 		// missing players
 		if (currentMemberSet.size && oldMemberSet.size) {
