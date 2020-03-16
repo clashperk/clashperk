@@ -4,7 +4,6 @@ const { firestore } = require('../struct/Database');
 
 const donateList = [];
 let oldMemberList = [];
-let oldMemberListData = [];
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -153,7 +152,7 @@ class Tracker {
 		}
 	}
 
-	async memberLog(clan, color, channel) {
+	async memberLog(clan, channel) {
 		console.log('Init', channel.name);
 		const currentMemberList = clan.memberList.map(m => m.tag);
 
@@ -164,11 +163,11 @@ class Tracker {
 		if (oldMemberList.length) {
 			const tags = currentMemberList.filter(x => !oldMemberSet.has(x));
 			for (const tag of tags) {
-				const member = clan.memberList.find(m => m.tag === tag);
+				const member = await this.getPlayer(tag);
 				const embed = new MessageEmbed()
 					.setColor(0x38d863)
 					.setTitle(`${member.name} (${member.tag}) Joined`)
-					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${member.tag.replace(/#/g, '')}`)
+					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${tag.replace(/#/g, '')}`)
 					.setDescription([
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`<:xp:534752059501838346> ${member.expLevel}`,
@@ -188,11 +187,11 @@ class Tracker {
 		if (currentMemberSet.size && oldMemberSet.size) {
 			const tags = oldMemberList.filter(x => !currentMemberSet.has(x));
 			for (const tag of tags) {
-				const member = oldMemberListData.find(m => m.tag === tag);
+				const member = await this.getPlayer(tag);
 				const embed = new MessageEmbed()
 					.setColor(0xeb3508)
 					.setTitle(`${member.name} (${member.tag}) Left`)
-					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${member.tag.replace(/#/g, '')}`)
+					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${tag.replace(/#/g, '')}`)
 					.setDescription([
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`<:xp:534752059501838346> ${member.expLevel}`,
@@ -206,8 +205,6 @@ class Tracker {
 		}
 
 		oldMemberList = [];
-		oldMemberListData = [];
-		oldMemberListData = clan.memberList;
 		oldMemberList = currentMemberList;
 		oldMemberSet.clear();
 	}
@@ -236,7 +233,7 @@ class Tracker {
 					this.track(data, clan.color, channel, clan.guild);
 					if (clan.tag === '#8QU8J9LP') {
 						const channel = this.client.channels.cache.get('683195551801802753');
-						this.memberLog(data, clan.color, channel);
+						this.memberLog(data, channel);
 					}
 				}
 			} else {
@@ -250,6 +247,23 @@ class Tracker {
 
 	async delay(ms) {
 		return new Promise(res => setTimeout(res, ms));
+	}
+
+	async getPlayer(tag) {
+		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`, {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json',
+				authorization: `Bearer ${process.env.TRACKER_API}`,
+				'cache-control': 'no-cache'
+			},
+			timeout: 3000
+		}).catch(() => null);
+
+		if (!res) return null;
+		if (!res.ok) return null;
+
+		return res.json();
 	}
 }
 
