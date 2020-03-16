@@ -6,6 +6,29 @@ const donateList = [];
 let oldMemberList = [];
 let oldMemberListData = [];
 
+const TownHallEmoji = {
+	2: '<:townhall2:534745498561806357>',
+	3: '<:townhall3:534745539510534144>',
+	4: '<:townhall4:534745571798286346>',
+	5: '<:townhall5:534745574251954176>',
+	6: '<:townhall6:534745574738624524>',
+	7: '<:townhall7:534745575732805670>',
+	8: '<:townhall8:534745576802353152>',
+	9: '<:townhall9:534745577033039882>',
+	10: '<:townhall10:534745575757709332>',
+	11: '<:townhall11:534745577599270923>',
+	12: '<:townhall12:534745574981894154>',
+	13: '<:townhall13:653959735124426814>'
+};
+
+const HeroEmojis = {
+	'Barbarian King': '<:barbarianking:524939911581663242>',
+	'Archer Queen': '<:archerqueen:524939902408720394>',
+	'Grand Warden': '<:grandwarden:524939931303411722>',
+	'Battle Machine': '<:warmachine:524939920943349781>',
+	'Royal Champion': '<:royal_champion:653967122166185995>'
+};
+
 const leagueStrings = {
 	29000000: '<:no_league:524912313531367424>',
 	29000001: '<:bronze3:524912314332348416>',
@@ -140,18 +163,21 @@ class Tracker {
 		// new players
 		if (oldMemberList.length) {
 			const tags = currentMemberList.filter(x => !oldMemberSet.has(x));
-			let members = '';
 			for (const tag of tags) {
 				const member = clan.memberList.find(m => m.tag === tag);
-				members += `${member.name} (${member.tag}) \n`;
-			}
-
-			if (members !== '') {
 				const embed = new MessageEmbed()
-					.setColor(color)
-					.setAuthor(members)
-					.setFooter('Joined');
+					.setColor(0x38d863)
+					.setTitle(`${member.name} (${member.tag}) Joined`)
+					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${member.tag.replace(/#/g, '')}`)
+					.setDescription([
+						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
+						`<:xp:534752059501838346> ${member.expLevel}`,
+						`<:warstars:534759020309774337> ${member.warStars}`,
+						`${leagueStrings[member.league ? member.league.id : 0]} ${member.trophies}`
+					].join(' '));
 				await channel.send({ embed });
+
+				await this.delay(200);
 			}
 		}
 
@@ -161,18 +187,21 @@ class Tracker {
 		// missing players
 		if (currentMemberSet.size && oldMemberSet.size) {
 			const tags = oldMemberList.filter(x => !currentMemberSet.has(x));
-			let members = '';
 			for (const tag of tags) {
 				const member = oldMemberListData.find(m => m.tag === tag);
-				members += `${member.name} (${member.tag}) \n`;
-			}
-
-			if (members !== '') {
 				const embed = new MessageEmbed()
-					.setColor(color)
-					.setAuthor(members)
-					.setFooter('Left');
+					.setColor(0xeb3508)
+					.setTitle(`${member.name} (${member.tag}) Left`)
+					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${member.tag.replace(/#/g, '')}`)
+					.setDescription([
+						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
+						`<:xp:534752059501838346> ${member.expLevel}`,
+						`<:warstars:534759020309774337> ${member.warStars}`,
+						`${leagueStrings[member.league ? member.league.id : 0]} ${member.trophies}`
+					].join(' '));
 				await channel.send({ embed });
+
+				await this.delay(200);
 			}
 		}
 
