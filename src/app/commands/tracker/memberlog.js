@@ -88,7 +88,8 @@ class StartMemberLogCommand extends Command {
 				createdAt: new Date()
 			}, { merge: true });
 
-		this.client.tracker.add(data.tag, message.guild.id, channel.id, color);
+		const memberlog = { channel: channel.id };
+		this.client.tracker.add(data.tag, message.guild.id, channel.id, color, true, memberlog);
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)

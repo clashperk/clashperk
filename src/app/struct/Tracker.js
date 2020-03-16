@@ -55,19 +55,25 @@ class Tracker {
 				snapshot.forEach(doc => {
 					const data = doc.data();
 					if (this.client.guilds.cache.has(data.guild)) {
-						this.add(data.tag, data.guild, data.channel, data.color);
+						if (data.memrLogEnabled) {
+							this.add(data.tag, data.guild, data.channel, data.color, true, data.memberlog);
+						} else {
+							this.add(data.tag, data.guild, data.channel, data.color);
+						}
 					}
 				});
 			});
 		return true;
 	}
 
-	add(tag, guild, channel, color) {
+	add(tag, guild, channel, color, memrLogEnabled = false, memberlog) {
 		const data = {
 			channel,
 			tag,
 			color,
-			guild
+			guild,
+			memrLogEnabled,
+			memberlog
 		};
 		this.cached.set(`${guild}${tag}`, data);
 	}
@@ -130,36 +136,40 @@ class Tracker {
 		const currentMemberSet = new Set(currentMemberList);
 		const oldMemberSet = new Set(oldMemberList);
 
+		// new players
 		if (oldMemberList.length) {
 			const tags = currentMemberList.filter(x => !oldMemberSet.has(x));
-			console.log(`Joined: ${currentMemberList.filter(x => !oldMemberSet.has(x))}`);
 			let members = '';
 			for (const tag of tags) {
 				const member = clan.memberList.find(m => m.tag === tag);
 				members += `${member.name} (${member.tag}) \n`;
 			}
 
-			const embed = new MessageEmbed()
-				.setColor(color)
-				.setAuthor(members)
-				.setFooter('Joined');
-			channel.send({ embed });
+			if (members !== '') {
+				const embed = new MessageEmbed()
+					.setColor(color)
+					.setAuthor(members)
+					.setFooter('Joined');
+				channel.send({ embed });
+			}
 		}
 
+		// missing players
 		if (currentMemberSet.size && oldMemberSet.size) {
 			const tags = oldMemberList.filter(x => !currentMemberSet.has(x));
-			console.log(`Left: ${oldMemberList.filter(x => !currentMemberSet.has(x))}`);
 			let members = '';
 			for (const tag of tags) {
 				const member = oldMemberListData.find(m => m.tag === tag);
 				members += `${member.name} (${member.tag}) \n`;
 			}
 
-			const embed = new MessageEmbed()
-				.setColor(color)
-				.setAuthor(members)
-				.setFooter('Left');
-			channel.send({ embed });
+			if (members !== '') {
+				const embed = new MessageEmbed()
+					.setColor(color)
+					.setAuthor(members)
+					.setFooter('Left');
+				channel.send({ embed });
+			}
 		}
 
 		oldMemberList = [];
