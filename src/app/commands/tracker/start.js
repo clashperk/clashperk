@@ -50,7 +50,7 @@ class StartCommand extends Command {
 
 	async exec(message, { data, channel, color }) {
 		const clans = await this.count(message);
-		const limit = this.client.patron.guilds.get(message.guild, 'clanLimit', 3);
+		const limit = this.client.patron.guilds.get(message.guild, 'clanLimit', 1);
 		if (clans >= limit) {
 			const embed = this.client.util.embed()
 				.setDescription([
