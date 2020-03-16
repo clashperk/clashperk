@@ -45,6 +45,9 @@ class Tracker {
 		await this.load();
 		await this.start();
 		this.client.setInterval(this.start.bind(this), this.checkRate);
+
+		await this.start_();
+		this.client.setInterval(this.start_.bind(this), 1 * 60 * 1000);
 	}
 
 	async load() {
@@ -123,22 +126,42 @@ class Tracker {
 		}
 	}
 
-	memberLog(clan, color, channel, guild) {
-		if (guild !== '609250675431309313') return;
+	memberLog(clan, channel) {
 		const currentMemberSet = new Set(clan.memberList.map(m => m.tag));
 
-		if (memberSet.size) {
+		if (memberSet.size && currentMemberSet.size) {
 			console.log(`Left: ${currentMemberSet.filter(x => !memberSet.has(x))}`);
 			channel.send(`Left: ${currentMemberSet.filter(x => !memberSet.has(x)).join(' ')}`);
 		}
 
-		if (currentMemberSet.size) {
+
+		if (currentMemberSet.size && memberSet.size) {
 			console.log(`Joined: ${memberSet.filter(x => !currentMemberSet.has(x))}`);
 			channel.send(`Joined: ${memberSet.filter(x => !currentMemberSet.has(x)).join(' ')}`);
 		}
 
 		memberSet.clear();
 		memberSet.add(clan.memberList.map(m => m.tag));
+	}
+
+	async start_() {
+		const channel = this.client.channels.cache.get('636540553420603411');
+		// check client permissions
+		if (channel.permissionsFor(channel.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'], false)) {
+			const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent('#8QU8J9LP')}`, {
+				method: 'GET',
+				headers: {
+					Accept: 'application/json',
+					authorization: `Bearer ${process.env.TRACKER_API}`,
+					'cache-control': 'no-cache'
+				},
+				timeout: 3000
+			}).catch(() => null);
+
+			const data = await res.json();
+
+			this.memberLog(data, channel);
+		}
 	}
 
 	async start() {
