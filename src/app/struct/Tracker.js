@@ -239,7 +239,7 @@ class Tracker {
 					this.track(data, clan.color, channel, clan.guild);
 					if (clan.memberLogEnabled) {
 						const channel = this.client.channels.cache.get(clan.memberlog.channel);
-						this.memberLog(data, channel);
+						this.memberLog(data, channel, clan.guild);
 					}
 				}
 			} else {
