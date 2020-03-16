@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const { firestore } = require('../struct/Database');
 
 const donateList = [];
-let memberList = [];
+const memberSet = new Set();
 
 const leagueStrings = {
 	29000000: '<:no_league:524912313531367424>',
@@ -125,24 +125,20 @@ class Tracker {
 
 	memberLog(clan, color, channel, guild) {
 		if (guild !== '609250675431309313') return;
-		for (const member of clan.memberList) {
-			if (member.tag in memberList.map(m => m.tag) === false && memberList.length) {
-				console.log(member.tag, 'Joined');
-			}
+		const currentMemberSet = new Set(clan.memberList.map(m => m.tag));
+
+		if (memberSet.size) {
+			console.log(`Left: ${currentMemberSet.filter(x => !memberSet.has(x))}`);
+			channel.send(`Left: ${currentMemberSet.filter(x => !memberSet.has(x)).join(' ')}`);
 		}
 
-		for (const member of memberList) {
-			if (member.tag in clan.memberList.map(m => m.tag) === false) {
-				console.log(member.tag, 'Left');
-			}
+		if (currentMemberSet.size) {
+			console.log(`Joined: ${memberSet.filter(x => !currentMemberSet.has(x))}`);
+			channel.send(`Joined: ${memberSet.filter(x => !currentMemberSet.has(x)).join(' ')}`);
 		}
 
-		memberList = [];
-		for (const member of clan.memberList) {
-			memberList.push(member);
-		}
-
-		console.log(memberList);
+		memberSet.clear();
+		memberSet.add(clan.memberList.map(m => m.tag));
 	}
 
 	async start() {
@@ -167,7 +163,7 @@ class Tracker {
 					const data = await res.json();
 
 					this.track(data, clan.color, channel, clan.guild);
-					// this.memberLog(data, clan.color, channel, clan.guild);
+					this.memberLog(data, clan.color, channel, clan.guild);
 				}
 			} else {
 				this.client.logger.warn(`Channel: ${clan.channel}`, { label: 'Missing Channel' });
