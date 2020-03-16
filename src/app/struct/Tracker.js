@@ -116,7 +116,7 @@ class Tracker {
 		for (const member of clan.memberList) {
 			if (`${guild}${member.tag}` in donateList) {
 				clanInfo = `${clan.name} (${clan.tag})`;
-				badge = clan.badgeUrls.large;
+				badge = clan.badgeUrls.small;
 				members = clan.members;
 				league = leagueStrings[member.league.id];
 				const donations = member.donations - donateList[`${guild}${member.tag}`].donations;
@@ -164,6 +164,7 @@ class Tracker {
 			const tags = currentMemberList.filter(x => !oldMemberSet.has(x));
 			for (const tag of tags) {
 				const member = await this.getPlayer(tag);
+				if (!member) return;
 				const embed = new MessageEmbed()
 					.setColor(0x38d863)
 					.setTitle(`${member.name} (${member.tag}) Joined`)
@@ -173,7 +174,9 @@ class Tracker {
 						`<:xp:534752059501838346> ${member.expLevel}`,
 						`<:warstars:534759020309774337> ${member.warStars}`,
 						`${leagueStrings[member.league ? member.league.id : 0]} ${member.trophies}`
-					].join(' '));
+					].join(' '))
+					.setFooter(clan.name, clan.badgeUrls.small)
+					.setTimestamp();
 				await channel.send({ embed });
 
 				await this.delay(200);
@@ -188,6 +191,7 @@ class Tracker {
 			const tags = oldMemberList.filter(x => !currentMemberSet.has(x));
 			for (const tag of tags) {
 				const member = await this.getPlayer(tag);
+				if (!member) return;
 				const embed = new MessageEmbed()
 					.setColor(0xeb3508)
 					.setTitle(`${member.name} (${member.tag}) Left`)
@@ -197,7 +201,9 @@ class Tracker {
 						`<:xp:534752059501838346> ${member.expLevel}`,
 						`<:warstars:534759020309774337> ${member.warStars}`,
 						`${leagueStrings[member.league ? member.league.id : 0]} ${member.trophies}`
-					].join(' '));
+					].join(' '))
+					.setFooter(clan.name, clan.badgeUrls.small)
+					.setTimestamp();
 				await channel.send({ embed });
 
 				await this.delay(200);
