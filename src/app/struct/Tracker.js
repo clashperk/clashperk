@@ -188,7 +188,7 @@ class Tracker {
 
 		// missing players
 		if (currentMemberSet.size && oldMemberSet.size) {
-			const tags = oldMemberList.filter(x => !currentMemberSet.has(x));
+			const tags = oldMemberList.get(clan.tag).filter(x => !currentMemberSet.has(x));
 			for (const tag of tags) {
 				const member = await this.getPlayer(tag);
 				if (!member) return;
