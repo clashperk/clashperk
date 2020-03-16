@@ -83,7 +83,7 @@ class Tracker {
 		delete donateList[`${guild}${tag}`];
 	}
 
-	track(clan, color, channel, guild) {
+	async track(clan, color, channel, guild) {
 		let donated = '';
 		let received = '';
 		let clanInfo;
@@ -119,7 +119,7 @@ class Tracker {
 			if (received) embed.addField('Received', `${received.substring(0, 1024)}`);
 
 			try {
-				channel.send({ embed });
+				await channel.send({ embed });
 			} catch (error) {
 				this.client.logger.error(error.toString(), { label: 'TRACKER MESSAGE' });
 			}
@@ -130,7 +130,7 @@ class Tracker {
 		}
 	}
 
-	memberLog(clan, color, channel) {
+	async memberLog(clan, color, channel) {
 		console.log('Init');
 		const currentMemberList = clan.memberList.map(m => m.tag);
 
@@ -151,7 +151,7 @@ class Tracker {
 					.setColor(color)
 					.setAuthor(members)
 					.setFooter('Joined');
-				channel.send({ embed });
+				await channel.send({ embed });
 			}
 		}
 
@@ -169,7 +169,7 @@ class Tracker {
 					.setColor(color)
 					.setAuthor(members)
 					.setFooter('Left');
-				channel.send({ embed });
+				await channel.send({ embed });
 			}
 		}
 
