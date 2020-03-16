@@ -121,6 +121,25 @@ class ClashPerk extends AkairoClient {
 			return data;
 		});
 
+		this.commandHandler.resolver.addType('guild_', async (msg, id) => {
+			if (!id) return null;
+			return this.guilds.cache.get(id);
+		});
+
+		this.commandHandler.resolver.addType('user_', async (msg, id) => {
+			if (!id) return null;
+			return this.users.cache.get(id);
+		});
+
+		this.commandHandler.resolver.addType('textChannel_', (msg, str) => {
+			if (!str) return null;
+			const mention = str.match(/<#(\d{17,19})>/);
+			const id = str.match(/^\d+$/);
+			if (id) return this.channels.cache.get(id[0]) || null;
+			if (mention) return this.channels.cache.get(mention[1]) || null;
+			return null;
+		});
+
 		setInterval(() => {
 			for (const guild of this.guilds.cache.values()) {
 				guild.presences.cache.clear();

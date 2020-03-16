@@ -237,7 +237,7 @@ class Tracker {
 					const data = await res.json();
 
 					this.track(data, clan.color, channel, clan.guild);
-					if (clan.memrLogEnabled) {
+					if (clan.memberLogEnabled) {
 						const channel = this.client.channels.cache.get(clan.memberlog.channel);
 						this.memberLog(data, channel);
 					}

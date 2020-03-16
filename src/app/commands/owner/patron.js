@@ -22,8 +22,8 @@ class PatronCommand extends Command {
 			type: (msg, id) => {
 				if (!id) return null;
 				const resolver = this.handler.resolver.type({
-					user: 'user',
-					guild: 'guild'
+					user: 'user_',
+					guild: 'guild_'
 				}[type]);
 				return resolver(msg, id);
 			},
