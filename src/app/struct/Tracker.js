@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const { firestore } = require('../struct/Database');
 
 const donateList = [];
-const memberSet = new Set();
+const memberSet = new Set([]);
 
 const leagueStrings = {
 	29000000: '<:no_league:524912313531367424>',
