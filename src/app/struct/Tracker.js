@@ -44,10 +44,9 @@ class Tracker {
 	async init() {
 		await this.load();
 		await this.start();
-		this.client.setInterval(this.start.bind(this), this.checkRate);
-
 		await this.start_();
-		this.client.setInterval(this.start_.bind(this), 1 * 60 * 1000);
+		this.client.setInterval(this.start.bind(this), this.checkRate);
+		setInterval(this.start_.bind(this), 1 * 60 * 1000);
 	}
 
 	async load() {
@@ -128,10 +127,11 @@ class Tracker {
 
 	memberLog(clan, channel) {
 		const currentMemberList = clan.memberList.map(m => m.tag);
+
 		const currentMemberSet = new Set(currentMemberList);
 		const memberSet = new Set(memberList);
 
-		if (memberSet.size && currentMemberSet.size) {
+		if (memberList.length) {
 			console.log(`Left: ${currentMemberList.filter(x => !memberSet.has(x))}`);
 			channel.send(`Left: ${currentMemberList.filter(x => !memberSet.has(x)).join(' ')}`);
 		}
