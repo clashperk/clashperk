@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const { firestore } = require('../struct/Database');
 
 const donateList = [];
-let oldMemberList = [];
+const oldMemberList = new Map();
 
 const TownHallEmoji = {
 	2: '<:townhall2:534745498561806357>',
@@ -157,10 +157,10 @@ class Tracker {
 		const currentMemberList = clan.memberList.map(m => m.tag);
 
 		const currentMemberSet = new Set(currentMemberList);
-		const oldMemberSet = new Set(oldMemberList);
+		const oldMemberSet = new Set(oldMemberList.get(clan.tag));
 
 		// new players
-		if (oldMemberList.length) {
+		if (oldMemberSet.size) {
 			const tags = currentMemberList.filter(x => !oldMemberSet.has(x));
 			for (const tag of tags) {
 				const member = await this.getPlayer(tag);
@@ -210,8 +210,8 @@ class Tracker {
 			}
 		}
 
-		oldMemberList = [];
-		oldMemberList = currentMemberList;
+		oldMemberList.set(clan.tag, []);
+		oldMemberList.set(clan.tag, currentMemberList);
 		oldMemberSet.clear();
 	}
 
