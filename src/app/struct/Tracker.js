@@ -133,7 +133,7 @@ class Tracker {
 
 		if (memberSet.size && currentMemberSet.size) {
 			console.log(`Left: ${currentMemberList.filter(x => !memberSet.has(x))}`);
-			channel.send(`Left: ${currentMemberSet.filter(x => !memberSet.has(x)).join(' ')}`);
+			channel.send(`Left: ${currentMemberList.filter(x => !memberSet.has(x)).join(' ')}`);
 		}
 
 
