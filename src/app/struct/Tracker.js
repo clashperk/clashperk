@@ -3,7 +3,8 @@ const fetch = require('node-fetch');
 const { firestore } = require('../struct/Database');
 
 const donateList = [];
-let memberList = [];
+let oldMemberList = [];
+let oldMemberListData = [];
 
 const leagueStrings = {
 	29000000: '<:no_league:524912313531367424>',
@@ -44,9 +45,7 @@ class Tracker {
 	async init() {
 		await this.load();
 		await this.start();
-		await this.start_();
 		this.client.setInterval(this.start.bind(this), this.checkRate);
-		setInterval(this.start_.bind(this), 1 * 60 * 1000);
 	}
 
 	async load() {
@@ -125,45 +124,49 @@ class Tracker {
 		}
 	}
 
-	memberLog(clan, channel) {
+	memberLog(clan, color, channel, guild) {
 		const currentMemberList = clan.memberList.map(m => m.tag);
 
 		const currentMemberSet = new Set(currentMemberList);
-		const memberSet = new Set(memberList);
+		const oldMemberSet = new Set(oldMemberList);
 
-		if (memberList.length) {
-			console.log(`Joined: ${currentMemberList.filter(x => !memberSet.has(x))}`);
-			channel.send(`Joined: ${currentMemberList.filter(x => !memberSet.has(x)).join(' ')}`);
+		if (oldMemberList.length) {
+			const tags = currentMemberList.filter(x => !oldMemberSet.has(x));
+			console.log(`Joined: ${currentMemberList.filter(x => !oldMemberSet.has(x))}`);
+			let members = '';
+			for (const tag of tags) {
+				const member = clan.memberList.find(m => m.tag === tag);
+				members += `${member.name} (${member.tag}) \n`;
+			}
+
+			const embed = new MessageEmbed()
+				.setColor(color)
+				.setAuthor(members)
+				.setFooter('Joined');
+			channel.send({ embed });
 		}
 
-		if (currentMemberSet.size && memberSet.size) {
-			console.log(`Left: ${memberList.filter(x => !currentMemberSet.has(x))}`);
-			channel.send(`Left: ${memberList.filter(x => !currentMemberSet.has(x)).join(' ')}`);
+		if (currentMemberSet.size && oldMemberSet.size) {
+			const tags = oldMemberList.filter(x => !currentMemberSet.has(x));
+			console.log(`Left: ${oldMemberList.filter(x => !currentMemberSet.has(x))}`);
+			let members = '';
+			for (const tag of tags) {
+				const member = oldMemberListData.find(m => m.tag === tag);
+				members += `${member.name} (${member.tag}) \n`;
+			}
+
+			const embed = new MessageEmbed()
+				.setColor(color)
+				.setAuthor(members)
+				.setFooter('Left');
+			channel.send({ embed });
 		}
 
-		memberList = [];
-		memberList = currentMemberList;
-		memberSet.clear();
-	}
-
-	async start_() {
-		const channel = this.client.channels.cache.get('636540553420603411');
-		// check client permissions
-		if (channel.permissionsFor(channel.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'], false)) {
-			const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent('#8QU8J9LP')}`, {
-				method: 'GET',
-				headers: {
-					Accept: 'application/json',
-					authorization: `Bearer ${process.env.TRACKER_API}`,
-					'cache-control': 'no-cache'
-				},
-				timeout: 3000
-			}).catch(() => null);
-
-			const data = await res.json();
-
-			this.memberLog(data, channel);
-		}
+		oldMemberList = [];
+		oldMemberListData = [];
+		oldMemberListData = clan.memberList;
+		oldMemberList = currentMemberList;
+		oldMemberSet.clear();
 	}
 
 	async start() {
@@ -188,6 +191,10 @@ class Tracker {
 					const data = await res.json();
 
 					this.track(data, clan.color, channel, clan.guild);
+					if (clan.memrLogEnabled) {
+						const channel = this.client.channels.cache.get(clan.memberlog.channel);
+						this.memberLog(data, clan.color, channel, clan.guild);
+					}
 				}
 			} else {
 				this.client.logger.warn(`Channel: ${clan.channel}`, { label: 'Missing Channel' });
