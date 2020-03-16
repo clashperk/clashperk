@@ -132,14 +132,13 @@ class Tracker {
 		const memberSet = new Set(memberList);
 
 		if (memberList.length) {
-			console.log(`Left: ${currentMemberList.filter(x => !memberSet.has(x))}`);
-			channel.send(`Left: ${currentMemberList.filter(x => !memberSet.has(x)).join(' ')}`);
+			console.log(`Joined: ${currentMemberList.filter(x => !memberSet.has(x))}`);
+			channel.send(`Joined: ${currentMemberList.filter(x => !memberSet.has(x)).join(' ')}`);
 		}
 
-
 		if (currentMemberSet.size && memberSet.size) {
-			console.log(`Joined: ${memberList.filter(x => !currentMemberSet.has(x))}`);
-			channel.send(`Joined: ${memberList.filter(x => !currentMemberSet.has(x)).join(' ')}`);
+			console.log(`Left: ${memberList.filter(x => !currentMemberSet.has(x))}`);
+			channel.send(`Left: ${memberList.filter(x => !currentMemberSet.has(x)).join(' ')}`);
 		}
 
 		memberList = [];
