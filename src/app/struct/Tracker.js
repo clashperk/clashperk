@@ -152,12 +152,12 @@ class Tracker {
 		}
 	}
 
-	async memberLog(clan, channel) {
+	async memberLog(clan, channel, guild) {
 		console.log('Init', channel.name);
 		const currentMemberList = clan.memberList.map(m => m.tag);
 
 		const currentMemberSet = new Set(currentMemberList);
-		const oldMemberSet = new Set(oldMemberList.get(clan.tag));
+		const oldMemberSet = new Set(oldMemberList.get(`${guild}${clan.tag}`));
 
 		// new players
 		if (oldMemberSet.size) {
@@ -188,7 +188,7 @@ class Tracker {
 
 		// missing players
 		if (currentMemberSet.size && oldMemberSet.size) {
-			const tags = oldMemberList.get(clan.tag).filter(x => !currentMemberSet.has(x));
+			const tags = oldMemberList.get(`${guild}${clan.tag}`).filter(x => !currentMemberSet.has(x));
 			for (const tag of tags) {
 				const member = await this.getPlayer(tag);
 				if (!member) return;
@@ -210,8 +210,8 @@ class Tracker {
 			}
 		}
 
-		oldMemberList.set(clan.tag, []);
-		oldMemberList.set(clan.tag, currentMemberList);
+		oldMemberList.set(`${guild}${clan.tag}`, []);
+		oldMemberList.set(`${guild}${clan.tag}`, currentMemberList);
 		oldMemberSet.clear();
 	}
 
