@@ -77,7 +77,7 @@ class Tracker {
 				snapshot.forEach(doc => {
 					const data = doc.data();
 					if (this.client.guilds.cache.has(data.guild)) {
-						if (data.memrLogEnabled) {
+						if (data.memberLogEnabled) {
 							this.add(data.tag, data.guild, data.channel, data.color, true, data.memberlog);
 						} else {
 							this.add(data.tag, data.guild, data.channel, data.color);
@@ -88,13 +88,13 @@ class Tracker {
 		return true;
 	}
 
-	add(tag, guild, channel, color, memrLogEnabled = false, memberlog) {
+	add(tag, guild, channel, color, memberLogEnabled = false, memberlog) {
 		const data = {
 			channel,
 			tag,
 			color,
 			guild,
-			memrLogEnabled,
+			memberLogEnabled,
 			memberlog
 		};
 		this.cached.set(`${guild}${tag}`, data);
