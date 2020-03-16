@@ -250,7 +250,7 @@ class Tracker {
 	}
 
 	async getPlayer(tag) {
-		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`, {
+		const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 			method: 'GET',
 			headers: {
 				Accept: 'application/json',
