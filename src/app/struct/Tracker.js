@@ -237,8 +237,8 @@ class Tracker {
 					const data = await res.json();
 
 					this.track(data, clan.color, channel, clan.guild);
-					if (clan.tag === '#8QU8J9LP') {
-						const channel = this.client.channels.cache.get('683195551801802753');
+					if (clan.memrLogEnabled) {
+						const channel = this.client.channels.cache.get(clan.memberlog.channel);
 						this.memberLog(data, channel);
 					}
 				}
