@@ -4,7 +4,7 @@ const { firestore } = require('../../struct/Database');
 class LinkPlayerCommand extends Command {
 	constructor() {
 		super('link-player', {
-			aliases: ['link-player', 'link-profile', 'save-profile'],
+			aliases: ['link-player', 'link-profile', 'save-profile', 'link'],
 			category: 'profile',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
@@ -58,9 +58,9 @@ class LinkPlayerCommand extends Command {
 				'',
 				'If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.',
 				'',
-				`For Examples **\u200b${prefix}player** will return the info of ${data.name} (${data.tag}).`,
+				`For Examples **\u200b${prefix}player** will return the info of *${data.name} (${data.tag})*.`,
 				'',
-				`As well as **\u200b${prefix}units** will return the player units for the same account.`,
+				`As well as **\u200b${prefix}units** will return the player units for the same account (works with other comamnds too).`,
 				'',
 				`Also get info by mention or user-id **\u200b${prefix}player <user/id>** (works if the user is linked).`
 			])

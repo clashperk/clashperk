@@ -59,6 +59,17 @@ class LinkClanCommand extends Command {
 				`\`${prefix}clan\`, \`${prefix}myclan\`, \`${prefix}warlog\`, \`${prefix}thcompo\`, \`${prefix}currentwar\`, \`${prefix}roster\`,`,
 				`\`${prefix}cwlwar <user>\`, \`${prefix}clan <user>\`, \`${prefix}warlog <user>\`, \`etc\``
 			])
+			.addField(`Linked **${member.user.tag}** to ${data.name} (${data.tag})`, [
+				'You\'ve successfully linked.',
+				'',
+				'If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.',
+				'',
+				`For Examples **\u200b${prefix}clan** will return the info of *${data.name} (${data.tag})*.`,
+				'',
+				`As well as **\u200b${prefix}thcompo** will return the townhall composition for the same clan (works with other comamnds too).`,
+				'',
+				`Also get info by mention or user-id **\u200b${prefix}clan <user/id>** (works if the user is linked).`
+			])
 			.setThumbnail(member.user.displayAvatarURL());
 		return message.util.send({ embed });
 	}
