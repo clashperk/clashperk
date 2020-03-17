@@ -2,16 +2,16 @@ const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { firestore } = require('../../struct/Database');
 
-class StartMemberLogCommand extends Command {
+class StartPlayerLogCommand extends Command {
 	constructor() {
-		super('memberlog', {
-			aliases: ['memberlog'],
+		super('playerlog', {
+			aliases: ['playerlog'],
 			category: 'owner',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Starts the memberlog in a channel.',
+				content: 'Starts the playerlog in a channel.',
 				usage: '<clan tag> [channel/hexColor] [hexColor/channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #tracker #5970C1', '#8QU8J9LP #5970C1 #tracker']
 			}
@@ -83,6 +83,7 @@ class StartMemberLogCommand extends Command {
 			memberlog: {
 				channel: channel.id
 			},
+			isPremium: this.client.patron.guilds.get(message.guild, 'patron', false),
 			createdAt: new Date()
 		}, { merge: true });
 
@@ -106,4 +107,4 @@ class StartMemberLogCommand extends Command {
 	}
 }
 
-module.exports = StartMemberLogCommand;
+module.exports = StartPlayerLogCommand;

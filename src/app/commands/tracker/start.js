@@ -85,6 +85,7 @@ class StartCommand extends Command {
 				color
 			},
 			guild: message.guild.id,
+			isPremium: this.client.patron.guilds.get(message.guild, 'patron', false),
 			createdAt: new Date()
 		}, { merge: true });
 
