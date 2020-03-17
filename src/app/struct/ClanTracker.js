@@ -261,7 +261,7 @@ class ClanTracker {
 	}
 
 	async start() {
-		for (const clan of this.cached.values().filter(clan => !clan.isPremium)) {
+		for (const clan of Array.from(this.cached.values()).filter(clan => !clan.isPremium)) {
 			if (clan.donationlogEnabled && this.client.channels.cache.has(clan.donationlog.channel)) {
 				const channel = this.client.channels.cache.get(clan.donationlog.channel);
 				// check client permissions
@@ -321,7 +321,7 @@ class ClanTracker {
 	}
 
 	async _start() {
-		for (const clan of this.cached.values().filter(clan => clan.isPremium)) {
+		for (const clan of Array.from(this.cached.values()).filter(clan => clan.isPremium)) {
 			if (clan.donationlogEnabled && this.client.channels.cache.has(clan.donationlog.channel)) {
 				const channel = this.client.channels.cache.get(clan.donationlog.channel);
 				// check client permissions
