@@ -53,7 +53,7 @@ class LinkClanCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x10ffc1)
 			.addField(`Linked **${member.user.tag}** to ${data.name} (${data.tag})`, [
-				'You\'ve successfully linked. Now enjoy arguments free commands!',
+				'You\'ve successfully linked.',
 				'',
 				'Examples',
 				`\`${prefix}clan\`, \`${prefix}myclan\`, \`${prefix}warlog\`, \`${prefix}thcompo\`, \`${prefix}currentwar\`, \`${prefix}roster\`,`,

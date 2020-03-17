@@ -54,12 +54,12 @@ class LinkPlayerCommand extends Command {
 			.setColor(0x10ffc1)
 			.addField(`Linked **${member.user.tag}** to ${data.name} (${data.tag})`, [
 				'You\'ve successfully linked.',
-				`You can link multiple accounts, to view your all accounts type **${prefix}profile**`,
+				`You can link multiple accounts, to view your all accounts type **\u200b${prefix}profile**`,
 				'',
 				'If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.',
-				`For Examples **${prefix}player** will return the info ${data.name} (${data.tag}).`,
-				`As well as **${prefix}units** will return the player units for the same profile.`,
-				`Mentioning a user in discord works too \`${prefix}player <user>\`, \`${prefix}units <user>\``
+				`For Examples **\u200b${prefix}player** will return the info ${data.name} (${data.tag}).`,
+				`As well as **\u200b${prefix}units** will return the player units for the same profile.`,
+				`Mentioning a user in discord works too **\u200b${prefix}player <user>**, **\u200b${prefix}units <user>**`
 			])
 			.setThumbnail(member.user.displayAvatarURL());
 		return message.util.send({ embed });
