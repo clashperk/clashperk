@@ -45,7 +45,10 @@ class Patron {
 		const webhook = await this.client.fetchWebhook(this.webhook).catch(() => null);
 		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
 		const user = await this.client.users.fetch(discord_id).catch(() => null);
-		if (user) this.client.logger.info(user.tag, { label: 'PATRON' });
+		if (user) {
+			this.client.logger.info(user.tag, { label: 'PATRON' });
+			this.client.patron.users.set(user, 'patron', true);
+		}
 
 		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
 		await firestore.collection('patreon')
@@ -123,7 +126,10 @@ class Patron {
 		const webhook = await this.client.fetchWebhook(this.webhook).catch(() => null);
 		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
 		const user = await this.client.users.fetch(discord_id).catch(() => null);
-		if (user) this.client.logger.info(user.tag, { label: 'PATRON' });
+		if (user) {
+			this.client.logger.info(user.tag, { label: 'PATRON' });
+			this.client.patron.users.set(user, 'patron', false);
+		}
 
 		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
 

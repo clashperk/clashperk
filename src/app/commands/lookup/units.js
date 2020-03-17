@@ -3,70 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
-
-const HeroEmojis = {
-	'Barbarian King': '<:barbarianking:524939911581663242>',
-	'Archer Queen': '<:archerqueen:524939902408720394>',
-	'Grand Warden': '<:grandwarden:524939931303411722>',
-	'Battle Machine': '<:warmachine:524939920943349781>',
-	'Royal Champion': '<:royal_champion:653967122166185995>'
-};
-const TroopEmojis = {
-	'Barbarian': '<:barbarian:524921080951865354>',
-	'Archer': '<:archer:524921038862024723>',
-	'Goblin': '<:goblin:524921092368891925>',
-	'Giant': '<:giant:524921093652348955>',
-	'Wall Breaker': '<:wallbreaker:524921094814171147>',
-	'Balloon': '<:balloonc:524921095363493912>',
-	'Wizard': '<:wizard:524921085645291522>',
-	'Healer': '<:healer:524921090196242432>',
-	'Dragon': '<:dragonc:524921090884108288>',
-	'P.E.K.K.A': '<:pekka:524921093753012227>',
-	'Yeti': '<:yeti:653963810482290719>',
-	'Minion': '<:minion:524921093132255232>',
-	'Hog Rider': '<:hogrider:524921085561667584>',
-	'Valkyrie': '<:valkyrie:524921093031723019>',
-	'Golem': '<:golem:524921095300579328>',
-	'Witch': '<:witch:524921091383099404>',
-	'Lava Hound': '<:lavahound:524921094185156619>',
-	'Bowler': '<:bowler:524921085024534528>',
-	'Baby Dragon': '<:babydragon:524921039004631050>',
-	'Miner': '<:miner:524921087461425162>',
-	'Electro Dragon': '<:electrodragon:524921092213833750>',
-	'Ice Golem': '<:ice_golem:627156215394467851>',
-	'Battle Blimp': '<:battleblimp:524921096345092126>',
-	'Wall Wrecker': '<:wallwrecker:524921096655339520>',
-	'Stone Slammer': '<:Stone_Slammer_info:524937839457337374>',
-	'Siege Barracks': '<:siege_barracks:658299037476454411>'
-};
-
-const BuilderTroops = {
-	'Night Witch': '<:night_witch:627148850800492574>',
-	'Baby Dragon': '<:baby_dragon:627148415473680415>',
-	'Drop Ship': '<:drop_ship:627151120896098345>',
-	'Cannon Cart': '<:cannon_cart:627148662547677204>',
-	'Super P.E.K.K.A': '<:supper_pekka:627149954917466142>',
-	'Bomber': '<:bomber:627148263233159188>',
-	'Boxer Giant': '<:boxer_giant:627148013512556544>',
-	'Beta Minion': '<:beta_minion:627148135373864960>',
-	'Sneaky Archer': '<:skeaky_archer:627147702584606722>',
-	'Raged Barbarian': '<:raged_barbarian:627147507717111808>',
-	'Hog Glider': '<:hog_glider:658297486120583199>'
-};
-
-const SpellEmojis = {
-	'Lightning Spell': '<:lightning:524921197369229342>',
-	'Healing Spell': '<:healing:524921190834503723>',
-	'Rage Spell': '<:ragec:524921200900833280>',
-	'Jump Spell': '<:jump:524921194437279745>',
-	'Freeze Spell': '<:freeze:524921189290999818>',
-	'Poison Spell': '<:poison:524921198312816641>',
-	'Earthquake Spell': '<:earthquake:524921182659674122>',
-	'Haste Spell': '<:haste:524921185549418506>',
-	'Clone Spell': '<:clone:524921180910518272>',
-	'Skeleton Spell': '<:skeleton:524921203975127049>',
-	'Bat Spell': '<:Bat_Spell_info:524937829122441227>'
-};
+const { TroopEmojis, HeroEmojis, BuilderTroops, SpellEmojis } = require('../../util/constants');
 
 class UnitsCommand extends Command {
 	constructor() {

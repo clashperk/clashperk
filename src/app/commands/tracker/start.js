@@ -73,19 +73,24 @@ class StartCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		await firestore.collection('tracking_clans')
-			.doc(`${message.guild.id}${data.tag}`)
-			.update({
-				tag: data.tag,
-				name: data.name,
-				color,
-				user: message.author.id,
-				channel: channel.id,
-				guild: message.guild.id,
-				createdAt: new Date()
-			}, { merge: true });
+		const ref = firestore.collection('tracking_clans').doc(`${message.guild.id}${data.tag}`);
 
-		this.client.tracker.add(data.tag, message.guild.id, channel.id, color);
+		await ref.update({
+			tag: data.tag,
+			name: data.name,
+			user: message.author.id,
+			donationlogEnabled: true,
+			donationlog: {
+				channel: channel.id,
+				color
+			},
+			guild: message.guild.id,
+			createdAt: new Date()
+		}, { merge: true });
+
+		const metadata = await ref.get().then(snap => snap.data());
+
+		this.client.tracker.add(data.tag, message.guild.id, metadata);
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)

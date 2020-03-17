@@ -3,7 +3,7 @@ const Settings = require('../struct/SettingsProvider');
 const { firestore } = require('../struct/Database');
 const path = require('path');
 const Logger = require('../util/logger');
-const Tracker = require('../struct/Tracker');
+const ClanTracker = require('../struct/ClanTracker');
 const fetch = require('node-fetch');
 const Patrons = require('../struct/Patrons');
 const Voter = require('../struct/Voter');
@@ -162,7 +162,7 @@ class ClashPerk extends AkairoClient {
 
 		this.settings = new Settings(firestore.collection('settings'));
 		this.postStats = new PostStats(this);
-		this.tracker = new Tracker(this);
+		this.tracker = new ClanTracker(this);
 		this.firebase = new Firebase(this);
 		this.patron = new Patrons(this);
 		this.voter = new Voter(this);

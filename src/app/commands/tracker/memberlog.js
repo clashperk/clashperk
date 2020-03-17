@@ -50,7 +50,7 @@ class StartMemberLogCommand extends Command {
 
 	async exec(message, { data, channel, color }) {
 		const clans = await this.count(message);
-		const limit = this.client.patron.guilds.get(message.guild, 'clanLimit', 3);
+		const limit = this.client.patron.guilds.get(message.guild, 'clanLimit', 1);
 		if (clans >= limit) {
 			const embed = this.client.util.embed()
 				.setDescription([
@@ -73,23 +73,22 @@ class StartMemberLogCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		await firestore.collection('tracking_clans')
-			.doc(`${message.guild.id}${data.tag}`)
-			.update({
-				tag: data.tag,
-				name: data.name,
-				color,
-				user: message.author.id,
-				memberLogEnabled: true,
-				guild: message.guild.id,
-				memberlog: {
-					channel: channel.id
-				},
-				createdAt: new Date()
-			}, { merge: true });
+		const ref = await firestore.collection('tracking_clans').doc(`${message.guild.id}${data.tag}`);
+		await ref.update({
+			tag: data.tag,
+			name: data.name,
+			user: message.author.id,
+			memberlogEnabled: true,
+			guild: message.guild.id,
+			memberlog: {
+				channel: channel.id
+			},
+			createdAt: new Date()
+		}, { merge: true });
 
-		const memberlog = { channel: channel.id };
-		this.client.tracker.add(data.tag, message.guild.id, channel.id, color, true, memberlog);
+		const metadata = await ref.get().then(snap => snap.data());
+
+		this.client.tracker.add(data.tag, message.guild.id, metadata);
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)

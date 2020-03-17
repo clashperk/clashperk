@@ -41,7 +41,7 @@ class TrackingCommand extends Command {
 				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL());
 			if (data.length) {
 				embed.setDescription([
-					data.map(({ name, tag, channel }, index) => `**${++index}.** ${name} (${tag}) => <#${channel}>`).join('\n')
+					data.map(({ name, tag }, index) => `**${++index}.** ${name} (${tag})`).join('\n')
 				]);
 			}
 			embed.setFooter(`Tracking ${data.length} ${data.length > 1 || data.length === 0 ? 'clans' : 'clan'}`);

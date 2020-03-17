@@ -2,22 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror } = require('../../util/constants');
-
-const TownHallEmoji = {
-	2: '<:townhall2:534745498561806357>',
-	3: '<:townhall3:534745539510534144>',
-	4: '<:townhall4:534745571798286346>',
-	5: '<:townhall5:534745574251954176>',
-	6: '<:townhall6:534745574738624524>',
-	7: '<:townhall7:534745575732805670>',
-	8: '<:townhall8:534745576802353152>',
-	9: '<:townhall9:534745577033039882>',
-	10: '<:townhall10:534745575757709332>',
-	11: '<:townhall11:534745577599270923>',
-	12: '<:townhall12:534745574981894154>',
-	13: '<:townhall13:653959735124426814>'
-};
+const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
 
 class CwlMembersComamnd extends Command {
 	constructor() {

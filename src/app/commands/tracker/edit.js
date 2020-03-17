@@ -72,8 +72,10 @@ class EditCommand extends Command {
 	}
 
 	async exec(message, { clan, color }) {
-		await clan.ref.update({ color }, { merge: true });
-		this.client.tracker.add(clan.tag, message.guild.id, clan.channel, color);
+		await clan.ref.update({ donationlog: { color } }, { merge: true });
+
+		const metadata = clan.ref.get().then(snap => snap.data());
+		this.client.tracker.add(clan.tag, message.guild.id, metadata);
 		return message.util.send({
 			embed: {
 				author: { name: 'Embed Color Update' },
