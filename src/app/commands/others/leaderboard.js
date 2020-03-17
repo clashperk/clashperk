@@ -8,7 +8,7 @@ class LeaderboardCommand extends Command {
 			category: 'other',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Shows the leaderboard ([vote](https://discordbots.org/bot/526971716711350273/vote) based).'
+				content: 'Shows the leaderboard ([vote](https://top.gg/bot/526971716711350273/vote) based).'
 			},
 			args: [
 				{

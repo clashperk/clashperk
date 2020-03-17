@@ -21,7 +21,7 @@ class VoteCommand extends Command {
 		this.client.voter.fetchVote(message.author.id);
 		return message.util.send([
 			'**Thanks for voting in advance!**',
-			'https://discordbots.org/bot/526971716711350273/vote'
+			'https://top.gg/bot/526971716711350273/vote'
 		]);
 	}
 }

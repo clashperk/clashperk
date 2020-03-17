@@ -7,12 +7,12 @@ class GuideCommand extends Command {
 			category: 'util',
 			cooldown: 1000,
 			clientPermissions: ['EMBED_LINKS'],
-			description: { content: 'Shows [information](https://clashperk.xyz/) about how to use bot.' }
+			description: { content: 'Shows [information](https://guide.clashperk.xyz/) about how to use bot.' }
 		});
 	}
 
 	async exec(message) {
-		return message.util.send('https://clashperk.xyz/');
+		return message.util.send('https://guide.clashperk.xyz/');
 	}
 }
 

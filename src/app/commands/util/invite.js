@@ -22,7 +22,8 @@ class InviteCommand extends Command {
 			'ATTACH_FILES',
 			'READ_MESSAGE_HISTORY',
 			'USE_EXTERNAL_EMOJIS',
-			'MANAGE_MESSAGES'
+			'MANAGE_MESSAGES',
+			'MANAGE_WEBHOOKS'
 		]);
 
 		this.invite = invite;
