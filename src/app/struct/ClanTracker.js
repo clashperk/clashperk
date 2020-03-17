@@ -284,7 +284,7 @@ class ClanTracker {
 
 					const data = await res.json();
 
-					this.track(data, clan.color, channel, clan.guild);
+					this.track(data, clan.donationlog.color, channel, clan.guild);
 					if (clan.memberlogEnabled) {
 						const channel = this.client.channels.cache.get(clan.memberlog.channel);
 						if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
@@ -344,7 +344,7 @@ class ClanTracker {
 
 					const data = await res.json();
 
-					this._track(data, clan.color, channel, clan.guild);
+					this._track(data, clan.donationlog.color, channel, clan.guild);
 					if (clan.memberlogEnabled) {
 						const channel = this.client.channels.cache.get(clan.memberlog.channel);
 						if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
