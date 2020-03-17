@@ -55,13 +55,6 @@ class LinkClanCommand extends Command {
 			.addField(`Linked **${member.user.tag}** to ${data.name} (${data.tag})`, [
 				'You\'ve successfully linked.',
 				'',
-				'Examples',
-				`\`${prefix}clan\`, \`${prefix}myclan\`, \`${prefix}warlog\`, \`${prefix}thcompo\`, \`${prefix}currentwar\`, \`${prefix}roster\`,`,
-				`\`${prefix}cwlwar <user>\`, \`${prefix}clan <user>\`, \`${prefix}warlog <user>\`, \`etc\``
-			])
-			.addField(`Linked **${member.user.tag}** to ${data.name} (${data.tag})`, [
-				'You\'ve successfully linked.',
-				'',
 				'If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.',
 				'',
 				`For Examples **\u200b${prefix}clan** will return the info of *${data.name} (${data.tag})*.`,
