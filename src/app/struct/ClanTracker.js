@@ -15,8 +15,10 @@ class ClanTracker {
 
 	async init() {
 		await this.load();
+		await this._start();
 		await this.start();
-		this.client.setInterval(this.start.bind(this), this.checkRate);
+		setInterval(this.start.bind(this), this.checkRate);
+		setInterval(this._start.bind(this), this.checkRate);
 	}
 
 	async load() {
