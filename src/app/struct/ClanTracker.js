@@ -7,9 +7,10 @@ const donateList = [];
 const oldMemberList = new Map();
 
 class ClanTracker {
-	constructor(client, { checkRate = 5 * 60 * 1000 } = {}) {
+	constructor(client, { checkRate = 5 * 60 * 1000, quickRate = 3 * 60 * 1000 } = {}) {
 		this.client = client;
 		this.checkRate = checkRate;
+		this.quickRate = quickRate;
 		this.cached = new Map();
 	}
 
@@ -18,7 +19,7 @@ class ClanTracker {
 		await this._start();
 		await this.start();
 		setInterval(this.start.bind(this), this.checkRate);
-		setInterval(this._start.bind(this), this.checkRate);
+		setInterval(this._start.bind(this), this.quickRate);
 	}
 
 	async load() {
