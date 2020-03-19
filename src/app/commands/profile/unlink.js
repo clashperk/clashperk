@@ -11,8 +11,8 @@ class UnlinkCommand extends Command {
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
 			description: {
 				content: 'Unlinks your profile form your Discord.',
-				usage: '<profile/clan>',
-				examples: ['profile', 'clan']
+				usage: '<tag>',
+				examples: ['#9Q92C8R20']
 			},
 			args: [
 				{
@@ -50,7 +50,7 @@ class UnlinkCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(0x10ffc1)
-			.setAuthor('Successfully Deleted');
+			.setAuthor(`Successfully deleted **${data.name} (${data.tag})**`);
 		return message.util.send({ embed });
 	}
 
@@ -61,7 +61,7 @@ class UnlinkCommand extends Command {
 			.get()
 			.then(snap => {
 				const data = snap.data();
-				if (data && data.tags.length) {
+				if (data && data.tags.length && data.tags.includes(tag)) {
 					batch.update(snap.ref, {
 						tags: firebase.firestore.FieldValue.arrayRemove(tag),
 						[`metadata.${tag}`]: firebase.firestore.FieldValue.delete()
