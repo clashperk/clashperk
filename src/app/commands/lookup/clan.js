@@ -7,7 +7,7 @@ const { geterror, fetcherror } = require('../../util/constants');
 class ClanCommand extends Command {
 	constructor() {
 		super('clan', {
-			aliases: ['clan'],
+			aliases: ['clan', 'myclan'],
 			category: 'lookup',
 			description: {
 				content: 'Clash of Clans clan lookup command.',

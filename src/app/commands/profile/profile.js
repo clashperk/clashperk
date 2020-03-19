@@ -51,7 +51,7 @@ class ProfileCommand extends Command {
 			embed.setTitle('No Accounts are Linked');
 		}
 
-		embed.setFooter(`Accounts: ${snap.tags.length}`);
+		if (snap.tags.length) embed.setFooter(`Accounts: ${snap.tags.length}`);
 
 		let accounts = 0;
 		for (const tag of snap.tags) {
@@ -62,7 +62,7 @@ class ProfileCommand extends Command {
 			if (!res.ok) continue;
 			const data = await res.json();
 
-			embed.addField(`${++accounts}. - ${TownHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
+			embed.addField(`${++accounts}. ${TownHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
 				this.heroes(data),
 				this.clanName(data)
 			]);
