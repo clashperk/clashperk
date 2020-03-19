@@ -75,7 +75,7 @@ class ProfileCommand extends Command {
 
 	clanName(data) {
                 const clanEmoji = this.client.emojis.cache.get('534765878118449152');
-		if (!data.clan) return `{clanEmoji} No Clan`;
+		if (!data.clan) return `${clanEmoji} No Clan`;
 		const clanRole = data.role.replace(/admin/g, 'Elder')
 			.replace(/coLeader/g, 'Co-Leader')
 			.replace(/member/g, 'Member')
