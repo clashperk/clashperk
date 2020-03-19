@@ -30,7 +30,7 @@ class UnitsCommand extends Command {
 						return data;
 					});
 				}
-				const data = await firestore.collection('linked_players')
+				const data = await firestore.collection('linked_accounts')
 					.doc(resolver.id)
 					.get()
 					.then(snap => snap.data());

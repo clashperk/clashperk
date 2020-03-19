@@ -10,7 +10,7 @@ class UnlinkClanCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
 			description: {
-				content: 'Unlinks your clan from your Discord ID.',
+				content: 'Unlinks your clan from your Discord.',
 				usage: '<profile/clan>',
 				examples: ['profile', 'clan']
 			},
