@@ -62,7 +62,7 @@ class ProfileCommand extends Command {
 			if (!res.ok) continue;
 			const data = await res.json();
 
-			embed.addField(`${++accounts}. ${TownHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
+			embed.addField(`${++accounts}. ${TownHallEmoji[data.townHallLevel]} ${data.name}`, [
 				this.heroes(data),
 				this.clanName(data)
 			]);
@@ -80,7 +80,7 @@ class ProfileCommand extends Command {
 			.replace(/member/g, 'Member')
 			.replace(/leader/g, 'Leader');
 		const clanEmoji = this.client.emojis.cache.get('534765878118449152');
-		return `${clanEmoji} ${clanRole} of ${data.clan.name} (${data.clan.tag})`;
+		return `${clanEmoji} ${clanRole} of ${data.clan.name}`;
 	}
 
 	heroes(data) {
