@@ -1,10 +1,11 @@
 const { Command } = require('discord-akairo');
 const { firestore } = require('../../struct/Database');
+const admin = require('firebase-admin');
 
 class LinkPlayerCommand extends Command {
 	constructor() {
 		super('link-player', {
-			aliases: ['link-player', 'link-profile', 'save-profile', 'link'],
+			aliases: ['link', 'link-profile', 'save-profile', 'link-player'],
 			category: 'profile',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
@@ -37,14 +38,42 @@ class LinkPlayerCommand extends Command {
 	}
 
 	async exec(message, { data, member }) {
-		await firestore.collection('linked_players')
+		const doc = await this.getPlayer(data.tag);
+		if (doc && doc.user === member.id) {
+			return message.util.send({
+				embed: {
+					color: 3093046,
+					description: `**${member.user.tag}** is already linked to **${data.name} (${data.tag})**`
+				}
+			});
+		}
+
+		if (doc && doc.user !== member.id) {
+			return message.util.send({
+				embed: {
+					color: 3093046,
+					description: `**${data.name} (${data.tag})** is already linked to another Discord ID.`
+				}
+			});
+		}
+
+		if (doc && doc.tags.length >= 25) {
+			return message.util.send({
+				embed: {
+					color: 3093046,
+					description: 'You can only link 25 accounts to your Discord.'
+				}
+			});
+		}
+
+		await firestore.collection('linked_accounts')
 			.doc(member.id)
 			.update({
-				[message.guild.id]: {
-					guild: message.guild.id,
-					user: member.id,
-					tag: data.tag,
-					name: data.name,
+				user: member.id,
+				tags: admin.firestore.FieldValue.arrayUnion(data.tag),
+				createdAt: new Date(),
+				hidden: false,
+				[`metadata.${data.tag}`]: {
 					createdAt: new Date()
 				}
 			}, { merge: true });
@@ -66,6 +95,21 @@ class LinkPlayerCommand extends Command {
 			])
 			.setThumbnail(member.user.displayAvatarURL());
 		return message.util.send({ embed });
+	}
+
+	async getPlayer(tag) {
+		let data;
+		await firestore.collection('linked_accounts')
+			.where('tags', 'array-contains', tag)
+			.limit(1)
+			.get()
+			.then(snapshot => {
+				snapshot.forEach(doc => {
+					data = Object.assign({ ref: doc.ref }, doc.data());
+				});
+				if (!snapshot.size) data = null;
+			});
+		return data;
 	}
 }
 

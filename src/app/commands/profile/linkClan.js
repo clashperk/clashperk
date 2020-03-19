@@ -37,17 +37,19 @@ class LinkClanCommand extends Command {
 	}
 
 	async exec(message, { data, member }) {
-		await firestore.collection('linked_clans')
-			.doc(member.id)
-			.update({
-				[message.guild.id]: {
-					guild: message.guild.id,
+		const doc = await this.getClan(data.tag, member.id);
+		if (doc) {
+			await doc.ref.update({ clan: data.tag, createdAt: new Date() });
+		} else {
+			await firestore.collection('linked_accounts')
+				.doc(member.id)
+				.update({
 					user: member.id,
-					tag: data.tag,
-					name: data.name,
-					createdAt: new Date()
-				}
-			}, { merge: true });
+					clan: data.tag,
+					createdAt: new Date(),
+					tags: []
+				}, { merge: true });
+		}
 
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
@@ -65,6 +67,22 @@ class LinkClanCommand extends Command {
 			])
 			.setThumbnail(member.user.displayAvatarURL());
 		return message.util.send({ embed });
+	}
+
+	async getClan(tag, id) {
+		let data;
+		await firestore.collection('linked_accounts')
+			.where('clan', '==', tag)
+			.where('user', '==', id)
+			.limit(1)
+			.get()
+			.then(snapshot => {
+				snapshot.forEach(doc => {
+					data = Object.assign({ ref: doc.ref }, doc.data());
+				});
+				if (!snapshot.size) data = null;
+			});
+		return data;
 	}
 }
 

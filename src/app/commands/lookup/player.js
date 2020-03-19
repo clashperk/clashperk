@@ -4,7 +4,7 @@ const moment = require('moment');
 const { firestore } = require('../../struct/Database');
 const Fetch = require('../../struct/Fetch');
 const { geterror, fetcherror } = require('../../util/constants');
-const { TownHallEmoji, HeroEmojis, leagueStrings, StarEmoji } = require('../../util/constants');
+const { TownHallEmoji, HeroEmojis, leagueStrings, StarEmoji, leagueId } = require('../../util/constants');
 
 class PlayerCommand extends Command {
 	constructor() {
@@ -36,8 +36,8 @@ class PlayerCommand extends Command {
 					.get()
 					.then(snap => snap.data());
 				if (!data) return msg.util.send({ embed: geterror(resolver, 'player') }) && Flag.cancel();
-				if (!data[msg.guild.id]) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				return Fetch.player(data[msg.guild.id].tag).then(data => {
+				if (!data.tags.length) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
+				return Fetch.player(data.tags[0]).then(data => {
 					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 					return data;
 				});
@@ -71,9 +71,7 @@ class PlayerCommand extends Command {
 		], true);
 		embed.addField('XP Level', `<:xp:534752059501838346> ${data.expLevel}`, true);
 
-		const BestTrohies = this.bestTrophies(data);
-
-		embed.addField('Best Trophies', `${leagueStrings[BestTrohies]} **${data.bestTrophies}**`, true);
+		embed.addField('Best Trophies', `${leagueStrings[leagueId(data.bestTrophies)]} **${data.bestTrophies}**`, true);
 
 		embed.addField('War Stars', `<:warstars:534759020309774337> ${data.warStars}`, true);
 		embed.addField('Attacks/Defenses', `<:attacks:534757491775504425> ${data.attackWins} <:defense:534757493029732363> ${data.defenseWins}`, true);
@@ -136,56 +134,6 @@ class PlayerCommand extends Command {
 			.get()
 			.then(snap => snap.data());
 		return data;
-	}
-
-	bestTrophies(data) {
-		if (data.bestTrophies <= 399) {
-			return 0;
-		} else if (data.bestTrophies >= 400 && data.bestTrophies <= 499) {
-			return 29000001;
-		} else if (data.bestTrophies >= 500 && data.bestTrophies <= 599) {
-			return 29000002;
-		} else if (data.bestTrophies >= 600 && data.bestTrophies <= 799) {
-			return 29000003;
-		} else if (data.bestTrophies >= 800 && data.bestTrophies <= 999) {
-			return 29000004;
-		} else if (data.bestTrophies >= 1000 && data.bestTrophies <= 1199) {
-			return 29000005;
-		} else if (data.bestTrophies >= 1200 && data.bestTrophies <= 1399) {
-			return 29000006;
-		} else if (data.bestTrophies >= 1400 && data.bestTrophies <= 1599) {
-			return 29000007;
-		} else if (data.bestTrophies >= 1600 && data.bestTrophies <= 1799) {
-			return 29000008;
-		} else if (data.bestTrophies >= 1800 && data.bestTrophies <= 1999) {
-			return 29000009;
-		} else if (data.bestTrophies >= 2000 && data.bestTrophies <= 2199) {
-			return 29000010;
-		} else if (data.bestTrophies >= 2200 && data.bestTrophies <= 2399) {
-			return 29000011;
-		} else if (data.bestTrophies >= 2400 && data.bestTrophies <= 2599) {
-			return 29000012;
-		} else if (data.bestTrophies >= 2600 && data.bestTrophies <= 2799) {
-			return 29000013;
-		} else if (data.bestTrophies >= 2800 && data.bestTrophies <= 2999) {
-			return 29000014;
-		} else if (data.bestTrophies >= 3000 && data.bestTrophies <= 3199) {
-			return 29000015;
-		} else if (data.bestTrophies >= 3200 && data.bestTrophies <= 3499) {
-			return 29000016;
-		} else if (data.bestTrophies >= 3500 && data.bestTrophies <= 3799) {
-			return 29000017;
-		} else if (data.bestTrophies >= 3800 && data.bestTrophies <= 4099) {
-			return 29000018;
-		} else if (data.bestTrophies >= 4100 && data.bestTrophies <= 4399) {
-			return 29000019;
-		} else if (data.bestTrophies >= 4400 && data.bestTrophies <= 4799) {
-			return 29000020;
-		} else if (data.bestTrophies >= 4800 && data.bestTrophies <= 4999) {
-			return 29000021;
-		} else if (data.bestTrophies >= 5000) {
-			return 29000022;
-		}
 	}
 }
 

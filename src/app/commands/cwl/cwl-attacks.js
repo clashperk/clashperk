@@ -50,13 +50,13 @@ class CwlAttacksComamnd extends Command {
 						return data;
 					});
 				}
-				const data = await firestore.collection('linked_clans')
+				const data = await firestore.collection('linked_accounts')
 					.doc(resolver.id)
 					.get()
 					.then(snap => snap.data());
 				if (!data) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				if (!data[msg.guild.id]) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				return Fetch.clan(data[msg.guild.id].tag).then(data => {
+				if (!data.clan) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
+				return Fetch.clan(data.clan).then(data => {
 					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 					return data;
 				});

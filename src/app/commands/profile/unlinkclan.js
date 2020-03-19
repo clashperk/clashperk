@@ -2,27 +2,19 @@ const { Command } = require('discord-akairo');
 const { firestore } = require('../../struct/Database');
 const firebase = require('firebase-admin');
 
-class UnlinkCommand extends Command {
+class UnlinkClanCommand extends Command {
 	constructor() {
-		super('unlink', {
-			aliases: ['unlink'],
+		super('unlinkclan', {
+			aliases: ['unlinkclan'],
 			category: 'profile',
 			channel: 'guild',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
 			description: {
-				content: 'Unlinks your profile form your Discord.',
+				content: 'Unlinks your clan from your Discord ID.',
 				usage: '<profile/clan>',
 				examples: ['profile', 'clan']
 			},
 			args: [
-				{
-					id: 'data',
-					type: 'player',
-					prompt: {
-						start: 'What tag would you like to unlink?',
-						retry: 'Please provide a valid tag to unlink.'
-					}
-				},
 				{
 					id: 'member',
 					type: 'guildMember',
@@ -37,13 +29,13 @@ class UnlinkCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, member }) {
-		const deleted = await this.delete(member.id, data.tag);
+	async exec(message, { member }) {
+		const deleted = await this.delele(member.id);
 		if (!deleted) {
 			return message.util.send({
 				embed: {
 					color: 3093046,
-					description: `Couldn\'t find a player linked to **${member.user.tag}**!`
+					description: `Couldn\'t find a clan linked to **${member.user.tag}**!`
 				}
 			});
 		}
@@ -54,17 +46,16 @@ class UnlinkCommand extends Command {
 		return message.util.send({ embed });
 	}
 
-	async delete(id, tag) {
+	async delele(id) {
 		const batch = firestore.batch();
 		const deleted = await firestore.collection('linked_accounts')
-			.doc(id, tag)
+			.doc(id)
 			.get()
 			.then(snap => {
 				const data = snap.data();
-				if (data && data.tags.length) {
+				if (data && data.clan) {
 					batch.update(snap.ref, {
-						tags: firebase.firestore.FieldValue.arrayRemove(tag),
-						[`metadata.${tag}`]: firebase.firestore.FieldValue.delete()
+						clan: firebase.firestore.FieldValue.delete()
 					}, { merge: true });
 					batch.commit();
 					return true;
@@ -74,5 +65,4 @@ class UnlinkCommand extends Command {
 		return deleted;
 	}
 }
-
-module.exports = UnlinkCommand;
+module.exports = UnlinkClanCommand;
