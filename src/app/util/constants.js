@@ -1,4 +1,5 @@
 const { MessageEmbed } = require('discord.js');
+const admin = require('firebase-admin');
 
 const codes = {
 	504: 'Service is temprorarily unavailable.',
@@ -119,6 +120,63 @@ module.exports = {
 		'Clone Spell': '<:clone:524921180910518272>',
 		'Skeleton Spell': '<:skeleton:524921203975127049>',
 		'Bat Spell': '<:Bat_Spell_info:524937829122441227>'
+	},
+
+	leagueId(bestTrophies) {
+		let leagueId;
+		if (bestTrophies <= 399) {
+			leagueId = 29000000;
+		} else if (bestTrophies >= 400 && bestTrophies <= 499) {
+			leagueId = 29000001;
+		} else if (bestTrophies >= 500 && bestTrophies <= 599) {
+			leagueId = 29000002;
+		} else if (bestTrophies >= 600 && bestTrophies <= 799) {
+			leagueId = 29000003;
+		} else if (bestTrophies >= 800 && bestTrophies <= 999) {
+			leagueId = 29000004;
+		} else if (bestTrophies >= 1000 && bestTrophies <= 1199) {
+			leagueId = 29000005;
+		} else if (bestTrophies >= 1200 && bestTrophies <= 1399) {
+			leagueId = 29000006;
+		} else if (bestTrophies >= 1400 && bestTrophies <= 1599) {
+			leagueId = 29000007;
+		} else if (bestTrophies >= 1600 && bestTrophies <= 1799) {
+			leagueId = 29000008;
+		} else if (bestTrophies >= 1800 && bestTrophies <= 1999) {
+			leagueId = 29000009;
+		} else if (bestTrophies >= 2000 && bestTrophies <= 2199) {
+			leagueId = 29000010;
+		} else if (bestTrophies >= 2200 && bestTrophies <= 2399) {
+			leagueId = 29000011;
+		} else if (bestTrophies >= 2400 && bestTrophies <= 2599) {
+			leagueId = 29000012;
+		} else if (bestTrophies >= 2600 && bestTrophies <= 2799) {
+			leagueId = 29000013;
+		} else if (bestTrophies >= 2800 && bestTrophies <= 2999) {
+			leagueId = 29000014;
+		} else if (bestTrophies >= 3000 && bestTrophies <= 3199) {
+			leagueId = 29000015;
+		} else if (bestTrophies >= 3200 && bestTrophies <= 3499) {
+			leagueId = 29000016;
+		} else if (bestTrophies >= 3500 && bestTrophies <= 3799) {
+			leagueId = 29000017;
+		} else if (bestTrophies >= 3800 && bestTrophies <= 4099) {
+			leagueId = 29000018;
+		} else if (bestTrophies >= 4100 && bestTrophies <= 4399) {
+			leagueId = 29000019;
+		} else if (bestTrophies >= 4400 && bestTrophies <= 4799) {
+			leagueId = 29000020;
+		} else if (bestTrophies >= 4800 && bestTrophies <= 4999) {
+			leagueId = 29000021;
+		} else if (bestTrophies >= 5000) {
+			leagueId = 29000022;
+		}
+
+		return leagueId;
+	},
+
+	FieldValue() {
+		return admin.firestore.FieldValue;
 	},
 
 	status(code) {
