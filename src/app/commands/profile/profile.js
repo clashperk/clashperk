@@ -24,8 +24,6 @@ class ProfileCommand extends Command {
 				}
 			]
 		});
-
-		this.accounts = 0;
 	}
 
 	cooldown(message) {
@@ -54,6 +52,7 @@ class ProfileCommand extends Command {
 
 		embed.setFooter(`Accounts: ${snap.tags.length}`);
 
+		let accounts = 0;
 		for (const tag of snap.tags) {
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
@@ -62,12 +61,12 @@ class ProfileCommand extends Command {
 			if (!res.ok) continue;
 			const data = await res.json();
 
-			embed.addField(`${++this.accounts}. - ${TownHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
+			embed.addField(`${++accounts}. - ${TownHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
 				this.heroes(data),
 				this.clanName(data)
 			]);
 
-			if (this.accounts === 25) break;
+			if (accounts === 25) break;
 		}
 
 		return message.util.send({ embed });
