@@ -7,7 +7,7 @@ const donateList = [];
 const oldMemberList = new Map();
 
 class ClanTracker {
-	constructor(client, { checkRate = 5 * 60 * 1000, quickRate = 3 * 60 * 1000 } = {}) {
+	constructor(client, { checkRate = 6 * 60 * 1000, quickRate = 3 * 60 * 1000 } = {}) {
 		this.client = client;
 		this.checkRate = checkRate;
 		this.quickRate = quickRate;
@@ -16,10 +16,6 @@ class ClanTracker {
 
 	async delay(ms) {
 		return new Promise(res => setTimeout(res, ms));
-	}
-
-	isNegative(a, b) {
-		return b < a;
 	}
 
 	async init() {
@@ -50,7 +46,6 @@ class ClanTracker {
 
 	delete(guild, tag) {
 		this.cached.delete(`${guild}${tag}`);
-		delete donateList[`${guild}${tag}`];
 	}
 
 	async track(clan, color, channel, guild) {
@@ -194,7 +189,7 @@ class ClanTracker {
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`<:xp:534752059501838346> ${member.expLevel}`,
 						`<:warstars:534759020309774337> ${member.warStars}`,
-						`${leagueStrings[member.league ? member.league.id : 0]} ${member.trophies}`
+						`${leagueStrings[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small)
 					.setTimestamp();
@@ -207,6 +202,7 @@ class ClanTracker {
 		oldMemberList.set(`${guild}${clan.tag}`, []);
 		oldMemberList.set(`${guild}${clan.tag}`, currentMemberList);
 		oldMemberSet.clear();
+		currentMemberSet.clear();
 	}
 
 	async _memberLog(clan, channel, guild) {
@@ -256,7 +252,7 @@ class ClanTracker {
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`<:xp:534752059501838346> ${member.expLevel}`,
 						`<:warstars:534759020309774337> ${member.warStars}`,
-						`${leagueStrings[member.league ? member.league.id : 0]} ${member.trophies}`
+						`${leagueStrings[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small)
 					.setTimestamp();
@@ -269,6 +265,7 @@ class ClanTracker {
 		oldMemberList.set(`${guild}${clan.tag}`, []);
 		oldMemberList.set(`${guild}${clan.tag}`, currentMemberList);
 		oldMemberSet.clear();
+		currentMemberSet.clear();
 	}
 
 	async start() {
