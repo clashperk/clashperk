@@ -162,7 +162,7 @@ class ClanTracker {
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`<:xp:534752059501838346> ${member.expLevel}`,
 						`<:warstars:534759020309774337> ${member.warStars}`,
-						`${leagueStrings[member.league ? member.league.id : 0]} ${member.trophies}`
+						`${leagueStrings[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small)
 					.setTimestamp();
@@ -225,7 +225,7 @@ class ClanTracker {
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`<:xp:534752059501838346> ${member.expLevel}`,
 						`<:warstars:534759020309774337> ${member.warStars}`,
-						`${leagueStrings[member.league ? member.league.id : 0]} ${member.trophies}`
+						`${leagueStrings[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small)
 					.setTimestamp();
