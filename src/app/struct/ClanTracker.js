@@ -98,7 +98,6 @@ class ClanTracker {
 	}
 
 	async _track(clan, color, channel, guild) {
-		if (channel.id !== '517935069172727818') return;
 		let donated = '';
 		let received = '';
 		let clanInfo;
