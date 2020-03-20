@@ -98,6 +98,7 @@ class ClanTracker {
 	}
 
 	async _track(clan, color, channel, guild) {
+		console.log('ROUND_UP', clan.name);
 		let donated = '';
 		let received = '';
 		let clanInfo;
@@ -107,12 +108,14 @@ class ClanTracker {
 
 		for (const member of clan.memberList) {
 			const key = `${guild}${member.tag}`;
+			console.log('map', clan.name, member.name);
 			if (donateList.has(key)) {
 				clanInfo = `${clan.name} (${clan.tag})`;
 				badge = clan.badgeUrls.small;
 				members = clan.members;
 				league = leagueStrings[member.league.id];
 				const donations = member.donations - donateList.get(key).donations;
+				console.log('don', clan.name, member.name, member.donations, donateList.get(key).donations);
 				if (donations && donations > 0) {
 					donated += `${league} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
