@@ -175,7 +175,7 @@ class ClashPerk extends AkairoClient {
 		if (this.user.id === process.env.CLIENT_ID) {
 			this.firebase.init();
 			this.postStats.init();
-			this.tracker.init();
+			// this.tracker.init();
 			this.voter.init();
 		}
 	}
