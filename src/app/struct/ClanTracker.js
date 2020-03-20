@@ -21,8 +21,8 @@ class ClanTracker {
 	async init() {
 		await this.load();
 		await this._start();
-		// await this.start();
-		// setInterval(this.start.bind(this), this.checkRate);
+		await this.start();
+		setInterval(this.start.bind(this), this.checkRate);
 		setInterval(this._start.bind(this), this.quickRate);
 	}
 
@@ -48,7 +48,7 @@ class ClanTracker {
 		this.cached.delete(`${guild}${tag}`);
 	}
 
-	async track(clan, color, channel, key) {
+	async track(clan, color, channel, guild) {
 		let donated = '';
 		let received = '';
 		let clanInfo;
@@ -57,6 +57,7 @@ class ClanTracker {
 		let league;
 
 		for (const member of clan.memberList) {
+			const key = `${guild}${member.tag}`;
 			if (donateList.has(key)) {
 				clanInfo = `${clan.name} (${clan.tag})`;
 				badge = clan.badgeUrls.small;
@@ -91,11 +92,12 @@ class ClanTracker {
 		}
 
 		for (const member of clan.memberList) {
+			const key = `${guild}${member.tag}`;
 			donateList.set(key, member);
 		}
 	}
 
-	async _track(clan, color, channel, key) {
+	async _track(clan, color, channel, guild) {
 		if (channel.id !== '517935069172727818') return;
 		let donated = '';
 		let received = '';
@@ -105,17 +107,16 @@ class ClanTracker {
 		let league;
 
 		for (const member of clan.memberList) {
+			const key = `${guild}${member.tag}`;
 			if (donateList.has(key)) {
 				clanInfo = `${clan.name} (${clan.tag})`;
 				badge = clan.badgeUrls.small;
 				members = clan.members;
 				league = leagueStrings[member.league.id];
 				const donations = member.donations - donateList.get(key).donations;
-				console.log('don', member.donations, donateList.get(key).donations);
 				if (donations && donations > 0) {
 					donated += `${league} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
-				console.log('rev', member.donationsReceived, donateList.get(key).donationsReceived);
 				const receives = member.donationsReceived - donateList.get(key).donationsReceived;
 				if (receives && receives > 0) {
 					received += `${league} **${member.name}** (${member.tag}) : ${receives} \n`;
@@ -141,6 +142,7 @@ class ClanTracker {
 		}
 
 		for (const member of clan.memberList) {
+			const key = `${guild}${member.tag}`;
 			donateList.set(key, member);
 		}
 	}
@@ -293,7 +295,7 @@ class ClanTracker {
 
 					const data = await res.json();
 
-					this.track(data, clan.donationlog.color, channel, `${clan.guild}${data.tag}`);
+					this.track(data, clan.donationlog.color, channel, clan.guild);
 					if (clan.memberlogEnabled) {
 						const channel = this.client.channels.cache.get(clan.memberlog.channel);
 						if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
@@ -353,7 +355,7 @@ class ClanTracker {
 
 					const data = await res.json();
 
-					this._track(data, clan.donationlog.color, channel, `${clan.guild}${data.tag}`);
+					this._track(data, clan.donationlog.color, channel, clan.guild);
 					if (clan.memberlogEnabled) {
 						const channel = this.client.channels.cache.get(clan.memberlog.channel);
 						if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
