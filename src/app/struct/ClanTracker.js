@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const { firestore } = require('./Database');
 const { TownHallEmoji, leagueStrings } = require('../util/constants');
 
-const donateList = [];
+const donateList = new Map();
 const oldMemberList = new Map();
 
 class ClanTracker {
@@ -48,7 +48,7 @@ class ClanTracker {
 		this.cached.delete(`${guild}${tag}`);
 	}
 
-	async track(clan, color, channel, guild) {
+	async track(clan, color, channel, key) {
 		let donated = '';
 		let received = '';
 		let clanInfo;
@@ -57,16 +57,16 @@ class ClanTracker {
 		let league;
 
 		for (const member of clan.memberList) {
-			if (`${guild}${member.tag}` in donateList) {
+			if (donateList.has(key)) {
 				clanInfo = `${clan.name} (${clan.tag})`;
 				badge = clan.badgeUrls.small;
 				members = clan.members;
 				league = leagueStrings[member.league.id];
-				const donations = member.donations - donateList[`${guild}${member.tag}`].donations;
+				const donations = member.donations - donateList.get(key).donations;
 				if (donations && donations > 0) {
 					donated += `${league} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
-				const receives = member.donationsReceived - donateList[`${guild}${member.tag}`].donationsReceived;
+				const receives = member.donationsReceived - donateList.get(key).donationsReceived;
 				if (receives && receives > 0) {
 					received += `${league} **${member.name}** (${member.tag}) : ${receives} \n`;
 				}
@@ -91,11 +91,11 @@ class ClanTracker {
 		}
 
 		for (const member of clan.memberList) {
-			donateList[`${guild}${member.tag}`] = member;
+			donateList.set(key, member);
 		}
 	}
 
-	async _track(clan, color, channel, guild) {
+	async _track(clan, color, channel, key) {
 		let donated = '';
 		let received = '';
 		let clanInfo;
@@ -104,16 +104,16 @@ class ClanTracker {
 		let league;
 
 		for (const member of clan.memberList) {
-			if (`${guild}${member.tag}` in donateList) {
+			if (donateList.has(key)) {
 				clanInfo = `${clan.name} (${clan.tag})`;
 				badge = clan.badgeUrls.small;
 				members = clan.members;
 				league = leagueStrings[member.league.id];
-				const donations = member.donations - donateList[`${guild}${member.tag}`].donations;
+				const donations = member.donations - donateList.get(key).donations;
 				if (donations && donations > 0) {
 					donated += `${league} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
-				const receives = member.donationsReceived - donateList[`${guild}${member.tag}`].donationsReceived;
+				const receives = member.donationsReceived - donateList.get(key).donationsReceived;
 				if (receives && receives > 0) {
 					received += `${league} **${member.name}** (${member.tag}) : ${receives} \n`;
 				}
@@ -138,15 +138,15 @@ class ClanTracker {
 		}
 
 		for (const member of clan.memberList) {
-			donateList[`${guild}${member.tag}`] = member;
+			donateList.set(key, member);
 		}
 	}
 
-	async memberLog(clan, channel, guild) {
+	async memberLog(clan, channel, key) {
 		const currentMemberList = clan.memberList.map(m => m.tag);
 
 		const currentMemberSet = new Set(currentMemberList);
-		const oldMemberSet = new Set(oldMemberList.get(`${guild}${clan.tag}`));
+		const oldMemberSet = new Set(oldMemberList.get(key));
 
 		// new players
 		if (oldMemberSet.size) {
@@ -177,7 +177,7 @@ class ClanTracker {
 
 		// missing players
 		if (currentMemberSet.size && oldMemberSet.size) {
-			const tags = oldMemberList.get(`${guild}${clan.tag}`).filter(tag => !currentMemberSet.has(tag));
+			const tags = oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 			for (const tag of tags) {
 				const member = await this.getPlayer(tag);
 				if (!member) return;
@@ -199,17 +199,17 @@ class ClanTracker {
 			}
 		}
 
-		oldMemberList.set(`${guild}${clan.tag}`, []);
-		oldMemberList.set(`${guild}${clan.tag}`, currentMemberList);
+		oldMemberList.set(key, []);
+		oldMemberList.set(key, currentMemberList);
 		oldMemberSet.clear();
 		currentMemberSet.clear();
 	}
 
-	async _memberLog(clan, channel, guild) {
+	async _memberLog(clan, channel, key) {
 		const currentMemberList = clan.memberList.map(m => m.tag);
 
 		const currentMemberSet = new Set(currentMemberList);
-		const oldMemberSet = new Set(oldMemberList.get(`${guild}${clan.tag}`));
+		const oldMemberSet = new Set(oldMemberList.get(key));
 
 		// new players
 		if (oldMemberSet.size) {
@@ -240,7 +240,7 @@ class ClanTracker {
 
 		// missing players
 		if (currentMemberSet.size && oldMemberSet.size) {
-			const tags = oldMemberList.get(`${guild}${clan.tag}`).filter(tag => !currentMemberSet.has(tag));
+			const tags = oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 			for (const tag of tags) {
 				const member = await this.getPlayer(tag);
 				if (!member) return;
@@ -262,8 +262,8 @@ class ClanTracker {
 			}
 		}
 
-		oldMemberList.set(`${guild}${clan.tag}`, []);
-		oldMemberList.set(`${guild}${clan.tag}`, currentMemberList);
+		oldMemberList.set(key, []);
+		oldMemberList.set(key, currentMemberList);
 		oldMemberSet.clear();
 		currentMemberSet.clear();
 	}
@@ -290,11 +290,11 @@ class ClanTracker {
 
 					const data = await res.json();
 
-					this.track(data, clan.donationlog.color, channel, clan.guild);
+					this.track(data, clan.donationlog.color, channel, `${clan.guild}${data.tag}`);
 					if (clan.memberlogEnabled) {
 						const channel = this.client.channels.cache.get(clan.memberlog.channel);
 						if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-							this.memberLog(data, channel, clan.guild);
+							this.memberLog(data, channel, `${clan.guild}${clan.tag}`);
 						}
 					}
 				}
@@ -318,7 +318,7 @@ class ClanTracker {
 
 					const data = await res.json();
 
-					this.memberLog(data, channel, clan.guild);
+					this.memberLog(data, channel, `${clan.guild}${clan.tag}`);
 				}
 			} else {
 				this.delete(clan.guild, clan.tag);
@@ -350,11 +350,11 @@ class ClanTracker {
 
 					const data = await res.json();
 
-					this._track(data, clan.donationlog.color, channel, clan.guild);
+					this._track(data, clan.donationlog.color, channel, `${clan.guild}${data.tag}`);
 					if (clan.memberlogEnabled) {
 						const channel = this.client.channels.cache.get(clan.memberlog.channel);
 						if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-							this._memberLog(data, channel, clan.guild);
+							this._memberLog(data, channel, `${clan.guild}${clan.tag}`);
 						}
 					}
 				}
@@ -378,7 +378,7 @@ class ClanTracker {
 
 					const data = await res.json();
 
-					this._memberLog(data, channel, clan.guild);
+					this._memberLog(data, channel, `${clan.guild}${clan.tag}`);
 				}
 			} else {
 				this.delete(clan.guild, clan.tag);
