@@ -7,12 +7,12 @@ class RankCommand extends Command {
 			category: 'other',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Shows your rank ([vote](https://discordbots.org/bot/526971716711350273/vote) based).'
+				content: 'Shows your rank ([vote](https://top.gg/bot/526971716711350273/vote) based).'
 			},
 			args: [
 				{
 					id: 'member',
-					type: 'member',
+					type: 'guildMember',
 					default: message => message.member
 				}
 			]
