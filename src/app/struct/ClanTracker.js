@@ -21,8 +21,8 @@ class ClanTracker {
 	async init() {
 		await this.load();
 		await this._start();
-		await this.start();
-		setInterval(this.start.bind(this), this.checkRate);
+		// await this.start();
+		// setInterval(this.start.bind(this), this.checkRate);
 		setInterval(this._start.bind(this), this.quickRate);
 	}
 
@@ -96,6 +96,7 @@ class ClanTracker {
 	}
 
 	async _track(clan, color, channel, key) {
+		if (channel.id !== '517935069172727818') return;
 		let donated = '';
 		let received = '';
 		let clanInfo;
@@ -110,9 +111,11 @@ class ClanTracker {
 				members = clan.members;
 				league = leagueStrings[member.league.id];
 				const donations = member.donations - donateList.get(key).donations;
+				console.log('don', member.donations, donateList.get(key).donations);
 				if (donations && donations > 0) {
 					donated += `${league} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
+				console.log('rev', member.donationsReceived, donateList.get(key).donationsReceived);
 				const receives = member.donationsReceived - donateList.get(key).donationsReceived;
 				if (receives && receives > 0) {
 					received += `${league} **${member.name}** (${member.tag}) : ${receives} \n`;
