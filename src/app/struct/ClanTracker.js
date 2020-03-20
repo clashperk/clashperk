@@ -14,6 +14,14 @@ class ClanTracker {
 		this.cached = new Map();
 	}
 
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
+
+	isNegative(a, b) {
+		return b < a;
+	}
+
 	async init() {
 		await this.load();
 		await this._start();
@@ -60,12 +68,12 @@ class ClanTracker {
 				members = clan.members;
 				league = leagueStrings[member.league.id];
 				const donations = member.donations - donateList[`${guild}${member.tag}`].donations;
-				if (donations) {
-					donated += `${league} **${member.name}** (${member.tag}) : ${Math.abs(donations)} \n`;
+				if (donations && donations > 0) {
+					donated += `${league} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
 				const receives = member.donationsReceived - donateList[`${guild}${member.tag}`].donationsReceived;
-				if (receives) {
-					received += `${league} **${member.name}** (${member.tag}) : ${Math.abs(receives)} \n`;
+				if (receives && receives > 0) {
+					received += `${league} **${member.name}** (${member.tag}) : ${receives} \n`;
 				}
 			}
 		}
@@ -107,12 +115,12 @@ class ClanTracker {
 				members = clan.members;
 				league = leagueStrings[member.league.id];
 				const donations = member.donations - donateList[`${guild}${member.tag}`].donations;
-				if (donations) {
-					donated += `${league} **${member.name}** (${member.tag}) : ${Math.abs(donations)} \n`;
+				if (donations && donations > 0) {
+					donated += `${league} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
 				const receives = member.donationsReceived - donateList[`${guild}${member.tag}`].donationsReceived;
-				if (receives) {
-					received += `${league} **${member.name}** (${member.tag}) : ${Math.abs(receives)} \n`;
+				if (receives && receives > 0) {
+					received += `${league} **${member.name}** (${member.tag}) : ${receives} \n`;
 				}
 			}
 		}
@@ -381,10 +389,6 @@ class ClanTracker {
 
 			await this.delay(150);
 		}
-	}
-
-	async delay(ms) {
-		return new Promise(res => setTimeout(res, ms));
 	}
 
 	async getPlayer(tag) {

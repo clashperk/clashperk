@@ -67,7 +67,7 @@ class StartPlayerLogCommand extends Command {
 				.setDescription([
 					'**Not Voted!**',
 					'',
-					'**[Vote ClashPerk](https://discordbots.org/bot/526971716711350273/vote)**'
+					'**[Vote ClashPerk](https://top.gg/bot/526971716711350273/vote)**'
 				])
 				.setColor(5861569);
 			return message.util.send({ embed });
