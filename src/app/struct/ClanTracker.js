@@ -325,7 +325,7 @@ class ClanTracker {
 					this.memberLog(data, channel, `${clan.guild}${clan.tag}`);
 				}
 			} else {
-				this.delete(clan.guild, clan.tag);
+				// this.delete(clan.guild, clan.tag);
 			}
 
 			await this.delay(100);
@@ -385,7 +385,7 @@ class ClanTracker {
 					this._memberLog(data, channel, `${clan.guild}${clan.tag}`);
 				}
 			} else {
-				this.delete(clan.guild, clan.tag);
+				// this.delete(clan.guild, clan.tag);
 			}
 
 			await this.delay(150);
