@@ -50,7 +50,7 @@ class UnlinkCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(0x10ffc1)
-			.setAuthor(`Successfully deleted **${data.name} (${data.tag})**`);
+			.setAuthor(`Successfully deleted ${data.tag}`);
 		return message.util.send({ embed });
 	}
 

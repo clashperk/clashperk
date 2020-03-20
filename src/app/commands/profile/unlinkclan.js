@@ -42,7 +42,7 @@ class UnlinkClanCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(0x10ffc1)
-			.setAuthor('Successfully Deleted');
+			.setAuthor(`Successfully deleted ${deleted.clan}`);
 		return message.util.send({ embed });
 	}
 
@@ -58,11 +58,12 @@ class UnlinkClanCommand extends Command {
 						clan: firebase.firestore.FieldValue.delete()
 					}, { merge: true });
 					batch.commit();
-					return true;
+					return data.clan;
 				}
-				return false;
+				return null;
 			});
 		return deleted;
 	}
 }
+
 module.exports = UnlinkClanCommand;
