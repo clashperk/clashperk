@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const { firestore } = require('./Database');
 const { TownHallEmoji, leagueStrings } = require('../util/constants');
 
-const donateList = new Map();
+const donateList = [];
 const oldMemberList = new Map();
 
 class ClanTracker {
@@ -58,16 +58,16 @@ class ClanTracker {
 
 		for (const member of clan.memberList) {
 			const key = `${guild}${member.tag}`;
-			if (donateList.has(key)) {
+			if (key in donateList) {
 				clanInfo = `${clan.name} (${clan.tag})`;
 				badge = clan.badgeUrls.small;
 				members = clan.members;
 				league = leagueStrings[member.league.id];
-				const donations = member.donations - donateList.get(key).donations;
+				const donations = member.donations - donateList[key].donations;
 				if (donations && donations > 0) {
 					donated += `${league} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
-				const receives = member.donationsReceived - donateList.get(key).donationsReceived;
+				const receives = member.donationsReceived - donateList[key].donationsReceived;
 				if (receives && receives > 0) {
 					received += `${league} **${member.name}** (${member.tag}) : ${receives} \n`;
 				}
@@ -93,12 +93,11 @@ class ClanTracker {
 
 		for (const member of clan.memberList) {
 			const key = `${guild}${member.tag}`;
-			donateList.set(key, member);
+			donateList[key] = member;
 		}
 	}
 
 	async _track(clan, color, channel, guild) {
-		console.log('ROUND_UP', clan.name);
 		let donated = '';
 		let received = '';
 		let clanInfo;
@@ -108,18 +107,16 @@ class ClanTracker {
 
 		for (const member of clan.memberList) {
 			const key = `${guild}${member.tag}`;
-			console.log('map', clan.name, member.name);
-			if (donateList.has(key)) {
+			if (key in donateList) {
 				clanInfo = `${clan.name} (${clan.tag})`;
 				badge = clan.badgeUrls.small;
 				members = clan.members;
 				league = leagueStrings[member.league.id];
-				const donations = member.donations - donateList.get(key).donations;
-				console.log('don', clan.name, member.name, member.donations, donateList.get(key).donations);
+				const donations = member.donations - donateList[key].donations;
 				if (donations && donations > 0) {
 					donated += `${league} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
-				const receives = member.donationsReceived - donateList.get(key).donationsReceived;
+				const receives = member.donationsReceived - donateList[key].donationsReceived;
 				if (receives && receives > 0) {
 					received += `${league} **${member.name}** (${member.tag}) : ${receives} \n`;
 				}
@@ -145,7 +142,7 @@ class ClanTracker {
 
 		for (const member of clan.memberList) {
 			const key = `${guild}${member.tag}`;
-			donateList.set(key, member);
+			donateList[key] = member;
 		}
 	}
 
