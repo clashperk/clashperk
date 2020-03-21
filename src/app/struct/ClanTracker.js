@@ -273,6 +273,7 @@ class ClanTracker {
 	}
 
 	async start() {
+		console.log(Object.keys(donateList).length);
 		for (const clan of Array.from(this.cached.values()).filter(clan => !clan.isPremium)) {
 			if (clan.donationlogEnabled && this.client.channels.cache.has(clan.donationlog.channel)) {
 				const channel = this.client.channels.cache.get(clan.donationlog.channel);
