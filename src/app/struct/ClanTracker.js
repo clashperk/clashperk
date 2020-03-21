@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const { firestore } = require('./Database');
 const { TownHallEmoji, leagueStrings } = require('../util/constants');
 
-const donateList = [];
+const donateList = {};
 const oldMemberList = new Map();
 
 class ClanTracker {
