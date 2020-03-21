@@ -175,10 +175,6 @@ module.exports = {
 		return leagueId;
 	},
 
-	FieldValue() {
-		return admin.firestore.FieldValue;
-	},
-
 	status(code) {
 		return codes[code];
 	},

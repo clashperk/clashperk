@@ -23,14 +23,14 @@ class CooldownListener extends Listener {
 				.setColor(0x5970c1);
 			if (this.client.patron.users.get(message.author, 'patron', false)) {
 				embed.setDescription([
-					`The default cooldown is ${ms(cooldown, { long: true })}, but as a donator you only need to wait ${this.donator(command)} sec.`
+					`The default cooldown is ${this.donator(command)}, but as a donator you only need to wait ${ms(cooldown, { long: true })} sec.`
 				]);
 			} else {
 				embed.setDescription([
 					`You'll be able to use this command again in **${time}**`,
-					`The default cooldown is ${ms(cooldown, { long: true })}, but [voters](https://discordbots.org/bot/526971716711350273/vote) and [donators](https://www.patreon.com/bePatron?u=14584309) only need to wait ${this.default(command)} sec!`,
+					`The default cooldown is ${ms(cooldown, { long: true })}, but [voters](https://top.gg/bot/526971716711350273/vote) and [donators](https://www.patreon.com/bePatron?u=14584309) only need to wait ${this.default(command)} sec!`,
 					'',
-					'While you wait, go [vote us](https://discordbots.org/bot/526971716711350273/vote) and check out our [Patreon](https://www.patreon.com/bePatron?u=14584309)'
+					'While you wait, go [vote us](https://top.gg/bot/526971716711350273/vote) and check out our [Patreon](https://www.patreon.com/bePatron?u=14584309)'
 				]);
 			}
 			return message.channel.send({ embed });
