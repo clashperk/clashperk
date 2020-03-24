@@ -122,7 +122,7 @@ class FastTracker {
 				.setColor(cache.color)
 				.setAuthor(item.clan, item.clanBadge)
 				.setThumbnail(item.clanBadge)
-				.setFooter(`${item.members}/50`, this.client.user.displayAvatarURL())
+				.setFooter(`${item.members}/50 [CLUSTER_01]`, this.client.user.displayAvatarURL())
 				.setTimestamp();
 			if (item.donated) embed.addField('Donated', `${item.donated.substring(0, 1024)}`);
 			if (item.received) embed.addField('Received', `${item.received.substring(0, 1024)}`);
@@ -302,7 +302,7 @@ class SlowTracker {
 		currentMemberSet.clear();
 	}
 
-	async donationlog(clan, cache, channel1, channel2) {
+	async donationlog(clan, cache, channel) {
 		const item = {
 			donated: '',
 			received: ''
@@ -325,18 +325,22 @@ class SlowTracker {
 			}
 		}
 
+		const index = Array.from(this.cached.keys())
+			.filter(clan => !clan.isPremium)
+			.findIndex(`${cache.guild}${cache.tag}`);
+		const range = ((index / 100) + 2).toFixed();
 		if (item.donated !== '' || item.received !== '') {
 			const embed = new MessageEmbed()
 				.setColor(cache.color)
 				.setAuthor(item.clan, item.clanBadge)
 				.setThumbnail(item.clanBadge)
-				.setFooter(`${item.members}/50`, this.client.user.displayAvatarURL())
+				.setFooter(`${item.members}/50 [CLUSTER_${range > 9 ? range : `0${range}`}]`, this.client.user.displayAvatarURL())
 				.setTimestamp();
 			if (item.donated) embed.addField('Donated', `${item.donated.substring(0, 1024)}`);
 			if (item.received) embed.addField('Received', `${item.received.substring(0, 1024)}`);
 
 			try {
-				await channel1.send({ embed });
+				await channel.send({ embed });
 			} catch (error) {
 				this.client.logger.error(error.toString(), { label: 'DONATION_LOG_MESSAGE' });
 			}
