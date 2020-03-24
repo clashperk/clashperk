@@ -359,6 +359,7 @@ class SlowTracker {
 					if (!res.ok) continue;
 					const data = await res.json();
 					this.donationlog(data, cache, channel);
+					console.log(data.name);
 
 					if (this.client.channels.cache.get(cache.member_log_channel)) {
 						const channel = this.client.channels.cache.get(cache.member_log_channel);
@@ -368,7 +369,7 @@ class SlowTracker {
 						}
 					}
 
-					await this.delay(150);
+					await this.delay(3000);
 				}
 			} else if (this.client.channels.cache.has(cache.member_log_channel)) {
 				const channel = this.client.channels.cache.get(cache.member_log_channel);
