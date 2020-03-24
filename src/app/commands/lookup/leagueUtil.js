@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { Util } = require('discord.js');
 const { stripIndent } = require('common-tags');
-const { leagueStrings } = require('../../util/constants');
+const { leagueEmojis } = require('../../util/constants');
 
 class MembersLeagueCommand extends Command {
 	constructor() {
@@ -30,7 +30,7 @@ class MembersLeagueCommand extends Command {
 		let members = '';
 
 		for (const member of data.memberList) {
-			members += `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}\n`;
+			members += `${leagueEmojis[member.league.id]} **${member.name}** ${member.tag}\n`;
 		}
 
 		const split = stripIndent`<:clans:534765878118449152> **${data.name} (${data.tag}) ~ ${data.members}/50**

@@ -4,7 +4,7 @@ const moment = require('moment');
 const { firestore } = require('../../struct/Database');
 const Fetch = require('../../struct/Fetch');
 const { geterror, fetcherror } = require('../../util/constants');
-const { TownHallEmoji, HeroEmojis, leagueStrings, StarEmoji, leagueId } = require('../../util/constants');
+const { TownHallEmoji, HeroEmojis, leagueEmojis, StarEmoji, leagueId } = require('../../util/constants');
 
 class PlayerCommand extends Command {
 	constructor() {
@@ -67,11 +67,11 @@ class PlayerCommand extends Command {
 
 		embed.addField('Town Hall', `${TownHallEmoji[data.townHallLevel]} ${data.townHallLevel}`, true);
 		embed.addField('Current League', [
-			`${leagueStrings[data.league ? data.league.id : 0]} ${data.league ? data.league.name : 'Unranked'} (${data.trophies})`
+			`${leagueEmojis[data.league ? data.league.id : 0]} ${data.league ? data.league.name : 'Unranked'} (${data.trophies})`
 		], true);
 		embed.addField('XP Level', `<:xp:534752059501838346> ${data.expLevel}`, true);
 
-		embed.addField('Best Trophies', `${leagueStrings[leagueId(data.bestTrophies)]} **${data.bestTrophies}**`, true);
+		embed.addField('Best Trophies', `${leagueEmojis[leagueId(data.bestTrophies)]} **${data.bestTrophies}**`, true);
 
 		embed.addField('War Stars', `<:warstars:534759020309774337> ${data.warStars}`, true);
 		embed.addField('Attacks/Defenses', `<:attacks:534757491775504425> ${data.attackWins} <:defense:534757493029732363> ${data.defenseWins}`, true);

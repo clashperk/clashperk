@@ -1,7 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
 const fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror, leagueStrings } = require('../../util/constants');
+const { geterror, fetcherror, leagueEmojis } = require('../../util/constants');
 
 class MembersLeagueCommand extends Command {
 	constructor() {
@@ -59,10 +59,10 @@ class MembersLeagueCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
-			.setDescription(first.items.map(member => `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}`).join('\n'));
+			.setDescription(first.items.map(member => `${leagueEmojis[member.league.id]} **${member.name}** ${member.tag}`).join('\n'));
 		if (data.members > 32) {
-			embed.addField(second.items.map(member => `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}`).join('\n'), [
-				third.items.length ? third.items.map(member => `${leagueStrings[member.league.id]} **${member.name}** ${member.tag}`).join('\n') : '\u200b'
+			embed.addField(second.items.map(member => `${leagueEmojis[member.league.id]} **${member.name}** ${member.tag}`).join('\n'), [
+				third.items.length ? third.items.map(member => `${leagueEmojis[member.league.id]} **${member.name}** ${member.tag}`).join('\n') : '\u200b'
 			]);
 		}
 

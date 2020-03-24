@@ -1,7 +1,7 @@
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const { firestore } = require('./Database');
-const { TownHallEmoji, leagueStrings } = require('../util/constants');
+const { TownHallEmoji, leagueEmojis } = require('../util/constants');
 
 class FastTracker {
 	constructor(client, cached) {
@@ -41,7 +41,7 @@ class FastTracker {
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`<:xp:534752059501838346> ${member.expLevel}`,
 						`<:warstars:534759020309774337> ${member.warStars}`,
-						`${leagueStrings[member.league ? member.league.id : 29000000]} ${member.trophies}`
+						`${leagueEmojis[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small);
 				embed.setTimestamp();
@@ -73,7 +73,7 @@ class FastTracker {
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`<:xp:534752059501838346> ${member.expLevel}`,
 						`<:warstars:534759020309774337> ${member.warStars}`,
-						`${leagueStrings[member.league ? member.league.id : 29000000]} ${member.trophies}`
+						`${leagueEmojis[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small);
 				embed.setTimestamp();
@@ -108,11 +108,11 @@ class FastTracker {
 				item.members = clan.members;
 				const donations = member.donations - this.donateList[key].donations;
 				if (donations && donations > 0) {
-					item.donated += `${leagueStrings[member.league.id]} **${member.name}** (${member.tag}) : ${donations} \n`;
+					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key].donationsReceived;
 				if (receives && receives > 0) {
-					item.received += `${leagueStrings[member.league.id]} **${member.name}** (${member.tag}) : ${receives} \n`;
+					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) : ${receives} \n`;
 				}
 			}
 		}
@@ -249,7 +249,7 @@ class SlowTracker {
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`<:xp:534752059501838346> ${member.expLevel}`,
 						`<:warstars:534759020309774337> ${member.warStars}`,
-						`${leagueStrings[member.league ? member.league.id : 29000000]} ${member.trophies}`
+						`${leagueEmojis[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small);
 				embed.setTimestamp();
@@ -281,7 +281,7 @@ class SlowTracker {
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`<:xp:534752059501838346> ${member.expLevel}`,
 						`<:warstars:534759020309774337> ${member.warStars}`,
-						`${leagueStrings[member.league ? member.league.id : 29000000]} ${member.trophies}`
+						`${leagueEmojis[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small);
 				embed.setTimestamp();
@@ -316,11 +316,11 @@ class SlowTracker {
 				item.members = clan.members;
 				const donations = member.donations - this.donateList[key].donations;
 				if (donations && donations > 0) {
-					item.donated += `${leagueStrings[member.league.id]} **${member.name}** (${member.tag}) : ${donations} \n`;
+					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) : ${donations} \n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key].donationsReceived;
 				if (receives && receives > 0) {
-					item.received += `${leagueStrings[member.league.id]} **${member.name}** (${member.tag}) : ${receives} \n`;
+					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) : ${receives} \n`;
 				}
 			}
 		}
