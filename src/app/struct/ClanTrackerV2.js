@@ -325,9 +325,9 @@ class SlowTracker {
 			}
 		}
 
-		const index = Array.from(this.cached.keys())
+		/* const index = Array.from(this.cached.keys())
 			.filter(clan => !clan.isPremium)
-			.findIndex(`${cache.guild}${cache.tag}`);
+			.findIndex(`${cache.guild}${cache.tag}`);*/
 		const range = (Math.random() * (14 - 2)) + 2; // ((index / 100) + 2).toFixed();
 		if (item.donated !== '' || item.received !== '') {
 			const embed = new MessageEmbed()
