@@ -108,11 +108,11 @@ class FastTracker {
 				item.members = clan.members;
 				const donations = member.donations - this.donateList[key].donations;
 				if (donations && donations > 0) {
-					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) : ${donations} \n`;
+					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) » ${donations} \n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key].donationsReceived;
 				if (receives && receives > 0) {
-					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) : ${receives} \n`;
+					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) » ${receives} \n`;
 				}
 			}
 		}
@@ -316,11 +316,11 @@ class SlowTracker {
 				item.members = clan.members;
 				const donations = member.donations - this.donateList[key].donations;
 				if (donations && donations > 0) {
-					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) : ${donations} \n`;
+					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) » ${donations} \n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key].donationsReceived;
 				if (receives && receives > 0) {
-					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) : ${receives} \n`;
+					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) » ${receives} \n`;
 				}
 			}
 		}
