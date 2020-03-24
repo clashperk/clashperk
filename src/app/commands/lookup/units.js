@@ -63,7 +63,7 @@ class UnitsCommand extends Command {
 		let index = 0;
 		let troopLevels = '';
 		data.troops.forEach(troop => {
-			if (troop.village === 'home') {
+			if (troop.village === 'home' && !['Wall Wrecker', 'Stone Slammer', 'Battle Blimp', 'Siege Barracks'].includes(troop.name)) {
 				index++;
 				if (troop.level === troop.maxLevel) {
 					troopLevels += `${TroopEmojis[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002`;
@@ -77,6 +77,24 @@ class UnitsCommand extends Command {
 			}
 		});
 		if (troopLevels) embed.setDescription(['**Troops**', troopLevels.split('#').join('\n')]);
+
+		index = 0;
+		let SiegeMachines = '';
+		data.troops.forEach(troop => {
+			if (troop.village === 'home' && ['Wall Wrecker', 'Stone Slammer', 'Battle Blimp', 'Siege Barracks'].includes(troop.name)) {
+				index++;
+				if (troop.level === troop.maxLevel) {
+					SiegeMachines += `${TroopEmojis[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002`;
+				} else {
+					SiegeMachines += `${TroopEmojis[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002`;
+				}
+				if (index === 4) {
+					troopLevels += '#';
+					index = 0;
+				}
+			}
+		});
+		if (SiegeMachines) embed.addField('**Siege Machines**', SiegeMachines.split('#').join('\n'));
 
 		let builderTroops = '';
 		index = 0;
