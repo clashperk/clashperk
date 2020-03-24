@@ -1,9 +1,9 @@
 const { Listener } = require('discord-akairo');
 
-class ShardResumedListener extends Listener {
+class ShardResumeListener extends Listener {
 	constructor() {
-		super('shardResumed', {
-			event: 'shardResumed',
+		super('shardResume', {
+			event: 'shardResume',
 			emitter: 'client',
 			category: 'client'
 		});
@@ -14,4 +14,4 @@ class ShardResumedListener extends Listener {
 	}
 }
 
-module.exports = ShardResumedListener;
+module.exports = ShardResumeListener;

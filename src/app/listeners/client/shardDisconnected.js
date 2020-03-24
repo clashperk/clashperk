@@ -2,8 +2,8 @@ const { Listener } = require('discord-akairo');
 
 class ShardDisconnectListener extends Listener {
 	constructor() {
-		super('shardDisconnected', {
-			event: 'shardDisconnected',
+		super('shardDisconnect', {
+			event: 'shardDisconnect',
 			emitter: 'client',
 			category: 'client'
 		});
