@@ -31,7 +31,7 @@ class FastTracker {
 		if (oldMemberSet.size) {
 			const tags = currentMemberList.filter(tag => !oldMemberSet.has(tag));
 			for (const tag of tags) {
-				const member = await this.getPlayer(tag);
+				const member = await this.fetchPlayer(tag);
 				if (!member) return;
 				const embed = new MessageEmbed()
 					.setColor(0x38d863)
@@ -63,7 +63,7 @@ class FastTracker {
 		if (currentMemberSet.size && oldMemberSet.size) {
 			const tags = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 			for (const tag of tags) {
-				const member = await this.getPlayer(tag);
+				const member = await this.fetchPlayer(tag);
 				if (!member) return;
 				const embed = new MessageEmbed()
 					.setColor(0xeb3508)
@@ -239,7 +239,7 @@ class SlowTracker {
 		if (oldMemberSet.size) {
 			const tags = currentMemberList.filter(tag => !oldMemberSet.has(tag));
 			for (const tag of tags) {
-				const member = await this.getPlayer(tag);
+				const member = await this.fetchPlayer(tag);
 				if (!member) return;
 				const embed = new MessageEmbed()
 					.setColor(0x38d863)
@@ -271,7 +271,7 @@ class SlowTracker {
 		if (currentMemberSet.size && oldMemberSet.size) {
 			const tags = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 			for (const tag of tags) {
-				const member = await this.getPlayer(tag);
+				const member = await this.fetchPlayer(tag);
 				if (!member) return;
 				const embed = new MessageEmbed()
 					.setColor(0xeb3508)
