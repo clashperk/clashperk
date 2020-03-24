@@ -76,7 +76,7 @@ class UnitsCommand extends Command {
 				}
 			}
 		});
-		if (troopLevels) embed.setDescription(['**Troops**', troopLevels.split('#').join('\n')]);
+		if (troopLevels) embed.setDescription(['Troops', troopLevels.split('#').join('\n')]);
 
 		index = 0;
 		let SiegeMachines = '';
@@ -94,7 +94,7 @@ class UnitsCommand extends Command {
 				}
 			}
 		});
-		if (SiegeMachines) embed.addField('**Siege Machines**', SiegeMachines.split('#').join('\n'));
+		if (SiegeMachines) embed.addField('Siege Machines', SiegeMachines.split('#').join('\n'));
 
 		let builderTroops = '';
 		index = 0;
