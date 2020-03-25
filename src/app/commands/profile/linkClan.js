@@ -39,7 +39,9 @@ class LinkClanCommand extends Command {
 	async exec(message, { data, member }) {
 		const doc = await this.get(member.id);
 		if (doc) {
-			await doc.ref.update({ clan: data.tag, createdAt: new Date() });
+			await firestore.collection('linked_accounts')
+				.doc(member.id)
+				.update({ clan: data.tag, createdAt: new Date() });
 		} else {
 			await firestore.collection('linked_accounts')
 				.doc(member.id)
