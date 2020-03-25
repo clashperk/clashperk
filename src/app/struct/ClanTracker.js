@@ -9,6 +9,7 @@ class FastTracker {
 		this.cached = cached;
 		this.donateList = {};
 		this.oldMemberList = new Map();
+		this.donateMemberList = new Map();
 	}
 
 	async init() {
@@ -94,23 +95,32 @@ class FastTracker {
 		currentMemberSet.clear();
 	}
 
-	async donationlog(clan, cache, channel1, channel2) {
-		const item = {
-			donated: '',
-			received: ''
-		};
+	async donationlog(clan, cache, channel) {
+		const key = `${cache.guild}${clan.tag}`;
+		const currentMemberList = clan.memberList.map(m => m.tag);
+		const oldMemberSet = new Set(this.donateMemberList.get(key));
+		const item = { donated: '', received: '' };
 
 		for (const member of clan.memberList) {
 			const key = `${cache.guild}${member.tag}`;
+			item.clan = `${clan.name} (${clan.tag})`;
+			item.clanBadge = clan.badgeUrls.small;
+			item.members = clan.members;
 			if (key in this.donateList) {
-				item.clan = `${clan.name} (${clan.tag})`;
-				item.clanBadge = clan.badgeUrls.small;
-				item.members = clan.members;
 				const donations = member.donations - this.donateList[key].donations;
 				if (donations && donations > 0) {
 					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key].donationsReceived;
+				if (receives && receives > 0) {
+					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives} \n`;
+				}
+			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
+				const donations = member.donations;
+				if (donations && donations > 0) {
+					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
+				}
+				const receives = member.donationsReceived;
 				if (receives && receives > 0) {
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives} \n`;
 				}
@@ -122,13 +132,13 @@ class FastTracker {
 				.setColor(cache.color)
 				.setAuthor(item.clan, item.clanBadge)
 				.setThumbnail(item.clanBadge)
-				.setFooter(`${item.members}/50 [CLUSTER_01]`, this.client.user.displayAvatarURL())
+				.setFooter(`${item.members}/50 [CLUSTER 1]`, this.client.user.displayAvatarURL())
 				.setTimestamp();
 			if (item.donated) embed.addField('Donated', `${item.donated.substring(0, 1024)}`);
 			if (item.received) embed.addField('Received', `${item.received.substring(0, 1024)}`);
 
 			try {
-				await channel1.send({ embed });
+				await channel.send({ embed });
 			} catch (error) {
 				this.client.logger.error(error.toString(), { label: 'DONATION_LOG_MESSAGE' });
 			}
@@ -138,6 +148,10 @@ class FastTracker {
 			const key = `${cache.guild}${member.tag}`;
 			this.donateList[key] = member;
 		}
+
+		this.donateMemberList.set(key, []);
+		this.donateMemberList.set(key, currentMemberList);
+		oldMemberSet.clear();
 	}
 
 	async start() {
@@ -334,7 +348,7 @@ class SlowTracker {
 				.setColor(cache.color)
 				.setAuthor(item.clan, item.clanBadge)
 				.setThumbnail(item.clanBadge)
-				.setFooter(`${item.members}/50 [CLUSTER_${range > 9 ? range : `0${range}`}]`, this.client.user.displayAvatarURL())
+				.setFooter(`${item.members}/50 [CLUSTER ${range}]`, this.client.user.displayAvatarURL())
 				.setTimestamp();
 			if (item.donated) embed.addField('Donated', `${item.donated.substring(0, 1024)}`);
 			if (item.received) embed.addField('Received', `${item.received.substring(0, 1024)}`);
