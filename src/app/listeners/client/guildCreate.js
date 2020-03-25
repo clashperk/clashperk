@@ -10,6 +10,13 @@ class GuildCreateListener extends Listener {
 		});
 	}
 
+	async fetchWebhook() {
+		if (this.webhook) return this.webhook;
+		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'webhook', undefined)).catch(() => null);
+		this.webhook = webhook;
+		return webhook;
+	}
+
 	async exec(guild) {
 		if (!guild.available) return;
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
@@ -17,7 +24,7 @@ class GuildCreateListener extends Listener {
 		await this.restore(guild);
 
 		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
-		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'webhook', undefined)).catch(() => null);
+		const webhook = await this.fetchWebhook().catch(() => null);
 		if (webhook) {
 			const embed = this.client.util.embed()
 				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL())

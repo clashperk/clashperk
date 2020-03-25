@@ -1,5 +1,5 @@
 const { Listener } = require('discord-akairo');
-const { WebhookClient, MessageEmbed } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 class RateLimitListener extends Listener {
 	constructor() {
@@ -10,11 +10,18 @@ class RateLimitListener extends Listener {
 		});
 	}
 
-	exec({ timeout, limit, method, path, route }) {
+	async fetchWebhook() {
+		if (this.webhook) return this.webhook;
+		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'rateLimitWebhook', undefined)).catch(() => null);
+		this.webhook = webhook;
+		return webhook;
+	}
+
+	async exec({ timeout, limit, method, path, route }) {
 		const msg = { timeout, limit, method, path, route };
 		this.client.logger.warn(msg, { label: 'RATELIMIT' });
 
-		const webhook = new WebhookClient('691896200005419060', '7rRsKul-JCc8433pn6Dl6QSlwvGjjo8XtUkc4SJeYuGEqJgneQ1hwuY0zYpSU4nutIN-');
+		const webhook = await this.fetchWebhook().catch(() => null);
 		if (!webhook) return;
 
 		const embed = new MessageEmbed()

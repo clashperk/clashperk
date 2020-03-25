@@ -26,7 +26,7 @@ class MissingPermissionsListener extends Listener {
 
 		if (!text) return;
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
-			return message.reply(text());
+			return message.channel.send(text());
 		}
 	}
 

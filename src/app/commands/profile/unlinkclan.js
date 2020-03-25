@@ -30,7 +30,7 @@ class UnlinkClanCommand extends Command {
 	}
 
 	async exec(message, { member }) {
-		const deleted = await this.delele(member.id);
+		const deleted = await this.remove(member.id);
 		if (!deleted) {
 			return message.util.send({
 				embed: {
@@ -46,7 +46,7 @@ class UnlinkClanCommand extends Command {
 		return message.util.send({ embed });
 	}
 
-	async delele(id) {
+	async remove(id) {
 		const batch = firestore.batch();
 		const deleted = await firestore.collection('linked_accounts')
 			.doc(id)

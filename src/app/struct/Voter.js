@@ -3,17 +3,23 @@ const { firebase } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 
 class Voter {
-	constructor(client, { timeout = 30 * 60 * 1000, webhook = '611560024895913985' } = {}) {
+	constructor(client, { timeout = 30 * 60 * 1000 } = {}) {
 		this.client = client;
 		this.store = new Map();
 		this.timeout = timeout;
-		this.webhook = webhook;
 	}
 
 	init() {
 		this.incoming();
 		this.clear();
 		setInterval(this.clear.bind(this), this.timeout);
+	}
+
+	async fetchWebhook() {
+		if (this.webhook) return this.webhook;
+		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'voteWebhook', undefined)).catch(() => null);
+		this.webhook = webhook;
+		return webhook;
 	}
 
 	isVoter(user) {
@@ -124,7 +130,7 @@ class Voter {
 	async send(key, data) {
 		if (data.webhook_triggered) return;
 
-		const webhook = await this.client.fetchWebhook(this.webhook).catch(() => null);
+		const webhook = await this.fetchWebhook().catch(() => null);
 		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING WEBHOOK' });
 
 		const user = await this.client.users.fetch(data.user).catch(() => null);
