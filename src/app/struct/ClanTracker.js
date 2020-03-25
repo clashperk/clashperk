@@ -118,11 +118,11 @@ class FastTracker {
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				const donations = member.donations;
 				if (donations && donations > 0) {
-					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
+					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations}* \n`;
 				}
 				const receives = member.donationsReceived;
 				if (receives && receives > 0) {
-					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives} \n`;
+					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
 				}
 			}
 		}
