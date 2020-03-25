@@ -67,6 +67,8 @@ class CommandStartedListener extends Listener {
 
 		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		this.client.logger.debug(`${command.id}`, { label });
+
+		// Counters
 		this.counter(message, command);
 	}
 

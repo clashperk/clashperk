@@ -2,7 +2,7 @@ const { Guild, User } = require('discord.js');
 const FirestoreProvider = require('./FirestoreProvider');
 
 class Guilds extends FirestoreProvider {
-	constructor(database, {} = {}) {
+	constructor(database, { } = {}) {
 		super(database);
 	}
 
@@ -29,7 +29,7 @@ class Guilds extends FirestoreProvider {
 }
 
 class Users extends FirestoreProvider {
-	constructor(database, {} = {}) {
+	constructor(database, { } = {}) {
 		super(database);
 	}
 

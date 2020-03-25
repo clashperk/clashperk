@@ -51,7 +51,7 @@ class ProfileCommand extends Command {
 			embed.setTitle('No Accounts are Linked');
 		}
 
-		if (snap.tags.length) embed.setFooter(`Accounts: ${snap.tags.length}`);
+		if (snap.tags.length) embed.setTitle(`Accounts Linked » ${snap.tags.length}`);
 
 		let accounts = 0;
 		for (const tag of snap.tags) {

@@ -2,7 +2,7 @@ const { Provider } = require('discord-akairo');
 const firebase = require('firebase-admin');
 
 class FirestoreProvider extends Provider {
-	constructor(database, {} = {}) {
+	constructor(database, { } = {}) {
 		super();
 		this.database = database;
 	}
