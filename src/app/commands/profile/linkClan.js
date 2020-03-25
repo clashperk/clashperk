@@ -37,7 +37,7 @@ class LinkClanCommand extends Command {
 	}
 
 	async exec(message, { data, member }) {
-		const doc = await this.getClan(data.tag, member.id);
+		const doc = await this.get(member.id);
 		if (doc) {
 			await doc.ref.update({ clan: data.tag, createdAt: new Date() });
 		} else {
@@ -69,19 +69,12 @@ class LinkClanCommand extends Command {
 		return message.util.send({ embed });
 	}
 
-	async getClan(tag, id) {
-		let data;
-		await firestore.collection('linked_accounts')
-			.where('clan', '==', tag)
-			.where('user', '==', id)
-			.limit(1)
+	async get(id) {
+		const data = await firestore.collection('linked_accounts')
+			.doc(id)
 			.get()
-			.then(snapshot => {
-				snapshot.forEach(doc => {
-					data = Object.assign({ ref: doc.ref }, doc.data());
-				});
-				if (!snapshot.size) data = null;
-			});
+			.then(snap => Object.assign({ ref: snap.ref }, snap.data()));
+
 		return data;
 	}
 }

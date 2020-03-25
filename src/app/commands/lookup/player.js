@@ -36,7 +36,7 @@ class PlayerCommand extends Command {
 					.get()
 					.then(snap => snap.data());
 				if (!data) return msg.util.send({ embed: geterror(resolver, 'player') }) && Flag.cancel();
-				if (!data.tags.length) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
+				if (!data.tags.length) return msg.util.send({ embed: geterror(resolver, 'player') }) && Flag.cancel();
 				return Fetch.player(data.tags[0]).then(data => {
 					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 					return data;
