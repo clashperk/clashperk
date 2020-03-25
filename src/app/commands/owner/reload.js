@@ -21,7 +21,12 @@ class ReloadCommand extends Command {
 			const cmd = await this.client.commandHandler.modules.size;
 			const listener = await this.client.listenerHandler.modules.size;
 			const inhibitor = await this.client.inhibitorHandler.modules.size;
-			return message.util.send(`**Reloaded ${cmd} commands, ${listener} listeners, ${inhibitor} inhibitors \\🌊**`);
+			return message.util.send({
+				embed: {
+					color: 3093046,
+					description: `Reloaded ${cmd} commands, ${listener} listeners, ${inhibitor} inhibitors`
+				}
+			});
 		}
 	}
 }
