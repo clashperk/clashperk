@@ -4,7 +4,7 @@ const { firestore } = require('../../struct/Database');
 class PatronCommand extends Command {
 	constructor() {
 		super('patron', {
-			aliases: ['patron', 'donate'],
+			aliases: ['patron', 'donate', 'patreon'],
 			category: 'util',
 			clientPermissions: ['EMBED_LINKS'],
 			cooldown: 1000,

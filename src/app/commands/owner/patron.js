@@ -1,9 +1,9 @@
 const { Command } = require('discord-akairo');
 
-class PatronCommand extends Command {
+class AddPatronCommand extends Command {
 	constructor() {
-		super('patron', {
-			aliases: ['patron'],
+		super('addpatron', {
+			aliases: ['addpatron'],
 			category: 'owner',
 			channel: 'guild',
 			ownerOnly: true,
@@ -71,4 +71,4 @@ class PatronCommand extends Command {
 	}
 }
 
-module.exports = PatronCommand;
+module.exports = AddPatronCommand;
