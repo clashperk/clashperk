@@ -73,7 +73,7 @@ class LinkClanCommand extends Command {
 		const data = await firestore.collection('linked_accounts')
 			.doc(id)
 			.get()
-			.then(snap => Object.assign({ ref: snap.ref }, snap.data()));
+			.then(snap => snap.data());
 
 		return data;
 	}
