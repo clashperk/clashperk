@@ -67,7 +67,7 @@ class StartCommand extends Command {
 
 		const isPatron = this.client.patron.users.get(message.author, 'patron', false);
 		const isVoter = this.client.voter.isVoter(message.author.id);
-		if (clans.length >= 1 && !clans.map(clan => clan.tag).includes(data.tag) && !(isVoter || isPatron)) {
+		if (clans.length >= 1 && !(isVoter || isPatron)) {
 			const embed = this.client.util.embed()
 				.setDescription([
 					'**Not Voted!**',
