@@ -3,11 +3,11 @@ const { Command } = require('discord-akairo');
 class AboutCommand extends Command {
 	constructor() {
 		super('about', {
-			aliases: ['about', 'info', 'donate', 'patreon', 'support'],
+			aliases: ['about', 'info', 'support'],
 			category: 'util',
 			cooldown: 1000,
 			clientPermissions: ['EMBED_LINKS'],
-			description: { content: 'Shows information about the bot.' }
+			description: { content: 'Shows information about the ClashPerk.' }
 		});
 	}
 
