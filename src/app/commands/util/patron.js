@@ -41,8 +41,7 @@ class PatronCommand extends Command {
 			.get()
 			.then(snapshot => {
 				snapshot.forEach(snap => {
-					const data = snap.data();
-					patrons.push(data.id);
+					patrons.push(snap.id);
 				});
 				if (!snapshot.size) patrons = null;
 			});
