@@ -1,5 +1,6 @@
 const { Command } = require('discord-akairo');
 const { firestore } = require('../../struct/Database');
+const { oneLine } = require('common-tags');
 
 class PatronCommand extends Command {
 	constructor() {
@@ -20,13 +21,14 @@ class PatronCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor('« ClashPerk Patrons »')
 			.setDescription([
-				'ClashPerk & it\'s donation tracking system requires a lot of processing power & monthly expenditure.',
-				'Keeping ClashPerk alive is a draining project. So any and all help is beyond appreciated.',
+				oneLine`ClashPerk & it\'s donation tracking system requires a lot of processing power & monthly expenditure.',
+				Keeping ClashPerk alive is a draining project. So any and all help is beyond appreciated.`,
 				'',
 				'Subscribing to ClashPerk\'s Patreon will help to keep this service alive and enable future development.',
 				'',
-				'As a patron, you will get a few special rewards like ability to claim more than 2 clans per server, faster updates, no cooldown, a special hoisted role on support server and much more.',
-
+				oneLine`As a patron, you will get a few special rewards like ability to claim more than 2 clans per server,
+				faster updates, no cooldown, a special hoisted role on support server and much more.`,
+				'',
 				'[Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
 			])
 			.addField('Our Current Patrons', [
