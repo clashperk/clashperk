@@ -1,33 +1,33 @@
 const request = require('request');
 
 class PostStats {
-	constructor(client, { checkRate = 30 * 60 * 1000 } = {}) {
+	constructor(client, { postRate = 30 * 60 * 1000 } = {}) {
 		this.client = client;
-		this.checkRate = checkRate;
+		this.postRate = postRate;
 	}
 
 	async init() {
 		await this.post();
-		this.client.setInterval(this.post.bind(this), this.checkRate);
+		this.client.setInterval(this.post.bind(this), this.postRate);
 	}
 
 	async post() {
-		// https://discordbots.org
+		// https://top.gg/
 		request({
 			headers: {
 				Authorization: process.env.DBL,
 				'Content-Type': 'application/json'
 			},
-			url: `https://discordbots.org/api/bots/${this.client.user.id}/stats`,
+			url: `https://top.gg/api/bots/${this.client.user.id}/stats`,
 			method: 'POST',
 			form: {
 				server_count: this.client.guilds.cache.size
 			}
 		}, (error, response, body) => {
-			if (error) this.client.logger.error(error.toString(), { level: 'https://discord.bots.gg' });
+			if (error) this.client.logger.error(error.toString(), { level: 'https://top.gg' });
 		});
 
-		// https://discord.bots.gg
+		// https://discord.bots.gg/
 		request({
 			headers: {
 				'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ class PostStats {
 		});
 
 
-		// https://discordbotlist.com
+		// https://discordbotlist.com/
 		request({
 			headers: {
 				'Content-Type': 'application/json',
