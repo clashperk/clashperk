@@ -21,7 +21,7 @@ class PatronCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor('« ClashPerk Patrons »')
 			.setDescription([
-				oneLine`ClashPerk & it\'s donation tracking system requires a lot of processing power & monthly expenditure.',
+				oneLine`ClashPerk & it\'s donation tracking system requires a lot of processing power & monthly expenditure.
 				Keeping ClashPerk alive is a draining project. So any and all help is beyond appreciated.`,
 				'',
 				'Subscribing to ClashPerk\'s Patreon will help to keep this service alive and enable future development.',
