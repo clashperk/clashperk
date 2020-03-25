@@ -1,7 +1,6 @@
 const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
 const Settings = require('../struct/SettingsProvider');
 const { firestore } = require('../struct/Database');
-const path = require('path');
 const Logger = require('../util/logger');
 const ClanTracker = require('../struct/ClanTracker');
 const fetch = require('node-fetch');
@@ -10,6 +9,8 @@ const Voter = require('../struct/Voter');
 const PostStats = require('../struct/PostStats');
 const Firebase = require('../struct/Firebase');
 const { MessageEmbed } = require('discord.js');
+const { status } = require('../util/constants');
+const path = require('path');
 
 class ClashPerk extends AkairoClient {
 	constructor(config) {
@@ -76,16 +77,6 @@ class ClashPerk extends AkairoClient {
 		this.inhibitorHandler = new InhibitorHandler(this, { directory: path.join(__dirname, '..', 'inhibitors') });
 		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
-		const STATUS = {
-			100: 'Service is temprorarily unavailable.',
-			400: 'Client provided incorrect parameters for the request.',
-			403: 'Access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
-			404: 'Invalid tag, resource was not found.',
-			429: 'Request was throttled, because amount of requests was above the threshold defined for the used API token.',
-			500: 'Unknown error happened when handling the request.',
-			503: 'Service is temprorarily unavailable because of maintenance.'
-		};
-
 		this.commandHandler.resolver.addType('guildMember', (msg, str) => {
 			if (!str) return null;
 			const mention = str.match(/<@!?(\d{17,19})>/);
@@ -102,8 +93,8 @@ class ClashPerk extends AkairoClient {
 				method: 'GET', timeout: 3000, headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).catch(() => null);
 
-			if (!res) return Flag.fail(STATUS[100]);
-			if (!res.ok) return Flag.fail(STATUS[res.status]);
+			if (!res) return Flag.fail(status(504));
+			if (!res.ok) return Flag.fail(status(res.status));
 			const data = await res.json();
 			return data;
 		});
@@ -115,8 +106,8 @@ class ClashPerk extends AkairoClient {
 				method: 'GET', timeout: 3000, headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).catch(() => null);
 
-			if (!res) return Flag.fail(STATUS[100]);
-			if (!res.ok) return Flag.fail(STATUS[res.status]);
+			if (!res) return Flag.fail(status(504));
+			if (!res.ok) return Flag.fail(status(res.status));
 			const data = await res.json();
 			return data;
 		});
