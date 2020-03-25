@@ -37,7 +37,7 @@ class PatronCommand extends Command {
 	}
 
 	async patrons(patrons = []) {
-		const clans = await firestore.collection('patron_users')
+		await firestore.collection('patron_users')
 			.get()
 			.then(snapshot => {
 				snapshot.forEach(snap => {
@@ -46,7 +46,7 @@ class PatronCommand extends Command {
 				});
 				if (!snapshot.size) patrons = null;
 			});
-		return clans;
+		return patrons;
 	}
 }
 
