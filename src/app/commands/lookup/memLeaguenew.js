@@ -57,6 +57,7 @@ class MembersLeagueCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
 			.setDescription([
+				`Name ${'Trophies'.padStart(20, ' ')}`,
 				data.memberList.slice(0, 30).map(member => `\`${member.name} ${this.indent(member.name, member.trophies.toString())}\``).join('\n')
 			]);
 		return message.util.send({ embed });
