@@ -188,7 +188,7 @@ class FastTracker {
 					await this.delay(150);
 				}
 			} else {
-				this.cached.delete(`${cache.guilds}${cache.tag}`);
+				this.cached.delete(`${cache.guild}${cache.tag}`);
 				this.client.logger.warn('UNKNOWN_CHANNEL', { label: 'NOT_FOUND' });
 			}
 		}
@@ -413,7 +413,7 @@ class SlowTracker {
 					await this.delay(150);
 				}
 			} else {
-				this.cached.delete(`${cache.guilds}${cache.tag}`);
+				this.cached.delete(`${cache.guild}${cache.tag}`);
 				this.client.logger.warn('UNKNOWN_CHANNEL', { label: 'NOT_FOUND' });
 			}
 		}
