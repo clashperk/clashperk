@@ -58,7 +58,7 @@ class MembersLeagueCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
 			.setDescription([
 				`\`\u200b ${'🏆'.padStart(18, ' ')}\``,
-				`<:townhall2:534745498561806357> ${data.memberList.slice(0, 30).map(member => `\`${member.name} ${this.indent(member.name, member.trophies.toString())}\``).join('\n')}`
+				`${data.memberList.slice(0, 30).map(member => `<:townhall12:534745574981894154> \`${member.name} ${this.indent(member.name, member.trophies.toString())}\``).join('\n')}`
 			]);
 		return message.util.send({ embed });
 	}
