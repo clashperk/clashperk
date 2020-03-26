@@ -5,33 +5,31 @@ const { MessageEmbed } = require('discord.js');
 class MemeCommand extends Command {
 	constructor() {
 		super('meme', {
-			aliases: ['meme', 'memes'],
-			clientPermissions: ['EMBED_LINKS'],
+			aliases: ['meme', 'memes', 'jokes'],
 			category: 'other',
+			cooldown: 3000,
 			description: {
-				content: 'Receives random Clash of Clans memes.'
+				content: 'Receives random Memes.'
 			}
 		});
 	}
 
-	cooldown(message) {
-		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
-		return 3000;
-	}
-
 	async exec(message) {
-		const album = this.client.settings.get('global', 'albumID', process.env.ALBUM_ID);
-		const res = await fetch(`https://api.imgur.com/3/album/${album}/images`, {
-			method: 'GET', headers: { Authorization: `Client-ID ${process.env.IMGUR}` }
-		});
-		const body = await res.json();
-		const image = Math.floor(Math.random() * body.data.length);
-		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
-			.setTitle(body.data[image].title.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase()))
-			.setURL(body.data[image].link)
-			.setImage(body.data[image].link);
-		return message.util.send({ embed });
+		const page = Math.floor(Math.random() * 100) + 10;
+		const image = Math.floor(Math.random() * 100) + 10;
+		try {
+			const res = await fetch(`https://api.imgur.com/3/gallery/r/memes/all/${page}`, {
+				method: 'GET',
+				headers: { Authorization: `Client-ID ${process.env.IMGUR}` }
+			});
+			const data = await res.json();
+			const embed = new MessageEmbed()
+				.setColor(5861569)
+				.setTitle(data.data[image].title.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase()))
+				.setURL(data.data[image].link)
+				.setImage(data.data[image].link);
+			return message.channel.send({ embed });
+		} catch { } // eslint-disable-line
 	}
 }
 
