@@ -106,11 +106,11 @@ class FastTracker {
 			item.clanBadge = clan.badgeUrls.small;
 			item.members = clan.members;
 			if (member.tag in this.donateList[key]) {
-				const donations = member.donations - this.donateList[key].donations;
+				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
 					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
 				}
-				const receives = member.donationsReceived - this.donateList[key].donationsReceived;
+				const receives = member.donationsReceived - this.donateList[key][member.tag].donationsReceived;
 				if (receives && receives > 0) {
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives} \n`;
 				}
