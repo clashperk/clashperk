@@ -67,7 +67,7 @@ class MembersLeagueCommand extends Command {
 	}
 
 	indent(name, data) {
-		return data.padStart(15 - name.length, '-');
+		return data.padStart(20 - name.length, ' ');
 	}
 }
 
