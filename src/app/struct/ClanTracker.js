@@ -323,16 +323,15 @@ class SlowTracker {
 		const item = { donated: '', received: '' };
 
 		for (const member of clan.memberList) {
-			const key = `${cache.guild}${member.tag}`;
 			item.clan = `${clan.name} (${clan.tag})`;
 			item.clanBadge = clan.badgeUrls.small;
 			item.members = clan.members;
-			if (key in this.donateList) {
-				const donations = member.donations - this.donateList[key].donations;
+			if (this.donateList[key] && member.tag in this.donateList[key]) {
+				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
 					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
 				}
-				const receives = member.donationsReceived - this.donateList[key].donationsReceived;
+				const receives = member.donationsReceived - this.donateList[key][member.tag].donationsReceived;
 				if (receives && receives > 0) {
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives} \n`;
 				}
@@ -369,9 +368,9 @@ class SlowTracker {
 			}
 		}
 
+		this.donateList[key] = {};
 		for (const member of clan.memberList) {
-			const key = `${cache.guild}${member.tag}`;
-			this.donateList[key] = member;
+			this.donateList[key][member.tag] = member;
 		}
 
 		this.donateMemberList.set(key, []);
