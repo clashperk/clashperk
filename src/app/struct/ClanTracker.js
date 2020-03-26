@@ -105,7 +105,7 @@ class FastTracker {
 			item.clan = `${clan.name} (${clan.tag})`;
 			item.clanBadge = clan.badgeUrls.small;
 			item.members = clan.members;
-			if (member.tag in this.donateList[key]) {
+			if (this.donateList[key] && member.tag in this.donateList[key]) {
 				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
 					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
