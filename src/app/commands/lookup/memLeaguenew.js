@@ -57,7 +57,7 @@ class MembersLeagueCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
 			.setDescription([
-				data.memberList.slice(0, 30).map(member => `${member.name} ${this.indent(member.name, member.trophies.toString())}`).join('\n')
+				data.memberList.slice(0, 30).map(member => `\`${member.name} ${this.indent(member.name, member.trophies.toString())}\``).join('\n')
 			]);
 		return message.util.send({ embed });
 	}
@@ -67,7 +67,7 @@ class MembersLeagueCommand extends Command {
 	}
 
 	indent(name, data) {
-		return data.padStart(15 - name.length, '\u200b ');
+		return data.padStart(15 - name.length, '-');
 	}
 }
 
