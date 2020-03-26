@@ -102,11 +102,10 @@ class FastTracker {
 		const item = { donated: '', received: '' };
 
 		for (const member of clan.memberList) {
-			const key = `${cache.guild}${member.tag}`;
 			item.clan = `${clan.name} (${clan.tag})`;
 			item.clanBadge = clan.badgeUrls.small;
 			item.members = clan.members;
-			if (key in this.donateList) {
+			if (member.tag in this.donateList[key]) {
 				const donations = member.donations - this.donateList[key].donations;
 				if (donations && donations > 0) {
 					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
@@ -144,9 +143,9 @@ class FastTracker {
 			}
 		}
 
+		this.donateList[key] = {};
 		for (const member of clan.memberList) {
-			const key = `${cache.guild}${member.tag}`;
-			this.donateList[key] = member;
+			this.donateList[key][member.tag] = member;
 		}
 
 		this.donateMemberList.set(key, []);
@@ -231,6 +230,7 @@ class SlowTracker {
 		this.cached = cached;
 		this.donateList = {};
 		this.oldMemberList = new Map();
+		this.donateMemberList = new Map();
 	}
 
 	async init() {
@@ -317,17 +317,17 @@ class SlowTracker {
 	}
 
 	async donationlog(clan, cache, channel) {
-		const item = {
-			donated: '',
-			received: ''
-		};
+		const key = `${cache.guild}${clan.tag}`;
+		const currentMemberList = clan.memberList.map(m => m.tag);
+		const oldMemberSet = new Set(this.donateMemberList.get(key));
+		const item = { donated: '', received: '' };
 
 		for (const member of clan.memberList) {
 			const key = `${cache.guild}${member.tag}`;
+			item.clan = `${clan.name} (${clan.tag})`;
+			item.clanBadge = clan.badgeUrls.small;
+			item.members = clan.members;
 			if (key in this.donateList) {
-				item.clan = `${clan.name} (${clan.tag})`;
-				item.clanBadge = clan.badgeUrls.small;
-				item.members = clan.members;
 				const donations = member.donations - this.donateList[key].donations;
 				if (donations && donations > 0) {
 					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
@@ -335,6 +335,15 @@ class SlowTracker {
 				const receives = member.donationsReceived - this.donateList[key].donationsReceived;
 				if (receives && receives > 0) {
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives} \n`;
+				}
+			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
+				const donations = member.donations;
+				if (donations && donations > 0) {
+					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations}* \n`;
+				}
+				const receives = member.donationsReceived;
+				if (receives && receives > 0) {
+					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
 				}
 			}
 		}
@@ -364,6 +373,10 @@ class SlowTracker {
 			const key = `${cache.guild}${member.tag}`;
 			this.donateList[key] = member;
 		}
+
+		this.donateMemberList.set(key, []);
+		this.donateMemberList.set(key, currentMemberList);
+		oldMemberSet.clear();
 	}
 
 	async start() {
