@@ -223,6 +223,7 @@ class FastTracker {
 			this.donateList[key][member.tag] = member;
 		}
 
+		this.oldMemberList.set(key, clan.memberList.map(member => member.tag));
 		this.donateMemberList.set(key, clan.memberList.map(member => member.tag));
 	}
 
@@ -480,6 +481,7 @@ class SlowTracker {
 			this.donateList[key][member.tag] = member;
 		}
 
+		this.oldMemberList.set(key, clan.memberList.map(member => member.tag));
 		this.donateMemberList.set(key, clan.memberList.map(member => member.tag));
 	}
 
