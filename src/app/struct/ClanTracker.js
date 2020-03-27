@@ -523,10 +523,8 @@ class ClanTracker {
 
 	async init() {
 		await this.load();
-		this.fastTracker = new FastTracker(this.client, this.cached);
-		this.slowTracker = new SlowTracker(this.client, this.cached);
-		this.fastTracker.init();
-		this.slowTracker.init();
+		new FastTracker(this.client, this.cached).init();
+		new SlowTracker(this.client, this.cached).init();
 	}
 
 	async load() {
@@ -552,11 +550,6 @@ class ClanTracker {
 
 		if (data.memberlog) {
 			data.member_log_channel = data.memberlog.channel;
-		}
-
-		if (!this.cached.has(`${guild}${tag}`)) {
-			if (data.isPremium) this.fastTracker.add(data);
-			if (!data.isPremium) this.slowTracker.add(data);
 		}
 
 		this.cached.set(`${guild}${tag}`, data);
