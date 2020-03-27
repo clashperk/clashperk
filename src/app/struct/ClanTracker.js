@@ -194,6 +194,21 @@ class FastTracker {
 		}
 	}
 
+	async add(data) {
+		const res = await this.fetchClan(data.tag);
+		if (!res) return;
+		if (!res.ok) return;
+		const clan = await res.json();
+
+		const key = `${data.guild}${data.tag}`;
+		this.donateList[key] = {};
+		for (const member of clan.memberList) {
+			this.donateList[key][member.tag] = member;
+		}
+
+		this.donateMemberList.set(key, clan.memberList.map(member => member.tag));
+	}
+
 	async fetchClan(tag) {
 		return fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`, {
 			method: 'GET',
@@ -417,6 +432,21 @@ class SlowTracker {
 				this.client.logger.warn('UNKNOWN_CHANNEL', { label: 'NOT_FOUND' });
 			}
 		}
+	}
+
+	async add(data) {
+		const res = await this.fetchClan(data.tag);
+		if (!res) return;
+		if (!res.ok) return;
+		const clan = await res.json();
+
+		const key = `${data.guild}${data.tag}`;
+		this.donateList[key] = {};
+		for (const member of clan.memberList) {
+			this.donateList[key][member.tag] = member;
+		}
+
+		this.donateMemberList.set(key, clan.memberList.map(member => member.tag));
 	}
 
 	async fetchClan(tag) {
