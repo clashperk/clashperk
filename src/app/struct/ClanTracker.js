@@ -98,8 +98,9 @@ class FastTracker {
 	async donationlog(clan, cache, channel) {
 		const key = `${cache.guild}${clan.tag}`;
 		const currentMemberList = clan.memberList.map(m => m.tag);
+		const currentMemberSet = new Set(currentMemberList);
 		const oldMemberSet = new Set(this.donateMemberList.get(key));
-		const item = { donated: '', received: '' };
+		const item = { donated: '', received: '', donations: 0, receives: 0 };
 
 		for (const member of clan.memberList) {
 			item.clan = `${clan.name} (${clan.tag})`;
@@ -108,19 +109,23 @@ class FastTracker {
 			if (this.donateList[key] && member.tag in this.donateList[key]) {
 				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
+					item.donations += donations;
 					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key][member.tag].donationsReceived;
 				if (receives && receives > 0) {
+					item.receives += receives;
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives} \n`;
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				const donations = member.donations;
 				if (donations && donations > 0) {
+					item.donations += donations;
 					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations}* \n`;
 				}
 				const receives = member.donationsReceived;
 				if (receives && receives > 0) {
+					item.receives += receives;
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
 				}
 			}
@@ -135,6 +140,17 @@ class FastTracker {
 				.setTimestamp();
 			if (item.donated) embed.addField('Donated', `${item.donated.substring(0, 1024)}`);
 			if (item.received) embed.addField('Received', `${item.received.substring(0, 1024)}`);
+
+			if (currentMemberSet.size && oldMemberSet.size) {
+				const membersJoined = currentMemberList.filter(tag => !oldMemberSet.has(tag));
+				const membersLeft = this.donateMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
+				if (item.donations !== item.receives && (membersJoined.length || membersLeft.length)) {
+					embed.addField('Unmatched Donations', [
+						membersJoined.length ? `${membersJoined.length} Member${membersJoined.length === 1 ? '' : 's'} Joined` : '',
+						membersLeft.length ? `${membersLeft.length} Member${membersLeft.length === 1 ? '' : 's'} Left` : ''
+					]);
+				}
+			}
 
 			try {
 				await channel.send({ embed });
@@ -151,6 +167,7 @@ class FastTracker {
 		this.donateMemberList.set(key, []);
 		this.donateMemberList.set(key, currentMemberList);
 		oldMemberSet.clear();
+		currentMemberSet.clear();
 	}
 
 	async start() {
@@ -334,8 +351,9 @@ class SlowTracker {
 	async donationlog(clan, cache, channel) {
 		const key = `${cache.guild}${clan.tag}`;
 		const currentMemberList = clan.memberList.map(m => m.tag);
+		const currentMemberSet = new Set(currentMemberList);
 		const oldMemberSet = new Set(this.donateMemberList.get(key));
-		const item = { donated: '', received: '' };
+		const item = { donated: '', received: '', donations: 0, receives: 0 };
 
 		for (const member of clan.memberList) {
 			item.clan = `${clan.name} (${clan.tag})`;
@@ -344,19 +362,23 @@ class SlowTracker {
 			if (this.donateList[key] && member.tag in this.donateList[key]) {
 				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
+					item.donations += donations;
 					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key][member.tag].donationsReceived;
 				if (receives && receives > 0) {
+					item.receives += receives;
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives} \n`;
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				const donations = member.donations;
 				if (donations && donations > 0) {
+					item.donations += donations;
 					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations}* \n`;
 				}
 				const receives = member.donationsReceived;
 				if (receives && receives > 0) {
+					item.receives += receives;
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
 				}
 			}
@@ -376,6 +398,17 @@ class SlowTracker {
 			if (item.donated) embed.addField('Donated', `${item.donated.substring(0, 1024)}`);
 			if (item.received) embed.addField('Received', `${item.received.substring(0, 1024)}`);
 
+			if (currentMemberSet.size && oldMemberSet.size) {
+				const membersJoined = currentMemberList.filter(tag => !oldMemberSet.has(tag));
+				const membersLeft = this.donateMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
+				if (item.donations !== item.receives && (membersJoined.length || membersLeft.length)) {
+					embed.addField('Unmatched Donations', [
+						membersJoined.length ? `${membersJoined.length} Member${membersJoined.length === 1 ? '' : 's'} Joined` : '',
+						membersLeft.length ? `${membersLeft.length} Member${membersLeft.length === 1 ? '' : 's'} Left` : ''
+					]);
+				}
+			}
+
 			try {
 				await channel.send({ embed });
 			} catch (error) {
@@ -391,6 +424,7 @@ class SlowTracker {
 		this.donateMemberList.set(key, []);
 		this.donateMemberList.set(key, currentMemberList);
 		oldMemberSet.clear();
+		currentMemberSet.clear();
 	}
 
 	async start() {
@@ -487,8 +521,10 @@ class ClanTracker {
 
 	async init() {
 		await this.load();
-		new FastTracker(this.client, this.cached).init();
-		new SlowTracker(this.client, this.cached).init();
+		this.fastTracker = new FastTracker(this.client, this.cached);
+		this.slowTracker = new SlowTracker(this.client, this.cached);
+		this.fastTracker.init();
+		this.slowTracker.init();
 	}
 
 	async load() {
@@ -514,6 +550,11 @@ class ClanTracker {
 
 		if (data.memberlog) {
 			data.member_log_channel = data.memberlog.channel;
+		}
+
+		if (!this.cached.has(`${guild}${tag}`)) {
+			if (data.isPremium) this.fastTracker.add(data);
+			if (!data.isPremium) this.slowTracker.add(data);
 		}
 
 		this.cached.set(`${guild}${tag}`, data);
