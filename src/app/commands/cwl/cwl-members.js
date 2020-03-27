@@ -137,15 +137,15 @@ class CwlMembersComamnd extends Command {
 
 	heroes(items) {
 		return Object.assign([
-			{ level: '00' },
-			{ level: '00' },
-			{ level: '00' },
-			{ level: '00' }
+			{ level: '  ' },
+			{ level: '  ' },
+			{ level: '  ' },
+			{ level: '  ' }
 		], items);
 	}
 
 	padStart(number) {
-		return number.toString().padStart(2, 0);
+		return number.toString().padStart(2, ' ');
 	}
 
 	split(content) {

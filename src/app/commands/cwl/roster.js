@@ -55,8 +55,7 @@ class CwlRosterComamnd extends Command {
 	}
 
 	async exec(message, { data }) {
-		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
-		const res = await fetch(uri, {
+		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
 			method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 		});
 		const body = await res.json();
