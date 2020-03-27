@@ -113,14 +113,16 @@ class CwlAttacksComamnd extends Command {
 				]);
 			return message.util.send({ embed });
 		}
+
 		const rounds = round
 			? body.rounds[round - 1].warTags
-			: body.rounds.filter(d => !d.warTags.includes('#0'))
-				.slice(-2)
-				.reverse()
-				.pop()
-				.warTags;
-
+			: body.rounds.filter(d => !d.warTags.includes('#0')).length === body.rounds.length
+				? body.rounds.pop().warTags
+				: body.rounds.filter(d => !d.warTags.includes('#0'))
+					.slice(-2)
+					.reverse()
+					.pop()
+					.warTags;
 		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
