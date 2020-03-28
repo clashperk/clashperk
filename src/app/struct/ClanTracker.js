@@ -14,7 +14,7 @@ class FastTracker {
 
 	async init() {
 		await this.start();
-		setInterval(this.start.bind(this), 3 * 60 * 1000);
+		// setInterval(this.start.bind(this), 3 * 60 * 1000);
 	}
 
 	async delay(ms) {
@@ -97,6 +97,7 @@ class FastTracker {
 
 	async donationlog(clan, cache, channel) {
 		const key = `${cache.guild}${clan.tag}`;
+		clearInterval(this.cached.get(key));
 		const currentMemberList = clan.memberList.map(m => m.tag);
 		const currentMemberSet = new Set(currentMemberList);
 		const oldMemberSet = new Set(this.donateMemberList.get(key));
@@ -169,9 +170,9 @@ class FastTracker {
 		oldMemberSet.clear();
 		currentMemberSet.clear();
 
-		/*const intervalID = setInterval(this.update.bind(this), 1 * 60 * 1000, cache);
+		const intervalID = setInterval(this.update.bind(this), 1 * 60 * 1000, cache);
 		cache.intervalID = intervalID;
-		this.cached.set(key, cache);*/
+		this.cached.set(key, cache);
 	}
 
 	async update(cache) {
