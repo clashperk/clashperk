@@ -103,27 +103,30 @@ class MembersTHCommand extends Command {
 			]);
 		}
 
+		const msg = await message.util.send('React!');
+
 		for (const emoji of ['⬅', '➡']) {
-			await message.react(emoji);
+			await msg.react(emoji);
 			await this.delay(250);
 		}
 
-		const collector = message.createReactionCollector(
+		const collector = msg.createReactionCollector(
 			(reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 10000, errors: ['time'] }
+			{ time: 20000, errors: ['time'] }
 		);
 
 		collector.on('collect', reaction => {
-			console.log(reaction.emoji.name);
+			if (reaction.emoji.name === '➡') message.reply('forward');
+			if (reaction.emoji.name === '➡') message.reply('backward');
 		});
 
-		collector.on('collect', reaction => {
-			console.log(reaction);
+		collector.on('collect', async () => {
+			await msg.reactions.removeAll().catch(() => null);
 		});
 
 		const diff = process.hrtime(hrStart);
 		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
-		return message.util.send(`*\u200b**Executed in ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**\u200b*`, { embed });
+		// return message.util.send(`*\u200b**Executed in ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**\u200b*`, { embed });
 	}
 
 	paginate(items, start, end) {

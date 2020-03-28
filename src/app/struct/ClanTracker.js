@@ -648,7 +648,8 @@ class ClanTracker {
 	}
 
 	delete(guild, tag) {
-		clearInterval(this.cached.get(`${guild}${tag}`).intervalID);
+		const clan = this.cached.get(`${guild}${tag}`);
+		if (clan) clearInterval(clan.intervalID);
 		this.cached.delete(`${guild}${tag}`);
 	}
 }
