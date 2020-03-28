@@ -99,6 +99,7 @@ class StartCommand extends Command {
 		const metadata = await ref.get().then(snap => snap.data());
 
 		this.client.tracker.add(data.tag, message.guild.id, metadata);
+		this.client.tracker.push(metadata);
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)

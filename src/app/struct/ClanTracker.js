@@ -525,6 +525,7 @@ class SlowTracker {
 				const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
 				if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
 					const res = await this.fetchClan(cache.tag);
+					console.log(res.status);
 					if (!res) continue;
 					if (!res.ok) continue;
 					const data = await res.json();
@@ -566,7 +567,6 @@ class SlowTracker {
 		const clan = await res.json();
 
 		const key = `${data.guild}${data.tag}`;
-		this.donateList[key] = {};
 		for (const member of clan.memberList) {
 			this.donateList[key][member.tag] = member;
 		}
@@ -609,12 +609,14 @@ class ClanTracker {
 	constructor(client) {
 		this.client = client;
 		this.cached = new Map();
+		this.fastTracker = new FastTracker(this.client, this.cached);
+		this.slowTracker = new SlowTracker(this.client, this.cached);
 	}
 
 	async init() {
 		await this.load();
-		new FastTracker(this.client, this.cached).init();
-		new SlowTracker(this.client, this.cached).init();
+		await this.fastTracker.init();
+		await this.slowTracker.init();
 	}
 
 	async load() {
@@ -645,7 +647,16 @@ class ClanTracker {
 		this.cached.set(`${guild}${tag}`, data);
 	}
 
+	push(data) {
+		if (data.isPremium) {
+			this.fastTracker.add(data);
+		} else {
+			this.slowTracker.add(data);
+		}
+	}
+
 	delete(guild, tag) {
+		clearInterval(this.cached.get(`${guild}${tag}`).intervalID);
 		this.cached.delete(`${guild}${tag}`);
 	}
 }
