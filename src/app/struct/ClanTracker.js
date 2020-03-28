@@ -562,7 +562,7 @@ class SlowTracker {
 		this.oldMemberList.set(key, clan.memberList.map(member => member.tag));
 		this.donateMemberList.set(key, clan.memberList.map(member => member.tag));
 
-		const intervalID = setInterval(this.update.bind(this), 1 * 60 * 1000, data);
+		const intervalID = setInterval(this.update.bind(this), 2 * 60 * 1000, data);
 		data.intervalID = intervalID;
 		this.cached.set(key, data);
 	}
