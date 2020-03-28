@@ -108,19 +108,17 @@ class MembersTHCommand extends Command {
 			await this.delay(250);
 		}
 
-		message.awaitReactions((reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id, {
-			time: 10000
-		}).then(collected => {
-			const reaction = collected.first();
-			console.log(collected);
+		const collector = message.createReactionCollector(
+			(reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 10000, errors: ['time'] }
+		);
 
-			if (reaction.emoji.name === '➡') {
-				message.reply('you reacted with a thumbs up.');
-			} else {
-				message.reply('you reacted with a thumbs down.');
-			}
-		}).catch(collected => {
-			message.reply('you reacted with neither a thumbs up, nor a thumbs down.');
+		collector.on('collect', reaction => {
+			console.log(reaction.emoji.name);
+		});
+
+		collector.on('collect', reaction => {
+			console.log(reaction);
 		});
 
 		const diff = process.hrtime(hrStart);
