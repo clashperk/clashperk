@@ -112,7 +112,7 @@ class MembersTHCommand extends Command {
 
 		const collector = msg.createReactionCollector(
 			(reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 30000, max: 5 }
+			{ time: 30000, max: 5, maxEmojis: 2 }
 		);
 
 		collector.on('collect', reaction => {
