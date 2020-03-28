@@ -64,12 +64,13 @@ class MembersLeagueCommand extends Command {
 			const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).then(res => res.json());
-			const star = member.achievements.filter(achievement => achievement.name === 'War League Legend').value;
+			const star = member.achievements.filter(achievement => achievement.name === 'War League Legend');
+			console.log(star)
 			memberList.push({ townHallLevel: member.townHallLevel, name: member.name, cwlStar: star });
 		}
 
 		const items = this.sort(memberList);
-		console.log(items);
+		// console.log(items);
 		embed.setDescription([
 			`<:townhall:631389478568591370> \`\u200b ${'CWL ⭐'.padStart(15, ' ')}\``,
 			`${items.slice(0, 20).map(member => `${TownHallEmoji[member.townHallLevel]} \`${member.name} ${this.indent(member.name, member.cwlStar.toString())}\``).join('\n')}`
