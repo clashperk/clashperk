@@ -60,7 +60,7 @@ class MembersLeagueCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
 		const memberList = [];
-		for (const tag of data.memberList.map(m => m.tag).slice(0, 30)) {
+		for (const tag of data.memberList.map(m => m.tag)) {
 			const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).then(res => res.json());
@@ -68,7 +68,7 @@ class MembersLeagueCommand extends Command {
 			memberList.push({ townHallLevel: member.townHallLevel, name: member.name, cwlStar: star });
 		}
 
-		const items = this.sort(memberList);
+		const items = this.sort(memberList).slice(0, 30);
 		embed.setDescription([
 			`<:townhall:631389478568591370> \`\u200b ${'CWL ⭐'.padStart(15, ' ')}\``,
 			`${items.map(member => `${TownHallEmoji[member.townHallLevel]} \`${member.name} ${this.indent(member.name, member.cwlStar.toString())}\``).join('\n')}`
