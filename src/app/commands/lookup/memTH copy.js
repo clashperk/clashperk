@@ -109,9 +109,10 @@ class MembersTHCommand extends Command {
 		}
 
 		message.awaitReactions((reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id, {
-			max: 1, time: 10000, errors: ['time']
+			max: 5, time: 10000, errors: ['time']
 		}).then(collected => {
 			const reaction = collected.first();
+			console.log(collected);
 
 			if (reaction.emoji.name === '➡') {
 				message.reply('you reacted with a thumbs up.');
