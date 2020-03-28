@@ -60,7 +60,7 @@ class MembersLeagueCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
 		const memberList = [];
-		for (const tag of data.memberList.map(m => m.tag)) {
+		for (const tag of data.memberList.map(m => m.tag).slice(0, 30)) {
 			const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).then(res => res.json());
