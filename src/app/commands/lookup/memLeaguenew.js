@@ -90,7 +90,7 @@ class MembersLeagueCommand extends Command {
 	}
 
 	star(msg) {
-		return msg.padStart(4 - msg.length, ' ');
+		return msg.padStart(4, ' ');
 	}
 
 	name(msg) {
