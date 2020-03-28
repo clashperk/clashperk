@@ -117,7 +117,7 @@ class MembersTHCommand extends Command {
 
 		collector.on('collect', reaction => {
 			if (reaction.emoji.name === '➡') message.reply('forward');
-			if (reaction.emoji.name === '➡') message.reply('backward');
+			if (reaction.emoji.name === '⬅') message.reply('backward');
 		});
 
 		collector.on('collect', async () => {
