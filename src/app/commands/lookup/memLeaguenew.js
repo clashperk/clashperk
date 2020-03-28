@@ -90,11 +90,11 @@ class MembersLeagueCommand extends Command {
 	}
 
 	star(msg) {
-		return msg.padStart(4, ' ');
+		return msg.padStart(4, '\u0000');
 	}
 
 	name(msg) {
-		return msg.padEnd(20, ' ');
+		return msg.padEnd(20, '\u0000');
 	}
 
 	clean(name, message) {
