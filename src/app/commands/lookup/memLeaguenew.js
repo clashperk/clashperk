@@ -1,7 +1,9 @@
 const { Command, Flag } = require('discord-akairo');
-const fetch = require('../../struct/Fetch');
+const Fetch = require('../../struct/Fetch');
+const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror, leagueEmojis } = require('../../util/constants');
+const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
+
 
 class MembersLeagueCommand extends Command {
 	constructor() {
@@ -23,7 +25,7 @@ class MembersLeagueCommand extends Command {
 				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
 				if (!resolver && !str) return null;
 				if (!resolver && str) {
-					return fetch.clan(str).then(data => {
+					return Fetch.clan(str).then(data => {
 						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 						return data;
 					});
@@ -34,7 +36,7 @@ class MembersLeagueCommand extends Command {
 					.then(snap => snap.data());
 				if (!data) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
 				if (!data.clan) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				return fetch.clan(data.clan).then(data => {
+				return Fetch.clan(data.clan).then(data => {
 					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 					return data;
 				});
@@ -55,15 +57,28 @@ class MembersLeagueCommand extends Command {
 	async exec(message, { data }) {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
-			.setDescription([
-				`<:townhall:631389478568591370> \`\u200b ${'CWL ⭐'.padStart(17, ' ')}\``,
-				`${data.memberList.slice(0, 30).map(member => {
-					const star = member.achievements.filter(achievement => achievement.value);
-					return `<:townhall12:534745574981894154> \`${member.name} ${this.indent(member.name, star.toString())}\``;
-				}).join('\n')}`
-			]);
+			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
+
+		const memberList = [];
+		for (const tag of data.memberList.map(m => m.tag)) {
+			const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
+				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			}).then(res => res.json());
+			const star = member.achievements.filter(achievement => achievement.value);
+			memberList.push({ townHallLevel: member.townHallLevel, name: member.name, cwlStar: star });
+		}
+
+		const items = this.sort(memberList);
+		embed.setDescription([
+			`<:townhall:631389478568591370> \`\u200b ${'CWL ⭐'.padStart(15, ' ')}\``,
+			`${items.map(member => `${TownHallEmoji[member.townHallLevel]} \`${member.name} ${this.indent(member.name, member.cwlStar.toString())}\``).join('\n')}`
+		]);
+
 		return message.util.send({ embed });
+	}
+
+	sort(items) {
+		return items.sort((a, b) => b.cwlStar - a.cwlStar);
 	}
 
 	paginate(items, start, end) {
