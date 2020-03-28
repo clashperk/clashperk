@@ -14,7 +14,6 @@ class FastTracker {
 
 	async init() {
 		await this.start();
-		// setInterval(this.start.bind(this), 3 * 60 * 1000);
 	}
 
 	async delay(ms) {
@@ -310,7 +309,6 @@ class SlowTracker {
 
 	async init() {
 		await this.start();
-		// setInterval(this.start.bind(this), 5 * 60 * 1000);
 	}
 
 	async delay(ms) {
