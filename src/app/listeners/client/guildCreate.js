@@ -45,6 +45,7 @@ class GuildCreateListener extends Listener {
 				snapstot.forEach(doc => {
 					const data = doc.data();
 					this.client.tracker.add(data.tag, data.guild, data);
+					this.client.tracker.push(data);
 				});
 				return snapstot.size;
 			});

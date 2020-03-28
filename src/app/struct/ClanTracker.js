@@ -525,7 +525,6 @@ class SlowTracker {
 				const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
 				if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
 					const res = await this.fetchClan(cache.tag);
-					console.log(res.status);
 					if (!res) continue;
 					if (!res.ok) continue;
 					const data = await res.json();
