@@ -22,7 +22,7 @@ class MembersTHCommand extends Command {
 	}
 
 	*args() {
-		const th = yield {
+		const townhall = yield {
 			match: 'option',
 			flag: ['--th', '-th', 'th'],
 			type: Argument.range('integer', 1, 13, true)
@@ -55,7 +55,7 @@ class MembersTHCommand extends Command {
 			}
 		};
 
-		return { data, th };
+		return { data, townhall };
 	}
 
 	cooldown(message) {
@@ -63,7 +63,7 @@ class MembersTHCommand extends Command {
 		return 20000;
 	}
 
-	async exec(message, { data, th }) {
+	async exec(message, { data, townhall }) {
 		await message.util.send('**Making list of your clan members... <a:loading:538989228403458089>**');
 		const hrStart = process.hrtime();
 
@@ -88,22 +88,22 @@ class MembersTHCommand extends Command {
 		}
 
 		const items = this.sort(array);
-		const filter = items.filter(arr => arr.townHallLevel === th);
-		const first = this.paginate(th ? filter : items, 0, 32);
-		const second = this.paginate(th ? filter : items, 32, 35);
-		const third = this.paginate(th ? filter : items, 35, 50);
+		const filter = items.filter(arr => arr.townHallLevel === townhall);
 
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
-		if (first.items.length) embed.setDescription(first.items.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`).join('\n'));
-		if (second.items.length) {
-			embed.addField(second.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n'), [
-				third.items.length ? third.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n') : '\u200b'
-			]);
-		}
 
-		const msg = await message.channel.send('React!');
+		const pages = [
+			this.paginate(townhall ? filter : items, 0, 32)
+				.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`),
+			this.paginate(townhall ? filter : items, 32, 50)
+				.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`)
+		];
+
+		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
+
+		const msg = await message.util.send('React!');
 
 		for (const emoji of ['⬅', '➡']) {
 			await msg.react(emoji);
@@ -117,21 +117,27 @@ class MembersTHCommand extends Command {
 
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡') {
-				console.log(reaction);
-				await message.reply('forward');
+				await msg.edit({
+					embed: embed.setDescription(pages[0].join('\n'))
+				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
 			}
-			if (reaction.emoji.name === '⬅') message.reply('backward');
+			if (reaction.emoji.name === '⬅') {
+				await msg.edit({
+					embed: embed.setDescription(pages[1].join('\n'))
+				});
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
 		});
 
 		collector.on('end', async () => {
 			await msg.reactions.removeAll().catch(() => null);
+			return message;
 		});
-
-		const diff = process.hrtime(hrStart);
-		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
-		// return message.util.send(`*\u200b**Executed in ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**\u200b*`, { embed });
+		return message;
 	}
 
 	paginate(items, start, end) {
