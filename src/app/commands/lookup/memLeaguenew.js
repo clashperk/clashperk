@@ -72,7 +72,7 @@ class MembersLeagueCommand extends Command {
 
 		const items = this.sort(memberList);
 		embed.setDescription([
-			`<:townhall:631389478568591370>\`» STAR ${'NAME'.padEnd(20, ' ')}\``,
+			`<:townhall:631389478568591370>\`» STAR  ${'NAME'.padEnd(20, ' ')}\``,
 			items.slice(0, 30)
 				.map(member => {
 					const name = this.name(member.name);
