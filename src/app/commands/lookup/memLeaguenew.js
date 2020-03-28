@@ -3,6 +3,7 @@ const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
+const { Util } = require('discord.js');
 
 
 class MembersLeagueCommand extends Command {
@@ -71,7 +72,9 @@ class MembersLeagueCommand extends Command {
 		const items = this.sort(memberList);
 		embed.setDescription([
 			`<:townhall:631389478568591370> \`Name ${'CWL Star'.padStart(20, ' ')}\``,
-			`${items.slice(0, 30).map(member => `${TownHallEmoji[member.townHallLevel]} \`${member.name} ${this.indent(member.name, member.cwlStar.toString())}  \u200b\``).join('\n')}`
+			`${items.slice(0, 30)
+				.map(member => `${TownHallEmoji[member.townHallLevel]} \`${this.clean(member.name, message)} ${this.indent(member.name, member.cwlStar.toString())}\``)
+				.join('\n')}`
 		]);
 
 		return message.util.send({ embed });
@@ -83,6 +86,10 @@ class MembersLeagueCommand extends Command {
 
 	indent(name, data) {
 		return data.padStart(20 - name.length, ' ');
+	}
+
+	clean(name, message) {
+		return Util.cleanContent(name, message);
 	}
 }
 
