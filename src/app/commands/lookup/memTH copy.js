@@ -103,7 +103,7 @@ class MembersTHCommand extends Command {
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
 
-		const msg = await message.util.send('React!');
+		const msg = await message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
 
 		for (const emoji of ['⬅', '➡']) {
 			await msg.react(emoji);
@@ -118,14 +118,14 @@ class MembersTHCommand extends Command {
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡') {
 				await msg.edit({
-					embed: embed.setDescription(pages[0].join('\n'))
+					embed: embed.setDescription(pages[1].join('\n'))
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
 			}
 			if (reaction.emoji.name === '⬅') {
 				await msg.edit({
-					embed: embed.setDescription(pages[1].join('\n'))
+					embed: embed.setDescription(pages[0].join('\n'))
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
