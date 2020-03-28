@@ -556,6 +556,7 @@ class SlowTracker {
 		const clan = await res.json();
 
 		const key = `${data.guild}${data.tag}`;
+		this.donateList[key] = {};
 		for (const member of clan.memberList) {
 			this.donateList[key][member.tag] = member;
 		}
