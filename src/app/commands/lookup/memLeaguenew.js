@@ -77,7 +77,7 @@ class MembersLeagueCommand extends Command {
 				.map(member => {
 					const name = this.name(member.name);
 					const star = this.star(member.cwlStar.toString());
-					return stripIndent`${TownHallEmoji[member.townHallLevel]} ${star} ${name}`;
+					return `${TownHallEmoji[member.townHallLevel]}\`${star} ${name}\``;
 				})
 				.join('\n')
 		]);
