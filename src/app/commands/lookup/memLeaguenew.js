@@ -57,8 +57,11 @@ class MembersLeagueCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
 			.setDescription([
-				`<:townhall:631389478568591370> \`\u200b ${'🏆'.padStart(17, ' ')}\``,
-				`${data.memberList.slice(0, 30).map(member => `<:townhall12:534745574981894154> \`${member.name} ${this.indent(member.name, member.trophies.toString())}\``).join('\n')}`
+				`<:townhall:631389478568591370> \`\u200b ${'CWL ⭐'.padStart(17, ' ')}\``,
+				`${data.memberList.slice(0, 30).map(member => {
+					const star = member.achievements.filter(achievement => achievement.value);
+					return `<:townhall12:534745574981894154> \`${member.name} ${this.indent(member.name, star.toString())}\``;
+				}).join('\n')}`
 			]);
 		return message.util.send({ embed });
 	}
