@@ -97,7 +97,7 @@ class FastTracker {
 
 	async donationlog(clan, cache, channel) {
 		const key = `${cache.guild}${clan.tag}`;
-		clearInterval(this.cached.get(key));
+		clearInterval(this.cached.get(key).intervalID);
 		const currentMemberList = clan.memberList.map(m => m.tag);
 		const currentMemberSet = new Set(currentMemberList);
 		const oldMemberSet = new Set(this.donateMemberList.get(key));
