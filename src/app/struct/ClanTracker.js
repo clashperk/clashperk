@@ -14,7 +14,7 @@ class FastTracker {
 
 	async init() {
 		await this.start();
-		// setInterval(this.start.bind(this), 3 * 60 * 1000);
+		setInterval(this.start.bind(this), 3 * 60 * 1000);
 	}
 
 	async delay(ms) {
@@ -169,12 +169,13 @@ class FastTracker {
 		oldMemberSet.clear();
 		currentMemberSet.clear();
 
-		const intervalID = setInterval(this.update.bind(this), 1 * 60 * 1000, cache);
+		/*const intervalID = setInterval(this.update.bind(this), 1 * 60 * 1000, cache);
 		cache.intervalID = intervalID;
-		this.cached.set(key, cache);
+		this.cached.set(key, cache);*/
 	}
 
 	async update(cache) {
+		console.log(cache.tag);
 		if (this.client.channels.cache.has(cache.donation_log_channel)) {
 			const channel = this.client.channels.cache.get(cache.donation_log_channel);
 			const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
