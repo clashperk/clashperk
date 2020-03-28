@@ -68,10 +68,10 @@ class MembersLeagueCommand extends Command {
 			memberList.push({ townHallLevel: member.townHallLevel, name: member.name, cwlStar: star });
 		}
 
-		const items = this.sort(memberList).slice(0, 30);
+		const items = this.sort(memberList);
 		embed.setDescription([
 			`<:townhall:631389478568591370> \`\u200b ${'CWL ⭐'.padStart(15, ' ')}\``,
-			`${items.map(member => `${TownHallEmoji[member.townHallLevel]} \`${member.name} ${this.indent(member.name, member.cwlStar.toString())}\``).join('\n')}`
+			`${items.slice(0, 20).map(member => `${TownHallEmoji[member.townHallLevel]} \`${member.name} ${this.indent(member.name, member.cwlStar.toString())}\``).join('\n')}`
 		]);
 
 		return message.util.send({ embed });
