@@ -103,7 +103,7 @@ class MembersTHCommand extends Command {
 			]);
 		}
 
-		const msg = await message.util.send('React!');
+		const msg = await message.channel.send('React!');
 
 		for (const emoji of ['⬅', '➡']) {
 			await msg.react(emoji);
@@ -112,7 +112,7 @@ class MembersTHCommand extends Command {
 
 		const collector = msg.createReactionCollector(
 			(reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 20000, errors: ['time'] }
+			{ time: 30000 }
 		);
 
 		collector.on('collect', reaction => {
