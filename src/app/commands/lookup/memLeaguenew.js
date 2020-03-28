@@ -72,12 +72,12 @@ class MembersLeagueCommand extends Command {
 
 		const items = this.sort(memberList);
 		embed.setDescription([
-			`<:townhall:631389478568591370> \`Name ${'CWL Star'.padStart(20, ' ')}\``,
+			`<:townhall:631389478568591370>\`CWL⭐ \`\u200b \` ${'Name'.padEnd(25, ' ')}\``,
 			items.slice(0, 30)
 				.map(member => {
 					const name = this.name(member.name);
 					const star = this.star(member.cwlStar.toString());
-					return `${TownHallEmoji[member.townHallLevel]}\`${star} ${name}\``;
+					return `${TownHallEmoji[member.townHallLevel]}\`${star} \`\u200b \` ${name}\``;
 				})
 				.join('\n')
 		]);
