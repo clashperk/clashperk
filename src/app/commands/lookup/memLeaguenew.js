@@ -94,7 +94,7 @@ class MembersLeagueCommand extends Command {
 	}
 
 	name(msg) {
-		return msg.padStart(20 - msg.length, ' ');
+		return msg.padEnd(25, ' ');
 	}
 
 	clean(name, message) {
