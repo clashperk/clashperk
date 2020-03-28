@@ -109,7 +109,7 @@ class MembersTHCommand extends Command {
 		}
 
 		message.awaitReactions((reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id, {
-			time: 60000, errors: ['time']
+			max: 1, time: 10000, errors: ['time']
 		}).then(collected => {
 			const reaction = collected.first();
 
