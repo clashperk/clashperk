@@ -69,6 +69,7 @@ class MembersLeagueCommand extends Command {
 		}
 
 		const items = this.sort(memberList);
+		console.log(items);
 		embed.setDescription([
 			`<:townhall:631389478568591370> \`\u200b ${'CWL ⭐'.padStart(15, ' ')}\``,
 			`${items.slice(0, 20).map(member => `${TownHallEmoji[member.townHallLevel]} \`${member.name} ${this.indent(member.name, member.cwlStar.toString())}\``).join('\n')}`
