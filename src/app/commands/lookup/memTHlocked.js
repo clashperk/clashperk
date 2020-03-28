@@ -9,7 +9,6 @@ const API = process.env.APIS.split(',');
 class MembersTHCommand extends Command {
 	constructor() {
 		super('members-th_', {
-			aliases: ['mem2'],
 			category: 'lookup',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
@@ -22,7 +21,7 @@ class MembersTHCommand extends Command {
 	}
 
 	*args() {
-		const townhall = yield {
+		const th = yield {
 			match: 'option',
 			flag: ['--th', '-th', 'th'],
 			type: Argument.range('integer', 1, 13, true)
@@ -55,7 +54,7 @@ class MembersTHCommand extends Command {
 			}
 		};
 
-		return { data, townhall };
+		return { data, th };
 	}
 
 	cooldown(message) {
@@ -63,7 +62,7 @@ class MembersTHCommand extends Command {
 		return 20000;
 	}
 
-	async exec(message, { data, townhall }) {
+	async exec(message, { data, th }) {
 		await message.util.send('**Making list of your clan members... <a:loading:538989228403458089>**');
 		const hrStart = process.hrtime();
 
@@ -88,64 +87,28 @@ class MembersTHCommand extends Command {
 		}
 
 		const items = this.sort(array);
-		const filter = items.filter(arr => arr.townHallLevel === townhall);
+		const filter = items.filter(arr => arr.townHallLevel === th);
+		const first = this.paginate(th ? filter : items, 0, 32);
+		const second = this.paginate(th ? filter : items, 32, 35);
+		const third = this.paginate(th ? filter : items, 35, 50);
 
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
-
-		const pages = [
-			this.paginate(townhall ? filter : items, 0, 32)
-				.items.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`),
-			this.paginate(townhall ? filter : items, 32, 50)
-				.items.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`)
-		];
-
-		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
-
-		const msg = await message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
-
-		for (const emoji of ['⬅', '➡']) {
-			await msg.react(emoji);
-			await this.delay(250);
+		if (first.items.length) embed.setDescription(first.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n'));
+		if (second.items.length) {
+			embed.addField(second.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n'), [
+				third.items.length ? third.items.map(member => `${TownHallEmoji[member.townHallLevel]} **${member.name}** ${member.tag}`).join('\n') : '\u200b'
+			]);
 		}
 
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 30000, max: 5 }
-		);
-
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡') {
-				await msg.edit({
-					embed: embed.setDescription(pages[1].join('\n'))
-				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-			}
-			if (reaction.emoji.name === '⬅') {
-				await msg.edit({
-					embed: embed.setDescription(pages[0].join('\n'))
-				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
-			}
-		});
-
-		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
-		});
-		return message;
+		const diff = process.hrtime(hrStart);
+		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
+		return message.util.send(`*\u200b**Executed in ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**\u200b*`, { embed });
 	}
 
 	paginate(items, start, end) {
 		return { items: items.slice(start, end) };
-	}
-
-	async delay(ms) {
-		return new Promise(res => setTimeout(res, ms));
 	}
 
 	sort(items) {
