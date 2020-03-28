@@ -115,11 +115,12 @@ class MembersTHCommand extends Command {
 			{ time: 30000, max: 5 }
 		);
 
-		collector.on('collect', reaction => {
+		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡') {
 				console.log(reaction);
-				message.reply('forward');
-				reaction.users.remove(message.author.id);
+				await message.reply('forward');
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
 			}
 			if (reaction.emoji.name === '⬅') message.reply('backward');
 		});
