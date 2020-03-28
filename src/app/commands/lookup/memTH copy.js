@@ -96,9 +96,9 @@ class MembersTHCommand extends Command {
 
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 32)
-				.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`),
+				.items.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`),
 			this.paginate(townhall ? filter : items, 32, 50)
-				.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`)
+				.items.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`)
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
