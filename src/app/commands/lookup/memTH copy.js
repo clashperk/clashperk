@@ -112,11 +112,15 @@ class MembersTHCommand extends Command {
 
 		const collector = msg.createReactionCollector(
 			(reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 30000, max: 5, maxEmojis: 2 }
+			{ time: 30000, max: 5 }
 		);
 
 		collector.on('collect', reaction => {
-			if (reaction.emoji.name === '➡') message.reply('forward');
+			if (reaction.emoji.name === '➡') {
+				console.log(reaction);
+				message.reply('forward');
+				reaction.users.remove(message.author.id);
+			}
 			if (reaction.emoji.name === '⬅') message.reply('backward');
 		});
 
