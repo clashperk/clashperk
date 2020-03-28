@@ -473,7 +473,7 @@ class SlowTracker {
 		oldMemberSet.clear();
 		currentMemberSet.clear();
 
-		const intervalID = setInterval(this.update.bind(this), 3 * 60 * 1000, cache);
+		const intervalID = setInterval(this.update.bind(this), 2 * 60 * 1000, cache);
 		cache.intervalID = intervalID;
 		this.cached.set(key, cache);
 	}
