@@ -72,9 +72,13 @@ class MembersLeagueCommand extends Command {
 		const items = this.sort(memberList);
 		embed.setDescription([
 			`<:townhall:631389478568591370> \`Name ${'CWL Star'.padStart(20, ' ')}\``,
-			`${items.slice(0, 30)
-				.map(member => `${TownHallEmoji[member.townHallLevel]} \`${this.clean(member.name, message)} ${this.indent(member.name, member.cwlStar.toString())}\``)
-				.join('\n')}`
+			items.slice(0, 30)
+				.map(member => {
+					const name = this.name(member.name);
+					const star = this.star(member.cwlStar.toString());
+					return `${TownHallEmoji[member.townHallLevel]} \`${name} \`\u200b \`${star}\``;
+				})
+				.join('\n')
 		]);
 
 		return message.util.send({ embed });
@@ -84,8 +88,12 @@ class MembersLeagueCommand extends Command {
 		return items.sort((a, b) => b.cwlStar - a.cwlStar);
 	}
 
-	indent(name, data) {
-		return data.padStart(20 - name.length, ' ');
+	star(msg) {
+		return msg.padStart(4 - msg.length, ' ');
+	}
+
+	name(msg) {
+		return msg.padEnd(20 - msg.length, ' ');
 	}
 
 	clean(name, message) {
