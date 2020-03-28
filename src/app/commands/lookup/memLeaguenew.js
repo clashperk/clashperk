@@ -72,7 +72,7 @@ class MembersLeagueCommand extends Command {
 
 		const items = this.sort(memberList);
 		embed.setDescription([
-			`<:townhall:631389478568591370>\`CWL⭐ \`\u200b \` ${'Name'.padEnd(25, ' ')}\``,
+			`<:townhall:631389478568591370>\`CWL⭐ \`\u200b \` ${'Name'.padEnd(20, ' ')}\``,
 			items.slice(0, 30)
 				.map(member => {
 					const name = this.name(member.name);
@@ -94,7 +94,7 @@ class MembersLeagueCommand extends Command {
 	}
 
 	name(msg) {
-		return msg.padEnd(25, ' ');
+		return msg.padEnd(20, ' ');
 	}
 
 	clean(name, message) {
