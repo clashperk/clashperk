@@ -120,7 +120,7 @@ class MembersTHCommand extends Command {
 			if (reaction.emoji.name === '⬅') message.reply('backward');
 		});
 
-		collector.on('collect', async () => {
+		collector.on('end', async () => {
 			await msg.reactions.removeAll().catch(() => null);
 		});
 
