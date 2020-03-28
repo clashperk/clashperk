@@ -64,7 +64,7 @@ class MembersLeagueCommand extends Command {
 			const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).then(res => res.json());
-			const star = member.achievements.filter(achievement => achievement.value);
+			const star = member.achievements.filter(achievement => achievement.name === 'War League Legend').value;
 			memberList.push({ townHallLevel: member.townHallLevel, name: member.name, cwlStar: star });
 		}
 
