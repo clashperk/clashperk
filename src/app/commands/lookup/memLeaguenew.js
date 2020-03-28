@@ -57,7 +57,7 @@ class MembersLeagueCommand extends Command {
 	async exec(message, { data }) {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
 		const memberList = [];
 		for (const tag of data.memberList.map(m => m.tag)) {
@@ -65,15 +65,13 @@ class MembersLeagueCommand extends Command {
 				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).then(res => res.json());
 			const star = member.achievements.find(achievement => achievement.name === 'War League Legend');
-			console.log(star)
 			memberList.push({ townHallLevel: member.townHallLevel, name: member.name, cwlStar: star.value });
 		}
 
 		const items = this.sort(memberList);
-		// console.log(items);
 		embed.setDescription([
-			`<:townhall:631389478568591370> \`\u200b ${'CWL ⭐'.padStart(15, ' ')}\``,
-			`${items.slice(0, 20).map(member => `${TownHallEmoji[member.townHallLevel]} \`${member.name} ${this.indent(member.name, member.cwlStar.toString())}\``).join('\n')}`
+			`<:townhall:631389478568591370> \`Name ${'CWL Star'.padStart(17, ' ')}\``,
+			`${items.slice(0, 30).map(member => `${TownHallEmoji[member.townHallLevel]} \`${member.name} ${this.indent(member.name, member.cwlStar.toString())}\``).join('\n')}`
 		]);
 
 		return message.util.send({ embed });
@@ -81,10 +79,6 @@ class MembersLeagueCommand extends Command {
 
 	sort(items) {
 		return items.sort((a, b) => b.cwlStar - a.cwlStar);
-	}
-
-	paginate(items, start, end) {
-		return { items: items.slice(start, end) };
 	}
 
 	indent(name, data) {
