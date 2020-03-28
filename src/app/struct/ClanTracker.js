@@ -176,7 +176,6 @@ class FastTracker {
 	}
 
 	async update(cache) {
-		console.log(cache.tag);
 		if (this.client.channels.cache.has(cache.donation_log_channel)) {
 			const channel = this.client.channels.cache.get(cache.donation_log_channel);
 			const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
@@ -314,7 +313,7 @@ class SlowTracker {
 
 	async init() {
 		await this.start();
-		setInterval(this.start.bind(this), 5 * 60 * 1000);
+		// setInterval(this.start.bind(this), 5 * 60 * 1000);
 	}
 
 	async delay(ms) {
@@ -397,6 +396,7 @@ class SlowTracker {
 
 	async donationlog(clan, cache, channel) {
 		const key = `${cache.guild}${clan.tag}`;
+		clearInterval(this.cached.get(key).intervalID);
 		const currentMemberList = clan.memberList.map(m => m.tag);
 		const currentMemberSet = new Set(currentMemberList);
 		const oldMemberSet = new Set(this.donateMemberList.get(key));
@@ -472,6 +472,50 @@ class SlowTracker {
 		this.donateMemberList.set(key, currentMemberList);
 		oldMemberSet.clear();
 		currentMemberSet.clear();
+
+		const intervalID = setInterval(this.update.bind(this), 3 * 60 * 1000, cache);
+		cache.intervalID = intervalID;
+		this.cached.set(key, cache);
+	}
+
+	async update(cache) {
+		if (this.client.channels.cache.has(cache.donation_log_channel)) {
+			const channel = this.client.channels.cache.get(cache.donation_log_channel);
+			const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
+			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
+				const res = await this.fetchClan(cache.tag);
+				if (!res) return;
+				if (!res.ok) return;
+				const data = await res.json();
+				this.donationlog(data, cache, channel);
+
+				if (this.client.channels.cache.get(cache.member_log_channel)) {
+					const channel = this.client.channels.cache.get(cache.member_log_channel);
+					const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
+					if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
+						this.memberlog(data, cache, channel);
+					}
+				}
+
+				await this.delay(150);
+			}
+		} else if (this.client.channels.cache.has(cache.member_log_channel)) {
+			const channel = this.client.channels.cache.get(cache.member_log_channel);
+			const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
+			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
+				const res = await this.fetchClan(cache.tag);
+				if (!res) return;
+				if (!res.ok) return;
+				const data = await res.json();
+				this.memberlog(data, cache, channel, channel);
+
+				await this.delay(150);
+			}
+		} else {
+			clearInterval(cache.intervalID);
+			this.cached.delete(`${cache.guild}${cache.tag}`);
+			this.client.logger.warn('UNKNOWN_CHANNEL', { label: 'NOT_FOUND' });
+		}
 	}
 
 	async start() {
