@@ -57,9 +57,6 @@ class FastTracker {
 			}
 		}
 
-		// a delay of 200 ms
-		await this.delay(200);
-
 		// missing players
 		if (currentMemberSet.size && oldMemberSet.size) {
 			const tags = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
@@ -193,8 +190,6 @@ class FastTracker {
 						this.memberlog(data, cache, channel);
 					}
 				}
-
-				await this.delay(150);
 			}
 		} else if (this.client.channels.cache.has(cache.member_log_channel)) {
 			const channel = this.client.channels.cache.get(cache.member_log_channel);
@@ -205,8 +200,6 @@ class FastTracker {
 				if (!res.ok) return;
 				const data = await res.json();
 				this.memberlog(data, cache, channel, channel);
-
-				await this.delay(150);
 			}
 		} else {
 			clearInterval(cache.intervalID);
@@ -235,7 +228,7 @@ class FastTracker {
 						}
 					}
 
-					await this.delay(150);
+					await this.delay(100);
 				}
 			} else if (this.client.channels.cache.has(cache.member_log_channel)) {
 				const channel = this.client.channels.cache.get(cache.member_log_channel);
@@ -247,7 +240,7 @@ class FastTracker {
 					const data = await res.json();
 					this.memberlog(data, cache, channel, channel);
 
-					await this.delay(150);
+					await this.delay(100);
 				}
 			} else {
 				this.cached.delete(`${cache.guild}${cache.tag}`);
@@ -355,9 +348,6 @@ class SlowTracker {
 				await this.delay(200);
 			}
 		}
-
-		// a delay of 200 ms
-		await this.delay(200);
 
 		// missing players
 		if (currentMemberSet.size && oldMemberSet.size) {
@@ -496,8 +486,6 @@ class SlowTracker {
 						this.memberlog(data, cache, channel);
 					}
 				}
-
-				await this.delay(150);
 			}
 		} else if (this.client.channels.cache.has(cache.member_log_channel)) {
 			const channel = this.client.channels.cache.get(cache.member_log_channel);
@@ -508,8 +496,6 @@ class SlowTracker {
 				if (!res.ok) return;
 				const data = await res.json();
 				this.memberlog(data, cache, channel, channel);
-
-				await this.delay(150);
 			}
 		} else {
 			clearInterval(cache.intervalID);
@@ -538,7 +524,7 @@ class SlowTracker {
 						}
 					}
 
-					await this.delay(150);
+					await this.delay(100);
 				}
 			} else if (this.client.channels.cache.has(cache.member_log_channel)) {
 				const channel = this.client.channels.cache.get(cache.member_log_channel);
@@ -550,7 +536,7 @@ class SlowTracker {
 					const data = await res.json();
 					this.memberlog(data, cache, channel, channel);
 
-					await this.delay(150);
+					await this.delay(100);
 				}
 			} else {
 				this.cached.delete(`${cache.guild}${cache.tag}`);
