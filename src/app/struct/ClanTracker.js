@@ -249,23 +249,7 @@ class FastTracker {
 	}
 
 	async add(data) {
-		const res = await this.fetchClan(data.tag);
-		if (!res) return;
-		if (!res.ok) return;
-		const clan = await res.json();
-
-		const key = `${data.guild}${data.tag}`;
-		this.donateList[key] = {};
-		for (const member of clan.memberList) {
-			this.donateList[key][member.tag] = member;
-		}
-
-		this.oldMemberList.set(key, clan.memberList.map(member => member.tag));
-		this.donateMemberList.set(key, clan.memberList.map(member => member.tag));
-
-		const intervalID = setInterval(this.update.bind(this), 1 * 60 * 1000, data);
-		data.intervalID = intervalID;
-		this.cached.set(key, data);
+		this.update(data);
 	}
 
 	async fetchClan(tag) {
@@ -548,23 +532,7 @@ class SlowTracker {
 	}
 
 	async add(data) {
-		const res = await this.fetchClan(data.tag);
-		if (!res) return;
-		if (!res.ok) return;
-		const clan = await res.json();
-
-		const key = `${data.guild}${data.tag}`;
-		this.donateList[key] = {};
-		for (const member of clan.memberList) {
-			this.donateList[key][member.tag] = member;
-		}
-
-		this.oldMemberList.set(key, clan.memberList.map(member => member.tag));
-		this.donateMemberList.set(key, clan.memberList.map(member => member.tag));
-
-		const intervalID = setInterval(this.update.bind(this), 2 * 60 * 1000, data);
-		data.intervalID = intervalID;
-		this.cached.set(key, data);
+		this.update(data);
 	}
 
 	async fetchClan(tag) {
