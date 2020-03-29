@@ -56,7 +56,7 @@ class WarWeightCommand extends Command {
 		return 20000;
 	}
 
-	async exec(message, { data, townhall }) {
+	async exec(message, { data }) {
 		await message.util.send('**Making list of your clan members... <a:loading:538989228403458089>**');
 
 		const object_array = await Promise.all([
@@ -167,7 +167,7 @@ class WarWeightCommand extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[0]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
@@ -176,7 +176,7 @@ class WarWeightCommand extends Command {
 		for (const tag of items) {
 			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[1]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel });
+			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 		}
 		return collection;
 	}
