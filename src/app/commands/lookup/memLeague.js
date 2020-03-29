@@ -52,21 +52,60 @@ class MembersLeagueCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		const first = this.paginate(data.memberList, 0, 32);
-		const second = this.paginate(data.memberList, 32, 35);
-		const third = this.paginate(data.memberList, 35, 50);
-
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
-			.setDescription(first.items.map(member => `${leagueEmojis[member.league.id]} **${member.name}** ${member.tag}`).join('\n'));
-		if (data.members > 32) {
-			embed.addField(second.items.map(member => `${leagueEmojis[member.league.id]} **${member.name}** ${member.tag}`).join('\n'), [
-				third.items.length ? third.items.map(member => `${leagueEmojis[member.league.id]} **${member.name}** ${member.tag}`).join('\n') : '\u200b'
-			]);
+			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
+
+		const pages = [
+			this.paginate(data.memberList, 0, 25)
+				.items.map(member => `${leagueEmojis[member.league.id]} ${member.name}`),
+			this.paginate(data.memberList, 25, 50)
+				.items.map(member => `${leagueEmojis[member.league.id]} ${member.name}`)
+		];
+
+		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
+
+		const msg = await message.util.send({
+			embed: embed.setDescription(pages[0].join('\n'))
+				.setFooter('Page 1/2')
+		});
+
+		for (const emoji of ['⬅', '➡']) {
+			await msg.react(emoji);
+			await this.delay(250);
 		}
 
-		return message.util.send({ embed });
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 30000, max: 10 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '➡') {
+				await msg.edit({
+					embed: embed.setDescription(pages[1].join('\n'))
+						.setFooter('Page 2/2')
+				});
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+			if (reaction.emoji.name === '⬅') {
+				await msg.edit({
+					embed: embed.setDescription(pages[0].join('\n'))
+						.setFooter('Page 1/2')
+				});
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+		});
+
+		collector.on('end', async () => {
+			await msg.reactions.removeAll().catch(() => null);
+			return message;
+		});
+		return message;
 	}
 
 	paginate(items, start, end) {
