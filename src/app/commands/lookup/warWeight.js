@@ -99,7 +99,7 @@ class WarWeightCommand extends Command {
 			'<:royal_champion:653967122166185995>'
 		];
 		// const header = stripIndent(`${emojis[0]} \u200b \u200b \u200b ${emojis[1]} \u200b ${emojis[2]} \u200b ${emojis[3]} \u200b ${emojis[4]}`);
-		const header = stripIndent(`${emojis[0]} ${emojis[1]}_${emojis[2]}_${emojis[3]}_${emojis[4]}`);
+		const header = stripIndent(`${emojis[0]} ${emojis[1]}\_${emojis[2]}\_${emojis[3]}\_${emojis[4]}`);
 
 		const pages = [
 			this.paginate(memberList, 0, 25)
