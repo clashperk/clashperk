@@ -3,7 +3,7 @@ const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
-const { stripIndent } = require('common-tags');
+const { stripIndents } = require('common-tags');
 
 const API = process.env.APIS.split(',');
 
@@ -97,7 +97,7 @@ class WarWeightCommand extends Command {
 			'<:archerqueen:524939902408720394>',
 			'<:royal_champion:653967122166185995>'
 		];
-		const header = stripIndent`${emojis[0]}  ${emojis[1]} ${emojis[2]} ${emojis[3]}`;
+		const header = stripIndents(`${emojis[0]}\u200b \u200b ${emojis[1]} ${emojis[2]} ${emojis[3]}`);
 		const pages = [
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
