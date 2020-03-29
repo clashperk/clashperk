@@ -97,7 +97,7 @@ class WarWeightCommand extends Command {
 			'<:archerqueen:524939902408720394>',
 			'<:royal_champion:653967122166185995>'
 		];
-		const header = stripIndent(`${emojis[0]}\u200b \u200b ${emojis[1]} ${emojis[2]} ${emojis[3]}`);
+		const header = stripIndent(`${emojis[0]} \u200b \u200b \u200b \u200b \u200b ${emojis[1]} ${emojis[2]} ${emojis[3]}`);
 		const pages = [
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
