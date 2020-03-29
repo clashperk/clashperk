@@ -108,6 +108,10 @@ class MembersLeagueCommand extends Command {
 		return message;
 	}
 
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
+
 	paginate(items, start, end) {
 		return { items: items.slice(start, end) };
 	}
