@@ -92,9 +92,15 @@ class WarWeightCommand extends Command {
 
 		const pages = [
 			this.paginate(memberList, 0, 25)
-				.items.map(member => `${TownHallEmoji[member.townHallLevel]}\`» ${this.heroes(member.heroes).map(h => h.level).join(' ')} ${member.name}\``),
+				.items.map(member => {
+					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
+					return `${TownHallEmoji[member.townHallLevel]}\`» ${heroes} ${member.name.padEnd(20, ' ')}\``;
+				}),
 			this.paginate(memberList, 25, 50)
-				.items.map(member => `${TownHallEmoji[member.townHallLevel]}\`» ${this.heroes(member.heroes).map(h => h.level).join(' ')} ${member.name}\``)
+				.items.map(member => {
+					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
+					return `${TownHallEmoji[member.townHallLevel]}\`» ${heroes} ${member.name.padEnd(20, ' ')}\``;
+				})
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
@@ -149,6 +155,10 @@ class WarWeightCommand extends Command {
 			{ level: '  ' },
 			{ level: '  ' }
 		], items);
+	}
+
+	padStart(data) {
+		return data.toString().padStart(2, ' ');
 	}
 
 	paginate(items, start, end) {
