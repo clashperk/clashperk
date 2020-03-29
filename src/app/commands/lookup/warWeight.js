@@ -3,6 +3,7 @@ const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
+const { stripIndent } = require('common-tags');
 
 const API = process.env.APIS.split(',');
 
@@ -90,12 +91,13 @@ class WarWeightCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
-		const header = [
+		const emojis = [
 			'<:townhall:631389478568591370>',
-			'  <:barbarianking:524939911581663242>',
+			'<:barbarianking:524939911581663242>',
 			'<:archerqueen:524939902408720394>',
 			'<:royal_champion:653967122166185995>'
 		];
+		const header = stripIndent`${emojis[0]}  ${emojis[1]} ${emojis[2]} ${emojis[3]}`;
 		const pages = [
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
@@ -112,7 +114,7 @@ class WarWeightCommand extends Command {
 		if (!pages[1].length) {
 			return message.util.send({
 				embed: embed.setDescription([
-					header.join(' '),
+					header,
 					pages[0].join('\n')
 				])
 			});
@@ -120,7 +122,7 @@ class WarWeightCommand extends Command {
 
 		const msg = await message.util.send({
 			embed: embed.setDescription([
-				header.join(' '),
+				header,
 				pages[0].join('\n')
 			]).setFooter('Page 1/2')
 		});
@@ -139,7 +141,7 @@ class WarWeightCommand extends Command {
 			if (reaction.emoji.name === '➡') {
 				await msg.edit({
 					embed: embed.setDescription([
-						header.join(' '),
+						header,
 						pages[1].join('\n')
 					]).setFooter('Page 2/2')
 				});
@@ -150,7 +152,7 @@ class WarWeightCommand extends Command {
 			if (reaction.emoji.name === '⬅') {
 				await msg.edit({
 					embed: embed.setDescription([
-						header.join(' '),
+						header,
 						pages[0].join('\n')
 					]).setFooter('Page 1/2')
 				});
