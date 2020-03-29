@@ -99,7 +99,7 @@ class WarWeightCommand extends Command {
 			'<:rc:693851787857362974>'
 		];
 
-		const header = stripIndent(`${emojis[0]} ${emojis[1]} \u200b ${emojis[2]} \u200b ${emojis[3]} \u200b ${emojis[4]}`);
+		const header = stripIndent(`${emojis[0]} ${emojis[1]} ${emojis[2]} ${emojis[3]} ${emojis[4]}`);
 
 		const pages = [
 			this.paginate(memberList, 0, 25)
