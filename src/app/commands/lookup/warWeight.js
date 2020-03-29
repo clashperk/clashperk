@@ -92,7 +92,7 @@ class WarWeightCommand extends Command {
 
 		const header = [
 			'<:townhall:631389478568591370>',
-			'<:barbarianking:524939911581663242>',
+			'  <:barbarianking:524939911581663242>',
 			'<:archerqueen:524939902408720394>',
 			'<:royal_champion:653967122166185995>'
 		];
