@@ -93,9 +93,9 @@ class MembersTHCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
 		const pages = [
-			this.paginate(townhall ? filter : items, 0, 32)
+			this.paginate(townhall ? filter : items, 0, 25)
 				.items.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`),
-			this.paginate(townhall ? filter : items, 32, 50)
+			this.paginate(townhall ? filter : items, 25, 50)
 				.items.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`)
 		];
 
