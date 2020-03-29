@@ -22,8 +22,8 @@ class AddPatronCommand extends Command {
 			type: (msg, id) => {
 				if (!id) return null;
 				const resolver = this.handler.resolver.type({
-					user: 'user_',
-					guild: 'guild_'
+					user: 'user',
+					guild: 'guild'
 				}[type]);
 				return resolver(msg, id);
 			},

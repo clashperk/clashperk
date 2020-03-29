@@ -29,7 +29,7 @@ class StartCommand extends Command {
 		};
 
 		const channel = yield {
-			type: 'textChannel_',
+			type: 'textChannel',
 			unordered: [1, 2],
 			default: message => message.channel
 		};
