@@ -90,6 +90,12 @@ class WarWeightCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
+		const header = [
+			'<:townhall:631389478568591370>',
+			'<:barbarianking:524939911581663242>',
+			'<:archerqueen:524939902408720394>',
+			'<:royal_champion:653967122166185995>'
+		];
 		const pages = [
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
@@ -103,11 +109,20 @@ class WarWeightCommand extends Command {
 				})
 		];
 
-		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
+		if (!pages[1].length) {
+			return message.util.send({
+				embed: embed.setDescription([
+					header.join(' '),
+					pages[0].join('\n')
+				])
+			});
+		}
 
 		const msg = await message.util.send({
-			embed: embed.setDescription(pages[0].join('\n'))
-				.setFooter('Page 1/2')
+			embed: embed.setDescription([
+				header.join(' '),
+				pages[0].join('\n')
+			]).setFooter('Page 1/2')
 		});
 
 		for (const emoji of ['⬅', '➡']) {
@@ -123,8 +138,10 @@ class WarWeightCommand extends Command {
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡') {
 				await msg.edit({
-					embed: embed.setDescription(pages[1].join('\n'))
-						.setFooter('Page 2/2')
+					embed: embed.setDescription([
+						header.join(' '),
+						pages[1].join('\n')
+					]).setFooter('Page 2/2')
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -132,8 +149,10 @@ class WarWeightCommand extends Command {
 			}
 			if (reaction.emoji.name === '⬅') {
 				await msg.edit({
-					embed: embed.setDescription(pages[0].join('\n'))
-						.setFooter('Page 1/2')
+					embed: embed.setDescription([
+						header.join(' '),
+						pages[0].join('\n')
+					]).setFooter('Page 1/2')
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
