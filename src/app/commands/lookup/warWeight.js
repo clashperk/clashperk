@@ -98,19 +98,19 @@ class WarWeightCommand extends Command {
 			'<:grandwarden:524939931303411722>',
 			'<:royal_champion:653967122166185995>'
 		];
-		// const header = stripIndent(`${emojis[0]} \u200b \u200b \u200b ${emojis[1]} \u200b ${emojis[2]} \u200b ${emojis[3]} \u200b ${emojis[4]}`);
-		const header = stripIndent(`${emojis[0]} ${emojis[1]}•${emojis[2]}•${emojis[3]}•${emojis[4]}`);
+
+		const header = stripIndent(`${emojis[0]} ${emojis[1]} ${emojis[2]} ${emojis[3]} ${emojis[4]}`);
 
 		const pages = [
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
-					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join('  ');
+					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
 					return `${TownHallEmoji[member.townHallLevel]} \`${heroes}  ${member.name.padEnd(20, ' ')}\``;
 				}),
 			this.paginate(memberList, 25, 50)
 				.items.map(member => {
 					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${TownHallEmoji[member.townHallLevel]} \`${heroes}  ${member.name.padEnd(20, '  ')}\``;
+					return `${TownHallEmoji[member.townHallLevel]} \`${heroes}  ${member.name.padEnd(20, ' ')}\``;
 				})
 		];
 
