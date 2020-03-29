@@ -92,14 +92,13 @@ class WarWeightCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
 		const emojis = [
-			'<:townhall:631389478568591370>',
-			'<:barbarianking:524939911581663242>',
-			'<:archerqueen:524939902408720394>',
-			'<:grandwarden:524939931303411722>',
-			'<:royal_champion:653967122166185995>'
+			'<:bk:693851738217906196>',
+			'<:aq:693851621892816976>',
+			'<:gw:693851681108131990>',
+			'<:rc:693851787857362974>'
 		];
 
-		const header = stripIndent(`${emojis[0]} ${emojis[1]} ${emojis[2]} ${emojis[3]} ${emojis[4]}`);
+		const header = stripIndent(`${emojis[0]} ${emojis[1]} \u200b ${emojis[2]} \u200b ${emojis[3]} \u200b ${emojis[4]}`);
 
 		const pages = [
 			this.paginate(memberList, 0, 25)
