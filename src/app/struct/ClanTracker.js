@@ -201,7 +201,7 @@ class FastTracker {
 				this.memberlog(data, cache, channel, channel);
 			}
 		} else {
-			clearInterval(cache.intervalID);
+			if (cache && cache.intervalID) clearInterval(cache.intervalID);
 			this.cached.delete(`${cache.guild}${cache.tag}`);
 			this.client.logger.warn('UNKNOWN_CHANNEL', { label: 'NOT_FOUND' });
 		}
@@ -249,6 +249,9 @@ class FastTracker {
 	}
 
 	async add(data) {
+		const cache = this.cached.get(`${data.guild}${data.tag}`);
+		if (cache && cache.intervalID) clearInterval(cache.intervalID);
+
 		this.update(data);
 	}
 
@@ -484,7 +487,7 @@ class SlowTracker {
 				this.memberlog(data, cache, channel, channel);
 			}
 		} else {
-			clearInterval(cache.intervalID);
+			if (cache && cache.intervalID) clearInterval(cache.intervalID);
 			this.cached.delete(`${cache.guild}${cache.tag}`);
 			this.client.logger.warn('UNKNOWN_CHANNEL', { label: 'NOT_FOUND' });
 		}
@@ -532,6 +535,9 @@ class SlowTracker {
 	}
 
 	async add(data) {
+		const cache = this.cached.get(`${data.guild}${data.tag}`);
+		if (cache && cache.intervalID) clearInterval(cache.intervalID);
+
 		this.update(data);
 	}
 
@@ -617,7 +623,7 @@ class ClanTracker {
 
 	delete(guild, tag) {
 		const clan = this.cached.get(`${guild}${tag}`);
-		if (clan) clearInterval(clan.intervalID);
+		if (clan && clan.intervalID) clearInterval(clan.intervalID);
 		this.cached.delete(`${guild}${tag}`);
 	}
 }
