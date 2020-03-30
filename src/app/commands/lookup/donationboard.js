@@ -10,7 +10,7 @@ class DonationBoardCommand extends Command {
 			category: 'lookup',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Displays a list of clan members.',
+				content: 'List of clan members with donations.',
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			}
