@@ -57,24 +57,41 @@ class DonationBoardCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
+		const headers = [
+			'#',
+			'<:bk:693851738217906196>',
+			'<:aq:693851621892816976>',
+			'<:gw:693851681108131990>',
+			'<:rc:693851787857362974>'
+		];
+		const header = '`#   DON   REC NAME`';
 		const pages = [
 			this.paginate(data.memberList, 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
-					return `\`${(index + 1).toString().padStart(2, '0')} ${donation} ${this.padStart(member.name)}\``;
+					return `\`${(index + 1).toString().padStart(2, '0')} ${donation} ${this.padEnd(member.name)}\``;
 				}),
 			this.paginate(data.memberList, 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
-					return `\`${(index + 25).toString().padStart(2, '0')} ${donation} ${this.padStart(member.name)}\``;
+					return `\`${(index + 26).toString().padStart(2, '0')} ${donation} ${this.padEnd(member.name)}\``;
 				})
 		];
 
-		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
+		if (!pages[1].length) {
+			return message.util.send({
+				embed: embed.setDescription([
+					header,
+					pages[0].join('\n')
+				])
+			});
+		}
 
 		const msg = await message.util.send({
-			embed: embed.setDescription(pages[0].join('\n'))
-				.setFooter('Page 1/2')
+			embed: embed.setDescription([
+				header,
+				pages[0].join('\n')
+			]).setFooter('Page 1/2')
 		});
 
 		for (const emoji of ['⬅', '➡']) {
@@ -90,8 +107,10 @@ class DonationBoardCommand extends Command {
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡') {
 				await msg.edit({
-					embed: embed.setDescription(pages[1].join('\n'))
-						.setFooter('Page 2/2')
+					embed: embed.setDescription([
+						header,
+						pages[1].join('\n')
+					]).setFooter('Page 2/2')
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -99,8 +118,10 @@ class DonationBoardCommand extends Command {
 			}
 			if (reaction.emoji.name === '⬅') {
 				await msg.edit({
-					embed: embed.setDescription(pages[0].join('\n'))
-						.setFooter('Page 1/2')
+					embed: embed.setDescription([
+						header,
+						pages[0].join('\n')
+					]).setFooter('Page 1/2')
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -115,8 +136,8 @@ class DonationBoardCommand extends Command {
 		return message;
 	}
 
-	padStart(data) {
-		return data.padStart(20, ' ');
+	padEnd(data) {
+		return data.padEnd(20, ' ');
 	}
 
 	donation(data) {
