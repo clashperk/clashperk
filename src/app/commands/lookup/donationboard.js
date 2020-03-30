@@ -8,7 +8,7 @@ class DonationBoardCommand extends Command {
 		super('donationboard', {
 			aliases: ['donationboard'],
 			category: 'lookup',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: 'List of clan members with donations.',
 				usage: '<tag>',

@@ -10,7 +10,7 @@ class MembersTHCommand extends Command {
 	constructor() {
 		super('members-th', {
 			category: 'lookup',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: 'Displays a list of clan members.',
 				usage: '<tag>',

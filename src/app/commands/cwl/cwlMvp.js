@@ -10,7 +10,7 @@ class CWLMvpCommand extends Command {
 		super('cwlmvp', {
 			aliases: ['cwltop', 'cwlmvp'],
 			category: 'owner',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: 'Displays a list of clan members.',
 				usage: '<tag>',
