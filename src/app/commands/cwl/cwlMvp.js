@@ -8,7 +8,7 @@ const { Util } = require('discord.js');
 class CWLMvpCommand extends Command {
 	constructor() {
 		super('cwlmvp', {
-			aliases: ['cwlmvp'],
+			aliases: ['cwltop', 'cwlmvp'],
 			category: 'owner',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
