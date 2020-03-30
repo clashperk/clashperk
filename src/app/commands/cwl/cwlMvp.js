@@ -50,11 +50,12 @@ class CWLMvpCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
-		return 3000;
+		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 3000;
+		return 15000;
 	}
 
 	async exec(message, { data }) {
+		await message.util.send('**Making list... <a:loading:538989228403458089>**');
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
@@ -70,7 +71,8 @@ class CWLMvpCommand extends Command {
 
 		const items = this.sort(memberList);
 		embed.setDescription([
-			'List of most valuable players, sorted by CWL Star',
+			'List of most valuable players, sorted by total stars of CWL',
+			'',
 			`<:townhall:631389478568591370>\`» STAR  ${'NAME'.padEnd(20, ' ')}\``,
 			items.slice(0, 30)
 				.map(member => {
