@@ -57,24 +57,17 @@ class DonationBoardCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
-		const headers = [
-			'#',
-			'<:bk:693851738217906196>',
-			'<:aq:693851621892816976>',
-			'<:gw:693851681108131990>',
-			'<:rc:693851787857362974>'
-		];
-		const header = `\`#    DON   REC  ${'NAME'.padEnd(20, ' ')}\``;
+		const header = `\`#     DON   REC  ${'NAME'.padEnd(20, ' ')}\``;
 		const pages = [
 			this.paginate(data.memberList, 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
-					return `\`${(index + 1).toString().padStart(2, '0')} ${donation} ${this.padEnd(member.name)}\``;
+					return `\`${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name)}\``;
 				}),
 			this.paginate(data.memberList, 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
-					return `\`${(index + 26).toString().padStart(2, '0')} ${donation} ${this.padEnd(member.name)}\``;
+					return `\`${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name)}\``;
 				})
 		];
 
