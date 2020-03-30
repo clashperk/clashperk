@@ -92,8 +92,9 @@ class FastTracker {
 	}
 
 	async donationlog(clan, cache, channel) {
+		if (cache && cache.intervalID) clearInterval(cache.intervalID);
+
 		const key = `${cache.guild}${clan.tag}`;
-		clearInterval(this.cached.get(key).intervalID);
 		const currentMemberList = clan.memberList.map(m => m.tag);
 		const currentMemberSet = new Set(currentMemberList);
 		const oldMemberSet = new Set(this.donateMemberList.get(key));
@@ -374,8 +375,9 @@ class SlowTracker {
 	}
 
 	async donationlog(clan, cache, channel) {
+		if (cache && cache.intervalID) clearInterval(cache.intervalID);
+
 		const key = `${cache.guild}${clan.tag}`;
-		clearInterval(this.cached.get(key).intervalID);
 		const currentMemberList = clan.memberList.map(m => m.tag);
 		const currentMemberSet = new Set(currentMemberList);
 		const oldMemberSet = new Set(this.donateMemberList.get(key));
