@@ -61,12 +61,12 @@ class DonationBoardCommand extends Command {
 			this.paginate(data.memberList, 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
-					return `${(index + 1).toString().padStart(2, '0')} \`» ${donation} ${this.padStart(member.name)}\``;
+					return `\`${(index + 1).toString().padStart(2, '0')} ${donation} ${this.padStart(member.name)}\``;
 				}),
 			this.paginate(data.memberList, 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
-					return `${(index + 1).toString().padStart(2, '0')} \`» ${donation} ${this.padStart(member.name)}\``;
+					return `\`${(index + 1).toString().padStart(2, '0')} ${donation} ${this.padStart(member.name)}\``;
 				})
 		];
 
