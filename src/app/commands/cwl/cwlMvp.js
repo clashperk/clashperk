@@ -4,13 +4,11 @@ const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
 const { Util } = require('discord.js');
-const { stripIndent } = require('common-tags');
 
-
-class MembersLeagueCommand extends Command {
+class CWLMvpCommand extends Command {
 	constructor() {
-		super('members-league_', {
-			aliases: ['mem'],
+		super('cwlmvp', {
+			aliases: ['cwlmvp'],
 			category: 'owner',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
@@ -72,6 +70,7 @@ class MembersLeagueCommand extends Command {
 
 		const items = this.sort(memberList);
 		embed.setDescription([
+			'List of most valuable players, sorted by CWL Star',
 			`<:townhall:631389478568591370>\`» STAR  ${'NAME'.padEnd(20, ' ')}\``,
 			items.slice(0, 30)
 				.map(member => {
@@ -102,4 +101,4 @@ class MembersLeagueCommand extends Command {
 	}
 }
 
-module.exports = MembersLeagueCommand;
+module.exports = CWLMvpCommand;
