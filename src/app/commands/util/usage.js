@@ -25,13 +25,22 @@ class UsageCommand extends Command {
 			.setFooter('Since August 2019')
 			.setTitle(`${total}x commands used`)
 			.addField('Users', [
-				`\u200b${users.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.users.cache.get(id).tag}\` \u200b\`${uses}x\``).join('\n')}`
+				`\u200b${users.splice(0, 10).map(({ id, uses }, index) => {
+					const user = this.client.users.cache.get(id);
+					return `\`${(index + 1).toString().padStart(2, '0')}. ${uses.toString().padStart(4, ' ')}x ${user.username.padEnd(30, ' ')} \``;
+				}).join('\n')}`
 			])
 			.addField('Servers', [
-				`\u200b${guilds.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.guilds.cache.get(id).name}\` \u200b\`${uses}x\``).join('\n')}`
+				`\u200b${guilds.splice(0, 10).map(({ id, uses }, index) => {
+					const guild = this.client.guilds.cache.get(id);
+					return `\`${(index + 1).toString().padStart(2, '0')}. ${uses.toString().padStart(4, ' ')}x ${guild.name.padEnd(30, ' ')} \``;
+				}).join('\n')}`
 			])
 			.addField('Commands', [
-				`\u200b${commands.splice(0, 10).map(({ id, uses }, index) => `\`${++index}.\` \u200b\`${this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '')}\` \u200b\`${uses}x\``).join('\n')}`
+				`\u200b${commands.splice(0, 10).map(({ id, uses }, index) => {
+					const command = this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '');
+					return `\`${(index + 1).toString().padStart(2, '0')}. ${uses.toString().padStart(4, ' ')}x ${command.padEnd(30, ' ')} \``;
+				}).join('\n')}`
 			]);
 
 		return message.util.send({ embed });
