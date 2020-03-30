@@ -59,12 +59,12 @@ class DonationBoardCommand extends Command {
 
 		const header = `\`#    DON   REC  ${'NAME'.padEnd(20, ' ')}\``;
 		const pages = [
-			this.paginate(data.memberList, 0, 25)
+			this.paginate(this.sort(data.memberList), 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
 					return `\`${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name)}\``;
 				}),
-			this.paginate(data.memberList, 25, 50)
+			this.paginate(this.sort(data.memberList), 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
 					return `\`${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name)}\``;
@@ -127,6 +127,10 @@ class DonationBoardCommand extends Command {
 			return message;
 		});
 		return message;
+	}
+
+	sort(items) {
+		return items.sort((a, b) => b.donations - a.donations);
 	}
 
 	padEnd(data) {

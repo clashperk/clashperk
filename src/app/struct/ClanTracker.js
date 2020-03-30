@@ -608,10 +608,12 @@ class ClanTracker {
 	}
 
 	push(data) {
-		if (data.isPremium) {
-			this.fastTracker.add(data);
-		} else {
-			this.slowTracker.add(data);
+		if (!this.cached.has(`${data.guild}${data.tag}`)) {
+			if (data.isPremium) {
+				this.fastTracker.add(data);
+			} else {
+				this.slowTracker.add(data);
+			}
 		}
 	}
 
