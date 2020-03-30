@@ -64,7 +64,7 @@ class DonationBoardCommand extends Command {
 			'<:gw:693851681108131990>',
 			'<:rc:693851787857362974>'
 		];
-		const header = '`#   DON   REC NAME`';
+		const header = `\`#    DON   REC  ${'NAME'.padEnd(20, ' ')}\``;
 		const pages = [
 			this.paginate(data.memberList, 0, 25)
 				.items.map((member, index) => {
