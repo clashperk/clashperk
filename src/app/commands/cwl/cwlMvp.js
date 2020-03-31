@@ -12,7 +12,7 @@ class CWLMvpCommand extends Command {
 			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
-				content: 'Displays a list of clan members.',
+				content: 'Most valuable clan members sorted by CWL stars.',
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			}
