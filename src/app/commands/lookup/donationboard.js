@@ -57,19 +57,20 @@ class DonationBoardCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
-		const header = `\`#    DON   REC   ${'RATIO'.padStart(8, ' ')}  ${'NAME'.padEnd(20, ' ')}\``;
+		// const header = `\`#    DON   REC   ${'RATIO'.padStart(8, ' ')}  ${'NAME'.padEnd(20, ' ')}\``;
+		const header = `\`#    DON   REC  ${'NAME'.padEnd(20, ' ')}\``;
 		const pages = [
 			this.paginate(this.sort(data.memberList), 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
-					const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
-					return `\`${(index + 1).toString().padStart(2, '0')} ${donation} ${ratio}  ${this.padEnd(member.name)}\``;
+					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
+					return `\`${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name)}\``;
 				}),
 			this.paginate(this.sort(data.memberList), 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
-					const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
-					return `\`${(index + 26).toString().padStart(2, '0')} ${donation} ${ratio}  ${this.padEnd(member.name)}\``;
+					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
+					return `\`${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name)}\``;
 				})
 		];
 
