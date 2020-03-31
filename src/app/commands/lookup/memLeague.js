@@ -77,7 +77,7 @@ class MembersLeagueCommand extends Command {
 
 		const collector = msg.createReactionCollector(
 			(reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 30000, max: 10 }
+			{ time: 45000, max: 10 }
 		);
 
 		collector.on('collect', async reaction => {
