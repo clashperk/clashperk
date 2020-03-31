@@ -6,7 +6,7 @@ const { geterror, fetcherror } = require('../../util/constants');
 class DonationBoardCommand extends Command {
 	constructor() {
 		super('donationboard', {
-			aliases: ['donationboard'],
+			aliases: ['donationboard', 'db'],
 			category: 'lookup',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {

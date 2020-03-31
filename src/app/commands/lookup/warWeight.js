@@ -10,7 +10,7 @@ const API = process.env.APIS.split(',');
 class WarWeightCommand extends Command {
 	constructor() {
 		super('warweight', {
-			aliases: ['warweight'],
+			aliases: ['warweight', 'ww'],
 			category: 'lookup',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
@@ -99,7 +99,7 @@ class WarWeightCommand extends Command {
 			'<:rc:693851787857362974>'
 		];
 
-		const header = stripIndent(`${emojis[0]} \u200b \u200b \u200b ${emojis[1]} ${emojis[2]} ${emojis[3]} \u200b ${emojis[4]}`);
+		const header = stripIndent(`${emojis[0]} \u200b \u200b \u200b ${emojis[1]} ${emojis[2]} ${emojis[3]} ${emojis[4]}`);
 
 		const pages = [
 			this.paginate(memberList, 0, 25)

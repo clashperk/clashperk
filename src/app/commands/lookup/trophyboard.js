@@ -6,7 +6,7 @@ const { geterror, fetcherror } = require('../../util/constants');
 class TrophyBoardCommand extends Command {
 	constructor() {
 		super('trophyboard', {
-			aliases: ['trophyboard'],
+			aliases: ['trophyboard', 'tb'],
 			category: 'lookup',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
