@@ -93,7 +93,11 @@ module.exports = {
 		'Battle Blimp': '<:battleblimp:524921096345092126>',
 		'Wall Wrecker': '<:wallwrecker:524921096655339520>',
 		'Stone Slammer': '<:Stone_Slammer_info:524937839457337374>',
-		'Siege Barracks': '<:siege_barracks:658299037476454411>'
+		'Siege Barracks': '<:siege_barracks:658299037476454411>',
+		'Super Barbarian': '<:barb_p:694426126159708201>',
+		'Super Wall Breaker': '<:breakerp:694426092156485672>',
+		'Super Giant': '<:giant_p:694426007092068393>',
+		'Sneaky Goblin': '<:goblin_p:694426058317103164>'
 	},
 	BuilderTroops: {
 		'Night Witch': '<:night_witch:627148850800492574>',
