@@ -62,12 +62,14 @@ class DonationBoardCommand extends Command {
 			this.paginate(this.sort(data.memberList), 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
-					return `\`${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name)}\``;
+					const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
+					return `\`${(index + 1).toString().padStart(2, '0')} ${donation} ${ratio}  ${this.padEnd(member.name)}\``;
 				}),
 			this.paginate(this.sort(data.memberList), 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
-					return `\`${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name)}\``;
+					const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
+					return `\`${(index + 26).toString().padStart(2, '0')} ${donation} ${ratio}  ${this.padEnd(member.name)}\``;
 				})
 		];
 
@@ -127,6 +129,16 @@ class DonationBoardCommand extends Command {
 			return message;
 		});
 		return message;
+	}
+
+	ratio(a, b) {
+		for (let num = b; num > 1; num--) {
+			if ((a % num) === 0 && (b % num) === 0) {
+				a /= num;
+				b /= num;
+			}
+		}
+		return `${a}:${b}`;
 	}
 
 	sort(items) {
