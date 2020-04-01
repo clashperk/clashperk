@@ -54,8 +54,8 @@ class TrackingCommand extends Command {
 						const memberlog_log = this.client.channels.cache.has(donationlog);
 						return stripIndent(
 							`${++index} » **${data.name} (${data.tag})**
-							**Donation Log** » ${donationlog ? `${donation_log ? `<#${donationlog}>` : '#deleted-channel'}` : 'Inactive'}
-							**Player Log** » ${memberlog ? `${memberlog_log ? `<#${memberlog}>` : '#deleted-channel'}` : 'Inactive'}`
+						**Donation Log** » ${donationlog ? `${donation_log ? `<#${donationlog}>` : '#deleted-channel'}` : 'Inactive'}
+						**Player Log** » ${memberlog ? `${memberlog_log ? `<#${memberlog}>` : '#deleted-channel'}` : 'Inactive'}`
 						);
 					}).join('\n\n')
 				]);
