@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { firestore } = require('../../struct/Database');
-const { stripIndent } = require('common-tags');
+const { stripIndents } = require('common-tags');
 
 class TrackingCommand extends Command {
 	constructor() {
@@ -52,7 +52,7 @@ class TrackingCommand extends Command {
 
 						const donation_log = this.client.channels.cache.has(donationlog);
 						const memberlog_log = this.client.channels.cache.has(donationlog);
-						return stripIndent(
+						return stripIndents(
 							`${++index} » **${data.name} (${data.tag})**
 						**Donation Log** » ${donationlog ? `${donation_log ? `<#${donationlog}>` : '#deleted-channel'}` : 'Inactive'}
 						**Player Log** » ${memberlog ? `${memberlog_log ? `<#${memberlog}>` : '#deleted-channel'}` : 'Inactive'}`
