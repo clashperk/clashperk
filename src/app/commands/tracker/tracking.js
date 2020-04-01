@@ -56,7 +56,7 @@ class TrackingCommand extends Command {
 						**Donation Log**
 						${donationlog ? `${donation_log ? `<#${donationlog}>` : 'Channel Deleted'}` : 'Inactive'}
 						**Player Log**
-						${memberlog ? `${memberlog_log ? `<#${donationlog}>` : 'Channel Deleted'}` : 'Inactive'}
+						${memberlog ? `${memberlog_log ? `<#${memberlog}>` : 'Channel Deleted'}` : 'Inactive'}
 						
 						`;
 					}).join('\n')
