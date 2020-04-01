@@ -55,9 +55,9 @@ class StopAllCommand extends Command {
 			.where('guild', '==', message.guild.id)
 			.get()
 			.then(snapshot => {
-				snapshot.forEach(doc => {
-					message.channel.send(doc.data().tag, { code: true });
-					this.client.tracker.delete(message.guild.id, doc.data().tag);
+				snapshot.forEach(async doc => {
+					const data = await doc.data();
+					this.client.tracker.delete(message.guild.id, data.tag);
 					batch.delete(doc.ref);
 				});
 				return batch.commit() && snapshot.size;
