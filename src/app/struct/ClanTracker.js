@@ -129,9 +129,11 @@ class FastTracker {
 					item.receives += receives;
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
 				}
+
 			}
 
-			const m = this.donateList[key][member.tag];
+			/* const m = this.donateList[key][member.tag];
+			if (this.donateList[key])
 			if (
 				!(m.name === member.name ||
 					m.donationsReceived === member.donationsReceived ||
@@ -139,7 +141,7 @@ class FastTracker {
 					m.versusTrophies === member.versusTrophies ||
 					m.expLevel === member.expLevel
 				)
-			) return this.save(clan, cache, member);
+			) return this.save(clan, member);*/
 		}
 
 		if (item.donated !== '' || item.received !== '') {
@@ -185,7 +187,11 @@ class FastTracker {
 		this.cached.set(key, cache);
 	}
 
-	async save(clan, cache, member) {
+	isOnline() {
+
+	}
+
+	async save(clan, member) {
 		const exist = fs.existsSync(`./store/${clan.tag}.json`);
 		if (!exist) await fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify({}));
 		const raw = fs.readFileSync(`./store/${clan.tag}.json`);
@@ -445,7 +451,7 @@ class SlowTracker {
 				}
 			}
 
-			const m = this.donateList[key][member.tag];
+			/* const m = this.donateList[key][member.tag];
 			if (
 				!(m.name === member.name ||
 					m.donationsReceived === member.donationsReceived ||
@@ -453,7 +459,7 @@ class SlowTracker {
 					m.versusTrophies === member.versusTrophies ||
 					m.expLevel === member.expLevel
 				)
-			) return this.save(clan, cache, member);
+			) return this.save(clan, member);*/
 		}
 
 
@@ -504,7 +510,7 @@ class SlowTracker {
 		this.cached.set(key, cache);
 	}
 
-	async save(clan, cache, member) {
+	async save(clan, member) {
 		const exist = fs.existsSync(`./store/${clan.tag}.json`);
 		if (!exist) await fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify({}));
 		const raw = fs.readFileSync(`./store/${clan.tag}.json`);
