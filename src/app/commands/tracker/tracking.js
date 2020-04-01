@@ -1,6 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { firestore } = require('../../struct/Database');
+const { stripIndent } = require('common-tags');
 
 class TrackingCommand extends Command {
 	constructor() {
@@ -41,7 +42,24 @@ class TrackingCommand extends Command {
 				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL());
 			if (data.length) {
 				embed.setDescription([
-					data.map(({ name, tag }, index) => `**${++index}.** ${name} (${tag})`).join('\n')
+					data.map((data, index) => {
+						const donationlog = data.donationlog
+							? data.donationlog.channel
+							: null;
+						const memberlog = data.memberlog
+							? data.memberlog.channel
+							: null;
+
+						const donation_log = this.client.channels.cache.has(donationlog);
+						const memberlog_log = this.client.channels.cache.has(donationlog);
+						return stripIndent`${++index} » ${data.name} (${data.tag})
+						**Donation Log**
+						${donationlog ? `${donation_log ? `<#${donationlog}>` : 'Channel Deleted'}` : 'Inactive'}
+						**Player Log**
+						${memberlog ? `${memberlog_log ? `<#${donationlog}>` : 'Channel Deleted'}` : 'Inactive'}
+						
+						`;
+					}).join('\n')
 				]);
 			}
 			embed.setFooter(`Tracking ${data.length} ${data.length > 1 || data.length === 0 ? 'clans' : 'clan'}`);
