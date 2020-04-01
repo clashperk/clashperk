@@ -50,7 +50,6 @@ class StopAllCommand extends Command {
 	}
 
 	async delete(message) {
-		const batch = firestore.batch();
 		const clans = await firestore.collection('tracking_clans')
 			.where('guild', '==', message.guild.id)
 			.get()
@@ -58,9 +57,9 @@ class StopAllCommand extends Command {
 				snapshot.forEach(async doc => {
 					const data = await doc.data();
 					this.client.tracker.delete(message.guild.id, data.tag);
-					batch.delete(doc.ref);
+					doc.ref.delete();
 				});
-				return batch.commit() && snapshot.size;
+				return snapshot.size;
 			});
 		return clans;
 	}
