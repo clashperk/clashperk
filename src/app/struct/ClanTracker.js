@@ -129,19 +129,20 @@ class FastTracker {
 					item.receives += receives;
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
 				}
-
+				this.save(clan, member);
 			}
 
-			/* const m = this.donateList[key][member.tag];
-			if (this.donateList[key])
-			if (
-				!(m.name === member.name ||
-					m.donationsReceived === member.donationsReceived ||
-					m.donations === member.donations ||
-					m.versusTrophies === member.versusTrophies ||
-					m.expLevel === member.expLevel
-				)
-			) return this.save(clan, member);*/
+			if (this.donateList[key] && this.donateList[key][member.tag]) {
+				const m = this.donateList[key][member.tag];
+				if (
+					!(m.name === member.name ||
+						m.donationsReceived === member.donationsReceived ||
+						m.donations === member.donations ||
+						m.versusTrophies === member.versusTrophies ||
+						m.expLevel === member.expLevel
+					)
+				) this.save(clan, member);
+			}
 		}
 
 		if (item.donated !== '' || item.received !== '') {
@@ -185,10 +186,6 @@ class FastTracker {
 		const intervalID = setInterval(this.update.bind(this), 1 * 60 * 1000, cache);
 		cache.intervalID = intervalID;
 		this.cached.set(key, cache);
-	}
-
-	isOnline() {
-
 	}
 
 	async save(clan, member) {
@@ -449,17 +446,20 @@ class SlowTracker {
 					item.receives += receives;
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
 				}
+				this.save(clan, member);
 			}
 
-			/* const m = this.donateList[key][member.tag];
-			if (
-				!(m.name === member.name ||
-					m.donationsReceived === member.donationsReceived ||
-					m.donations === member.donations ||
-					m.versusTrophies === member.versusTrophies ||
-					m.expLevel === member.expLevel
-				)
-			) return this.save(clan, member);*/
+			if (this.donateList[key] && this.donateList[key][member.tag]) {
+				const m = this.donateList[key][member.tag];
+				if (
+					!(m.name === member.name ||
+						m.donationsReceived === member.donationsReceived ||
+						m.donations === member.donations ||
+						m.versusTrophies === member.versusTrophies ||
+						m.expLevel === member.expLevel
+					)
+				) this.save(clan, member);
+			}
 		}
 
 
