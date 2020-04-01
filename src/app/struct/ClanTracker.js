@@ -206,7 +206,7 @@ class FastTracker {
 			}
 		};
 
-		fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify(data));
+		fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify(data, null, 4));
 	}
 
 	async update(cache) {
@@ -529,7 +529,7 @@ class SlowTracker {
 			}
 		};
 
-		fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify(data));
+		fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify(data, null, 4));
 	}
 
 	async update(cache) {
