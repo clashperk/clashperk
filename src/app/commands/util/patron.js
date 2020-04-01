@@ -30,10 +30,10 @@ class PatronCommand extends Command {
 				oneLine`As a patron, you will get a few special rewards like ability to claim more than 2 clans per server,
 				faster updates, no cooldown, a special hoisted role on support server and much more.`,
 				'',
-				'[Become a Patron](https://www.patreon.com/bePatron?u=14584309)',
-				'',
-				'**Our Current Patrons**',
-				patrons.map(id => `» ${this.client.users.cache.get(id).username}`).join('\n')
+				'[Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
+				// '',
+				// '**Our Current Patrons**',
+				// patrons.map(id => `» ${this.client.users.cache.get(id).username}`).join('\n')
 			]);
 
 		return message.util.send({ embed });
