@@ -4,7 +4,7 @@ const { firestore } = require('./Database');
 const { TownHallEmoji, leagueEmojis } = require('../util/constants');
 const fs = require('fs');
 
-const SEASON_ID = 1;
+const SEASON_ID = '1';
 
 class FastTracker {
 	constructor(client, cached) {
@@ -452,7 +452,8 @@ class SlowTracker {
 			if (this.donateList[key] && this.donateList[key][member.tag]) {
 				const m = this.donateList[key][member.tag];
 				if (
-					!(m.name === member.name ||
+					!(
+						m.name === member.name ||
 						m.donationsReceived === member.donationsReceived ||
 						m.donations === member.donations ||
 						m.versusTrophies === member.versusTrophies ||
