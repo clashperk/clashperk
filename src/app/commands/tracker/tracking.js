@@ -39,7 +39,7 @@ class TrackingCommand extends Command {
 		if (data) {
 			const embed = new MessageEmbed()
 				.setColor(0x5970c1)
-				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL());
+				.setAuthor(`${guild.name}`, guild.iconURL());
 			if (data.length) {
 				embed.setDescription([
 					data.map((data, index) => {
@@ -52,14 +52,10 @@ class TrackingCommand extends Command {
 
 						const donation_log = this.client.channels.cache.has(donationlog);
 						const memberlog_log = this.client.channels.cache.has(donationlog);
-						return stripIndent`${++index} » ${data.name} (${data.tag})
-						**Donation Log**
-						${donationlog ? `${donation_log ? `<#${donationlog}>` : 'Channel Deleted'}` : 'Inactive'}
-						**Player Log**
-						${memberlog ? `${memberlog_log ? `<#${memberlog}>` : 'Channel Deleted'}` : 'Inactive'}
-						
-						`;
-					}).join('\n')
+						return stripIndent`${++index} » **${data.name} (${data.tag})**
+						**Donation Log** » ${donationlog ? `${donation_log ? `<#${donationlog}>` : 'Channel Deleted'}` : 'Inactive'}
+						**Player Log** » ${memberlog ? `${memberlog_log ? `<#${memberlog}>` : 'Channel Deleted'}` : 'Inactive'}`;
+					}).join('\n\n')
 				]);
 			}
 			embed.setFooter(`Tracking ${data.length} ${data.length > 1 || data.length === 0 ? 'clans' : 'clan'}`);
