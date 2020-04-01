@@ -190,7 +190,7 @@ class FastTracker {
 
 	async save(clan, member) {
 		const exist = fs.existsSync(`./store/${clan.tag}.json`);
-		if (!exist) await fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify({}));
+		if (!exist) fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify({}));
 		const raw = fs.readFileSync(`./store/${clan.tag}.json`);
 		const data = JSON.parse(raw);
 
@@ -513,7 +513,7 @@ class SlowTracker {
 
 	async save(clan, member) {
 		const exist = fs.existsSync(`./store/${clan.tag}.json`);
-		if (!exist) await fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify({}));
+		if (!exist) fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify({}));
 		const raw = fs.readFileSync(`./store/${clan.tag}.json`);
 		const data = JSON.parse(raw);
 
