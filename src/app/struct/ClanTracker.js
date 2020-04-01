@@ -2,6 +2,9 @@ const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const { firestore } = require('./Database');
 const { TownHallEmoji, leagueEmojis } = require('../util/constants');
+const fs = require('fs');
+
+const SEASON_ID = 1;
 
 class FastTracker {
 	constructor(client, cached) {
@@ -127,6 +130,16 @@ class FastTracker {
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
 				}
 			}
+
+			const m = this.donateList[key][member.tag];
+			if (
+				!(m.name === member.name ||
+					m.donationsReceived === member.donationsReceived ||
+					m.donations === member.donations ||
+					m.versusTrophies === member.versusTrophies ||
+					m.expLevel === member.expLevel
+				)
+			) return this.save(clan, cache, member);
 		}
 
 		if (item.donated !== '' || item.received !== '') {
@@ -170,6 +183,27 @@ class FastTracker {
 		const intervalID = setInterval(this.update.bind(this), 1 * 60 * 1000, cache);
 		cache.intervalID = intervalID;
 		this.cached.set(key, cache);
+	}
+
+	async save(clan, cache, member) {
+		const exist = fs.existsSync(`./store/${clan.tag}.json`);
+		if (!exist) await fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify({}));
+		const raw = fs.readFileSync(`./store/${clan.tag}.json`);
+		const data = JSON.parse(raw);
+
+		data[SEASON_ID] = {
+			[member.tag]: {
+				lastOnline: Date.now(),
+				donations: member.donations,
+				donationsReceived: member.donationsReceived,
+				trophies: member.trophies,
+				versusTrophies: member.versusTrophies,
+				name: member.name,
+				tag: member.tag
+			}
+		};
+
+		fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify());
 	}
 
 	async update(cache) {
@@ -410,7 +444,18 @@ class SlowTracker {
 					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
 				}
 			}
+
+			const m = this.donateList[key][member.tag];
+			if (
+				!(m.name === member.name ||
+					m.donationsReceived === member.donationsReceived ||
+					m.donations === member.donations ||
+					m.versusTrophies === member.versusTrophies ||
+					m.expLevel === member.expLevel
+				)
+			) return this.save(clan, cache, member);
 		}
+
 
 		const index = Array.from(this.cached.keys())
 			.filter(clan => !clan.isPremium)
@@ -457,6 +502,27 @@ class SlowTracker {
 		const intervalID = setInterval(this.update.bind(this), 2 * 60 * 1000, cache);
 		cache.intervalID = intervalID;
 		this.cached.set(key, cache);
+	}
+
+	async save(clan, cache, member) {
+		const exist = fs.existsSync(`./store/${clan.tag}.json`);
+		if (!exist) await fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify({}));
+		const raw = fs.readFileSync(`./store/${clan.tag}.json`);
+		const data = JSON.parse(raw);
+
+		data[SEASON_ID] = {
+			[member.tag]: {
+				lastOnline: Date.now(),
+				donations: member.donations,
+				donationsReceived: member.donationsReceived,
+				trophies: member.trophies,
+				versusTrophies: member.versusTrophies,
+				name: member.name,
+				tag: member.tag
+			}
+		};
+
+		fs.writeFileSync(`./store/${clan.tag}.json`, JSON.stringify());
 	}
 
 	async update(cache) {
