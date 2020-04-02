@@ -63,7 +63,7 @@ class CwlRosterComamnd extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1);
 
-		if (!body.state) {
+		if (!(body.state || res.ok)) {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
