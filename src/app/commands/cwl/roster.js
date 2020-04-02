@@ -123,7 +123,8 @@ class CwlRosterComamnd extends Command {
 
 			embed.addField(`${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
 				this.chunk(townHalls)
-					.map(chunks => chunks.map(th => `${TownHallEmoji[th.level]} ${th.total}`).join(' '))
+					.map(chunks => chunks.map(th => `${TownHallEmoji[th.level]} ${th.total.toString().padStart(2, '0')}`)
+						.join(' '))
 					.join('\n')
 			]);
 		}
