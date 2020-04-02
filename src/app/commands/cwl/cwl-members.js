@@ -1,7 +1,6 @@
 const { Command, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const { Util } = require('discord.js');
-const { stripIndent } = require('common-tags');
 const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
@@ -119,7 +118,7 @@ class CwlMembersComamnd extends Command {
 		const result = this.split(members);
 		if (Array.isArray(result)) {
 			embed.setDescription([
-				`**\`\`\`\u200e${header}\`\`\`**\u200b\`\`\`\u200e${result[0]}\`\`\``
+				`**\`\`\`\u200e${header}\n${result[0]}\`\`\``
 			]);
 		}
 
