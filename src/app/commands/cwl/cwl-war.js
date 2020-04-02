@@ -77,7 +77,7 @@ class CwlWarComamnd extends Command {
 		const res = await fetch(uri, {
 			method: 'GET', timeout: 3000,
 			headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
-		});
+		}).catch(() => null);
 
 		if (!res) {
 			return message.util.send({ embed: fetcherror(504) });
