@@ -123,7 +123,7 @@ class CwlRosterComamnd extends Command {
 
 			embed.addField(`${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
 				this.chunk(townHalls)
-					.map(chunks => chunks.map(th => `${TownHallEmoji[th.level]} ${th.total.toString().padStart(2, '0')}`)
+					.map(chunks => chunks.map(th => `${TownHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')} \``)
 						.join(' '))
 					.join('\n')
 			]);
@@ -133,7 +133,7 @@ class CwlRosterComamnd extends Command {
 	}
 
 	chunk(items = []) {
-		const chunk = 4;
+		const chunk = 5;
 		const array = [];
 		for (let i = 0; i < items.length; i += chunk) {
 			array.push(items.slice(i, i + chunk));
