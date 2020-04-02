@@ -119,7 +119,7 @@ class CwlRosterComamnd extends Command {
 				{ level: 11, total: TH11 },
 				{ level: 12, total: TH12 },
 				{ level: 13, total: TH13 }
-			].filter(townHall => townHall.total !== 0);
+			].filter(townHall => townHall.total !== 0).reverse();
 
 			embed.addField(`${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
 				this.chunk(townHalls)
