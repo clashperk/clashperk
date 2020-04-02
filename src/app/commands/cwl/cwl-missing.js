@@ -132,9 +132,10 @@ class CwlMissingComamnd extends Command {
 				embed.setAuthor(`${myclan.name} (${myclan.tag})`, myclan.badgeUrls.medium);
 				if (data.state === 'warEnded') {
 					let missing = '';
+					let index = 0;
 					for (const member of this.short(myclan.members)) {
 						if (member.attacks && member.attacks.length === 1) continue;
-						missing += `${member.mapPosition}. ${member.name} \n`;
+						missing += `${++index}. ${member.name} \n`;
 					}
 
 					embed.setDescription([
@@ -158,9 +159,10 @@ class CwlMissingComamnd extends Command {
 				if (data.state === 'inWar') {
 					const started = new Date(moment(data.startTime).toDate()).getTime();
 					let missing = '';
+					let index = 0;
 					for (const member of this.short(myclan.members)) {
 						if (member.attacks && member.attacks.length === 1) continue;
-						missing += `${member.mapPosition}. ${member.name} \n`;
+						missing += `${++index}. ${member.name} \n`;
 					}
 
 					embed.setDescription([
