@@ -111,7 +111,7 @@ class CwlMembersComamnd extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${memberList.length}`, data.badgeUrls.medium);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
-			members += `${this.padStart(member.townHallLevel)}  ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join('  ')}  ${member.name}`;
+			members += `${this.padStart(member.townHallLevel)}  ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join('  ')}  ${member.name.padEnd(20, ' ')}`;
 			members += '\n';
 		}
 
@@ -120,7 +120,6 @@ class CwlMembersComamnd extends Command {
 		if (Array.isArray(result)) {
 			embed.setDescription([
 				`\`\u200e${header}\``,
-				'',
 				`\`\u200e${result[0]}\``
 			]);
 		}
