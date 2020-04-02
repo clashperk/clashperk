@@ -67,7 +67,7 @@ class PlayerCommand extends Command {
 
 		embed.addField('Town Hall', `${TownHallEmoji[data.townHallLevel]} ${data.townHallLevel}`, true);
 		embed.addField('Current League', [
-			`${leagueEmojis[data.league ? data.league.id : 0]} ${data.league ? data.league.name : 'Unranked'} (${data.trophies})`
+			`${leagueEmojis[data.league ? data.league.id : 29000000]} ${data.league ? data.league.name : 'Unranked'} (${data.trophies})`
 		], true);
 		embed.addField('XP Level', `<:xp:534752059501838346> ${data.expLevel}`, true);
 
