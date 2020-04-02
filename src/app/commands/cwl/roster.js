@@ -104,24 +104,40 @@ class CwlRosterComamnd extends Command {
 				if (TownHAll === 2) TH02++;
 				if (TownHAll === 1) TH01++;
 			}
+
+			const townHalls = [
+				{ level: 1, total: TH01 },
+				{ level: 2, total: TH02 },
+				{ level: 3, total: TH03 },
+				{ level: 4, total: TH04 },
+				{ level: 5, total: TH05 },
+				{ level: 6, total: TH06 },
+				{ level: 7, total: TH07 },
+				{ level: 8, total: TH08 },
+				{ level: 9, total: TH09 },
+				{ level: 10, total: TH10 },
+				{ level: 11, total: TH11 },
+				{ level: 12, total: TH12 },
+				{ level: 13, total: TH13 }
+			].filter(townHall => townHall.total !== 0);
+
 			embed.addField(`${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
-				oneLine`
-				${TH13 > 0 ? `${TownHallEmoji[13]} ${TH13 < 10 ? `0${TH13}` : `${TH13} `} ` : ''}
-				${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12} `} ` : ''}
-				${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`} ` : ''}
-				${TH10 > 0 ? `${TownHallEmoji[10]} ${TH10 < 10 ? `0${TH10}` : `${TH10}`} ` : ''}
-				${TH09 > 0 ? `${TownHallEmoji[9]} ${TH09 < 10 ? `0${TH09}` : `${TH09}`} ` : ''}
-				${TH08 > 0 ? `${TownHallEmoji[8]} ${TH08 < 10 ? `0${TH08}` : `${TH08}`} ` : ''}
-				${TH07 > 0 ? `${TownHallEmoji[7]} ${TH07 < 10 ? `0${TH07}` : `${TH07}`} ` : ''}
-				${TH06 > 0 ? `${TownHallEmoji[6]} ${TH06 < 10 ? `0${TH06}` : `${TH06}`} ` : ''}
-				${TH05 > 0 ? `${TownHallEmoji[5]} ${TH05 < 10 ? `0${TH05}` : `${TH05}`} ` : ''}
-				${TH04 > 0 ? `${TownHallEmoji[4]} ${TH04 < 10 ? `0${TH04}` : `${TH04}`} ` : ''}
-				${TH03 > 0 ? `${TownHallEmoji[3]} ${TH03 < 10 ? `0${TH03}` : `${TH03}`} ` : ''}
-				${TH02 > 0 ? `${TownHallEmoji[2]} ${TH02 < 10 ? `0${TH02}` : `${TH02}`} ` : ''}`
+				this.chunk(townHalls)
+					.map(chunks => chunks.map(th => `${TownHallEmoji[th.level]} ${th.total}`).join(' '))
+					.join('\n')
 			]);
 		}
 
 		return message.util.send({ embed });
+	}
+
+	chunk(items = []) {
+		const chunk = 4;
+		const array = [];
+		for (let i = 0; i < items.length; i += chunk) {
+			array.push(items.slice(i, i + chunk));
+		}
+		return array;
 	}
 }
 
