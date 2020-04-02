@@ -2,7 +2,7 @@ const { MessageEmbed } = require('discord.js');
 const admin = require('firebase-admin');
 
 const codes = {
-	504: 'Service is temprorarily unavailable.',
+	504: '504 Request Timeout',
 	400: 'Client provided incorrect parameters for the request.',
 	403: 'Access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
 	404: 'Invalid tag, resource was not found.',

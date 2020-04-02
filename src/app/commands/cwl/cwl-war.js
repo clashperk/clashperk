@@ -75,8 +75,14 @@ class CwlWarComamnd extends Command {
 		await message.util.send('**Fetching data... <a:loading:538989228403458089>**');
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
-			method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			method: 'GET', timeout: 3000,
+			headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 		});
+
+		if (!res) {
+			return message.util.send({ embed: fetcherror(504) });
+		}
+
 		const body = await res.json();
 
 		const embed = this.client.util.embed()
