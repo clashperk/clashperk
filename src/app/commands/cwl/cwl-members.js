@@ -115,7 +115,7 @@ class CwlMembersComamnd extends Command {
 			members += '\n';
 		}
 
-		const header = 'TH  BK  AQ  GW  RC  PLAYER';
+		const header = `TH  BK  AQ  GW  RC  ${'PLAYER'.padEnd(20, ' ')}`;
 		const result = this.split(members);
 		if (Array.isArray(result)) {
 			embed.setDescription([
