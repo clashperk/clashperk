@@ -73,9 +73,23 @@ class ThCompoCommand extends Command {
 		let TH02 = 0;
 		let TH01 = 0;
 
+		const xy = [
+			data.memberList.slice(0, 5).map(m => m.tag),
+			data.memberList.slice(5, 10).map(m => m.tag),
+			data.memberList.slice(10, 15).map(m => m.tag),
+			data.memberList.slice(15, 20).map(m => m.tag),
+			data.memberList.slice(20, 25).map(m => m.tag),
+			data.memberList.slice(25, 30).map(m => m.tag),
+			data.memberList.slice(30, 35).map(m => m.tag),
+			data.memberList.slice(35, 40).map(m => m.tag),
+			data.memberList.slice(40, 45).map(m => m.tag),
+			data.memberList.slice(45, 50).map(m => m.tag)
+		];
+
 		// this.chunk(data.memberList.map(m => m.tag))
-		const list = data.memberList.map(m => m.tag);
-		const funcs = new Array(Math.ceil(list.length / 9)).fill().map(() => list.splice(0, 9))
+		//  new Array(Math.ceil(list.length / 9)).fill().map(() => list.splice(0, 9))
+		// const list = data.memberList.map(m => m.tag);
+		const funcs = xy
 			.map((tags, index) => async (collection = []) => {
 				for (const tag of tags) {
 					const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
