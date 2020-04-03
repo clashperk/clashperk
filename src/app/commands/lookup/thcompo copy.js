@@ -73,19 +73,20 @@ class ThCompoCommand extends Command {
 		let TH02 = 0;
 		let TH01 = 0;
 
-		const arr = this.chunk(data.memberList.map(m => m.tag))
+		// this.chunk(data.memberList.map(m => m.tag))
+		const list = data.memberList.map(m => m.tag);
+		const funcs = new Array(Math.ceil(list.length / 9)).fill().map(() => list.splice(0, 9))
 			.map((tags, index) => async (collection = []) => {
 				for (const tag of tags) {
 					const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-					const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[index]}` } }).then(res => res.json());
-					console.log(member, API[index]);
+					const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[index]}` } })
+						.then(res => res.json());
 					collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 				}
 				return collection;
 			});
 
-		const requests = await Promise.all(arr.map(x => x()));
-		console.log(arr, '====================', requests);
+		const requests = await Promise.all(funcs.map(func => func()));
 
 		for (const request of requests) {
 			for (const member of request) {
