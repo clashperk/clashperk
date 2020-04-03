@@ -60,21 +60,23 @@ class WarWeightCommand extends Command {
 	async exec(message, { data }) {
 		await message.util.send('**Making list of your clan members... <a:loading:538989228403458089>**');
 
-		const object_array = await Promise.all([
-			this.one(data.memberList.slice(0, 5).map(m => m.tag)),
-			this.two(data.memberList.slice(5, 10).map(m => m.tag)),
-			this.three(data.memberList.slice(10, 15).map(m => m.tag)),
-			this.four(data.memberList.slice(15, 20).map(m => m.tag)),
-			this.five(data.memberList.slice(20, 25).map(m => m.tag)),
-			this.six(data.memberList.slice(25, 30).map(m => m.tag)),
-			this.seven(data.memberList.slice(30, 35).map(m => m.tag)),
-			this.eight(data.memberList.slice(35, 40).map(m => m.tag)),
-			this.nine(data.memberList.slice(40, 45).map(m => m.tag)),
-			this.ten(data.memberList.slice(45, 50).map(m => m.tag))
-		]);
+		const list = data.memberList.map(m => m.tag);
+		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
+			.map((tags, index) => async (collection = []) => {
+				for (const tag of tags) {
+					const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
+						method: 'GET',
+						headers: { Accept: 'application/json', authorization: `Bearer ${API[index]}` }
+					}).then(res => res.json());
+					collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
+				}
+				return collection;
+			});
+
+		const requests = await Promise.all(funcs.map(func => func()));
 
 		const array = [];
-		for (const arr of object_array) {
+		for (const arr of requests) {
 			for (const member of arr) {
 				array.push({
 					tag: member.tag,
@@ -199,96 +201,6 @@ class WarWeightCommand extends Command {
 
 	sort(items) {
 		return items.sort((a, b) => b.townHallLevel - a.townHallLevel);
-	}
-
-	async one(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[0]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
-		}
-		return collection;
-	}
-
-	async two(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[1]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
-		}
-		return collection;
-	}
-
-	async three(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[2]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
-		}
-		return collection;
-	}
-
-	async four(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[3]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
-		}
-		return collection;
-	}
-
-	async five(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[4]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
-		}
-		return collection;
-	}
-
-	async six(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[5]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
-		}
-		return collection;
-	}
-
-	async seven(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[6]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
-		}
-		return collection;
-	}
-
-	async eight(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[7]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
-		}
-		return collection;
-	}
-
-	async nine(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[8]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
-		}
-		return collection;
-	}
-
-	async ten(items, collection = []) {
-		for (const tag of items) {
-			const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
-			const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[9]}` } }).then(res => res.json());
-			collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
-		}
-		return collection;
 	}
 }
 
