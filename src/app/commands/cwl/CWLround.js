@@ -177,7 +177,7 @@ class CwlRoundComamnd extends Command {
 					`**${data.opponent.name}**`,
 					await this.count(data.opponent.members)
 				]);
-				embed.setFooter(`Round #${round || availableRounds}`);
+				embed.setFooter(`Round #${round || body.rounds.findIndex(round => round.warTags === rounds) + 1}`);
 			}
 		}
 		return message.util.send({ embed });
