@@ -78,6 +78,7 @@ class ThCompoCommand extends Command {
 				for (const tag of tags) {
 					const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
 					const member = await fetch(uri, { method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${API[index]}` } }).then(res => res.json());
+					console.log(member, API[index]);
 					collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 				}
 				return collection;
