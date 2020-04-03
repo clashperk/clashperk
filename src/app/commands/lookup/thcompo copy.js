@@ -73,7 +73,7 @@ class ThCompoCommand extends Command {
 		let TH02 = 0;
 		let TH01 = 0;
 
-		const arr = Array(10).fill(this.chunk(data.memberList.map(m => m.tag)))
+		const arr = this.chunk(data.memberList.map(m => m.tag))
 			.map((tags, index) => async (collection = []) => {
 				for (const tag of tags) {
 					const uri = `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`;
