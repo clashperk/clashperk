@@ -131,12 +131,16 @@ class ThCompoCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setColor(0x5970c1)
 			.setThumbnail(data.badgeUrls.small)
-			.setDescription(townHalls.map(th => `${TownHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``))
+			.setDescription(townHalls.map(th => `${TownHallEmoji[th.level]} ${this.padStart(th.total)}`))
 			.setFooter(`Avg: ${AVG.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/539370925515210763.png');
 
 		const diff = process.hrtime(hrStart);
 		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
 		return message.util.send(`*\u200b**Executed in ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**\u200b*`, { embed });
+	}
+
+	padStart(msg) {
+		return msg.toString().padStart(2, '0');
 	}
 }
 
