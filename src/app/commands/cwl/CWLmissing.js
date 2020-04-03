@@ -194,6 +194,8 @@ class CwlMissingComamnd extends Command {
 					embed.addField('State', 'Preparation Day')
 						.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
 				}
+
+				embed.setFooter(`Round #${round || body.rounds.findIndex(round => round.warTags === rounds) + 1}`);
 			}
 		}
 		return message.util.send({ embed });
