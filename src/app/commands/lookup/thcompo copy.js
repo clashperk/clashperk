@@ -84,6 +84,7 @@ class ThCompoCommand extends Command {
 			});
 
 		const requests = await Promise.all(arr.map(x => x()));
+		console.log(arr, '====================', requests);
 
 		for (const request of requests) {
 			for (const member of request) {
