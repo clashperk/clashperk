@@ -63,7 +63,8 @@ class CWLMvpCommand extends Command {
 		const memberList = [];
 		for (const tag of data.memberList.map(m => m.tag)) {
 			const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-				method: 'GET', headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+				method: 'GET',
+				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).then(res => res.json());
 			const star = member.achievements.find(achievement => achievement.name === 'War League Legend');
 			memberList.push({ townHallLevel: member.townHallLevel, name: member.name, cwlStar: star.value });

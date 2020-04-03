@@ -90,7 +90,7 @@ class ClashPerk extends AkairoClient {
 			if (!str) return null;
 			const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-				method: 'GET', timeout: 3000, headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+				method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).catch(() => null);
 
 			if (!res) return Flag.fail(status(504));
@@ -103,7 +103,7 @@ class ClashPerk extends AkairoClient {
 			if (!str) return null;
 			const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
 			const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`, {
-				method: 'GET', timeout: 3000, headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+				method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).catch(() => null);
 
 			if (!res) return Flag.fail(status(504));

@@ -2,7 +2,7 @@ const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { firestore } = require('../../struct/Database');
 
-class StartPlayerLogCommand extends Command {
+class PlayerLogCommand extends Command {
 	constructor() {
 		super('playerlog', {
 			aliases: ['playerlog'],
@@ -120,4 +120,4 @@ class StartPlayerLogCommand extends Command {
 	}
 }
 
-module.exports = StartPlayerLogCommand;
+module.exports = PlayerLogCommand;

@@ -68,11 +68,9 @@ class WarlogCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}`;
-		const body = await fetch(`${uri}/warlog?limit=10`, {
-			method: 'GET', headers: {
-				Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}`
-			}
+		const body = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/warlog?limit=10`, {
+			method: 'GET',
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 		}).then(res => res.json());
 
 		const results = body.items.map(r => r.result);

@@ -19,7 +19,7 @@ class StopCommand extends Command {
 					type: async (msg, str) => {
 						if (!str) return null;
 						const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-						const ref = await firestore.collection('tracking_clans').doc(`${msg.guild.id}${tag}`);
+						const ref = firestore.collection('tracking_clans').doc(`${msg.guild.id}${tag}`);
 						const data = await ref.get().then(snap => snap.data());
 						if (!data) return null;
 						return { name: data.name, tag: data.tag, ref };

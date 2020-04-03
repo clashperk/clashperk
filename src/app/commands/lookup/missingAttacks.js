@@ -83,12 +83,9 @@ class MissingAttacksCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const body = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar`,
-			{
-				method: 'GET', headers: {
-					Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}`
-				}
-			}).then(res => res.json());
+		const body = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar`, {
+			method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+		}).then(res => res.json());
 
 		if (body.state === 'preparation') {
 			embed.setDescription('Preparation Day');

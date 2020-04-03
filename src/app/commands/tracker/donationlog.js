@@ -2,16 +2,16 @@ const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { firestore } = require('../../struct/Database');
 
-class StartCommand extends Command {
+class DonationLogCommand extends Command {
 	constructor() {
 		super('start', {
-			aliases: ['start'],
+			aliases: ['donationlog', 'start'],
 			category: 'tracker',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Starts the donation tracker in a channel.',
+				content: 'Starts the donation-log in a channel.',
 				usage: '<clan tag> [channel/hexColor] [hexColor/channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #tracker #5970C1', '#8QU8J9LP #5970C1 #tracker']
 			}
@@ -122,4 +122,4 @@ class StartCommand extends Command {
 	}
 }
 
-module.exports = StartCommand;
+module.exports = DonationLogCommand;

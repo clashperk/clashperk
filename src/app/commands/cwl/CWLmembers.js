@@ -61,7 +61,7 @@ class CwlMembersComamnd extends Command {
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
 			method: 'GET', timeout: 3000,
-			headers: { Accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 		}).catch(() => null);
 
 		if (!res) {
@@ -86,7 +86,7 @@ class CwlMembersComamnd extends Command {
 				for (const tag of tags) {
 					const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 						method: 'GET',
-						headers: { Accept: 'application/json', authorization: `Bearer ${API[index]}` }
+						headers: { accept: 'application/json', authorization: `Bearer ${API[index]}` }
 					}).then(res => res.json());
 					collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 				}

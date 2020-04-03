@@ -21,6 +21,13 @@ class FastTracker {
 		return new Promise(res => setTimeout(res, ms));
 	}
 
+	async add(data) {
+		const cache = this.cached.get(`${data.guild}${data.tag}`);
+		if (cache && cache.intervalID) clearInterval(cache.intervalID);
+
+		return this.update(data);
+	}
+
 	async memberlog(clan, cache, channel) {
 		const key = `${cache.guild}${clan.tag}`;
 		const currentMemberList = clan.memberList.map(m => m.tag);
@@ -178,10 +185,8 @@ class FastTracker {
 		if (this.client.channels.cache.has(cache.donation_log_channel)) {
 			const channel = this.client.channels.cache.get(cache.donation_log_channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				const res = await this.clan(cache.tag);
-				if (!res) return;
-				if (!res.ok) return;
-				const data = await res.json();
+				const data = await this.clan(cache.tag);
+				if (!data) return;
 				this.donationlog(data, cache, channel);
 
 				if (this.client.channels.cache.get(cache.member_log_channel)) {
@@ -194,10 +199,8 @@ class FastTracker {
 		} else if (this.client.channels.cache.has(cache.member_log_channel)) {
 			const channel = this.client.channels.cache.get(cache.member_log_channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				const res = await this.clan(cache.tag);
-				if (!res) return;
-				if (!res.ok) return;
-				const data = await res.json();
+				const data = await this.clan(cache.tag);
+				if (!data) return;
 				this.memberlog(data, cache, channel, channel);
 			}
 		} else {
@@ -212,10 +215,8 @@ class FastTracker {
 			if (this.client.channels.cache.has(cache.donation_log_channel)) {
 				const channel = this.client.channels.cache.get(cache.donation_log_channel);
 				if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-					const res = await this.clan(cache.tag);
-					if (!res) continue;
-					if (!res.ok) continue;
-					const data = await res.json();
+					const data = await this.clan(cache.tag);
+					if (!data) continue;
 					this.donationlog(data, cache, channel);
 
 					if (this.client.channels.cache.get(cache.member_log_channel)) {
@@ -230,10 +231,8 @@ class FastTracker {
 			} else if (this.client.channels.cache.has(cache.member_log_channel)) {
 				const channel = this.client.channels.cache.get(cache.member_log_channel);
 				if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-					const res = await this.clan(cache.tag);
-					if (!res) continue;
-					if (!res.ok) continue;
-					const data = await res.json();
+					const data = await this.clan(cache.tag);
+					if (!data) continue;
 					this.memberlog(data, cache, channel, channel);
 
 					await this.delay(100);
@@ -245,30 +244,11 @@ class FastTracker {
 		}
 	}
 
-	async add(data) {
-		const cache = this.cached.get(`${data.guild}${data.tag}`);
-		if (cache && cache.intervalID) clearInterval(cache.intervalID);
-
-		return this.update(data);
-	}
-
 	async clan(tag) {
-		return fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`, {
+		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`, {
 			method: 'GET',
 			headers: {
-				Accept: 'application/json',
-				authorization: `Bearer ${process.env.TRACKER_API}`,
-				'cache-control': 'no-cache'
-			},
-			timeout: 3000
-		}).catch(() => null);
-	}
-
-	async player(tag) {
-		const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-			method: 'GET',
-			headers: {
-				Accept: 'application/json',
+				accept: 'application/json',
 				authorization: `Bearer ${process.env.TRACKER_API}`,
 				'cache-control': 'no-cache'
 			},
@@ -278,7 +258,66 @@ class FastTracker {
 		if (!res) return null;
 		if (!res.ok) return null;
 
-		return res.json();
+		return res.json().catch(() => null);
+	}
+
+	async player(tag) {
+		const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
+			method: 'GET',
+			headers: {
+				accept: 'application/json',
+				authorization: `Bearer ${process.env.TRACKER_API}`,
+				'cache-control': 'no-cache'
+			},
+			timeout: 3000
+		}).catch(() => null);
+
+		if (!res) return null;
+		if (!res.ok) return null;
+
+		return res.json().catch(() => null);
+	}
+}
+
+class CWLTracker {
+	constructor(client) {
+		this.client = client;
+		this.cached = new Map();
+	}
+
+	async init() { }
+
+	async fetch(tag) {
+		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar/leaguegroup`, {
+			method: 'GET', timeout: 3000,
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+		}).catch(() => null);
+
+		const body = await res.json();
+
+		const rounds = body.rounds.filter(d => !d.warTags.includes('#0')).length === body.rounds.length
+			? body.rounds.pop().warTags
+			: body.rounds.filter(d => !d.warTags.includes('#0'))
+				.slice(-2)
+				.reverse()
+				.pop()
+				.warTags;
+
+		for (const tag of rounds) {
+			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
+				method: 'GET',
+				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			});
+
+			const data = await res.json();
+
+			if ((data.clan && data.clan.tag === tag) || (data.opponent && data.opponent.tag === tag)) {
+				const clan = data.clan.tag === tag ? data.clan : data.opponent;
+				const opponent = data.clan.tag === tag ? data.opponent : data.clan;
+
+				return { clan, opponent };
+			}
+		}
 	}
 }
 
