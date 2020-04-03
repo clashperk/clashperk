@@ -7,10 +7,10 @@ const { MessageEmbed } = require('discord.js');
 const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
 const { firestore } = require('../../struct/Database');
 
-class CwlWarComamnd extends Command {
+class CwlRoundComamnd extends Command {
 	constructor() {
-		super('cwl-war', {
-			aliases: ['cwl-war'],
+		super('cwl-round', {
+			aliases: ['cwl-round', 'cwl-war'],
 			category: 'cwl',
 			description: {
 				content: 'Shows info about current cwl war.',
@@ -246,4 +246,4 @@ class CwlWarComamnd extends Command {
 	}
 }
 
-module.exports = CwlWarComamnd;
+module.exports = CwlRoundComamnd;

@@ -3,7 +3,6 @@ const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
 const moment = require('moment');
-const { oneLine } = require('common-tags');
 const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
 
 class CwlRosterComamnd extends Command {
