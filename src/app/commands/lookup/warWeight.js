@@ -105,12 +105,12 @@ class WarWeightCommand extends Command {
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
 					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${TownHallEmoji[member.townHallLevel]} \`\u200e ${heroes}  ${member.name.padEnd(20, ' ')}\``;
+					return `${TownHallEmoji[member.townHallLevel]} \`\u200e ${heroes}  ${this.padEnd(member.name)}\``;
 				}),
 			this.paginate(memberList, 25, 50)
 				.items.map(member => {
 					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${TownHallEmoji[member.townHallLevel]} \`\u200e ${heroes}  ${member.name.padEnd(20, ' ')}\``;
+					return `${TownHallEmoji[member.townHallLevel]} \`\u200e ${heroes}  ${this.padEnd(member.name)}\``;
 				})
 		];
 
@@ -183,6 +183,10 @@ class WarWeightCommand extends Command {
 
 	padStart(data) {
 		return data.toString().padStart(2, ' ');
+	}
+
+	padEnd(data) {
+		return data.padEnd(20, ' ');
 	}
 
 	paginate(items, start, end) {

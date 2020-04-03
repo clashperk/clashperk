@@ -139,7 +139,7 @@ class CwlMissingComamnd extends Command {
 				if (data.state === 'warEnded') {
 					let missing = '';
 					let index = 0;
-					for (const member of this.short(myclan.members)) {
+					for (const member of this.sort(myclan.members)) {
 						if (member.attacks && member.attacks.length === 1) continue;
 						missing += `${++index}. ${member.name} \n`;
 					}
@@ -166,7 +166,7 @@ class CwlMissingComamnd extends Command {
 					const started = new Date(moment(data.startTime).toDate()).getTime();
 					let missing = '';
 					let index = 0;
-					for (const member of this.short(myclan.members)) {
+					for (const member of this.sort(myclan.members)) {
 						if (member.attacks && member.attacks.length === 1) continue;
 						missing += `${++index}. ${member.name} \n`;
 					}
@@ -199,7 +199,7 @@ class CwlMissingComamnd extends Command {
 		return message.util.send({ embed });
 	}
 
-	short(items) {
+	sort(items) {
 		return items.sort((a, b) => a.mapPosition - b.mapPosition);
 	}
 }

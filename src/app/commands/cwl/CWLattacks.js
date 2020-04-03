@@ -144,7 +144,7 @@ class CwlAttacksComamnd extends Command {
 					embed.addField('State', 'War Ended');
 					let missing = '';
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
-					for (const member of this.short(clanMembers)) {
+					for (const member of this.sort(clanMembers)) {
 						if (!member.attacks) continue;
 						missing += `${member.mapPosition}. ${member.name} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
 					}
@@ -164,7 +164,7 @@ class CwlAttacksComamnd extends Command {
 					const started = new Date(moment(data.startTime).toDate()).getTime();
 					let missing = '';
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
-					for (const member of this.short(clanMembers)) {
+					for (const member of this.sort(clanMembers)) {
 						if (!member.attacks) continue;
 						missing += `${member.mapPosition}. ${member.name} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
 					}
@@ -189,7 +189,7 @@ class CwlAttacksComamnd extends Command {
 		return message.util.send({ embed });
 	}
 
-	short(items) {
+	sort(items) {
 		return items.sort((a, b) => a.mapPosition - b.mapPosition);
 	}
 }

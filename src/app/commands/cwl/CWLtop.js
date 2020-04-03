@@ -73,11 +73,11 @@ class CWLMvpCommand extends Command {
 		embed.setDescription([
 			'List of most valuable players, sorted by total stars of CWL',
 			'',
-			`<:townhall:631389478568591370>\`» STAR  ${'NAME'.padEnd(20, ' ')}\``,
+			`<:townhall:631389478568591370>\`» STAR  ${this.padEnd('NAME')}\``,
 			items.slice(0, 30)
 				.map(member => {
-					const name = this.name(member.name);
-					const star = this.star(member.cwlStar.toString());
+					const name = this.padEnd(member.name);
+					const star = this.padStart(member.cwlStar.toString());
 					return `${TownHallEmoji[member.townHallLevel]}\`» ${star}  ${name}\``;
 				})
 				.join('\n')
@@ -90,16 +90,12 @@ class CWLMvpCommand extends Command {
 		return items.sort((a, b) => b.cwlStar - a.cwlStar);
 	}
 
-	star(msg) {
+	padStart(msg) {
 		return msg.padStart(4, ' ');
 	}
 
-	name(msg) {
+	padEnd(msg) {
 		return msg.padEnd(20, ' ');
-	}
-
-	clean(name, message) {
-		return Util.cleanContent(name, message);
 	}
 }
 
