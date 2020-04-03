@@ -107,6 +107,22 @@ class ThCompoCommand extends Command {
 			}
 		}
 
+		const townHalls = [
+			{ level: 1, total: TH01 },
+			{ level: 2, total: TH02 },
+			{ level: 3, total: TH03 },
+			{ level: 4, total: TH04 },
+			{ level: 5, total: TH05 },
+			{ level: 6, total: TH06 },
+			{ level: 7, total: TH07 },
+			{ level: 8, total: TH08 },
+			{ level: 9, total: TH09 },
+			{ level: 10, total: TH10 },
+			{ level: 11, total: TH11 },
+			{ level: 12, total: TH12 },
+			{ level: 13, total: TH13 }
+		].filter(townHall => townHall.total !== 0).reverse();
+
 		const math = (TH13 * 13) + (TH12 * 12) + (TH11 * 11) + (TH10 * 10) + (TH09 * 9) + (TH08 * 8) + (TH07 * 7) + (TH06 * 6) + (TH05 * 5) + (TH04 * 4) + (TH03 * 3) + (TH02 * 2) + Number(TH01);
 		const total = TH13 + TH12 + TH11 + TH10 + TH09 + TH08 + TH07 + TH06 + TH05 + TH04 + TH03 + TH02 + TH01;
 		const AVG = math / total || 0;
@@ -115,20 +131,7 @@ class ThCompoCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setColor(0x5970c1)
 			.setThumbnail(data.badgeUrls.small)
-			.setDescription(
-				`${TH13 > 0 ? `${TownHallEmoji[13]} ${TH13 < 10 ? `0${TH13}` : `${TH13}`}\n` : ''}` +
-				`${TH12 > 0 ? `${TownHallEmoji[12]} ${TH12 < 10 ? `0${TH12}` : `${TH12}`}\n` : ''}` +
-				`${TH11 > 0 ? `${TownHallEmoji[11]} ${TH11 < 10 ? `0${TH11}` : `${TH11}`}\n` : ''}` +
-				`${TH10 > 0 ? `${TownHallEmoji[10]} ${TH10 < 10 ? `0${TH10}` : `${TH10}`}\n` : ''}` +
-				`${TH09 > 0 ? `${TownHallEmoji[9]} ${TH09 < 10 ? `0${TH09}` : `${TH09}`}\n` : ''}` +
-				`${TH08 > 0 ? `${TownHallEmoji[8]} ${TH08 < 10 ? `0${TH08}` : `${TH08}`}\n` : ''}` +
-				`${TH07 > 0 ? `${TownHallEmoji[7]} ${TH07 < 10 ? `0${TH07}` : `${TH07}`}\n` : ''}` +
-				`${TH06 > 0 ? `${TownHallEmoji[6]} ${TH06 < 10 ? `0${TH06}` : `${TH06}`}\n` : ''}` +
-				`${TH05 > 0 ? `${TownHallEmoji[5]} ${TH05 < 10 ? `0${TH05}` : `${TH05}`}\n` : ''}` +
-				`${TH04 > 0 ? `${TownHallEmoji[4]} ${TH04 < 10 ? `0${TH04}` : `${TH04}`}\n` : ''}` +
-				`${TH03 > 0 ? `${TownHallEmoji[3]} ${TH03 < 10 ? `0${TH03}` : `${TH03}`}\n` : ''}` +
-				`${TH02 > 0 ? `${TownHallEmoji[2]} ${TH02 < 10 ? `0${TH02}` : `${TH02}`}\n` : ''}`
-			)
+			.setDescription(townHalls.map(th => `${TownHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``))
 			.setFooter(`Avg: ${AVG.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/539370925515210763.png');
 
 		const diff = process.hrtime(hrStart);
