@@ -70,7 +70,7 @@ class HelpCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 .setThumbnail(this.client.user.displayAvatarURL()).setAuthor('Command List')
-			.addField([
+			.setDescription([
 				`To view details for a command, do \`${prefix}help <command>\``,
 				'Official Discord: https://discord.gg/ppuppun'
 			]);
