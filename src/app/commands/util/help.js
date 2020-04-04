@@ -85,7 +85,7 @@ class HelpCommand extends Command {
 				config: 'Config'
 			}[category.id];
 
-			if (title) embed.addField(title, `${category.filter(cmd => cmd.aliases.length > 0).map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`).join('\n')}`);
+			if (title) embed.addField(title, `${category.filter(cmd => cmd.aliases.length > 0).map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`).join('\n')}`, true);
 		}
 
 		return message.util.send('For more help please join the support server, link is below.\nhttps://discord.gg/ppuppun', { embed });
