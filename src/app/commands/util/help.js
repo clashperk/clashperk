@@ -69,7 +69,7 @@ class HelpCommand extends Command {
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-//.setThumbnail(this.client.user.displayAvatarURL())
+
 .setAuthor('Command List')
 			.setDescription([
 				`To view details for a command, do \`${prefix}help <command>\``,
