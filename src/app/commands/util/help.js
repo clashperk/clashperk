@@ -68,8 +68,9 @@ class HelpCommand extends Command {
 	async execCommandList(message) {
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1).setThumbnail(this.client.user.displayAvatarURL())
-			.addField('Command List', [
+			.setColor(0x5970c1)
+.setThumbnail(this.client.user.displayAvatarURL()).setAuthor('Command List')
+			.addField([
 				`To view details for a command, do \`${prefix}help <command>\``,
 				'Official Discord: https://discord.gg/ppuppun'
 			]);
@@ -88,7 +89,7 @@ class HelpCommand extends Command {
 			if (title) embed.addField(title, `${category.filter(cmd => cmd.aliases.length > 0).map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`).join('\n')}`, true);
 		}
 
-		return message.util.send("ClashPerk Bot gives you info on Players and Clans from Clash of Clans. If you want more, please join our support server https://www.clashperk.com", { embed });
+		return message.util.send({ embed });
 	}
 }
 
