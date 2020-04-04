@@ -68,7 +68,7 @@ class HelpCommand extends Command {
 	async execCommandList(message) {
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(0x5970c1).setThumbnail(this.client.user.displayAvatarURL())
 			.addField('Command List', [
 				`To view details for a command, do \`${prefix}help <command>\``,
 				'Official Discord: https://discord.gg/ppuppun'
