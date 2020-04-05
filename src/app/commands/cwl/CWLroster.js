@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
 const moment = require('moment');
 const { geterror, fetcherror } = require('../../util/constants');
-const { emoji, townHallEmoji } = require('../../util/emojis');
+const { townHallEmoji } = require('../../util/emojis');
 
 class CwlRosterComamnd extends Command {
 	constructor() {
