@@ -61,7 +61,7 @@ class PlayerCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.league ? data.league.iconUrls.small : null)
-			.setTitle('Open In Game')
+			.setTitle('Open In-Game')
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`)
 			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`);
 
