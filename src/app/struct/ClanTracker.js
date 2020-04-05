@@ -1,7 +1,7 @@
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const { firestore } = require('./Database');
-const { TownHallEmoji, leagueEmojis } = require('../util/constants');
+const { townHallEmoji, leagueEmoji } = require('../util/emojis');
 const { emoji } = require('../util/emojis');
 const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
 
@@ -47,10 +47,10 @@ class FastTracker {
 					.setTitle(`${member.name} (${member.tag}) Joined`)
 					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${tag.replace(/#/g, '')}`)
 					.setDescription([
-						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
+						`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`${emoji.xp} ${member.expLevel}`,
 						`${emoji.warstar} ${member.warStars}`,
-						`${leagueEmojis[member.league ? member.league.id : 29000000]} ${member.trophies}`
+						`${leagueEmoji[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small);
 				embed.setTimestamp();
@@ -76,10 +76,10 @@ class FastTracker {
 					.setTitle(`${member.name} (${member.tag}) Left`)
 					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${tag.replace(/#/g, '')}`)
 					.setDescription([
-						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
+						`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 						`${emoji.xp} ${member.expLevel}`,
 						`${emoji.warstar} ${member.warStars}`,
-						`${leagueEmojis[member.league ? member.league.id : 29000000]} ${member.trophies}`
+						`${leagueEmoji[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small);
 				embed.setTimestamp();
@@ -118,23 +118,23 @@ class FastTracker {
 				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
+					item.donated += `${leagueEmoji[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key][member.tag].donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives} \n`;
+					item.received += `${leagueEmoji[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives} \n`;
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				const donations = member.donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations}* \n`;
+					item.donated += `${leagueEmoji[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations}* \n`;
 				}
 				const receives = member.donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmojis[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
+					item.received += `${leagueEmoji[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
 				}
 			}
 		}
