@@ -84,7 +84,7 @@ class CurrentWarCommand extends Command {
 				.addField('War State', 'Battle Day')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
-					`\\⭐ ${body.clan.stars} / ${body.opponent.stars}`,
+					`<:cp_star:696274427972681768> ${body.clan.stars} / ${body.opponent.stars}`,
 					`\\🔥 ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
 					`<:attacks:534757491775504425> ${body.clan.attacks} / ${body.opponent.attacks}`
 				])
@@ -94,7 +94,7 @@ class CurrentWarCommand extends Command {
 				.addField('War State', 'War Ended')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
-					`\\⭐ ${body.clan.stars} / ${body.opponent.stars}`,
+					`<:cp_star:696274427972681768> ${body.clan.stars} / ${body.opponent.stars}`,
 					`\\🔥 ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
 					`<:attacks:534757491775504425> ${body.clan.attacks} / ${body.opponent.attacks}`
 				])

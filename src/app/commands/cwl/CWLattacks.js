@@ -146,17 +146,17 @@ class CwlAttacksComamnd extends Command {
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
 						if (!member.attacks) continue;
-						missing += `${member.mapPosition}. ${member.name} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
+						missing += `${member.mapPosition}. ${member.name} <:cp_star:696274427972681768> ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
 					}
 
 					embed.addField('Attacks', `${missing || 'Nobody Attacked Yet'}`);
 					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
-							`\\⭐ ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.clan.attacks}`,
+							`<:cp_star:696274427972681768> ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.clan.attacks}`,
 							'',
 							`**${data.opponent.name}**`,
-							`\\⭐ ${data.opponent.stars} \\🔥 ${data.opponent.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.opponent.attacks}`
+							`<:cp_star:696274427972681768> ${data.opponent.stars} \\🔥 ${data.opponent.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.opponent.attacks}`
 						]);
 				}
 				if (data.state === 'inWar') {
@@ -166,17 +166,17 @@ class CwlAttacksComamnd extends Command {
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
 						if (!member.attacks) continue;
-						missing += `${member.mapPosition}. ${member.name} \\⭐ ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
+						missing += `${member.mapPosition}. ${member.name} <:cp_star:696274427972681768> ${member.attacks[0].stars} \\🔥 ${member.attacks[0].destructionPercentage}% \n`;
 					}
 
 					embed.addField('Attacks', `${missing || 'Nobody Attacked Yet'}`)
 						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
-							`\\⭐ ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.clan.attacks}`,
+							`<:cp_star:696274427972681768> ${data.clan.stars} \\🔥 ${data.clan.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.clan.attacks}`,
 							'',
 							`**${data.opponent.name}**`,
-							`\\⭐ ${data.opponent.stars} \\🔥 ${data.opponent.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.opponent.attacks}`
+							`<:cp_star:696274427972681768> ${data.opponent.stars} \\🔥 ${data.opponent.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.opponent.attacks}`
 						]);
 				}
 				if (data.state === 'preparation') {

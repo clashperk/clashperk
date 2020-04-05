@@ -95,7 +95,7 @@ class WarlogCommand extends Command {
 				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				embed.addField(`**${++index}.** \\🌀 Clan War League`, [
-					`\\⭐ ${our_stars} / ${opp_stars} \\🔥 ${our_destruct.toFixed(2)}% <:cp_sword:631128558206713856> ${our_attacks} `,
+					`<:cp_star:696274427972681768> ${our_stars} / ${opp_stars} \\🔥 ${our_destruct.toFixed(2)}% <:cp_sword:631128558206713856> ${our_attacks} `,
 					`\\🆚 ${size} vs ${size} \\⏲ ${time} ago`
 				]);
 			} else {
@@ -111,7 +111,7 @@ class WarlogCommand extends Command {
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${++index}.** ${result === 'Win war' ? '<:tick_:545874377523068930>' : '\\❌'} ${result} against **${opp_name} (${opp_tag})**`, [
-					`\\⭐ ${our_stars} / ${opp_stars} \\🔥 ${our_destruct}% / ${opp_destruct}% <:cp_sword:631128558206713856> ${our_attacks} `,
+					`<:cp_star:696274427972681768> ${our_stars} / ${opp_stars} \\🔥 ${our_destruct}% / ${opp_destruct}% <:cp_sword:631128558206713856> ${our_attacks} `,
 					`\\🆚 ${size} vs ${size} \\⏲ ${time} ago`
 				]);
 			}
