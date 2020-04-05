@@ -85,7 +85,7 @@ class CurrentWarCommand extends Command {
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
 					`<:cp_star:696274427972681768> ${body.clan.stars} / ${body.opponent.stars}`,
-					`\\🔥 ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+					`<:cp_fire:696276054058467328> ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
 					`<:attacks:534757491775504425> ${body.clan.attacks} / ${body.opponent.attacks}`
 				])
 				.addField('End Time', moment.duration(new Date(moment(body.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
@@ -95,7 +95,7 @@ class CurrentWarCommand extends Command {
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
 					`<:cp_star:696274427972681768> ${body.clan.stars} / ${body.opponent.stars}`,
-					`\\🔥 ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+					`<:cp_fire:696276054058467328> ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
 					`<:attacks:534757491775504425> ${body.clan.attacks} / ${body.opponent.attacks}`
 				])
 				.addField('War Ended', moment.duration(Date.now() - new Date(moment(body.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
