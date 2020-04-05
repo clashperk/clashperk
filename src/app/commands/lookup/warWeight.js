@@ -1,8 +1,9 @@
-const { Command, Flag, Argument } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
+const { geterror, fetcherror } = require('../../util/constants');
+const { emoji, townHallEmoji } = require('../../util/emojis');
 const { stripIndent } = require('common-tags');
 
 const API = process.env.APIS.split(',');
@@ -94,7 +95,7 @@ class WarWeightCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
 		const emojis = [
-			'<:townhall:631389478568591370>',
+			emoji.townhall,
 			'<:bk:693851738217906196>',
 			'<:aq:693851621892816976>',
 			'<:gw:693851681108131990>',
@@ -107,12 +108,12 @@ class WarWeightCommand extends Command {
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
 					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${TownHallEmoji[member.townHallLevel]} \`\u200e ${heroes}  ${this.padEnd(member.name)}\``;
+					return `${townHallEmoji[member.townHallLevel]} \`\u200e ${heroes}  ${this.padEnd(member.name)}\``;
 				}),
 			this.paginate(memberList, 25, 50)
 				.items.map(member => {
 					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${TownHallEmoji[member.townHallLevel]} \`\u200e ${heroes}  ${this.padEnd(member.name)}\``;
+					return `${townHallEmoji[member.townHallLevel]} \`\u200e ${heroes}  ${this.padEnd(member.name)}\``;
 				})
 		];
 

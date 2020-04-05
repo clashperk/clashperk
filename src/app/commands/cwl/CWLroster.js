@@ -3,7 +3,8 @@ const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
 const moment = require('moment');
-const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
+const { geterror, fetcherror } = require('../../util/constants');
+const { emoji, townHallEmoji } = require('../../util/emojis');
 
 class CwlRosterComamnd extends Command {
 	constructor() {
@@ -128,7 +129,7 @@ class CwlRosterComamnd extends Command {
 
 			embed.addField(`${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
 				this.chunk(townHalls)
-					.map(chunks => chunks.map(th => `${TownHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
+					.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
 						.join(' '))
 					.join('\n')
 			]);

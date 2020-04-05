@@ -6,6 +6,7 @@ const { firestore } = require('../../struct/Database');
 const moment = require('moment');
 require('moment-duration-format');
 const { geterror, fetcherror } = require('../../util/constants');
+const { emoji } = require('../../util/emojis');
 
 class CurrentWarCommand extends Command {
 	constructor() {
@@ -84,9 +85,9 @@ class CurrentWarCommand extends Command {
 				.addField('War State', 'Battle Day')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
-					`<:cp_star:696274427972681768> ${body.clan.stars} / ${body.opponent.stars}`,
-					`<:cp_fire:696276054058467328> ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
-					`<:attacks:534757491775504425> ${body.clan.attacks} / ${body.opponent.attacks}`
+					`${emoji.star} ${body.clan.stars} / ${body.opponent.stars}`,
+					`${emoji.destruction} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+					`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`
 				])
 				.addField('End Time', moment.duration(new Date(moment(body.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
 		} else if (body.state === 'warEnded') {
@@ -94,9 +95,9 @@ class CurrentWarCommand extends Command {
 				.addField('War State', 'War Ended')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
-					`<:cp_star:696274427972681768> ${body.clan.stars} / ${body.opponent.stars}`,
-					`<:cp_fire:696276054058467328> ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
-					`<:attacks:534757491775504425> ${body.clan.attacks} / ${body.opponent.attacks}`
+					`${emoji.star} ${body.clan.stars} / ${body.opponent.stars}`,
+					`${emoji.destruction} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+					`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`
 				])
 				.addField('War Ended', moment.duration(Date.now() - new Date(moment(body.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
 		}

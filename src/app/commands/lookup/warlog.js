@@ -6,6 +6,7 @@ const { firestore } = require('../../struct/Database');
 const moment = require('moment');
 require('moment-duration-format');
 const { geterror, fetcherror } = require('../../util/constants');
+const { emoji } = require('../../util/emojis');
 
 class WarlogCommand extends Command {
 	constructor() {
@@ -94,9 +95,9 @@ class WarlogCommand extends Command {
 				const EndTime = new Date(moment(endTimes[oppnames.indexOf(opp)]).toDate()).getTime();
 				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
-				embed.addField(`**${++index}.** \\🌀 Clan War League`, [
-					`<:cp_star:696274427972681768> ${our_stars} / ${opp_stars} <:cp_fire:696276054058467328> ${our_destruct.toFixed(2)}% <:cp_sword:631128558206713856> ${our_attacks} `,
-					`\\🆚 ${size} vs ${size} \\⏲ ${time} ago`
+				embed.addField(`**${++index}.** ${emoji.cwl} Clan War League`, [
+					`${emoji.star} ${our_stars} / ${opp_stars} ${emoji.destruction} ${our_destruct.toFixed(2)}% ${emoji.attacksword} ${our_attacks} `,
+					`${emoji.clanwar} ${size} vs ${size} ${emoji.clock} ${time} ago`
 				]);
 			} else {
 				const opp_name = opp;
@@ -110,9 +111,9 @@ class WarlogCommand extends Command {
 				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
-				embed.addField(`**${++index}.** ${result === 'Win war' ? '<:tick_:545874377523068930>' : '\\❌'} ${result} against **${opp_name} (${opp_tag})**`, [
-					`<:cp_star:696274427972681768> ${our_stars} / ${opp_stars} <:cp_fire:696276054058467328> ${our_destruct}% / ${opp_destruct}% <:cp_sword:631128558206713856> ${our_attacks} `,
-					`\\🆚 ${size} vs ${size} \\⏲ ${time} ago`
+				embed.addField(`**${++index}.** ${result === 'Win war' ? emoji.ok : emoji.wrong} ${result} against **${opp_name} (${opp_tag})**`, [
+					`${emoji.star} ${our_stars} / ${opp_stars} ${emoji.destruction} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks} `,
+					`${emoji.clanwar} ${size} vs ${size} ${emoji.clock} ${time} ago`
 				]);
 			}
 		}

@@ -5,6 +5,7 @@ const moment = require('moment');
 const { MessageEmbed } = require('discord.js');
 const { geterror, fetcherror } = require('../../util/constants');
 const { firestore } = require('../../struct/Database');
+const { emoji } = require('../../util/emojis');
 
 class CwlAttacksComamnd extends Command {
 	constructor() {
@@ -71,7 +72,7 @@ class CwlAttacksComamnd extends Command {
 	}
 
 	async exec(message, { data, round }) {
-		await message.util.send('**Fetching data... <a:loading:538989228403458089>**');
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
 			method: 'GET', timeout: 3000,
@@ -110,11 +111,11 @@ class CwlAttacksComamnd extends Command {
 					'',
 					Array(availableRounds)
 						.fill(0)
-						.map((x, i) => `**\`${i + 1}\`** <:green_tick:545874377523068930>`)
+						.map((x, i) => `**\`${i + 1}\`** ${emoji.ok}`)
 						.join('\n'),
 					Array(body.rounds.length - availableRounds)
 						.fill(0)
-						.map((x, i) => `**\`${i + availableRounds + 1}\`** <:red_tick:545968755423838209>`)
+						.map((x, i) => `**\`${i + availableRounds + 1}\`** ${emoji.wrong}`)
 						.join('\n')
 				]);
 			return message.util.send({ embed });
@@ -146,17 +147,17 @@ class CwlAttacksComamnd extends Command {
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
 						if (!member.attacks) continue;
-						missing += `${member.mapPosition}. ${member.name} <:cp_star:696274427972681768> ${member.attacks[0].stars} <:cp_fire:696276054058467328> ${member.attacks[0].destructionPercentage}% \n`;
+						missing += `${member.mapPosition}. ${member.name} ${emoji.star} ${member.attacks[0].stars} ${emoji.destruction} ${member.attacks[0].destructionPercentage}% \n`;
 					}
 
 					embed.addField('Attacks', `${missing || 'Nobody Attacked Yet'}`);
 					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
-							`<:cp_star:696274427972681768> ${data.clan.stars} <:cp_fire:696276054058467328> ${data.clan.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.clan.attacks}`,
+							`${emoji.star} ${data.clan.stars} ${emoji.destruction} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
 							'',
 							`**${data.opponent.name}**`,
-							`<:cp_star:696274427972681768> ${data.opponent.stars} <:cp_fire:696276054058467328> ${data.opponent.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.opponent.attacks}`
+							`${emoji.star} ${data.opponent.stars} ${emoji.destruction} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
 						]);
 				}
 				if (data.state === 'inWar') {
@@ -166,17 +167,17 @@ class CwlAttacksComamnd extends Command {
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
 						if (!member.attacks) continue;
-						missing += `${member.mapPosition}. ${member.name} <:cp_star:696274427972681768> ${member.attacks[0].stars} <:cp_fire:696276054058467328> ${member.attacks[0].destructionPercentage}% \n`;
+						missing += `${member.mapPosition}. ${member.name} ${emoji.star} ${member.attacks[0].stars} ${emoji.destruction} ${member.attacks[0].destructionPercentage}% \n`;
 					}
 
 					embed.addField('Attacks', `${missing || 'Nobody Attacked Yet'}`)
 						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
-							`<:cp_star:696274427972681768> ${data.clan.stars} <:cp_fire:696276054058467328> ${data.clan.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.clan.attacks}`,
+							`${emoji.star} ${data.clan.stars} ${emoji.destruction} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
 							'',
 							`**${data.opponent.name}**`,
-							`<:cp_star:696274427972681768> ${data.opponent.stars} <:cp_fire:696276054058467328> ${data.opponent.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.opponent.attacks}`
+							`${emoji.star} ${data.opponent.stars} ${emoji.destruction} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
 						]);
 				}
 				if (data.state === 'preparation') {

@@ -2,7 +2,8 @@ const { Command, Flag, Argument } = require('discord-akairo');
 const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
+const { geterror, fetcherror } = require('../../util/constants');
+const { emoji, townHallEmoji } = require('../../util/emojis');
 
 const API = process.env.APIS.split(',');
 
@@ -63,7 +64,7 @@ class MembersTHCommand extends Command {
 	}
 
 	async exec(message, { data, townhall }) {
-		await message.util.send('**Making list of your clan members... <a:loading:538989228403458089>**');
+		await message.util.send(`**Making list of your clan members... ${emoji.loading}**`);
 
 		const list = data.memberList.map(m => m.tag);
 		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
@@ -96,9 +97,9 @@ class MembersTHCommand extends Command {
 
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
-				.items.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`),
+				.items.map(member => `${townHallEmoji[member.townHallLevel]} ${member.name}`),
 			this.paginate(townhall ? filter : items, 25, 50)
-				.items.map(member => `${TownHallEmoji[member.townHallLevel]} ${member.name}`)
+				.items.map(member => `${townHallEmoji[member.townHallLevel]} ${member.name}`)
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });

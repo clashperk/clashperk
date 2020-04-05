@@ -2,6 +2,7 @@ const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const { firestore } = require('./Database');
 const { TownHallEmoji, leagueEmojis } = require('../util/constants');
+const { emoji } = require('../util/emojis');
 const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
 
 class FastTracker {
@@ -47,8 +48,8 @@ class FastTracker {
 					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${tag.replace(/#/g, '')}`)
 					.setDescription([
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
-						`<:xp:534752059501838346> ${member.expLevel}`,
-						`<:warstars:534759020309774337> ${member.warStars}`,
+						`${emoji.xp} ${member.expLevel}`,
+						`${emoji.warstar} ${member.warStars}`,
 						`${leagueEmojis[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small);
@@ -76,8 +77,8 @@ class FastTracker {
 					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${tag.replace(/#/g, '')}`)
 					.setDescription([
 						`${TownHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
-						`<:xp:534752059501838346> ${member.expLevel}`,
-						`<:warstars:534759020309774337> ${member.warStars}`,
+						`${emoji.xp} ${member.expLevel}`,
+						`${emoji.warstar} ${member.warStars}`,
 						`${leagueEmojis[member.league ? member.league.id : 29000000]} ${member.trophies}`
 					].join(' '))
 					.setFooter(clan.name, clan.badgeUrls.small);

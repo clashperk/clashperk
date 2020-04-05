@@ -2,10 +2,10 @@ const { Command, Argument, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const Fetch = require('../../struct/Fetch');
 const moment = require('moment');
-const { oneLine } = require('common-tags');
 const { MessageEmbed } = require('discord.js');
-const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
+const { geterror, fetcherror } = require('../../util/constants');
 const { firestore } = require('../../struct/Database');
+const { emoji, townHallEmoji } = require('../../util/emojis');
 
 class CwlRoundComamnd extends Command {
 	constructor() {
@@ -72,7 +72,7 @@ class CwlRoundComamnd extends Command {
 	}
 
 	async exec(message, { data, round }) {
-		await message.util.send('**Fetching data... <a:loading:538989228403458089>**');
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
 			method: 'GET', timeout: 3000,
 			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
@@ -110,11 +110,11 @@ class CwlRoundComamnd extends Command {
 					'',
 					Array(availableRounds)
 						.fill(0)
-						.map((x, i) => `**\`${i + 1}\`** <:green_tick:545874377523068930>`)
+						.map((x, i) => `**\`${i + 1}\`** ${emoji.ok}`)
 						.join('\n'),
 					Array(body.rounds.length - availableRounds)
 						.fill(0)
-						.map((x, i) => `**\`${i + availableRounds + 1}\`** <:red_tick:545968755423838209>`)
+						.map((x, i) => `**\`${i + availableRounds + 1}\`** ${emoji.wrong}`)
 						.join('\n')
 				]);
 			return message.util.send({ embed });
@@ -146,10 +146,10 @@ class CwlRoundComamnd extends Command {
 						.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
-							`<:cp_star:696274427972681768> ${data.clan.stars} <:cp_fire:696276054058467328> ${data.clan.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.clan.attacks}`,
+							`${emoji.star} ${data.clan.stars} ${emoji.destruction} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
 							'',
 							`**${data.opponent.name}**`,
-							`<:cp_star:696274427972681768> ${data.opponent.stars} <:cp_fire:696276054058467328> ${data.opponent.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.opponent.attacks}`
+							`${emoji.star} ${data.opponent.stars} ${emoji.destruction} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
 						]);
 				}
 				if (data.state === 'inWar') {
@@ -158,10 +158,10 @@ class CwlRoundComamnd extends Command {
 						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
-							`<:cp_star:696274427972681768> ${data.clan.stars} <:cp_fire:696276054058467328> ${data.clan.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.clan.attacks}`,
+							`${emoji.star} ${data.clan.stars} ${emoji.destruction} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
 							'',
 							`**${data.opponent.name}**`,
-							`<:cp_star:696274427972681768> ${data.opponent.stars} <:cp_fire:696276054058467328> ${data.opponent.destructionPercentage.toFixed(2)}% <:cp_sword:631128558206713856> ${data.opponent.attacks}`
+							`${emoji.star} ${data.opponent.stars} ${emoji.destruction} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
 						]);
 				}
 				if (data.state === 'preparation') {
@@ -230,7 +230,7 @@ class CwlRoundComamnd extends Command {
 		].filter(townHall => townHall.total !== 0).reverse();
 
 		return this.chunk(townHalls)
-			.map(chunks => chunks.map(th => `${TownHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
+			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
 				.join(' '))
 			.join('\n');
 	}

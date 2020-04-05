@@ -3,7 +3,8 @@ const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
+const { geterror, fetcherror } = require('../../util/constants');
+const { townHallEmoji, emoji } = require('../../util/emojis');
 
 const API = process.env.APIS.split(',');
 
@@ -57,7 +58,7 @@ class ThCompoCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		await message.util.send('**Calculating TH compositions of your clan... <a:loading:538989228403458089>**');
+		await message.util.send(`**Calculating TH compositions of your clan... ${emoji.loading}**`);
 		const hrStart = process.hrtime();
 		let TH13 = 0;
 		let TH12 = 0;
@@ -131,8 +132,8 @@ class ThCompoCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setColor(0x5970c1)
 			.setThumbnail(data.badgeUrls.small)
-			.setDescription(townHalls.map(th => `${TownHallEmoji[th.level]} ${this.padStart(th.total)}`))
-			.setFooter(`Avg: ${AVG.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/539370925515210763.png');
+			.setDescription(townHalls.map(th => `${townHallEmoji[th.level]} ${this.padStart(th.total)}`))
+			.setFooter(`Avg: ${AVG.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/696324063316148234.png');
 
 		const diff = process.hrtime(hrStart);
 		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;

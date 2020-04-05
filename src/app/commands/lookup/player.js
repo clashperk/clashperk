@@ -4,7 +4,8 @@ const moment = require('moment');
 const { firestore } = require('../../struct/Database');
 const Fetch = require('../../struct/Fetch');
 const { geterror, fetcherror } = require('../../util/constants');
-const { TownHallEmoji, HeroEmojis, leagueEmojis, StarEmoji, leagueId } = require('../../util/constants');
+const { leagueId } = require('../../util/constants');
+const { emoji, townHallEmoji, heroEmoji, leagueEmoji, starEmoji } = require('../../util/emojis');
 
 class PlayerCommand extends Command {
 	constructor() {
@@ -65,16 +66,16 @@ class PlayerCommand extends Command {
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`)
 			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`);
 
-		embed.addField('Town Hall', `${TownHallEmoji[data.townHallLevel]} ${data.townHallLevel}`, true);
+		embed.addField('Town Hall', `${townHallEmoji[data.townHallLevel]} ${data.townHallLevel}`, true);
 		embed.addField('Current League', [
-			`${leagueEmojis[data.league ? data.league.id : 29000000]} ${data.league ? data.league.name : 'Unranked'} (${data.trophies})`
+			`${leagueEmoji[data.league ? data.league.id : 29000000]} ${data.league ? data.league.name : 'Unranked'} (${data.trophies})`
 		], true);
-		embed.addField('XP Level', `<:xp:534752059501838346> ${data.expLevel}`, true);
+		embed.addField('XP Level', `${emoji.xp} ${data.expLevel}`, true);
 
-		embed.addField('Best Trophies', `${leagueEmojis[leagueId(data.bestTrophies)]} **${data.bestTrophies}**`, true);
+		embed.addField('Best Trophies', `${leagueEmoji[leagueId(data.bestTrophies)]} **${data.bestTrophies}**`, true);
 
-		embed.addField('War Stars', `<:warstars:534759020309774337> ${data.warStars}`, true);
-		embed.addField('Attacks/Defenses', `<:attacks:534757491775504425> ${data.attackWins} <:defense:534757493029732363> ${data.defenseWins}`, true);
+		embed.addField('War Stars', `${emoji.warstar} ${data.warStars}`, true);
+		embed.addField('Attacks/Defenses', `${emoji.attacksword} ${data.attackWins} ${emoji.shield} ${data.defenseWins}`, true);
 
 		embed.addField('Donations/Receives', [
 			`<:donates:534758602691575838> ${data.donations} <:receives:534758309060804608> ${data.donationsReceived}`
@@ -82,13 +83,13 @@ class PlayerCommand extends Command {
 
 		data.achievements.forEach(achievement => {
 			if (achievement.name === 'Friend in Need') {
-				embed.addField('Friend in Need', `${StarEmoji[achievement.stars]} ${achievement.value}`, true);
+				embed.addField('Friend in Need', `${starEmoji[achievement.stars]} ${achievement.value}`, true);
 			}
 			if (achievement.name === 'Games Champion') {
-				embed.addField('Clan Games Points', `${StarEmoji[achievement.stars]} ${achievement.value}`, true);
+				embed.addField('Clan Games Points', `${starEmoji[achievement.stars]} ${achievement.value}`, true);
 			}
 			if (achievement.name === 'War League Legend') {
-				embed.addField('CWL Stars', `${StarEmoji[achievement.stars]} ${achievement.value}`, true);
+				embed.addField('CWL Stars', `${starEmoji[achievement.stars]} ${achievement.value}`, true);
 			}
 		});
 
@@ -98,7 +99,7 @@ class PlayerCommand extends Command {
 				.replace(/member/g, 'Member')
 				.replace(/leader/g, 'Leader');
 			embed.addField('Clan', [
-				`<:clans:534765878118449152> ${role} of **${data.clan.name}** [${data.clan.tag}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.clan.tag.replace(/#/g, '')})`
+				`${emoji.clan} ${role} of **${data.clan.name}** [${data.clan.tag}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.clan.tag.replace(/#/g, '')})`
 			]);
 		}
 
@@ -106,9 +107,9 @@ class PlayerCommand extends Command {
 		data.heroes.forEach(hero => {
 			if (hero.village === 'home') {
 				if (hero.level === hero.maxLevel) {
-					heroLevels += `${HeroEmojis[hero.name]} **${hero.level}**\u2002\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} **${hero.level}**\u2002\u2002`;
 				} else {
-					heroLevels += `${HeroEmojis[hero.name]} ${hero.level}\u2002\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} ${hero.level}\u2002\u2002`;
 				}
 			}
 		});

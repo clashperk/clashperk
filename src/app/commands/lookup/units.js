@@ -3,7 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
-const { TroopEmojis, HeroEmojis, BuilderTroops, SpellEmojis } = require('../../util/constants');
+const { homeTroopsEmoji, builderTroopsEmoji, heroEmoji, spellEmoji } = require('../../util/emojis');
 
 class UnitsCommand extends Command {
 	constructor() {
@@ -66,9 +66,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home' && !['Wall Wrecker', 'Stone Slammer', 'Battle Blimp', 'Siege Barracks'].includes(troop.name)) {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					troopLevels += `${TroopEmojis[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002\u2002`;
+					troopLevels += `${homeTroopsEmoji[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002\u2002`;
 				} else {
-					troopLevels += `${TroopEmojis[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002\u2002`;
+					troopLevels += `${homeTroopsEmoji[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002\u2002`;
 				}
 				if (index === 4) {
 					troopLevels += '#';
@@ -84,9 +84,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home' && ['Wall Wrecker', 'Stone Slammer', 'Battle Blimp', 'Siege Barracks'].includes(troop.name)) {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					SiegeMachines += `${TroopEmojis[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002\u2002`;
+					SiegeMachines += `${homeTroopsEmoji[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002\u2002`;
 				} else {
-					SiegeMachines += `${TroopEmojis[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002\u2002`;
+					SiegeMachines += `${homeTroopsEmoji[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002\u2002`;
 				}
 				if (index === 4) {
 					troopLevels += '#';
@@ -102,9 +102,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'builderBase') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					builderTroops += `${BuilderTroops[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002\u2002`;
 				} else {
-					builderTroops += `${BuilderTroops[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002\u2002`;
 				}
 				if (index === 4) {
 					builderTroops += '#';
@@ -120,9 +120,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					spellLevels += `${SpellEmojis[spell.name]} **\`${spell.level > 9 ? '' : '\u200b '}${spell.level}\`**\u2002\u2002`;
+					spellLevels += `${spellEmoji[spell.name]} **\`${spell.level > 9 ? '' : '\u200b '}${spell.level}\`**\u2002\u2002`;
 				} else {
-					spellLevels += `${SpellEmojis[spell.name]} \`${spell.level > 9 ? '' : '\u200b '}${spell.level}\`\u2002\u2002`;
+					spellLevels += `${spellEmoji[spell.name]} \`${spell.level > 9 ? '' : '\u200b '}${spell.level}\`\u2002\u2002`;
 				}
 				if (index === 4) {
 					spellLevels += '#';
@@ -137,9 +137,9 @@ class UnitsCommand extends Command {
 		data.heroes.forEach(hero => {
 			if (hero.village === 'home') {
 				if (hero.level === hero.maxLevel) {
-					heroLevels += `${HeroEmojis[hero.name]} **\`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`**\u2002\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} **\`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`**\u2002\u2002`;
 				} else {
-					heroLevels += `${HeroEmojis[hero.name]} \`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`\u2002\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} \`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`\u2002\u2002`;
 				}
 
 				if (index === 4) {
@@ -152,9 +152,9 @@ class UnitsCommand extends Command {
 		data.heroes.forEach(hero => {
 			if (hero.village === 'builderBase') {
 				if (hero.level === hero.maxLevel) {
-					heroLevels += `${HeroEmojis[hero.name]} **\`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`**\u2002\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} **\`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`**\u2002\u2002`;
 				} else {
-					heroLevels += `${HeroEmojis[hero.name]} \`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`\u2002\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} \`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`\u2002\u2002`;
 				}
 			}
 		});

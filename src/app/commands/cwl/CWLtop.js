@@ -2,8 +2,8 @@ const { Command, Flag } = require('discord-akairo');
 const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror, TownHallEmoji } = require('../../util/constants');
-const { Util } = require('discord.js');
+const { geterror, fetcherror } = require('../../util/constants');
+const { emoji, townHallEmoji } = require('../../util/emojis');
 
 class CWLMvpCommand extends Command {
 	constructor() {
@@ -55,7 +55,7 @@ class CWLMvpCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		await message.util.send('**Making list... <a:loading:538989228403458089>**');
+		await message.util.send(`**Making list... ${emoji.loading}**`);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
@@ -74,12 +74,12 @@ class CWLMvpCommand extends Command {
 		embed.setDescription([
 			'List of most valuable players, sorted by total stars of CWL',
 			'',
-			`<:townhall:631389478568591370>\`» STAR  ${this.padEnd('NAME')}\``,
+			`${emoji.townhall}\`» STAR  ${this.padEnd('NAME')}\``,
 			items.slice(0, 30)
 				.map(member => {
 					const name = this.padEnd(member.name);
 					const star = this.padStart(member.cwlStar.toString());
-					return `${TownHallEmoji[member.townHallLevel]}\`» ${star}  ${name}\``;
+					return `${townHallEmoji[member.townHallLevel]}\`» ${star}  ${name}\``;
 				})
 				.join('\n')
 		]);

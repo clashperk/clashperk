@@ -2,7 +2,7 @@ const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
-const { TownHallEmoji, HeroEmojis } = require('../../util/constants');
+const { emoji, townHallEmoji, heroEmoji } = require('../../util/emojis');
 
 class ProfileCommand extends Command {
 	constructor() {
@@ -62,7 +62,7 @@ class ProfileCommand extends Command {
 			if (!res.ok) continue;
 			const data = await res.json();
 
-			embed.addField(`${++accounts}. ${TownHallEmoji[data.townHallLevel]} ${data.name}`, [
+			embed.addField(`${++accounts}. ${townHallEmoji[data.townHallLevel]} ${data.name}`, [
 				this.heroes(data),
 				this.clanName(data)
 			]);
@@ -74,20 +74,19 @@ class ProfileCommand extends Command {
 	}
 
 	clanName(data) {
-		const clanEmoji = this.client.emojis.cache.get('534765878118449152');
-		if (!data.clan) return `${clanEmoji} Not in a Clan`;
+		if (!data.clan) return `${emoji.clan} Not in a Clan`;
 		const clanRole = data.role.replace(/admin/g, 'Elder')
 			.replace(/coLeader/g, 'Co-Leader')
 			.replace(/member/g, 'Member')
 			.replace(/leader/g, 'Leader');
 
-		return `${clanEmoji} ${clanRole} of ${data.clan.name}`;
+		return `${emoji.clan} ${clanRole} of ${data.clan.name}`;
 	}
 
 	heroes(data) {
 		if (!data.heroes) return '';
 		return data.heroes.filter(hero => hero.village === 'home')
-			.map(hero => `${HeroEmojis[hero.name]} ${hero.level}`).join(' ');
+			.map(hero => `${heroEmoji[hero.name]} ${hero.level}`).join(' ');
 	}
 
 	async getProfile(id) {

@@ -2,6 +2,7 @@ const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const qs = require('querystring');
+const { emoji } = require('../../util/emojis');
 
 const STATUS = {
 	400: 'client provided incorrect parameters for the request.',
@@ -69,7 +70,7 @@ class ClanSearchCommand extends Command {
 				`Level: ${clan.clanLevel}`,
 				`Members: ${clan.members}`,
 				`Points: ${clan.clanPoints}`,
-				`Status: ${clan_type} \\🏆 ${clan.requiredTrophies}`,
+				`Status: ${clan_type} ${emoji.trophy} ${clan.requiredTrophies}`,
 				`${clan.location ? `Location: ${clan.location.name}` : ''}`
 			], true);
 		}

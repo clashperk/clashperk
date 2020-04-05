@@ -3,6 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
+const { emoji } = require('../../util/emojis');
 
 class ClanCommand extends Command {
 	constructor() {
@@ -71,9 +72,9 @@ class ClanCommand extends Command {
 			.setThumbnail(data.badgeUrls.medium)
 			.addField('Level', data.clanLevel, true)
 			.addField('Members', data.members, true)
-			.addField('Required Trophies', `<:trophyc:534753357399588874> ${data.requiredTrophies}`, true)
+			.addField('Required Trophies', `${emoji.trophy} ${data.requiredTrophies}`, true)
 			.addField('Clan Type', clan_type, true)
-			.addField('Clan Points', `<:trophyc:534753357399588874> ${data.clanPoints} <:versustrophies:549844310858661888> ${data.clanVersusPoints}`, true)
+			.addField('Clan Points', `${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints}`, true)
 			.addField('War Log', data.isWarLogPublic ? 'Public' : 'Private', true)
 			.addField('War Wins', data.warWins, true)
 			.addField('Win Streak', data.warWinStreak, true)
