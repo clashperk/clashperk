@@ -62,7 +62,7 @@ class UnitsCommand extends Command {
 
 		let index = 0;
 		let troopLevels = '';
-		data.troops.forEach(troop => {
+		data.troops.filter(troop => ['Super Barbarian', 'Super Wall Breaker', 'Super Giant', 'Sneaky Goblin'].includes(troop.name)).forEach(troop => {
 			if (troop.village === 'home' && !['Wall Wrecker', 'Stone Slammer', 'Battle Blimp', 'Siege Barracks'].includes(troop.name)) {
 				index++;
 				if (troop.level === troop.maxLevel) {
