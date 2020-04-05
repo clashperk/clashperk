@@ -96,7 +96,7 @@ class WarlogCommand extends Command {
 				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				embed.addField(`**${++index}.** ${emoji.cwl} Clan War League`, [
-					`${emoji.star} ${our_stars} / ${opp_stars} ${emoji.destruction} ${our_destruct.toFixed(2)}% ${emoji.attacksword} ${our_attacks} `,
+					`${emoji.star} ${our_stars} / ${opp_stars} ${emoji.fire} ${our_destruct.toFixed(2)}% ${emoji.attacksword} ${our_attacks} `,
 					`${emoji.clanwar} ${size} vs ${size} ${emoji.clock} ${time} ago`
 				]);
 			} else {
@@ -112,7 +112,7 @@ class WarlogCommand extends Command {
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${++index}.** ${result === 'Win war' ? emoji.ok : emoji.wrong} ${result} against **${opp_name} (${opp_tag})**`, [
-					`${emoji.star} ${our_stars} / ${opp_stars} ${emoji.destruction} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks} `,
+					`${emoji.star} ${our_stars} / ${opp_stars} ${emoji.fire} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks} `,
 					`${emoji.clanwar} ${size} vs ${size} ${emoji.clock} ${time} ago`
 				]);
 			}

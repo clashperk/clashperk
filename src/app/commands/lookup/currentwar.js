@@ -86,7 +86,7 @@ class CurrentWarCommand extends Command {
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
 					`${emoji.star} ${body.clan.stars} / ${body.opponent.stars}`,
-					`${emoji.destruction} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+					`${emoji.fire} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
 					`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`
 				])
 				.addField('End Time', moment.duration(new Date(moment(body.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
@@ -96,7 +96,7 @@ class CurrentWarCommand extends Command {
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
 				.addField('War Stats', [
 					`${emoji.star} ${body.clan.stars} / ${body.opponent.stars}`,
-					`${emoji.destruction} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+					`${emoji.fire} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
 					`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`
 				])
 				.addField('War Ended', moment.duration(Date.now() - new Date(moment(body.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
