@@ -98,7 +98,7 @@ class WarWeightCommand extends Command {
 			'<:bk:693851738217906196>',
 			'<:aq:693851621892816976>',
 			'<:gw:693851681108131990>',
-			'<:rc:693851787857362974>'
+			'<:rc:696273448514879538>'
 		];
 
 		const header = stripIndent(`${emojis[0]} \u200b \u200b \u200b ${emojis[1]} ${emojis[2]} ${emojis[3]} \u200b ${emojis[4]}`);
