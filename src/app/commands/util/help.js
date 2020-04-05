@@ -69,8 +69,7 @@ class HelpCommand extends Command {
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-
-.setAuthor('Command List')
+			.setAuthor('Command List')
 			.setDescription([
 				`To view details for a command, do \`${prefix}help <command>\``,
 				'Official Discord: https://discord.gg/ppuppun'
