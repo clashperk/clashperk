@@ -95,7 +95,7 @@ class WarWeightCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
 		const emojis = [
-			emoji.townhall,
+			'<:townhall:696655174025871461>',
 			'<:bk:693851738217906196>',
 			'<:aq:693851621892816976>',
 			'<:gw:693851681108131990>',
