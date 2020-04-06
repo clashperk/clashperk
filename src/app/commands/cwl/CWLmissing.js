@@ -146,7 +146,7 @@ class CwlMissingComamnd extends Command {
 							++index;
 							continue;
 						}
-						missing += `\`${++index} ${member.name}\`\n`;
+						missing += `\`${this.index(++index)} ${this.padEnd(member.name)}\`\n`;
 					}
 
 					embed.setDescription([
@@ -176,14 +176,14 @@ class CwlMissingComamnd extends Command {
 							++index;
 							continue;
 						}
-						missing += `${++index}. ${member.name} \n`;
+						missing += `\`${this.index(++index)} ${this.padEnd(member.name)}\`\n`;
 					}
 
 					embed.setDescription([
 						'**War Against**',
 						`${oppclan.name} (${oppclan.tag})`,
 						'',
-						`**Missing Attacks** - ${myclan.members.filter(m => !m.attacks).length}`,
+						`**Missing Attacks** - ${myclan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
 						missing || 'All Players Attacked'
 					]);
 					embed.addField('State', 'In War')
@@ -211,6 +211,14 @@ class CwlMissingComamnd extends Command {
 
 	sort(items) {
 		return items.sort((a, b) => a.mapPosition - b.mapPosition);
+	}
+
+	index(num) {
+		return num.toString().padStart(2, '0');
+	}
+
+	padEnd(data) {
+		return data.padEnd(20, ' ');
 	}
 }
 
