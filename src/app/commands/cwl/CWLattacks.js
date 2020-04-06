@@ -148,7 +148,7 @@ class CwlAttacksComamnd extends Command {
 				embed.setAuthor(`${myclan.name} (${myclan.tag})`, myclan.badgeUrls.medium);
 				if (data.state === 'warEnded') {
 					const end = new Date(moment(data.endTime).toDate()).getTime();
-					let missing = '';
+					let attacks = '';
 					let index = 0;
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
@@ -156,7 +156,7 @@ class CwlAttacksComamnd extends Command {
 							++index;
 							continue;
 						}
-						missing += `\`${this.index(++index)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
+						attacks += `\`${this.index(++index)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
 					}
 
 					embed.setDescription([
@@ -166,8 +166,8 @@ class CwlAttacksComamnd extends Command {
 						'**State**',
 						'War Ended',
 						'',
-						'**Attacks**',
-						`${missing || 'Nobody Attacked'}`
+						`**Attacks** - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}`,
+						`${attacks || 'Nobody Attacked'}`
 					]);
 					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
@@ -180,7 +180,7 @@ class CwlAttacksComamnd extends Command {
 				}
 				if (data.state === 'inWar') {
 					const started = new Date(moment(data.startTime).toDate()).getTime();
-					let missing = '';
+					let attacks = '';
 					let index = 0;
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
@@ -188,7 +188,7 @@ class CwlAttacksComamnd extends Command {
 							++index;
 							continue;
 						}
-						missing += `\`${this.index(++index)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
+						attacks += `\`${this.index(++index)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
 					}
 
 					embed.setDescription([
@@ -199,9 +199,9 @@ class CwlAttacksComamnd extends Command {
 						'In War',
 						'',
 						'**Attacks**',
-						`${missing || 'Nobody Attacked Yet'}`
-					])
-						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+						`${attacks || 'Nobody Attacked Yet'}`
+					]);
+					embed.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
 							`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
