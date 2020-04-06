@@ -204,7 +204,7 @@ class CwlAttacksComamnd extends Command {
 	}
 
 	padStart(data) {
-		return data.padStart();
+		return data.padStart(20, ' ');
 	}
 
 	index(num) {
