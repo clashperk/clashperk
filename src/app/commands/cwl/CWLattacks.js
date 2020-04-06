@@ -7,6 +7,13 @@ const { geterror, fetcherror } = require('../../util/constants');
 const { firestore } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
 
+const star = {
+	0: '☆☆☆',
+	1: '★☆☆',
+	2: '★★☆',
+	3: '★★★'
+};
+
 class CwlAttacksComamnd extends Command {
 	constructor() {
 		super('cwl-attacks', {
@@ -147,10 +154,10 @@ class CwlAttacksComamnd extends Command {
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
 						if (!member.attacks) continue;
-						missing += `${member.mapPosition}. ${member.name} ${emoji.star} ${member.attacks[0].stars} ${emoji.fire} ${member.attacks[0].destructionPercentage}% \n`;
+						missing += `\`${this.index(member.mapPosition)} ${star[member.attacks[0].stars]} ${this.padStart(member.name)}\`\n`;
 					}
 
-					embed.addField('Attacks', `${missing || 'Nobody Attacked Yet'}`);
+					embed.addField('Attacks', `${missing || 'Nobody Attacked'}`);
 					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
@@ -167,7 +174,7 @@ class CwlAttacksComamnd extends Command {
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
 						if (!member.attacks) continue;
-						missing += `${member.mapPosition}. ${member.name} ${emoji.star} ${member.attacks[0].stars} ${emoji.fire} ${member.attacks[0].destructionPercentage}% \n`;
+						missing += `\`${this.index(member.mapPosition)} ${star[member.attacks[0].stars]} ${this.padStart(member.name)}\`\n`;
 					}
 
 					embed.addField('Attacks', `${missing || 'Nobody Attacked Yet'}`)
@@ -194,6 +201,14 @@ class CwlAttacksComamnd extends Command {
 
 	sort(items) {
 		return items.sort((a, b) => a.mapPosition - b.mapPosition);
+	}
+
+	padStart(data) {
+		return data.padStart();
+	}
+
+	index(num) {
+		return num.toString().padStart(2, '0');
 	}
 }
 
