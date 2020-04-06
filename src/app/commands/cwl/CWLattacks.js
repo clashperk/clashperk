@@ -154,10 +154,10 @@ class CwlAttacksComamnd extends Command {
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
 						if (!member.attacks) continue;
-						missing += `\`${this.index(member.mapPosition)} ${star[member.attacks[0].stars]} ${this.padStart(member.name)}\`\n`;
+						missing += `\`${this.index(member.mapPosition)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
 					}
 
-					embed.addField('Attacks', `${missing || 'Nobody Attacked'}`);
+					embed.setDescription(`${missing || 'Nobody Attacked'}`);
 					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
@@ -174,10 +174,10 @@ class CwlAttacksComamnd extends Command {
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
 						if (!member.attacks) continue;
-						missing += `\`${this.index(member.mapPosition)} ${star[member.attacks[0].stars]} ${this.padStart(member.name)}\`\n`;
+						missing += `\`${this.index(member.mapPosition)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
 					}
 
-					embed.addField('Attacks', `${missing || 'Nobody Attacked Yet'}`)
+					embed.setDescription(`${missing || 'Nobody Attacked Yet'}`)
 						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
@@ -203,12 +203,16 @@ class CwlAttacksComamnd extends Command {
 		return items.sort((a, b) => a.mapPosition - b.mapPosition);
 	}
 
-	padStart(data) {
-		return data.padStart(20, ' ');
+	padEnd(data) {
+		return data.padEnd(20, ' ');
 	}
 
 	index(num) {
 		return num.toString().padStart(2, '0');
+	}
+
+	Percentage(num) {
+		return num.toString.padStart(2, ' ');
 	}
 }
 
