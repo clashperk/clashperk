@@ -3,6 +3,7 @@ const fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
 const { leagueEmoji } = require('../../util/emojis');
+const { Util } = require('discord.js');
 
 class MembersLeagueCommand extends Command {
 	constructor() {
@@ -59,9 +60,9 @@ class MembersLeagueCommand extends Command {
 
 		const pages = [
 			this.paginate(data.memberList, 0, 25)
-				.items.map(member => `${leagueEmoji[member.league.id]} ${member.name}`),
+				.items.map(member => `${leagueEmoji[member.league.id]} ${Util.escapeMarkdown(member.name)}`),
 			this.paginate(data.memberList, 25, 50)
-				.items.map(member => `${leagueEmoji[member.league.id]} ${member.name}`)
+				.items.map(member => `${leagueEmoji[member.league.id]} ${Util.escapeMarkdown(member.name)}`)
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });

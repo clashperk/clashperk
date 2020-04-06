@@ -5,7 +5,6 @@ const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
 const { emoji } = require('../../util/emojis');
-
 const API = process.env.APIS.split(',');
 
 class CwlMembersComamnd extends Command {
@@ -118,7 +117,7 @@ class CwlMembersComamnd extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${memberList.length}`, data.badgeUrls.medium);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
-			members += `${this.padStart(member.townHallLevel)}  ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join('  ')}  ${member.name}`;
+			members += `${this.padStart(member.townHallLevel)}  ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join('  ')}  ${Util.escapeMarkdown(member.name)}`;
 			members += '\n';
 		}
 

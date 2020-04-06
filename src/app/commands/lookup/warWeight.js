@@ -3,8 +3,9 @@ const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
-const { emoji, townHallEmoji } = require('../../util/emojis');
+const { townHallEmoji } = require('../../util/emojis');
 const { stripIndent } = require('common-tags');
+const { Util } = require('discord.js');
 
 const API = process.env.APIS.split(',');
 
@@ -189,7 +190,7 @@ class WarWeightCommand extends Command {
 	}
 
 	padEnd(data) {
-		return data.padEnd(20, ' ');
+		return Util.escapeMarkdown(data).padEnd(20, ' ');
 	}
 
 	paginate(items, start, end) {

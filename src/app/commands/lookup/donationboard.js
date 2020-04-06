@@ -2,6 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
+const { Util } = require('discord.js');
 
 class DonationBoardCommand extends Command {
 	constructor() {
@@ -147,7 +148,7 @@ class DonationBoardCommand extends Command {
 	}
 
 	padEnd(data) {
-		return data.padEnd(20, ' ');
+		return Util.escapeMarkdown(data).padEnd(20, ' ');
 	}
 
 	donation(data) {

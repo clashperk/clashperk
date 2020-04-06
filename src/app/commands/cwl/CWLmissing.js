@@ -6,6 +6,7 @@ const { MessageEmbed } = require('discord.js');
 const { geterror, fetcherror } = require('../../util/constants');
 const { firestore } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
+const { Util } = require('discord.js');
 
 class CwlMissingComamnd extends Command {
 	constructor() {
@@ -222,7 +223,7 @@ class CwlMissingComamnd extends Command {
 	}
 
 	padEnd(data) {
-		return data.padEnd(20, ' ');
+		return Util.escapeMarkdown(data).padEnd(20, ' ');
 	}
 }
 

@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
 const { emoji, townHallEmoji } = require('../../util/emojis');
+const { Util } = require('discord.js');
 
 const API = process.env.APIS.split(',');
 
@@ -97,9 +98,9 @@ class MembersTHCommand extends Command {
 
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
-				.items.map(member => `${townHallEmoji[member.townHallLevel]} ${member.name}`),
+				.items.map(member => `${townHallEmoji[member.townHallLevel]} ${Util.escapeMarkdown(member.name)}`),
 			this.paginate(townhall ? filter : items, 25, 50)
-				.items.map(member => `${townHallEmoji[member.townHallLevel]} ${member.name}`)
+				.items.map(member => `${townHallEmoji[member.townHallLevel]} ${Util.escapeMarkdown(member.name)}`)
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });

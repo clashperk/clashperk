@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
 const { emoji, townHallEmoji } = require('../../util/emojis');
+const { Util } = require('discord.js');
 
 class CWLMvpCommand extends Command {
 	constructor() {
@@ -95,8 +96,8 @@ class CWLMvpCommand extends Command {
 		return msg.padStart(4, ' ');
 	}
 
-	padEnd(msg) {
-		return msg.padEnd(20, ' ');
+	padEnd(data) {
+		return Util.escapeMarkdown(data).padEnd(20, ' ');
 	}
 }
 
