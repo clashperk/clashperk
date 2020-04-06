@@ -157,8 +157,6 @@ class CwlAttacksComamnd extends Command {
 						missing += `\`${this.index(member.mapPosition)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
 					}
 
-					message.channel.send(missing.length);
-
 					embed.setDescription(`${missing || 'Nobody Attacked'}`);
 					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
