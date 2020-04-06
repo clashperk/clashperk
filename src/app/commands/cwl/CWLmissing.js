@@ -153,12 +153,14 @@ class CwlMissingComamnd extends Command {
 						'**War Against**',
 						`${oppclan.name} (${oppclan.tag})`,
 						'',
+						'**State**',
+						'War Ended',
+						'',
 						`**Missed Attacks** - ${myclan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
 						missing || 'All Players Attacked'
 					]);
 					const end = new Date(moment(data.endTime).toDate()).getTime();
-					embed.addField('State', 'War Ended')
-						.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
 							`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
@@ -183,11 +185,13 @@ class CwlMissingComamnd extends Command {
 						'**War Against**',
 						`${oppclan.name} (${oppclan.tag})`,
 						'',
+						'**State**',
+						'In War',
+						'',
 						`**Missing Attacks** - ${myclan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
 						missing || 'All Players Attacked'
 					]);
-					embed.addField('State', 'In War')
-						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+					embed.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
 							`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
