@@ -145,11 +145,9 @@ class CwlAttacksComamnd extends Command {
 			if ((data.clan && data.clan.tag === clan.tag) || (data.opponent && data.opponent.tag === clan.tag)) {
 				const myclan = data.clan.tag === clan.tag ? data.clan : data.opponent;
 				const oppclan = data.clan.tag === clan.tag ? data.opponent : data.clan;
-				embed.setAuthor(`${myclan.name} (${myclan.tag})`, myclan.badgeUrls.medium)
-					.addField('War Against', `${oppclan.name} (${oppclan.tag})`);
+				embed.setAuthor(`${myclan.name} (${myclan.tag})`, myclan.badgeUrls.medium);
 				if (data.state === 'warEnded') {
 					const end = new Date(moment(data.endTime).toDate()).getTime();
-					embed.addField('State', 'War Ended');
 					let missing = '';
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
@@ -157,7 +155,16 @@ class CwlAttacksComamnd extends Command {
 						missing += `\`${this.index(member.mapPosition)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
 					}
 
-					embed.setDescription(`${missing || 'Nobody Attacked'}`);
+					embed.setDescription([
+						'**War Against**',
+						`${oppclan.name} (${oppclan.tag})`,
+						'',
+						'**State**',
+						'War Ended',
+						'',
+						'**Attacks**',
+						`${missing || 'Nobody Attacked'}`
+					]);
 					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
@@ -168,7 +175,6 @@ class CwlAttacksComamnd extends Command {
 						]);
 				}
 				if (data.state === 'inWar') {
-					embed.addField('State', 'In War');
 					const started = new Date(moment(data.startTime).toDate()).getTime();
 					let missing = '';
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
@@ -177,7 +183,16 @@ class CwlAttacksComamnd extends Command {
 						missing += `\`${this.index(member.mapPosition)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
 					}
 
-					embed.setDescription(`${missing || 'Nobody Attacked Yet'}`)
+					embed.setDescription([
+						'**War Against**',
+						`${oppclan.name} (${oppclan.tag})`,
+						'',
+						'**State**',
+						'In War',
+						'',
+						'**Attacks**',
+						`${missing || 'Nobody Attacked Yet'}`
+					])
 						.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 						.addField('Stats', [
 							`**${data.clan.name}**`,
