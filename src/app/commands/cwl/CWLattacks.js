@@ -228,7 +228,7 @@ class CwlAttacksComamnd extends Command {
 	}
 
 	padEnd(data) {
-		return Util.escapeMarkdown(data).padEnd(20, ' ');
+		return Util.escapeInlineCode(data).padEnd(20, ' ');
 	}
 
 	index(num) {
