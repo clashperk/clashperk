@@ -142,7 +142,10 @@ class CwlMissingComamnd extends Command {
 					let missing = '';
 					let index = 0;
 					for (const member of this.sort(myclan.members)) {
-						if (member.attacks && member.attacks.length === 1) continue;
+						if (member.attacks && member.attacks.length === 1) {
+							++index;
+							continue;
+						}
 						missing += `${++index}. ${member.name} \n`;
 					}
 
@@ -169,7 +172,10 @@ class CwlMissingComamnd extends Command {
 					let missing = '';
 					let index = 0;
 					for (const member of this.sort(myclan.members)) {
-						if (member.attacks && member.attacks.length === 1) continue;
+						if (member.attacks && member.attacks.length === 1) {
+							++index;
+							continue;
+						}
 						missing += `${++index}. ${member.name} \n`;
 					}
 

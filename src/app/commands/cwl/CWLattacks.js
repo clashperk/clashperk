@@ -149,10 +149,14 @@ class CwlAttacksComamnd extends Command {
 				if (data.state === 'warEnded') {
 					const end = new Date(moment(data.endTime).toDate()).getTime();
 					let missing = '';
+					let index = 0;
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
-						if (!member.attacks) continue;
-						missing += `\`${this.index(member.mapPosition)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
+						if (!member.attacks) {
+							++index;
+							continue;
+						}
+						missing += `\`${this.index(++index)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
 					}
 
 					embed.setDescription([
@@ -177,10 +181,14 @@ class CwlAttacksComamnd extends Command {
 				if (data.state === 'inWar') {
 					const started = new Date(moment(data.startTime).toDate()).getTime();
 					let missing = '';
+					let index = 0;
 					const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 					for (const member of this.sort(clanMembers)) {
-						if (!member.attacks) continue;
-						missing += `\`${this.index(member.mapPosition)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
+						if (!member.attacks) {
+							++index;
+							continue;
+						}
+						missing += `\`${this.index(++index)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
 					}
 
 					embed.setDescription([
