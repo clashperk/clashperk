@@ -146,14 +146,14 @@ class CwlMissingComamnd extends Command {
 							++index;
 							continue;
 						}
-						missing += `${++index}. ${member.name} \n`;
+						missing += `\`${++index} ${member.name}\`\n`;
 					}
 
 					embed.setDescription([
 						'**War Against**',
 						`${oppclan.name} (${oppclan.tag})`,
 						'',
-						'**Missed Attacks**',
+						`**Missed Attacks** - ${myclan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
 						missing || 'All Players Attacked'
 					]);
 					const end = new Date(moment(data.endTime).toDate()).getTime();
@@ -183,7 +183,7 @@ class CwlMissingComamnd extends Command {
 						'**War Against**',
 						`${oppclan.name} (${oppclan.tag})`,
 						'',
-						'**Missing Attacks**',
+						`**Missing Attacks** - ${myclan.members.filter(m => !m.attacks).length}`,
 						missing || 'All Players Attacked'
 					]);
 					embed.addField('State', 'In War')
