@@ -90,18 +90,18 @@ class DonationBoardCommand extends Command {
 			]).setFooter('Page 1/2')
 		});
 
-		for (const emoji of ['⬅', '➡']) {
+		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅', '➡'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 45000, max: 10 }
 		);
 
 		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡') {
+			if (reaction.emoji.name === '➡️') {
 				await msg.edit({
 					embed: embed.setDescription([
 						header,
@@ -112,7 +112,7 @@ class DonationBoardCommand extends Command {
 				await reaction.users.remove(message.author.id);
 				return message;
 			}
-			if (reaction.emoji.name === '⬅') {
+			if (reaction.emoji.name === '⬅️') {
 				await msg.edit({
 					embed: embed.setDescription([
 						header,
