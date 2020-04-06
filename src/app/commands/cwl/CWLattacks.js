@@ -212,7 +212,7 @@ class CwlAttacksComamnd extends Command {
 	}
 
 	percentage(num) {
-		return num.toString.padStart(2, ' ');
+		return num.toString().padStart(2, ' ');
 	}
 }
 
