@@ -19,6 +19,7 @@
     "dotenv": "^8.0.0",
     "firebase-admin": "^8.2.0",
     "moment": "^2.24.0",
+    "mongodb": "^3.5.5",
     "moment-duration-format": "^2.3.2",
     "moment-timezone": "^0.5.26",
     "ms": "^2.1.2",

@@ -1,6 +1,7 @@
 const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
 const Settings = require('../struct/SettingsProvider');
 const { firestore } = require('../struct/Database');
+const Database = require('../struct/Database');
 const Logger = require('../util/logger');
 const ClanTracker = require('../struct/ClanTracker');
 const fetch = require('node-fetch');
@@ -77,44 +78,35 @@ class ClashPerk extends AkairoClient {
 		this.inhibitorHandler = new InhibitorHandler(this, { directory: path.join(__dirname, '..', 'inhibitors') });
 		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
-		this.commandHandler.resolver.addType('guildMember', (msg, str) => {
-			if (!str) return null;
-			const mention = str.match(/<@!?(\d{17,19})>/);
-			const id = str.match(/^\d+$/);
+		this.commandHandler.resolver.addType('guildMember', (msg, phrase) => {
+			if (!phrase) return null;
+			const mention = phrase.match(/<@!?(\d{17,19})>/);
+			const id = phrase.match(/^\d+$/);
 			if (id) return msg.guild.members.cache.get(id[0]) || null;
 			if (mention) return msg.guild.members.cache.get(mention[1]) || null;
 			return null;
 		});
 
-		this.commandHandler.resolver.addType('player', async (msg, str) => {
-			if (!str) return null;
-			const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
+		this.commandHandler.resolver.addType('player', async (msg, tag) => {
+			if (!tag) return null;
+			const res = await fetch(`https://api.clashofclans.com/v1/players/%23${this.format(tag)}`, {
 				method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).catch(() => null);
 
 			if (!res) return Flag.fail(status(504));
 			if (!res.ok) return Flag.fail(status(res.status));
-			const data = await res.json();
-			return data;
+			return res.json();
 		});
 
-		this.commandHandler.resolver.addType('clan', async (msg, str) => {
-			if (!str) return null;
-			const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-			const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`, {
+		this.commandHandler.resolver.addType('clan', async (msg, tag) => {
+			if (!tag) return null;
+			const res = await fetch(`https://api.clashofclans.com/v1/clans/%23${this.format(tag)}`, {
 				method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 			}).catch(() => null);
 
 			if (!res) return Flag.fail(status(504));
 			if (!res.ok) return Flag.fail(status(res.status));
-			const data = await res.json();
-			return data;
-		});
-
-		this.commandHandler.resolver.addType('guild_', async (msg, id) => {
-			if (!id) return null;
-			return this.guilds.cache.get(id);
+			return res.json();
 		});
 
 		setInterval(() => {
@@ -122,6 +114,10 @@ class ClashPerk extends AkairoClient {
 				guild.presences.cache.clear();
 			}
 		}, 900);
+	}
+
+	format(tag) {
+		return tag.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0');
 	}
 
 	async init() {
@@ -146,6 +142,7 @@ class ClashPerk extends AkairoClient {
 
 		await this.settings.init();
 		await this.patron.init();
+		await Database.connect();
 
 		const intervalID = setInterval(() => {
 			if (this.readyAt && this.user && this.user.id === process.env.CLIENT_ID) {

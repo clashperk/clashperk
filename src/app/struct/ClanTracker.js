@@ -1,6 +1,6 @@
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
-const { firestore } = require('./Database');
+const { firestore, mongodb } = require('./Database');
 const { townHallEmoji, leagueEmoji } = require('../util/emojis');
 const { emoji } = require('../util/emojis');
 const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
@@ -102,7 +102,7 @@ class FastTracker {
 
 	async donationlog(clan, cache, channel) {
 		if (cache && cache.intervalID) clearInterval(cache.intervalID);
-
+		const collection = mongodb.db('clashperk').collection('lastonlines');
 		const key = `${cache.guild}${clan.tag}`;
 		const currentMemberList = clan.memberList.map(m => m.tag);
 		const currentMemberSet = new Set(currentMemberList);
@@ -136,6 +136,68 @@ class FastTracker {
 					item.receives += receives;
 					item.received += `${leagueEmoji[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
 				}
+			}
+
+			// MongoDB
+			if (this.memberList[clan.tag] && member.tag in this.memberList[clan.tag]) {
+				if (
+					this.memberList[clan.tag][member.tag].donations !== member.donations ||
+					this.memberList[clan.tag][member.tag].donationsReceived !== member.donationsReceived ||
+					this.memberList[clan.tag][member.tag].versusTrophies !== member.versusTrophies ||
+					this.memberList[clan.tag][member.tag].expLevel !== member.expLevel ||
+					this.memberList[clan.tag][member.tag].name !== member.name
+				) {
+					console.log('Member Activity', member.tag);
+					await collection.findOneAndUpdate({
+						tag: clan.tag
+					}, {
+						$set: {
+							[`memberList.${member.tag}`]: {
+								lastOnline: new Date(),
+								name: member.name,
+								tag: member.tag,
+								donationsReceived: member.donationsReceived,
+								donations: member.donations,
+								versusTrophies: member.versusTrophies,
+								expLevel: member.expLevel
+							}
+						}
+					}, { upsert: true }).catch(error => console.log(error));
+				}
+			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
+				console.log('New Member', member.tag);
+				await collection.findOneAndUpdate({
+					tag: clan.tag
+				}, {
+					$set: {
+						[`memberList.${member.tag}`]: {
+							lastOnline: new Date(),
+							name: member.name,
+							tag: member.tag,
+							donationsReceived: member.donationsReceived,
+							donations: member.donations,
+							versusTrophies: member.versusTrophies,
+							expLevel: member.expLevel
+						}
+					}
+				}, { upsert: true }).catch(error => console.log(error));
+			}
+		}
+
+		if (currentMemberSet.size && oldMemberSet.size) {
+			const unset = {};
+			const leftMembers = this.donateMemberList.get(clan.tag).filter(tag => !currentMemberSet.has(tag));
+			for (const member of leftMembers) {
+				unset[`memberList.${member}`] = '';
+			}
+
+			console.log('Member Deleted', unset);
+			if (leftMembers.length) {
+				await collection.updateOne({
+					tag: clan.tag
+				}, {
+					$unset: unset
+				}, { upsert: true }).catch(error => console.log(error));
 			}
 		}
 
