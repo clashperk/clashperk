@@ -191,8 +191,8 @@ class FastTracker {
 				unset[`memberList.${member}`] = '';
 			}
 
-			console.log('Member Deleted', unset);
 			if (leftMembers.length) {
+				console.log('Member Deleted', unset);
 				await collection.updateOne({
 					tag: clan.tag
 				}, {
