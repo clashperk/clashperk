@@ -139,13 +139,13 @@ class FastTracker {
 			}
 
 			// MongoDB
-			if (this.donateList[clan.tag] && member.tag in this.donateList[clan.tag]) {
+			if (this.donateList[key] && member.tag in this.donateList[key]) {
 				if (
-					this.donateList[clan.tag][member.tag].donations !== member.donations ||
-					this.donateList[clan.tag][member.tag].donationsReceived !== member.donationsReceived ||
-					this.donateList[clan.tag][member.tag].versusTrophies !== member.versusTrophies ||
-					this.donateList[clan.tag][member.tag].expLevel !== member.expLevel ||
-					this.donateList[clan.tag][member.tag].name !== member.name
+					this.donateList[key][member.tag].donations !== member.donations ||
+					this.donateList[key][member.tag].donationsReceived !== member.donationsReceived ||
+					this.donateList[key][member.tag].versusTrophies !== member.versusTrophies ||
+					this.donateList[key][member.tag].expLevel !== member.expLevel ||
+					this.donateList[key][member.tag].name !== member.name
 				) {
 					console.log('Member Activity', member.tag);
 					await collection.findOneAndUpdate({
