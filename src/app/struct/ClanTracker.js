@@ -152,6 +152,8 @@ class FastTracker {
 						tag: clan.tag
 					}, {
 						$set: {
+							tag: clan.tag,
+							name: clan.name,
 							[`memberList.${member.tag}`]: {
 								lastOnline: new Date(),
 								name: member.name,
@@ -170,6 +172,8 @@ class FastTracker {
 					tag: clan.tag
 				}, {
 					$set: {
+						tag: clan.tag,
+						name: clan.name,
 						[`memberList.${member.tag}`]: {
 							lastOnline: new Date(),
 							name: member.name,
