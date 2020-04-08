@@ -38,7 +38,7 @@ class Database {
 		await mongodb.init();
 	}
 
-	static mongodb() {
+	static get mongodb() {
 		return mongodb;
 	}
 }
