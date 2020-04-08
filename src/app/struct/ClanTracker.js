@@ -186,7 +186,7 @@ class FastTracker {
 
 		if (currentMemberSet.size && oldMemberSet.size) {
 			const unset = {};
-			const leftMembers = this.donateMemberList.get(clan.tag).filter(tag => !currentMemberSet.has(tag));
+			const leftMembers = this.donateMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 			for (const member of leftMembers) {
 				unset[`memberList.${member}`] = '';
 			}
