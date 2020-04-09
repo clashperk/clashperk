@@ -68,8 +68,8 @@ class LastOnlineCommand extends Command {
 		const embed = this.client.util.embed()
 			.setAuthor(data.name, data.badgeUrls.medium)
 			.setDescription([
-				`\`\`\`\u200e${this.filter(data, clan)
-					.map(m => `${m.lastOnline ? require('ms')(m.lastOnline).padStart(5, ' ') : ''.padStart(5, ' ')}   ${this.padEnd(m.name)}`)
+				`\`\`\`\u200e${''.padStart(5, 'Last Seen')} ${'Name'.padEnd(20, ' ')}\n${this.filter(data, clan)
+					.map(m => `${m.lastOnline ? require('ms')(m.lastOnline).padStart(5, ' ') : ''.padStart(5, ' ')}     ${this.padEnd(m.name)}`)
 					.join('\n')}\`\`\``
 			]);
 
@@ -77,10 +77,7 @@ class LastOnlineCommand extends Command {
 	}
 
 	padEnd(data) {
-		return data.split('')
-			.splice(0, 12)
-			.join('')
-			.padEnd(20, ' ');
+		return data.padEnd(20, ' ');
 	}
 
 	filter(data, clan) {
