@@ -41,7 +41,7 @@ class GuildCreateListener extends Listener {
 	async intro(guild) {
 		const prefix = this.client.settings.get(guild, 'prefix', '*');
 		const embed = this.client.util.embed()
-			.setAuthor('Thanks for Inviting me, have a Nice Day!', this.client.user.displayAvatarURL())
+			.setAuthor('Thanks for Inviting me, have a nice day!', this.client.user.displayAvatarURL())
 			.setDescription([
 				`My default prefix is \`${prefix}\``,
 				`If you want to change my prefix, just type \`${prefix}prefix <new prefix>\``,
