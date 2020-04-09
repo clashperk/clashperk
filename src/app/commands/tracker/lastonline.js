@@ -71,7 +71,7 @@ class LastOnlineCommand extends Command {
 			.setAuthor(data.name, data.badgeUrls.medium)
 			.setDescription([
 				this.filter(data, clan)
-					.map(m => `\`${m.name.padEnd(18, ' ')} ${m.lastOnline ? require('ms')(new Date() - new Date(m.lastOnline)).padEnd(5, ' ') : ''.padEnd(5, ' ')}\``)
+					.map(m => `\`${m.name.padEnd(18, ' ')} ${m.lastOnline ? require('ms')(m.lastOnline).padEnd(5, ' ') : ''.padEnd(5, ' ')}\``)
 					.join('\n')
 			]);
 
@@ -79,12 +79,16 @@ class LastOnlineCommand extends Command {
 	}
 
 	filter(data, clan) {
-		return data.memberList.map(member => {
+		const members = data.memberList.map(member => {
 			const lastOnline = member.tag in clan.memberList
-				? clan.memberList[member.tag].lastOnline
+				? new Date() - new Date(clan.memberList[member.tag].lastOnline)
 				: null;
 			return { tag: member.tag, name: member.name, lastOnline };
 		});
+
+		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
+
+		return sorted.filter(item => item.lastOnline).push(sorted.filter(item => !item.lastOnline));
 	}
 }
 
