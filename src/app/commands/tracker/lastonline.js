@@ -69,11 +69,18 @@ class LastOnlineCommand extends Command {
 			.setAuthor(data.name, data.badgeUrls.medium)
 			.setDescription([
 				this.filter(data, clan)
-					.map(m => `\`${m.name.padEnd(18, ' ')} ${m.lastOnline ? require('ms')(m.lastOnline).padEnd(5, ' ') : ''.padEnd(5, ' ')}\``)
+					.map(m => `\`\u200e${this.padStart(m.name)} ${m.lastOnline ? require('ms')(m.lastOnline).padEnd(5, ' ') : ''.padEnd(5, ' ')}\``)
 					.join('\n')
 			]);
 
 		return message.util.send({ embed });
+	}
+
+	padStart(data) {
+		return data.split('')
+			.splice(0, 10)
+			.join('')
+			.padStart(20, ' ');
 	}
 
 	filter(data, clan) {
