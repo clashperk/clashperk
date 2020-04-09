@@ -12,7 +12,7 @@ class LastOnlineCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows last online',
+				content: 'Shows an approximate last-online time of clan members.',
 				usage: '<clan tag> [channel/hexColor] [hexColor/channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #player-log #5970C1', '#8QU8J9LP #5970C1 #player-log']
 			}
@@ -68,10 +68,9 @@ class LastOnlineCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
-			/* .setTitle([
-				'The Last Online based on following chanages in Game',
-				'Donation, Versus Trophies, XP Level, Name Change etc'
-			])*/
+			.setTitle([
+				'The Last Online based on donated/received troops, gained/lost versus trophies, name change, xp level change and gained legend trophies'
+			])
 			.setDescription([
 				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}\n${this.filter(data, clan)
 					.map(m => `${m.lastOnline ? require('ms')(m.lastOnline).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
