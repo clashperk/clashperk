@@ -69,7 +69,7 @@ class LastOnlineCommand extends Command {
 			.setAuthor(data.name, data.badgeUrls.medium)
 			.setDescription([
 				`\`\`\`${this.filter(data, clan)
-					.map(m => `${this.padEnd(m.name)} ${m.lastOnline ? require('ms')(m.lastOnline).padEnd(5, ' ') : ''.padEnd(5, ' ')}`)
+					.map(m => `${m.lastOnline ? require('ms')(m.lastOnline).padEnd(5, ' ') : ''.padStart(5, ' ')} ${this.padEnd(m.name)}`)
 					.join('\n')}\`\`\``
 			]);
 
