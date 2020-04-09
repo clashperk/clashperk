@@ -41,10 +41,9 @@ class GuildCreateListener extends Listener {
 	async intro(guild) {
 		const prefix = this.client.settings.get(guild, 'prefix', '*');
 		const embed = this.client.util.embed()
-			.setColor(3093046)
-			.setAuthor('Thanks for Inviting me, have a Nice Day!')
+			.setAuthor('Thanks for Inviting me, have a Nice Day!', this.client.user.displayAvatarURL())
 			.setDescription([
-				`My Default Prefix is \`${prefix}\``,
+				`My default prefix is \`${prefix}\``,
 				`If you want to change my prefix, just type \`${prefix}prefix <new prefix>\``,
 				'',
 				`To get the full list of commands type \`${prefix}help\``,
@@ -58,8 +57,7 @@ class GuildCreateListener extends Listener {
 				'Join [Support Server](https://discord.gg/ppuppun) if you need help.',
 				'',
 				'If you like the bot, please support us on [Patreon](https://patreon.com/clashperk)'
-			])
-			.setFooter();
+			]);
 		if (guild.systemChannelID) {
 			const channel = guild.channels.cache.get(guild.systemChannelID);
 			if (channel.permissionsFor(channel.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false)) {
