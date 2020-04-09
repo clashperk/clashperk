@@ -42,13 +42,13 @@ class GuildCreateListener extends Listener {
 		const prefix = this.client.settings.get(guild, 'prefix', '*');
 		const embed = this.client.util.embed()
 			.setColor(3093046)
-			.setAuthor('Thanks for adding me to your server')
+			.setAuthor('Thanks for Inviting me, have a Nice Day!')
 			.setDescription([
-				`» My Default Prefix is \`${prefix}\``,
-				`» If you want to change my prefix, just type \`${prefix}prefix <new prefix>\``,
+				`My Default Prefix is \`${prefix}\``,
+				`If you want to change my prefix, just type \`${prefix}prefix <new prefix>\``,
 				'',
-				`» To get the full list of commands type \`${prefix}help\``,
-				`» To view more details for a command, do \`${prefix}help <command>\``
+				`To get the full list of commands type \`${prefix}help\``,
+				`To view more details for a command, do \`${prefix}help <command>\``
 			])
 			.addField('Add to Discord', [
 				'ClashPerk can be added to as many servers as you want!',
@@ -70,7 +70,8 @@ class GuildCreateListener extends Listener {
 		const channel = guild.channels.cache.filter(channel => channel.type === 'text')
 			.filter(channel => channel.permissionsFor(channel.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false))
 			.first();
-		return channel.send({ embed });
+		if (channel) return channel.send({ embed });
+		return this.client.logger.info(`Failed on ${guild.name} (${guild.id})`, { label: 'INTRO_MESSAGE' });
 	}
 
 	async restore(guild) {
