@@ -147,7 +147,6 @@ class FastTracker {
 					this.donateList[key][member.tag].expLevel !== member.expLevel ||
 					this.donateList[key][member.tag].name !== member.name
 				) {
-					console.log('Member Activity', member.tag);
 					await collection.findOneAndUpdate({
 						tag: clan.tag
 					}, {
@@ -167,7 +166,6 @@ class FastTracker {
 					}, { upsert: true }).catch(error => console.log(error));
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
-				console.log('New Member', member.tag);
 				await collection.findOneAndUpdate({
 					tag: clan.tag
 				}, {
@@ -196,7 +194,6 @@ class FastTracker {
 			}
 
 			if (leftMembers.length) {
-				console.log('Member Deleted', unset);
 				await collection.updateOne({
 					tag: clan.tag
 				}, {
