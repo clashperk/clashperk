@@ -21,6 +21,7 @@ class GuildCreateListener extends Listener {
 		if (!guild.available) return;
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
 
+		await this.intro(guild);
 		await this.restore(guild);
 
 		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
@@ -35,6 +36,41 @@ class GuildCreateListener extends Listener {
 
 			return webhook.send({ embeds: [embed] });
 		}
+	}
+
+	async intro(guild) {
+		const prefix = this.client.settings.get(guild, 'prefix', '*');
+		const embed = this.client.util.embed()
+			.setColor(3093046)
+			.setAuthor('Thanks for adding me to your server')
+			.setDescription([
+				`» My Default Prefix is \`${prefix}\``,
+				`» If you want to change my prefix, just type \`${prefix}prefix <new prefix>\``,
+				'',
+				`» To get the full list of commands type \`${prefix}help\``,
+				`» To view more details for a command, do \`${prefix}help <command>\``
+			])
+			.addField('Add to Discord', [
+				'ClashPerk can be added to as many servers as you want!',
+				'Please share the bot with your Friends. [Invite Link](https://clashperk.xyz/invite)'
+			])
+			.addField('Support', [
+				'Join [Support Server](https://discord.gg/ppuppun) if you need help.',
+				'',
+				'If you like the bot, please support us on [Patreon](https://patreon.com/clashperk)'
+			])
+			.setFooter();
+		if (guild.systemChannelID) {
+			const channel = guild.channels.cache.get(guild.systemChannelID);
+			if (channel.permissionsFor(channel.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false)) {
+				return channel.send({ embed });
+			}
+		}
+
+		const channel = guild.channels.cache.filter(channel => channel.type === 'text')
+			.filter(channel => channel.permissionsFor(channel.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false))
+			.first();
+		return channel.send({ embed });
 	}
 
 	async restore(guild) {
