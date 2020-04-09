@@ -68,7 +68,7 @@ class LastOnlineCommand extends Command {
 		const embed = this.client.util.embed()
 			.setAuthor(data.name, data.badgeUrls.medium)
 			.setDescription([
-				`\`\`\`\u200e${'Last Seen'}  ${'Name'.padEnd(20, ' ')}\n${this.filter(data, clan)
+				`\`\`\`\u200e${'Last Seen'.padStart(9, ' ')}  ${'Name'.padEnd(20, ' ')}\n${this.filter(data, clan)
 					.map(m => `${m.lastOnline ? require('ms')(m.lastOnline).padStart(9, ' ') : ''.padStart(9, ' ')}  ${this.padEnd(m.name)}`)
 					.join('\n')}\`\`\``
 			]);
