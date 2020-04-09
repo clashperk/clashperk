@@ -61,7 +61,7 @@ class LastOnlineCommand extends Command {
 		const clan = await db.findOne({ tag: data.tag });
 		if (!clan) {
 			return message.util.send({
-				description: 'No Data Found'
+				embed: { description: 'No Data Found' }
 			});
 		}
 
