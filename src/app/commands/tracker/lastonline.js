@@ -65,8 +65,6 @@ class LastOnlineCommand extends Command {
 			});
 		}
 
-		const key = new Set(data.memberList.map(m => m.tag));
-
 		const embed = this.client.util.embed()
 			.setAuthor(data.name, data.badgeUrls.medium)
 			.setDescription([
@@ -88,7 +86,7 @@ class LastOnlineCommand extends Command {
 
 		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
 
-		return sorted.filter(item => item.lastOnline).push(sorted.filter(item => !item.lastOnline));
+		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
 	}
 }
 
