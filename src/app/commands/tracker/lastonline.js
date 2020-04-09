@@ -66,10 +66,15 @@ class LastOnlineCommand extends Command {
 		}
 
 		const embed = this.client.util.embed()
-			.setAuthor(data.name, data.badgeUrls.medium)
+			.setColor(0x5970c1)
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+			/* .setTitle([
+				'The Last Online based on following chanages in Game',
+				'Donation, Versus Trophies, XP Level, Name Change etc'
+			])*/
 			.setDescription([
 				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}\n${this.filter(data, clan)
-					.map(m => `${m.lastOnline ? require('ms')(m.lastOnline).padStart(7, ' ') : '55555'.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
+					.map(m => `${m.lastOnline ? require('ms')(m.lastOnline).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
 					.join('\n')}\`\`\``
 			]);
 
