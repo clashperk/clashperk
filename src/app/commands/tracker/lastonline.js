@@ -65,13 +65,13 @@ class LastOnlineCommand extends Command {
 			});
 		}
 
-		const currentMembers = data.memberList.map(m => m.tag);
+		const key = new Set(data.memberList.map(m => m.tag));
 
 		const embed = this.client.util.embed()
 			.setAuthor(data.name, data.badgeUrls.medium)
 			.setDescription([
 				Object.assign(data.memberList, Object.values(clan.memberList))
-					.filter(obj => currentMembers.includes(obj.tag))
+					.filter(obj => key.has(obj.tag))
 					.map(m => `\`${m.name.padEnd(18, ' ')} ${m.lastOnline ? require('ms')(new Date() - new Date(m.lastOnline)).padEnd(5, ' ') : ''.padEnd(5, ' ')}\``)
 					.join('\n')
 			]);
