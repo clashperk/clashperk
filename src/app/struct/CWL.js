@@ -36,7 +36,7 @@ class CWLTracker {
 	}
 
 	add(tag, data) {
-		this.cached.add(tag, data);
+		this.cached.set(tag, data);
 	}
 
 	async fetch() {
