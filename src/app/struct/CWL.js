@@ -27,16 +27,25 @@ class CWLTracker {
 				snapshot.forEach(doc => {
 					const data = doc.data();
 					if (this.client.guilds.cache.has(data.guild)) {
-						this.add(data.tag, data);
+						this.add(data.tag, true);
 					}
+				});
+			});
+
+		await firestore.collection('clan_metadata')
+			.get()
+			.then(snapshot => {
+				snapshot.forEach(doc => {
+					const data = doc.data();
+					this.add(data.tag, false);
 				});
 			});
 
 		return data;
 	}
 
-	add(tag, data) {
-		this.cached.set(tag, data);
+	add(tag, boolean) {
+		return this.cached.set(tag, boolean);
 	}
 
 	async fetch() {
@@ -55,7 +64,7 @@ class CWLTracker {
 				? body.rounds
 				: null;
 
-			if (rounds) {
+			if (rounds && this.cached.get(tag)) {
 				await firestore.collection('clan_metadata')
 					.doc(tag)
 					.update({
@@ -64,6 +73,7 @@ class CWLTracker {
 							rounds
 						}
 					}, { merge: true });
+				return this.add(tag, false);
 			}
 
 			await this.delay(200);

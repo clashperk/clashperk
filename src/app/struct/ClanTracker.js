@@ -380,6 +380,7 @@ class ClanTracker {
 			data.member_log_channel = data.memberlog.channel;
 		}
 
+		this.client.cwl.add(tag, true);
 		return this.cached.set(`${guild}${tag}`, data);
 	}
 
