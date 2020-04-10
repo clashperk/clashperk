@@ -2,6 +2,8 @@ const { Command, Flag } = require('discord-akairo');
 const Fetch = require('../../struct/Fetch');
 const { firestore, mongodb } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
+const moment = require('moment');
+require('moment-duration-format');
 
 class LastOnlineCommand extends Command {
 	constructor() {
@@ -70,7 +72,7 @@ class LastOnlineCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}\n${this.filter(data, clan)
-					.map(m => `${m.lastOnline ? require('ms')(m.lastOnline).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
 					.join('\n')}\`\`\``
 			]);
 
@@ -92,6 +94,15 @@ class LastOnlineCommand extends Command {
 		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
 
 		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
+	}
+
+	format(time) {
+		if (time > 864e5) {
+			moment.duration(time).format('D[d] H[h]', { trim: 'both mid' });
+		} else if (time > 36e5) {
+			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
+		}
+		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
 	}
 }
 
