@@ -2,9 +2,10 @@ const fetch = require('node-fetch');
 const { firestore } = require('./Database');
 
 class CWLTracker {
-	constructor() {
+	constructor(client) {
+		this.client = client;
 		this.cached = new Map();
-		this.interval = null;
+		this.intervalId = null;
 	}
 
 	async delay(ms) {
@@ -14,13 +15,9 @@ class CWLTracker {
 	async init() {
 		if (new Date().getDate() < 12 && new Date().getDate() > 8) {
 			await this.load();
-			await this.fetch();
-			this.interval = setInterval(this.fetch.bind(this), 10 * 60 * 1000);
+			await this.fetch(this.intervalId);
+			this.intervalId = setInterval(this.fetch.bind(this), 10 * 60 * 1000, this.intervalId);
 		}
-	}
-
-	async clearInterval() {
-		clearInterval(this.interval);
 	}
 
 	async load() {
@@ -42,7 +39,8 @@ class CWLTracker {
 		this.cached.add(tag, data);
 	}
 
-	async fetch() {
+	async fetch(intervalId) {
+		if (new Date().getDate() > 12 && new Date().getDate() < 8) clearInterval(intervalId);
 		for (const tag of this.cached.keys()) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar/leaguegroup`, {
 				method: 'GET', timeout: 3000,
