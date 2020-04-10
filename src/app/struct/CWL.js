@@ -21,18 +21,7 @@ class CWLTracker {
 	}
 
 	async load() {
-		const data = await firestore.collection('tracking_clans')
-			.get()
-			.then(snapshot => {
-				snapshot.forEach(doc => {
-					const data = doc.data();
-					if (this.client.guilds.cache.has(data.guild)) {
-						this.add(data.tag, true);
-					}
-				});
-			});
-
-		await firestore.collection('clan_metadata')
+		const data = await firestore.collection('clan_metadata')
 			.get()
 			.then(snapshot => {
 				snapshot.forEach(doc => {
@@ -51,6 +40,11 @@ class CWLTracker {
 	async fetch() {
 		if (new Date().getDate() > 12 && new Date().getDate() < 8) clearInterval(this.intervalId);
 		for (const tag of this.cached.keys()) {
+			if (this.cached.get(tag) === false) {
+				this.cached.delete(tag);
+				continue;
+			}
+
 			const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar/leaguegroup`, {
 				method: 'GET', timeout: 3000,
 				headers: { accept: 'application/json', authorization: `Bearer ${process.env.TRACKER_API}` }
@@ -73,6 +67,7 @@ class CWLTracker {
 							rounds
 						}
 					}, { merge: true });
+
 				return this.add(tag, false);
 			}
 
