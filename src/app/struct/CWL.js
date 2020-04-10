@@ -21,7 +21,16 @@ class CWLTracker {
 	}
 
 	async load() {
-		const data = await firestore.collection('clan_metadata')
+		await firestore.collection('tracking_clans')
+			.get()
+			.then(snapshot => {
+				snapshot.forEach(doc => {
+					const data = doc.data();
+					this.add(data.tag, true);
+				});
+			});
+
+		await firestore.collection('clan_metadata')
 			.get()
 			.then(snapshot => {
 				snapshot.forEach(doc => {
@@ -29,8 +38,6 @@ class CWLTracker {
 					this.add(data.tag, false);
 				});
 			});
-
-		return data;
 	}
 
 	add(tag, boolean) {
