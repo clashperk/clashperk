@@ -47,7 +47,7 @@ class GuildCreateListener extends Listener {
 				`If you want to change my prefix, just type \`${prefix}prefix <new prefix>\``,
 				'',
 				`To get the full list of commands type \`${prefix}help\``,
-				`To view more details for a command, do \`${prefix}help <command>\``
+				`To view more details for a command, type \`${prefix}help <command>\``
 			])
 			.addField('Add to Discord', [
 				'ClashPerk can be added to as many servers as you want!',
