@@ -98,7 +98,7 @@ class LastOnlineCommand extends Command {
 
 	format(time) {
 		if (time > 864e5) {
-			moment.duration(time).format('D[d] H[h]', { trim: 'both mid' });
+			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' });
 		} else if (time > 36e5) {
 			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
 		}
