@@ -226,7 +226,7 @@ class FastTracker {
 			try {
 				await channel.send({ embed });
 			} catch (error) {
-				this.client.logger.error(error.toString(), { label: 'DONATION_LOG_MESSAGE' });
+				this.client.logger.error(`${error.toString()} ${channel}`, { label: 'DONATION_LOG_MESSAGE' });
 			}
 		}
 
