@@ -75,7 +75,7 @@ class CWLTracker {
 						}
 					}, { merge: true });
 
-				return this.add(tag, false);
+				this.add(tag, false);
 			}
 
 			await this.delay(200);
