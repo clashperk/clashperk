@@ -123,9 +123,10 @@ class LastOnlineBoardCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)
-			.setDescription(`Started tracking in ${channel} (${channel.id})`)
+			.setDescription(`Started last-online board in ${channel} (${channel.id})`)
 			.setColor(color);
-		return message.util.send({ embed });
+		if (message.channel.id !== channel.id) return message.util.send({ embed });
+		return message;
 	}
 
 	async clans(message, clans = []) {

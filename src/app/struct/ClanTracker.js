@@ -279,11 +279,11 @@ class FastTracker {
 					const msg = await channel.messages.fetch(cache.lastonline_msg)
 						.catch(error => {
 							this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
-							this.messages.set(cache.lastonline_msg, { editable: false, message: null });
+							this.messages.set(cache.lastonline_msg, { id: null, editable: false, message: null });
 							return null;
 						});
 					if (msg) {
-						this.messages.set(cache.lastonline_msg, { editable: true, message: msg });
+						this.messages.set(cache.lastonline_msg, { editable: true, message: msg, id: msg.id });
 						return this.updateMessage(data, clan, msg).catch(() => null);
 					}
 				}
@@ -307,6 +307,7 @@ class FastTracker {
 		return message.edit([
 			'Last Online Board'
 		], { embed }).catch(error => {
+			this.messages.delete(message.id);
 			this.client.logger.warn(error, { label: 'LAST_ONLINE_EDIT_MESSAGE' });
 			return null;
 		});
