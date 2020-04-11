@@ -7,7 +7,7 @@ class LastOnlineBoardCommand extends Command {
 		super('lastonlineboard', {
 			aliases: ['lastonlineboard'],
 			ownerOnly: true,
-			category: 'tracker',
+			category: 'owner',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],

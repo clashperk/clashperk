@@ -167,7 +167,7 @@ class FastTracker {
 
 			try {
 				if (this.client.channels.cache.has(cache.donation_log_channel)) {
-					const channel = this.client.channels.cache.has(cache.donation_log_channel);
+					const channel = this.client.channels.cache.get(cache.donation_log_channel);
 					if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
 						await channel.send({ embed });
 					}
@@ -220,7 +220,7 @@ class FastTracker {
 
 				try {
 					if (this.client.channels.cache.has(cache.member_log_channel)) {
-						const channel = this.client.channels.cache.has(cache.member_log_channel);
+						const channel = this.client.channels.cache.get(cache.member_log_channel);
 						if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
 							await channel.send({ embed });
 						}
@@ -254,7 +254,7 @@ class FastTracker {
 
 				try {
 					if (this.client.channels.cache.has(cache.member_log_channel)) {
-						const channel = this.client.channels.cache.has(cache.member_log_channel);
+						const channel = this.client.channels.cache.get(cache.member_log_channel);
 						if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
 							await channel.send({ embed });
 						}
