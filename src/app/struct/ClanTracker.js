@@ -28,7 +28,7 @@ class FastTracker {
 		const cache = this.cached.get(`${data.guild}${data.tag}`);
 		if (cache && cache.intervalID) clearInterval(cache.intervalID);
 
-		return this.update(data);
+		return this.log(data);
 	}
 
 	async log(cache) {
