@@ -4,6 +4,8 @@ const { firestore, mongodb } = require('./Database');
 const { townHallEmoji, leagueEmoji } = require('../util/emojis');
 const { emoji } = require('../util/emojis');
 const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
+const moment = require('moment');
+require('moment-duration-format');
 
 class FastTracker {
 	constructor(client, cached) {
@@ -11,7 +13,7 @@ class FastTracker {
 		this.cached = cached;
 		this.donateList = {};
 		this.oldMemberList = new Map();
-		this.donateMemberList = new Map();
+		this.messages = new Map();
 	}
 
 	async init() {
@@ -29,91 +31,23 @@ class FastTracker {
 		return this.update(data);
 	}
 
-	async memberlog(clan, cache, channel) {
-		const key = `${cache.guild}${clan.tag}`;
-		const currentMemberList = clan.memberList.map(m => m.tag);
+	async log(cache) {
+		const clan = await this.clan(cache.tag);
+		if (!clan) return;
 
+		const collection = mongodb.db('clashperk').collection('lastonlines');
+		if (cache && cache.intervalID) clearInterval(cache.intervalID);
+		const key = [cache.guild, clan.tag].join('');
+		const currentMemberList = clan.memberList.map(m => m.tag);
 		const currentMemberSet = new Set(currentMemberList);
 		const oldMemberSet = new Set(this.oldMemberList.get(key));
-
-		// new players
-		if (oldMemberSet.size) {
-			const tags = currentMemberList.filter(tag => !oldMemberSet.has(tag));
-			for (const tag of tags) {
-				const member = await this.player(tag);
-				if (!member) return;
-				const embed = new MessageEmbed()
-					.setColor(0x38d863)
-					.setTitle(`${member.name} (${member.tag}) Joined`)
-					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${tag.replace(/#/g, '')}`)
-					.setDescription([
-						`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
-						`${emoji.xp} ${member.expLevel}`,
-						`${emoji.warstar} ${member.warStars}`,
-						`${leagueEmoji[member.league ? member.league.id : 29000000]} ${member.trophies}`
-					].join(' '))
-					.setFooter(clan.name, clan.badgeUrls.small);
-				embed.setTimestamp();
-
-				try {
-					await channel.send({ embed });
-				} catch (error) {
-					this.client.logger.error(error.toString(), { label: 'PLAYER_LOG_MESSAGE' });
-				}
-
-				await this.delay(200);
-			}
-		}
-
-		// missing players
-		if (currentMemberSet.size && oldMemberSet.size) {
-			const tags = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
-			for (const tag of tags) {
-				const member = await this.player(tag);
-				if (!member) return;
-				const embed = new MessageEmbed()
-					.setColor(0xeb3508)
-					.setTitle(`${member.name} (${member.tag}) Left`)
-					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${tag.replace(/#/g, '')}`)
-					.setDescription([
-						`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
-						`${emoji.xp} ${member.expLevel}`,
-						`${emoji.warstar} ${member.warStars}`,
-						`${leagueEmoji[member.league ? member.league.id : 29000000]} ${member.trophies}`
-					].join(' '))
-					.setFooter(clan.name, clan.badgeUrls.small);
-				embed.setTimestamp();
-
-				try {
-					await channel.send({ embed });
-				} catch (error) {
-					this.client.logger.error(error.toString(), { label: 'PLAYER_LOG_MESSAGE' });
-				}
-
-				await this.delay(200);
-			}
-		}
-
-		this.oldMemberList.set(key, []);
-		this.oldMemberList.set(key, currentMemberList);
-		oldMemberSet.clear();
-		currentMemberSet.clear();
-	}
-
-	async donationlog(clan, cache, channel) {
-		if (cache && cache.intervalID) clearInterval(cache.intervalID);
-		const collection = mongodb.db('clashperk').collection('lastonlines');
-		const key = `${cache.guild}${clan.tag}`;
-		const currentMemberList = clan.memberList.map(m => m.tag);
-		const currentMemberSet = new Set(currentMemberList);
-		const oldMemberSet = new Set(this.donateMemberList.get(key));
 		const item = { donated: '', received: '', donations: 0, receives: 0 };
 
+		// Donation Counter
 		for (const member of clan.memberList) {
 			item.clan = `${clan.name} (${clan.tag})`;
 			item.clanBadge = clan.badgeUrls.small;
 			item.members = clan.members;
-
 			if (this.donateList[key] && member.tag in this.donateList[key]) {
 				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
@@ -138,7 +72,7 @@ class FastTracker {
 				}
 			}
 
-			// MongoDB
+			// Update MongoDB - Last Online
 			if (this.donateList[key] && member.tag in this.donateList[key]) {
 				if (
 					this.donateList[key][member.tag].donations !== member.donations ||
@@ -186,9 +120,10 @@ class FastTracker {
 			}
 		}
 
+		// Last Online - Purge Missing Players
 		if (currentMemberSet.size && oldMemberSet.size) {
 			const unset = {};
-			const leftMembers = this.donateMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
+			const leftMembers = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 			for (const member of leftMembers) {
 				unset[`memberList.${member}`] = '';
 			}
@@ -202,6 +137,13 @@ class FastTracker {
 			}
 		}
 
+		// Last Online - Send Message
+		if (cache.lastonline_channel) {
+			const data = await collection.findOne({ tag: clan.tag });
+			if (data) await this.lastOnline(cache, data, clan);
+		}
+
+		// Donation Log - Send Message
 		if (item.donated !== '' || item.received !== '') {
 			const embed = new MessageEmbed()
 				.setColor(cache.color)
@@ -214,7 +156,7 @@ class FastTracker {
 
 			if (currentMemberSet.size && oldMemberSet.size) {
 				const membersJoined = currentMemberList.filter(tag => !oldMemberSet.has(tag));
-				const membersLeft = this.donateMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
+				const membersLeft = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 				if (item.donations !== item.receives && (membersJoined.length || membersLeft.length)) {
 					embed.addField('Unmatched Donations', [
 						membersJoined.length ? `${membersJoined.length} Member${membersJoined.length === 1 ? '' : 's'} Joined` : '',
@@ -224,87 +166,182 @@ class FastTracker {
 			}
 
 			try {
-				await channel.send({ embed });
+				if (this.client.channels.cache.has(cache.donation_log_channel)) {
+					const channel = this.client.channels.cache.has(cache.donation_log_channel);
+					if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
+						await channel.send({ embed });
+					}
+				}
 			} catch (error) {
-				this.client.logger.error(`${error.toString()} ${channel}`, { label: 'DONATION_LOG_MESSAGE' });
+				this.client.logger.error(error, { label: 'DONATION_LOG_MESSAGE' });
 			}
 		}
 
+		// Member Log
+		this.memberlog(cache, clan, currentMemberList, oldMemberSet, currentMemberSet);
+
+		// Purge Cache
 		this.donateList[key] = {};
 		for (const member of clan.memberList) {
 			this.donateList[key][member.tag] = member;
 		}
 
-		this.donateMemberList.set(key, []);
-		this.donateMemberList.set(key, currentMemberList);
+		this.oldMemberList.set(key, []);
+		this.oldMemberList.set(key, currentMemberList);
 		oldMemberSet.clear();
 		currentMemberSet.clear();
 
-		const intervalID = setInterval(this.update.bind(this), 1.5 * 60 * 1000, cache);
+		// Callback
+		const intervalID = setInterval(this.log.bind(this), 1.5 * 60 * 1000, cache);
 		cache.intervalID = intervalID;
 		this.cached.set(key, cache);
 	}
 
-	async update(cache) {
-		if (this.client.channels.cache.has(cache.donation_log_channel)) {
-			const channel = this.client.channels.cache.get(cache.donation_log_channel);
-			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				const data = await this.clan(cache.tag);
-				if (!data) return;
-				this.donationlog(data, cache, channel);
+	async memberlog(cache, clan, currentMemberList, oldMemberSet, currentMemberSet) {
+		const key = [cache.guild, clan.tag].join('');
+		// Member Log - New Players
+		if (oldMemberSet.size) {
+			const tags = currentMemberList.filter(tag => !oldMemberSet.has(tag));
+			for (const tag of tags) {
+				const member = await this.player(tag);
+				if (!member) return;
+				const embed = new MessageEmbed()
+					.setColor(0x38d863)
+					.setTitle(`${member.name} (${member.tag}) Joined`)
+					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${tag.replace(/#/g, '')}`)
+					.setDescription([
+						`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
+						`${emoji.xp} ${member.expLevel}`,
+						`${emoji.warstar} ${member.warStars}`,
+						`${leagueEmoji[member.league ? member.league.id : 29000000]} ${member.trophies}`
+					].join(' '))
+					.setFooter(clan.name, clan.badgeUrls.small);
+				embed.setTimestamp();
 
-				if (this.client.channels.cache.get(cache.member_log_channel)) {
-					const channel = this.client.channels.cache.get(cache.member_log_channel);
-					if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-						this.memberlog(data, cache, channel);
+				try {
+					if (this.client.channels.cache.has(cache.member_log_channel)) {
+						const channel = this.client.channels.cache.has(cache.member_log_channel);
+						if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
+							await channel.send({ embed });
+						}
+					}
+				} catch (error) {
+					this.client.logger.error(error, { label: 'PLAYER_LOG_MESSAGE' });
+				}
+
+				await this.delay(250);
+			}
+		}
+
+		// Member Log - Missing Players
+		if (currentMemberSet.size && oldMemberSet.size) {
+			const tags = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
+			for (const tag of tags) {
+				const member = await this.player(tag);
+				if (!member) return;
+				const embed = new MessageEmbed()
+					.setColor(0xeb3508)
+					.setTitle(`${member.name} (${member.tag}) Left`)
+					.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${tag.replace(/#/g, '')}`)
+					.setDescription([
+						`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
+						`${emoji.xp} ${member.expLevel}`,
+						`${emoji.warstar} ${member.warStars}`,
+						`${leagueEmoji[member.league ? member.league.id : 29000000]} ${member.trophies}`
+					].join(' '))
+					.setFooter(clan.name, clan.badgeUrls.small);
+				embed.setTimestamp();
+
+				try {
+					if (this.client.channels.cache.has(cache.member_log_channel)) {
+						const channel = this.client.channels.cache.has(cache.member_log_channel);
+						if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
+							await channel.send({ embed });
+						}
+					}
+				} catch (error) {
+					this.client.logger.error(error, { label: 'PLAYER_LOG_MESSAGE' });
+				}
+
+				await this.delay(250);
+			}
+		}
+	}
+
+	async lastOnline(cache, data, clan) {
+		if (this.client.channels.cache.has(cache.lastonline_channel)) {
+			const channel = this.client.channels.cache.get(cache.lastonline_channel);
+			if (channel.permissionsFor(channel.guild.me).has(permissions.concat('READ_MESSAGE_HISTORY'), false)) {
+				const msg = this.messages.get(cache.lastonline_msg);
+				if (msg) {
+					return this.updateMessage(data, clan, msg).catch(() => null);
+				} else if (!msg) {
+					const msg = await channel.messages.fetch(cache.lastonline_msg)
+						.catch(error => {
+							this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
+							this.messages.set(cache.lastonline_msg, { editable: false, message: null });
+							return null;
+						});
+					if (msg) {
+						this.messages.set(cache.lastonline_msg, { editable: true, message: msg });
+						return this.updateMessage(data, clan, msg).catch(() => null);
 					}
 				}
 			}
-		} else if (this.client.channels.cache.has(cache.member_log_channel)) {
-			const channel = this.client.channels.cache.get(cache.member_log_channel);
-			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				const data = await this.clan(cache.tag);
-				if (!data) return;
-				this.memberlog(data, cache, channel, channel);
-			}
-		} else {
-			if (cache && cache.intervalID) clearInterval(cache.intervalID);
-			this.cached.delete(`${cache.guild}${cache.tag}`);
-			this.client.logger.warn('UNKNOWN_CHANNEL', { label: 'NOT_FOUND' });
 		}
+	}
+
+	async updateMessage(data, clan, msg) {
+		const message = msg.editable ? msg.message : null;
+		if (!message) return null;
+		const embed = this.client.util.embed()
+			.setColor(0x5970c1)
+			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+			.setDescription([
+				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}\n${this.filter(data, clan)
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
+					.join('\n')}\`\`\``
+			])
+			.setTimestamp();
+
+		return message.edit([
+			'Last Online Board'
+		], { embed }).catch(error => {
+			this.client.logger.warn(error, { label: 'LAST_ONLINE_EDIT_MESSAGE' });
+			return null;
+		});
+	}
+
+	padEnd(data) {
+		return data.padEnd(20, ' ');
+	}
+
+	filter(data, clan) {
+		const members = clan.memberList.map(member => {
+			const lastOnline = member.tag in clan.memberList
+				? new Date() - new Date(data.memberList[member.tag].lastOnline)
+				: null;
+			return { tag: member.tag, name: member.name, lastOnline };
+		});
+
+		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
+
+		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
+	}
+
+	format(time) {
+		if (time > 864e5) {
+			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' });
+		} else if (time > 36e5) {
+			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
+		}
+		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
 	}
 
 	async start() {
 		for (const cache of Array.from(this.cached.values())) {
-			if (this.client.channels.cache.has(cache.donation_log_channel)) {
-				const channel = this.client.channels.cache.get(cache.donation_log_channel);
-				if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-					const data = await this.clan(cache.tag);
-					if (!data) continue;
-					this.donationlog(data, cache, channel);
-
-					if (this.client.channels.cache.get(cache.member_log_channel)) {
-						const channel = this.client.channels.cache.get(cache.member_log_channel);
-						if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-							this.memberlog(data, cache, channel);
-						}
-					}
-
-					await this.delay(100);
-				}
-			} else if (this.client.channels.cache.has(cache.member_log_channel)) {
-				const channel = this.client.channels.cache.get(cache.member_log_channel);
-				if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-					const data = await this.clan(cache.tag);
-					if (!data) continue;
-					this.memberlog(data, cache, channel, channel);
-
-					await this.delay(100);
-				}
-			} else {
-				this.cached.delete(`${cache.guild}${cache.tag}`);
-				this.client.logger.warn('UNKNOWN_CHANNEL', { label: 'NOT_FOUND' });
-			}
+			await this.log(cache);
+			await this.delay(100);
 		}
 	}
 
@@ -378,6 +415,11 @@ class ClanTracker {
 
 		if (data.memberlog) {
 			data.member_log_channel = data.memberlog.channel;
+		}
+
+		if (data.lastonline) {
+			data.lastonline_channel = data.lastonline.channel;
+			data.lastonline_msg = data.lastonline.message;
 		}
 
 		this.client.cwl.add(tag, true);
