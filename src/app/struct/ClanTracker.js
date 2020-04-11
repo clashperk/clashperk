@@ -318,7 +318,7 @@ class FastTracker {
 
 	filter(data, clan) {
 		const members = clan.memberList.map(member => {
-			const lastOnline = member.tag in clan.memberList
+			const lastOnline = member.tag in data.memberList
 				? new Date() - new Date(data.memberList[member.tag].lastOnline)
 				: null;
 			return { tag: member.tag, name: member.name, lastOnline };
