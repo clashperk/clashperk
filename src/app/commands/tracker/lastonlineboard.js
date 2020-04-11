@@ -82,7 +82,7 @@ class LastOnlineBoardCommand extends Command {
 
 		if (!data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
-				.setAuthor(`${data.anme} - Last Online Board Setup`, data.badgeUrls.small)
+				.setAuthor(`${data.name} - Last Online Board Setup`, data.badgeUrls.small)
 				.setDescription([
 					'**Clan Description**',
 					`${data.description}`,
