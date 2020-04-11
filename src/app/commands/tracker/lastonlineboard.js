@@ -11,7 +11,7 @@ class LastOnlineBoardCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
-				content: 'Starts the donation-log in a channel.',
+				content: 'Setup a live last-online board for a clan.',
 				usage: '<clan tag> [channel/hexColor] [hexColor/channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #tracker #5970C1', '#8QU8J9LP #5970C1 #tracker']
 			}
@@ -97,6 +97,10 @@ class LastOnlineBoardCommand extends Command {
 
 		const ref = firestore.collection('tracking_clans').doc(`${message.guild.id}${data.tag}`);
 
+		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL'];
+		if (!channel.permissionsFor(channel.guild.me).has(permissions, false)) {
+			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
+		}
 		const msg = await channel.send({
 			embed: {
 				description: 'Placeholder for Last Online Board \nPlease do not Delete this Message'
@@ -140,6 +144,18 @@ class LastOnlineBoardCommand extends Command {
 				if (!snap.size) clans = [];
 			});
 		return clans;
+	}
+
+	missingPermissions(channel, user, permissions) {
+		const missingPerms = channel.permissionsFor(user).missing(permissions)
+			.map(str => {
+				if (str === 'VIEW_CHANNEL') return '`Read Messages`';
+				return `\`${str.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}\``;
+			});
+
+		return missingPerms.length > 1
+			? `${missingPerms.slice(0, -1).join(', ')} and ${missingPerms.slice(-1)[0]}`
+			: missingPerms[0];
 	}
 }
 

@@ -80,6 +80,11 @@ class DonationLogCommand extends Command {
 			return message.util.send({ embed });
 		}
 
+		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL'];
+		if (!channel.permissionsFor(channel.guild.me).has(permissions, false)) {
+			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
+		}
+
 		const ref = firestore.collection('tracking_clans').doc(`${message.guild.id}${data.tag}`);
 
 		await ref.update({
@@ -106,6 +111,18 @@ class DonationLogCommand extends Command {
 			.setDescription(`Started tracking in ${channel} (${channel.id})`)
 			.setColor(color);
 		return message.util.send({ embed });
+	}
+
+	missingPermissions(channel, user, permissions) {
+		const missingPerms = channel.permissionsFor(user).missing(permissions)
+			.map(str => {
+				if (str === 'VIEW_CHANNEL') return '`Read Messages`';
+				return `\`${str.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}\``;
+			});
+
+		return missingPerms.length > 1
+			? `${missingPerms.slice(0, -1).join(', ')} and ${missingPerms.slice(-1)[0]}`
+			: missingPerms[0];
 	}
 
 	async clans(message, clans = []) {
