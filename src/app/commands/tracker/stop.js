@@ -62,7 +62,7 @@ class StopCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		if (log === 'doantionlog') {
+		if (log === 'donationlog') {
 			await clan.ref.update({
 				donationlog: admin.firestore.FieldValue.delete()
 			});
