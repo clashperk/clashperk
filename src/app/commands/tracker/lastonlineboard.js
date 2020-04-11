@@ -84,9 +84,11 @@ class LastOnlineBoardCommand extends Command {
 			const embed = this.client.util.embed()
 				.setAuthor('Last Online Board Setup')
 				.setDescription([
-					'Verify Your Clan',
-					'Add the word `CP` at the end of the clan description. You can remove it after verification.',
-					'This is a security feature to ensure you have proper leadership/co-leadership of the clan.'
+					'**Verify Your Clan**',
+					'',
+					'Add the word `CP` at the end of the clan description.',
+					'You can remove it after verification.',
+					'This is a security feature to ensure you have proper leadership of the clan.'
 				]);
 			return message.util.send({ embed });
 		}
