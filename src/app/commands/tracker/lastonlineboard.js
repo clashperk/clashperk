@@ -97,7 +97,7 @@ class LastOnlineBoardCommand extends Command {
 
 		const ref = firestore.collection('tracking_clans').doc(`${message.guild.id}${data.tag}`);
 
-		const msg = await message.util.send({
+		const msg = await message.channel.send({
 			embed: {
 				description: 'Placeholder for Last Online Board \nPlease do not Delete this Message'
 			}
