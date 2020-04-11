@@ -6,7 +6,7 @@
   "description": "Clash of Clans Discord Bot",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node src/main.js",
     "test": "eslint --ext .js --ignore-path .gitignore .",
     "lint": "eslint --fix --ext .js --ignore-path .gitignore ."
   },
