@@ -88,7 +88,6 @@ class LastOnlineBoardCommand extends Command {
 					`${data.description}`,
 					'',
 					'**Verify Your Clan**',
-					'',
 					'Add the word `CP` at the end of the clan description.',
 					'You can remove it after verification.',
 					'This is a security feature to ensure you have proper leadership of the clan.'
