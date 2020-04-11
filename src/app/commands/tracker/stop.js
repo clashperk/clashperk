@@ -64,7 +64,7 @@ class StopCommand extends Command {
 
 		if (log === 'doantionlog') {
 			await clan.ref.update({
-				donantionlog: admin.firestore.FieldValue.delete()
+				donationlog: admin.firestore.FieldValue.delete()
 			});
 		} else if (log === 'playerlog') {
 			await clan.ref.update({
@@ -78,7 +78,7 @@ class StopCommand extends Command {
 
 		this.client.tracker.delete(message.guild.id, clan.tag);
 		const metadata = await clan.ref.get().then(snap => snap.data());
-		if (metadata.donantionlog || metadata.memberlog || metadata.lastonline) {
+		if (metadata.donationlog || metadata.memberlog || metadata.lastonline) {
 			this.client.tracker.add(clan.tag, message.guild.id, metadata);
 			this.client.tracker.push(metadata);
 		} else {
