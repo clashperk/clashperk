@@ -49,15 +49,15 @@ class StopCommand extends Command {
 			const embed = this.client.util.embed()
 				.setAuthor('Invalid Use - No Method Selected')
 				.setDescription([
-					'Available Methods',
+					'**Available Methods**',
 					'• donationlog `<tag>`',
 					'• playerlog `<tag>`',
 					'• lastonline `<tag>`',
 					'',
-					'Examples',
-					`${prefix}stop donationlog #8QU8J9LP`,
-					`${prefix}stop playerlog #8QU8J9LP`,
-					`${prefix}stop lastonline #8QU8J9LP`
+					'**Examples**',
+					`\`${prefix}stop donationlog #8QU8J9LP\``,
+					`\`${prefix}stop playerlog #8QU8J9LP\``,
+					`\`${prefix}stop lastonline #8QU8J9LP\``
 				]);
 			return message.util.send({ embed });
 		}
