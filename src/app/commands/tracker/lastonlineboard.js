@@ -82,8 +82,11 @@ class LastOnlineBoardCommand extends Command {
 
 		if (!data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
-				.setAuthor('Last Online Board Setup')
+				.setAuthor(`${data.anme} - Last Online Board Setup`, data.badgeUrls.small)
 				.setDescription([
+					'**Clan Description**',
+					`${data.description}`,
+					'',
 					'**Verify Your Clan**',
 					'',
 					'Add the word `CP` at the end of the clan description.',
