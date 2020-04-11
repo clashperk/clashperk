@@ -6,11 +6,10 @@ class LastOnlineBoardCommand extends Command {
 	constructor() {
 		super('lastonlineboard', {
 			aliases: ['lastonlineboard'],
-			ownerOnly: true,
-			category: 'owner',
+			category: 'beta',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: 'Starts the donation-log in a channel.',
 				usage: '<clan tag> [channel/hexColor] [hexColor/channel]',
@@ -24,7 +23,7 @@ class LastOnlineBoardCommand extends Command {
 			type: 'clan',
 			unordered: false,
 			prompt: {
-				start: 'What clan do you want to track donations?',
+				start: 'What clan do you want to track?',
 				retry: (msg, { failure }) => failure.value
 			}
 		};
@@ -81,7 +80,24 @@ class LastOnlineBoardCommand extends Command {
 			return message.util.send({ embed });
 		}
 
+		if (!data.description.toLowerCase().includes('cp')) {
+			const embed = this.client.util.embed()
+				.setAuthor('Last Online Board Setup')
+				.setDescription([
+					'Verify Your Clan',
+					'Add the word `CP` at the end of the clan description. You can remove it after verification.',
+					'This is a security feature to ensure you have proper leadership/co-leadership of the clan.'
+				]);
+			return message.util.send({ embed });
+		}
+
 		const ref = firestore.collection('tracking_clans').doc(`${message.guild.id}${data.tag}`);
+
+		const msg = await message.util.send({
+			embed: {
+				description: 'Placeholder for Last Online Board \nPlease do not Delete this Message'
+			}
+		});
 
 		await ref.update({
 			tag: data.tag,
@@ -89,7 +105,7 @@ class LastOnlineBoardCommand extends Command {
 			user: message.author.id,
 			lastonline: {
 				channel: channel.id,
-				message: ''
+				message: msg.id
 			},
 			guild: message.guild.id,
 			isPremium: this.client.patron.guilds.get(message.guild, 'patron', false),
