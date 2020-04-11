@@ -90,11 +90,7 @@ class FastTracker {
 							[`memberList.${member.tag}`]: {
 								lastOnline: new Date(),
 								name: member.name,
-								tag: member.tag,
-								donationsReceived: member.donationsReceived,
-								donations: member.donations,
-								versusTrophies: member.versusTrophies,
-								expLevel: member.expLevel
+								tag: member.tag
 							}
 						}
 					}, { upsert: true }).catch(error => console.log(error));
@@ -109,11 +105,7 @@ class FastTracker {
 						[`memberList.${member.tag}`]: {
 							lastOnline: new Date(),
 							name: member.name,
-							tag: member.tag,
-							donationsReceived: member.donationsReceived,
-							donations: member.donations,
-							versusTrophies: member.versusTrophies,
-							expLevel: member.expLevel
+							tag: member.tag
 						}
 					}
 				}, { upsert: true }).catch(error => console.log(error));
@@ -125,16 +117,28 @@ class FastTracker {
 			const unset = {};
 			const leftMembers = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 			for (const member of leftMembers) {
-				unset[`memberList.${member}`] = '';
+				// unset[`memberList.${member}`] = '';
+				await collection.findOneAndUpdate({
+					tag: clan.tag
+				}, {
+					$set: {
+						tag: clan.tag,
+						name: clan.name,
+						[`memberList.${member}`]: {
+							lastOnline: new Date(),
+							tag: member
+						}
+					}
+				}, { upsert: true }).catch(error => console.log(error));
 			}
 
-			if (leftMembers.length) {
+			/* if (leftMembers.length) {
 				await collection.updateOne({
 					tag: clan.tag
 				}, {
 					$unset: unset
 				}, { upsert: true }).catch(error => console.log(error));
-			}
+			}*/
 		}
 
 		// Last Online - Send Message
@@ -274,7 +278,8 @@ class FastTracker {
 			if (channel.permissionsFor(channel.guild.me).has(permissions.concat('READ_MESSAGE_HISTORY'), false)) {
 				const msg = this.messages.get(cache.lastonline_msg);
 				if (msg) {
-					return this.updateMessage(data, clan, msg).catch(() => null);
+					return this.updateMessage(data, clan, msg)
+						.catch(() => null);
 				} else if (!msg) {
 					const msg = await channel.messages.fetch(cache.lastonline_msg)
 						.catch(error => {
@@ -284,7 +289,8 @@ class FastTracker {
 						});
 					if (msg) {
 						this.messages.set(cache.lastonline_msg, { editable: true, message: msg, id: msg.id });
-						return this.updateMessage(data, clan, msg).catch(() => null);
+						return this.updateMessage(data, clan, msg)
+							.catch(() => null);
 					}
 				}
 			}
@@ -299,7 +305,7 @@ class FastTracker {
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}\n${this.filter(data, clan)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
 					.join('\n')}\`\`\``
 			])
 			.setTimestamp();
