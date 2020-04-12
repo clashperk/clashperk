@@ -76,9 +76,26 @@ class HelpCommand extends Command {
 			]);
 
 		for (const category of this.handler.categories.values()) {
-			console.log(category);
+			const title = {
+				// util: 'Util',
+				cwl: 'CWL'
+				// tracker: 'Tracker',
+				// lookup: 'Lookup',
+				// profile: 'Profile',
+				// other: 'Other',
+				// config: 'Config'
+			}[category.id];
 
-			// if (title) embed.addField(title, `${category.filter(cmd => cmd.aliases.length > 0).map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`).join('\n')}`);
+			if (title) embed.addField(title, `${category.filter(cmd => cmd.aliases.length > 0).map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`).join('\n')}`);
+			if (title) {
+				category.filter(cmd => cmd.aliases.length)
+					.map(cmd => {
+						const description = cmd.description.content;
+						return embed.addField(`\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``, [
+							description
+						]);
+					});
+			}
 		}
 
 		return message.util.send({ embed });
