@@ -5,7 +5,8 @@ class FlagCommand extends Command {
 	constructor() {
 		super('flag', {
 			aliases: ['flag'],
-			category: 'other',
+			category: 'owner',
+			ownerOnly: true,
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {

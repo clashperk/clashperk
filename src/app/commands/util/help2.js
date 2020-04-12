@@ -4,7 +4,8 @@ class HelpCommand extends Command {
 	constructor() {
 		super('help2', {
 			aliases: ['help2'],
-			category: 'util',
+			category: 'owner',
+			ownerOnly: true,
 			clientPermissions: ['EMBED_LINKS'],
 			cooldown: 1000,
 			args: [
@@ -75,6 +76,7 @@ class HelpCommand extends Command {
 				'Official Discord: https://discord.gg/ppuppun'
 			]);
 
+		const commands = [];
 		for (const category of this.handler.categories.values()) {
 			const title = {
 				util: 'Util',
@@ -87,16 +89,22 @@ class HelpCommand extends Command {
 			}[category.id];
 
 			if (title) {
-				embed.addField(title, [
-					category.id === 'util' || category.id === 'other'
-						? category.filter(cmd => cmd.aliases.length > 0)
-							.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``)
-							.join(', ')
-						: category.filter(cmd => cmd.aliases.length > 0)
-							.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`)
-							.join('\n')
-				]);
+				commands.push({ id: category.id, category, title });
 			}
+		}
+		commands.filter(cmd => !['util', 'other'].includes(cmd.id))
+			.push(commands.filter(cmd => ['util', 'other'].includes(cmd.id)));
+
+		for (const category of commands) {
+			embed.addField(category.title, [
+				category.id === 'util' || category.id === 'other'
+					? category.filter(cmd => cmd.aliases.length > 0)
+						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``)
+						.join(', ')
+					: category.filter(cmd => cmd.aliases.length > 0)
+						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`)
+						.join('\n')
+			]);
 		}
 
 		return message.util.send({ embed });
