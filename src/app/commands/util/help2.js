@@ -95,13 +95,13 @@ class HelpCommand extends Command {
 		commands.filter(cmd => !['util', 'other'].includes(cmd.id))
 			.push(commands.filter(cmd => ['util', 'other'].includes(cmd.id)));
 
-		for (const category of commands) {
-			embed.addField(category.title, [
-				category.id === 'util' || category.id === 'other'
-					? category.filter(cmd => cmd.aliases.length > 0)
+		for (const cmd of commands) {
+			embed.addField(cmd.title, [
+				cmd.category.id === 'util' || cmd.category.id === 'other'
+					? cmd.category.filter(cmd => cmd.aliases.length > 0)
 						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``)
 						.join(', ')
-					: category.filter(cmd => cmd.aliases.length > 0)
+					: cmd.category.filter(cmd => cmd.aliases.length > 0)
 						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`)
 						.join('\n')
 			]);
