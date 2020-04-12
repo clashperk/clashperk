@@ -178,10 +178,6 @@ class FastTracker {
 			this.donateList[key][member.tag] = member;
 		}
 
-		if (this.client.patron.guilds.get(cache.guild, 'patron', undefined)) {
-			await this.playerUpdate(clan, key, collection);
-		}
-
 		this.oldMemberList.set(key, []);
 		this.oldMemberList.set(key, currentMemberList);
 		oldMemberSet.clear();
