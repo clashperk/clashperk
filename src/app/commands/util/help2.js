@@ -79,8 +79,8 @@ class HelpCommand extends Command {
 			const title = {
 				util: 'Util',
 				cwl: 'CWL',
-				tracker: 'Tracker',
-				lookup: 'Lookup',
+				tracker: 'Activity Tracker',
+				lookup: 'Clash Search',
 				profile: 'Profile',
 				other: 'Other',
 				config: 'Config'
@@ -88,7 +88,7 @@ class HelpCommand extends Command {
 
 			if (title) {
 				embed.addField(title, [
-					category.id === 'util'
+					category.id === 'util' && category.id === 'other'
 						? category.filter(cmd => cmd.aliases.length > 0)
 							.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``)
 							.join(', ')
@@ -98,6 +98,7 @@ class HelpCommand extends Command {
 				]);
 			}
 		}
+
 		return message.util.send({ embed });
 	}
 }
