@@ -86,12 +86,12 @@ class HelpCommand extends Command {
 				// config: 'Config'
 			}[category.id];
 
-			if (title) embed.addField(title, `${category.filter(cmd => cmd.aliases.length > 0).map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`).join('\n')}`);
+			// if (title) embed.addField(title, `${category.filter(cmd => cmd.aliases.length > 0).map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`).join('\n')}`);
 			if (title) {
 				category.filter(cmd => cmd.aliases.length)
 					.map(cmd => {
 						const description = cmd.description.content;
-						return embed.addField(`\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``, [
+						return embed.addField(`${prefix}${cmd.aliases[0].replace(/-/g, '')} ${cmd.description.usage}`, [
 							description
 						]);
 					});
