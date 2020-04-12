@@ -88,7 +88,7 @@ class HelpCommand extends Command {
 
 			if (title) {
 				embed.addField(title, [
-					category.id === 'util' && category.id === 'other'
+					category.id === 'util' || category.id === 'other'
 						? category.filter(cmd => cmd.aliases.length > 0)
 							.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``)
 							.join(', ')
