@@ -191,7 +191,7 @@ class FastTracker {
 		}
 
 		if (this.client.patron.guilds.get(cache.guild, 'patron', undefined)) {
-			await this.playerUpdate(clan, key, collection);
+			// await this.playerUpdate(clan, key, collection);
 		}
 
 		this.oldMemberList.set(key, []);
