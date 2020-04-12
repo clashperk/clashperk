@@ -1,5 +1,6 @@
 const { Command } = require('discord-akairo');
 const { firestore } = require('../../struct/Database');
+const admin = require('firebase-admin');
 
 class StopCommand extends Command {
 	constructor() {
@@ -10,10 +11,14 @@ class StopCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: 'Stops tracking for a clan.',
-				usage: '<tag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				usage: '<method> <tag>',
+				examples: ['donationlog #8QU8J9LP', 'playerlog #8QU8J9LP', 'lastonline #8QU8J9LP']
 			},
 			args: [
+				{
+					id: 'log',
+					type: ['donationlog', 'playerlog', ['lastonline', 'lastonlineboard']]
+				},
 				{
 					id: 'clan',
 					type: async (msg, str) => {
@@ -38,9 +43,48 @@ class StopCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { clan }) {
+	async exec(message, { log, clan }) {
+		if (!log) {
+			const prefix = this.handler.prefix(message);
+			const embed = this.client.util.embed()
+				.setAuthor('Invalid Use - No Method Selected')
+				.setDescription([
+					'**Available Methods**',
+					'• donationlog `<tag>`',
+					'• playerlog `<tag>`',
+					'• lastonline `<tag>`',
+					'',
+					'**Examples**',
+					`\`${prefix}stop donationlog #8QU8J9LP\``,
+					`\`${prefix}stop playerlog #8QU8J9LP\``,
+					`\`${prefix}stop lastonline #8QU8J9LP\``
+				]);
+			return message.util.send({ embed });
+		}
+
+		if (log === 'donationlog') {
+			await clan.ref.update({
+				donationlog: admin.firestore.FieldValue.delete()
+			});
+		} else if (log === 'playerlog') {
+			await clan.ref.update({
+				memberlog: admin.firestore.FieldValue.delete()
+			});
+		} else if (log === 'lastonline') {
+			await clan.ref.update({
+				lastonline: admin.firestore.FieldValue.delete()
+			});
+		}
+
 		this.client.tracker.delete(message.guild.id, clan.tag);
-		await clan.ref.delete();
+		const metadata = await clan.ref.get().then(snap => snap.data());
+		if (metadata.donationlog || metadata.memberlog || metadata.lastonline) {
+			this.client.tracker.add(clan.tag, message.guild.id, metadata);
+			this.client.tracker.push(metadata);
+		} else {
+			await clan.ref.delete();
+		}
+
 		return message.util.send({
 			embed: {
 				title: `Successfully deleted **${clan.name} (${clan.tag})**`,
