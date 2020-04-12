@@ -93,7 +93,7 @@ class FastTracker {
 								tag: member.tag
 							}
 						}
-					}, { upsert: true }).catch(error => console.log(error));
+					}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_OLD_MEMBER' }));
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				await collection.findOneAndUpdate({
@@ -108,37 +108,25 @@ class FastTracker {
 							tag: member.tag
 						}
 					}
-				}, { upsert: true }).catch(error => console.log(error));
+				}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_NEW_MEMBER' }));
 			}
 		}
 
 		// Last Online - Purge Missing Players
 		if (currentMemberSet.size && oldMemberSet.size) {
 			const unset = {};
-			const leftMembers = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
-			for (const member of leftMembers) {
-				// unset[`memberList.${member}`] = '';
-				await collection.findOneAndUpdate({
-					tag: clan.tag
-				}, {
-					$set: {
-						tag: clan.tag,
-						name: clan.name,
-						[`memberList.${member}`]: {
-							lastOnline: new Date(),
-							tag: member
-						}
-					}
-				}, { upsert: true }).catch(error => console.log(error));
+			const membersLeft = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
+			for (const member of membersLeft) {
+				unset[`memberList.${member}`] = '';
 			}
 
-			/* if (leftMembers.length) {
+			if (membersLeft.length) {
 				await collection.updateOne({
 					tag: clan.tag
 				}, {
 					$unset: unset
-				}, { upsert: true }).catch(error => console.log(error));
-			}*/
+				}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_UNSET' }));
+			}
 		}
 
 		// Last Online - Send Message
@@ -191,7 +179,7 @@ class FastTracker {
 		}
 
 		if (this.client.patron.guilds.get(cache.guild, 'patron', undefined)) {
-			// await this.playerUpdate(clan, key, collection);
+			await this.playerUpdate(clan, key, collection);
 		}
 
 		this.oldMemberList.set(key, []);
@@ -206,10 +194,11 @@ class FastTracker {
 	}
 
 	async playerUpdate(clan, key, collection) {
+		if (clan.tag !== '#8QU8J9LP') return;
 		for (const tag of clan.memberList.map(m => m.tag)) {
 			const member = await this.player(tag);
 			if (!member) continue;
-			if (this.donateList[key] && member.tag in this.donateList[key]) {
+			if (this.donateList[key] && member.tag in this.donateList[key] && this.donateList[key][member.tag].attackWins) {
 				if (this.donateList[key][member.tag].attackWins !== member.attackWins) {
 					console.log(member.tag);
 					await collection.findOneAndUpdate({
@@ -380,7 +369,7 @@ class FastTracker {
 	async start() {
 		for (const cache of Array.from(this.cached.values())) {
 			await this.log(cache);
-			await this.delay(100);
+			await this.delay(200);
 		}
 	}
 
