@@ -44,7 +44,6 @@ class StopCommand extends Command {
 	}
 
 	async exec(message, { log, clan }) {
-		console.log(log);
 		if (!log) {
 			const prefix = this.handler.prefix(message);
 			const embed = this.client.util.embed()
