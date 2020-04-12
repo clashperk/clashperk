@@ -75,18 +75,8 @@ class HelpCommand extends Command {
 				'Official Discord: https://discord.gg/ppuppun'
 			]);
 
-		let index = 0;
-		for (const categories of this.handler.categories.values()) {
-			for (const command of categories) {
-				if (command.aliases.length) {
-					embed.addField(`\`${prefix}${command.aliases[0].replace(/-/g, '')}\``, [
-						command.description.content.toLowerCase()
-					]);
-					index += 1;
-
-					if (index === 24) break;
-				}
-			}
+		for (const category of this.handler.categories.values()) {
+			console.log(category);
 
 			// if (title) embed.addField(title, `${category.filter(cmd => cmd.aliases.length > 0).map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`).join('\n')}`);
 		}
