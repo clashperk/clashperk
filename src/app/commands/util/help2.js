@@ -75,12 +75,16 @@ class HelpCommand extends Command {
 				'Official Discord: https://discord.gg/ppuppun'
 			]);
 
+		let index = 0;
 		for (const categories of this.handler.categories.values()) {
-			for (const command of categories[0]) {
+			for (const command of categories) {
 				if (command.aliases.length) {
 					embed.addField(`\`${prefix}${command.aliases[0].replace(/-/g, '')}\``, [
 						command.description.content.toLowerCase()
 					]);
+					index += 1;
+
+					if (index === 24) break;
 				}
 			}
 
