@@ -92,10 +92,8 @@ class HelpCommand extends Command {
 				commands.push({ id: category.id, category, title });
 			}
 		}
-		commands.filter(cmd => !['util', 'other'].includes(cmd.id))
-			.push(commands.filter(cmd => ['util', 'other'].includes(cmd.id)));
 
-		for (const cmd of commands) {
+		for (const cmd of commands.filter(cmd => !['util', 'other'].includes(cmd.id)).concat(commands.filter(cmd => ['util', 'other'].includes(cmd.id)))) {
 			embed.addField(cmd.title, [
 				cmd.category.id === 'util' || cmd.category.id === 'other'
 					? cmd.category.filter(cmd => cmd.aliases.length > 0)
