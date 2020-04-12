@@ -145,9 +145,6 @@ class FastTracker {
 		if (cache.lastonline_channel) {
 			const data = await collection.findOne({ tag: clan.tag });
 			if (data) await this.lastOnline(cache, data, clan);
-			if (this.client.patron.guilds.get(cache.guild, 'patron', undefined)) {
-				await this.playerUpdate(clan, key, collection);
-			}
 		}
 
 		// Donation Log - Send Message
@@ -191,6 +188,10 @@ class FastTracker {
 		this.donateList[key] = {};
 		for (const member of clan.memberList) {
 			this.donateList[key][member.tag] = member;
+		}
+
+		if (this.client.patron.guilds.get(cache.guild, 'patron', undefined)) {
+			await this.playerUpdate(clan, key, collection);
 		}
 
 		this.oldMemberList.set(key, []);
