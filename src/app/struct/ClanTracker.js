@@ -177,7 +177,7 @@ class FastTracker {
 					}
 				}
 			} catch (error) {
-				this.client.logger.error(error, { label: 'DONATION_LOG_MESSAGE' });
+				this.client.logger.warn(error, { label: 'DONATION_LOG_MESSAGE' });
 			}
 		}
 
@@ -230,7 +230,7 @@ class FastTracker {
 						}
 					}
 				} catch (error) {
-					this.client.logger.error(error, { label: 'PLAYER_LOG_MESSAGE' });
+					this.client.logger.warn(error, { label: 'PLAYER_LOG_MESSAGE' });
 				}
 
 				await this.delay(250);
@@ -264,7 +264,7 @@ class FastTracker {
 						}
 					}
 				} catch (error) {
-					this.client.logger.error(error, { label: 'PLAYER_LOG_MESSAGE' });
+					this.client.logger.warn(error, { label: 'PLAYER_LOG_MESSAGE' });
 				}
 
 				await this.delay(250);

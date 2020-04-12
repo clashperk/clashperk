@@ -49,13 +49,18 @@ class TrackingCommand extends Command {
 						const memberlog = data.memberlog
 							? data.memberlog.channel
 							: null;
+						const lastonline = data.lastonline
+							? data.lastonline.channel
+							: null;
 
 						const donation_log = this.client.channels.cache.has(donationlog);
-						const memberlog_log = this.client.channels.cache.has(donationlog);
+						const memberlog_log = this.client.channels.cache.has(memberlog);
+						const lastonline_log = this.client.channels.cache.has(lastonline);
 						return stripIndents(
 							`**${++index} » ${data.name} (${data.tag})**
 						Donation Log **»** ${donationlog ? `${donation_log ? `<#${donationlog}>` : '#deleted-channel'}` : 'Inactive'}
-						Player Log **»** ${memberlog ? `${memberlog_log ? `<#${memberlog}>` : '#deleted-channel'}` : 'Inactive'}`
+						Player Log **»** ${memberlog ? `${memberlog_log ? `<#${memberlog}>` : '#deleted-channel'}` : 'Inactive'}
+						Last Online Board **»** ${lastonline ? `${lastonline_log ? `<#${lastonline}>` : '#deleted-channel'}` : 'Inactive'}`
 						);
 					}).join('\n\n')
 				]);
