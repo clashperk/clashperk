@@ -75,6 +75,7 @@ class HelpCommand extends Command {
 				'Official Discord: https://discord.gg/ppuppun'
 			]);
 
+		const commands = [];
 		for (const category of this.handler.categories.values()) {
 			const title = {
 				util: 'Util',
@@ -87,16 +88,20 @@ class HelpCommand extends Command {
 			}[category.id];
 
 			if (title) {
-				embed.addField(title, [
-					category.id === 'util' && category.id === 'other'
-						? category.filter(cmd => cmd.aliases.length > 0)
-							.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``)
-							.join(', ')
-						: category.filter(cmd => cmd.aliases.length > 0)
-							.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`)
-							.join('\n')
-				]);
+				commands.push({ id: category.id, category, title });
 			}
+		}
+
+		for (const cmd of commands.filter(cmd => !['util', 'other'].includes(cmd.id)).concat(commands.filter(cmd => ['util', 'other'].includes(cmd.id)))) {
+			embed.addField(cmd.title, [
+				cmd.category.id === 'util' || cmd.category.id === 'other'
+					? cmd.category.filter(cmd => cmd.aliases.length > 0)
+						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``)
+						.join(', ')
+					: cmd.category.filter(cmd => cmd.aliases.length > 0)
+						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`)
+						.join('\n')
+			]);
 		}
 
 		return message.util.send({ embed });
