@@ -210,6 +210,7 @@ class FastTracker {
 			if (!member) continue;
 			if (this.donateList[key] && member.tag in this.donateList[key]) {
 				if (this.donateList[key][member.tag].attackWins !== member.attackWins) {
+					console.log(member.tag);
 					await collection.findOneAndUpdate({
 						tag: clan.tag
 					}, {
