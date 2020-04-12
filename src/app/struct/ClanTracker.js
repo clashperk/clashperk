@@ -145,6 +145,9 @@ class FastTracker {
 		if (cache.lastonline_channel) {
 			const data = await collection.findOne({ tag: clan.tag });
 			if (data) await this.lastOnline(cache, data, clan);
+			if (this.client.patron.guilds.get(cache.guild, 'patron', undefined)) {
+				await this.playerUpdate(clan, key, collection);
+			}
 		}
 
 		// Donation Log - Send Message
@@ -199,6 +202,33 @@ class FastTracker {
 		const intervalID = setInterval(this.log.bind(this), 1.5 * 60 * 1000, cache);
 		cache.intervalID = intervalID;
 		this.cached.set(key, cache);
+	}
+
+	async playerUpdate(clan, key, collection) {
+		for (const tag of clan.memberList.map(m => m.tag)) {
+			const member = await this.player(tag);
+			if (!member) continue;
+			if (this.donateList[key] && member.tag in this.donateList[key]) {
+				if (this.donateList[key][member.tag].attackWins !== member.attackWins) {
+					await collection.findOneAndUpdate({
+						tag: clan.tag
+					}, {
+						$set: {
+							tag: clan.tag,
+							name: clan.name,
+							[`memberList.${member.tag}`]: {
+								lastOnline: new Date(),
+								name: member.name,
+								tag: member.tag
+							}
+						}
+					}, { upsert: true }).catch(error => console.log(error));
+				}
+			}
+
+			await this.delay(150);
+			this.donateList[key][member.tag].attackWins = member.attackWins;
+		}
 	}
 
 	async memberlog(cache, clan, currentMemberList, oldMemberSet, currentMemberSet) {
@@ -374,7 +404,7 @@ class FastTracker {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.TRACKER_API}`,
+				authorization: `Bearer ${process.env.TRACKER_API_P}`,
 				'cache-control': 'no-cache'
 			},
 			timeout: 3000
