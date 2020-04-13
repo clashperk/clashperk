@@ -9,7 +9,7 @@ class LastOnlineCommand extends Command {
 	constructor() {
 		super('lastonline', {
 			aliases: ['lastonline'],
-			category: 'beta',
+			category: 'owner', ownerOnly: true,
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
