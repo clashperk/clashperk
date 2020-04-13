@@ -52,23 +52,23 @@ class FastTracker {
 				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]} _\`${donations.toString().padEnd(4, ' ')}\`_ **» ${member.name}**\n`;
+					item.donated += `${leagueEmoji[member.league.id]} _\`\u200e ${donations.toString().padStart(4, ' ')}\` ${member.name}_\n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key][member.tag].donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]} _\`${receives.toString().padEnd(4, ' ')}\`_ **» ${member.name}**\n`;
+					item.received += `${leagueEmoji[member.league.id]} _\`\u200e ${receives.toString().padStart(4, ' ')}\` ${member.name}_\n`;
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				const donations = member.donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]} _\`${donations.toString().padEnd(4, ' ')}*\`_ **» ${member.name}**\n`;
+					item.donated += `${leagueEmoji[member.league.id]} _\`\u200e ${donations.toString().padEnd(4, ' ')}*\` ${member.name}_\n`;
 				}
 				const receives = member.donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]} _\`${receives.toString().padEnd(4, ' ')}*\`_ **» ${member.name}**\n`;
+					item.received += `${leagueEmoji[member.league.id]} _\`\u200e ${receives.toString().padEnd(4, ' ')}*\`_ ${member.name}\n`;
 				}
 			}
 
