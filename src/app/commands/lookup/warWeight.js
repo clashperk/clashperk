@@ -103,13 +103,13 @@ class WarWeightCommand extends Command {
 			'<:rc:696273448514879538>'
 		];
 
-		const header = stripIndent(`${emojis[0]}\u2002${emojis[1]}\u2002${emojis[2]}\u2002${emojis[3]}\u2002${emojis[4]}`);
+		const header = stripIndent(`${emojis[0]} \u200b \u200b \u200b ${emojis[1]} ${emojis[2]} ${emojis[3]} \u200b ${emojis[4]}`);
 
 		const pages = [
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
-					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join('\u2002');
-					return `${townHallEmoji[member.townHallLevel]}\u2002${heroes} \u2002${this.padEnd(member.name)}`;
+					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
+					return `${townHallEmoji[member.townHallLevel]} \`\u200e ${heroes}  ${this.padEnd(member.name)}\``;
 				}),
 			this.paginate(memberList, 25, 50)
 				.items.map(member => {
