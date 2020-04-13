@@ -75,18 +75,33 @@ class HelpCommand extends Command {
 				'Official Discord: https://discord.gg/ppuppun'
 			]);
 
+		const commands = [];
 		for (const category of this.handler.categories.values()) {
 			const title = {
 				util: 'Util',
 				cwl: 'CWL',
-				tracker: 'Tracker',
-				lookup: 'Lookup',
+				tracker: 'Activity Tracker',
+				lookup: 'Clash Search',
 				profile: 'Profile',
 				other: 'Other',
 				config: 'Config'
 			}[category.id];
 
-			if (title) embed.addField(title, `${category.filter(cmd => cmd.aliases.length > 0).map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`).join('\n')}`);
+			if (title) {
+				commands.push({ id: category.id, category, title });
+			}
+		}
+
+		for (const cmd of commands.filter(cmd => !['util', 'other'].includes(cmd.id)).concat(commands.filter(cmd => ['util', 'other'].includes(cmd.id)))) {
+			embed.addField(cmd.title, [
+				cmd.category.id === 'util' || cmd.category.id === 'other'
+					? cmd.category.filter(cmd => cmd.aliases.length > 0)
+						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``)
+						.join(', ')
+					: cmd.category.filter(cmd => cmd.aliases.length > 0)
+						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`)
+						.join('\n')
+			]);
 		}
 
 		return message.util.send({ embed });

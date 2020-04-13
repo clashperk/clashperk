@@ -6,6 +6,7 @@ const { emoji } = require('../util/emojis');
 const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
 const moment = require('moment');
 require('moment-duration-format');
+const { Util } = require('discord.js');
 
 class FastTracker {
 	constructor(client, cached) {
@@ -31,6 +32,15 @@ class FastTracker {
 		return this.log(data);
 	}
 
+	formatNum(num) {
+		return num < 10
+			? num.toString()
+				.padStart(2, '0')
+				.padStart(3, '\u2002')
+			: num.toString()
+				.padStart(3, '\u2002');
+	}
+
 	async log(cache) {
 		const clan = await this.clan(cache.tag);
 		if (!clan) return;
@@ -52,23 +62,23 @@ class FastTracker {
 				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations} \n`;
+					item.donated += `${leagueEmoji[member.league.id]}_**${this.formatNum(donations)}** \u2002${Util.escapeItalic(member.name)}_\n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key][member.tag].donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives} \n`;
+					item.received += `${leagueEmoji[member.league.id]}_**${this.formatNum(receives)}** \u2002${Util.escapeItalic(member.name)}_\n`;
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				const donations = member.donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]} **${member.name}** (${member.tag}) **»** ${donations}* \n`;
+					item.donated += `${leagueEmoji[member.league.id]}_**${this.formatNum(donations)}** \u2002${Util.escapeItalic(member.name)}_\n`;
 				}
 				const receives = member.donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]} **${member.name}** (${member.tag}) **»** ${receives}* \n`;
+					item.received += `${leagueEmoji[member.league.id]}_**${this.formatNum(receives)}** \u2002${Util.escapeItalic(member.name)}_\n`;
 				}
 			}
 
@@ -93,7 +103,7 @@ class FastTracker {
 								tag: member.tag
 							}
 						}
-					}, { upsert: true }).catch(error => console.log(error));
+					}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_OLD_MEMBER' }));
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				await collection.findOneAndUpdate({
@@ -108,37 +118,25 @@ class FastTracker {
 							tag: member.tag
 						}
 					}
-				}, { upsert: true }).catch(error => console.log(error));
+				}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_NEW_MEMBER' }));
 			}
 		}
 
 		// Last Online - Purge Missing Players
 		if (currentMemberSet.size && oldMemberSet.size) {
 			const unset = {};
-			const leftMembers = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
-			for (const member of leftMembers) {
-				// unset[`memberList.${member}`] = '';
-				await collection.findOneAndUpdate({
-					tag: clan.tag
-				}, {
-					$set: {
-						tag: clan.tag,
-						name: clan.name,
-						[`memberList.${member}`]: {
-							lastOnline: new Date(),
-							tag: member
-						}
-					}
-				}, { upsert: true }).catch(error => console.log(error));
+			const membersLeft = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
+			for (const member of membersLeft) {
+				unset[`memberList.${member}`] = '';
 			}
 
-			/* if (leftMembers.length) {
+			if (membersLeft.length) {
 				await collection.updateOne({
 					tag: clan.tag
 				}, {
 					$unset: unset
-				}, { upsert: true }).catch(error => console.log(error));
-			}*/
+				}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_UNSET' }));
+			}
 		}
 
 		// Last Online - Send Message
@@ -177,7 +175,7 @@ class FastTracker {
 					}
 				}
 			} catch (error) {
-				this.client.logger.error(error, { label: 'DONATION_LOG_MESSAGE' });
+				this.client.logger.warn(error, { label: 'DONATION_LOG_MESSAGE' });
 			}
 		}
 
@@ -199,6 +197,35 @@ class FastTracker {
 		const intervalID = setInterval(this.log.bind(this), 1.5 * 60 * 1000, cache);
 		cache.intervalID = intervalID;
 		this.cached.set(key, cache);
+	}
+
+	async playerUpdate(clan, key, collection) {
+		if (clan.tag !== '#8QU8J9LP') return;
+		for (const tag of clan.memberList.map(m => m.tag)) {
+			const member = await this.player(tag);
+			if (!member) continue;
+			if (this.donateList[key] && member.tag in this.donateList[key] && this.donateList[key][member.tag].attackWins) {
+				if (this.donateList[key][member.tag].attackWins !== member.attackWins) {
+					console.log(member.tag);
+					await collection.findOneAndUpdate({
+						tag: clan.tag
+					}, {
+						$set: {
+							tag: clan.tag,
+							name: clan.name,
+							[`memberList.${member.tag}`]: {
+								lastOnline: new Date(),
+								name: member.name,
+								tag: member.tag
+							}
+						}
+					}, { upsert: true }).catch(error => console.log(error));
+				}
+			}
+
+			await this.delay(150);
+			this.donateList[key][member.tag].attackWins = member.attackWins;
+		}
 	}
 
 	async memberlog(cache, clan, currentMemberList, oldMemberSet, currentMemberSet) {
@@ -230,7 +257,7 @@ class FastTracker {
 						}
 					}
 				} catch (error) {
-					this.client.logger.error(error, { label: 'PLAYER_LOG_MESSAGE' });
+					this.client.logger.warn(error, { label: 'PLAYER_LOG_MESSAGE' });
 				}
 
 				await this.delay(250);
@@ -264,7 +291,7 @@ class FastTracker {
 						}
 					}
 				} catch (error) {
-					this.client.logger.error(error, { label: 'PLAYER_LOG_MESSAGE' });
+					this.client.logger.warn(error, { label: 'PLAYER_LOG_MESSAGE' });
 				}
 
 				await this.delay(250);
@@ -348,7 +375,7 @@ class FastTracker {
 	async start() {
 		for (const cache of Array.from(this.cached.values())) {
 			await this.log(cache);
-			await this.delay(100);
+			await this.delay(200);
 		}
 	}
 
@@ -374,7 +401,7 @@ class FastTracker {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.TRACKER_API}`,
+				authorization: `Bearer ${process.env.TRACKER_API_P}`,
 				'cache-control': 'no-cache'
 			},
 			timeout: 3000

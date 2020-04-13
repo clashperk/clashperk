@@ -14,7 +14,7 @@ class GitPullCommand extends Command {
 	}
 
 	exec(message) {
-		const { stderr, stdout, code } = shell.exec('git pull git@github.com:ndency/clashperk.git');
+		const { stderr, stdout, code } = shell.exec('git pull');
 		return message.channel.send([
 			`${stderr}`,
 			`${stdout}`,
