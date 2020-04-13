@@ -6,6 +6,7 @@ const { emoji } = require('../util/emojis');
 const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];
 const moment = require('moment');
 require('moment-duration-format');
+const { Util } = require('discord.js');
 
 class FastTracker {
 	constructor(client, cached) {
@@ -52,23 +53,23 @@ class FastTracker {
 				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]} _**${donations.toString().padEnd(3, '\u2002')}** ${member.name}_\n`;
+					item.donated += `${leagueEmoji[member.league.id]} _**${donations.toString().padEnd(3, '\u2002')}** ${Util.escapeItalic(member.name)}_\n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key][member.tag].donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]} _**${receives.toString().padEnd(3, '\u2002')}** ${member.name}_\n`;
+					item.received += `${leagueEmoji[member.league.id]} _**${receives.toString().padEnd(3, '\u2002')}** ${Util.escapeItalic(member.name)}_\n`;
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				const donations = member.donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]} _**${donations.toString().padEnd(3, '\u2002')}** ${member.name}_\n`;
+					item.donated += `${leagueEmoji[member.league.id]} _**${donations.toString().padEnd(3, '\u2002')}** ${Util.escapeItalic(member.name)}_\n`;
 				}
 				const receives = member.donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]} _**${receives.toString().padEnd(3, '\u2002')}** ${member.name}_\n`;
+					item.received += `${leagueEmoji[member.league.id]} _**${receives.toString().padEnd(3, '\u2002')}** ${Util.escapeItalic(member.name)}_\n`;
 				}
 			}
 
