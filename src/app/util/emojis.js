@@ -138,6 +138,7 @@ module.exports = {
 		clan: '<:clan:696297353216262176>',
 		ok: '<:ok:696297369209274438>',
 		wrong: '<:wrong:696314714535231538>',
+		empty: '<:empty:699639532013748326>',
 		townhall: '<:townhall:696655174025871461>',
 		trophy: '<:trophy:696297701423448095>',
 		versustrophy: '<:versustrophies:696299029746679860>',

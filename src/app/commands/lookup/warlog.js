@@ -123,7 +123,7 @@ class WarlogCommand extends Command {
 	result(result) {
 		if (result === 'Won') return `${emoji.ok} Won`;
 		if (result === 'Lost') return `${emoji.wrong} Lost`;
-		if (result === 'Tied') return '<:empty:699639532013748326> Tied ';
+		if (result === 'Tied') return '<:userssolid:699652935197655061> Tied ';
 	}
 }
 
