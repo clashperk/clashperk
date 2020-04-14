@@ -40,7 +40,6 @@ class ClashPerk extends AkairoClient {
 			commandUtilLifetime: 3e5,
 			commandUtilSweepInterval: 3e5,
 			handleEdits: true,
-			fetchMembers: true,
 			defaultCooldown: 3000,
 			argumentDefaults: {
 				prompt: {
@@ -70,10 +69,11 @@ class ClashPerk extends AkairoClient {
 		this.inhibitorHandler = new InhibitorHandler(this, { directory: path.join(__dirname, '..', 'inhibitors') });
 		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
-		this.commandHandler.resolver.addType('guildMember', (msg, phrase) => {
+		this.commandHandler.resolver.addType('guildMember', async (msg, phrase) => {
 			if (!phrase) return null;
 			const mention = phrase.match(/<@!?(\d{17,19})>/);
 			const id = phrase.match(/^\d+$/);
+			await this.util.fetchMember(msg.guild, mention || id, true);
 			if (id) return msg.guild.members.cache.get(id[0]) || null;
 			if (mention) return msg.guild.members.cache.get(mention[1]) || null;
 			return null;
