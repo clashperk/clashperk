@@ -111,8 +111,8 @@ class WarlogCommand extends Command {
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${++index}.** ${result === 'Win war' ? emoji.ok : emoji.wrong} ${result} against **${opp_name}**`, [
-					`\u2002 ${emoji.star} ${our_stars} / ${opp_stars} ${emoji.fire} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks} `,
-					`\u2002 ${emoji.clanwar} ${size} vs ${size} ${emoji.clock} ${time} ago`
+					`\u2002 \u2002${emoji.star} ${our_stars} / ${opp_stars} ${emoji.fire} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
+					`\u2002 \u2002${emoji.clanwar} ${size} vs ${size} ${emoji.clock} ${time} ago`
 				]);
 			}
 		}
