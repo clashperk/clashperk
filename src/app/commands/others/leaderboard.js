@@ -1,5 +1,6 @@
 const { Command } = require('discord-akairo');
 const { firebase } = require('../../struct/Database');
+const { emoji } = require('../../util/emojis');
 
 class LeaderboardCommand extends Command {
 	constructor() {
@@ -33,7 +34,7 @@ class LeaderboardCommand extends Command {
 		let index = (leaderboard.page - 1) * 10;
 		for (const { user, level, xp } of leaderboard.items) {
 			embed.addField(`**${++index}**. ${this.client.users.cache.get(user).tag}`, [
-				`${Array(4).fill('\u200b').join(' ')} 🏷️\`LEVEL ${level}\` <:cp_fire:696276054058467328>\`EXP ${xp}\``
+				`${Array(4).fill('\u200b').join(' ')} 🏷️\`LEVEL ${level}\` ${emoji.fire}\`EXP ${xp}\``
 			]);
 		}
 		embed.setFooter(`Page ${leaderboard.page}/${leaderboard.maxPage}`);
