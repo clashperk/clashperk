@@ -29,7 +29,7 @@ class StatsCommand extends Command {
 			], true)
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }), true)
 			.addField('Servers', this.client.guilds.cache.size, true)
-			.addField('Users', this.client.users.cache.size, true)
+			.addField('Users', this.users, true)
 			.addField('Channels', this.client.channels.cache.size, true)
 			.addField('Clans in DB', await this.count(), true)
 			.addField('Version', `v${version}`, true)
@@ -57,6 +57,10 @@ class StatsCommand extends Command {
 
 	get owner() {
 		return this.client.users.cache.get(this.client.ownerID);
+	}
+
+	get users() {
+		return this.client.guilds.cache.reduce((prev, guild) => guild.memberCount + prev, 0);
 	}
 
 	freemem() {
