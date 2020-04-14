@@ -100,7 +100,7 @@ class WarlogCommand extends Command {
 				]);
 			} else {
 				const opp_name = opp;
-				const result = results[oppnames.indexOf(opp)].replace(/lose/g, 'Lose war').replace(/win/g, 'Win war');
+				const result = results[oppnames.indexOf(opp)].replace(/lose/g, 'Lost').replace(/win/g, 'Won').replace(/tie/g, 'Tie');
 				const opp_tag = opptags[oppnames.indexOf(opp)];
 				const size = warSizes[oppnames.indexOf(opp)];
 				const our_attacks = ourattacks[oppnames.indexOf(opp)];
@@ -110,7 +110,7 @@ class WarlogCommand extends Command {
 				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
-				embed.addField(`**${(++index).toString().padStart(2, '0')} ${result === 'Win war' ? emoji.ok : emoji.wrong} ${result} against ${opp_name}**`, [
+				embed.addField(`**${(++index).toString().padStart(2, '0')} ${result === 'Won' ? emoji.ok : emoji.wrong} ${result} against ${opp_name}**`, [
 					`\u200e\u2002 \u2002${emoji.star} ${our_stars} / ${opp_stars} ${emoji.fire} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
 					`\u200e\u2002 \u2002${emoji.clanwar} ${size} vs ${size} ${emoji.clock} ${time} ago`
 				]);
