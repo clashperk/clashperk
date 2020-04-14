@@ -24,6 +24,7 @@ class ClashPerk extends AkairoClient {
 				intents: [
 					'GUILDS',
 					'GUILD_MESSAGES',
+					'GUILD_MEMBERS',
 					'GUILD_MESSAGE_REACTIONS'
 				]
 			}
