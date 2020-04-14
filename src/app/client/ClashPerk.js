@@ -19,15 +19,15 @@ class ClashPerk extends AkairoClient {
 		super({ ownerID: config.owner }, {
 			messageCacheMaxSize: 50,
 			messageCacheLifetime: 300,
-			messageSweepInterval: 300,
-			ws: {
+			messageSweepInterval: 300
+			/* ws: {
 				intents: [
 					'GUILDS',
 					'GUILD_MESSAGES',
 					'GUILD_MEMBERS',
 					'GUILD_MESSAGE_REACTIONS'
 				]
-			}
+			}*/
 		});
 
 		this.logger = new Logger();
