@@ -69,11 +69,10 @@ class ClashPerk extends AkairoClient {
 		this.inhibitorHandler = new InhibitorHandler(this, { directory: path.join(__dirname, '..', 'inhibitors') });
 		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
-		this.commandHandler.resolver.addType('guildMember', async (msg, phrase) => {
+		this.commandHandler.resolver.addType('guildMember', (msg, phrase) => {
 			if (!phrase) return null;
 			const mention = phrase.match(/<@!?(\d{17,19})>/);
 			const id = phrase.match(/^\d+$/);
-			await this.util.fetchMember(msg.guild, mention || id, true);
 			if (id) return msg.guild.members.cache.get(id[0]) || null;
 			if (mention) return msg.guild.members.cache.get(mention[1]) || null;
 			return null;
