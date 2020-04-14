@@ -40,6 +40,7 @@ class ClashPerk extends AkairoClient {
 			commandUtilLifetime: 3e5,
 			commandUtilSweepInterval: 3e5,
 			handleEdits: true,
+			fetchMembers: true,
 			defaultCooldown: 3000,
 			argumentDefaults: {
 				prompt: {
