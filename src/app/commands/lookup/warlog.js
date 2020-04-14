@@ -112,7 +112,7 @@ class WarlogCommand extends Command {
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${opp_name}**`, [
 					`\u200e\u2002 \u2002${emoji.star} ${our_stars} / ${opp_stars} ${emoji.fire} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
-					`\u200e\u2002 \u2002${emoji.clanwar} ${size} vs ${size} ${emoji.clock} ${time} ago`
+					`\u200e\u2002 \u2002${'<:userssolid:699652935197655061>'} ${size} vs ${size} ${emoji.clock} ${time} ago`
 				]);
 			}
 		}
@@ -123,7 +123,7 @@ class WarlogCommand extends Command {
 	result(result) {
 		if (result === 'Won') return `${emoji.ok} Won`;
 		if (result === 'Lost') return `${emoji.wrong} Lost`;
-		if (result === 'Tied') return '<:userssolid:699652935197655061> Tied ';
+		if (result === 'Tied') return '<:empty:699639532013748326> Tied ';
 	}
 }
 
