@@ -103,7 +103,7 @@ class WarWeightCommand extends Command {
 			'<:rc:696273448514879538>'
 		];
 
-		const header = stripIndent(`\`${'TH'}\`\u200b\`\u200e BK AQ GW RC  ${'NAME'.padEnd(20, ' ')}\``);
+		const header = stripIndent(`${emojis[0]}\`\u200e BK AQ GW RC  ${'NAME'.padEnd(20, ' ')}\``);
 
 		const pages = [
 			this.paginate(memberList, 0, 25)
