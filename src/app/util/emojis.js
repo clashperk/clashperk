@@ -133,7 +133,9 @@ module.exports = {
 		xp: '<:xp:696296069348458516>',
 		warstar: '<:warstar:696299067193425951>',
 		star: '<:cp_star:696292402532450306>',
+		star_small: '<:cp_star_small:699834188731252857>',
 		fire: '<:cp_fire:696292379703115780>',
+		fire_small: '<:cp_star_small:699834188731252857>',
 		sword: '<:cp_sword:696292361134932038>',
 		clan: '<:clan:696297353216262176>',
 		ok: '<:ok:696297369209274438>',
@@ -152,7 +154,11 @@ module.exports = {
 		discord: '<:discord:696317142307700747>',
 		clanwar: '<:clanwar:696321876271562782>',
 		cwl: '<:clanwarleague:696321885784244314>',
+		cwl_small: '<:cwl_small:699837806129971202>',
 		clock: '<:cp_clock:696324225019019326>',
-		loading: '<a:loading:696328441146114050>'
+		clock_small: '<:clock_small:699831825002135683>',
+		loading: '<a:loading:696328441146114050>',
+		users: '<:userssolid:699652935197655061>',
+		users_small: '<:userssolid_small:699834141931339777>'
 	}
 };
