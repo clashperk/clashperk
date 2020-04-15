@@ -88,7 +88,7 @@ class UnitsCommand extends Command {
 					darkTroops += `${darkTroopsEmoji[troop.name]} ${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\u2002`;
 				}
 				if (index === 4) {
-					troopLevels += '#';
+					darkTroops += '#';
 					index = 0;
 				}
 			}
