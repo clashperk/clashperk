@@ -111,8 +111,8 @@ class WarlogCommand extends Command {
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opp_name)}**`, [
-					`\u200e\u2002 \u2002${emoji.star} ${this.monospace(our_stars).padStart(6, '\u2020')} / ${this.monospace(opp_stars).padStart(6, '\u2002')} ${emoji.fire} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
-					`\u200e\u2002 \u2002${'<:userssolid:699652935197655061>'} ${this.monospace(size).padStart(6, '\u2002')} vs ${this.monospace(size).padStart(6, '\u2002')} ${emoji.clock} ${time} ago`
+					`\u200e\u2002 \u2002${emoji.star} ${this.monospace(our_stars).padStart(5, '\u2020')} / ${this.monospace(opp_stars).padStart(5, '\u2002')} ${emoji.fire} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
+					`\u200e\u2002 \u2002${'<:userssolid:699652935197655061>'} ${this.monospace(size).padStart(5, '\u2002')} vs ${this.monospace(size).padStart(5, '\u2002')} ${emoji.clock} ${time} ago`
 				]);
 			}
 		}
