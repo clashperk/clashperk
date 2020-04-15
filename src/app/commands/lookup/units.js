@@ -151,7 +151,7 @@ class UnitsCommand extends Command {
 
 		let darkSpells = '';
 		index = 0;
-		data.spells.filter(spell => spell.name in elixirSpellEmoji).forEach(spell => {
+		data.spells.filter(spell => spell.name in darkSpellEmoji).forEach(spell => {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
