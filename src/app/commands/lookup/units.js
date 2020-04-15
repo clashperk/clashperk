@@ -57,8 +57,7 @@ class UnitsCommand extends Command {
 	async exec(message, { data }) {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag})`, data.league ? data.league.iconUrls.small : null, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`)
-			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`);
+			.setAuthor(`${data.name} (${data.tag})`, `https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`);
 
 		let index = 0;
 		let troopLevels = '';
@@ -66,9 +65,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home' && !['Wall Wrecker', 'Stone Slammer', 'Battle Blimp', 'Siege Barracks'].includes(troop.name)) {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					troopLevels += `${homeTroopsEmoji[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002\u2002`;
+					troopLevels += `${homeTroopsEmoji[troop.name]} **${this.formatNum(troop.level)}**\u2002`;
 				} else {
-					troopLevels += `${homeTroopsEmoji[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002\u2002`;
+					troopLevels += `${homeTroopsEmoji[troop.name]} ${this.formatNum(troop.level)}\u2002`;
 				}
 				if (index === 4) {
 					troopLevels += '#';
@@ -84,9 +83,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home' && ['Wall Wrecker', 'Stone Slammer', 'Battle Blimp', 'Siege Barracks'].includes(troop.name)) {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					SiegeMachines += `${homeTroopsEmoji[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002\u2002`;
+					SiegeMachines += `${homeTroopsEmoji[troop.name]} **${this.formatNum(troop.level)}**\u2002`;
 				} else {
-					SiegeMachines += `${homeTroopsEmoji[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002\u2002`;
+					SiegeMachines += `${homeTroopsEmoji[troop.name]} ${this.formatNum(troop.level)}\u2002`;
 				}
 				if (index === 4) {
 					troopLevels += '#';
@@ -102,9 +101,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'builderBase') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					builderTroops += `${builderTroopsEmoji[troop.name]} **\`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`**\u2002\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} **${this.formatNum(troop.level)}**\u2002`;
 				} else {
-					builderTroops += `${builderTroopsEmoji[troop.name]} \`${troop.level > 9 ? '' : '\u200b '}${troop.level}\`\u2002\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} ${this.formatNum(troop.level)}\u2002`;
 				}
 				if (index === 4) {
 					builderTroops += '#';
@@ -120,9 +119,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					spellLevels += `${spellEmoji[spell.name]} **\`${spell.level > 9 ? '' : '\u200b '}${spell.level}\`**\u2002\u2002`;
+					spellLevels += `${spellEmoji[spell.name]} **${this.formatNum(spell.level)}**\u2002`;
 				} else {
-					spellLevels += `${spellEmoji[spell.name]} \`${spell.level > 9 ? '' : '\u200b '}${spell.level}\`\u2002\u2002`;
+					spellLevels += `${spellEmoji[spell.name]} ${this.formatNum(spell.level)}\u2002`;
 				}
 				if (index === 4) {
 					spellLevels += '#';
@@ -138,9 +137,9 @@ class UnitsCommand extends Command {
 			if (hero.village === 'home') {
 				index++;
 				if (hero.level === hero.maxLevel) {
-					heroLevels += `${heroEmoji[hero.name]} **\`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`**\u2002\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} **${this.formatNum(hero.level)}**\u2002`;
 				} else {
-					heroLevels += `${heroEmoji[hero.name]} \`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`\u2002\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} ${this.formatNum(hero.level)}\u2002`;
 				}
 			}
 		});
@@ -152,15 +151,35 @@ class UnitsCommand extends Command {
 					index = 0;
 				}
 				if (hero.level === hero.maxLevel) {
-					heroLevels += `${heroEmoji[hero.name]} **\`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`**\u2002\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} **${this.formatNum(hero.level)}**\u2002`;
 				} else {
-					heroLevels += `${heroEmoji[hero.name]} \`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`\u2002\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} ${this.formatNum(hero.level)}\u2002`;
 				}
 			}
 		});
 		if (heroLevels) embed.addField('Heroes', heroLevels.split('#').join('\n'));
 
 		return message.util.send({ embed });
+	}
+
+	formatNum(num) {
+		const num_string = num < 10
+			? num.toString()
+				.padStart(2, '0')
+				.padStart(3, '\u2002')
+			: num.toString()
+				.padStart(3, '\u2002');
+		return num_string
+			.replace(/0/g, '𝟶')
+			.replace(/1/g, '𝟷')
+			.replace(/2/g, '𝟸')
+			.replace(/3/g, '𝟹')
+			.replace(/4/g, '𝟺')
+			.replace(/5/g, '𝟻')
+			.replace(/6/g, '𝟼')
+			.replace(/7/g, '𝟽')
+			.replace(/8/g, '𝟾')
+			.replace(/9/g, '𝟿');
 	}
 }
 
