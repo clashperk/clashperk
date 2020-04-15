@@ -167,11 +167,22 @@ class UnitsCommand extends Command {
 		});
 		if (darkSpells) embed.addField('Dark Spells', darkSpells.split('#').join('\n'));
 
+		let builderHero = '';
+		data.heroes.forEach(hero => {
+			if (hero.village === 'builderBase') {
+				if (hero.level === hero.maxLevel) {
+					builderHero += `${heroEmoji[hero.name]} **${this.formatNum(hero.level)}**/${this.formatNum(hero.maxLevel)}\u2002`;
+				} else {
+					builderHero += `${heroEmoji[hero.name]} ${this.formatNum(hero.level)}/${this.formatNum(hero.maxLevel)}\u2002`;
+				}
+			}
+		});
+
+		if (builderHero) embed.addField('Buider Base Hero', builderHero);
+
 		let heroLevels = '';
-		index = 0;
 		data.heroes.forEach(hero => {
 			if (hero.village === 'home') {
-				index++;
 				if (hero.level === hero.maxLevel) {
 					heroLevels += `${heroEmoji[hero.name]} **${this.formatNum(hero.level)}**/${this.formatNum(hero.maxLevel)}\u2002`;
 				} else {
@@ -180,20 +191,7 @@ class UnitsCommand extends Command {
 			}
 		});
 
-		data.heroes.forEach(hero => {
-			if (hero.village === 'builderBase') {
-				if (index === 4) {
-					heroLevels += '#';
-					index = 0;
-				}
-				if (hero.level === hero.maxLevel) {
-					heroLevels += `${heroEmoji[hero.name]} **${this.formatNum(hero.level)}**/${this.formatNum(hero.maxLevel)}\u2002`;
-				} else {
-					heroLevels += `${heroEmoji[hero.name]} ${this.formatNum(hero.level)}/${this.formatNum(hero.maxLevel)}\u2002`;
-				}
-			}
-		});
-		if (heroLevels) embed.addField('Heroes', heroLevels.split('#').join('\n'));
+		if (heroLevels) embed.addField('Heroes', heroLevels);
 
 		return message.util.send({ embed });
 	}
