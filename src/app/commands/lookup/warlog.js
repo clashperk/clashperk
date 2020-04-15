@@ -111,11 +111,14 @@ class WarlogCommand extends Command {
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opp_name)}**`, [
-					`\u200e\u2002 \u2002${emoji.star} ${our_stars} / ${opp_stars} ${emoji.fire} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
-					`\u200e\u2002 \u2002${'<:userssolid:699652935197655061>'} ${size} vs ${size} ${emoji.clock} ${time} ago`
+					`\u200e\u2002 \u2002${emoji.star} ${this.monospace(our_stars)} / ${this.monospace(opp_stars)} ${emoji.fire} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
+					`\u200e\u2002 \u2002${'<:userssolid:699652935197655061>'} ${this.monospace(size)} vs ${this.monospace(size)} ${emoji.clock} ${time} ago`
 				]);
 			}
 		}
+
+		// 𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿
+		// 0123456789
 
 		return message.util.send({ embed });
 	}
@@ -128,6 +131,20 @@ class WarlogCommand extends Command {
 
 	name(data) {
 		return data.split('').slice(0, 10).join('');
+	}
+
+	monospace(num) {
+		return num.toString()
+			.replace(/0/g, '𝟶')
+			.replace(/1/g, '𝟷')
+			.replace(/2/g, '𝟸')
+			.replace(/3/g, '𝟹')
+			.replace(/4/g, '𝟺')
+			.replace(/5/g, '𝟻')
+			.replace(/6/g, '𝟼')
+			.replace(/7/g, '𝟽')
+			.replace(/8/g, '𝟾')
+			.replace(/9/g, '𝟿');
 	}
 }
 
