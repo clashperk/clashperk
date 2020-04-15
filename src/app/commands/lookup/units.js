@@ -119,7 +119,7 @@ class UnitsCommand extends Command {
 			if (troop.village === 'builderBase') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					builderTroops += `${builderTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(troop.maxLevel)}\u200f\`**\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(troop.maxLevel)}\u200f\`\u2002`;
 				} else {
 					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(troop.maxLevel)}\u200f\`\u2002`;
 				}
