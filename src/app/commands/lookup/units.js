@@ -142,14 +142,14 @@ class UnitsCommand extends Command {
 					heroLevels += `${heroEmoji[hero.name]} \`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`\u2002\u2002`;
 				}
 			}
+			if (index === 4) {
+				heroLevels += '#';
+				index = 0;
+			}
 		});
 
 		data.heroes.forEach(hero => {
 			if (hero.village === 'builderBase') {
-				if (index === 4) {
-					heroLevels += '#';
-					index = 0;
-				}
 				if (hero.level === hero.maxLevel) {
 					heroLevels += `${heroEmoji[hero.name]} **\`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`**\u2002\u2002`;
 				} else {
