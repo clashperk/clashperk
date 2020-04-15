@@ -165,7 +165,7 @@ class UnitsCommand extends Command {
 	formatNum(num) {
 		const num_string = num < 10
 			? num.toString()
-				.padEnd(2, '\u2002')
+				.padStart(2, '0')
 			: num.toString();
 
 		return num_string
