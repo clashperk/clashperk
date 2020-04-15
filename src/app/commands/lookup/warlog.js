@@ -112,7 +112,7 @@ class WarlogCommand extends Command {
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opp_name)}**`, [
 					`\u200b\u2002 \u2002${emoji.star_small} ${this.monospace(our_stars).padStart(5, '\u2002')} / ${this.monospace(opp_stars).padEnd(5, '\u2002')} ${emoji.fire_small} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
-					`\u200b\u2002 \u2002${emoji.users_small} ${this.monospace(size).padStart(5, '\u2002')} / ${this.monospace(size).padEnd(5, '\u2002')} ${emoji.clock_small} ${time} ago`
+					`\u200b \u200b\u2002 \u2002${emoji.users_small} ${this.monospace(size).padStart(5, '\u2002')} / ${this.monospace(size).padEnd(5, '\u2002')} ${emoji.clock_small} ${time} ago`
 				]);
 			}
 		}
