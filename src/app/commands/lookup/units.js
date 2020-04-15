@@ -83,9 +83,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					darkTroops += `${darkTroopsEmoji[troop.name]} **\`\u200b${this.padStart(troop.level)}/${this.padEnd(troop.maxLevel)}\`**\u2002\u2002`;
+					darkTroops += `${darkTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(troop.maxLevel)}\`**\u2002`;
 				} else {
-					darkTroops += `${darkTroopsEmoji[troop.name]} \`\u200b${this.padStart(troop.level)}/${this.padEnd(troop.maxLevel)}\`\u2002\u2002`;
+					darkTroops += `${darkTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(troop.maxLevel)}\`\u2002`;
 				}
 				if (index === 4) {
 					darkTroops += '#';
@@ -201,7 +201,7 @@ class UnitsCommand extends Command {
 	}
 
 	padEnd(num) {
-		return num.toString().padEnd(2, '\u200b\u2002');
+		return num.toString().padEnd(2, ' ');
 	}
 }
 
