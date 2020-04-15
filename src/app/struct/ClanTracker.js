@@ -171,7 +171,7 @@ class FastTracker {
 				const membersJoined = currentMemberList.filter(tag => !oldMemberSet.has(tag));
 				const membersLeft = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 				if (item.donations !== item.receives && (membersJoined.length || membersLeft.length)) {
-					embed.addField('Unmatched Donations', [
+					embed.addField('Unmatched Donation', [
 						membersJoined.length ? `${membersJoined.length} Member${membersJoined.length === 1 ? '' : 's'} Joined` : '',
 						membersLeft.length ? `${membersLeft.length} Member${membersLeft.length === 1 ? '' : 's'} Left` : ''
 					]);
