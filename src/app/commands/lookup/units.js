@@ -3,7 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
-const { homeTroopsEmoji, builderTroopsEmoji, heroEmoji, spellEmoji } = require('../../util/emojis');
+const { builderTroopsEmoji, heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
 
 class UnitsCommand extends Command {
 	constructor() {
@@ -61,13 +61,13 @@ class UnitsCommand extends Command {
 
 		let index = 0;
 		let troopLevels = '';
-		data.troops.filter(troop => !['Super Barbarian', 'Super Wall Breaker', 'Super Giant', 'Sneaky Goblin'].includes(troop.name)).forEach(troop => {
-			if (troop.village === 'home' && !['Wall Wrecker', 'Stone Slammer', 'Battle Blimp', 'Siege Barracks'].includes(troop.name)) {
+		data.troops.filter(troop => troop.name in elixirTroopsEmoji).forEach(troop => {
+			if (troop.village === 'home') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					troopLevels += `${homeTroopsEmoji[troop.name]} **${this.formatNum(troop.level)}**/${this.formatNum(troop.maxLevel)}\u2002`;
+					troopLevels += `${elixirTroopsEmoji[troop.name]} **${this.formatNum(troop.level)}**/${this.formatNum(troop.maxLevel)}\u2002`;
 				} else {
-					troopLevels += `${homeTroopsEmoji[troop.name]} ${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\u2002`;
+					troopLevels += `${elixirTroopsEmoji[troop.name]} ${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\u2002`;
 				}
 				if (index === 4) {
 					troopLevels += '#';
@@ -75,17 +75,35 @@ class UnitsCommand extends Command {
 				}
 			}
 		});
-		if (troopLevels) embed.setDescription(['Troops', troopLevels.split('#').join('\n')]);
+		if (troopLevels) embed.setDescription(['**Elixir Troops**', troopLevels.split('#').join('\n')]);
+
+		index = 0;
+		let darkTroops = '';
+		data.troops.filter(troop => troop.name in darkTroopsEmoji).forEach(troop => {
+			if (troop.village === 'home') {
+				index++;
+				if (troop.level === troop.maxLevel) {
+					darkTroops += `${darkTroopsEmoji[troop.name]} **${this.formatNum(troop.level)}**/${this.formatNum(troop.maxLevel)}\u2002`;
+				} else {
+					darkTroops += `${darkTroopsEmoji[troop.name]} ${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\u2002`;
+				}
+				if (index === 4) {
+					troopLevels += '#';
+					index = 0;
+				}
+			}
+		});
+		if (darkTroops) embed.addField('Dark Troops', darkTroops.split('#').join('\n'));
 
 		index = 0;
 		let SiegeMachines = '';
-		data.troops.forEach(troop => {
-			if (troop.village === 'home' && ['Wall Wrecker', 'Stone Slammer', 'Battle Blimp', 'Siege Barracks'].includes(troop.name)) {
+		data.troops.filter(troop => troop.name in siegeMachinesEmoji).forEach(troop => {
+			if (troop.village === 'home') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					SiegeMachines += `${homeTroopsEmoji[troop.name]} **${this.formatNum(troop.level)}**/${this.formatNum(troop.maxLevel)}\u2002`;
+					SiegeMachines += `${siegeMachinesEmoji[troop.name]} **${this.formatNum(troop.level)}**/${this.formatNum(troop.maxLevel)}\u2002`;
 				} else {
-					SiegeMachines += `${homeTroopsEmoji[troop.name]} ${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\u2002`;
+					SiegeMachines += `${siegeMachinesEmoji[troop.name]} ${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\u2002`;
 				}
 				if (index === 4) {
 					troopLevels += '#';
@@ -97,7 +115,7 @@ class UnitsCommand extends Command {
 
 		let builderTroops = '';
 		index = 0;
-		data.troops.forEach(troop => {
+		data.troops.filter(troop => troop.name in builderTroopsEmoji).forEach(troop => {
 			if (troop.village === 'builderBase') {
 				index++;
 				if (troop.level === troop.maxLevel) {
@@ -113,23 +131,41 @@ class UnitsCommand extends Command {
 		});
 		if (builderTroops) embed.addField('Builder Base Troops', builderTroops.split('#').join('\n'));
 
-		let spellLevels = '';
+		let elixirSpells = '';
 		index = 0;
-		data.spells.forEach(spell => {
+		data.spells.filter(spell => spell.name in elixirSpellEmoji).forEach(spell => {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					spellLevels += `${spellEmoji[spell.name]} **${this.formatNum(spell.level)}**/${this.formatNum(spell.maxLevel)}\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} **${this.formatNum(spell.level)}**/${this.formatNum(spell.maxLevel)}\u2002`;
 				} else {
-					spellLevels += `${spellEmoji[spell.name]} ${this.formatNum(spell.level)}/${this.formatNum(spell.maxLevel)}\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} ${this.formatNum(spell.level)}/${this.formatNum(spell.maxLevel)}\u2002`;
 				}
 				if (index === 4) {
-					spellLevels += '#';
+					elixirSpells += '#';
 					index = 0;
 				}
 			}
 		});
-		if (spellLevels) embed.addField('Spells', spellLevels.split('#').join('\n'));
+		if (elixirSpells) embed.addField('Elixir Spells', elixirSpells.split('#').join('\n'));
+
+		let darkSpells = '';
+		index = 0;
+		data.spells.filter(spell => spell.name in elixirSpellEmoji).forEach(spell => {
+			if (spell.village === 'home') {
+				index++;
+				if (spell.level === spell.maxLevel) {
+					darkSpells += `${elixirSpellEmoji[spell.name]} **${this.formatNum(spell.level)}**/${this.formatNum(spell.maxLevel)}\u2002`;
+				} else {
+					darkSpells += `${elixirSpellEmoji[spell.name]} ${this.formatNum(spell.level)}/${this.formatNum(spell.maxLevel)}\u2002`;
+				}
+				if (index === 4) {
+					darkSpells += '#';
+					index = 0;
+				}
+			}
+		});
+		if (darkSpells) embed.addField('Dark Spells', darkSpells.split('#').join('\n'));
 
 		let heroLevels = '';
 		index = 0;

@@ -1,5 +1,5 @@
 module.exports = {
-	homeTroopsEmoji: {
+	elixirTroopsEmoji: {
 		'Barbarian': '<:barbarian:696280898122809344>',
 		'Archer': '<:archer:696280941005504592>',
 		'Giant': '<:giant:696280991697731585>',
@@ -13,8 +13,10 @@ module.exports = {
 		'Baby Dragon': '<:babydragon:696281500018278400>',
 		'Miner': '<:miner:696281535111757895>',
 		'Electro Dragon': '<:electrodragon:696281556930527352>',
-		'Yeti': '<:yeti:696281814293282857>',
+		'Yeti': '<:yeti:696281814293282857>'
+	},
 
+	darkTroopsEmoji: {
 		'Minion': '<:minion:696281875794231326>',
 		'Hog Rider': '<:hogrider:696281961257238579>',
 		'Valkyrie': '<:valkyrie:696282003158597662>',
@@ -22,8 +24,10 @@ module.exports = {
 		'Witch': '<:witch:696282143508267068>',
 		'Lava Hound': '<:lavahound:696282183832305685>',
 		'Bowler': '<:bowler:696282213360074782>',
-		'Ice Golem': '<:icegolem:696282324798799892>',
+		'Ice Golem': '<:icegolem:696282324798799892>'
+	},
 
+	siegeMachinesEmoji: {
 		'Wall Wrecker': '<:wallwrecker:696282434278522931>',
 		'Battle Blimp': '<:battleblimp:696282472480112731>',
 		'Stone Slammer': '<:stoneslammer:696282610472714271>',
@@ -73,13 +77,16 @@ module.exports = {
 		29000025: '<:legend:696301773513818162>'
 	},
 
-	spellEmoji: {
+	elixirSpellEmoji: {
 		'Lightning Spell': '<:lightning:696301967953231913>',
 		'Healing Spell': '<:healing:696302035913670737>',
 		'Rage Spell': '<:rage:696302044343959572>',
 		'Jump Spell': '<:jump:696302055681425438>',
 		'Freeze Spell': '<:freeze:696302064992780299>',
-		'Clone Spell': '<:clone:696302107950710795>',
+		'Clone Spell': '<:clone:696302107950710795>'
+	},
+
+	darkSpellEmoji: {
 		'Poison Spell': '<:poison:696302119434846231>',
 		'Earthquake Spell': '<:earthquake:696302170957414460>',
 		'Haste Spell': '<:haste:696302178763276348>',
