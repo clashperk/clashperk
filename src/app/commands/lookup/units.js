@@ -147,7 +147,7 @@ class UnitsCommand extends Command {
 		data.heroes.forEach(hero => {
 			if (hero.village === 'builderBase') {
 				if (index === 4) {
-					troopLevels += '#';
+					heroLevels += '#';
 					index = 0;
 				}
 				if (hero.level === hero.maxLevel) {
