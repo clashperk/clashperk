@@ -137,9 +137,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} **\`${this.padStart(spell.level)}/${this.padEnd(spell.maxLevel)}\`**\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(spell.maxLevel)}\`**\u2002`;
 				} else {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} \`${this.padStart(spell.level)}/${this.padEnd(spell.maxLevel)}\`\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(spell.maxLevel)}\`\u2002`;
 				}
 				if (index === 4) {
 					elixirSpells += '#';
@@ -147,7 +147,7 @@ class UnitsCommand extends Command {
 				}
 			}
 		});
-		if (elixirSpells) embed.addField('Elixir Spells', `\u200e${elixirSpells.split('#').join('\n')}`);
+		if (elixirSpells) embed.addField('Elixir Spells', `${elixirSpells.split('#').join('\n')}`);
 
 		let darkSpells = '';
 		index = 0;
