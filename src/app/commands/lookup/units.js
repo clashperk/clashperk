@@ -147,7 +147,7 @@ class UnitsCommand extends Command {
 				}
 			}
 		});
-		if (elixirSpells) embed.addField('Elixir Spells', elixirSpells.split('#').join('\n'));
+		if (elixirSpells) embed.addField('Elixir Spells', `\u200e${elixirSpells.split('#').join('\n')}`);
 
 		let darkSpells = '';
 		index = 0;
