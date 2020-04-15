@@ -155,9 +155,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					darkSpells += `${elixirSpellEmoji[spell.name]} **${this.formatNum(spell.level)}**/${this.formatNum(spell.maxLevel)}\u2002`;
+					darkSpells += `${darkSpellEmoji[spell.name]} **${this.formatNum(spell.level)}**/${this.formatNum(spell.maxLevel)}\u2002`;
 				} else {
-					darkSpells += `${elixirSpellEmoji[spell.name]} ${this.formatNum(spell.level)}/${this.formatNum(spell.maxLevel)}\u2002`;
+					darkSpells += `${darkSpellEmoji[spell.name]} ${this.formatNum(spell.level)}/${this.formatNum(spell.maxLevel)}\u2002`;
 				}
 				if (index === 4) {
 					darkSpells += '#';
