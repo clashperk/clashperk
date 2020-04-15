@@ -33,12 +33,23 @@ class FastTracker {
 	}
 
 	formatNum(num) {
-		return num < 10
+		const num_string = num < 10
 			? num.toString()
 				.padStart(2, '0')
 				.padStart(3, '\u2002')
 			: num.toString()
 				.padStart(3, '\u2002');
+		return num_string
+			.replace(/0/g, '𝟶')
+			.replace(/1/g, '𝟷')
+			.replace(/2/g, '𝟸')
+			.replace(/3/g, '𝟹')
+			.replace(/4/g, '𝟺')
+			.replace(/5/g, '𝟻')
+			.replace(/6/g, '𝟼')
+			.replace(/7/g, '𝟽')
+			.replace(/8/g, '𝟾')
+			.replace(/9/g, '𝟿');
 	}
 
 	async log(cache) {
@@ -62,23 +73,23 @@ class FastTracker {
 				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]}_**${this.formatNum(donations)}** \u2002${Util.escapeItalic(member.name)}_\n`;
+					item.donated += `${leagueEmoji[member.league.id]}**${this.formatNum(donations)}** \u2002${Util.escapeItalic(member.name)}_\n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key][member.tag].donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]}_**${this.formatNum(receives)}** \u2002${Util.escapeItalic(member.name)}_\n`;
+					item.received += `${leagueEmoji[member.league.id]}**${this.formatNum(receives)}** \u2002${Util.escapeItalic(member.name)}\n`;
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				const donations = member.donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]}_**${this.formatNum(donations)}** \u2002${Util.escapeItalic(member.name)}_\n`;
+					item.donated += `${leagueEmoji[member.league.id]}**${this.formatNum(donations)}** \u2002${Util.escapeItalic(member.name)}\n`;
 				}
 				const receives = member.donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]}_**${this.formatNum(receives)}** \u2002${Util.escapeItalic(member.name)}_\n`;
+					item.received += `${leagueEmoji[member.league.id]}**${this.formatNum(receives)}** \u2002${Util.escapeItalic(member.name)}\n`;
 				}
 			}
 
