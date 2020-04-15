@@ -2,7 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror } = require('../../util/constants');
+const { geterror, fetcherror, monospace } = require('../../util/constants');
 const { builderTroopsEmoji, heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
 
 class UnitsCommand extends Command {
@@ -199,22 +199,7 @@ class UnitsCommand extends Command {
 	}
 
 	formatNum(num) {
-		const num_string = num < 10
-			? num.toString()
-				.padStart(2, '0')
-			: num.toString();
-
-		return num_string
-			.replace(/0/g, '𝟶')
-			.replace(/1/g, '𝟷')
-			.replace(/2/g, '𝟸')
-			.replace(/3/g, '𝟹')
-			.replace(/4/g, '𝟺')
-			.replace(/5/g, '𝟻')
-			.replace(/6/g, '𝟼')
-			.replace(/7/g, '𝟽')
-			.replace(/8/g, '𝟾')
-			.replace(/9/g, '𝟿');
+		return monospace(num.toString().padStart(2, '0'));
 	}
 }
 
