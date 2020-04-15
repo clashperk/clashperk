@@ -129,7 +129,7 @@ class UnitsCommand extends Command {
 				}
 			}
 		});
-		if (builderTroops) embed.addField('Builder Base Troops', builderTroops.split('#').join('\n'));
+		if (builderTroops) embed.addField('Builder Base Troops', builderTroops.split('#').join('\n\u200e'));
 
 		let elixirSpells = '';
 		index = 0;
@@ -137,9 +137,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e ${this.padStart(spell.level)}/${this.padEnd(spell.maxLevel)}\`**\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(spell.maxLevel)}\`**\u2002`;
 				} else {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} \`\u200e ${this.padStart(spell.level)}/${this.padEnd(spell.maxLevel)}\`\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(spell.maxLevel)}\`\u2002`;
 				}
 				if (index === 4) {
 					elixirSpells += '#';
