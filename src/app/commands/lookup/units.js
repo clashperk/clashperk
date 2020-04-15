@@ -119,9 +119,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'builderBase') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					builderTroops += `${builderTroopsEmoji[troop.name]} **\`${this.padStart(troop.level)}/${this.padEnd(troop.maxLevel)}\`**\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(troop.maxLevel)}\`**\u2002`;
 				} else {
-					builderTroops += `${builderTroopsEmoji[troop.name]} \`${this.padStart(troop.level)}/${this.padEnd(troop.maxLevel)}\`\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(troop.maxLevel)}\`\u2002`;
 				}
 				if (index === 4) {
 					builderTroops += '#';
@@ -129,7 +129,7 @@ class UnitsCommand extends Command {
 				}
 			}
 		});
-		if (builderTroops) embed.addField('Builder Base Troops', builderTroops.split('#').join('\n\u200e'));
+		if (builderTroops) embed.addField('Builder Base Troops', builderTroops.split('#').join('\n'));
 
 		let elixirSpells = '';
 		index = 0;
@@ -147,7 +147,7 @@ class UnitsCommand extends Command {
 				}
 			}
 		});
-		if (elixirSpells) embed.addField('Elixir Spells', `${elixirSpells.split('#').join('\n\u200e')}`);
+		if (elixirSpells) embed.addField('Elixir Spells', `${elixirSpells.split('#').join('\n')}`);
 
 		let darkSpells = '';
 		index = 0;
