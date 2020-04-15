@@ -95,8 +95,8 @@ class WarlogCommand extends Command {
 				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${emoji.cwl} Clan War League**`, [
-					`\u200b\u2002 \u2002${emoji.star_small} ${this.monospace(our_stars).padStart(5, '\u2002')} / ${this.monospace(opp_stars).padEnd(5, '\u2002')} ${emoji.fire_small} ${our_destruct.toFixed(2)}% ${emoji.attacksword} ${our_attacks} `,
-					`\u2002 \u2002${emoji.users_small} ${this.monospace(size).padStart(5, '\u2002')} / ${this.monospace(size).padEnd(5, '\u2002')} ${emoji.clock_small} ${time} ago`
+					`\u200e\u2002 \u2002${emoji.star_small} ${this.padStart(our_stars)} / ${this.padEnd(opp_stars)} ${emoji.fire_small} ${our_destruct.toFixed(2)}% ${emoji.attacksword} ${our_attacks} `,
+					`\u2002 \u2002${emoji.users_small} ${this.padStart(size)} / ${this.padEnd(size)} ${emoji.clock_small} ${time} ago`
 				]);
 			} else {
 				const opp_name = opp;
@@ -111,8 +111,8 @@ class WarlogCommand extends Command {
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opp_name)}**`, [
-					`\u200b\u2002 \u2002${emoji.star_small} ${this.monospace(our_stars).padStart(5, '\u2002')} / ${this.monospace(opp_stars).padEnd(5, '\u2002')} ${emoji.fire_small} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
-					`\u2002 \u2002${emoji.users_small} ${this.monospace(size).padStart(5, '\u2002')} / ${this.monospace(size).padEnd(5, '\u2002')} ${emoji.clock_small} ${time} ago`
+					`\u200e\u2002 \u2002${emoji.star_small} ${this.padStart(our_stars)} / ${this.padEnd(opp_stars)} ${emoji.fire_small} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
+					`\u2002 \u2002${emoji.users_small} ${this.padStart(size)} / ${this.padEnd(size)} ${emoji.clock_small} ${time} ago`
 				]);
 			}
 		}
@@ -130,18 +130,12 @@ class WarlogCommand extends Command {
 		return data.split('').slice(0, 10).join('');
 	}
 
-	monospace(num) {
-		return num.toString()
-			.replace(/0/g, '𝟶')
-			.replace(/1/g, '𝟷')
-			.replace(/2/g, '𝟸')
-			.replace(/3/g, '𝟹')
-			.replace(/4/g, '𝟺')
-			.replace(/5/g, '𝟻')
-			.replace(/6/g, '𝟼')
-			.replace(/7/g, '𝟽')
-			.replace(/8/g, '𝟾')
-			.replace(/9/g, '𝟿');
+	padEnd(num) {
+		return num.toString().padEnd(3, '\u2002');
+	}
+
+	padStart(num) {
+		return num.toString().padStart(3, '\u2002');
 	}
 }
 

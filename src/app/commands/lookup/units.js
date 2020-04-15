@@ -65,9 +65,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					troopLevels += `${elixirTroopsEmoji[troop.name]} **${this.formatNum(troop.level)}**/${this.formatNum(troop.maxLevel)}\u2002`;
+					troopLevels += `${elixirTroopsEmoji[troop.name]} **\`${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\`**\u2002`;
 				} else {
-					troopLevels += `${elixirTroopsEmoji[troop.name]} ${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\u2002`;
+					troopLevels += `${elixirTroopsEmoji[troop.name]} \`${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\`\u2002`;
 				}
 				if (index === 4) {
 					troopLevels += '#';
@@ -83,9 +83,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					darkTroops += `${darkTroopsEmoji[troop.name]} **${this.formatNum(troop.level)}**/${this.formatNum(troop.maxLevel)}\u2002`;
+					darkTroops += `${darkTroopsEmoji[troop.name]} **\`${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\`**\u2002`;
 				} else {
-					darkTroops += `${darkTroopsEmoji[troop.name]} ${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\u2002`;
+					darkTroops += `${darkTroopsEmoji[troop.name]} \`${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\`\u2002`;
 				}
 				if (index === 4) {
 					darkTroops += '#';
@@ -101,9 +101,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					SiegeMachines += `${siegeMachinesEmoji[troop.name]} **${this.formatNum(troop.level)}**/${this.formatNum(troop.maxLevel)}\u2002`;
+					SiegeMachines += `${siegeMachinesEmoji[troop.name]} **\`${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\`**\u2002`;
 				} else {
-					SiegeMachines += `${siegeMachinesEmoji[troop.name]} ${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\u2002`;
+					SiegeMachines += `${siegeMachinesEmoji[troop.name]} \`${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\`\u2002`;
 				}
 				if (index === 4) {
 					troopLevels += '#';
@@ -119,9 +119,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'builderBase') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					builderTroops += `${builderTroopsEmoji[troop.name]} **${this.formatNum(troop.level)}**/${this.formatNum(troop.maxLevel)}\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} **\`${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\`**\u2002`;
 				} else {
-					builderTroops += `${builderTroopsEmoji[troop.name]} ${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} \`${this.formatNum(troop.level)}/${this.formatNum(troop.maxLevel)}\`\u2002`;
 				}
 				if (index === 4) {
 					builderTroops += '#';
@@ -137,9 +137,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} **${this.formatNum(spell.level)}**/${this.formatNum(spell.maxLevel)}\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} **\`${this.formatNum(spell.level)}/${this.formatNum(spell.maxLevel)}\`**\u2002`;
 				} else {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} ${this.formatNum(spell.level)}/${this.formatNum(spell.maxLevel)}\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} \`${this.formatNum(spell.level)}/${this.formatNum(spell.maxLevel)}\`\u2002`;
 				}
 				if (index === 4) {
 					elixirSpells += '#';
@@ -155,9 +155,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					darkSpells += `${darkSpellEmoji[spell.name]} **${this.formatNum(spell.level)}**/${this.formatNum(spell.maxLevel)}\u2002`;
+					darkSpells += `${darkSpellEmoji[spell.name]} **\`${this.formatNum(spell.level)}/${this.formatNum(spell.maxLevel)}\`**\u2002`;
 				} else {
-					darkSpells += `${darkSpellEmoji[spell.name]} ${this.formatNum(spell.level)}/${this.formatNum(spell.maxLevel)}\u2002`;
+					darkSpells += `${darkSpellEmoji[spell.name]} \`${this.formatNum(spell.level)}/${this.formatNum(spell.maxLevel)}\`\u2002`;
 				}
 				if (index === 4) {
 					darkSpells += '#';
@@ -171,9 +171,9 @@ class UnitsCommand extends Command {
 		data.heroes.forEach(hero => {
 			if (hero.village === 'builderBase') {
 				if (hero.level === hero.maxLevel) {
-					builderHero += `${heroEmoji[hero.name]} **${this.formatNum(hero.level)}**/${this.formatNum(hero.maxLevel)}\u2002`;
+					builderHero += `${heroEmoji[hero.name]} **\`${this.formatNum(hero.level)}/${this.formatNum(hero.maxLevel)}\`**\u2002`;
 				} else {
-					builderHero += `${heroEmoji[hero.name]} ${this.formatNum(hero.level)}/${this.formatNum(hero.maxLevel)}\u2002`;
+					builderHero += `${heroEmoji[hero.name]} \`${this.formatNum(hero.level)}/${this.formatNum(hero.maxLevel)}\`\u2002`;
 				}
 			}
 		});
@@ -184,9 +184,9 @@ class UnitsCommand extends Command {
 		data.heroes.forEach(hero => {
 			if (hero.village === 'home') {
 				if (hero.level === hero.maxLevel) {
-					heroLevels += `${heroEmoji[hero.name]} **${this.formatNum(hero.level)}**/${this.formatNum(hero.maxLevel)}\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} **\`${this.formatNum(hero.level)}/${this.formatNum(hero.maxLevel)}\`**\u2002`;
 				} else {
-					heroLevels += `${heroEmoji[hero.name]} ${this.formatNum(hero.level)}/${this.formatNum(hero.maxLevel)}\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} \`${this.formatNum(hero.level)}/${this.formatNum(hero.maxLevel)}\`\u2002`;
 				}
 			}
 		});
@@ -197,7 +197,7 @@ class UnitsCommand extends Command {
 	}
 
 	formatNum(num) {
-		return monospace(num.toString().padStart(2, '0'));
+		return num.toString().padStart(2, '0');
 	}
 }
 
