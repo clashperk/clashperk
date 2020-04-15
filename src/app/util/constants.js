@@ -64,20 +64,6 @@ module.exports = {
 		return leagueId;
 	},
 
-	monospace(num_string) {
-		return num_string
-			.replace(/0/g, '𝟶')
-			.replace(/1/g, '𝟷')
-			.replace(/2/g, '𝟸')
-			.replace(/3/g, '𝟹')
-			.replace(/4/g, '𝟺')
-			.replace(/5/g, '𝟻')
-			.replace(/6/g, '𝟼')
-			.replace(/7/g, '𝟽')
-			.replace(/8/g, '𝟾')
-			.replace(/9/g, '𝟿');
-	},
-
 	status(code) {
 		return codes[code];
 	},
