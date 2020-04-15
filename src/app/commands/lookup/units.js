@@ -142,7 +142,7 @@ class UnitsCommand extends Command {
 					heroLevels += `${heroEmoji[hero.name]} \`${hero.level > 9 ? '' : '\u200b '}${hero.level}\`\u2002\u2002`;
 				}
 			}
-			if (index === 4) {
+			if (index === 2) {
 				heroLevels += '#';
 				index = 0;
 			}
