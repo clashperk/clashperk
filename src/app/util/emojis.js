@@ -135,7 +135,7 @@ module.exports = {
 		star: '<:cp_star:696292402532450306>',
 		star_small: '<:cp_star_small:699834188731252857>',
 		fire: '<:cp_fire:696292379703115780>',
-		fire_small: '<:cp_star_small:699834188731252857>',
+		fire_small: '<:cp_fire_small:699833080092950568>',
 		sword: '<:cp_sword:696292361134932038>',
 		clan: '<:clan:696297353216262176>',
 		ok: '<:ok:696297369209274438>',
