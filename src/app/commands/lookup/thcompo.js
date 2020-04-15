@@ -3,7 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror, monospace } = require('../../util/constants');
+const { geterror, fetcherror } = require('../../util/constants');
 const { townHallEmoji, emoji } = require('../../util/emojis');
 
 const API = process.env.APIS.split(',');
@@ -141,7 +141,7 @@ class ThCompoCommand extends Command {
 	}
 
 	padStart(msg) {
-		return monospace(msg.toString().padStart(2, '0'));
+		return msg.toString().padStart(2, '0');
 	}
 }
 

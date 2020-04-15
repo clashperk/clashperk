@@ -2,7 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror, monospace } = require('../../util/constants');
+const { geterror, fetcherror } = require('../../util/constants');
 const { builderTroopsEmoji, heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
 
 class UnitsCommand extends Command {
