@@ -423,7 +423,7 @@ class ClanTracker {
 
 	async init() {
 		await this.load();
-		// return this.fastTracker.init();
+		return this.fastTracker.init();
 	}
 
 	async load() {
@@ -456,7 +456,7 @@ class ClanTracker {
 			data.lastonline_msg = data.lastonline.message;
 		}
 
-		// this.client.cwl.add(tag, true);
+		this.client.cwl.add(tag, true);
 		return this.cached.set(`${guild}${tag}`, data);
 	}
 
