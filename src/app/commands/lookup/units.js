@@ -165,10 +165,9 @@ class UnitsCommand extends Command {
 	formatNum(num) {
 		const num_string = num < 10
 			? num.toString()
-				.padStart(2, '0')
-				.padStart(3, '\u2002')
+				.padStart(2, '\u2002')
 			: num.toString()
-				.padStart(3, '\u2002');
+				.padStart(2, '\u2002');
 		return num_string
 			.replace(/0/g, '𝟶')
 			.replace(/1/g, '𝟷')
