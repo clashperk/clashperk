@@ -138,16 +138,16 @@ class ClashPerk extends AkairoClient {
 		await this.patron.init();
 		await Database.connect();
 
-		/* const intervalID = setInterval(() => {
+		const intervalID = setInterval(() => {
 			if (this.readyAt && this.user && this.user.id === process.env.CLIENT_ID) {
-				this.firebase.init();
-				this.postStats.init();
+				// this.firebase.init();
+				// this.postStats.init();
 				this.tracker.init();
-				this.voter.init();
-				this.cwl.init();
+				// this.voter.init();
+				// this.cwl.init();
 				clearInterval(intervalID);
 			}
-		}, 2000);*/
+		}, 2000);
 		setInterval(() => {
 			console.log(this.guilds.cache.size);
 			console.log(this.readyAt);
