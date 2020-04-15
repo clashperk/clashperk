@@ -197,11 +197,11 @@ class UnitsCommand extends Command {
 	}
 
 	padStart(num) {
-		return num.toString().padStart(2, '\u200b ');
+		return num.toString().padStart(2, '\u2002');
 	}
 
 	padEnd(num) {
-		return num.toString().padEnd(2, ' \u200b');
+		return num.toString().padEnd(2, '\u2002');
 	}
 }
 
