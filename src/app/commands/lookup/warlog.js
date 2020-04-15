@@ -111,8 +111,8 @@ class WarlogCommand extends Command {
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opp_name)}**`, [
-					`\u200e\u2002 \u2002${emoji.star} ${this.monospace(our_stars).padStart(5, '\u2002')} / ${this.monospace(opp_stars).padEnd(5, '\u2002')} ${'<:cp_fire22:699833080092950568>'} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
-					`\u200e\u2002 \u2002${'<:userssolid:699652935197655061>'} ${this.monospace(size).padStart(5, '\u2002')} / ${this.monospace(size).padEnd(5, '\u2002')} ${'<:clock22:699831825002135683>'} ${time} ago`
+					`\u200e\u2002 \u2002${'<:cp_star_small:699834188731252857>'} ${this.monospace(our_stars).padStart(5, '\u2002')} / ${this.monospace(opp_stars).padEnd(5, '\u2002')} ${'<:cp_fire_small:699833080092950568>'} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
+					`\u200e\u2002 \u2002${'<:userssolid_small:699834141931339777>'} ${this.monospace(size).padStart(5, '\u2002')} / ${this.monospace(size).padEnd(5, '\u2002')} ${'<:cp_star_small:699834188731252857>'} ${time} ago`
 				]);
 			}
 		}
