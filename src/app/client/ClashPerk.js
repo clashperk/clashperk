@@ -25,7 +25,7 @@ class ClashPerk extends AkairoClient {
 					'GUILDS',
 					'GUILD_MESSAGES',
 					'GUILD_MEMBERS',
-					'GUILD_PRESENCES',
+					// 'GUILD_PRESENCES',
 					'GUILD_MESSAGE_REACTIONS'
 				]
 			}
