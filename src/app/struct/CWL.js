@@ -41,7 +41,9 @@ class CWLTracker {
 	}
 
 	add(tag, boolean) {
-		return this.cached.set(tag, boolean);
+		if (new Date().getDate() < 12 && new Date().getDate() > 8) {
+			return this.cached.set(tag, boolean);
+		}
 	}
 
 	async fetch() {
