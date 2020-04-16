@@ -62,23 +62,23 @@ class FastTracker {
 				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]}_**${this.formatNum(donations)}** \u2002${Util.escapeItalic(member.name)}_\n`;
+					item.donated += `${leagueEmoji[member.league.id]} \u2002**\`${this.formatNum(donations)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key][member.tag].donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]}_**${this.formatNum(receives)}** \u2002${Util.escapeItalic(member.name)}_\n`;
+					item.received += `${leagueEmoji[member.league.id]} \u2002**\`${this.formatNum(receives)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				const donations = member.donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]}_**${this.formatNum(donations)}** \u2002${Util.escapeItalic(member.name)}_\n`;
+					item.donated += `${leagueEmoji[member.league.id]} \u2002**\`${this.formatNum(donations)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
 				}
 				const receives = member.donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]}_**${this.formatNum(receives)}** \u2002${Util.escapeItalic(member.name)}_\n`;
+					item.received += `${leagueEmoji[member.league.id]} \u2002**\`${this.formatNum(receives)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
 				}
 			}
 
@@ -160,7 +160,7 @@ class FastTracker {
 				const membersJoined = currentMemberList.filter(tag => !oldMemberSet.has(tag));
 				const membersLeft = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 				if (item.donations !== item.receives && (membersJoined.length || membersLeft.length)) {
-					embed.addField('Unmatched Donations', [
+					embed.addField('Unmatched Donation', [
 						membersJoined.length ? `${membersJoined.length} Member${membersJoined.length === 1 ? '' : 's'} Joined` : '',
 						membersLeft.length ? `${membersLeft.length} Member${membersLeft.length === 1 ? '' : 's'} Left` : ''
 					]);

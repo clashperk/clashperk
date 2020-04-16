@@ -1,5 +1,5 @@
 module.exports = {
-	homeTroopsEmoji: {
+	elixirTroopsEmoji: {
 		'Barbarian': '<:barbarian:696280898122809344>',
 		'Archer': '<:archer:696280941005504592>',
 		'Giant': '<:giant:696280991697731585>',
@@ -13,8 +13,10 @@ module.exports = {
 		'Baby Dragon': '<:babydragon:696281500018278400>',
 		'Miner': '<:miner:696281535111757895>',
 		'Electro Dragon': '<:electrodragon:696281556930527352>',
-		'Yeti': '<:yeti:696281814293282857>',
+		'Yeti': '<:yeti:696281814293282857>'
+	},
 
+	darkTroopsEmoji: {
 		'Minion': '<:minion:696281875794231326>',
 		'Hog Rider': '<:hogrider:696281961257238579>',
 		'Valkyrie': '<:valkyrie:696282003158597662>',
@@ -22,8 +24,10 @@ module.exports = {
 		'Witch': '<:witch:696282143508267068>',
 		'Lava Hound': '<:lavahound:696282183832305685>',
 		'Bowler': '<:bowler:696282213360074782>',
-		'Ice Golem': '<:icegolem:696282324798799892>',
+		'Ice Golem': '<:icegolem:696282324798799892>'
+	},
 
+	siegeMachinesEmoji: {
 		'Wall Wrecker': '<:wallwrecker:696282434278522931>',
 		'Battle Blimp': '<:battleblimp:696282472480112731>',
 		'Stone Slammer': '<:stoneslammer:696282610472714271>',
@@ -73,13 +77,16 @@ module.exports = {
 		29000025: '<:legend:696301773513818162>'
 	},
 
-	spellEmoji: {
+	elixirSpellEmoji: {
 		'Lightning Spell': '<:lightning:696301967953231913>',
 		'Healing Spell': '<:healing:696302035913670737>',
 		'Rage Spell': '<:rage:696302044343959572>',
 		'Jump Spell': '<:jump:696302055681425438>',
 		'Freeze Spell': '<:freeze:696302064992780299>',
-		'Clone Spell': '<:clone:696302107950710795>',
+		'Clone Spell': '<:clone:696302107950710795>'
+	},
+
+	darkSpellEmoji: {
 		'Poison Spell': '<:poison:696302119434846231>',
 		'Earthquake Spell': '<:earthquake:696302170957414460>',
 		'Haste Spell': '<:haste:696302178763276348>',
@@ -133,11 +140,14 @@ module.exports = {
 		xp: '<:xp:696296069348458516>',
 		warstar: '<:warstar:696299067193425951>',
 		star: '<:cp_star:696292402532450306>',
+		star_small: '<:cp_star_small:699834188731252857>',
 		fire: '<:cp_fire:696292379703115780>',
+		fire_small: '<:cp_fire_small:699833080092950568>',
 		sword: '<:cp_sword:696292361134932038>',
 		clan: '<:clan:696297353216262176>',
 		ok: '<:ok:696297369209274438>',
 		wrong: '<:wrong:696314714535231538>',
+		empty: '<:empty:699639532013748326>',
 		townhall: '<:townhall:696655174025871461>',
 		trophy: '<:trophy:696297701423448095>',
 		versustrophy: '<:versustrophies:696299029746679860>',
@@ -151,7 +161,11 @@ module.exports = {
 		discord: '<:discord:696317142307700747>',
 		clanwar: '<:clanwar:696321876271562782>',
 		cwl: '<:clanwarleague:696321885784244314>',
+		cwl_small: '<:cwl_small:699837806129971202>',
 		clock: '<:cp_clock:696324225019019326>',
-		loading: '<a:loading:696328441146114050>'
+		clock_small: '<:clock_small:699831825002135683>',
+		loading: '<a:loading:696328441146114050>',
+		users: '<:userssolid:699652935197655061>',
+		users_small: '<:userssolid_small:699834141931339777>'
 	}
 };

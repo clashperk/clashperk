@@ -61,10 +61,10 @@ class WarlogCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
-			.setTitle(`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses,` : ''} win streak ${data.warWinStreak}`);
+			.setDescription(`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses,` : ''} win streak ${data.warWinStreak}`);
 
 		if (data.isWarLogPublic === false) {
-			embed.setDescription('War Log Is Private');
+			embed.setDescription('War Log is Private');
 			return message.util.send({ embed });
 		}
 
@@ -94,13 +94,13 @@ class WarlogCommand extends Command {
 				const EndTime = new Date(moment(endTimes[oppnames.indexOf(opp)]).toDate()).getTime();
 				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
-				embed.addField(`**${++index}.** ${emoji.cwl} Clan War League`, [
-					`${emoji.star} ${our_stars} / ${opp_stars} ${emoji.fire} ${our_destruct.toFixed(2)}% ${emoji.attacksword} ${our_attacks} `,
-					`${emoji.clanwar} ${size} vs ${size} ${emoji.clock} ${time} ago`
+				embed.addField(`**${(++index).toString().padStart(2, '0')} ${emoji.cwl} Clan War League**`, [
+					`\u200e\u2002 \u2002${emoji.star_small} ${this.padStart(our_stars)} / ${this.padEnd(opp_stars)} ${emoji.fire_small} ${our_destruct.toFixed(2)}% ${emoji.attacksword} ${our_attacks} `,
+					`\u2002 \u2002${emoji.users_small} ${this.padStart(size)} / ${this.padEnd(size)} ${emoji.clock_small} ${time} ago`
 				]);
 			} else {
 				const opp_name = opp;
-				const result = results[oppnames.indexOf(opp)].replace(/lose/g, 'Lose war').replace(/win/g, 'Win war');
+				const result = results[oppnames.indexOf(opp)].replace(/lose/g, 'Lost').replace(/win/g, 'Won').replace(/tie/g, 'Tied');
 				const opp_tag = opptags[oppnames.indexOf(opp)];
 				const size = warSizes[oppnames.indexOf(opp)];
 				const our_attacks = ourattacks[oppnames.indexOf(opp)];
@@ -110,14 +110,32 @@ class WarlogCommand extends Command {
 				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
-				embed.addField(`**${++index}.** ${result === 'Win war' ? emoji.ok : emoji.wrong} ${result} against **${opp_name} (${opp_tag})**`, [
-					`${emoji.star} ${our_stars} / ${opp_stars} ${emoji.fire} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks} `,
-					`${emoji.clanwar} ${size} vs ${size} ${emoji.clock} ${time} ago`
+				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opp_name)}**`, [
+					`\u200e\u2002 \u2002${emoji.star_small} ${this.padStart(our_stars)} / ${this.padEnd(opp_stars)} ${emoji.fire_small} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
+					`\u2002 \u2002${emoji.users_small} ${this.padStart(size)} / ${this.padEnd(size)} ${emoji.clock_small} ${time} ago`
 				]);
 			}
 		}
 
 		return message.util.send({ embed });
+	}
+
+	result(result) {
+		if (result === 'Won') return `${emoji.ok} Won`;
+		if (result === 'Lost') return `${emoji.wrong} Lost`;
+		if (result === 'Tied') return '<:empty:699639532013748326> Tied ';
+	}
+
+	name(data) {
+		return data.split('').slice(0, 10).join('');
+	}
+
+	padEnd(num) {
+		return num.toString().padEnd(3, '\u2002');
+	}
+
+	padStart(num) {
+		return num.toString().padStart(3, '\u2002');
 	}
 }
 

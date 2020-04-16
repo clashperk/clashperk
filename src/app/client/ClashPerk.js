@@ -36,7 +36,7 @@ class ClashPerk extends AkairoClient {
 		this.commandHandler = new CommandHandler(this, {
 			directory: path.join(__dirname, '..', 'commands'),
 			aliasReplacement: /-/g,
-			prefix: message => this.settings.get(message.guild, 'prefix', '*'),
+			prefix: message => this.settings.get(message.guild, 'prefix', 'cp!'),
 			allowMention: true,
 			commandUtil: true,
 			commandUtilLifetime: 3e5,
