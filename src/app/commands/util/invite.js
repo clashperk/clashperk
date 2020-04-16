@@ -3,7 +3,7 @@ const { Command } = require('discord-akairo');
 class InviteCommand extends Command {
 	constructor() {
 		super('invite', {
-			aliases: ['invite'],
+			aliases: ['invite', 'support'],
 			category: 'util',
 			cooldown: 1000,
 			clientPermissions: ['EMBED_LINKS'],
