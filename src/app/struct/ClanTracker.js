@@ -62,23 +62,23 @@ class FastTracker {
 				const donations = member.donations - this.donateList[key][member.tag].donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]} \u2002**\`${this.formatNum(donations)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
+					item.donated += `${leagueEmoji[member.league.id]} **\`\u200e${this.formatNum(donations)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
 				}
 				const receives = member.donationsReceived - this.donateList[key][member.tag].donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]} \u2002**\`${this.formatNum(receives)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
+					item.received += `${leagueEmoji[member.league.id]} **\`\u200e${this.formatNum(receives)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
 				const donations = member.donations;
 				if (donations && donations > 0) {
 					item.donations += donations;
-					item.donated += `${leagueEmoji[member.league.id]} \u2002**\`${this.formatNum(donations)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
+					item.donated += `${leagueEmoji[member.league.id]} **\`\u200e${this.formatNum(donations)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
 				}
 				const receives = member.donationsReceived;
 				if (receives && receives > 0) {
 					item.receives += receives;
-					item.received += `${leagueEmoji[member.league.id]} \u2002**\`${this.formatNum(receives)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
+					item.received += `${leagueEmoji[member.league.id]} **\`\u200e${this.formatNum(receives)}\`** \u2002${Util.escapeItalic(member.name)}\n`;
 				}
 			}
 
@@ -199,32 +199,27 @@ class FastTracker {
 		this.cached.set(key, cache);
 	}
 
-	async playerUpdate(clan, key, collection) {
-		if (clan.tag !== '#8QU8J9LP') return;
+	async playerUpdate(clan) {
+		const collection = mongodb.db('clashperk').collection('clangames');
 		for (const tag of clan.memberList.map(m => m.tag)) {
 			const member = await this.player(tag);
 			if (!member) continue;
-			if (this.donateList[key] && member.tag in this.donateList[key] && this.donateList[key][member.tag].attackWins) {
-				if (this.donateList[key][member.tag].attackWins !== member.attackWins) {
-					console.log(member.tag);
-					await collection.findOneAndUpdate({
-						tag: clan.tag
-					}, {
-						$set: {
-							tag: clan.tag,
-							name: clan.name,
-							[`memberList.${member.tag}`]: {
-								lastOnline: new Date(),
-								name: member.name,
-								tag: member.tag
-							}
-						}
-					}, { upsert: true }).catch(error => console.log(error));
+			await collection.findOneAndUpdate({
+				tag: clan.tag
+			}, {
+				$set: {
+					tag: clan.tag,
+					name: clan.name,
+					[`memberList.${member.tag}`]: {
+						tag: member.tag,
+						totalPoints: member.achievements
+							.filter(achievement => achievement.name === 'Games Champion')
+							.value
+					}
 				}
-			}
+			}, { upsert: true }).catch(error => console.log(error));
 
 			await this.delay(150);
-			this.donateList[key][member.tag].attackWins = member.attackWins;
 		}
 	}
 

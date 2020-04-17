@@ -12,7 +12,7 @@ class RankCommand extends Command {
 			args: [
 				{
 					id: 'member',
-					type: 'guildMember',
+					type: 'member',
 					default: message => message.member
 				}
 			]
