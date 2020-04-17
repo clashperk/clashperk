@@ -9,8 +9,13 @@ class ClanGames {
 	}
 
 	async init() {
-		await this.load();
-		return this.start();
+		const intervalID = setInterval(async () => {
+			if (new Date().getDate() > this.client.settings.get('global', 'clanGames', 21)) {
+				await this.load();
+				await this.start();
+				return clearInterval(intervalID);
+			}
+		}, 1 * 60 * 1000);
 	}
 
 	async delay(ms) {
@@ -62,7 +67,7 @@ class ClanGames {
 								name: clan.name,
 								[`memberList.${member.tag}`]: {
 									tag: member.tag,
-									totalPoints: member.achievements
+									points: member.achievements
 										.find(achievement => achievement.name === 'Games Champion')
 										.value
 								}
@@ -85,7 +90,7 @@ class ClanGames {
 							name: clan.name,
 							[`memberList.${member.tag}`]: {
 								tag: member.tag,
-								totalPoints: member.achievements
+								points: member.achievements
 									.find(achievement => achievement.name === 'Games Champion')
 									.value
 							}
