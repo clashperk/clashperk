@@ -51,7 +51,7 @@ class ClanGamesCommand extends Command {
 
 	async exec(message, { data, channel, color }) {
 		const clans = await this.clans(message);
-		const max = this.client.patron.guilds.get(message.guild, 'clanLimit', 1);
+		const max = this.client.patron.guilds.get(message.guild, 'clanLimit', 2);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
 			const embed = this.client.util.embed()
 				.setDescription([
@@ -103,6 +103,7 @@ class ClanGamesCommand extends Command {
 			name: data.name,
 			user: message.author.id,
 			guild: message.guild.id,
+			enabled: true,
 			isPremium: this.client.patron.guilds.get(message.guild, 'patron', false),
 			createdAt: new Date()
 		}, { merge: true });
