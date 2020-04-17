@@ -41,7 +41,8 @@ class ClanGames {
 			// Callback
 			const intervalID = setInterval(this.handle.bind(this), 30 * 60 * 1000, cache);
 			cache.intervalID = intervalID;
-			return this.cached.set(clan.tag, cache);
+			const key = [cache.guild, cache.tag].join('');
+			return this.cached.set(key, cache);
 		}
 	}
 
