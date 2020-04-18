@@ -83,8 +83,8 @@ class ClanGamesCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				'\`POINTS\` \u2002 NAME',
-				members.map(m => `\`\u200e${this.padStart(m.points)}\` \u2002 ${m.name}`)
+				`\`POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
+				members.map(m => `\`\u200e${this.padStart(m.points)} \u2002 ${this.padEnd(m.name)}\``).join('\n')
 			]);
 
 		return message.util.send({ embed });
@@ -99,7 +99,7 @@ class ClanGamesCommand extends Command {
 	}
 
 	padEnd(data) {
-		return data.padEnd(20, ' ');
+		return data.padEnd(16, ' ');
 	}
 
 	filter(data, clan) {
