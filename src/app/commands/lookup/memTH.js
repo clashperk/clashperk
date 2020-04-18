@@ -157,7 +157,7 @@ class MembersTHCommand extends Command {
 	}
 
 	padStart(num) {
-		return num.toString().padStart(2, '0');
+		return num.toString().padStart(2, ' ');
 	}
 
 	sort(items) {

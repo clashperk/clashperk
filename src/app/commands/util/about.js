@@ -16,11 +16,18 @@ class AboutCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`About ${this.client.user.username}`, this.client.user.displayAvatarURL())
-			.addField('Developer', `[${owner.tag}](https://github.com/ndency)`)
-			.addField('Library', '[discord.js#master](https://discord.js.org)')
+			.setDescription([
+				'ClashPerk is Clash of Clans Discord Bot for Activity Tracking, searching Players, Clans, War Log, CWL etc..'
+			])
+			.addField('Author', `[${owner.tag}](https://github.com/ndency)`)
+			.addField('Library', '[discord.js](https://discord.js.org)')
 			.addField('Support', '[Official Discord](https://discord.gg/ppuppun)')
 			.addField('Website', '[Guide](https://clashperk.xyz)')
 			.addField('Donate', '[Patreon](https://www.patreon.com/bePatron?u=14584309)')
+			.addField('Notice', [
+				'This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it.',
+				'For more information see Supercell\'s Fan Content Policy https://www.supercell.com/fan-content-policy'
+			])
 			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL());
 		return message.util.send({ embed });
 	}
