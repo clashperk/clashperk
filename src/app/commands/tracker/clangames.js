@@ -63,7 +63,7 @@ class ClanGamesCommand extends Command {
 						headers: { accept: 'application/json', authorization: `Bearer ${API[index]}` }
 					}).then(res => res.json());
 					const points = member.achievements.find(achievement => achievement.name === 'Games Champion');
-					collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, points: points.value });
+					collection.push({ name: member.name, tag: member.tag, points: points.value });
 				}
 				return collection;
 			});
@@ -73,7 +73,7 @@ class ClanGamesCommand extends Command {
 		const array = [];
 		for (const arr of requests) {
 			for (const member of arr) {
-				array.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel });
+				array.push({ tag: member.tag, name: member.name, points: member.points });
 			}
 		}
 
