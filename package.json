@@ -15,7 +15,7 @@
     "chalk": "^2.4.2",
     "common-tags": "^1.8.0",
     "discord-akairo": "clashperk/discord-akairo",
-    "discord.js": "^12.1.1",
+    "discord.js": "^12.2.0",
     "dotenv": "^8.0.0",
     "firebase-admin": "^8.2.0",
     "moment": "^2.24.0",
