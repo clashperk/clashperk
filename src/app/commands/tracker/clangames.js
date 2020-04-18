@@ -78,7 +78,7 @@ class ClanGamesCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				`\`POINTS \u2002 ${'NAME'.padEnd(20, ' ')}\``,
-				members.map(m => `\`\u200e${this.padStart(m.points || '')} \u2002 ${this.padEnd(m.name)}\``).join('\n')
+				members.map(m => `\`\u200e${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}\``).join('\n')
 			]);
 
 		return message.util.send({ embed });

@@ -6,7 +6,7 @@ const { stripIndents } = require('common-tags');
 class TrackingCommand extends Command {
 	constructor() {
 		super('tracking', {
-			aliases: ['tracking', 'clans'],
+			aliases: ['info', 'tracking', 'clans'],
 			category: 'tracker',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
