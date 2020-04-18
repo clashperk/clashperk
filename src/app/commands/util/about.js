@@ -17,7 +17,7 @@ class AboutCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`About ${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.setDescription([
-				'ClashPerk is Clash of Clans Discord Bot for Activity Tracking, searching Players, Clans, War Log, CWL etc..'
+				'ClashPerk is Clash of Clans Discord Bot for activity tracking (donations, last-online, players leave/join, clan games, cwl), searching players, clans, war log, cwl etc..'
 			])
 			.addField('Author', `[${owner.tag}](https://github.com/ndency)`)
 			.addField('Library', '[discord.js](https://discord.js.org)')

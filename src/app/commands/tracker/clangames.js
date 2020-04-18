@@ -5,14 +5,14 @@ const { firestore } = require('../../struct/Database');
 class ClanGamesCommand extends Command {
 	constructor() {
 		super('clangames', {
-			aliases: ['clangames'],
+			aliases: ['clangames', 'points', 'cg'],
 			category: 'owner',
 			ownerOnly: true,
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Nooo',
+				content: 'Shows clan game points of your clan members.',
 				usage: '<clan tag> [channel/hexColor] [hexColor/channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-games #5970C1', '#8QU8J9LP #5970C1 #clan-games']
 			}

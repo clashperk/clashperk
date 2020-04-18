@@ -5,8 +5,7 @@ class UnflagCommand extends Command {
 	constructor() {
 		super('unflag', {
 			aliases: ['unflag'],
-			category: 'owner',
-			ownerOnly: true,
+			category: 'other',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {

@@ -5,7 +5,7 @@ const { emoji } = require('../../util/emojis');
 class LeaderboardCommand extends Command {
 	constructor() {
 		super('leaderboard', {
-			aliases: ['levels', 'leaderboard'],
+			// aliases: ['levels', 'leaderboard'],
 			category: 'other',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
