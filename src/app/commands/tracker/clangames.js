@@ -31,19 +31,7 @@ class ClanGamesCommand extends Command {
 			}
 		};
 
-		const channel = yield {
-			type: 'textChannel',
-			unordered: [1, 2],
-			default: message => message.channel
-		};
-
-		const color = yield {
-			type: 'color',
-			unordered: [1, 2],
-			default: 5861569
-		};
-
-		return { data, channel, color };
+		return { data };
 	}
 
 	cooldown(message) {
@@ -53,6 +41,12 @@ class ClanGamesCommand extends Command {
 
 	async exec(message, { data }) {
 		const db = mongodb.db('clashperk').collection('clangames');
+		const clan = await db.findOne({ tag: data.tag });
+		if (!clan) {
+			return message.util.send({
+				embed: { description: 'No Data Found' }
+			});
+		}
 
 		const list = data.memberList.map(m => m.tag);
 		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
@@ -77,14 +71,14 @@ class ClanGamesCommand extends Command {
 			}
 		}
 
-		const members = this.sort(array);
+		const members = this.filter(array, clan);
 
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				`\`POINTS \u2002 ${'NAME'.padEnd(20, ' ')}\``,
-				members.map(m => `\`\u200e${this.padStart(m.points)} \u2002 ${this.padEnd(m.name)}\``).join('\n')
+				members.map(m => `\`\u200e${this.padStart(m.points || '')} \u2002 ${this.padEnd(m.name)}\``).join('\n')
 			]);
 
 		return message.util.send({ embed });
@@ -102,17 +96,17 @@ class ClanGamesCommand extends Command {
 		return data.padEnd(20, ' ');
 	}
 
-	filter(data, clan) {
-		const members = data.memberList.map(member => {
-			const lastOnline = member.tag in clan.memberList
-				? new Date() - new Date(clan.memberList[member.tag].lastOnline)
+	filter(memberList, clan) {
+		const members = memberList.map(member => {
+			const points = member.tag in clan.memberList
+				? member.points - clan.memberList[member.tag].points
 				: null;
-			return { tag: member.tag, name: member.name, lastOnline };
+			return { tag: member.tag, name: member.name, points };
 		});
 
-		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
+		const sorted = members.sort((a, b) => a.points - b.points);
 
-		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
+		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
 }
 
