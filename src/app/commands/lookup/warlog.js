@@ -95,8 +95,8 @@ class WarlogCommand extends Command {
 				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${emoji.cwl} Clan War League**`, [
-					`\u200e\u2002 \u2002${emoji.star_small} ${this.padStart(our_stars)} / ${this.padEnd(opp_stars)} ${emoji.fire_small} ${our_destruct.toFixed(2)}% ${emoji.attacksword} ${our_attacks} `,
-					`\u2002 \u2002${emoji.users_small} ${this.padStart(size)} / ${this.padEnd(size)} ${emoji.clock_small} ${time} ago`
+					`\u200e\u2002 \u2002${emoji.star_small} \`${this.padStart(our_stars)} / ${this.padEnd(opp_stars)}\u200f\` ${emoji.fire_small} ${our_destruct.toFixed(2)}% ${emoji.attacksword} ${our_attacks} `,
+					`\u2002 \u2002${emoji.users_small} \`${this.padStart(size)} / ${this.padEnd(size)}\u200f\` ${emoji.clock_small} ${time} ago`
 				]);
 			} else {
 				const opp_name = opp;
