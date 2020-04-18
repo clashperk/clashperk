@@ -1,6 +1,7 @@
-const { Command } = require('discord-akairo');
-const { MessageEmbed } = require('discord.js');
+const { Command, Flag } = require('discord-akairo');
+const Fetch = require('../../struct/Fetch');
 const { firestore, mongodb } = require('../../struct/Database');
+const { geterror, fetcherror } = require('../../util/constants');
 const fetch = require('node-fetch');
 const API = process.env.APIS.split(',');
 
@@ -8,26 +9,43 @@ class ClanGamesCommand extends Command {
 	constructor() {
 		super('clangames', {
 			aliases: ['clangames', 'points', 'cg'],
-			category: 'owner',
-			ownerOnly: true,
+			category: 'tracker',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows clan game points of your clan members.',
-				usage: '<clan tag> [channel/hexColor] [hexColor/channel]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-games #5970C1', '#8QU8J9LP #5970C1 #clan-games']
+				usage: '<clan tag>',
+				examples: ['#8QU8J9LP']
 			}
 		});
 	}
 
 	*args() {
 		const data = yield {
-			type: 'clan',
-			unordered: false,
+			type: async (msg, str) => {
+				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
+				if (!resolver && !str) return null;
+				if (!resolver && str) {
+					return Fetch.clan(str).then(data => {
+						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
+						return data;
+					});
+				}
+				const data = await firestore.collection('linked_accounts')
+					.doc(resolver.id)
+					.get()
+					.then(snap => snap.data());
+				if (!data) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
+				if (!data.clan) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
+				return Fetch.clan(data.clan).then(data => {
+					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
+					return data;
+				});
+			},
 			prompt: {
-				start: 'What clan do you want to track clan games?',
-				retry: (msg, { failure }) => failure.value
+				start: 'what would you like to search for?',
+				retry: 'what would you like to search for?'
 			}
 		};
 
