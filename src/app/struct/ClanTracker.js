@@ -451,7 +451,7 @@ class ClanTracker {
 			data.lastonline_msg = data.lastonline.message;
 		}
 
-		this.client.cwl.add(tag, true);
+		// this.client.cwl.add(tag, true);
 		return this.cached.set(`${guild}${tag}`, data);
 	}
 
