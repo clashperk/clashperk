@@ -92,11 +92,11 @@ class WarlogCommand extends Command {
 				const our_stars = ourstars[oppnames.indexOf(opp)];
 				const our_destruct = ourdes[oppnames.indexOf(opp)];
 				const EndTime = new Date(moment(endTimes[oppnames.indexOf(opp)]).toDate()).getTime();
-				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
+				const time = this.format(Date.now() - EndTime);
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${emoji.cwl} Clan War League**`, [
-					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(our_stars)} / ${this.padEnd(opp_stars)}\` ${emoji.fire_small} ${our_destruct.toFixed(2)}% ${emoji.attacksword} ${our_attacks} `,
-					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(size)} / ${this.padEnd(size)}\u200f\`\u200e ${emoji.clock_small} ${time} ago`
+					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(our_stars)} / ${this.padEnd(opp_stars)}\` ${emoji.fire_small} ${our_destruct.toFixed(2)}%`,
+					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(size)} / ${this.padEnd(size)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${our_attacks}`
 				]);
 			} else {
 				const opp_name = opp;
@@ -111,8 +111,8 @@ class WarlogCommand extends Command {
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opp_name)}**`, [
-					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(our_stars)} / ${this.padEnd(opp_stars)}\u200f\`\u200e ${emoji.fire_small} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
-					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(size)} / ${this.padEnd(size)}\u200f\`\u200e ${emoji.clock_small} ${time} ago`
+					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(our_stars)} / ${this.padEnd(opp_stars)}\u200f\`\u200e ${emoji.fire_small} ${our_destruct}% / ${opp_destruct}%`,
+					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(size)} / ${this.padEnd(size)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${our_attacks}`
 				]);
 			}
 		}
