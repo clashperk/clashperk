@@ -107,7 +107,7 @@ class WarlogCommand extends Command {
 				const our_stars = ourstars[oppnames.indexOf(opp)];
 				const our_destruct = ourdes[oppnames.indexOf(opp)];
 				const EndTime = new Date(moment(endTimes[oppnames.indexOf(opp)]).toDate()).getTime();
-				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
+				const time = this.format(Date.now() - EndTime);
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opp_name)}**`, [
@@ -136,6 +136,15 @@ class WarlogCommand extends Command {
 
 	padStart(num) {
 		return num.toString().padStart(3, '\u2002');
+	}
+
+	format(time) {
+		if (time > 864e5) {
+			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' });
+		} else if (time > 36e5) {
+			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
+		}
+		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
 	}
 }
 
