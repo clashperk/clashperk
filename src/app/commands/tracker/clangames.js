@@ -1,6 +1,8 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { firestore, mongodb } = require('../../struct/Database');
+const fetch = require('node-fetch');
+const API = process.env.APIS.split(',');
 
 class ClanGamesCommand extends Command {
 	constructor() {
@@ -52,23 +54,48 @@ class ClanGamesCommand extends Command {
 	async exec(message, { data }) {
 		const db = mongodb.db('clashperk').collection('clangames');
 
-		const clan = await db.findOne({ tag: data.tag });
-		if (!clan) {
-			return message.util.send({
-				embed: { description: 'No Data Found' }
+		const list = data.memberList.map(m => m.tag);
+		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
+			.map((tags, index) => async (collection = []) => {
+				for (const tag of tags) {
+					const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
+						method: 'GET',
+						headers: { accept: 'application/json', authorization: `Bearer ${API[index]}` }
+					}).then(res => res.json());
+					const points = member.achievements.find(achievement => achievement.name === 'Games Champion');
+					collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, points: points.value });
+				}
+				return collection;
 			});
+
+		const requests = await Promise.all(funcs.map(func => func()));
+
+		const array = [];
+		for (const arr of requests) {
+			for (const member of arr) {
+				array.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel });
+			}
 		}
+
+		const members = this.sort(array);
 
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}\n${this.filter(data, clan)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
-					.join('\n')}\`\`\``
+				'\`POINTS\` \u2002 NAME',
+				members.map(m => `\`\u200e${this.padStart(m.points)}\` \u2002 ${m.name}`)
 			]);
 
 		return message.util.send({ embed });
+	}
+
+	sort(items) {
+		return items.sort((a, b) => b.points - a.points);
+	}
+
+	padStart(num) {
+		return num.toString().padStart(6, ' ');
 	}
 
 	padEnd(data) {
