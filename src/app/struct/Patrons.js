@@ -1,4 +1,3 @@
-const { Users, Guilds } = require('./PatreonProvider');
 const { firebase, firestore } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 
