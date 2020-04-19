@@ -23,7 +23,7 @@ class UsageCommand extends Command {
 			.setAuthor(`${this.client.user.username} Usage  Statistics`, this.client.user.displayAvatarURL())
 			.setColor(0x5970c1)
 			.setFooter('Since August 2019')
-			.setTitle(`${total}x commands used`)
+			.setTitle(`${await this.commandsTotal()}x commands used`)
 			.addField('Users', [
 				`\`\`\`${users.splice(0, 10).map(({ id, uses }, index) => {
 					const user = this.client.users.cache.get(id);
@@ -47,7 +47,7 @@ class UsageCommand extends Command {
 	}
 
 	async users() {
-		const ref = await firebase.ref('users');
+		const ref = firebase.ref('users');
 		const data = await ref.once('value').then(snap => snap.val());
 		const users = [];
 		for (const [key, value] of Object.entries(data)) {
@@ -59,7 +59,7 @@ class UsageCommand extends Command {
 	}
 
 	async guilds() {
-		const ref = await firebase.ref('guilds');
+		const ref = firebase.ref('guilds');
 		const data = await ref.once('value').then(snap => snap.val());
 		const guilds = [];
 		for (const [key, value] of Object.entries(data)) {
@@ -71,7 +71,7 @@ class UsageCommand extends Command {
 	}
 
 	async commands() {
-		const ref = await firebase.ref('commands');
+		const ref = firebase.ref('commands');
 		const data = await ref.once('value').then(snap => snap.val());
 		const commands = [];
 		for (const [key, value] of Object.entries(data)) {
@@ -83,7 +83,7 @@ class UsageCommand extends Command {
 	}
 
 	async commandsTotal() {
-		const ref = await firebase.ref('stats');
+		const ref = firebase.ref('stats');
 		const data = await ref.once('value').then(snap => snap.val());
 
 		return data ? data.commands_used : 0;

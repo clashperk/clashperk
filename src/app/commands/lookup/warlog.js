@@ -53,7 +53,7 @@ class WarlogCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 1000;
 		return 3000;
 	}
 
@@ -92,11 +92,11 @@ class WarlogCommand extends Command {
 				const our_stars = ourstars[oppnames.indexOf(opp)];
 				const our_destruct = ourdes[oppnames.indexOf(opp)];
 				const EndTime = new Date(moment(endTimes[oppnames.indexOf(opp)]).toDate()).getTime();
-				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
+				const time = this.format(Date.now() - EndTime);
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${emoji.cwl} Clan War League**`, [
-					`\u200e\u2002 \u2002${emoji.star_small} ${this.padStart(our_stars)} / ${this.padEnd(opp_stars)} ${emoji.fire_small} ${our_destruct.toFixed(2)}% ${emoji.attacksword} ${our_attacks} `,
-					`\u2002 \u2002${emoji.users_small} ${this.padStart(size)} / ${this.padEnd(size)} ${emoji.clock_small} ${time} ago`
+					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(our_stars)} / ${this.padEnd(opp_stars)}\` ${emoji.fire_small} ${our_destruct.toFixed(2)}%`,
+					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(size)} / ${this.padEnd(size)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${our_attacks}`
 				]);
 			} else {
 				const opp_name = opp;
@@ -107,12 +107,12 @@ class WarlogCommand extends Command {
 				const our_stars = ourstars[oppnames.indexOf(opp)];
 				const our_destruct = ourdes[oppnames.indexOf(opp)];
 				const EndTime = new Date(moment(endTimes[oppnames.indexOf(opp)]).toDate()).getTime();
-				const time = moment.duration(Date.now() - EndTime).format('D [days], H [hours]');
+				const time = this.format(Date.now() - EndTime);
 				const opp_stars = oppstars[oppnames.indexOf(opp)];
 				const opp_destruct = oppdes[oppnames.indexOf(opp)];
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opp_name)}**`, [
-					`\u200e\u2002 \u2002${emoji.star_small} ${this.padStart(our_stars)} / ${this.padEnd(opp_stars)} ${emoji.fire_small} ${our_destruct}% / ${opp_destruct}% ${emoji.attacksword} ${our_attacks}`,
-					`\u2002 \u2002${emoji.users_small} ${this.padStart(size)} / ${this.padEnd(size)} ${emoji.clock_small} ${time} ago`
+					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(our_stars)} / ${this.padEnd(opp_stars)}\u200f\`\u200e ${emoji.fire_small} ${our_destruct}% / ${opp_destruct}%`,
+					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(size)} / ${this.padEnd(size)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${our_attacks}`
 				]);
 			}
 		}
@@ -136,6 +136,15 @@ class WarlogCommand extends Command {
 
 	padStart(num) {
 		return num.toString().padStart(3, '\u2002');
+	}
+
+	format(time) {
+		if (time > 864e5) {
+			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' });
+		} else if (time > 36e5) {
+			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
+		}
+		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
 	}
 }
 

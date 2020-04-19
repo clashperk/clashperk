@@ -50,7 +50,7 @@ class ClanCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 1000;
 		return 3000;
 	}
 
@@ -75,6 +75,7 @@ class ClanCommand extends Command {
 			.addField('Required Trophies', `${emoji.trophy} ${data.requiredTrophies}`, true)
 			.addField('Clan Type', clan_type, true)
 			.addField('Clan Points', `${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints}`, true)
+			.addField('War League', data.warLeague.name, true)
 			.addField('War Log', data.isWarLogPublic ? 'Public' : 'Private', true)
 			.addField('War Wins', data.warWins, true)
 			.addField('Win Streak', data.warWinStreak, true)

@@ -21,7 +21,7 @@ class CooldownListener extends Listener {
 			const embed = this.client.util.embed()
 				.setAuthor('Slow it down!')
 				.setColor(0x5970c1);
-			if (this.client.patron.users.get(message.author, 'patron', false)) {
+			if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false)) {
 				embed.setDescription([
 					`The default cooldown is ${this.donator(command)}, but as a donator you only need to wait ${ms(cooldown, { long: true })} sec.`
 				]);

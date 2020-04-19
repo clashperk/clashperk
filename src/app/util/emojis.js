@@ -162,10 +162,11 @@ module.exports = {
 		clanwar: '<:clanwar:696321876271562782>',
 		cwl: '<:clanwarleague:696321885784244314>',
 		cwl_small: '<:cwl_small:699837806129971202>',
-		clock: '<:cp_clock:696324225019019326>',
-		clock_small: '<:clock_small:699831825002135683>',
+		clock_small: '<:cp_clock:701085554691014667>',
 		loading: '<a:loading:696328441146114050>',
 		users: '<:userssolid:699652935197655061>',
-		users_small: '<:userssolid_small:699834141931339777>'
+		users_small: '<:userssolid_small:699834141931339777>',
+		authorize: '<:cp_authorized:701085545555689503>',
+		channel: '<:cp_channel:701085544335147059>'
 	}
 };

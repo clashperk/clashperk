@@ -35,6 +35,18 @@ class Firebase {
 			});
 	}
 
+	async ranks(user) {
+		return firebase.ref('ranks')
+			.child(user)
+			.transaction(point => {
+				if (point === null) return { xp: Math.floor(Math.random() * 5) };
+				point.xp += Math.floor(Math.random() * 5);
+				return point;
+			}, error => {
+				if (error) this.client.logger.error(error, { label: 'FIREBASE' });
+			});
+	}
+
 	async users(user) {
 		return firebase.ref('users')
 			.child(user)

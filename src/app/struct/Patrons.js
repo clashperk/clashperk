@@ -1,27 +1,62 @@
-const { Users, Guilds } = require('./PatreonProvider');
 const { firebase, firestore } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 
 class Patron {
-	constructor(client, { webhook = '612211124556791808' } = {}) {
+	constructor(client, { } = {}) {
 		this.client = client;
-		this.webhook = webhook;
-		this.users = new Users(firestore.collection('patron_users'));
-		this.guilds = new Guilds(firestore.collection('patron_guilds'));
+		this.store = new Map();
 	}
 
 	async init() {
-		await this.users.init();
-		await this.guilds.init();
-		await this.incoming();
+		await this.refresh();
+		return this.incoming();
 	}
 
-	users() {
-		return this.users;
+	get(id, key, def) {
+		if (this.store.has(id)) {
+			const value = this.store.get(id)[key];
+			return value == null ? def : value;
+		}
+
+		return def;
 	}
 
-	guilds() {
-		return this.guilds;
+	async refresh() {
+		this.store.clear();
+		await firestore.collection('patrons')
+			.where('active', '==', true)
+			.get()
+			.then(snap => {
+				snap.forEach(doc => {
+					const data = doc.data();
+					if (data.active) {
+						if (data.discord_id) {
+							this.store.set(data.discord_id, {
+								user: true
+							});
+						}
+
+						if (data.shared) {
+							for (const id of data.shared) {
+								this.store.set(id, {
+									user: true
+								});
+							}
+						}
+
+						if (data.guilds) {
+							for (const guild of data.guilds) {
+								this.store.set(guild.id, {
+									guild: true,
+									limit: guild.limit
+								});
+							}
+						}
+					}
+				});
+			});
+
+		return true;
 	}
 
 	async incoming() {
@@ -42,27 +77,29 @@ class Patron {
 		const { attributes } = body.data;
 		if (attributes.currently_entitled_amount_cents === 0) return;
 
-		const webhook = await this.client.fetchWebhook(this.webhook).catch(() => null);
-		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
+		this.client.logger.info(`${patron_user.attributes.full_name} (${patron_user.id})`, { label: 'PATRON_NEW' });
+
 		const user = await this.client.users.fetch(discord_id).catch(() => null);
 		if (user) {
-			this.client.logger.info(user.tag, { label: 'PATRON' });
-			this.client.patron.users.set(user, 'patron', true);
+			this.client.logger.info(`${user.tag} (${user.id})`, { label: 'PATRON_NEW' });
 		}
 
-		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
-		await firestore.collection('patreon')
+		await firestore.collection('patrons')
 			.doc(patron_user.id)
 			.update({
-				patron: {
-					name: patron_user.attributes.full_name,
-					id: patron_user.id
-				},
-				discord: {
-					id: discord_id
-				},
-				createdAt: attributes.pledge_relationship_start || new Date()
+				name: patron_user.attributes.full_name,
+				id: patron_user.id,
+				discord_id: discord_id || null,
+				createdAt: attributes.pledge_relationship_start || new Date(),
+				active: true,
+				entitled_amount: attributes.currently_entitled_amount_cents / 100
 			}, { merge: true });
+
+		await this.refresh();
+
+		const webhook = await this.fetchWebhook().catch(() => null);
+		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
+		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
 
 		const embed = new MessageEmbed()
 			.setColor(0xf96854)
@@ -73,7 +110,7 @@ class Patron {
 				`$ ${attributes.currently_entitled_amount_cents / 100}`
 			]);
 
-		return webhook.send({ embeds: [embed] });
+		return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user.displayAvatarURL() });
 	}
 
 	async updatePatron(body, key) {
@@ -84,24 +121,29 @@ class Patron {
 
 		const { attributes } = body.data;
 
-		const webhook = await this.client.fetchWebhook(this.webhook).catch(() => null);
-		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
-		const user = await this.client.users.fetch(discord_id).catch(() => null);
-		if (user) this.client.logger.info(user.tag, { label: 'PATRON' });
+		this.client.logger.info(`${patron_user.attributes.full_name} (${patron_user.id})`, { label: 'PATRON_UPDATE' });
 
-		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
-		await firestore.collection('petreon')
+		const user = await this.client.users.fetch(discord_id).catch(() => null);
+		if (user) {
+			this.client.logger.info(`${user.tag} (${user.id})`, { label: 'PATRON_UPDATE' });
+		}
+
+		await firestore.collection('patrons')
 			.doc(patron_user.id)
 			.update({
-				patron: {
-					user: patron_user.attributes.full_name,
-					id: patron_user.id
-				},
-				discord: {
-					id: discord_id
-				},
-				createdAt: patron_user.pledge_relationship_start || new Date()
+				name: patron_user.attributes.full_name,
+				id: patron_user.id,
+				discord_id: discord_id || null,
+				updatedAt: new Date(),
+				active: true,
+				entitled_amount: attributes.currently_entitled_amount_cents / 100
 			}, { merge: true });
+
+		await this.refresh();
+
+		const webhook = await this.fetchWebhook().catch(() => null);
+		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
+		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
 
 		const embed = new MessageEmbed()
 			.setColor(0x38d863)
@@ -112,7 +154,7 @@ class Patron {
 				`$ ${attributes.currently_entitled_amount_cents / 100}`
 			]);
 
-		return webhook.send({ embeds: [embed] });
+		return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user.displayAvatarURL() });
 	}
 
 	async deletePatron(body, key) {
@@ -123,14 +165,28 @@ class Patron {
 
 		const { attributes } = body.data;
 
-		const webhook = await this.client.fetchWebhook(this.webhook).catch(() => null);
-		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
+		this.client.logger.info(`${patron_user.attributes.full_name} (${patron_user.id})`, { label: 'PATRON_DELETE' });
+
 		const user = await this.client.users.fetch(discord_id).catch(() => null);
 		if (user) {
-			this.client.logger.info(user.tag, { label: 'PATRON' });
-			this.client.patron.users.set(user, 'patron', false);
+			this.client.logger.info(`${user.tag} (${user.id})`, { label: 'PATRON_DELETE' });
 		}
 
+		await firestore.collection('patrons')
+			.doc(patron_user.id)
+			.update({
+				name: patron_user.attributes.full_name,
+				id: patron_user.id,
+				discord_id: discord_id || null,
+				active: false,
+				expiedAt: new Date(),
+				lifetime_support: attributes.lifetime_support_cents / 100
+			}, { merge: true });
+
+		await this.refresh();
+
+		const webhook = await this.fetchWebhook().catch(() => null);
+		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
 		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
 
 		const embed = new MessageEmbed()
@@ -142,7 +198,26 @@ class Patron {
 				`$ ${attributes.lifetime_support_cents / 100}`
 			]);
 
-		return webhook.send({ embeds: [embed] });
+		return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user.displayAvatarURL() });
+	}
+
+	delclans() {
+		firestore.collection('tracking_clans').where('guild', '==', '').limit()
+			.get()
+			.then(snap => {
+				snap.forEach(async doc => {
+					await doc.ref.delete();
+					clearInterval(this.client.tracker.cached.get(doc.id).intervalID);
+					this.client.tracker.cached.delete(doc.id);
+				});
+			});
+	}
+
+	async fetchWebhook() {
+		if (this.webhook) return this.webhook;
+		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'patreonWebhook', undefined)).catch(() => null);
+		this.webhook = webhook;
+		return webhook;
 	}
 }
 

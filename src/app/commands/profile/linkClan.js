@@ -32,7 +32,7 @@ class LinkClanCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 1000;
 		return 3000;
 	}
 

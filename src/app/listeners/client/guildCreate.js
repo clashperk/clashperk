@@ -34,7 +34,7 @@ class GuildCreateListener extends Listener {
 				.setColor(0x38d863)
 				.setTimestamp();
 
-			return webhook.send({ embeds: [embed] });
+			return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user.displayAvatarURL() });
 		}
 	}
 
