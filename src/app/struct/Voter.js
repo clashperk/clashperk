@@ -145,7 +145,7 @@ class Voter {
 			.setAuthor(`${user.tag}`, user.displayAvatarURL())
 			.setFooter(`Received ${data.earnedXP} XP`)
 			.setTimestamp(Number(key));
-		return webhook.send({ embeds: [embed] });
+		return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user.displayAvatarURL() });
 	}
 
 	clear() {
