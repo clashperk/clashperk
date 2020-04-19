@@ -18,9 +18,9 @@ const path = require('path');
 class ClashPerk extends AkairoClient {
 	constructor(config) {
 		super({ ownerID: config.owner }, {
-			messageCacheMaxSize: 50,
-			messageCacheLifetime: 300,
-			messageSweepInterval: 300,
+			messageCacheMaxSize: 10,
+			messageCacheLifetime: 150,
+			messageSweepInterval: 150,
 			ws: {
 				intents: [
 					'GUILDS',
@@ -40,8 +40,8 @@ class ClashPerk extends AkairoClient {
 			prefix: message => this.settings.get(message.guild, 'prefix', '*'),
 			allowMention: true,
 			commandUtil: true,
-			commandUtilLifetime: 3e5,
-			commandUtilSweepInterval: 3e5,
+			commandUtilLifetime: 15e4,
+			commandUtilSweepInterval: 15e4,
 			handleEdits: true,
 			defaultCooldown: 3000,
 			argumentDefaults: {

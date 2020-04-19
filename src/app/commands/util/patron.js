@@ -19,7 +19,7 @@ class PatronCommand extends Command {
 		const patrons = await this.patrons();
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-			.setTitle('ClashPerk Patrons')
+			.setTitle('ClashPerk Patron')
 			.setURL('https://www.patreon.com/bePatron?u=14584309')
 			.setDescription([
 				oneLine`ClashPerk & it\'s donation tracking system requires a lot of processing power & monthly expenditure.

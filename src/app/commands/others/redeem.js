@@ -31,7 +31,10 @@ class RedeemCommand extends Command {
 				.setColor(16345172)
 				.setAuthor('Oh my!')
 				.setDescription([
-					'I could not find any patreon account connected to your discord.'
+					'I could not find any patreon account connected to your discord.',
+					'',
+					'Make sure that you are connected and subscribed to ClashPerk.',
+					'Not subscribed yet? [Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
 				])
 				.addField('How to connect?', [
 					'https://www.patreon.com/settings/apps'
