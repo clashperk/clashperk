@@ -3,9 +3,8 @@ const { firebase, firestore } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 
 class Patron {
-	constructor(client, { webhook = '612211124556791808' } = {}) {
+	constructor(client, { } = {}) {
 		this.client = client;
-		this.webhook = webhook;
 		this.store = new Map();
 	}
 
