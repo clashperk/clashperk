@@ -77,7 +77,7 @@ class CommandStartedListener extends Listener {
 		if (this.client.isOwner(message.author.id)) return;
 		this.client.firebase.commandcounter();
 		this.client.firebase.users(message.author.id);
-		// this.client.firebase.ranks(message.author.id);
+		if (commad.id !== 'rank') this.client.firebase.ranks(message.author.id);
 		this.client.firebase.commands(command.id);
 		if (message.guild) this.client.firebase.guilds(message.guild.id);
 	}
