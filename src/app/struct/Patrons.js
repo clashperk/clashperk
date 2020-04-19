@@ -202,6 +202,18 @@ class Patron {
 		return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user.displayAvatarURL() });
 	}
 
+	delclans() {
+		firestore.collection('tracking_clans').where('guild', '==', '').limit()
+			.get()
+			.then(snap => {
+				snap.forEach(async doc => {
+					await doc.ref.delete();
+					clearInterval(this.client.tracker.cached.get(doc.id).intervalID);
+					this.client.tracker.cached.delete(doc.id);
+				});
+			});
+	}
+
 	async fetchWebhook() {
 		if (this.webhook) return this.webhook;
 		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'patreonWebhook', undefined)).catch(() => null);

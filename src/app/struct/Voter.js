@@ -48,15 +48,21 @@ class Voter {
 	}
 
 	async count() {
-		const object = await firebase.ref('votes').once('value').then(snap => snap.val());
+		const object = await firebase.ref('users').once('value').then(snap => snap.val());
+		let index = 0;
 		for (const [key, value] of Object.entries(object)) {
-			const data = await firebase.ref('ranks').child(value.user).once('value')
-				.then(snap => snap.val());
-			if (data) {
-				await firebase.ref('ranks').child(value.user).update({ xp: data.xp + value.earnedXP, last_voted: Number(key) });
-			} else {
-				await firebase.ref('ranks').child(value.user).update({ xp: value.earnedXP, last_voted: Number(key) });
-			}
+			console.log(key, value);
+
+			const g = Math.floor((Math.floor(Math.random() * 3) + 2) * value);
+			console.log('Random', g);
+			await firebase.ref('ranks')
+				.child(key)
+				.transaction(point => {
+					if (point === null) return { xp: g };
+					point.xp += g;
+					return point;
+				})
+				.then(() => console.log('Doc', index++));
 		}
 	}
 

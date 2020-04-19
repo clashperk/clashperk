@@ -19,7 +19,7 @@ class ConfigCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`Settings of ${message.guild.name}`)
-			.addField('prefix', this.handler.prefix(message))
+			.addField('Prefix', this.handler.prefix(message))
 			.addField('Restriction', restrict.join(', ') || 'None');
 
 		return message.util.send({ embed });

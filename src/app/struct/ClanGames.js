@@ -23,7 +23,7 @@ class ClanGames {
 	}
 
 	async load() {
-		const data = await firestore.collection('clan_games_store')
+		const data = await firestore.collection('tracking_clans')
 			.get()
 			.then(snapshot => {
 				snapshot.forEach(doc => {
@@ -97,7 +97,7 @@ class ClanGames {
 						}
 					}, { upsert: true }).catch(error => console.log(error));
 
-					await this.delay(200);
+					await this.delay(100);
 				}
 			}
 		}
@@ -108,7 +108,7 @@ class ClanGames {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.TRACKER_API}`,
+				authorization: `Bearer ${process.env.CLAN_GAMES_API}`,
 				'cache-control': 'no-cache'
 			},
 			timeout: 3000
@@ -140,7 +140,7 @@ class ClanGames {
 	async start() {
 		for (const cache of Array.from(this.cached.values())) {
 			await this.handle(cache);
-			await this.delay(300);
+			await this.delay(5000);
 		}
 	}
 
