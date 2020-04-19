@@ -1,6 +1,6 @@
 const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
-const { } = require('firebase-admin');
+const { emoji } = require('../../util/emojis');
 const { firestore } = require('../../struct/Database');
 
 class RedeemCommand extends Command {
@@ -73,7 +73,9 @@ class RedeemCommand extends Command {
 
 				await this.client.patron.refresh();
 
-				const embed = this.client.util.embed();
+				const embed = this.client.util.embed()
+					.setColor(16345172)
+					.setDescription([`**Subscription for ${message.guild.name}**`, `Active ${emoji.authorize}`]);
 
 				return message.util.send({ embed });
 			}
@@ -82,7 +84,11 @@ class RedeemCommand extends Command {
 				const isNew = this.isNew(user, message, patreon_user);
 				if (isNew) await this.client.patron.refresh();
 
-				const embed = this.client.util.embed();
+				const embed = this.client.util.embed()
+					.setColor(16345172)
+					.setDescription([
+						'You\'ve already claimed.'
+					]);
 
 				return message.util.send({ embed });
 			}
@@ -98,9 +104,11 @@ class RedeemCommand extends Command {
 
 				await this.client.patron.refresh();
 
-				const embed = this.client.util.embed();
+				const embed = this.client.util.embed()
+					.setColor(16345172)
+					.setDescription([`**Subscription for ${message.guild.name}**`, `Active ${emoji.authorize}`]);
 
-				return message.util.send({ embed });
+				return message.channel.send({ embed });
 			}
 		}
 	}

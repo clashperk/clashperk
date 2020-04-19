@@ -44,13 +44,13 @@ class PlayerLogCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.users.get(message.author, 'patron', false) || this.client.voter.isVoter(message.author.id)) return 3000;
+		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 3000;
 		return 20000;
 	}
 
 	async exec(message, { data, channel, color }) {
 		const clans = await this.clans(message);
-		const max = this.client.patron.guilds.get(message.guild, 'clanLimit', 2);
+		const max = this.client.patron.get(message.guild.id, 'limit', 2);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
 			const embed = this.client.util.embed()
 				.setDescription([
@@ -65,7 +65,7 @@ class PlayerLogCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const isPatron = this.client.patron.users.get(message.author, 'patron', false);
+		const isPatron = this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false);
 		const isVoter = this.client.voter.isVoter(message.author.id);
 		if (clans.length >= 1 && !clans.map(clan => clan.tag).includes(data.tag) && !(isVoter || isPatron)) {
 			const embed = this.client.util.embed()
@@ -110,7 +110,7 @@ class PlayerLogCommand extends Command {
 			memberlog: {
 				channel: channel.id
 			},
-			isPremium: this.client.patron.guilds.get(message.guild, 'patron', false),
+			isPremium: this.client.patron.get(message.guild.id, 'guild', false),
 			createdAt: new Date()
 		}, { merge: true });
 

@@ -47,7 +47,7 @@ class Patron {
 						}
 
 						if (data.guilds) {
-							for (const guild of data.shared) {
+							for (const guild of data.guilds) {
 								this.store.set(guild.id, {
 									guild: true,
 									limit: guild.limit
