@@ -28,10 +28,15 @@ class RedeemCommand extends Command {
 
 		if (!user) {
 			const embed = this.client.util.embed()
+				.setColor(16345172)
 				.setAuthor('Oh my!')
 				.setDescription([
-					'I could not find any patreon account linked to your discord.'
-				]);
+					'I could not find any patreon account conneceted to your discord.'
+				])
+				.addField('How to connect?', [
+					'https://www.patreon.com/settings/apps'
+				])
+				.setImage('https://i.imgur.com/APME0CX.png');
 
 			return message.util.send({ embed });
 		}
