@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 class RedeemCommand extends Command {
 	constructor() {
 		super('redeem', {
-			// aliases: ['redeem'],
+			aliases: ['redeem'],
 			category: 'others',
 			description: {
 				content: 'Redeems your premium perks.'
@@ -21,12 +21,24 @@ class RedeemCommand extends Command {
 
 		const data = await res.json();
 
-		const users = data.included;
+		const user = data.included.find(entry => entry.attributes &&
+			entry.attributes.social_connections &&
+			entry.attributes.social_connections.discord &&
+			entry.attributes.social_connections.discord.user_id === message.author.id);
 
-		const user = users.find(entry => entry.attributes &&
-            entry.attributes.social_connections &&
-            entry.attributes.social_connections.discord &&
-            entry.attributes.social_connections.discord.user_id === message.author.id);
+		if (!user) {
+			const embed = this.client.util.embed()
+				.setAuthor('Oh my!')
+				.setDescription([
+					'I could not find any patreon account linked to your discord.'
+				]);
+
+			return message.util.send({ embed });
+		}
+
+		if (user) {
+			return message;
+		}
 	}
 }
 
