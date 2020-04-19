@@ -31,7 +31,7 @@ class RedeemCommand extends Command {
 				.setColor(16345172)
 				.setAuthor('Oh my!')
 				.setDescription([
-					'I could not find any patreon account conneceted to your discord.'
+					'I could not find any patreon account connected to your discord.'
 				])
 				.addField('How to connect?', [
 					'https://www.patreon.com/settings/apps'
