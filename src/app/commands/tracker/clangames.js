@@ -102,10 +102,6 @@ class ClanGamesCommand extends Command {
 		return message.util.send({ embed });
 	}
 
-	sort(items) {
-		return items.sort((a, b) => b.points - a.points);
-	}
-
 	padStart(num) {
 		return num.toString().padStart(6, ' ');
 	}
@@ -122,7 +118,7 @@ class ClanGamesCommand extends Command {
 			return { tag: member.tag, name: member.name, points };
 		});
 
-		const sorted = members.sort((a, b) => a.points - b.points);
+		const sorted = members.sort((a, b) => b.points - a.points);
 
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
