@@ -61,7 +61,7 @@ class RedeemCommand extends Command {
 					entry.relationships.patron.data.id === patreon_user.id);
 
 				await firestore.collection('patrons')
-					.doc(patreon_user.user.attributes.id)
+					.doc(patreon_user.id)
 					.update({
 						name: patreon_user.attributes.full_name,
 						id: patreon_user.id,
