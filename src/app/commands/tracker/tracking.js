@@ -79,9 +79,9 @@ class TrackingCommand extends Command {
 						return [
 							`**${this.padStart(++index)}. [${data.name} (${data.tag})](${this.openInGame(data.tag)})**`,
 							'\u2002',
-							`${logs[0].length ? `\u200e \u2002**DonationLog**\n${logs[0]}` : ''}`,
-							`${logs[1].length ? `\u200e \u2002**PlayerLog**\n${logs[1]}` : ''}`,
-							`${logs[2].length ? `\u200e \u2002**Last-Online Board**\n${logs[2]}` : ''}`
+							`${logs[0].length ? `\u200e \u2002**DonationLog**\n\u200e \u2002${logs[0]}` : ''}`,
+							`${logs[1].length ? `\u200e \u2002**PlayerLog**\n\u200e \u2002${logs[1]}` : ''}`,
+							`${logs[2].length ? `\u200e \u2002**Last-Online Board**\n\u200e \u2002${logs[2]}` : ''}`
 						].filter(item => item.length).join('\n');
 					}).join('\n\n')
 				]);
