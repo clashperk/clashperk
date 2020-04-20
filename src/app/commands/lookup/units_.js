@@ -156,9 +156,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					darkSpells += `${darkSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(spell.maxLevel)}\u200f\`**\u2002`;
+					darkSpells += `${darkSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd_(spell.maxLevel)}\u200f\`**\u2002`;
 				} else {
-					darkSpells += `${darkSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(spell.maxLevel)}\u200f\`\u2002`;
+					darkSpells += `${darkSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd_(spell.maxLevel)}\u200f\`\u2002`;
 				}
 				if (index === 4) {
 					darkSpells += '#';
@@ -201,12 +201,14 @@ class UnitsCommand extends Command {
 		return num.toString().padStart(2, '\u2002');
 	}
 
-	padEnd(townHallLevel, troop) {
-		console.log(troop);
-		// const num = troops.find(t => t.name === troop.name);
-		// console.log(num);
+	padEnd(num) {
+		return num.toString().padEnd(2, '\u2002');
+	}
 
-		return '0'.toString().padEnd(2, '\u2002');
+	padEnd_(townHallLevel, troop) {
+		const num = troops.find(t => t.name === troop.name)[townHallLevel];
+
+		return num.toString().padEnd(2, '\u2002');
 	}
 }
 
