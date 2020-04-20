@@ -41,10 +41,11 @@ class TrackingCommand extends Command {
 		if (data) {
 			const embed = new MessageEmbed()
 				.setColor(0x5970c1)
-				.setTitle(`${premium ? `Subscription \nActive ${emoji.authorize}` : 'None'}`)
 				.setAuthor(`${guild.name}`, guild.iconURL());
 			if (data.length) {
 				embed.setDescription([
+					`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
+					'',
 					data.map((data, index) => {
 						const donationlog = data.donationlog
 							? data.donationlog.channel
@@ -77,7 +78,7 @@ class TrackingCommand extends Command {
 								: ''
 						];
 						return [
-							`**${this.padStart(++index)} » ${data.name} (${data.tag})**`,
+							`**${this.padStart(++index)} [${data.name} (${data.tag})](${this.openInGame(data.tag)})**`,
 							'\u2002',
 							`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
 							`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
@@ -86,9 +87,12 @@ class TrackingCommand extends Command {
 					}).join('\n\n')
 				]);
 			}
-			embed.setFooter(`Tracking ${data.length} ${data.length > 1 || data.length === 0 ? 'clans' : 'clan'}`);
 			return message.util.send({ embed });
 		}
+	}
+
+	openInGame(tag) {
+		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${tag}`;
 	}
 
 	padStart(num) {
