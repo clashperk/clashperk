@@ -29,8 +29,6 @@ class RedeemCommand extends Command {
 			entry.attributes.social_connections.discord &&
 			entry.attributes.social_connections.discord.user_id === message.author.id);
 
-		console.log(patreon_user.attributes);
-
 		if (!patreon_user) {
 			const embed = this.client.util.embed()
 				.setColor(16345172)
@@ -54,7 +52,6 @@ class RedeemCommand extends Command {
 				.doc(patreon_user.id)
 				.get()
 				.then(snap => snap.data());
-			console.log(user);
 
 			if (!user) {
 				const pledge = data.data.find(entry => entry.relationships &&
