@@ -8,7 +8,10 @@ class SetNickNameCommand extends Command {
 			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			userPermissions: ['MANAGE_GUILD'],
-			description: { content: 'Sets nickname of a member' }
+			description: {
+				content: 'Sets nickname of a member',
+				usage: '<@user> <#player tag> <prefix>'
+			}
 		});
 	}
 
