@@ -75,14 +75,13 @@ class TrackingCommand extends Command {
 									: `${emoji.wrong} Disabled \n${emoji.channel} <#${lastonline}>`
 								: ''
 						];
-						return (
-							`**${this.padStart(++index)} » ${data.name} (${data.tag})**
-						
-							${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}
-							${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}
-							${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}
-							`
-						);
+						return [
+							`**${this.padStart(++index)} » ${data.name} (${data.tag})**`,
+							'\u2002',
+							`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
+							`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
+							`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`
+						].filter(item => item.length).join('');
 					}).join('\n\n')
 				]);
 			}
