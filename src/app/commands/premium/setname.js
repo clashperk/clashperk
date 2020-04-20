@@ -7,31 +7,33 @@ class SetNickNameCommand extends Command {
 			category: 'owner',
 			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
-			description: { content: 'Sets nickname of a member' },
-			args: [
-				{
-					id: 'member',
-					type: 'guildMember',
-					prompt: {
-						start: 'What member do you want to set nickname?',
-						retry: 'Please mention a valid member to change nickname.'
-					}
-				},
-				{
-					id: 'tag',
-					type: 'player',
-					prompt: {
-						prompt: 'What is the player tag?',
-						retry: 'Please provide a valid player tag.'
-					}
-				},
-				{
-					id: 'prefix',
-					type: 'string',
-					match: 'content'
-				}
-			]
+			description: { content: 'Sets nickname of a member' }
 		});
+	}
+
+	*args() {
+		const member = yield {
+			type: 'guildMember',
+			prompt: {
+				start: 'What member do you want to set nickname?',
+				retry: 'Please mention a valid member to change nickname.'
+			}
+		};
+
+		const player = yield {
+			type: 'player',
+			prompt: {
+				prompt: 'What is the player tag?',
+				retry: (msg, { failure }) => failure.value
+			}
+		};
+
+		const prefix = yield {
+			type: 'string',
+			match: 'content'
+		};
+
+		return { prefix, member, player };
 	}
 
 	async exec(message, { prefix, member, player }) {
