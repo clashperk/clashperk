@@ -81,7 +81,7 @@ class TrackingCommand extends Command {
 							`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
 							`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
 							`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`
-						].filter(item => item.length).join('');
+						].filter(item => item.length).join('\n');
 					}).join('\n\n')
 				]);
 			}
