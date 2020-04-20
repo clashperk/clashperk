@@ -62,7 +62,7 @@ class TrackingCommand extends Command {
 						const logs = [
 							donationlog
 								? donation_log
-									? `\u200b \u2002 ${emoji.ok} Enabled \n\u200b \u2002 ${emoji.channel} <#${donationlog}>`
+									? `${this.space()} ${emoji.ok} Enabled \n${this.space()} ${emoji.channel} <#${donationlog}>`
 									: `\u200b \u2002 ${emoji.wrong} Disabled \n\u200b \u2002 ${emoji.channel} <#${donationlog}>`
 								: '',
 							memberlog
@@ -92,6 +92,10 @@ class TrackingCommand extends Command {
 
 	openInGame(tag) {
 		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${tag}`;
+	}
+
+	space() {
+		return '\u200b'.padEnd(3, '\u2002');
 	}
 
 	padStart(num) {
