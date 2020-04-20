@@ -78,7 +78,7 @@ class TrackingCommand extends Command {
 								: ''
 						];
 						return [
-							`**[${this.padStart(++index)}. ${data.name} (${data.tag})](${this.openInGame(data.tag)})**`,
+							`**${this.padStart(++index)}. [${data.name} (${data.tag})](${this.openInGame(data.tag)})**`,
 							'\u2002',
 							`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
 							`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
