@@ -46,6 +46,7 @@ class SetNickNameCommand extends Command {
 		}
 
 		const name = [prefix, player.name].join(' ');
+		console.log(name);
 		await member.setNickname(name, `Nickname set by ${message.author.tag}`);
 
 		const embed = this.client.util.embed()
