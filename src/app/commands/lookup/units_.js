@@ -202,7 +202,7 @@ class UnitsCommand extends Command {
 	}
 
 	padEnd(townHallLevel, troop) {
-		console.log(troop.name);
+		console.log(troop);
 		// const num = troops.find(t => t.name === troop.name);
 		// console.log(num);
 
