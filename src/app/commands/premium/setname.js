@@ -51,7 +51,7 @@ class SetNickNameCommand extends Command {
 
 		const name = [prefix, player.name].join(' ');
 
-		if (name.length) {
+		if (name.length > 31) {
 			const embed = this.client.util.embed()
 				.setDescription([
 					'Too large name ~ < 31'
