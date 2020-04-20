@@ -50,7 +50,15 @@ class SetNickNameCommand extends Command {
 		}
 
 		const name = [prefix, player.name].join(' ');
-		console.log(name);
+
+		if (name.length) {
+			const embed = this.client.util.embed()
+				.setDescription([
+					'Too large name ~ < 31'
+				]);
+			return message.util.send({ embed });
+		}
+
 		await member.setNickname(name, `Nickname set by ${message.author.tag}`);
 
 		const embed = this.client.util.embed()
