@@ -62,25 +62,25 @@ class TrackingCommand extends Command {
 						const logs = [
 							donationlog
 								? donation_log
-									? `\u200b \u2002${emoji.ok} Enabled \n${emoji.channel} <#${donationlog}>`
-									: `\u200b \u2002${emoji.wrong} Disabled \n${emoji.channel} <#${donationlog}>`
+									? `\u200b \u2002 ${emoji.ok} Enabled \n\u200b \u2002 ${emoji.channel} <#${donationlog}>`
+									: `\u200b \u2002 ${emoji.wrong} Disabled \n\u200b \u2002 ${emoji.channel} <#${donationlog}>`
 								: '',
 							memberlog
 								? member_log
-									? `\u200b \u2002${emoji.ok} Enabled \n${emoji.channel} <#${memberlog}>`
-									: `\u200b \u2002${emoji.wrong} Disabled \n${emoji.channel} <#${memberlog}>`
+									? `\u200b \u2002 ${emoji.ok} Enabled \n\u200b \u2002 ${emoji.channel} <#${memberlog}>`
+									: `\u200b \u2002 ${emoji.wrong} Disabled \n\u200b \u2002 ${emoji.channel} <#${memberlog}>`
 								: '',
 							lastonline
 								? lastonline_log
-									? `\u200b \u2002${emoji.ok} Enabled \n${emoji.channel} <#${lastonline}>`
-									: `\u200b \u2002${emoji.wrong} Disabled \n${emoji.channel} <#${lastonline}>`
+									? `\u200b \u2002 ${emoji.ok} Enabled \n\u200b \u2002 ${emoji.channel} <#${lastonline}>`
+									: `\u200b \u2002 ${emoji.wrong} Disabled \n\u200b \u2002 ${emoji.channel} <#${lastonline}>`
 								: ''
 						];
 						return [
 							`**${this.padStart(++index)}. [${data.name} (${data.tag})](${this.openInGame(data.tag)})**`,
-							`${logs[0].length ? `\u200b \u2002**DonationLog**\n${logs[0]}` : ''}`,
-							`${logs[1].length ? `\u200b \u2002**PlayerLog**\n${logs[1]}` : ''}`,
-							`${logs[2].length ? `\u200b \u2002**Last-Online Board**\n${logs[2]}` : ''}`
+							`${logs[0].length ? `\u200b \u2002 **DonationLog**\n${logs[0]}` : ''}`,
+							`${logs[1].length ? `\u200b \u2002 **PlayerLog**\n${logs[1]}` : ''}`,
+							`${logs[2].length ? `\u200b \u2002 **Last-Online Board**\n${logs[2]}` : ''}`
 						].filter(item => item.length).join('\n');
 					}).join('\n\n')
 				]);
