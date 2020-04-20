@@ -37,7 +37,7 @@ class SetNickNameCommand extends Command {
 	}
 
 	async exec(message, { prefix, member, player }) {
-		if (member.roles.highest.position <= message.guild.me.roles.highest.position || member.id === message.guild.ownerID) {
+		if (message.guild.me.roles.highest.position <= member.roles.highest.position || member.id === message.guild.ownerID) {
 			const embed = this.client.util.embed()
 				.setDescription([
 					'I do not have permission to change nickname of this user ~'
