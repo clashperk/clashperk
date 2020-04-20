@@ -3,7 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const Fetch = require('../../struct/Fetch');
 const { firestore } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
-const { troops } = require('./troops.json');
+const { troops, buildertroops } = require('./troops.json');
 const { builderTroopsEmoji, heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
 
 class UnitsCommand extends Command {
@@ -202,7 +202,7 @@ class UnitsCommand extends Command {
 	}
 
 	padEnd_(builderHallLevel, troop) {
-		const num = troops.find(t => t.name === troop.name)[builderHallLevel];
+		const num = buildertroops.find(t => t.name === troop.name)[builderHallLevel];
 
 		return num.toString().padEnd(2, '\u2002');
 	}
