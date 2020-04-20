@@ -75,7 +75,7 @@ class TrackingCommand extends Command {
 									: `${emoji.wrong} Disabled \n${emoji.channel} <#${lastonline}>`
 								: ''
 						];
-						return stripIndents(
+						return (
 							`**${this.padStart(++index)} » ${data.name} (${data.tag})**
 						
 							${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}
