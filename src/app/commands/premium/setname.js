@@ -30,7 +30,7 @@ class SetNickNameCommand extends Command {
 
 		const prefix = yield {
 			type: 'string',
-			match: 'content'
+			match: 'rest'
 		};
 
 		return { prefix, member, player };
