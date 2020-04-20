@@ -29,6 +29,8 @@ class RedeemCommand extends Command {
 			entry.attributes.social_connections.discord &&
 			entry.attributes.social_connections.discord.user_id === message.author.id);
 
+		console.log(patreon_user);
+
 		if (!patreon_user) {
 			const embed = this.client.util.embed()
 				.setColor(16345172)
