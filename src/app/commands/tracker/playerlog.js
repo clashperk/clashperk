@@ -105,7 +105,7 @@ class PlayerLogCommand extends Command {
 			tag: data.tag,
 			name: data.name,
 			user: message.author.id,
-			memberlogEnabled: true,
+			verified: true,
 			guild: message.guild.id,
 			memberlog: {
 				channel: channel.id

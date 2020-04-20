@@ -112,6 +112,7 @@ class LastOnlineBoardCommand extends Command {
 			tag: data.tag,
 			name: data.name,
 			user: message.author.id,
+			verified: true,
 			lastonline: {
 				channel: channel.id,
 				message: msg.id

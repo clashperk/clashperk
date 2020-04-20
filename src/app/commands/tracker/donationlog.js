@@ -106,7 +106,7 @@ class DonationLogCommand extends Command {
 			tag: data.tag,
 			name: data.name,
 			user: message.author.id,
-			donationlogEnabled: true,
+			verified: true,
 			donationlog: {
 				channel: channel.id,
 				color
