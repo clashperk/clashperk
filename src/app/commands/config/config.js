@@ -1,4 +1,5 @@
 const { Command } = require('discord-akairo');
+const { emoji } = require('../../util/emojis');
 
 class ConfigCommand extends Command {
 	constructor() {
@@ -20,6 +21,7 @@ class ConfigCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`Settings of ${message.guild.name}`)
 			.addField('Prefix', this.handler.prefix(message))
+			.addField('Subscription', this.client.patron.get(message.guild.id, 'guild', false) ? `Active ${emoji.authorize}` : 'None')
 			.addField('Restriction', restrict.join(', ') || 'None');
 
 		return message.util.send({ embed });

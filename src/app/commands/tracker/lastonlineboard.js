@@ -12,7 +12,7 @@ class LastOnlineBoardCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
-				content: 'Setup a live last-online board for a clan.',
+				content: 'Setup a live updating last-online board for a clan.',
 				usage: '<clan tag> [channel/hexColor] [hexColor/channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #tracker #5970C1', '#8QU8J9LP #5970C1 #tracker']
 			}
