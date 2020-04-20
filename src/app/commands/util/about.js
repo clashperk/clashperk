@@ -25,7 +25,7 @@ class AboutCommand extends Command {
 			.addField('Need help?', 'Join [Official Discord](https://discord.gg/ppuppun)')
 			// .addField('Website', '[Guide](https://clashperk.xyz)')
 			.addField('Do you like the bot?', 'Please support on us [Patreon](https://www.patreon.com/bePatron?u=14584309)')
-			.addField('Leagal Notice', [
+			.addField('Legal Notice', [
 				oneLine(`This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it.
 				For more information see Supercell\'s [Fan Content Policy](https://www.supercell.com/fan-content-policy)`)
 			])
