@@ -62,25 +62,25 @@ class TrackingCommand extends Command {
 						const logs = [
 							donationlog
 								? donation_log
-									? `${this.space()} ${emoji.ok} Enabled \n${this.space()} ${emoji.channel} <#${donationlog}>`
-									: `${this.space()} ${emoji.wrong} Disabled \n${this.space()} ${emoji.channel} <#${donationlog}>`
+									? `${emoji.ok} Enabled \n${emoji.channel} <#${donationlog}>`
+									: `${emoji.wrong} Disabled \n${emoji.channel} <#${donationlog}>`
 								: '',
 							memberlog
 								? member_log
-									? `${this.space()} ${emoji.ok} Enabled \n${this.space()} ${emoji.channel} <#${memberlog}>`
-									: `${this.space()} ${emoji.wrong} Disabled \n${this.space()} ${emoji.channel} <#${memberlog}>`
+									? `${emoji.ok} Enabled \n${emoji.channel} <#${memberlog}>`
+									: `${emoji.wrong} Disabled \n${emoji.channel} <#${memberlog}>`
 								: '',
 							lastonline
 								? lastonline_log
-									? `${this.space()} ${emoji.ok} Enabled \n${this.space()} ${emoji.channel} <#${lastonline}>`
-									: `${this.space()} ${emoji.wrong} Disabled \n${this.space()} ${emoji.channel} <#${lastonline}>`
+									? `${emoji.ok} Enabled \n${emoji.channel} <#${lastonline}>`
+									: `${emoji.wrong} Disabled \n${emoji.channel} <#${lastonline}>`
 								: ''
 						];
 						return [
-							`**${this.padStart(++index)}. [${data.name} (${data.tag})](${this.openInGame(data.tag)})**`,
-							`${logs[0].length ? `${this.space()} **DonationLog**\n${logs[0]}` : ''}`,
-							`${logs[1].length ? `${this.space()} **PlayerLog**\n${logs[1]}` : ''}`,
-							`${logs[2].length ? `${this.space()} **Last-Online Board**\n${logs[2]}` : ''}`
+							`**[${data.name} (${data.tag})](${this.openInGame(data.tag)})**`,
+							`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
+							`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
+							`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`
 						].filter(item => item.length).join('\n');
 					}).join('\n\n')
 				]);
@@ -92,14 +92,6 @@ class TrackingCommand extends Command {
 
 	openInGame(tag) {
 		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${tag}`;
-	}
-
-	space() {
-		return '\u200b'.padEnd(4, '\u2002');
-	}
-
-	padStart(num) {
-		return num.toString().padStart(2, '0');
 	}
 
 	async findAll(guild) {
