@@ -85,7 +85,7 @@ class TrackingCommand extends Command {
 					}).join('\n\n')
 				]);
 			}
-			embed.setFooter(`${data.length} ${data.length === 1 ? 'clan' : 'clans'}`);
+			embed.setFooter(`${data.length} ${data.length === 1 ? 'clan' : 'clans'}${data.length ? '. why not add some?' : ''}`);
 			return message.util.send({ embed });
 		}
 	}
