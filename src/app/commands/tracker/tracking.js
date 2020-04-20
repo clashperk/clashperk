@@ -1,7 +1,6 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { firestore } = require('../../struct/Database');
-const { stripIndents } = require('common-tags');
 const { emoji } = require('../../util/emojis');
 
 class TrackingCommand extends Command {
@@ -37,7 +36,7 @@ class TrackingCommand extends Command {
 
 	async exec(message, { guild }) {
 		const data = await this.findAll(guild);
-		const premium = this.client.patron.get(message.guild.id, 'guild', false);
+		const premium = this.client.patron.get(guild.id, 'guild', false);
 		if (data) {
 			const embed = new MessageEmbed()
 				.setColor(0x5970c1)
@@ -79,13 +78,15 @@ class TrackingCommand extends Command {
 						];
 						return [
 							`**${this.padStart(++index)}. [${data.name} (${data.tag})](${this.openInGame(data.tag)})**`,
-							`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
-							`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
-							`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`
+							'\u2002',
+							`${logs[0].length ? `\u200e \u200b**DonationLog**\n${logs[0]}` : ''}`,
+							`${logs[1].length ? `\u200e \u200b**PlayerLog**\n${logs[1]}` : ''}`,
+							`${logs[2].length ? `\u200e \u200b**Last-Online Board**\n${logs[2]}` : ''}`
 						].filter(item => item.length).join('\n');
 					}).join('\n\n')
 				]);
 			}
+			embed.setFooter(`${data.length} ${data.length === 1 ? 'clan' : 'clans'}`);
 			return message.util.send({ embed });
 		}
 	}
@@ -95,7 +96,7 @@ class TrackingCommand extends Command {
 	}
 
 	padStart(num) {
-		return num.toString().padStart(2, '');
+		return num.toString().padStart(2, '0');
 	}
 
 	async findAll(guild) {
