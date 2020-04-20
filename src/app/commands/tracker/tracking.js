@@ -43,7 +43,7 @@ class TrackingCommand extends Command {
 				.setAuthor(`${guild.name}`, guild.iconURL());
 			if (data.length) {
 				embed.setDescription([
-					`\u200e${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
+					`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
 					'',
 					data.map((data, index) => {
 						const donationlog = data.donationlog
