@@ -41,7 +41,8 @@ class TrackingCommand extends Command {
 		if (data) {
 			const embed = new MessageEmbed()
 				.setColor(0x5970c1)
-				.setAuthor(`${guild.name} ${premium ? emoji.authorize : ''}`, guild.iconURL());
+				.setTitle(`${premium ? `Subscription \nActive ${emoji.authorize}` : 'None'}`)
+				.setAuthor(`${guild.name}`, guild.iconURL());
 			if (data.length) {
 				embed.setDescription([
 					data.map((data, index) => {
