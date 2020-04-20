@@ -95,7 +95,7 @@ class TrackingCommand extends Command {
 	}
 
 	space() {
-		return '\u200b'.padEnd(3, '\u2002');
+		return '\u200b'.padEnd(4, '\u2002');
 	}
 
 	padStart(num) {
