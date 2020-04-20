@@ -69,6 +69,7 @@ class ErrorListener extends Listener {
 
 		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		this.client.logger.error(`${command.id} ~ ${error}`, { label });
+		this.client.logger.error(error, { label });
 
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
 			await message.channel.send([
