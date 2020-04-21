@@ -44,7 +44,7 @@ class ClanGames {
 			await this.isMember(clan);
 
 			// Callback
-			const intervalID = setInterval(this.handle.bind(this), 30 * 60 * 1000, cache);
+			const intervalID = setInterval(this.handle.bind(this), 1 * 60 * 1000, cache);
 			cache.intervalID = intervalID;
 			const key = [cache.guild, cache.tag].join('');
 			return this.cached.set(key, cache);
@@ -139,6 +139,7 @@ class ClanGames {
 
 	async start() {
 		for (const cache of Array.from(this.cached.values())) {
+			if (cache.tag !== '#8QU8J9LP') continue;
 			await this.handle(cache);
 			await this.delay(5000);
 		}
