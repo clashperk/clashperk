@@ -61,18 +61,18 @@ class UnitsCommand extends Command {
 			embed: embed.setFooter(`Level / Max Level of Town Hall ${data.townHallLevel}`)
 		});
 
-		for (const emoji of ['696292379703115780', '696292379703115780']) {
+		for (const emoji of ['696655174025871461', '696292379703115780']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['696292379703115780', '696292379703115780'].includes(reaction.emoji.id) && user.id === message.author.id,
+			(reaction, user) => ['696655174025871461', '696292379703115780'].includes(reaction.emoji.id) && user.id === message.author.id,
 			{ time: 45000, max: 10 }
 		);
 
 		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '696292379703115780') {
+			if (reaction.emoji.name === '696655174025871461') {
 				const embed = await this.embed(data, true);
 				await msg.edit({
 					embed: embed.setFooter(`Level / Max Level of Town Hall ${data.townHallLevel}`)
