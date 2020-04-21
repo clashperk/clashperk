@@ -72,7 +72,7 @@ class UnitsCommand extends Command {
 		);
 
 		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '696655174025871461') {
+			if (reaction.emoji.id === '696655174025871461') {
 				const embed = await this.embed(data, true);
 				await msg.edit({
 					embed: embed.setFooter(`Level / Max Level of Town Hall ${data.townHallLevel}`)
@@ -81,7 +81,7 @@ class UnitsCommand extends Command {
 				await reaction.users.remove(message.author.id);
 				return message;
 			}
-			if (reaction.emoji.name === '696292379703115780') {
+			if (reaction.emoji.id === '696292379703115780') {
 				const embed = await this.embed(data, false);
 				await msg.edit({
 					embed: embed.setFooter('Level / Max Level')
