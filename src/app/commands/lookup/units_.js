@@ -56,6 +56,48 @@ class UnitsCommand extends Command {
 	}
 
 	async exec(message, { data }) {
+		const embed = await data(data, true);
+		const msg = await message.util.send({ embed });
+
+		for (const emoji of ['696292379703115780', '696292379703115780']) {
+			await msg.react(emoji);
+			await this.delay(250);
+		}
+
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['696292379703115780', '696292379703115780'].includes(reaction.emoji.id) && user.id === message.author.id,
+			{ time: 45000, max: 10 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '696292379703115780') {
+				const embed = await data(data, true);
+				await msg.edit({
+					embed: embed.setFooter(`Level / Max Level of Town Hall ${data.townHallLevel}`)
+				});
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+			if (reaction.emoji.name === '696292379703115780') {
+				const embed = await data(data, false);
+				await msg.edit({
+					embed: embed.setFooter('Level / Max Level')
+				});
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+		});
+
+		collector.on('end', async () => {
+			await msg.reactions.removeAll().catch(() => null);
+			return message;
+		});
+		return message;
+	}
+
+	async data(data, option) {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, `https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`);
@@ -66,9 +108,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					troopLevels += `${elixirTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(data.townHallLevel, troop)}\u200f\`**\u2002`;
+					troopLevels += `${elixirTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
 				} else {
-					troopLevels += `${elixirTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(data.townHallLevel, troop)}\u200f\`\u2002`;
+					troopLevels += `${elixirTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`\u2002`;
 				}
 				if (index === 4) {
 					troopLevels += '#';
@@ -84,9 +126,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					darkTroops += `${darkTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(data.townHallLevel, troop)}\u200f\`**\u2002`;
+					darkTroops += `${darkTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
 				} else {
-					darkTroops += `${darkTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(data.townHallLevel, troop)}\u200f\`\u2002`;
+					darkTroops += `${darkTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`\u2002`;
 				}
 				if (index === 4) {
 					darkTroops += '#';
@@ -102,9 +144,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'home') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					SiegeMachines += `${siegeMachinesEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(data.townHallLevel, troop)}\u200f\`**\u2002`;
+					SiegeMachines += `${siegeMachinesEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
 				} else {
-					SiegeMachines += `${siegeMachinesEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(data.townHallLevel, troop)}\u200f\`\u2002`;
+					SiegeMachines += `${siegeMachinesEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`\u2002`;
 				}
 				if (index === 4) {
 					troopLevels += '#';
@@ -120,9 +162,9 @@ class UnitsCommand extends Command {
 			if (troop.village === 'builderBase') {
 				index++;
 				if (troop.level === troop.maxLevel) {
-					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(data.builderHallLevel, troop)}\u200f\`\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
 				} else {
-					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(data.builderHallLevel, troop)}\u200f\`\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
 				}
 				if (index === 4) {
 					builderTroops += '#';
@@ -138,9 +180,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(data.townHallLevel, spell)}\u200f\`**\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
 				} else {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(data.townHallLevel, spell)}\u200f\`\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`\u2002`;
 				}
 				if (index === 4) {
 					elixirSpells += '#';
@@ -156,9 +198,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					darkSpells += `${darkSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(data.townHallLevel, spell)}\u200f\`**\u2002`;
+					darkSpells += `${darkSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
 				} else {
-					darkSpells += `${darkSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(data.townHallLevel, spell)}\u200f\`\u2002`;
+					darkSpells += `${darkSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`\u2002`;
 				}
 				if (index === 4) {
 					darkSpells += '#';
@@ -172,9 +214,9 @@ class UnitsCommand extends Command {
 		data.heroes.forEach(hero => {
 			if (hero.village === 'builderBase') {
 				if (hero.level === hero.maxLevel) {
-					builderHero += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}/${this.padEnd_(data.builderHallLevel, hero)}\u200f\`**\u2002`;
+					builderHero += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}/${this.padEnd(option, data.builderHallLevel, hero)}\u200f\`**\u2002`;
 				} else {
-					builderHero += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd_(data.builderHallLevel, hero)}\u200f\`\u2002`;
+					builderHero += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd(option, data.builderHallLevel, hero)}\u200f\`\u2002`;
 				}
 			}
 		});
@@ -185,31 +227,31 @@ class UnitsCommand extends Command {
 		data.heroes.forEach(hero => {
 			if (hero.village === 'home') {
 				if (hero.level === hero.maxLevel) {
-					heroLevels += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}/${this.padEnd(data.townHallLevel, hero)}\u200f\`**\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}/${this.padEnd(option, data.townHallLevel, hero)}\u200f\`**\u2002`;
 				} else {
-					heroLevels += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd(data.townHallLevel, hero)}\u200f\`\u2002`;
+					heroLevels += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd(option, data.townHallLevel, hero)}\u200f\`\u2002`;
 				}
 			}
 		});
 
 		if (heroLevels) embed.addField('Heroes', heroLevels);
 
-		return message.util.send({ embed });
+		return embed;
 	}
 
 	padStart(num) {
 		return num.toString().padStart(2, '\u2002');
 	}
 
-	padEnd_(builderHallLevel, troop) {
+	padEnd_(option, builderHallLevel, troop) {
+		if (!option) return troop.maxLevel.toString().padEnd(2, '\u2002');
 		const num = buildertroops.find(t => t.name === troop.name)[builderHallLevel];
-
 		return num.toString().padEnd(2, '\u2002');
 	}
 
-	padEnd(townHallLevel, troop) {
+	padEnd(option, townHallLevel, troop) {
+		if (!option) return troop.maxLevel.toString().padEnd(2, '\u2002');
 		const num = troops.find(t => t.name === troop.name)[townHallLevel];
-
 		return num.toString().padEnd(2, '\u2002');
 	}
 }
