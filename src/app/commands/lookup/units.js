@@ -75,7 +75,7 @@ class UnitsCommand extends Command {
 			if (reaction.emoji.id === '696655174025871461') {
 				const embed = await this.embed(data, true);
 				await msg.edit({
-					embed: embed.setFooter(`Level / Town Hall ${data.townHallLevel} & ${data.builderHallLevel ? `Builder Hall ${data.builderHallLevel}` : ''} Max`)
+					embed: embed.setFooter(`Level / Town Hall ${data.townHallLevel}${data.builderHallLevel ? ` & Builder Hall ${data.builderHallLevel}` : ''} Max`)
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
