@@ -122,7 +122,7 @@ class UnitsCommand extends Command {
 		});
 		if (troopLevels) {
 			embed.setDescription([
-				`At Town-Hall ${data.townHallLevel} ${data.builderHallLevel ? `and Builder-Hall ${data.builderHallLevel}` : ''}`,
+				`**At Town-Hall ${data.townHallLevel} ${data.builderHallLevel ? `and Builder-Hall ${data.builderHallLevel}` : ''}**`,
 				'',
 				'**Elixir Troops**',
 				troopLevels.split('#').join('\n')
