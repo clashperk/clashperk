@@ -58,7 +58,7 @@ class UnitsCommand extends Command {
 	async exec(message, { data }) {
 		const embed = await this.embed(data, true);
 		const msg = await message.util.send({
-			embed: embed.setFooter(`Level / Max Level of TH ${data.townHallLevel} & BH ${data.builderHallLevel}`)
+			embed: embed.setFooter('Level / Town-Hall & Builder-Hall Max')
 		});
 
 		for (const emoji of ['696655174025871461', '696292379703115780']) {
@@ -75,7 +75,7 @@ class UnitsCommand extends Command {
 			if (reaction.emoji.id === '696655174025871461') {
 				const embed = await this.embed(data, true);
 				await msg.edit({
-					embed: embed.setFooter(`Level / Max Level of TH ${data.townHallLevel} & BH ${data.builderHallLevel}`)
+					embed: embed.setFooter('Level / Town-Hall & Builder-Hall Max')
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -120,7 +120,14 @@ class UnitsCommand extends Command {
 				}
 			}
 		});
-		if (troopLevels) embed.setDescription(['**Elixir Troops**', troopLevels.split('#').join('\n')]);
+		if (troopLevels) {
+			embed.setDescription([
+				`At Town-Hall ${data.townHallLevel} ${data.builderHallLevel ? `and Builder-Hall ${data.builderHallLevel}` : ''}`,
+				'',
+				'**Elixir Troops**',
+				troopLevels.split('#').join('\n')
+			]);
+		}
 
 		index = 0;
 		let darkTroops = '';
