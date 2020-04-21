@@ -97,7 +97,8 @@ class ClanGamesCommand extends Command {
 			.setDescription([
 				`\`POINTS \u2002 ${'NAME'.padEnd(20, ' ')}\``,
 				members.map(m => `\`\u200e${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}\``).join('\n')
-			]);
+			])
+			.setFooter(members.reduce((a, b) => a + b.points || 0, 0));
 
 		return message.util.send({ embed });
 	}
