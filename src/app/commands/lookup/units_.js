@@ -57,7 +57,9 @@ class UnitsCommand extends Command {
 
 	async exec(message, { data }) {
 		const embed = await this.embed(data, true);
-		const msg = await message.util.send({ embed });
+		const msg = await message.util.send({
+			embed: embed.setFooter(`Level / Max Level of Town Hall ${data.townHallLevel}`)
+		});
 
 		for (const emoji of ['696292379703115780', '696292379703115780']) {
 			await msg.react(emoji);
