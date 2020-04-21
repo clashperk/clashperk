@@ -28,7 +28,7 @@ class GitPullCommand extends Command {
 					}
 				});
 		}
-		return message.channel.send(arr, { code: true, split: true });
+		return message.channel.send(arr, { code: true });
 	}
 }
 
