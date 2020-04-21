@@ -58,7 +58,7 @@ class UnitsCommand extends Command {
 	async exec(message, { data }) {
 		const embed = await this.embed(data, true);
 		const msg = await message.util.send({
-			embed: embed.setFooter(`Level / Max Level of Town Hall ${data.townHallLevel}`)
+			embed: embed.setFooter(`Level / Max Level of TH ${data.townHallLevel} & BH ${data.builderHallLevel}`)
 		});
 
 		for (const emoji of ['696655174025871461', '696292379703115780']) {
@@ -75,7 +75,7 @@ class UnitsCommand extends Command {
 			if (reaction.emoji.id === '696655174025871461') {
 				const embed = await this.embed(data, true);
 				await msg.edit({
-					embed: embed.setFooter(`Level / Max Level of Town Hall ${data.townHallLevel}`)
+					embed: embed.setFooter(`Level / Max Level of TH ${data.townHallLevel} & BH ${data.builderHallLevel}`)
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
