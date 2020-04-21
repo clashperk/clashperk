@@ -24,7 +24,7 @@ class GitPullCommand extends Command {
 				.then(snap => snap.size)
 				.then(size => {
 					if (size && size > 2) {
-						arr.push(guild.id);
+						arr.push({ guild: guild.id, size });
 					}
 				});
 		}
