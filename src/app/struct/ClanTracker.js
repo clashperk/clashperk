@@ -7,6 +7,7 @@ const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD
 const moment = require('moment');
 require('moment-duration-format');
 const { Util } = require('discord.js');
+const ClanGames = require('./ClanGames');
 
 class FastTracker {
 	constructor(client, cached) {
@@ -26,7 +27,8 @@ class FastTracker {
 	}
 
 	async add(data) {
-		const cache = this.cached.get(`${data.guild}${data.tag}`);
+		const key = [data.guild, data.tag].join('');
+		const cache = this.cached.get(key);
 		if (cache && cache.intervalID) clearInterval(cache.intervalID);
 
 		return this.log(data);
@@ -303,7 +305,7 @@ class FastTracker {
 					return this.updateMessage(data, clan, msg)
 						.catch(() => null);
 				} else if (!msg) {
-					const msg = await channel.messages.fetch(cache.lastonline_msg)
+					const msg = await channel.messages.fetch(cache.lastonline_msg, false)
 						.catch(error => {
 							this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
 							this.messages.set(cache.lastonline_msg, { id: null, editable: false, message: null });
@@ -330,6 +332,7 @@ class FastTracker {
 					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
 					.join('\n')}\`\`\``
 			])
+			.setFooter('Last Updated')
 			.setTimestamp();
 
 		return message.edit([
@@ -414,10 +417,12 @@ class ClanTracker {
 		this.client = client;
 		this.cached = new Map();
 		this.fastTracker = new FastTracker(this.client, this.cached);
+		this.clangame = new ClanGames(this.client);
 	}
 
 	async init() {
 		await this.load();
+		await this.clangame.init();
 		return this.fastTracker.init();
 	}
 
@@ -437,6 +442,8 @@ class ClanTracker {
 	}
 
 	add(tag, guild, data) {
+		this.clangame.add(tag, guild, { tag, guild, enabled: true });
+
 		if (data.donationlog) {
 			data.donation_log_channel = data.donationlog.channel;
 			data.color = data.donationlog.color;
@@ -452,17 +459,21 @@ class ClanTracker {
 		}
 
 		// this.client.cwl.add(tag, true);
-		return this.cached.set(`${guild}${tag}`, data);
+		const key = [guild, tag].join('');
+		return this.cached.set(key, data);
 	}
 
 	push(data) {
+		this.clangame.push({ tag: data.tag, guild: data.guild, enabled: true });
 		return this.fastTracker.add(data);
 	}
 
 	delete(guild, tag) {
-		const clan = this.cached.get(`${guild}${tag}`);
+		const key = [guild, tag].join('');
+		this.clangame.delete(guild, tag);
+		const clan = this.cached.get(key);
 		if (clan && clan.intervalID) clearInterval(clan.intervalID);
-		return this.cached.delete(`${guild}${tag}`);
+		return this.cached.delete(key);
 	}
 }
 

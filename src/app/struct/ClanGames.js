@@ -146,14 +146,14 @@ class ClanGames {
 
 	add(tag, guild, data) {
 		const key = [guild, tag].join('');
-		return this.cached.set(key, data);
+		return this.cached.set(key, { tag, guild, enabled: true });
 	}
 
 	push(data) {
 		const cache = this.cached.get(`${data.guild}${data.tag}`);
 		if (cache && cache.intervalID) clearInterval(cache.intervalID);
 
-		return this.handle(data);
+		return this.handle({ tag: data.tag, guild: data.guild, enabled: true });
 	}
 
 	delete(guild, tag) {
