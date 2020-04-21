@@ -180,9 +180,9 @@ class UnitsCommand extends Command {
 			if (spell.village === 'home') {
 				index++;
 				if (spell.level === spell.maxLevel) {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd_(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
 				} else {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`\u2002`;
+					elixirSpells += `${elixirSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd_(option, data.townHallLevel, spell)}\u200f\`\u2002`;
 				}
 				if (index === 4) {
 					elixirSpells += '#';
@@ -214,9 +214,9 @@ class UnitsCommand extends Command {
 		data.heroes.forEach(hero => {
 			if (hero.village === 'builderBase') {
 				if (hero.level === hero.maxLevel) {
-					builderHero += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}/${this.padEnd(option, data.builderHallLevel, hero)}\u200f\`**\u2002`;
+					builderHero += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}/${this.padEnd_(option, data.builderHallLevel, hero)}\u200f\`**\u2002`;
 				} else {
-					builderHero += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd(option, data.builderHallLevel, hero)}\u200f\`\u2002`;
+					builderHero += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd_(option, data.builderHallLevel, hero)}\u200f\`\u2002`;
 				}
 			}
 		});
