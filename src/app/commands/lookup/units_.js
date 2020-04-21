@@ -239,6 +239,10 @@ class UnitsCommand extends Command {
 		return embed;
 	}
 
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
+
 	padStart(num) {
 		return num.toString().padStart(2, '\u2002');
 	}
