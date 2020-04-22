@@ -442,7 +442,7 @@ class ClanTracker {
 	}
 
 	add(tag, guild, data) {
-		this.clangame.add(tag, guild, { tag, guild, enabled: true });
+		this.clangame.add(tag, { tag: data.tag, guild: data.guild, enabled: true });
 
 		if (data.donationlog) {
 			data.donation_log_channel = data.donationlog.channel;
@@ -470,7 +470,7 @@ class ClanTracker {
 
 	delete(guild, tag) {
 		const key = [guild, tag].join('');
-		this.clangame.delete(guild, tag);
+		this.clangame.delete(tag);
 		const clan = this.cached.get(key);
 		if (clan && clan.intervalID) clearInterval(clan.intervalID);
 		return this.cached.delete(key);

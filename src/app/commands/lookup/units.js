@@ -22,11 +22,11 @@ class UnitsCommand extends Command {
 
 	*args() {
 		const data = yield {
-			type: async (msg, str) => {
-				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
-				if (!resolver && !str) return null;
-				if (!resolver && str) {
-					return Fetch.player(str).then(data => {
+			type: async (msg, phrase) => {
+				const resolver = this.handler.resolver.type('guildMember')(msg, phrase || msg.member.id);
+				if (!resolver && !phrase) return null;
+				if (!resolver && phrase) {
+					return Fetch.player(phrase).then(data => {
 						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
 						return data;
 					});
