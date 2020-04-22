@@ -47,12 +47,12 @@ class HelpCommand extends Command {
 		}
 
 		if (command.aliases.length > 1) {
-			embed.addField('Aliases', `\`${command.aliases.join('` `')}\``, true);
+			embed.addField('Aliases', `\`${command.aliases.join('`, `')}\``, true);
 		}
 
 		if (command.userPermissions && command.userPermissions[0]) {
 			embed.addField('User Permissions',
-				`\`${command.userPermissions.join('` `').replace(/_/g, ' ').toLowerCase()
+				`\`${command.userPermissions.join('`, `').replace(/_/g, ' ').toLowerCase()
 					.replace(/\b(\w)/g, char => char.toUpperCase())}\`` || null, true);
 		}
 
