@@ -43,23 +43,23 @@ class HelpCommand extends Command {
 
 		if (description.examples.length) {
 			const text = `${prefix}${command.aliases[0].replace(/-/g, '')}`;
-			embed.addField('Examples', `\`${text} ${description.examples.join(`\`\n\`${text} `)}\``, true);
+			embed.addField('Examples', `\`${text} ${description.examples.join(`\`\n\`${text} `)}\``);
 		}
 
 		if (command.aliases.length > 1) {
-			embed.addField('Aliases', `\`${command.aliases.join('`, `')}\``, true);
+			embed.addField('Aliases', `\`${command.aliases.join('`, `')}\``);
 		}
 
 		if (command.userPermissions && command.userPermissions[0]) {
 			embed.addField('User Permissions',
 				`\`${command.userPermissions.join('`, `').replace(/_/g, ' ').toLowerCase()
-					.replace(/\b(\w)/g, char => char.toUpperCase())}\`` || null, true);
+					.replace(/\b(\w)/g, char => char.toUpperCase())}\`` || null);
 		}
 
 		if (command.clientPermissions && command.clientPermissions[0]) {
 			embed.addField('Client Permissions',
-				`\`${command.clientPermissions.join('` `').replace(/_/g, ' ').toLowerCase()
-					.replace(/\b(\w)/g, char => char.toUpperCase())}\`` || null, true);
+				`\`${command.clientPermissions.join('`, `').replace(/_/g, ' ').toLowerCase()
+					.replace(/\b(\w)/g, char => char.toUpperCase())}\`` || null);
 		}
 
 		return message.util.send({ embed });
