@@ -91,14 +91,16 @@ class ClanGamesCommand extends Command {
 
 		const members = this.filter(array, clan);
 
+		const total = members.reduce((a, b) => a + b.points || 0, 0);
+
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium)
 			.setDescription([
 				`\`POINTS \u2002 ${'NAME'.padEnd(20, ' ')}\``,
 				members.map(m => `\`\u200e${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}\``).join('\n')
 			])
-			.setFooter(members.reduce((a, b) => a + b.points || 0, 0));
+			.setFooter(`Points ${total} [Avg: ${total / data.members}]`);
 
 		return message.util.send({ embed });
 	}
