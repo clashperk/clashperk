@@ -98,7 +98,7 @@ class ClanGamesCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				`Clan Games Scoreboard [${data.members}/50]`,
-				` \`\u200e # POINTS \u2002 ${'NAME'.padEnd(20, ' ')}\``,
+				` \`\u200e#\u2002 POINTS \u2002 ${'NAME'.padEnd(20, ' ')}\``,
 				members.map((m, i) => `\`\u200e${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}\``).join('\n')
 			])
 			.setFooter(`Points ${total} [Avg: ${total / data.members}]`);
