@@ -29,7 +29,7 @@ class ClanGames {
 				snapshot.forEach(doc => {
 					const data = doc.data();
 					if (this.client.guilds.cache.has(data.guild)) {
-						this.add(data.tag, data.guild, data);
+						this.add(data.tag, data);
 					}
 				});
 			});
@@ -44,10 +44,9 @@ class ClanGames {
 			await this.isMember(clan);
 
 			// Callback
-			const intervalID = setInterval(this.handle.bind(this), 30 * 60 * 1000, cache);
+			const intervalID = setInterval(this.handle.bind(this), 20 * 60 * 1000, cache);
 			cache.intervalID = intervalID;
-			const key = [cache.guild, cache.tag].join('');
-			return this.cached.set(key, cache);
+			return this.cached.set(cache.tag, cache);
 		}
 	}
 
@@ -97,7 +96,7 @@ class ClanGames {
 						}
 					}, { upsert: true }).catch(error => console.log(error));
 
-					await this.delay(100);
+					await this.delay(200);
 				}
 			}
 		}
@@ -140,27 +139,25 @@ class ClanGames {
 	async start() {
 		for (const cache of Array.from(this.cached.values())) {
 			await this.handle(cache);
-			await this.delay(5000);
+			await this.delay(200);
 		}
 	}
 
-	add(tag, guild, data) {
-		const key = [guild, tag].join('');
-		return this.cached.set(key, data);
+	add(tag, data) {
+		return this.cached.set(tag, { tag: data.tag, guild: data.guild, enabled: true });
 	}
 
 	push(data) {
-		const cache = this.cached.get(`${data.guild}${data.tag}`);
+		const cache = this.cached.get(data.tag);
 		if (cache && cache.intervalID) clearInterval(cache.intervalID);
 
-		return this.handle(data);
+		return this.handle({ tag: data.tag, guild: data.guild, enabled: true });
 	}
 
-	delete(guild, tag) {
-		const key = [guild, tag].join('');
-		const clan = this.cached.get(key);
+	delete(tag) {
+		const clan = this.cached.get(tag);
 		if (clan && clan.intervalID) clearInterval(clan.intervalID);
-		return this.cached.delete(key);
+		return this.cached.delete(tag);
 	}
 }
 

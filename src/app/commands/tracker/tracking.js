@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { firestore } = require('../../struct/Database');
-const { stripIndents } = require('common-tags');
+const { emoji } = require('../../util/emojis');
 
 class TrackingCommand extends Command {
 	constructor() {
@@ -36,12 +36,15 @@ class TrackingCommand extends Command {
 
 	async exec(message, { guild }) {
 		const data = await this.findAll(guild);
+		const premium = this.client.patron.get(guild.id, 'guild', false);
 		if (data) {
 			const embed = new MessageEmbed()
 				.setColor(0x5970c1)
 				.setAuthor(`${guild.name}`, guild.iconURL());
 			if (data.length) {
 				embed.setDescription([
+					`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
+					'',
 					data.map((data, index) => {
 						const donationlog = data.donationlog
 							? data.donationlog.channel
@@ -54,20 +57,41 @@ class TrackingCommand extends Command {
 							: null;
 
 						const donation_log = this.client.channels.cache.has(donationlog);
-						const memberlog_log = this.client.channels.cache.has(memberlog);
+						const member_log = this.client.channels.cache.has(memberlog);
 						const lastonline_log = this.client.channels.cache.has(lastonline);
-						return stripIndents(
-							`**${++index} » ${data.name} (${data.tag})**
-						Donation Log **»** ${donationlog ? `${donation_log ? `<#${donationlog}>` : '#deleted-channel'}` : 'Inactive'}
-						Player Log **»** ${memberlog ? `${memberlog_log ? `<#${memberlog}>` : '#deleted-channel'}` : 'Inactive'}
-						Last Online Board **»** ${lastonline ? `${lastonline_log ? `<#${lastonline}>` : '#deleted-channel'}` : 'Inactive'}`
-						);
+						const logs = [
+							donationlog
+								? donation_log
+									? `${emoji.ok} Enabled \n${emoji.channel} <#${donationlog}>`
+									: `${emoji.wrong} Disabled \n${emoji.channel} <#${donationlog}>`
+								: '',
+							memberlog
+								? member_log
+									? `${emoji.ok} Enabled \n${emoji.channel} <#${memberlog}>`
+									: `${emoji.wrong} Disabled \n${emoji.channel} <#${memberlog}>`
+								: '',
+							lastonline
+								? lastonline_log
+									? `${emoji.ok} Enabled \n${emoji.channel} <#${lastonline}>`
+									: `${emoji.wrong} Disabled \n${emoji.channel} <#${lastonline}>`
+								: ''
+						];
+						return [
+							`**[${data.name} (${data.tag})](${this.openInGame(data.tag)})**`,
+							`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
+							`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
+							`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`
+						].filter(item => item.length).join('\n');
 					}).join('\n\n')
 				]);
 			}
-			embed.setFooter(`Tracking ${data.length} ${data.length > 1 || data.length === 0 ? 'clans' : 'clan'}`);
+			embed.setFooter(`${data.length} ${data.length === 1 ? 'clan' : 'clans'}${data.length ? '' : '. why not add some?'}`);
 			return message.util.send({ embed });
 		}
+	}
+
+	openInGame(tag) {
+		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${tag}`;
 	}
 
 	async findAll(guild) {

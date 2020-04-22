@@ -4,7 +4,6 @@ const { firestore } = require('../struct/Database');
 const Database = require('../struct/Database');
 const Logger = require('../util/logger');
 const ClanTracker = require('../struct/ClanTracker');
-const CWLTracker = require('../struct/CWL');
 const fetch = require('node-fetch');
 const Patrons = require('../struct/Patrons');
 const Voter = require('../struct/Voter');
@@ -12,21 +11,20 @@ const PostStats = require('../struct/PostStats');
 const Firebase = require('../struct/Firebase');
 const { MessageEmbed } = require('discord.js');
 const { status } = require('../util/constants');
-const ClanGames = require('../struct/ClanGames');
 const path = require('path');
 
 class ClashPerk extends AkairoClient {
 	constructor(config) {
 		super({ ownerID: config.owner }, {
-			messageCacheMaxSize: 10,
-			messageCacheLifetime: 150,
-			messageSweepInterval: 150,
+			messageCacheMaxSize: 50,
+			messageCacheLifetime: 300,
+			messageSweepInterval: 300,
 			ws: {
 				intents: [
 					'GUILDS',
 					'GUILD_MESSAGES',
 					'GUILD_MEMBERS',
-					// 'GUILD_PRESENCES',
+					'GUILD_PRESENCES',
 					'GUILD_MESSAGE_REACTIONS'
 				]
 			}
@@ -40,8 +38,8 @@ class ClashPerk extends AkairoClient {
 			prefix: message => this.settings.get(message.guild, 'prefix', '*'),
 			allowMention: true,
 			commandUtil: true,
-			commandUtilLifetime: 15e4,
-			commandUtilSweepInterval: 15e4,
+			commandUtilLifetime: 3e5,
+			commandUtilSweepInterval: 3e5,
 			handleEdits: true,
 			defaultCooldown: 3000,
 			argumentDefaults: {
@@ -130,11 +128,9 @@ class ClashPerk extends AkairoClient {
 		this.settings = new Settings(firestore.collection('settings'));
 		this.postStats = new PostStats(this);
 		this.tracker = new ClanTracker(this);
-		this.cwl = new CWLTracker(this);
 		this.firebase = new Firebase(this);
 		this.patron = new Patrons(this);
 		this.voter = new Voter(this);
-		this.clangames = new ClanGames(this);
 
 		await this.settings.init();
 		await this.patron.init();
@@ -146,8 +142,6 @@ class ClashPerk extends AkairoClient {
 				this.postStats.init();
 				this.tracker.init();
 				this.voter.init();
-				this.clangames.init();
-				// this.cwl.init();
 				clearInterval(intervalID);
 			}
 		}, 2000);

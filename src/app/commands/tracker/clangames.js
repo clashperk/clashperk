@@ -91,19 +91,19 @@ class ClanGamesCommand extends Command {
 
 		const members = this.filter(array, clan);
 
+		const total = members.reduce((a, b) => a + b.points || 0, 0);
+
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				`\`POINTS \u2002 ${'NAME'.padEnd(20, ' ')}\``,
-				members.map(m => `\`\u200e${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}\``).join('\n')
-			]);
+				`Clan Games Scoreboard [${data.members}/50]`,
+				`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}\``,
+				members.map((m, i) => `\`\u200e${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}\``).join('\n')
+			])
+			.setFooter(`Points ${total} [Avg: ${(total / data.members).toFixed(2)}]`);
 
 		return message.util.send({ embed });
-	}
-
-	sort(items) {
-		return items.sort((a, b) => b.points - a.points);
 	}
 
 	padStart(num) {
@@ -117,12 +117,12 @@ class ClanGamesCommand extends Command {
 	filter(memberList, clan) {
 		const members = memberList.map(member => {
 			const points = member.tag in clan.memberList
-				? member.points - clan.memberList[member.tag].totalPoints
+				? member.points - clan.memberList[member.tag].points
 				: null;
 			return { tag: member.tag, name: member.name, points };
 		});
 
-		const sorted = members.sort((a, b) => a.points - b.points);
+		const sorted = members.sort((a, b) => b.points - a.points);
 
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}

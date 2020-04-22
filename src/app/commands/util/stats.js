@@ -4,7 +4,7 @@ require('moment-duration-format');
 const { MessageEmbed } = require('discord.js');
 const os = require('os');
 const { version } = require('../../../../package.json');
-const { firestore } = require('../../struct/Database');
+const { firestore, firebase } = require('../../struct/Database');
 
 class StatsCommand extends Command {
 	constructor() {
@@ -30,7 +30,7 @@ class StatsCommand extends Command {
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }), true)
 			.addField('Servers', this.client.guilds.cache.size, true)
 			.addField('Users', this.users, true)
-			.addField('Channels', this.client.channels.cache.size, true)
+			.addField('Commands Used', await this.commandsTotal(), true)
 			.addField('Clans in DB', await this.count(), true)
 			.addField('Version', `v${version}`, true)
 			.addField('Node.JS', process.version, true)
@@ -65,6 +65,13 @@ class StatsCommand extends Command {
 
 	freemem() {
 		return os.freemem() / (1024 * 1024);
+	}
+
+	async commandsTotal() {
+		const ref = firebase.ref('stats');
+		const data = await ref.once('value').then(snap => snap.val());
+
+		return data ? data.commands_used : 0;
 	}
 
 	async count() {

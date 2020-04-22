@@ -62,9 +62,9 @@ class ProfileCommand extends Command {
 			if (!res.ok) continue;
 			const data = await res.json();
 
-			embed.addField(`${++accounts}. ${townHallEmoji[data.townHallLevel]} ${data.name}`, [
-				this.heroes(data),
-				this.clanName(data)
+			embed.addField(`\`\u200e\u2002${++accounts}\` ${townHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
+				`\u200e\u2002\u2002 ${this.heroes(data)}`,
+				`\u200b\u2002\u2002 ${this.clanName(data)}`
 			]);
 
 			if (accounts === 25) break;

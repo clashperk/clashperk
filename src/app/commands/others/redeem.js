@@ -49,7 +49,7 @@ class RedeemCommand extends Command {
 
 		if (patreon_user) {
 			const user = await firestore.collection('patrons')
-				.doc(patreon_user.attributes.id)
+				.doc(patreon_user.id)
 				.get()
 				.then(snap => snap.data());
 
@@ -58,10 +58,10 @@ class RedeemCommand extends Command {
 					entry.relationships &&
 					entry.relationships.patron &&
 					entry.relationships.patron.data &&
-					entry.relationships.patron.data.id === patreon_user.attributes.id);
+					entry.relationships.patron.data.id === patreon_user.id);
 
 				await firestore.collection('patrons')
-					.doc(patreon_user.user.attributes.id)
+					.doc(patreon_user.id)
 					.update({
 						name: patreon_user.attributes.full_name,
 						id: patreon_user.id,
@@ -96,7 +96,7 @@ class RedeemCommand extends Command {
 
 			if (user && !user.redeemed) {
 				await firestore.collection('patrons')
-					.doc(patreon_user.attributes.id)
+					.doc(patreon_user.id)
 					.update({
 						guilds: [{ id: message.guild.id, limit: 50 }],
 						discord_id: message.author.id,
@@ -117,7 +117,7 @@ class RedeemCommand extends Command {
 	async isNew(user, message, patreon_user) {
 		if (user && user.discord_id !== message.author.id) {
 			await firestore.collection('patrons')
-				.doc(patreon_user.attributes.id)
+				.doc(patreon_user.id)
 				.update({
 					discord_id: message.author.id
 				}, { merge: true });
