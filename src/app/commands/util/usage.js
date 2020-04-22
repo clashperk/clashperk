@@ -23,7 +23,7 @@ class UsageCommand extends Command {
 			.setAuthor(`${this.client.user.username} Usage  Statistics`, this.client.user.displayAvatarURL())
 			.setColor(0x5970c1)
 			.setFooter('Since August 2019')
-			.setTitle(`${await this.commandsTotal()}x commands used`)
+			.setTitle(`${total}x commands used`)
 			.addField('Users', [
 				`\`\`\`${users.splice(0, 10).map(({ id, uses }, index) => {
 					const user = this.client.users.cache.get(id);
