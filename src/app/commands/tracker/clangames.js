@@ -11,7 +11,7 @@ class ClanGamesCommand extends Command {
 			aliases: ['clangames', 'points', 'cg'],
 			category: 'tracker',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
+			// userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows clan game points of your clan members.',
@@ -101,7 +101,7 @@ class ClanGamesCommand extends Command {
 				`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}\``,
 				members.map((m, i) => `\`\u200e${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}\``).join('\n')
 			])
-			.setFooter(`Points ${total} [Avg: ${total / data.members}]`);
+			.setFooter(`Points ${total} [Avg: ${(total / data.members).toFixed(2)}]`);
 
 		return message.util.send({ embed });
 	}
