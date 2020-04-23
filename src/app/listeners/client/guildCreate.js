@@ -1,5 +1,6 @@
 const { Listener } = require('discord-akairo');
 const { firestore } = require('../../struct/Database');
+const { emoji } = require('../../util/emojis');
 
 class GuildCreateListener extends Listener {
 	constructor() {
@@ -29,7 +30,7 @@ class GuildCreateListener extends Listener {
 		if (webhook) {
 			const embed = this.client.util.embed()
 				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL())
-				.setTitle(`${this.client.emojis.cache.get('609254782808621066')} ${user.tag} (${user.id})`)
+				.setTitle(`${emoji.owner} ${user.tag} (${user.id})`)
 				.setFooter(`${guild.memberCount} members`, user.displayAvatarURL())
 				.setColor(0x38d863)
 				.setTimestamp();

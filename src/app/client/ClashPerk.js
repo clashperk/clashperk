@@ -133,7 +133,6 @@ class ClashPerk extends AkairoClient {
 		this.voter = new Voter(this);
 
 		await this.settings.init();
-		await this.patron.init();
 		await Database.connect();
 
 		const intervalID = setInterval(() => {
@@ -144,6 +143,7 @@ class ClashPerk extends AkairoClient {
 					this.firebase.init();
 					this.postStats.init();
 					this.voter.init();
+					this.patron.init();
 				}
 				this.tracker.init();
 				clearInterval(intervalID);
