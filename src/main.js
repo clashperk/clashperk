@@ -15,8 +15,6 @@ if (process.env.SENTRY) {
 	});
 }
 
-console.log('==---');
-
 client.on('error', error => client.logger.error(error, { label: 'CLIENT ERROR' }));
 client.on('warn', warn => client.logger.warn(warn, { label: 'CLIENT WARN' }));
 
