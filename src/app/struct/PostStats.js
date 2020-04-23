@@ -15,8 +15,8 @@ class PostStats {
 		let [guilds, users] = [0, 0];
 		const values = await this.client.shard.broadcastEval(
 			`[
-				this.guilds.size,
-				this.guilds.reduce((previous, current) => current.memberCount + previous, 0),
+				this.guilds.cache.size,
+				this.guilds.cache.reduce((previous, current) => current.memberCount + previous, 0),
 			]`
 		);
 
