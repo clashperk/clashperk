@@ -133,17 +133,17 @@ class ClashPerk extends AkairoClient {
 		this.voter = new Voter(this);
 
 		await this.settings.init();
+		await this.patron.init();
 		await Database.connect();
 
 		const intervalID = setInterval(() => {
-			console.log(this.readyAt);
+			console.log(this.shard.fetchClientValues('readyAt'), this.shard.broadcastEval('this.readyAt'));
 			console.log(this.shard.count, this.shard.ids);
 			if (this.readyAt && this.user && this.user.id === process.env.CLIENT_ID) {
 				if (this.shard.ids && this.shard.ids[0] === this.shard.count - 1) {
 					this.firebase.init();
 					this.postStats.init();
 					this.voter.init();
-					this.patron.init();
 				}
 				this.tracker.init();
 				clearInterval(intervalID);
