@@ -1,4 +1,4 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 const { Util } = require('discord.js');
 const util = require('util');
 
@@ -8,43 +8,55 @@ class EvalCommand extends Command {
 			aliases: ['eval', 'e'],
 			category: 'owner',
 			ownerOnly: true,
-			args: [
-				{
-					id: 'code',
-					match: 'content',
-					type: 'string',
-					prompt: {
-						start: 'what would you like to evaluate?'
-					}
-				}
-			],
 			description: {
 				content: 'You can\'t use this anyway, so why explain?',
 				usage: '<code>'
-			}
+			},
+			optionFlags: ['--depth', '-d', '--shard', '-s']
 		});
 
 		this.eval = null;
 	}
 
-	async exec(message, { code }) {
+	*args() {
+		const depth = yield {
+			match: 'option',
+			type: Argument.range('integer', 0, 3, true),
+			flag: ['--depth', '-d'],
+			default: 0
+		};
+
+		const shard = yield {
+			match: 'flag',
+			flag: ['--shard', '-s']
+		};
+
+		const code = yield {
+			match: 'rest',
+			type: 'string'
+		};
+
+		return { depth, shard, code };
+	}
+
+	async exec(message, { code, depth, shard }) {
 		let hrDiff;
 		try {
 			const hrStart = process.hrtime();
-			this.eval = eval(code); // eslint-disable-line
+			this.eval = shard ? this.client.shard.broadcastEval(code) : eval(code); // eslint-disable-line
 			hrDiff = process.hrtime(hrStart);
 		} catch (error) {
 			return message.util.send(`*Error while evaluating:* \`${error}\``);
 		}
 
 		this.hrStart = process.hrtime();
-		const result = this._result(await this.eval, hrDiff, code);
+		const result = this._result(await this.eval, hrDiff, code, depth);
 		if (Array.isArray(result)) return result.map(async res => message.util.send(res));
 		return message.util.send(result);
 	}
 
-	_result(result, hrDiff, input) {
-		const inspected = util.inspect(result, { depth: 0 }).replace(new RegExp('!!NL!!', 'g'), '\n').replace(this.replaceToken, '--🙄--');
+	_result(result, hrDiff, input, depth, shard) {
+		const inspected = util.inspect(result, { depth: shard ? depth + 1 : depth }).replace(new RegExp('!!NL!!', 'g'), '\n').replace(this.replaceToken, '--🙄--');
 		const split = inspected.split('\n');
 		const last = inspected.length - 1;
 		const prependPart = inspected[0] !== '{' && inspected[0] !== '[' && inspected[0] !== '\'' ? split[0] : inspected[0];
