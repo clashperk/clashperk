@@ -30,7 +30,7 @@ class GuildCreateListener extends Listener {
 		if (webhook) {
 			const embed = this.client.util.embed()
 				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL())
-				.setTitle(`${emoji.owner} ${user.tag} (${user.id})`)
+				.setTitle(`${emoji.owner_} ${user.tag} (${user.id})`)
 				.setFooter(`${guild.memberCount} members`, user.displayAvatarURL())
 				.setColor(0x38d863)
 				.setTimestamp();

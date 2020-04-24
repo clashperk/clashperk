@@ -154,6 +154,7 @@ module.exports = {
 		clashperk: '<:clashperk:696314694780321875>',
 		destruction: '<:destruction:696314713918668811>',
 		owner: '<:owner:696314724765139014>',
+		owner_: '<:Owner:609254782808621066>',
 		troopsdonation: '<:troopsdonation:696314739889799198>',
 		spelldonation: '<:spellsdonation:696314747989000293>',
 		shield: '<:shield:696297690606075924>',
