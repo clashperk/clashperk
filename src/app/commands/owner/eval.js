@@ -51,7 +51,7 @@ class EvalCommand extends Command {
 		}
 
 		this.hrStart = process.hrtime();
-		const result = this._result(await this.eval, hrDiff, code, depth);
+		const result = this._result(await this.eval, hrDiff, code, depth, shard);
 		if (Array.isArray(result)) return result.map(async res => message.util.send(res));
 		return message.util.send(result);
 	}
