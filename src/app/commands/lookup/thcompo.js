@@ -58,7 +58,7 @@ class ThCompoCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		await message.util.send(`**Calculating TH compositions of your clan... ${emoji.loading}**`);
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const hrStart = process.hrtime();
 		let TH13 = 0;
 		let TH12 = 0;

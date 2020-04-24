@@ -12,6 +12,19 @@ class PostStats {
 	}
 
 	async post() {
+		let [guilds, users] = [0, 0];
+		const values = await this.client.shard.broadcastEval(
+			`[
+				this.guilds.cache.size,
+				this.guilds.cache.reduce((previous, current) => current.memberCount + previous, 0),
+			]`
+		);
+
+		for (const value of values) {
+			guilds += value[0];
+			users += value[1];
+		}
+
 		// https://top.gg/
 		request({
 			headers: {
@@ -20,9 +33,7 @@ class PostStats {
 			},
 			url: `https://top.gg/api/bots/${this.client.user.id}/stats`,
 			method: 'POST',
-			form: {
-				server_count: this.client.guilds.cache.size
-			}
+			form: { server_count: guilds }
 		}, (error, response, body) => {
 			if (error) this.client.logger.error(error.toString(), { level: 'https://top.gg' });
 		});
@@ -35,9 +46,7 @@ class PostStats {
 			},
 			url: `https://discord.bots.gg/api/v1/bots/${this.client.user.id}/stats`,
 			method: 'POST',
-			json: {
-				guildCount: this.client.guilds.cache.size
-			}
+			json: { guildCount: guilds }
 		}, (error, response, body) => {
 			if (error) this.client.logger.error(error, { level: 'https://discord.bots.gg' });
 		});
@@ -51,10 +60,7 @@ class PostStats {
 			},
 			url: `https://discordbotlist.com/api/bots/${this.client.user.id}/stats`,
 			method: 'POST',
-			json: {
-				guilds: this.client.guilds.cache.size,
-				users: this.client.guilds.cache.reduce((prev, guild) => guild.memberCount + prev, 0)
-			}
+			json: { guilds, users }
 		}, (error, response, body) => {
 			if (error) this.client.logger.error(error, { level: 'https://discordbotlist.com' });
 		});

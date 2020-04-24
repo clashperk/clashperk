@@ -30,7 +30,7 @@ class ClashPerk extends AkairoClient {
 			}
 		});
 
-		this.logger = new Logger();
+		this.logger = new Logger(this);
 
 		this.commandHandler = new CommandHandler(this, {
 			directory: path.join(__dirname, '..', 'commands'),
@@ -133,15 +133,18 @@ class ClashPerk extends AkairoClient {
 		this.voter = new Voter(this);
 
 		await this.settings.init();
-		await this.patron.init();
+		await this.patron.refresh();
 		await Database.connect();
 
 		const intervalID = setInterval(() => {
 			if (this.readyAt && this.user && this.user.id === process.env.CLIENT_ID) {
-				this.firebase.init();
-				this.postStats.init();
+				if (this.shard.ids && this.shard.ids[0] === this.shard.count - 1) {
+					this.firebase.init();
+					this.postStats.init();
+					this.voter.init();
+					this.patron.init();
+				}
 				this.tracker.init();
-				this.voter.init();
 				clearInterval(intervalID);
 			}
 		}, 2000);

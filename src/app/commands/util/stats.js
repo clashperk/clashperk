@@ -20,18 +20,35 @@ class StatsCommand extends Command {
 	}
 
 	async exec(message) {
+		let [guilds, users, channels, memory] = [0, 0, 0, 0];
+		const values = await this.client.shard.broadcastEval(
+			`[
+				this.guilds.cache.size,
+				this.guilds.cache.reduce((previous, current) => current.memberCount + previous, 0),
+				this.channels.cache.size,
+				(process.memoryUsage().heapUsed / 1024 / 1024),
+			]`
+		);
+
+		for (const value of values) {
+			guilds += value[0];
+			users += value[1];
+			channels += value[2];
+			memory += value[3];
+		}
+
 		const embed = new MessageEmbed().setTitle('Stats')
 			.setColor(0x5970c1)
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
-			.addField('Memory Usage', `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB`, true)
+			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
 			.addField('Free Memory', [
 				this.freemem() > 1024 ? `${(this.freemem() / 1024).toFixed(2)} GB` : `${Math.round(this.freemem())} MB`
 			], true)
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }), true)
-			.addField('Servers', this.client.guilds.cache.size, true)
-			.addField('Users', this.users, true)
-			.addField('Commands Used', await this.commandsTotal(), true)
-			.addField('Clans in DB', await this.count(), true)
+			.addField('Servers', guilds, true)
+			.addField('Users', users, true)
+			// .addField('Commands Used', await this.commandsTotal(), true)
+			// .addField('Clans in DB', await this.count(), true)
 			.addField('Version', `v${version}`, true)
 			.addField('Node.JS', process.version, true)
 			.setFooter(`© ${new Date().getFullYear()} ${this.owner.tag}`, this.owner.displayAvatarURL());

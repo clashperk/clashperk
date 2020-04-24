@@ -61,18 +61,18 @@ class UnitsCommand extends Command {
 			embed: embed.setFooter(`Level / Town Hall ${data.townHallLevel} & ${data.builderHallLevel ? `Builder Hall ${data.builderHallLevel}` : ''} Max`)
 		});
 
-		for (const emoji of ['696655174025871461', '696292379703115780']) {
+		for (const emoji of ['🏠', '🔥']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['696655174025871461', '696292379703115780'].includes(reaction.emoji.id) && user.id === message.author.id,
+			(reaction, user) => ['🏠', '🔥'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 45000, max: 10 }
 		);
 
 		collector.on('collect', async reaction => {
-			if (reaction.emoji.id === '696655174025871461') {
+			if (reaction.emoji.name === '🏠') {
 				const embed = await this.embed(data, true);
 				await msg.edit({
 					embed: embed.setFooter(`Level / Town Hall ${data.townHallLevel}${data.builderHallLevel ? ` & Builder Hall ${data.builderHallLevel}` : ''} Max`)
@@ -81,7 +81,7 @@ class UnitsCommand extends Command {
 				await reaction.users.remove(message.author.id);
 				return message;
 			}
-			if (reaction.emoji.id === '696292379703115780') {
+			if (reaction.emoji.name === '🔥') {
 				const embed = await this.embed(data, false);
 				await msg.edit({
 					embed: embed.setFooter('Level / Max Level')

@@ -8,7 +8,6 @@ class Patron {
 	}
 
 	async init() {
-		await this.refresh();
 		return this.incoming();
 	}
 

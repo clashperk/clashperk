@@ -70,11 +70,26 @@ class Firebase {
 	}
 
 	async stats() {
+		let [guilds, users, channels, memory] = [0, 0, 0, 0];
+		const values = await this.client.shard.broadcastEval(
+			`[
+				this.guilds.cache.size,
+				this.guilds.cache.reduce((previous, current) => current.memberCount + previous, 0),
+				this.channels.cache.size
+			]`
+		);
+
+		for (const value of values) {
+			guilds += value[0];
+			users += value[1];
+			channels += value[2];
+		}
+
 		return firebase.ref('stats').update({
 			uptime: moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }),
-			users: this.client.guilds.cache.reduce((prev, guild) => guild.memberCount + prev, 0) || this.client.users.cache.size,
-			guilds: this.client.guilds.cache.size,
-			channels: this.client.channels.cache.size
+			users,
+			guilds,
+			channels
 		}, error => {
 			if (error) this.client.logger.error(error, { label: 'FIREBASE' });
 		});
