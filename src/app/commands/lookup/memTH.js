@@ -65,7 +65,7 @@ class MembersTHCommand extends Command {
 	}
 
 	async exec(message, { data, townhall }) {
-		await message.util.send(`**Making list of your clan members... ${emoji.loading}**`);
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 
 		const list = data.memberList.map(m => m.tag);
 		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))

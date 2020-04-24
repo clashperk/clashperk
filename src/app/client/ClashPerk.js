@@ -30,7 +30,7 @@ class ClashPerk extends AkairoClient {
 			}
 		});
 
-		this.logger = new Logger();
+		this.logger = new Logger(this);
 
 		this.commandHandler = new CommandHandler(this, {
 			directory: path.join(__dirname, '..', 'commands'),

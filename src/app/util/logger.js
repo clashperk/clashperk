@@ -11,7 +11,7 @@ class Logger {
 		this.constructor.write(message, { color, tag, label });
 	}
 
-	info(message, { color = 'cyan', tag = '[INFO]', label } = {}) {
+	info(message, { color = 'cyan', tag = '[INFO ]', label } = {}) {
 		this.constructor.write(message, { color, tag, label });
 	}
 
@@ -19,7 +19,7 @@ class Logger {
 		this.constructor.write(message, { color, tag, label, error: true });
 	}
 
-	warn(message, { color = 'magenta', tag = '[WARN]', label } = {}) {
+	warn(message, { color = 'magenta', tag = '[WARN ]', label } = {}) {
 		this.constructor.write(message, { color, tag, label });
 	}
 
@@ -27,13 +27,18 @@ class Logger {
 		const timestamp = chalk.cyan(moment().format('DD-MM-YYYY kk:mm:ss'));
 		const content = this.clean(message);
 		const stream = error ? process.stderr : process.stdout;
-		stream.write(`[${timestamp}] ${chalk[color].bold(tag)} » [${label}] » ${content}\n`);
+		const shard = this.constructor.shard(this.client);
+		stream.write(`[${timestamp}]${shard} ${chalk[color].bold(tag)} » [${label}] » ${content}\n`);
 	}
 
 	static clean(item) {
 		if (typeof item === 'string') return item;
 		const cleaned = inspect(item, { depth: Infinity });
 		return cleaned;
+	}
+
+	static shard() {
+		return this.client && this.client.shard && this.client.shard.ids ? ` [SHARD ${this.client.shard.ids[0]}]` : '';
 	}
 }
 

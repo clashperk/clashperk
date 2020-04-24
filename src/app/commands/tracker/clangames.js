@@ -4,6 +4,7 @@ const { firestore, mongodb } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
 const fetch = require('node-fetch');
 const API = process.env.APIS.split(',');
+const { emoji } = require('../../util/emojis');
 
 class ClanGamesCommand extends Command {
 	constructor() {
@@ -57,6 +58,7 @@ class ClanGamesCommand extends Command {
 	}
 
 	async exec(message, { data }) {
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const db = mongodb.db('clashperk').collection('clangames');
 		const clan = await db.findOne({ tag: data.tag });
 		if (!clan) {
