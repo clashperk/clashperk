@@ -12,7 +12,8 @@ class EvalCommand extends Command {
 				content: 'You can\'t use this anyway, so why explain?',
 				usage: '<code>'
 			},
-			optionFlags: ['--depth', '-d', '--shard', '-s']
+			optionFlags: ['--depth', '-d'],
+			flags: ['--shard', '-s']
 		});
 
 		this.eval = null;
