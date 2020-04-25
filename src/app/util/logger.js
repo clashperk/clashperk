@@ -9,6 +9,7 @@ class Logger {
 
 	debug(message, { color = 'yellow', tag = '[DEBUG]', label } = {}) {
 		this.constructor.write(message, { color, tag, label });
+		console.log(this.client);
 	}
 
 	info(message, { color = 'cyan', tag = '[INFO ]', label } = {}) {
