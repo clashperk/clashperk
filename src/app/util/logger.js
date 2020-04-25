@@ -39,7 +39,7 @@ class Logger {
 
 	static shard(client) {
 		console.log(client);
-		return client && client.shard && client.shard.ids ? ` [SHARD ${client.shard.ids[0]}]` : '';
+		return '';// client && client.shard && client.shard.ids ? ` [SHARD ${client.shard.ids[0]}]` : '';
 	}
 }
 
