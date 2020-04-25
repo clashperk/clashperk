@@ -27,7 +27,7 @@ class Logger {
 		const timestamp = chalk.cyan(moment().format('DD-MM-YYYY kk:mm:ss'));
 		const content = this.clean(message);
 		const stream = error ? process.stderr : process.stdout;
-		const shard = this.shard(this.client);
+		const shard = this.shard();
 		stream.write(`[${timestamp}]${shard} ${chalk[color].bold(tag)} » [${label}] » ${content}\n`);
 	}
 
@@ -38,6 +38,7 @@ class Logger {
 	}
 
 	static shard() {
+		console.log(this.client.shard);
 		return this.client && this.client.shard && this.client.shard.ids ? ` [SHARD ${this.client.shard.ids[0]}]` : '';
 	}
 }
