@@ -307,6 +307,7 @@ class FastTracker {
 				} else if (!msg) {
 					const msg = await channel.messages.fetch(cache.lastonline_msg, false)
 						.catch(error => {
+							if (error.code === 500) return null;
 							this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
 							this.messages.set(cache.lastonline_msg, { id: null, editable: false, message: null });
 							return null;
