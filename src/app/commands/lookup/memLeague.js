@@ -60,9 +60,9 @@ class MembersLeagueCommand extends Command {
 
 		const pages = [
 			this.paginate(data.memberList, 0, 25)
-				.items.map(member => `${leagueEmoji[member.league.id]} ${Util.escapeInlineCode(member.name)}`),
+				.items.map(member => `${leagueEmoji[member.league.id]} \`\u200e${member.tag.padEnd(12, '\u2002')} ${Util.escapeInlineCode(member.name)}\``),
 			this.paginate(data.memberList, 25, 50)
-				.items.map(member => `${leagueEmoji[member.league.id]} ${Util.escapeInlineCode(member.name)}`)
+				.items.map(member => `${leagueEmoji[member.league.id]} \`\u200e${member.tag.padEnd(12, '\u2002')} ${Util.escapeInlineCode(member.name)}\``)
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
