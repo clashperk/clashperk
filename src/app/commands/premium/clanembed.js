@@ -12,7 +12,7 @@ class ClanEmbedCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: 'Creates a live updating clan embed.',
-				usage: '<tag> [--accepts] [11 12 13]'
+				usage: '<tag>'
 			}
 		});
 	}
@@ -53,8 +53,55 @@ class ClanEmbedCommand extends Command {
 		return { clan, leader, accepts, description };
 	}
 
-	async exec(message, { clan, accepts, leader, description }) {
+	async exec(message, { clan, clan: data, accepts, leader, description }) {
 		if (!this.client.patron.get(message.guild.id, 'guild', false)) return;
+
+		const clans = await this.clans(message);
+		const max = this.client.patron.get(message.guild.id, 'limit', 2);
+		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
+			const embed = this.client.util.embed()
+				.setDescription([
+					'You can only claim 2 clans per guild!',
+					'',
+					'**Want more than that?**',
+					'Consider subscribing to one of our premium plans on Patreon',
+					'',
+					'[Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
+				])
+				.setColor(5861569);
+			return message.util.send({ embed });
+		}
+
+		const isPatron = this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false);
+		const isVoter = this.client.voter.isVoter(message.author.id);
+		if (clans.length >= 1 && !clans.map(clan => clan.tag).includes(data.tag) && !(isVoter || isPatron)) {
+			const embed = this.client.util.embed()
+				.setDescription([
+					'**Not Voted!**',
+					'',
+					'Want to claim one more clan? Please consider voting us on Discord Bot List',
+					'',
+					'[Vote ClashPerk](https://top.gg/bot/526971716711350273/vote)'
+				])
+				.setColor(5861569);
+			return message.util.send({ embed });
+		}
+
+		if (!clans.map(clan => clan.tag).includes(data.tag) && !data.description.toLowerCase().includes('cp')) {
+			const embed = this.client.util.embed()
+				.setAuthor(`${data.name} - Donation Log Setup`, data.badgeUrls.small)
+				.setDescription([
+					'**Clan Description**',
+					`${data.description}`,
+					'',
+					'**Verify Your Clan**',
+					'Add the word `CP` at the end of the clan description.',
+					'You can remove it after verification.',
+					'This is a security feature to ensure you have proper leadership of the clan.'
+				]);
+			return message.util.send({ embed });
+		}
+
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
@@ -90,8 +137,8 @@ class ClanEmbedCommand extends Command {
 
 		const metadata = await ref.get().then(snap => snap.data());
 
-		// this.client.tracker.add(clan.tag, message.guild.id, metadata);
-		// this.client.tracker.push(metadata);
+		this.client.tracker.add(clan.tag, message.guild.id, metadata);
+		this.client.tracker.push(metadata);
 
 		return this.save({
 			guild: message.guild.id,
@@ -105,6 +152,19 @@ class ClanEmbedCommand extends Command {
 				description
 			}
 		});
+	}
+
+	async clans(message, clans = []) {
+		await firestore.collection('tracking_clans')
+			.where('guild', '==', message.guild.id)
+			.get()
+			.then(snap => {
+				snap.forEach(doc => {
+					clans.push(doc.data());
+				});
+				if (!snap.size) clans = [];
+			});
+		return clans;
 	}
 
 	async save(data) {
