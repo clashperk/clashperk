@@ -1,4 +1,4 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 
 class ClanEmbedCommand extends Command {
 	constructor() {
@@ -12,6 +12,7 @@ class ClanEmbedCommand extends Command {
 				content: 'Creates a live updating clan embed.',
 				usage: '<tag> [--accepts] [11 12 13]'
 			},
+			separator: ',',
 			flags: ['--accepts']
 		});
 	}
@@ -33,8 +34,8 @@ class ClanEmbedCommand extends Command {
 		const accepts = yield (
 			// eslint-disable-next-line multiline-ternary
 			flag ? {
-				match: 'rest',
-				type: 'string'
+				match: 'separate',
+				type: Argument.range('integer', 1, 13, true)
 			} : {
 				match: 'rest',
 				type: 'string'

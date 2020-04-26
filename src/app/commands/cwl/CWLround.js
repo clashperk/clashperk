@@ -38,7 +38,7 @@ class CwlRoundComamnd extends Command {
 		const round = yield {
 			match: 'option',
 			flag: ['--round', '-r'],
-			type: Argument.range('integer', 1, Infinity, true)
+			type: Argument.range('integer', 1, 7, true)
 		};
 
 		const data = yield {
