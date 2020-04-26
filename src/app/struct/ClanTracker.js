@@ -326,7 +326,7 @@ class FastTracker {
 		if (data.embed.description) embed.setDescription(data.embed.description);
 		else embed.setDescription(clan.description);
 		if (data.embed.leader) {
-			embed.addField(`${emoji.leader} Leader`, `<@!${data.embed.leader}>`);
+			embed.addField(`${emoji.owner} Leader`, `<@!${data.embed.leader}>`);
 		}
 		if (data.embed.accepts) {
 			embed.addField(`${emoji.townhall} Accepted Town-Hall`, data.embed.accepts.join(', '));
