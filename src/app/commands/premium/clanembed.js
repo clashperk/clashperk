@@ -19,34 +19,48 @@ class ClanEmbedCommand extends Command {
 
 	*args() {
 		const clan = yield {
-			type: 'string',
+			type: 'clan',
 			prompt: {
 				start: 'What is the clan tag?',
 				retry: 'Please provide a valid clan tag.'
 			}
 		};
 
-		const flag = yield {
-			match: 'flag',
-			flag: ['--th', '-th', 'th']
+		const leader = yield {
+			type: 'member',
+			prompt: {
+				start: 'Who is the leader?',
+				retry: 'Please mention a valid member...'
+			}
 		};
 
-		const accepts = yield (
-			// eslint-disable-next-line multiline-ternary
-			flag ? {
-				match: 'separate',
-				type: Argument.range('integer', 1, 13, true)
-			} : {
-				match: 'rest',
-				type: 'string'
+		const accepts = yield {
+			match: 'separate',
+			type: 'string',
+			prompt: {
+				start: 'What townhalls are accepted?',
+				retry: 'Please provide a valid number...'
 			}
-		);
+		};
 
-		return { clan, flag, accepts };
+		const description = yield {
+			type: 'string',
+			match: 'rest',
+			prompt: {
+				start: 'What would you like to set the description?',
+				retry: 'Please provide a description...'
+			}
+		};
+
+		return { clan, leader, accepts, description };
 	}
 
-	async exec(message, { clan, accepts }) {
-		return message.util.send(`${clan} | ${accepts}`);
+	async exec(message, { clan, accepts, leader, description }) {
+		return message.util.send([
+			`${clan} | ${accepts.map(item => item.trim()).join(' ')}`,
+			leader.id,
+			description
+		]);
 	}
 }
 

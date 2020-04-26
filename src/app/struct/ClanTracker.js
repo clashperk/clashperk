@@ -16,6 +16,7 @@ class FastTracker {
 		this.donateList = {};
 		this.oldMemberList = new Map();
 		this.messages = new Map();
+		this.embeds = new Map();
 	}
 
 	async init() {
@@ -164,8 +165,13 @@ class FastTracker {
 			}
 		}
 
+		if (cache.clan_embed_channel && this.client.patron.get(cache.guild, 'guild', false)) {
+			const collection = mongodb.db('clashperk').collection('clanembeds');
+			const data = await collection.findOne({ tag: clan.tag, guild: cache.guild });
+			if (data) await this.clanEmbed(cache, data, clan);
+		}
 		// Member Log
-		this.memberlog(cache, clan, currentMemberList, oldMemberSet, currentMemberSet);
+		await this.memberlog(cache, clan, currentMemberList, oldMemberSet, currentMemberSet);
 
 		// Purge Cache
 		this.donateList[key] = {};
@@ -182,30 +188,6 @@ class FastTracker {
 		const intervalID = setInterval(this.log.bind(this), 1.5 * 60 * 1000, cache);
 		cache.intervalID = intervalID;
 		this.cached.set(key, cache);
-	}
-
-	async playerUpdate(clan) {
-		const collection = mongodb.db('clashperk').collection('clangames');
-		for (const tag of clan.memberList.map(m => m.tag)) {
-			const member = await this.player(tag);
-			if (!member) continue;
-			await collection.findOneAndUpdate({
-				tag: clan.tag
-			}, {
-				$set: {
-					tag: clan.tag,
-					name: clan.name,
-					[`memberList.${member.tag}`]: {
-						tag: member.tag,
-						totalPoints: member.achievements
-							.filter(achievement => achievement.name === 'Games Champion')
-							.value
-					}
-				}
-			}, { upsert: true }).catch(error => console.log(error));
-
-			await this.delay(150);
-		}
 	}
 
 	async memberlog(cache, clan, currentMemberList, oldMemberSet, currentMemberSet) {
@@ -305,6 +287,62 @@ class FastTracker {
 		}
 	}
 
+	async clanEmbed(cache, clan, data) {
+		if (this.client.channels.cache.has(cache.clan_embed_channel)) {
+			const channel = this.client.channels.cache.get(cache.clan_embed_msg);
+			if (channel.permissionsFor(channel.guild.me).has(permissions.concat('READ_MESSAGE_HISTORY'), false)) {
+				const msg = this.embeds.get(cache.clan_embed_msg);
+				if (msg) {
+					return this.updateEmbed(data, clan, msg)
+						.catch(() => null);
+				} else if (!msg) {
+					const msg = await channel.messages.fetch(cache.clan_embed_msg, false)
+						.catch(error => {
+							if (error.code === 500) return null;
+							this.client.logger.warn(error, { label: 'CLAN_EMBED_FETCH_MESSAGE' });
+							this.embeds.set(cache.clan_embed_msg, { id: null, editable: false, message: null });
+							return null;
+						});
+					if (msg) {
+						this.embeds.set(cache.clan_embed_msg, { editable: true, message: msg, id: msg.id });
+						return this.updateEmbed(data, clan, msg)
+							.catch(() => null);
+					}
+				}
+			}
+		}
+	}
+
+	async updateEmbed(data, clan, msg) {
+		const message = msg.editable ? msg.message : null;
+		if (!message) return null;
+		const embed = this.client.util.embed()
+			.setColor(data.embed.color || 0x5970c1)
+			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+			.setThumbnail(clan.badgeUrls.medium);
+		if (data.embed.description) embed.setDescription(data.embed.description);
+		else embed.setDescription(clan.description);
+		if (data.embed.owner) {
+			embed.addField(`${emoji.owner} Leader`, `<@!${data.embed.owner}>`);
+		}
+		if (data.embed.accepts) {
+			embed.addField(`${emoji.townhall} Accepted Town-Hall`, data.embed.accepts.join(', '));
+		}
+
+		embed.addField('War Info', [
+			`${clan.warWins} wins, ${clan.isWarLogPublic ? `${clan.warLosses} losses, ${clan.warTies} ties,` : ''} win streak ${clan.warWinStreak}`
+		]);
+
+		embed.setFooter(`Members [${clan.members}/50]`, this.client.user.displayAvatarURL())
+			.setTimestamp();
+
+		return message.edit({ embed }).catch(error => {
+			this.embeds.delete(message.id);
+			this.client.logger.warn(error, { label: 'CLAN_BANNER_MESSAGE' });
+			return null;
+		});
+	}
+
 	async updateMessage(data, clan, msg) {
 		const message = msg.editable ? msg.message : null;
 		if (!message) return null;
@@ -312,6 +350,7 @@ class FastTracker {
 			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
+				`Last Online Board [${clan.members}/50]`,
 				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}\n${this.filter(data, clan)
 					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
 					.join('\n')}\`\`\``
@@ -319,9 +358,7 @@ class FastTracker {
 			.setFooter('Last Updated')
 			.setTimestamp();
 
-		return message.edit([
-			'Last Online Board'
-		], { embed }).catch(error => {
+		return message.edit({ embed }).catch(error => {
 			this.messages.delete(message.id);
 			this.client.logger.warn(error, { label: 'LAST_ONLINE_EDIT_MESSAGE' });
 			return null;
