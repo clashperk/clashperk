@@ -56,6 +56,7 @@ class FastTracker {
 		const item = { donated: '', received: '', donations: 0, receives: 0 };
 
 		// Donation Counter
+		const $set = {};
 		for (const member of clan.memberList) {
 			item.clan = `${clan.name} (${clan.tag})`;
 			item.clanBadge = clan.badgeUrls.small;
@@ -93,52 +94,34 @@ class FastTracker {
 					this.donateList[key][member.tag].expLevel !== member.expLevel ||
 					this.donateList[key][member.tag].name !== member.name
 				) {
-					await collection.findOneAndUpdate({
-						tag: clan.tag
-					}, {
-						$set: {
-							tag: clan.tag,
-							name: clan.name,
-							[`memberList.${member.tag}`]: {
-								lastOnline: new Date(),
-								name: member.name,
-								tag: member.tag
-							}
-						}
-					}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_OLD_MEMBER' }));
+					$set.name = clan.name;
+					$set.tag = clan.tag;
+					$set[`memberList.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
-				await collection.findOneAndUpdate({
-					tag: clan.tag
-				}, {
-					$set: {
-						tag: clan.tag,
-						name: clan.name,
-						[`memberList.${member.tag}`]: {
-							lastOnline: new Date(),
-							name: member.name,
-							tag: member.tag
-						}
-					}
-				}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_NEW_MEMBER' }));
+				$set.name = clan.name;
+				$set.tag = clan.tag;
+				$set[`memberList.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
 			}
 		}
 
 		// Last Online - Purge Missing Players
+		const $unset = {};
 		if (currentMemberSet.size && oldMemberSet.size) {
-			const unset = {};
 			const membersLeft = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 			for (const member of membersLeft) {
-				unset[`memberList.${member}`] = '';
+				$unset[`memberList.${member}`] = '';
 			}
+		}
 
-			if (membersLeft.length) {
-				await collection.updateOne({
-					tag: clan.tag
-				}, {
-					$unset: unset
-				}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_UNSET' }));
-			}
+
+		if (Object.keys($set).length || Object.keys($unset).length) {
+			const update = {};
+			if (Object.keys($set).length) update.$set = $set;
+			if (Object.keys($unset).length) update.$unset = $unset;
+
+			await collection.updateOne({ tag: clan.tag }, update, { upsert: true })
+				.catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR' }));
 		}
 
 		// Last Online - Send Message
