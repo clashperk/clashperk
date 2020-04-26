@@ -33,7 +33,7 @@ class MembersCommand extends Command {
 				default: ''
 			} : {
 				match: 'content',
-				type: 'rest',
+				type: 'string',
 				default: ''
 			}
 		);
