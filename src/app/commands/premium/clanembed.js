@@ -112,13 +112,15 @@ class ClanEmbedCommand extends Command {
 				guild: data.guild,
 				tag: data.tag
 			}, {
-				guild: data.guild,
-				tag: data.tag,
-				name: data.name,
-				channel: data.channel,
-				message: data.message,
-				createdAt: new Date(),
-				embed: data.embed
+				$set: {
+					guild: data.guild,
+					tag: data.tag,
+					name: data.name,
+					channel: data.channel,
+					message: data.message,
+					createdAt: new Date(),
+					embed: data.embed
+				}
 			}, { upsert: true, returnOriginal: false });
 	}
 }
