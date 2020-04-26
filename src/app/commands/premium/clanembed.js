@@ -58,6 +58,8 @@ class ClanEmbedCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+			.setTitle('Open In-Game')
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`)
 			.setThumbnail(clan.badgeUrls.medium)
 			.setDescription(description)
 			.addField(`${emoji.owner} Leader`, `${leader}`)

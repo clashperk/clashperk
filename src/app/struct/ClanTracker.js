@@ -319,14 +319,16 @@ class FastTracker {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
-			.setThumbnail(clan.badgeUrls.medium);
+			.setThumbnail(clan.badgeUrls.medium)
+			.setTitle('Open In-Game')
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`);
 		if (data.embed.description) embed.setDescription(data.embed.description);
 		else embed.setDescription(clan.description);
 		if (data.embed.leader) {
 			embed.addField(`${emoji.leader} Leader`, `<@!${data.embed.leader}>`);
 		}
 		if (data.embed.accepts) {
-			embed.addField(`${emoji.townhall} Accepted Town-Hall`, data.embed.accepts);
+			embed.addField(`${emoji.townhall} Accepted Town-Hall`, data.embed.accepts.join(', '));
 		}
 
 		embed.addField('War Info', [
