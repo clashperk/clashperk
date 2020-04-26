@@ -76,7 +76,7 @@ class StopCommand extends Command {
 			});
 		} else if (log === 'clanembed') {
 			await clan.ref.update({
-				lastonline: admin.firestore.FieldValue.delete()
+				clanembed: admin.firestore.FieldValue.delete()
 			});
 		}
 
