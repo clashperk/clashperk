@@ -331,7 +331,7 @@ class FastTracker {
 			embed.addField(`${emoji.townhall} Accepted Town-Hall`, data.embed.accepts.join(', '));
 		}
 
-		embed.addField('War Info', [
+		embed.addField(`${emoji.clan} War Info`, [
 			`${clan.warWins} wins, ${clan.isWarLogPublic ? `${clan.warLosses} losses, ${clan.warTies} ties,` : ''} win streak ${clan.warWinStreak}`
 		]);
 

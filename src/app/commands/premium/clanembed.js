@@ -64,7 +64,7 @@ class ClanEmbedCommand extends Command {
 			.setDescription(description)
 			.addField(`${emoji.owner} Leader`, `${leader}`)
 			.addField(`${emoji.townhall} Accepted Town-Hall`, accepts.split(',').map(x => x.trim()).join(', '))
-			.addField('War Info', [
+			.addField(`${emoji.clan} War Info`, [
 				`${clan.warWins} wins, ${clan.isWarLogPublic ? `${clan.warLosses} losses, ${clan.warTies} ties,` : ''} win streak ${clan.warWinStreak}`
 			])
 			.setFooter(`Members [${clan.members}/50]`, this.client.user.displayAvatarURL())
