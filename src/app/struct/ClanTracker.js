@@ -289,7 +289,7 @@ class FastTracker {
 
 	async clanEmbed(cache, clan, data) {
 		if (this.client.channels.cache.has(cache.clan_embed_channel)) {
-			const channel = this.client.channels.cache.get(cache.clan_embed_msg);
+			const channel = this.client.channels.cache.get(cache.clan_embed_channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions.concat('READ_MESSAGE_HISTORY'), false)) {
 				const msg = this.embeds.get(cache.clan_embed_msg);
 				if (msg) {
@@ -317,16 +317,16 @@ class FastTracker {
 		const message = msg.editable ? msg.message : null;
 		if (!message) return null;
 		const embed = this.client.util.embed()
-			.setColor(data.embed.color || 0x5970c1)
+			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setThumbnail(clan.badgeUrls.medium);
 		if (data.embed.description) embed.setDescription(data.embed.description);
 		else embed.setDescription(clan.description);
-		if (data.embed.owner) {
-			embed.addField(`${emoji.owner} Leader`, `<@!${data.embed.owner}>`);
+		if (data.embed.leader) {
+			embed.addField(`${emoji.leader} Leader`, `<@!${data.embed.leader}>`);
 		}
 		if (data.embed.accepts) {
-			embed.addField(`${emoji.townhall} Accepted Town-Hall`, data.embed.accepts.join(', '));
+			embed.addField(`${emoji.townhall} Accepted Town-Hall`, data.embed.accepts);
 		}
 
 		embed.addField('War Info', [
@@ -477,6 +477,11 @@ class ClanTracker {
 		if (data.lastonline) {
 			data.lastonline_channel = data.lastonline.channel;
 			data.lastonline_msg = data.lastonline.message;
+		}
+
+		if (data.clanembed) {
+			data.clan_embed_channel = data.clanembed.channel;
+			data.clan_embed_msg = data.clanembed.message;
 		}
 
 		// this.client.cwl.add(tag, true);
