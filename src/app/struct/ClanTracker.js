@@ -32,7 +32,7 @@ class FastTracker {
 		const cache = this.cached.get(key);
 		if (cache && cache.intervalID) clearInterval(cache.intervalID);
 
-		return this.log(data);
+		return this.log(cache);
 	}
 
 	formatNum(num) {
