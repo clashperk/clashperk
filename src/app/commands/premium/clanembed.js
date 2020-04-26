@@ -54,7 +54,7 @@ class ClanEmbedCommand extends Command {
 	}
 
 	async exec(message, { clan, accepts, leader, description }) {
-		if (this.client.patron.get(message.guild.id, 'guild', false)) return;
+		if (!this.client.patron.get(message.guild.id, 'guild', false)) return;
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
