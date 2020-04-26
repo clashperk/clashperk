@@ -131,6 +131,12 @@ class FastTracker {
 			if (data) await this.lastOnline(cache, data, clan);
 		}
 
+		if (cache.clan_embed_channel) {
+			const collection = mongodb.db('clashperk').collection('clanembeds');
+			const data = await collection.findOne({ tag: clan.tag, guild: cache.guild });
+			if (data) await this.clanEmbed(cache, data, clan);
+		}
+
 		// Donation Log - Send Message
 		if (item.donated !== '' || item.received !== '') {
 			const embed = new MessageEmbed()
@@ -165,12 +171,6 @@ class FastTracker {
 			}
 		}
 
-		if (cache.clan_embed_channel) {
-			const collection = mongodb.db('clashperk').collection('clanembeds');
-			const data = await collection.findOne({ tag: clan.tag, guild: cache.guild });
-			console.log(data);
-			if (data) await this.clanEmbed(cache, data, clan);
-		}
 		// Member Log
 		await this.memberlog(cache, clan, currentMemberList, oldMemberSet, currentMemberSet);
 
@@ -288,7 +288,8 @@ class FastTracker {
 		}
 	}
 
-	async clanEmbed(cache, clan, data) {
+	async clanEmbed(cache, data, clan) {
+		console.log('Cl');
 		if (this.client.channels.cache.has(cache.clan_embed_channel)) {
 			const channel = this.client.channels.cache.get(cache.clan_embed_channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions.concat('READ_MESSAGE_HISTORY'), false)) {
@@ -315,6 +316,7 @@ class FastTracker {
 	}
 
 	async updateEmbed(data, clan, msg) {
+		console.log('UP');
 		const message = msg.editable ? msg.message : null;
 		if (!message) return null;
 		const embed = this.client.util.embed()
