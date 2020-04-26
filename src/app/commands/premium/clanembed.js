@@ -13,7 +13,8 @@ class ClanEmbedCommand extends Command {
 			description: {
 				content: 'Creates a live updating clan embed.',
 				usage: '<tag>'
-			}
+			},
+			optionFlags: ['--color']
 		});
 	}
 
@@ -50,10 +51,17 @@ class ClanEmbedCommand extends Command {
 			}
 		};
 
-		return { clan, leader, accepts, description };
+		const color = yield {
+			match: 'option',
+			flag: ['--color'],
+			type: 'color',
+			default: 5861569
+		};
+
+		return { clan, leader, accepts, description, color };
 	}
 
-	async exec(message, { clan, clan: data, accepts, leader, description }) {
+	async exec(message, { clan, clan: data, accepts, leader, description, color }) {
 		if (!this.client.patron.get(message.guild.id, 'guild', false)) return;
 
 		const clans = await this.clans(message);
@@ -103,7 +111,7 @@ class ClanEmbedCommand extends Command {
 		}
 
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(color)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setTitle('Open In-Game')
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`)
@@ -128,7 +136,8 @@ class ClanEmbedCommand extends Command {
 			verified: true,
 			clanembed: {
 				channel: message.channel.id,
-				message: msg.id
+				message: msg.id,
+				color
 			},
 			guild: message.guild.id,
 			isPremium: this.client.patron.get(message.guild.id, 'guild', false),
@@ -149,7 +158,8 @@ class ClanEmbedCommand extends Command {
 			embed: {
 				leader: leader.id,
 				accepts: accepts.split(',').map(x => x.trim()),
-				description
+				description,
+				color
 			}
 		});
 	}

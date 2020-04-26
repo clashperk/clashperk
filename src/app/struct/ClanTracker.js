@@ -289,7 +289,6 @@ class FastTracker {
 	}
 
 	async clanEmbed(cache, data, clan) {
-		console.log('Cl');
 		if (this.client.channels.cache.has(cache.clan_embed_channel)) {
 			const channel = this.client.channels.cache.get(cache.clan_embed_channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions.concat('READ_MESSAGE_HISTORY'), false)) {
@@ -316,11 +315,10 @@ class FastTracker {
 	}
 
 	async updateEmbed(data, clan, msg) {
-		console.log('UP');
 		const message = msg.editable ? msg.message : null;
 		if (!message) return null;
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(data.embed.color || 0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setThumbnail(clan.badgeUrls.medium)
 			.setTitle('Open In-Game')
