@@ -11,9 +11,7 @@ class ClanEmbedCommand extends Command {
 			description: {
 				content: 'Creates a live updating clan embed.',
 				usage: '<tag> [--accepts] [11 12 13]'
-			},
-			separator: ',',
-			flags: ['--accepts']
+			}
 		});
 	}
 
@@ -35,7 +33,6 @@ class ClanEmbedCommand extends Command {
 		};
 
 		const accepts = yield {
-			match: 'separate',
 			type: 'string',
 			prompt: {
 				start: 'What townhalls are accepted?',
@@ -44,7 +41,6 @@ class ClanEmbedCommand extends Command {
 		};
 
 		const description = yield {
-			type: 'string',
 			match: 'rest',
 			prompt: {
 				start: 'What would you like to set the description?',
@@ -57,7 +53,7 @@ class ClanEmbedCommand extends Command {
 
 	async exec(message, { clan, accepts, leader, description }) {
 		return message.util.send([
-			`${clan} | ${accepts.map(item => item.trim()).join(' ')}`,
+			`${clan} | ${accepts.split(',').map(item => item.trim()).join(', ')}`,
 			leader.id,
 			description
 		]);
