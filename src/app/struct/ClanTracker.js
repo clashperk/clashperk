@@ -165,9 +165,10 @@ class FastTracker {
 			}
 		}
 
-		if (cache.clan_embed_channel && this.client.patron.get(cache.guild, 'guild', false)) {
+		if (cache.clan_embed_channel) {
 			const collection = mongodb.db('clashperk').collection('clanembeds');
 			const data = await collection.findOne({ tag: clan.tag, guild: cache.guild });
+			console.log(data);
 			if (data) await this.clanEmbed(cache, data, clan);
 		}
 		// Member Log
