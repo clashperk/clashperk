@@ -8,7 +8,6 @@ class LastOnlineBoardCommand extends Command {
 			aliases: ['lastonlineboard'],
 			category: 'tracker',
 			channel: 'guild',
-			ignoreCooldown: [],
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
