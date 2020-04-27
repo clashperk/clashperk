@@ -57,9 +57,9 @@ class LinkClanCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setDescription([
-				`Linked **${member.user.tag}** to ${data.name} (${data.tag})`,
+				`Linked **${member.user.tag}** to **${data.name}** (${data.tag})`,
 				'',
-				'You\'ve successfully linked. If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.',
+				'If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.',
 				`For Examples **\u200b${prefix}clan** will return the info of *${data.name} (${data.tag})*.`,
 				`As well as **\u200b${prefix}thcompo** will return the townhall composition for the same clan (works with other comamnds too).`
 			]);
