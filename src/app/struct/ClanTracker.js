@@ -266,21 +266,22 @@ class FastTracker {
 		if (this.client.channels.cache.has(cache.lastonline_channel)) {
 			const channel = this.client.channels.cache.get(cache.lastonline_channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions.concat('READ_MESSAGE_HISTORY'), false)) {
-				const msg = this.messages.get(cache.lastonline_msg);
-				if (msg) {
-					return this.updateMessage(data, clan, msg)
+				if (cache.lastonline_msg_obj) {
+					return this.updateMessage(data, clan, cache)
 						.catch(() => null);
-				} else if (!msg) {
+				} else if (!cache.lastonline_msg_obj) {
 					const msg = await channel.messages.fetch(cache.lastonline_msg, false)
 						.catch(error => {
 							if (error.code === 500) return null;
 							this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
-							this.messages.set(cache.lastonline_msg, { id: null, editable: false, message: null });
+							cache.lastonline_msg_obj = { id: null, editable: false, message: null };
+							this.cached.set(`${cache.guild}${cache.tag}`, cache);
 							return null;
 						});
 					if (msg) {
-						this.messages.set(cache.lastonline_msg, { editable: true, message: msg, id: msg.id });
-						return this.updateMessage(data, clan, msg)
+						cache.lastonline_msg_obj = { editable: true, message: msg, id: msg.id };
+						this.cached.set(`${cache.guild}${cache.tag}`, cache);
+						return this.updateMessage(data, clan, cache)
 							.catch(() => null);
 					}
 				}
@@ -293,19 +294,21 @@ class FastTracker {
 			const channel = this.client.channels.cache.get(cache.clan_embed_channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions.concat('READ_MESSAGE_HISTORY'), false)) {
 				const msg = this.embeds.get(cache.clan_embed_msg);
-				if (msg) {
+				if (cache.clan_embed_msg_obj) {
 					return this.updateEmbed(data, clan, msg)
 						.catch(() => null);
-				} else if (!msg) {
+				} else if (!cache.clan_embed_msg_obj) {
 					const msg = await channel.messages.fetch(cache.clan_embed_msg, false)
 						.catch(error => {
 							if (error.code === 500) return null;
 							this.client.logger.warn(error, { label: 'CLAN_EMBED_FETCH_MESSAGE' });
-							this.embeds.set(cache.clan_embed_msg, { id: null, editable: false, message: null });
+							cache.clan_embed_msg_obj = { editable: false, message: null, id: null };
+							this.cached.set(`${cache.guild}${cache.tag}`, cache);
 							return null;
 						});
 					if (msg) {
-						this.embeds.set(cache.clan_embed_msg, { editable: true, message: msg, id: msg.id });
+						cache.clan_embed_msg_obj = { editable: true, message: msg, id: msg.id };
+						this.cached.set(`${cache.guild}${cache.tag}`, cache);
 						return this.updateEmbed(data, clan, msg)
 							.catch(() => null);
 					}
@@ -314,8 +317,8 @@ class FastTracker {
 		}
 	}
 
-	async updateEmbed(data, clan, msg) {
-		const message = msg.editable ? msg.message : null;
+	async updateEmbed(data, clan, cache) {
+		const message = cache.clan_embed_msg_obj.editable ? cache.clan_embed_msg_obj.message : null;
 		if (!message) return null;
 		const embed = this.client.util.embed()
 			.setColor(data.embed.color || 0x5970c1)
@@ -340,14 +343,15 @@ class FastTracker {
 			.setTimestamp();
 
 		return message.edit({ embed }).catch(error => {
-			this.embeds.delete(message.id);
+			cache.clan_embed_msg_obj = { editable: false, message: null, id: null };
+			this.cached.set(`${cache.guild}${cache.tag}`, cache);
 			this.client.logger.warn(error, { label: 'CLAN_BANNER_MESSAGE' });
 			return null;
 		});
 	}
 
-	async updateMessage(data, clan, msg) {
-		const message = msg.editable ? msg.message : null;
+	async updateMessage(data, clan, cache) {
+		const message = cache.lastonline_msg_obj.editable ? cache.lastonline_msg_obj.message : null;
 		if (!message) return null;
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
@@ -362,7 +366,8 @@ class FastTracker {
 			.setTimestamp();
 
 		return message.edit({ embed }).catch(error => {
-			this.messages.delete(message.id);
+			cache.lastonline_msg_obj = { id: null, editable: false, message: null };
+			this.cached.set(`${cache.guild}${cache.tag}`, cache);
 			this.client.logger.warn(error, { label: 'LAST_ONLINE_EDIT_MESSAGE' });
 			return null;
 		});
