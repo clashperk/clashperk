@@ -80,20 +80,14 @@ class LinkPlayerCommand extends Command {
 
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
-			.setColor(0x10ffc1)
-			.addField(`Linked **${member.user.tag}** to ${data.name} (${data.tag})`, [
-				'You\'ve successfully linked.',
-				`You can link multiple accounts, to view your all accounts use **\u200b${prefix}profile** command.`,
-				'',
+			.setColor(0x5970c1)
+			.setDescription([
+				`Linked **${member.user.tag}** to ${data.name} (${data.tag})`,
+				`You\'ve successfully linked. You can link multiple accounts, to view your all accounts use **\u200b${prefix}profile** command.`,
 				'If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.',
-				'',
 				`For Examples **\u200b${prefix}player** will return the info of *${data.name} (${data.tag})*.`,
-				'',
-				`As well as **\u200b${prefix}units** will return the player units for the same account (works with other comamnds too).`,
-				'',
-				`Also get info by mention or user-id **\u200b${prefix}player <user/id>** (works if the user is linked).`
-			])
-			.setThumbnail(member.user.displayAvatarURL());
+				`As well as **\u200b${prefix}units** will return the player units for the same account (works with other comamnds too).`
+			]);
 		return message.util.send({ embed });
 	}
 
