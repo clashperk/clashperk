@@ -9,13 +9,25 @@ class ClanGames {
 	}
 
 	async init() {
-		const intervalID = setInterval(async () => {
-			if (new Date().getDate() > this.client.settings.get('global', 'clanGames', 21)) {
+		const intervalId = setInterval(async () => {
+			const time = this.client.settings.get('global', 'clanGames', null);
+			if (time && new Date() > new Date(time.start) && new Date() < new Date(time.end)) {
 				await this.load();
 				await this.start();
-				return clearInterval(intervalID);
+				return clearInterval(intervalId);
 			}
-		}, 1 * 60 * 1000);
+		}, 2 * 60 * 1000);
+	}
+
+	flush() {
+		const time = this.client.settings.get('global', 'clanGames', null);
+		if (time && new Date() > new Date(time.end)) {
+			for (const cache of this.cached.values()) {
+				if (cache && cache.intervalID) clearInterval(cache.intervalID);
+			}
+
+			return this.cached.clear();
+		}
 	}
 
 	async delay(ms) {
@@ -38,6 +50,9 @@ class ClanGames {
 	}
 
 	async handle(cache) {
+		const time = this.client.settings.get('global', 'clanGames', null);
+		if (time && new Date() > new Date(time.end)) return this.flush();
+
 		if (cache.enabled) {
 			const clan = await this.clan(cache.tag);
 			if (!clan) return;
