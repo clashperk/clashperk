@@ -507,7 +507,7 @@ class ClanTracker {
 		const key = [guild, tag].join('');
 		this.clangame.delete(tag);
 		const clan = this.cached.get(key);
-		if (clan && clan.intervalID) clearInterval(clan.intervalID);
+		if (clan && clan.intervalID) clearTimeout(clan.intervalID);
 		return this.cached.delete(key);
 	}
 }
