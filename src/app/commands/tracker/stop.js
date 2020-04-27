@@ -17,7 +17,7 @@ class StopCommand extends Command {
 			args: [
 				{
 					id: 'log',
-					type: ['donationlog', 'playerlog', ['lastonline', 'lastonlineboard']]
+					type: ['donationlog', 'playerlog', ['lastonline', 'lastonlineboard'], 'clanembed']
 				},
 				{
 					id: 'clan',
@@ -74,11 +74,15 @@ class StopCommand extends Command {
 			await clan.ref.update({
 				lastonline: admin.firestore.FieldValue.delete()
 			});
+		} else if (log === 'clanembed') {
+			await clan.ref.update({
+				clanembed: admin.firestore.FieldValue.delete()
+			});
 		}
 
 		this.client.tracker.delete(message.guild.id, clan.tag);
 		const metadata = await clan.ref.get().then(snap => snap.data());
-		if (metadata.donationlog || metadata.memberlog || metadata.lastonline) {
+		if (metadata.donationlog || metadata.memberlog || metadata.lastonline || metadata.clanembed) {
 			this.client.tracker.add(clan.tag, message.guild.id, metadata);
 			this.client.tracker.push(metadata);
 		} else {

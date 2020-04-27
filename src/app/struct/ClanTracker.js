@@ -15,7 +15,6 @@ class FastTracker {
 		this.cached = cached;
 		this.donateList = {};
 		this.oldMemberList = new Map();
-		this.messages = new Map();
 	}
 
 	async init() {
@@ -29,9 +28,9 @@ class FastTracker {
 	async add(data) {
 		const key = [data.guild, data.tag].join('');
 		const cache = this.cached.get(key);
-		if (cache && cache.intervalID) clearInterval(cache.intervalID);
+		if (cache && cache.intervalID) clearTimeout(cache.intervalID);
 
-		return this.log(data);
+		return this.log(key);
 	}
 
 	formatNum(num) {
@@ -43,19 +42,20 @@ class FastTracker {
 				.padStart(3, '\u2002');
 	}
 
-	async log(cache) {
+	async log(key) {
+		const cache = this.cached.get(key);
 		const clan = await this.clan(cache.tag);
 		if (!clan) return;
 
 		const collection = mongodb.db('clashperk').collection('lastonlines');
-		if (cache && cache.intervalID) clearInterval(cache.intervalID);
-		const key = [cache.guild, clan.tag].join('');
+		if (cache && cache.intervalID) clearTimeout(cache.intervalID);
 		const currentMemberList = clan.memberList.map(m => m.tag);
 		const currentMemberSet = new Set(currentMemberList);
 		const oldMemberSet = new Set(this.oldMemberList.get(key));
 		const item = { donated: '', received: '', donations: 0, receives: 0 };
 
 		// Donation Counter
+		const $set = {};
 		for (const member of clan.memberList) {
 			item.clan = `${clan.name} (${clan.tag})`;
 			item.clanBadge = clan.badgeUrls.small;
@@ -93,58 +93,46 @@ class FastTracker {
 					this.donateList[key][member.tag].expLevel !== member.expLevel ||
 					this.donateList[key][member.tag].name !== member.name
 				) {
-					await collection.findOneAndUpdate({
-						tag: clan.tag
-					}, {
-						$set: {
-							tag: clan.tag,
-							name: clan.name,
-							[`memberList.${member.tag}`]: {
-								lastOnline: new Date(),
-								name: member.name,
-								tag: member.tag
-							}
-						}
-					}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_OLD_MEMBER' }));
+					$set.name = clan.name;
+					$set.tag = clan.tag;
+					$set[`memberList.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
 				}
 			} else if (oldMemberSet.size && !oldMemberSet.has(member.tag)) {
-				await collection.findOneAndUpdate({
-					tag: clan.tag
-				}, {
-					$set: {
-						tag: clan.tag,
-						name: clan.name,
-						[`memberList.${member.tag}`]: {
-							lastOnline: new Date(),
-							name: member.name,
-							tag: member.tag
-						}
-					}
-				}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_NEW_MEMBER' }));
+				$set.name = clan.name;
+				$set.tag = clan.tag;
+				$set[`memberList.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
 			}
 		}
 
 		// Last Online - Purge Missing Players
+		const $unset = {};
 		if (currentMemberSet.size && oldMemberSet.size) {
-			const unset = {};
 			const membersLeft = this.oldMemberList.get(key).filter(tag => !currentMemberSet.has(tag));
 			for (const member of membersLeft) {
-				unset[`memberList.${member}`] = '';
+				$unset[`memberList.${member}`] = '';
 			}
+		}
 
-			if (membersLeft.length) {
-				await collection.updateOne({
-					tag: clan.tag
-				}, {
-					$unset: unset
-				}, { upsert: true }).catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR_UNSET' }));
-			}
+
+		if (Object.keys($set).length || Object.keys($unset).length) {
+			const update = {};
+			if (Object.keys($set).length) update.$set = $set;
+			if (Object.keys($unset).length) update.$unset = $unset;
+
+			await collection.updateOne({ tag: clan.tag }, update, { upsert: true })
+				.catch(error => this.client.logger.error(error, { label: 'MONGO_ERROR' }));
 		}
 
 		// Last Online - Send Message
 		if (cache.lastonline_channel) {
 			const data = await collection.findOne({ tag: clan.tag });
-			if (data) await this.lastOnline(cache, data, clan);
+			if (data) await this.lastOnline(key, data, clan);
+		}
+
+		if (cache.clan_embed_channel) {
+			const collection = mongodb.db('clashperk').collection('clanembeds');
+			const data = await collection.findOne({ tag: clan.tag, guild: cache.guild });
+			if (data) await this.clanEmbed(key, data, clan);
 		}
 
 		// Donation Log - Send Message
@@ -182,7 +170,7 @@ class FastTracker {
 		}
 
 		// Member Log
-		this.memberlog(cache, clan, currentMemberList, oldMemberSet, currentMemberSet);
+		await this.memberlog(cache, clan, currentMemberList, oldMemberSet, currentMemberSet);
 
 		// Purge Cache
 		this.donateList[key] = {};
@@ -196,33 +184,9 @@ class FastTracker {
 		currentMemberSet.clear();
 
 		// Callback
-		const intervalID = setInterval(this.log.bind(this), 1.5 * 60 * 1000, cache);
+		const intervalID = setTimeout(this.log.bind(this), 1.5 * 60 * 1000, key);
 		cache.intervalID = intervalID;
 		this.cached.set(key, cache);
-	}
-
-	async playerUpdate(clan) {
-		const collection = mongodb.db('clashperk').collection('clangames');
-		for (const tag of clan.memberList.map(m => m.tag)) {
-			const member = await this.player(tag);
-			if (!member) continue;
-			await collection.findOneAndUpdate({
-				tag: clan.tag
-			}, {
-				$set: {
-					tag: clan.tag,
-					name: clan.name,
-					[`memberList.${member.tag}`]: {
-						tag: member.tag,
-						totalPoints: member.achievements
-							.filter(achievement => achievement.name === 'Games Champion')
-							.value
-					}
-				}
-			}, { upsert: true }).catch(error => console.log(error));
-
-			await this.delay(150);
-		}
 	}
 
 	async memberlog(cache, clan, currentMemberList, oldMemberSet, currentMemberSet) {
@@ -296,24 +260,27 @@ class FastTracker {
 		}
 	}
 
-	async lastOnline(cache, data, clan) {
+	async lastOnline(key, data, clan) {
+		const cache = this.cached.get(key);
 		if (this.client.channels.cache.has(cache.lastonline_channel)) {
 			const channel = this.client.channels.cache.get(cache.lastonline_channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions.concat('READ_MESSAGE_HISTORY'), false)) {
-				const msg = this.messages.get(cache.lastonline_msg);
-				if (msg) {
-					return this.updateMessage(data, clan, msg)
+				if (cache.lastonline_msg_obj) {
+					return this.updateMessage(data, clan, key)
 						.catch(() => null);
-				} else if (!msg) {
+				} else if (!cache.lastonline_msg_obj) {
 					const msg = await channel.messages.fetch(cache.lastonline_msg, false)
 						.catch(error => {
+							if (error.code === 500) return null;
 							this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
-							this.messages.set(cache.lastonline_msg, { id: null, editable: false, message: null });
+							cache.lastonline_msg_obj = { id: null, editable: false, message: null };
+							this.cached.set(`${cache.guild}${cache.tag}`, cache);
 							return null;
 						});
 					if (msg) {
-						this.messages.set(cache.lastonline_msg, { editable: true, message: msg, id: msg.id });
-						return this.updateMessage(data, clan, msg)
+						cache.lastonline_msg_obj = { editable: true, message: msg, id: msg.id };
+						this.cached.set(`${cache.guild}${cache.tag}`, cache);
+						return this.updateMessage(data, clan, key)
 							.catch(() => null);
 					}
 				}
@@ -321,13 +288,77 @@ class FastTracker {
 		}
 	}
 
-	async updateMessage(data, clan, msg) {
-		const message = msg.editable ? msg.message : null;
+	async clanEmbed(key, data, clan) {
+		const cache = this.cached.get(key);
+		if (this.client.channels.cache.has(cache.clan_embed_channel)) {
+			const channel = this.client.channels.cache.get(cache.clan_embed_channel);
+			if (channel.permissionsFor(channel.guild.me).has(permissions.concat('READ_MESSAGE_HISTORY'), false)) {
+				if (cache.clan_embed_msg_obj) {
+					return this.updateEmbed(data, clan, key)
+						.catch(() => null);
+				} else if (!cache.clan_embed_msg_obj) {
+					const msg = await channel.messages.fetch(cache.clan_embed_msg, false)
+						.catch(error => {
+							if (error.code === 500) return null;
+							this.client.logger.warn(error, { label: 'CLAN_EMBED_FETCH_MESSAGE' });
+							cache.clan_embed_msg_obj = { editable: false, message: null, id: null };
+							this.cached.set(`${cache.guild}${cache.tag}`, cache);
+							return null;
+						});
+					if (msg) {
+						cache.clan_embed_msg_obj = { editable: true, message: msg, id: msg.id };
+						this.cached.set(`${cache.guild}${cache.tag}`, cache);
+						return this.updateEmbed(data, clan, key)
+							.catch(() => null);
+					}
+				}
+			}
+		}
+	}
+
+	async updateEmbed(data, clan, key) {
+		const cache = this.cached.get(key);
+		const message = cache.clan_embed_msg_obj.editable ? cache.clan_embed_msg_obj.message : null;
+		if (!message) return null;
+		const embed = this.client.util.embed()
+			.setColor(data.embed.color || 0x5970c1)
+			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+			.setThumbnail(clan.badgeUrls.medium)
+			.setTitle('Open In-Game')
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`);
+		if (data.embed.description) embed.setDescription(data.embed.description);
+		else embed.setDescription(clan.description);
+		if (data.embed.leader) {
+			embed.addField(`${emoji.owner} Leader`, `<@!${data.embed.leader}>`);
+		}
+		if (data.embed.accepts) {
+			embed.addField(`${emoji.townhall} Accepted Town-Hall`, data.embed.accepts.join(', '));
+		}
+
+		embed.addField(`${emoji.clan} War Info`, [
+			`${clan.warWins} wins, ${clan.isWarLogPublic ? `${clan.warLosses} losses, ${clan.warTies} ties,` : ''} win streak ${clan.warWinStreak}`
+		]);
+
+		embed.setFooter(`Members [${clan.members}/50]`, this.client.user.displayAvatarURL())
+			.setTimestamp();
+
+		return message.edit({ embed }).catch(error => {
+			cache.clan_embed_msg_obj = { editable: false, message: null, id: null };
+			this.cached.set(`${cache.guild}${cache.tag}`, cache);
+			this.client.logger.warn(error, { label: 'CLAN_BANNER_MESSAGE' });
+			return null;
+		});
+	}
+
+	async updateMessage(data, clan, key) {
+		const cache = this.cached.get(key);
+		const message = cache.lastonline_msg_obj.editable ? cache.lastonline_msg_obj.message : null;
 		if (!message) return null;
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
+				`Last Online Board [${clan.members}/50]`,
 				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}\n${this.filter(data, clan)
 					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
 					.join('\n')}\`\`\``
@@ -335,10 +366,9 @@ class FastTracker {
 			.setFooter('Last Updated')
 			.setTimestamp();
 
-		return message.edit([
-			'Last Online Board'
-		], { embed }).catch(error => {
-			this.messages.delete(message.id);
+		return message.edit({ embed }).catch(error => {
+			cache.lastonline_msg_obj = { id: null, editable: false, message: null };
+			this.cached.set(`${cache.guild}${cache.tag}`, cache);
 			this.client.logger.warn(error, { label: 'LAST_ONLINE_EDIT_MESSAGE' });
 			return null;
 		});
@@ -371,8 +401,8 @@ class FastTracker {
 	}
 
 	async start() {
-		for (const cache of Array.from(this.cached.values())) {
-			await this.log(cache);
+		for (const key of this.cached.keys()) {
+			await this.log(key);
 			await this.delay(200);
 		}
 	}
@@ -458,6 +488,11 @@ class ClanTracker {
 			data.lastonline_msg = data.lastonline.message;
 		}
 
+		if (data.clanembed) {
+			data.clan_embed_channel = data.clanembed.channel;
+			data.clan_embed_msg = data.clanembed.message;
+		}
+
 		// this.client.cwl.add(tag, true);
 		const key = [guild, tag].join('');
 		return this.cached.set(key, data);
@@ -472,7 +507,7 @@ class ClanTracker {
 		const key = [guild, tag].join('');
 		this.clangame.delete(tag);
 		const clan = this.cached.get(key);
-		if (clan && clan.intervalID) clearInterval(clan.intervalID);
+		if (clan && clan.intervalID) clearTimeout(clan.intervalID);
 		return this.cached.delete(key);
 	}
 }

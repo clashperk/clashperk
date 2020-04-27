@@ -8,7 +8,6 @@ class LastOnlineBoardCommand extends Command {
 			aliases: ['lastonlineboard'],
 			category: 'tracker',
 			channel: 'guild',
-			ignoreCooldown: [],
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
@@ -81,7 +80,8 @@ class LastOnlineBoardCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		if (!data.description.toLowerCase().includes('cp')) {
+		const clan = clans.find(clan => clan.tag === data.tag) || { verified: false };
+		if (!clan.verified && !data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
 				.setAuthor(`${data.name} - Last Online Board Setup`, data.badgeUrls.small)
 				.setDescription([

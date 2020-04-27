@@ -9,13 +9,25 @@ class ClanGames {
 	}
 
 	async init() {
-		const intervalID = setInterval(async () => {
-			if (new Date().getDate() > this.client.settings.get('global', 'clanGames', 21)) {
+		const intervalId = setInterval(async () => {
+			const time = this.client.settings.get('global', 'clanGames', null);
+			if (time && new Date() > new Date(time.start) && new Date() < new Date(time.end)) {
 				await this.load();
 				await this.start();
-				return clearInterval(intervalID);
+				return clearInterval(intervalId);
 			}
-		}, 1 * 60 * 1000);
+		}, 2 * 60 * 1000);
+	}
+
+	flush() {
+		const time = this.client.settings.get('global', 'clanGames', null);
+		if (time && new Date() > new Date(time.end)) {
+			for (const cache of this.cached.values()) {
+				if (cache && cache.intervalID) clearInterval(cache.intervalID);
+			}
+
+			return this.cached.clear();
+		}
 	}
 
 	async delay(ms) {
@@ -38,13 +50,17 @@ class ClanGames {
 	}
 
 	async handle(cache) {
+		const time = this.client.settings.get('global', 'clanGames', null);
+		if (time && new Date() > new Date(time.end)) return this.flush();
+
 		if (cache.enabled) {
 			const clan = await this.clan(cache.tag);
 			if (!clan) return;
+			if (cache && cache.intervalID) clearInterval(cache.intervalID);
 			await this.isMember(clan);
 
 			// Callback
-			const intervalID = setInterval(this.handle.bind(this), 20 * 60 * 1000, cache);
+			const intervalID = setInterval(this.handle.bind(this), 60 * 60 * 1000, cache);
 			cache.intervalID = intervalID;
 			return this.cached.set(cache.tag, cache);
 		}
@@ -53,26 +69,20 @@ class ClanGames {
 	async isMember(clan) {
 		const collection = mongodb.db('clashperk').collection('clangames');
 		const data = await collection.findOne({ tag: clan.tag });
+		const $set = {};
 		if (data) {
 			for (const tag of clan.memberList.map(m => m.tag)) {
 				if (tag in data.memberList === false) {
 					const member = await this.player(tag);
 					if (member) {
-						await collection.findOneAndUpdate({
-							tag: clan.tag
-						}, {
-							$set: {
-								tag: clan.tag,
-								name: clan.name,
-								[`memberList.${member.tag}`]: {
-									tag: member.tag,
-									points: member.achievements
-										.find(achievement => achievement.name === 'Games Champion')
-										.value
-								}
-							}
-						}, { upsert: true }).catch(error => console.log(error));
-
+						$set.name = clan.name;
+						$set.tag = clan.tag;
+						$set[`memberList.${member.tag}`] = {
+							tag: member.tag,
+							points: member.achievements
+								.find(achievement => achievement.name === 'Games Champion')
+								.value
+						};
 						await this.delay(200);
 					}
 				}
@@ -81,24 +91,22 @@ class ClanGames {
 			for (const tag of clan.memberList.map(m => m.tag)) {
 				const member = await this.player(tag);
 				if (member) {
-					await collection.findOneAndUpdate({
-						tag: clan.tag
-					}, {
-						$set: {
-							tag: clan.tag,
-							name: clan.name,
-							[`memberList.${member.tag}`]: {
-								tag: member.tag,
-								points: member.achievements
-									.find(achievement => achievement.name === 'Games Champion')
-									.value
-							}
-						}
-					}, { upsert: true }).catch(error => console.log(error));
-
+					$set.name = clan.name;
+					$set.tag = clan.tag;
+					$set[`memberList.${member.tag}`] = {
+						tag: member.tag,
+						points: member.achievements
+							.find(achievement => achievement.name === 'Games Champion')
+							.value
+					};
 					await this.delay(200);
 				}
 			}
+		}
+
+		if (Object.keys($set).length) {
+			await collection.updateOne({ tag: clan.tag }, { $set }, { upsert: true })
+				.catch(error => console.log(error));
 		}
 	}
 

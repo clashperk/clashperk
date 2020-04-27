@@ -55,19 +55,14 @@ class LinkClanCommand extends Command {
 
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
-			.setColor(0x10ffc1)
-			.addField(`Linked **${member.user.tag}** to ${data.name} (${data.tag})`, [
-				'You\'ve successfully linked.',
+			.setColor(0x5970c1)
+			.setDescription([
+				`Linked **${member.user.tag}** to **${data.name}** (${data.tag})`,
 				'',
 				'If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.',
-				'',
 				`For Examples **\u200b${prefix}clan** will return the info of *${data.name} (${data.tag})*.`,
-				'',
-				`As well as **\u200b${prefix}thcompo** will return the townhall composition for the same clan (works with other comamnds too).`,
-				'',
-				`Also get info by mention or user-id **\u200b${prefix}clan <user/id>** (works if the user is linked).`
-			])
-			.setThumbnail(member.user.displayAvatarURL());
+				`As well as **\u200b${prefix}thcompo** will return the townhall composition for the same clan (works with other comamnds too).`
+			]);
 		return message.util.send({ embed });
 	}
 
