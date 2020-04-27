@@ -80,7 +80,8 @@ class LastOnlineBoardCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		if (!data.description.toLowerCase().includes('cp')) {
+		const clan = clans.find(clan => clan.tag === data.tag) || { verified: false };
+		if (!clan.verified && !data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
 				.setAuthor(`${data.name} - Last Online Board Setup`, data.badgeUrls.small)
 				.setDescription([
