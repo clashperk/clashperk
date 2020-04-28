@@ -129,11 +129,11 @@ class ClashPerk extends AkairoClient {
 		/* this.postStats = new PostStats(this);
 		this.tracker = new ClanTracker(this);
 		this.firebase = new Firebase(this);
-		this.patron = new Patrons(this);
 		this.voter = new Voter(this);*/
 
+		this.patron = new Patrons(this);
 		await this.settings.init();
-		// await this.patron.refresh();
+		await this.patron.refresh();
 		await Database.connect();
 		await Database.mongodb.db('clashperk').collection('linkedplayers').createIndex({ user: 1 }, { unique: true });
 		await Database.mongodb.db('clashperk').collection('linkedclans').createIndex({ user: 1 }, { unique: true });
