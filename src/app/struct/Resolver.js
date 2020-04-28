@@ -49,7 +49,7 @@ class Reslover {
 	}
 
 	static isMember(message, args) {
-		if (!args) return null;
+		if (!args) return message.member;
 		const mention = args.match(/<@!?(\d{17,19})>/);
 		const id = args.match(/^\d+$/);
 		if (id) return message.guild.members.cache.get(id[0]) || null;
