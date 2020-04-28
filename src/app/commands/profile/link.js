@@ -1,6 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firestore, mongodb } = require('../../struct/Database');
-const admin = require('firebase-admin');
+const { mongodb } = require('../../struct/Database');
 
 class LinkPlayerCommand extends Command {
 	constructor() {
@@ -92,7 +91,8 @@ class LinkPlayerCommand extends Command {
 	}
 
 	async getPlayer(tag) {
-		return mongodb.db('clashperk').collection('linkedplayers')
+		return mongodb.db('clashperk')
+			.collection('linkedplayers')
 			.findOne({ tags: tag });
 	}
 }

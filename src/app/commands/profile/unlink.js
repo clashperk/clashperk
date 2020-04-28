@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firestore } = require('../../struct/Database');
+const { firestore, mongodb } = require('../../struct/Database');
 const firebase = require('firebase-admin');
 
 class UnlinkCommand extends Command {
@@ -47,6 +47,14 @@ class UnlinkCommand extends Command {
 				}
 			});
 		}
+
+		const x = await mongodb.db('clashperk')
+			.collection('linkedusers')
+			.updateOne({ user: member.id }, {
+				$pull: { tags: data.tag }
+			});
+
+		console.log(x);
 
 		const embed = this.client.util.embed()
 			.setColor(0x10ffc1)
