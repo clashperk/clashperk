@@ -9,7 +9,7 @@ class Reslover {
 		if (member) {
 			const data = await mongodb.db('clashperk')
 				.collection('linkedplayers')
-				.findOne({ user: args });
+				.findOne({ user: member.id });
 
 			if (data) return this.player(data.tag);
 			const embed = new MessageEmbed()
@@ -20,7 +20,7 @@ class Reslover {
 					'Either provide a tag or link a player to your Discord.'
 				]);
 
-			return embed;
+			return Object.assign(embed, { status: 404 });
 		}
 
 		return this.player(args);
@@ -31,7 +31,7 @@ class Reslover {
 		if (member) {
 			const data = await mongodb.db('clashperk')
 				.collection('linkedclans')
-				.findOne({ user: args });
+				.findOne({ user: member.id });
 
 			if (data) return this.clan(data.tag);
 			const embed = new MessageEmbed()
@@ -42,7 +42,7 @@ class Reslover {
 					'Either provide a tag or link a clan to your Discord.'
 				]);
 
-			return embed;
+			return Object.assign(embed, { status: 404 });
 		}
 
 		return this.clan(args);
