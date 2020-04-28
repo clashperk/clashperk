@@ -135,7 +135,7 @@ class ClashPerk extends AkairoClient {
 		await this.settings.init();
 		await this.patron.refresh();
 		await Database.connect();
-		await Database.mongodb.db('clashperk').collection('linkedplayers').createIndex({ user: 1 }, { unique: true });
+		await Database.mongodb.db('clashperk').collection('linkedusers').createIndex({ user: 1 }, { unique: true });
 		await Database.mongodb.db('clashperk').collection('linkedclans').createIndex({ user: 1 }, { unique: true });
 
 		/* const intervalID = setInterval(() => {

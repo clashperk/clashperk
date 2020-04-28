@@ -65,7 +65,7 @@ class LinkPlayerCommand extends Command {
 			});
 		}
 
-		await mongodb.db('clashperk').collection('linkedplayers')
+		await mongodb.db('clashperk').collection('linkedusers')
 			.updateOne({ user: member.id }, {
 				$set: {
 					user: member.id,
@@ -92,7 +92,7 @@ class LinkPlayerCommand extends Command {
 
 	async getPlayer(tag) {
 		return mongodb.db('clashperk')
-			.collection('linkedplayers')
+			.collection('linkedusers')
 			.findOne({ tags: tag });
 	}
 }

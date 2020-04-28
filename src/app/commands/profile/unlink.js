@@ -55,7 +55,8 @@ class UnlinkCommand extends Command {
 	}
 
 	async delete(id, tag) {
-		const data = await mongodb.db('clashperk').collection('linkedplayers')
+		const data = await mongodb.db('clashperk')
+			.collection('linkedusers')
 			.findOneAndUpdate({ user: id }, {
 				$pull: { tags: tag }
 			});

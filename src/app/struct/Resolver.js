@@ -9,7 +9,7 @@ class Reslover {
 		if (boolean) {
 			if (member) {
 				const data = await mongodb.db('clashperk')
-					.collection('linkedplayers')
+					.collection('linkedusers')
 					.findOne({ user: member.id });
 
 				if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);

@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firestore } = require('../../struct/Database');
+const { firestore, mongodb } = require('../../struct/Database');
 const firebase = require('firebase-admin');
 
 class UnlinkClanCommand extends Command {
@@ -47,22 +47,11 @@ class UnlinkClanCommand extends Command {
 	}
 
 	async remove(id) {
-		const batch = firestore.batch();
-		const deleted = await firestore.collection('linked_accounts')
-			.doc(id)
-			.get()
-			.then(snap => {
-				const data = snap.data();
-				if (data && data.clan) {
-					batch.update(snap.ref, {
-						clan: firebase.firestore.FieldValue.delete()
-					}, { merge: true });
-					batch.commit();
-					return data.clan;
-				}
-				return null;
-			});
-		return deleted;
+		const data = await mongodb.db('clashperk')
+			.collection('linkedusers')
+			.deleteOne({ user: id });
+		console.log(data);
+		return data;
 	}
 }
 
