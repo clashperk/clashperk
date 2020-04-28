@@ -20,7 +20,7 @@ class ClanCommand extends Command {
 	*args() {
 		const data = yield {
 			type: async (message, args) => {
-				const resolved = await Resolver.resolve(message, args, 0);
+				const resolved = await Resolver.resolveclan(message, args);
 				if (resolved.status !== 200) {
 					await message.util.send(resolved.embed);
 					return Flag.cancel();
