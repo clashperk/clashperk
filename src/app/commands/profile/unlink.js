@@ -38,13 +38,15 @@ class UnlinkCommand extends Command {
 	}
 
 	async exec(message, { data, member }) {
-		const x = await mongodb.db('clashperk')
-			.collection('linkedplayers')
-			.updateOne({ user: member.id }, {
-				$pull: { tags: data.tag }
+		const deleted = await this.delete(member.id, data.tag);
+		if (!deleted) {
+			return message.util.send({
+				embed: {
+					color: 3093046,
+					description: `Couldn\'t find a player linked to **${member.user.tag}**!`
+				}
 			});
-
-		console.log(x);
+		}
 
 		const embed = this.client.util.embed()
 			.setColor(0x10ffc1)
