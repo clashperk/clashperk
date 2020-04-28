@@ -21,7 +21,7 @@ class Reslover {
 						'Either provide a tag or link a player to your Discord.'
 					]);
 
-				return Object.assign(embed, { status: 404 });
+				return { status: 404, embed };
 			}
 
 			return this.player(args);
@@ -41,7 +41,7 @@ class Reslover {
 					'Either provide a tag or link a clan to your Discord.'
 				]);
 
-			return Object.assign(embed, { status: 404 });
+			return { status: 404, embed };
 		}
 
 		return this.clan(args);
