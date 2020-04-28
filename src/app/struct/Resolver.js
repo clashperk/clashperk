@@ -57,8 +57,7 @@ class Reslover {
 		return null;
 	}
 
-	static async player(str) {
-		const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
+	static async player(tag) {
 		const res = await fetch(`https://api.clashofclans.com/v1/players/%23${this.format(tag)}`, {
 			method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 		}).catch(() => null);

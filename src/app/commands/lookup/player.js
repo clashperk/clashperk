@@ -25,6 +25,7 @@ class PlayerCommand extends Command {
 		const data = yield {
 			type: async (message, args) => {
 				const resolved = await Resolver.resolve(message, args, true);
+				console.log(resolved);
 				if (resolved.status !== 200) {
 					await message.util.send({ embed: resolved.embed });
 					return Flag.cancel();
