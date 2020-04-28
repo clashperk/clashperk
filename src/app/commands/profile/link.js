@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firestore } = require('../../struct/Database');
+const { firestore, mongodb } = require('../../struct/Database');
 const admin = require('firebase-admin');
 
 class LinkPlayerCommand extends Command {
@@ -66,17 +66,16 @@ class LinkPlayerCommand extends Command {
 			});
 		}
 
-		await firestore.collection('linked_accounts')
-			.doc(member.id)
-			.update({
-				user: member.id,
-				tags: admin.firestore.FieldValue.arrayUnion(data.tag),
-				createdAt: new Date(),
-				hidden: false,
-				[`metadata.${data.tag}`]: {
+		await mongodb.db('clashperk').collection('linkedaccounts')
+			.updateOne({ user: member.id }, {
+				$set: {
+					user: member.id,
+					hidden: false,
+					default: false,
 					createdAt: new Date()
-				}
-			}, { merge: true });
+				},
+				$push: { tags: data.tag }
+			}, { upsert: true });
 
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
@@ -93,18 +92,8 @@ class LinkPlayerCommand extends Command {
 	}
 
 	async getPlayer(tag) {
-		let data;
-		await firestore.collection('linked_accounts')
-			.where('tags', 'array-contains', tag)
-			.limit(1)
-			.get()
-			.then(snapshot => {
-				snapshot.forEach(doc => {
-					data = Object.assign({ ref: doc.ref }, doc.data());
-				});
-				if (!snapshot.size) data = null;
-			});
-		return data;
+		return mongodb.db('clashperk').collection('linkedaccounts')
+			.findOne({ tags: tag });
 	}
 }
 

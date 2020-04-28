@@ -3,15 +3,24 @@ const { mongodb } = require('./Database');
 const { status } = require('../util/constants');
 const { MessageEmbed } = require('discord.js');
 
-class Fetch {
+class Reslover {
 	static async resolve(message, args) {
 		const member = this.isMember(message, args);
 		if (member) {
 			const data = await mongodb.db('clashperk')
 				.collection('linkedaccounts')
-				.findOne({ tag: args });
+				.findOne({ user: args });
 
 			if (data) return this.player(data.tag);
+			const embed = new MessageEmbed()
+				.setAuthor('Error')
+				.setColor(0xf30c11)
+				.setDescription([
+					`Couldn't find a player linked to **${member.user.tag}!**`,
+					'Either provide a tag or link a player to your Discord.'
+				]);
+
+			return embed;
 		}
 
 		return this.player(args);
@@ -22,9 +31,18 @@ class Fetch {
 		if (member) {
 			const data = await mongodb.db('clashperk')
 				.collection('linkedclans')
-				.findOne({ tag: args });
+				.findOne({ user: args });
 
 			if (data) return this.clan(data.tag);
+			const embed = new MessageEmbed()
+				.setAuthor('Error')
+				.setColor(0xf30c11)
+				.setDescription([
+					`Couldn't find a clan linked to **${member.user.tag}!**`,
+					'Either provide a tag or link a clan to your Discord.'
+				]);
+
+			return embed;
 		}
 
 		return this.clan(args);
@@ -41,7 +59,7 @@ class Fetch {
 
 	static async player(str) {
 		const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-		const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
+		const res = await fetch(`https://api.clashofclans.com/v1/players/%23${this.format(tag)}`, {
 			method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 		}).catch(() => null);
 
@@ -55,9 +73,8 @@ class Fetch {
 		return this.assign(data);
 	}
 
-	static async clan(str) {
-		const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`, {
+	static async clan(tag) {
+		const res = await fetch(`https://api.clashofclans.com/v1/clans/%23${this.format(tag)}`, {
 			method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
 		}).catch(() => null);
 
@@ -69,6 +86,10 @@ class Fetch {
 		if (!res.ok) return { status: res.status || 504, embed: embed.setDescription(status(res.status || 504)) };
 		const data = await res.json();
 		return this.assign(data);
+	}
+
+	static format(tag) {
+		return tag.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0');
 	}
 
 	static assign(data) {
@@ -76,4 +97,4 @@ class Fetch {
 	}
 }
 
-module.exports = Fetch;
+module.exports = Reslover;

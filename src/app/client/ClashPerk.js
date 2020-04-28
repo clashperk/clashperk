@@ -23,8 +23,8 @@ class ClashPerk extends AkairoClient {
 				intents: [
 					'GUILDS',
 					'GUILD_MESSAGES',
-					'GUILD_MEMBERS',
-					'GUILD_PRESENCES',
+					// 'GUILD_MEMBERS',
+					// 'GUILD_PRESENCES',
 					'GUILD_MESSAGE_REACTIONS'
 				]
 			}
@@ -126,17 +126,18 @@ class ClashPerk extends AkairoClient {
 		this.listenerHandler.loadAll();
 
 		this.settings = new Settings(firestore.collection('settings'));
-		this.postStats = new PostStats(this);
+		/* this.postStats = new PostStats(this);
 		this.tracker = new ClanTracker(this);
 		this.firebase = new Firebase(this);
 		this.patron = new Patrons(this);
-		this.voter = new Voter(this);
+		this.voter = new Voter(this);*/
 
 		await this.settings.init();
-		await this.patron.refresh();
+		// await this.patron.refresh();
 		await Database.connect();
+		await Database.mongodb.db('clashperk').collection('linkedusers').createIndex({ user: 1 }, { unique: true });
 
-		const intervalID = setInterval(() => {
+		/* const intervalID = setInterval(() => {
 			if (this.readyAt && this.user && this.user.id === process.env.CLIENT_ID) {
 				if (this.shard.ids && this.shard.ids[0] === this.shard.count - 1) {
 					this.firebase.init();
@@ -147,7 +148,7 @@ class ClashPerk extends AkairoClient {
 				this.tracker.init();
 				clearInterval(intervalID);
 			}
-		}, 2000);
+		}, 2000);*/
 	}
 
 	async start(token) {

@@ -1,6 +1,14 @@
 const { Provider } = require('discord-akairo');
+const { mongodb } = require('./Database');
 const firebase = require('firebase-admin');
 const { Guild } = require('discord.js');
+
+class MongoDBProvider extends Provider {
+	constructor(database) {
+		super();
+		this.database = mongodb.db('clashperk').collection('settings');
+	}
+}
 
 class FirestoreProvider extends Provider {
 	constructor(database, { } = {}) {
