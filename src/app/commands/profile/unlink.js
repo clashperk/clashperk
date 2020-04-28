@@ -59,7 +59,7 @@ class UnlinkCommand extends Command {
 			.findOneAndUpdate({ user: id }, {
 				$pull: { tags: tag }
 			});
-		return data.value && data.value.tags && data.value.tags.inclues(tag);
+		return data.value && data.value.tags && data.value.tags.includes(tag);
 	}
 }
 
