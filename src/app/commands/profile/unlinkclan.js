@@ -42,7 +42,7 @@ class UnlinkClanCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(0x10ffc1)
-			.setAuthor(`Successfully deleted ${deleted}`);
+			.setAuthor(`Successfully deleted`);
 		return message.util.send({ embed });
 	}
 
