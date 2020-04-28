@@ -8,7 +8,7 @@ class Reslover {
 		const member = this.isMember(message, args);
 		if (member) {
 			const data = await mongodb.db('clashperk')
-				.collection('linkedaccounts')
+				.collection('linkedplayers')
 				.findOne({ user: args });
 
 			if (data) return this.player(data.tag);

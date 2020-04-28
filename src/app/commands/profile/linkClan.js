@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firestore } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 
 class LinkClanCommand extends Command {
 	constructor() {
@@ -37,21 +37,13 @@ class LinkClanCommand extends Command {
 	}
 
 	async exec(message, { data, member }) {
-		const doc = await this.get(member.id);
-		if (doc) {
-			await firestore.collection('linked_accounts')
-				.doc(member.id)
-				.update({ clan: data.tag, createdAt: new Date() });
-		} else {
-			await firestore.collection('linked_accounts')
-				.doc(member.id)
-				.update({
-					user: member.id,
-					clan: data.tag,
-					createdAt: new Date(),
-					tags: []
-				}, { merge: true });
-		}
+		await mongodb.db('clashperk').collection('linkedclans')
+			.updateOne({ user: member.id }, {
+				user: member.id,
+				tag: data.tag,
+				createdAt: new Date(),
+				hidden: false
+			}, { upsert: true });
 
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
@@ -64,15 +56,6 @@ class LinkClanCommand extends Command {
 				`As well as **\u200b${prefix}thcompo** will return the townhall composition for the same clan (works with other comamnds too).`
 			]);
 		return message.util.send({ embed });
-	}
-
-	async get(id) {
-		const data = await firestore.collection('linked_accounts')
-			.doc(id)
-			.get()
-			.then(snap => snap.data());
-
-		return data;
 	}
 }
 
