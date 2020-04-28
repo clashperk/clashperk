@@ -39,10 +39,12 @@ class LinkClanCommand extends Command {
 	async exec(message, { data, member }) {
 		await mongodb.db('clashperk').collection('linkedclans')
 			.updateOne({ user: member.id }, {
-				user: member.id,
-				tag: data.tag,
-				createdAt: new Date(),
-				hidden: false
+				$set: {
+					user: member.id,
+					tag: data.tag,
+					createdAt: new Date(),
+					hidden: false
+				}
 			}, { upsert: true });
 
 		const prefix = this.handler.prefix(message);
