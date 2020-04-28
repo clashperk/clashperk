@@ -48,7 +48,7 @@ class UnlinkClanCommand extends Command {
 
 	async remove(id) {
 		const data = await mongodb.db('clashperk')
-			.collection('linkedusers')
+			.collection('linkedclans')
 			.deleteOne({ user: id });
 		console.log(data);
 		return data;
