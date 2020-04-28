@@ -49,7 +49,7 @@ class UnlinkCommand extends Command {
 		}
 
 		const x = await mongodb.db('clashperk')
-			.collection('linkedusers')
+			.collection('linkedplayers')
 			.updateOne({ user: member.id }, {
 				$pull: { tags: data.tag }
 			});
