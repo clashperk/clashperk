@@ -53,23 +53,11 @@ class UnlinkCommand extends Command {
 	}
 
 	async delete(id, tag) {
-		const batch = firestore.batch();
-		const deleted = await firestore.collection('linked_accounts')
-			.doc(id, tag)
-			.get()
-			.then(snap => {
-				const data = snap.data();
-				if (data && data.tags.length && data.tags.includes(tag)) {
-					batch.update(snap.ref, {
-						tags: firebase.firestore.FieldValue.arrayRemove(tag),
-						[`metadata.${tag}`]: firebase.firestore.FieldValue.delete()
-					}, { merge: true });
-					batch.commit();
-					return true;
-				}
-				return false;
+		const data = await mongodb.db('clashperk').collection('linkedplayers')
+			.findOneAndUpdate({ user: id }, {
+				$pull: { tags: tag }
 			});
-		return deleted;
+		return data.value && data.value.tags && data.value.tags.inclues(tag);
 	}
 }
 
