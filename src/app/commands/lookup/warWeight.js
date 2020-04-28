@@ -1,8 +1,6 @@
 const { Command, Flag } = require('discord-akairo');
-const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
-const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror } = require('../../util/constants');
+const Resolver = require('../../struct/Resolver');
 const { townHallEmoji, emoji } = require('../../util/emojis');
 const { stripIndent } = require('common-tags');
 const { Util } = require('discord.js');
@@ -25,29 +23,13 @@ class WarWeightCommand extends Command {
 
 	*args() {
 		const data = yield {
-			type: async (msg, str) => {
-				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
-				if (!resolver && !str) return null;
-				if (!resolver && str) {
-					return Fetch.clan(str).then(data => {
-						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-						return data;
-					});
+			type: async (message, args) => {
+				const resolved = await Resolver.resolve(message, args);
+				if (resolved.status !== 200) {
+					await message.util.send({ embed: resolved.embed });
+					return Flag.cancel();
 				}
-				const data = await firestore.collection('linked_accounts')
-					.doc(resolver.id)
-					.get()
-					.then(snap => snap.data());
-				if (!data) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				if (!data.clan) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				return Fetch.clan(data.clan).then(data => {
-					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-					return data;
-				});
-			},
-			prompt: {
-				start: 'what would you like to search for?',
-				retry: 'what would you like to search for?'
+				return resolved;
 			}
 		};
 

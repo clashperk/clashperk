@@ -2,8 +2,8 @@ const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const moment = require('moment');
 const { firestore } = require('../../struct/Database');
-const Fetch = require('../../struct/Fetch');
-const { geterror, fetcherror } = require('../../util/constants');
+const Resolver = require('../../struct/Resolver');
+const { fetcherror } = require('../../util/constants');
 const { leagueId } = require('../../util/constants');
 const { emoji, townHallEmoji, heroEmoji, leagueEmoji, starEmoji } = require('../../util/emojis');
 
@@ -23,31 +23,16 @@ class PlayerCommand extends Command {
 
 	*args() {
 		const data = yield {
-			type: async (msg, str) => {
-				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
-				if (!resolver && !str) return null;
-				if (!resolver && str) {
-					return Fetch.player(str).then(data => {
-						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-						return data;
-					});
+			type: async (message, args) => {
+				const resolved = await Resolver.resolve(message, args, true);
+				if (resolved.status !== 200) {
+					await message.util.send({ embed: resolved.embed });
+					return Flag.cancel();
 				}
-				const data = await firestore.collection('linked_accounts')
-					.doc(resolver.id)
-					.get()
-					.then(snap => snap.data());
-				if (!data) return msg.util.send({ embed: geterror(resolver, 'player') }) && Flag.cancel();
-				if (!data.tags.length) return msg.util.send({ embed: geterror(resolver, 'player') }) && Flag.cancel();
-				return Fetch.player(data.tags[0]).then(data => {
-					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-					return data;
-				});
-			},
-			prompt: {
-				start: 'what would you like to search for?',
-				retry: 'what would you like to search for?'
+				return resolved;
 			}
 		};
+
 		return { data };
 	}
 

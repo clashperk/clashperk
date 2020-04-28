@@ -4,30 +4,29 @@ const { status } = require('../util/constants');
 const { MessageEmbed } = require('discord.js');
 
 class Reslover {
-	static async resolve(message, args) {
+	static async resolve(message, args, boolean = false) {
 		const member = this.isMember(message, args);
-		if (member) {
-			const data = await mongodb.db('clashperk')
-				.collection('linkedplayers')
-				.findOne({ user: member.id });
+		if (boolean) {
+			if (member) {
+				const data = await mongodb.db('clashperk')
+					.collection('linkedplayers')
+					.findOne({ user: member.id });
 
-			if (data) return this.player(data.tag);
-			const embed = new MessageEmbed()
-				.setAuthor('Error')
-				.setColor(0xf30c11)
-				.setDescription([
-					`Couldn't find a player linked to **${member.user.tag}!**`,
-					'Either provide a tag or link a player to your Discord.'
-				]);
+				if (data) return this.player(data.tag);
+				const embed = new MessageEmbed()
+					.setAuthor('Error')
+					.setColor(0xf30c11)
+					.setDescription([
+						`Couldn't find a player linked to **${member.user.tag}!**`,
+						'Either provide a tag or link a player to your Discord.'
+					]);
 
-			return Object.assign(embed, { status: 404 });
+				return Object.assign(embed, { status: 404 });
+			}
+
+			return this.player(args);
 		}
 
-		return this.player(args);
-	}
-
-	static async resolveclan(message, args) {
-		const member = this.isMember(message, args);
 		if (member) {
 			const data = await mongodb.db('clashperk')
 				.collection('linkedclans')
@@ -47,6 +46,7 @@ class Reslover {
 
 		return this.clan(args);
 	}
+
 
 	static isMember(message, args) {
 		if (!args) return message.member;
