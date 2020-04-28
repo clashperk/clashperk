@@ -12,7 +12,7 @@ class Reslover {
 					.collection('linkedplayers')
 					.findOne({ user: member.id });
 
-				if (data) return this.player(data.tag);
+				if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);
 				const embed = new MessageEmbed()
 					.setAuthor('Error')
 					.setColor(0xf30c11)
