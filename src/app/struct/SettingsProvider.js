@@ -10,11 +10,13 @@ class MongoDBProvider extends Provider {
 	}
 
 	async init() {
-		return this.database.find()
-			.toArray()
-			.forEach(data => {
-				this.items.set(data.id, data);
+		return this.database.find().toArray()
+			.then(data => {
+				data.forEach(data => {
+					this.items.set(data.id, data);
+				});
 			});
+
 	}
 
 	get(id, key, defaultValue) {
