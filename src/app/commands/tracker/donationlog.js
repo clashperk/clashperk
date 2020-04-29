@@ -16,8 +16,6 @@ class DonationLogCommand extends Command {
 				examples: ['#8QU8J9LP', '#8QU8J9LP #tracker #5970C1', '#8QU8J9LP #5970C1 #tracker']
 			}
 		});
-
-		this.database = mongodb.db('clashperk');
 	}
 
 	*args() {
