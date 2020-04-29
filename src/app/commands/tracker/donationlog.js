@@ -1,6 +1,6 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const { firestore } = require('../../struct/Database');
+const { firestore, mongodb } = require('../../struct/Database');
 
 class DonationLogCommand extends Command {
 	constructor() {
@@ -16,6 +16,8 @@ class DonationLogCommand extends Command {
 				examples: ['#8QU8J9LP', '#8QU8J9LP #tracker #5970C1', '#8QU8J9LP #5970C1 #tracker']
 			}
 		});
+
+		this.database = mongodb.db('clashperk');
 	}
 
 	*args() {
@@ -115,6 +117,19 @@ class DonationLogCommand extends Command {
 			isPremium: this.client.patron.get(message.guild.id, 'guild', false),
 			createdAt: new Date()
 		}, { merge: true });
+		const collection = await this.database.collection('clanstores')
+			.findOneAndUpdate({ tag: data.tag, guild: data.guild }, {
+				$set: {
+					tag: data.tag,
+					guild: data.guild,
+					name: data.name,
+					premium: data.premium,
+					donationlog: {
+						channel: channel.id,
+						color
+					}
+				}
+			}, { upsert: true, returnOriginal: false });
 
 		const metadata = await ref.get().then(snap => snap.data());
 
