@@ -98,7 +98,7 @@ class FirestoreProvider extends Provider {
 }
 
 
-class Settings extends FirestoreProvider {
+class Settings extends MongoDBProvider {
 	constructor(database, { } = {}) {
 		super(database);
 	}
