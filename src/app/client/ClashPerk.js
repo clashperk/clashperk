@@ -126,7 +126,7 @@ class ClashPerk extends AkairoClient {
 		this.listenerHandler.loadAll();
 
 		await Database.connect();
-		this.settings = new Settings(firestore.collection('settings'));
+		this.settings = new Settings(Database.mongodb.db('clashperk').collection('settings'));
 		/* this.postStats = new PostStats(this);
 		this.tracker = new ClanTracker(this);
 		this.firebase = new Firebase(this);

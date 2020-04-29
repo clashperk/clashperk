@@ -6,7 +6,7 @@ const { Guild } = require('discord.js');
 class MongoDBProvider extends Provider {
 	constructor(database) {
 		super();
-		this.database = mongodb.db('clashperk').collection('settings');
+		this.database = database;
 	}
 
 	async init() {
