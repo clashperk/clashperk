@@ -19,7 +19,6 @@ class ClashPerk extends AkairoClient {
 			messageCacheMaxSize: 50,
 			messageCacheLifetime: 300,
 			messageSweepInterval: 300,
-			shardCount: 3,
 			ws: {
 				intents: [
 					'GUILDS',
