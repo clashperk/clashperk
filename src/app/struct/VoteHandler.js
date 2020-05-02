@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const { firebase } = require('../struct/Database');
+const { firebase } = require('./Database');
 const { MessageEmbed } = require('discord.js');
 
 class Voter {

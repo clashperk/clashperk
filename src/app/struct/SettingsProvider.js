@@ -16,7 +16,6 @@ class MongoDBProvider extends Provider {
 					this.items.set(data.id, data);
 				});
 			});
-
 	}
 
 	get(id, key, defaultValue) {

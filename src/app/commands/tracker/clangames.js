@@ -1,5 +1,4 @@
 const { Command, Flag } = require('discord-akairo');
-const Fetch = require('../../struct/Fetch');
 const { firestore, mongodb } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
 const fetch = require('node-fetch');
@@ -132,4 +131,4 @@ class ClanGamesCommand extends Command {
 	}
 }
 
-module.exports = ClanGamesCommand;
+// module.exports = ClanGamesCommand;

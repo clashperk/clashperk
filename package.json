@@ -1,34 +1,34 @@
 {
-  "name": "clashperk",
-  "version": "1.2.8",
-  "author": "SUVAJIT (suvajit.me@gmail.com)",
-  "license": "MIT",
-  "description": "Clash of Clans Discord Bot",
-  "main": "src/index.js",
-  "scripts": {
-    "start": "node src/main.js",
-    "test": "eslint --ext .js --ignore-path .gitignore .",
-    "lint": "eslint --fix --ext .js --ignore-path .gitignore ."
-  },
-  "dependencies": {
-    "@sentry/node": "^5.4.3",
-    "chalk": "^2.4.2",
-    "common-tags": "^1.8.0",
-    "discord-akairo": "clashperk/discord-akairo",
-    "discord.js": "^12.2.0",
-    "dotenv": "^8.0.0",
-    "firebase-admin": "^8.2.0",
-    "moment": "^2.24.0",
-    "mongodb": "^3.5.5",
-    "moment-duration-format": "^2.3.2",
-    "moment-timezone": "^0.5.26",
-    "ms": "^2.1.2",
-    "node-fetch": "^2.6.0",
-    "request": "^2.88.2",
-    "shelljs": "^0.8.3"
-  },
-  "devDependencies": {
-    "eslint": "^6.0.0",
-    "eslint-config-mars": "^1.0.4"
-  }
+	"name": "clashperk",
+	"version": "1.2.8",
+	"author": "SUVAJIT (suvajit.me@gmail.com)",
+	"license": "MIT",
+	"description": "Clash of Clans Discord Bot",
+	"main": "src/index.js",
+	"scripts": {
+		"start": "node src/main.js",
+		"test": "eslint --ext .js --ignore-path .gitignore .",
+		"lint": "eslint --fix --ext .js --ignore-path .gitignore ."
+	},
+	"dependencies": {
+		"@sentry/node": "^5.4.3",
+		"chalk": "^2.4.2",
+		"common-tags": "^1.8.0",
+		"discord-akairo": "clashperk/discord-akairo",
+		"discord.js": "^12.2.0",
+		"dotenv": "^8.0.0",
+		"firebase-admin": "^8.2.0",
+		"moment": "^2.24.0",
+		"mongodb": "^3.5.5",
+		"moment-duration-format": "^2.3.2",
+		"moment-timezone": "^0.5.26",
+		"ms": "^2.1.2",
+		"node-fetch": "^2.6.0",
+		"request": "^2.88.2",
+		"shelljs": "^0.8.3"
+	},
+	"devDependencies": {
+		"eslint": "^6.0.0",
+		"eslint-config-mars": "^1.0.4"
+	}
 }

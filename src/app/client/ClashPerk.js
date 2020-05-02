@@ -1,17 +1,19 @@
-const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
+const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag, CommandUtil } = require('discord-akairo');
 const Settings = require('../struct/SettingsProvider');
 const { firestore } = require('../struct/Database');
 const Database = require('../struct/Database');
 const Logger = require('../util/logger');
-const ClanTracker = require('../struct/ClanTracker');
+const ClanTracker = require('../core/ClanTracker');
 const fetch = require('node-fetch');
 const Patrons = require('../struct/Patrons');
-const Voter = require('../struct/Voter');
+const Voter = require('../struct/VoteHandler');
 const PostStats = require('../struct/PostStats');
 const Firebase = require('../struct/Firebase');
 const { MessageEmbed } = require('discord.js');
 const { status } = require('../util/constants');
 const path = require('path');
+
+const CUtil = require('../core/MessageUtil');
 
 class ClashPerk extends AkairoClient {
 	constructor(config) {
@@ -126,7 +128,9 @@ class ClashPerk extends AkairoClient {
 		this.listenerHandler.loadAll();
 
 		await Database.connect();
+		this.cutil = new CUtil();
 		this.settings = new Settings(Database.mongodb.db('clashperk').collection('settings'));
+
 		/* this.postStats = new PostStats(this);
 		this.tracker = new ClanTracker(this);
 		this.firebase = new Firebase(this);

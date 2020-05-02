@@ -13,13 +13,8 @@ class PingCommand extends Command {
 	}
 
 	async exec(message) {
-		const msg = await message.util.send('Pinging~');
-		// eslint-disable-next-line max-len
-		const latency = (msg.editedTimestamp || msg.createdTimestamp) - (message.editedTimestamp || message.createdTimestamp);
-		return message.util.send([
-			`**Gateway Ping~ ${latency.toString()}ms**`,
-			`**API Ping~ ${Math.round(this.client.ws.ping).toString()}ms**`
-		]);
+		const f = await this.client.cutil.s(message);
+		console.log(f);
 	}
 }
 

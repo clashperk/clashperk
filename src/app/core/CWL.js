@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const { firestore } = require('./Database');
+const { firestore } = require('../struct/Database');
 
 class CWLTracker {
 	constructor(client) {

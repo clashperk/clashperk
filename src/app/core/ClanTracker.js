@@ -1,6 +1,6 @@
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
-const { firestore, mongodb } = require('./Database');
+const { firestore, mongodb } = require('../struct/Database');
 const { townHallEmoji, leagueEmoji } = require('../util/emojis');
 const { emoji } = require('../util/emojis');
 const permissions = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'VIEW_CHANNEL'];

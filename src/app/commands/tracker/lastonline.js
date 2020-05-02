@@ -1,5 +1,5 @@
 const { Command, Flag } = require('discord-akairo');
-const Fetch = require('../../struct/Fetch');
+// const Fetch = require('../../struct/Fetch');
 const { firestore, mongodb } = require('../../struct/Database');
 const { geterror, fetcherror } = require('../../util/constants');
 const moment = require('moment');
@@ -106,4 +106,4 @@ class LastOnlineCommand extends Command {
 	}
 }
 
-module.exports = LastOnlineCommand;
+// module.exports = LastOnlineCommand;

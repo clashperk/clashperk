@@ -1,5 +1,5 @@
-const { firestore } = require('./Database');
-const { mongodb } = require('./Database');
+const { firestore } = require('../struct/Database');
+const { mongodb } = require('../struct/Database');
 const fetch = require('node-fetch');
 
 class ClanGames {
