@@ -13,7 +13,7 @@ const { MessageEmbed } = require('discord.js');
 const { status } = require('../util/constants');
 const path = require('path');
 
-const CUtil = require('../core/MessageUtil');
+const Handler = require('../core/Util');
 
 class ClashPerk extends AkairoClient {
 	constructor(config) {
@@ -128,13 +128,13 @@ class ClashPerk extends AkairoClient {
 		this.listenerHandler.loadAll();
 
 		await Database.connect();
-		this.cutil = new CUtil();
 		this.settings = new Settings(Database.mongodb.db('clashperk').collection('settings'));
 
 		/* this.postStats = new PostStats(this);
 		this.tracker = new ClanTracker(this);
 		this.firebase = new Firebase(this);
 		this.voter = new Voter(this);*/
+		this.firebase = new Firebase(this);
 
 		this.patron = new Patrons(this);
 		await this.settings.init();
@@ -155,6 +155,14 @@ class ClashPerk extends AkairoClient {
 				clearInterval(intervalID);
 			}
 		}, 2000);*/
+
+		this.handler = new Handler(this);
+		const intervalId = setInterval(() => {
+			if (this.readyAt && this.user && this.user.id === process.env.CLIENT_ID) {
+				this.handler.init();
+				clearInterval(intervalId);
+			}
+		}, 2000);
 	}
 
 	async start(token) {

@@ -21,7 +21,7 @@ class Util {
 	async broadcast(data) {
 		switch (data.mode) {
 			case 'CLAN_DONATION_EVENT':
-				this.clanEmbed.exec(data._id, data.clan);
+				this.clanEvent.exec(data._id, data);
 				break;
 			case 'LAST_ONLINE_EVENT':
 				this.lastOnline.exec(data._id, data.clan, data.update);
@@ -29,12 +29,20 @@ class Util {
 			case 'CLAN_MEMBER_ACTION':
 				this.playerEvent.exec(data._id, data);
 				break;
+			case 'CLAN_EMBED_UPDATE':
+				this.clanEmbed.exec(data._id, data.clan);
+				break;
 			default:
 				break;
 		}
 	}
 
 	async init() {
+		await this.clanEmbed.init();
+		await this.clanEvent.init();
+		await this.playerEvent.init();
+		await this.lastOnline.init();
+
 		const collection = await mongodb.db('clashperk')
 			.collection('clanstores')
 			.find()
@@ -163,11 +171,6 @@ class Util {
 		const $update = {};
 		if (Object.keys($set).length) $update.$set = $set;
 		if (Object.keys($unset).length) $update.$unset = $unset;
-
-		if (Object.keys($update).length) {
-			// await collection.updateOne({ tag: clan.tag }, update, { upsert: true })
-			// .catch(error => this.logger.error(error, { label: 'MONGO_ERROR' }));
-		}
 
 		// Last Online - Send Message
 		this.broadcast({
