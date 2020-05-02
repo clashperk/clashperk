@@ -48,11 +48,6 @@ class LastOnlineEvent {
 			const msg = await this.sendNew(_id, channel, clan);
 			if (!msg) return;
 
-			await mongodb.db('clashperk')
-				.collection('lastonlinelogs')
-				.updateOne({ id: ObjectId(_id).toString() }, { $set: { message: msg.id } })
-				.catch(() => null);
-
 			cache.msg = msg;
 			return this.cached.set(_id, cache);
 		}
@@ -80,11 +75,6 @@ class LastOnlineEvent {
 			const msg = await this.sendNew(_id, channel, clan);
 			if (!msg) return;
 
-			await mongodb.db('clashperk')
-				.collection('lastonlinelogs')
-				.updateOne({ id: ObjectId(_id).toString() }, { $set: { message: msg.id } })
-				.catch(() => null);
-
 			cache.msg = msg;
 			return this.cached.set(_id, cache);
 		}
@@ -99,8 +89,17 @@ class LastOnlineEvent {
 
 	async sendNew(_id, channel, clan) {
 		const embed = await this.embed(_id, clan);
-		return channel.send({ embed })
+		const message = await channel.send({ embed })
 			.catch(() => null);
+
+		if (message) {
+			await mongodb.db('clashperk')
+				.collection('lastonlinelogs')
+				.updateOne({ id: ObjectId(_id).toString() }, { $set: { message: message.id } })
+				.catch(() => null);
+		}
+
+		return message;
 	}
 
 	async edit(_id, message, clan) {
@@ -108,7 +107,7 @@ class LastOnlineEvent {
 		return message.edit({ embed })
 			.catch(error => {
 				if (error.code === 10008) {
-					return message.channel.send({ embed });
+					return this.sendNew(_id, message.channel, clan);
 				}
 				return null;
 			});
