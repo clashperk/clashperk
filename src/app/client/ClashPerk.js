@@ -29,7 +29,8 @@ class ClashPerk extends AkairoClient {
 					// 'GUILD_PRESENCES',
 					'GUILD_MESSAGE_REACTIONS'
 				]
-			}
+			},
+			partials: ['MESSAGE']
 		});
 
 		this.logger = new Logger(this);
