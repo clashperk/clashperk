@@ -61,7 +61,7 @@ class LastOnlineEvent {
 			return this.edit(_id, cache.msg, clan);
 		}
 
-		const msg = await channel.messages.fetch(cache.message, true)
+		const msg = await channel.messages.fetch(cache.message)
 			.catch(error => {
 				this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
 				return null;
