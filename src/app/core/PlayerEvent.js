@@ -75,7 +75,7 @@ class PlayerEvent {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.TRACKER_API_P}`
+				authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}`
 			},
 			timeout: 3000
 		}).catch(() => null);
