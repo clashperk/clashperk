@@ -88,7 +88,7 @@ class ClanEvent {
 
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(data._id, {
+				this.cached.set(data.id, {
 					_id: data.id,
 					guild: data.guild,
 					channel: data.channel,

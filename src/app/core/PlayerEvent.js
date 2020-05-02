@@ -44,6 +44,7 @@ class PlayerEvent {
 
 	async handleMessage(channel, data) {
 		for (const item of data.tags) {
+			console.log(item);
 			const embed = await this.embed(item, data);
 			if (!embed) continue;
 			await channel.send({ embed });

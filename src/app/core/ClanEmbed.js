@@ -9,6 +9,7 @@ class ClanEmbed {
 
 	exec(_id, clan) {
 		const cache = this.cached.get(_id);
+		console.log(clan.name);
 		if (cache) {
 			return this.permissionsFor(cache, clan);
 		}
@@ -55,6 +56,8 @@ class ClanEmbed {
 				this.client.logger.warn(error, { label: 'CLAN_EMBED_FETCH_MESSAGE' });
 				return null;
 			});
+
+		console.log(msg);
 
 		if (!msg) {
 			const msg = await this.sendNew(_id, channel, clan);
