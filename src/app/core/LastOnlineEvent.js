@@ -61,9 +61,7 @@ class LastOnlineEvent {
 		}
 
 		if (cache && cache.msg && !cache.msg.deleted) {
-			const msg = await this.edit(_id, cache.msg, clan);
-			cache.msg = msg;
-			return this.cached.set(_id, cache);
+			return this.edit(_id, cache.msg, clan);
 		}
 
 		const msg = await channel.messages.fetch(cache.message, false)
