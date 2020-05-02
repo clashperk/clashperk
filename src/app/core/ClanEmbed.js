@@ -38,7 +38,7 @@ class ClanEmbed {
 			const msg = await this.sendNew(_id, channel, clan);
 			if (!msg) return;
 
-			await mongodb.db('clashperk').collection('clanembeds')
+			await mongodb.db('clashperk').collection('clanembedlogs')
 				.updateOne({ _id }, { message: msg.id })
 				.catch(() => null);
 
@@ -60,7 +60,7 @@ class ClanEmbed {
 			const msg = await this.sendNew(_id, channel, clan);
 			if (!msg) return;
 
-			await mongodb.db('clashperk').collection('clanembeds')
+			await mongodb.db('clashperk').collection('clanembedlogs')
 				.updateOne({ _id }, { message: msg.id })
 				.catch(() => null);
 

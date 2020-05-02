@@ -46,7 +46,7 @@ class LastOnlineEvent {
 			if (!msg) return;
 
 			await mongodb.db('clashperk')
-				.collection('lastonlines')
+				.collection('lastonlinelogs')
 				.updateOne({ _id }, { message: msg.id })
 				.catch(() => null);
 
@@ -69,7 +69,7 @@ class LastOnlineEvent {
 			if (!msg) return;
 
 			await mongodb.db('clashperk')
-				.collection('lastonlines')
+				.collection('lastonlinelogs')
 				.updateOne({ _id }, { message: msg.id })
 				.catch(() => null);
 
