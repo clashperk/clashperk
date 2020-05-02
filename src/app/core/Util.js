@@ -29,7 +29,7 @@ class Util {
 			case 'CLAN_MEMBER_ACTION':
 				this.playerEvent.exec(data._id, data);
 				break;
-			case 'CLAN_EMBED_UPDATE':
+			case 'CLAN_EMBED_EVENT':
 				this.clanEmbed.exec(data._id, data.clan);
 				break;
 			default:

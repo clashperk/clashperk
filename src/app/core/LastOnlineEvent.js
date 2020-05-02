@@ -9,6 +9,7 @@ class LastOnlineEvent {
 
 	async exec(_id, clan, update) {
 		const cache = this.cached.get(_id);
+		console.log(clan.name);
 		if (Object.keys(update).length) {
 			await mongodb.db('clashperk')
 				.collection('lastonlines')
