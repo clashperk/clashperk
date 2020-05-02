@@ -91,6 +91,7 @@ class Util {
 
 		const clan = await this.clan(cache.tag);
 		if (!clan) return;
+		console.log([clan.name, clan.tag]);
 
 		if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
 

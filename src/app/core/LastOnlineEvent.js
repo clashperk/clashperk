@@ -121,7 +121,7 @@ class LastOnlineEvent {
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
 				this.cached.set(data._id, {
-					_id: data._id,
+					_id: data.id,
 					guild: data.guild,
 					channel: data.channel,
 					message: data.message
@@ -131,7 +131,12 @@ class LastOnlineEvent {
 	}
 
 	add(data) {
-		return this.cached.set(data._id, data);
+		return this.cached.set(data._id, {
+			_id: data.id,
+			guild: data.guild,
+			channel: data.channel,
+			message: data.message
+		});
 	}
 
 	delete(_id) {
