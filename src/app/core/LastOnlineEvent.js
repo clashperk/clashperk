@@ -10,7 +10,6 @@ class LastOnlineEvent {
 
 	async exec(_id, clan, update) {
 		const cache = this.cached.get(ObjectId(_id).toString());
-		console.log(clan.name, typeof _id);
 		if (Object.keys(update).length) {
 			await mongodb.db('clashperk')
 				.collection('lastonlines')
@@ -24,7 +23,6 @@ class LastOnlineEvent {
 	}
 
 	permissionsFor(cache, clan) {
-		console.log('t');
 		const permissions = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -34,7 +32,6 @@ class LastOnlineEvent {
 			'VIEW_CHANNEL'
 		];
 
-		console.log(this.client.channels.cache.has(cache.channel));
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
@@ -97,7 +94,9 @@ class LastOnlineEvent {
 
 	async edit(_id, message, clan) {
 		const embed = await this.embed(_id, clan);
-		return message.edit({ embed });
+		const g = await message.edit({ embed });
+		console.log(g);
+		return g;
 	}
 
 	async embed(_id, clan) {
