@@ -1,5 +1,6 @@
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
+const { ObjectId } = require('mongodb');
 
 class LastOnlineEvent {
 	constructor(client) {
@@ -8,8 +9,8 @@ class LastOnlineEvent {
 	}
 
 	async exec(_id, clan, update) {
-		const cache = this.cached.get(_id);
-		console.log(clan.name);
+		const cache = this.cached.get(ObjectId(_id).toString());
+		console.log(clan.name, typeof _id);
 		if (Object.keys(update).length) {
 			await mongodb.db('clashperk')
 				.collection('lastonlines')
@@ -23,6 +24,7 @@ class LastOnlineEvent {
 	}
 
 	permissionsFor(cache, clan) {
+		console.log('t');
 		const permissions = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -32,6 +34,7 @@ class LastOnlineEvent {
 			'VIEW_CHANNEL'
 		];
 
+		console.log(this.client.channels.cache.has(cache.channel));
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
@@ -50,7 +53,7 @@ class LastOnlineEvent {
 
 			await mongodb.db('clashperk')
 				.collection('lastonlinelogs')
-				.updateOne({ _id }, { message: msg.id })
+				.updateOne({ id: ObjectId(_id).toString() }, { $set: { message: msg.id } })
 				.catch(() => null);
 
 			cache.msg = msg;
@@ -58,7 +61,9 @@ class LastOnlineEvent {
 		}
 
 		if (cache && cache.msg && !cache.msg.deleted) {
-			return this.edit(_id, cache.msg, clan);
+			const msg = await this.edit(_id, cache.msg, clan);
+			cache.msg = msg;
+			return this.cached.set(_id, cache);
 		}
 
 		const msg = await channel.messages.fetch(cache.message, false)
@@ -73,7 +78,7 @@ class LastOnlineEvent {
 
 			await mongodb.db('clashperk')
 				.collection('lastonlinelogs')
-				.updateOne({ _id }, { message: msg.id })
+				.updateOne({ id: ObjectId(_id).toString() }, { $set: { message: msg.id } })
 				.catch(() => null);
 
 			cache.msg = msg;
@@ -101,7 +106,7 @@ class LastOnlineEvent {
 		const cache = this.cached.get(_id);
 		const embed = new MessageEmbed();
 		if (cache) {
-			embed.setColor(cache.embed.color)
+			embed.setColor(0x5970c1)
 				.setTimestamp()
 				.setAuthor(clan.name);
 			// TODO: More

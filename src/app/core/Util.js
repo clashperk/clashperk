@@ -238,7 +238,7 @@ class Util {
 		CurrentMemberSet.clear();
 
 		// Callback
-		const timeoutId = setTimeout(this.start.bind(this), 1.5 * 60 * 1000, key);
+		const timeoutId = setTimeout(this.start.bind(this), 0.5 * 60 * 1000, key);
 		cache.timeoutId = timeoutId;
 		this.cached.set(key, cache);
 	}
