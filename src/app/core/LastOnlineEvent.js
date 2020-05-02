@@ -35,6 +35,7 @@ class LastOnlineEvent {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
+				console.log('perm');
 				return this.handleMessage(cache._id, channel, clan);
 			}
 		}
@@ -42,6 +43,7 @@ class LastOnlineEvent {
 
 	async handleMessage(_id, channel, clan) {
 		const cache = this.cached.get(_id);
+		console.log(cache);
 		if (cache && cache.msg && cache.msg.deleted) {
 			const msg = await this.sendNew(_id, channel, clan);
 			if (!msg) return;
