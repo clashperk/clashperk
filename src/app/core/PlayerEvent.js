@@ -88,7 +88,7 @@ class PlayerEvent {
 
 	async init() {
 		const collection = await mongodb.db('clashperk')
-			.collection('donationlogs')
+			.collection('playerlogs')
 			.find()
 			.toArray();
 

@@ -99,6 +99,7 @@ class LastOnlineEvent {
 		const embed = new MessageEmbed();
 		if (cache) {
 			embed.setColor(cache.embed.color)
+				.setTimestamp()
 				.setAuthor(clan.name);
 			// TODO: More
 
@@ -106,6 +107,7 @@ class LastOnlineEvent {
 		}
 
 		embed.setColor(0x5970c1)
+			.setTimestamp()
 			.setAuthor(clan.name);
 		// TODO: More
 
@@ -114,7 +116,7 @@ class LastOnlineEvent {
 
 	async init() {
 		const collection = await mongodb.db('clashperk')
-			.collection('lastonlines')
+			.collection('lastonlinelogs')
 			.find()
 			.toArray();
 

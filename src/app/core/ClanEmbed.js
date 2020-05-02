@@ -90,13 +90,15 @@ class ClanEmbed {
 		const embed = new MessageEmbed();
 		if (cache) {
 			embed.setColor(cache.embed.color)
-				.setAuthor(clan.name);
+				.setAuthor(clan.name)
+				.setTimestamp();
 			// TODO: More
 
 			return embed;
 		}
 
 		embed.setColor(0x5970c1)
+			.setTimestamp()
 			.setAuthor(clan.name);
 		// TODO: More
 
@@ -105,7 +107,7 @@ class ClanEmbed {
 
 	async init() {
 		const collection = await mongodb.db('clashperk')
-			.collection('clanembeds')
+			.collection('clanembedlogs')
 			.find()
 			.toArray();
 
