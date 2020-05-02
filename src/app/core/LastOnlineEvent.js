@@ -81,9 +81,9 @@ class LastOnlineEvent {
 		}
 
 		if (msg) {
-			const m = await this.edit(_id, msg, clan);
-			cache.msg = m;
-			return this.cached.set(_id, cache);
+			cache.msg = msg;
+			this.cached.set(_id, cache);
+			return this.edit(_id, msg, clan);
 		}
 	}
 
