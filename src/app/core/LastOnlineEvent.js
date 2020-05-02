@@ -58,16 +58,25 @@ class LastOnlineEvent {
 		}
 
 		if (cache && cache.msg && !cache.msg.deleted) {
-			return this.edit(_id, cache.msg, clan);
+			const msg = await this.edit(_id, cache.msg, clan);
+			if (!msg) return;
+			cache.msg = msg;
+			return this.cached.set(_id, cache);
 		}
 
-		const msg = await channel.messages.fetch(cache.message, false)
+		const message = await channel.messages.fetch(cache.message, false)
 			.catch(error => {
 				this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
+				if (error.code === 10008) {
+					return { deleted: true };
+				}
+
 				return null;
 			});
 
-		if (!msg) {
+		if (!message) return;
+
+		if (message.deleted) {
 			const msg = await this.sendNew(_id, channel, clan);
 			if (!msg) return;
 
@@ -80,23 +89,29 @@ class LastOnlineEvent {
 			return this.cached.set(_id, cache);
 		}
 
-		if (msg) {
+		if (!message.deleted) {
+			const msg = await this.edit(_id, message, clan);
+			if (!msg) return;
 			cache.msg = msg;
-			this.cached.set(_id, cache);
-			return this.edit(_id, msg, clan);
+			return this.cached.set(_id, cache);
 		}
 	}
 
 	async sendNew(_id, channel, clan) {
 		const embed = await this.embed(_id, clan);
-		return channel.send({ embed });
+		return channel.send({ embed })
+			.catch(() => null);
 	}
 
 	async edit(_id, message, clan) {
 		const embed = await this.embed(_id, clan);
-		const g = await message.edit({ embed });
-		console.log(g);
-		return g;
+		return message.edit({ embed })
+			.catch(error => {
+				if (error.code === 10008) {
+					return message.channel.send({ embed });
+				}
+				return null;
+			});
 	}
 
 	async embed(_id, clan) {
