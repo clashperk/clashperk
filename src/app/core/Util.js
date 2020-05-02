@@ -1,7 +1,9 @@
 const fetch = require('node-fetch');
 const { mongodb } = require('../struct/Database');
 const ClanEmbed = require('./ClanEmbed');
-const ClanEvent = require();
+const DonationEvent = require('./DonationEvent');
+const LastOnlineEvent = require('./LastOnlineEvent');
+const PlayerEvent = require('./PlayerEvent');
 
 class Util {
 	constructor(client) {
@@ -11,25 +13,21 @@ class Util {
 		this.memberList = {};
 
 		this.clanEmbed = new ClanEmbed(client);
-		this.clanEvent = new ClanEvent(client);
+		this.clanEvent = new DonationEvent(client);
+		this.lastOnline = new LastOnlineEvent(client);
+		this.playerEvent = new PlayerEvent(client);
 	}
 
 	async broadcast(data) {
 		switch (data.mode) {
 			case 'CLAN_DONATION_EVENT':
-				this.clanEmbed.exec(data);
+				this.clanEmbed.exec(data._id, data.clan);
 				break;
 			case 'LAST_ONLINE_EVENT':
-				//
-				break;
-			case 'LAST_ONLINE_UPDATE':
-				//
+				this.lastOnline.exec(data._id, data.clan, data.update);
 				break;
 			case 'CLAN_MEMBER_ACTION':
-				//
-				break;
-			case '':
-				//
+				this.playerEvent.exec(data._id, data);
 				break;
 			default:
 				break;
@@ -92,7 +90,15 @@ class Util {
 		const CurrentMemberSet = new Set(CurrentMemberList);
 		const OldMemberSet = new Set(this.oldMemberList.get(key));
 
-		const data = { donated: [], received: [], donations: 0, receives: 0, mode: 'CLAN_DONATION_EVENT', id: key };
+		const data = {
+			_id: key,
+			donated: [],
+			received: [],
+			donations: 0,
+			receives: 0,
+			mode: 'CLAN_DONATION_EVENT'
+		};
+
 		const $set = {};
 		for (const member of clan.memberList) {
 			data.clan = {
@@ -154,27 +160,29 @@ class Util {
 			}
 		}
 
-		const update = {};
-		if (Object.keys($set).length) update.$set = $set;
-		if (Object.keys($unset).length) update.$unset = $unset;
+		const $update = {};
+		if (Object.keys($set).length) $update.$set = $set;
+		if (Object.keys($unset).length) $update.$unset = $unset;
 
-		if (Object.keys(update).length) {
+		if (Object.keys($update).length) {
 			// await collection.updateOne({ tag: clan.tag }, update, { upsert: true })
 			// .catch(error => this.logger.error(error, { label: 'MONGO_ERROR' }));
-			this.broadcast({
-				mode: 'LAST_ONLINE_UPDATE',
-				update,
-				id: key,
-				tag: clan.tag,
-				name: clan.name
-			});
 		}
 
 		// Last Online - Send Message
-		this.broadcast({ id: key, mode: 'LAST_ONLINE_EVENT', clan });
+		this.broadcast({
+			_id: key,
+			clan,
+			update: $update,
+			mode: 'LAST_ONLINE_EVENT'
+		});
 
 		// Clan Embed
-		this.broadcast({ id: key, mode: 'CLAN_EMBED_EVENT', clan });
+		this.broadcast({
+			_id: key,
+			clan,
+			mode: 'CLAN_EMBED_EVENT'
+		});
 
 		// Donation Log - Send Message
 		if (data.donated.length || data.received.length) {
@@ -202,11 +210,13 @@ class Util {
 
 			if (tags.length) {
 				this.broadcast({
+					_id: key,
 					tags,
-					id: key,
-					name: clan.name,
-					tag: clan.tag,
-					badge: clan.badgeUrls.small,
+					clan: {
+						name: clan.name,
+						tag: clan.tag,
+						badge: clan.badgeUrls.small
+					},
 					mode: 'CLAN_MEMBER_ACTION'
 				});
 			}

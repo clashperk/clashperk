@@ -1,14 +1,21 @@
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 
-class ClanEmbed {
+class LastOnlineEvent {
 	constructor(client) {
 		this.client = client;
 		this.cached = new Map();
 	}
 
-	exec(_id, clan) {
+	async exec(_id, clan, update) {
 		const cache = this.cached.get(_id);
+		if (Object.keys(update).length) {
+			await mongodb.db('clashperk')
+				.collection('lastonlines')
+				.updateOne({ tag: clan.tag }, update, { upsert: true })
+				.catch(error => this.logger.error(error, { label: 'MONGO_ERROR' }));
+		}
+
 		if (cache) {
 			return this.permissionsFor(cache, clan);
 		}
@@ -38,7 +45,8 @@ class ClanEmbed {
 			const msg = await this.sendNew(_id, channel, clan);
 			if (!msg) return;
 
-			await mongodb.db('clashperk').collection('clanembeds')
+			await mongodb.db('clashperk')
+				.collection('lastonlines')
 				.updateOne({ _id }, { message: msg.id })
 				.catch(() => null);
 
@@ -52,7 +60,7 @@ class ClanEmbed {
 
 		const msg = await channel.messages.fetch(cache.message, false)
 			.catch(error => {
-				this.client.logger.warn(error, { label: 'CLAN_EMBED_FETCH_MESSAGE' });
+				this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
 				return null;
 			});
 
@@ -60,7 +68,8 @@ class ClanEmbed {
 			const msg = await this.sendNew(_id, channel, clan);
 			if (!msg) return;
 
-			await mongodb.db('clashperk').collection('clanembeds')
+			await mongodb.db('clashperk')
+				.collection('lastonlines')
 				.updateOne({ _id }, { message: msg.id })
 				.catch(() => null);
 
@@ -105,7 +114,7 @@ class ClanEmbed {
 
 	async init() {
 		const collection = await mongodb.db('clashperk')
-			.collection('clanembeds')
+			.collection('lastonlines')
 			.find()
 			.toArray();
 
@@ -115,23 +124,14 @@ class ClanEmbed {
 					_id: data._id,
 					guild: data.guild,
 					channel: data.channel,
-					message: data.message,
-					color: data.color,
-					embed: data.embed
+					message: data.message
 				});
 			}
 		});
 	}
 
 	add(data) {
-		return this.cached.set(data._id, {
-			_id: data._id,
-			guild: data.guild,
-			channel: data.channel,
-			message: data.message,
-			color: data.color,
-			embed: data.embed
-		});
+		return this.cached.set(data._id, data);
 	}
 
 	delete(_id) {
@@ -139,4 +139,4 @@ class ClanEmbed {
 	}
 }
 
-module.exports = ClanEmbed;
+module.exports = LastOnlineEvent;
