@@ -113,7 +113,7 @@ class ClanEmbed {
 
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(data._id, {
+				this.cached.set(data.id, {
 					_id: data.id,
 					guild: data.guild,
 					channel: data.channel,
@@ -126,7 +126,7 @@ class ClanEmbed {
 	}
 
 	add(data) {
-		return this.cached.set(data._id, {
+		return this.cached.set(data.id, {
 			_id: data.id,
 			guild: data.guild,
 			channel: data.channel,

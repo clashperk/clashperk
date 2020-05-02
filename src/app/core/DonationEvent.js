@@ -99,7 +99,7 @@ class ClanEvent {
 	}
 
 	add(data) {
-		return this.cached.set(data._id, {
+		return this.cached.set(data.id, {
 			_id: data.id,
 			guild: data.guild,
 			channel: data.channel,
