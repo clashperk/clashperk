@@ -52,6 +52,8 @@ class PlayerEvent {
 			await channel.send({ embed });
 			await this.delay(250);
 		}
+
+		return data.tags.length;
 	}
 
 	async queue(channel, data) {
@@ -60,8 +62,10 @@ class PlayerEvent {
 			const embed = await this.embed(item, data);
 			if (!embed) continue;
 			await channel.send({ embed });
-			await this.delay(500);
+			await this.delay(1000);
 		}
+
+		return data.tags.length;
 	}
 
 	async embed(item, data) {

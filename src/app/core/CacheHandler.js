@@ -74,8 +74,6 @@ class CacheHandler {
 
 	async launch() {
 		for (const key of this.cached.keys()) {
-			// console.log(key);
-			// console.log(typeof key);
 			await this.start(key);
 			await this.delay(500);
 		}
