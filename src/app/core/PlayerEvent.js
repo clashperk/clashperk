@@ -49,7 +49,7 @@ class PlayerEvent {
 			const embed = await this.embed(item, data);
 			if (!embed) continue;
 			await channel.send({ embed });
-			await this.delay(250);
+			await this.delay(500);
 		}
 	}
 
