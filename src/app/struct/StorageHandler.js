@@ -19,7 +19,7 @@ class StorageHandler {
 
 		const id = ObjectId(collection.value._id).toString();
 
-		switch (data.type) {
+		switch (data.mode) {
 			case 'DONATION_LOG':
 				await mongodb.db('clashperk').collection('donationlogs')
 					.updateOne({ clan_id: ObjectId(id) }, {
@@ -102,50 +102,50 @@ class StorageHandler {
 		return collection.value._id;
 	}
 
-	async delete(data) {
+	async delete(id) {
 		await mongodb.db('clashperk').collection('donationlogs')
-			.deleteOne({ guild: data.guild, tag: data.tag });
+			.deleteOne({ clan_id: ObjectId(id) });
 
 		await mongodb.db('clashperk').collection('playerlogs')
-			.deleteOne({ guild: data.guild, tag: data.tag });
+			.deleteOne({ clan_id: ObjectId(id) });
 
 		await mongodb.db('clashperk').collection('lastonlinelogs')
-			.deleteOne({ guild: data.guild, tag: data.tag });
+			.deleteOne({ clan_id: ObjectId(id) });
 
 		await mongodb.db('clashperk').collection('clangameslogs')
-			.deleteOne({ guild: data.guild, tag: data.tag });
+			.deleteOne({ clan_id: ObjectId(id) });
 
 		await mongodb.db('clashperk').collection('clanembedlogs')
-			.deleteOne({ guild: data.guild, tag: data.tag });
+			.deleteOne({ clan_id: ObjectId(id) });
 
 		return mongodb.db('clashperk').collection('clanstore')
-			.deleteOne({ guild: data.guild, tag: data.tag });
+			.deleteOne({ clan_id: ObjectId(id) });
 	}
 
-	async stop(data) {
-		if (data.type === 'DONATION_LOG') {
+	async stop(id, data) {
+		if (data.mode === 'DONATION_LOG') {
 			return mongodb.db('clashperk').collection('donationlogs')
-				.deleteOne({ guild: data.guild, tag: data.tag });
+				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.type === 'PLAYER_LOG') {
+		if (data.mode === 'PLAYER_LOG') {
 			return mongodb.db('clashperk').collection('playerlogs')
-				.deleteOne({ guild: data.guild, tag: data.tag });
+				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.type === 'LAST_ONLINE_LOG') {
+		if (data.mode === 'LAST_ONLINE_LOG') {
 			return mongodb.db('clashperk').collection('lastonlinelogs')
-				.deleteOne({ guild: data.guild, tag: data.tag });
+				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.type === 'CLAN_GAMES_LOG') {
+		if (data.mode === 'CLAN_GAMES_LOG') {
 			return mongodb.db('clashperk').collection('clangameslogs')
-				.deleteOne({ guild: data.guild, tag: data.tag });
+				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.type === 'CLAN_EMBED_LOG') {
+		if (data.mode === 'CLAN_EMBED_LOG') {
 			return mongodb.db('clashperk').collection('clanembedlogs')
-				.deleteOne({ guild: data.guild, tag: data.tag });
+				.deleteOne({ clan_id: ObjectId(id) });
 		}
 	}
 }

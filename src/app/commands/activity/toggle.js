@@ -1,17 +1,16 @@
 const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { ObjectId } = require('mongodb');
-const admin = require('firebase-admin');
 
-class StopCommand extends Command {
+class ToggleCommand extends Command {
 	constructor() {
-		super('stop', {
-			aliases: ['stop'],
+		super('toggle', {
+			aliases: ['toggle', 'toggle'],
 			category: 'activity',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: 'Stops tracking for a clan.',
+				content: 'Toogle logs and boards on your guild.',
 				usage: '<method> <tag>',
 				examples: ['donationlog #8QU8J9LP', 'playerlog #8QU8J9LP', 'lastonline #8QU8J9LP']
 			},
@@ -82,23 +81,7 @@ class StopCommand extends Command {
 
 		const id = ObjectId(data._id).toString();
 
-		if (method === 'DONATION_LOG') {
-			await db.collection('donationlogs')
-				.deleteOne({ clan_id: ObjectId(id) });
-		} else if (method === 'PLAYER_LOG') {
-			await db.collection('playerlogs')
-				.deleteOne({ clan_id: ObjectId(id) });
-		} else if (method === 'LAST_ONLINE_LOG') {
-			await db.collection('lastonlinelogs')
-				.deleteOne({ clan_id: ObjectId(id) });
-		} else if (method === 'CLAN_EMBED_LOG') {
-			await db.collection('clanembedlogs')
-				.deleteOne({ clan_id: ObjectId(id) });
-		} else if (method === 'CLAN_GAMES_LOG') {
-			await db.collection('clangameslogs')
-				.deleteOne({ clan_id: ObjectId(id) });
-		}
-
+		await this.client.storage.stop(data._id, { mode: method });
 		await this.client.cacheHandler.delete(id, { mode: method });
 		await this.delete(id);
 
@@ -125,4 +108,4 @@ class StopCommand extends Command {
 	}
 }
 
-module.exports = StopCommand;
+module.exports = ToggleCommand;
