@@ -93,9 +93,8 @@ class LastOnlineEvent {
 
 		if (message) {
 			try {
-				const cache = this.cached.get(id);
 				const collection = mongodb.db('clashperk').collection('lastonlinelogs');
-				await collection.updateOne({ clan_id: cache.id }, { $set: { message: message.id } });
+				await collection.updateOne({ clan_id: ObjectId(id) }, { $set: { message: message.id } });
 			} catch (error) {
 				this.client.logger.warn(error, { label: 'MONGODB_ERROR' });
 			}
