@@ -5,7 +5,7 @@ const { ObjectId } = require('mongodb');
 class ToggleCommand extends Command {
 	constructor() {
 		super('toggle', {
-			aliases: ['toggle', 'toggle'],
+			aliases: ['toggle'],
 			category: 'activity',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
