@@ -169,10 +169,6 @@ class LastOnlineEvent {
 		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' }).padStart(7, ' ');
 	}
 
-	padEnd(data) {
-		return data.padEnd(20, ' ');
-	}
-
 	async init() {
 		const collection = await mongodb.db('clashperk')
 			.collection('lastonlinelogs')
@@ -182,7 +178,6 @@ class LastOnlineEvent {
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
-					clan_id: data.clan_id,
 					guild: data.guild,
 					channel: data.channel,
 					message: data.message
@@ -193,7 +188,6 @@ class LastOnlineEvent {
 
 	add(data) {
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
-			id: data.clan_id,
 			guild: data.guild,
 			channel: data.channel,
 			message: data.message

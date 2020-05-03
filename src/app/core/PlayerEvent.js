@@ -112,7 +112,6 @@ class PlayerEvent {
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
-					id: data.clan_id,
 					guild: data.guild,
 					channel: data.channel
 				});
@@ -122,7 +121,6 @@ class PlayerEvent {
 
 	add(data) {
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
-			id: data.clan_id,
 			guild: data.guild,
 			channel: data.channel
 		});

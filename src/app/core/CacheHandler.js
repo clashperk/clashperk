@@ -49,8 +49,6 @@ class CacheHandler {
 			.find()
 			.toArray();
 
-		console.log(collection);
-
 		for (const item of collection) {
 			if (this.client.guilds.cache.has(item.guild)) {
 				this.cached.set(ObjectId(item._id).toString(), {
@@ -61,9 +59,7 @@ class CacheHandler {
 			}
 		}
 
-		// console.log(collection);
-
-		this.client.logger.info('Cache store Initialized', { label: 'CACHE_STORE' });
+		this.client.logger.info(`Cache store Initialized ${this.cached.size}/${collection.length}`, { label: 'CACHE_STORE' });
 
 		return this.launch();
 	}
@@ -182,7 +178,7 @@ class CacheHandler {
 		if (Object.keys($set).length) $update.$set = $set;
 		if (Object.keys($unset).length) $update.$unset = $unset;
 
-		// Last Online - Send Message
+		// Last Online
 		await this.broadcast({
 			_id: key,
 			clan,
@@ -197,7 +193,7 @@ class CacheHandler {
 			mode: 'CLAN_EMBED_EVENT'
 		});
 
-		// Donation Log - Send Message
+		// Donation Log
 		if (data.donated.length || data.received.length) {
 			if (CurrentMemberSet.size && OldMemberSet.size) {
 				const joined = CurrentMemberList.filter(tag => !OldMemberSet.has(tag));
