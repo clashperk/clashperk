@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const { firestore } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
+const { mongodb } = require('../../struct/Database');
 
 class InfoCommand extends Command {
 	constructor() {
@@ -11,7 +11,7 @@ class InfoCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Shows all tracking details.'
+				content: 'Shows how many clans you\'ve claimed.'
 			},
 			args: [
 				{
@@ -35,8 +35,30 @@ class InfoCommand extends Command {
 	}
 
 	async exec(message, { guild }) {
-		const data = await this.findAll(guild);
 		const premium = this.client.patron.get(guild.id, 'guild', false);
+
+		const collection = await this.findAll(guild);
+		const db = mongodb.db('clashperk');
+		const data = await Promise.all(collection.map(async item => {
+			const donationlog = await db.collection('donationlogs').findOne({ clan_id: item._id });
+			const playerlog = await db.collection('playerlogs').findOne({ clan_id: item._id });
+			const onlinelog = await db.collection('lastonlinelogs').findOne({ clan_id: item._id });
+
+			return {
+				tag: item.tag,
+				name: item.name,
+				donationlog: donationlog
+					? donationlog.channel
+					: null,
+				playerlog: playerlog
+					? playerlog.channel
+					: null,
+				onlinelog: onlinelog
+					? onlinelog.channel
+					: null
+			};
+		}));
+
 		if (data) {
 			const embed = new MessageEmbed()
 				.setColor(0x5970c1)
@@ -45,39 +67,29 @@ class InfoCommand extends Command {
 				embed.setDescription([
 					`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
 					'',
-					data.map((data, index) => {
-						const donationlog = data.donationlog
-							? data.donationlog.channel
-							: null;
-						const memberlog = data.memberlog
-							? data.memberlog.channel
-							: null;
-						const lastonline = data.lastonline
-							? data.lastonline.channel
-							: null;
-
-						const donation_log = this.client.channels.cache.has(donationlog);
-						const member_log = this.client.channels.cache.has(memberlog);
-						const lastonline_log = this.client.channels.cache.has(lastonline);
+					data.map((item, index) => {
+						const donationlog = this.client.channels.cache.has(item.donationlog);
+						const playerlog = this.client.channels.cache.has(item.playerlog);
+						const onlinelog = this.client.channels.cache.has(item.onlinelog);
 						const logs = [
-							donationlog
-								? donation_log
-									? `${emoji.ok} Enabled \n${emoji.channel} <#${donationlog}>`
-									: `${emoji.wrong} Disabled \n${emoji.channel} <#${donationlog}>`
+							item.donationlog
+								? donationlog
+									? `${emoji.ok} Enabled \n${emoji.channel} <#${item.donationlog}>`
+									: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.donationlog}>`
 								: '',
-							memberlog
-								? member_log
-									? `${emoji.ok} Enabled \n${emoji.channel} <#${memberlog}>`
-									: `${emoji.wrong} Disabled \n${emoji.channel} <#${memberlog}>`
+							item.playerlog
+								? playerlog
+									? `${emoji.ok} Enabled \n${emoji.channel} <#${item.playerlog}>`
+									: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.playerlog}>`
 								: '',
-							lastonline
-								? lastonline_log
-									? `${emoji.ok} Enabled \n${emoji.channel} <#${lastonline}>`
-									: `${emoji.wrong} Disabled \n${emoji.channel} <#${lastonline}>`
+							item.onlinelog
+								? onlinelog
+									? `${emoji.ok} Enabled \n${emoji.channel} <#${item.onlinelog}>`
+									: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.onlinelog}>`
 								: ''
 						];
 						return [
-							`**[${data.name} (${data.tag})](${this.openInGame(data.tag)})**`,
+							`**[${item.name} (${item.tag})](${this.openInGame(item.tag)})**`,
 							`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
 							`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
 							`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`
@@ -95,16 +107,12 @@ class InfoCommand extends Command {
 	}
 
 	async findAll(guild) {
-		const clans = [];
-		await firestore.collection('tracking_clans')
-			.where('guild', '==', guild.id)
-			.get()
-			.then(snapshot => {
-				snapshot.forEach(doc => {
-					clans.push(doc.data());
-				});
-			});
-		return clans;
+		const db = mongodb.db('clashperk');
+		const collection = await db.collection('clanstores')
+			.find({ guild: guild.id })
+			.toArray();
+
+		return collection;
 	}
 }
 
