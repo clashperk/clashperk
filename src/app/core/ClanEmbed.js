@@ -1,5 +1,6 @@
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
+const { ObjectId } = require('mongodb');
 
 class ClanEmbed {
 	constructor(client) {
@@ -9,7 +10,7 @@ class ClanEmbed {
 
 	exec(id, clan) {
 		const cache = this.cached.get(id);
-		console.log(clan.name);
+		console.log(this.cached);
 		if (cache) {
 			return this.permissionsFor(id, cache, clan);
 		}
@@ -35,7 +36,6 @@ class ClanEmbed {
 
 	async handleMessage(id, channel, clan) {
 		const cache = this.cached.get(id);
-		console.log(cache);
 		if (cache && cache.msg && cache.msg.deleted) {
 			const msg = await this.sendNew(id, channel, clan);
 			if (!msg) return;
@@ -83,10 +83,12 @@ class ClanEmbed {
 			.catch(() => null);
 
 		if (message) {
-			await mongodb.db('clashperk')
-				.collection('clanembedlogs')
-				.updateOne({ clan_id: id }, { $set: { message: message.id } })
-				.catch(() => null);
+			try {
+				const collection = mongodb.db('clashperk').collection('clanembedlogs');
+				await collection.updateOne({ clan_id: id }, { $set: { message: message.id } });
+			} catch (error) {
+				this.client.logger.warn(error, { label: 'MONGODB_ERROR' });
+			}
 		}
 
 		return message;
@@ -109,7 +111,7 @@ class ClanEmbed {
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed();
 		if (cache) {
-			embed.setColor(cache.embed.color)
+			embed.setColor(cache.color)
 				.setAuthor(clan.name)
 				.setTimestamp();
 			// TODO: More
@@ -133,7 +135,7 @@ class ClanEmbed {
 
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(data.clan_id, {
+				this.cached.set(ObjectId(data.clan_id).toString(), {
 					id: data.clan_id,
 					guild: data.guild,
 					channel: data.channel,
@@ -146,7 +148,7 @@ class ClanEmbed {
 	}
 
 	add(data) {
-		return this.cached.set(data.clan_id, {
+		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			id: data.clan_id,
 			guild: data.guild,
 			channel: data.channel,

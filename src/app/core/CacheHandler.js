@@ -51,7 +51,7 @@ class CacheHandler {
 
 		for (const item of collection) {
 			if (this.client.guilds.cache.has(item.guild)) {
-				this.cached.set(item._id, {
+				this.cached.set(ObjectId(item._id).toString(), {
 					_id: item._id,
 					tag: item.tag,
 					guild: item.guild
@@ -59,7 +59,7 @@ class CacheHandler {
 			}
 		}
 
-		console.log(collection);
+		// console.log(collection);
 
 		this.client.logger.info('Cache store Initialized', { label: 'CACHE_STORE' });
 
@@ -72,8 +72,8 @@ class CacheHandler {
 
 	async launch() {
 		for (const key of this.cached.keys()) {
-			console.log(key);
-			console.log(typeof key);
+			// console.log(key);
+			// console.log(typeof key);
 			await this.start(key);
 			await this.delay(500);
 		}
@@ -249,7 +249,7 @@ class CacheHandler {
 		CurrentMemberSet.clear();
 
 		// Callback
-		const timeoutId = setTimeout(this.start.bind(this), 0.5 * 60 * 1000, key);
+		const timeoutId = setTimeout(this.start.bind(this), 1.5 * 60 * 1000, key);
 		cache.timeoutId = timeoutId;
 		this.cached.set(key, cache);
 	}

@@ -1,6 +1,7 @@
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 const { leagueEmoji } = require('../util/emojis');
+const { ObjectId } = require('mongodb');
 
 class ClanEvent {
 	constructor(client) {
@@ -88,7 +89,7 @@ class ClanEvent {
 
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(data.clan_id, {
+				this.cached.set(ObjectId(data.clan_id).toString(), {
 					id: data.clan_id,
 					guild: data.guild,
 					channel: data.channel,
@@ -99,7 +100,7 @@ class ClanEvent {
 	}
 
 	add(data) {
-		return this.cached.set(data.id, {
+		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			id: data.clan_id,
 			guild: data.guild,
 			channel: data.channel,

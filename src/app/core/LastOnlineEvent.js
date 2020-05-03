@@ -1,6 +1,7 @@
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 const moment = require('moment');
+const { ObjectId } = require('mongodb');
 
 class LastOnlineEvent {
 	constructor(client) {
@@ -10,12 +11,13 @@ class LastOnlineEvent {
 
 	async exec(id, clan, update) {
 		const cache = this.cached.get(id);
-		console.log(cache, typeof id);
 		if (Object.keys(update).length) {
-			await mongodb.db('clashperk')
-				.collection('lastonlines')
-				.updateOne({ tag: clan.tag }, update, { upsert: true })
-				.catch(error => this.logger.error(error, { label: 'MONGO_ERROR' }));
+			try {
+				const collection = mongodb.db('clashperk').collection('lastonlines');
+				await collection.updateOne({ tag: clan.tag }, update, { upsert: true });
+			} catch (error) {
+				this.logger.error(error, { label: 'MONGODB_ERROR' });
+			}
 		}
 
 		if (cache) {
@@ -36,7 +38,6 @@ class LastOnlineEvent {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				console.log('perm');
 				return this.handleMessage(id, channel, clan);
 			}
 		}
@@ -44,7 +45,6 @@ class LastOnlineEvent {
 
 	async handleMessage(id, channel, clan) {
 		const cache = this.cached.get(id);
-		console.log(cache);
 		if (cache && cache.msg && cache.msg.deleted) {
 			const msg = await this.sendNew(id, channel, clan);
 			if (!msg) return;
@@ -92,10 +92,12 @@ class LastOnlineEvent {
 			.catch(() => null);
 
 		if (message) {
-			await mongodb.db('clashperk')
-				.collection('lastonlinelogs')
-				.updateOne({ clan_id: id }, { $set: { message: message.id } })
-				.catch(() => null);
+			try {
+				const collection = mongodb.db('clashperk').collection('lastonlinelogs');
+				await collection.updateOne({ clan_id: id }, { $set: { message: message.id } });
+			} catch (error) {
+				this.client.logger.warn(error, { label: 'MONGODB_ERROR' });
+			}
 		}
 
 		return message;
@@ -115,14 +117,20 @@ class LastOnlineEvent {
 	}
 
 	async embed(clan) {
+		const data = await mongodb.db('clashperk')
+			.collection('lastonlines')
+			.findOne({ tag: clan.tag });
+
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Last Online Board [${clan.members}/50]`,
-				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}\n${this.filter(clan)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
-					.join('\n')}\`\`\``
+				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'}`,
+				this.filter(data, clan)
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}   ${m.name}`)
+					.join('\n'),
+				'\`\`\`'
 			])
 			.setFooter('Last Updated')
 			.setTimestamp();
@@ -130,17 +138,17 @@ class LastOnlineEvent {
 		return embed;
 	}
 
-	async filter(clan) {
-		const data = await mongodb.db('cllashperk')
-			.collection('lastonlines')
-			.findOne({ tag: clan.tag });
-
+	filter(data, clan) {
 		if (!data) {
 			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null }));
 		}
 
+		if (data && !data.members) {
+			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null }));
+		}
+
 		const members = clan.memberList.map(member => {
-			const lastOnline = member.tag in data.memberList
+			const lastOnline = member.tag in data.members
 				? new Date() - new Date(data.members[member.tag].lastOnline)
 				: null;
 			return { tag: member.tag, name: member.name, lastOnline };
@@ -153,12 +161,16 @@ class LastOnlineEvent {
 
 	format(time) {
 		if (time > 864e5) {
-			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' });
+			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' }).padStart(7, ' ');
 		} else if (time > 36e5) {
-			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
+			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' }).padStart(7, ' ');
 		}
 
-		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
+		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' }).padStart(7, ' ');
+	}
+
+	padEnd(data) {
+		return data.padEnd(20, ' ');
 	}
 
 	async init() {
@@ -169,20 +181,18 @@ class LastOnlineEvent {
 
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(data.clan_id, {
+				this.cached.set(ObjectId(data.clan_id).toString(), {
 					clan_id: data.clan_id,
 					guild: data.guild,
 					channel: data.channel,
 					message: data.message
 				});
-
-				console.log(typeof data.clan_id, data.clan_id, 0);
 			}
 		});
 	}
 
 	add(data) {
-		return this.cached.set(data.clan_id, {
+		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			id: data.clan_id,
 			guild: data.guild,
 			channel: data.channel,

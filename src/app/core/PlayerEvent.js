@@ -2,6 +2,7 @@ const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 const { townHallEmoji, emoji, leagueEmoji } = require('../util/emojis');
 const fetch = require('node-fetch');
+const { ObjectId } = require('mongodb');
 
 const MODE = {
 	JOINED: 0x38d863, // green
@@ -95,8 +96,8 @@ class PlayerEvent {
 
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(data.clan_id, {
-					id: data.id,
+				this.cached.set(ObjectId(data.clan_id).toString(), {
+					id: data.clan_id,
 					guild: data.guild,
 					channel: data.channel
 				});
@@ -105,7 +106,7 @@ class PlayerEvent {
 	}
 
 	add(data) {
-		return this.cached.set(data.clan_id, {
+		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			id: data.clan_id,
 			guild: data.guild,
 			channel: data.channel
