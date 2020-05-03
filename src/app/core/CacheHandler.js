@@ -49,6 +49,8 @@ class CacheHandler {
 			.find()
 			.toArray();
 
+		console.log(collection);
+
 		for (const item of collection) {
 			if (this.client.guilds.cache.has(item.guild)) {
 				this.cached.set(ObjectId(item._id).toString(), {
@@ -98,7 +100,6 @@ class CacheHandler {
 
 	async start(key) {
 		const cache = this.cached.get(key);
-		console.log(cache);
 
 		const clan = await this.clan(cache.tag);
 		if (!clan) return;

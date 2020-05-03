@@ -10,7 +10,6 @@ class ClanEmbed {
 
 	exec(id, clan) {
 		const cache = this.cached.get(id);
-		console.log(this.cached);
 		if (cache) {
 			return this.permissionsFor(id, cache, clan);
 		}
