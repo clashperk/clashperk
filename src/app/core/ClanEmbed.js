@@ -145,7 +145,12 @@ class ClanEmbed {
 		});
 	}
 
-	add(data) {
+	async add(id) {
+		const data = await mongodb.db('clashperk')
+			.collection('clanembedlogs')
+			.findOne({ clan_id: ObjectId(id) });
+
+		if (!data) return null;
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			guild: data.guild,
 			channel: data.channel,
@@ -156,7 +161,7 @@ class ClanEmbed {
 	}
 
 	delete(id) {
-		return this.cached.delete(id);
+		return this.cached.delete(ObjectId(id).toString());
 	}
 }
 

@@ -2,11 +2,11 @@ const { Command } = require('discord-akairo');
 const { firestore } = require('../../struct/Database');
 const admin = require('firebase-admin');
 
-class StopCommand extends Command {
+class RemoveClanCommand extends Command {
 	constructor() {
-		super('stop', {
-			aliases: ['stop'],
-			category: 'tracker',
+		super('remove', {
+			aliases: ['remove'],
+			category: 'activity',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
@@ -17,7 +17,7 @@ class StopCommand extends Command {
 			args: [
 				{
 					id: 'log',
-					type: ['donationlog', 'playerlog', ['lastonline', 'lastonlineboard'], 'clanembed']
+					type: ['donationlog', 'playerlog', ['lastonline', 'lastonlineboard'], 'clanembed', ['n']]
 				},
 				{
 					id: 'clan',
@@ -98,4 +98,4 @@ class StopCommand extends Command {
 	}
 }
 
-module.exports = StopCommand;
+module.exports = RemoveClanCommand;

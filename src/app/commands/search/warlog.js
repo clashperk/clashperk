@@ -10,7 +10,7 @@ class WarlogCommand extends Command {
 	constructor() {
 		super('warlog', {
 			aliases: ['warlog'],
-			category: 'lookup',
+			category: 'search',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Clash of Clans war log lookup command.',

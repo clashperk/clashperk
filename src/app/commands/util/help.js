@@ -80,8 +80,8 @@ class HelpCommand extends Command {
 			const title = {
 				util: 'Util',
 				cwl: 'CWL',
-				tracker: 'Activity Tracker',
-				lookup: 'Clash Search',
+				activity: 'Clan Activity',
+				search: 'Clash Search',
 				profile: 'Profile',
 				other: 'Other',
 				config: 'Config'
@@ -96,8 +96,8 @@ class HelpCommand extends Command {
 			embed.addField(cmd.title, [
 				cmd.category.id === 'util' || cmd.category.id === 'other'
 					? cmd.category.filter(cmd => cmd.aliases.length > 0)
-						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``)
-						.join(', ')
+						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`)
+						.join('\n')
 					: cmd.category.filter(cmd => cmd.aliases.length > 0)
 						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`)
 						.join('\n')

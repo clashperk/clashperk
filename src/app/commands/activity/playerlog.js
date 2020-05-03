@@ -1,19 +1,19 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const { firestore, mongodb } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 
-class DonationLogCommand extends Command {
+class PlayerLogCommand extends Command {
 	constructor() {
-		super('start', {
-			aliases: ['donationlog', 'start'],
-			category: 'tracker',
+		super('playerlog', {
+			aliases: ['playerlog'],
+			category: 'activity',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Starts the donation-log in a channel.',
-				usage: '<clan tag> [channel/hexColor] [hexColor/channel]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #tracker #5970C1', '#8QU8J9LP #5970C1 #tracker']
+				content: 'Starts the player-log in a channel.',
+				usage: '<clan tag> [channel/color] [color/channel]',
+				examples: ['#8QU8J9LP', '#8QU8J9LP #player-log #5970C1', '#8QU8J9LP #5970C1 #player-log']
 			}
 		});
 	}
@@ -23,7 +23,7 @@ class DonationLogCommand extends Command {
 			type: 'clan',
 			unordered: false,
 			prompt: {
-				start: 'What clan do you want to track donations?',
+				start: 'What clan do you want to track memberlog?',
 				retry: (msg, { failure }) => failure.value
 			}
 		};
@@ -82,7 +82,7 @@ class DonationLogCommand extends Command {
 
 		if (!clans.map(clan => clan.tag).includes(data.tag) && !data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
-				.setAuthor(`${data.name} - Donation Log Setup`, data.badgeUrls.small)
+				.setAuthor(`${data.name} - Player Log Setup`, data.badgeUrls.small)
 				.setDescription([
 					'**Clan Description**',
 					`${data.description}`,
@@ -100,39 +100,21 @@ class DonationLogCommand extends Command {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
 		}
 
-		const ref = firestore.collection('tracking_clans').doc(`${message.guild.id}${data.tag}`);
-
-		await ref.update({
+		const id = await this.client.storage.register({
+			mode: 'PLAYER_LOG',
+			guild: message.guild.id,
+			channel: channel.id,
 			tag: data.tag,
 			name: data.name,
-			user: message.author.id,
-			verified: true,
-			donationlog: {
-				channel: channel.id,
-				color
-			},
+			premium: this.client.patron.get(message.guild.id, 'guild', false)
+		});
+
+		this.client.cacheHandler.add(id, {
+			mode: 'PLAYER_LOG',
 			guild: message.guild.id,
-			isPremium: this.client.patron.get(message.guild.id, 'guild', false),
-			createdAt: new Date()
-		}, { merge: true });
-		const collection = await this.database.collection('clanstores')
-			.findOneAndUpdate({ tag: data.tag, guild: data.guild }, {
-				$set: {
-					tag: data.tag,
-					guild: data.guild,
-					name: data.name,
-					premium: data.premium,
-					donationlog: {
-						channel: channel.id,
-						color
-					}
-				}
-			}, { upsert: true, returnOriginal: false });
-
-		const metadata = await ref.get().then(snap => snap.data());
-
-		this.client.tracker.add(data.tag, message.guild.id, metadata);
-		this.client.tracker.push(metadata);
+			channel: channel.id,
+			tag: data.tag
+		});
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)
@@ -153,18 +135,13 @@ class DonationLogCommand extends Command {
 			: missingPerms[0];
 	}
 
-	async clans(message, clans = []) {
-		await firestore.collection('tracking_clans')
-			.where('guild', '==', message.guild.id)
-			.get()
-			.then(snap => {
-				snap.forEach(doc => {
-					clans.push(doc.data());
-				});
-				if (!snap.size) clans = [];
-			});
-		return clans;
+	async clans(message) {
+		const collection = await mongodb.db('clashperk')
+			.collection('clanstores')
+			.find({ guild: message.guild.id })
+			.toArray();
+		return collection;
 	}
 }
 
-module.exports = DonationLogCommand;
+module.exports = PlayerLogCommand;

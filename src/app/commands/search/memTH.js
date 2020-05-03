@@ -1,27 +1,32 @@
-const { Command, Flag } = require('discord-akairo');
+const { Command, Flag, Argument } = require('discord-akairo');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
-const { townHallEmoji, emoji } = require('../../util/emojis');
-const { stripIndent } = require('common-tags');
+const { emoji, townHallEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
 
 const API = process.env.APIS.split(',');
 
-class WarWeightCommand extends Command {
+class MembersTHCommand extends Command {
 	constructor() {
-		super('warweight', {
-			aliases: ['warweight', 'ww'],
-			category: 'lookup',
+		super('members-th', {
+			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
-				content: 'List of clan members with townhall & heroes.',
+				content: 'Displays a list of clan members.',
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
-			}
+			},
+			optionFlags: ['--th', '-th', 'th']
 		});
 	}
 
 	*args() {
+		const townhall = yield {
+			match: 'option',
+			flag: ['--th', '-th', 'th'],
+			type: Argument.range('integer', 1, 13, true)
+		};
+
 		const data = yield {
 			type: async (message, args) => {
 				const resolved = await Resolver.resolve(message, args);
@@ -33,7 +38,7 @@ class WarWeightCommand extends Command {
 			}
 		};
 
-		return { data };
+		return { data, townhall };
 	}
 
 	cooldown(message) {
@@ -41,7 +46,7 @@ class WarWeightCommand extends Command {
 		return 20000;
 	}
 
-	async exec(message, { data }) {
+	async exec(message, { data, townhall }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 
 		const list = data.memberList.map(m => m.tag);
@@ -62,49 +67,29 @@ class WarWeightCommand extends Command {
 		const array = [];
 		for (const arr of requests) {
 			for (const member of arr) {
-				array.push({
-					tag: member.tag,
-					name: member.name,
-					townHallLevel: member.townHallLevel,
-					heroes: member.heroes.filter(a => a.village === 'home')
-				});
+				array.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel });
 			}
 		}
 
-		const memberList = this.sort(array);
+		const items = this.sort(array);
+		const filter = items.filter(arr => arr.townHallLevel === townhall);
 
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
-		const header = stripIndent(`${emoji.townhall}\`\u200e BK AQ GW RC  ${'NAME'.padEnd(20, ' ')}\``);
 		const pages = [
-			this.paginate(memberList, 0, 25)
-				.items.map(member => {
-					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name)}\``;
-				}),
-			this.paginate(memberList, 25, 50)
-				.items.map(member => {
-					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name)}\``;
-				})
+			this.paginate(townhall ? filter : items, 0, 25)
+				.items.map(member => `${townHallEmoji[member.townHallLevel]} \`\u200e${this.padStart(member.townHallLevel)}\` ${Util.escapeInlineCode(member.name)}`),
+			this.paginate(townhall ? filter : items, 25, 50)
+				.items.map(member => `${townHallEmoji[member.townHallLevel]} \`\u200e${this.padStart(member.townHallLevel)}\` ${Util.escapeInlineCode(member.name)}`)
 		];
 
-		if (!pages[1].length) {
-			return message.util.send({
-				embed: embed.setDescription([
-					header,
-					pages[0].join('\n')
-				])
-			});
-		}
+		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
 
 		const msg = await message.util.send({
-			embed: embed.setDescription([
-				header,
-				pages[0].join('\n')
-			]).setFooter('Page 1/2')
+			embed: embed.setDescription(pages[0].join('\n'))
+				.setFooter('Page 1/2')
 		});
 
 		for (const emoji of ['⬅️', '➡️']) {
@@ -120,10 +105,8 @@ class WarWeightCommand extends Command {
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡️') {
 				await msg.edit({
-					embed: embed.setDescription([
-						header,
-						pages[1].join('\n')
-					]).setFooter('Page 2/2')
+					embed: embed.setDescription(pages[1].join('\n'))
+						.setFooter('Page 2/2')
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -131,10 +114,8 @@ class WarWeightCommand extends Command {
 			}
 			if (reaction.emoji.name === '⬅️') {
 				await msg.edit({
-					embed: embed.setDescription([
-						header,
-						pages[0].join('\n')
-					]).setFooter('Page 1/2')
+					embed: embed.setDescription(pages[0].join('\n'))
+						.setFooter('Page 1/2')
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -149,23 +130,6 @@ class WarWeightCommand extends Command {
 		return message;
 	}
 
-	heroes(items) {
-		return Object.assign([
-			{ level: '  ' },
-			{ level: '  ' },
-			{ level: '  ' },
-			{ level: '  ' }
-		], items);
-	}
-
-	padStart(data) {
-		return data.toString().padStart(2, ' ');
-	}
-
-	padEnd(data) {
-		return Util.escapeInlineCode(data).padEnd(20, ' ');
-	}
-
 	paginate(items, start, end) {
 		return { items: items.slice(start, end) };
 	}
@@ -174,9 +138,13 @@ class WarWeightCommand extends Command {
 		return new Promise(res => setTimeout(res, ms));
 	}
 
+	padStart(num) {
+		return num.toString().padStart(2, ' ');
+	}
+
 	sort(items) {
 		return items.sort((a, b) => b.townHallLevel - a.townHallLevel);
 	}
 }
 
-module.exports = WarWeightCommand;
+module.exports = MembersTHCommand;

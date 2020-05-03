@@ -1,19 +1,19 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const { firestore } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 
 class LastOnlineBoardCommand extends Command {
 	constructor() {
 		super('lastonlineboard', {
 			aliases: ['lastonlineboard'],
-			category: 'tracker',
+			category: 'activity',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: 'Setup a live updating last-online board for a clan.',
-				usage: '<clan tag> [channel/hexColor] [hexColor/channel]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #tracker #5970C1', '#8QU8J9LP #5970C1 #tracker']
+				usage: '<clanTag> [channel/color] [color/channel]',
+				examples: ['#8QU8J9LP', '#8QU8J9LP #last-online #5970C1', '#8QU8J9LP #5970C1 #last-online']
 			}
 		});
 	}
@@ -96,36 +96,35 @@ class LastOnlineBoardCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const ref = firestore.collection('tracking_clans').doc(`${message.guild.id}${data.tag}`);
-
 		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL'];
 		if (!channel.permissionsFor(channel.guild.me).has(permissions, false)) {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
 		}
+
 		const msg = await channel.send({
 			embed: {
-				description: 'Placeholder for Last Online Board \nPlease do not Delete this Message'
+				description: ['Placeholder for Last Online board', 'Please do not delete this message.'].join('\n')
 			}
 		});
 
-		await ref.update({
+		const id = await this.client.storage.register({
+			mode: 'LAST_ONLINE_LOG',
+			guild: message.guild.id,
+			channel: channel.id,
 			tag: data.tag,
 			name: data.name,
-			user: message.author.id,
-			verified: true,
-			lastonline: {
-				channel: channel.id,
-				message: msg.id
-			},
+			color,
+			message: msg.id,
+			premium: this.client.patron.get(message.guild.id, 'guild', false)
+		});
+
+		this.client.cacheHandler.add(id, {
+			mode: 'LAST_ONLINE_LOG',
 			guild: message.guild.id,
-			isPremium: this.client.patron.get(message.guild.id, 'guild', false),
-			createdAt: new Date()
-		}, { merge: true });
-
-		const metadata = await ref.get().then(snap => snap.data());
-
-		this.client.tracker.add(data.tag, message.guild.id, metadata);
-		this.client.tracker.push(metadata);
+			channel: channel.id,
+			tag: data.tag,
+			message: msg.id
+		});
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)
@@ -133,19 +132,6 @@ class LastOnlineBoardCommand extends Command {
 			.setColor(color);
 		if (message.channel.id !== channel.id) return message.util.send({ embed });
 		return message;
-	}
-
-	async clans(message, clans = []) {
-		await firestore.collection('tracking_clans')
-			.where('guild', '==', message.guild.id)
-			.get()
-			.then(snap => {
-				snap.forEach(doc => {
-					clans.push(doc.data());
-				});
-				if (!snap.size) clans = [];
-			});
-		return clans;
 	}
 
 	missingPermissions(channel, user, permissions) {
@@ -158,6 +144,14 @@ class LastOnlineBoardCommand extends Command {
 		return missingPerms.length > 1
 			? `${missingPerms.slice(0, -1).join(', ')} and ${missingPerms.slice(-1)[0]}`
 			: missingPerms[0];
+	}
+
+	async clans(message) {
+		const collection = await mongodb.db('clashperk')
+			.collection('clanstores')
+			.find({ guild: message.guild.id })
+			.toArray();
+		return collection;
 	}
 }
 

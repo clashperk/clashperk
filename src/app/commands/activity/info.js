@@ -3,11 +3,11 @@ const { MessageEmbed } = require('discord.js');
 const { firestore } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
 
-class TrackingCommand extends Command {
+class InfoCommand extends Command {
 	constructor() {
-		super('tracking', {
+		super('info', {
 			aliases: ['info', 'tracking', 'clans'],
-			category: 'tracker',
+			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
@@ -108,4 +108,4 @@ class TrackingCommand extends Command {
 	}
 }
 
-module.exports = TrackingCommand;
+module.exports = InfoCommand;

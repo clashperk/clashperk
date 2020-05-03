@@ -117,7 +117,12 @@ class PlayerEvent {
 		});
 	}
 
-	add(data) {
+	async add(id) {
+		const data = await mongodb.db('clashperk')
+			.collection('playerlogs')
+			.findOne({ clan_id: ObjectId(id) });
+
+		if (!data) return null;
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			guild: data.guild,
 			channel: data.channel

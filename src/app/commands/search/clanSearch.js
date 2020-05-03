@@ -17,7 +17,7 @@ class ClanSearchCommand extends Command {
 	constructor() {
 		super('clan-search', {
 			aliases: ['clan-search'],
-			category: 'lookup',
+			category: 'search',
 			description: {
 				content: 'Clash of Clans clan search command.',
 				usage: '<tag>',

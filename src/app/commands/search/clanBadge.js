@@ -6,7 +6,7 @@ class ClanBadgeCommand extends Command {
 	constructor() {
 		super('clan-badge', {
 			aliases: ['clan-badge', 'badge'],
-			category: 'lookup',
+			category: 'search',
 			description: {
 				content: 'Clash of Clans clan badge lookup command.',
 				usage: '<tag>',

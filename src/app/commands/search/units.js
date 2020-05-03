@@ -8,7 +8,7 @@ class UnitsCommand extends Command {
 	constructor() {
 		super('units', {
 			aliases: ['units', 'troops'],
-			category: 'owner',
+			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows troops and spells of a player.',

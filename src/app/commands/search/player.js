@@ -11,7 +11,7 @@ class PlayerCommand extends Command {
 	constructor() {
 		super('player', {
 			aliases: ['player'],
-			category: 'lookup',
+			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Clash of clans player lookup commnad.',

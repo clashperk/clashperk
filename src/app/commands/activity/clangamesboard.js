@@ -1,19 +1,19 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const { firestore } = require('../../struct/Database');
+const { firestore, mongodb } = require('../../struct/Database');
 
-class PlayerLogCommand extends Command {
+class ClanGamesBoardCommand extends Command {
 	constructor() {
-		super('playerlog', {
-			aliases: ['playerlog'],
-			category: 'tracker',
+		super('clangamesboard', {
+			aliases: ['clangamesboard', 'cgboard', 'clangameboard'],
+			category: 'activity',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
-				content: 'Starts the player-log in a channel.',
-				usage: '<clan tag> [channel/hexColor] [hexColor/channel]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #player-log #5970C1', '#8QU8J9LP #5970C1 #player-log']
+				content: 'Setup a live updating last-online board for a clan.',
+				usage: '<clanTag> [channel/color] [color/channel]',
+				examples: ['#8QU8J9LP', '#8QU8J9LP #last-online #5970C1', '#8QU8J9LP #5970C1 #last-online']
 			}
 		});
 	}
@@ -23,7 +23,7 @@ class PlayerLogCommand extends Command {
 			type: 'clan',
 			unordered: false,
 			prompt: {
-				start: 'What clan do you want to track memberlog?',
+				start: 'What clan do you want to track clan games?',
 				retry: (msg, { failure }) => failure.value
 			}
 		};
@@ -80,9 +80,10 @@ class PlayerLogCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		if (!clans.map(clan => clan.tag).includes(data.tag) && !data.description.toLowerCase().includes('cp')) {
+		const clan = clans.find(clan => clan.tag === data.tag) || { verified: false };
+		if (!clan.verified && !data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
-				.setAuthor(`${data.name} - Player Log Setup`, data.badgeUrls.small)
+				.setAuthor(`${data.name} - Last Online Board Setup`, data.badgeUrls.small)
 				.setDescription([
 					'**Clan Description**',
 					`${data.description}`,
@@ -100,30 +101,52 @@ class PlayerLogCommand extends Command {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
 		}
 
-		const ref = await firestore.collection('tracking_clans').doc(`${message.guild.id}${data.tag}`);
-		await ref.update({
-			tag: data.tag,
-			name: data.name,
-			user: message.author.id,
-			verified: true,
+		const msg = await channel.send({
+			embed: {
+				description: ['Placeholder for Last-Online board.', 'Please do not delete this message.'].join('\n')
+			}
+		});
+
+		const id = await this.client.store.register({
+			type: 'CLAN_GAMES_LOG',
 			guild: message.guild.id,
-			memberlog: {
-				channel: channel.id
-			},
-			isPremium: this.client.patron.get(message.guild.id, 'guild', false),
-			createdAt: new Date()
-		}, { merge: true });
+			channel: channel.id,
+			premium: this.client.patron.get(message.guild.id, 'guild', false),
+			message: msg.id,
+			name: data.name,
+			tag: data.name
+		});
 
-		const metadata = await ref.get().then(snap => snap.data());
-
-		this.client.tracker.add(data.tag, message.guild.id, metadata);
-		this.client.tracker.push(metadata);
+		this.client.cacheHandler.add(id, {
+			mode: 'CLAN_GAMES_LOG',
+			tag: data.tag,
+			guild: message.guild.id,
+			channel: channel.id,
+			message: msg.id,
+			color,
+			embed: null
+		});
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)
-			.setDescription(`Started tracking in ${channel} (${channel.id})`)
+			.setDescription(`Started clan games board in ${channel} (${channel.id})`)
 			.setColor(color);
-		return message.util.send({ embed });
+		if (message.channel.id !== channel.id) return message.util.send({ embed });
+		return message;
+	}
+
+	async clans(message, clans = []) {
+		await mongodb.db('clashperk').collection('clangameslogs');
+		await firestore.collection('tracking_clans')
+			.where('guild', '==', message.guild.id)
+			.get()
+			.then(snap => {
+				snap.forEach(doc => {
+					clans.push(doc.data());
+				});
+				if (!snap.size) clans = [];
+			});
+		return clans;
 	}
 
 	missingPermissions(channel, user, permissions) {
@@ -137,19 +160,6 @@ class PlayerLogCommand extends Command {
 			? `${missingPerms.slice(0, -1).join(', ')} and ${missingPerms.slice(-1)[0]}`
 			: missingPerms[0];
 	}
-
-	async clans(message, clans = []) {
-		await firestore.collection('tracking_clans')
-			.where('guild', '==', message.guild.id)
-			.get()
-			.then(snap => {
-				snap.forEach(doc => {
-					clans.push(doc.data());
-				});
-				if (!snap.size) clans = [];
-			});
-		return clans;
-	}
 }
 
-module.exports = PlayerLogCommand;
+module.exports = ClanGamesBoardCommand;

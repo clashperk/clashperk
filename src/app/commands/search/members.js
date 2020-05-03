@@ -4,7 +4,7 @@ class MembersCommand extends Command {
 	constructor() {
 		super('members', {
 			aliases: ['members'],
-			category: 'lookup',
+			category: 'search',
 			description: {
 				content: 'List of clan members (--th to view th levels).',
 				usage: '<tag> [--th/-th] [th level]',

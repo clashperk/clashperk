@@ -7,7 +7,7 @@ class ClanCommand extends Command {
 	constructor() {
 		super('clan', {
 			aliases: ['clan', 'myclan'],
-			category: 'lookup',
+			category: 'search',
 			description: {
 				content: 'Clash of Clans clan lookup command.',
 				usage: '<tag>',

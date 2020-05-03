@@ -5,14 +5,14 @@ const moment = require('moment');
 require('moment-duration-format');
 const Resolver = require('../../struct/Resolver');
 
-class MissingAttacksCommand extends Command {
+class RemainingAttacksCommand extends Command {
 	constructor() {
-		super('missing-attacks', {
-			aliases: ['missing', 'missing-attacks'],
-			category: 'lookup',
+		super('remaining-attacks', {
+			aliases: ['remaining', 'missing', 'missing-attacks'],
+			category: 'search',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: 'Shows info about missing attacks.',
+				content: 'Shows info about remaining attacks.',
 				usage: '<tag> [--cwl/cwl]',
 				examples: ['#8QU8J9LP', '8QU8J9LP --cwl', '#8QU8J9LP cwl'],
 				fields: [{
@@ -100,4 +100,4 @@ class MissingAttacksCommand extends Command {
 	}
 }
 
-module.exports = MissingAttacksCommand;
+module.exports = RemainingAttacksCommand;

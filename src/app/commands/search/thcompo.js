@@ -10,7 +10,7 @@ class ThCompoCommand extends Command {
 	constructor() {
 		super('th-compo', {
 			aliases: ['th-compo', 'compo'],
-			category: 'lookup',
+			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Calculates TH compositions of a clan.',

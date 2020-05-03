@@ -10,7 +10,8 @@ const Firebase = require('../struct/Firebase');
 const { MessageEmbed } = require('discord.js');
 const { status } = require('../util/constants');
 const path = require('path');
-const Handler = require('../core/CacheHandler');
+const CacheHandler = require('../core/CacheHandler');
+const Storage = require('../struct/StorageHandler');
 
 class ClashPerk extends AkairoClient {
 	constructor(config) {
@@ -149,7 +150,8 @@ class ClashPerk extends AkairoClient {
 			}
 		}, 2000);*/
 
-		this.handler = new Handler(this);
+		this.cacheHandler = new CacheHandler(this);
+		this.storage = new Storage(this);
 		const intervalId = setInterval(() => {
 			if (this.readyAt && this.user && this.user.id === process.env.CLIENT_ID) {
 				this.handler.init();

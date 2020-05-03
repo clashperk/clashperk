@@ -1,15 +1,15 @@
 const { Command, Flag } = require('discord-akairo');
 const Resolver = require('../../struct/Resolver');
-const { leagueEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
 
-class MembersLeagueCommand extends Command {
+class TrophyBoardCommand extends Command {
 	constructor() {
-		super('members-league', {
-			category: 'lookup',
+		super('trophyboard', {
+			aliases: ['trophies', 'trophyboard', 'tb'],
+			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
-				content: 'Displays a list of clan members.',
+				content: 'List of clan members with trophies.',
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			}
@@ -41,18 +41,34 @@ class MembersLeagueCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
+		const header = `\`# TROPHY  ${'NAME'.padEnd(20, ' ')}\``;
 		const pages = [
 			this.paginate(data.memberList, 0, 25)
-				.items.map(member => `${leagueEmoji[member.league.id]} \`\u200e${member.tag.padEnd(12, '\u2002')} ${Util.escapeInlineCode(member.name).padEnd(12, '\u2002')}\``),
+				.items.map((member, index) => {
+					const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
+					return `\`${(index + 1).toString().padStart(2, '0')} ${trophies}  ${this.padEnd(member.name)}\``;
+				}),
 			this.paginate(data.memberList, 25, 50)
-				.items.map(member => `${leagueEmoji[member.league.id]} \`\u200e${member.tag.padEnd(12, '\u2002')} ${Util.escapeInlineCode(member.name).padEnd(20, '\u2002')}\``)
+				.items.map((member, index) => {
+					const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
+					return `\`${(index + 1).toString().padStart(2, '0')} ${trophies}  ${this.padEnd(member.name)}\``;
+				})
 		];
 
-		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
+		if (!pages[1].length) {
+			return message.util.send({
+				embed: embed.setDescription([
+					header,
+					pages[0].join('\n')
+				])
+			});
+		}
 
 		const msg = await message.util.send({
-			embed: embed.setDescription(pages[0].join('\n'))
-				.setFooter('Page 1/2')
+			embed: embed.setDescription([
+				header,
+				pages[0].join('\n')
+			]).setFooter('Page 1/2')
 		});
 
 		for (const emoji of ['⬅️', '➡️']) {
@@ -68,8 +84,10 @@ class MembersLeagueCommand extends Command {
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡️') {
 				await msg.edit({
-					embed: embed.setDescription(pages[1].join('\n'))
-						.setFooter('Page 2/2')
+					embed: embed.setDescription([
+						header,
+						pages[1].join('\n')
+					]).setFooter('Page 2/2')
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -77,8 +95,10 @@ class MembersLeagueCommand extends Command {
 			}
 			if (reaction.emoji.name === '⬅️') {
 				await msg.edit({
-					embed: embed.setDescription(pages[0].join('\n'))
-						.setFooter('Page 1/2')
+					embed: embed.setDescription([
+						header,
+						pages[0].join('\n')
+					]).setFooter('Page 1/2')
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -93,6 +113,14 @@ class MembersLeagueCommand extends Command {
 		return message;
 	}
 
+	padEnd(data) {
+		return Util.escapeInlineCode(data).padEnd(20, ' ');
+	}
+
+	donation(data) {
+		return data.toString().padStart(5, ' ');
+	}
+
 	async delay(ms) {
 		return new Promise(res => setTimeout(res, ms));
 	}
@@ -102,4 +130,4 @@ class MembersLeagueCommand extends Command {
 	}
 }
 
-module.exports = MembersLeagueCommand;
+module.exports = TrophyBoardCommand;

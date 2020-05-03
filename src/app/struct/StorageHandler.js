@@ -1,13 +1,13 @@
 const { mongodb } = require('./Database');
+const { ObjectId } = require('mongodb');
 
 class StorageHandler {
 	constructor(client) {
 		this.client = client;
-		this.database = mongodb.db('clashperk');
 	}
 
 	async register(data) {
-		const collection = await this.database.collection('clanstores')
+		const collection = await mongodb.db('clashperk').collection('clanstores')
 			.findOneAndUpdate({ tag: data.tag, guild: data.guild }, {
 				tag: data.tag,
 				guild: data.guild,
@@ -15,12 +15,14 @@ class StorageHandler {
 				createdAt: new Date()
 			}, { upsert: true, returnOriginal: false });
 
+		const id = ObjectId(collection.value._id).toString();
+
 		switch (data.type) {
 			case 'DONATION_LOG':
-				await this.database.collection('donationlogs')
-					.updateOne({ clan_id: collection.value._id }, {
+				await mongodb.db('clashperk').collection('donationlogs')
+					.updateOne({ clan_id: ObjectId(id) }, {
 						$set: {
-							clan_id: collection.value._id,
+							clan_id: ObjectId(id),
 							tag: data.tag,
 							guild: data.guild,
 							name: data.name,
@@ -32,10 +34,10 @@ class StorageHandler {
 					}, { upsert: true });
 				break;
 			case 'PLAYER_LOG':
-				await this.database.collection('playerlogs')
-					.updateOne({ clan_id: collection.value._id }, {
+				await mongodb.db('clashperk').collection('playerlogs')
+					.updateOne({ clan_id: ObjectId(id) }, {
 						$set: {
-							clan_id: collection.value._id,
+							clan_id: ObjectId(id),
 							tag: data.tag,
 							guild: data.guild,
 							name: data.name,
@@ -46,10 +48,10 @@ class StorageHandler {
 					}, { upsert: true });
 				break;
 			case 'LAST_ONLINE_LOG':
-				await this.database.collection('lastonlinelogs')
-					.updateOne({ clan_id: collection.value._id }, {
+				await mongodb.db('clashperk').collection('lastonlinelogs')
+					.updateOne({ clan_id: ObjectId(id) }, {
 						$set: {
-							clan_id: collection.value._id,
+							clan_id: ObjectId(id),
 							tag: data.tag,
 							guild: data.guild,
 							name: data.name,
@@ -62,10 +64,10 @@ class StorageHandler {
 					}, { upsert: true });
 				break;
 			case 'CLAN_GAMES_LOG':
-				await this.database.collection('clangameslogs')
-					.updateOne({ clan_id: collection.value._id }, {
+				await mongodb.db('clashperk').collection('clangameslogs')
+					.updateOne({ clan_id: ObjectId(id) }, {
 						$set: {
-							clan_id: collection.value._id,
+							clan_id: ObjectId(id),
 							tag: data.tag,
 							guild: data.guild,
 							name: data.name,
@@ -77,10 +79,10 @@ class StorageHandler {
 						}
 					}, { upsert: true });
 			case 'CLAN_EMBED_LOG':
-				await this.database.collection('clanembedlogs')
-					.updateOne({ clan_id: collection.value._id }, {
+				await mongodb.db('clashperk').collection('clanembedlogs')
+					.updateOne({ clan_id: ObjectId(id) }, {
 						$set: {
-							clan_id: collection.value._id,
+							clan_id: ObjectId(id),
 							tag: data.tag,
 							guild: data.guild,
 							name: data.name,
@@ -95,52 +97,52 @@ class StorageHandler {
 				break;
 		}
 
-		return collection;
+		return collection.value._id;
 	}
 
 	async delete(data) {
-		await this.database.collection('donationlogs')
+		await mongodb.db('clashperk').collection('donationlogs')
 			.deleteOne({ guild: data.guild, tag: data.tag });
 
-		await this.database.collection('playerlogs')
+		await mongodb.db('clashperk').collection('playerlogs')
 			.deleteOne({ guild: data.guild, tag: data.tag });
 
-		await this.database.collection('lastonlinelogs')
+		await mongodb.db('clashperk').collection('lastonlinelogs')
 			.deleteOne({ guild: data.guild, tag: data.tag });
 
-		await this.database.collection('clangameslogs')
+		await mongodb.db('clashperk').collection('clangameslogs')
 			.deleteOne({ guild: data.guild, tag: data.tag });
 
-		await this.database.collection('clanembedlogs')
+		await mongodb.db('clashperk').collection('clanembedlogs')
 			.deleteOne({ guild: data.guild, tag: data.tag });
 
-		return this.database.collection('clanstore')
+		return mongodb.db('clashperk').collection('clanstore')
 			.deleteOne({ guild: data.guild, tag: data.tag });
 	}
 
 	async stop(data) {
 		if (data.type === 'DONATION_LOG') {
-			return this.database.collection('donationlogs')
+			return mongodb.db('clashperk').collection('donationlogs')
 				.deleteOne({ guild: data.guild, tag: data.tag });
 		}
 
 		if (data.type === 'PLAYER_LOG') {
-			return this.database.collection('playerlogs')
+			return mongodb.db('clashperk').collection('playerlogs')
 				.deleteOne({ guild: data.guild, tag: data.tag });
 		}
 
 		if (data.type === 'LAST_ONLINE_LOG') {
-			return this.database.collection('lastonlinelogs')
+			return mongodb.db('clashperk').collection('lastonlinelogs')
 				.deleteOne({ guild: data.guild, tag: data.tag });
 		}
 
 		if (data.type === 'CLAN_GAMES_LOG') {
-			return this.database.collection('clangameslogs')
+			return mongodb.db('clashperk').collection('clangameslogs')
 				.deleteOne({ guild: data.guild, tag: data.tag });
 		}
 
 		if (data.type === 'CLAN_EMBED_LOG') {
-			return this.database.collection('clanembedlogs')
+			return mongodb.db('clashperk').collection('clanembedlogs')
 				.deleteOne({ guild: data.guild, tag: data.tag });
 		}
 	}

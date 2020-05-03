@@ -75,21 +75,38 @@ class CacheHandler {
 		}
 	}
 
-	add(key, value) {
-		const cache = this.cached.get(key);
+	add(_id, data) {
+		const id = ObjectId(_id).toString();
+		const cache = this.cached.get(id);
 		if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
-		this.cached.set(key, value);
-		return this.start(key);
+		this.cached.set(id, { guild: data.guild, tag: data.tag });
+		this.addLogs(_id, data.mode);
+		return this.start(id);
 	}
 
-	delete(key) {
-		const cache = this.cached.get(key);
+	async addLogs(id, mode) {
+		if (!mode) {
+			await this.clanEvent.add(id);
+			await this.lastOnline.add(id);
+			await this.clanEmbed.add(id);
+			return this.playerEvent.add(id);
+		}
+
+		if (mode === 'DONATION_LOG') return this.clanEvent.add(id);
+		if (mode === 'LAST_ONLINE_LOG') return this.lastOnline.add(id);
+		if (mode === 'CLAN_EMBED_LOG') return this.clanEmbed.add(id);
+		if (mode === 'PLAYER_LOG') return this.playerEvent.add(id);
+	}
+
+	delete(_id) {
+		const id = ObjectId(_id).toString();
+		const cache = this.cached.get(id);
 		if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
-		this.clanEmbed.delete(key);
-		this.clanEvent.delete(key);
-		this.playerEvent.delete(key);
-		this.lastOnline.delete(key);
-		return this.cached.delete(key);
+		this.clanEmbed.delete(id);
+		this.clanEvent.delete(id);
+		this.playerEvent.delete(id);
+		this.lastOnline.delete(id);
+		return this.cached.delete(id);
 	}
 
 	async start(key) {
@@ -265,7 +282,6 @@ class CacheHandler {
 
 	async flush() {
 		for (const key of this.cached.keys()) {
-			console.log(typeof key);
 			const cache = this.cached.get(key);
 			if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
 		}

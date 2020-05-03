@@ -89,5 +89,12 @@ module.exports = {
 			]);
 
 		return embed;
+	},
+
+	MSG: {
+		0: 'LAST_ONLINE_LOG',
+		1: 'DONATION_LOG',
+		2: 'CLAN_EMBED_LOG',
+		3: ''
 	}
 };

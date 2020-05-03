@@ -10,10 +10,10 @@ const { Util } = require('discord.js');
 class CwlMissingComamnd extends Command {
 	constructor() {
 		super('cwl-missing', {
-			aliases: ['cwl-missing'],
+			aliases: ['cwl-remaining', 'cwl-missing'],
 			category: 'cwl',
 			description: {
-				content: 'Shows missing attacks of current cwl.',
+				content: 'Shows remaining attacks of current cwl.',
 				usage: '<tag>',
 				examples: ['#8QU8J9LP'],
 				fields: [

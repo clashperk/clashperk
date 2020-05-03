@@ -10,7 +10,7 @@ class CurrentWarCommand extends Command {
 	constructor() {
 		super('current-war', {
 			aliases: ['current-war', 'war'],
-			category: 'lookup',
+			category: 'search',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Shows info about currentwar.',

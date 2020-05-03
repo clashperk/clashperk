@@ -2,14 +2,14 @@ const { Command, Flag } = require('discord-akairo');
 const Resolver = require('../../struct/Resolver');
 const { Util } = require('discord.js');
 
-class TrophyBoardCommand extends Command {
+class DonationBoardCommand extends Command {
 	constructor() {
-		super('trophyboard', {
-			aliases: ['trophyboard', 'tb'],
-			category: 'lookup',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+		super('donationboard', {
+			aliases: ['donations', 'donationboard', 'db'],
+			category: 'search',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
-				content: 'List of clan members with trophies.',
+				content: 'List of clan members with donations.',
 				usage: '<tag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			}
@@ -41,17 +41,20 @@ class TrophyBoardCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
-		const header = `\`# TROPHY  ${'NAME'.padEnd(20, ' ')}\``;
+		// const header = `\`#    DON   REC   ${'RATIO'.padStart(8, ' ')}  ${'NAME'.padEnd(20, ' ')}\``;
+		const header = `\`#    DON   REC  ${'NAME'.padEnd(20, ' ')}\``;
 		const pages = [
-			this.paginate(data.memberList, 0, 25)
+			this.paginate(this.sort(data.memberList), 0, 25)
 				.items.map((member, index) => {
-					const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
-					return `\`${(index + 1).toString().padStart(2, '0')} ${trophies}  ${this.padEnd(member.name)}\``;
+					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
+					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
+					return `\`${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name)}\``;
 				}),
-			this.paginate(data.memberList, 25, 50)
+			this.paginate(this.sort(data.memberList), 25, 50)
 				.items.map((member, index) => {
-					const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
-					return `\`${(index + 1).toString().padStart(2, '0')} ${trophies}  ${this.padEnd(member.name)}\``;
+					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
+					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
+					return `\`${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name)}\``;
 				})
 		];
 
@@ -113,6 +116,20 @@ class TrophyBoardCommand extends Command {
 		return message;
 	}
 
+	ratio(a, b) {
+		for (let num = b; num > 1; num--) {
+			if ((a % num) === 0 && (b % num) === 0) {
+				a /= num;
+				b /= num;
+			}
+		}
+		return `${a}:${b}`;
+	}
+
+	sort(items) {
+		return items.sort((a, b) => b.donations - a.donations);
+	}
+
 	padEnd(data) {
 		return Util.escapeInlineCode(data).padEnd(20, ' ');
 	}
@@ -130,4 +147,4 @@ class TrophyBoardCommand extends Command {
 	}
 }
 
-module.exports = TrophyBoardCommand;
+module.exports = DonationBoardCommand;
