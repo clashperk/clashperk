@@ -22,16 +22,16 @@ class CacheHandler {
 	async broadcast(data) {
 		switch (data.mode) {
 			case 'CLAN_DONATION_EVENT':
-				this.clanEvent.exec(data._id, data);
+				await this.clanEvent.exec(data._id, data);
 				break;
 			case 'LAST_ONLINE_EVENT':
-				this.lastOnline.exec(data._id, data.clan, data.update);
+				await this.lastOnline.exec(data._id, data.clan, data.update);
 				break;
 			case 'CLAN_MEMBER_ACTION':
-				this.playerEvent.exec(data._id, data);
+				await this.playerEvent.exec(data._id, data);
 				break;
 			case 'CLAN_EMBED_EVENT':
-				this.clanEmbed.exec(data._id, data.clan);
+				await this.clanEmbed.exec(data._id, data.clan);
 				break;
 			default:
 				break;
@@ -101,7 +101,6 @@ class CacheHandler {
 
 		const clan = await this.clan(cache.tag);
 		if (!clan) return;
-		console.log([clan.name, clan.tag]);
 
 		if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
 
@@ -184,7 +183,7 @@ class CacheHandler {
 		if (Object.keys($unset).length) $update.$unset = $unset;
 
 		// Last Online - Send Message
-		this.broadcast({
+		await this.broadcast({
 			_id: key,
 			clan,
 			update: $update,
@@ -192,7 +191,7 @@ class CacheHandler {
 		});
 
 		// Clan Embed
-		this.broadcast({
+		await this.broadcast({
 			_id: key,
 			clan,
 			mode: 'CLAN_EMBED_EVENT'
@@ -208,7 +207,7 @@ class CacheHandler {
 				}
 			}
 
-			this.broadcast(data);
+			await this.broadcast(data);
 		}
 
 		// Member Log
@@ -223,7 +222,7 @@ class CacheHandler {
 			}
 
 			if (tags.length) {
-				this.broadcast({
+				await this.broadcast({
 					_id: key,
 					tags,
 					clan: {
