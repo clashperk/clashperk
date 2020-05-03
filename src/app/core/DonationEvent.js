@@ -8,14 +8,14 @@ class ClanEvent {
 		this.cached = new Map();
 	}
 
-	exec(_id, data) {
-		const cache = this.cached.get(_id);
+	exec(id, data) {
+		const cache = this.cached.get(id);
 		if (cache) {
-			return this.permissionsFor(_id, cache, data);
+			return this.permissionsFor(id, cache, data);
 		}
 	}
 
-	permissionsFor(_id, cache, data) {
+	permissionsFor(id, cache, data) {
 		const permissions = [
 			'SEND_MESSAGES',
 			'EMBED_LINKS',
@@ -27,13 +27,13 @@ class ClanEvent {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				return this.handleMessage(_id, channel, data);
+				return this.handleMessage(id, channel, data);
 			}
 		}
 	}
 
-	async handleMessage(_id, channel, data) {
-		const cache = this.cached.get(_id);
+	async handleMessage(id, channel, data) {
+		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
 			.setAuthor(data.clan.name, data.clan.badge)
@@ -88,8 +88,8 @@ class ClanEvent {
 
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(data.id, {
-					_id: data.id,
+				this.cached.set(data.clan_id, {
+					id: data.clan_id,
 					guild: data.guild,
 					channel: data.channel,
 					color: data.color
@@ -100,15 +100,15 @@ class ClanEvent {
 
 	add(data) {
 		return this.cached.set(data.id, {
-			_id: data.id,
+			id: data.clan_id,
 			guild: data.guild,
 			channel: data.channel,
 			color: data.color
 		});
 	}
 
-	delete(_id) {
-		return this.cached.delete(_id);
+	delete(id) {
+		return this.cached.delete(id);
 	}
 }
 

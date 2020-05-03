@@ -4,8 +4,9 @@ const ClanEmbed = require('./ClanEmbed');
 const DonationEvent = require('./DonationEvent');
 const LastOnlineEvent = require('./LastOnlineEvent');
 const PlayerEvent = require('./PlayerEvent');
+const { ObjectId } = require('mongodb');
 
-class Util {
+class CacheHandler {
 	constructor(client) {
 		this.client = client;
 		this.cached = new Map();
@@ -50,13 +51,17 @@ class Util {
 
 		for (const item of collection) {
 			if (this.client.guilds.cache.has(item.guild)) {
-				this.cached.set(item._id, { tag: item.tag, _id: item._id, guild: item.guild });
+				this.cached.set(item._id, {
+					_id: ObjectId(item._id).toString(),
+					tag: item.tag,
+					guild: item.guild
+				});
 			}
 		}
 
 		console.log(collection);
 
-		this.client.logger.info('Cache store Initialized');
+		this.client.logger.info('Cache store Initialized', { label: 'CACHE_STORE' });
 
 		return this.launch();
 	}
@@ -83,6 +88,10 @@ class Util {
 	delete(key) {
 		const cache = this.cached.get(key);
 		if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
+		this.clanEmbed.delete(key);
+		this.clanEvent.delete(key);
+		this.playerEvent.delete(key);
+		this.lastOnline.delete(key);
 		return this.cached.delete(key);
 	}
 
@@ -258,14 +267,20 @@ class Util {
 		return res.json().catch(() => null);
 	}
 
-	async stop() {
+	async flush() {
 		for (const key of this.cached.keys()) {
+			console.log(typeof key);
 			const cache = this.cached.get(key);
 			if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
 		}
+
+		this.clanEmbed.cached.clear();
+		this.clanEvent.cached.clear();
+		this.playerEvent.cached.clear();
+		this.lastOnline.cached.clear();
 
 		return this.cached.clear();
 	}
 }
 
-module.exports = Util;
+module.exports = CacheHandler;

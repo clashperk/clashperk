@@ -1,19 +1,16 @@
-const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag, CommandUtil } = require('discord-akairo');
+const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
 const Settings = require('../struct/SettingsProvider');
-const { firestore } = require('../struct/Database');
 const Database = require('../struct/Database');
 const Logger = require('../util/logger');
-const ClanTracker = require('../core/ClanTracker');
 const fetch = require('node-fetch');
 const Patrons = require('../struct/Patrons');
-const Voter = require('../struct/VoteHandler');
+const VoteHandler = require('../struct/VoteHandler');
 const PostStats = require('../struct/PostStats');
 const Firebase = require('../struct/Firebase');
 const { MessageEmbed } = require('discord.js');
 const { status } = require('../util/constants');
 const path = require('path');
-
-const Handler = require('../core/Util');
+const Handler = require('../core/CacheHandler');
 
 class ClashPerk extends AkairoClient {
 	constructor(config) {
@@ -25,8 +22,8 @@ class ClashPerk extends AkairoClient {
 				intents: [
 					'GUILDS',
 					'GUILD_MESSAGES',
-					// 'GUILD_MEMBERS',
-					// 'GUILD_PRESENCES',
+					'GUILD_MEMBERS',
+					'GUILD_PRESENCES',
 					'GUILD_MESSAGE_REACTIONS'
 				]
 			}
@@ -131,7 +128,6 @@ class ClashPerk extends AkairoClient {
 		this.settings = new Settings(Database.mongodb.db('clashperk').collection('settings'));
 
 		/* this.postStats = new PostStats(this);
-		this.tracker = new ClanTracker(this);
 		this.firebase = new Firebase(this);
 		this.voter = new Voter(this);*/
 		this.firebase = new Firebase(this);
@@ -139,9 +135,6 @@ class ClashPerk extends AkairoClient {
 		this.patron = new Patrons(this);
 		await this.settings.init();
 		await this.patron.refresh();
-
-		await Database.mongodb.db('clashperk').collection('linkedusers').createIndex({ user: 1 }, { unique: true });
-		await Database.mongodb.db('clashperk').collection('linkedclans').createIndex({ user: 1 }, { unique: true });
 
 		/* const intervalID = setInterval(() => {
 			if (this.readyAt && this.user && this.user.id === process.env.CLIENT_ID) {

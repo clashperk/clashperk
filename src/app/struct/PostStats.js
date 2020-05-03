@@ -33,7 +33,7 @@ class PostStats {
 			},
 			url: `https://top.gg/api/bots/${this.client.user.id}/stats`,
 			method: 'POST',
-			form: { server_count: guilds }
+			form: { server_count: guilds, shard_count: this.client.shard.count }
 		}, (error, response, body) => {
 			if (error) this.client.logger.error(error.toString(), { level: 'https://top.gg' });
 		});

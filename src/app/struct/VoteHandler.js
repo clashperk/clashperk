@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 const { firebase } = require('./Database');
 const { MessageEmbed } = require('discord.js');
 
-class Voter {
+class VoteHandler {
 	constructor(client, { timeout = 30 * 60 * 1000 } = {}) {
 		this.client = client;
 		this.store = new Map();
@@ -17,7 +17,10 @@ class Voter {
 
 	async fetchWebhook() {
 		if (this.webhook) return this.webhook;
-		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'voteWebhook', undefined)).catch(() => null);
+		const guild = this.client.guilds.cache.get(this.client.settings.set('global', 'server', undefined));
+		if (!guild) return null;
+		const webhook = await guild.fetchWebhook(this.client.settings.get('global', 'voteWebhook', undefined))
+			.catch(() => null);
 		this.webhook = webhook;
 		return webhook;
 	}
@@ -161,4 +164,4 @@ class Voter {
 	}
 }
 
-module.exports = Voter;
+module.exports = VoteHandler;

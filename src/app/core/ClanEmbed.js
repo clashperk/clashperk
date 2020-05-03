@@ -7,15 +7,15 @@ class ClanEmbed {
 		this.cached = new Map();
 	}
 
-	exec(_id, clan) {
-		const cache = this.cached.get(_id);
+	exec(id, clan) {
+		const cache = this.cached.get(id);
 		console.log(clan.name);
 		if (cache) {
-			return this.permissionsFor(cache, clan);
+			return this.permissionsFor(id, cache, clan);
 		}
 	}
 
-	permissionsFor(cache, clan) {
+	permissionsFor(id, cache, clan) {
 		const permissions = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -28,68 +28,85 @@ class ClanEmbed {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				return this.handleMessage(cache._id, channel, clan);
+				return this.handleMessage(id, channel, clan);
 			}
 		}
 	}
 
-	async handleMessage(_id, channel, clan) {
-		const cache = this.cached.get(_id);
+	async handleMessage(id, channel, clan) {
+		const cache = this.cached.get(id);
+		console.log(cache);
 		if (cache && cache.msg && cache.msg.deleted) {
-			const msg = await this.sendNew(_id, channel, clan);
+			const msg = await this.sendNew(id, channel, clan);
 			if (!msg) return;
-
-			await mongodb.db('clashperk').collection('clanembedlogs')
-				.updateOne({ _id }, { message: msg.id })
-				.catch(() => null);
-
 			cache.msg = msg;
-			return this.cached.set(_id, cache);
+			return this.cached.set(id, cache);
 		}
 
 		if (cache && cache.msg && !cache.msg.deleted) {
-			return this.edit(_id, cache.msg, clan);
+			const msg = await this.edit(id, cache.msg, clan);
+			if (!msg) return;
+			cache.msg = msg;
+			return this.cached.set(id, cache);
 		}
 
-		const msg = await channel.messages.fetch(cache.message, false)
+		const message = await channel.messages.fetch(cache.message, false)
 			.catch(error => {
-				this.client.logger.warn(error, { label: 'CLAN_EMBED_FETCH_MESSAGE' });
+				this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
+				if (error.code === 10008) {
+					return { deleted: true };
+				}
+
 				return null;
 			});
 
-		console.log(msg);
+		if (!message) return;
 
-		if (!msg) {
-			const msg = await this.sendNew(_id, channel, clan);
+		if (message.deleted) {
+			const msg = await this.sendNew(id, channel, clan);
 			if (!msg) return;
+			cache.msg = msg;
+			return this.cached.set(id, cache);
+		}
 
-			await mongodb.db('clashperk').collection('clanembedlogs')
-				.updateOne({ _id }, { message: msg.id })
+		if (!message.deleted) {
+			const msg = await this.edit(id, message, clan);
+			if (!msg) return;
+			cache.msg = msg;
+			return this.cached.set(id, cache);
+		}
+	}
+
+	async sendNew(id, channel, clan) {
+		const embed = await this.embed(id, clan);
+		const message = await channel.send({ embed })
+			.catch(() => null);
+
+		if (message) {
+			await mongodb.db('clashperk')
+				.collection('clanembedlogs')
+				.updateOne({ clan_id: id }, { $set: { message: message.id } })
 				.catch(() => null);
-
-			cache.msg = msg;
-			return this.cached.set(_id, cache);
 		}
 
-		if (msg) {
-			cache.msg = msg;
-			this.cached.set(_id, cache);
-			return this.edit(_id, msg, clan);
-		}
+		return message;
 	}
 
-	async sendNew(_id, channel, clan) {
-		const embed = await this.embed(_id, clan);
-		return channel.send({ embed });
+	async edit(id, message, clan) {
+		const embed = await this.embed(id, clan);
+		const msg = await message.edit({ embed })
+			.catch(error => {
+				if (error.code === 10008) {
+					return this.sendNew(id, message.channel, clan);
+				}
+				return null;
+			});
+
+		return msg;
 	}
 
-	async edit(_id, message, clan) {
-		const embed = await this.embed(_id, clan);
-		return message.edit({ embed });
-	}
-
-	async embed(_id, clan) {
-		const cache = this.cached.get(_id);
+	async embed(id, clan) {
+		const cache = this.cached.get(id);
 		const embed = new MessageEmbed();
 		if (cache) {
 			embed.setColor(cache.embed.color)
@@ -116,8 +133,8 @@ class ClanEmbed {
 
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(data.id, {
-					_id: data.id,
+				this.cached.set(data.clan_id, {
+					id: data.clan_id,
 					guild: data.guild,
 					channel: data.channel,
 					message: data.message,
@@ -129,8 +146,8 @@ class ClanEmbed {
 	}
 
 	add(data) {
-		return this.cached.set(data.id, {
-			_id: data.id,
+		return this.cached.set(data.clan_id, {
+			id: data.clan_id,
 			guild: data.guild,
 			channel: data.channel,
 			message: data.message,
@@ -139,8 +156,8 @@ class ClanEmbed {
 		});
 	}
 
-	delete(_id) {
-		return this.cached.delete(_id);
+	delete(id) {
+		return this.cached.delete(id);
 	}
 }
 

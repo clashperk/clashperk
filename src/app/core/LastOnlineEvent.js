@@ -8,8 +8,8 @@ class LastOnlineEvent {
 		this.cached = new Map();
 	}
 
-	async exec(_id, clan, update) {
-		const cache = this.cached.get(ObjectId(_id).toString());
+	async exec(id, clan, update) {
+		const cache = this.cached.get(id);
 		if (Object.keys(update).length) {
 			await mongodb.db('clashperk')
 				.collection('lastonlines')
@@ -18,11 +18,11 @@ class LastOnlineEvent {
 		}
 
 		if (cache) {
-			return this.permissionsFor(cache, clan);
+			return this.permissionsFor(id, cache, clan);
 		}
 	}
 
-	permissionsFor(cache, clan) {
+	permissionsFor(id, cache, clan) {
 		const permissions = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -36,27 +36,26 @@ class LastOnlineEvent {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
 				console.log('perm');
-				return this.handleMessage(cache._id, channel, clan);
+				return this.handleMessage(id, channel, clan);
 			}
 		}
 	}
 
-	async handleMessage(_id, channel, clan) {
-		const cache = this.cached.get(_id);
+	async handleMessage(id, channel, clan) {
+		const cache = this.cached.get(id);
 		console.log(cache);
 		if (cache && cache.msg && cache.msg.deleted) {
-			const msg = await this.sendNew(_id, channel, clan);
+			const msg = await this.sendNew(id, channel, clan);
 			if (!msg) return;
-
 			cache.msg = msg;
-			return this.cached.set(_id, cache);
+			return this.cached.set(id, cache);
 		}
 
 		if (cache && cache.msg && !cache.msg.deleted) {
-			const msg = await this.edit(_id, cache.msg, clan);
+			const msg = await this.edit(id, cache.msg, clan);
 			if (!msg) return;
 			cache.msg = msg;
-			return this.cached.set(_id, cache);
+			return this.cached.set(id, cache);
 		}
 
 		const message = await channel.messages.fetch(cache.message, false)
@@ -72,45 +71,46 @@ class LastOnlineEvent {
 		if (!message) return;
 
 		if (message.deleted) {
-			const msg = await this.sendNew(_id, channel, clan);
+			const msg = await this.sendNew(id, channel, clan);
 			if (!msg) return;
-
 			cache.msg = msg;
-			return this.cached.set(_id, cache);
+			return this.cached.set(id, cache);
 		}
 
 		if (!message.deleted) {
-			const msg = await this.edit(_id, message, clan);
+			const msg = await this.edit(id, message, clan);
 			if (!msg) return;
 			cache.msg = msg;
-			return this.cached.set(_id, cache);
+			return this.cached.set(id, cache);
 		}
 	}
 
-	async sendNew(_id, channel, clan) {
-		const embed = await this.embed(_id, clan);
+	async sendNew(id, channel, clan) {
+		const embed = await this.embed(id, clan);
 		const message = await channel.send({ embed })
 			.catch(() => null);
 
 		if (message) {
 			await mongodb.db('clashperk')
 				.collection('lastonlinelogs')
-				.updateOne({ id: ObjectId(_id).toString() }, { $set: { message: message.id } })
+				.updateOne({ clan_id: id }, { $set: { message: message.id } })
 				.catch(() => null);
 		}
 
 		return message;
 	}
 
-	async edit(_id, message, clan) {
-		const embed = await this.embed(_id, clan);
-		return message.edit({ embed })
+	async edit(id, message, clan) {
+		const embed = await this.embed(id, clan);
+		const msg = await message.edit({ embed })
 			.catch(error => {
 				if (error.code === 10008) {
-					return this.sendNew(_id, message.channel, clan);
+					return this.sendNew(id, message.channel, clan);
 				}
 				return null;
 			});
+
+		return msg;
 	}
 
 	async embed(_id, clan) {
@@ -141,8 +141,8 @@ class LastOnlineEvent {
 
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(data.id, {
-					_id: data.id,
+				this.cached.set(data.clan_id, {
+					clan_id: data.clan_id,
 					guild: data.guild,
 					channel: data.channel,
 					message: data.message
@@ -152,16 +152,16 @@ class LastOnlineEvent {
 	}
 
 	add(data) {
-		return this.cached.set(data._id, {
-			_id: data.id,
+		return this.cached.set(data.clan_id, {
+			id: data.clan_id,
 			guild: data.guild,
 			channel: data.channel,
 			message: data.message
 		});
 	}
 
-	delete(_id) {
-		return this.cached.delete(_id);
+	delete(id) {
+		return this.cached.delete(id);
 	}
 }
 

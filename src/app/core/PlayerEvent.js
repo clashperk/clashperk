@@ -14,8 +14,8 @@ class PlayerEvent {
 		this.cached = new Map();
 	}
 
-	exec(_id, data) {
-		const cache = this.cached.get(_id);
+	exec(id, data) {
+		const cache = this.cached.get(id);
 		if (cache) {
 			return this.permissionsFor(cache, data);
 		}
@@ -95,8 +95,8 @@ class PlayerEvent {
 
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(data.id, {
-					_id: data.id,
+				this.cached.set(data.clan_id, {
+					id: data.id,
 					guild: data.guild,
 					channel: data.channel
 				});
@@ -105,15 +105,15 @@ class PlayerEvent {
 	}
 
 	add(data) {
-		return this.cached.set(data._id, {
-			_id: data.id,
+		return this.cached.set(data.clan_id, {
+			id: data.clan_id,
 			guild: data.guild,
 			channel: data.channel
 		});
 	}
 
-	delete(_id) {
-		return this.cached.delete(_id);
+	delete(id) {
+		return this.cached.delete(id);
 	}
 }
 
