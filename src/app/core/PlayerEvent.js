@@ -62,7 +62,7 @@ class PlayerEvent {
 			const embed = await this.embed(item, data);
 			if (!embed) continue;
 			await channel.send({ embed });
-			await this.delay(1000);
+			await this.delay(2000);
 		}
 
 		return data.tags.length;
