@@ -10,6 +10,7 @@ class LastOnlineEvent {
 
 	async exec(id, clan, update) {
 		const cache = this.cached.get(id);
+		console.log(cache, typeof id);
 		if (Object.keys(update).length) {
 			await mongodb.db('clashperk')
 				.collection('lastonlines')
@@ -174,6 +175,8 @@ class LastOnlineEvent {
 					channel: data.channel,
 					message: data.message
 				});
+
+				console.log(typeof data.clan_id, data.clan_id, 0);
 			}
 		});
 	}
