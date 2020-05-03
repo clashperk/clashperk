@@ -52,7 +52,7 @@ class CacheHandler {
 		for (const item of collection) {
 			if (this.client.guilds.cache.has(item.guild)) {
 				this.cached.set(item._id, {
-					_id: ObjectId(item._id).toString(),
+					_id: item._id,
 					tag: item.tag,
 					guild: item.guild
 				});
@@ -73,6 +73,7 @@ class CacheHandler {
 	async launch() {
 		for (const key of this.cached.keys()) {
 			console.log(key);
+			console.log(typeof key);
 			await this.start(key);
 			await this.delay(500);
 		}
@@ -97,6 +98,7 @@ class CacheHandler {
 
 	async start(key) {
 		const cache = this.cached.get(key);
+		console.log(cache);
 
 		const clan = await this.clan(cache.tag);
 		if (!clan) return;

@@ -1,6 +1,6 @@
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
-const { ObjectId } = require('mongodb');
+const moment = require('moment');
 
 class LastOnlineEvent {
 	constructor(client) {
@@ -86,7 +86,7 @@ class LastOnlineEvent {
 	}
 
 	async sendNew(id, channel, clan) {
-		const embed = await this.embed(id, clan);
+		const embed = await this.embed(clan);
 		const message = await channel.send({ embed })
 			.catch(() => null);
 
@@ -101,7 +101,7 @@ class LastOnlineEvent {
 	}
 
 	async edit(id, message, clan) {
-		const embed = await this.embed(id, clan);
+		const embed = await this.embed(clan);
 		const msg = await message.edit({ embed })
 			.catch(error => {
 				if (error.code === 10008) {
@@ -113,24 +113,51 @@ class LastOnlineEvent {
 		return msg;
 	}
 
-	async embed(_id, clan) {
-		const cache = this.cached.get(_id);
-		const embed = new MessageEmbed();
-		if (cache) {
-			embed.setColor(0x5970c1)
-				.setTimestamp()
-				.setAuthor(clan.name);
-			// TODO: More
-
-			return embed;
-		}
-
-		embed.setColor(0x5970c1)
-			.setTimestamp()
-			.setAuthor(clan.name);
-		// TODO: More
+	async embed(clan) {
+		const embed = new MessageEmbed()
+			.setColor(0x5970c1)
+			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+			.setDescription([
+				`Last Online Board [${clan.members}/50]`,
+				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}\n${this.filter(clan)
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${this.padEnd(m.name)}`)
+					.join('\n')}\`\`\``
+			])
+			.setFooter('Last Updated')
+			.setTimestamp();
 
 		return embed;
+	}
+
+	async filter(clan) {
+		const data = await mongodb.db('cllashperk')
+			.collection('lastonlines')
+			.findOne({ tag: clan.tag });
+
+		if (!data) {
+			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null }));
+		}
+
+		const members = clan.memberList.map(member => {
+			const lastOnline = member.tag in data.memberList
+				? new Date() - new Date(data.members[member.tag].lastOnline)
+				: null;
+			return { tag: member.tag, name: member.name, lastOnline };
+		});
+
+		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
+
+		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
+	}
+
+	format(time) {
+		if (time > 864e5) {
+			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' });
+		} else if (time > 36e5) {
+			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
+		}
+
+		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
 	}
 
 	async init() {
