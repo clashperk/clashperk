@@ -9,10 +9,12 @@ class StorageHandler {
 	async register(data) {
 		const collection = await mongodb.db('clashperk').collection('clanstores')
 			.findOneAndUpdate({ tag: data.tag, guild: data.guild }, {
-				tag: data.tag,
-				guild: data.guild,
-				name: data.name,
-				createdAt: new Date()
+				$set: {
+					tag: data.tag,
+					guild: data.guild,
+					name: data.name,
+					createdAt: new Date()
+				}
 			}, { upsert: true, returnOriginal: false });
 
 		const id = ObjectId(collection.value._id).toString();

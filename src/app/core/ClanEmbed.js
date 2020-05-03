@@ -161,7 +161,7 @@ class ClanEmbed {
 	}
 
 	delete(id) {
-		return this.cached.delete(ObjectId(id).toString());
+		return this.cached.delete(id);
 	}
 }
 

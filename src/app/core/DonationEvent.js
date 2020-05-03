@@ -102,6 +102,7 @@ class ClanEvent {
 		const data = await mongodb.db('clashperk')
 			.collection('donationlogs')
 			.findOne({ clan_id: ObjectId(id) });
+		console.log(data);
 
 		if (!data) return null;
 		return this.cached.set(ObjectId(data.clan_id).toString(), {

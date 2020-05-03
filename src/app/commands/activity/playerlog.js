@@ -112,7 +112,6 @@ class PlayerLogCommand extends Command {
 		this.client.cacheHandler.add(id, {
 			mode: 'PLAYER_LOG',
 			guild: message.guild.id,
-			channel: channel.id,
 			tag: data.tag
 		});
 

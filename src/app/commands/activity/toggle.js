@@ -1,5 +1,6 @@
 const { Command } = require('discord-akairo');
-const { firestore } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
+const { ObjectId } = require('mongodb');
 const admin = require('firebase-admin');
 
 class StopCommand extends Command {
@@ -16,22 +17,23 @@ class StopCommand extends Command {
 			},
 			args: [
 				{
-					id: 'log',
-					type: ['donationlog', 'playerlog', ['lastonline', 'lastonlineboard'], 'clanembed', ['n']]
+					id: 'method',
+					type: [
+						['DONATION_LOG', 'donationlog'],
+						['PLAYER_LOG', 'playerlog'],
+						['LAST_ONLINE_LOG', 'lastonline', 'lastonlineboard'],
+						['CLAN_EMBED_LOG', 'clanembed'],
+						['CLAN_GAMES_LOG', 'clangames', 'clangame', 'clangamesboard', 'clangameboard', 'cgboard']
+					],
+					prompt: {
+						start: 'What would you like to stop?'
+					}
 				},
 				{
-					id: 'clan',
-					type: async (msg, str) => {
-						if (!str) return null;
-						const tag = `#${str.toUpperCase().replace(/O/g, '0').replace(/#/g, '')}`;
-						const ref = firestore.collection('tracking_clans').doc(`${msg.guild.id}${tag}`);
-						const data = await ref.get().then(snap => snap.data());
-						if (!data) return null;
-						return { name: data.name, tag: data.tag, ref };
-					},
+					id: 'tag',
+					type: 'string',
 					prompt: {
-						start: 'What is the clan tag?',
-						retry: (msg, { phrase }) => `Clan tag \`${phrase}\` not found!`
+						start: 'What is the clan tag?'
 					}
 				}
 			]
@@ -43,58 +45,83 @@ class StopCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { log, clan }) {
-		if (!log) {
+	async exec(message, { method, tag }) {
+		if (!method) {
 			const prefix = this.handler.prefix(message);
 			const embed = this.client.util.embed()
-				.setAuthor('Invalid Use - No Method Selected')
+				.setAuthor('No Method Selected')
 				.setDescription([
 					'**Available Methods**',
-					'• donationlog `<tag>`',
-					'• playerlog `<tag>`',
-					'• lastonline `<tag>`',
+					'• donationlog `<clanTag>`',
+					'• playerlog `<clanTag>`',
+					'• lastonline `<clanTag>`',
+					'• clanembed <clanTag>',
+					'• clangames <clanTag>',
 					'',
 					'**Examples**',
 					`\`${prefix}stop donationlog #8QU8J9LP\``,
 					`\`${prefix}stop playerlog #8QU8J9LP\``,
-					`\`${prefix}stop lastonline #8QU8J9LP\``
+					`\`${prefix}stop lastonline #8QU8J9LP\``,
+					`\`${prefix}stop clanembed #8QU8J9LP\``,
+					`\`${prefix}stop clangames #8QU8J9LP\``
 				]);
 			return message.util.send({ embed });
 		}
 
-		if (log === 'donationlog') {
-			await clan.ref.update({
-				donationlog: admin.firestore.FieldValue.delete()
-			});
-		} else if (log === 'playerlog') {
-			await clan.ref.update({
-				memberlog: admin.firestore.FieldValue.delete()
-			});
-		} else if (log === 'lastonline') {
-			await clan.ref.update({
-				lastonline: admin.firestore.FieldValue.delete()
-			});
-		} else if (log === 'clanembed') {
-			await clan.ref.update({
-				clanembed: admin.firestore.FieldValue.delete()
+		const db = mongodb.db('clashperk');
+		const data = await db.collection('clanstores')
+			.findOne({ tag: tag.toUpperCase(), guild: message.guild.id });
+
+		if (!data) {
+			return message.util.send({
+				embed: {
+					description: 'ClanTag Not Found.'
+				}
 			});
 		}
 
-		this.client.tracker.delete(message.guild.id, clan.tag);
-		const metadata = await clan.ref.get().then(snap => snap.data());
-		if (metadata.donationlog || metadata.memberlog || metadata.lastonline || metadata.clanembed) {
-			this.client.tracker.add(clan.tag, message.guild.id, metadata);
-			this.client.tracker.push(metadata);
-		} else {
-			await clan.ref.delete();
+		const id = ObjectId(data._id).toString();
+
+		if (method === 'DONATION_LOG') {
+			await db.collection('donationlogs')
+				.deleteOne({ clan_id: ObjectId(id) });
+		} else if (method === 'PLAYER_LOG') {
+			await db.collection('playerlogs')
+				.deleteOne({ clan_id: ObjectId(id) });
+		} else if (method === 'LAST_ONLINE_LOG') {
+			await db.collection('lastonlinelogs')
+				.deleteOne({ clan_id: ObjectId(id) });
+		} else if (method === 'CLAN_EMBED_LOG') {
+			await db.collection('clanembedlogs')
+				.deleteOne({ clan_id: ObjectId(id) });
+		} else if (method === 'CLAN_GAMES_LOG') {
+			await db.collection('clangameslogs')
+				.deleteOne({ clan_id: ObjectId(id) });
 		}
+
+		await this.client.cacheHandler.delete(id, { mode: method });
+		await this.delete(id);
 
 		return message.util.send({
 			embed: {
-				title: `Successfully deleted **${clan.name} (${clan.tag})**`,
+				title: `Successfully deleted **${data.name} (${data.tag})**`,
 				color: 5861569
 			}
 		});
+	}
+
+	async delete(id) {
+		const db = mongodb.db('clashperk');
+		const data = await Promise.all([
+			db.collection('donationlogs').findOne({ clan_id: ObjectId(id) }),
+			db.collection('playerlogs').findOne({ clan_id: ObjectId(id) }),
+			db.collection('lastonlinelogs').findOne({ clan_id: ObjectId(id) }),
+			db.collection('clanembedlogs').findOne({ clan_id: ObjectId(id) })
+		]).then(collection => collection.every(item => item == null));
+		if (data) {
+			this.client.cacheHandler.delete(id);
+			return db.collection('clanstores').deleteOne({ _id: ObjectId(id) });
+		}
 	}
 }
 

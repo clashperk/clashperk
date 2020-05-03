@@ -50,7 +50,7 @@ class DonationLogCommand extends Command {
 
 	async exec(message, { data, channel, color }) {
 		const clans = await this.clans(message);
-		const max = this.client.patron.get(message.guild.id, 'limit', 2);
+		const max = this.client.patron.get(message.guild.id, 'limit', 4);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
 			const embed = this.client.util.embed()
 				.setDescription([
@@ -66,7 +66,7 @@ class DonationLogCommand extends Command {
 		}
 
 		const isPatron = this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false);
-		const isVoter = this.client.voter.isVoter(message.author.id);
+		const isVoter = true; // this.client.voter.isVoter(message.author.id);
 		if (clans.length >= 1 && !clans.map(clan => clan.tag).includes(data.tag) && !(isVoter || isPatron)) {
 			const embed = this.client.util.embed()
 				.setDescription([
@@ -80,7 +80,7 @@ class DonationLogCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		if (!clans.map(clan => clan.tag).includes(data.tag) && !data.description.toLowerCase().includes('cp')) {
+		/* if (!clans.map(clan => clan.tag).includes(data.tag) && !data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
 				.setAuthor(`${data.name} - Donation Log Setup`, data.badgeUrls.small)
 				.setDescription([
@@ -93,7 +93,7 @@ class DonationLogCommand extends Command {
 					'This is a security feature to ensure you have proper leadership of the clan.'
 				]);
 			return message.util.send({ embed });
-		}
+		}*/
 
 		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL'];
 		if (!channel.permissionsFor(channel.guild.me).has(permissions, false)) {
@@ -101,19 +101,18 @@ class DonationLogCommand extends Command {
 		}
 
 		const id = await this.client.storage.register({
-			mode: 'DONATION_LOG',
+			type: 'DONATION_LOG',
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
 			name: data.name,
 			color,
-			premium: this.client.patron.get(message.guild.id, 'guild', false)
+			patron: this.client.patron.get(message.guild.id, 'guild', false)
 		});
 
-		this.client.cacheHandler.add(id, {
+		await this.client.cacheHandler.add(id, {
 			mode: 'DONATION_LOG',
 			guild: message.guild.id,
-			channel: channel.id,
 			tag: data.tag
 		});
 

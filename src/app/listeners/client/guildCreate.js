@@ -79,8 +79,8 @@ class GuildCreateListener extends Listener {
 			.find({ guild: guild.id })
 			.toArray();
 
-		collection.forEach(data => {
-			this.client.cacheHandler.add(data._id, { tag: data.tag, guild: guild.id });
+		collection.forEach(async data => {
+			await this.client.cacheHandler.add(data._id, { tag: data.tag, guild: guild.id });
 		});
 
 		return collection.length;

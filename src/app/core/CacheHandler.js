@@ -75,38 +75,54 @@ class CacheHandler {
 		}
 	}
 
-	add(_id, data) {
+	async add(_id, data) {
 		const id = ObjectId(_id).toString();
 		const cache = this.cached.get(id);
 		if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
-		this.cached.set(id, { guild: data.guild, tag: data.tag });
-		this.addLogs(_id, data.mode);
-		return this.start(id);
-	}
 
-	async addLogs(id, mode) {
-		if (!mode) {
+		this.cached.set(id, { guild: data.guild, tag: data.tag });
+
+		if (data && data.mode) {
+			this.addLogs(_id, data.mode);
+		} else {
 			await this.clanEvent.add(id);
 			await this.lastOnline.add(id);
 			await this.clanEmbed.add(id);
 			return this.playerEvent.add(id);
 		}
 
-		if (mode === 'DONATION_LOG') return this.clanEvent.add(id);
-		if (mode === 'LAST_ONLINE_LOG') return this.lastOnline.add(id);
-		if (mode === 'CLAN_EMBED_LOG') return this.clanEmbed.add(id);
-		if (mode === 'PLAYER_LOG') return this.playerEvent.add(id);
+		return this.start(id);
 	}
 
-	delete(_id) {
+	async addLogs(_id, mode) {
+		if (mode === 'DONATION_LOG') return this.clanEvent.add(_id);
+		if (mode === 'LAST_ONLINE_LOG') return this.lastOnline.add(_id);
+		if (mode === 'CLAN_EMBED_LOG') return this.clanEmbed.add(_id);
+		if (mode === 'PLAYER_LOG') return this.playerEvent.add(_id);
+	}
+
+	delete(_id, data) {
 		const id = ObjectId(_id).toString();
 		const cache = this.cached.get(id);
 		if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
-		this.clanEmbed.delete(id);
-		this.clanEvent.delete(id);
-		this.playerEvent.delete(id);
-		this.lastOnline.delete(id);
+
+		if (data && data.mode) {
+			this.stopLogs(id, data.mode);
+		} else {
+			this.clanEmbed.delete(id);
+			this.clanEvent.delete(id);
+			this.playerEvent.delete(id);
+			this.lastOnline.delete(id);
+		}
+
 		return this.cached.delete(id);
+	}
+
+	async stopLogs(id, mode) {
+		if (mode === 'DONATION_LOG') return this.clanEvent.delete(id);
+		if (mode === 'LAST_ONLINE_LOG') return this.lastOnline.delete(id);
+		if (mode === 'CLAN_EMBED_LOG') return this.clanEmbed.delete(id);
+		if (mode === 'PLAYER_LOG') return this.playerEvent.delete(id);
 	}
 
 	async start(key) {

@@ -121,9 +121,7 @@ class LastOnlineBoardCommand extends Command {
 		this.client.cacheHandler.add(id, {
 			mode: 'LAST_ONLINE_LOG',
 			guild: message.guild.id,
-			channel: channel.id,
-			tag: data.tag,
-			message: msg.id
+			tag: data.tag
 		});
 
 		const embed = new MessageEmbed()
