@@ -80,8 +80,6 @@ class PlayerEvent {
 						.map(hero => `${heroEmoji[hero.name]}${hero.level}`)
 						.join(' ')
 					: `${emoji.xp} ${member.expLevel}`,
-				`${member.heroes.filter(({ village }) => village === 'home')
-					.map(hero => `${heroEmoji[hero.name]}${hero.level}`).join('')}`,
 				`${emoji.warstar}${member.warStars}`,
 				`${leagueEmoji[member.league ? member.league.id : 29000000]} ${member.trophies}`
 			].join(' '))
