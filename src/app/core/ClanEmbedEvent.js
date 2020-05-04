@@ -1,6 +1,7 @@
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 const { ObjectId } = require('mongodb');
+const { emoji } = require('../util/emojis');
 
 class ClanEmbed {
 	constructor(client) {
@@ -120,20 +121,29 @@ class ClanEmbed {
 
 	async embed(id, clan) {
 		const cache = this.cached.get(id);
-		const embed = new MessageEmbed();
-		if (cache) {
-			embed.setColor(cache.color)
-				.setAuthor(clan.name)
-				.setTimestamp();
-			// TODO: More
+		const embed = new MessageEmbed()
+			.setTimestamp()
+			.setColor(cache.color)
+			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+			.setThumbnail(clan.badgeUrls.medium)
+			.setTitle('Open In-Game')
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`);
+		if (cache.embed.description) embed.setDescription(cache.embed.description);
+		else embed.setDescription(clan.description);
 
-			return embed;
+		if (cache.embed.userId) {
+			embed.addField(`${emoji.owner} Leader`, `<@!${cache.embed.userId}>`);
 		}
 
-		embed.setColor(0x5970c1)
-			.setTimestamp()
-			.setAuthor(clan.name);
-		// TODO: More
+		if (cache.embed.accepts) {
+			embed.addField(`${emoji.townhall} Accepted Town-Hall`, cache.embed.accepts);
+		}
+
+		embed.addField(`${emoji.clan} War Info`, [
+			`${clan.warWins} wins, ${clan.isWarLogPublic ? `${clan.warLosses} losses, ${clan.warTies} ties,` : ''} win streak ${clan.warWinStreak}`
+		]);
+
+		embed.setFooter(`Members [${clan.members}/50]`, this.client.user.displayAvatarURL());
 
 		return embed;
 	}

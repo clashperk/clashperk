@@ -14,7 +14,7 @@ class ClanGamesCommand extends Command {
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows clan game points of your clan members.',
-				usage: '<clan tag>',
+				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			}
 		});
@@ -86,7 +86,7 @@ class ClanGamesCommand extends Command {
 				members.map((m, i) => `${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
 				'```'
 			])
-			.setFooter(`Approximate Points ${total} [Avg: ${(total / data.members).toFixed(2)}]`);
+			.setFooter(`Approximate Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`);
 
 		return message.util.send({ embed });
 	}

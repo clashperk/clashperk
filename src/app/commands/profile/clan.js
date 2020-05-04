@@ -18,7 +18,7 @@ class LinkClanCommand extends Command {
 					id: 'data',
 					type: 'clan',
 					prompt: {
-						start: 'What would you like to search for?',
+						start: 'What is your ClanTag?',
 						retry: (msg, { failure }) => failure.value
 					}
 				},

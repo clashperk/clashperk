@@ -26,7 +26,8 @@ class LinkCommand extends Command {
 
 		const rest = yield {
 			match: 'rest',
-			type: 'string'
+			type: 'string',
+			default: ''
 		};
 
 		return { method, rest };

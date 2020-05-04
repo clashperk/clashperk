@@ -4,13 +4,13 @@ class SetNickNameCommand extends Command {
 	constructor() {
 		super('setnick', {
 			aliases: ['setnick'],
-			category: 'owner',
+			category: 'premium',
 			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: 'Sets nickname of a member',
-				usage: '<@user> <#player tag> <prefix>'
+				usage: '<user> <#playerTag> <prefix>'
 			}
 		});
 	}
@@ -63,7 +63,7 @@ class SetNickNameCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setDescription([
-				`Nickname set to ${name}`
+				`Nickname set to **${name}**`
 			]);
 		return message.util.send({ embed });
 	}

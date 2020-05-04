@@ -14,7 +14,7 @@ class ClanGamesBoardCommand extends Command {
 			description: {
 				content: 'Setup a live updating clan-games board.',
 				usage: '<clanTag> [channel/color] [color/channel]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #last-online #5970C1', '#8QU8J9LP #5970C1 #last-online']
+				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-games #5970C1', '#8QU8J9LP #5970C1 #clan-games']
 			}
 		});
 	}

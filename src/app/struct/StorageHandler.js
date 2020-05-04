@@ -93,6 +93,7 @@ class StorageHandler {
 							color: data.color,
 							message: data.message,
 							patron: data.patron,
+							embed: data.embed,
 							createdAt: new Date()
 						}
 					}, { upsert: true });

@@ -19,13 +19,8 @@ class UnlinkCommand extends Command {
 					type: 'player',
 					prompt: {
 						start: 'What tag would you like to unlink?',
-						retry: 'Please provide a valid tag to unlink.'
+						retry: 'Please provide a valid PlayerTag.'
 					}
-				},
-				{
-					id: 'member',
-					type: 'guildMember',
-					default: message => message.member
 				}
 			]
 		});
@@ -36,13 +31,13 @@ class UnlinkCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, member }) {
-		const deleted = await this.delete(member.id, data.tag);
+	async exec(message, { data }) {
+		const deleted = await this.delete(message.author.id, data.tag);
 		if (!deleted) {
 			return message.util.send({
 				embed: {
 					color: 3093046,
-					description: `Couldn\'t find a player linked to **${member.user.tag}**!`
+					description: `Couldn\'t find a player linked to **${message.author.tag}**!`
 				}
 			});
 		}

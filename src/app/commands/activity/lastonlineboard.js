@@ -6,7 +6,7 @@ const { MODES } = require('../../util/constants');
 class LastOnlineBoardCommand extends Command {
 	constructor() {
 		super('lastonlineboard', {
-			aliases: ['lastonlineboard'],
+			aliases: ['lastonlineboard', 'onlineboard'],
 			category: 'activity',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],

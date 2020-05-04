@@ -5,7 +5,7 @@ const { MODES } = require('../../util/constants');
 
 class DonationLogCommand extends Command {
 	constructor() {
-		super('start', {
+		super('donationlog', {
 			aliases: ['donationlog', 'start'],
 			category: 'activity',
 			channel: 'guild',

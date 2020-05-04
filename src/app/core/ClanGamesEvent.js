@@ -94,7 +94,7 @@ class ClanGames {
 	}
 
 	async sendNew(id, channel, clan) {
-		const embed = await this.embed(id, clan);
+		const embed = await this.embed(clan);
 		const message = await channel.send({ embed })
 			.catch(() => null);
 
@@ -111,7 +111,7 @@ class ClanGames {
 	}
 
 	async edit(id, message, clan) {
-		const embed = await this.embed(id, clan);
+		const embed = await this.embed(clan);
 		const msg = await message.edit({ embed })
 			.catch(error => {
 				if (error.code === 10008) {
@@ -123,24 +123,74 @@ class ClanGames {
 		return msg;
 	}
 
-	async embed(id, clan) {
-		const cache = this.cached.get(id);
-		const embed = new MessageEmbed();
-		if (cache) {
-			embed.setColor(cache.color)
-				.setAuthor(clan.name)
-				.setTimestamp();
-			// TODO: More
-
-			return embed;
-		}
-
-		embed.setColor(0x5970c1)
-			.setTimestamp()
-			.setAuthor(clan.name);
-		// TODO: More
+	async embed(clan) {
+		const db = mongodb.db('clashperk').collection('clangames');
+		const data = await db.findOne({ tag: clan.tag });
+		const collection = await this.getList(clan.memberList.map(m => m.tag));
+		const members = this.filter(collection, data);
+		const total = members.reduce((a, b) => a + b.points || 0, 0);
+		const embed = new MessageEmbed()
+			.setColor(0x5970c1)
+			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+			.setDescription([
+				`Clan Games Scoreboard [${clan.members}/50]`,
+				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
+				members.map((m, i) => `${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
+				'```'
+			])
+			.setFooter(`Approximate Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]`);
 
 		return embed;
+	}
+
+	async getList(tags) {
+		let index = 0;
+		const collection = [];
+		for (const tag of tags) {
+			if (index === 4) index = 0;
+			const player = await this.player(tag, index);
+			const value = player.achievements
+				.find(achievement => achievement.name === 'Games Champion')
+				.value;
+			collection.push({
+				name: player.name,
+				tag: player.tag,
+				points: value
+			});
+		}
+
+		return collection;
+	}
+
+	padStart(num) {
+		return num.toString().padStart(6, ' ');
+	}
+
+	padEnd(data) {
+		return data.padEnd(20, ' ');
+	}
+
+	filter(memberList, data) {
+		if (!data) {
+			return memberList.map(member => ({ tag: member.tag, name: member.name, points: null }));
+		}
+
+		if (data && !data.members) {
+			return memberList.map(member => ({ tag: member.tag, name: member.name, points: null }));
+		}
+
+		const members = memberList.map(member => {
+			const points = member.tag in data.members
+				? (member.points - data.members[member.tag].points) > 4000
+					? 4000
+					: member.points - data.members[member.tag].points
+				: null;
+			return { tag: member.tag, name: member.name, points };
+		});
+
+		const sorted = members.sort((a, b) => b.points - a.points);
+
+		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
 
 	async init() {
@@ -271,6 +321,7 @@ class ClanGames {
 	}
 
 	async add(id) {
+		if (!this.event()) return;
 		const data = await mongodb.db('clashperk')
 			.collection('clangameslogs')
 			.findOne({ clan_id: ObjectId(id) });

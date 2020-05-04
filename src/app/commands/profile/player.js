@@ -18,7 +18,7 @@ class LinkPlayerCommand extends Command {
 					id: 'data',
 					type: 'player',
 					prompt: {
-						start: 'What would you like to search for?',
+						start: 'What is your PlayerTag?',
 						retry: (msg, { failure }) => failure.value
 					}
 				},
@@ -51,7 +51,7 @@ class LinkPlayerCommand extends Command {
 			return message.util.send({
 				embed: {
 					color: 3093046,
-					description: `**${data.name} (${data.tag})** is already linked to another Discord ID.`
+					description: `**${data.name} (${data.tag})** is already linked to another Discord.`
 				}
 			});
 		}
@@ -91,9 +91,7 @@ class LinkPlayerCommand extends Command {
 	}
 
 	async getPlayer(tag) {
-		return mongodb.db('clashperk')
-			.collection('linkedusers')
-			.findOne({ tags: tag });
+		return mongodb.db('clashperk').collection('linkedusers').findOne({ tags: tag });
 	}
 }
 
