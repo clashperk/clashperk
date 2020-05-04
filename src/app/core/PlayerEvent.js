@@ -1,6 +1,6 @@
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
-const { townHallEmoji, emoji, leagueEmoji } = require('../util/emojis');
+const { townHallEmoji, emoji, leagueEmoji, heroEmoji } = require('../util/emojis');
 const fetch = require('node-fetch');
 const { ObjectId } = require('mongodb');
 
@@ -75,7 +75,9 @@ class PlayerEvent {
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${item.tag}`)
 			.setDescription([
 				`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
-				`${emoji.xp} ${member.expLevel}`,
+				// `${emoji.xp} ${member.expLevel}`,
+				`${member.heroes.filter(({ village }) => village === 'home')
+					.map(hero => `${heroEmoji[hero.name]} ${hero.level}`)}`,
 				`${emoji.warstar} ${member.warStars}`,
 				`${leagueEmoji[member.league ? member.league.id : 29000000]} ${member.trophies}`
 			].join(' '))
