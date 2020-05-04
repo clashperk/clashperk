@@ -128,9 +128,9 @@ class ClashPerk extends AkairoClient {
 		await Database.connect();
 		this.settings = new Settings(Database.mongodb.db('clashperk').collection('settings'));
 
-		/* this.postStats = new PostStats(this);
+		/* this.postStats = new PostStats(this);*/
 		this.firebase = new Firebase(this);
-		this.voter = new VoteHandler(this);*/
+		this.voter = new VoteHandler(this);
 		this.firebase = new Firebase(this);
 
 		this.patron = new Patrons(this);
@@ -142,7 +142,6 @@ class ClashPerk extends AkairoClient {
 				if (this.shard.ids && this.shard.ids[0] === this.shard.count - 1) {
 					this.firebase.init();
 					this.postStats.init();
-					this.voter.init();
 					this.patron.init();
 				}
 				this.tracker.init();
@@ -155,6 +154,7 @@ class ClashPerk extends AkairoClient {
 		const intervalId = setInterval(() => {
 			if (this.readyAt && this.user && this.user.id === process.env.CLIENT_ID) {
 				this.cacheHandler.init();
+				this.voter.init();
 				clearInterval(intervalId);
 			}
 		}, 2000);
