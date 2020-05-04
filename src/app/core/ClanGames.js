@@ -2,6 +2,7 @@ const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const fetch = require('node-fetch');
 const { ObjectId } = require('mongodb');
+const API_TOKENS = process.env.CLAN_GAMES_API_TOKENS.split(',');
 
 class ClanGames {
 	constructor(client) {
@@ -204,10 +205,12 @@ class ClanGames {
 		const collection = mongodb.db('clashperk').collection('clangames');
 		const data = await collection.findOne({ tag: clan.tag });
 		const $set = {};
+		let index = 0;
 		if (data) {
 			for (const tag of clan.memberList.map(m => m.tag)) {
+				if (index === 4) index = 0;
 				if (tag in data.memberList === false) {
-					const member = await this.player(tag);
+					const member = await this.player(tag, index);
 					if (member) {
 						$set.name = clan.name;
 						$set.tag = clan.tag;
@@ -218,13 +221,14 @@ class ClanGames {
 								.value
 						};
 
-						await this.delay(100);
+						index += 1;
 					}
 				}
 			}
 		} else if (!data) {
 			for (const tag of clan.memberList.map(m => m.tag)) {
-				const member = await this.player(tag);
+				if (index === 4) index = 0;
+				const member = await this.player(tag, index);
 				if (member) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
@@ -235,7 +239,7 @@ class ClanGames {
 							.value
 					};
 
-					await this.delay(100);
+					index += 1;
 				}
 			}
 		}
@@ -250,12 +254,12 @@ class ClanGames {
 		return new Promise(res => setTimeout(res, ms));
 	}
 
-	async player(tag) {
+	async player(tag, index) {
 		const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.CLAN_GAMES_API}`
+				authorization: `Bearer ${API_TOKENS[index]}`
 			},
 			timeout: 3000
 		}).catch(() => null);
