@@ -133,7 +133,7 @@ module.exports = {
 		'Archer Queen': '<:archerqueen:696305403046133780>',
 		'Grand Warden': '<:grandwarden:696305417994764298>',
 		'Battle Machine': '<:warmachine:696305434570522665>',
-		'Royal Champion': '<:royalchampion:696306450208915456>'
+		'Royal Champion': '<:royalchampion:706899855703933037>'
 	},
 
 	emoji: {
