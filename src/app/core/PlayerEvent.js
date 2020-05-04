@@ -75,11 +75,7 @@ class PlayerEvent {
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${item.tag}`)
 			.setDescription([
 				`${townHallEmoji[member.townHallLevel]}${member.townHallLevel}`,
-				member.heroes && member.heroes.filter(({ village }) => village === 'home').length
-					? member.heroes.filter(({ village }) => village === 'home')
-						.map(hero => `${heroEmoji[hero.name]}${hero.level}`)
-						.join(' ')
-					: `${emoji.xp} ${member.expLevel}`,
+				`${this.formatHeroes(member)}`,
 				`${emoji.warstar}${member.warStars}`,
 				`${leagueEmoji[member.league ? member.league.id : 29000000]}${member.trophies}`
 			].join(' '))
@@ -87,6 +83,19 @@ class PlayerEvent {
 			.setTimestamp();
 
 		return embed;
+	}
+
+	formatHeroes(member) {
+		if (member.heroes) {
+			const heroes = member.heroes.filter(({ village }) => village === 'home');
+			return heroes.length
+				? heroes.length > 3
+					? heroes.map(hero => `${heroEmoji[hero.name]}${hero.level}`).join(' ')
+					: `${emoji.xp}${member.expLevel} ${heroes.map(hero => `${heroEmoji[hero.name]}${hero.level}`).join(' ')}`
+				: `${emoji.xp} ${member.expLevel}`;
+		}
+
+		return `${emoji.xp} ${member.expLevel}`;
 	}
 
 	async player(tag) {
