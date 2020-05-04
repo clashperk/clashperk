@@ -15,7 +15,7 @@ class PlayerCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Clash of clans player lookup commnad.',
-				usage: '<#tag>',
+				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			}
 		});

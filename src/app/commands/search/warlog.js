@@ -14,7 +14,7 @@ class WarlogCommand extends Command {
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Clash of Clans war log lookup command.',
-				usage: '<tag>',
+				usage: '<clanTag>',
 				examples: ['#8QU8J9LP', '8QU8J9LP']
 			}
 		});

@@ -11,7 +11,7 @@ class RemoveClanCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: 'Removes a specified clan from your guild.',
-				usage: '<tag>',
+				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
 			args: [

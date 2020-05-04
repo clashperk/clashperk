@@ -15,7 +15,7 @@ class WarWeightCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: 'List of clan members with townhall & heroes.',
-				usage: '<tag>',
+				usage: '<clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			}
 		});

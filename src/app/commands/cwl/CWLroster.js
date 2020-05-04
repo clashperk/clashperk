@@ -13,7 +13,7 @@ class CwlRosterComamnd extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows cwl roster & total number of th for each clan.',
-				usage: '<#clan tag>',
+				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			}
 		});

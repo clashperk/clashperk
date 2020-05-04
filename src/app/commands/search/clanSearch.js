@@ -20,7 +20,7 @@ class ClanSearchCommand extends Command {
 			category: 'search',
 			description: {
 				content: 'Clash of Clans clan search command.',
-				usage: '<tag>',
+				usage: '<clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],

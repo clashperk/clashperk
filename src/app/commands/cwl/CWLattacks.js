@@ -22,7 +22,7 @@ class CwlAttacksComamnd extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows attacks of current cwl.',
-				usage: '<tag>',
+				usage: '<clanTag>',
 				examples: ['#8QU8J9LP'],
 				fields: [
 					{

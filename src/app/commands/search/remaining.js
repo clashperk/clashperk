@@ -13,7 +13,7 @@ class RemainingAttacksCommand extends Command {
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Shows info about remaining attacks.',
-				usage: '<tag> [--cwl/cwl]',
+				usage: '<clanTag> [--cwl/cwl]',
 				examples: ['#8QU8J9LP', '8QU8J9LP --cwl', '#8QU8J9LP cwl'],
 				fields: [{
 					name: 'Flags',

@@ -14,7 +14,7 @@ class CwlMembersComamnd extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'CWL members command.',
-				usage: '<tag>',
+				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			}
 		});

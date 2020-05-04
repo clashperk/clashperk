@@ -7,7 +7,7 @@ class MembersCommand extends Command {
 			category: 'search',
 			description: {
 				content: 'List of clan members (--th to view th levels).',
-				usage: '<tag> [--th/-th] [th level]',
+				usage: '<clanTag> [--th/-th] [th level]',
 				examples: [
 					'#8QU8J9LP',
 					'#8QU8J9LP --th',

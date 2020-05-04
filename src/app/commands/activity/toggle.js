@@ -11,7 +11,7 @@ class ToggleCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: 'Toogle logs and boards on your guild.',
-				usage: '<method> <tag>',
+				usage: '<method> <clanTag>',
 				examples: ['donationlog #8QU8J9LP', 'playerlog #8QU8J9LP', 'lastonline #8QU8J9LP']
 			},
 			args: [

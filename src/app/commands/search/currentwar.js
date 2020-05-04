@@ -14,7 +14,7 @@ class CurrentWarCommand extends Command {
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Shows info about currentwar.',
-				usage: '<tag>',
+				usage: '<clanTag>',
 				examples: ['#8QU8J9LP', '8QU8J9LP']
 			}
 		});
