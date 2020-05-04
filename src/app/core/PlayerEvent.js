@@ -81,7 +81,7 @@ class PlayerEvent {
 						.join(' ')
 					: `${emoji.xp} ${member.expLevel}`,
 				`${emoji.warstar}${member.warStars}`,
-				`${leagueEmoji[member.league ? member.league.id : 29000000]} ${member.trophies}`
+				`${leagueEmoji[member.league ? member.league.id : 29000000]}${member.trophies}`
 			].join(' '))
 			.setFooter(data.clan.name, data.clan.badge)
 			.setTimestamp();
