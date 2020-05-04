@@ -58,12 +58,12 @@ class CWLMvpCommand extends Command {
 		embed.setDescription([
 			'List of most valuable players, sorted by total stars of CWL',
 			'',
-			`${emoji.townhall}\`» STAR  ${this.padEnd('NAME')}\``,
+			`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
 			items.slice(0, 30)
 				.map(member => {
 					const name = this.padEnd(member.name);
 					const star = this.padStart(member.cwlStar.toString());
-					return `${townHallEmoji[member.townHallLevel]}\`» ${star}  ${name}\``;
+					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name}\``;
 				})
 				.join('\n')
 		]);

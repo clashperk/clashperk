@@ -1,10 +1,12 @@
 const fetch = require('node-fetch');
 const { mongodb } = require('../struct/Database');
-const ClanEmbed = require('./ClanEmbed');
+const ClanEmbed = require('./ClanEmbedEvent');
 const DonationEvent = require('./DonationEvent');
 const LastOnlineEvent = require('./LastOnlineEvent');
+const ClanGamesEvent = require('./ClanGamesEvent');
 const PlayerEvent = require('./PlayerEvent');
 const { ObjectId } = require('mongodb');
+const { MODES, EVENTS } = require('../util/constants');
 
 class CacheHandler {
 	constructor(client) {
@@ -17,10 +19,11 @@ class CacheHandler {
 		this.clanEvent = new DonationEvent(client);
 		this.lastOnline = new LastOnlineEvent(client);
 		this.playerEvent = new PlayerEvent(client);
+		this.clanGame = new ClanGamesEvent(client);
 	}
 
 	async broadcast(data) {
-		switch (data.mode) {
+		switch (data.event) {
 			case 'CLAN_DONATION_EVENT':
 				await this.clanEvent.exec(data._id, data);
 				break;
@@ -32,6 +35,9 @@ class CacheHandler {
 				break;
 			case 'CLAN_EMBED_EVENT':
 				await this.clanEmbed.exec(data._id, data.clan);
+				break;
+			case 'CLAN_GAMES_EVENT':
+				await this.clanGame.exec(data._id, data.clan);
 				break;
 			default:
 				break;
@@ -88,6 +94,7 @@ class CacheHandler {
 			await this.clanEvent.add(id);
 			await this.lastOnline.add(id);
 			await this.clanEmbed.add(id);
+			await this.clanGame.add(id);
 			return this.playerEvent.add(id);
 		}
 
@@ -95,10 +102,11 @@ class CacheHandler {
 	}
 
 	async addLogs(_id, mode) {
-		if (mode === 'DONATION_LOG') return this.clanEvent.add(_id);
-		if (mode === 'LAST_ONLINE_LOG') return this.lastOnline.add(_id);
-		if (mode === 'CLAN_EMBED_LOG') return this.clanEmbed.add(_id);
-		if (mode === 'PLAYER_LOG') return this.playerEvent.add(_id);
+		if (mode === MODES[1]) return this.clanEvent.add(_id);
+		if (mode === MODES[2]) return this.playerEvent.add(_id);
+		if (mode === MODES[3]) return this.lastOnline.add(_id);
+		if (mode === MODES[4]) return this.clanEmbed.add(_id);
+		if (mode === MODES[5]) return this.clanGame.add(_id);
 	}
 
 	delete(_id, data) {
@@ -113,16 +121,18 @@ class CacheHandler {
 			this.clanEvent.delete(id);
 			this.playerEvent.delete(id);
 			this.lastOnline.delete(id);
+			this.clanGame.delete(id);
 		}
 
 		return this.cached.delete(id);
 	}
 
 	async stopLogs(id, mode) {
-		if (mode === 'DONATION_LOG') return this.clanEvent.delete(id);
-		if (mode === 'LAST_ONLINE_LOG') return this.lastOnline.delete(id);
-		if (mode === 'CLAN_EMBED_LOG') return this.clanEmbed.delete(id);
-		if (mode === 'PLAYER_LOG') return this.playerEvent.delete(id);
+		if (mode === MODES[1]) return this.clanEvent.delete(id);
+		if (mode === MODES[2]) return this.playerEvent.delete(id);
+		if (mode === MODES[3]) return this.lastOnline.delete(id);
+		if (mode === MODES[4]) return this.clanEmbed.delete(id);
+		if (mode === MODES[5]) return this.clanGame.delete(id);
 	}
 
 	async start(key) {
@@ -143,7 +153,7 @@ class CacheHandler {
 			received: [],
 			donations: 0,
 			receives: 0,
-			mode: 'CLAN_DONATION_EVENT'
+			event: EVENTS[1]
 		};
 
 		const $set = {};
@@ -216,14 +226,21 @@ class CacheHandler {
 			_id: key,
 			clan,
 			update: $update,
-			mode: 'LAST_ONLINE_EVENT'
+			event: EVENTS[3]
 		});
 
 		// Clan Embed
 		await this.broadcast({
 			_id: key,
 			clan,
-			mode: 'CLAN_EMBED_EVENT'
+			event: EVENTS[4]
+		});
+
+		// Clan Games
+		await this.broadcast({
+			_id: key,
+			clan,
+			event: EVENTS[5]
 		});
 
 		// Donation Log
@@ -259,7 +276,7 @@ class CacheHandler {
 						tag: clan.tag,
 						badge: clan.badgeUrls.small
 					},
-					mode: 'CLAN_MEMBER_ACTION'
+					event: EVENTS[2]
 				});
 			}
 		}

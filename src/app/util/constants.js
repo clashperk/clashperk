@@ -91,10 +91,19 @@ module.exports = {
 		return embed;
 	},
 
-	MSG: {
-		0: 'LAST_ONLINE_LOG',
+	MODES: {
 		1: 'DONATION_LOG',
-		2: 'CLAN_EMBED_LOG',
-		3: ''
+		2: 'PLAYER_LOG',
+		3: 'LAST_ONLINE_LOG',
+		4: 'CLAN_EMBED_LOG',
+		5: 'CLAN_GAMES_LOG'
+	},
+
+	EVENTS: {
+		1: 'CLAN_DONATION_EVENT',
+		2: 'CLAN_MEMBER_ACTION',
+		3: 'LAST_ONLINE_EVENT',
+		4: 'CLAN_EMBED_EVENT',
+		5: 'CLAN_GAMES_EVENT'
 	}
 };

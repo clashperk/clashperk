@@ -19,6 +19,7 @@ class CwlAttacksComamnd extends Command {
 		super('cwl-attacks', {
 			aliases: ['cwl-attacks'],
 			category: 'cwl',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows attacks of current cwl.',
 				usage: '<tag>',

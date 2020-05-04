@@ -1,6 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../../struct/Database');
+const { MODES } = require('../../util/constants');
 
 class DonationLogCommand extends Command {
 	constructor() {
@@ -66,7 +67,7 @@ class DonationLogCommand extends Command {
 		}
 
 		const isPatron = this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false);
-		const isVoter = true; // this.client.voter.isVoter(message.author.id);
+		const isVoter = this.client.voter.isVoter(message.author.id);
 		if (clans.length >= 1 && !clans.map(clan => clan.tag).includes(data.tag) && !(isVoter || isPatron)) {
 			const embed = this.client.util.embed()
 				.setDescription([
@@ -101,7 +102,7 @@ class DonationLogCommand extends Command {
 		}
 
 		const id = await this.client.storage.register({
-			type: 'DONATION_LOG',
+			mode: MODES[1],
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
@@ -111,7 +112,7 @@ class DonationLogCommand extends Command {
 		});
 
 		await this.client.cacheHandler.add(id, {
-			mode: 'DONATION_LOG',
+			mode: MODES[1],
 			guild: message.guild.id,
 			tag: data.tag
 		});

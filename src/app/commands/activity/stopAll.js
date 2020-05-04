@@ -65,4 +65,4 @@ class StopAllCommand extends Command {
 	}
 }
 
-module.exports = StopAllCommand;
+// module.exports = StopAllCommand;

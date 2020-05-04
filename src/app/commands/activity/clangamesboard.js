@@ -1,6 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const { firestore, mongodb } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
+const { MODES } = require('../../util/constants');
 
 class ClanGamesBoardCommand extends Command {
 	constructor() {
@@ -103,7 +104,7 @@ class ClanGamesBoardCommand extends Command {
 
 		const msg = await channel.send({
 			embed: {
-				description: ['Placeholder for Last-Online board.', 'Please do not delete this message.'].join('\n')
+				description: 'Placeholder for Clan Games Board.'
 			}
 		});
 
@@ -117,14 +118,10 @@ class ClanGamesBoardCommand extends Command {
 			tag: data.name
 		});
 
-		this.client.cacheHandler.add(id, {
-			mode: 'CLAN_GAMES_LOG',
+		await this.client.cacheHandler.add(id, {
+			mode: MODES[5],
 			tag: data.tag,
-			guild: message.guild.id,
-			channel: channel.id,
-			message: msg.id,
-			color,
-			embed: null
+			guild: message.guild.id
 		});
 
 		const embed = new MessageEmbed()
@@ -135,18 +132,12 @@ class ClanGamesBoardCommand extends Command {
 		return message;
 	}
 
-	async clans(message, clans = []) {
-		await mongodb.db('clashperk').collection('clangameslogs');
-		await firestore.collection('tracking_clans')
-			.where('guild', '==', message.guild.id)
-			.get()
-			.then(snap => {
-				snap.forEach(doc => {
-					clans.push(doc.data());
-				});
-				if (!snap.size) clans = [];
-			});
-		return clans;
+	async clans(message) {
+		const collection = await mongodb.db('clashperk')
+			.collection('clanstores')
+			.find({ guild: message.guild.id })
+			.toArray();
+		return collection;
 	}
 
 	missingPermissions(channel, user, permissions) {

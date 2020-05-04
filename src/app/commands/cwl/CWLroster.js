@@ -10,6 +10,7 @@ class CwlRosterComamnd extends Command {
 		super('cwl-roster', {
 			aliases: ['roster', 'cwl-roster'],
 			category: 'cwl',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows cwl roster & total number of th for each clan.',
 				usage: '<#clan tag>',

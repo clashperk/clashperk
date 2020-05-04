@@ -1,6 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../../struct/Database');
+const { MODES } = require('../../util/constants');
 
 class LastOnlineBoardCommand extends Command {
 	constructor() {
@@ -108,7 +109,7 @@ class LastOnlineBoardCommand extends Command {
 		});
 
 		const id = await this.client.storage.register({
-			mode: 'LAST_ONLINE_LOG',
+			mode: MODES[3],
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
@@ -119,7 +120,7 @@ class LastOnlineBoardCommand extends Command {
 		});
 
 		this.client.cacheHandler.add(id, {
-			mode: 'LAST_ONLINE_LOG',
+			mode: MODES[3],
 			guild: message.guild.id,
 			tag: data.tag
 		});

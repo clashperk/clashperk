@@ -13,6 +13,7 @@ class StorageHandler {
 					tag: data.tag,
 					guild: data.guild,
 					name: data.name,
+					verified: true,
 					createdAt: new Date()
 				}
 			}, { upsert: true, returnOriginal: false });

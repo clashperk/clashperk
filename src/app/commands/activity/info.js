@@ -36,7 +36,6 @@ class InfoCommand extends Command {
 
 	async exec(message, { guild }) {
 		const premium = this.client.patron.get(guild.id, 'guild', false);
-
 		const collection = await this.findAll(guild);
 		const db = mongodb.db('clashperk');
 		const data = await Promise.all(collection.map(async item => {

@@ -11,6 +11,7 @@ class CwlRoundComamnd extends Command {
 		super('cwl-round', {
 			aliases: ['cwl-round', 'cwl-war'],
 			category: 'cwl',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows info about current cwl war.',
 				usage: '<tag> [--round/-r] [round]',
