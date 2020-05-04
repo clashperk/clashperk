@@ -49,6 +49,7 @@ class CacheHandler {
 		await this.clanEvent.init();
 		await this.playerEvent.init();
 		await this.lastOnline.init();
+		await this.clanGame.init();
 
 		const collection = await mongodb.db('clashperk')
 			.collection('clanstores')
@@ -323,6 +324,7 @@ class CacheHandler {
 		this.clanEvent.cached.clear();
 		this.playerEvent.cached.clear();
 		this.lastOnline.cached.clear();
+		this.clanGame.cached.clear();
 
 		return this.cached.clear();
 	}

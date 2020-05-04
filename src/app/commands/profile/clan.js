@@ -5,7 +5,7 @@ class LinkClanCommand extends Command {
 	constructor() {
 		super('link-clan', {
 			aliases: ['link-clan', 'save-clan'],
-			category: 'profile',
+			category: 'hidden',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
 			description: {

@@ -16,7 +16,7 @@ class PatronCommand extends Command {
 	}
 
 	async exec(message) {
-		const patrons = await this.patrons();
+		// const patrons = await this.patrons();
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setTitle('ClashPerk Patron')

@@ -1,6 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firestore, mongodb } = require('../../struct/Database');
-const firebase = require('firebase-admin');
+const { mongodb } = require('../../struct/Database');
 
 class UnlinkCommand extends Command {
 	constructor() {
@@ -57,9 +56,7 @@ class UnlinkCommand extends Command {
 	async delete(id, tag) {
 		const data = await mongodb.db('clashperk')
 			.collection('linkedusers')
-			.findOneAndUpdate({ user: id }, {
-				$pull: { tags: tag }
-			});
+			.findOneAndUpdate({ user: id }, { $pull: { tags: tag } });
 		return data.value && data.value.tags && data.value.tags.includes(tag);
 	}
 }
