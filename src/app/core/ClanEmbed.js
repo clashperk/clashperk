@@ -10,7 +10,19 @@ class ClanEmbed {
 
 	exec(id, clan) {
 		const cache = this.cached.get(id);
+		if (cache && cache.updatedAt) {
+			if (new Date() - new Date(cache.updatedAt) > 10 * 60 * 1000) {
+				cache.updatedAt = new Date();
+				this.cached.set(id, cache);
+				return this.permissionsFor(id, cache, clan);
+			}
+
+			return;
+		}
+
 		if (cache) {
+			cache.updatedAt = new Date();
+			this.cached.set(id, cache);
 			return this.permissionsFor(id, cache, clan);
 		}
 	}

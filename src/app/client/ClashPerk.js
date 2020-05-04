@@ -1,17 +1,17 @@
 const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
 const Settings = require('../struct/SettingsProvider');
-const Database = require('../struct/Database');
-const Logger = require('../util/logger');
-const fetch = require('node-fetch');
-const Patrons = require('../struct/Patrons');
+const CacheHandler = require('../core/CacheHandler');
 const VoteHandler = require('../struct/VoteHandler');
+const Storage = require('../struct/StorageHandler');
 const PostStats = require('../struct/PostStats');
+const { status } = require('../util/constants');
+const Database = require('../struct/Database');
 const Firebase = require('../struct/Firebase');
 const { MessageEmbed } = require('discord.js');
-const { status } = require('../util/constants');
+const Patrons = require('../struct/Patrons');
+const Logger = require('../util/logger');
+const fetch = require('node-fetch');
 const path = require('path');
-const CacheHandler = require('../core/CacheHandler');
-const Storage = require('../struct/StorageHandler');
 
 class ClashPerk extends AkairoClient {
 	constructor(config) {
@@ -130,7 +130,7 @@ class ClashPerk extends AkairoClient {
 
 		/* this.postStats = new PostStats(this);
 		this.firebase = new Firebase(this);
-		this.voter = new Voter(this);*/
+		this.voter = new VoteHandler(this);*/
 		this.firebase = new Firebase(this);
 
 		this.patron = new Patrons(this);
