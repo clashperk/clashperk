@@ -44,8 +44,7 @@ class ProfileCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
-			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())
-			.setThumbnail(member.user.displayAvatarURL());
+			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL());
 
 		if (!data.tags.length) {
 			embed.setTitle('No Accounts are Linked');
