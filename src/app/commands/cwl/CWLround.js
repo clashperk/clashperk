@@ -59,7 +59,7 @@ class CwlRoundComamnd extends Command {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
 			method: 'GET', timeout: 3000,
-			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 		}).catch(() => null);
 
 		if (!res) {
@@ -115,7 +115,7 @@ class CwlRoundComamnd extends Command {
 					.warTags;
 		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
-				method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+				method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 			});
 			const data = await res.json();
 			if ((data.clan && data.clan.tag === clan.tag) || (data.opponent && data.opponent.tag === clan.tag)) {

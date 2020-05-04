@@ -4,7 +4,7 @@ const Resolver = require('../../struct/Resolver');
 const { emoji, townHallEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
 
-const API = process.env.APIS.split(',');
+const API = process.env.API_TOKENS.split(',');
 
 class MembersTHCommand extends Command {
 	constructor() {

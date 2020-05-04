@@ -4,7 +4,7 @@ const { Util } = require('discord.js');
 const Resolver = require('../../struct/Resolver');
 const { fetcherror } = require('../../util/constants');
 const { emoji } = require('../../util/emojis');
-const API = process.env.APIS.split(',');
+const API = process.env.API_TOKENS.split(',');
 
 class CwlMembersComamnd extends Command {
 	constructor() {
@@ -46,7 +46,7 @@ class CwlMembersComamnd extends Command {
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
 			method: 'GET', timeout: 3000,
-			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 		}).catch(() => null);
 
 		if (!res) {

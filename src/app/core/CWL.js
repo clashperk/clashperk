@@ -56,7 +56,7 @@ class CWLTracker {
 
 			const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar/leaguegroup`, {
 				method: 'GET', timeout: 3000,
-				headers: { accept: 'application/json', authorization: `Bearer ${process.env.TRACKER_API}` }
+				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLAN_EVENTS_API}` }
 			}).catch(() => null);
 
 			if (!res.ok) continue;

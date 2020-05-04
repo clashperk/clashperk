@@ -304,7 +304,7 @@ class CacheHandler {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}`
+				authorization: `Bearer ${process.env.CLAN_EVENTS_API}`
 			},
 			timeout: 5000
 		}).catch(() => null);

@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
 const { townHallEmoji, emoji } = require('../../util/emojis');
 
-const API = process.env.APIS.split(',');
+const API = process.env.API_TOKENS.split(',');
 
 class ThCompoCommand extends Command {
 	constructor() {

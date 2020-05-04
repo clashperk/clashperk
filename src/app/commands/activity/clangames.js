@@ -2,7 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
 const fetch = require('node-fetch');
-const API = process.env.APIS.split(',');
+const API = process.env.API_TOKENS.split(',');
 const { emoji } = require('../../util/emojis');
 
 class ClanGamesCommand extends Command {

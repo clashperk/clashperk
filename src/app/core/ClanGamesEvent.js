@@ -252,6 +252,7 @@ class ClanGames {
 	}
 
 	async update(clan) {
+		if (!this.event()) return this.flush();
 		const collection = mongodb.db('clashperk').collection('clangames');
 		const data = await collection.findOne({ tag: clan.tag });
 		const $set = {};

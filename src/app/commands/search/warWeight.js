@@ -5,7 +5,7 @@ const { townHallEmoji, emoji } = require('../../util/emojis');
 const { stripIndent } = require('common-tags');
 const { Util } = require('discord.js');
 
-const API = process.env.APIS.split(',');
+const API = process.env.API_TOKENS.split(',');
 
 class WarWeightCommand extends Command {
 	constructor() {

@@ -45,7 +45,7 @@ class ClanSearchCommand extends Command {
 	async exec(message, { name }) {
 		const query = qs.stringify({ name, limit: 10 });
 		const res = await fetch(`https://api.clashofclans.com/v1/clans?${query}`, {
-			method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 		});
 		const data = await res.json();
 
