@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
-const { firestore } = require('../../struct/Database');
+const { firestore, mongodb } = require('../../struct/Database');
 const { emoji, townHallEmoji, heroEmoji } = require('../../util/emojis');
 
 class ProfileCommand extends Command {
@@ -32,8 +32,8 @@ class ProfileCommand extends Command {
 	}
 
 	async exec(message, { member }) {
-		const snap = await this.getProfile(member.id);
-		if (!snap) {
+		const data = await this.getProfile(member.id);
+		if (!data) {
 			return message.util.send({
 				embed: {
 					color: 3093046,
@@ -47,14 +47,13 @@ class ProfileCommand extends Command {
 			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())
 			.setThumbnail(member.user.displayAvatarURL());
 
-		if (!snap.tags.length) {
+		if (!data.tags.length) {
 			embed.setTitle('No Accounts are Linked');
 		}
 
-		if (snap.tags.length) embed.setTitle(`Accounts Linked » ${snap.tags.length}`);
-
 		let accounts = 0;
-		for (const tag of snap.tags) {
+		for (const tag of data.tags) {
+			accounts += 1;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
 				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
@@ -62,13 +61,15 @@ class ProfileCommand extends Command {
 			if (!res.ok) continue;
 			const data = await res.json();
 
-			embed.addField(`\`\u200e\u2002${++accounts}\` ${townHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
-				`\u200e\u2002\u2002 ${this.heroes(data)}`,
-				`\u200b\u2002\u2002 ${this.clanName(data)}`
+			embed.addField(`${townHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
+				`${this.heroes(data)}`,
+				`${this.clanName(data)}`
 			]);
 
 			if (accounts === 25) break;
 		}
+
+		embed.setFooter(`Accounts [${accounts}/25]`);
 
 		return message.util.send({ embed });
 	}
@@ -90,10 +91,18 @@ class ProfileCommand extends Command {
 	}
 
 	async getProfile(id) {
-		const data = await firestore.collection('linked_accounts')
-			.doc(id)
-			.get()
-			.then(snap => snap.data());
+		const data = await mongodb.db('clashperk')
+			.collection('linkedusers')
+			.findOne({ user: id });
+
+		return data;
+	}
+
+	async getClan(id) {
+		const data = await mongodb.db('clashperk')
+			.collection('linkedclans')
+			.findOne({ user: id });
+
 		return data;
 	}
 }
