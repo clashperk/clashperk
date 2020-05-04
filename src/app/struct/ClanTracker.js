@@ -271,12 +271,15 @@ class FastTracker {
 				} else if (!cache.lastonline_msg_obj) {
 					const msg = await channel.messages.fetch(cache.lastonline_msg, false)
 						.catch(error => {
-							if (error.code === 500) return null;
-							this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
-							cache.lastonline_msg_obj = { id: null, editable: false, message: null };
-							this.cached.set(`${cache.guild}${cache.tag}`, cache);
+							if (error.code === 10008) {
+								this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
+								cache.lastonline_msg_obj = { id: null, editable: false, message: null };
+								this.cached.set(`${cache.guild}${cache.tag}`, cache);
+								return null;
+							}
 							return null;
 						});
+					if (!msg) return null;
 					if (msg) {
 						cache.lastonline_msg_obj = { editable: true, message: msg, id: msg.id };
 						this.cached.set(`${cache.guild}${cache.tag}`, cache);
@@ -299,12 +302,15 @@ class FastTracker {
 				} else if (!cache.clan_embed_msg_obj) {
 					const msg = await channel.messages.fetch(cache.clan_embed_msg, false)
 						.catch(error => {
-							if (error.code === 500) return null;
-							this.client.logger.warn(error, { label: 'CLAN_EMBED_FETCH_MESSAGE' });
-							cache.clan_embed_msg_obj = { editable: false, message: null, id: null };
-							this.cached.set(`${cache.guild}${cache.tag}`, cache);
+							if (error.code === 10008) {
+								this.client.logger.warn(error, { label: 'CLAN_EMBED_FETCH_MESSAGE' });
+								cache.clan_embed_msg_obj = { editable: false, message: null, id: null };
+								this.cached.set(`${cache.guild}${cache.tag}`, cache);
+								return null;
+							}
 							return null;
 						});
+					if (!msg) return;
 					if (msg) {
 						cache.clan_embed_msg_obj = { editable: true, message: msg, id: msg.id };
 						this.cached.set(`${cache.guild}${cache.tag}`, cache);
@@ -343,9 +349,12 @@ class FastTracker {
 			.setTimestamp();
 
 		return message.edit({ embed }).catch(error => {
-			cache.clan_embed_msg_obj = { editable: false, message: null, id: null };
-			this.cached.set(`${cache.guild}${cache.tag}`, cache);
-			this.client.logger.warn(error, { label: 'CLAN_BANNER_MESSAGE' });
+			if (error.code === 10008) {
+				cache.clan_embed_msg_obj = { editable: false, message: null, id: null };
+				this.cached.set(`${cache.guild}${cache.tag}`, cache);
+				this.client.logger.warn(error, { label: 'CLAN_BANNER_MESSAGE' });
+				return null;
+			}
 			return null;
 		});
 	}
@@ -367,9 +376,12 @@ class FastTracker {
 			.setTimestamp();
 
 		return message.edit({ embed }).catch(error => {
-			cache.lastonline_msg_obj = { id: null, editable: false, message: null };
-			this.cached.set(`${cache.guild}${cache.tag}`, cache);
-			this.client.logger.warn(error, { label: 'LAST_ONLINE_EDIT_MESSAGE' });
+			if (error.code === 10008) {
+				cache.lastonline_msg_obj = { id: null, editable: false, message: null };
+				this.cached.set(`${cache.guild}${cache.tag}`, cache);
+				this.client.logger.warn(error, { label: 'LAST_ONLINE_EDIT_MESSAGE' });
+				return null;
+			}
 			return null;
 		});
 	}
