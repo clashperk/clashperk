@@ -137,7 +137,7 @@ module.exports = {
 	},
 
 	emoji: {
-		xp: '<:xp:696296069348458516>',
+		xp: '<:eXP:706910526373888060>',
 		warstar: '<:warstar:696299067193425951>',
 		star: '<:cp_star:696292402532450306>',
 		star_small: '<:cp_star_small:699834188731252857>',
