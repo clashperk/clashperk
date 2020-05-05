@@ -108,8 +108,8 @@ class ClanGamesBoardCommand extends Command {
 			}
 		});
 
-		const id = await this.client.store.register({
-			type: 'CLAN_GAMES_LOG',
+		const id = await this.client.storage.register({
+			type: MODES[5],
 			guild: message.guild.id,
 			channel: channel.id,
 			premium: this.client.patron.get(message.guild.id, 'guild', false),
