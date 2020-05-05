@@ -59,7 +59,7 @@ class ClansCommand extends Command {
 					? onlinelog.channel
 					: null,
 				clanembedlog: clanembed
-					? onlinelog
+					? clanembed.channel
 					: null,
 				clangameslog: clangames
 					? clangames.channel
