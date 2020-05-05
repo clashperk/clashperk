@@ -112,8 +112,8 @@ class ClansCommand extends Command {
 							`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
 							`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
 							`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`,
-							`${logs[3].length ? `**Clan Embed**\n${logs[2]}` : ''}`,
-							`${logs[4].length ? `**Clan Games Board**\n${logs[2]}` : ''}`
+							`${logs[3].length ? `**Clan Embed**\n${logs[3]}` : ''}`,
+							`${logs[4].length ? `**Clan Games Board**\n${logs[4]}` : ''}`
 						].filter(item => item.length).join('\n');
 					}).join('\n\n')
 				]);
