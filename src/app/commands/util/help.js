@@ -71,7 +71,7 @@ class HelpCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor('Command List')
-			.setDescription(`To view details for a command, do \`${prefix}help <command>\``);
+			.setDescription([`To view details for a command, do \`${prefix}help <command>\``, '\u200b']);
 
 		const commands = [];
 		for (const category of this.handler.categories.values()) {
