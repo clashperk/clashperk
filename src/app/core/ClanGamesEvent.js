@@ -317,7 +317,10 @@ class ClanGames {
 		}).catch(() => null);
 
 		if (!res) return null;
-		if (!res.ok) return null;
+		if (!res.ok) {
+			console.log(await res.json());
+			return null;
+		}
 
 		return res.json().catch(() => null);
 	}
