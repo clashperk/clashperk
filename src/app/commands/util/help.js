@@ -106,7 +106,7 @@ class HelpCommand extends Command {
 		embed.addField('Need more help?', [
 			'What do you think about the bot?',
 			'Do you have any suggestion?',
-			`Please let me know [here](https://discord.gg/ppuppun) ${emoji.discord}`,
+			'Please let me know. Link is below!',
 			'\n\u200b'
 		].join(' '));
 		embed.addField('Developer', [emoji.botdev, '[Suvajit](https://suvajit.me/)'].join(' '), true)
