@@ -111,7 +111,9 @@ class ClansCommand extends Command {
 							`**[${item.name} (${item.tag})](${this.openInGame(item.tag)})**`,
 							`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
 							`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
-							`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`
+							`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`,
+							`${logs[3].length ? `**Clan Embed**\n${logs[2]}` : ''}`,
+							`${logs[4].length ? `**Clan Games Board**\n${logs[2]}` : ''}`
 						].filter(item => item.length).join('\n');
 					}).join('\n\n')
 				]);
