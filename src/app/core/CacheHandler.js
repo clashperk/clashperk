@@ -83,7 +83,9 @@ class CacheHandler {
 	}
 
 	async add(_id, data) {
+		console.log(typeof _id);
 		const id = ObjectId(_id).toString();
+		console.log(id);
 		const cache = this.cached.get(id);
 		if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
 
@@ -138,6 +140,7 @@ class CacheHandler {
 
 	async start(key) {
 		const cache = this.cached.get(key);
+		console.log(cache);
 
 		const clan = await this.clan(cache.tag);
 		if (!clan) return;
