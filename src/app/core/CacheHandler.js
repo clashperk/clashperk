@@ -87,7 +87,7 @@ class CacheHandler {
 		const id = ObjectId(_id).toString();
 		console.log(id);
 		const cache = this.cached.get(id);
-		if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
+		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 
 		this.cached.set(id, { guild: data.guild, tag: data.tag });
 
@@ -98,7 +98,7 @@ class CacheHandler {
 			await this.lastOnline.add(id);
 			await this.clanEmbed.add(id);
 			await this.clanGame.add(id);
-			return this.playerEvent.add(id);
+			await this.playerEvent.add(id);
 		}
 
 		return this.start(id);
@@ -115,7 +115,7 @@ class CacheHandler {
 	delete(_id, data) {
 		const id = ObjectId(_id).toString();
 		const cache = this.cached.get(id);
-		if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
+		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 
 		if (data && data.mode) {
 			this.stopLogs(id, data.mode);
@@ -145,7 +145,7 @@ class CacheHandler {
 		const clan = await this.clan(cache.tag);
 		if (!clan) return;
 
-		if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
+		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 
 		const CurrentMemberList = clan.memberList.map(m => m.tag);
 		const CurrentMemberSet = new Set(CurrentMemberList);
@@ -297,8 +297,8 @@ class CacheHandler {
 		CurrentMemberSet.clear();
 
 		// Callback
-		const timeoutId = setTimeout(this.start.bind(this), 1.5 * 60 * 1000, key);
-		cache.timeoutId = timeoutId;
+		const intervalId = setInterval(this.start.bind(this), 1.5 * 60 * 1000, key);
+		cache.intervalId = intervalId;
 		this.cached.set(key, cache);
 	}
 
@@ -320,7 +320,7 @@ class CacheHandler {
 	async flush() {
 		for (const key of this.cached.keys()) {
 			const cache = this.cached.get(key);
-			if (cache && cache.timeoutId) clearTimeout(cache.timeoutId);
+			if (cache && cache.intervalId) clearInterval(cache.intervalId);
 		}
 
 		this.clanEmbed.cached.clear();
