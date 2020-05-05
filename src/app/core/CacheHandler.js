@@ -83,9 +83,7 @@ class CacheHandler {
 	}
 
 	async add(_id, data) {
-		console.log(typeof _id);
 		const id = ObjectId(_id).toString();
-		console.log(id);
 		const cache = this.cached.get(id);
 		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 
@@ -115,6 +113,8 @@ class CacheHandler {
 	delete(_id, data) {
 		const id = ObjectId(_id).toString();
 		const cache = this.cached.get(id);
+		delete this.memberList[id];
+		this.oldMemberList.delete(id);
 		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 
 		if (data && data.mode) {
