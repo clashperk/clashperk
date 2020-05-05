@@ -14,7 +14,7 @@ class ClanGames {
 		if (!this.event()) return;
 		const cache = this.cached.get(id);
 		if (cache && cache.updatedAt) {
-			if (new Date() - new Date(cache.updatedAt) >= 1 * 60 * 1000) {
+			if (new Date() - new Date(cache.updatedAt) >= 30 * 60 * 1000) {
 				cache.updatedAt = new Date();
 				this.cached.set(id, cache);
 				return this.permissionsFor(id, cache, clan);
@@ -252,11 +252,10 @@ class ClanGames {
 
 				return clearInterval(intervalId);
 			}
-		}, 0);
+		}, 1 * 60 * 1000);
 	}
 
-	event(x) {
-		if (!x) return true;
+	event() {
 		const START = [
 			new Date()
 				.getFullYear(),
