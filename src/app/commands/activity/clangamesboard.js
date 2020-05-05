@@ -112,10 +112,11 @@ class ClanGamesBoardCommand extends Command {
 			mode: MODES[5],
 			guild: message.guild.id,
 			channel: channel.id,
-			premium: this.client.patron.get(message.guild.id, 'guild', false),
+			patron: this.client.patron.get(message.guild.id, 'guild', false),
 			message: msg.id,
 			name: data.name,
-			tag: data.name
+			tag: data.name,
+			color
 		});
 
 		await this.client.cacheHandler.add(id, {

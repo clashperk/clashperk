@@ -66,6 +66,13 @@ class ClanGames {
 			return this.cached.set(id, cache);
 		}
 
+		if (!cache.message) {
+			const msg = await this.sendNew(id, channel, clan);
+			if (!msg) return;
+			cache.msg = msg;
+			return this.cached.set(id, cache);
+		}
+
 		const message = await channel.messages.fetch(cache.message, false)
 			.catch(error => {
 				this.client.logger.warn(error, { label: 'CLAN_GAMES_FETCH_MESSAGE' });
@@ -261,7 +268,7 @@ class ClanGames {
 		if (data) {
 			for (const tag of clan.memberList.map(m => m.tag)) {
 				if (index === 4) index = 0;
-				if (tag in data.memberList === false) {
+				if (tag in data.members === false) {
 					const member = await this.player(tag, index);
 					if (member) {
 						$set.name = clan.name;
@@ -336,8 +343,7 @@ class ClanGames {
 			guild: data.guild,
 			channel: data.channel,
 			message: data.message,
-			color: data.color,
-			embed: data.embed
+			color: data.color
 		});
 	}
 
