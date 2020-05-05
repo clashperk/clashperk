@@ -35,7 +35,7 @@ class ClansCommand extends Command {
 	}
 
 	async exec(message, { guild }) {
-		await message.util.send(`**Feching data... ${emoji.loading}**`)
+		await message.util.send(`**Feching data... ${emoji.loading}**`);
 		const premium = this.client.patron.get(guild.id, 'guild', false);
 		const collection = await this.findAll(guild);
 		const db = mongodb.db('clashperk');
