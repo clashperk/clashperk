@@ -168,6 +168,7 @@ module.exports = {
 		users: '<:userssolid:699652935197655061>',
 		users_small: '<:userssolid_small:699834141931339777>',
 		authorize: '<:cp_authorized:701085545555689503>',
-		channel: '<:cp_channel:701085544335147059>'
+		channel: '<:cp_channel:701085544335147059>',
+		botdev: '<:botdev:707231318857089136>'
 	}
 };

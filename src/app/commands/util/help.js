@@ -73,10 +73,6 @@ class HelpCommand extends Command {
 			.setAuthor('Command List')
 			.setDescription(`To view details for a command, do \`${prefix}help <command>\``);
 
-		embed.addField('Our Server', [emoji.clashperk, '[ClashPerk](https://discord.gg/ppuppun)'].join(' '), true)
-			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`].join(' '), true);
-
-
 		const commands = [];
 		for (const category of this.handler.categories.values()) {
 			const title = {
@@ -106,6 +102,15 @@ class HelpCommand extends Command {
 				'\u200b'
 			]);
 		}
+
+		embed.addField('Feedback and Suggestion', [
+			'What do you think about the bot? Do you have any suggestion?',
+			'Let me know [here]()!'
+		]);
+		embed.addField('Developer', [emoji.botdev, '[Suvajit](https://suvajit.me/)'].join(' '), true)
+			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`].join(' '), true)
+			.addField('Our Server', [emoji.clashperk, '[ClashPerk](https://discord.gg/ppuppun)'].join(' '), true);
+
 
 		return message.util.send({ embed });
 	}
