@@ -106,7 +106,7 @@ class HelpCommand extends Command {
 		}
 
 		embed.addField('Our Server', [emoji.clashperk, 'ClashPerk'].join(' '), true)
-			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`], true);
+			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`].join(' '), true);
 
 		return message.util.send({ embed });
 	}
