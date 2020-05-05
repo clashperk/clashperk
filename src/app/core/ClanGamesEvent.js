@@ -223,7 +223,7 @@ class ClanGames {
 
 				return clearInterval(intervalId);
 			}
-		}, 0.1 * 60 * 1000);
+		}, 0);
 	}
 
 	event(x) {
