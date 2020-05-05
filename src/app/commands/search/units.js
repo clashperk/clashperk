@@ -11,7 +11,7 @@ class UnitsCommand extends Command {
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows troops and spells of a player.',
+				content: 'Shows troops and spells levels.',
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			}

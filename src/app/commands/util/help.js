@@ -1,11 +1,12 @@
 const { Command } = require('discord-akairo');
+const { emoji } = require('../../util/emojis');
 
 class HelpCommand extends Command {
 	constructor() {
 		super('help', {
 			aliases: ['help', 'commands'],
 			category: 'util',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			cooldown: 1000,
 			args: [
 				{
@@ -103,6 +104,9 @@ class HelpCommand extends Command {
 						.join('\n')
 			]);
 		}
+
+		embed.addField('Our Server', [emoji.clashperk, 'ClashPerk'].join(' '), true)
+			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`], true);
 
 		return message.util.send({ embed });
 	}

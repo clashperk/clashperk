@@ -13,7 +13,7 @@ class WarlogCommand extends Command {
 			category: 'search',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: 'Clash of Clans war log lookup command.',
+				content: 'Shows your clan war log.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP', '8QU8J9LP']
 			}

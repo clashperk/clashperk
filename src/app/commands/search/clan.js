@@ -9,7 +9,7 @@ class ClanCommand extends Command {
 			aliases: ['clan', 'myclan'],
 			category: 'search',
 			description: {
-				content: 'Clash of Clans clan lookup command.',
+				content: 'Shows some basic info about your clan.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP', '8QU8J9LP']
 			},
