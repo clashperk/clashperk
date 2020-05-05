@@ -13,12 +13,10 @@ class ClanGames {
 	async exec(id, clan) {
 		// if (!this.event()) return;
 		const cache = this.cached.get(id);
-		// console.log(cache);
 		if (cache && cache.updatedAt) {
 			if (new Date() - new Date(cache.updatedAt) >= 1 * 60 * 1000) {
 				cache.updatedAt = new Date();
 				this.cached.set(id, cache);
-				await this.update(clan);
 				return this.permissionsFor(id, cache, clan);
 			}
 
@@ -28,7 +26,6 @@ class ClanGames {
 		if (cache) {
 			cache.updatedAt = new Date();
 			this.cached.set(id, cache);
-			await this.update(clan);
 			return this.permissionsFor(id, cache, clan);
 		}
 	}
@@ -134,8 +131,8 @@ class ClanGames {
 	async embed(clan) {
 		const db = mongodb.db('clashperk').collection('clangames');
 		const data = await db.findOne({ tag: clan.tag });
-		const collection = await this.getList(clan.memberList.map(m => m.tag));
-		const members = this.filter(collection, data);
+		const items = await this.getList(clan, data, clan.memberList.map(m => m.tag));
+		const members = this.filter(items.collection, items.data);
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
@@ -152,7 +149,38 @@ class ClanGames {
 		return embed;
 	}
 
-	async getList(tags) {
+	async update(clan, data, collection) {
+		if (!this.event()) return this.flush();
+		const $set = {};
+		if (data) {
+			for (const member of collection) {
+				if (member.tag in data.members === false) {
+					$set.name = clan.name;
+					$set.tag = clan.tag;
+					$set[`members.${member.tag}`] = { tag: member.tag, points: member.points };
+				}
+			}
+		} else if (!data) {
+			for (const member of collection) {
+				$set.name = clan.name;
+				$set.tag = clan.tag;
+				$set[`members.${member.tag}`] = { tag: member.tag, points: member.points };
+			}
+		}
+
+		if (Object.keys($set).length) {
+			const data = await mongodb.db('clashperk')
+				.collection('clangames')
+				.findOneAndUpdate({ tag: clan.tag }, { $set }, { upsert: true, returnOriginal: false });
+
+			return data.value;
+		}
+
+		return data;
+	}
+
+
+	async getList(clan, data, tags) {
 		let index = 0;
 		const collection = [];
 		for (const tag of tags) {
@@ -168,7 +196,8 @@ class ClanGames {
 			});
 		}
 
-		return collection;
+		const updated = await this.update(clan, data, collection);
+		return { collection, data: updated };
 	}
 
 	padStart(num) {
@@ -258,56 +287,6 @@ class ClanGames {
 			}
 
 			return this.cached.clear();
-		}
-	}
-
-	async update(clan) {
-		if (!this.event()) return this.flush();
-		const collection = mongodb.db('clashperk').collection('clangames');
-		const data = await collection.findOne({ tag: clan.tag });
-		const $set = {};
-		let index = 0;
-		if (data) {
-			for (const tag of clan.memberList.map(m => m.tag)) {
-				if (index === 4) index = 0;
-				if (tag in data.members === false) {
-					const member = await this.player(tag, index);
-					if (member) {
-						$set.name = clan.name;
-						$set.tag = clan.tag;
-						$set[`members.${member.tag}`] = {
-							tag: member.tag,
-							points: member.achievements
-								.find(achievement => achievement.name === 'Games Champion')
-								.value
-						};
-
-						index += 1;
-					}
-				}
-			}
-		} else if (!data) {
-			for (const tag of clan.memberList.map(m => m.tag)) {
-				if (index === 4) index = 0;
-				const member = await this.player(tag, index);
-				if (member) {
-					$set.name = clan.name;
-					$set.tag = clan.tag;
-					$set[`members.${member.tag}`] = {
-						tag: member.tag,
-						points: member.achievements
-							.find(achievement => achievement.name === 'Games Champion')
-							.value
-					};
-
-					index += 1;
-				}
-			}
-		}
-
-		if (Object.keys($set).length) {
-			return collection.updateOne({ tag: clan.tag }, { $set }, { upsert: true })
-				.catch(error => this.client.logger.warn(error, { label: 'MONGODB_ERROR' }));
 		}
 	}
 
