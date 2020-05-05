@@ -11,10 +11,11 @@ class ClanGames {
 	}
 
 	async exec(id, clan) {
-		if (!this.event()) return;
+		// if (!this.event()) return;
 		const cache = this.cached.get(id);
+		console.log(cache);
 		if (cache && cache.updatedAt) {
-			if (new Date() - new Date(cache.updatedAt) > 6 * 60 * 1000) {
+			if (new Date() - new Date(cache.updatedAt) >= 1 * 60 * 1000) {
 				cache.updatedAt = new Date();
 				this.cached.set(id, cache);
 				await this.update(clan);
