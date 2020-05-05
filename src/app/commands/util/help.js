@@ -15,7 +15,7 @@ class HelpCommand extends Command {
 				}
 			],
 			description: {
-				content: 'Displays a list of commands or info about a command.',
+				content: 'Displays info about commands.',
 				usage: '[command]',
 				examples: ['', 'start']
 			}
@@ -71,11 +71,7 @@ class HelpCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor('Command List')
-			.setDescription([
-				`To view details for a command, do \`${prefix}help <command>\``,
-				'Official Discord: https://discord.gg/ppuppun'
-			]);
-
+			.setDescription(`To view details for a command, do \`${prefix}help <command>\``);
 
 		embed.addField('Our Server', [emoji.clashperk, '[ClashPerk](https://discord.gg/ppuppun)'].join(' '), true)
 			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`].join(' '), true);
@@ -106,7 +102,8 @@ class HelpCommand extends Command {
 						.join('\n')
 					: cmd.category.filter(cmd => cmd.aliases.length > 0)
 						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz) - ${cmd.description.content.toLowerCase()}`)
-						.join('\n')
+						.join('\n'),
+				'\u200b'
 			]);
 		}
 

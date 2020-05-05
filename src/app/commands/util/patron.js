@@ -10,7 +10,7 @@ class PatronCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			cooldown: 1000,
 			description: {
-				content: 'Get information about the ClashPerk\'s Patreon.'
+				content: 'Get info about the our Patreon.'
 			}
 		});
 	}
