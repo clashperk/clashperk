@@ -76,6 +76,11 @@ class HelpCommand extends Command {
 				'Official Discord: https://discord.gg/ppuppun'
 			]);
 
+
+		embed.addField('Our Server', [emoji.clashperk, '[ClashPerk](https://discord.gg/ppuppun)'].join(' '), true)
+			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`].join(' '), true);
+
+
 		const commands = [];
 		for (const category of this.handler.categories.values()) {
 			const title = {
@@ -104,9 +109,6 @@ class HelpCommand extends Command {
 						.join('\n')
 			]);
 		}
-
-		embed.addField('Our Server', [emoji.clashperk, '[ClashPerk](https://discord.gg/ppuppun)'].join(' '), true)
-			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`].join(' '), true);
 
 		return message.util.send({ embed });
 	}
