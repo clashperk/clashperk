@@ -121,6 +121,7 @@ class ClanEmbed {
 
 	async embed(id, clan) {
 		const cache = this.cached.get(id);
+		console.log(cache);
 		const embed = new MessageEmbed()
 			.setTimestamp()
 			.setColor(cache.color)
@@ -156,6 +157,7 @@ class ClanEmbed {
 
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
+				console.log(data);
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					guild: data.guild,
 					channel: data.channel,
