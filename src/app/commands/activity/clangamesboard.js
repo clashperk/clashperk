@@ -115,7 +115,7 @@ class ClanGamesBoardCommand extends Command {
 			patron: this.client.patron.get(message.guild.id, 'guild', false),
 			message: msg.id,
 			name: data.name,
-			tag: data.name,
+			tag: data.tag,
 			color
 		});
 
