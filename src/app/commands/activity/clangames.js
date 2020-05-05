@@ -101,10 +101,10 @@ class ClanGamesCommand extends Command {
 
 	filter(memberList, clan) {
 		const members = memberList.map(member => {
-			const points = member.tag in clan.memberList
-				? (member.points - clan.memberList[member.tag].points) > 4000
+			const points = member.tag in clan.members
+				? (member.points - clan.members[member.tag].points) > 4000
 					? 4000
-					: member.points - clan.memberList[member.tag].points
+					: member.points - clan.members[member.tag].points
 				: null;
 			return { tag: member.tag, name: member.name, points };
 		});
