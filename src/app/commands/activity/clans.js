@@ -79,8 +79,8 @@ class ClansCommand extends Command {
 						const donationlog = this.client.channels.cache.has(item.donationlog);
 						const playerlog = this.client.channels.cache.has(item.playerlog);
 						const onlinelog = this.client.channels.cache.has(item.onlinelog);
-						const clanembedlog = this.client.channels.cache.has(item.onlinelog);
-						const clangameslog = this.client.channels.cache.has(item.onlinelog);
+						const clanembedlog = this.client.channels.cache.has(item.clanembedlog);
+						const clangameslog = this.client.channels.cache.has(item.clangameslog);
 						const logs = [
 							item.donationlog
 								? donationlog
