@@ -133,7 +133,7 @@ class ClanEmbedCommand extends Command {
 			tag: data.tag,
 			color,
 			name: data.name,
-			premium: this.client.patron.get(message.guild.id, 'guild', false),
+			patron: this.client.patron.get(message.guild.id, 'guild', false),
 			message: msg.id,
 			embed: { userId: user.id, accepts, description }
 		});
