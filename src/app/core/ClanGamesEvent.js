@@ -252,11 +252,10 @@ class ClanGames {
 
 				return clearInterval(intervalId);
 			}
-		}, 0);
+		}, 1 * 60 * 1000);
 	}
 
-	event(x) {
-		if (!x) return true;
+	event() {
 		const START = [
 			new Date()
 				.getFullYear(),
