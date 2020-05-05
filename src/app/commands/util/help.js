@@ -107,7 +107,7 @@ class HelpCommand extends Command {
 			'What do you think about the bot?',
 			'Do you have any suggestion?',
 			`Please let me know [here](https://discord.gg/ppuppun) ${emoji.discord}`,
-			'\n'
+			'\n\u200b'
 		].join(' '));
 		embed.addField('Developer', [emoji.botdev, '[Suvajit](https://suvajit.me/)'].join(' '), true)
 			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`].join(' '), true)
