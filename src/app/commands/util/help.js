@@ -112,7 +112,7 @@ class HelpCommand extends Command {
 		embed.addField('Developer', [emoji.botdev, '[Suvajit](https://suvajit.me/)'].join(' '), true)
 			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`].join(' '), true)
 			.addField('Our Server', [emoji.clashperk, '[ClashPerk](https://discord.gg/ppuppun)'].join(' '), true)
-			.setFooter('\u2002', this.client.user.defaultAvatarURL());
+			.setFooter('\u2002', this.client.user.displayAvatarURL());
 
 
 		return message.util.send({ embed });
