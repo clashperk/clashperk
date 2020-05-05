@@ -83,7 +83,7 @@ class ToggleCommand extends Command {
 
 		await this.client.storage.stop(data._id, { mode: method });
 		await this.client.cacheHandler.delete(id, { mode: method });
-		await this.delete(id);
+		this.delete(id);
 
 		return message.util.send({
 			embed: {
@@ -99,7 +99,8 @@ class ToggleCommand extends Command {
 			db.collection('donationlogs').findOne({ clan_id: ObjectId(id) }),
 			db.collection('playerlogs').findOne({ clan_id: ObjectId(id) }),
 			db.collection('lastonlinelogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('clanembedlogs').findOne({ clan_id: ObjectId(id) })
+			db.collection('clanembedlogs').findOne({ clan_id: ObjectId(id) }),
+			db.collection('clangameslogs').findOne({ clan_id: ObjectId(id) })
 		]).then(collection => collection.every(item => item == null));
 		if (data) {
 			this.client.cacheHandler.delete(id);
