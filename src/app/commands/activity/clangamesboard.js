@@ -6,13 +6,13 @@ const { MODES } = require('../../util/constants');
 class ClanGamesBoardCommand extends Command {
 	constructor() {
 		super('clangamesboard', {
-			aliases: ['clangamesboard', 'cgboard', 'clangameboard'],
+			aliases: ['cgboard', 'clangamesboard', 'clangameboard'],
 			category: 'activity',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
-				content: 'Setup a live updating clan-games board.',
+				content: 'Setup a live updating Clan Games board.',
 				usage: '<clanTag> [channel/color] [color/channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-games #5970C1', '#8QU8J9LP #5970C1 #clan-games']
 			}

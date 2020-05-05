@@ -10,7 +10,7 @@ class RemoveClanCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: 'Removes a specified clan from your guild.',
+				content: 'Removes a clan from the server.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},

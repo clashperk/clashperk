@@ -12,7 +12,7 @@ class DonationLogCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Setup donation-log in a channel.',
+				content: 'Setup Donation Log in a channel.',
 				usage: '<clanTag> [channel/color] [color/channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #donations #5970C1', '#8QU8J9LP #5970C1 #donations']
 			}

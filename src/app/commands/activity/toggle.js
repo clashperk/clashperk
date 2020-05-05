@@ -10,7 +10,7 @@ class ToggleCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: 'Toogle logs and boards on your guild.',
+				content: 'Toogle logs and boards on the server.',
 				usage: '<method> <clanTag>',
 				examples: ['donationlog #8QU8J9LP', 'playerlog #8QU8J9LP', 'lastonline #8QU8J9LP']
 			},

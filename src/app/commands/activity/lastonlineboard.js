@@ -6,13 +6,13 @@ const { MODES } = require('../../util/constants');
 class LastOnlineBoardCommand extends Command {
 	constructor() {
 		super('lastonlineboard', {
-			aliases: ['lastonlineboard', 'onlineboard'],
+			aliases: ['onlineboard', 'lastonlineboard'],
 			category: 'activity',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
-				content: 'Setup a live updating last-online board.',
+				content: 'Setup a live updating Last Online board.',
 				usage: '<clanTag> [channel/color] [color/channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #last-online #5970C1', '#8QU8J9LP #5970C1 #last-online']
 			}
