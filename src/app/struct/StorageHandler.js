@@ -81,6 +81,7 @@ class StorageHandler {
 							createdAt: new Date()
 						}
 					}, { upsert: true });
+				break;
 			case 'CLAN_EMBED_LOG':
 				await mongodb.db('clashperk').collection('clanembedlogs')
 					.updateOne({ clan_id: ObjectId(id) }, {
@@ -97,6 +98,7 @@ class StorageHandler {
 							createdAt: new Date()
 						}
 					}, { upsert: true });
+				break;
 			default:
 				break;
 		}
