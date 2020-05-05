@@ -12,7 +12,7 @@ class PlayerLogCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Setup a player-log in a channel.',
+				content: 'Setup player-log in a channel.',
 				usage: '<clanTag> [channel/color] [color/channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #player-log #5970C1', '#8QU8J9LP #5970C1 #player-log']
 			}

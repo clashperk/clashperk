@@ -12,7 +12,7 @@ class DonationLogCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Starts the donation-log in a channel.',
+				content: 'Setup donation-log in a channel.',
 				usage: '<clanTag> [channel/color] [color/channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #donations #5970C1', '#8QU8J9LP #5970C1 #donations']
 			}
@@ -51,7 +51,7 @@ class DonationLogCommand extends Command {
 
 	async exec(message, { data, channel, color }) {
 		const clans = await this.clans(message);
-		const max = this.client.patron.get(message.guild.id, 'limit', 4);
+		const max = this.client.patron.get(message.guild.id, 'limit', 2);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
 			const embed = this.client.util.embed()
 				.setDescription([

@@ -84,7 +84,7 @@ class ClanGamesBoardCommand extends Command {
 		const clan = clans.find(clan => clan.tag === data.tag) || { verified: false };
 		if (!clan.verified && !data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
-				.setAuthor(`${data.name} - Last Online Board Setup`, data.badgeUrls.small)
+				.setAuthor(`${data.name} - Clan Games Board Setup`, data.badgeUrls.small)
 				.setDescription([
 					'**Clan Description**',
 					`${data.description}`,

@@ -14,7 +14,7 @@ class ClanGames {
 		if (!this.event()) return;
 		const cache = this.cached.get(id);
 		if (cache && cache.updatedAt) {
-			if (new Date() - new Date(cache.updatedAt) > 30 * 60 * 1000) {
+			if (new Date() - new Date(cache.updatedAt) > 6 * 60 * 1000) {
 				cache.updatedAt = new Date();
 				this.cached.set(id, cache);
 				await this.update(clan);
@@ -217,7 +217,8 @@ class ClanGames {
 		}, 2 * 60 * 1000);
 	}
 
-	event() {
+	event(x) {
+		if (!x) return true;
 		const START = [
 			new Date()
 				.getFullYear(),
