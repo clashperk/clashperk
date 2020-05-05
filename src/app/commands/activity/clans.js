@@ -3,15 +3,15 @@ const { MessageEmbed } = require('discord.js');
 const { emoji } = require('../../util/emojis');
 const { mongodb } = require('../../struct/Database');
 
-class InfoCommand extends Command {
+class ClansCommand extends Command {
 	constructor() {
-		super('info', {
-			aliases: ['info', 'tracking', 'clans'],
+		super('clans', {
+			aliases: ['clans', 'tracking', 'info'],
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Shows how many clans you\'ve claimed.'
+				content: 'Shows all clans related to the guild.'
 			},
 			args: [
 				{
@@ -42,6 +42,8 @@ class InfoCommand extends Command {
 			const donationlog = await db.collection('donationlogs').findOne({ clan_id: item._id });
 			const playerlog = await db.collection('playerlogs').findOne({ clan_id: item._id });
 			const onlinelog = await db.collection('lastonlinelogs').findOne({ clan_id: item._id });
+			const clanembed = await db.collection('clanembedlogs').findOne({ clan_id: item._id });
+			const clangames = await db.collection('clangameslogs').findOne({ clan_id: item._id });
 
 			return {
 				tag: item.tag,
@@ -54,6 +56,12 @@ class InfoCommand extends Command {
 					: null,
 				onlinelog: onlinelog
 					? onlinelog.channel
+					: null,
+				clanembedlog: clanembed
+					? onlinelog
+					: null,
+				clangameslog: clangames
+					? clangames.channel
 					: null
 			};
 		}));
@@ -70,6 +78,8 @@ class InfoCommand extends Command {
 						const donationlog = this.client.channels.cache.has(item.donationlog);
 						const playerlog = this.client.channels.cache.has(item.playerlog);
 						const onlinelog = this.client.channels.cache.has(item.onlinelog);
+						const clanembedlog = this.client.channels.cache.has(item.onlinelog);
+						const clangameslog = this.client.channels.cache.has(item.onlinelog);
 						const logs = [
 							item.donationlog
 								? donationlog
@@ -85,6 +95,16 @@ class InfoCommand extends Command {
 								? onlinelog
 									? `${emoji.ok} Enabled \n${emoji.channel} <#${item.onlinelog}>`
 									: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.onlinelog}>`
+								: '',
+							item.clanembedlog
+								? clanembedlog
+									? `${emoji.ok} Enabled \n${emoji.channel} <#${item.clanembedlog}>`
+									: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.clanembedlog}>`
+								: '',
+							item.clangameslog
+								? clangameslog
+									? `${emoji.ok} Enabled \n${emoji.channel} <#${item.clangameslog}>`
+									: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.clangameslog}>`
 								: ''
 						];
 						return [
@@ -115,4 +135,4 @@ class InfoCommand extends Command {
 	}
 }
 
-module.exports = InfoCommand;
+module.exports = ClansCommand;
