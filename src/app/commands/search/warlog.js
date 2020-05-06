@@ -56,46 +56,21 @@ class WarlogCommand extends Command {
 			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 		}).then(res => res.json());
 
-		const results = body.items.map(r => r.result);
-		const oppnames = body.items.map(r => r.opponent.name);
-		const opptags = body.items.map(r => r.opponent.tag);
-		const endTimes = body.items.map(r => r.endTime);
-		const warSizes = body.items.map(r => r.teamSize);
-		const ourattacks = body.items.map(r => r.clan.attacks);
-		const ourstars = body.items.map(r => r.clan.stars);
-		const ourdes = body.items.map(r => r.clan.destructionPercentage);
-		const oppstars = body.items.map(r => r.opponent.stars);
-		const oppdes = body.items.map(r => r.opponent.destructionPercentage);
-
 		let index = 0;
-		for (const opp of oppnames) {
-			if (!opp) {
-				const size = warSizes[oppnames.indexOf(opp)];
-				const our_attacks = ourattacks[oppnames.indexOf(opp)];
-				const our_stars = ourstars[oppnames.indexOf(opp)];
-				const our_destruct = ourdes[oppnames.indexOf(opp)];
-				const EndTime = new Date(moment(endTimes[oppnames.indexOf(opp)]).toDate()).getTime();
-				const time = this.format(Date.now() - EndTime);
-				const opp_stars = oppstars[oppnames.indexOf(opp)];
+		for (const item of body.items) {
+			const { clan, opponent } = item;
+			if (!opponent.name) {
+				const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${emoji.cwl} Clan War League**`, [
-					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(our_stars)} / ${this.padEnd(opp_stars)}\u200f\`\u200e ${emoji.fire_small} ${our_destruct.toFixed(2)}%`,
-					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(size)} / ${this.padEnd(size)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${our_attacks}`
+					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}%`,
+					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
 				]);
 			} else {
-				const opp_name = opp;
-				const result = results[oppnames.indexOf(opp)].replace(/lose/g, 'Lost').replace(/win/g, 'Won').replace(/tie/g, 'Tied');
-				const opp_tag = opptags[oppnames.indexOf(opp)];
-				const size = warSizes[oppnames.indexOf(opp)];
-				const our_attacks = ourattacks[oppnames.indexOf(opp)];
-				const our_stars = ourstars[oppnames.indexOf(opp)];
-				const our_destruct = ourdes[oppnames.indexOf(opp)];
-				const EndTime = new Date(moment(endTimes[oppnames.indexOf(opp)]).toDate()).getTime();
-				const time = this.format(Date.now() - EndTime);
-				const opp_stars = oppstars[oppnames.indexOf(opp)];
-				const opp_destruct = oppdes[oppnames.indexOf(opp)];
-				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opp_name)}**`, [
-					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(our_stars)} / ${this.padEnd(opp_stars)}\u200f\`\u200e ${emoji.fire_small} ${our_destruct}% / ${opp_destruct}%`,
-					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(size)} / ${this.padEnd(size)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${our_attacks}`
+				const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
+				const result = item.result.replace(/lose/g, 'Lost').replace(/win/g, 'Won').replace(/tie/g, 'Tied');
+				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opponent.name)}**`, [
+					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}% / ${opponent.destructionPercentage.toFixed(2)}`,
+					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
 				]);
 			}
 		}
