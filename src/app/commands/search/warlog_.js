@@ -63,14 +63,14 @@ class WarlogCommand extends Command {
 				const time = this.format(new Date() - new Date(moment(opponent.endTime).toDate()).getTime());
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${emoji.cwl} Clan War League**`, [
 					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}%`,
-					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(opponent.teamSize)} / ${this.padEnd(opponent.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
+					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
 				]);
 			} else {
 				const time = this.format(new Date() - new Date(moment(opponent.endTime).toDate()).getTime());
 				const result = item.result.replace(/lose/g, 'Lost').replace(/win/g, 'Won').replace(/tie/g, 'Tied');
 				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} against ${this.name(opponent.name)}**`, [
 					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}% / ${opponent.destructionPercentage.toFixed(2)}`,
-					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(opponent.teamSize)} / ${this.padEnd(opponent.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
+					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
 				]);
 			}
 		}
