@@ -69,7 +69,7 @@ class ClanEvent {
 			]);
 		}
 
-		return channel.send({ embed });
+		return channel.send({ embed }).catch(() => null);
 	}
 
 	formatNum(num) {

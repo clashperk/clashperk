@@ -48,7 +48,7 @@ class PlayerEvent {
 		for (const item of data.tags) {
 			const embed = await this.embed(item, data);
 			if (!embed) continue;
-			await channel.send({ embed });
+			await channel.send({ embed }).catch(() => null);
 			await this.delay(250);
 		}
 
@@ -59,7 +59,7 @@ class PlayerEvent {
 		for (const item of data.tags) {
 			const embed = await this.embed(item, data);
 			if (!embed) continue;
-			await channel.send({ embed });
+			await channel.send({ embed }).catch(() => null);
 			await this.delay(2000);
 		}
 

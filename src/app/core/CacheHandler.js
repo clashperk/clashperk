@@ -144,8 +144,6 @@ class CacheHandler {
 		const clan = await this.clan(cache.tag);
 		if (!clan) return;
 
-		if (cache && cache.intervalId) clearInterval(cache.intervalId);
-
 		const CurrentMemberList = clan.memberList.map(m => m.tag);
 		const CurrentMemberSet = new Set(CurrentMemberList);
 		const OldMemberSet = new Set(this.oldMemberList.get(key));
@@ -296,6 +294,7 @@ class CacheHandler {
 		CurrentMemberSet.clear();
 
 		// Callback
+		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 		const intervalId = setInterval(this.start.bind(this), 1.5 * 60 * 1000, key);
 		cache.intervalId = intervalId;
 		this.cached.set(key, cache);
