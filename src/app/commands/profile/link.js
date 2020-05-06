@@ -28,7 +28,7 @@ class LinkCommand extends Command {
 		};
 
 		const rest = yield {
-			match: 'content',
+			match: 'rest',
 			type: 'string',
 			default: ''
 		};
@@ -37,6 +37,7 @@ class LinkCommand extends Command {
 	}
 
 	exec(message, { flag, rest }) {
+		console.log(flag, rest);
 		if (flag) {
 			const command = this.handler.modules.get('link-player');
 			return this.handler.handleDirectCommand(message, rest, command, true);
