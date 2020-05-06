@@ -60,6 +60,7 @@ class CWLMvpCommand extends Command {
 			'',
 			`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
 			items.slice(0, 30)
+				.filter(m => m.cwlStar !== 0)
 				.map(member => {
 					const name = this.padEnd(member.name);
 					const star = this.padStart(member.cwlStar.toString());

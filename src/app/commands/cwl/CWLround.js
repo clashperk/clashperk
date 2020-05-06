@@ -9,7 +9,7 @@ const { emoji, townHallEmoji } = require('../../util/emojis');
 class CwlRoundComamnd extends Command {
 	constructor() {
 		super('cwl-round', {
-			aliases: ['cwl-round', 'cwl-war'],
+			aliases: ['round', 'cwl-war', 'cwl-round'],
 			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
