@@ -271,7 +271,7 @@ class CacheHandler {
 			if (tags.length) {
 				await this.broadcast({
 					_id: key,
-					tags,
+					tags: tags.map(tag => ({ value: Math.random(), tag: tag.tag, mode: tag.mode })),
 					clan: {
 						name: clan.name,
 						tag: clan.tag,
