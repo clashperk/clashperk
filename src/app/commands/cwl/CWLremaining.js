@@ -2,7 +2,7 @@ const { Command, Argument, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const moment = require('moment');
 const { MessageEmbed } = require('discord.js');
-const { fetcherror } = require('../../util/constants');
+const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const { emoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
@@ -65,7 +65,13 @@ class CwlMissingComamnd extends Command {
 		}).catch(() => null);
 
 		if (!res) {
-			return message.util.send({ embed: fetcherror(504) });
+			return message.util.send({
+				embed: {
+					color: 0xf30c11,
+					author: { name: 'Error' },
+					description: status[504]
+				}
+			});
 		}
 
 		const body = await res.json();

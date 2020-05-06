@@ -1,5 +1,3 @@
-const { MessageEmbed } = require('discord.js');
-
 const codes = {
 	504: '504 Request Timeout',
 	400: 'Client provided incorrect parameters for the request.',
@@ -66,29 +64,6 @@ module.exports = {
 
 	status(code) {
 		return codes[code];
-	},
-
-	geterror(member, type) {
-		const embed = new MessageEmbed()
-			.setAuthor('Error')
-			.setColor(0xf30c11)
-			.setDescription([
-				`Couldn't find a ${type} linked to **${member.user.tag}!**`,
-				`Either provide a tag or link a ${type} to your Discord.`
-			]);
-
-		return embed;
-	},
-
-	fetcherror(code) {
-		const embed = new MessageEmbed()
-			.setAuthor('Error')
-			.setColor(0xf30c11)
-			.setDescription([
-				`${codes[code]}`
-			]);
-
-		return embed;
 	},
 
 	MODES: {

@@ -2,7 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const { Util } = require('discord.js');
 const Resolver = require('../../struct/Resolver');
-const { fetcherror } = require('../../util/constants');
+const { status } = require('../../util/constants');
 const { emoji } = require('../../util/emojis');
 const API = process.env.API_TOKENS.split(',');
 
@@ -50,7 +50,13 @@ class CwlMembersComamnd extends Command {
 		}).catch(() => null);
 
 		if (!res) {
-			return message.util.send({ embed: fetcherror(504) });
+			return message.util.send({
+				embed: {
+					color: 0xf30c11,
+					author: { name: 'Error' },
+					description: status[504]
+				}
+			});
 		}
 
 		if (!res.ok) {

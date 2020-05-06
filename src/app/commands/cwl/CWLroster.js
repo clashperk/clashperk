@@ -2,7 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
 const moment = require('moment');
-const { fetcherror } = require('../../util/constants');
+const { status } = require('../../util/constants');
 const { townHallEmoji } = require('../../util/emojis');
 
 class CwlRosterComamnd extends Command {
@@ -46,7 +46,13 @@ class CwlRosterComamnd extends Command {
 		}).catch(() => null);
 
 		if (!res) {
-			return message.util.send({ embed: fetcherror(504) });
+			return message.util.send({
+				embed: {
+					color: 0xf30c11,
+					author: { name: 'Error' },
+					description: status[504]
+				}
+			});
 		}
 
 		const body = await res.json();
