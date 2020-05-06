@@ -46,6 +46,7 @@ class RemoveClanCommand extends Command {
 
 		const id = ObjectId(clan._id).toString();
 		await this.client.storage.delete(id);
+		await this.client.cacheHandler.delete(id);
 
 		return message.util.send({
 			embed: {
