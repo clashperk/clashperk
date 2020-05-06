@@ -123,7 +123,7 @@ class StorageHandler {
 			.deleteOne({ clan_id: ObjectId(id) });
 
 		return mongodb.db('clashperk').collection('clanstore')
-			.deleteOne({ clan_id: ObjectId(id) });
+			.deleteOne({ _id: ObjectId(id) });
 	}
 
 	async stop(id, data) {
