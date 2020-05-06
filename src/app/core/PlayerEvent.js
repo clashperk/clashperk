@@ -45,7 +45,7 @@ class PlayerEvent {
 
 	async handleMessage(channel, data) {
 		if (data.tags.length >= 5) return this.queue(channel, data);
-		for (const item of data.tags) {
+		for (const item of data.tags.sort()) {
 			const embed = await this.embed(item, data);
 			if (!embed) continue;
 			await channel.send({ embed }).catch(() => null);
@@ -56,7 +56,7 @@ class PlayerEvent {
 	}
 
 	async queue(channel, data) {
-		for (const item of data.tags) {
+		for (const item of data.tags.sort()) {
 			const embed = await this.embed(item, data);
 			if (!embed) continue;
 			await channel.send({ embed }).catch(() => null);
