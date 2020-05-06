@@ -3,13 +3,12 @@ const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
 const { townHallEmoji, emoji } = require('../../util/emojis');
-
-const API = process.env.API_TOKENS.split(',');
+const API_TOKENS = process.env.API_TOKENS.split(',');
 
 class ThCompoCommand extends Command {
 	constructor() {
 		super('th-compo', {
-			aliases: ['th-compo', 'compo'],
+			aliases: ['compo', 'th-compo'],
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
@@ -63,7 +62,7 @@ class ThCompoCommand extends Command {
 				for (const tag of tags) {
 					const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 						method: 'GET',
-						headers: { accept: 'application/json', authorization: `Bearer ${API[index]}` }
+						headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[index]}` }
 					}).then(res => res.json());
 					collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 				}

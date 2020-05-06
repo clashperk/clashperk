@@ -4,8 +4,7 @@ const Resolver = require('../../struct/Resolver');
 const { townHallEmoji, emoji } = require('../../util/emojis');
 const { stripIndent } = require('common-tags');
 const { Util } = require('discord.js');
-
-const API = process.env.API_TOKENS.split(',');
+const API_TOKENS = process.env.API_TOKENS.split(',');
 
 class WarWeightCommand extends Command {
 	constructor() {
@@ -50,7 +49,7 @@ class WarWeightCommand extends Command {
 				for (const tag of tags) {
 					const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 						method: 'GET',
-						headers: { accept: 'application/json', authorization: `Bearer ${API[index]}` }
+						headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[index]}` }
 					}).then(res => res.json());
 					collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
 				}
