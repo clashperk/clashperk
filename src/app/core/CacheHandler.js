@@ -90,7 +90,7 @@ class CacheHandler {
 		this.cached.set(id, { guild: data.guild, tag: data.tag });
 
 		if (data && data.mode) {
-			this.addLogs(_id, data.mode);
+			await this.addLogs(_id, data.mode);
 		} else {
 			await this.clanEvent.add(id);
 			await this.lastOnline.add(id);
