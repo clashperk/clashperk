@@ -175,8 +175,9 @@ class WarWeightCommand extends Command {
 	}
 
 	sort(items) {
-		return items.sort((a, b) => b.townHallLevel - a.townHallLevel)
-			.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0));
+		return items
+			.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
+			.sort((a, b) => b.townHallLevel - a.townHallLevel);
 	}
 }
 
