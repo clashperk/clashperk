@@ -1,4 +1,4 @@
-const { Command } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 
 class LinkCommand extends Command {
 	constructor() {
@@ -11,35 +11,39 @@ class LinkCommand extends Command {
 				content: 'Links a clan or player to your Discord.',
 				usage: '<method> <...args>',
 				examples: ['clan #8QU8J9LP', 'player #9Q92C8R20']
-			}
+			},
+			flags: ['clan', 'player', 'profile']
 		});
 	}
 
 	*args() {
-		const method = yield {
-			type: [
-				['clan'],
-				['player', 'profile']
-			],
-			default: 'clan'
+		const flag_ = yield {
+			match: 'flag',
+			flag: 'clan'
+		};
+
+		const flag = yield {
+			match: 'flag',
+			flag: ['player', 'profile']
 		};
 
 		const rest = yield {
-			match: 'rest',
+			match: 'content',
 			type: 'string',
 			default: ''
 		};
 
-		return { method, rest };
+		return { flag_, flag, rest };
 	}
 
-	exec(message, { method, rest }) {
-		const command = {
-			clan: this.handler.modules.get('link-clan'),
-			player: this.handler.modules.get('link-player')
-		}[method];
+	exec(message, { flag, rest }) {
+		if (flag) {
+			const command = this.handler.modules.get('link-player');
+			return this.handler.handleDirectCommand(message, rest, command, true);
+		}
 
-		return this.handler.handleDirectCommand(message, rest, command, false);
+		const command = this.handler.modules.get('link-clan');
+		return this.handler.handleDirectCommand(message, rest, command, true);
 	}
 }
 
