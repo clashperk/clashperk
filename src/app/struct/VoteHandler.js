@@ -19,8 +19,8 @@ class VoteHandler {
 		if (this.webhook) return this.webhook;
 		const guild = this.client.guilds.cache.get(this.client.settings.get('global', 'server', undefined));
 		if (!guild) return null;
-		const webhook = await guild.fetchWebhook(this.client.settings.get('global', 'voteWebhook', undefined))
-			.catch(() => null);
+		const webhooks = await guild.fetchWebhooks().catch(() => null);
+		const webhook = webhooks.get(this.client.settings.get('global', 'voteWebhook', undefined));
 		this.webhook = webhook;
 		return webhook;
 	}
