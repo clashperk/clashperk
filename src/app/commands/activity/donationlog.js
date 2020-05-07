@@ -81,7 +81,7 @@ class DonationLogCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		/* if (!clans.map(clan => clan.tag).includes(data.tag) && !data.description.toLowerCase().includes('cp')) {
+		if (!clans.map(clan => clan.tag).includes(data.tag) && !data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
 				.setAuthor(`${data.name} - Donation Log Setup`, data.badgeUrls.small)
 				.setDescription([
@@ -94,7 +94,7 @@ class DonationLogCommand extends Command {
 					'This is a security feature to ensure you have proper leadership of the clan.'
 				]);
 			return message.util.send({ embed });
-		}*/
+		}
 
 		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL'];
 		if (!channel.permissionsFor(channel.guild.me).has(permissions, false)) {
