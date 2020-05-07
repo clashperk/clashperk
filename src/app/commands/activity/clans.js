@@ -15,6 +15,11 @@ class ClansCommand extends Command {
 			},
 			args: [
 				{
+					id: 'page',
+					type: Argument.range('integer', 1, 100),
+					default: 1
+				},
+				{
 					id: 'guild',
 					type: (msg, id) => {
 						if (!id) return null;
@@ -23,14 +28,7 @@ class ClansCommand extends Command {
 						if (!guild) return null;
 						return guild;
 					},
-					default: message => message.guild,
-					unordered: true
-				},
-				{
-					id: 'page',
-					type: Argument.range('integer', 1, 100),
-					default: 1,
-					unordered: true
+					default: message => message.guild
 				}
 			]
 		});
