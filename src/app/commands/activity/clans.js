@@ -16,7 +16,7 @@ class ClansCommand extends Command {
 			args: [
 				{
 					id: 'page',
-					type: Argument.range('integer', 1, 100),
+					type: 'number',
 					default: 1
 				},
 				{
