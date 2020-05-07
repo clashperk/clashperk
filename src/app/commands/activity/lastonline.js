@@ -69,8 +69,8 @@ class LastOnlineCommand extends Command {
 
 	filter(data, clan) {
 		const members = data.memberList.map(member => {
-			const lastOnline = member.tag in clan.memberList
-				? new Date() - new Date(clan.memberList[member.tag].lastOnline)
+			const lastOnline = member.tag in clan.members
+				? new Date() - new Date(clan.members[member.tag].lastOnline)
 				: null;
 			return { tag: member.tag, name: member.name, lastOnline };
 		});
