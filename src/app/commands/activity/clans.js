@@ -11,6 +11,8 @@ class ClansCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
+				usage: '<page>',
+				examples: ['2'],
 				content: 'Shows all clans related to the server.'
 			},
 			args: [
