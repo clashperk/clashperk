@@ -43,10 +43,16 @@ class ClanGamesCommand extends Command {
 	async exec(message, { data }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const db = mongodb.db('clashperk').collection('clangames');
+		const prefix = this.handler.prefix(message);
 		const clan = await db.findOne({ tag: data.tag });
 		if (!clan) {
 			return message.util.send({
-				embed: { description: 'No Data Found' }
+				embed: {
+					description: [
+						'Setup a clan games board to use this command.',
+						`Type \`${prefix}help cgboard\` to know more.`
+					].join(' ')
+				}
 			});
 		}
 

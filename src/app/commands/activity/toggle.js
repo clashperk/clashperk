@@ -87,7 +87,7 @@ class ToggleCommand extends Command {
 
 		return message.util.send({
 			embed: {
-				title: `Successfully deleted **${data.name} (${data.tag})**`,
+				title: `Successfully disabled **${data.name} (${data.tag})**`,
 				color: 5861569
 			}
 		});
