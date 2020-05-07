@@ -37,7 +37,6 @@ class LinkCommand extends Command {
 	}
 
 	exec(message, { flag, rest }) {
-		console.log(flag, rest);
 		if (flag) {
 			const command = this.handler.modules.get('link-player');
 			return this.handler.handleDirectCommand(message, rest, command, true);
