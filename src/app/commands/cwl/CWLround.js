@@ -119,7 +119,6 @@ class CwlRoundComamnd extends Command {
 					.reverse()
 					.slice(-1)[0]
 					.warTags;
-		console.log(round, rounds, body.rounds.slice(-1), body.rounds.findIndex(round => round.warTags === rounds));
 		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
@@ -172,10 +171,7 @@ class CwlRoundComamnd extends Command {
 		}
 
 		const prefix = this.handler.prefix(message);
-		return message.util.send([
-			'Did you know you can get info about specific round?',
-			`\`${prefix}round <clanTag> --round <number>\``
-		], { embed });
+		return message.util.send({ embed });
 	}
 
 	async count(members) {
