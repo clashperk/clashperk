@@ -119,7 +119,7 @@ class CwlRoundComamnd extends Command {
 					.reverse()
 					.pop()
 					.warTags;
-		console.log(round, rounds, body.rounds.findIndex(round => round.warTags === rounds));
+		console.log(round, rounds, body.rounds.slice(-1), body.rounds.findIndex(round => round.warTags === rounds));
 		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
