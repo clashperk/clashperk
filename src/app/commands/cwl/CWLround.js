@@ -29,10 +29,10 @@ class CwlRoundComamnd extends Command {
 		});
 	}
 
-	cooldown(message) {
-		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 2000;
+	/* cooldown(message) {
+		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 2000;
 		return 15000;
-	}
+	}*/
 
 	*args() {
 		const round = yield {
@@ -119,6 +119,7 @@ class CwlRoundComamnd extends Command {
 					.reverse()
 					.pop()
 					.warTags;
+		console.log(round, rounds, body.rounds.findIndex(round => round.warTags === rounds));
 		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
 				method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
