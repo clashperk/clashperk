@@ -92,7 +92,7 @@ class ClanGamesCommand extends Command {
 				members.map((m, i) => `${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
 				'```'
 			])
-			.setFooter(`Approximate Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`);
+			.setFooter(`Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`);
 
 		return message.util.send({ embed });
 	}
