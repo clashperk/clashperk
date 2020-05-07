@@ -80,7 +80,7 @@ class ClansCommand extends Command {
 				embed.setDescription([
 					`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
 					'',
-					data.slice(0, index).map((item, index) => {
+					data.slice(index - 2, index).map((item, index) => {
 						const donationlog = this.client.channels.cache.has(item.donationlog);
 						const playerlog = this.client.channels.cache.has(item.playerlog);
 						const onlinelog = this.client.channels.cache.has(item.onlinelog);
