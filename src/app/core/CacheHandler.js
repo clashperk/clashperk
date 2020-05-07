@@ -118,9 +118,8 @@ class CacheHandler {
 		if (!data) {
 			delete this.memberList[id];
 			this.oldMemberList.delete(id);
+			if (cache && cache.intervalId) clearInterval(cache.intervalId);
 		}
-
-		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 
 		if (data && data.mode) {
 			this.stopLogs(id, data.mode);
