@@ -111,10 +111,15 @@ class CacheHandler {
 	}
 
 	delete(_id, data) {
+		console.log(data);
 		const id = ObjectId(_id).toString();
 		const cache = this.cached.get(id);
-		delete this.memberList[id];
-		this.oldMemberList.delete(id);
+
+		if (!data) {
+			delete this.memberList[id];
+			this.oldMemberList.delete(id);
+		}
+
 		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 
 		if (data && data.mode) {
