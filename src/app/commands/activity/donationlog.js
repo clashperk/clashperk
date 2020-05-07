@@ -81,7 +81,8 @@ class DonationLogCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		if (!clans.map(clan => clan.tag).includes(data.tag) && !data.description.toLowerCase().includes('cp')) {
+		const clan = clans.find(clan => clan.tag === data.tag) || { verified: false };
+		if (!clan.verified && !data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
 				.setAuthor(`${data.name} - Donation Log Setup`, data.badgeUrls.small)
 				.setDescription([
