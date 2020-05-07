@@ -23,7 +23,7 @@ class StorageHandler {
 		switch (data.mode) {
 			case 'DONATION_LOG':
 				await mongodb.db('clashperk').collection('donationlogs')
-					.updateOne({ clan_id: ObjectId(id) }, {
+					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
 							clan_id: ObjectId(id),
 							tag: data.tag,
@@ -38,7 +38,7 @@ class StorageHandler {
 				break;
 			case 'PLAYER_LOG':
 				await mongodb.db('clashperk').collection('playerlogs')
-					.updateOne({ clan_id: ObjectId(id) }, {
+					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
 							clan_id: ObjectId(id),
 							tag: data.tag,
@@ -52,7 +52,7 @@ class StorageHandler {
 				break;
 			case 'LAST_ONLINE_LOG':
 				await mongodb.db('clashperk').collection('lastonlinelogs')
-					.updateOne({ clan_id: ObjectId(id) }, {
+					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
 							clan_id: ObjectId(id),
 							tag: data.tag,
@@ -68,7 +68,7 @@ class StorageHandler {
 				break;
 			case 'CLAN_GAMES_LOG':
 				await mongodb.db('clashperk').collection('clangameslogs')
-					.updateOne({ clan_id: ObjectId(id) }, {
+					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
 							clan_id: ObjectId(id),
 							tag: data.tag,
@@ -84,7 +84,7 @@ class StorageHandler {
 				break;
 			case 'CLAN_EMBED_LOG':
 				await mongodb.db('clashperk').collection('clanembedlogs')
-					.updateOne({ clan_id: ObjectId(id) }, {
+					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
 							clan_id: ObjectId(id),
 							tag: data.tag,
