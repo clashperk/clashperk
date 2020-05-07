@@ -170,7 +170,12 @@ class CwlRoundComamnd extends Command {
 				embed.setFooter(`Round #${round || body.rounds.findIndex(round => round.warTags === rounds) + 1}`);
 			}
 		}
-		return message.util.send({ embed });
+
+		const prefix = this.handler.prefix(message);
+		return message.util.send([
+			'Did you know you can get info about specific round?',
+			`\`${prefix}round <clanTag> --round <number>\``
+		], { embed });
 	}
 
 	async count(members) {
