@@ -38,7 +38,7 @@ class CwlAttacksComamnd extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 2000;
+		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 2000;
 		return 15000;
 	}
 
@@ -122,11 +122,11 @@ class CwlAttacksComamnd extends Command {
 		const rounds = round
 			? body.rounds[round - 1].warTags
 			: body.rounds.filter(d => !d.warTags.includes('#0')).length === body.rounds.length
-				? body.rounds.pop().warTags
+				? body.rounds.slice(-1)[0].warTags
 				: body.rounds.filter(d => !d.warTags.includes('#0'))
 					.slice(-2)
 					.reverse()
-					.pop()
+					.slice(-1)[0]
 					.warTags;
 		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {

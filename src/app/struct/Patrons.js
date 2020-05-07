@@ -20,6 +20,10 @@ class Patron {
 		return def;
 	}
 
+	isPatron(user, guild) {
+		return this.get(guild.id, 'guild', false) || this.get(user.id, 'user', false);
+	}
+
 	async refresh() {
 		this.store.clear();
 		await firestore.collection('patrons')

@@ -130,7 +130,7 @@ class ClashPerk extends AkairoClient {
 
 		this.postStats = new PostStats(this);
 		this.firebase = new Firebase(this);
-		this.voter = new VoteHandler(this);
+		this.voteHandler = new VoteHandler(this);
 		this.firebase = new Firebase(this);
 
 		this.patron = new Patrons(this);
@@ -142,9 +142,8 @@ class ClashPerk extends AkairoClient {
 		const intervalId = setInterval(() => {
 			if (this.readyAt && this.user && this.user.id === process.env.CLIENT_ID) {
 				this.cacheHandler.init();
-				this.voter.init();
-				// this.postStats.init();
-				// this.firebase.init();
+				this.voteHandler.init();
+				this.firebase.init();
 				clearInterval(intervalId);
 			}
 		}, 2000);

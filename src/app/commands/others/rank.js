@@ -20,7 +20,7 @@ class RankCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 1000;
 		return 3000;
 	}
 
@@ -32,7 +32,7 @@ class RankCommand extends Command {
 				.setTitle('🏷️ Bots aren\'t invited to Rank Party!');
 			return message.util.send({ embed });
 		}
-		const data = await this.client.voter.get(member.id);
+		const data = await this.client.voteHandler.get(member.id);
 		const embed = this.client.util.embed()
 			.setAuthor(member.user.tag, member.user.displayAvatarURL())
 			.setColor(0x5970c1)

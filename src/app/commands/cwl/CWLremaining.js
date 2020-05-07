@@ -31,7 +31,7 @@ class CwlMissingComamnd extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 2000;
+		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 2000;
 		return 15000;
 	}
 
@@ -116,7 +116,7 @@ class CwlMissingComamnd extends Command {
 			: body.rounds.filter(d => !d.warTags.includes('#0'))
 				.slice(-2)
 				.reverse()
-				.pop()
+				.slice(-1)[0]
 				.warTags;
 
 		for (const tag of rounds) {

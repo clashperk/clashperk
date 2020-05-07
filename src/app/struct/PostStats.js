@@ -6,11 +6,6 @@ class PostStats {
 		this.postRate = postRate;
 	}
 
-	async init() {
-		await this.post();
-		this.client.setInterval(this.post.bind(this), this.postRate);
-	}
-
 	async post() {
 		let [guilds, users] = [0, 0];
 		const values = await this.client.shard.broadcastEval(

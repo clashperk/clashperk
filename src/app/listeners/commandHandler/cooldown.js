@@ -21,16 +21,16 @@ class CooldownListener extends Listener {
 			const embed = this.client.util.embed()
 				.setAuthor('Slow it down!')
 				.setColor(0x5970c1);
-			if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false)) {
+			if (this.client.patron.isPatron(message.author, message.guild)) {
 				embed.setDescription([
 					`The default cooldown is ${this.donator(command)}, but as a donator you only need to wait ${ms(cooldown, { long: true })} sec.`
 				]);
 			} else {
 				embed.setDescription([
 					`You'll be able to use this command again in **${time}**`,
-					`The default cooldown is ${ms(cooldown, { long: true })}, but [voters](https://top.gg/bot/526971716711350273/vote) and [donators](https://www.patreon.com/bePatron?u=14584309) only need to wait ${this.default(command)} sec!`,
+					`The default cooldown is ${ms(cooldown, { long: true })}, but [voters](https://top.gg/bot/526971716711350273/vote) and [donators](https://www.patreon.com/join/clashperk) only need to wait ${this.default(command)} sec!`,
 					'',
-					'While you wait, go [vote us](https://top.gg/bot/526971716711350273/vote) and check out our [Patreon](https://www.patreon.com/bePatron?u=14584309)'
+					'While you wait, go [vote us](https://top.gg/bot/526971716711350273/vote) and check out our [Patreon](https://www.patreon.com/join/clashperk)'
 				]);
 			}
 			return message.channel.send({ embed });
@@ -43,7 +43,7 @@ class CooldownListener extends Listener {
 	}
 
 	donator(command) {
-		if (['start', 'th-compo', 'members-th'].includes(command.id)) return 20;
+		if (['start', 'th-compo', 'members-th'].includes(command.id)) return 15;
 		return 3;
 	}
 }

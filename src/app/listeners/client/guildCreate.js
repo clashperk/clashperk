@@ -1,5 +1,5 @@
 const { Listener } = require('discord-akairo');
-const { firestore, mongodb } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
 
 class GuildCreateListener extends Listener {
@@ -22,6 +22,7 @@ class GuildCreateListener extends Listener {
 		if (!guild.available) return;
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
 
+		await this.client.postStats.post().catch(() => null);
 		await this.intro(guild);
 		await this.restore(guild);
 

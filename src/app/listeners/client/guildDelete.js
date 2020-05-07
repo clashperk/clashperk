@@ -22,6 +22,7 @@ class GuildDeleteListener extends Listener {
 		if (!guild.available) return;
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_DELETE' });
 
+		await this.client.postStats.post().catch(() => null);
 		await this.delete(guild);
 
 		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
