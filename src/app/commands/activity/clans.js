@@ -1,4 +1,4 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { emoji } = require('../../util/emojis');
 const { mongodb } = require('../../struct/Database');
@@ -23,12 +23,14 @@ class ClansCommand extends Command {
 						if (!guild) return null;
 						return guild;
 					},
-					default: message => message.guild
+					default: message => message.guild,
+					unordered: true
 				},
 				{
-					id: 'index',
-					type: 'number',
-					default: 2
+					id: 'page',
+					type: Argument.range('integer', 1, 100),
+					default: 1,
+					unordered: true
 				}
 			]
 		});
@@ -39,7 +41,7 @@ class ClansCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { guild, index }) {
+	async exec(message, { guild, page }) {
 		await message.util.send(`**Feching data... ${emoji.loading}**`);
 		const premium = this.client.patron.get(guild.id, 'guild', false);
 		const collection = await this.findAll(guild);
@@ -77,10 +79,11 @@ class ClansCommand extends Command {
 				.setColor(0x5970c1)
 				.setAuthor(`${guild.name}`, guild.iconURL());
 			if (data.length) {
+				const paginated = this.paginate(data, page);
 				embed.setDescription([
 					`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
 					'',
-					data.slice(index - 2, index).map((item, index) => {
+					paginated.items.map((item, index) => {
 						const donationlog = this.client.channels.cache.has(item.donationlog);
 						const playerlog = this.client.channels.cache.has(item.playerlog);
 						const onlinelog = this.client.channels.cache.has(item.onlinelog);
@@ -123,8 +126,16 @@ class ClansCommand extends Command {
 						].filter(item => item.length).join('\n');
 					}).join('\n\n')
 				]);
+
+				embed.setFooter([
+					paginated.maxPage > 1
+						? `Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
+						: `${data.length} ${data.length === 1 ? 'clan' : 'clans'}`
+				]);
+			} else {
+				embed.setDescription(`${message.guild.name} doesn't have any clans. Why not add some?`);
 			}
-			embed.setFooter(`${data.length} ${data.length === 1 ? 'clan' : 'clans'}${data.length ? '' : '. why not add some?'}`);
+
 			return message.util.send({ embed });
 		}
 	}
@@ -140,6 +151,18 @@ class ClansCommand extends Command {
 			.toArray();
 
 		return collection;
+	}
+
+	paginate(items, page = 1, pageLength = 2) {
+		const maxPage = Math.ceil(items.length / pageLength);
+		if (page < 1) page = 1;
+		if (page > maxPage) page = maxPage;
+		const startIndex = (page - 1) * pageLength;
+
+		return {
+			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
+			page, maxPage, pageLength
+		};
 	}
 }
 
