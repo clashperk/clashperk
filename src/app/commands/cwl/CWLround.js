@@ -113,11 +113,11 @@ class CwlRoundComamnd extends Command {
 		const rounds = round
 			? body.rounds[round - 1].warTags
 			: body.rounds.filter(d => !d.warTags.includes('#0')).length === body.rounds.length
-				? body.rounds.slice(-1).warTags
+				? body.rounds.slice(-1)[0].warTags
 				: body.rounds.filter(d => !d.warTags.includes('#0'))
 					.slice(-2)
 					.reverse()
-					.slice(-1)
+					.slice(-1)[0]
 					.warTags;
 		console.log(round, rounds, body.rounds.slice(-1), body.rounds.findIndex(round => round.warTags === rounds));
 		for (const tag of rounds) {
