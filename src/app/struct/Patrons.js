@@ -218,7 +218,7 @@ class Patron {
 
 	async fetchWebhook() {
 		if (this.webhook) return this.webhook;
-		const guild = this.client.guilds.cache.get(this.client.settings.set('global', 'server', undefined));
+		const guild = this.client.guilds.cache.get(this.client.settings.get('global', 'server', undefined));
 		if (!guild) return null;
 		const webhook = await guild.fetchWebhook(this.client.settings.get('global', 'patreonWebhook', undefined)).catch(() => null);
 		this.webhook = webhook;
