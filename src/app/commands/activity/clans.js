@@ -24,6 +24,11 @@ class ClansCommand extends Command {
 						return guild;
 					},
 					default: message => message.guild
+				},
+				{
+					id: 'index',
+					type: 'number',
+					default: 2
 				}
 			]
 		});
@@ -34,7 +39,7 @@ class ClansCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { guild }) {
+	async exec(message, { guild, index }) {
 		await message.util.send(`**Feching data... ${emoji.loading}**`);
 		const premium = this.client.patron.get(guild.id, 'guild', false);
 		const collection = await this.findAll(guild);
@@ -75,7 +80,7 @@ class ClansCommand extends Command {
 				embed.setDescription([
 					`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
 					'',
-					data.map((item, index) => {
+					data.slice(0, index).map((item, index) => {
 						const donationlog = this.client.channels.cache.has(item.donationlog);
 						const playerlog = this.client.channels.cache.has(item.playerlog);
 						const onlinelog = this.client.channels.cache.has(item.onlinelog);
