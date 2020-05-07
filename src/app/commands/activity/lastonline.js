@@ -10,7 +10,7 @@ class LastOnlineCommand extends Command {
 			aliases: ['lastonline'],
 			category: 'activity',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
+			// userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows an approximate last-online time of clan members.',
