@@ -80,66 +80,135 @@ class ClansCommand extends Command {
 			const embed = new MessageEmbed()
 				.setColor(0x5970c1)
 				.setAuthor(`${guild.name}`, guild.iconURL());
-			if (data.length) {
-				const paginated = this.paginate(data, page);
-				embed.setDescription([
-					`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
-					'',
-					paginated.items.map((item, index) => {
-						const donationlog = this.client.channels.cache.has(item.donationlog);
-						const playerlog = this.client.channels.cache.has(item.playerlog);
-						const onlinelog = this.client.channels.cache.has(item.onlinelog);
-						const clanembedlog = this.client.channels.cache.has(item.clanembedlog);
-						const clangameslog = this.client.channels.cache.has(item.clangameslog);
-						const logs = [
-							item.donationlog
-								? donationlog
-									? `${emoji.ok} Enabled \n${emoji.channel} <#${item.donationlog}>`
-									: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.donationlog}>`
-								: '',
-							item.playerlog
-								? playerlog
-									? `${emoji.ok} Enabled \n${emoji.channel} <#${item.playerlog}>`
-									: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.playerlog}>`
-								: '',
-							item.onlinelog
-								? onlinelog
-									? `${emoji.ok} Enabled \n${emoji.channel} <#${item.onlinelog}>`
-									: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.onlinelog}>`
-								: '',
-							item.clanembedlog
-								? clanembedlog
-									? `${emoji.ok} Enabled \n${emoji.channel} <#${item.clanembedlog}>`
-									: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.clanembedlog}>`
-								: '',
-							item.clangameslog
-								? clangameslog
-									? `${emoji.ok} Enabled \n${emoji.channel} <#${item.clangameslog}>`
-									: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.clangameslog}>`
-								: ''
-						];
-						return [
-							`**[${item.name} (${item.tag})](${this.openInGame(item.tag)})**`,
-							`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
-							`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
-							`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`,
-							`${logs[3].length ? `**Clan Embed**\n${logs[3]}` : ''}`,
-							`${logs[4].length ? `**Clan Games Board**\n${logs[4]}` : ''}`
-						].filter(item => item.length).join('\n');
-					}).join('\n\n')
-				]);
-
-				embed.setFooter([
-					paginated.maxPage > 1
-						? `Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
-						: `${data.length} ${data.length === 1 ? 'clan' : 'clans'}`
-				]);
-			} else {
+			if (!data.length) {
 				embed.setDescription(`${message.guild.name} doesn't have any clans. Why not add some?`);
 			}
 
-			return message.util.send({ embed });
+			const paginated = this.paginate(data, page);
+
+			embed.setDescription([
+				`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
+				'',
+				this.desc(paginated)
+			]);
+
+			embed.setFooter([
+				paginated.maxPage > 1
+					? `Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
+					: `${data.length} ${data.length === 1 ? 'clan' : 'clans'}`
+			]);
+
+			embed.setDescription([
+				`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
+				'',
+				this.desc(paginated)
+			]);
+
+			if (collection.length <= 2) {
+				embed.setFooter(`${data.length} ${data.length === 1 ? 'clan' : 'clans'}`);
+				return message.util.send({ embed });
+			}
+
+			embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`);
+			const msg = await message.util.send({ embed });
+
+			for (const emoji of ['⬅️', '➡️']) {
+				await msg.react(emoji);
+				await this.delay(250);
+			}
+
+			const collector = msg.createReactionCollector(
+				(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+				{ time: 60000, max: 10 }
+			);
+
+			collector.on('collect', async reaction => {
+				if (reaction.emoji.name === '➡️') {
+					page += 1;
+					if (page < 1) page = paginated.maxPage;
+					if (page > paginated.maxPage) page = 1;
+					await msg.edit({
+						embed: embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
+							.setDescription([
+								`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
+								'',
+								this.desc(paginated)
+							])
+					});
+					await this.delay(250);
+					await reaction.users.remove(message.author.id);
+					return message;
+				}
+
+				if (reaction.emoji.name === '⬅️') {
+					page -= 1;
+					if (page < 1) page = paginated.maxPage;
+					if (page > paginated.maxPage) page = 1;
+					await msg.edit({
+						embed: embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
+							.setDescription([
+								`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
+								'',
+								this.desc(paginated)
+							])
+					});
+					await this.delay(250);
+					await reaction.users.remove(message.author.id);
+					return message;
+				}
+			});
+
+			collector.on('end', async () => {
+				await msg.reactions.removeAll().catch(() => null);
+				return message;
+			});
+			return message;
 		}
+	}
+
+	desc(paginated) {
+		return paginated.items.map((item, index) => {
+			const donationlog = this.client.channels.cache.has(item.donationlog);
+			const playerlog = this.client.channels.cache.has(item.playerlog);
+			const onlinelog = this.client.channels.cache.has(item.onlinelog);
+			const clanembedlog = this.client.channels.cache.has(item.clanembedlog);
+			const clangameslog = this.client.channels.cache.has(item.clangameslog);
+			const logs = [
+				item.donationlog
+					? donationlog
+						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.donationlog}>`
+						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.donationlog}>`
+					: '',
+				item.playerlog
+					? playerlog
+						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.playerlog}>`
+						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.playerlog}>`
+					: '',
+				item.onlinelog
+					? onlinelog
+						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.onlinelog}>`
+						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.onlinelog}>`
+					: '',
+				item.clanembedlog
+					? clanembedlog
+						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.clanembedlog}>`
+						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.clanembedlog}>`
+					: '',
+				item.clangameslog
+					? clangameslog
+						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.clangameslog}>`
+						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.clangameslog}>`
+					: ''
+			];
+			return [
+				`**[${item.name} (${item.tag})](${this.openInGame(item.tag)})**`,
+				`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
+				`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
+				`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`,
+				`${logs[3].length ? `**Clan Embed**\n${logs[3]}` : ''}`,
+				`${logs[4].length ? `**Clan Games Board**\n${logs[4]}` : ''}`
+			].filter(item => item.length).join('\n');
+		}).join('\n\n');
 	}
 
 	openInGame(tag) {
@@ -165,6 +234,10 @@ class ClansCommand extends Command {
 			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
 			page, maxPage, pageLength
 		};
+	}
+
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
 	}
 }
 
