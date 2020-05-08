@@ -34,7 +34,7 @@ class CacheHandler {
 				await this.playerEvent.exec(data._id, data);
 				break;
 			case 'CLAN_EMBED_EVENT':
-				await this.clanEmbed.exec(data._id, data.clan);
+				await this.clanEmbed.exec(data._id, data.clan, data.forced);
 				break;
 			case 'CLAN_GAMES_EVENT':
 				await this.clanGame.exec(data._id, data.clan);
@@ -283,6 +283,14 @@ class CacheHandler {
 					},
 					event: EVENTS[2]
 				});
+
+				// Force update clan embed
+				await this.broadcast({
+					_id: key,
+					clan,
+					forced: true,
+					event: EVENTS[5]
+				});
 			}
 		}
 
@@ -292,7 +300,7 @@ class CacheHandler {
 			this.memberList[key][member.tag] = member;
 		}
 
-		this.oldMemberList.set(key, []);
+		this.oldMemberList.delete(key);
 		this.oldMemberList.set(key, CurrentMemberList);
 		OldMemberSet.clear();
 		CurrentMemberSet.clear();

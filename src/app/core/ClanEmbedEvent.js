@@ -9,9 +9,9 @@ class ClanEmbed {
 		this.cached = new Map();
 	}
 
-	exec(id, clan) {
+	exec(id, clan, forced = false) {
 		const cache = this.cached.get(id);
-		if (cache && cache.updatedAt) {
+		if (cache && cache.updatedAt && !forced) {
 			if (new Date() - new Date(cache.updatedAt) > 10 * 60 * 1000) {
 				cache.updatedAt = new Date();
 				this.cached.set(id, cache);
@@ -48,7 +48,7 @@ class ClanEmbed {
 
 	async handleMessage(id, channel, clan) {
 		const cache = this.cached.get(id);
-		if (cache && cache.msg && cache.msg.deleted) {
+		/* if (cache && cache.msg && cache.msg.deleted) {
 			const msg = await this.sendNew(id, channel, clan);
 			if (!msg) return;
 			cache.msg = msg;
@@ -60,6 +60,10 @@ class ClanEmbed {
 			if (!msg) return;
 			cache.msg = msg;
 			return this.cached.set(id, cache);
+		}*/
+
+		if (cache && cache.msg) {
+			return this.edit(id, cache.msg, clan);
 		}
 
 		const message = await channel.messages.fetch(cache.message, false)
@@ -77,14 +81,14 @@ class ClanEmbed {
 		if (message.deleted) {
 			const msg = await this.sendNew(id, channel, clan);
 			if (!msg) return;
-			cache.msg = msg;
+			cache.msg = message;
 			return this.cached.set(id, cache);
 		}
 
 		if (!message.deleted) {
 			const msg = await this.edit(id, message, clan);
 			if (!msg) return;
-			cache.msg = msg;
+			cache.msg = message;
 			return this.cached.set(id, cache);
 		}
 	}
@@ -96,6 +100,9 @@ class ClanEmbed {
 
 		if (message) {
 			try {
+				const cache = this.cached.get(id);
+				cache.message = message.id;
+				this.cached.set(id, cache);
 				const collection = mongodb.db('clashperk').collection('clanembedlogs');
 				await collection.updateOne({ clan_id: ObjectId(id) }, { $set: { message: message.id } });
 			} catch (error) {
@@ -111,6 +118,9 @@ class ClanEmbed {
 		const msg = await message.edit({ embed })
 			.catch(error => {
 				if (error.code === 10008) {
+					const cache = this.cached.get(id);
+					cache.msg = null;
+					this.cached.set(id, cache);
 					return this.sendNew(id, message.channel, clan);
 				}
 				return null;
