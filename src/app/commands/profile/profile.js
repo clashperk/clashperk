@@ -74,11 +74,11 @@ class ProfileCommand extends Command {
 
 		embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'));
 		if (collection.length <= 5) {
-			embed.setFooter(`${index} accounts`);
+			embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
 			return message.util.send({ embed });
 		}
 
-		embed.setFooter(`Accounts [${index}/25] (Page ${paginated.page}/${paginated.maxPage})`);
+		embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
 		const msg = await message.util.send({ embed });
 
 		for (const emoji of ['⬅️', '➡️']) {

@@ -82,6 +82,7 @@ class ClansCommand extends Command {
 				.setAuthor(`${guild.name}`, guild.iconURL());
 			if (!data.length) {
 				embed.setDescription(`${message.guild.name} doesn't have any clans. Why not add some?`);
+				return message.util.send({ embed });
 			}
 
 			const paginated = this.paginate(data, page);
@@ -92,20 +93,10 @@ class ClansCommand extends Command {
 				this.desc(paginated)
 			]);
 
-			embed.setFooter([
-				paginated.maxPage > 1
-					? `Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
-					: `${data.length} ${data.length === 1 ? 'clan' : 'clans'}`
-			]);
-
-			embed.setDescription([
-				`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
-				'',
-				this.desc(paginated)
-			]);
-
 			if (collection.length <= 2) {
-				embed.setFooter(`${data.length} ${data.length === 1 ? 'clan' : 'clans'}`);
+				embed.setFooter([
+					`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
+				]);
 				return message.util.send({ embed });
 			}
 
