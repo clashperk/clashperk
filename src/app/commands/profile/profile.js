@@ -61,14 +61,6 @@ class ProfileCommand extends Command {
 			if (!res.ok) continue;
 			const data = await res.json();
 
-			if (index > 5) {
-				embed.addField(`${townHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
-					`${this.heroes(data)}`,
-					`${this.clanName(data)}`,
-					'\u200b\u2002'
-				]);
-			}
-
 			collection.push({
 				field: `${townHallEmoji[data.townHallLevel]} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag})`,
 				values: [this.heroes(data), this.clanName(data), '\u200b\u2002'].filter(a => a.length)
@@ -77,11 +69,56 @@ class ProfileCommand extends Command {
 			if (index === 30) break;
 		}
 
-		embed.setDescription(collection.slice(0, 5).map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'));
+		let page = 1;
+		const paginated = this.paginate(collection, page);
 
-		embed.setFooter(`Accounts [${index}/25]`);
+		embed.setFooter(`Accounts [${index}/25] (Page ${paginated.page}/${paginated.maxPage})`);
 
-		return message.util.send({ embed });
+		const msg = await message.util.send({
+			embed: embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'))
+		});
+
+		for (const emoji of ['⬅️', '➡️']) {
+			await msg.react(emoji);
+			await this.delay(250);
+		}
+
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 60000, max: 10 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '➡️') {
+				page += 1;
+				const paginated = this.paginate(collection, page);
+				await msg.edit({
+					embed: embed.setFooter(`Accounts [${index}/25] (Page ${paginated.page}/${paginated.maxPage})`)
+						.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'))
+				});
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+
+			if (reaction.emoji.name === '⬅️') {
+				page -= 1;
+				const paginated = this.paginate(collection, page);
+				await msg.edit({
+					embed: embed.setFooter(`Accounts [${index}/25] (Page ${paginated.page}/${paginated.maxPage})`)
+						.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'))
+				});
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+		});
+
+		collector.on('end', async () => {
+			await msg.reactions.removeAll().catch(() => null);
+			return message;
+		});
+		return message;
 	}
 
 	clanName(data) {
@@ -114,6 +151,18 @@ class ProfileCommand extends Command {
 			.findOne({ user: id });
 
 		return data;
+	}
+
+	paginate(items, page = 1, pageLength = 5) {
+		const maxPage = Math.ceil(items.length / pageLength);
+		if (page < 1) page = 1;
+		if (page > maxPage) page = maxPage;
+		const startIndex = (page - 1) * pageLength;
+
+		return {
+			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
+			page, maxPage, pageLength
+		};
 	}
 }
 
