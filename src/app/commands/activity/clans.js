@@ -89,7 +89,7 @@ class ClansCommand extends Command {
 			embed.setDescription([
 				`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
 				'',
-				this.desc(paginated)
+				this.desc(data, page)
 			]);
 
 			embed.setFooter([
@@ -128,11 +128,11 @@ class ClansCommand extends Command {
 					if (page < 1) page = paginated.maxPage;
 					if (page > paginated.maxPage) page = 1;
 					await msg.edit({
-						embed: embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
+						embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
 							.setDescription([
 								`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
 								'',
-								this.desc(paginated)
+								this.desc(this.paginate(data, page))
 							])
 					});
 					await this.delay(250);
@@ -145,11 +145,11 @@ class ClansCommand extends Command {
 					if (page < 1) page = paginated.maxPage;
 					if (page > paginated.maxPage) page = 1;
 					await msg.edit({
-						embed: embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
+						embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
 							.setDescription([
 								`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
 								'',
-								this.desc(paginated)
+								this.desc(this.paginate(data, page))
 							])
 					});
 					await this.delay(250);
