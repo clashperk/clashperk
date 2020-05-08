@@ -167,6 +167,7 @@ class ClansCommand extends Command {
 	}
 
 	desc(paginated) {
+		console.log(paginated);
 		return paginated.items.map((item, index) => {
 			const donationlog = this.client.channels.cache.has(item.donationlog);
 			const playerlog = this.client.channels.cache.has(item.playerlog);
