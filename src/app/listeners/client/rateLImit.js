@@ -22,7 +22,6 @@ class RateLimitListener extends Listener {
 		this.client.logger.warn(msg, { label: 'RATELIMIT' });
 
 		const webhook = await this.fetchWebhook().then(webhook => new WebhookClient(webhook.id, webhook.token)).catch(() => null);
-		console.log(webhook);
 		if (!webhook) return;
 
 		const embed = new MessageEmbed()
