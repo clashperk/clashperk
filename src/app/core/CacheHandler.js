@@ -141,7 +141,7 @@ class CacheHandler {
 
 	async start(key) {
 		const cache = this.cached.get(key);
-
+		if (!cache) return;
 		const clan = await this.clan(cache.tag);
 		if (!clan) return;
 
