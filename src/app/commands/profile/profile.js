@@ -66,17 +66,22 @@ class ProfileCommand extends Command {
 				values: [this.heroes(data), this.clanName(data), '\u200b\u2002'].filter(a => a.length)
 			});
 
-			if (index === 30) break;
+			if (index === 25) break;
 		}
 
 		let page = 1;
 		const paginated = this.paginate(collection, page);
 
-		embed.setFooter(`Accounts [${index}/25] (Page ${paginated.page}/${paginated.maxPage})`);
-
 		const msg = await message.util.send({
 			embed: embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'))
 		});
+
+		if (collection.length <= 5) {
+			embed.setFooter(`Accounts [${index}/25]`);
+			return message;
+		}
+
+		embed.setFooter(`Accounts [${index}/25] (Page ${paginated.page}/${paginated.maxPage})`);
 
 		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
