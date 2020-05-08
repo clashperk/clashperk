@@ -50,10 +50,10 @@ class ProfileCommand extends Command {
 			embed.setTitle('No Accounts are Linked');
 		}
 
-		let accounts = 0;
+		let index = 0;
 		const collection = [];
 		for (const tag of data.tags) {
-			accounts += 1;
+			index += 1;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
 				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
@@ -61,22 +61,24 @@ class ProfileCommand extends Command {
 			if (!res.ok) continue;
 			const data = await res.json();
 
-			/* embed.addField(`${townHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
-				`${this.heroes(data)}`,
-				`${this.clanName(data)}`
-			]);*/
+			if (index === 5) {
+				embed.addField(`${townHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
+					`${this.heroes(data)}`,
+					`${this.clanName(data)}`
+				]);
+			}
 
 			collection.push({
 				field: `${townHallEmoji[data.townHallLevel]} **[${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag})**`,
 				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
 			});
 
-			if (accounts === 25) break;
+			if (index === 30) break;
 		}
 
-		embed.setDescription(collection.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'));
+		embed.setDescription(collection.slice(0, 5).map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'));
 
-		embed.setFooter(`Accounts [${accounts}/25]`);
+		embed.setFooter(`Accounts [${index}/25]`);
 
 		return message.util.send({ embed });
 	}

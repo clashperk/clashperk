@@ -56,7 +56,7 @@ class LinkPlayerCommand extends Command {
 			});
 		}
 
-		if (doc && doc.tags.length >= 25) {
+		if (doc && doc.tags.length >= 30) {
 			return message.util.send({
 				embed: {
 					color: 3093046,
