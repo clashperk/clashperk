@@ -84,7 +84,6 @@ class CacheHandler {
 
 	async add(_id, data) {
 		const id = ObjectId(_id).toString();
-		if (!this.cached.has(id)) this.cached.set(id, { guild: data.guild, tag: data.tag });
 
 		if (data && data.mode) {
 			await this.addLogs(_id, data.mode);
@@ -96,7 +95,10 @@ class CacheHandler {
 			await this.playerEvent.add(id);
 		}
 
-		if (!this.cached.has(id)) return this.start(id);
+		if (!this.cached.has(id)) {
+			this.cached.set(id, { guild: data.guild, tag: data.tag });
+			return this.start(id);
+		}
 	}
 
 	async addLogs(_id, mode) {
@@ -111,12 +113,6 @@ class CacheHandler {
 		const id = ObjectId(_id).toString();
 		const cache = this.cached.get(id);
 
-		if (!data) {
-			delete this.memberList[id];
-			this.oldMemberList.delete(id);
-			if (cache && cache.intervalId) clearInterval(cache.intervalId);
-		}
-
 		if (data && data.mode) {
 			this.stopLogs(id, data.mode);
 		} else {
@@ -127,7 +123,12 @@ class CacheHandler {
 			this.clanGame.delete(id);
 		}
 
-		return this.cached.delete(id);
+		if (!data) {
+			delete this.memberList[id];
+			this.oldMemberList.delete(id);
+			if (cache && cache.intervalId) clearInterval(cache.intervalId);
+			return this.cached.delete(id);
+		}
 	}
 
 	async stopLogs(id, mode) {
