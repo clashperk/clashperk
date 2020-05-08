@@ -74,7 +74,7 @@ class ProfileCommand extends Command {
 
 		embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'));
 		if (collection.length <= 5) {
-			embed.setFooter(`Accounts [${index}/25]`);
+			embed.setFooter(`${index} accounts`);
 			return message.util.send({ embed });
 		}
 
@@ -97,7 +97,7 @@ class ProfileCommand extends Command {
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
 				await msg.edit({
-					embed: embed.setFooter(`Accounts [${index}/25] (Page ${this.paginate(collection, page).page}/${paginated.maxPage})`)
+					embed: embed.setFooter(`Page ${this.paginate(collection, page).page}/${paginated.maxPage} (${index} accounts)`)
 						.setDescription([
 							this.paginate(collection, page).items
 								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
@@ -114,7 +114,7 @@ class ProfileCommand extends Command {
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
 				await msg.edit({
-					embed: embed.setFooter(`Accounts [${index}/25] (Page ${this.paginate(collection, page).page}/${paginated.maxPage})`)
+					embed: embed.setFooter(`Page ${this.paginate(collection, page).page}/${paginated.maxPage} (${index} accounts)`)
 						.setDescription([
 							this.paginate(collection, page).items
 								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
