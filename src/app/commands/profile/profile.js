@@ -121,6 +121,10 @@ class ProfileCommand extends Command {
 		return message;
 	}
 
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
+
 	clanName(data) {
 		if (!data.clan) return `${emoji.clan} Not in a Clan`;
 		const clanRole = data.role.replace(/admin/g, 'Elder')
