@@ -89,7 +89,7 @@ class ClansCommand extends Command {
 			embed.setDescription([
 				`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
 				'',
-				this.desc(data, page)
+				this.desc(paginated)
 			]);
 
 			embed.setFooter([
