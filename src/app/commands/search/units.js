@@ -149,7 +149,7 @@ class UnitsCommand extends Command {
 		let builderTroops = '';
 		index = 0;
 		data.troops.filter(troop => troop.name in builderTroopsEmoji).forEach(troop => {
-			if (troop.village === 'builderBase') {
+			if (troop.village === 'builderBase' && data.builderHallLevel) {
 				index++;
 				if (troop.level === troop.maxLevel) {
 					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
@@ -202,7 +202,7 @@ class UnitsCommand extends Command {
 
 		let builderHero = '';
 		data.heroes.forEach(hero => {
-			if (hero.village === 'builderBase') {
+			if (hero.village === 'builderBase' && data.builderHallLevel) {
 				if (hero.level === hero.maxLevel) {
 					builderHero += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}/${this.padEnd_(option, data.builderHallLevel, hero)}\u200f\`**\u2002`;
 				} else {
@@ -237,13 +237,13 @@ class UnitsCommand extends Command {
 		return num.toString().padStart(2, '\u2002');
 	}
 
-	padEnd_(option, builderHallLevel = 1, troop) {
+	padEnd_(option, builderHallLevel, troop) {
 		if (!option) return troop.maxLevel.toString().padEnd(2, '\u2002');
 		const num = buildertroops.find(t => t.name === troop.name)[builderHallLevel];
 		return num.toString().padEnd(2, '\u2002');
 	}
 
-	padEnd(option, townHallLevel = 1, troop) {
+	padEnd(option, townHallLevel, troop) {
 		if (!option) return troop.maxLevel.toString().padEnd(2, '\u2002');
 		const num = troops.find(t => t.name === troop.name)[townHallLevel];
 		return num.toString().padEnd(2, '\u2002');
