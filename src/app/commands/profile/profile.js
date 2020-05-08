@@ -63,7 +63,7 @@ class ProfileCommand extends Command {
 
 			collection.push({
 				field: `${townHallEmoji[data.townHallLevel]} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag})`,
-				values: [this.heroes(data), this.clanName(data), '\u200b\u2002'].filter(a => a.length)
+				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
 			});
 
 			if (index === 25) break;
@@ -72,7 +72,7 @@ class ProfileCommand extends Command {
 		let page = 1;
 		const paginated = this.paginate(collection, page);
 
-		embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'))
+		embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n\n'))
 			.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
 		if (collection.length <= 5) {
 			return message.util.send({ embed });
@@ -99,7 +99,7 @@ class ProfileCommand extends Command {
 						.setDescription([
 							this.paginate(collection, page).items
 								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
-								.join('\n')
+								.join('\n\n')
 						])
 				});
 				await this.delay(250);
@@ -116,7 +116,7 @@ class ProfileCommand extends Command {
 						.setDescription([
 							this.paginate(collection, page).items
 								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
-								.join('\n')
+								.join('\n\n')
 						])
 				});
 				await this.delay(250);
