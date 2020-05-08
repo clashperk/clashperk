@@ -62,7 +62,7 @@ class ProfileCommand extends Command {
 			const data = await res.json();
 
 			collection.push({
-				field: `${townHallEmoji[data.townHallLevel]} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag})`,
+				field: `${townHallEmoji[data.townHallLevel]} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)})`,
 				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
 			});
 
