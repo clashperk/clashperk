@@ -91,16 +91,14 @@ class ClansCommand extends Command {
 				`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
 				'',
 				this.desc(paginated)
+			]).setFooter([
+				`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
 			]);
 
 			if (collection.length <= 2) {
-				embed.setFooter([
-					`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
-				]);
 				return message.util.send({ embed });
 			}
 
-			embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`);
 			const msg = await message.util.send({ embed });
 
 			for (const emoji of ['⬅️', '➡️']) {

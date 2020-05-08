@@ -72,15 +72,13 @@ class ProfileCommand extends Command {
 		let page = 1;
 		const paginated = this.paginate(collection, page);
 
-		embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'));
+		embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'))
+			.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
 		if (collection.length <= 5) {
-			embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
 			return message.util.send({ embed });
 		}
 
-		embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
 		const msg = await message.util.send({ embed });
-
 		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
