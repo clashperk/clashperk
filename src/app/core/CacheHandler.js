@@ -234,13 +234,6 @@ class CacheHandler {
 			event: EVENTS[3]
 		});
 
-		// Clan Embed
-		await this.broadcast({
-			_id: key,
-			clan,
-			event: EVENTS[4]
-		});
-
 		// Clan Games
 		await this.broadcast({
 			_id: key,
@@ -262,6 +255,7 @@ class CacheHandler {
 		}
 
 		// Member Log
+		const temp = new Set();
 		if (CurrentMemberSet.size && OldMemberSet.size) {
 			const tags = [];
 			for (const tag of this.oldMemberList.get(key).filter(tag => !CurrentMemberSet.has(tag))) {
@@ -291,7 +285,18 @@ class CacheHandler {
 					forced: true,
 					event: EVENTS[5]
 				});
+
+				temp.add('SENT');
 			}
+		}
+
+		// Clan Embed
+		if (!temp.delete('SENT')) {
+			await this.broadcast({
+				_id: key,
+				clan,
+				event: EVENTS[4]
+			});
 		}
 
 		// Purge Cache
