@@ -70,7 +70,7 @@ class ProfileCommand extends Command {
 			}
 
 			collection.push({
-				field: `${townHallEmoji[data.townHallLevel]} **[${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag})**`,
+				field: `${townHallEmoji[data.townHallLevel]} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag})`,
 				values: [this.heroes(data), this.clanName(data), '\u200b\u2002'].filter(a => a.length)
 			});
 
