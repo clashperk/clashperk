@@ -64,13 +64,14 @@ class ProfileCommand extends Command {
 			if (index > 5) {
 				embed.addField(`${townHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
 					`${this.heroes(data)}`,
-					`${this.clanName(data)}`
+					`${this.clanName(data)}`,
+					'\u200b\u2002'
 				]);
 			}
 
 			collection.push({
 				field: `${townHallEmoji[data.townHallLevel]} **[${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag})**`,
-				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
+				values: [this.heroes(data), this.clanName(data), '\u200b\u2002'].filter(a => a.length)
 			});
 
 			if (index === 30) break;
