@@ -51,6 +51,7 @@ class ProfileCommand extends Command {
 		}
 
 		let accounts = 0;
+		const collection = [];
 		for (const tag of data.tags) {
 			accounts += 1;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
@@ -60,13 +61,20 @@ class ProfileCommand extends Command {
 			if (!res.ok) continue;
 			const data = await res.json();
 
-			embed.addField(`${townHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
+			/* embed.addField(`${townHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
 				`${this.heroes(data)}`,
 				`${this.clanName(data)}`
-			]);
+			]);*/
+
+			collection.push({
+				field: `${townHallEmoji[data.townHallLevel]} **[${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag})**`,
+				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
+			});
 
 			if (accounts === 25) break;
 		}
+
+		embed.setDescription(collection.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'));
 
 		embed.setFooter(`Accounts [${accounts}/25]`);
 
