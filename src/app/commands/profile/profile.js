@@ -92,7 +92,7 @@ class ProfileCommand extends Command {
 			if (reaction.emoji.name === '➡️') {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = 1;
 				await msg.edit({
 					embed: embed.setFooter(`Accounts [${index}/25] (Page ${this.paginate(collection, page).page}/${paginated.maxPage})`)
 						.setDescription([
@@ -109,7 +109,7 @@ class ProfileCommand extends Command {
 			if (reaction.emoji.name === '⬅️') {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = 1;
 				await msg.edit({
 					embed: embed.setFooter(`Accounts [${index}/25] (Page ${this.paginate(collection, page).page}/${paginated.maxPage})`)
 						.setDescription([
