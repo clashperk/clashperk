@@ -91,10 +91,15 @@ class ProfileCommand extends Command {
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡️') {
 				page += 1;
-				const paginated = this.paginate(collection, page);
+				if (page < 1) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = paginated.maxPage;
 				await msg.edit({
-					embed: embed.setFooter(`Accounts [${index}/25] (Page ${paginated.page}/${paginated.maxPage})`)
-						.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'))
+					embed: embed.setFooter(`Accounts [${index}/25] (Page ${this.paginate(collection, page).page}/${paginated.maxPage})`)
+						.setDescription([
+							this.paginate(collection, page).items
+								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
+								.join('\n')
+						])
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -103,10 +108,15 @@ class ProfileCommand extends Command {
 
 			if (reaction.emoji.name === '⬅️') {
 				page -= 1;
-				const paginated = this.paginate(collection, page);
+				if (page < 1) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = paginated.maxPage;
 				await msg.edit({
-					embed: embed.setFooter(`Accounts [${index}/25] (Page ${paginated.page}/${paginated.maxPage})`)
-						.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n'))
+					embed: embed.setFooter(`Accounts [${index}/25] (Page ${this.paginate(collection, page).page}/${paginated.maxPage})`)
+						.setDescription([
+							this.paginate(collection, page).items
+								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
+								.join('\n')
+						])
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
