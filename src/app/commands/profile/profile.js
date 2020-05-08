@@ -61,7 +61,7 @@ class ProfileCommand extends Command {
 			if (!res.ok) continue;
 			const data = await res.json();
 
-			if (index > 6) {
+			if (index > 5) {
 				embed.addField(`${townHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
 					`${this.heroes(data)}`,
 					`${this.clanName(data)}`
