@@ -237,13 +237,13 @@ class UnitsCommand extends Command {
 		return num.toString().padStart(2, '\u2002');
 	}
 
-	padEnd_(option, builderHallLevel, troop) {
+	padEnd_(option, builderHallLevel = 1, troop) {
 		if (!option) return troop.maxLevel.toString().padEnd(2, '\u2002');
 		const num = buildertroops.find(t => t.name === troop.name)[builderHallLevel];
 		return num.toString().padEnd(2, '\u2002');
 	}
 
-	padEnd(option, townHallLevel, troop) {
+	padEnd(option, townHallLevel = 1, troop) {
 		if (!option) return troop.maxLevel.toString().padEnd(2, '\u2002');
 		const num = troops.find(t => t.name === troop.name)[townHallLevel];
 		return num.toString().padEnd(2, '\u2002');
