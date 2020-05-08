@@ -59,9 +59,9 @@ class CacheHandler {
 		for (const item of collection) {
 			if (this.client.guilds.cache.has(item.guild)) {
 				this.cached.set(ObjectId(item._id).toString(), {
-					_id: item._id,
-					tag: item.tag,
-					guild: item.guild
+					// _id: item._id,
+					// guild: item.guild,
+					tag: item.tag
 				});
 			}
 		}
@@ -96,7 +96,10 @@ class CacheHandler {
 		}
 
 		if (!this.cached.has(id)) {
-			this.cached.set(id, { guild: data.guild, tag: data.tag });
+			this.cached.set(id, {
+				// guild: data.guild,
+				tag: data.tag
+			});
 			return this.start(id);
 		}
 	}
