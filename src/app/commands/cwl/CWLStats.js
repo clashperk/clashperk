@@ -131,7 +131,7 @@ class CWLStatsComamnd extends Command {
 			const header = arr[0].join('\n');
 			const description = arr[1].join('\n');
 			return [header, description].join('\n');
-		}).join('\n');
+		}).join('\n\n');
 
 		return message.util.send(data);
 	}
