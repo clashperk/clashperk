@@ -63,7 +63,7 @@ class LastOnlineCommand extends Command {
 				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'}\n${this.filter(data, clan)
 					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${m.name}`)
 					.join('\n')}\`\`\``
-			]);
+			]).setFooter('Last Updated').setTimestamp();
 
 		return message.util.send({ embed });
 	}
