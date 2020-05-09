@@ -6,11 +6,6 @@ class PostStats {
 		this.postRate = postRate;
 	}
 
-	async init() {
-		await this.post();
-		this.client.setInterval(this.post.bind(this), this.postRate);
-	}
-
 	async post() {
 		let [guilds, users] = [0, 0];
 		const values = await this.client.shard.broadcastEval(
@@ -33,7 +28,7 @@ class PostStats {
 			},
 			url: `https://top.gg/api/bots/${this.client.user.id}/stats`,
 			method: 'POST',
-			form: { server_count: guilds }
+			form: { server_count: guilds, shard_count: this.client.shard.count }
 		}, (error, response, body) => {
 			if (error) this.client.logger.error(error.toString(), { level: 'https://top.gg' });
 		});

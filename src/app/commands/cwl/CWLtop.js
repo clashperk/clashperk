@@ -1,8 +1,6 @@
 const { Command, Flag } = require('discord-akairo');
-const Fetch = require('../../struct/Fetch');
 const fetch = require('node-fetch');
-const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror } = require('../../util/constants');
+const Resolver = require('../../struct/Resolver');
 const { emoji, townHallEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
 
@@ -14,7 +12,7 @@ class CWLMvpCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: 'Most valuable clan members sorted by CWL stars.',
-				usage: '<tag>',
+				usage: '<clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			}
 		});
@@ -22,36 +20,21 @@ class CWLMvpCommand extends Command {
 
 	*args() {
 		const data = yield {
-			type: async (msg, str) => {
-				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
-				if (!resolver && !str) return null;
-				if (!resolver && str) {
-					return Fetch.clan(str).then(data => {
-						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-						return data;
-					});
+			type: async (message, args) => {
+				const resolved = await Resolver.resolve(message, args);
+				if (resolved.status !== 200) {
+					await message.util.send({ embed: resolved.embed });
+					return Flag.cancel();
 				}
-				const data = await firestore.collection('linked_accounts')
-					.doc(resolver.id)
-					.get()
-					.then(snap => snap.data());
-				if (!data) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				if (!data.clan) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				return Fetch.clan(data.clan).then(data => {
-					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-					return data;
-				});
-			},
-			prompt: {
-				start: 'what would you like to search for?',
-				retry: 'what would you like to search for?'
+				return resolved;
 			}
 		};
+
 		return { data };
 	}
 
 	cooldown(message) {
-		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 3000;
+		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 3000;
 		return 15000;
 	}
 
@@ -65,7 +48,7 @@ class CWLMvpCommand extends Command {
 		for (const tag of data.memberList.map(m => m.tag)) {
 			const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
-				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 			}).then(res => res.json());
 			const star = member.achievements.find(achievement => achievement.name === 'War League Legend');
 			memberList.push({ townHallLevel: member.townHallLevel, name: member.name, cwlStar: star.value });
@@ -75,12 +58,13 @@ class CWLMvpCommand extends Command {
 		embed.setDescription([
 			'List of most valuable players, sorted by total stars of CWL',
 			'',
-			`${emoji.townhall}\`» STAR  ${this.padEnd('NAME')}\``,
+			`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
 			items.slice(0, 30)
+				.filter(m => m.cwlStar !== 0)
 				.map(member => {
 					const name = this.padEnd(member.name);
 					const star = this.padStart(member.cwlStar.toString());
-					return `${townHallEmoji[member.townHallLevel]}\`» ${star}  ${name}\``;
+					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name}\``;
 				})
 				.join('\n')
 		]);

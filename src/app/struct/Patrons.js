@@ -20,6 +20,10 @@ class Patron {
 		return def;
 	}
 
+	isPatron(user, guild) {
+		return this.get(guild.id, 'guild', false) || this.get(user.id, 'user', false);
+	}
+
 	async refresh() {
 		this.store.clear();
 		await firestore.collection('patrons')
@@ -214,7 +218,10 @@ class Patron {
 
 	async fetchWebhook() {
 		if (this.webhook) return this.webhook;
-		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'patreonWebhook', undefined)).catch(() => null);
+		const guild = this.client.guilds.cache.get(this.client.settings.get('global', 'server', undefined));
+		if (!guild) return null;
+		const webhooks = await guild.fetchWebhooks().catch(() => null);
+		const webhook = webhooks.get(this.client.settings.get('global', 'patreonWebhook', undefined));
 		this.webhook = webhook;
 		return webhook;
 	}

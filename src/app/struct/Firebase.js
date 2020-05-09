@@ -3,7 +3,7 @@ const moment = require('moment');
 require('moment-duration-format');
 
 class Firebase {
-	constructor(client, { checkRate = 1 * 60 * 1000 } = {}) {
+	constructor(client, { checkRate = 5 * 60 * 1000 } = {}) {
 		this.client = client;
 		this.checkRate = checkRate;
 	}

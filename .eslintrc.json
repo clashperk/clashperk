@@ -6,12 +6,17 @@
         "no-eq-null": "off",
         "no-negated-condition": "off",
         "no-undefined": "off",
-        "linebreak-style":"off",
-        "camelcase":"off",
-        "no-shadow":"off",
-        "no-unused-vars":"off",
-        "prefer-destructuring": ["off"],
-        "quotes": ["error", "single"],
+        "linebreak-style": "off",
+        "camelcase": "off",
+        "no-shadow": "off",
+        "no-unused-vars": "off",
+        "prefer-destructuring": [
+            "off"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
         "quote-props": "off"
     }
 }

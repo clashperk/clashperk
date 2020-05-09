@@ -133,11 +133,11 @@ module.exports = {
 		'Archer Queen': '<:archerqueen:696305403046133780>',
 		'Grand Warden': '<:grandwarden:696305417994764298>',
 		'Battle Machine': '<:warmachine:696305434570522665>',
-		'Royal Champion': '<:royalchampion:696306450208915456>'
+		'Royal Champion': '<:royalchampion:706899855703933037>'
 	},
 
 	emoji: {
-		xp: '<:xp:696296069348458516>',
+		xp: '<:eXP:706910526373888060>',
 		warstar: '<:warstar:696299067193425951>',
 		star: '<:cp_star:696292402532450306>',
 		star_small: '<:cp_star_small:699834188731252857>',
@@ -168,6 +168,7 @@ module.exports = {
 		users: '<:userssolid:699652935197655061>',
 		users_small: '<:userssolid_small:699834141931339777>',
 		authorize: '<:cp_authorized:701085545555689503>',
-		channel: '<:cp_channel:701085544335147059>'
+		channel: '<:cp_channel:701085544335147059>',
+		botdev: '<:botdev:707231318857089136>'
 	}
 };

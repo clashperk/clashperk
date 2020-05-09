@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
-const { firestore } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 const { emoji, townHallEmoji, heroEmoji } = require('../../util/emojis');
 
 class ProfileCommand extends Command {
@@ -27,13 +27,13 @@ class ProfileCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 1000;
 		return 3000;
 	}
 
 	async exec(message, { member }) {
-		const snap = await this.getProfile(member.id);
-		if (!snap) {
+		const data = await this.getProfile(member.id);
+		if (!data) {
 			return message.util.send({
 				embed: {
 					color: 3093046,
@@ -44,33 +44,96 @@ class ProfileCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
-			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())
-			.setThumbnail(member.user.displayAvatarURL());
+			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL());
 
-		if (!snap.tags.length) {
+		if (!data.tags.length) {
 			embed.setTitle('No Accounts are Linked');
 		}
 
-		if (snap.tags.length) embed.setTitle(`Accounts Linked » ${snap.tags.length}`);
-
-		let accounts = 0;
-		for (const tag of snap.tags) {
+		let index = 0;
+		const collection = [];
+		for (const tag of data.tags) {
+			index += 1;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
-				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 			});
 			if (!res.ok) continue;
 			const data = await res.json();
 
-			embed.addField(`\`\u200e\u2002${++accounts}\` ${townHallEmoji[data.townHallLevel]} ${data.name} (${data.tag})`, [
-				`\u200e\u2002\u2002 ${this.heroes(data)}`,
-				`\u200b\u2002\u2002 ${this.clanName(data)}`
-			]);
+			collection.push({
+				field: `${townHallEmoji[data.townHallLevel]} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)})`,
+				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
+			});
 
-			if (accounts === 25) break;
+			if (index === 25) break;
 		}
 
-		return message.util.send({ embed });
+		let page = 1;
+		const paginated = this.paginate(collection, page);
+
+		embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n\n'))
+			.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
+		if (collection.length <= 5) {
+			return message.util.send({ embed });
+		}
+
+		const msg = await message.util.send({ embed });
+		for (const emoji of ['⬅️', '➡️']) {
+			await msg.react(emoji);
+			await this.delay(250);
+		}
+
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 60000, max: 10 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '➡️') {
+				page += 1;
+				if (page < 1) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = 1;
+				await msg.edit({
+					embed: embed.setFooter(`Page ${this.paginate(collection, page).page}/${paginated.maxPage} (${index} accounts)`)
+						.setDescription([
+							this.paginate(collection, page).items
+								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
+								.join('\n\n')
+						])
+				});
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+
+			if (reaction.emoji.name === '⬅️') {
+				page -= 1;
+				if (page < 1) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = 1;
+				await msg.edit({
+					embed: embed.setFooter(`Page ${this.paginate(collection, page).page}/${paginated.maxPage} (${index} accounts)`)
+						.setDescription([
+							this.paginate(collection, page).items
+								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
+								.join('\n\n')
+						])
+				});
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+		});
+
+		collector.on('end', async () => {
+			await msg.reactions.removeAll().catch(() => null);
+			return message;
+		});
+		return message;
+	}
+
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
 	}
 
 	clanName(data) {
@@ -90,11 +153,31 @@ class ProfileCommand extends Command {
 	}
 
 	async getProfile(id) {
-		const data = await firestore.collection('linked_accounts')
-			.doc(id)
-			.get()
-			.then(snap => snap.data());
+		const data = await mongodb.db('clashperk')
+			.collection('linkedusers')
+			.findOne({ user: id });
+
 		return data;
+	}
+
+	async getClan(id) {
+		const data = await mongodb.db('clashperk')
+			.collection('linkedclans')
+			.findOne({ user: id });
+
+		return data;
+	}
+
+	paginate(items, page = 1, pageLength = 5) {
+		const maxPage = Math.ceil(items.length / pageLength);
+		if (page < 1) page = 1;
+		if (page > maxPage) page = maxPage;
+		const startIndex = (page - 1) * pageLength;
+
+		return {
+			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
+			page, maxPage, pageLength
+		};
 	}
 }
 

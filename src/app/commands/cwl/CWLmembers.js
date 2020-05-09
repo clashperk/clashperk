@@ -1,20 +1,20 @@
 const { Command, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const { Util } = require('discord.js');
-const Fetch = require('../../struct/Fetch');
-const { firestore } = require('../../struct/Database');
-const { geterror, fetcherror } = require('../../util/constants');
+const Resolver = require('../../struct/Resolver');
+const { status } = require('../../util/constants');
 const { emoji } = require('../../util/emojis');
-const API = process.env.APIS.split(',');
+const API = process.env.API_TOKENS.split(',');
 
 class CwlMembersComamnd extends Command {
 	constructor() {
 		super('cwl-members', {
 			aliases: ['cwl-members', 'cwl-mem', 'cwl-lineup'],
 			category: 'cwl',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'CWL members command.',
-				usage: '<tag>',
+				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			}
 		});
@@ -22,38 +22,23 @@ class CwlMembersComamnd extends Command {
 
 	*args() {
 		const data = yield {
-			type: async (msg, str) => {
-				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
-				if (!resolver && !str) return null;
-				if (!resolver && str) {
-					return Fetch.clan(str).then(data => {
-						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-						return data;
-					});
+			type: async (message, args) => {
+				const resolved = await Resolver.resolve(message, args);
+				if (resolved.status !== 200) {
+					await message.util.send({ embed: resolved.embed });
+					return Flag.cancel();
 				}
-				const data = await firestore.collection('linked_accounts')
-					.doc(resolver.id)
-					.get()
-					.then(snap => snap.data());
-				if (!data) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				if (!data.clan) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				return Fetch.clan(data.clan).then(data => {
-					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-					return data;
-				});
-			},
-			prompt: {
-				start: 'What would you like to search for?',
-				retry: 'What would you like to search for?'
+				return resolved;
 			}
 		};
+
 		return { data };
 	}
 
 
 	cooldown(message) {
-		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 3000;
-		return 20000;
+		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 3000;
+		return 15000;
 	}
 
 	async exec(message, { data }) {
@@ -61,11 +46,17 @@ class CwlMembersComamnd extends Command {
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
 			method: 'GET', timeout: 3000,
-			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 		}).catch(() => null);
 
 		if (!res) {
-			return message.util.send({ embed: fetcherror(504) });
+			return message.util.send({
+				embed: {
+					color: 0xf30c11,
+					author: { name: 'Error' },
+					description: status[504]
+				}
+			});
 		}
 
 		if (!res.ok) {

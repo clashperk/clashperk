@@ -1,11 +1,12 @@
 const { Command } = require('discord-akairo');
+const { emoji } = require('../../util/emojis');
 
 class HelpCommand extends Command {
 	constructor() {
 		super('help', {
 			aliases: ['help', 'commands'],
 			category: 'util',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			cooldown: 1000,
 			args: [
 				{
@@ -14,7 +15,7 @@ class HelpCommand extends Command {
 				}
 			],
 			description: {
-				content: 'Displays a list of commands or info about a command.',
+				content: 'Displays info about commands.',
 				usage: '[command]',
 				examples: ['', 'start']
 			}
@@ -70,18 +71,15 @@ class HelpCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor('Command List')
-			.setDescription([
-				`To view details for a command, do \`${prefix}help <command>\``,
-				'Official Discord: https://discord.gg/ppuppun'
-			]);
+			.setDescription([`To view details for a command, do \`${prefix}help <command>\``, '\u200b']);
 
 		const commands = [];
 		for (const category of this.handler.categories.values()) {
 			const title = {
 				util: 'Util',
 				cwl: 'CWL',
-				tracker: 'Activity Tracker',
-				lookup: 'Clash Search',
+				activity: 'Clan Activity',
+				search: 'Clash Search',
 				profile: 'Profile',
 				other: 'Other',
 				config: 'Config'
@@ -96,13 +94,25 @@ class HelpCommand extends Command {
 			embed.addField(cmd.title, [
 				cmd.category.id === 'util' || cmd.category.id === 'other'
 					? cmd.category.filter(cmd => cmd.aliases.length > 0)
-						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\``)
-						.join(', ')
-					: cmd.category.filter(cmd => cmd.aliases.length > 0)
-						.map(cmd => `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` - ${cmd.description.content.toLowerCase()}`)
+						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz) - ${cmd.description.content.toLowerCase()}`)
 						.join('\n')
+					: cmd.category.filter(cmd => cmd.aliases.length > 0)
+						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz) - ${cmd.description.content.toLowerCase()}`)
+						.join('\n'),
+				'\u200b'
 			]);
 		}
+
+		/* embed.addField('Need more help?', [
+			'What do you think about the bot?',
+			'Do you have any suggestion?',
+			'Please let me know. Link is below!',
+			'\n\u200b'
+		].join(' '));
+		embed.addField('Developer', [emoji.botdev, '[Suvajit](https://suvajit.me/)'].join(' '), true)
+			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`].join(' '), true)*/
+		embed.addField('Our Server', [emoji.clashperk, '[ClashPerk](https://discord.gg/ppuppun)'].join(' '));
+
 
 		return message.util.send({ embed });
 	}

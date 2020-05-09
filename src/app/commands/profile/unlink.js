@@ -1,6 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firestore } = require('../../struct/Database');
-const firebase = require('firebase-admin');
+const { mongodb } = require('../../struct/Database');
 
 class UnlinkCommand extends Command {
 	constructor() {
@@ -20,30 +19,25 @@ class UnlinkCommand extends Command {
 					type: 'player',
 					prompt: {
 						start: 'What tag would you like to unlink?',
-						retry: 'Please provide a valid tag to unlink.'
+						retry: 'Please provide a valid PlayerTag.'
 					}
-				},
-				{
-					id: 'member',
-					type: 'guildMember',
-					default: message => message.member
 				}
 			]
 		});
 	}
 
 	cooldown(message) {
-		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 1000;
+		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 1000;
 		return 3000;
 	}
 
-	async exec(message, { data, member }) {
-		const deleted = await this.delete(member.id, data.tag);
+	async exec(message, { data }) {
+		const deleted = await this.delete(message.author.id, data.tag);
 		if (!deleted) {
 			return message.util.send({
 				embed: {
 					color: 3093046,
-					description: `Couldn\'t find a player linked to **${member.user.tag}**!`
+					description: `Couldn\'t find a player linked to **${message.author.tag}**!`
 				}
 			});
 		}
@@ -55,23 +49,10 @@ class UnlinkCommand extends Command {
 	}
 
 	async delete(id, tag) {
-		const batch = firestore.batch();
-		const deleted = await firestore.collection('linked_accounts')
-			.doc(id, tag)
-			.get()
-			.then(snap => {
-				const data = snap.data();
-				if (data && data.tags.length && data.tags.includes(tag)) {
-					batch.update(snap.ref, {
-						tags: firebase.firestore.FieldValue.arrayRemove(tag),
-						[`metadata.${tag}`]: firebase.firestore.FieldValue.delete()
-					}, { merge: true });
-					batch.commit();
-					return true;
-				}
-				return false;
-			});
-		return deleted;
+		const data = await mongodb.db('clashperk')
+			.collection('linkedusers')
+			.findOneAndUpdate({ user: id }, { $pull: { tags: tag } });
+		return data.value && data.value.tags && data.value.tags.includes(tag);
 	}
 }
 

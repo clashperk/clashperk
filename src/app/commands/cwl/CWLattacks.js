@@ -1,10 +1,9 @@
 const { Command, Argument, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
-const Fetch = require('../../struct/Fetch');
 const moment = require('moment');
 const { MessageEmbed } = require('discord.js');
-const { geterror, fetcherror } = require('../../util/constants');
-const { firestore } = require('../../struct/Database');
+const { status } = require('../../util/constants');
+const Resolver = require('../../struct/Resolver');
 const { emoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
 
@@ -20,9 +19,10 @@ class CwlAttacksComamnd extends Command {
 		super('cwl-attacks', {
 			aliases: ['cwl-attacks'],
 			category: 'cwl',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows attacks of current cwl.',
-				usage: '<tag>',
+				usage: '<clanTag>',
 				examples: ['#8QU8J9LP'],
 				fields: [
 					{
@@ -38,7 +38,7 @@ class CwlAttacksComamnd extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.get(message.guild.id, 'guild', false) || this.client.patron.get(message.author.id, 'user', false) || this.client.voter.isVoter(message.author.id)) return 2000;
+		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 2000;
 		return 15000;
 	}
 
@@ -50,29 +50,13 @@ class CwlAttacksComamnd extends Command {
 		};
 
 		const data = yield {
-			type: async (msg, str) => {
-				const resolver = this.handler.resolver.type('guildMember')(msg, str || msg.member.id);
-				if (!resolver && !str) return null;
-				if (!resolver && str) {
-					return Fetch.clan(str).then(data => {
-						if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-						return data;
-					});
+			type: async (message, args) => {
+				const resolved = await Resolver.resolve(message, args);
+				if (resolved.status !== 200) {
+					await message.util.send({ embed: resolved.embed });
+					return Flag.cancel();
 				}
-				const data = await firestore.collection('linked_accounts')
-					.doc(resolver.id)
-					.get()
-					.then(snap => snap.data());
-				if (!data) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				if (!data.clan) return msg.util.send({ embed: geterror(resolver, 'clan') }) && Flag.cancel();
-				return Fetch.clan(data.clan).then(data => {
-					if (data.status !== 200) return msg.util.send({ embed: fetcherror(data.status) }) && Flag.cancel();
-					return data;
-				});
-			},
-			prompt: {
-				start: 'what would you like to search for?',
-				retry: 'what would you like to search for?'
+				return resolved;
 			}
 		};
 
@@ -84,11 +68,17 @@ class CwlAttacksComamnd extends Command {
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
 			method: 'GET', timeout: 3000,
-			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 		}).catch(() => null);
 
 		if (!res) {
-			return message.util.send({ embed: fetcherror(504) });
+			return message.util.send({
+				embed: {
+					color: 0xf30c11,
+					author: { name: 'Error' },
+					description: status[504]
+				}
+			});
 		}
 
 		const body = await res.json();
@@ -132,15 +122,15 @@ class CwlAttacksComamnd extends Command {
 		const rounds = round
 			? body.rounds[round - 1].warTags
 			: body.rounds.filter(d => !d.warTags.includes('#0')).length === body.rounds.length
-				? body.rounds.pop().warTags
+				? body.rounds.slice(-1)[0].warTags
 				: body.rounds.filter(d => !d.warTags.includes('#0'))
 					.slice(-2)
 					.reverse()
-					.pop()
+					.slice(-1)[0]
 					.warTags;
 		for (const tag of rounds) {
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
-				method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+				method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 			});
 			const data = await res.json();
 			if ((data.clan && data.clan.tag === clan.tag) || (data.opponent && data.opponent.tag === clan.tag)) {

@@ -8,7 +8,7 @@ class AboutCommand extends Command {
 			category: 'util',
 			cooldown: 1000,
 			clientPermissions: ['EMBED_LINKS'],
-			description: { content: 'Shows information about the ClashPerk.' }
+			description: { content: 'Shows information about the bot.' }
 		});
 	}
 

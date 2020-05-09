@@ -1,5 +1,5 @@
 const { Listener } = require('discord-akairo');
-const { firestore } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
 
 class GuildDeleteListener extends Listener {
@@ -19,9 +19,10 @@ class GuildDeleteListener extends Listener {
 	}
 
 	async exec(guild) {
-		if (!guild.available) return this.delete(guild);
+		if (!guild.available) return;
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_DELETE' });
 
+		await this.client.postStats.post().catch(() => null);
 		await this.delete(guild);
 
 		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
@@ -39,18 +40,16 @@ class GuildDeleteListener extends Listener {
 	}
 
 	async delete(guild) {
-		// const batch = firestore.batch();
-		const deleted = await firestore.collection('tracking_clans')
-			.where('guild', '==', guild.id)
-			.get()
-			.then(snapstot => {
-				snapstot.forEach(doc => {
-					this.client.tracker.delete(guild.id, doc.data().tag);
-					// batch.delete(doc.ref);
-				});
-				// return batch.commit() && snapstot.size;
-			});
-		return deleted;
+		const collection = await mongodb.db('clashperk')
+			.collection('clanstores')
+			.find({ guild: guild.id })
+			.toArray();
+
+		collection.forEach(async data => {
+			await this.client.cacheHandler.delete(data._id);
+		});
+
+		return collection.length;
 	}
 }
 

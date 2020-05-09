@@ -10,13 +10,13 @@ class PatronCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			cooldown: 1000,
 			description: {
-				content: 'Get information about the ClashPerk\'s Patreon.'
+				content: 'Get info about the our Patreon.'
 			}
 		});
 	}
 
 	async exec(message) {
-		const patrons = await this.patrons();
+		// const patrons = await this.patrons();
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setTitle('ClashPerk Patron')

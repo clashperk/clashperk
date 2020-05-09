@@ -1,19 +1,19 @@
 const { Provider } = require('discord-akairo');
-const firebase = require('firebase-admin');
 const { Guild } = require('discord.js');
 
-class FirestoreProvider extends Provider {
-	constructor(database, { } = {}) {
+class MongoDBProvider extends Provider {
+	constructor(database) {
 		super();
 		this.database = database;
 	}
 
 	async init() {
-		await this.database.get().then(snapshot => {
-			snapshot.forEach(doc => {
-				this.items.set(doc.id, doc.data());
+		return this.database.find().toArray()
+			.then(data => {
+				data.forEach(data => {
+					this.items.set(data.id, data);
+				});
 			});
-		});
 	}
 
 	get(id, key, defaultValue) {
@@ -30,25 +30,28 @@ class FirestoreProvider extends Provider {
 		data[key] = value;
 		this.items.set(id, data);
 
-		return this.database.doc(id).update({ [key]: value }, { merge: true });
+		return this.database.updateOne({ id }, {
+			$set: { [key]: value }
+		}, { upsert: true });
 	}
 
 	delete(id, key) {
 		const data = this.items.get(id) || {};
 		delete data[key];
 
-		return this.database.doc(id).update({ [key]: firebase.firestore.FieldValue.delete() }, { merge: true });
+		return this.database.updateOne({ id }, {
+			$unset: { [key]: '' }
+		}, { upsert: true });
 	}
 
 	clear(id) {
 		this.items.delete(id);
 
-		return this.database.doc(id).delete();
+		return this.database.deleteOne({ id });
 	}
 }
 
-
-class Settings extends FirestoreProvider {
+class Settings extends MongoDBProvider {
 	constructor(database, { } = {}) {
 		super(database);
 	}

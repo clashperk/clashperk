@@ -1,24 +1,24 @@
 const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
 const Settings = require('../struct/SettingsProvider');
-const { firestore } = require('../struct/Database');
-const Database = require('../struct/Database');
-const Logger = require('../util/logger');
-const ClanTracker = require('../struct/ClanTracker');
-const fetch = require('node-fetch');
-const Patrons = require('../struct/Patrons');
-const Voter = require('../struct/Voter');
+const CacheHandler = require('../core/CacheHandler');
+const VoteHandler = require('../struct/VoteHandler');
+const Storage = require('../struct/StorageHandler');
 const PostStats = require('../struct/PostStats');
+const { status } = require('../util/constants');
+const Database = require('../struct/Database');
 const Firebase = require('../struct/Firebase');
 const { MessageEmbed } = require('discord.js');
-const { status } = require('../util/constants');
+const Patrons = require('../struct/Patrons');
+const Logger = require('../util/logger');
+const fetch = require('node-fetch');
 const path = require('path');
 
 class ClashPerk extends AkairoClient {
 	constructor(config) {
 		super({ ownerID: config.owner }, {
-			messageCacheMaxSize: 50,
-			messageCacheLifetime: 300,
-			messageSweepInterval: 300,
+			messageCacheMaxSize: 10,
+			messageCacheLifetime: 150,
+			messageSweepInterval: 150,
 			ws: {
 				intents: [
 					'GUILDS',
@@ -38,8 +38,8 @@ class ClashPerk extends AkairoClient {
 			prefix: message => this.settings.get(message.guild, 'prefix', '*'),
 			allowMention: true,
 			commandUtil: true,
-			commandUtilLifetime: 3e5,
-			commandUtilSweepInterval: 3e5,
+			commandUtilLifetime: 15e4,
+			commandUtilSweepInterval: 15e4,
 			handleEdits: true,
 			defaultCooldown: 3000,
 			argumentDefaults: {
@@ -82,7 +82,7 @@ class ClashPerk extends AkairoClient {
 		this.commandHandler.resolver.addType('player', async (msg, tag) => {
 			if (!tag) return null;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/%23${this.format(tag)}`, {
-				method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+				method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 			}).catch(() => null);
 
 			if (!res) return Flag.fail(status(504));
@@ -93,7 +93,7 @@ class ClashPerk extends AkairoClient {
 		this.commandHandler.resolver.addType('clan', async (msg, tag) => {
 			if (!tag) return null;
 			const res = await fetch(`https://api.clashofclans.com/v1/clans/%23${this.format(tag)}`, {
-				method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_API}` }
+				method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 			}).catch(() => null);
 
 			if (!res) return Flag.fail(status(504));
@@ -125,27 +125,26 @@ class ClashPerk extends AkairoClient {
 		this.inhibitorHandler.loadAll();
 		this.listenerHandler.loadAll();
 
-		this.settings = new Settings(firestore.collection('settings'));
-		this.postStats = new PostStats(this);
-		this.tracker = new ClanTracker(this);
-		this.firebase = new Firebase(this);
-		this.patron = new Patrons(this);
-		this.voter = new Voter(this);
+		await Database.connect();
+		this.settings = new Settings(Database.mongodb.db('clashperk').collection('settings'));
 
+		this.postStats = new PostStats(this);
+		this.firebase = new Firebase(this);
+		this.voteHandler = new VoteHandler(this);
+		this.firebase = new Firebase(this);
+
+		this.patron = new Patrons(this);
 		await this.settings.init();
 		await this.patron.refresh();
-		await Database.connect();
 
-		const intervalID = setInterval(() => {
+		this.cacheHandler = new CacheHandler(this);
+		this.storage = new Storage(this);
+		const intervalId = setInterval(() => {
 			if (this.readyAt && this.user && this.user.id === process.env.CLIENT_ID) {
-				if (this.shard.ids && this.shard.ids[0] === this.shard.count - 1) {
-					this.firebase.init();
-					this.postStats.init();
-					this.voter.init();
-					this.patron.init();
-				}
-				this.tracker.init();
-				clearInterval(intervalID);
+				this.cacheHandler.init();
+				this.voteHandler.init();
+				this.firebase.init();
+				clearInterval(intervalId);
 			}
 		}, 2000);
 	}

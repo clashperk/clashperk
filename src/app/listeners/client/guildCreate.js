@@ -1,5 +1,5 @@
 const { Listener } = require('discord-akairo');
-const { firestore } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
 
 class GuildCreateListener extends Listener {
@@ -22,6 +22,7 @@ class GuildCreateListener extends Listener {
 		if (!guild.available) return;
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
 
+		await this.client.postStats.post().catch(() => null);
 		await this.intro(guild);
 		await this.restore(guild);
 
@@ -74,18 +75,16 @@ class GuildCreateListener extends Listener {
 	}
 
 	async restore(guild) {
-		const restored = await firestore.collection('tracking_clans')
-			.where('guild', '==', guild.id)
-			.get()
-			.then(snapstot => {
-				snapstot.forEach(doc => {
-					const data = doc.data();
-					this.client.tracker.add(data.tag, data.guild, data);
-					this.client.tracker.push(data);
-				});
-				return snapstot.size;
-			});
-		return restored;
+		const collection = await mongodb.db('clashperk')
+			.collection('clanstores')
+			.find({ guild: guild.id })
+			.toArray();
+
+		collection.forEach(async data => {
+			await this.client.cacheHandler.add(data._id, { tag: data.tag, guild: guild.id });
+		});
+
+		return collection.length;
 	}
 }
 
