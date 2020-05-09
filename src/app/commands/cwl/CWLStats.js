@@ -75,10 +75,10 @@ class CWLStatsComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data.tag);
+		return this.rounds(message, body, { clanTag: data.tag, clanName: data.name, clanBadge: data.badgeUrls.medium });
 	}
 
-	async rounds(message, body, clanTag) {
+	async rounds(message, body, { clanTag, clanName, clanBadge } = {}) {
 		const collection = [];
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let index = 0;
@@ -128,13 +128,17 @@ class CWLStatsComamnd extends Command {
 			}
 		}
 
-		const data = collection.map(arr => {
+		const description = collection.map(arr => {
 			const header = arr[0].join('\n');
 			const description = arr[1].join('\n');
 			return [header, description].join('\n');
 		}).join('\n\n');
 
-		return message.util.send({ embed: { description: data } });
+		const embed = new MessageEmbed()
+			.setColor()
+			.setAuthor(`${clanName} CWL`, clanBadge)
+			.setDescription(description);
+		return message.util.send({ embed });
 	}
 
 	destruction(dest) {
