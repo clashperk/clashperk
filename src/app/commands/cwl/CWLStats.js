@@ -200,7 +200,7 @@ class CWLStatsComamnd extends Command {
 				.destruction += data.opponent.destructionPercentage * data.teamSize;
 			ranking
 				.find(({ tag }) => tag === data.opponent.tag)
-				.stars += this.winner(data.clan, data.opponent) ? data.opponent.stars + 10 : data.opponent.stars;
+				.stars += this.winner(data.opponent, data.clan) ? data.opponent.stars + 10 : data.opponent.stars;
 		}
 
 		if (data.state === 'inWar') {
