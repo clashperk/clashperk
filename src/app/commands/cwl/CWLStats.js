@@ -104,9 +104,9 @@ class CWLStatsComamnd extends Command {
 							`${this.isWinner(clan, opponent)} **${clan.name}** vs **${opponent.name}**`,
 							`${emoji.clock_small} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
 						], [
-							`\`${data.clan.stars.toString().padEnd(14, ' ')} Stars ${data.opponent.stars.toString().padStart(14, ' ')}\``,
-							`\`${this.attacks(data.clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(data.opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
-							`\`${this.destruction(data.clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(11, ' ')}\``
+							`\`${clan.stars.toString().padEnd(14, ' ')} Stars ${opponent.stars.toString().padStart(14, ' ')}\``,
+							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
+							`\`${this.destruction(clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(11, ' ')}\``
 						]]);
 					}
 					if (data.state === 'inWar') {
