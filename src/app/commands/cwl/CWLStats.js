@@ -91,7 +91,6 @@ class CWLStatsComamnd extends Command {
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
-					embed.addField('Team Size', `${data.teamSize}`);
 					if (data.state === 'warEnded') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
 						embed.addField([
