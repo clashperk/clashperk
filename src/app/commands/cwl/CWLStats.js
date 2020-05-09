@@ -81,7 +81,7 @@ class CWLStatsComamnd extends Command {
 	async rounds(message, body, { clanTag, clanName, clanBadge } = {}) {
 		const collection = [];
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		let index = 0;
+		let [index, stars] = [0, 0];
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
@@ -92,6 +92,7 @@ class CWLStatsComamnd extends Command {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 					if (data.state === 'warEnded') {
+						stars += clan.stars;
 						const end = new Date(moment(data.endTime).toDate()).getTime();
 						collection.push([[
 							`${this.isWinner(clan, opponent)} **${clan.name}** vs **${opponent.name}**`,
@@ -103,6 +104,7 @@ class CWLStatsComamnd extends Command {
 						]]);
 					}
 					if (data.state === 'inWar') {
+						stars += clan.stars;
 						const started = new Date(moment(data.startTime).toDate()).getTime();
 						collection.push([[
 							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
@@ -137,7 +139,8 @@ class CWLStatsComamnd extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clanName} CWL`, clanBadge)
-			.setDescription(description);
+			.setDescription(description)
+			.setFooter(stars);
 		return message.util.send({ embed });
 	}
 
