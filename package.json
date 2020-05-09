@@ -5,6 +5,7 @@
 	"license": "MIT",
 	"description": "Clash of Clans Discord Bot",
 	"main": "src/index.js",
+	"private": true,
 	"scripts": {
 		"start": "node src/main.js",
 		"test": "eslint --ext .js --ignore-path .gitignore .",
