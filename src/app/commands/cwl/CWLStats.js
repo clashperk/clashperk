@@ -82,7 +82,7 @@ class CWLStatsComamnd extends Command {
 		const collection = [];
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [index, stars, destruction] = [0, 0, 0];
-		const ranking = {};
+		const ranking = body.clans.map(clan => ({ [clan.tag]: { destruction: 0, stars: 0 } }))[0];
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
@@ -197,19 +197,19 @@ class CWLStatsComamnd extends Command {
 
 	ranking(data, ranking = {}) {
 		if (data.state === 'warEnded') {
-			ranking[data.clan.tag].destruction = data.clan.destructionPercentage * data.teamSize;
-			ranking[data.clan.tag].stars = this.winner(data.clan, data.opponent) ? data.clan.stars + 10 : data.clan.stars;
+			ranking[data.clan.tag].destruction += data.clan.destructionPercentage * data.teamSize;
+			ranking[data.clan.tag].stars += this.winner(data.clan, data.opponent) ? data.clan.stars + 10 : data.clan.stars;
 
-			ranking[data.opponent.tag].destruction = data.opponent.destructionPercentage * data.teamSize;
-			ranking[data.opponent.tag].stars = this.winner(data.clan, data.opponent) ? data.opponent.stars + 10 : data.opponent.stars;
+			ranking[data.opponent.tag].destruction += data.opponent.destructionPercentage * data.teamSize;
+			ranking[data.opponent.tag].stars += this.winner(data.clan, data.opponent) ? data.opponent.stars + 10 : data.opponent.stars;
 		}
 
 		if (data.state === 'inWar') {
-			ranking[data.clan.tag].destruction = data.clan.destructionPercentage * data.teamSize;
-			ranking[data.clan.tag].stars = data.clan.stars;
+			ranking[data.clan.tag].destruction += data.clan.destructionPercentage * data.teamSize;
+			ranking[data.clan.tag].stars += data.clan.stars;
 
-			ranking[data.opponent.tag].destruction = data.opponent.destructionPercentage * data.teamSize;
-			ranking[data.opponent.tag].stars = data.opponent.stars;
+			ranking[data.opponent.tag].destruction += data.opponent.destructionPercentage * data.teamSize;
+			ranking[data.opponent.tag].stars += data.opponent.stars;
 		}
 
 		return ranking;
