@@ -29,10 +29,10 @@ class CwlRoundComamnd extends Command {
 		});
 	}
 
-	/* cooldown(message) {
+	cooldown(message) {
 		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 2000;
 		return 15000;
-	}*/
+	}
 
 	*args() {
 		const round = yield {
