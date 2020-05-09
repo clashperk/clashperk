@@ -95,7 +95,7 @@ class CWLStatsComamnd extends Command {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
 						collection.push([[
 							`${this.isWinner(clan, opponent)} **${clan.name}** vs **${opponent.name}**`,
-							`${emoji.clock_small} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
+							`${emoji.clock_small} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
 						], [
 							`\`${data.clan.stars.toString().padEnd(14, ' ')} Stars ${data.opponent.stars.toString().padStart(14, ' ')}\``,
 							`\`${this.attacks(data.clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(data.opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
@@ -106,7 +106,7 @@ class CWLStatsComamnd extends Command {
 						const started = new Date(moment(data.startTime).toDate()).getTime();
 						collection.push([[
 							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
-							`${emoji.clock_small} [Round ${++index}] Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
+							`${emoji.clock_small} [Round ${++index}] Started ${moment.duration(Date.now() - started).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
 						], [
 							`\`${data.clan.stars.toString().padEnd(14, ' ')} Stars ${data.opponent.stars.toString().padStart(14, ' ')}\``,
 							`\`${this.attacks(data.clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(data.opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
