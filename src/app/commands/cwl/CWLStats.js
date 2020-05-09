@@ -96,10 +96,9 @@ class CWLStatsComamnd extends Command {
 							`**${clan.name}** vs **${opponent.name}**`,
 							`Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
-							`\`${data.clan.stars.toString().padEnd(18, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}`,
-							`${data.clan.attacks.toString().padEnd(17, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}`,
-							`${this.destruction(data.clan.destructionPercentage).padEnd(15, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}`,
-							'`'
+							`\`${data.clan.stars.toString().padEnd(18, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}\``,
+							`\`${data.clan.attacks.toString().padEnd(17, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}\``,
+							`\`${this.destruction(data.clan.destructionPercentage).padEnd(15, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}\``
 						]]);
 					}
 					if (data.state === 'inWar') {
@@ -108,10 +107,9 @@ class CWLStatsComamnd extends Command {
 							`**${clan.name}** vs **${opponent.name}**`,
 							`Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
-							`\`${data.clan.stars.toString().padEnd(18, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}`,
-							`${data.clan.attacks.toString().padEnd(17, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}`,
-							`${this.destruction(data.clan.destructionPercentage).padEnd(15, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}`,
-							'`'
+							`\`${data.clan.stars.toString().padEnd(18, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}\``,
+							`\`${data.clan.attacks.toString().padEnd(17, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}\``,
+							`\`${this.destruction(data.clan.destructionPercentage).padEnd(15, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}\``
 						]]);
 					}
 					if (data.state === 'preparation') {
