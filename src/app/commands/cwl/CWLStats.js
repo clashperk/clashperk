@@ -82,7 +82,8 @@ class CWLStatsComamnd extends Command {
 		const collection = [];
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [index, stars, destruction] = [0, 0, 0];
-		const ranking = body.clans.map(clan => ({ tag: clan.tag, destruction: 0, stars: 0 }));
+		const ranking = body.clans.map(clan => ({ tag: clan.tag, stars: 0 }));
+
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
@@ -90,6 +91,7 @@ class CWLStatsComamnd extends Command {
 				});
 				const data = await res.json();
 				this.ranking(data, ranking);
+
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
@@ -97,6 +99,7 @@ class CWLStatsComamnd extends Command {
 						stars += this.winner(clan, opponent) ? clan.stars + 10 : clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const end = new Date(moment(data.endTime).toDate()).getTime();
+
 						collection.push([[
 							`${this.isWinner(clan, opponent)} **${clan.name}** vs **${opponent.name}**`,
 							`${emoji.clock_small} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
@@ -110,6 +113,7 @@ class CWLStatsComamnd extends Command {
 						stars += clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const started = new Date(moment(data.startTime).toDate()).getTime();
+
 						collection.push([[
 							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
 							`${emoji.clock_small} [Round ${++index}] Started ${moment.duration(Date.now() - started).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
@@ -121,6 +125,7 @@ class CWLStatsComamnd extends Command {
 					}
 					/* if (data.state === 'preparation') {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
+
 						collection.push([[
 							`${this.isWinner(clan, opponent)} **${clan.name}** vs **${opponent.name}**`,
 							`${emoji.clock_small} [Round ${++index}] Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
@@ -183,39 +188,26 @@ class CWLStatsComamnd extends Command {
 		} else if (clan.destructionPercentage < opponent.destructionPercentage) {
 			return false;
 		}
-		return false;
 	}
 
 	ranking(data, ranking) {
 		if (data.state === 'warEnded') {
-			ranking
-				.find(({ tag }) => tag === data.clan.tag)
-				.destruction += data.clan.destructionPercentage * data.teamSize;
-			ranking
-				.find(({ tag }) => tag === data.clan.tag)
-				.stars += this.winner(data.clan, data.opponent) ? data.clan.stars + 10 : data.clan.stars;
+			ranking.find(({ tag }) => tag === data.clan.tag)
+				.stars += this.winner(data.clan, data.opponent)
+					? data.clan.stars + 10
+					: data.clan.stars;
 
-			ranking
-				.find(({ tag }) => tag === data.opponent.tag)
-				.destruction += data.opponent.destructionPercentage * data.teamSize;
-			ranking
-				.find(({ tag }) => tag === data.opponent.tag)
-				.stars += this.winner(data.opponent, data.clan) ? data.opponent.stars + 10 : data.opponent.stars;
+			ranking.find(({ tag }) => tag === data.opponent.tag)
+				.stars += this.winner(data.opponent, data.clan)
+					? data.opponent.stars + 10
+					: data.opponent.stars;
 		}
 
 		if (data.state === 'inWar') {
-			ranking
-				.find(({ tag }) => tag === data.clan.tag)
-				.destruction += data.clan.destructionPercentage * data.teamSize;
-			ranking
-				.find(({ tag }) => tag === data.clan.tag)
+			ranking.find(({ tag }) => tag === data.clan.tag)
 				.stars += data.clan.stars;
 
-			ranking
-				.find(({ tag }) => tag === data.opponent.tag)
-				.destruction += data.opponent.destructionPercentage * data.teamSize;
-			ranking
-				.find(({ tag }) => tag === data.opponent.tag)
+			ranking.find(({ tag }) => tag === data.opponent.tag)
 				.stars += data.opponent.stars;
 		}
 
