@@ -79,8 +79,7 @@ class CWLStatsComamnd extends Command {
 	}
 
 	async rounds(message, body, clanTag) {
-		const embed = new MessageEmbed()
-			.setColor(0x5970c1);
+		const collection = [];
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -93,31 +92,31 @@ class CWLStatsComamnd extends Command {
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 					if (data.state === 'warEnded') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
-						embed.addField([
+						collection.push([[
 							`**${clan.name}** vs **${opponent.name}**`,
-							`War Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
+							`Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
 							`\`\`\`${data.clan.stars.toString().padEnd(19, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}`,
 							`${data.clan.attacks.toString().padEnd(18, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}`,
 							`${this.destruction(data.clan.destructionPercentage).padEnd(16, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}`,
 							'```'
-						]);
+						]]);
 					}
 					if (data.state === 'inWar') {
 						const started = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField([
+						collection.push([[
 							`**${clan.name}** vs **${opponent.name}**`,
-							`War Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
+							`Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
 							`\`\`\`${data.clan.stars.toString().padEnd(19, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}`,
 							`${data.clan.attacks.toString().padEnd(18, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}`,
 							`${this.destruction(data.clan.destructionPercentage).padEnd(16, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}`,
 							'```'
-						]);
+						]]);
 					}
 					if (data.state === 'preparation') {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField([
+						collection.push([[
 							`**${clan.name}** vs **${opponent.name}**`,
 							`Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
@@ -125,13 +124,19 @@ class CWLStatsComamnd extends Command {
 							`${data.clan.attacks.toString().padEnd(18, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}`,
 							`${this.destruction(data.clan.destructionPercentage).padEnd(16, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}`,
 							'```'
-						]);
+						]]);
 					}
 				}
 			}
 		}
 
-		return message.util.send({ embed });
+		const data = collection.map(arr => {
+			const header = arr[0].join('\n');
+			const description = arr[1].join('\n');
+			return [header, description].join('\n');
+		}).join('\n');
+
+		return message.util.send(data);
 	}
 
 	destruction(dest) {
