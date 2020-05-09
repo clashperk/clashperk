@@ -94,8 +94,8 @@ class CWLStatsComamnd extends Command {
 					if (data.state === 'warEnded') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
 						collection.push([[
-							`${this.isWinner(clan, opponent)} [Round ${++index}] **${clan.name}** vs **${opponent.name}**`,
-							`Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
+							`${this.isWinner(clan, opponent)} **${clan.name}** vs **${opponent.name}**`,
+							`${emoji.clock_small} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
 							`\`${data.clan.stars.toString().padEnd(14, ' ')} Stars ${data.opponent.stars.toString().padStart(14, ' ')}\``,
 							`\`${this.attacks(data.clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(data.opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
@@ -105,25 +105,25 @@ class CWLStatsComamnd extends Command {
 					if (data.state === 'inWar') {
 						const started = new Date(moment(data.startTime).toDate()).getTime();
 						collection.push([[
-							`${this.isWinner(clan, opponent)} [Round ${++index}] **${clan.name}** vs **${opponent.name}**`,
-							`Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
+							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
+							`${emoji.clock_small} [Round ${++index}] Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
 							`\`${data.clan.stars.toString().padEnd(14, ' ')} Stars ${data.opponent.stars.toString().padStart(14, ' ')}\``,
 							`\`${this.attacks(data.clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(data.opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
 							`\`${this.destruction(data.clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(11, ' ')}\``
 						]]);
 					}
-					if (data.state === 'preparation') {
+					/* if (data.state === 'preparation') {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
 						collection.push([[
-							`${this.isWinner(clan, opponent)} [Round ${++index}] **${clan.name}** vs **${opponent.name}**`,
-							`Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+							`${this.isWinner(clan, opponent)} **${clan.name}** vs **${opponent.name}**`,
+							`${emoji.clock_small} [Round ${++index}] Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
 						], [
 							`\`${data.clan.stars.toString().padEnd(14, ' ')} Stars ${data.opponent.stars.toString().padStart(14, ' ')}\``,
 							`\`${this.attacks(data.clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(data.opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
 							`\`${this.destruction(data.clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(11, ' ')}\``
 						]]);
-					}
+					}*/
 				}
 			}
 		}
