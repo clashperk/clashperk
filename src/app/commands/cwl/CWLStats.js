@@ -120,10 +120,10 @@ class CWLStatsComamnd extends Command {
 							`**${clan.name}** vs **${opponent.name}**`,
 							`Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
-							`\`\`\`${data.clan.stars.toString().padEnd(19, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}`,
+							`\`${data.clan.stars.toString().padEnd(19, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}`,
 							`${data.clan.attacks.toString().padEnd(18, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}`,
 							`${this.destruction(data.clan.destructionPercentage).padEnd(16, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}`,
-							'```'
+							'`'
 						]]);
 					}
 				}
