@@ -92,7 +92,7 @@ class CWLStatsComamnd extends Command {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 					if (data.state === 'warEnded') {
-						stars += clan.stars;
+						stars += this.winner(clan, opponent) ? clan.stars + 10 : clan.stars;
 						const end = new Date(moment(data.endTime).toDate()).getTime();
 						collection.push([[
 							`${this.isWinner(clan, opponent)} **${clan.name}** vs **${opponent.name}**`,
@@ -164,6 +164,20 @@ class CWLStatsComamnd extends Command {
 			return emoji.wrong;
 		}
 		return emoji.empty;
+	}
+
+	winner(clan, opponent) {
+		if (clan.stars > opponent.stars) {
+			return true;
+		} else if (clan.stars < opponent.stars) {
+			return false;
+		}
+		if (clan.destructionPercentage > opponent.destructionPercentage) {
+			return true;
+		} else if (clan.destructionPercentage < opponent.destructionPercentage) {
+			return false;
+		}
+		return false;
 	}
 }
 
