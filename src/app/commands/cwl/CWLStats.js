@@ -148,7 +148,7 @@ class CWLStatsComamnd extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${clanName} CWL`, clanBadge)
 			.setDescription(description)
-			.setFooter(`Rank ${rank + 1} ${stars} stars, ${destruction.toFixed()}% destruction`);
+			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
 		return message.util.send({ embed });
 	}
 
