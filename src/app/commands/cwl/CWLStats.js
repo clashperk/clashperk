@@ -135,7 +135,7 @@ class CWLStatsComamnd extends Command {
 		}).join('\n\n');
 
 		const embed = new MessageEmbed()
-			.setColor()
+			.setColor(0x5970c1)
 			.setAuthor(`${clanName} CWL`, clanBadge)
 			.setDescription(description);
 		return message.util.send({ embed });
