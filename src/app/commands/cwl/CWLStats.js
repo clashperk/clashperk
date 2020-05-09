@@ -118,12 +118,11 @@ class CWLStatsComamnd extends Command {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
 						collection.push([[
 							`**${clan.name}** vs **${opponent.name}**`,
-							`Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
+							`Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
 						], [
-							`\`${data.clan.stars.toString().padEnd(20, ' ')} Stars ${data.opponent.stars.toString().padStart(20, ' ')}`,
-							`${data.clan.attacks.toString().padEnd(19, ' ')} Attacks ${data.opponent.attacks.toString().padStart(19, ' ')}`,
-							`${this.destruction(data.clan.destructionPercentage).padEnd(17, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(17, ' ')}`,
-							'`'
+							`\`${data.clan.stars.toString().padEnd(18, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}\``,
+							`\`${data.clan.attacks.toString().padEnd(17, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}\``,
+							`\`${this.destruction(data.clan.destructionPercentage).padEnd(15, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}\``
 						]]);
 					}
 				}
