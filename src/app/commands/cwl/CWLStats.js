@@ -81,7 +81,7 @@ class CWLStatsComamnd extends Command {
 	async rounds(message, body, clanTag) {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1);
-		const rounds = body.rounds.filter(r => !r.warTags.includes('#0')).length;
+		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		for (const warTags of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
