@@ -127,8 +127,6 @@ class CWLStatsComamnd extends Command {
 							`${this.destruction(data.clan.destructionPercentage).padEnd(16, ' ')} Destruction ${this.description(data.opponent.destructionPercentage).padStart(15, ' ')}`,
 							'```'
 						]);
-						embed.addField('State', 'Preparation Day')
-							.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
 					}
 				}
 			}
