@@ -100,7 +100,7 @@ class CWLStatsComamnd extends Command {
 						], [
 							`\`\`\`${data.clan.stars.toString().padEnd(19, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}`,
 							`${data.clan.attacks.toString().padEnd(18, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}`,
-							`${data.clan.destructionPercentage.toString().padEnd(16, ' ')} Destruction ${data.opponent.destructionPercentage.toFixed(2).toString().padStart(15, ' ')}`,
+							`${this.destruction(data.clan.destructionPercentage).padEnd(16, ' ')} Destruction ${this.description(data.opponent.destructionPercentage).padStart(15, ' ')}`,
 							'```'
 						]);
 					}
@@ -112,7 +112,7 @@ class CWLStatsComamnd extends Command {
 						], [
 							`\`\`\`${data.clan.stars.toString().padEnd(19, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}`,
 							`${data.clan.attacks.toString().padEnd(18, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}`,
-							`${data.clan.destructionPercentage.toString().padEnd(16, ' ')} Destruction ${data.opponent.destructionPercentage.toFixed(2).toString().padStart(15, ' ')}`,
+							`${this.destruction(data.clan.destructionPercentage).padEnd(16, ' ')} Destruction ${this.description(data.opponent.destructionPercentage).padStart(15, ' ')}`,
 							'```'
 						]);
 					}
@@ -120,11 +120,11 @@ class CWLStatsComamnd extends Command {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
 						embed.addField([
 							`**${clan.name}** vs **${opponent.name}**`,
-							`Starts in ${moment.duration(Date.now() - start).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
+							`Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
 							`\`\`\`${data.clan.stars.toString().padEnd(19, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}`,
 							`${data.clan.attacks.toString().padEnd(18, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}`,
-							`${data.clan.destructionPercentage.toString().padEnd(16, ' ')} Destruction ${data.opponent.destructionPercentage.toFixed(2).toString().padStart(15, ' ')}`,
+							`${this.destruction(data.clan.destructionPercentage).padEnd(16, ' ')} Destruction ${this.description(data.opponent.destructionPercentage).padStart(15, ' ')}`,
 							'```'
 						]);
 						embed.addField('State', 'Preparation Day')
@@ -135,6 +135,10 @@ class CWLStatsComamnd extends Command {
 		}
 
 		return message.util.send({ embed });
+	}
+
+	destruction(dest) {
+		return dest.toFixed(2).toString().concat('%');
 	}
 }
 
