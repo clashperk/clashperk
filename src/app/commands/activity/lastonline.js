@@ -59,7 +59,7 @@ class LastOnlineCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				`Last Online Board [${data.members}/50]`,
+				`Last Online Board [${this.filter(data, clan).length}/50]`,
 				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'}\n${this.filter(data, clan)
 					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${m.name}`)
 					.join('\n')}\`\`\``
@@ -82,7 +82,7 @@ class LastOnlineCommand extends Command {
 
 		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
 
-		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
+		return sorted.filter(item => item.lastOnline); // .concat(sorted.filter(item => !item.lastOnline));
 	}
 
 	format(time) {
