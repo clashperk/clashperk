@@ -97,9 +97,9 @@ class CWLStatsComamnd extends Command {
 							`**[Round ${++index}] ${clan.name}** vs **${opponent.name}**`,
 							`Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
-							`\`${data.clan.stars.toString().padEnd(18, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}\``,
-							`\`${data.clan.attacks.toString().padEnd(17, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}\``,
-							`\`${this.destruction(data.clan.destructionPercentage).padEnd(15, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}\``
+							`\`${data.clan.stars.toString().padEnd(12, ' ')} Stars ${data.opponent.stars.toString().padStart(12, ' ')}\``,
+							`\`${data.clan.attacks.toString().padEnd(14, ' ')} Attacks ${data.opponent.attacks.toString().padStart(14, ' ')}\``,
+							`\`${this.destruction(data.clan.destructionPercentage).padEnd(12, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(12, ' ')}\``
 						]]);
 					}
 					if (data.state === 'inWar') {
@@ -108,9 +108,9 @@ class CWLStatsComamnd extends Command {
 							`**[Round ${++index}] ${clan.name}** vs **${opponent.name}**`,
 							`Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
-							`\`${data.clan.stars.toString().padEnd(18, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}\``,
-							`\`${data.clan.attacks.toString().padEnd(17, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}\``,
-							`\`${this.destruction(data.clan.destructionPercentage).padEnd(15, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}\``
+							`\`${data.clan.stars.toString().padEnd(12, ' ')} Stars ${data.opponent.stars.toString().padStart(12, ' ')}\``,
+							`\`${data.clan.attacks.toString().padEnd(14, ' ')} Attacks ${data.opponent.attacks.toString().padStart(14, ' ')}\``,
+							`\`${this.destruction(data.clan.destructionPercentage).padEnd(12, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(12, ' ')}\``
 						]]);
 					}
 					if (data.state === 'preparation') {
@@ -119,9 +119,9 @@ class CWLStatsComamnd extends Command {
 							`**[Round ${++index}] ${clan.name}** vs **${opponent.name}**`,
 							`Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
 						], [
-							`\`${data.clan.stars.toString().padEnd(18, ' ')} Stars ${data.opponent.stars.toString().padStart(18, ' ')}\``,
-							`\`${data.clan.attacks.toString().padEnd(17, ' ')} Attacks ${data.opponent.attacks.toString().padStart(17, ' ')}\``,
-							`\`${this.destruction(data.clan.destructionPercentage).padEnd(15, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(15, ' ')}\``
+							`\`${data.clan.stars.toString().padEnd(12, ' ')} Stars ${data.opponent.stars.toString().padStart(12, ' ')}\``,
+							`\`${data.clan.attacks.toString().padEnd(14, ' ')} Attacks ${data.opponent.attacks.toString().padStart(14, ' ')}\``,
+							`\`${this.destruction(data.clan.destructionPercentage).padEnd(12, ' ')} Destruction ${this.destruction(data.opponent.destructionPercentage).padStart(12, ' ')}\``
 						]]);
 					}
 				}
@@ -139,6 +139,12 @@ class CWLStatsComamnd extends Command {
 
 	destruction(dest) {
 		return dest.toFixed(2).toString().concat('%');
+	}
+
+	isWinner(clan, opponent) {
+		if (clan.stars > opponent.stars) return '';
+		if (clan.destructionPercentage > opponent.destructionPercentage) return '';
+		return '';
 	}
 }
 
