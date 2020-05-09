@@ -82,12 +82,14 @@ class CWLStatsComamnd extends Command {
 		const collection = [];
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [index, stars, destruction] = [0, 0, 0];
+		const ranking = {};
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
 					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 				});
 				const data = await res.json();
+				this.ranking(data, ranking);
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
@@ -138,11 +140,20 @@ class CWLStatsComamnd extends Command {
 			return [header, description].join('\n');
 		}).join('\n\n');
 
+		const list = [];
+		for (const [key, value] of Object.entries(ranking)) {
+			list.push({ tag: key, stars: value.stars, description: value.destruction });
+		}
+
+		const rank = list.sort((a, b) => b.destruction - a.destruction)
+			.sort((a, b) => b.stars - a.stars)
+			.findIndex(a => a.tag === clanTag);
+
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clanName} CWL`, clanBadge)
 			.setDescription(description)
-			.setFooter(`${stars} stars, ${destruction.toFixed()}% destruction`);
+			.setFooter(`Rank ${rank + 1} ${stars} stars, ${destruction.toFixed()}% destruction`);
 		return message.util.send({ embed });
 	}
 
@@ -180,6 +191,26 @@ class CWLStatsComamnd extends Command {
 			return false;
 		}
 		return false;
+	}
+
+	ranking(data, ranking = {}) {
+		if (data.state === 'warEnded') {
+			ranking[data.clan.tag].destruction += data.clan.destructionPercentage * data.teamSize;
+			ranking[data.clan.tag].stars += this.winner(data.clan, data.opponent) ? data.clan.stars + 10 : data.clan.stars;
+
+			ranking[data.opponent.tag].destruction += data.opponent.destructionPercentage * data.teamSize;
+			ranking[data.opponent.tag].stars += this.winner(data.clan, data.opponent) ? data.opponent.stars + 10 : data.opponent.stars;
+		}
+
+		if (data.state === 'inWar') {
+			ranking[data.clan.tag].destruction += data.clan.destructionPercentage * data.teamSize;
+			ranking[data.clan.tag].stars += data.clan.stars;
+
+			ranking[data.opponent.tag].destruction += data.opponent.destructionPercentage * data.teamSize;
+			ranking[data.opponent.tag].stars += data.opponent.stars;
+		}
+
+		return ranking;
 	}
 }
 
