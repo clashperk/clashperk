@@ -50,7 +50,7 @@ class ClanGames {
 
 	async handleMessage(id, channel, clan) {
 		const cache = this.cached.get(id);
-		if (cache && cache.msg && cache.msg.deleted) {
+		/* if (cache && cache.msg && cache.msg.deleted) {
 			const msg = await this.sendNew(id, channel, clan);
 			if (!msg) return;
 			cache.msg = msg;
@@ -62,13 +62,14 @@ class ClanGames {
 			if (!msg) return;
 			cache.msg = msg;
 			return this.cached.set(id, cache);
-		}
+		}*/
 
 		if (!cache.message) {
-			const msg = await this.sendNew(id, channel, clan);
-			if (!msg) return;
-			cache.msg = msg;
-			return this.cached.set(id, cache);
+			return this.sendNew(id, channel, clan);
+		}
+
+		if (cache && cache.msg) {
+			return this.edit(id, cache.msg, clan);
 		}
 
 		const message = await channel.messages.fetch(cache.message, false)
@@ -86,14 +87,14 @@ class ClanGames {
 		if (message.deleted) {
 			const msg = await this.sendNew(id, channel, clan);
 			if (!msg) return;
-			cache.msg = msg;
+			cache.msg = message;
 			return this.cached.set(id, cache);
 		}
 
 		if (!message.deleted) {
 			const msg = await this.edit(id, message, clan);
 			if (!msg) return;
-			cache.msg = msg;
+			cache.msg = message;
 			return this.cached.set(id, cache);
 		}
 	}
@@ -105,6 +106,9 @@ class ClanGames {
 
 		if (message) {
 			try {
+				const cache = this.cached.get(id);
+				cache.message = message.id;
+				this.cached.set(id, cache);
 				const collection = mongodb.db('clashperk').collection('clangameslogs');
 				await collection.updateOne({ clan_id: ObjectId(id) }, { $set: { message: message.id } });
 			} catch (error) {
@@ -120,6 +124,9 @@ class ClanGames {
 		const msg = await message.edit({ embed })
 			.catch(error => {
 				if (error.code === 10008) {
+					const cache = this.cached.get(id);
+					cache.msg = null;
+					this.cached.set(id, cache);
 					return this.sendNew(id, message.channel, clan);
 				}
 				return null;
