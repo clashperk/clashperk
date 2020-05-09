@@ -75,13 +75,10 @@ class CWLStatsComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data);
+		return this.rounds(message, body, data.tag);
 	}
 
-	async rounds(message, body, data) {
-		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
-			.setAuthor(`${data.name} CWL`, data.badgeUrls.medium);
+	async rounds(message, body, clanTag) {
 		const collection = [];
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let index = 0;
@@ -91,9 +88,9 @@ class CWLStatsComamnd extends Command {
 					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 				});
 				const data = await res.json();
-				if ((data.clan && data.clan.tag === data.tag) || (data.opponent && data.opponent.tag === data.tag)) {
-					const clan = data.clan.tag === data.tag ? data.clan : data.opponent;
-					const opponent = data.clan.tag === data.tag ? data.opponent : data.clan;
+				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
+					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
+					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 					if (data.state === 'warEnded') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
 						collection.push([[
@@ -131,14 +128,13 @@ class CWLStatsComamnd extends Command {
 			}
 		}
 
-		const description = collection.map(arr => {
+		const data = collection.map(arr => {
 			const header = arr[0].join('\n');
 			const description = arr[1].join('\n');
 			return [header, description].join('\n');
 		}).join('\n\n');
-		embed.setDescription(description);
 
-		return message.util.send({ embed: { description } });
+		return message.util.send({ embed: { description: data } });
 	}
 
 	destruction(dest) {
