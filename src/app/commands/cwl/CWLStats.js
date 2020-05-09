@@ -141,13 +141,7 @@ class CWLStatsComamnd extends Command {
 		}).join('\n\n');
 
 
-		const rank = ranking.sort((a, b) => {
-			if (b.stars === a.stars) {
-				return b.destruction - a.destruction;
-			}
-			return b.stars === a.stars;
-		}).findIndex(a => a.tag === clanTag);
-
+		const rank = ranking.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clanName} CWL`, clanBadge)
