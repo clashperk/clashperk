@@ -94,7 +94,7 @@ class CWLStatsComamnd extends Command {
 					if (data.state === 'warEnded') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
 						collection.push([[
-							`**[Round ${++index}] ${clan.name}** vs **${opponent.name}**`,
+							`${this.isWinner(data)} [Round ${++index}] **${clan.name}** vs **${opponent.name}**`,
 							`Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
 							`\`${data.clan.stars.toString().padEnd(14, ' ')} Stars ${data.opponent.stars.toString().padStart(14, ' ')}\``,
@@ -105,7 +105,7 @@ class CWLStatsComamnd extends Command {
 					if (data.state === 'inWar') {
 						const started = new Date(moment(data.startTime).toDate()).getTime();
 						collection.push([[
-							`**[Round ${++index}] ${clan.name}** vs **${opponent.name}**`,
+							`${this.isWinner(data)} [Round ${++index}] **${clan.name}** vs **${opponent.name}**`,
 							`Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
 						], [
 							`\`${data.clan.stars.toString().padEnd(14, ' ')} Stars ${data.opponent.stars.toString().padStart(14, ' ')}\``,
@@ -116,7 +116,7 @@ class CWLStatsComamnd extends Command {
 					if (data.state === 'preparation') {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
 						collection.push([[
-							`**[Round ${++index}] ${clan.name}** vs **${opponent.name}**`,
+							`${this.isWinner(data)} [Round ${++index}] **${clan.name}** vs **${opponent.name}**`,
 							`Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
 						], [
 							`\`${data.clan.stars.toString().padEnd(14, ' ')} Stars ${data.opponent.stars.toString().padStart(14, ' ')}\``,
