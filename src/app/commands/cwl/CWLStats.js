@@ -140,6 +140,8 @@ class CWLStatsComamnd extends Command {
 			return [header, description].join('\n');
 		}).join('\n\n');
 
+		console.log(ranking);
+
 		const list = [];
 		for (const [key, value] of Object.entries(ranking)) {
 			list.push({ tag: key, stars: value.stars, description: value.destruction });
@@ -195,19 +197,19 @@ class CWLStatsComamnd extends Command {
 
 	ranking(data, ranking = {}) {
 		if (data.state === 'warEnded') {
-			ranking[data.clan.tag].destruction += data.clan.destructionPercentage * data.teamSize;
-			ranking[data.clan.tag].stars += this.winner(data.clan, data.opponent) ? data.clan.stars + 10 : data.clan.stars;
+			ranking[data.clan.tag].destruction = data.clan.destructionPercentage * data.teamSize;
+			ranking[data.clan.tag].stars = this.winner(data.clan, data.opponent) ? data.clan.stars + 10 : data.clan.stars;
 
-			ranking[data.opponent.tag].destruction += data.opponent.destructionPercentage * data.teamSize;
-			ranking[data.opponent.tag].stars += this.winner(data.clan, data.opponent) ? data.opponent.stars + 10 : data.opponent.stars;
+			ranking[data.opponent.tag].destruction = data.opponent.destructionPercentage * data.teamSize;
+			ranking[data.opponent.tag].stars = this.winner(data.clan, data.opponent) ? data.opponent.stars + 10 : data.opponent.stars;
 		}
 
 		if (data.state === 'inWar') {
-			ranking[data.clan.tag].destruction += data.clan.destructionPercentage * data.teamSize;
-			ranking[data.clan.tag].stars += data.clan.stars;
+			ranking[data.clan.tag].destruction = data.clan.destructionPercentage * data.teamSize;
+			ranking[data.clan.tag].stars = data.clan.stars;
 
-			ranking[data.opponent.tag].destruction += data.opponent.destructionPercentage * data.teamSize;
-			ranking[data.opponent.tag].stars += data.opponent.stars;
+			ranking[data.opponent.tag].destruction = data.opponent.destructionPercentage * data.teamSize;
+			ranking[data.opponent.tag].stars = data.opponent.stars;
 		}
 
 		return ranking;
