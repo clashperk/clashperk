@@ -195,7 +195,8 @@ class CWLStatsComamnd extends Command {
 		return false;
 	}
 
-	ranking(data, ranking = {}) {
+	ranking(data, ranking) {
+		console.log(ranking, ranking[data.clan.tag]);
 		if (data.state === 'warEnded') {
 			ranking[data.clan.tag].destruction += data.clan.destructionPercentage * data.teamSize;
 			ranking[data.clan.tag].stars += this.winner(data.clan, data.opponent) ? data.clan.stars + 10 : data.clan.stars;
