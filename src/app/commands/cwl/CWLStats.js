@@ -138,7 +138,7 @@ class CWLStatsComamnd extends Command {
 		}).join('\n\n');
 		embed.setDescription(description);
 
-		return message.util.send({ embed });
+		return message.util.send({ embed: { description } });
 	}
 
 	destruction(dest) {
