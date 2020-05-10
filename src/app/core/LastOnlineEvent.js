@@ -1,5 +1,5 @@
 const { mongodb } = require('../struct/Database');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, Message } = require('discord.js');
 const moment = require('moment');
 const { ObjectId } = require('mongodb');
 
@@ -112,6 +112,11 @@ class LastOnlineEvent {
 
 	async edit(id, message, clan) {
 		const embed = await this.embed(clan);
+		if (message instanceof Message === false) {
+			const cache = this.cached.get(id);
+			cache.msg = null;
+			return this.cached.set(id, cache);
+		}
 		const msg = await message.edit({ embed })
 			.catch(error => {
 				if (error.code === 10008) {

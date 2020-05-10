@@ -1,5 +1,5 @@
 const { mongodb } = require('../struct/Database');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, Message } = require('discord.js');
 const { ObjectId } = require('mongodb');
 const { emoji } = require('../util/emojis');
 
@@ -115,6 +115,13 @@ class ClanEmbed {
 
 	async edit(id, message, clan) {
 		const embed = await this.embed(id, clan);
+		if (message instanceof Message === false) {
+			const cache = this.cached.get(id);
+			cache.msg = null;
+			this.cached.set(id, cache);
+			return null;
+		}
+
 		const msg = await message.edit({ embed })
 			.catch(error => {
 				if (error.code === 10008) {
