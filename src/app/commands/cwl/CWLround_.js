@@ -176,9 +176,9 @@ class CwlRoundComamnd extends Command {
 
 		let page = index + 1;
 		const paginated = this.paginate(chunks, page).items[0];
-		console.log(chunks);
+		console.log(index, '===', item, '===', chunks);
 
-		const msg = await message.util.send({ embed: paginated.embed });
+		const msg = await message.util.send({ embed: item.embed });
 		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
