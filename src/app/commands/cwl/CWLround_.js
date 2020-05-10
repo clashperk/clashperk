@@ -177,7 +177,6 @@ class CwlRoundComamnd extends Command {
 
 		let page = pageIndex + 1;
 		const paginated = this.paginate(chunks, page).items[0];
-		console.log(index, '===', item, '===', chunks);
 
 		const msg = await message.util.send({ embed: item.embed });
 		for (const emoji of ['⬅️', '➡️']) {
@@ -195,6 +194,7 @@ class CwlRoundComamnd extends Command {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
+				console.log(page);
 				const { embed } = this.paginate(chunks, page).items[0];
 				await msg.edit({ embed });
 				await this.delay(250);
@@ -206,6 +206,7 @@ class CwlRoundComamnd extends Command {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
+				console.log(page);
 				const { embed } = this.paginate(chunks, page).items[0];
 				await msg.edit({ embed });
 				await this.delay(250);
