@@ -198,9 +198,9 @@ class CWLStatsComamnd extends Command {
 					icon_url: clanBadge
 				},
 				description: [
-					`\`\u200eSTARS  ATTACKS  ${'NAME'.padEnd(20, ' ')}\``,
+					`\`\u200e # STARS  ATTACKS  ${'NAME'.padEnd(20, ' ')}\``,
 					leaderboard.filter(m => m.attacks !== 0)
-						.map(m => `\`\u200e${m.stars.toString().padStart(5, ' ')}  ${this.attacks(m.attacks, m.of).padStart(6, ' ')}  ${m.name}\``).join('\n')
+						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')} ${m.stars.toString().padStart(5, ' ')}  ${this.attacks(m.attacks, m.of).padStart(6, ' ')}   ${m.name}\``).join('\n')
 				].join('\n')
 			}
 		});
