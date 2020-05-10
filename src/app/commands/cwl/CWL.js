@@ -8,7 +8,7 @@ class CWLComamnd extends Command {
 			category: 'cwl',
 			cooldown: 0,
 			description: {
-				content: 'Full list of CWL commands, ({prefix}cwl for more info)',
+				content: 'Full list of CWL commands ({prefix}cwl for more info)',
 				examples: ['stats #8QU8J9LP', 'remaining #8QU8J9LP'],
 				usage: '<method> <...args>'
 			}
