@@ -200,7 +200,7 @@ class CWLStatsComamnd extends Command {
 					`\`\u200eSTARS  ATTACKS  ${'NAME'.padEnd(20, ' ')}\``,
 					leaderboard.filter(m => m.attacks !== 0)
 						.map(m => `\`\u200e${m.stars.toString().padStart(5, ' ')}  ${`${m.attacks}/${m.of} `.padStart(4, ' ')}  ${m.name}\``).join('\n')
-				]
+				].join('\n')
 			}
 		});
 	}
