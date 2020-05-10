@@ -26,10 +26,10 @@ class PostStats {
 
 		const request = https.request(`https://api.statuspage.io/v1/pages/${pageId}/metrics/${metricId}/data.json`, options, res => {
 			res.on('data', () => {
-				console.log('/');
+				// console.log('/');
 			});
 			res.on('end', () => {
-				setTimeout(this.status.bind(this), 1000);
+				setTimeout(this.status.bind(this), 4.5 * 1000 * 60);
 			});
 		});
 
