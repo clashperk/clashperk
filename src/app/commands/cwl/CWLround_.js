@@ -110,6 +110,7 @@ class CwlRoundComamnd extends Command {
 
 		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
 		const chunks = [];
+		let index = 0;
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
@@ -160,7 +161,7 @@ class CwlRoundComamnd extends Command {
 						`**${data.opponent.name}**`,
 						await this.count(data.opponent.members)
 					]);
-					embed.setFooter(`Round #${round || body.rounds.findIndex(round => round.warTags === rounds) + 1}`);
+					embed.setFooter(`Round #${index++}`);
 
 					chunks.push({ state: data.state, embed });
 				}
@@ -172,9 +173,9 @@ class CwlRoundComamnd extends Command {
 			: chunks.length === 7
 				? chunks.find(c => c.state === 'inWar') || chunks[-1]
 				: chunks.slice(-2)[0];
-		const index = chunks.indexOf(item);
+		const pageIndex = chunks.indexOf(item);
 
-		let page = index + 1;
+		let page = pageIndex + 1;
 		const paginated = this.paginate(chunks, page).items[0];
 		console.log(index, '===', item, '===', chunks);
 
