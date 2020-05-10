@@ -9,7 +9,7 @@ class CWLComamnd extends Command {
 			cooldown: 0,
 			description: {
 				content: 'Full list of CWL commands ({prefix}cwl for more info)',
-				examples: ['stats #8QU8J9LP', 'remaining #8QU8J9LP'],
+				examples: ['', 'stats #8QU8J9LP', 'remaining #8QU8J9LP'],
 				usage: '<method> <...args>'
 			}
 		});
@@ -20,12 +20,12 @@ class CWLComamnd extends Command {
 		const command = yield {
 			type: [
 				['cwl-attacks', 'attacks'],
-				['cwl-remaining', 'remaining'],
+				['cwl-remaining', 'remaining', 'missing'],
 				['cwl-round', 'round'],
 				['cwl-roster', 'roster'],
 				['cwl-stats', 'stats'],
-				['cwl-top', 'top'],
-				['cwl-members', 'members']
+				['cwl-top', 'top', 'mvp'],
+				['cwl-members', 'members', 'lineup']
 			],
 			otherwise: new MessageEmbed()
 				.setAuthor('CWL Commands')
