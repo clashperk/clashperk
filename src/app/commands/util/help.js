@@ -12,7 +12,7 @@ class HelpCommand extends Command {
 				{
 					id: 'command',
 					match: 'content',
-					type: Argument.validate('commandAlias', (msg, cmd) => cmd.toLocaleLowerCase().replace(/ /g, '-'))
+					type: Argument.compose('commandAlias', (msg, cmd) => cmd ? cmd.toLocaleLowerCase().replace(/ /g, '-') : null)
 				}
 			],
 			description: {
