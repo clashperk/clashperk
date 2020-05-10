@@ -241,7 +241,6 @@ class CWLAttacksComamnd extends Command {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				console.log(page);
 				const { embed } = this.paginate(chunks, page).items[0];
 				await msg.edit({ embed });
 				await this.delay(250);
@@ -253,7 +252,6 @@ class CWLAttacksComamnd extends Command {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				console.log(page);
 				const { embed } = this.paginate(chunks, page).items[0];
 				await msg.edit({ embed });
 				await this.delay(250);
