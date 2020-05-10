@@ -20,7 +20,7 @@ class PostStats {
 	status() {
 		const data = {
 			timestamp: Math.floor(new Date() / 1000),
-			value: this.command.reduce((p, c) => p + c, 0)
+			value: this.command.reduce((p, c) => p + c, 1)
 		};
 
 		const request = https.request(`https://api.statuspage.io/v1/pages/${pageId}/metrics/${metricId}/data.json`, options, res => {
