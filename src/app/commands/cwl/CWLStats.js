@@ -182,7 +182,7 @@ class CWLStatsComamnd extends Command {
 		let react;
 		try {
 			react = await msg.awaitReactions(
-				(reaction, user) => reaction.emoji.name === '🗑' && user.id === message.author.id,
+				(reaction, user) => reaction.emoji.name === 'ℹ' && user.id === message.author.id,
 				{ max: 1, time: 30000, errors: ['time'] }
 			);
 		} catch (error) {
