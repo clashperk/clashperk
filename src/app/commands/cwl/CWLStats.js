@@ -186,9 +186,10 @@ class CWLStatsComamnd extends Command {
 				{ max: 1, time: 30000, errors: ['time'] }
 			);
 		} catch (error) {
-			msg.reactions.removeAll();
+			await msg.reactions.removeAll().catch(() => null);
 			return message;
 		}
+		await msg.reactions.removeAll().catch(() => null);
 		return message.util.send({
 			embed: {
 				color: 0x5970c1,
@@ -199,7 +200,7 @@ class CWLStatsComamnd extends Command {
 				description: [
 					`\`\u200eSTARS  ATTACKS  ${'NAME'.padEnd(20, ' ')}\``,
 					leaderboard.filter(m => m.attacks !== 0)
-						.map(m => `\`\u200e${m.stars.toString().padStart(5, ' ')}  ${`${m.attacks}/${m.of} `.padStart(4, ' ')}  ${m.name}\``).join('\n')
+						.map(m => `\`\u200e${m.stars.toString().padStart(5, ' ')}  ${this.attacks(m.attacks, m.of).padStart(6, ' ')}  ${m.name}\``).join('\n')
 				].join('\n')
 			}
 		});
