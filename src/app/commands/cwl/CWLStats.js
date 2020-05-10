@@ -156,8 +156,6 @@ class CWLStatsComamnd extends Command {
 			const description = arr[1].join('\n');
 			return [header, description].join('\n');
 		}).join('\n\n');
-
-
 		const rank = ranking.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
 		const leaderboard = members.sort((a, b) => b.stars - a.stars);
 		const embed = new MessageEmbed()
