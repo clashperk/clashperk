@@ -7,29 +7,30 @@ const authHeader = { 'Authorization': `OAuth ${apiKey}` };
 const options = { method: 'POST', headers: authHeader };
 
 class PostStats {
-	constructor(client, { postRate = 4.5 * 60 * 1000 } = {}) {
+	constructor(client, { postRate = 2.5 * 60 * 1000 } = {}) {
 		this.client = client;
 		this.postRate = postRate;
-		this.count = 0;
+		this.command = [];
+	}
+
+	commands() {
+		return this.command.push(1);
 	}
 
 	status() {
-		const totalPoints = 60 / 5 * 24;
-		const epochInSeconds = Math.floor(new Date() / 1000);
-		const currentTimestamp = epochInSeconds - ((this.count - 1) * 5 * 60);
-		if (this.count > totalPoints) this.count = 0;
-
 		const data = {
-			timestamp: currentTimestamp,
-			value: this.client.ws.ping
+			timestamp: Math.floor(new Date() / 1000),
+			value: this.command.reduce((p, c) => p + c, 0)
 		};
+
+		this.command = [];
 
 		const request = https.request(`https://api.statuspage.io/v1/pages/${pageId}/metrics/${metricId}/data.json`, options, res => {
 			res.on('data', () => {
 				// console.log('/');
 			});
 			res.on('end', () => {
-				setTimeout(this.status.bind(this), 4.5 * 1000 * 60);
+				setTimeout(this.status.bind(this), this.postRate);
 			});
 		});
 
