@@ -43,7 +43,7 @@ class HelpCommand extends Command {
 			.setColor(0x5970c1)
 			.setTitle(`\`${prefix}${command.aliases[0].replace(/-/g, '')} ${description.usage}\``)
 			.setImage(description.image)
-			.addField('Description', description.content.replace(/{prefix}/g, prefix));
+			.addField('Description', description.content.replace(/{prefix}/g, `\\${prefix}`));
 
 		for (const field of description.fields) embed.addField(field.name, field.value);
 
@@ -99,10 +99,10 @@ class HelpCommand extends Command {
 			embed.addField(cmd.title, [
 				cmd.category.id === 'util' || cmd.category.id === 'other'
 					? cmd.category.filter(cmd => cmd.aliases.length > 0)
-						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, prefix)}`)
+						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
 						.join('\n')
 					: cmd.category.filter(cmd => cmd.aliases.length > 0)
-						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, prefix)}`)
+						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
 						.join('\n'),
 				'\u200b'
 			]);
