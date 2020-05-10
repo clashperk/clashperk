@@ -12,7 +12,11 @@ class HelpCommand extends Command {
 				{
 					id: 'command',
 					match: 'content',
-					type: Argument.compose('commandAlias', (msg, cmd) => cmd ? cmd.toLocaleLowerCase().replace(/ /g, '-') : null)
+					type: (msg, cmd) => {
+						if (!cmd) return null;
+						const resolver = this.handler.resolver.type('commandAlias');
+						return resolver(msg, cmd.toLocaleLowerCase().replace(/ /g, '-'));
+					}
 				}
 			],
 			description: {
