@@ -23,13 +23,12 @@ class PostStats {
 			value: this.command.reduce((p, c) => p + c, 0)
 		};
 
-		this.command = [];
-
 		const request = https.request(`https://api.statuspage.io/v1/pages/${pageId}/metrics/${metricId}/data.json`, options, res => {
 			res.on('data', () => {
-				// console.log('/');
+				this.client.logger.debug(`Command Posted ${this.command.reduce((p, c) => p + c, 0)}`, { label: 'STATUS_PAGE' });
 			});
 			res.on('end', () => {
+				this.command = [];
 				setTimeout(this.status.bind(this), this.postRate);
 			});
 		});
