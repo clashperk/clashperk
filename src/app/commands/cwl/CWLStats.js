@@ -83,6 +83,8 @@ class CWLStatsComamnd extends Command {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [index, stars, destruction] = [0, 0, 0];
 		const ranking = body.clans.map(clan => ({ tag: clan.tag, stars: 0 }));
+		const members = body.clans.find(clan => clan.tag === clanTag)
+			.members.map(member => ({ name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0 }));
 
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -99,6 +101,17 @@ class CWLStatsComamnd extends Command {
 						stars += this.winner(clan, opponent) ? clan.stars + 10 : clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const end = new Date(moment(data.endTime).toDate()).getTime();
+						for (const member of clan.members) {
+							members.find(m => m.tag === member.tag)
+								.of += 1;
+							if (member.attacks) {
+								members.find(m => m.tag === member.tag)
+									.attacks += 1;
+
+								members.find(m => m.tag === member.tag)
+									.stars += member.attacks[0].stars;
+							}
+						}
 
 						collection.push([[
 							`${this.isWinner(clan, opponent)} **${clan.name}** vs **${opponent.name}**`,
@@ -113,6 +126,17 @@ class CWLStatsComamnd extends Command {
 						stars += clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const started = new Date(moment(data.startTime).toDate()).getTime();
+						for (const member of clan.members) {
+							members.find(m => m.tag === member.tag)
+								.of += 1;
+							if (member.attacks) {
+								members.find(m => m.tag === member.tag)
+									.attacks += 1;
+
+								members.find(m => m.tag === member.tag)
+									.stars += member.attacks[0].stars;
+							}
+						}
 
 						collection.push([[
 							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
@@ -147,12 +171,35 @@ class CWLStatsComamnd extends Command {
 
 
 		const rank = ranking.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
+		const leaderboard = members.sort((a, b) => b.stars - a.stars);
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clanName} CWL`, clanBadge)
 			.setDescription(description)
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
-		return message.util.send({ embed });
+		const msg = await message.util.send({ embed });
+		msg.react('ℹ');
+		let react;
+		try {
+			react = await msg.awaitReactions(
+				(reaction, user) => reaction.emoji.name === '🗑' && user.id === message.author.id,
+				{ max: 1, time: 30000, errors: ['time'] }
+			);
+		} catch (error) {
+			msg.reactions.removeAll();
+			return message;
+		}
+		return message.util.send({
+			embed: {
+				color: 0x5970c1,
+				author: {
+					name: `${clanName} CWL`,
+					icon_url: clanBadge
+				},
+				description: leaderboard.filter(m => m.attacks !== 0)
+					.map(m => `${m.name} ${m.stars} ${m.attacks}/${m.of}`).join('\n')
+			}
+		});
 	}
 
 	destruction(dest) {
