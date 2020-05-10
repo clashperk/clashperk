@@ -144,6 +144,7 @@ class ClashPerk extends AkairoClient {
 				this.cacheHandler.init();
 				this.voteHandler.init();
 				this.firebase.init();
+				this.postStats.status();
 				clearInterval(intervalId);
 			}
 		}, 2000);
