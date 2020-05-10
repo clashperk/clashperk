@@ -89,119 +89,178 @@ class CwlMissingComamnd extends Command {
 		return this.rounds(message, body, data, round);
 	}
 
-	async rounds(message, body, clan, round) {
-		const embed = new MessageEmbed()
-			.setColor(0x5970c1);
-		const availableRounds = body.rounds.filter(r => !r.warTags.includes('#0')).length;
-		if (round && round > availableRounds) {
-			embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`)
+	async rounds(message, body, clan_, round) {
+		const rounds_ = body.rounds.filter(r => !r.warTags.includes('#0')).length;
+		if (round && round > rounds_) {
+			const embed = new MessageEmbed()
+				.setColor(0x5970c1)
+				.setAuthor(`${clan_.name} (${clan_.tag})`, clan_.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan_.tag}`)
 				.setDescription([
 					'This round is not available yet!',
 					'',
 					'**Available Rounds**',
 					'',
-					new Array(availableRounds)
+					new Array(rounds_)
 						.fill(0)
 						.map((x, i) => `**\`${i + 1}\`** ${emoji.ok}`)
 						.join('\n'),
-					new Array(body.rounds.length - availableRounds)
+					new Array(body.rounds.length - rounds_)
 						.fill(0)
-						.map((x, i) => `**\`${i + availableRounds + 1}\`** ${emoji.wrong}`)
+						.map((x, i) => `**\`${i + rounds_ + 1}\`** ${emoji.wrong}`)
 						.join('\n')
 				]);
 			return message.util.send({ embed });
 		}
-		const rounds = round
-			? body.rounds[round - 1].warTags
-			: body.rounds.filter(d => !d.warTags.includes('#0'))
-				.slice(-2)
-				.reverse()
-				.slice(-1)[0]
-				.warTags;
 
-		for (const tag of rounds) {
-			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(tag)}`, {
-				method: 'GET',
-				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
-			});
-			const data = await res.json();
-			if ((data.clan && data.clan.tag === clan.tag) || (data.opponent && data.opponent.tag === clan.tag)) {
-				const myclan = data.clan.tag === clan.tag ? data.clan : data.opponent;
-				const oppclan = data.clan.tag === clan.tag ? data.opponent : data.clan;
-				embed.setAuthor(`${myclan.name} (${myclan.tag})`, myclan.badgeUrls.medium);
-				if (data.state === 'warEnded') {
-					let missing = '';
-					let index = 0;
-					for (const member of this.sort(myclan.members)) {
-						if (member.attacks && member.attacks.length === 1) {
-							++index;
-							continue;
+		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
+		const chunks = [];
+		let i = 0;
+		for (const { warTags } of rounds) {
+			for (const warTag of warTags) {
+				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
+					method: 'GET',
+					headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
+				});
+				const data = await res.json();
+				if ((data.clan && data.clan.tag === clan_.tag) || (data.opponent && data.opponent.tag === clan_.tag)) {
+					const embed = new MessageEmbed()
+						.setColor(0x5970c1);
+
+					const clan = data.clan.tag === clan_.tag ? data.clan : data.opponent;
+					const opponent = data.clan.tag === clan_.tag ? data.opponent : data.clan;
+
+					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
+					if (data.state === 'warEnded') {
+						let missing = '';
+						let index = 0;
+						for (const member of this.sort(clan.members)) {
+							if (member.attacks && member.attacks.length === 1) {
+								++index;
+								continue;
+							}
+							missing += `\`${this.index(++index)} ${this.padEnd(member.name)}\`\n`;
 						}
-						missing += `\`${this.index(++index)} ${this.padEnd(member.name)}\`\n`;
+
+						embed.setDescription([
+							'**War Against**',
+							`${opponent.name} (${opponent.tag})`,
+							'',
+							'**State**',
+							'War Ended',
+							'',
+							`**Missed Attacks** - ${clan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
+							missing || 'All Players Attacked'
+						]);
+						const end = new Date(moment(data.endTime).toDate()).getTime();
+						embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+							.addField('Stats', [
+								`**${data.clan.name}**`,
+								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
+								'',
+								`**${data.opponent.name}**`,
+								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
+							]);
+					}
+					if (data.state === 'inWar') {
+						const started = new Date(moment(data.startTime).toDate()).getTime();
+						let missing = '';
+						let index = 0;
+						for (const member of this.sort(clan.members)) {
+							if (member.attacks && member.attacks.length === 1) {
+								++index;
+								continue;
+							}
+							missing += `\`${this.index(++index)} ${this.padEnd(member.name)}\`\n`;
+						}
+
+						embed.setDescription([
+							'**War Against**',
+							`${opponent.name} (${opponent.tag})`,
+							'',
+							'**State**',
+							'In War',
+							'',
+							`**Missing Attacks** - ${clan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
+							missing || 'All Players Attacked'
+						]);
+						embed.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+							.addField('Stats', [
+								`**${data.clan.name}**`,
+								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
+								'',
+								`**${data.opponent.name}**`,
+								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
+							]);
+					}
+					if (data.state === 'preparation') {
+						embed.addField('War Against', `${opponent.name} (${opponent.tag})`);
+						const start = new Date(moment(data.startTime).toDate()).getTime();
+						embed.addField('State', 'Preparation Day')
+							.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
 					}
 
-					embed.setDescription([
-						'**War Against**',
-						`${oppclan.name} (${oppclan.tag})`,
-						'',
-						'**State**',
-						'War Ended',
-						'',
-						`**Missed Attacks** - ${myclan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
-						missing || 'All Players Attacked'
-					]);
-					const end = new Date(moment(data.endTime).toDate()).getTime();
-					embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-						.addField('Stats', [
-							`**${data.clan.name}**`,
-							`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-							'',
-							`**${data.opponent.name}**`,
-							`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
-						]);
-				}
-				if (data.state === 'inWar') {
-					const started = new Date(moment(data.startTime).toDate()).getTime();
-					let missing = '';
-					let index = 0;
-					for (const member of this.sort(myclan.members)) {
-						if (member.attacks && member.attacks.length === 1) {
-							++index;
-							continue;
-						}
-						missing += `\`${this.index(++index)} ${this.padEnd(member.name)}\`\n`;
-					}
+					embed.setFooter(`Round #${++i}`);
 
-					embed.setDescription([
-						'**War Against**',
-						`${oppclan.name} (${oppclan.tag})`,
-						'',
-						'**State**',
-						'In War',
-						'',
-						`**Missing Attacks** - ${myclan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
-						missing || 'All Players Attacked'
-					]);
-					embed.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-						.addField('Stats', [
-							`**${data.clan.name}**`,
-							`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-							'',
-							`**${data.opponent.name}**`,
-							`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
-						]);
+					chunks.push({ state: data.state, embed });
 				}
-				if (data.state === 'preparation') {
-					embed.addField('War Against', `${oppclan.name} (${oppclan.tag})`);
-					const start = new Date(moment(data.startTime).toDate()).getTime();
-					embed.addField('State', 'Preparation Day')
-						.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
-				}
-
-				embed.setFooter(`Round #${round || body.rounds.findIndex(round => round.warTags === rounds) + 1}`);
 			}
 		}
-		return message.util.send({ embed });
+
+		const item = round
+			? chunks[round - 1]
+			: chunks.length === 7
+				? chunks.find(c => c.state === 'inWar') || chunks.slice(-1)[0]
+				: chunks.slice(-2)[0];
+		const pageIndex = chunks.indexOf(item);
+
+		let page = pageIndex + 1;
+		const paginated = this.paginate(chunks, page);
+
+		if (chunks.length === 1) {
+			return message.util.send({ embed: paginated.items[0].embed });
+		}
+		const msg = await message.util.send({ embed: paginated.items[0].embed });
+		for (const emoji of ['⬅️', '➡️']) {
+			await msg.react(emoji);
+			await this.delay(250);
+		}
+
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 60000, max: 10 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '➡️') {
+				page += 1;
+				if (page < 1) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = 1;
+				console.log(page);
+				const { embed } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embed });
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+
+			if (reaction.emoji.name === '⬅️') {
+				page -= 1;
+				if (page < 1) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = 1;
+				console.log(page);
+				const { embed } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embed });
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+		});
+
+		collector.on('end', async () => {
+			await msg.reactions.removeAll().catch(() => null);
+			return message;
+		});
+		return message;
 	}
 
 	sort(items) {
@@ -214,6 +273,22 @@ class CwlMissingComamnd extends Command {
 
 	padEnd(data) {
 		return Util.escapeInlineCode(data).padEnd(20, ' ');
+	}
+
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
+
+	paginate(items, page = 1, pageLength = 1) {
+		const maxPage = Math.ceil(items.length / pageLength);
+		if (page < 1) page = 1;
+		if (page > maxPage) page = maxPage;
+		const startIndex = (page - 1) * pageLength;
+
+		return {
+			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
+			page, maxPage, pageLength
+		};
 	}
 }
 
