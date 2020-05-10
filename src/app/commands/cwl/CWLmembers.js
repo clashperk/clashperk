@@ -6,7 +6,7 @@ const { status } = require('../../util/constants');
 const { emoji } = require('../../util/emojis');
 const API = process.env.API_TOKENS.split(',');
 
-class CwlMembersComamnd extends Command {
+class CWLMembersComamnd extends Command {
 	constructor() {
 		super('cwl-members', {
 			aliases: ['cwl-members', 'cwl-mem', 'cwl-lineup'],
@@ -150,4 +150,4 @@ class CwlMembersComamnd extends Command {
 	}
 }
 
-module.exports = CwlMembersComamnd;
+module.exports = CWLMembersComamnd;

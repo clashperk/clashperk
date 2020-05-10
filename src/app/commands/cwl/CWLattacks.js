@@ -14,7 +14,7 @@ const star = {
 	3: '★★★'
 };
 
-class CwlAttacksComamnd extends Command {
+class CWLAttacksComamnd extends Command {
 	constructor() {
 		super('cwl-attacks', {
 			aliases: ['cwl-attacks'],
@@ -302,4 +302,4 @@ class CwlAttacksComamnd extends Command {
 	}
 }
 
-module.exports = CwlAttacksComamnd;
+module.exports = CWLAttacksComamnd;

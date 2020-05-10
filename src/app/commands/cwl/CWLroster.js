@@ -5,7 +5,7 @@ const moment = require('moment');
 const { status } = require('../../util/constants');
 const { townHallEmoji } = require('../../util/emojis');
 
-class CwlRosterComamnd extends Command {
+class CWLRosterComamnd extends Command {
 	constructor() {
 		super('cwl-roster', {
 			aliases: ['roster', 'cwl-roster'],
@@ -139,4 +139,4 @@ class CwlRosterComamnd extends Command {
 	}
 }
 
-module.exports = CwlRosterComamnd;
+module.exports = CWLRosterComamnd;

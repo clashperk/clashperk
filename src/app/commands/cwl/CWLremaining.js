@@ -7,9 +7,9 @@ const Resolver = require('../../struct/Resolver');
 const { emoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
 
-class CwlMissingComamnd extends Command {
+class CWLRemainingComamnd extends Command {
 	constructor() {
-		super('cwl-missing', {
+		super('cwl-remaining', {
 			aliases: ['cwl-remaining', 'cwl-missing'],
 			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
@@ -292,4 +292,4 @@ class CwlMissingComamnd extends Command {
 	}
 }
 
-module.exports = CwlMissingComamnd;
+module.exports = CWLRemainingComamnd;

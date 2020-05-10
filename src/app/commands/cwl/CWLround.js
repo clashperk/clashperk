@@ -6,7 +6,7 @@ const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const { emoji, townHallEmoji } = require('../../util/emojis');
 
-class CwlRoundComamnd extends Command {
+class CWLRoundComamnd extends Command {
 	constructor() {
 		super('cwl-round', {
 			aliases: ['round', 'cwl-war', 'cwl-round'],
@@ -306,4 +306,4 @@ class CwlRoundComamnd extends Command {
 	}
 }
 
-module.exports = CwlRoundComamnd;
+module.exports = CWLRoundComamnd;

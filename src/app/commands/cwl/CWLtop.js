@@ -4,10 +4,10 @@ const Resolver = require('../../struct/Resolver');
 const { emoji, townHallEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
 
-class CWLMvpCommand extends Command {
+class CWLTopCommand extends Command {
 	constructor() {
-		super('cwlmvp', {
-			aliases: ['cwltop', 'cwlmvp'],
+		super('cwl-top', {
+			aliases: ['cwl-top', 'cwl-mvp'],
 			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
@@ -85,4 +85,4 @@ class CWLMvpCommand extends Command {
 	}
 }
 
-module.exports = CWLMvpCommand;
+module.exports = CWLTopCommand;
