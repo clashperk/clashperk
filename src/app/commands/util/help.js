@@ -1,4 +1,4 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 const { emoji } = require('../../util/emojis');
 
 class HelpCommand extends Command {
@@ -11,7 +11,8 @@ class HelpCommand extends Command {
 			args: [
 				{
 					id: 'command',
-					type: 'commandAlias'
+					match: 'content',
+					type: Argument.validate('commandAlias', (msg, cmd) => cmd.toLocaleLowerCase().replace(/ /g, '-'))
 				}
 			],
 			description: {
