@@ -88,9 +88,7 @@ class CwlRoundComamnd extends Command {
 	}
 
 	async rounds(message, body, clan_, round) {
-		const embed = new MessageEmbed()
-			.setColor(0x5970c1);
-		const availableRounds = body.rounds.filter(r => !r.warTags.includes('#0')).length;
+		/* const availableRounds = body.rounds.filter(r => !r.warTags.includes('#0')).length;
 		if (round && round > availableRounds) {
 			embed.setAuthor(`${clan_.name} (${clan_.tag})`, clan_.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan_.tag}`)
 				.setDescription([
@@ -108,7 +106,7 @@ class CwlRoundComamnd extends Command {
 						.join('\n')
 				]);
 			return message.util.send({ embed });
-		}
+		}*/
 
 		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
 		const chunks = [];
@@ -121,6 +119,8 @@ class CwlRoundComamnd extends Command {
 				if ((data.clan && data.clan.tag === clan_.tag) || (data.opponent && data.opponent.tag === clan_.tag)) {
 					const clan = data.clan.tag === clan_.tag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
+					const embed = new MessageEmbed()
+						.setColor(0x5970c1);
 					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 						.addField('War Against', `${opponent.name} (${opponent.tag})`)
 						.addField('Team Size', `${data.teamSize}`);
