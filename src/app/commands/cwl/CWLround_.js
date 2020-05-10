@@ -176,9 +176,9 @@ class CwlRoundComamnd extends Command {
 		const pageIndex = chunks.indexOf(item);
 
 		let page = pageIndex + 1;
-		const paginated = this.paginate(chunks, page).items[0];
+		const paginated = this.paginate(chunks, page);
 
-		const msg = await message.util.send({ embed: item.embed });
+		const msg = await message.util.send({ embed: paginated.items[0].embed });
 		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
@@ -193,7 +193,7 @@ class CwlRoundComamnd extends Command {
 			if (reaction.emoji.name === '➡️') {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = 1;
+				if (page > paginated.ma) page = 1;
 				console.log(page);
 				const { embed } = this.paginate(chunks, page).items[0];
 				await msg.edit({ embed });
