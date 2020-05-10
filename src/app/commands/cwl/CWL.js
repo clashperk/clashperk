@@ -8,7 +8,7 @@ class CWLComamnd extends Command {
 			category: 'cwl',
 			cooldown: 0,
 			description: {
-				content: '',
+				content: 'Full list of CWL commands.',
 				examples: [''],
 				usage: '<method> <...args>'
 			}
@@ -29,12 +29,12 @@ class CWLComamnd extends Command {
 			],
 			otherwise: new MessageEmbed()
 				.setAuthor('CWL Commands')
+				.setColor(0x5970c1)
 				.setDescription([
 					'**Usage**',
 					`\`${prefix}cwl <method> <...args>\``,
 					'',
 					'**Available Methods**',
-					'',
 					'• roster `<clanTag>`',
 					'• round `<clanTag>`',
 					'• attacks `<clanTag>`',

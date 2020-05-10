@@ -8,7 +8,7 @@ class CWLMvpCommand extends Command {
 	constructor() {
 		super('cwlmvp', {
 			aliases: ['cwltop', 'cwlmvp'],
-			category: 'cwl',
+			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: 'Most valuable clan members sorted by CWL stars.',

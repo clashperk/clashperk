@@ -10,7 +10,7 @@ class CWLStatsComamnd extends Command {
 	constructor() {
 		super('cwl-stats', {
 			aliases: ['cwl-stats'],
-			category: 'cwl',
+			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows stats about current cwl war.',

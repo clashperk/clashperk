@@ -11,7 +11,7 @@ class CwlMissingComamnd extends Command {
 	constructor() {
 		super('cwl-missing', {
 			aliases: ['cwl-remaining', 'cwl-missing'],
-			category: 'cwl',
+			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows remaining attacks of current cwl.',
