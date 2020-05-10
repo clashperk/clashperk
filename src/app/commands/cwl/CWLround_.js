@@ -176,7 +176,7 @@ class CwlRoundComamnd extends Command {
 
 		let page = index + 1;
 		const paginated = this.paginate(chunks, page).items[0];
-		console.log(paginated);
+		console.log(chunks);
 
 		const msg = await message.util.send({ embed: paginated.embed });
 		for (const emoji of ['⬅️', '➡️']) {
@@ -218,6 +218,10 @@ class CwlRoundComamnd extends Command {
 			return message;
 		});
 		return message;
+	}
+
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
 	}
 
 	paginate(items, page = 1, pageLength = 1) {
