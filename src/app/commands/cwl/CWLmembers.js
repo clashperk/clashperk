@@ -9,7 +9,7 @@ const API = process.env.API_TOKENS.split(',');
 class CWLMembersComamnd extends Command {
 	constructor() {
 		super('cwl-members', {
-			aliases: ['cwl-members', 'cwl-mem', 'cwl-lineup'],
+			aliases: ['cwl-members', 'cwl-mem'],
 			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
