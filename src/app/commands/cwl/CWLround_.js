@@ -161,7 +161,7 @@ class CwlRoundComamnd extends Command {
 						`**${data.opponent.name}**`,
 						await this.count(data.opponent.members)
 					]);
-					embed.setFooter(`Round #${index++}`);
+					embed.setFooter(`Round #${++index}`);
 
 					chunks.push({ state: data.state, embed });
 				}
