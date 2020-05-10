@@ -126,7 +126,7 @@ class CWLStatsComamnd extends Command {
 						stars += clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const started = new Date(moment(data.startTime).toDate()).getTime();
-						for (const member of clan.members) {
+						/* for (const member of clan.members) {
 							members.find(m => m.tag === member.tag)
 								.of += 1;
 							if (member.attacks) {
@@ -136,7 +136,7 @@ class CWLStatsComamnd extends Command {
 								members.find(m => m.tag === member.tag)
 									.stars += member.attacks[0].stars;
 							}
-						}
+						}*/
 
 						collection.push([[
 							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
@@ -196,8 +196,11 @@ class CWLStatsComamnd extends Command {
 					name: `${clanName} CWL`,
 					icon_url: clanBadge
 				},
-				description: leaderboard.filter(m => m.attacks !== 0)
-					.map(m => `${m.name} ${m.stars} ${m.attacks}/${m.of}`).join('\n')
+				description: [
+					`\`\u200eSTARS  ATTACKS  ${'NAME'.padEnd(20, ' ')}\``,
+					leaderboard.filter(m => m.attacks !== 0)
+						.map(m => `\`\u200e${m.stars.toString().padStart(5, ' ')}  ${`${m.attacks}/${m.of} `.padStart(4, ' ')}  ${m.name}\``).join('\n')
+				]
 			}
 		});
 	}
