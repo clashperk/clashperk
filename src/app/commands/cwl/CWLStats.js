@@ -126,7 +126,7 @@ class CWLStatsComamnd extends Command {
 						stars += clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const started = new Date(moment(data.startTime).toDate()).getTime();
-						/* for (const member of clan.members) {
+						for (const member of clan.members) {
 							members.find(m => m.tag === member.tag)
 								.of += 1;
 							if (member.attacks) {
@@ -136,7 +136,7 @@ class CWLStatsComamnd extends Command {
 								members.find(m => m.tag === member.tag)
 									.stars += member.attacks[0].stars;
 							}
-						}*/
+						}
 
 						collection.push([[
 							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
@@ -147,18 +147,6 @@ class CWLStatsComamnd extends Command {
 							`\`${this.destruction(clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(11, ' ')}\``
 						]]);
 					}
-					/* if (data.state === 'preparation') {
-						const start = new Date(moment(data.startTime).toDate()).getTime();
-
-						collection.push([[
-							`${this.isWinner(clan, opponent)} **${clan.name}** vs **${opponent.name}**`,
-							`${emoji.clock_small} [Round ${++index}] Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
-						], [
-							`\`${clan.stars.toString().padEnd(14, ' ')} Stars ${opponent.stars.toString().padStart(14, ' ')}\``,
-							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
-							`\`${this.destruction(clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(11, ' ')}\``
-						]]);
-					}*/
 				}
 			}
 		}
@@ -190,7 +178,7 @@ class CWLStatsComamnd extends Command {
 			return message;
 		}
 		await msg.reactions.removeAll().catch(() => null);
-		return message.util.send({
+		return message.channel.send({
 			embed: {
 				color: 0x5970c1,
 				author: {
@@ -200,7 +188,7 @@ class CWLStatsComamnd extends Command {
 				description: [
 					`\`\u200e # STARS  ATTACKS  ${'NAME'.padEnd(20, ' ')}\``,
 					leaderboard.filter(m => m.attacks !== 0)
-						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')} ${m.stars.toString().padStart(5, ' ')}  ${this.attacks(m.attacks, m.of).padStart(6, ' ')}   ${m.name}\``).join('\n')
+						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')} ${m.stars.toString().padStart(5, ' ')}  ${this.attacks(m.attacks, m.of).padStart(6, ' ')}   ${m.name.padEnd(20, ' ')}\``).join('\n')
 				].join('\n')
 			}
 		});
