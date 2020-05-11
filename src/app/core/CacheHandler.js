@@ -37,7 +37,7 @@ class CacheHandler {
 				await this.clanEmbed.exec(data._id, data.clan, data.forced);
 				break;
 			case 'CLAN_GAMES_EVENT':
-				await this.clanGame.exec(data._id, data.clan);
+				await this.clanGame.exec(data._id, data.clan, data.forced, data.tags);
 				break;
 			default:
 				break;
@@ -234,13 +234,6 @@ class CacheHandler {
 			event: EVENTS[3]
 		});
 
-		// Clan Games
-		await this.broadcast({
-			_id: key,
-			clan,
-			event: EVENTS[5]
-		});
-
 		// Donation Log
 		if (data.donated.length || data.received.length) {
 			if (CurrentMemberSet.size && OldMemberSet.size) {
@@ -286,16 +279,31 @@ class CacheHandler {
 					event: EVENTS[5]
 				});
 
-				temp.add('SENT');
+				// Clan Games
+				await this.broadcast({
+					_id: key,
+					clan,
+					forced: true,
+					event: EVENTS[5]
+				});
+
+				temp.add('ON_HOLD');
 			}
 		}
 
 		// Clan Embed
-		if (!temp.delete('SENT')) {
+		if (!temp.delete('ON_HOLD')) {
 			await this.broadcast({
 				_id: key,
 				clan,
 				event: EVENTS[4]
+			});
+
+			// Clan Games
+			await this.broadcast({
+				_id: key,
+				clan,
+				event: EVENTS[5]
 			});
 		}
 
