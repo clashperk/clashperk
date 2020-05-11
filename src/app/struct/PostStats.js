@@ -1,10 +1,6 @@
 const request = require('request');
 const https = require('https');
-const apiKey = '8c675e60-3f0c-486b-9891-5e44c57adbb2';
-const pageId = '4yfhbwkxvrf6';
-const metricId = 'ffzb3v8k3clv';
-const authHeader = { 'Authorization': `OAuth ${apiKey}` };
-const options = { method: 'POST', headers: authHeader };
+const [apiKey, pageId, metricId] = [process.env.SP_API_KEY, process.env.SP_PAGE_ID, process.env.SP_METRIC_ID];
 
 class PostStats {
 	constructor(client, { postRate = 2.5 * 60 * 1000 } = {}) {
@@ -20,20 +16,28 @@ class PostStats {
 	status() {
 		const data = {
 			timestamp: Math.floor(new Date() / 1000),
-			value: this.command.reduce((p, c) => p + c, 1)
+			value: this.command.reduce((p, c) => p + c, 0)
 		};
 
-		const request = https.request(`https://api.statuspage.io/v1/pages/${pageId}/metrics/${metricId}/data.json`, options, res => {
-			res.on('data', () => {
-				this.client.logger.debug(`Command Posted ${this.command.reduce((p, c) => p + c, 0)}`, { label: 'STATUS_PAGE' });
+		try {
+			const request = https.request(`https://api.statuspage.io/v1/pages/${pageId}/metrics/${metricId}/data.json`, {
+				method: 'POST', headers: { 'Authorization': `OAuth ${apiKey}` }
+			}, res => {
+				res.on('data', d => {
+					if (res.statusCode !== 201) {
+						this.client.logger.warn(d.toString(), { label: 'STATUS_PAGE' });
+					}
+				});
+				res.on('end', () => {
+					this.command = [];
+					setTimeout(this.status.bind(this), this.postRate);
+				});
 			});
-			res.on('end', () => {
-				this.command = [];
-				setTimeout(this.status.bind(this), this.postRate);
-			});
-		});
 
-		return request.end(JSON.stringify({ data }));
+			return request.end(JSON.stringify({ data }));
+		} catch (error) {
+			return this.client.logger.error(error, { label: 'STATUS_PAGE' });
+		}
 	}
 
 	async post() {
