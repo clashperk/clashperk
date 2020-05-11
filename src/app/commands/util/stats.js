@@ -65,7 +65,7 @@ class StatsCommand extends Command {
 				{ max: 1, time: 30000, errors: ['time'] }
 			);
 		} catch (error) {
-			msg.reactions.removeAll();
+			msg.reactions.removeAll().catch(() => null);
 			return message;
 		}
 		react.first().message.delete();
