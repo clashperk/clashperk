@@ -24,7 +24,7 @@ class PostStats {
 				method: 'POST', headers: { 'Authorization': `OAuth ${apiKey}` }
 			}, res => {
 				res.on('data', d => {
-					console.log(d);
+					console.log(d.toString());
 					if (res.statusCode !== 201) {
 						this.client.logger.warn(d.toString(), { label: 'STATUS_PAGE' });
 					}
