@@ -284,6 +284,7 @@ class CacheHandler {
 					_id: key,
 					clan,
 					forced: true,
+					tags,
 					event: EVENTS[5]
 				});
 

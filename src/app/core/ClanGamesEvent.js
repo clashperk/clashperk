@@ -10,7 +10,7 @@ class ClanGames {
 		this.cached = new Map();
 	}
 
-	async exec(id, clan, forced = false, tags) {
+	async exec(id, clan, forced = false, tags = []) {
 		if (!this.event()) return this.flush();
 
 		// force update points
