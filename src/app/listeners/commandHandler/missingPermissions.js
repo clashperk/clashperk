@@ -12,12 +12,12 @@ class MissingPermissionsListener extends Listener {
 	exec(message, command, type, missing) {
 		const text = {
 			client: () => {
-				const str = this.missingPermissions(message.channel, this.client.user, missing);
-				return `I'm missing ${str} to use that command.`;
+				const name = this.missingPermissions(message.channel, this.client.user, missing);
+				return `I'm missing ${name} to use that command.`;
 			},
 			user: () => {
-				const str = this.missingPermissions(message.channel, message.author, missing);
-				return `You are missing ${str} to use that command.`;
+				const name = this.missingPermissions(message.channel, message.author, missing);
+				return `You are missing ${name} to use that command.`;
 			}
 		}[type];
 
@@ -32,12 +32,12 @@ class MissingPermissionsListener extends Listener {
 
 	missingPermissions(channel, user, permissions) {
 		const missingPerms = channel.permissionsFor(user).missing(permissions)
-			.map(str => {
-				if (str === 'VIEW_CHANNEL') return '`Read Messages`';
-				if (str === 'SEND_TTS_MESSAGES') return '`Send TTS Messages`';
-				if (str === 'USE_VAD') return '`Use VAD`';
-				if (str === 'MANAGE_GUILD') return '`Manage Server`';
-				return `\`${str.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}\``;
+			.map(name => {
+				if (name === 'VIEW_CHANNEL') return '`Read Messages`';
+				if (name === 'SEND_TTS_MESSAGES') return '`Send TTS Messages`';
+				if (name === 'USE_VAD') return '`Use VAD`';
+				if (name === 'MANAGE_GUILD') return '`Manage Server`';
+				return `\`${name.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}\``;
 			});
 
 		return missingPerms.length > 1

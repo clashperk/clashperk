@@ -18,7 +18,7 @@ class Reslover {
 					.setColor(0xf30c11)
 					.setDescription([
 						`Couldn't find a player linked to **${member.user.tag}!**`,
-						'Either provide a tag or link a player to your Discord.'
+						'Either provide a tag or link a player to your account.'
 					]);
 
 				return { status: 404, embed };
@@ -38,7 +38,7 @@ class Reslover {
 				.setColor(0xf30c11)
 				.setDescription([
 					`Couldn't find a clan linked to **${member.user.tag}!**`,
-					'Either provide a tag or link a clan to your Discord.'
+					'Either provide a tag or link a clan to your account.'
 				]);
 
 			return { status: 404, embed };

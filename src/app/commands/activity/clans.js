@@ -201,7 +201,7 @@ class ClansCommand extends Command {
 	}
 
 	openInGame(tag) {
-		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${tag}`;
+		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 
 	async findAll(guild) {
