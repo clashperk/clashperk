@@ -6,17 +6,22 @@ class PostStats {
 	constructor(client, { postRate = 2.5 * 60 * 1000 } = {}) {
 		this.client = client;
 		this.postRate = postRate;
-		this.command = [];
+		this.command = 0;
+		this.request = 0;
 	}
 
 	commands() {
-		return this.command.push(1);
+		return this.command += 1;
+	}
+
+	requests() {
+		return this.request += 1;
 	}
 
 	status() {
 		const data = {
 			timestamp: Math.floor(new Date() / 1000),
-			value: this.command.reduce((p, c) => p + c, 0)
+			value: this.command
 		};
 
 		try {
@@ -29,7 +34,7 @@ class PostStats {
 					}
 				});
 				res.on('end', () => {
-					this.command = [];
+					this.command = 0;
 					setTimeout(this.status.bind(this), this.postRate);
 				});
 			});
