@@ -5,7 +5,7 @@ const { MessageEmbed } = require('discord.js');
 class CocMemeCommand extends Command {
 	constructor() {
 		super('cocmeme', {
-			aliases: ['cocmeme', 'cocmemes'],
+			aliases: ['cmeme', 'cocmeme'],
 			clientPermissions: ['EMBED_LINKS'],
 			category: 'other',
 			description: {

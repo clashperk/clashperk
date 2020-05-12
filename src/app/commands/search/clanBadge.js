@@ -5,10 +5,10 @@ const Resolver = require('../../struct/Resolver');
 class ClanBadgeCommand extends Command {
 	constructor() {
 		super('clan-badge', {
-			aliases: ['clan-badge', 'badge'],
+			aliases: ['badge', 'clan-badge'],
 			category: 'search',
 			description: {
-				content: 'Clash of Clans clan badge lookup command.',
+				content: 'In-game clan badge in high resolution.',
 				usage: '<clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},

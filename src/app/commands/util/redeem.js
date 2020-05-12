@@ -7,10 +7,10 @@ class RedeemCommand extends Command {
 	constructor() {
 		super('redeem', {
 			aliases: ['redeem'],
-			category: 'other',
+			category: 'util',
 			cooldown: 3000,
 			description: {
-				content: 'Redeems your premium subscription.'
+				content: 'Redeems your patreon subscription.'
 			}
 		});
 	}
