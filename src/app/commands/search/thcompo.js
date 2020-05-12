@@ -36,7 +36,7 @@ class ThCompoCommand extends Command {
 
 	cooldown(message) {
 		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 3000;
-		return 15000;
+		return 10000;
 	}
 
 	async exec(message, { data }) {

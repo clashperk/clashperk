@@ -8,6 +8,23 @@ class CooldownListener extends Listener {
 			emitter: 'commandHandler',
 			category: 'commandHandler'
 		});
+
+		this.commands = [
+			'donationlog',
+			'playerlog',
+			'lastonlineboard',
+			'clangamesboard',
+			'th-compo',
+			'members-th',
+			'warweight',
+			'cwl-top',
+			'cwl-members',
+			'cwl-remaining',
+			'cwl-round',
+			'cwl-stats',
+			'cwl-lineup',
+			'cwl-attacks'
+		];
 	}
 
 	exec(message, command, remaining) {
@@ -23,7 +40,7 @@ class CooldownListener extends Listener {
 				.setColor(0x5970c1);
 			if (this.client.patron.isPatron(message.author, message.guild)) {
 				embed.setDescription([
-					`The default cooldown is ${this.donator(command)}, but as a donator you only need to wait ${ms(cooldown, { long: true })} sec.`
+					`The default cooldown is ${this.donator(command)} sec, but as a donator you only need to wait ${ms(cooldown, { long: true })} sec.`
 				]);
 			} else {
 				embed.setDescription([
@@ -38,12 +55,12 @@ class CooldownListener extends Listener {
 	}
 
 	default(command) {
-		if (['start', 'th-compo', 'members-th'].includes(command.id)) return 3;
+		if (this.commands.includes(command.id)) return 3;
 		return 1;
 	}
 
 	donator(command) {
-		if (['start', 'th-compo', 'members-th'].includes(command.id)) return 15;
+		if (this.commands.includes(command.id)) return 10;
 		return 3;
 	}
 }
