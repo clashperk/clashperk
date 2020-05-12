@@ -46,7 +46,7 @@ class StatsCommand extends Command {
 			], true)
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }), true)
 			.addField('Servers', guilds, true)
-			.addField('Shards', `${message.guild.shard.id}/${this.client.shard.count}`, true)
+			.addField('Shards', `${this.client.shard.count} [ID: ${message.guild.shard.id}]`, true)
 			// .addField('Commands Used', await this.commandsTotal(), true)
 			// .addField('Clans in DB', await this.count(), true)
 			.addField('Version', `v${version}`, true)
