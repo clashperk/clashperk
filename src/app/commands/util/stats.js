@@ -42,13 +42,10 @@ class StatsCommand extends Command {
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
 			.addField('Free Memory', [
-				this.freemem() > 1024 ? `${(this.freemem() / 1024).toFixed(2)} GB` : `${Math.round(this.freemem())} MB`
+				this.freemem > 1024 ? `${(this.freemem / 1024).toFixed(2)} GB` : `${Math.round(this.freemem)} MB`
 			], true)
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }), true)
 			.addField('Servers', guilds, true)
-			.addField('Shards', `${this.client.shard.count} [ID: ${message.guild.shard.id}]`, true)
-			// .addField('Commands Used', await this.commandsTotal(), true)
-			// .addField('Clans in DB', await this.count(), true)
 			.addField('Version', `v${version}`, true)
 			.addField('Node.JS', process.version, true)
 			.setFooter(`© ${new Date().getFullYear()} ${this.owner.tag}`, this.owner.displayAvatarURL());
@@ -80,7 +77,7 @@ class StatsCommand extends Command {
 		return this.client.guilds.cache.reduce((prev, guild) => guild.memberCount + prev, 0);
 	}
 
-	freemem() {
+	get freemem() {
 		return os.freemem() / (1024 * 1024);
 	}
 
@@ -89,13 +86,6 @@ class StatsCommand extends Command {
 		const data = await ref.once('value').then(snap => snap.val());
 
 		return data ? data.commands_used : 0;
-	}
-
-	async count() {
-		const clans = await firestore.collection('tracking_clans')
-			.get()
-			.then(snap => snap.size);
-		return clans;
 	}
 }
 
