@@ -36,12 +36,13 @@ class MissingPermissionsListener extends Listener {
 				if (str === 'VIEW_CHANNEL') return '`Read Messages`';
 				if (str === 'SEND_TTS_MESSAGES') return '`Send TTS Messages`';
 				if (str === 'USE_VAD') return '`Use VAD`';
+				if (str === 'MANAGE_GUILD') return '`Manage Server`';
 				return `\`${str.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}\``;
 			});
 
 		return missingPerms.length > 1
-			? `${missingPerms.slice(0, -1).join(', ')} and ${missingPerms.slice(-1)[0]}`
-			: missingPerms[0];
+			? `${missingPerms.slice(0, -1).join(', ')} and ${missingPerms.slice(-1)[0]} permissions`
+			: `${missingPerms[0]} permission`;
 	}
 }
 

@@ -4,7 +4,7 @@ require('moment-duration-format');
 const { MessageEmbed } = require('discord.js');
 const os = require('os');
 const { version } = require('../../../../package.json');
-const { firestore, firebase } = require('../../struct/Database');
+const { firebase } = require('../../struct/Database');
 
 class StatsCommand extends Command {
 	constructor() {
@@ -37,8 +37,9 @@ class StatsCommand extends Command {
 			memory += value[3];
 		}
 
-		const embed = new MessageEmbed().setTitle('Stats')
+		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
+			.setTitle('Stats')
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
 			.addField('Free Memory', [
