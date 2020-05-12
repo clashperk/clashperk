@@ -40,6 +40,7 @@ class StatsCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setTitle('Stats')
+			.setURL('https://status.clashperk.xyz')
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
 			.addField('Free Memory', [
