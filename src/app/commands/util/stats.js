@@ -44,7 +44,7 @@ class StatsCommand extends Command {
 			.addField('Free Memory', [
 				this.freemem > 1024 ? `${(this.freemem / 1024).toFixed(2)} GB` : `${Math.round(this.freemem)} MB`
 			], true)
-			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D [days], H [hrs], m [mins], s [secs]', { trim: 'both mid' }), true)
+			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }), true)
 			.addField('Servers', guilds, true)
 			.addField('Version', `v${version}`, true)
 			.addField('Node.JS', process.version, true)
