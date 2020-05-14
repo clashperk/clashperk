@@ -82,7 +82,7 @@ class DonationLogCommand extends Command {
 		}
 
 		const clan = clans.find(clan => clan.tag === data.tag) || { verified: false };
-		if ((!this.client.isOwner(message.author.id)) || (!clan.verified && !data.description.toLowerCase().includes('cp'))) {
+		if (!clan.verified && !data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
 				.setAuthor(`${data.name} - Donation Log Setup`, data.badgeUrls.small)
 				.setDescription([
