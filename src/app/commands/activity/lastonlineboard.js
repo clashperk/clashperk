@@ -7,7 +7,7 @@ class LastOnlineBoardCommand extends Command {
 	constructor() {
 		super('lastonlineboard', {
 			aliases: ['onlineboard', 'lastonlineboard'],
-			category: 'activity',
+			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],

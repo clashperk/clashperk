@@ -10,7 +10,7 @@ class WarWeightCommand extends Command {
 	constructor() {
 		super('warweight', {
 			aliases: ['warweight', 'ww'],
-			category: 'search',
+			category: 'activity',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: 'List of clan members with townhall & heroes.',

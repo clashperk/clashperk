@@ -6,7 +6,7 @@ class ToggleCommand extends Command {
 	constructor() {
 		super('toggle', {
 			aliases: ['toggle', 'stop'],
-			category: 'activity',
+			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {

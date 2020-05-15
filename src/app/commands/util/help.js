@@ -80,18 +80,20 @@ class HelpCommand extends Command {
 
 		const commands = [];
 		for (const category of this.handler.categories.values()) {
-			const title = {
-				util: 'Util',
-				cwl: 'CWL',
+			const name = {
+				setup: 'Clan Management',
 				activity: 'Clan Activity',
+				cwl: 'CWL',
 				search: 'Clash Search',
+				config: 'Config',
 				profile: 'Profile',
 				other: 'Other',
-				config: 'Config'
-			}[category.id];
+				util: 'Util'
+			};
+			const title = name[category.id];
 
 			if (title) {
-				commands.push({ id: category.id, category, title });
+				commands[Object.values(name).indexOf(title)] = { id: category.id, category, title };
 			}
 		}
 
@@ -99,26 +101,15 @@ class HelpCommand extends Command {
 			embed.addField(cmd.title, [
 				cmd.category.id === 'util' || cmd.category.id === 'other'
 					? cmd.category.filter(cmd => cmd.aliases.length > 0)
-						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
+						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz#${cmd.id}) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
 						.join('\n')
 					: cmd.category.filter(cmd => cmd.aliases.length > 0)
-						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
+						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz#${cmd.id}) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
 						.join('\n'),
 				'\u200b'
 			]);
 		}
-
-		/* embed.addField('Need more help?', [
-			'What do you think about the bot?',
-			'Do you have any suggestion?',
-			'Please let me know. Link is below!',
-			'\n\u200b'
-		].join(' '));
-		embed.addField('Developer', [emoji.botdev, '[Suvajit](https://suvajit.me/)'].join(' '), true)
-			.addField('Invite Link', [emoji.discord, `[${prefix}invite](https://discordapp.com/api/oauth2/authorize?client_id=526971716711350273&permissions=537259073&scope=bot)`].join(' '), true)*/
-		embed.addField('Our Server', [emoji.clashperk, '[ClashPerk](https://discord.gg/ppuppun)'].join(' '));
-
-
+		embed.setFooter('For more info click on the commands!');
 		return message.util.send({ embed });
 	}
 }

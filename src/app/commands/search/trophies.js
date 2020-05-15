@@ -4,9 +4,9 @@ const { Util } = require('discord.js');
 
 class TrophyBoardCommand extends Command {
 	constructor() {
-		super('trophyboard', {
+		super('trophies', {
 			aliases: ['trophies', 'trophyboard', 'tb'],
-			category: 'search',
+			category: 'activity',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: 'List of clan members with trophies.',

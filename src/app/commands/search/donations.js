@@ -4,9 +4,9 @@ const { Util } = require('discord.js');
 
 class DonationBoardCommand extends Command {
 	constructor() {
-		super('donationboard', {
+		super('donations', {
 			aliases: ['donations', 'donationboard', 'db'],
-			category: 'search',
+			category: 'activity',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: 'List of clan members with donations.',

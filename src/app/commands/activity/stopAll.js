@@ -5,7 +5,7 @@ class StopAllCommand extends Command {
 	constructor() {
 		super('stop-all', {
 			aliases: ['stop-all'],
-			category: 'activity',
+			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {

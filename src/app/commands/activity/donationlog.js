@@ -7,7 +7,7 @@ class DonationLogCommand extends Command {
 	constructor() {
 		super('donationlog', {
 			aliases: ['donationlog', 'start'],
-			category: 'activity',
+			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],

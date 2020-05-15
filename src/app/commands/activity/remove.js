@@ -6,7 +6,7 @@ class RemoveClanCommand extends Command {
 	constructor() {
 		super('remove', {
 			aliases: ['remove', 'remove-clan'],
-			category: 'activity',
+			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
