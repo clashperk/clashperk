@@ -107,11 +107,11 @@ class CWLLineupComamnd extends Command {
 					'',
 					'**Available Rounds**',
 					'',
-					Array(rounds_)
+					new Array(rounds_)
 						.fill(0)
 						.map((x, i) => `**\`${i + 1}\`** ${emoji.ok}`)
 						.join('\n'),
-					Array(body.rounds.length - rounds_)
+					new Array(body.rounds.length - rounds_)
 						.fill(0)
 						.map((x, i) => `**\`${i + rounds_ + 1}\`** ${emoji.wrong}`)
 						.join('\n')

@@ -99,10 +99,10 @@ class HelpCommand extends Command {
 			embed.addField(cmd.title, [
 				cmd.category.id === 'util' || cmd.category.id === 'other'
 					? cmd.category.filter(cmd => cmd.aliases.length > 0)
-						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
+						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz#${cmd.id}) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
 						.join('\n')
 					: cmd.category.filter(cmd => cmd.aliases.length > 0)
-						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
+						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz#${cmd.id}) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
 						.join('\n'),
 				'\u200b'
 			]);
