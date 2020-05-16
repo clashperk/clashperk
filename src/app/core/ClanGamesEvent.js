@@ -183,6 +183,7 @@ class ClanGames {
 				}
 
 				if (member.tag in data.members) {
+					if (member.points === data.members[member.tag].points) continue;
 					$set.name = clan.name;
 					$set.tag = clan.tag;
 					$set[`members.${member.tag}.gain`] = member.points - data.members[member.tag].points;
