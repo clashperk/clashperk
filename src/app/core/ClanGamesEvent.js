@@ -14,13 +14,13 @@ class ClanGames {
 		if (!this.event()) return this.flush();
 
 		// force update points
-		if (forced) {
+		const cache = this.cached.get(id);
+		if (cache && forced) {
 			const db = mongodb.db('clashperk').collection('clangames');
 			const data = await db.findOne({ tag: clan.tag });
 			return this.getList(clan, data, tags);
 		}
 
-		const cache = this.cached.get(id);
 		if (cache && cache.updatedAt) {
 			if (new Date() - new Date(cache.updatedAt) >= 1 * 60 * 1000) {
 				cache.updatedAt = new Date();
@@ -212,6 +212,7 @@ class ClanGames {
 		for (const tag of tags) {
 			if (index === 4) index = 0;
 			const player = await this.player(tag, index);
+			console.log(index, player.name);
 			const value = player.achievements
 				.find(achievement => achievement.name === 'Games Champion')
 				.value;
@@ -253,10 +254,8 @@ class ClanGames {
 		});
 
 		const tags = memberList.map(m => m.tag);
-		const sorted = members
-			.concat(Object.values(data.members).filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag)))
-			.map(x => ({ tag: x.tag, name: x.name, points: x.gain }))
-			.sort((a, b) => b.points - a.points);
+		const sorted = members.sort((a, b) => b.points - a.points);
+		console.log(Object.values(data.members).filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag)));
 
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
@@ -282,7 +281,7 @@ class ClanGames {
 
 				return clearInterval(intervalId);
 			}
-		}, 1 * 60 * 1000);
+		}, 0);
 	}
 
 	event(x) {
