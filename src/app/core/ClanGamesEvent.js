@@ -22,7 +22,7 @@ class ClanGames {
 
 		const cache = this.cached.get(id);
 		if (cache && cache.updatedAt) {
-			if (new Date() - new Date(cache.updatedAt) >= 30 * 60 * 1000) {
+			if (new Date() - new Date(cache.updatedAt) >= 1 * 60 * 1000) {
 				cache.updatedAt = new Date();
 				this.cached.set(id, cache);
 				return this.permissionsFor(id, cache, clan);
@@ -178,20 +178,20 @@ class ClanGames {
 				if (member.tag in data.members === false) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
-					$set[`members.${member.tag}`] = { tag: member.tag, points: member.points };
+					$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
 				}
 
 				if (member.tag in data.members) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
-					$set[`members.${member.tag}`] = { tag: member.tag, gain: member.points - data.members[member.tag].points };
+					$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, gain: member.points - data.members[member.tag].points };
 				}
 			}
 		} else if (!data) {
 			for (const member of collection) {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
-				$set[`members.${member.tag}`] = { tag: member.tag, points: member.points };
+				$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
 			}
 		}
 
@@ -252,7 +252,11 @@ class ClanGames {
 			return { tag: member.tag, name: member.name, points };
 		});
 
-		const sorted = members.sort((a, b) => b.points - a.points);
+		const tags = memberList.map(m => m.tag);
+		const sorted = members
+			.concat(Object.values(data.members).filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag)))
+			.map(x => ({ tag: x.tag, name: x.name, points: x.gain }))
+			.sort((a, b) => b.points - a.points);
 
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
@@ -281,7 +285,8 @@ class ClanGames {
 		}, 1 * 60 * 1000);
 	}
 
-	event() {
+	event(x) {
+		if (!x) return true;
 		const START = [
 			new Date()
 				.getFullYear(),
