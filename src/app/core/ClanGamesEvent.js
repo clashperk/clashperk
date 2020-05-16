@@ -14,6 +14,7 @@ class ClanGames {
 		if (!this.event()) return this.flush();
 
 		// force update points
+		console.log(forced, tags);
 		const cache = this.cached.get(id);
 		if (cache && forced) {
 			const db = mongodb.db('clashperk').collection('clangames');
@@ -257,7 +258,7 @@ class ClanGames {
 
 		const tags = memberList.map(m => m.tag);
 		const sorted = members.sort((a, b) => b.points - a.points);
-		console.log(data, Object.values(data.members).filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag)));
+		console.log(Object.values(data.members).filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag)));
 
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
