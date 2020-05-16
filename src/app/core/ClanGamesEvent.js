@@ -213,11 +213,10 @@ class ClanGames {
 			if (index === 5) index = 0;
 			const player = await this.player(tag, index);
 			if (!player) continue;
+			if (!player.achievements) continue;
 			const value = player.achievements
-				? player.achievements
-					.find(achievement => achievement.name === 'Games Champion')
-					.value
-				: 0;
+				.find(achievement => achievement.name === 'Games Champion')
+				.value;
 			collection.push({
 				name: player.name,
 				tag: player.tag,
@@ -258,7 +257,7 @@ class ClanGames {
 
 		const tags = memberList.map(m => m.tag);
 		const sorted = members.sort((a, b) => b.points - a.points);
-		console.log(Object.values(data.members).filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag)));
+		console.log(data, Object.values(data.members).filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag)));
 
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
