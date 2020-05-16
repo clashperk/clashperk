@@ -258,9 +258,10 @@ class ClanGames {
 		});
 
 		const tags = memberList.map(m => m.tag);
-		const sorted = members.sort((a, b) => b.points - a.points);
-		console.log(Object.values(data.members).filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag)));
-
+		const excess = Object.values(data.members)
+			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
+			.map(x => ({ name: x.name, tag: x.tag, points: x.gain }));
+		const sorted = members.concat(excess).sort((a, b) => b.points - a.points);
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
 
