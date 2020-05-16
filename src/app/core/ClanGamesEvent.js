@@ -212,7 +212,7 @@ class ClanGames {
 		for (const tag of tags) {
 			if (index === 4) index = 0;
 			const player = await this.player(tag, index);
-			console.log(index, player.name);
+			console.log(index, !player.achievements ? player.tag : '');
 			const value = player.achievements
 				.find(achievement => achievement.name === 'Games Champion')
 				.value;
