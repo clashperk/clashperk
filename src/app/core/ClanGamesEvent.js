@@ -23,7 +23,8 @@ class ClanGames {
 		}
 
 		if (cache && cache.updatedAt) {
-			if (new Date() - new Date(cache.updatedAt) >= 5 * 60 * 1000) {
+			const patron = this.client.patron.get(cache.guild, 'guild', false);
+			if (new Date() - new Date(cache.updatedAt) >= patron ? 15 : 30 * 60 * 1000) {
 				cache.updatedAt = new Date();
 				this.cached.set(id, cache);
 				return this.permissionsFor(id, cache, clan);
@@ -276,7 +277,7 @@ class ClanGames {
 				collection.forEach(data => {
 					if (this.client.guilds.cache.has(data.guild)) {
 						this.cached.set(ObjectId(data.clan_id).toString(), {
-							// guild: data.guild,
+							guild: data.guild,
 							channel: data.channel,
 							message: data.message,
 							color: data.color
@@ -286,11 +287,10 @@ class ClanGames {
 
 				return clearInterval(intervalId);
 			}
-		}, 0);
+		}, 1 * 60 * 1000);
 	}
 
-	event(x) {
-		if (!x) return true;
+	event() {
 		const START = [
 			new Date()
 				.getFullYear(),
@@ -347,7 +347,7 @@ class ClanGames {
 
 		if (!data) return null;
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
-			// guild: data.guild,
+			guild: data.guild,
 			channel: data.channel,
 			message: data.message,
 			color: data.color

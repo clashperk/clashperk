@@ -259,7 +259,6 @@ class CacheHandler {
 				tags.push({ tag, mode: 'JOINED' });
 			}
 
-			console.log(tags.length);
 			if (tags.length) {
 				await this.broadcast({
 					_id: key,
