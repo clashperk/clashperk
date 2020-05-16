@@ -259,6 +259,7 @@ class CacheHandler {
 				tags.push({ tag, mode: 'JOINED' });
 			}
 
+			console.log(tags.length);
 			if (tags.length) {
 				await this.broadcast({
 					_id: key,
@@ -276,7 +277,7 @@ class CacheHandler {
 					_id: key,
 					clan,
 					forced: true,
-					event: EVENTS[5]
+					event: EVENTS[4]
 				});
 
 				// Clan Games
