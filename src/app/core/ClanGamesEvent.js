@@ -22,7 +22,7 @@ class ClanGames {
 		}
 
 		if (cache && cache.updatedAt) {
-			if (new Date() - new Date(cache.updatedAt) >= 1 * 60 * 1000) {
+			if (new Date() - new Date(cache.updatedAt) >= 5 * 60 * 1000) {
 				cache.updatedAt = new Date();
 				this.cached.set(id, cache);
 				return this.permissionsFor(id, cache, clan);
