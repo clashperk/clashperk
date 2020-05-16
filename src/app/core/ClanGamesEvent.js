@@ -210,12 +210,14 @@ class ClanGames {
 		let index = 0;
 		const collection = [];
 		for (const tag of tags) {
-			if (index === 4) index = 0;
+			if (index === 5) index = 0;
 			const player = await this.player(tag, index);
-			console.log(index, !player.achievements ? player.tag : '');
+			if (!player) continue;
 			const value = player.achievements
-				.find(achievement => achievement.name === 'Games Champion')
-				.value;
+				? player.achievements
+					.find(achievement => achievement.name === 'Games Champion')
+					.value
+				: 0;
 			collection.push({
 				name: player.name,
 				tag: player.tag,
@@ -331,11 +333,7 @@ class ClanGames {
 		}).catch(() => null);
 
 		if (!res) return null;
-		if (!res.ok) {
-			console.log(await res.json());
-			return null;
-		}
-
+		if (!res.ok) return null;
 		return res.json().catch(() => null);
 	}
 
