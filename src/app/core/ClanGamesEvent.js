@@ -19,7 +19,7 @@ class ClanGames {
 		if (cache && forced) {
 			const db = mongodb.db('clashperk').collection('clangames');
 			const data = await db.findOne({ tag: clan.tag });
-			return this.getList(clan, data, tags);
+			return this.getList(clan, data, tags.map(t => t.tag));
 		}
 
 		if (cache && cache.updatedAt) {
