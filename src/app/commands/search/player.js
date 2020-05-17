@@ -1,9 +1,8 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const moment = require('moment');
-const { firestore } = require('../../struct/Database');
+const { firestore, mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
-const { fetcherror } = require('../../util/constants');
 const { leagueId } = require('../../util/constants');
 const { emoji, townHallEmoji, heroEmoji, leagueEmoji, starEmoji } = require('../../util/emojis');
 
@@ -42,8 +41,6 @@ class PlayerCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		if (data.status !== 200) return message.util.send({ embed: fetcherror(data.status) });
-
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.league ? data.league.iconUrls.small : null)
@@ -105,9 +102,9 @@ class PlayerCommand extends Command {
 		if (body) {
 			const user = this.client.users.cache.get(body.user);
 			embed.addField('Note', [
-				body.note,
+				body.reason,
 				'',
-				`**${user ? user.tag : body.user}** created on **${moment(body.createdAt).format('MMMM D, YYYY, hh:mm')}**`
+				`**${user ? user.tag : `<@${body.user}>`}** created on **${moment(body.createdAt).format('MMMM D, YYYY, hh:mm')}**`
 			]);
 		}
 
@@ -115,10 +112,9 @@ class PlayerCommand extends Command {
 	}
 
 	async note(message, tag) {
-		const data = await firestore.collection('player_notes')
-			.doc(`${message.guild.id}${tag}`)
-			.get()
-			.then(snap => snap.data());
+		const data = await mongodb.db('clashperk')
+			.collection('flaggedusers')
+			.findOne({ guild: message.guild.id, tag });
 		return data;
 	}
 }
