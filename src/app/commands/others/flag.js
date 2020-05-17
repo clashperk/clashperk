@@ -39,7 +39,7 @@ class FlagCommand extends Command {
 	}
 
 	async exec(message, { data, reason }) {
-		if (reason.length > 900) return message.util.send('It has a limit of 1000 characters!');
+		if (reason.length > 900) return message.util.send('Reason must be 1024 or fewer in length.');
 		await mongodb.db('clashperk').collection('flaggedusers')
 			.findOneAndUpdate({ guild: message.guild.id, tag: data.tag }, {
 				$set: {
