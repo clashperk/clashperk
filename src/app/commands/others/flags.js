@@ -29,7 +29,7 @@ class FlagsCommand extends Command {
 			.toArray();
 
 		if (data && data.length) {
-			embed.addField('Flagged Players')
+			embed.setAuthor('Flagged Players')
 				.setDescription([
 					data.map((x, i) => `**${(++i).toString().padStart(2, '0')}.** ${x.name} ${x.tag}`).join('\n')
 				])
