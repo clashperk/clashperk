@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firestore } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 
 class UnflagCommand extends Command {
 	constructor() {
@@ -9,8 +9,8 @@ class UnflagCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: 'Unflags a player.',
-				usage: '<tag>',
+				content: 'Unflags a player from your server / clans.',
+				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			},
 			args: [
@@ -32,11 +32,10 @@ class UnflagCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		await firestore.collection('player_notes')
-			.doc(`${message.guild.id}${data.tag}`)
-			.delete();
+		await mongodb.db('clashperk').collection('flaggedusers')
+			.deleteOne({ guild: message.guild.id, tag: data.tag });
 
-		return message.util.send(`Note deleted for **${data.name} (${data.tag})**`);
+		return message.util.send(`Successfully unflagged **${data.name} (${data.tag})**`);
 	}
 }
 
