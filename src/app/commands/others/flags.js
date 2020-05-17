@@ -11,24 +11,7 @@ class FlagsCommand extends Command {
 			description: {
 				content: 'Shows the list of all flagged players.',
 				examples: ['']
-			},
-			args: [
-				{
-					id: 'data',
-					type: 'player',
-					prompt: {
-						start: 'What tag would you like to flag?',
-						retry: (msg, { failure }) => failure.value
-					}
-				},
-				{
-					id: 'reason',
-					match: 'rest',
-					prompt: {
-						start: 'What is the reason?'
-					}
-				}
-			]
+			}
 		});
 	}
 
