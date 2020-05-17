@@ -30,7 +30,7 @@ class FlagsCommand extends Command {
 
 		if (data && data.length) {
 			embed.setDescription([
-				data.map((x, i) => `${++i}. ${x.name} ${x.tag}`).join('\n')
+				data.map((x, i) => `**${(++i).toString().padStart(2, '0')}.** ${x.name} ${x.tag}`).join('\n')
 			]);
 		} else {
 			embed.setDescription(`${message.guild.name} does not have any flagged players.`);
