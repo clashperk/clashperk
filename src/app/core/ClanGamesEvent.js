@@ -14,7 +14,6 @@ class ClanGames {
 		if (!this.event()) return this.flush();
 
 		// force update points
-		console.log(forced, clan.name, tags.map(t => t.tag));
 		const cache = this.cached.get(id);
 		if (cache && forced) {
 			const db = mongodb.db('clashperk').collection('clangames');
