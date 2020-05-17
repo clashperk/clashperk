@@ -104,7 +104,7 @@ class PlayerCommand extends Command {
 			embed.addField(`Flagged by ${user ? user.tag : 'Unknown#0000'}`, [
 				body.reason,
 				'',
-				`Created on **${moment(body.createdAt).format('MMMM D, YYYY, hh:mm')}**`
+				`Flagged on **${moment(body.createdAt).format('MMMM D, YYYY, hh:mm')}**`
 			]);
 		}
 
