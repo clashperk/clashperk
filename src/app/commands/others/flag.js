@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firestore } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 
 class FlagCommand extends Command {
 	constructor() {
@@ -9,8 +9,8 @@ class FlagCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: 'Flags a player.',
-				usage: '<#tag> <note>',
+				content: 'Flags a player in your server / clans.',
+				usage: '<playerTag> <reason>',
 				examples: ['#9Q92C8R20 Hopper']
 			},
 			args: [
@@ -23,7 +23,7 @@ class FlagCommand extends Command {
 					}
 				},
 				{
-					id: 'text',
+					id: 'reason',
 					match: 'rest',
 					prompt: {
 						start: 'What is the reason?'
@@ -38,19 +38,21 @@ class FlagCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, text }) {
-		if (text.length > 900) return message.util.send('It has a limit of 1000 characters!');
-		await firestore.collection('player_notes')
-			.doc(`${message.guild.id}${data.tag}`)
-			.set({
-				guild: message.guild.id,
-				user: message.author.id,
-				tag: data.tag,
-				note: text,
-				createdAt: new Date()
-			}, { merge: true });
+	async exec(message, { data, reason }) {
+		if (reason.length > 900) return message.util.send('It has a limit of 1000 characters!');
+		await mongodb.db('clashperk').collection('flaggedusers')
+			.findOneAndUpdate({ guild: message.guild.id, tag: data.tag }, {
+				$set: {
+					guild: message.guild.id,
+					user: message.author.id,
+					tag: data.tag,
+					name: data.name,
+					reason,
+					createdAt: new Date()
+				}
+			}, { upsert: true });
 
-		return message.util.send(`Note created for **${data.name} (${data.tag})**`);
+		return message.util.send(`Successfully flagged **${data.name} (${data.tag})**`);
 	}
 }
 
