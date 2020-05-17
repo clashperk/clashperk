@@ -100,11 +100,11 @@ class PlayerCommand extends Command {
 
 		const body = await this.note(message, data.tag);
 		if (body) {
-			const user = this.client.users.cache.get(body.user);
-			embed.addField('Note', [
+			const user = await this.client.users.fetch(body.user, false).catch(() => null);
+			embed.addField(`Flagged by ${user ? user.tag : 'Unknown#0000'}`, [
 				body.reason,
 				'',
-				`**${user ? user.tag : `<@${body.user}>`}** created on **${moment(body.createdAt).format('MMMM D, YYYY, hh:mm')}**`
+				`Created on **${moment(body.createdAt).format('MMMM D, YYYY, hh:mm')}**`
 			]);
 		}
 
