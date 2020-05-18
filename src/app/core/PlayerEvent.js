@@ -72,7 +72,7 @@ class PlayerEvent {
 		const embed = new MessageEmbed()
 			.setColor(MODE[item.mode])
 			.setTitle(`${member.name} (${member.tag})`)
-			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(item.tag)}`)
+			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`)
 			.setDescription([
 				`${townHallEmoji[member.townHallLevel]}${member.townHallLevel}`,
 				`${this.formatHeroes(member)}`,
