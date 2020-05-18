@@ -21,7 +21,7 @@ class ClanEmbedCommand extends Command {
 
 	*args() {
 		const data = yield {
-			type: 'clan',
+			type: 'string',
 			prompt: {
 				start: 'What is the clan tag?',
 				retry: 'Please provide a valid ClanTag.'
@@ -39,7 +39,8 @@ class ClanEmbedCommand extends Command {
 		const accepts = yield {
 			type: 'string',
 			prompt: {
-				start: 'What townhalls are accepted?'
+				start: 'What townhalls are accepted?',
+				time: 1 * 60 * 1000
 			},
 			default: '\u200b'
 		};
@@ -47,7 +48,8 @@ class ClanEmbedCommand extends Command {
 		const description = yield {
 			match: 'rest',
 			prompt: {
-				start: 'What would you like to set the description?'
+				start: 'What would you like to set the description?',
+				time: 1.5 * 60 * 1000
 			},
 			default: '\u200b'
 		};
