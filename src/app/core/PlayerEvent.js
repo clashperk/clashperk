@@ -3,6 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const { townHallEmoji, emoji, leagueEmoji, heroEmoji } = require('../util/emojis');
 const fetch = require('node-fetch');
 const { ObjectId } = require('mongodb');
+const moment = require('moment');
 
 const MODE = {
 	JOINED: 0x38d863, // green
@@ -66,20 +67,37 @@ class PlayerEvent {
 		return data.tags.length;
 	}
 
-	async embed(item, data) {
+	async embed(item, data, id) {
+		const cache = this.cached.get(id);
 		const member = await this.player(item.tag);
+		const flag = await mongodb.db('clashperk')
+			.collection('flaggedusers')
+			.findOne({ guild: cache.guild, tag: item.tag });
+
 		if (!member) return null;
 		const embed = new MessageEmbed()
 			.setColor(MODE[item.mode])
 			.setTitle(`${member.name} (${member.tag})`)
-			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`)
-			.setDescription([
+			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`);
+		if (item.mode === 'LEFT') {
+			embed.setDescription([
+				`${townHallEmoji[member.townHallLevel]}${member.townHallLevel}`,
+				`${emoji.troopsdonation} ${item.donated}${emoji.donated} ${item.received}${emoji.received}`
+			].join(' '));
+		} else {
+			embed.setDescription([
 				`${townHallEmoji[member.townHallLevel]}${member.townHallLevel}`,
 				`${this.formatHeroes(member)}`,
 				`${emoji.warstar}${member.warStars}`,
 				`${leagueEmoji[member.league ? member.league.id : 29000000]}${member.trophies}`
-			].join(' '))
-			.setFooter(data.clan.name, data.clan.badge)
+			].join(' '));
+			if (flag) {
+				const user = await this.client.users.fetch(flag.user).catch(() => null);
+				embed.addField('Flag', flag.reason)
+					.addField('Author', `${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})`);
+			}
+		}
+		embed.setFooter(data.clan.name, data.clan.badge)
 			.setTimestamp();
 
 		return embed;
@@ -123,7 +141,7 @@ class PlayerEvent {
 		collection.forEach(data => {
 			if (this.client.guilds.cache.has(data.guild)) {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
-					// guild: data.guild,
+					guild: data.guild,
 					channel: data.channel
 				});
 			}
@@ -137,7 +155,7 @@ class PlayerEvent {
 
 		if (!data) return null;
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
-			// guild: data.guild,
+			guild: data.guild,
 			channel: data.channel
 		});
 	}

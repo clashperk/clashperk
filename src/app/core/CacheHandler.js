@@ -252,7 +252,16 @@ class CacheHandler {
 		if (CurrentMemberSet.size && OldMemberSet.size) {
 			const tags = [];
 			for (const tag of this.oldMemberList.get(key).filter(tag => !CurrentMemberSet.has(tag))) {
-				tags.push({ tag, mode: 'LEFT' });
+				if (this.memberList[key] && this.memberList[key][tag]) {
+					tags.push({
+						tag,
+						mode: 'LEFT',
+						donated: this.memberList[key][tag].donations,
+						received: this.memberList[key][tag].donationsReceived
+					});
+				} else {
+					tags.push({ tag, mode: 'LEFT' });
+				}
 			}
 
 			for (const tag of CurrentMemberList.filter(tag => !OldMemberSet.has(tag))) {

@@ -169,6 +169,8 @@ module.exports = {
 		users_small: '<:userssolid_small:699834141931339777>',
 		authorize: '<:cp_authorized:701085545555689503>',
 		channel: '<:cp_channel:701085544335147059>',
-		botdev: '<:botdev:707231318857089136>'
+		botdev: '<:botdev:707231318857089136>',
+		donated: '<:donated:712617495587979306>',
+		received: '<:received:712617494904438855>'
 	}
 };
