@@ -65,7 +65,7 @@ class WarWeightCommand extends Command {
 					tag: member.tag,
 					name: member.name,
 					townHallLevel: member.townHallLevel,
-					heroes: member.heroes.filter(a => a.village === 'home')
+					heroes: member.heroes ? member.heroes.filter(a => a.village === 'home') : []
 				});
 			}
 		}

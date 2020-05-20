@@ -50,7 +50,10 @@ class CWLTopCommand extends Command {
 				method: 'GET',
 				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 			}).then(res => res.json());
-			const star = member.achievements.find(achievement => achievement.name === 'War League Legend');
+			if (!member) continue;
+			const star = member.achievements
+				? member.achievements.find(achievement => achievement.name === 'War League Legend')
+				: 0;
 			memberList.push({ townHallLevel: member.townHallLevel, name: member.name, cwlStar: star.value });
 		}
 

@@ -9,6 +9,7 @@ class ToggleCommand extends Command {
 			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
+			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Toogle logs and boards on the server.',
 				usage: '<method> <clanTag>',
