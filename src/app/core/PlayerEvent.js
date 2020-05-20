@@ -81,7 +81,8 @@ class PlayerEvent {
 			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`);
 		if (item.mode === 'LEFT') {
 			embed.setDescription([
-				`${townHallEmoji[member.townHallLevel]}${member.townHallLevel}`,
+				`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
+				`${emoji.xp} ${member.expLevel}`,
 				`${emoji.troopsdonation} ${item.donated}${emoji.donated} ${item.received}${emoji.received}`
 			].join(' '));
 		} else {
