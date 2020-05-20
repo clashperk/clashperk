@@ -19,7 +19,7 @@ class PlayerEvent {
 	exec(id, data) {
 		const cache = this.cached.get(id);
 		if (cache) {
-			return this.permissionsFor(cache, data);
+			return this.permissionsFor(cache, data, id);
 		}
 	}
 
@@ -27,7 +27,7 @@ class PlayerEvent {
 		return new Promise(res => setTimeout(res, ms));
 	}
 
-	permissionsFor(cache, data) {
+	permissionsFor(cache, data, id) {
 		const permissions = [
 			'SEND_MESSAGES',
 			'EMBED_LINKS',
@@ -39,15 +39,15 @@ class PlayerEvent {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				return this.handleMessage(channel, data);
+				return this.handleMessage(channel, data, id);
 			}
 		}
 	}
 
-	async handleMessage(channel, data) {
-		if (data.tags.length >= 5) return this.queue(channel, data);
+	async handleMessage(channel, data, id) {
+		if (data.tags.length >= 5) return this.queue(channel, data, id);
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
-			const embed = await this.embed(item, data);
+			const embed = await this.embed(item, data, id);
 			if (!embed) continue;
 			await channel.send({ embed }).catch(() => null);
 			await this.delay(250);
@@ -56,9 +56,9 @@ class PlayerEvent {
 		return data.tags.length;
 	}
 
-	async queue(channel, data) {
+	async queue(channel, data, id) {
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
-			const embed = await this.embed(item, data);
+			const embed = await this.embed(item, data, id);
 			if (!embed) continue;
 			await channel.send({ embed }).catch(() => null);
 			await this.delay(2000);
