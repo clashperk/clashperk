@@ -24,8 +24,7 @@ class ClanGames {
 		}
 
 		if (cache && cache.updatedAt) {
-			const patron = this.client.patron.get(cache.guild, 'guild', false);
-			if (new Date() - new Date(cache.updatedAt) >= 30 * 60 * 1000) {
+			if ((this.timer(cache) * 60 * 1000) >= (new Date() - new Date(cache.updatedAt))) {
 				cache.updatedAt = new Date();
 				this.cached.set(id, cache);
 				return this.permissionsFor(id, cache, clan);
@@ -39,6 +38,11 @@ class ClanGames {
 			this.cached.set(id, cache);
 			return this.permissionsFor(id, cache, clan);
 		}
+	}
+
+	timer(cache) {
+		const patron = this.client.patron.get(cache.guild, 'guild', false);
+		return patron ? 15 : 30;
 	}
 
 	permissionsFor(id, cache, clan) {
