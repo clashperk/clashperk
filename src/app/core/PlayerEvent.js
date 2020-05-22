@@ -94,8 +94,11 @@ class PlayerEvent {
 			].join(' '));
 			if (flag) {
 				const user = await this.client.users.fetch(flag.user).catch(() => null);
-				embed.addField('Flag', flag.reason)
-					.addField('Author', `${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})`);
+				embed.addField('Flag', [
+					flag.reason,
+					'',
+					`${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})`
+				]);
 			}
 		}
 		embed.setFooter(data.clan.name, data.clan.badge)

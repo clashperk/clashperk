@@ -118,7 +118,7 @@ class ClanGamesCommand extends Command {
 		const tags = memberList.map(m => m.tag);
 		const excess = Object.values(clan.members)
 			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
-			.map(x => ({ name: x.name, tag: x.tag, points: x.gain }));
+			.map(x => ({ name: x.name, tag: x.tag, points: x.gain > 4000 ? 4000 : x.gain }));
 		const sorted = members.concat(excess).sort((a, b) => b.points - a.points);
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
