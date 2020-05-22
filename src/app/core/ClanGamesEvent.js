@@ -16,7 +16,7 @@ class ClanGames {
 		// force update points
 		const cache = this.cached.get(id);
 		if (cache && forced) {
-			setInterval(async () => {
+			setTimeout(async () => {
 				const db = mongodb.db('clashperk').collection('clangames');
 				const data = await db.findOne({ tag: clan.tag });
 				return this.getList(clan, data, tags.map(t => t.tag));
