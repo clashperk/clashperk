@@ -16,9 +16,11 @@ class ClanGames {
 		// force update points
 		const cache = this.cached.get(id);
 		if (cache && forced) {
-			const db = mongodb.db('clashperk').collection('clangames');
-			const data = await db.findOne({ tag: clan.tag });
-			return this.getList(clan, data, tags.map(t => t.tag));
+			setInterval(async () => {
+				const db = mongodb.db('clashperk').collection('clangames');
+				const data = await db.findOne({ tag: clan.tag });
+				return this.getList(clan, data, tags.map(t => t.tag));
+			}, 2.5 * 60 * 1000);
 		}
 
 		if (cache && cache.updatedAt) {
