@@ -7,7 +7,7 @@ class ClansCommand extends Command {
 	constructor() {
 		super('clans', {
 			aliases: ['clans', 'tracking', 'info'],
-			category: 'activity',
+			category: 'setup',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
