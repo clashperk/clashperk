@@ -9,6 +9,7 @@ const Database = require('../struct/Database');
 const Firebase = require('../struct/Firebase');
 const { MessageEmbed } = require('discord.js');
 const Patrons = require('../struct/Patrons');
+const ClashAPI = require('clashofclans.js');
 const Logger = require('../util/logger');
 const fetch = require('node-fetch');
 const path = require('path');
@@ -128,10 +129,12 @@ class ClashPerk extends AkairoClient {
 		await Database.connect();
 		this.settings = new Settings(Database.mongodb.db('clashperk').collection('settings'));
 
+
+		this.firebase = new Firebase(this);
+		this.firebase = new Firebase(this);
+		this.clashapi = new ClashAPI({ token: process.env.CLASH_OF_CLANS_API });
 		this.postStats = new PostStats(this);
-		this.firebase = new Firebase(this);
 		this.voteHandler = new VoteHandler(this);
-		this.firebase = new Firebase(this);
 
 		this.patron = new Patrons(this);
 		await this.settings.init();
