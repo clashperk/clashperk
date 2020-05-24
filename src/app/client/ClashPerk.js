@@ -1,4 +1,5 @@
 const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
+const { Client: ClashAPI } = require('clashofclans.js');
 const Settings = require('../struct/SettingsProvider');
 const CacheHandler = require('../core/CacheHandler');
 const VoteHandler = require('../struct/VoteHandler');
@@ -9,7 +10,6 @@ const Database = require('../struct/Database');
 const Firebase = require('../struct/Firebase');
 const { MessageEmbed } = require('discord.js');
 const Patrons = require('../struct/Patrons');
-const ClashAPI = require('clashofclans.js');
 const Logger = require('../util/logger');
 const fetch = require('node-fetch');
 const path = require('path');
