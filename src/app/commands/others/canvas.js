@@ -14,7 +14,7 @@ class CanvasCommand extends Command {
 				{
 					id: 'txt',
 					match: 'content',
-					default: '#f30c11'
+					default: msg => msg.author.tag
 				}
 			]
 		});
@@ -29,7 +29,7 @@ class CanvasCommand extends Command {
 		ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
 		ctx.font = '60px sans-seriff';
-		ctx.fillStyle = '#ffffff';
+		ctx.fillStyle = '#f30c11';
 		ctx.fillText(txt, canvas.width / 2.5, canvas.height / 1.8);
 
 		ctx.beginPath();
