@@ -22,8 +22,8 @@ class CanvasCommand extends Command {
 
 	async exec(message, { txt }) {
 		const Canvas = require('canvas');
-		const background = await Canvas.loadImage('https://cdn.discordapp.com/attachments/707884431314124800/713991474404130816/airhounds.png');
-		const canvas = Canvas.createCanvas(1280, 720);
+		const background = await Canvas.loadImage('https://cdn.discordapp.com/attachments/707884431314124800/714058385636458516/thumb-1920-857565.jpg');
+		const canvas = Canvas.createCanvas(1920, 1200);
 		const ctx = canvas.getContext('2d');
 
 		ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
