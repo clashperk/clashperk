@@ -14,7 +14,7 @@ class CanvasCommand extends Command {
 				{
 					id: 'txt',
 					match: 'content',
-					default: 'FUCK'
+					default: '#f30c11'
 				}
 			]
 		});
