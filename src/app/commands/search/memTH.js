@@ -84,7 +84,7 @@ class MembersTHCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
-		const header = `${emoji.trophy} \`\u200eTH ${'TAG'.padEnd(11, '\u2002')} ${'NAME'.padEnd(20, '\u2002')}\``;
+		const header = `${emoji.trophy} **\`\u200eTH ${'TAG'.padEnd(11, '\u2002')} ${'NAME'.padEnd(20, '\u2002')}\`**`;
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
 				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(11, '\u2002')} ${Util.escapeInlineCode(member.name).padEnd(20, '\u2002')}\``),
