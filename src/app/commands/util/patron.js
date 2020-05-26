@@ -34,8 +34,9 @@ class PatronCommand extends Command {
 				'• Ability to claim more than 2 clans per server.',
 				'• Faster updates and no cooldown.',
 				'• A special hoisted role on support server.',
-				'• Allows access to beta commands',
-				'\u200e		• Access to `clanmebed` command. ',
+				'• Allows access to beta commands. ',
+				'\u200e\u2002 \u2002 • Access to `clanmebed` command. ',
+				'',
 				'[Become a Patron](https://www.patreon.com/clashperk)'
 				// '',
 				// '**Our Current Patrons**',
