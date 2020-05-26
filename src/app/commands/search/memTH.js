@@ -87,11 +87,9 @@ class MembersTHCommand extends Command {
 		const header = [`\`\u200e\u2002 TH ${'TAG'.padEnd(11, '\u2002')} ${'NAME'.padEnd(20, '\u2002')}`];
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
-				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${Util.escapeInlineCode(member.name).padEnd(20, '\u2002')}\``)
-				.unshift(header[0]),
+				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${Util.escapeInlineCode(member.name).padEnd(20, '\u2002')}\``),
 			this.paginate(townhall ? filter : items, 25, 50)
 				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${Util.escapeInlineCode(member.name).padEnd(20, '\u2002')}\``)
-				.unshift(header[0])
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
