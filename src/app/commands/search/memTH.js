@@ -3,6 +3,7 @@ const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
 const { emoji, leagueEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
+const { stripIndent } = require('common-tags');
 
 const API = process.env.API_TOKENS.split(',');
 
@@ -84,7 +85,7 @@ class MembersTHCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
-		const header = `\u200e${emoji.trophy} **\`TH ${'#TAG'.padEnd(11, '\u2002')} ${'NAME'.padEnd(20, '\u2002')}\`**`;
+		const header = stripIndent(`${emoji.trophy} **\`\u200eTH ${'TAG'.padEnd(11, '\u2002')} ${'NAME'.padEnd(20, '\u2002')}\`**`);
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
 				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(11, '\u2002')} ${Util.escapeInlineCode(member.name).padEnd(20, '\u2002')}\``),
