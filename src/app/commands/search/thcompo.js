@@ -42,19 +42,7 @@ class ThCompoCommand extends Command {
 	async exec(message, { data }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const hrStart = process.hrtime();
-		let TH13 = 0;
-		let TH12 = 0;
-		let TH11 = 0;
-		let TH10 = 0;
-		let TH09 = 0;
-		let TH08 = 0;
-		let TH07 = 0;
-		let TH06 = 0;
-		let TH05 = 0;
-		let TH04 = 0;
-		let TH03 = 0;
-		let TH02 = 0;
-		let TH01 = 0;
+		let [TH13, TH12, TH11, TH10, TH09, TH08, TH07, TH06, TH05, TH04, TH03, TH02, TH01] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 		const list = data.memberList.map(m => m.tag);
 		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))

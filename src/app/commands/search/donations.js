@@ -5,7 +5,7 @@ const { Util } = require('discord.js');
 class DonationBoardCommand extends Command {
 	constructor() {
 		super('donations', {
-			aliases: ['donations', 'donationboard', 'db'],
+			aliases: ['donations', 'donationboard', 'db', 'don'],
 			category: 'activity',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {

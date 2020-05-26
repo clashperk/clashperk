@@ -1,4 +1,4 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
 const { MODES } = require('../../util/constants');
@@ -37,21 +37,24 @@ class ClanEmbedCommand extends Command {
 		};
 
 		const accepts = yield {
-			type: 'string',
+			type: Argument.validate('string', (msg, txt) => txt.length <= 1024),
 			prompt: {
 				start: 'What townhalls are accepted?',
+				retry: 'Embed field must be 1024 or fewer in length.',
 				time: 1 * 60 * 1000
 			},
-			default: '\u200b'
+			default: ' \u200b'
 		};
 
 		const description = yield {
 			match: 'rest',
+			type: Argument.validate('string', (msg, txt) => txt.length <= 1024),
 			prompt: {
 				start: 'What would you like to set the description?',
+				retry: 'Embed description must be 1024 or fewer in length.',
 				time: 1.5 * 60 * 1000
 			},
-			default: '\u200b'
+			default: ' \u200b'
 		};
 
 		const color = yield {
@@ -98,15 +101,17 @@ class ClanEmbedCommand extends Command {
 
 		if (!clans.map(clan => clan.tag).includes(data.tag) && !data.description.toLowerCase().includes('cp')) {
 			const embed = this.client.util.embed()
-				.setAuthor(`${data.name} - Donation Log Setup`, data.badgeUrls.small)
+				.setAuthor(`${data.name}`, data.badgeUrls.small)
 				.setDescription([
 					'**Clan Description**',
 					`${data.description}`,
 					'',
 					'**Verify Your Clan**',
-					'Add the word `CP` at the end of the clan description.',
-					'You can remove it after verification.',
-					'This is a security feature to ensure you have proper leadership of the clan.'
+					[
+						'Add the word `CP` at the end of the clan description.',
+						'This is a security feature to ensure you have proper leadership of the clan.',
+						'The word `CP` should be removed after verification.'
+					].join(' ')
 				]);
 			return message.util.send({ embed });
 		}

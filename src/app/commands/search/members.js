@@ -3,7 +3,7 @@ const { Command } = require('discord-akairo');
 class MembersCommand extends Command {
 	constructor() {
 		super('members', {
-			aliases: ['members'],
+			aliases: ['members', 'mem'],
 			category: 'search',
 			description: {
 				content: 'List of clan members (--th to view th levels).',

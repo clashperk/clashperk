@@ -9,7 +9,7 @@ const { emoji } = require('../../util/emojis');
 class WarlogCommand extends Command {
 	constructor() {
 		super('warlog', {
-			aliases: ['warlog'],
+			aliases: ['warlog', 'wl'],
 			category: 'search',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {

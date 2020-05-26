@@ -16,7 +16,7 @@ const STATUS = {
 class ClanSearchCommand extends Command {
 	constructor() {
 		super('clan-search', {
-			aliases: ['clan-search'],
+			aliases: ['clan-search', 'cs'],
 			category: 'search',
 			description: {
 				content: 'Search in-game clans by name.',

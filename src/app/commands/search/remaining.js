@@ -8,7 +8,7 @@ const Resolver = require('../../struct/Resolver');
 class RemainingAttacksCommand extends Command {
 	constructor() {
 		super('remaining', {
-			aliases: ['remaining', 'missing', 'missing-attacks'],
+			aliases: ['remaining', 'missing', 'missing-attacks', 'rem'],
 			category: 'search',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {

@@ -72,19 +72,7 @@ class CWLRosterComamnd extends Command {
 
 		let index = 0;
 		for (const clan of body.clans) {
-			let TH13 = 0;
-			let TH12 = 0;
-			let TH11 = 0;
-			let TH10 = 0;
-			let TH09 = 0;
-			let TH08 = 0;
-			let TH07 = 0;
-			let TH06 = 0;
-			let TH05 = 0;
-			let TH04 = 0;
-			let TH03 = 0;
-			let TH02 = 0;
-			let TH01 = 0;
+			let [TH13, TH12, TH11, TH10, TH09, TH08, TH07, TH06, TH05, TH04, TH03, TH02, TH01] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 			for (const member of clan.members) {
 				const TownHAll = member.townHallLevel;
 				if (TownHAll === 13) TH13++;
