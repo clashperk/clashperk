@@ -1,5 +1,5 @@
-const request = require('request');
 const https = require('https');
+const qs = require('querystring');
 const [apiKey, pageId, metricId] = [process.env.SP_API_KEY, process.env.SP_PAGE_ID, process.env.SP_METRIC_ID];
 
 class PostStats {
@@ -60,44 +60,49 @@ class PostStats {
 		}
 
 		// https://top.gg/
-		request({
-			headers: {
+		const form = qs.stringify({ server_count: guilds, shard_count: this.client.shard.count });
+		https.request(`https://top.gg/api/bots/${this.client.user.id}/stats`, {
+			method: 'POST', headers: {
 				Authorization: process.env.DBL,
-				'Content-Type': 'application/json'
-			},
-			url: `https://top.gg/api/bots/${this.client.user.id}/stats`,
-			method: 'POST',
-			form: { server_count: guilds, shard_count: this.client.shard.count }
-		}, (error, response, body) => {
-			if (error) this.client.logger.error(error.toString(), { level: 'https://top.gg' });
-		});
+				'Content-Type': 'application/x-www-form-urlencoded',
+				'Content-Length': form.length
+			}
+		}, res => {
+			res.on('data', d => {
+				if (res.statusCode !== 200) {
+					this.client.logger.error(d.toString(), { level: 'https://top.gg' });
+				}
+			});
+		}).end(form);
 
 		// https://discord.bots.gg/
-		request({
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: process.env.DISCORD_BOTS_GG
-			},
-			url: `https://discord.bots.gg/api/v1/bots/${this.client.user.id}/stats`,
-			method: 'POST',
-			json: { guildCount: guilds }
-		}, (error, response, body) => {
-			if (error) this.client.logger.error(error, { level: 'https://discord.bots.gg' });
-		});
+		https.request(`https://discord.bots.gg/api/v1/bots/${this.client.user.id}/stats`, {
+			method: 'POST', headers: {
+				Authorization: process.env.DISCORD_BOTS_GG,
+				'Content-Type': 'application/json'
+			}
+		}, res => {
+			res.on('data', d => {
+				if (res.statusCode !== 200) {
+					this.client.logger.error(d.toString(), { level: 'https://discord.bots.gg/' });
+				}
+			});
+		}).end(JSON.stringify({ guildCount: guilds }));
 
 
 		// https://discordbotlist.com/
-		request({
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bot ${process.env.DISCORD_BOT_LIST}`
-			},
-			url: `https://discordbotlist.com/api/bots/${this.client.user.id}/stats`,
-			method: 'POST',
-			json: { guilds, users }
-		}, (error, response, body) => {
-			if (error) this.client.logger.error(error, { level: 'https://discordbotlist.com' });
-		});
+		https.request(`https://discordbotlist.com/api/bots/${this.client.user.id}/stats`, {
+			method: 'POST', headers: {
+				Authorization: process.env.DISCORD_BOT_LIST,
+				'Content-Type': 'application/json'
+			}
+		}, res => {
+			res.on('data', d => {
+				if (res.statusCode !== 200) {
+					this.client.logger.error(d.toString(), { level: 'https://discordbotlist.com' });
+				}
+			});
+		}).end(JSON.stringify({ guilds, users }));
 	}
 }
 
