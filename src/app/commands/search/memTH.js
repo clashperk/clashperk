@@ -84,7 +84,7 @@ class MembersTHCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
-		const header = [`\`\u200e\u2002 TH ${'TAG'.padEnd(11, '\u2002')} ${'NAME'.padEnd(20, '\u2002')}`];
+		const header = `\`\u200e\u2002 TH ${'TAG'.padEnd(11, '\u2002')} ${'NAME'.padEnd(20, '\u2002')}`;
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
 				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${Util.escapeInlineCode(member.name).padEnd(20, '\u2002')}\``),
@@ -92,10 +92,10 @@ class MembersTHCommand extends Command {
 				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${Util.escapeInlineCode(member.name).padEnd(20, '\u2002')}\``)
 		];
 
-		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
+		if (!pages[1].length) return message.util.send({ embed: embed.setDescription([header, pages[0].join('\n')]) });
 
 		const msg = await message.util.send({
-			embed: embed.setDescription(pages[0].join('\n'))
+			embed: embed.setDescription([header, pages[0].join('\n')])
 				.setFooter('Page 1/2')
 		});
 
@@ -112,7 +112,7 @@ class MembersTHCommand extends Command {
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡️') {
 				await msg.edit({
-					embed: embed.setDescription(pages[1].join('\n'))
+					embed: embed.setDescription([header, pages[1].join('\n')])
 						.setFooter('Page 2/2')
 				});
 				await this.delay(250);
@@ -121,7 +121,7 @@ class MembersTHCommand extends Command {
 			}
 			if (reaction.emoji.name === '⬅️') {
 				await msg.edit({
-					embed: embed.setDescription(pages[0].join('\n'))
+					embed: embed.setDescription([header, pages[0].join('\n')])
 						.setFooter('Page 1/2')
 				});
 				await this.delay(250);
