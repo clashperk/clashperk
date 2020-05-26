@@ -43,9 +43,9 @@ class MembersLeagueCommand extends Command {
 
 		const pages = [
 			this.paginate(data.memberList, 0, 25)
-				.items.map(member => `${leagueEmoji[member.league.id]} \`\u200e${member.tag.padEnd(12, '\u2002')} ${Util.escapeInlineCode(member.name).padEnd(12, '\u2002')}\``),
+				.items.map(member => `${leagueEmoji[member.league.id]} ${Util.escapeInlineCode(member.name).padEnd(12, '\u2002')} (${member.tag})`),
 			this.paginate(data.memberList, 25, 50)
-				.items.map(member => `${leagueEmoji[member.league.id]} \`\u200e${member.tag.padEnd(12, '\u2002')} ${Util.escapeInlineCode(member.name).padEnd(20, '\u2002')}\``)
+				.items.map(member => `${leagueEmoji[member.league.id]} ${Util.escapeInlineCode(member.name).padEnd(20, '\u2002')} (${member.tag})`)
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
