@@ -21,7 +21,7 @@ class ClanEmbedCommand extends Command {
 
 	*args() {
 		const data = yield {
-			type: 'string',
+			type: 'clan',
 			prompt: {
 				start: 'What is the clan tag?',
 				retry: 'Please provide a valid ClanTag.'
