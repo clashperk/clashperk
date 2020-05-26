@@ -1,7 +1,7 @@
 const { Command, Flag, Argument } = require('discord-akairo');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
-const { emoji, townHallEmoji } = require('../../util/emojis');
+const { emoji, leagueEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
 
 const API = process.env.API_TOKENS.split(',');
@@ -57,7 +57,13 @@ class MembersTHCommand extends Command {
 						method: 'GET',
 						headers: { accept: 'application/json', authorization: `Bearer ${API[index]}` }
 					}).then(res => res.json());
-					collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
+					collection.push({
+						name: member.name,
+						tag: member.tag,
+						townHallLevel: member.townHallLevel,
+						heroes: member.heroes,
+						league: member.league ? member.league.id : 29000000
+					});
 				}
 				return collection;
 			});
@@ -67,7 +73,7 @@ class MembersTHCommand extends Command {
 		const array = [];
 		for (const arr of requests) {
 			for (const member of arr) {
-				array.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel });
+				array.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel, league: member.league });
 			}
 		}
 
@@ -80,9 +86,9 @@ class MembersTHCommand extends Command {
 
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
-				.items.map(member => `${townHallEmoji[member.townHallLevel]} \`\u200e${this.padStart(member.townHallLevel)}\` ${Util.escapeInlineCode(member.name)} (${member.tag})`),
+				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(12, '\u2002')} ${Util.escapeInlineCode(member.name)}\``),
 			this.paginate(townhall ? filter : items, 25, 50)
-				.items.map(member => `${townHallEmoji[member.townHallLevel]} \`\u200e${this.padStart(member.townHallLevel)}\` ${Util.escapeInlineCode(member.name)} (${member.tag})`)
+				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(12, '\u2002')} ${Util.escapeInlineCode(member.name)}\``)
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription(pages[0].join('\n')) });
