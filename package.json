@@ -13,7 +13,6 @@
 	},
 	"dependencies": {
 		"@sentry/node": "^5.4.3",
-		"canvas": "^2.6.1",
 		"chalk": "^2.4.2",
 		"clashofclans.js": "^1.0.6",
 		"common-tags": "^1.8.0",
@@ -23,11 +22,9 @@
 		"firebase-admin": "^8.2.0",
 		"moment": "^2.24.0",
 		"moment-duration-format": "^2.3.2",
-		"moment-timezone": "^0.5.26",
 		"mongodb": "^3.5.5",
 		"ms": "^2.1.2",
 		"node-fetch": "^2.6.0",
-		"request": "^2.88.2",
 		"shelljs": "^0.8.3"
 	},
 	"devDependencies": {
