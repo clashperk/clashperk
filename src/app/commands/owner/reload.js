@@ -24,7 +24,7 @@ class ReloadCommand extends Command {
 			return message.util.send({
 				embed: {
 					color: 3093046,
-					description: `Reloaded ${cmd} commands, ${listener} listeners, ${inhibitor} inhibitors`
+					description: `Reloaded ${cmd} commands, ${listener} listeners & ${inhibitor} inhibitors`
 				}
 			});
 		}

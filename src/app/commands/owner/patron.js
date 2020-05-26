@@ -48,27 +48,7 @@ class AddPatronCommand extends Command {
 		return { type, data, limit };
 	}
 
-	async exec(message, { type, data: guild, data: user, limit }) {
-		if (!type) return;
-
-		if (type === 'user') {
-			this.client.patron.users.set(user, 'patron', true);
-			const embed = this.client.util.embed()
-				.setAuthor('Patron')
-				.setDescription(user.tag);
-			return message.util.send({ embed });
-		}
-
-		if (type === 'guild') {
-			this.client.patron.guilds.set(guild, 'patron', true);
-			this.client.patron.guilds.set(guild, 'clanLimit', limit);
-			const embed = this.client.util.embed()
-				.setAuthor('Patron')
-				.setDescription(guild.name)
-				.setFooter(`Limit ${limit}`, guild.iconURL());
-			return message.util.send({ embed });
-		}
-	}
+	async exec(message, { }) { }
 }
 
 module.exports = AddPatronCommand;

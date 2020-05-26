@@ -17,7 +17,7 @@ class GuildBanCommand extends Command {
 					match: 'content',
 					type: 'guild',
 					prompt: {
-						start: 'who would you like to blacklist/unblacklist?'
+						start: 'Who would you like to blacklist/unblacklist?'
 					}
 				}
 			]
