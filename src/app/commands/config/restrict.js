@@ -18,7 +18,7 @@ class RestrictCommand extends Command {
 				{
 					id: 'member',
 					match: 'content',
-					type: 'guildMember',
+					type: 'member',
 					prompt: {
 						start: 'Which user do you want to restrict or unrestrict?',
 						retry: 'Please provide a valid member!'

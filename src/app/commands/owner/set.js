@@ -14,39 +14,31 @@ class SetCommand extends Command {
 	}
 
 	*args() {
-		const type = yield {
-			type: ['log', 'beta']
-		};
-
-		const data = yield {
-			type: (msg, id) => {
-				if (!id) return null;
-				const resolver = this.handler.resolver.type({
-					log: 'string',
-					beta: 'user'
-				}[type]);
-				return resolver(msg, id);
-			},
+		const method = yield {
+			type: ['patron', 'beta'],
 			prompt: {
-				start: 'what is the ID of webhook or user?',
-				retry: 'please provide a valid webhook ID or user ID.'
+				start: 'What would you like to set?',
+				retry: 'Please provide a valid method.'
 			}
 		};
 
-		return { type, data };
+		const user = yield {
+			type: async (msg, id) => {
+				if (!id) return null;
+				return this.client.users.fetch(id, false).catch(() => null);
+			},
+			prompt: {
+				start: 'What is the userId?',
+				retry: 'Please provide a valid userId.'
+			}
+		};
+
+		return { method, user };
 	}
 
-	async exec(message, { type, data: id, data: user }) {
-		if (!type || !id) return;
-
-		if (type === 'log') {
-			const webhook = await this.client.fetchWebhook(id).catch(() => null);
-			if (!webhook) return;
-			this.client.settings.set('global', 'webhook', webhook.id);
-			return message.util.reply(`client webhook set to ${webhook.name}`);
-		}
-
-		if (type === 'beta') {
+	async exec(message, { method, user }) {
+		if (method === 'patron') return;
+		if (method === 'beta') {
 			const beta = this.client.settings.get('global', 'beta', []);
 			if (beta.includes(user.id)) {
 				const index = beta.indexOf(user.id);

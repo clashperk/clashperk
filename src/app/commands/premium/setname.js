@@ -10,14 +10,14 @@ class SetNickNameCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: 'Sets nickname of a member',
-				usage: '<user> <#playerTag> <prefix>'
+				usage: '<user> <playerTag> <prefix>'
 			}
 		});
 	}
 
 	*args() {
 		const member = yield {
-			type: 'guildMember',
+			type: 'member',
 			prompt: {
 				start: 'What member do you want to set nickname?',
 				retry: 'Please mention a valid member to change nickname.'

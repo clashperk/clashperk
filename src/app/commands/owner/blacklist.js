@@ -15,9 +15,13 @@ class BlacklistCommand extends Command {
 				{
 					id: 'user',
 					match: 'content',
-					type: 'user',
+					type: async (msg, id) => {
+						if (!id) return null;
+						return this.client.users.fetch(id, false).catch(() => null);
+					},
 					prompt: {
-						start: 'Who would you like to blacklist/unblacklist?'
+						start: 'Who would you like to blacklist/unblacklist?',
+						retry: 'Please provide a valid userId.'
 					}
 				}
 			]

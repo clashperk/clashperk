@@ -18,13 +18,13 @@ class LinkPlayerCommand extends Command {
 					id: 'data',
 					type: 'player',
 					prompt: {
-						start: 'What is your PlayerTag?',
+						start: 'What is your player tag?',
 						retry: (msg, { failure }) => failure.value
 					}
 				},
 				{
 					id: 'member',
-					type: 'guildMember',
+					type: 'member',
 					default: message => message.member
 				}
 			]

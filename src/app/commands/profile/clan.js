@@ -24,7 +24,7 @@ class LinkClanCommand extends Command {
 				},
 				{
 					id: 'member',
-					type: 'guildMember',
+					type: 'member',
 					default: message => message.member
 				}
 			]

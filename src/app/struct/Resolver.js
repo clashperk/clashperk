@@ -14,12 +14,16 @@ class Reslover {
 
 				if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);
 				const embed = new MessageEmbed()
-					.setAuthor('Error')
-					.setColor(0xf30c11)
-					.setDescription([
-						`Couldn't find a player linked to **${member.user.tag}!**`,
-						'Either provide a tag or link a player to your account.'
+					.setColor(0xf30c11);
+				if (message.author.id !== member.id) {
+					embed.setDescription([
+						`Couldn't find a player linked to **${member.user.tag}!**`
 					]);
+				} else {
+					embed.setDescription([
+						'Please provide a player tag and try again!'
+					]);
+				}
 
 				return { status: 404, embed };
 			}
@@ -34,12 +38,16 @@ class Reslover {
 
 			if (data) return this.clan(data.tag);
 			const embed = new MessageEmbed()
-				.setAuthor('Error')
-				.setColor(0xf30c11)
-				.setDescription([
-					`Couldn't find a clan linked to **${member.user.tag}!**`,
-					'Either provide a tag or link a clan to your account.'
+				.setColor(0xf30c11);
+			if (message.author.id !== member.id) {
+				embed.setDescription([
+					`Couldn't find a clan linked to **${member.user.tag}!**`
 				]);
+			} else {
+				embed.setDescription([
+					'Please provide a clan tag and try again!'
+				]);
+			}
 
 			return { status: 404, embed };
 		}

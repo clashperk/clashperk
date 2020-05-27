@@ -6,7 +6,7 @@ class GuildBanCommand extends Command {
 			aliases: ['guildban'],
 			description: {
 				content: 'You can\'t use this anyway, so why explain?',
-				usage: '<guild>',
+				usage: '<guildId>',
 				examples: ['81440962496172032']
 			},
 			category: 'owner',
@@ -15,9 +15,13 @@ class GuildBanCommand extends Command {
 				{
 					id: 'guild',
 					match: 'content',
-					type: 'guild',
+					type: (msg, id) => {
+						if (!id) return null;
+						if (this.client.guilds.cache.has(id)) return this.client.guilds.cache.get(id);
+						return { id, name: id };
+					},
 					prompt: {
-						start: 'Who would you like to blacklist/unblacklist?'
+						start: 'What is the guildId to be blacklisted/unblacklisted?'
 					}
 				}
 			]
