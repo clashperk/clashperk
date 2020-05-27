@@ -37,7 +37,8 @@ class ClanGamesBoardCommand extends Command {
 			prompt: {
 				start: 'What is your clan tag?',
 				retry: (msg, { failure }) => failure.value
-			}
+			},
+			unordered: false
 		};
 
 		const channel = yield {

@@ -1,8 +1,9 @@
-const { Command, Argument } = require('discord-akairo');
+const { Command, Argument, Flag } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
 const { MODES } = require('../../util/constants');
 const { oneLine } = require('common-tags');
+const Resolver = require('../../struct/Resolver');
 
 class ClanEmbedCommand extends Command {
 	constructor() {
@@ -22,10 +23,20 @@ class ClanEmbedCommand extends Command {
 
 	*args() {
 		const data = yield {
-			type: 'clan',
+			type: async (message, args) => {
+				const resolved = await Resolver.clan(args);
+				if (resolved.status !== 200) {
+					if (resolved.status === 404) {
+						return Flag.fail(resolved.embed.description);
+					}
+					await message.util.send({ embed: resolved.embed });
+					return Flag.cancel();
+				}
+				return resolved;
+			},
 			prompt: {
-				start: 'What is the clan tag?',
-				retry: 'Please provide a valid ClanTag.'
+				start: 'What is your clan tag?',
+				retry: (msg, { failure }) => failure.value
 			}
 		};
 
