@@ -110,7 +110,7 @@ class ClanEmbedCommand extends Command {
 					'**Verify Your Clan**',
 					oneLine`Add the code \`CP${message.guild.id.substr(-2)}\` at the end of the clan description.
 					It's a security feature of the bot to ensure you are a Leader or Co-Leader in the clan.`,
-					'Please wait at least 1 min before you run the command again and remove the code after verification.'
+					'If you\'ve already added the code please wait at least 1 min before you run the command again and remove the code after verification.'
 				]);
 			return message.util.send({ embed });
 		}
