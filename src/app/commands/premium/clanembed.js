@@ -2,6 +2,7 @@ const { Command, Argument } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
 const { MODES } = require('../../util/constants');
+const { oneLine } = require('common-tags');
 
 class ClanEmbedCommand extends Command {
 	constructor() {
@@ -107,11 +108,9 @@ class ClanEmbedCommand extends Command {
 					`${data.description}`,
 					'',
 					'**Verify Your Clan**',
-					[
-						'Add the word `CP` at the end of the clan description.',
-						'This is a security feature to ensure you have proper leadership of the clan.',
-						'The word `CP` should be removed after verification.'
-					].join(' ')
+					oneLine`Add the code \`CP${message.guild.id.substr(-2)}\` at the end of the clan description.
+					It's a security feature of the bot to ensure you are a Leader or Co-Leader in the clan.`,
+					'Please wait at least 1 min before you run the command again and remove the code after verification.'
 				]);
 			return message.util.send({ embed });
 		}
