@@ -105,8 +105,14 @@ class ClashPerk extends AkairoClient {
 		setInterval(() => {
 			for (const guild of this.guilds.cache.values()) {
 				guild.presences.cache.clear();
+				for (const id of guild.members.cache.keys()) {
+					if (this.user.id !== id) {
+						guild.members.cache.delete(id);
+					}
+				}
+				this.users.cache.clear();
 			}
-		}, 900);
+		}, 5 * 60 * 1000);
 	}
 
 	format(tag) {

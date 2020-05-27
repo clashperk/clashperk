@@ -1,5 +1,4 @@
 const { Command, Argument } = require('discord-akairo');
-const { emoji } = require('../../util/emojis');
 
 class HelpCommand extends Command {
 	constructor() {
@@ -97,16 +96,11 @@ class HelpCommand extends Command {
 			}
 		}
 
-		for (const cmd of commands.filter(cmd => !['util', 'other'].includes(cmd.id)).concat(commands.filter(cmd => ['util', 'other'].includes(cmd.id)))) {
+		for (const cmd of commands) {
 			embed.addField(cmd.title, [
-				cmd.category.id === 'util' || cmd.category.id === 'other'
-					? cmd.category.filter(cmd => cmd.aliases.length > 0)
-						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz#${cmd.id}) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
-						.join('\n')
-					: cmd.category.filter(cmd => cmd.aliases.length > 0)
-						.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz#${cmd.id}) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
-						.join('\n'),
-				'\u200b'
+				cmd.category.filter(cmd => cmd.aliases.length > 0)
+					.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz#${cmd.id}) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
+					.join('\n')
 			]);
 		}
 		embed.setFooter('For more info click on the commands!');
