@@ -1,5 +1,6 @@
-const { Command } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
+const Resolver = require('../../struct/Resolver');
 
 class UnflagCommand extends Command {
 	constructor() {
@@ -12,18 +13,30 @@ class UnflagCommand extends Command {
 				content: 'Unflags a player from your server / clans.',
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
-			},
-			args: [
-				{
-					id: 'data',
-					type: 'player',
-					prompt: {
-						start: 'What tag would you like unflag?',
-						retry: (msg, { failure }) => failure.value
-					}
-				}
-			]
+			}
 		});
+	}
+
+	*args() {
+		const data = yield {
+			type: async (message, args) => {
+				const resolved = await Resolver.player(args);
+				if (resolved.status !== 200) {
+					if (resolved.status === 402) {
+						return Flag.fail(resolved.embed.description);
+					}
+					await message.util.send({ embed: resolved.embed });
+					return Flag.cancel();
+				}
+				return resolved;
+			},
+			prompt: {
+				start: 'What is the player tag?',
+				retry: (msg, { failure }) => failure.value
+			}
+		};
+
+		return { data };
 	}
 
 	cooldown(message) {

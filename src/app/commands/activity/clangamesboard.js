@@ -1,8 +1,9 @@
-const { Command } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../../struct/Database');
 const { MODES } = require('../../util/constants');
 const { oneLine } = require('common-tags');
+const Resolver = require('../../struct/Resolver');
 
 class ClanGamesBoardCommand extends Command {
 	constructor() {
@@ -22,10 +23,19 @@ class ClanGamesBoardCommand extends Command {
 
 	*args() {
 		const data = yield {
-			type: 'clan',
-			unordered: false,
+			type: async (message, args) => {
+				const resolved = await Resolver.clan(args);
+				if (resolved.status !== 200) {
+					if (resolved.status === 402) {
+						return Flag.fail(resolved.embed.description);
+					}
+					await message.util.send({ embed: resolved.embed });
+					return Flag.cancel();
+				}
+				return resolved;
+			},
 			prompt: {
-				start: 'What clan do you want to track clan games?',
+				start: 'What is your clan tag?',
 				retry: (msg, { failure }) => failure.value
 			}
 		};

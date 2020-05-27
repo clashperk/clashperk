@@ -1,5 +1,6 @@
-const { Command } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
+const Resolver = require('../../struct/Resolver');
 
 class LinkPlayerCommand extends Command {
 	constructor() {
@@ -12,23 +13,35 @@ class LinkPlayerCommand extends Command {
 				content: 'Saves a player to your discord account.',
 				usage: '<tag> [member]',
 				examples: ['#9Q92C8R20', '#9Q92C8R20 Suvajit']
-			},
-			args: [
-				{
-					id: 'data',
-					type: 'player',
-					prompt: {
-						start: 'What is your player tag?',
-						retry: (msg, { failure }) => failure.value
-					}
-				},
-				{
-					id: 'member',
-					type: 'member',
-					default: message => message.member
-				}
-			]
+			}
 		});
+	}
+
+	*args() {
+		const data = yield {
+			type: async (message, args) => {
+				const resolved = await Resolver.player(args);
+				if (resolved.status !== 200) {
+					if (resolved.status === 402) {
+						return Flag.fail(resolved.embed.description);
+					}
+					await message.util.send({ embed: resolved.embed });
+					return Flag.cancel();
+				}
+				return resolved;
+			},
+			prompt: {
+				start: 'What is your player tag?',
+				retry: (msg, { failure }) => failure.value
+			}
+		};
+
+		const member = yield {
+			type: 'member',
+			default: message => message.member
+		};
+
+		return { data, member };
 	}
 
 	cooldown(message) {

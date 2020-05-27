@@ -1,5 +1,6 @@
-const { Command } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
+const Resolver = require('../../struct/Resolver');
 
 class UnlinkCommand extends Command {
 	constructor() {
@@ -12,18 +13,30 @@ class UnlinkCommand extends Command {
 				content: 'Unlinks profile from your Discord.',
 				usage: '<tag>',
 				examples: ['#9Q92C8R20']
-			},
-			args: [
-				{
-					id: 'data',
-					type: 'player',
-					prompt: {
-						start: 'What tag would you like to unlink?',
-						retry: 'Please provide a valid PlayerTag.'
-					}
-				}
-			]
+			}
 		});
+	}
+
+	*args() {
+		const data = yield {
+			type: async (message, args) => {
+				const resolved = await Resolver.player(args);
+				if (resolved.status !== 200) {
+					if (resolved.status === 402) {
+						return Flag.fail(resolved.embed.description);
+					}
+					await message.util.send({ embed: resolved.embed });
+					return Flag.cancel();
+				}
+				return resolved;
+			},
+			prompt: {
+				start: 'What is your player tag?',
+				retry: (msg, { failure }) => failure.value
+			}
+		};
+
+		return { data };
 	}
 
 	cooldown(message) {
