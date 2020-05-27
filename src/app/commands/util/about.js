@@ -12,8 +12,8 @@ class AboutCommand extends Command {
 		});
 	}
 
-	exec(message) {
-		const owner = this.client.users.cache.get(this.client.ownerID);
+	async exec(message) {
+		const owner = await this.client.users.fetch(this.client.ownerID);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`About ${this.client.user.username}`, this.client.user.displayAvatarURL())

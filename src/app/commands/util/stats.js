@@ -50,7 +50,7 @@ class StatsCommand extends Command {
 			.addField('Servers', guilds, true)
 			.addField('Version', `v${version}`, true)
 			.addField('Node.JS', process.version, true)
-			.setFooter(`© ${new Date().getFullYear()} ${this.owner.tag}`, this.owner.displayAvatarURL());
+			.setFooter(`© ${new Date().getFullYear()} ${await this.owner.tag}`, await this.owner.displayAvatarURL());
 
 		if (message.channel.type === 'dm' || !message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
 			return message.util.send({ embed });
@@ -72,7 +72,7 @@ class StatsCommand extends Command {
 	}
 
 	get owner() {
-		return this.client.users.cache.get(this.client.ownerID);
+		return this.client.users.fetch(this.client.ownerID);
 	}
 
 	get users() {
