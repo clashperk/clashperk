@@ -112,7 +112,7 @@ class ClashPerk extends AkairoClient {
 				}
 				this.users.cache.clear();
 			}
-		}, 5 * 60 * 1000);
+		}, 1000);
 	}
 
 	format(tag) {
