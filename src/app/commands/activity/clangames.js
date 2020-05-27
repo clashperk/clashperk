@@ -102,7 +102,7 @@ class ClanGamesCommand extends Command {
 	}
 
 	padEnd(data) {
-		return data.padEnd(20, ' ');
+		return data.padEnd(16, ' ');
 	}
 
 	filter(memberList, clan) {
