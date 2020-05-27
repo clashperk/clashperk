@@ -13,7 +13,7 @@ class AboutCommand extends Command {
 	}
 
 	async exec(message) {
-		const owner = await this.client.users.fetch(this.client.ownerID);
+		const owner = await this.client.users.fetch(this.client.ownerID, false);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`About ${this.client.user.username}`, this.client.user.displayAvatarURL())

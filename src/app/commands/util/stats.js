@@ -37,6 +37,7 @@ class StatsCommand extends Command {
 			memory += value[3];
 		}
 
+		const owner = await this.client.users.fetch(this.client.ownerID, false);
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setTitle('Stats')
@@ -50,7 +51,7 @@ class StatsCommand extends Command {
 			.addField('Servers', guilds, true)
 			.addField('Version', `v${version}`, true)
 			.addField('Node.JS', process.version, true)
-			.setFooter(`© ${new Date().getFullYear()} ${await this.owner.tag}`, await this.owner.displayAvatarURL());
+			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL());
 
 		if (message.channel.type === 'dm' || !message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
 			return message.util.send({ embed });
@@ -69,14 +70,6 @@ class StatsCommand extends Command {
 		}
 		react.first().message.delete();
 		return message;
-	}
-
-	get owner() {
-		return this.client.users.fetch(this.client.ownerID);
-	}
-
-	get users() {
-		return this.client.guilds.cache.reduce((prev, guild) => guild.memberCount + prev, 0);
 	}
 
 	get freemem() {
