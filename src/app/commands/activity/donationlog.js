@@ -2,6 +2,7 @@ const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../../struct/Database');
 const { MODES } = require('../../util/constants');
+const { oneLine } = require('common-tags');
 
 class DonationLogCommand extends Command {
 	constructor() {
@@ -81,18 +82,19 @@ class DonationLogCommand extends Command {
 			return message.util.send({ embed });
 		}
 
+		const CODE = ['CP', message.guild.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) || { verified: false };
-		if (!clan.verified && !data.description.toLowerCase().includes('cp')) {
+		if (!clan.verified && !data.description.toUpperCase().includes(CODE)) {
 			const embed = this.client.util.embed()
-				.setAuthor(`${data.name} - Donation Log Setup`, data.badgeUrls.small)
+				.setAuthor(`${data.name}`, data.badgeUrls.small)
 				.setDescription([
 					'**Clan Description**',
 					`${data.description}`,
 					'',
 					'**Verify Your Clan**',
-					'Add the word `CP` at the end of the clan description.',
-					'You can remove it after verification.',
-					'This is a security feature to ensure you have proper leadership of the clan.'
+					oneLine`Add the code \`${CODE}\` at the end of the clan description.
+					It's a security feature of the bot to ensure you are a Leader or Co-Leader in the clan.`,
+					'If you\'ve already added the code please wait at least 1 min before you run the command again and remove the code after verification.'
 				]);
 			return message.util.send({ embed });
 		}

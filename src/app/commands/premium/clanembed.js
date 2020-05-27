@@ -100,7 +100,9 @@ class ClanEmbedCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		if (!clans.map(clan => clan.tag).includes(data.tag) && !data.description.toLowerCase().includes('cp')) {
+		const CODE = ['CP', message.guild.id.substr(-2)].join('');
+		const clan = clans.find(clan => clan.tag === data.tag) || { verified: false };
+		if (!clan.verified && !data.description.toUpperCase().includes(CODE)) {
 			const embed = this.client.util.embed()
 				.setAuthor(`${data.name}`, data.badgeUrls.small)
 				.setDescription([
@@ -108,7 +110,7 @@ class ClanEmbedCommand extends Command {
 					`${data.description}`,
 					'',
 					'**Verify Your Clan**',
-					oneLine`Add the code \`CP${message.guild.id.substr(-2)}\` at the end of the clan description.
+					oneLine`Add the code \`${CODE}\` at the end of the clan description.
 					It's a security feature of the bot to ensure you are a Leader or Co-Leader in the clan.`,
 					'If you\'ve already added the code please wait at least 1 min before you run the command again and remove the code after verification.'
 				]);
