@@ -41,7 +41,7 @@ class TrophyBoardCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
-		const header = `\`# TROPHY  ${'NAME'.padEnd(20, ' ')}\``;
+		const header = `**\`# TROPHY  ${'NAME'.padEnd(20, ' ')}\`**`;
 		const pages = [
 			this.paginate(data.memberList, 0, 25)
 				.items.map((member, index) => {
