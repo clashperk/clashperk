@@ -51,14 +51,13 @@ class RemainingAttacksCommand extends Command {
 
 	async exec(message, { data, cwl }) {
 		if (cwl) {
-			const command = this.client.commandHandler.modules.get('cwl-missing');
+			const command = this.client.commandHandler.modules.get('cwl-remaining');
 			return this.client.commandHandler.runCommand(message, command, { data });
 		}
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag}) ↗`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+			.setAuthor(`${data.name} (${data.tag}) ↗`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`);
 			// .setTitle(`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses,` : ''} win streak ${data.warWinStreak}`)
-			.setThumbnail(data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
 			embed.setDescription('Private WarLog');
