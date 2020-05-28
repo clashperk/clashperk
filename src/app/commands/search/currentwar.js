@@ -47,7 +47,7 @@ class CurrentWarCommand extends Command {
 			.setThumbnail(data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
-			embed.setDescription('War log is Private');
+			embed.setDescription('Private WarLog');
 			return message.util.send({ embed });
 		}
 

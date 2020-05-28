@@ -61,7 +61,7 @@ class RemainingAttacksCommand extends Command {
 			.setThumbnail(data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
-			embed.setDescription('War Log Is Private');
+			embed.setDescription('Private WarLog');
 			return message.util.send({ embed });
 		}
 
@@ -70,12 +70,12 @@ class RemainingAttacksCommand extends Command {
 		}).then(res => res.json());
 
 		if (body.state === 'preparation') {
-			embed.setDescription('Preparation Day');
+			embed.setDescription('Preparation');
 			return message.util.send({ embed });
 		}
 
 		if (body.state === 'notInWar') {
-			embed.setDescription('Not In War');
+			embed.setDescription('Not in War');
 			return message.util.send({ embed });
 		}
 
@@ -85,6 +85,9 @@ class RemainingAttacksCommand extends Command {
 			missing += `**${member.mapPosition}.** ${member.name} ${member.tag} ~ ${member.attacks ? 2 - member.attacks.length : 2} \n`;
 		}
 		embed.setDescription([
+			'**War Against**',
+			`${body.opponent.name} (${body.opponent.tag})`,
+			'',
 			'**Missing Attacks**',
 			'',
 			missing
