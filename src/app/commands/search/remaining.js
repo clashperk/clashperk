@@ -69,7 +69,7 @@ class RemainingAttacksCommand extends Command {
 		}).then(res => res.json());
 
 		if (body.state === 'preparation') {
-			embed.setDescription('Preparation');
+			embed.setDescription('Preparation Day');
 			return message.util.send({ embed });
 		}
 
@@ -88,8 +88,10 @@ class RemainingAttacksCommand extends Command {
 			'**War Against**',
 			`${body.opponent.name} (${body.opponent.tag})`,
 			'',
-			`**${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
+			'**War State**',
+			`${body.state.replace(/warEnded/g, 'War Ended').replace(/inWar/g, 'Battle Day')}`,
 			'',
+			`**${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
 			`${missing}`
 		]);
 		const endTime = new Date(moment(body.endTime).toDate()).getTime();
