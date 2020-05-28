@@ -313,7 +313,7 @@ class ClanGames {
 				.getMonth() + 1)
 				.toString()
 				.padStart(2, '0'),
-			28
+			'28T10:00:00Z'
 		].join('-');
 
 		return new Date() >= new Date(START) && new Date() <= new Date(END);
