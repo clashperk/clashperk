@@ -85,7 +85,7 @@ class ClanGamesCommand extends Command {
 
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
-		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), 22, 'T08:00:00Z'].join('-');
+		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), '22T08:00:00Z'].join('-');
 
 		const createdAt = new Date(ObjectId(clan._id).getTimestamp());
 		console.log(createdAt, new Date(START), START);
