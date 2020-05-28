@@ -57,7 +57,7 @@ class RemainingAttacksCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ↗`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
-			.setTitle(`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses,` : ''} win streak ${data.warWinStreak}`)
+			// .setTitle(`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses,` : ''} win streak ${data.warWinStreak}`)
 			.setThumbnail(data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
@@ -80,10 +80,10 @@ class RemainingAttacksCommand extends Command {
 		}
 
 		let missing = '';
-		missing = '**\`# ⚔️  NAME\`**\n';
+		missing = '**\`\u200e#   X  NAME\`**\n';
 		for (const member of this.short(body.clan.members)) {
 			if (member.attacks && member.attacks.length === 2) continue;
-			missing += `\`\u200e${member.mapPosition.toString().padEnd(2, ' ')} ${member.attacks ? 2 - member.attacks.length : 2}  ${member.name}\`\n`;
+			missing += `\`\u200e${member.mapPosition.toString().padEnd(2, ' ')} ${member.attacks ? 2 - member.attacks.length : 2}  ${member.name.padEnd(15, ' ')}\`\n`;
 		}
 		embed.setDescription([
 			'**War Against**',
