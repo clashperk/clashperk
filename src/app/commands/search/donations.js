@@ -42,7 +42,7 @@ class DonationBoardCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
 		// const header = `\`#    DON   REC   ${'RATIO'.padStart(8, ' ')}  ${'NAME'.padEnd(20, ' ')}\``;
-		const header = `**\`#    DON   REC  ${'NAME'.padEnd(20, ' ')}\`**`;
+		const header = `**\`#    DON   REC  ${'NAME'.padEnd(16, ' ')}\`**`;
 		const pages = [
 			this.paginate(this.sort(data.memberList), 0, 25)
 				.items.map((member, index) => {
