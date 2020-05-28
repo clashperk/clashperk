@@ -88,7 +88,7 @@ class ClanGamesCommand extends Command {
 		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), 22, 'T08:00:00Z'].join('-');
 
 		const createdAt = new Date(ObjectId(clan._id).getTimestamp());
-		console.log(createdAt, new Date(START));
+		console.log(createdAt, new Date(START), START);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
