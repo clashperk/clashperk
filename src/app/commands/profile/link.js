@@ -8,7 +8,15 @@ class LinkCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
 			description: {
-				content: 'Links a clan or player to your Discord.',
+				content: [
+					'Links a clan or player to your Discord.',
+					'',
+					'**Available Methods**',
+					'• clan `<clanTag>`',
+					'• player `<playerTag>`',
+					'',
+					'For additional `<...args>` usage refer to the examples below.'
+				],
 				usage: '<method> <...args>',
 				examples: ['clan #8QU8J9LP', 'player #9Q92C8R20']
 			},

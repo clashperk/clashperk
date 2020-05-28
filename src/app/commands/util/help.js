@@ -42,7 +42,12 @@ class HelpCommand extends Command {
 			.setColor(0x5970c1)
 			.setTitle(`\`${prefix}${command.aliases[0].replace(/-/g, '')} ${description.usage}\``)
 			.setImage(description.image)
-			.addField('Description', description.content.replace(/{prefix}/g, `\\${prefix}`));
+			.addField('Description', [
+				Array.isArray(description.content)
+					? description.content.join('\n')
+						.replace(/{prefix}/g, `\\${prefix}`)
+					: description.content.replace(/{prefix}/g, `\\${prefix}`)
+			]);
 
 		for (const field of description.fields) embed.addField(field.name, field.value);
 
@@ -99,7 +104,12 @@ class HelpCommand extends Command {
 		for (const cmd of commands) {
 			embed.addField(cmd.title, [
 				cmd.category.filter(cmd => cmd.aliases.length > 0)
-					.map(cmd => `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz#${cmd.id}) - ${cmd.description.content.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`)
+					.map(cmd => {
+						const description = Array.isArray(cmd.description.content)
+							? cmd.description.content[0]
+							: cmd.description.content;
+						return `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz#${cmd.id}) - ${description.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`;
+					})
 					.join('\n')
 			]);
 		}

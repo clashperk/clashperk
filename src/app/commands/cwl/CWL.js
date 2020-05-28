@@ -8,8 +8,30 @@ class CWLComamnd extends Command {
 			category: 'cwl',
 			cooldown: 0,
 			description: {
-				content: 'Full list of CWL commands ({prefix}cwl for more info)',
-				examples: ['', 'stats #8QU8J9LP', 'remaining #8QU8J9LP'],
+				content: [
+					'Full list of CWL commands ({prefix}cwl for more info)',
+					'',
+					'**Available Methods**',
+					'• roster `<clanTag>`',
+					'• round `<clanTag>`',
+					'• attacks `<clanTag>`',
+					'• remaining `<clanTag>`',
+					'• stats `<clanTag>`',
+					'• members `<clanTag>`',
+					'• top `<clanTag>`',
+					'',
+					'For additional `<...args>` usage refer to the examples below.'
+				],
+				examples: [
+					'',
+					'roster #8QU8J9LP',
+					'round #8QU8J9LP',
+					'attacks #8QU8J9LP',
+					'remaining #8QU8J9LP',
+					'stats #8QU8J9LP',
+					'members #8QU8J9LP',
+					'top #8QU8J9LP'
+				],
 				usage: '<method> <...args>'
 			}
 		});
