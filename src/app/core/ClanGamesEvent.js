@@ -2,6 +2,7 @@ const { MessageEmbed, Message } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const fetch = require('node-fetch');
 const { ObjectId } = require('mongodb');
+const moment = require('moment');
 const API_TOKENS = process.env.CLAN_GAMES_API_TOKENS.split(',');
 
 class ClanGames {
@@ -162,6 +163,9 @@ class ClanGames {
 		const items = await this.getList(clan, data, clan.memberList.map(m => m.tag));
 		const members = this.filter(items.collection, items.data);
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
+
+		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), '22T08:00:00Z'].join('-');
+		const createdAt = new Date(ObjectId(data._id).getTimestamp());
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
@@ -169,7 +173,8 @@ class ClanGames {
 				`Clan Games Scoreboard [${clan.members}/50]`,
 				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
 				members.map((m, i) => `${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
-				'```'
+				'```',
+				createdAt > new Date(START) ? `Created on ${moment(createdAt).format('MMMM Do kk:mm')}` : ''
 			])
 			.setFooter(`Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]`)
 			.setTimestamp();
