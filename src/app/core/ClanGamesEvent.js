@@ -242,7 +242,7 @@ class ClanGames {
 	}
 
 	padEnd(data) {
-		return data.padEnd(20, ' ');
+		return data.padEnd(15, ' ');
 	}
 
 	filter(memberList, data) {
