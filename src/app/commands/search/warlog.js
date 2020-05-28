@@ -61,7 +61,8 @@ class WarlogCommand extends Command {
 			const { clan, opponent } = item;
 			if (!opponent.name) {
 				const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
-				embed.addField(`**${(++index).toString().padStart(2, '0')} ${emoji.cwl} Clan War League**`, [
+				const result = item.result.replace(/lose/g, 'Lost').replace(/win/g, 'Won').replace(/tie/g, 'Tied');
+				embed.addField(`**${(++index).toString().padStart(2, '0')} ${this.result(result)} Clan War League**`, [
 					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}%`,
 					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
 				]);
@@ -81,7 +82,7 @@ class WarlogCommand extends Command {
 	result(result) {
 		if (result === 'Won') return `${emoji.ok} Won`;
 		if (result === 'Lost') return `${emoji.wrong} Lost`;
-		if (result === 'Tied') return '<:empty:699639532013748326> Tied ';
+		if (result === 'Tied') return `${emoji.empty} Tied `;
 	}
 
 	name(data) {

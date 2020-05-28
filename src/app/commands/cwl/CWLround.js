@@ -65,7 +65,7 @@ class CWLRoundComamnd extends Command {
 		if (!res) {
 			return message.util.send({
 				embed: {
-					color: 0xf30c11,
+					color: 0XF30C11,
 					author: { name: 'Error' },
 					description: status[504]
 				}
@@ -153,7 +153,7 @@ class CWLRoundComamnd extends Command {
 					}
 					if (data.state === 'preparation') {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField('State', 'Preparation Day')
+						embed.addField('State', 'Preparation')
 							.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
 					}
 					embed.addField('Rosters', [
