@@ -79,10 +79,10 @@ class RemainingAttacksCommand extends Command {
 		}
 
 		let missing = '';
-		missing = `**\`\u200e#  \u2002 X  ${'NAME'.padEnd(20, ' ')}\`**\n`;
+		missing = `**\`\u200e#  \u2002 X \u2002 ${'NAME'.padEnd(20, ' ')}\`**\n`;
 		for (const member of this.short(body.clan.members)) {
 			if (member.attacks && member.attacks.length === 2) continue;
-			missing += `\`\u200e${member.mapPosition.toString().padEnd(2, ' ')} \u2002 ${member.attacks ? 2 - member.attacks.length : 2}  ${member.name.padEnd(20, ' ')}\`\n`;
+			missing += `\`\u200e${member.mapPosition.toString().padEnd(2, ' ')} \u2002 ${member.attacks ? 2 - member.attacks.length : 2} \u2002 ${member.name.padEnd(20, ' ')}\`\n`;
 		}
 		embed.setDescription([
 			'**War Against**',
