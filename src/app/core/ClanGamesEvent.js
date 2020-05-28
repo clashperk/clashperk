@@ -170,11 +170,10 @@ class ClanGames {
 			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
-				`Clan Games Scoreboard [${clan.members}/50]`,
+				`Clan Games Scoreboard [${clan.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format('D MMMM, kk:mm')}` : ''}`,
 				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
 				members.map((m, i) => `${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
-				'```',
-				createdAt > new Date(START) ? `Created on ${moment(createdAt).format('MMMM Do kk:mm')}` : ''
+				'```'
 			])
 			.setFooter(`Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]`)
 			.setTimestamp();
