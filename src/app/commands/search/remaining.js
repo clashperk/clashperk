@@ -80,17 +80,18 @@ class RemainingAttacksCommand extends Command {
 		}
 
 		let missing = '';
+		missing = '**#  ⚔️  NAME**';
 		for (const member of this.short(body.clan.members)) {
 			if (member.attacks && member.attacks.length === 2) continue;
-			missing += `**${member.mapPosition}.** ${member.name} ${member.tag} ~ ${member.attacks ? 2 - member.attacks.length : 2} \n`;
+			missing += `\`\u200e${member.mapPosition.toString().padEnd(2, ' ')} ${member.attacks ? 2 - member.attacks.length : 2}  ${member.name}\`\n`;
 		}
 		embed.setDescription([
 			'**War Against**',
 			`${body.opponent.name} (${body.opponent.tag})`,
 			'',
-			'**Missing Attacks**',
+			`**${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
 			'',
-			missing
+			`${missing}`
 		]);
 		const endTime = new Date(moment(body.endTime).toDate()).getTime();
 		embed.setFooter(`Ends in ${moment.duration(endTime - Date.now()).format('D [days], H [hours] m [minutes]')}`);
