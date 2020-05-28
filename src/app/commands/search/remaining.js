@@ -80,7 +80,7 @@ class RemainingAttacksCommand extends Command {
 		}
 
 		let missing = '';
-		missing = '**#  ⚔️  NAME**';
+		missing = '\`**#  ⚔️  NAME**\`\n';
 		for (const member of this.short(body.clan.members)) {
 			if (member.attacks && member.attacks.length === 2) continue;
 			missing += `\`\u200e${member.mapPosition.toString().padEnd(2, ' ')} ${member.attacks ? 2 - member.attacks.length : 2}  ${member.name}\`\n`;
