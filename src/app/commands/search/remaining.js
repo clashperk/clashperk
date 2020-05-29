@@ -57,7 +57,6 @@ class RemainingAttacksCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`);
-			// .setTitle(`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses,` : ''} win streak ${data.warWinStreak}`)
 
 		if (data.isWarLogPublic === false) {
 			embed.setDescription('Private WarLog');
