@@ -95,7 +95,8 @@ class RemainingAttacksCommand extends Command {
 			`${missing}`
 		]);
 		const endTime = new Date(moment(body.endTime).toDate()).getTime();
-		embed.setFooter(`Ends in ${moment.duration(endTime - Date.now()).format('D [days], H [hours] m [minutes]')}`);
+		if (body.state === 'inWar') embed.setFooter(`Ends in ${moment.duration(endTime - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`);
+		else embed.setFooter(`Ended ${moment.duration(Date.now() - endTime).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })} ago`);
 
 		return message.util.send({ embed });
 	}
