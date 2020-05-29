@@ -69,7 +69,13 @@ class RemainingAttacksCommand extends Command {
 		}).then(res => res.json());
 
 		if (body.state === 'preparation') {
-			embed.setDescription('Preparation Day');
+			embed.setDescription([
+				'**War Against**',
+				`${body.opponent.name} (${body.opponent.tag})`,
+				'',
+				'**War State**',
+				'Preparation'
+			]);
 			return message.util.send({ embed });
 		}
 
