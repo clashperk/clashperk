@@ -62,7 +62,7 @@ class CurrentWarCommand extends Command {
 			embed.setDescription(`Preparation day against **${body.opponent.name} (${body.opponent.tag})**`)
 				.addField('War State', 'Preparation Day')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
-				.addField('Start Time', moment.duration(new Date(moment(body.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
+				.addField('Starts In', moment.duration(new Date(moment(body.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
 		} else if (body.state === 'inWar') {
 			embed.setDescription(`Battle day against **${body.opponent.name} (${body.opponent.tag})**`)
 				.addField('War State', 'Battle Day')

@@ -95,47 +95,22 @@ class MembersCommand extends Command {
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription([header, pages[0].join('\n')]) });
 
-		const msg = await message.util.send({
+		const msg = await message.channel.send({
 			embed: embed.setDescription([header, pages[0].join('\n')])
 				.setFooter('Page 1/2')
 		});
 
-		for (const emoji of ['⬅️', '➡️']) {
-			await msg.react(emoji);
-			await this.delay(250);
-		}
-
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 45000, max: 10 }
-		);
-
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
-				await msg.edit({
-					embed: embed.setDescription([header, pages[1].join('\n')])
-						.setFooter('Page 2/2')
-				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
-			}
-			if (reaction.emoji.name === '⬅️') {
-				await msg.edit({
-					embed: embed.setDescription([header, pages[0].join('\n')])
-						.setFooter('Page 1/2')
-				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
-			}
+		await msg.react('⬇️');
+		const collector = await msg.awaitReactions(
+			(reaction, user) => reaction.emoji.name === '⬇️' && user.id === message.author.id,
+			{ max: 1, time: 30000, errors: ['time'] }
+		).catch(() => null);
+		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
+		if (!collector || !collector.size) return;
+		return message.channel.send({
+			embed: embed.setDescription([header, pages[1].join('\n')])
+				.setFooter('Page 2/2')
 		});
-
-		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
-		});
-		return message;
 	}
 
 	paginate(items, start, end) {
