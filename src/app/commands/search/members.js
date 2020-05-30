@@ -95,7 +95,7 @@ class MembersCommand extends Command {
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription([header, pages[0].join('\n')]) });
 
-		const msg = await message.channel.send({
+		const msg = await message.util.send({
 			embed: embed.setDescription([header, pages[0].join('\n')])
 				.setFooter('Page 1/2')
 		});
