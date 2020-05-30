@@ -171,6 +171,7 @@ module.exports = {
 		channel: '<:cp_channel:701085544335147059>',
 		botdev: '<:botdev:707231318857089136>',
 		donated: '<:donated:712617495587979306>',
-		received: '<:received:712617494904438855>'
+		received: '<:received:712617494904438855>',
+		clash: '<:clash:716274886506709003>'
 	}
 };

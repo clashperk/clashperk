@@ -6,6 +6,7 @@ const LastOnlineEvent = require('./LastOnlineEvent');
 const ClanGamesEvent = require('./ClanGamesEvent');
 const PlayerEvent = require('./PlayerEvent');
 const { ObjectId } = require('mongodb');
+const MaintenanceHandler = require('./MaintenanceHandler');
 const { MODES, EVENTS } = require('../util/constants');
 
 class CacheHandler {
@@ -20,6 +21,7 @@ class CacheHandler {
 		this.lastOnline = new LastOnlineEvent(client);
 		this.playerEvent = new PlayerEvent(client);
 		this.clanGame = new ClanGamesEvent(client);
+		this.maintenanceHandler = new MaintenanceHandler(client);
 	}
 
 	async broadcast(data) {
