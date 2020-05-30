@@ -5,8 +5,6 @@ class MaintenanceHandler {
 	constructor(client) {
 		this.client = client;
 		this.isMaintenance = Boolean(false);
-
-		return this.init();
 	}
 
 	init() {

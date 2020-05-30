@@ -22,6 +22,7 @@ class CacheHandler {
 		this.playerEvent = new PlayerEvent(client);
 		this.clanGame = new ClanGamesEvent(client);
 		this.maintenanceHandler = new MaintenanceHandler(client);
+		this.maintenanceHandler.init();
 	}
 
 	async broadcast(data) {
