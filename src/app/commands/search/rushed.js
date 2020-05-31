@@ -228,7 +228,7 @@ class RushedCommand extends Command {
 	padEnd(option, townHallLevel, troop) {
 		if (!option) return troop.maxLevel.toString().padEnd(2, '\u2002');
 		const num = troops.find(t => t.name === troop.name)[townHallLevel];
-		return num.toString().padEnd(2, `${troop.level === troop.maxLevel ? '\u2002' : '+'}`);
+		return num.toString().padEnd(2, `${num === troop.maxLevel ? '\u2002' : '+'}`);
 	}
 }
 
