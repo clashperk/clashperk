@@ -89,12 +89,12 @@ class RushedCommand extends Command {
 			.setDescription([
 				'Rushed troop, spell & hero count',
 				'```\u200eTH  CNT  NAME',
-				members.filter(m => m.count)
+				members.filter(m => m.count !== 0)
 					.sort((a, b) => b.count - a.count)
 					.map(({ name, count, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding(count)}   ${name}`)
 					.join('\n'),
 				'',
-				members.filter(m => !m.count)
+				members.filter(m => m.count === 0)
 					.sort((a, b) => b.townHallLevel - a.townHallLevel)
 					.map(({ name, count, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding('🔥')}   ${name}`)
 					.join('\n'),
