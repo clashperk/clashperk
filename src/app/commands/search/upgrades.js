@@ -96,11 +96,11 @@ class UpgradesCommand extends Command {
 					const maxLevel = troops.find(t => t.name === troop.name)[data.townHallLevel];
 					if (troop.level < maxLevel) {
 						troopLevels += `${elixirTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
+						if (index === 4) {
+							troopLevels += '#';
+							index = 0;
+						}
 					}
-				}
-				if (index === 4) {
-					troopLevels += '#';
-					index = 0;
 				}
 			}
 		});
@@ -120,11 +120,11 @@ class UpgradesCommand extends Command {
 					const maxLevel = troops.find(t => t.name === troop.name)[data.townHallLevel];
 					if (troop.level < maxLevel) {
 						darkTroops += `${darkTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
+						if (index === 4) {
+							darkTroops += '#';
+							index = 0;
+						}
 					}
-				}
-				if (index === 4) {
-					darkTroops += '#';
-					index = 0;
 				}
 			}
 		});
@@ -139,11 +139,11 @@ class UpgradesCommand extends Command {
 					const maxLevel = troops.find(t => t.name === troop.name)[data.townHallLevel];
 					if (troop.level < maxLevel) {
 						SiegeMachines += `${siegeMachinesEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
+						if (index === 4) {
+							troopLevels += '#';
+							index = 0;
+						}
 					}
-				}
-				if (index === 4) {
-					troopLevels += '#';
-					index = 0;
 				}
 			}
 		});
@@ -158,11 +158,11 @@ class UpgradesCommand extends Command {
 					const maxLevel = buildertroops.find(t => t.name === troop.name)[data.builderHallLevel];
 					if (troop.level < maxLevel) {
 						builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
+						if (index === 4) {
+							builderTroops += '#';
+							index = 0;
+						}
 					}
-				}
-				if (index === 4) {
-					builderTroops += '#';
-					index = 0;
 				}
 			}
 		});
@@ -177,11 +177,11 @@ class UpgradesCommand extends Command {
 					const maxLevel = troops.find(t => t.name === spell.name)[data.townHallLevel];
 					if (spell.level < maxLevel) {
 						elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
+						if (index === 4) {
+							elixirSpells += '#';
+							index = 0;
+						}
 					}
-				}
-				if (index === 4) {
-					elixirSpells += '#';
-					index = 0;
 				}
 			}
 		});
@@ -196,11 +196,11 @@ class UpgradesCommand extends Command {
 					const maxLevel = troops.find(t => t.name === spell.name)[data.townHallLevel];
 					if (spell.level < maxLevel) {
 						darkSpells += `${darkSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
+						if (index === 4) {
+							darkSpells += '#';
+							index = 0;
+						}
 					}
-				}
-				if (index === 4) {
-					darkSpells += '#';
-					index = 0;
 				}
 			}
 		});
