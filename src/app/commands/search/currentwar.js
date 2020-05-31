@@ -134,7 +134,7 @@ class CurrentWarCommand extends Command {
 		const total = TH13 + TH12 + TH11 + TH10 + TH09 + TH08 + TH07 + TH06 + TH05 + TH04 + TH03 + TH02 + TH01;
 		const avg = math / total || 0;
 
-		return [`**[Avg: ${avg.toFixed(2)}]**`, this.chunk(townHalls)
+		return [`**(Avg: ${avg.toFixed(2)})**`, this.chunk(townHalls)
 			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
 				.join(' '))
 			.join('\n')].join('\n');
