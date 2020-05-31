@@ -92,8 +92,8 @@ class RushedCommand extends Command {
 	reduce(collection = [], num) {
 		return collection.reduce((i, a) => {
 			if (a.village === 'home' && a.level !== a.maxLevel) {
-				const min = troops.find(t => t.name === a.name)[num - 1];
-				if (a.level < min) i += 1;
+				const min = troops.find(t => t.name === a.name);
+				if (min && a.level < min[num - 1]) i += 1;
 			}
 			return i;
 		}, 0);
