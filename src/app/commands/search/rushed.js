@@ -1,9 +1,11 @@
-const { Command, Flag } = require('discord-akairo');
+const { Command, Flag, Argument } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const Resolver = require('../../struct/Resolver');
 const { troops, buildertroops } = require('../../util/troops.json');
 const { oneLine } = require('common-tags');
-const { builderTroopsEmoji, heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
+const fetch = require('node-fetch');
+const API_TOKENS = process.env.API_TOKENS.split(',');
+const { emoji, heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
 
 class RushedCommand extends Command {
 	constructor() {
@@ -20,9 +22,14 @@ class RushedCommand extends Command {
 	}
 
 	*args() {
+		const clan = yield {
+			match: 'flag',
+			flag: ['--clan', '-c', 'clan']
+		};
+
 		const data = yield {
 			type: async (message, args) => {
-				const resolved = await Resolver.resolve(message, args, true);
+				const resolved = await Resolver.resolve(message, args, clan ? false : true);
 				if (resolved.status !== 200) {
 					await message.util.send({ embed: resolved.embed });
 					return Flag.cancel();
@@ -31,7 +38,7 @@ class RushedCommand extends Command {
 			}
 		};
 
-		return { data };
+		return { data, clan };
 	}
 
 	cooldown(message) {
@@ -39,9 +46,55 @@ class RushedCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data }) {
+	async exec(message, { data, clan }) {
+		if (clan) return this.clan(message, data);
 		const embed = await this.embed(data, true);
 		return message.util.send({ embed });
+	}
+
+	async clan(message, data) {
+		// await message.util.send(`**Fetching data... ${emoji.loading}**`);
+		const hrStart = process.hrtime();
+		const list = data.memberList.map(m => m.tag);
+		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
+			.map((tags, index) => async (collection = []) => {
+				for (const tag of tags) {
+					const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
+						method: 'GET',
+						headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[index]}` }
+					}).then(res => res.json());
+					collection.push(member);
+				}
+				return collection;
+			});
+
+		const requests = await Promise.all(funcs.map(func => func()));
+		const reduced = requests.reduce((a, b) => {
+			a.push(...b);
+			return a;
+		}, []);
+
+		const members = [];
+		for (const { name, troops, spells, heroes } of reduced) {
+			let i = 0;
+			i += this.reduce(troops);
+			i += this.reduce(spells);
+			i += this.reduce(heroes);
+
+			members.push({ name, count: i });
+		}
+
+		console.log(members);
+	}
+
+	reduce(collection = [], num) {
+		return collection.reduce((i, a) => {
+			if (a.village === 'home' && a.level !== a.maxLevel) {
+				const min = troops.find(t => t.name === a.name)[num - 1];
+				if (a.level < min) i += 1;
+			}
+			return i;
+		}, 0);
 	}
 
 	async embed(data, option) {
