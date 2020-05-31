@@ -91,10 +91,10 @@ class UpgradesCommand extends Command {
 		let troopLevels = '';
 		data.troops.filter(troop => troop.name in elixirTroopsEmoji).forEach(troop => {
 			if (troop.village === 'home') {
-				index++;
 				if (troop.level !== troop.maxLevel) {
 					const maxLevel = troops.find(t => t.name === troop.name)[data.townHallLevel];
 					if (troop.level < maxLevel) {
+						index++;
 						troopLevels += `${elixirTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
 						if (index === 4) {
 							troopLevels += '#';
