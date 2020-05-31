@@ -101,7 +101,8 @@ class RushedCommand extends Command {
 				members.filter(m => !m.count)
 					.sort((a, b) => b.townHallLevel - a.townHallLevel)
 					.map(({ name, count, townHallLevel }) => `${this.padding(townHallLevel)}   ${name}`)
-					.join('\n')
+					.join('\n'),
+				'```'
 			]);
 		}
 
