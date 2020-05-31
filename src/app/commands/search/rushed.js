@@ -105,7 +105,7 @@ class RushedCommand extends Command {
 	}
 
 	padding(x) {
-		return !isNaN(x) ? x.toString().padEnd(2, '\u2002') : x.padEnd(2, '\u2002');
+		return !isNaN(x) ? x.toString().padEnd(2, '\u2002') : x;
 	}
 
 	reduce(collection = [], num) {
