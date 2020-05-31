@@ -42,8 +42,6 @@ class ThCompoCommand extends Command {
 	async exec(message, { data }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const hrStart = process.hrtime();
-		let [TH13, TH12, TH11, TH10, TH09, TH08, TH07, TH06, TH05, TH04, TH03, TH02, TH01] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
 		const list = data.memberList.map(m => m.tag);
 		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
 			.map((tags, index) => async (collection = []) => {
@@ -59,51 +57,26 @@ class ThCompoCommand extends Command {
 
 		const requests = await Promise.all(funcs.map(func => func()));
 
-		for (const request of requests) {
-			for (const member of request) {
-				const TownHAll = member.townHallLevel;
-				if (TownHAll === 13) TH13++;
-				if (TownHAll === 12) TH12++;
-				if (TownHAll === 11) TH11++;
-				if (TownHAll === 10) TH10++;
-				if (TownHAll === 9) TH09++;
-				if (TownHAll === 8) TH08++;
-				if (TownHAll === 7) TH07++;
-				if (TownHAll === 6) TH06++;
-				if (TownHAll === 5) TH05++;
-				if (TownHAll === 4) TH04++;
-				if (TownHAll === 3) TH03++;
-				if (TownHAll === 2) TH02++;
-				if (TownHAll === 1) TH01++;
-			}
-		}
+		const reduced = requests.reduce((a, b) => {
+			a.push(...b);
+			return a;
+		}, []).reduce((count, member) => {
+			const townHall = member.townHallLevel;
+			count[townHall] = (count[townHall] || 0) + 1;
+			return count;
+		}, {});
 
-		const townHalls = [
-			{ level: 1, total: TH01 },
-			{ level: 2, total: TH02 },
-			{ level: 3, total: TH03 },
-			{ level: 4, total: TH04 },
-			{ level: 5, total: TH05 },
-			{ level: 6, total: TH06 },
-			{ level: 7, total: TH07 },
-			{ level: 8, total: TH08 },
-			{ level: 9, total: TH09 },
-			{ level: 10, total: TH10 },
-			{ level: 11, total: TH11 },
-			{ level: 12, total: TH12 },
-			{ level: 13, total: TH13 }
-		].filter(townHall => townHall.total !== 0).reverse();
-
-		const math = (TH13 * 13) + (TH12 * 12) + (TH11 * 11) + (TH10 * 10) + (TH09 * 9) + (TH08 * 8) + (TH07 * 7) + (TH06 * 6) + (TH05 * 5) + (TH04 * 4) + (TH03 * 3) + (TH02 * 2) + Number(TH01);
-		const total = TH13 + TH12 + TH11 + TH10 + TH09 + TH08 + TH07 + TH06 + TH05 + TH04 + TH03 + TH02 + TH01;
-		const AVG = math / total || 0;
+		const townHalls = Object.entries(reduced)
+			.map(entry => ({ level: entry[0], total: entry[1] }))
+			.sort((a, b) => b.level - a.level);
+		const avg = townHalls.reduce((p, c) => p + (c.total * c.level), 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setColor(0x5970c1)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription(townHalls.map(th => `${townHallEmoji[th.level]} ${this.padStart(th.total)}`))
-			.setFooter(`Avg: ${AVG.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/696655174025871461.png');
+			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/696655174025871461.png');
 
 		const diff = process.hrtime(hrStart);
 		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
