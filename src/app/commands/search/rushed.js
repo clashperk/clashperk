@@ -56,7 +56,6 @@ class RushedCommand extends Command {
 			if (troop.village === 'home') {
 				if (troop.level !== troop.maxLevel) {
 					const rushedLevel = troops.find(t => t.name === troop.name)[data.townHallLevel - 1];
-					const maxLevel = troops.find(t => t.name === troop.name)[data.townHallLevel];
 					if (troop.level < rushedLevel) {
 						index++;
 						rushed++;
@@ -227,7 +226,7 @@ class RushedCommand extends Command {
 
 	padEnd(option, townHallLevel, troop) {
 		if (!option) return troop.maxLevel.toString().padEnd(2, '\u2002');
-		const num = troops.find(t => t.name === troop.name)[townHallLevel];
+		const num = troops.find(t => t.name === troop.name)[townHallLevel - 1];
 		return num.toString().padEnd(2, `${num === troop.maxLevel ? '\u2002' : '+'}`);
 	}
 }
