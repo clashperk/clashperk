@@ -101,7 +101,7 @@ class CurrentWarCommand extends Command {
 	count(members) {
 		let [TH13, TH12, TH11, TH10, TH09, TH08, TH07, TH06, TH05, TH04, TH03, TH02, TH01] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 		for (const member of members) {
-			const TownHAll = member.townHallLevel;
+			const TownHAll = member.townhallLevel;
 			if (TownHAll === 13) TH13++;
 			if (TownHAll === 12) TH12++;
 			if (TownHAll === 11) TH11++;
