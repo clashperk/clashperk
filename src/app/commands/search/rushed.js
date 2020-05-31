@@ -80,7 +80,7 @@ class RushedCommand extends Command {
 			i += this.reduce(spells, townHallLevel);
 			i += this.reduce(heroes, townHallLevel);
 
-			members.push({ name, count: i, townHallLevel });
+			members.push({ name, count: i });
 		}
 
 		const embed = this.client.util.embed()
@@ -89,8 +89,14 @@ class RushedCommand extends Command {
 			.setDescription([
 				'Rushed troop, spell & hero count',
 				'```\u200eTH  CNT  NAME',
-				members.sort((a, b) => b.count - a.count)
-					.map(({ name, count, townHallLevel }) => `${this.padding(count)}   ${name}`)
+				members.filter(m => m.count)
+					.sort((a, b) => b.count - a.count)
+					.map(({ name, count, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding(count)}   ${name}`)
+					.join('\n'),
+				'',
+				members.filter(m => !m.count)
+					.sort((a, b) => b.townHallLevel - a.townHallLevel)
+					.map(({ name, count, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding('🔥')}   ${name}`)
 					.join('\n'),
 				'```'
 			]);
@@ -99,7 +105,7 @@ class RushedCommand extends Command {
 	}
 
 	padding(num) {
-		return toString().padEnd(2, '\u2002');
+		return num.toString().padEnd(2, '\u2002');
 	}
 
 	reduce(collection = [], num) {
