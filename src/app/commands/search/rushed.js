@@ -54,8 +54,6 @@ class RushedCommand extends Command {
 	}
 
 	async clan(message, data) {
-		// await message.util.send(`**Fetching data... ${emoji.loading}**`);
-		const hrStart = process.hrtime();
 		const list = data.memberList.map(m => m.tag);
 		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
 			.map((tags, index) => async (collection = []) => {
@@ -74,7 +72,6 @@ class RushedCommand extends Command {
 			a.push(...b);
 			return a;
 		}, []);
-		console.log(reduced);
 
 		const members = [];
 		for (const { name, troops, spells, heroes, townHallLevel } of reduced) {
@@ -86,7 +83,18 @@ class RushedCommand extends Command {
 			members.push({ name, count: i });
 		}
 
-		console.log(members);
+		return message.util.send({
+			embed: {
+				description: [
+					'List of the clan members with total count of rushed troop/spell/hero.',
+					'```',
+					'X  NAME',
+					members.sort((a, b) => b.count - a.count)
+						.map(({ name, count }) => `${count.toString().padStart(2, '\u2002')}  ${name}`).join('\n'),
+					'```'
+				].join('\n')
+			}
+		});
 	}
 
 	reduce(collection = [], num) {
