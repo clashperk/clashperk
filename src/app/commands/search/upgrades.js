@@ -184,7 +184,7 @@ class UpgradesCommand extends Command {
 		let heroLevels = '';
 		data.heroes.forEach(hero => {
 			if (hero.village === 'home') {
-				if (hero.level === hero.maxLevel) {
+				if (hero.level !== hero.maxLevel) {
 					const maxLevel = troops.find(t => t.name === hero.name)[data.townHallLevel];
 					if (hero.level < maxLevel) {
 						heroLevels += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}/${this.padEnd(option, data.townHallLevel, hero)}\u200f\`**\u2002`;
