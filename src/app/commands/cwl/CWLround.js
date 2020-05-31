@@ -240,39 +240,15 @@ class CWLRoundComamnd extends Command {
 	}
 
 	count(members) {
-		let [TH13, TH12, TH11, TH10, TH09, TH08, TH07, TH06, TH05, TH04, TH03, TH02, TH01] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		for (const member of members) {
-			const TownHAll = member.townhallLevel;
-			if (TownHAll === 13) TH13++;
-			if (TownHAll === 12) TH12++;
-			if (TownHAll === 11) TH11++;
-			if (TownHAll === 10) TH10++;
-			if (TownHAll === 9) TH09++;
-			if (TownHAll === 8) TH08++;
-			if (TownHAll === 7) TH07++;
-			if (TownHAll === 6) TH06++;
-			if (TownHAll === 5) TH05++;
-			if (TownHAll === 4) TH04++;
-			if (TownHAll === 3) TH03++;
-			if (TownHAll === 2) TH02++;
-			if (TownHAll === 1) TH01++;
-		}
+		const reduced = members.reduce((count, member) => {
+			const townHall = member.townhallLevel;
+			count[townHall] = (count[townHall] || 0) + 1;
+			return count;
+		}, {});
 
-		const townHalls = [
-			{ level: 1, total: TH01 },
-			{ level: 2, total: TH02 },
-			{ level: 3, total: TH03 },
-			{ level: 4, total: TH04 },
-			{ level: 5, total: TH05 },
-			{ level: 6, total: TH06 },
-			{ level: 7, total: TH07 },
-			{ level: 8, total: TH08 },
-			{ level: 9, total: TH09 },
-			{ level: 10, total: TH10 },
-			{ level: 11, total: TH11 },
-			{ level: 12, total: TH12 },
-			{ level: 13, total: TH13 }
-		].filter(townHall => townHall.total !== 0).reverse();
+		const townHalls = Object.entries(reduced)
+			.map(entry => ({ level: entry[0], total: entry[1] }))
+			.sort((a, b) => b.level - a.level);
 		const avg = townHalls.reduce((p, c) => p + (c.total * c.level), 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
 
 		return [`**(Avg: ${avg.toFixed(2)})**`, this.chunk(townHalls)
