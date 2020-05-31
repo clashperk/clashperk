@@ -83,18 +83,19 @@ class RushedCommand extends Command {
 			members.push({ name, count: i });
 		}
 
-		return message.util.send({
-			embed: {
-				description: [
-					'List of the clan members with total count of rushed troop/spell/hero.',
-					'```',
-					'X  NAME',
-					members.sort((a, b) => b.count - a.count)
-						.map(({ name, count }) => `${count.toString().padStart(2, '\u2002')}  ${name}`).join('\n'),
-					'```'
-				].join('\n')
-			}
-		});
+		const embed = this.client.util.embed()
+			.setColor(0x5970c1)
+			.setAuthor(`${data.name} (${data.tag})`)
+			.setDescription([
+				'Rushed troop, spell & hero count',
+				'```\u200e',
+				'X  NAME',
+				members.sort((a, b) => b.count - a.count)
+					.map(({ name, count }) => `${count.toString().padStart(2, '\u2002')}  ${name}`).join('\n'),
+				'```'
+			]);
+
+		return message.util.send({ embed });
 	}
 
 	reduce(collection = [], num) {
