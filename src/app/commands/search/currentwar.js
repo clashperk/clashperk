@@ -91,7 +91,7 @@ class CurrentWarCommand extends Command {
 		embed.addField('Rosters', [
 			`**${body.clan.name}**\u200b ${this.count(body.clan.members)}`,
 			'',
-			`**${body.opponent.name}\u200b ${this.count(body.opponent.members)}**`
+			`**${body.opponent.name}**\u200b ${this.count(body.opponent.members)}`
 		]);
 		return message.util.send({ embed });
 	}
