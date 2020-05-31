@@ -132,7 +132,7 @@ class RushedCommand extends Command {
 						builderTroops += `${builderTroopsEmoji[troop.name]} `;
 						builderTroops += oneLine`\`\u200e${this.padStart(troop.level)}/${maxLevel === rushedLevel
 							? ''
-							: rushedLevel}${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
+							: rushedLevel}-${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
 						if (index === 4) {
 							builderTroops += '#';
 							index = 0;
