@@ -80,7 +80,7 @@ class RushedCommand extends Command {
 			i += this.reduce(spells, townHallLevel);
 			i += this.reduce(heroes, townHallLevel);
 
-			members.push({ name, count: i });
+			members.push({ name, count: i, townHallLevel });
 		}
 
 		const embed = this.client.util.embed()
