@@ -51,7 +51,7 @@ class TrophyBoardCommand extends Command {
 			this.paginate(data.memberList, 25, 50)
 				.items.map((member, index) => {
 					const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
-					return `\`${(index + 1).toString().padStart(2, '0')} ${trophies}  ${this.padEnd(member.name)}\``;
+					return `\`${(index + 26).toString().padStart(2, '0')} ${trophies}  ${this.padEnd(member.name)}\``;
 				})
 		];
 
