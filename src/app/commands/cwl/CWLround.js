@@ -157,11 +157,9 @@ class CWLRoundComamnd extends Command {
 							.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
 					}
 					embed.addField('Rosters', [
-						`**${data.clan.name}**`,
-						await this.count(data.clan.members),
+						`**${data.clan.name}**\u200b ${this.count(data.clan.members)}`,
 						'',
-						`**${data.opponent.name}**`,
-						await this.count(data.opponent.members)
+						`**${data.opponent.name}**\u200b ${this.count(data.opponent.members)}`
 					]);
 					embed.setFooter(`Round #${++index}`);
 
@@ -241,7 +239,7 @@ class CWLRoundComamnd extends Command {
 		};
 	}
 
-	async count(members) {
+	count(members) {
 		let [TH13, TH12, TH11, TH10, TH09, TH08, TH07, TH06, TH05, TH04, TH03, TH02, TH01] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 		for (const member of members) {
 			const TownHAll = member.townhallLevel;
@@ -275,11 +273,14 @@ class CWLRoundComamnd extends Command {
 			{ level: 12, total: TH12 },
 			{ level: 13, total: TH13 }
 		].filter(townHall => townHall.total !== 0).reverse();
+		const math = (TH13 * 13) + (TH12 * 12) + (TH11 * 11) + (TH10 * 10) + (TH09 * 9) + (TH08 * 8) + (TH07 * 7) + (TH06 * 6) + (TH05 * 5) + (TH04 * 4) + (TH03 * 3) + (TH02 * 2) + Number(TH01);
+		const total = TH13 + TH12 + TH11 + TH10 + TH09 + TH08 + TH07 + TH06 + TH05 + TH04 + TH03 + TH02 + TH01;
+		const avg = math / total || 0;
 
-		return this.chunk(townHalls)
+		return [`**(Avg: ${avg.toFixed(2)})**`, this.chunk(townHalls)
 			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
 				.join(' '))
-			.join('\n');
+			.join('\n')].join('\n');
 	}
 
 	chunk(items = []) {
