@@ -199,7 +199,7 @@ class RushedCommand extends Command {
 					const maxLevel = troops.find(t => t.name === hero.name)[data.townHallLevel - 1];
 					if (hero.level < maxLevel) {
 						rushed++;
-						heroLevels += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}|${this.padEnd(option, data.townHallLevel, hero)}+\u200f\`**\u2002`;
+						heroLevels += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}|${this.padEnd(option, data.townHallLevel, hero)}+\u200f\`\u2002`;
 					}
 				}
 			}
