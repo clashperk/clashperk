@@ -17,7 +17,8 @@ class RushedCommand extends Command {
 				content: 'Shows all rushed troop/spell/hero.',
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
-			}
+			},
+			flags: ['--clan', '-c', 'clan']
 		});
 	}
 
