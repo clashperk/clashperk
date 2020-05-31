@@ -76,11 +76,11 @@ class RushedCommand extends Command {
 		}, []);
 
 		const members = [];
-		for (const { name, troops, spells, heroes } of reduced) {
+		for (const { name, troops, spells, heroes, townHallLevel } of reduced) {
 			let i = 0;
-			i += this.reduce(troops);
-			i += this.reduce(spells);
-			i += this.reduce(heroes);
+			i += this.reduce(troops, townHallLevel);
+			i += this.reduce(spells, townHallLevel);
+			i += this.reduce(heroes, townHallLevel);
 
 			members.push({ name, count: i });
 		}
