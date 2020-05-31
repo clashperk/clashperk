@@ -4,10 +4,10 @@ const Resolver = require('../../struct/Resolver');
 const { troops, buildertroops } = require('../../util/troops.json');
 const { builderTroopsEmoji, heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
 
-class UnitsCommand extends Command {
+class UpgradesCommand extends Command {
 	constructor() {
-		super('units', {
-			aliases: ['units', 'troops'],
+		super('upgrades', {
+			aliases: ['upgrade', 'upgrades', 'ug'],
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
@@ -258,4 +258,4 @@ class UnitsCommand extends Command {
 	}
 }
 
-module.exports = UnitsCommand;
+module.exports = UpgradesCommand;
