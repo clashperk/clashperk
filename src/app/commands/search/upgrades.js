@@ -11,7 +11,7 @@ class UpgradesCommand extends Command {
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows troop, spell & hero levels.',
+				content: 'Shows all troop, spell & hero upgrades remaining.',
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			}
@@ -40,46 +40,7 @@ class UpgradesCommand extends Command {
 
 	async exec(message, { data }) {
 		const embed = await this.embed(data, true);
-		const msg = await message.util.send({
-			embed: embed.setFooter(`Level / Town Hall ${data.townHallLevel}${data.builderHallLevel ? ` & Builder Hall ${data.builderHallLevel}` : ''} Max`)
-		});
-
-		for (const emoji of ['🏠', '🔥']) {
-			await msg.react(emoji);
-			await this.delay(250);
-		}
-
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['🏠', '🔥'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 45000, max: 10 }
-		);
-
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '🏠') {
-				const embed = await this.embed(data, true);
-				await msg.edit({
-					embed: embed.setFooter(`Level / Town Hall ${data.townHallLevel}${data.builderHallLevel ? ` & Builder Hall ${data.builderHallLevel}` : ''} Max`)
-				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
-			}
-			if (reaction.emoji.name === '🔥') {
-				const embed = await this.embed(data, false);
-				await msg.edit({
-					embed: embed.setFooter('Level / Max Level')
-				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
-			}
-		});
-
-		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
-		});
-		return message;
+		return message.util.send({ embed });
 	}
 
 	async embed(data, option) {
@@ -115,10 +76,10 @@ class UpgradesCommand extends Command {
 		let darkTroops = '';
 		data.troops.filter(troop => troop.name in darkTroopsEmoji).forEach(troop => {
 			if (troop.village === 'home') {
-				index++;
 				if (troop.level !== troop.maxLevel) {
 					const maxLevel = troops.find(t => t.name === troop.name)[data.townHallLevel];
 					if (troop.level < maxLevel) {
+						index++;
 						darkTroops += `${darkTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
 						if (index === 4) {
 							darkTroops += '#';
@@ -134,10 +95,10 @@ class UpgradesCommand extends Command {
 		let SiegeMachines = '';
 		data.troops.filter(troop => troop.name in siegeMachinesEmoji).forEach(troop => {
 			if (troop.village === 'home') {
-				index++;
 				if (troop.level !== troop.maxLevel) {
 					const maxLevel = troops.find(t => t.name === troop.name)[data.townHallLevel];
 					if (troop.level < maxLevel) {
+						index++;
 						SiegeMachines += `${siegeMachinesEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
 						if (index === 4) {
 							troopLevels += '#';
@@ -153,10 +114,10 @@ class UpgradesCommand extends Command {
 		index = 0;
 		data.troops.filter(troop => troop.name in builderTroopsEmoji).forEach(troop => {
 			if (troop.village === 'builderBase' && data.builderHallLevel) {
-				index++;
 				if (troop.level !== troop.maxLevel) {
 					const maxLevel = buildertroops.find(t => t.name === troop.name)[data.builderHallLevel];
 					if (troop.level < maxLevel) {
+						index++;
 						builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
 						if (index === 4) {
 							builderTroops += '#';
@@ -172,10 +133,10 @@ class UpgradesCommand extends Command {
 		index = 0;
 		data.spells.filter(spell => spell.name in elixirSpellEmoji).forEach(spell => {
 			if (spell.village === 'home') {
-				index++;
 				if (spell.level !== spell.maxLevel) {
 					const maxLevel = troops.find(t => t.name === spell.name)[data.townHallLevel];
 					if (spell.level < maxLevel) {
+						index++;
 						elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
 						if (index === 4) {
 							elixirSpells += '#';
@@ -191,10 +152,10 @@ class UpgradesCommand extends Command {
 		index = 0;
 		data.spells.filter(spell => spell.name in darkSpellEmoji).forEach(spell => {
 			if (spell.village === 'home') {
-				index++;
 				if (spell.level !== spell.maxLevel) {
 					const maxLevel = troops.find(t => t.name === spell.name)[data.townHallLevel];
 					if (spell.level < maxLevel) {
+						index++;
 						darkSpells += `${darkSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
 						if (index === 4) {
 							darkSpells += '#';
@@ -233,6 +194,7 @@ class UpgradesCommand extends Command {
 		});
 
 		if (heroLevels) embed.addField('Heroes', heroLevels);
+		embed.setFooter('Remaining Upgrades');
 
 		return embed;
 	}
