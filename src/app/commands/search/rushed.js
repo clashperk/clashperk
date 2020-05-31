@@ -203,7 +203,7 @@ class RushedCommand extends Command {
 		});
 
 		if (heroLevels) embed.addField('Heroes', heroLevels);
-		embed.setFooter(`Remaining Upgrades | ${rushed} Troops`);
+		embed.setFooter(`Rushed Troops: ${rushed}`);
 
 		return embed;
 	}
