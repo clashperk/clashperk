@@ -87,11 +87,11 @@ class RushedCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`)
 			.setDescription([
-				'Rushed troop, spell & hero count',
-				'```\u200eTH  CNT  NAME',
+				'Rushed Members [Troop, Spell & Hero Count]',
+				'```\u200eTH  👎  NAME',
 				members.filter(m => m.count)
 					.sort((a, b) => b.count - a.count)
-					.map(({ name, count, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding(count)}   ${name}`)
+					.map(({ name, count, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding(count)}  ${name}`)
 					.join('\n'),
 				'```'
 			]);
