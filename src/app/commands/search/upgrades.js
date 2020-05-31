@@ -11,7 +11,7 @@ class UpgradesCommand extends Command {
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows all troop, spell & hero upgrades remaining.',
+				content: 'Shows remaining upgrades of troop/spell/hero.',
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			}
