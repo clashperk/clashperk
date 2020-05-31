@@ -89,7 +89,8 @@ class RushedCommand extends Command {
 			.setDescription([
 				'Rushed troop, spell & hero count',
 				'```\u200eCNT  NAME',
-				members.sort((a, b) => b.count - a.count)
+				members.filter(m => m.count)
+					.sort((a, b) => b.count - a.count)
 					.map(({ name, count }) => `${count.toString().padStart(2, '\u2002')}   ${name}`).join('\n'),
 				'```'
 			]);
