@@ -2,6 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const Resolver = require('../../struct/Resolver');
 const { troops, buildertroops } = require('../../util/troops.json');
+const { oneLine } = require('common-tags');
 const { builderTroopsEmoji, heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
 
 class RushedCommand extends Command {
@@ -54,11 +55,15 @@ class RushedCommand extends Command {
 		data.troops.filter(troop => troop.name in elixirTroopsEmoji).forEach(troop => {
 			if (troop.village === 'home') {
 				if (troop.level !== troop.maxLevel) {
-					const maxLevel = troops.find(t => t.name === troop.name)[data.townHallLevel - 1];
-					if (troop.level < maxLevel) {
+					const rushedLevel = troops.find(t => t.name === troop.name)[data.townHallLevel - 1];
+					const maxLevel = troops.find(t => t.name === troop.name)[data.townHallLevel];
+					if (troop.level < rushedLevel) {
 						index++;
 						rushed++;
-						troopLevels += `${elixirTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${maxLevel}-${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
+						troopLevels += `${elixirTroopsEmoji[troop.name]} `;
+						troopLevels += oneLine`**\`\u200e${this.padStart(troop.level)}/${maxLevel === rushedLevel
+							? ''
+							: rushedLevel}-${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
 						if (index === 4) {
 							troopLevels += '#';
 							index = 0;
@@ -119,11 +124,15 @@ class RushedCommand extends Command {
 		data.troops.filter(troop => troop.name in builderTroopsEmoji).forEach(troop => {
 			if (troop.village === 'builderBase' && data.builderHallLevel) {
 				if (troop.level !== troop.maxLevel) {
-					const maxLevel = buildertroops.find(t => t.name === troop.name)[data.builderHallLevel - 1];
-					if (troop.level < maxLevel) {
+					const rushedLevel = buildertroops.find(t => t.name === troop.name)[data.builderHallLevel - 1];
+					const maxLevel = buildertroops.find(t => t.name === troop.name)[data.builderHallLevel];
+					if (troop.level < rushedLevel) {
 						index++;
 						rushed++;
-						builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
+						builderTroops += `${builderTroopsEmoji[troop.name]} `;
+						builderTroops += oneLine`\`\u200e${this.padStart(troop.level)}/${maxLevel === rushedLevel
+							? ''
+							: rushedLevel}${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
 						if (index === 4) {
 							builderTroops += '#';
 							index = 0;
