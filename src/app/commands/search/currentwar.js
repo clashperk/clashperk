@@ -98,7 +98,7 @@ class CurrentWarCommand extends Command {
 		return message.util.send({ embed });
 	}
 
-	async count(members) {
+	count(members) {
 		let [TH13, TH12, TH11, TH10, TH09, TH08, TH07, TH06, TH05, TH04, TH03, TH02, TH01] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 		for (const member of members) {
 			const TownHAll = member.townHallLevel;
