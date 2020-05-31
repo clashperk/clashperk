@@ -14,9 +14,13 @@ class RushedCommand extends Command {
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows all rushed troop/spell/hero.',
+				content: [
+					'Shows all rushed troop/spell/hero.',
+					'',
+					'`{prefix}rushed clan <clanTag>` - shows the full list of your rushed & non-rushed clan members.'
+				],
 				usage: '<playerTag>',
-				examples: ['#9Q92C8R20']
+				examples: ['#9Q92C8R20', 'clan #8QU8J9LP']
 			},
 			flags: ['--clan', '-c', 'clan']
 		});
