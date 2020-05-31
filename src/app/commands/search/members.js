@@ -25,7 +25,7 @@ class MembersCommand extends Command {
 		const townhall = yield {
 			match: 'option',
 			flag: ['--th', '-th', 'th'],
-			type: Argument.range('integer', 1, 13, true)
+			type: Argument.range('integer', 3, 13, true)
 		};
 
 		const data = yield {

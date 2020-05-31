@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const moment = require('moment');
 require('moment-duration-format');
 const Resolver = require('../../struct/Resolver');
-const { emoji } = require('../../util/emojis');
+const { emoji, townHallEmoji } = require('../../util/emojis');
 
 class CurrentWarCommand extends Command {
 	constructor() {
@@ -57,8 +57,11 @@ class CurrentWarCommand extends Command {
 		}).then(res => res.json());
 
 		if (body.state === 'notInWar') {
-			embed.setDescription('Not In War');
-		} else if (body.state === 'preparation') {
+			embed.setDescription('Not in War');
+			return message.util.send({ embed });
+		}
+
+		if (body.state === 'preparation') {
 			embed.setDescription(`Preparation day against **${body.opponent.name} (${body.opponent.tag})**`)
 				.addField('War State', 'Preparation Day')
 				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
@@ -84,7 +87,65 @@ class CurrentWarCommand extends Command {
 				])
 				.addField('War Ended', moment.duration(Date.now() - new Date(moment(body.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
 		}
+
+		embed.addField('Rosters', [
+			`**${body.clan.name} (${body.clan.tag})**`,
+			`${this.count(body.clan.members)}`,
+			'',
+			`**${body.opponent.name} (${body.opponent.tag})**`,
+			`${this.count(body.opponent.members)}`
+		]);
 		return message.util.send({ embed });
+	}
+
+	async count(members) {
+		let [TH13, TH12, TH11, TH10, TH09, TH08, TH07, TH06, TH05, TH04, TH03, TH02, TH01] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+		for (const member of members) {
+			const TownHAll = member.townHallLevel;
+			if (TownHAll === 13) TH13++;
+			if (TownHAll === 12) TH12++;
+			if (TownHAll === 11) TH11++;
+			if (TownHAll === 10) TH10++;
+			if (TownHAll === 9) TH09++;
+			if (TownHAll === 8) TH08++;
+			if (TownHAll === 7) TH07++;
+			if (TownHAll === 6) TH06++;
+			if (TownHAll === 5) TH05++;
+			if (TownHAll === 4) TH04++;
+			if (TownHAll === 3) TH03++;
+			if (TownHAll === 2) TH02++;
+			if (TownHAll === 1) TH01++;
+		}
+
+		const townHalls = [
+			{ level: 1, total: TH01 },
+			{ level: 2, total: TH02 },
+			{ level: 3, total: TH03 },
+			{ level: 4, total: TH04 },
+			{ level: 5, total: TH05 },
+			{ level: 6, total: TH06 },
+			{ level: 7, total: TH07 },
+			{ level: 8, total: TH08 },
+			{ level: 9, total: TH09 },
+			{ level: 10, total: TH10 },
+			{ level: 11, total: TH11 },
+			{ level: 12, total: TH12 },
+			{ level: 13, total: TH13 }
+		].filter(townHall => townHall.total !== 0).reverse();
+
+		return this.chunk(townHalls)
+			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
+				.join(' '))
+			.join('\n');
+	}
+
+	chunk(items = []) {
+		const chunk = 5;
+		const array = [];
+		for (let i = 0; i < items.length; i += chunk) {
+			array.push(items.slice(i, i + chunk));
+		}
+		return array;
 	}
 }
 
