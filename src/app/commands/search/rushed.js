@@ -61,9 +61,7 @@ class RushedCommand extends Command {
 						index++;
 						rushed++;
 						troopLevels += `${elixirTroopsEmoji[troop.name]} `;
-						troopLevels += oneLine`**\`\u200e${this.padStart(troop.level)}/${maxLevel === rushedLevel
-							? ''
-							: `${rushedLevel.toString().padStart(2, ' ')}-`}${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
+						troopLevels += oneLine`**\`\u200e${this.padStart(troop.level)}|${this.padEnd(option, data.townHallLevel, troop)}+\u200f\`**\u2002`;
 						if (index === 4) {
 							troopLevels += '#';
 							index = 0;
@@ -88,7 +86,7 @@ class RushedCommand extends Command {
 					if (troop.level < maxLevel) {
 						index++;
 						rushed++;
-						darkTroops += `${darkTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
+						darkTroops += `${darkTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}|${this.padEnd(option, data.townHallLevel, troop)}+\u200f\`**\u2002`;
 						if (index === 4) {
 							darkTroops += '#';
 							index = 0;
@@ -108,7 +106,7 @@ class RushedCommand extends Command {
 					if (troop.level < maxLevel) {
 						index++;
 						rushed++;
-						SiegeMachines += `${siegeMachinesEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
+						SiegeMachines += `${siegeMachinesEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}|${this.padEnd(option, data.townHallLevel, troop)}+\u200f\`**\u2002`;
 						if (index === 4) {
 							troopLevels += '#';
 							index = 0;
@@ -124,15 +122,11 @@ class RushedCommand extends Command {
 		data.troops.filter(troop => troop.name in builderTroopsEmoji).forEach(troop => {
 			if (troop.village === 'builderBase' && data.builderHallLevel) {
 				if (troop.level !== troop.maxLevel) {
-					const rushedLevel = buildertroops.find(t => t.name === troop.name)[data.builderHallLevel - 1];
-					const maxLevel = buildertroops.find(t => t.name === troop.name)[data.builderHallLevel];
-					if (troop.level < rushedLevel) {
+					const maxLevel = buildertroops.find(t => t.name === troop.name)[data.builderHallLevel - 1];
+					if (troop.level < maxLevel) {
 						index++;
 						rushed++;
-						builderTroops += `${builderTroopsEmoji[troop.name]} `;
-						builderTroops += oneLine`\`\u200e${this.padStart(troop.level)}/${maxLevel === rushedLevel
-							? ''
-							: `${rushedLevel.toString().padStart(2, ' ')}-`}${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
+						builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}|${this.padEnd_(option, data.builderHallLevel, troop)}+\u200f\`\u2002`;
 						if (index === 4) {
 							builderTroops += '#';
 							index = 0;
@@ -152,7 +146,7 @@ class RushedCommand extends Command {
 					if (spell.level < maxLevel) {
 						index++;
 						rushed++;
-						elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
+						elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}|${this.padEnd(option, data.townHallLevel, spell)}+\u200f\`**\u2002`;
 						if (index === 4) {
 							elixirSpells += '#';
 							index = 0;
@@ -172,7 +166,7 @@ class RushedCommand extends Command {
 					if (spell.level < maxLevel) {
 						index++;
 						rushed++;
-						darkSpells += `${darkSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
+						darkSpells += `${darkSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}|${this.padEnd(option, data.townHallLevel, spell)}+\u200f\`**\u2002`;
 						if (index === 4) {
 							darkSpells += '#';
 							index = 0;
@@ -190,7 +184,7 @@ class RushedCommand extends Command {
 					const maxLevel = buildertroops.find(t => t.name === hero.name)[data.builderHallLevel - 1];
 					if (hero.level < maxLevel) {
 						rushed++;
-						builderHero += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}/${this.padEnd_(option, data.builderHallLevel, hero)}\u200f\`**\u2002`;
+						builderHero += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}|${this.padEnd_(option, data.builderHallLevel, hero)}+\u200f\`**\u2002`;
 					}
 				}
 			}
@@ -205,7 +199,7 @@ class RushedCommand extends Command {
 					const maxLevel = troops.find(t => t.name === hero.name)[data.townHallLevel - 1];
 					if (hero.level < maxLevel) {
 						rushed++;
-						heroLevels += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}/${this.padEnd(option, data.townHallLevel, hero)}\u200f\`**\u2002`;
+						heroLevels += `${heroEmoji[hero.name]} **\`\u200e${this.padStart(hero.level)}|${this.padEnd(option, data.townHallLevel, hero)}+\u200f\`**\u2002`;
 					}
 				}
 			}
