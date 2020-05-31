@@ -63,7 +63,7 @@ class RushedCommand extends Command {
 						troopLevels += `${elixirTroopsEmoji[troop.name]} `;
 						troopLevels += oneLine`**\`\u200e${this.padStart(troop.level)}/${maxLevel === rushedLevel
 							? ''
-							: rushedLevel}-${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
+							: `${rushedLevel.toString().padStart(2, ' ')}-`}${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
 						if (index === 4) {
 							troopLevels += '#';
 							index = 0;
@@ -132,7 +132,7 @@ class RushedCommand extends Command {
 						builderTroops += `${builderTroopsEmoji[troop.name]} `;
 						builderTroops += oneLine`\`\u200e${this.padStart(troop.level)}/${maxLevel === rushedLevel
 							? ''
-							: rushedLevel}-${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
+							: `${rushedLevel.toString().padStart(2, ' ')}-`}${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
 						if (index === 4) {
 							builderTroops += '#';
 							index = 0;
