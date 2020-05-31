@@ -17,7 +17,7 @@ class RushedCommand extends Command {
 				content: [
 					'Shows all rushed troop/spell/hero.',
 					'',
-					'`{prefix}rushed clan <clanTag>` - shows the full list of your rushed & non-rushed clan members.'
+					'• `rushed clan <clanTag>` - list of rushed & non-rushed clan members.'
 				],
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20', 'clan #8QU8J9LP']
