@@ -58,7 +58,7 @@ class RushedCommand extends Command {
 					if (troop.level < maxLevel) {
 						index++;
 						rushed++;
-						troopLevels += `${elixirTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
+						troopLevels += `${elixirTroopsEmoji[troop.name]} **\`\u200e${this.padStart(troop.level)}/${maxLevel}-${this.padEnd(option, data.townHallLevel, troop)}\u200f\`**\u2002`;
 						if (index === 4) {
 							troopLevels += '#';
 							index = 0;
