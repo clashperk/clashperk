@@ -104,8 +104,8 @@ class RushedCommand extends Command {
 		return message.util.send({ embed });
 	}
 
-	padding(num) {
-		return num.toString().padEnd(2, '\u2002');
+	padding(x) {
+		return !isNaN(x) ? x.toString().padEnd(2, '\u2002') : x.padEnd(2, '\u2002');
 	}
 
 	reduce(collection = [], num) {
