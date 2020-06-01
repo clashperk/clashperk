@@ -44,7 +44,7 @@ class CurrentWarCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
-			// .setThumbnail(data.badgeUrls.medium);
+		// .setThumbnail(data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
 			embed.setDescription('Private WarLog');
@@ -62,30 +62,57 @@ class CurrentWarCommand extends Command {
 		}
 
 		if (body.state === 'preparation') {
-			embed.setDescription(`Preparation day against **${body.opponent.name} (${body.opponent.tag})**`)
-				.addField('War State', 'Preparation Day')
-				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
-				.addField('Starts In', moment.duration(new Date(moment(body.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
+			embed.setDescription([
+				'**War Against**',
+				`${body.opponent.name} (${body.opponent.tag})`,
+				'',
+				'**War State**',
+				'Preparation Day',
+				'',
+				'**War Size**',
+				`${body.teamSize} vs ${body.teamSize}`,
+				'',
+				'**Starts In**',
+				moment.duration(new Date(moment(body.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })
+			]);
 		} else if (body.state === 'inWar') {
-			embed.setDescription(`Battle day against **${body.opponent.name} (${body.opponent.tag})**`)
-				.addField('War State', 'Battle Day')
-				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
-				.addField('War Stats', [
-					`${emoji.star} ${body.clan.stars} / ${body.opponent.stars}`,
-					`${emoji.fire} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
-					`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`
-				])
-				.addField('End Time', moment.duration(new Date(moment(body.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
+			embed.setDescription([
+				'**War Against**',
+				`${body.opponent.name} (${body.opponent.tag})`,
+				'',
+				'**War State**',
+				'Battle Day',
+				'',
+				'**War Size**',
+				`${body.teamSize} vs ${body.teamSize}`,
+				'',
+				'**War Stats**',
+				`${emoji.star} ${body.clan.stars} / ${body.opponent.stars}`,
+				`${emoji.fire} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+				`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`,
+				'',
+				'**End Time**',
+				moment.duration(new Date(moment(body.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })
+			]);
 		} else if (body.state === 'warEnded') {
-			embed.setDescription(`War ended against **${body.opponent.name} (${body.opponent.tag})**`)
-				.addField('War State', 'War Ended')
-				.addField('War Size', `${body.teamSize} vs ${body.teamSize}`)
-				.addField('War Stats', [
-					`${emoji.star} ${body.clan.stars} / ${body.opponent.stars}`,
-					`${emoji.fire} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
-					`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`
-				])
-				.addField('War Ended', moment.duration(Date.now() - new Date(moment(body.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' }));
+			embed.setDescription([
+				'**War Against**',
+				`${body.opponent.name} (${body.opponent.tag})`,
+				'',
+				'**War State**',
+				'War Ended',
+				'',
+				'**War Size**',
+				`${body.teamSize} vs ${body.teamSize}`,
+				'',
+				'**War Stats**',
+				`${emoji.star} ${body.clan.stars} / ${body.opponent.stars}`,
+				`${emoji.fire} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+				`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`,
+				'',
+				'**End Time**',
+				moment.duration(Date.now() - new Date(moment(body.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })
+			]);
 		}
 
 		embed.addField('Rosters', [
