@@ -115,17 +115,14 @@ class CurrentWarCommand extends Command {
 			]);
 		}
 
-		embed.description.concat([
+		embed.setDescription(embed.description.concat([
+			'',
 			'**Rosters**',
 			`**${body.clan.name}**\u200b ${this.count(body.clan.members)}`,
 			'',
 			`**${body.opponent.name}**\u200b ${this.count(body.opponent.members)}`
-		]);
-		embed.addField('Rosters', [
-			`**${body.clan.name}**\u200b ${this.count(body.clan.members)}`,
-			'',
-			`**${body.opponent.name}**\u200b ${this.count(body.opponent.members)}`
-		]);
+		]));
+
 		return message.util.send({ embed });
 	}
 
