@@ -101,8 +101,8 @@ class PlayerEvent {
 				]);
 			}
 		}
-		embed.setFooter(data.clan.name, data.clan.badge)
-			.setTimestamp();
+		embed.setFooter(data.clan.name, data.clan.badge);
+			// .setTimestamp();
 
 		return embed;
 	}
