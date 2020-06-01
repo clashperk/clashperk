@@ -151,13 +151,13 @@ class CWLStatsComamnd extends Command {
 			}
 		}
 
-		if (!collection.length) {
+		/* if (!collection.length) {
 			return message.util.send({
 				embed: {
 					description: 'CWL stats are available after round 2'
 				}
 			});
-		}
+		}*/
 		const description = collection.map(arr => {
 			const header = arr[0].join('\n');
 			const description = arr[1].join('\n');
