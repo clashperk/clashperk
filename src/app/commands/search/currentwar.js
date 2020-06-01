@@ -119,9 +119,9 @@ class CurrentWarCommand extends Command {
 			embed.description,
 			'',
 			'**Rosters**',
-			`${body.clan.name}**\u200b ${this.count(body.clan.members)}`,
+			`${body.clan.name}\u200b ${this.count(body.clan.members)}`,
 			'',
-			`${body.opponent.name}**\u200b ${this.count(body.opponent.members)}`
+			`${body.opponent.name}\u200b ${this.count(body.opponent.members)}`
 		]);
 
 		return message.util.send({ embed });
@@ -139,7 +139,7 @@ class CurrentWarCommand extends Command {
 			.sort((a, b) => b.level - a.level);
 		const avg = townHalls.reduce((p, c) => p + (c.total * c.level), 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
 
-		return [`**(Avg: ${avg.toFixed(2)})**`, this.chunk(townHalls)
+		return [`(Avg: ${avg.toFixed(2)})`, this.chunk(townHalls)
 			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
 				.join(' '))
 			.join('\n')].join('\n');
