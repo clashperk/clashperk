@@ -151,6 +151,13 @@ class CWLStatsComamnd extends Command {
 			}
 		}
 
+		if (!collection.length) {
+			return message.util.send({
+				embed: {
+					description: 'CWL stats are available after round 2'
+				}
+			});
+		}
 		const description = collection.map(arr => {
 			const header = arr[0].join('\n');
 			const description = arr[1].join('\n');
@@ -164,18 +171,13 @@ class CWLStatsComamnd extends Command {
 			.setDescription(description)
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
 		const msg = await message.util.send({ embed });
-		msg.react('ℹ');
-		let react;
-		try {
-			react = await msg.awaitReactions(
-				(reaction, user) => reaction.emoji.name === 'ℹ' && user.id === message.author.id,
-				{ max: 1, time: 30000, errors: ['time'] }
-			);
-		} catch (error) {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
-		}
-		await msg.reactions.removeAll().catch(() => null);
+		await msg.react('➕');
+		const collector = await msg.awaitReactions(
+			(reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
+			{ max: 1, time: 30000, errors: ['time'] }
+		).catch(() => null);
+		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
+		if (!collector || !collector.size) return;
 		return message.channel.send({
 			embed: {
 				color: 0x5970c1,
