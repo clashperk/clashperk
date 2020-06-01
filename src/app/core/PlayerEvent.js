@@ -77,7 +77,7 @@ class PlayerEvent {
 		if (!member) return null;
 		const embed = new MessageEmbed()
 			.setColor(MODE[item.mode])
-			.setTitle(`${member.name} (${member.tag})`)
+			.setTitle(`${member.name} - ${member.tag}`)
 			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`);
 		if (item.mode === 'LEFT') {
 			embed.setDescription([
