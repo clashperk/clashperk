@@ -284,7 +284,8 @@ class CacheHandler {
 					clan: {
 						name: clan.name,
 						tag: clan.tag,
-						badge: clan.badgeUrls.small
+						badge: clan.badgeUrls.small,
+						members: clan.members
 					},
 					event: EVENTS[2]
 				});
