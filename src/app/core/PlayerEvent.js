@@ -70,11 +70,8 @@ class PlayerEvent {
 	async embed(item, data, id) {
 		const cache = this.cached.get(id);
 		const member = await this.player(item.tag);
-		const flag = await mongodb.db('clashperk')
-			.collection('flaggedusers')
-			.findOne({ guild: cache.guild, tag: item.tag });
-
 		if (!member) return null;
+
 		let content = '';
 		const embed = new MessageEmbed()
 			.setColor(MODE[item.mode])
@@ -87,6 +84,9 @@ class PlayerEvent {
 				`${emoji.troopsdonation} ${item.donated}${emoji.donated} ${item.received}${emoji.received}`
 			].join(' '));
 		} else {
+			const flag = await mongodb.db('clashperk')
+				.collection('flaggedusers')
+				.findOne({ guild: cache.guild, tag: item.tag });
 			embed.setDescription([
 				`${townHallEmoji[member.townHallLevel]}${member.townHallLevel}`,
 				`${this.formatHeroes(member)}`,
@@ -96,13 +96,12 @@ class PlayerEvent {
 			if (flag) {
 				const user = await this.client.users.fetch(flag.user).catch(() => null);
 				content = [
-					`**${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})**`,
-					`${flag.reason}`
+					`**${data.clan.name} (${data.clan.tag})**`,
+					`**Flag:** ${flag.reason}`,
+					`**${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})**`
 				];
 			}
 		}
-		embed.setFooter(data.clan.name, data.clan.badge);
-
 		return { embed, content };
 	}
 
