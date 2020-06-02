@@ -83,7 +83,7 @@ class MembersCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
 		const header = stripIndent(`${emoji.trophy} **\`\u200eTH ${'TAG'.padEnd(10, ' ')} ${'NAME'.padEnd(12, '\u2002')}\`**`);
 		const pages = [
@@ -97,7 +97,7 @@ class MembersCommand extends Command {
 
 		const msg = await message.util.send({
 			embed: embed.setDescription([header, pages[0].join('\n')])
-				.setFooter('Page 1/2')
+				.setFooter(`Page 1/2 (${data.members}/50)`)
 		});
 
 		await msg.react('➕');
@@ -107,10 +107,10 @@ class MembersCommand extends Command {
 		).catch(() => null);
 		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
 		if (!collector || !collector.size) return;
-		delete embed.author;
+
 		return message.channel.send({
 			embed: embed.setDescription([header, pages[1].join('\n')])
-				.setFooter('Page 2/2')
+				.setFooter(`Page 2/2 (${data.members}/50)`)
 		});
 
 		/* for (const emoji of ['⬅️', '➡️']) {
