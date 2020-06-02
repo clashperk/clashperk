@@ -99,9 +99,10 @@ class MembersCommand extends Command {
 			embed: embed.setDescription([header, pages[0].join('\n')])
 				.setFooter('Page 1/2')
 		});
-		/* await msg.react('⬇️');
+
+		await msg.react('➕');
 		const collector = await msg.awaitReactions(
-			(reaction, user) => reaction.emoji.name === '⬇️' && user.id === message.author.id,
+			(reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
 			{ max: 1, time: 30000, errors: ['time'] }
 		).catch(() => null);
 		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
@@ -109,9 +110,9 @@ class MembersCommand extends Command {
 		return message.channel.send({
 			embed: embed.setDescription([header, pages[1].join('\n')])
 				.setFooter('Page 2/2')
-		});*/
+		});
 
-		for (const emoji of ['⬅️', '➡️']) {
+		/* for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
@@ -146,7 +147,7 @@ class MembersCommand extends Command {
 			await msg.reactions.removeAll().catch(() => null);
 			return message;
 		});
-		return message;
+		return message;*/
 	}
 
 	paginate(items, start, end) {
