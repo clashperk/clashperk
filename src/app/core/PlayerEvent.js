@@ -88,12 +88,15 @@ class PlayerEvent {
 			const flag = await mongodb.db('clashperk')
 				.collection('flaggedusers')
 				.findOne({ guild: cache.guild, tag: item.tag });
+
+			content = [`\u200e**${data.clan.name} (${data.clan.tag})**`];
 			embed.setDescription([
 				`${townHallEmoji[member.townHallLevel]}${member.townHallLevel}`,
 				`${this.formatHeroes(member)}`,
 				`${emoji.warstar}${member.warStars}`,
 				`${leagueEmoji[member.league ? member.league.id : 29000000]}${member.trophies}`
 			].join(' '));
+
 			if (flag) {
 				const user = await this.client.users.fetch(flag.user).catch(() => null);
 				content = [
