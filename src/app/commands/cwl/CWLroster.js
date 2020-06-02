@@ -67,8 +67,9 @@ class CWLRosterComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		embed.setFooter(`Season ${moment(body.season).format('MMMM YYYY')}`)
-			.setAuthor('CWL Roster');
+		embed.setFooter(`${moment(body.season).format('MMMM YYYY')}`)
+			.setAuthor('CWL Roster')
+			.setDescription('CWL Roster and Town-Hall Distribution');
 
 		let index = 0;
 		for (const clan of body.clans) {

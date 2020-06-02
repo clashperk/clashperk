@@ -108,11 +108,11 @@ class CWLMembersComamnd extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${memberList.length}`, data.badgeUrls.medium);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
-			members += `${this.padStart(member.townHallLevel)}  ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join('  ')}  ${Util.escapeInlineCode(member.name)}`;
+			members += `${this.padStart(member.townHallLevel)} ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join(' ')} ${Util.escapeInlineCode(member.name.substring(0, 12))}`;
 			members += '\n';
 		}
 
-		const header = `TH  BK  AQ  GW  RC  ${'PLAYER'}`;
+		const header = `TH BK AQ GW RC ${'PLAYER'}`;
 		const result = this.split(members);
 		if (Array.isArray(result)) {
 			embed.setDescription([
