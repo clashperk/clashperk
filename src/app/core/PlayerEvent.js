@@ -47,9 +47,9 @@ class PlayerEvent {
 	async handleMessage(channel, data, id) {
 		if (data.tags.length >= 5) return this.queue(channel, data, id);
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
-			const embed = await this.embed(item, data, id);
+			const { content, embed } = await this.embed(item, data, id);
 			if (!embed) continue;
-			await channel.send({ embed }).catch(() => null);
+			await channel.send(content, { embed }).catch(() => null);
 			await this.delay(250);
 		}
 
@@ -58,9 +58,9 @@ class PlayerEvent {
 
 	async queue(channel, data, id) {
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
-			const embed = await this.embed(item, data, id);
+			const { embed, content } = await this.embed(item, data, id);
 			if (!embed) continue;
-			await channel.send({ embed }).catch(() => null);
+			await channel.send(content, { embed }).catch(() => null);
 			await this.delay(2000);
 		}
 
@@ -75,6 +75,7 @@ class PlayerEvent {
 			.findOne({ guild: cache.guild, tag: item.tag });
 
 		if (!member) return null;
+		let content = '';
 		const embed = new MessageEmbed()
 			.setColor(MODE[item.mode])
 			.setTitle(`${member.name} - ${member.tag}`)
@@ -94,17 +95,15 @@ class PlayerEvent {
 			].join(' '));
 			if (flag) {
 				const user = await this.client.users.fetch(flag.user).catch(() => null);
-				embed.addField('Flag', [
-					flag.reason,
-					'',
-					`${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})`
-				]);
+				content = [
+					`**${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})**`,
+					`${flag.reason}`
+				];
 			}
 		}
 		embed.setFooter(data.clan.name, data.clan.badge);
-			// .setTimestamp();
 
-		return embed;
+		return { embed, content };
 	}
 
 	formatHeroes(member) {
