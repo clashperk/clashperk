@@ -78,6 +78,7 @@ class PlayerEvent {
 			.setTitle(`\u200e${member.name} - ${member.tag}`)
 			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`);
 		if (item.mode === 'LEFT') {
+			content = [`\u200e**${data.clan.name} (${data.clan.tag})**`];
 			embed.setDescription([
 				`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 				`${emoji.xp} ${member.expLevel}`,
