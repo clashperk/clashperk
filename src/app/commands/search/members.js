@@ -107,6 +107,7 @@ class MembersCommand extends Command {
 		).catch(() => null);
 		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
 		if (!collector || !collector.size) return;
+		delete embed.author;
 		return message.channel.send({
 			embed: embed.setDescription([header, pages[1].join('\n')])
 				.setFooter('Page 2/2')
