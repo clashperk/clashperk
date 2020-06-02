@@ -58,7 +58,7 @@ class CWLRoundComamnd extends Command {
 	async exec(message, { data, round }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
-			method: 'GET', timeout: 100,
+			method: 'GET', timeout: 10,
 			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 		}).catch(() => null);
 
