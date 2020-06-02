@@ -172,7 +172,7 @@ class ClanGames {
 			.setDescription([
 				`Clan Games Scoreboard [${clan.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`,
 				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-				members.map((m, i) => `${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
+				members.map((m, i) => `\u200e${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
 				'```'
 			])
 			.setFooter(`Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]`)
