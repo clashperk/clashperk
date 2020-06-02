@@ -76,7 +76,7 @@ class CWLLineupComamnd extends Command {
 				embed: {
 					color: 0xf30c11,
 					author: { name: 'Error' },
-					description: status[504]
+					description: status(504)
 				}
 			});
 		}

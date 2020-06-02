@@ -58,7 +58,7 @@ class CWLRoundComamnd extends Command {
 	async exec(message, { data, round }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
-			method: 'GET', timeout: 10,
+			method: 'GET', timeout: 3000,
 			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
 		}).catch(() => null);
 
@@ -67,7 +67,7 @@ class CWLRoundComamnd extends Command {
 				embed: {
 					color: 0XF30C11,
 					author: { name: 'Error' },
-					description: status[504]
+					description: status(504)
 				}
 			});
 		}
