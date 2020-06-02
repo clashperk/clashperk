@@ -48,13 +48,13 @@ class DonationBoardCommand extends Command {
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
 					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
-					return `\`${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
+					return `\`\u200e${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
 				}),
 			this.paginate(this.sort(data.memberList), 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
 					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
-					return `\`${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
+					return `\`\u200e${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
 				})
 		];
 
