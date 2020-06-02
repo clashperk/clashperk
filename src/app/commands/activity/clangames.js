@@ -93,7 +93,7 @@ class ClanGamesCommand extends Command {
 			.setDescription([
 				`Clan Games Scoreboard [${data.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`,
 				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-				members.map((m, i) => `${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
+				members.map((m, i) => `\u200e${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
 				'```'
 			])
 			.setFooter(`Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`);
@@ -123,7 +123,8 @@ class ClanGamesCommand extends Command {
 		const excess = Object.values(clan.members)
 			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
 			.map(x => ({ name: x.name, tag: x.tag, points: x.gain > 4000 ? 4000 : x.gain }));
-		const sorted = members.concat(excess).sort((a, b) => b.points - a.points);
+		// const sorted = members.concat(excess).sort((a, b) => b.points - a.points);
+		const sorted = members.sort((a, b) => b.points - a.points);
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
 }
