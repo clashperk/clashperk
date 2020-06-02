@@ -75,7 +75,7 @@ class PlayerEvent {
 		let content = '';
 		const embed = new MessageEmbed()
 			.setColor(MODE[item.mode])
-			.setTitle(`${member.name} - ${member.tag}`)
+			.setTitle(`\u200e${member.name} - ${member.tag}`)
 			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`);
 		if (item.mode === 'LEFT') {
 			embed.setDescription([
@@ -96,7 +96,7 @@ class PlayerEvent {
 			if (flag) {
 				const user = await this.client.users.fetch(flag.user).catch(() => null);
 				content = [
-					`**${data.clan.name} (${data.clan.tag})**`,
+					`\u200e**${data.clan.name} (${data.clan.tag})**`,
 					`**Flag:** ${flag.reason}`,
 					`**${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})**`
 				];
