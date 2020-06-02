@@ -78,7 +78,6 @@ class PlayerEvent {
 			.setTitle(`\u200e${member.name} - ${member.tag}`)
 			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`);
 		if (item.mode === 'LEFT') {
-			content = [`\u200e${data.clan.name} (${data.clan.tag})`];
 			embed.setDescription([
 				`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 				`${emoji.xp} ${member.expLevel}`,
@@ -89,7 +88,6 @@ class PlayerEvent {
 				.collection('flaggedusers')
 				.findOne({ guild: cache.guild, tag: item.tag });
 
-			content = [`\u200e${data.clan.name} (${data.clan.tag})`];
 			embed.setDescription([
 				`${townHallEmoji[member.townHallLevel]}${member.townHallLevel}`,
 				`${this.formatHeroes(member)}`,
@@ -100,12 +98,15 @@ class PlayerEvent {
 			if (flag) {
 				const user = await this.client.users.fetch(flag.user).catch(() => null);
 				content = [
-					`\u200e**${data.clan.name} (${data.clan.tag})**`,
 					`**Flag:** ${flag.reason}`,
 					`**${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})**`
 				];
 			}
 		}
+
+		embed.setFooter(data.clan.name, data.clan.badgeUrls.small);
+		content = [`\u200e${data.clan.name} (${data.clan.tag})`];
+
 		return { embed, content };
 	}
 
