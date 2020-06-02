@@ -8,7 +8,7 @@ const Resolver = require('../../struct/Resolver');
 class PlayerLogCommand extends Command {
 	constructor() {
 		super('playerlog', {
-			aliases: ['playerlog'],
+			aliases: ['playerlog', 'clanlog'],
 			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
