@@ -105,7 +105,6 @@ class PlayerEvent {
 		}
 
 		embed.setFooter(data.clan.name, data.clan.badge);
-		content = [`\u200e${data.clan.name} (${data.clan.tag})`];
 
 		return { embed, content };
 	}
