@@ -38,6 +38,7 @@ class ClanSearchCommand extends Command {
 	async exec(message, { name }) {
 		const data = await this.client.coc.clans(name, { limit: 12 })
 			.catch(error => ({ ok: false, status: error.code }));
+		console.log(data);
 
 		if (!data.ok) return message.util.reply(status(data.status));
 
