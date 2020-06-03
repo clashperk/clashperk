@@ -67,7 +67,13 @@ class ClanCommand extends Command {
 					? 'More Than Once Per Week'
 					: data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())
 			], true)
-			.addField('Location', data.location ? data.location.name : 'None', true)
+			.addField('Location', [
+				data.location
+					? data.location.isCountry
+						? `:flag_${data.location.countryCode.toLowerCase()}: ${data.location.name}`
+						: ''
+					: 'None'
+			], true)
 			.addField('Description', data.description ? data.description : '\u200b');
 
 		return message.util.send({ embed });
