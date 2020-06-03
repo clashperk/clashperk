@@ -71,7 +71,7 @@ class ClanCommand extends Command {
 				data.location
 					? data.location.isCountry
 						? `:flag_${data.location.countryCode.toLowerCase()}: ${data.location.name}`
-						: ''
+						: data.location.name
 					: 'None'
 			], true)
 			.addField('Description', data.description ? data.description : '\u200b');
