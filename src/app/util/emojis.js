@@ -136,6 +136,27 @@ module.exports = {
 		'Royal Champion': '<:royalchampion:706899855703933037>'
 	},
 
+	CWLEmoji: {
+		'Champion I': '<:champion_1:717735571933364334>',
+		'Champion II': '<:champion_2:717735583962759228>',
+		'Champion III': '<:champion_3:717735599184019598>',
+		'Crystal I': '<:crystal_1:717735618146467863>',
+		'Crystal II': '<:crystal_2:717735624815149107>',
+		'Crystal III': '<:crystal_3:717735631815704606>',
+		'Master I': '<:master_1:717735642708049967>',
+		'Master II': '<:master_2:717735651491053671>',
+		'Master III': '<:master_3:717735658113990738>',
+		'Gold I': '<:gold_1:717735671623843852>',
+		'Gold II': '<:gold_2:717735681589379185>',
+		'Gold III': '<:gold_3:717735697687248897>',
+		'Silver I': '<:silver_1:717735708839903304>',
+		'Silver II': '<:silver_2:717735717031378984>',
+		'Silver III': '<:silver_3:717735724937379870>',
+		'Bronze I': '<:bronze_1:717735738363609168>',
+		'Bronze II': '<:bronze_2:717735744856391702>',
+		'Bronze III': '<:bronze_3:717735755815976981>'
+	},
+
 	emoji: {
 		xp: '<:eXP:706910526373888060>',
 		warstar: '<:warstar:696299067193425951>',

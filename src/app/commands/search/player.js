@@ -60,7 +60,7 @@ class PlayerCommand extends Command {
 		embed.addField('Attacks/Defenses', `${emoji.attacksword} ${data.attackWins} ${emoji.shield} ${data.defenseWins}`, true);
 
 		embed.addField('Donations/Receives', [
-			`${data.donations} / ${data.donationsReceived}`
+			`${emoji.troopsdonation} ${data.donations}${emoji.donated} / ${data.donationsReceived}${emoji.received}`
 		], true);
 
 		data.achievements.forEach(achievement => {
