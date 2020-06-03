@@ -20,8 +20,8 @@ class ClanSearchCommand extends Command {
 			category: 'search',
 			description: {
 				content: 'Search in-game clans by name.',
-				usage: '<clanTag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				usage: '<clanName>',
+				examples: ['air hounds']
 			},
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			args: [
