@@ -1,17 +1,9 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const qs = require('querystring');
 const { emoji } = require('../../util/emojis');
-
-const STATUS = {
-	400: 'client provided incorrect parameters for the request.',
-	403: 'access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
-	404: 'invalid name, resource was not found.',
-	429: 'request was throttled, because amount of requests was above the threshold defined for the used API token.',
-	500: 'unknown error happened when handling the request.',
-	503: 'service is temprorarily unavailable because of maintenance.'
-};
+const { status } = require('../../util/constants');
 
 class ClanSearchCommand extends Command {
 	constructor() {
@@ -28,9 +20,10 @@ class ClanSearchCommand extends Command {
 				{
 					id: 'name',
 					match: 'content',
+					type: Argument.validate('string', (msg, name) => name.length >= 3),
 					prompt: {
-						start: 'what would you like to search for?',
-						retry: 'please provide a name to search clans!'
+						start: 'What would you like to search for?',
+						retry: 'Clan name has to be at least 3 characters long.'
 					}
 				}
 			]
@@ -43,13 +36,10 @@ class ClanSearchCommand extends Command {
 	}
 
 	async exec(message, { name }) {
-		const query = qs.stringify({ name, limit: 10 });
-		const res = await fetch(`https://api.clashofclans.com/v1/clans?${query}`, {
-			method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
-		});
-		const data = await res.json();
+		const data = await this.client.coc.clans(name, { limit: 12 })
+			.catch(error => ({ ok: false, status: error.code }));
 
-		if (!res.ok) return message.util.reply(STATUS[res.status]);
+		if (!data.ok) return message.util.reply(status(data.status));
 
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)

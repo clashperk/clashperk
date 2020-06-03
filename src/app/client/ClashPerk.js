@@ -101,7 +101,7 @@ class ClashPerk extends AkairoClient {
 
 		this.firebase = new Firebase(this);
 		this.firebase = new Firebase(this);
-		this.clashapi = new Client({ token: process.env.CLASH_OF_CLANS_API });
+		this.coc = new Client({ token: process.env.CLASH_OF_CLANS_API });
 		this.postStats = new PostStats(this);
 		this.voteHandler = new VoteHandler(this);
 
