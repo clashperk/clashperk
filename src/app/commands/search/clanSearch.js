@@ -36,7 +36,7 @@ class ClanSearchCommand extends Command {
 	}
 
 	async exec(message, { name }) {
-		const data = await this.client.coc.clans(name, { limit: 12 })
+		const data = await this.client.coc.clans(name, { limit: 10 })
 			.catch(error => ({ ok: false, status: error.code }));
 
 		if (!data.ok) return message.util.send(status(data.status));
@@ -51,11 +51,9 @@ class ClanSearchCommand extends Command {
 						.replace(/closed/g, 'Closed')
 						.replace(/open/g, 'Open');
 					return [
-						`${clan.name} (${clan.tag})`,
-						`${clan.clanLevel} level, ${clan.members} members`,
-						`${clan.location ? `Location: ${clan.location.name}` : ''}`,
-						`Points: ${clan.clanPoints}`,
-						`Status: ${clanType} ${emoji.trophy} ${clan.requiredTrophies}`
+						`**${clan.name} (${clan.tag})**`,
+						`${clan.clanLevel} level, ${clan.members} members, ${clan.clanPoints} points`,
+						`${clanType}, ${clan.requiredTrophies} required ${clan.location ? `, ${clan.location.name}` : ''}`
 					].join('\n');
 				}).join('\n\n')
 			]);
