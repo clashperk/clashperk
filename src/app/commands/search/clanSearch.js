@@ -52,7 +52,7 @@ class ClanSearchCommand extends Command {
 						.replace(/open/g, 'Open');
 					return [
 						`**[${clan.name} (${clan.tag})](https://www.clashofstats.com/clans/${clan.tag.substr(1)})**`,
-						`${clan.clanLevel} level, ${clan.members} members, ${clan.clanPoints} points`,
+						`${clan.clanLevel} level, ${clan.members} member${clan.members > 1 ? 's' : ''}, ${clan.clanPoints} points`,
 						`${clanType}, ${clan.requiredTrophies} required ${clan.location ? `, ${clan.location.name}` : ''}`
 					].join('\n');
 				}).join('\n\n')
