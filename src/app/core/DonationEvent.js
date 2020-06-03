@@ -58,7 +58,7 @@ class ClanEvent {
 			]);
 		}
 
-		if (data.unmatched) {
+		if (data.unmatched && (data.unmatched.left || data.unmatched.joined)) {
 			embed.addField('Unmatched', [
 				data.unmatched.left > 0
 					? `${data.unmatched.left} Member${data.unmatched.left === 1 ? '' : 's'} Left`

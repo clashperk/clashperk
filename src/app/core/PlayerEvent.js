@@ -103,7 +103,7 @@ class PlayerEvent {
 				];
 			}
 		}
-		embed.setFooter(`${data.clan.name} [${data.clan.members}/50]`, data.clan.badge);
+		embed.setFooter(`${data.clan.name}`, data.clan.badge).setTimestamp();
 
 		return { embed, content };
 	}

@@ -13,7 +13,6 @@ class CacheHandler {
 	constructor(client) {
 		this.client = client;
 		this.cached = new Map();
-		this.oldMemberList = new Map();
 		this.memberList = {};
 
 		this.clanEmbed = new ClanEmbed(client);
@@ -153,7 +152,8 @@ class CacheHandler {
 
 		const CurrentMemberList = clan.memberList.map(m => m.tag);
 		const CurrentMemberSet = new Set(CurrentMemberList);
-		const OldMemberSet = new Set(this.oldMemberList.get(key));
+		const oldMemberList = this.memberList[key] ? Object.keys(this.memberList[key]) : [];
+		const OldMemberSet = new Set(oldMemberList);
 
 		const data = {
 			_id: key,
@@ -220,7 +220,7 @@ class CacheHandler {
 		// Last Online - Purge Missing Players
 		const $unset = {};
 		if (CurrentMemberSet.size && OldMemberSet.size) {
-			for (const member of this.oldMemberList.get(key).filter(tag => !CurrentMemberSet.has(tag))) {
+			for (const member of oldMemberList.filter(tag => !CurrentMemberSet.has(tag))) {
 				$unset[`members.${member}`] = '';
 			}
 		}
@@ -239,12 +239,11 @@ class CacheHandler {
 
 		// Donation Log
 		if (data.donated.length || data.received.length) {
-			if (CurrentMemberSet.size && OldMemberSet.size) {
-				const joined = CurrentMemberList.filter(tag => !OldMemberSet.has(tag));
-				const left = this.oldMemberList.get(key).filter(tag => !CurrentMemberSet.has(tag));
-				if (data.donations !== data.receives && (joined.length || left.length)) {
-					data.unmatched = { joined: joined.length, left: left.length };
-				}
+			if (CurrentMemberSet.size && OldMemberSet.size && data.donations !== data.receives) {
+				data.unmatched = {
+					joined: CurrentMemberList.filter(tag => !OldMemberSet.has(tag)).length,
+					left: oldMemberList.filter(tag => !CurrentMemberSet.has(tag)).length
+				};
 			}
 
 			await this.broadcast(data);
@@ -254,7 +253,7 @@ class CacheHandler {
 		const temp = new Set();
 		if (CurrentMemberSet.size && OldMemberSet.size) {
 			const tags = [];
-			for (const tag of this.oldMemberList.get(key).filter(tag => !CurrentMemberSet.has(tag))) {
+			for (const tag of oldMemberList.filter(tag => !CurrentMemberSet.has(tag))) {
 				if (this.memberList[key] && this.memberList[key][tag]) {
 					tags.push({
 						tag,
@@ -284,8 +283,7 @@ class CacheHandler {
 					clan: {
 						name: clan.name,
 						tag: clan.tag,
-						badge: clan.badgeUrls.small,
-						members: clan.members
+						badge: clan.badgeUrls.small
 					},
 					event: EVENTS[2]
 				});
@@ -333,8 +331,6 @@ class CacheHandler {
 			this.memberList[key][member.tag] = member;
 		}
 
-		this.oldMemberList.delete(key);
-		this.oldMemberList.set(key, CurrentMemberList);
 		OldMemberSet.clear();
 		CurrentMemberSet.clear();
 
