@@ -38,33 +38,27 @@ class ClanSearchCommand extends Command {
 	async exec(message, { name }) {
 		const data = await this.client.coc.clans(name, { limit: 12 })
 			.catch(error => ({ ok: false, status: error.code }));
-		console.log(data);
 
-		if (!data.ok) return message.util.reply(status(data.status));
+		if (!data.ok) return message.util.send(status(data.status));
 
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`Showing Top ${data.items.length} Results`)
-			.setTitle(`Searching clans with name ${name}`);
-
-		for (const clan of data.items) {
-			let clan_type = '';
-			if (clan.type === 'inviteOnly') {
-				clan_type = 'Invite Only';
-			} else if (clan.type === 'closed') {
-				clan_type = 'Closed';
-			} else if (clan.type === 'open') {
-				clan_type = 'Open';
-			}
-
-			embed.addField(`${clan.name} (${clan.tag})`, [
-				`Level: ${clan.clanLevel}`,
-				`Members: ${clan.members}`,
-				`Points: ${clan.clanPoints}`,
-				`Status: ${clan_type} ${emoji.trophy} ${clan.requiredTrophies}`,
-				`${clan.location ? `Location: ${clan.location.name}` : ''}`
-			], true);
-		}
+			.setTitle(`Searching clans with name ${name}`)
+			.setDescription([
+				data.items.map(clan => {
+					const clanType = clan.type.replace(/inviteOnly/g, 'Invite Only')
+						.replace(/closed/g, 'Closed')
+						.replace(/open/g, 'Open');
+					return [
+						`${clan.name} (${clan.tag})`,
+						`${clan.clanLevel} level, ${clan.members} members`,
+						`${clan.location ? `Location: ${clan.location.name}` : ''}`,
+						`Points: ${clan.clanPoints}`,
+						`Status: ${clanType} ${emoji.trophy} ${clan.requiredTrophies}`
+					].join('\n');
+				}).join('\n\n')
+			]);
 
 		return message.util.send({ embed });
 	}
