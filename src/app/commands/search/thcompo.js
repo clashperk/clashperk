@@ -43,7 +43,8 @@ class ThCompoCommand extends Command {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const hrStart = process.hrtime();
 		const list = data.memberList.map(m => m.tag);
-		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
+		const separator = Math.ceil(list.length / 10);
+		const funcs = new Array(Math.ceil(list.length / separator)).fill().map(() => list.splice(0, separator))
 			.map((tags, index) => async (collection = []) => {
 				for (const tag of tags) {
 					const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
