@@ -24,7 +24,7 @@ class UsageCommand extends Command {
 			.setColor(0x5970c1)
 			.setFooter('Since August 2019')
 			.setTitle(`${total}x commands used`);
-		if (this.client.isOwner(message.guild.id)) {
+		if (this.client.isOwner(message.author.id)) {
 			embed.addField('Users', [
 				`\`\`\`${users.splice(0, 10).map(({ id, uses }, index) => {
 					const user = this.client.users.cache.get(id);
