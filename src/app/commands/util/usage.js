@@ -20,7 +20,7 @@ class UsageCommand extends Command {
 		const { commands, total } = await this.commands();
 
 		const embed = this.client.util.embed()
-			.setAuthor(`${this.client.user.username} Usage  Statistics`, this.client.user.displayAvatarURL())
+			.setAuthor(`${this.client.user.username} Usage`, this.client.user.displayAvatarURL())
 			.setColor(0x5970c1)
 			.setFooter('Since August 2019')
 			.setTitle(`${total}x commands used`);
