@@ -54,7 +54,7 @@ class ThCompoCommand extends Command {
 			index += 1;
 		}
 		const responses = await Promise.all(urls);
-		const fetched = await Promise.all(responses);
+		const fetched = await Promise.all(responses.map(res => res.json()));
 
 		const reduced = fetched.reduce((count, member) => {
 			const townHall = member.townHallLevel;
