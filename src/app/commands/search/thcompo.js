@@ -41,27 +41,25 @@ class ThCompoCommand extends Command {
 
 	async exec(message, { data }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
+
 		const hrStart = process.hrtime();
-		const list = data.memberList.map(m => m.tag);
-		const separator = Math.ceil(list.length / 10);
-		const funcs = new Array(Math.ceil(list.length / separator)).fill().map(() => list.splice(0, separator))
-			.map((tags, index) => async (collection = []) => {
-				for (const tag of tags) {
-					const member = fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-						method: 'GET',
-						headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[index]}` }
-					}).then(res => res.json());
-					collection.push({ name: member.name, tag: member.tag, townHallLevel: member.townHallLevel, heroes: member.heroes });
+		const requests = [];
+		let index = 0;
+		for (const tag of data.memberList.map(m => m.tag)) {
+			if (index === 9) index = 0;
+			requests.push({
+				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`,
+				option: {
+					method: 'GET',
+					headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[index]}` }
 				}
-				return collection;
 			});
+			index += 1;
+		}
 
-		const requests = await Promise.all(funcs.map(func => func()));
-
-		const reduced = requests.reduce((a, b) => {
-			a.push(...b);
-			return a;
-		}, []).reduce((count, member) => {
+		const fetched = await Promise.all(requests.map(req => fetch(req.url, req.option)))
+			.then(responses => Promise.all(responses.map(res => res.json())));
+		const reduced = fetched.reduce((count, member) => {
 			const townHall = member.townHallLevel;
 			count[townHall] = (count[townHall] || 0) + 1;
 			return count;
