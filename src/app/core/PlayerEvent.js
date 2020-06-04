@@ -47,8 +47,9 @@ class PlayerEvent {
 	async handleMessage(channel, data, id) {
 		if (data.tags.length >= 5) return this.queue(channel, data, id);
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
-			const { content, embed } = await this.embed(item, data, id);
-			if (!embed) continue;
+			const fetched = await this.embed(item, data, id);
+			if (!fetched) continue;
+			const { content, embed } = fetched;
 			await channel.send(content, { embed }).catch(() => null);
 			await this.delay(250);
 		}
@@ -58,8 +59,9 @@ class PlayerEvent {
 
 	async queue(channel, data, id) {
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
-			const { embed, content } = await this.embed(item, data, id);
-			if (!embed) continue;
+			const fetched = await this.embed(item, data, id);
+			if (!fetched) continue;
+			const { content, embed } = fetched;
 			await channel.send(content, { embed }).catch(() => null);
 			await this.delay(2000);
 		}
