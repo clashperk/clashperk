@@ -49,7 +49,7 @@ class ThCompoCommand extends Command {
 			if (index === 9) index = 0;
 			urls.push(fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
-				headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[index]}` }
+				headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[0]}` }
 			}));
 			index += 1;
 		}
