@@ -53,8 +53,8 @@ class ThCompoCommand extends Command {
 			}));
 			index += 1;
 		}
-		const responses = await new Promise.all(urls);
-		const fetched = await new Promise.all(responses);
+		const responses = await Promise.all(urls);
+		const fetched = await Promise.all(responses);
 
 		const reduced = fetched.reduce((count, member) => {
 			const townHall = member.townHallLevel;
