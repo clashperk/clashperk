@@ -40,21 +40,21 @@ class ThCompoCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		await message.util.send(`**Fetching data... ${emoji.loading}**`);
+		// await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const hrStart = process.hrtime();
-		const list = data.memberList.map(m => m.tag);
+		// const list = data.memberList.map(m => m.tag);
 		const urls = [];
 		let index = 0;
 		for (const tag of data.memberList.map(m => m.tag)) {
 			if (index === 9) index = 0;
 			urls.push(fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
-				headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[0]}` }
+				headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[index]}` }
 			}));
 			index += 1;
 		}
-		const responses = await Promise.all(urls);
-		const fetched = await Promise.all(responses.map(res => res.json()));
+		const fetched = await Promise.all(urls).then(responses => Promise.all(responses.map(res => res.json())));
+		// const fetched = await Promise.all(responses.map(res => res.json()));
 
 		const reduced = fetched.reduce((count, member) => {
 			const townHall = member.townHallLevel;
