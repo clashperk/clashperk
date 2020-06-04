@@ -47,7 +47,7 @@ class ThCompoCommand extends Command {
 		const funcs = new Array(Math.ceil(list.length / separator)).fill().map(() => list.splice(0, separator))
 			.map((tags, index) => async (collection = []) => {
 				for (const tag of tags) {
-					const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
+					const member = fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 						method: 'GET',
 						headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[index]}` }
 					}).then(res => res.json());
