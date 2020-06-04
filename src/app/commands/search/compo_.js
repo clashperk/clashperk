@@ -40,27 +40,30 @@ class ThCompoCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		// await message.util.send(`**Fetching data... ${emoji.loading}**`);
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const hrStart = process.hrtime();
-		// const list = data.memberList.map(m => m.tag);
-		const urls = [];
-		let index = 0;
-		for (const tag of data.memberList.map(m => m.tag)) {
-			if (index === 9) index = 0;
+		const requests = data.memberList.map(m => m.tag).reduce((urls, tag, i) => {
+			if (i === 9) i = 0;
 			urls.push(fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
-				headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[index]}` }
+				headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[i]}` }
 			}));
-			index += 1;
-		}
-		const fetched = await Promise.all(urls).then(responses => Promise.all(responses.map(res => res.json())));
-		// const fetched = await Promise.all(responses.map(res => res.json()));
+			return urls;
+		}, []);
 
+		const fetched = await Promise.all(requests).then(responses => Promise.all(responses.map(res => res.json())));
 		const reduced = fetched.reduce((count, member) => {
 			const townHall = member.townHallLevel;
 			count[townHall] = (count[townHall] || 0) + 1;
 			return count;
 		}, {});
+
+		/*
+		[].reduce((a, b) => {
+			a.push(...b);
+			return a;
+		}, []);
+		*/
 
 		const townHalls = Object.entries(reduced)
 			.map(entry => ({ level: entry[0], total: entry[1] }))
@@ -85,3 +88,4 @@ class ThCompoCommand extends Command {
 }
 
 module.exports = ThCompoCommand;
+
