@@ -23,25 +23,27 @@ class UsageCommand extends Command {
 			.setAuthor(`${this.client.user.username} Usage  Statistics`, this.client.user.displayAvatarURL())
 			.setColor(0x5970c1)
 			.setFooter('Since August 2019')
-			.setTitle(`${total}x commands used`)
-			.addField('Users', [
+			.setTitle(`${total}x commands used`);
+		if (this.client.isOwner(message.guild.id)) {
+			embed.addField('Users', [
 				`\`\`\`${users.splice(0, 10).map(({ id, uses }, index) => {
 					const user = this.client.users.cache.get(id);
 					return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${user.username}`;
 				}).join('\n')}\`\`\``
-			])
-			.addField('Servers', [
+			]);
+			embed.addField('Servers', [
 				`\`\`\`${guilds.splice(0, 10).map(({ id, uses }, index) => {
 					const guild = this.client.guilds.cache.get(id);
 					return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${guild.name}`;
 				}).join('\n')}\`\`\``
-			])
-			.addField('Commands', [
+			]);
+			embed.addField('Commands', [
 				`\`\`\`${commands.splice(0, 10).map(({ id, uses }, index) => {
 					const command = this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '');
 					return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${command}`;
 				}).join('\n')}\`\`\``
 			]);
+		}
 
 		return message.util.send({ embed });
 	}
