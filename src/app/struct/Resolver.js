@@ -67,7 +67,7 @@ class Reslover {
 
 	static async player(tag) {
 		const res = await fetch(`https://api.clashofclans.com/v1/players/%23${this.format(tag)}`, {
-			method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
+			method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		}).catch(() => null);
 
 		const embed = new MessageEmbed()
@@ -82,7 +82,7 @@ class Reslover {
 
 	static async clan(tag) {
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/%23${this.format(tag)}`, {
-			method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
+			method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		}).catch(() => null);
 
 		const embed = new MessageEmbed()

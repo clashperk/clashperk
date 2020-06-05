@@ -53,7 +53,7 @@ class CurrentWarCommand extends Command {
 
 		const body = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar`, {
 			method: 'GET',
-			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		}).then(res => res.json());
 
 		if (body.state === 'notInWar') {

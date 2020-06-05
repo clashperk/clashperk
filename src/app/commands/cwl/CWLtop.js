@@ -48,7 +48,7 @@ class CWLTopCommand extends Command {
 		for (const tag of data.memberList.map(m => m.tag)) {
 			const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
-				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
+				headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 			}).then(res => res.json());
 			if (!member) continue;
 			const star = member.achievements

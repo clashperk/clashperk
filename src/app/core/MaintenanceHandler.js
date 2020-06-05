@@ -11,7 +11,7 @@ class MaintenanceHandler {
 		return https.request('https://api.clashofclans.com/v1/locations?limit=1', {
 			method: 'GET',
 			headers: {
-				'Authorization': `Bearer ${process.env.CLASH_OF_CLANS_API}`,
+				'Authorization': `Bearer ${process.env.DEVELOPER_TOKEN}`,
 				'Content-Type': 'application/json'
 			}
 		}, res => {

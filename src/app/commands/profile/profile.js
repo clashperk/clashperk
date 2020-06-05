@@ -56,7 +56,7 @@ class ProfileCommand extends Command {
 			index += 1;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
-				headers: { accept: 'application/json', authorization: `Bearer ${process.env.CLASH_OF_CLANS_API}` }
+				headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 			});
 			if (!res.ok) continue;
 			const data = await res.json();
