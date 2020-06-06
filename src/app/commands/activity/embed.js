@@ -10,18 +10,7 @@ class ClanEmbedCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: [
-					'Creates a beautiful embed for a clan.',
-					'',
-					'**Become a Patron to make this Embed Live!**',
-					'',
-					'• Set custom description',
-					'• Set accepted Town-Halls',
-					'• Set clan Leader',
-					'• Auto updates every 5-10 min',
-					'',
-					'[Become a Patron](https://www.patreon.com/join/clashperk)'
-				],
+				content: 'Creates a beautiful embed for a clan.',
 				usage: '<clanTag>'
 			}
 		});

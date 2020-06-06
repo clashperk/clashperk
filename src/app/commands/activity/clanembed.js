@@ -10,7 +10,18 @@ class ClanEmbedCommand extends Command {
 			description: {
 				usage: '<clanTag> [--color]',
 				examples: ['#8QU8J9LP --color #5970C1'],
-				content: 'Setup a live updating clan embed.'
+				content: [
+					'Creates a beautiful embed for a clan.',
+					'',
+					'**Become a Patron to make this Embed Live!**',
+					'',
+					'• Set custom description',
+					'• Set accepted Town-Halls',
+					'• Set clan Leader',
+					'• Auto updates every 5-10 min',
+					'',
+					'[Become a Patron](https://www.patreon.com/join/clashperk)'
+				]
 			},
 			args: [
 				{
