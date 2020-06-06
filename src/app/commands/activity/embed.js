@@ -57,10 +57,11 @@ class ClanEmbedCommand extends Command {
 		return message.channel.send([
 			'Become a Patron to make this Embed Live!',
 			'',
+			'• Self-updaing Embed',
 			'• Set custom description',
 			'• Set accepted Town-Halls',
-			'• Set clan Leader',
-			'• Auto updates every 5-10 min'
+			'• Set custom clan Leader',
+			'• Set custom embed color'
 		]);
 	}
 
