@@ -14,10 +14,10 @@ class ClanEmbedCommand extends Command {
 					'Creates a beautiful embed for a clan.',
 					'',
 					'**Become a Patron to make this Embed Live!**',
-					'• Self-updaing Embed',
+					'• Self-updaing embed',
 					'• Set custom description',
-					'• Set accepted Town-Halls',
-					'• Set custom clan Leader',
+					'• Set accepted town-halls',
+					'• Set custom clan leader',
 					'• Set custom embed color',
 					'',
 					'[Become a Patron](https://www.patreon.com/join/clashperk)'

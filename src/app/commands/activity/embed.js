@@ -45,7 +45,7 @@ class ClanEmbedCommand extends Command {
 			.setTitle('Open In-Game')
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 			.setThumbnail(data.badgeUrls.medium)
-			.setDescription(data.description)
+			.setDescription(data.description || 'No description available.')
 			.addField(`${emoji.owner} Leader`, `${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name} (${m.tag})`)[0]}`)
 			.addField(`${emoji.clan} War Info`, [
 				`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses, ${data.warTies} ties,` : ''} win streak ${data.warWinStreak}`
@@ -58,10 +58,10 @@ class ClanEmbedCommand extends Command {
 		return message.channel.send([
 			'Become a Patron to make this Embed Live!',
 			'',
-			'• Self-updaing Embed',
+			'• Self-updaing embed',
 			'• Set custom description',
-			'• Set accepted Town-Halls',
-			'• Set custom clan Leader',
+			'• Set accepted town-halls',
+			'• Set custom clan leader',
 			'• Set custom embed color'
 		]);
 	}
