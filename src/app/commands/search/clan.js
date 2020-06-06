@@ -58,7 +58,7 @@ class ClanCommand extends Command {
 			.addField('Required Trophies', `${emoji.trophy} ${data.requiredTrophies}`, true)
 			.addField('Clan Type', clan_type, true)
 			.addField('Clan Points', `${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints}`, true)
-			.addField('War League', `${CWLEmoji[data.warLeague.name]} ${data.warLeague.name}`, true)
+			.addField('War League', `${CWLEmoji[data.warLeague.name] || ''} ${data.warLeague.name}`, true)
 			.addField('War Log', data.isWarLogPublic ? 'Public' : 'Private', true)
 			.addField('War Wins', data.warWins, true)
 			.addField('Win Streak', data.warWinStreak, true)
