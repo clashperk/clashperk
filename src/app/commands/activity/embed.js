@@ -44,7 +44,7 @@ class ClanEmbedCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setTitle('Open In-Game')
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
-			.setThumbnail(data.badgeUrls.small)
+			.setThumbnail(data.badgeUrls.medium)
 			.setDescription(data.description)
 			.addField(`${emoji.owner} Leader`, `${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name} (${m.tag})`)[0]}`)
 			.addField(`${emoji.clan} War Info`, [
@@ -63,7 +63,7 @@ class ClanEmbedCommand extends Command {
 			'• Set accepted Town-Halls',
 			'• Set custom clan Leader',
 			'• Set custom embed color'
-		]);
+		]).then(msg => msg.delete({ timeout: 1 * 60 * 1000 }));
 	}
 
 	async delay(ms) {
