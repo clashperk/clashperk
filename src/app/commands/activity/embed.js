@@ -67,7 +67,7 @@ class ClanEmbedCommand extends Command {
 
 		setTimeout(() => {
 			if (!msg.deleted) return msg.delete();
-		}, 1 * 60 * 1000);
+		}, 10000);
 
 		return message;
 	}
