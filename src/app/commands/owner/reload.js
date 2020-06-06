@@ -24,7 +24,8 @@ class ReloadCommand extends Command {
 			return message.util.send({
 				embed: {
 					color: 3093046,
-					description: `Reloaded ${cmd} commands, ${listener} listeners & ${inhibitor} inhibitors`
+					title: `Reloaded (Shard ${message.guild.shard.id}/${this.client.shard.count})`,
+					description: `${cmd} commands, ${listener} listeners & ${inhibitor} inhibitors`
 				}
 			});
 		}

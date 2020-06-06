@@ -15,7 +15,8 @@ class ClanEmbedCommand extends Command {
 			args: [
 				{
 					id: 'args',
-					match: 'content'
+					match: 'content',
+					default: ''
 				}
 			]
 		});
@@ -24,10 +25,10 @@ class ClanEmbedCommand extends Command {
 	async exec(message, { args }) {
 		const patron = this.client.patron.get(message.guild.id, 'guild', false);
 		if (patron) {
-			return this.handler.handleDirectCommand(message, args, this.handler.modules.get('clanembed'), false);
+			return this.handler.handleDirectCommand(message, args, this.handler.modules.get('patron-clanembed'), false);
 		}
 
-		return this.handler.handleDirectCommand(message, args, this.handler.modules.get('patron-clanembed'), false);
+		return this.handler.handleDirectCommand(message, args, this.handler.modules.get('simple-clanembed'), false);
 	}
 }
 
