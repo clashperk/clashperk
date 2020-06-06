@@ -55,7 +55,7 @@ class ClanEmbedCommand extends Command {
 
 		await message.channel.send({ embed });
 		await this.delay(250);
-		const msg = await message.channel.send([
+		return message.channel.send([
 			'Become a Patron to make this Embed Live!',
 			'',
 			'• Self-updaing Embed',
@@ -64,12 +64,6 @@ class ClanEmbedCommand extends Command {
 			'• Set custom clan Leader',
 			'• Set custom embed color'
 		]);
-
-		setTimeout(() => {
-			if (!msg.deleted) return msg.delete();
-		}, 10000);
-
-		return message;
 	}
 
 	async delay(ms) {
