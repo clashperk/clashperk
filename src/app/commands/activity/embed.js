@@ -7,7 +7,7 @@ class ClanEmbedCommand extends Command {
 		super('simple-clanembed', {
 			category: 'hidden',
 			cooldown: 3000,
-			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
+			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: 'Creates a beautiful embed for a clan.',
