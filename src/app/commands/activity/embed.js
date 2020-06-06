@@ -44,7 +44,7 @@ class ClanEmbedCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setTitle('Open In-Game')
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
-			.setThumbnail(data.badgeUrls.medium)
+			.setThumbnail(data.badgeUrls.small)
 			.setDescription(data.description)
 			.addField(`${emoji.owner} Leader`, `${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name} (${m.tag})`)[0]}`)
 			.addField(`${emoji.clan} War Info`, [
