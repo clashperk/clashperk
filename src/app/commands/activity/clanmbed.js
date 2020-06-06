@@ -4,7 +4,7 @@ class ClanEmbedCommand extends Command {
 	constructor() {
 		super('clanembed', {
 			aliases: ['clanembed', 'cembed'],
-			category: 'hidden',
+			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
