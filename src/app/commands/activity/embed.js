@@ -50,7 +50,8 @@ class ClanEmbedCommand extends Command {
 			.addField(`${emoji.clan} War Info`, [
 				`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses, ${data.warTies} ties,` : ''} win streak ${data.warWinStreak}`
 			])
-			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL());
+			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL())
+			.setTimestamp();
 
 		await message.channel.send({ embed });
 		await this.delay(250);
