@@ -15,12 +15,12 @@ class ReloadCommand extends Command {
 	async exec(message) {
 		await this.client.shard.broadcastEval(
 			`[
-				this.client.inhibitorHandler.removeAll(),
-				this.client.listenerHandler.removeAll(),
-				this.client.commandHandler.removeAll(),
-				this.client.inhibitorHandler.loadAll(),
-				this.client.listenerHandler.loadAll(),
-				this.client.commandHandler.loadAll()
+				this.inhibitorHandler.removeAll(),
+				this.listenerHandler.removeAll(),
+				this.commandHandler.removeAll(),
+				this.inhibitorHandler.loadAll(),
+				this.listenerHandler.loadAll(),
+				this.commandHandler.loadAll()
 			]`
 		).catch(() => null);
 		const cmd = this.client.commandHandler.modules.size;
