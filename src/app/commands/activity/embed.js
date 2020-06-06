@@ -63,7 +63,12 @@ class ClanEmbedCommand extends Command {
 			'• Set accepted Town-Halls',
 			'• Set custom clan Leader',
 			'• Set custom embed color'
-		]).then(msg => msg.delete({ timeout: 1 * 60 * 1000 }));
+		]).then(msg => {
+			if (!msg.deleted) {
+				msg.delete({ timeout: 1 * 60 * 1000 });
+			}
+			return msg;
+		});
 	}
 
 	async delay(ms) {
