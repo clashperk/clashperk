@@ -53,7 +53,7 @@ class CWLComamnd extends Command {
 				['cwl-top', 'top', 'mvp'],
 				['cwl-ranking', 'rank', 'ranks', 'ranking'],
 				['cwl-members', 'members', 'lineup'],
-				['cwl-stars', 'stars']
+				['cwl-stars', 'stars', 'star']
 			],
 			otherwise: new MessageEmbed()
 				.setAuthor('CWL Commands')
