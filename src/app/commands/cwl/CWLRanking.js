@@ -112,7 +112,7 @@ class CWLRankingComamnd extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${clanName} CWL`, clanBadge)
 			.setDescription([
-				`\`\`\`#  STAR  DEST  ${'NAME'.padEnd(15, ' ')}`,
+				`\`\`\`#  STAR DEST  ${'NAME'.padEnd(15, ' ')}`,
 				ranking.sort((a, b) => b.stars - a.stars)
 					.map((clan, i) => `\u200e${++i}  ${clan.stars.toString().padEnd(3, ' ')}  ${this.destruction(clan.destruction)}  ${clan.name}`)
 					.join('\n'),
