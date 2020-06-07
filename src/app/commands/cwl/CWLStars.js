@@ -13,7 +13,7 @@ class CWLStarsComamnd extends Command {
 			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows stats about current cwl war.',
+				content: 'Shows stars of current cwl.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			}
@@ -79,9 +79,8 @@ class CWLStarsComamnd extends Command {
 	}
 
 	async rounds(message, body, { clanTag, clanName, clanBadge } = {}) {
-		const collection = [];
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		let [index, stars, destruction, padding] = [0, 0, 0, 3];
+		let [padding] = [3];
 		const ranking = body.clans.map(clan => ({ tag: clan.tag, stars: 0 }));
 		const members = body.clans.find(clan => clan.tag === clanTag)
 			.members.map(member => ({ name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0 }));
@@ -96,11 +95,7 @@ class CWLStarsComamnd extends Command {
 
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
-					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 					if (data.state === 'warEnded') {
-						stars += this.winner(clan, opponent) ? clan.stars + 10 : clan.stars;
-						destruction += clan.destructionPercentage * data.teamSize;
-						const end = new Date(moment(data.endTime).toDate()).getTime();
 						for (const member of clan.members) {
 							members.find(m => m.tag === member.tag)
 								.of += 1;
@@ -113,20 +108,8 @@ class CWLStarsComamnd extends Command {
 									.stars += member.attacks[0].stars;
 							}
 						}
-
-						collection.push([[
-							`${this.isWinner(clan, opponent)} **${clan.name}** vs **${opponent.name}**`,
-							`${emoji.clock_small} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
-						], [
-							`\`${clan.stars.toString().padEnd(14, ' ')} Stars ${opponent.stars.toString().padStart(14, ' ')}\``,
-							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
-							`\`${this.destruction(clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(11, ' ')}\``
-						]]);
 					}
 					if (data.state === 'inWar') {
-						stars += clan.stars;
-						destruction += clan.destructionPercentage * data.teamSize;
-						const started = new Date(moment(data.startTime).toDate()).getTime();
 						for (const member of clan.members) {
 							members.find(m => m.tag === member.tag)
 								.of += 1;
@@ -139,15 +122,6 @@ class CWLStarsComamnd extends Command {
 									.stars += member.attacks[0].stars;
 							}
 						}
-
-						collection.push([[
-							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
-							`${emoji.clock_small} [Round ${++index}] Started ${moment.duration(Date.now() - started).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
-						], [
-							`\`${clan.stars.toString().padEnd(14, ' ')} Stars ${opponent.stars.toString().padStart(14, ' ')}\``,
-							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
-							`\`${this.destruction(clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(11, ' ')}\``
-						]]);
 					}
 				}
 			}
@@ -170,26 +144,8 @@ class CWLStarsComamnd extends Command {
 		});
 	}
 
-	destruction(dest) {
-		return dest.toFixed(2).toString().concat('%');
-	}
-
 	attacks(num, team) {
 		return num.toString().concat(`/${team}`);
-	}
-
-	isWinner(clan, opponent) {
-		if (clan.stars > opponent.stars) {
-			return emoji.ok;
-		} else if (clan.stars < opponent.stars) {
-			return emoji.wrong;
-		}
-		if (clan.destructionPercentage > opponent.destructionPercentage) {
-			return emoji.ok;
-		} else if (clan.destructionPercentage < opponent.destructionPercentage) {
-			return emoji.wrong;
-		}
-		return emoji.empty;
 	}
 
 	winner(clan, opponent) {
