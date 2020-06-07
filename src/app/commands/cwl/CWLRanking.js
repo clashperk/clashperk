@@ -114,7 +114,7 @@ class CWLRankingComamnd extends Command {
 			.setDescription([
 				`\`\`\`#  STAR  DEST  ${'NAME'.padEnd(15, ' ')}`,
 				ranking.sort((a, b) => b.stars - a.stars)
-					.map((clan, i) => `\u200e${++i} ${clan.stars.toString().padEnd(3, ' ')}  ${this.destruction(clan.destruction)}  ${clan.name}`)
+					.map((clan, i) => `\u200e${++i}  ${clan.stars.toString().padEnd(3, ' ')}  ${this.destruction(clan.destruction)}  ${clan.name}`)
 					.join('\n'),
 				'```'
 			])
