@@ -80,7 +80,6 @@ class CWLStarsComamnd extends Command {
 
 	async rounds(message, body, { clanTag, clanName, clanBadge } = {}) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		let [padding] = [3];
 		const ranking = body.clans.map(clan => ({ tag: clan.tag, stars: 0 }));
 		const members = body.clans.find(clan => clan.tag === clanTag)
 			.members.map(member => ({ name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0 }));
@@ -99,7 +98,6 @@ class CWLStarsComamnd extends Command {
 						for (const member of clan.members) {
 							members.find(m => m.tag === member.tag)
 								.of += 1;
-							if (members.find(m => m.tag === member.tag).of > 9) padding = 5;
 							if (member.attacks) {
 								members.find(m => m.tag === member.tag)
 									.attacks += 1;
@@ -113,7 +111,6 @@ class CWLStarsComamnd extends Command {
 						for (const member of clan.members) {
 							members.find(m => m.tag === member.tag)
 								.of += 1;
-							if (members.find(m => m.tag === member.tag).of > 9) padding = 5;
 							if (member.attacks) {
 								members.find(m => m.tag === member.tag)
 									.attacks += 1;
@@ -136,9 +133,9 @@ class CWLStarsComamnd extends Command {
 					icon_url: clanBadge
 				},
 				description: [
-					`\`\u200e # STAR ${padding > 3 ? 'ATTCK' : 'ATT'}  ${'NAME'.padEnd(20, ' ')}\``,
+					`\`\u200e # STR  ATT  ${'NAME'.padEnd(20, ' ')}\``,
 					leaderboard.filter(m => m.attacks !== 0)
-						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(padding, ' ')}  ${m.name.padEnd(20, ' ')}\``).join('\n')
+						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.padEnd(20, ' ')}\``).join('\n')
 				].join('\n')
 			}
 		});
