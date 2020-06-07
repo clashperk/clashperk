@@ -111,13 +111,20 @@ class CWLRankingComamnd extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clanName} CWL`, clanBadge)
-			.setDescription(ranking.sort((a, b) => b.stars - a.stars).map((a, i) => `\u200e${++i}. ${a.name}`).join('\n'))
+			.setDescription([
+				`\`\`\`${ranking.sort((a, b) => b.stars - a.stars)
+					.map((clan, i) => `\u200e${(++i).toString().padEnd(2, ' ')} ${clan.stars.toString().padStart(3, ' ')} ${this.description(clan.destruction)}  ${clan.name}`)
+					.join('\n')}\`\`\``
+			])
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
 		return message.util.send({ embed });
 	}
 
 	destruction(dest) {
-		return dest.toFixed(2).toString().concat('%');
+		return dest.toFixed()
+			.toString()
+			.concat('%')
+			.padEnd(5, ' ');
 	}
 
 	attacks(num, team) {
@@ -144,18 +151,30 @@ class CWLRankingComamnd extends Command {
 					? data.clan.stars + 10
 					: data.clan.stars;
 
+			ranking.find(({ tag }) => tag === data.clan.tag)
+				.destruction += data.clan.destructionPercentage * data.teamSize;
+
 			ranking.find(({ tag }) => tag === data.opponent.tag)
 				.stars += this.winner(data.opponent, data.clan)
 					? data.opponent.stars + 10
 					: data.opponent.stars;
+
+			ranking.find(({ tag }) => tag === data.opponent.tag)
+				.destruction += data.opponent.destructionPercentage * data.teamSize;
 		}
 
 		if (data.state === 'inWar') {
 			ranking.find(({ tag }) => tag === data.clan.tag)
 				.stars += data.clan.stars;
 
+			ranking.find(({ tag }) => tag === data.clan.tag)
+				.destruction += data.clan.destructionPercentage * data.teamSize;
+
 			ranking.find(({ tag }) => tag === data.opponent.tag)
 				.stars += data.opponent.stars;
+
+			ranking.find(({ tag }) => tag === data.opponent.tag)
+				.destruction += data.opponent.destructionPercentage * data.teamSize;
 		}
 
 		return ranking;
