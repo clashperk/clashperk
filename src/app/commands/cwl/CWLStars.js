@@ -162,7 +162,7 @@ class CWLStarsComamnd extends Command {
 					icon_url: clanBadge
 				},
 				description: [
-					`\`\u200e # STAR ${padding > 3 ? 'ATTCK' : 'ATT'} ${'NAME'.padEnd(20, ' ')}\``,
+					`\`\u200e # STAR ${padding > 3 ? 'ATTCK' : 'ATT'}  ${'NAME'.padEnd(20, ' ')}\``,
 					leaderboard.filter(m => m.attacks !== 0)
 						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(padding, ' ')}  ${m.name.padEnd(20, ' ')}\``).join('\n')
 				].join('\n')
