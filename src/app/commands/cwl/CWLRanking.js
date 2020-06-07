@@ -74,7 +74,7 @@ class CWLRankingComamnd extends Command {
 
 	async rounds(message, body, { clanTag, clanName, clanBadge } = {}) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		let [stars, destruction] = [0, 0];
+		let [stars, destruction, padding] = [0, 0, 5];
 		const ranking = body.clans.map(clan => ({ name: clan.name, tag: clan.tag, stars: 0, destruction: 0 }));
 
 		for (const { warTags } of rounds) {
@@ -96,6 +96,8 @@ class CWLRankingComamnd extends Command {
 						stars += clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 					}
+
+					if (destruction > 9999) padding = 6;
 				}
 			}
 		}
@@ -108,7 +110,7 @@ class CWLRankingComamnd extends Command {
 			.setDescription([
 				`\`\`\`#  STAR DEST   ${'NAME'.padEnd(15, ' ')}`,
 				ranking.sort((a, b) => b.stars - a.stars)
-					.map((clan, i) => `\u200e${++i}  ${clan.stars.toString().padEnd(3, ' ')}  ${this.destruction(clan.destruction)}  ${clan.name}`)
+					.map((clan, i) => `\u200e${++i}  ${clan.stars.toString().padEnd(3, ' ')}  ${this.destruction(clan.destruction, padding)}  ${clan.name}`)
 					.join('\n'),
 				'```'
 			])
@@ -116,11 +118,11 @@ class CWLRankingComamnd extends Command {
 		return message.util.send({ embed });
 	}
 
-	destruction(dest) {
+	destruction(dest, padding) {
 		return dest.toFixed()
 			.toString()
 			.concat('%')
-			.padEnd(5, ' ');
+			.padEnd(padding, ' ');
 	}
 
 	attacks(num, team) {
