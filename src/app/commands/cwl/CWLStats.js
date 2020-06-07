@@ -77,6 +77,8 @@ class CWLStatsComamnd extends Command {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [index, stars, destruction] = [0, 0, 0];
 		const ranking = body.clans.map(clan => ({ tag: clan.tag, stars: 0 }));
+		const members = body.clans.find(clan => clan.tag === clanTag)
+			.members.map(member => ({ name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0, dest: 0 }));
 
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -93,6 +95,20 @@ class CWLStatsComamnd extends Command {
 						stars += this.winner(clan, opponent) ? clan.stars + 10 : clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const end = new Date(moment(data.endTime).toDate()).getTime();
+						for (const member of clan.members) {
+							members.find(m => m.tag === member.tag)
+								.of += 1;
+							if (member.attacks) {
+								members.find(m => m.tag === member.tag)
+									.attacks += 1;
+
+								members.find(m => m.tag === member.tag)
+									.stars += member.attacks[0].stars;
+
+								members.find(m => m.tag === member.tag)
+									.dest += member.attacks[0].destructionPercentage;
+							}
+						}
 
 						collection.push([[
 							`${this.winner(clan, opponent) ? emoji.ok : emoji.wrong} **${clan.name}** vs **${opponent.name}**`,
@@ -107,6 +123,20 @@ class CWLStatsComamnd extends Command {
 						stars += clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const started = new Date(moment(data.startTime).toDate()).getTime();
+						for (const member of clan.members) {
+							members.find(m => m.tag === member.tag)
+								.of += 1;
+							if (member.attacks) {
+								members.find(m => m.tag === member.tag)
+									.attacks += 1;
+
+								members.find(m => m.tag === member.tag)
+									.stars += member.attacks[0].stars;
+
+								members.find(m => m.tag === member.tag)
+									.dest += member.attacks[0].destructionPercentage;
+							}
+						}
 
 						collection.push([[
 							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
@@ -127,6 +157,7 @@ class CWLStatsComamnd extends Command {
 			return [header, description].join('\n');
 		}).join('\n\n');
 		const rank = ranking.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
+		const leaderboard = members.sort((a, b) => b.stars - a.stars);
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clanName} CWL`, clanBadge)
@@ -140,7 +171,22 @@ class CWLStatsComamnd extends Command {
 		).catch(() => null);
 		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
 		if (!collector || !collector.size) return;
-		return this.handler.handleDirectCommand(message, clanTag, this.handler.modules.get('cwl-stars'), false);
+		return message.channel.send({
+			embed: {
+				color: 0x5970c1,
+				author: {
+					name: `${clanName} CWL`,
+					icon_url: clanBadge
+				},
+				description: [
+					`\`\`\`\u200e # STR DEST ATT ${'NAME'}`,
+					leaderboard.filter(m => m.attacks !== 0)
+						.map((m, i) => `\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')} ${this.destruction(m.dest).padEnd(4, ' ')} ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.substring(0, 12)}`)
+						.join('\n'),
+					'```'
+				].join('\n')
+			}
+		});
 	}
 
 	destruction(dest) {
