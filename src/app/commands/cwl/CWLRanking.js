@@ -111,7 +111,7 @@ class CWLRankingComamnd extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clanName} CWL`, clanBadge)
-			.setDescription(ranking.sort((a, b) => b.stars - a.stars).map((a, i) => `${++i}. ${a.name}`).join('\n'))
+			.setDescription(ranking.sort((a, b) => b.stars - a.stars).map((a, i) => `\u200e${++i}. ${a.name}`).join('\n'))
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
 		return message.util.send({ embed });
 	}
