@@ -75,7 +75,7 @@ class CWLStarsComamnd extends Command {
 	async rounds(message, body, { clanTag, clanName, clanBadge } = {}) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		const members = body.clans.find(clan => clan.tag === clanTag)
-			.members.map(member => ({ name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0 }));
+			.members.map(member => ({ name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0, dest: 0 }));
 
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -96,6 +96,9 @@ class CWLStarsComamnd extends Command {
 
 								members.find(m => m.tag === member.tag)
 									.stars += member.attacks[0].stars;
+
+								members.find(m => m.tag === member.tag)
+									.dest += member.attacks[0].destructionPercentage;
 							}
 						}
 					}
@@ -109,6 +112,9 @@ class CWLStarsComamnd extends Command {
 
 								members.find(m => m.tag === member.tag)
 									.stars += member.attacks[0].stars;
+
+								members.find(m => m.tag === member.tag)
+									.dest += member.attacks[0].destructionPercentage;
 							}
 						}
 					}
@@ -125,12 +131,19 @@ class CWLStarsComamnd extends Command {
 					icon_url: clanBadge
 				},
 				description: [
-					`\`\u200e # STR  ATT  ${'NAME'.padEnd(20, ' ')}\``,
+					`\`\u200e # STR ATT DEST ${'NAME'.padEnd(15, ' ')}\``,
 					leaderboard.filter(m => m.attacks !== 0)
-						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.padEnd(20, ' ')}\``).join('\n')
+						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')} ${m.stars.toString().padEnd(2, ' ')} ${this.destruction(m.dest)} ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.padEnd(20, ' ')}\``).join('\n')
 				].join('\n')
 			}
 		});
+	}
+
+	destruction(dest) {
+		return dest.toFixed()
+			.toString()
+			.concat('%')
+			.padEnd(4, ' ');
 	}
 
 	attacks(num, team) {
