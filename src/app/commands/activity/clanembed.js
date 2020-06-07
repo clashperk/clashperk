@@ -25,14 +25,14 @@ class ClanEmbedCommand extends Command {
 			},
 			args: [
 				{
-					id: 'args',
-					match: 'content',
-					default: ''
-				},
-				{
 					id: 'simple',
 					match: 'flag',
 					flag: ['--simple']
+				},
+				{
+					id: 'args',
+					match: 'rest',
+					default: ''
 				}
 			]
 		});
