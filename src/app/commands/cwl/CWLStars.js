@@ -160,9 +160,9 @@ class CWLStarsComamnd extends Command {
 					icon_url: clanBadge
 				},
 				description: [
-					`\`\u200e # ⭐ ⚔️ ${'NAME'.padEnd(20, ' ')}\``,
+					`\`\u200e # ⭐ ⚔️  ${'NAME'.padEnd(20, ' ')}\``,
 					leaderboard.filter(m => m.attacks !== 0)
-						.map((m, i) => `\`\u200e${(++i).toString().padEnd(2, ' ')} ${m.stars.toString().padEnd(4, ' ')} ${this.attacks(m.attacks, m.of).padStart(6, ' ')}  ${m.name.padEnd(20, ' ')}\``).join('\n')
+						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')} ${m.stars.toString().padEnd(2, ' ')} ${this.attacks(m.attacks, m.of).padEnd(5, ' ')}  ${m.name.padEnd(20, ' ')}\``).join('\n')
 				].join('\n')
 			}
 		});
