@@ -18,6 +18,8 @@ class CWLComamnd extends Command {
 					'• remaining `<clanTag>`',
 					'• stats `<clanTag>`',
 					'• members `<clanTag>`',
+					'• stars <clanTag>',
+					'• ranks <clanTag>',
 					'• top `<clanTag>`',
 					'',
 					'For additional `<...args>` usage refer to the examples below.'
@@ -30,6 +32,8 @@ class CWLComamnd extends Command {
 					'remaining #8QU8J9LP',
 					'stats #8QU8J9LP',
 					'members #8QU8J9LP',
+					'stars #8QU8J9LP',
+					'ranks #8QU8J9LP',
 					'top #8QU8J9LP'
 				],
 				usage: '<method> <...args>'
@@ -47,7 +51,9 @@ class CWLComamnd extends Command {
 				['cwl-roster', 'roster'],
 				['cwl-stats', 'stats'],
 				['cwl-top', 'top', 'mvp'],
-				['cwl-members', 'members', 'lineup']
+				['cwl-ranking', 'rank', 'ranks', 'ranking'],
+				['cwl-members', 'members', 'lineup'],
+				['cwl-stars', 'stars']
 			],
 			otherwise: new MessageEmbed()
 				.setAuthor('CWL Commands')
@@ -63,6 +69,8 @@ class CWLComamnd extends Command {
 					'• remaining `<clanTag>`',
 					'• stats `<clanTag>`',
 					'• members `<clanTag>`',
+					'• stars <clanTag>',
+					'• ranks <clanTag>',
 					'• top `<clanTag>`',
 					'',
 					'For additional `<...args>` usage refer to the examples below.',
@@ -74,6 +82,8 @@ class CWLComamnd extends Command {
 					`\`${prefix}cwl remaining #8QU8J9LP\``,
 					`\`${prefix}cwl stats #8QU8J9LP\``,
 					`\`${prefix}cwl members #8QU8J9LP\``,
+					`\`${prefix}cwl stars #8QU8J9LP\``,
+					`\`${prefix}cwl ranks #8QU8J9LP\``,
 					`\`${prefix}cwl top #8QU8J9LP\``
 				])
 		};

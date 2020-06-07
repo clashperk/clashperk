@@ -26,12 +26,6 @@ class CWLStatsComamnd extends Command {
 	}
 
 	*args() {
-		const round = yield {
-			match: 'option',
-			flag: ['--round', '-r'],
-			type: Argument.range('integer', 1, 7, true)
-		};
-
 		const data = yield {
 			type: async (message, args) => {
 				const resolved = await Resolver.resolve(message, args);
@@ -43,7 +37,7 @@ class CWLStatsComamnd extends Command {
 			}
 		};
 
-		return { data, round };
+		return { data };
 	}
 
 	async exec(message, { data }) {
