@@ -113,7 +113,7 @@ class CWLRankingComamnd extends Command {
 			.setAuthor(`${clanName} CWL`, clanBadge)
 			.setDescription([
 				`\`\`\`${ranking.sort((a, b) => b.stars - a.stars)
-					.map((clan, i) => `\u200e${(++i).toString().padEnd(2, ' ')} ${clan.stars.toString().padStart(3, ' ')} ${this.description(clan.destruction)}  ${clan.name}`)
+					.map((clan, i) => `\u200e${(++i).toString().padEnd(2, ' ')} ${clan.stars.toString().padStart(3, ' ')} ${this.destruction(clan.destruction)}  ${clan.name}`)
 					.join('\n')}\`\`\``
 			])
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
