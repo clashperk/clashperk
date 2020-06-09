@@ -130,7 +130,6 @@ class CacheHandler {
 
 		if (!data) {
 			delete this.memberList[id];
-			this.oldMemberList.delete(id);
 			if (cache && cache.intervalId) clearInterval(cache.intervalId);
 			return this.cached.delete(id);
 		}
@@ -368,6 +367,7 @@ class CacheHandler {
 		this.lastOnline.cached.clear();
 		this.clanGame.cached.clear();
 
+		this.memberList = {};
 		return this.cached.clear();
 	}
 }
