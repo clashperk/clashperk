@@ -323,8 +323,11 @@ class ClanGames {
 		return new Date() >= new Date(START) && new Date() <= new Date(END);
 	}
 
-	flush() {
+	async flush() {
 		if (!this.event()) {
+			await mongodb.db('clashperk')
+				.collection('clangameslogs')
+				.updateMany({}, { $unset: { message: '' } });
 			return this.cached.clear();
 		}
 	}
