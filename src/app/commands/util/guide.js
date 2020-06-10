@@ -8,7 +8,7 @@ class GuideCommand extends Command {
 			category: 'util',
 			cooldown: 1000,
 			clientPermissions: ['EMBED_LINKS'],
-			description: { content: 'Shows [info](https://clashperk.xyz/) about how to use bot.' }
+			description: { content: 'Shows info about how to use bot.' }
 		});
 	}
 
