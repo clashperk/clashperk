@@ -41,7 +41,6 @@ class StatsCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setTitle('Stats')
-			.setURL('https://status.clashperk.xyz')
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
 			.addField('Free Memory', [
@@ -50,7 +49,7 @@ class StatsCommand extends Command {
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }), true)
 			.addField('Servers', guilds, true)
 			.addField('Version', `v${version}`, true)
-			.addField('Node.JS', process.version, true)
+			.addField('Node.js', process.version, true)
 			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL());
 
 		if (message.channel.type === 'dm' || !message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
