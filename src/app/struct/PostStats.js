@@ -70,7 +70,7 @@ class PostStats {
 		}, res => {
 			res.on('data', d => {
 				if (res.statusCode !== 200) {
-					this.client.logger.error(d.toString(), { level: 'https://top.gg' });
+					this.client.logger.error(d.toString(), { label: 'https://top.gg' });
 				}
 			});
 		}).end(form);
@@ -84,7 +84,7 @@ class PostStats {
 		}, res => {
 			res.on('data', d => {
 				if (res.statusCode !== 200) {
-					this.client.logger.error(d.toString(), { level: 'https://discord.bots.gg/' });
+					this.client.logger.error(d.toString(), { label: 'https://discord.bots.gg/' });
 				}
 			});
 		}).end(JSON.stringify({ guildCount: guilds }));
@@ -99,7 +99,7 @@ class PostStats {
 		}, res => {
 			res.on('data', d => {
 				if (res.statusCode !== 200) {
-					this.client.logger.error(d.toString(), { level: 'https://discordbotlist.com' });
+					this.client.logger.error(d.toString(), { label: 'https://discordbotlist.com' });
 				}
 			});
 		}).end(JSON.stringify({ guilds, users }));
