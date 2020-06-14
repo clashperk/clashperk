@@ -101,7 +101,7 @@ class Patron {
 		await this.refresh();
 
 		const webhook = await this.fetchWebhook().catch(() => null);
-		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
+		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'PATREON WEBHOOK' });
 		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
 
 		const embed = new MessageEmbed()
@@ -145,7 +145,7 @@ class Patron {
 		await this.refresh();
 
 		const webhook = await this.fetchWebhook().catch(() => null);
-		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
+		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'PATREON WEBHOOK' });
 		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
 
 		const embed = new MessageEmbed()
@@ -189,7 +189,7 @@ class Patron {
 		await this.refresh();
 
 		const webhook = await this.fetchWebhook().catch(() => null);
-		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'VOTING HOOK' });
+		if (!webhook) return this.client.logger.error('Webhook Not Found', { label: 'PATREON WEBHOOK' });
 		await firebase.ref('patreon').child(key).update({ webhook_triggered: true });
 
 		const embed = new MessageEmbed()
