@@ -45,7 +45,7 @@ class ClanEvent {
 		if (data.donated.length) {
 			embed.addField('Donated', [
 				data.donated.map(m => {
-					if (m.donated > 100) {
+					if (m.donated > 200) {
 						const [div, mod] = this.divmod(m.donated);
 						const list = [`\u200e${leagueEmoji[m.league]} ${blueNum[div > 900 ? 900 : div]} ${m.name}`];
 						if (mod > 0) return list.concat(`\u200e${leagueEmoji[m.league]} ${blueNum[mod]} ${m.name}`).join('\n');
