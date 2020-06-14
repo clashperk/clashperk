@@ -1,6 +1,6 @@
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
-const { leagueEmoji, blueNum, redNum } = require('../util/emojis');
+const { leagueEmoji, blueNum, redNum, emoji } = require('../util/emojis');
 const { ObjectId } = require('mongodb');
 
 class ClanEvent {
@@ -39,7 +39,7 @@ class ClanEvent {
 			.setColor(cache.color)
 			.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badge)
 			.setThumbnail(data.clan.badge)
-			.setFooter(`${data.clan.members}/50`, this.client.user.displayAvatarURL())
+			.setFooter(`${data.clan.members} members`, this.client.user.displayAvatarURL())
 			.setTimestamp();
 
 		if (data.donated.length) {
@@ -72,11 +72,11 @@ class ClanEvent {
 
 		if (data.unmatched && (data.unmatched.left || data.unmatched.joined)) {
 			embed.addField('Unmatched', [
-				data.unmatched.left > 0
-					? `${data.unmatched.left} Member${data.unmatched.left === 1 ? '' : 's'} Left`
-					: '',
 				data.unmatched.joined > 0
-					? `${data.unmatched.joined} Member${data.unmatched.joined === 1 ? '' : 's'} Joined`
+					? `${emoji.mem_blue} ${blueNum[data.unmatched.joined]} Joined`
+					: '',
+				data.unmatched.left > 0
+					? `${emoji.mem_red} ${redNum[data.unmatched.left]} Left`
 					: ''
 			]);
 		}

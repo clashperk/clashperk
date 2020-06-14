@@ -193,7 +193,9 @@ module.exports = {
 		botdev: '<:botdev:707231318857089136>',
 		donated: '<:donated:712617495587979306>',
 		received: '<:received:712617494904438855>',
-		clash: '<:clash:716274886506709003>'
+		clash: '<:clash:716274886506709003>',
+		mem_red: '<:memred:721788624835838054>',
+		mem_blue: '<:memblue:721787113414197259>'
 	},
 
 	blueNum: {
