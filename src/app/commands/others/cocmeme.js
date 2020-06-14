@@ -35,4 +35,4 @@ class CocMemeCommand extends Command {
 	}
 }
 
-module.exports = CocMemeCommand;
+// module.exports = CocMemeCommand;
