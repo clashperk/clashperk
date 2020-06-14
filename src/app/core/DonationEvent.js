@@ -38,7 +38,7 @@ class ClanEvent {
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
 			.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badge)
-			.setFooter(`${data.clan.members} members`, this.client.user.displayAvatarURL())
+			.setFooter(`${data.clan.members}/50`, this.client.user.displayAvatarURL())
 			.setTimestamp();
 
 		if (data.donated.length) {
