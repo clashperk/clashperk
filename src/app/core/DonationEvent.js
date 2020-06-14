@@ -38,7 +38,6 @@ class ClanEvent {
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
 			.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badge)
-			.setThumbnail(data.clan.badge)
 			.setFooter(`${data.clan.members} members`, this.client.user.displayAvatarURL())
 			.setTimestamp();
 
