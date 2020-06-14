@@ -1,6 +1,6 @@
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
-const { leagueEmoji } = require('../util/emojis');
+const { leagueEmoji, blueNum, redNum } = require('../util/emojis');
 const { ObjectId } = require('mongodb');
 
 class ClanEvent {
@@ -44,17 +44,29 @@ class ClanEvent {
 
 		if (data.donated.length) {
 			embed.addField('Donated', [
-				data.donated.map(m => `${leagueEmoji[m.league]} **\`\u200e${this.formatNum(m.donated)}\`** \u2002${m.name}`)
-					.join('\n')
-					.substring(0, 1024)
+				data.donated.map(m => {
+					if (m.donated > 100) {
+						const [div, mod] = this.divmod(m.donated);
+						const list = [`\u200e${leagueEmoji[m.league]} ${blueNum[div > 900 ? 900 : div]} ${m.name}`];
+						if (mod > 0) return list.concat(`\u200e${leagueEmoji[m.league]} ${blueNum[mod]} ${m.name}`).join('\n');
+						return list.join('\n');
+					}
+					return `\u200e${leagueEmoji[m.league]} ${blueNum[m.donated]} ${m.name}`;
+				}).join('\n').substring(0, 1024)
 			]);
 		}
 
 		if (data.received.length) {
 			embed.addField('Received', [
-				data.received.map(m => `${leagueEmoji[m.league]} **\`\u200e${this.formatNum(m.received)}\`** \u2002${m.name}`)
-					.join('\n')
-					.substring(0, 1024)
+				data.received.map(m => {
+					if (m.received > 100) {
+						const [div, mod] = this.divmod(m.received);
+						const list = [`\u200e${leagueEmoji[m.league]} ${redNum[div > 900 ? 900 : div]} ${m.name}`];
+						if (mod > 0) return list.concat(`\u200e${leagueEmoji[m.league]} ${redNum[mod]} ${m.name}`).join('\n');
+						return list.join('\n');
+					}
+					return `\u200e${leagueEmoji[m.league]} ${redNum[m.received]} ${m.name}`;
+				}).join('\n').substring(0, 1024)
 			]);
 		}
 
@@ -72,13 +84,8 @@ class ClanEvent {
 		return channel.send({ embed }).catch(() => null);
 	}
 
-	formatNum(num) {
-		return num < 10
-			? num.toString()
-				.padStart(2, '0')
-				.padStart(3, '\u2002')
-			: num.toString()
-				.padStart(3, '\u2002');
+	divmod(num) {
+		return [Math.floor(num / 100) * 100, num % 100];
 	}
 
 	async init() {
