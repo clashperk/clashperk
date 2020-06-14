@@ -4,7 +4,6 @@ require('moment-duration-format');
 const { MessageEmbed } = require('discord.js');
 const os = require('os');
 const { version } = require('../../../../package.json');
-const { firebase } = require('../../struct/Database');
 
 class StatsCommand extends Command {
 	constructor() {
@@ -56,7 +55,7 @@ class StatsCommand extends Command {
 			return message.util.send({ embed });
 		}
 		const msg = await message.util.send({ embed });
-		msg.react('🗑');
+		await msg.react('🗑');
 		let react;
 		try {
 			react = await msg.awaitReactions(
@@ -64,22 +63,14 @@ class StatsCommand extends Command {
 				{ max: 1, time: 30000, errors: ['time'] }
 			);
 		} catch (error) {
-			msg.reactions.removeAll().catch(() => null);
-			return message;
+			return msg.reactions.removeAll().catch(() => null);
 		}
-		react.first().message.delete();
-		return message;
+		if (!react || !react.size) return;
+		return react.first().message.delete();
 	}
 
 	get freemem() {
 		return os.freemem() / (1024 * 1024);
-	}
-
-	async commandsTotal() {
-		const ref = firebase.ref('stats');
-		const data = await ref.once('value').then(snap => snap.val());
-
-		return data ? data.commands_used : 0;
 	}
 }
 
