@@ -10,11 +10,10 @@ const MaintenanceHandler = require('./MaintenanceHandler');
 const { MODES, EVENTS } = require('../util/constants');
 
 class CacheHandler {
-	constructor(client, { interval = 122 * 1000 }) {
+	constructor(client) {
 		this.client = client;
 		this.cached = new Map();
 		this.memberList = {};
-		this.interval = interval;
 
 		this.clanEmbed = new ClanEmbed(client);
 		this.clanEvent = new DonationEvent(client);
@@ -336,7 +335,7 @@ class CacheHandler {
 
 		// Callback
 		if (cache && cache.intervalId) clearInterval(cache.intervalId);
-		const intervalId = setInterval(this.start.bind(this), this.interval, key);
+		const intervalId = setInterval(this.start.bind(this), 122 * 1000, key);
 		cache.intervalId = intervalId;
 		this.cached.set(key, cache);
 	}
