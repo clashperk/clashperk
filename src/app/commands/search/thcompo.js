@@ -2,7 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
-const { townHallEmoji, emoji } = require('../../util/emojis');
+const { townHallEmoji, emoji, blueNum } = require('../../util/emojis');
 const API_TOKENS = process.env.API_TOKENS.split(',');
 
 class ThCompoCommand extends Command {
@@ -74,7 +74,7 @@ class ThCompoCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setColor(0x5970c1)
 			.setThumbnail(data.badgeUrls.small)
-			.setDescription(townHalls.map(th => `${townHallEmoji[th.level]} ${this.padStart(th.total)}`))
+			.setDescription(townHalls.map(th => `${townHallEmoji[th.level]} ${blueNum[th.total]}`))
 			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/696655174025871461.png');
 
 		const diff = process.hrtime(hrStart);
