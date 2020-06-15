@@ -5,6 +5,7 @@ class ThCompoCommand extends Command {
 		super('cping', {
 			aliases: ['cping'],
 			category: 'hidden',
+			cooldown: 1000,
 			description: {
 				content: 'Pings Clash of Clans API',
 				usage: '<clanTag>',
