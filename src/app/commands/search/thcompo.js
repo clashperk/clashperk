@@ -5,6 +5,18 @@ const Resolver = require('../../struct/Resolver');
 const { townHallEmoji, emoji, blueNum, redNum } = require('../../util/emojis');
 const API_TOKENS = process.env.API_TOKENS.split(',');
 
+const emojis = {
+	1: '<:1_blue:721965329147756594>',
+	2: '<:2_blue:721965329215127594>',
+	3: '<:3_blue:721965329194024991>',
+	4: '<:4_blue:721965329672175667>',
+	5: '<:5_blue:721965329412259941>',
+	6: '<:6_blue:721965329902731305>',
+	7: '<:7_blue:721965330083086357>',
+	8: '<:8_blue:721965330670419978>',
+	9: '<:9_blue:721965330653642853>'
+};
+
 class ThCompoCommand extends Command {
 	constructor() {
 		super('th-compo', {
@@ -74,7 +86,7 @@ class ThCompoCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setColor(0x5970c1)
 			.setThumbnail(data.badgeUrls.small)
-			.setDescription(townHalls.map(th => `${townHallEmoji[th.level]} ${th.level < 9 ? redNum[th.total] : blueNum[th.total]}`))
+			.setDescription(townHalls.map(th => `${townHallEmoji[th.level]} ${th.total < 10 ? emojis[th.total] : blueNum[th.total]}`))
 			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/696655174025871461.png');
 
 		const diff = process.hrtime(hrStart);
