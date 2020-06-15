@@ -24,7 +24,7 @@ class ThCompoCommand extends Command {
 
 		const diff = process.hrtime(hrStart);
 		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
-		return message.util.send(`**Clash API Ping ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**`);
+		return message.util.send(`**Clash API Ping~ ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**`);
 	}
 }
 
