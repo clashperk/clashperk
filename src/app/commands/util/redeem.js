@@ -67,7 +67,7 @@ class RedeemCommand extends Command {
 						id: patreon_user.id,
 						discord_id: message.author.id,
 						active: true,
-						guilds: [{ id: message.guild.id, limit: 50 }],
+						guilds: [{ id: message.guild.id, limit: pledge.attributes.amount_cents >= 300 ? 50 : 3 }],
 						entitled_amount: pledge.attributes.amount_cents / 100,
 						redeemed: true
 					}, { merge: true });
@@ -98,7 +98,7 @@ class RedeemCommand extends Command {
 				await firestore.collection('patrons')
 					.doc(patreon_user.id)
 					.update({
-						guilds: [{ id: message.guild.id, limit: 50 }],
+						guilds: [{ id: message.guild.id, limit: user.entitled_amount >= 3 ? 50 : 3 }],
 						discord_id: message.author.id,
 						redeemed: true
 					}, { merge: true });

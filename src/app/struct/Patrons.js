@@ -131,6 +131,17 @@ class Patron {
 			this.client.logger.info(`${user.tag} (${user.id})`, { label: 'PATRON_UPDATE' });
 		}
 
+		const user_db = await firestore.collection('patrons')
+			.doc(patron_user.id)
+			.get()
+			.then(snap => snap.data());
+		if (user_db && attributes.currently_entitled_amount_cents < 300 && user_db.guilds) {
+			await firestore.collection('patrons')
+				.doc(patron_user.id)
+				.update({
+					guilds: [{ id: user_db.guilds[0].id, limit: 3 }]
+				}, { merge: true });
+		}
 		await firestore.collection('patrons')
 			.doc(patron_user.id)
 			.update({
