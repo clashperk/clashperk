@@ -37,12 +37,14 @@ class ClanEvent {
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
-			.setAuthor(`${data.clan.name} (${data.clan.tag})`, data.clan.badge)
+			.setTitle(`${data.clan.name} (${data.clan.tag})`)
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`)
+			.setThumbnail(data.clan.badge)
 			.setFooter(`${data.clan.members}/50`, this.client.user.displayAvatarURL())
 			.setTimestamp();
 
 		if (data.donated.length) {
-			embed.addField('Donated', [
+			embed.addField(`${emoji.mem_blue} Donated`, [
 				data.donated.map(m => {
 					if (m.donated > 200) {
 						const [div, mod] = this.divmod(m.donated);
@@ -56,7 +58,7 @@ class ClanEvent {
 		}
 
 		if (data.received.length) {
-			embed.addField('Received', [
+			embed.addField(`${emoji.mem_red} Received`, [
 				data.received.map(m => {
 					if (m.received > 100) {
 						const [div, mod] = this.divmod(m.received);
@@ -70,7 +72,7 @@ class ClanEvent {
 		}
 
 		if (data.unmatched && (data.unmatched.left || data.unmatched.joined)) {
-			embed.addField('Unmatched', [
+			embed.addField(`${emoji.wrong} Unmatched`, [
 				data.unmatched.joined > 0
 					? `${emoji.mem_blue} ${blueNum[data.unmatched.joined]} Joined`
 					: '',
