@@ -61,7 +61,7 @@ class CacheHandler {
 			.toArray();
 
 		for (const item of collection) {
-			if (this.client.guilds.cache.has(item.guild)) {
+			if (this.client.guilds.cache.has(item.guild) && !item.frozen) {
 				this.cached.set(ObjectId(item._id).toString(), {
 					// _id: item._id,
 					// guild: item.guild,
