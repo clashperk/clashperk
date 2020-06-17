@@ -16,7 +16,7 @@ class PatronCommand extends Command {
 	}
 
 	async exec(message) {
-		// const patrons = await this.patrons();
+		const patrons = await this.patrons();
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setTitle('ClashPerk Patron')
@@ -29,9 +29,9 @@ class PatronCommand extends Command {
 				access to beta commands, faster updates, reduces cooldowns, a special hoisted role on support server and much more.`,
 				'',
 				'[Become a Patron](https://www.patreon.com/clashperk)'
-				/* '',
+				'',
 				'**Our Current Patrons**',
-				patrons.map(name => `» ${name}`).join('\n')*/
+				patrons.map(name => `» ${name}`).join('\n')
 			]);
 
 		return message.util.send({ embed });
