@@ -28,7 +28,7 @@ class PatronCommand extends Command {
 				oneLine`As a patron, you will get a few special rewards like ability to claim more than 2 clans per server,
 				access to beta commands, faster updates, reduces cooldowns, a special hoisted role on support server and much more.`,
 				'',
-				'[Become a Patron](https://www.patreon.com/clashperk)'
+				'[Become a Patron](https://www.patreon.com/clashperk)',
 				'',
 				'**Our Current Patrons**',
 				patrons.map(name => `» ${name}`).join('\n')
