@@ -28,8 +28,7 @@ class AboutCommand extends Command {
 			.addField('Legal Notice', [
 				oneLine(`This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it.
 				For more information see Supercell\'s [Fan Content Policy](https://www.supercell.com/fan-content-policy 'Fan Content Policy × Supercell')`)
-			])
-			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL());
+			]);
 		return message.util.send({ embed });
 	}
 }
