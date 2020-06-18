@@ -17,12 +17,12 @@ class AboutCommand extends Command {
 		const owner = await this.client.users.fetch(this.client.ownerID, false);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-			.setAuthor(`About ${this.client.user.username}`, this.client.user.displayAvatarURL())
+			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL(), 'https://clashperk.xyz')
 			.setDescription([
 				'Feature-Rich and Powerful Clash of Clans Discord bot with everything you will ever need.'
 			])
 			.addField('Owner', `${emoji.botdev} **${owner.tag}**`)
-			.addField('Library', '[discord.js](https://discord.js.org)')
+			.addField('Library', '<:587374156539232277:723162041095028797> [discord.js](https://discord.js.org)')
 			.addField('Need help?', 'Join [Official Discord](https://discord.gg/ppuppun)')
 			.addField('Do you like the bot?', 'Please support on us [Patreon](https://www.patreon.com/bePatron?u=14584309)')
 			.addField('Legal Notice', [

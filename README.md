@@ -1,6 +1,6 @@
 # ClashPerk <img src="https://i.imgur.com/3Wn8fek.png" width="15%" align="right"></a>
 
-#### Discord assistant for activity tracking, searching players and clans, current war status, war log, clan war league roster, and much more. For support and questions, join our [Official Discord](https://discord.gg/ppuppun)
+#### Feature-Rich and Powerful Clash of Clans Discord bot with everything you will ever need. For support and questions, join our [Official Discord](https://discord.gg/ppuppun)
 
 ## License
 
