@@ -1,5 +1,6 @@
 const { Command } = require('discord-akairo');
 const { oneLine } = require('common-tags');
+const { emoji } = require('../../util/emojis');
 
 class AboutCommand extends Command {
 	constructor() {
@@ -18,9 +19,9 @@ class AboutCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`About ${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.setDescription([
-				'Discord assistant for managing clans and CWL. Tracking donations, clan games, last online, & players leave/join. Searching players, clans, wars and much more.'
+				'Feature-Rich and Powerful Clash of Clans Discord bot with everything you will ever need.'
 			])
-			.addField('Author', `[${owner.tag}](https://github.com/ndency)`)
+			.addField('Owner', `${emoji.botdev} **${owner.tag}**`)
 			.addField('Library', '[discord.js](https://discord.js.org)')
 			.addField('Need help?', 'Join [Official Discord](https://discord.gg/ppuppun)')
 			.addField('Do you like the bot?', 'Please support on us [Patreon](https://www.patreon.com/bePatron?u=14584309)')

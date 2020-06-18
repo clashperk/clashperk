@@ -36,7 +36,6 @@ class StatsCommand extends Command {
 			memory += value[3];
 		}
 
-		const owner = await this.client.users.fetch(this.client.ownerID, false);
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setTitle('Stats')
@@ -48,8 +47,7 @@ class StatsCommand extends Command {
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }), true)
 			.addField('Servers', guilds, true)
 			.addField('Version', `v${version}`, true)
-			.addField('Node.js', process.version, true)
-			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL());
+			.addField('Node.js', process.version, true);
 
 		if (message.channel.type === 'dm' || !message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
 			return message.util.send({ embed });

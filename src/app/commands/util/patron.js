@@ -19,19 +19,21 @@ class PatronCommand extends Command {
 		const patrons = await this.patrons();
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-			.setTitle('ClashPerk Patron')
+			.setAuthor('ClashPerk', this.client.user.displayAvatarURL())
 			.setURL('https://www.patreon.com/clashperk')
 			.setDescription([
-				oneLine`ClashPerk\'s tracking system requires a lot of processing power & monthly expenditure.
-				Keeping the bot alive is a draining project. So any and all help is beyond appreciated.`,
+				oneLine`Help us with our hosting related expenses. Any help is beyond appreciated.`,
 				'',
-				oneLine`As a patron, you will get a few special rewards like ability to claim more than 2 clans per server,
-				access to beta commands, faster updates, reduces cooldowns, a special hoisted role on support server and much more.`,
+				'**Benefits**',
+				'• Faster updates and less cooldown',
+				'• Claim more than 2 clans',
+				'• Unlocks all patron only commands',
+				'• Patron role on support discord',
 				'',
 				'[Become a Patron](https://www.patreon.com/clashperk)',
 				'',
 				'**Our Current Patrons**',
-				patrons.map(name => `» ${name}`).join('\n')
+				patrons.map(name => `• ${name}`).join('\n')
 			]);
 
 		return message.util.send({ embed });

@@ -14,7 +14,7 @@ class MaintenanceHandler {
 				'Authorization': `Bearer ${process.env.DEVELOPER_TOKEN}`,
 				'Content-Type': 'application/json'
 			}
-		}, res => {
+		}, async res => {
 			setTimeout(this.init.bind(this), 30 * 1000);
 			if (res.statusCode === 503 && !this.isMaintenance) {
 				this.isMaintenance = Boolean(true);
@@ -23,7 +23,8 @@ class MaintenanceHandler {
 			}
 			if (res.statusCode === 200 && this.isMaintenance) {
 				this.isMaintenance = Boolean(false);
-				this.client.cacheHandler.init();
+				await this.client.cacheHandler.flush();
+				await this.client.cacheHandler.init();
 				return this.send();
 			}
 		}).end();
