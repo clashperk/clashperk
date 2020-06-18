@@ -40,36 +40,50 @@ class HelpCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
-			.setTitle(`\`${prefix}${command.aliases[0].replace(/-/g, '')} ${description.usage}\``)
-			.setImage(description.image)
-			.addField('Description', [
+			.setDescription([
+				`\`${prefix}${command.aliases[0].replace(/-/g, '')} ${description.usage}\``,
+				'',
 				Array.isArray(description.content)
 					? description.content.join('\n')
 						.replace(/{prefix}/g, `\\${prefix}`)
 					: description.content.replace(/{prefix}/g, `\\${prefix}`)
 			]);
 
-		for (const field of description.fields) embed.addField(field.name, field.value);
+		if (description.image) embed.setImage(description.image);
 
-		if (description.examples.length) {
-			const text = `${prefix}${command.aliases[0].replace(/-/g, '')}`;
-			embed.addField('Examples', `\`${text} ${description.examples.join(`\`\n\`${text} `)}\``);
-		}
+		const fields = [];
+		for (const field of description.fields) fields.push(...[`**${field.name}**`, field.value, '']);
+
+		if (fields.length) embed.setDescription([embed.description, '', ...fields]);
 
 		if (command.aliases.length > 1) {
-			embed.addField('Aliases', `\`${command.aliases.join('`, `')}\``);
+			embed.setDescription([
+				embed.description,
+				'**Aliases**',
+				`\`${command.aliases.join('`, `')}\``
+			]);
+		}
+
+		if (description.examples.length) {
+			const cmd = `${prefix}${command.aliases[0].replace(/-/g, '')}`;
+			embed.setDescription([
+				embed.description,
+				'',
+				'**Examples**',
+				`\`${cmd} ${description.examples.join(`\`\n\`${cmd} `)}\``
+			]);
 		}
 
 		if (command.userPermissions && command.userPermissions[0]) {
-			embed.addField('User Permissions',
-				`\`${command.userPermissions.join('`, `').replace(/_/g, ' ').toLowerCase()
-					.replace(/\b(\w)/g, char => char.toUpperCase())}\`` || null);
-		}
-
-		if (command.clientPermissions && command.clientPermissions[0]) {
-			embed.addField('Client Permissions',
-				`\`${command.clientPermissions.join('`, `').replace(/_/g, ' ').toLowerCase()
-					.replace(/\b(\w)/g, char => char.toUpperCase())}\`` || null);
+			embed.setDescription([
+				embed.description,
+				'',
+				`**Required Permission${command.userPermissions.length === 1 ? '' : 's'}**`,
+				command.userPermissions.join('\n')
+					.replace(/_/g, ' ')
+					.toLowerCase()
+					.replace(/\b(\w)/g, char => char.toUpperCase())
+			]);
 		}
 
 		return message.util.send({ embed });

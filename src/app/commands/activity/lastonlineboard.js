@@ -15,7 +15,7 @@ class LastOnlineBoardCommand extends Command {
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: 'Setup a live updating Last Online board.',
-				usage: '<clanTag> [channel/color] [color/channel]',
+				usage: '<clanTag> [channel/color]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #last-online #5970C1', '#8QU8J9LP #5970C1 #last-online']
 			}
 		});
