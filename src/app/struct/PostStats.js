@@ -74,35 +74,6 @@ class PostStats {
 				}
 			});
 		}).end(form);
-
-		// https://discord.bots.gg/
-		https.request(`https://discord.bots.gg/api/v1/bots/${this.client.user.id}/stats`, {
-			method: 'POST', headers: {
-				Authorization: process.env.DISCORD_BOTS_GG,
-				'Content-Type': 'application/json'
-			}
-		}, res => {
-			res.on('data', d => {
-				if (res.statusCode !== 200) {
-					this.client.logger.error(d.toString(), { label: 'https://discord.bots.gg/' });
-				}
-			});
-		}).end(JSON.stringify({ guildCount: guilds }));
-
-
-		// https://discordbotlist.com/
-		https.request(`https://discordbotlist.com/api/bots/${this.client.user.id}/stats`, {
-			method: 'POST', headers: {
-				Authorization: process.env.DISCORD_BOT_LIST,
-				'Content-Type': 'application/json'
-			}
-		}, res => {
-			res.on('data', d => {
-				if (res.statusCode !== 200) {
-					this.client.logger.error(d.toString(), { label: 'https://discordbotlist.com' });
-				}
-			});
-		}).end(JSON.stringify({ guilds, users }));
 	}
 }
 
