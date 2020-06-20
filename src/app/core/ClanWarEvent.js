@@ -69,7 +69,7 @@ class ClanWarEvent {
 
 		const db = await mongodb.db('clashperk')
 			.collection('clanwars')
-			.findOne({ tag: clan.tag });
+			.findOne({ clan_id: ObjectId(id) });
 
 		const states = ['warEnded', 'preparation'];
 		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && states.includes(data.state)) return null;
