@@ -49,7 +49,8 @@ class PlayerCommand extends Command {
 
 		embed.addField('Town Hall', `${townHallEmoji[data.townHallLevel]} ${data.townHallLevel}`, true);
 		embed.addField('Current League', [
-			`${leagueEmoji[data.league ? data.league.id : 29000000]} ${data.league ? data.league.name : 'Unranked'} (${data.trophies})`
+			`${emoji.trophy} ${data.trophies}`,
+			`${leagueEmoji[data.league ? data.league.id : 29000000]} ${data.league ? data.league.name : 'Unranked'}`
 		], true);
 		embed.addField('XP Level', `${emoji.xp} ${data.expLevel}`, true);
 
@@ -80,7 +81,7 @@ class PlayerCommand extends Command {
 				.replace(/member/g, 'Member')
 				.replace(/leader/g, 'Leader');
 			embed.addField(`Clan ${role}`, [
-				`${emoji.clan} **${data.clan.name} [${data.clan.tag}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)})**`
+				`${emoji.clan} ${data.clan.name} [${data.clan.tag}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)})`
 			]);
 		}
 
