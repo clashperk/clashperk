@@ -1,6 +1,6 @@
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
-const { townHallEmoji, emoji, leagueEmoji, heroEmoji, blueNum, redNum } = require('../util/emojis');
+const { townHallEmoji, emoji, whiteNum } = require('../util/emojis');
 const fetch = require('node-fetch');
 const { ObjectId } = require('mongodb');
 const moment = require('moment');
@@ -175,7 +175,7 @@ class ClanWarEvent {
 
 		return this.chunk(townHalls)
 			.map(chunks => {
-				const list = chunks.map(th => `${townHallEmoji[th.level]} ${th.level < 9 ? redNum[th.total] : blueNum[th.total]}`);
+				const list = chunks.map(th => `${townHallEmoji[th.level]} ${whiteNum[th.total]}`);
 				return list.join(' ');
 			}).join('\n');
 	}
