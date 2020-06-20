@@ -141,10 +141,9 @@ class ClanEmbed {
 		const embed = new MessageEmbed()
 			.setTimestamp()
 			.setColor(cache.color)
-			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+			.setTitle(`${clan.name} (${clan.tag})`)
 			.setThumbnail(clan.badgeUrls.medium)
-			.setTitle('Open In-Game')
-			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan.tag}`);
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`);
 		if (cache.embed.description) embed.setDescription(cache.embed.description);
 		else embed.setDescription(clan.description);
 

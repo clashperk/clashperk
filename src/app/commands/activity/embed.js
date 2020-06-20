@@ -41,9 +41,8 @@ class ClanEmbedCommand extends Command {
 	async exec(message, { data }) {
 		const embed = this.client.util.embed()
 			.setColor(5861569)
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
-			.setTitle('Open In-Game')
-			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+			.setTitle(`${data.name} (${data.tag})`)
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)
 			.setDescription(data.description || 'No description available.')
 			.addField(`${emoji.owner} Leader`, `${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name} (${m.tag})`)[0]}`)
