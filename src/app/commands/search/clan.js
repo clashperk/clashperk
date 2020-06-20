@@ -48,13 +48,16 @@ class ClanCommand extends Command {
 		}
 
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
-			.setTitle('Open In-Game')
+			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setColor(0x5970c1)
-			.setThumbnail(data.badgeUrls.medium)
-			.addField('Level', data.clanLevel, true)
+			.setThumbnail(data.badgeUrls.medium);
+		if (data.description && data.description.length) {
+			embed.setDescription(data.description);
+		}
+		embed.addField('Level', data.clanLevel, true)
 			.addField('Members', data.members, true)
+			.addField('Leader', `${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').name}`)
 			.addField('Required Trophies', `${emoji.trophy} ${data.requiredTrophies}`, true)
 			.addField('Clan Type', clan_type, true)
 			.addField('Clan Points', `${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints}`, true)
@@ -73,8 +76,7 @@ class ClanCommand extends Command {
 						? `:flag_${data.location.countryCode.toLowerCase()}: ${data.location.name}`
 						: data.location.name
 					: 'None'
-			], true)
-			.addField('Description', data.description ? data.description : '\u200b');
+			], true);
 
 		return message.util.send({ embed });
 	}
