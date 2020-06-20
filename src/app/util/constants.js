@@ -79,6 +79,7 @@ module.exports = {
 		2: 'CLAN_MEMBER_ACTION',
 		3: 'LAST_ONLINE_EVENT',
 		4: 'CLAN_EMBED_EVENT',
-		5: 'CLAN_GAMES_EVENT'
+		5: 'CLAN_GAMES_EVENT',
+		6: 'CLAN_WAR_EVENT'
 	}
 };

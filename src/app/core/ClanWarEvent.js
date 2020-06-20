@@ -16,7 +16,7 @@ class ClanWarEvent {
 		this.cached = new Map();
 	}
 
-	e(id, clan) {
+	exec(id, clan) {
 		const cache = this.cached.get(id);
 		if (cache && cache.updatedAt) {
 			if (new Date() - new Date(cache.updatedAt) >= this.timer(cache)) {
@@ -31,13 +31,6 @@ class ClanWarEvent {
 		if (cache) {
 			cache.updatedAt = new Date();
 			this.cached.set(id, cache);
-			return this.permissionsFor(cache, clan);
-		}
-	}
-
-	exec(id, clan) {
-		const cache = this.cached.get(id);
-		if (cache) {
 			return this.permissionsFor(cache, clan);
 		}
 	}
@@ -68,20 +61,28 @@ class ClanWarEvent {
 		}
 	}
 
-	async handleMessage(channel, data, id) { }
+	async handleMessage(channel, clan) {
+		const embed = await this.embed(clan);
+		if (!embed) return;
 
-	async embed(clan) {
+		return channel.send(embed);
+	}
+
+	async embed(clan, content = '') {
 		const data = await this.clanWar(clan.tag);
 		if (!data) return null;
 		if (data.state === 'notInWar') return null;
 
 		const embed = new MessageEmbed()
-			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small);
+			.setTitle(`${clan.name} (${clan.tag})`)
+			.setURL(this.clanURL(data.clan.tag))
+			.setThumbnail(clan.badgeUrls.small);
 		if (data.state === 'preparation') {
+			content = `**War has been declared against ${data.opponent.name}**`;
 			embed.setColor(0xfdaf18)
 				.setDescription([
 					'**War Against**',
-					`${data.opponent.name} (${data.opponent.tag})`,
+					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
 					'',
 					'**War State**',
 					'Preparation Day',
@@ -92,12 +93,12 @@ class ClanWarEvent {
 					'**Start Time**',
 					`${moment.duration(new Date(moment(data.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`
 				]);
-			embed.setFooter('-_-', this.client.user.displayAvatarURL()).setTimestamp();
 		} else if (data.state === 'inWar') {
+			content = `**Battle day started against ${data.opponent.name}**`;
 			embed.setColor(0xFF0000)
 				.setDescription([
 					'**War Against**',
-					`${data.opponent.name} (${data.opponent.tag})`,
+					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
 					'',
 					'**War State**',
 					'Battle Day',
@@ -113,12 +114,12 @@ class ClanWarEvent {
 					'**End Time**',
 					moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })
 				]);
-			embed.setFooter('-_-', this.client.user.displayAvatarURL()).setTimestamp();
 		} else if (data.state === 'warEnded') {
+			content = this.roster(data.clan, data.opponent) ? '**Congrats, you won the war...**' : '**Sorry, you lost the war...**';
 			embed.setColor(0x10ffc1)
 				.setDescription([
 					'**War Against**',
-					`${data.opponent.name} (${data.opponent.tag})`,
+					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
 					'',
 					'**War State**',
 					'War Ended',
@@ -134,7 +135,6 @@ class ClanWarEvent {
 					'**Ended**',
 					moment.duration(Date.now() - new Date(moment(data.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })
 				]);
-			embed.setFooter('-_-', this.client.user.displayAvatarURL()).setTimestamp();
 		}
 
 		embed.setDescription([
@@ -148,7 +148,18 @@ class ClanWarEvent {
 			`${this.roster(data.opponent.members)}`
 		]);
 
-		return embed;
+		return { content, embed };
+	}
+
+	clanURL(tag) {
+		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
+	}
+
+	result(clan, opponent) {
+		const stars = clan.stars !== opponent.stars && clan.stars > opponent.stars;
+		const destr = clan.stars === opponent.stars && clan.destructionPercentage > opponent.destructionPercentage;
+		if (stars || destr) return true;
+		return false;
 	}
 
 	roster(members = []) {
@@ -190,12 +201,12 @@ class ClanWarEvent {
 
 	async init() {
 		const collection = await mongodb.db('clashperk')
-			.collection('clanwarlogs')
+			.collection('playerlogs')
 			.find()
 			.toArray();
 
 		collection.forEach(data => {
-			if (this.client.guilds.cache.has(data.guild)) {
+			if (this.client.guilds.cache.has(data.guild) && data.war_updates) {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					guild: data.guild,
 					channel: data.channel
@@ -206,7 +217,7 @@ class ClanWarEvent {
 
 	async add(id) {
 		const data = await mongodb.db('clashperk')
-			.collection('clanwarlogs')
+			.collection('playerlogs')
 			.findOne({ clan_id: ObjectId(id) });
 
 		if (!data) return null;

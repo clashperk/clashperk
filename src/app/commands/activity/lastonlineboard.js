@@ -129,7 +129,7 @@ class LastOnlineBoardCommand extends Command {
 			name: data.name,
 			color,
 			message: msg.id,
-			premium: this.client.patron.get(message.guild.id, 'guild', false)
+			patron: this.client.patron.get(message.guild.id, 'guild', false)
 		});
 
 		this.client.cacheHandler.add(id, {

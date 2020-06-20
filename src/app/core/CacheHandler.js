@@ -6,6 +6,7 @@ const LastOnlineEvent = require('./LastOnlineEvent');
 const ClanGamesEvent = require('./ClanGamesEvent');
 const PlayerEvent = require('./PlayerEvent');
 const { ObjectId } = require('mongodb');
+const ClanWarEvent = require('./ClanWarEvent');
 const MaintenanceHandler = require('./MaintenanceHandler');
 const { MODES, EVENTS } = require('../util/constants');
 
@@ -22,6 +23,7 @@ class CacheHandler {
 		this.lastOnline = new LastOnlineEvent(client);
 		this.playerEvent = new PlayerEvent(client);
 		this.clanGame = new ClanGamesEvent(client);
+		this.clanwar = new ClanWarEvent(client);
 		this.maintenanceHandler = new MaintenanceHandler(client);
 		this.maintenanceHandler.init();
 	}
@@ -43,6 +45,9 @@ class CacheHandler {
 			case 'CLAN_GAMES_EVENT':
 				await this.clanGame.exec(data._id, data.clan, data.forced, data.tags);
 				break;
+			case 'CLAN_WAR_EVENT':
+				await this.clanwar.exec(data._id, data.clan);
+				break;
 			default:
 				break;
 		}
@@ -54,6 +59,7 @@ class CacheHandler {
 		await this.playerEvent.init();
 		await this.lastOnline.init();
 		await this.clanGame.init();
+		await this.clanwar.init();
 
 		const collection = await mongodb.db('clashperk')
 			.collection('clanstores')
@@ -229,6 +235,13 @@ class CacheHandler {
 		const $update = {};
 		if (Object.keys($set).length) $update.$set = $set;
 		if (Object.keys($unset).length) $update.$unset = $unset;
+
+		// Clan War
+		await this.broadcast({
+			_id: key,
+			clan,
+			event: EVENTS[6]
+		});
 
 		// Last Online
 		await this.broadcast({

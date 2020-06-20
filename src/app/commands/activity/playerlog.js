@@ -121,7 +121,7 @@ class PlayerLogCommand extends Command {
 			channel: channel.id,
 			tag: data.tag,
 			name: data.name,
-			premium: this.client.patron.get(message.guild.id, 'guild', false)
+			patron: this.client.patron.get(message.guild.id, 'guild', false)
 		});
 
 		this.client.cacheHandler.add(id, {
