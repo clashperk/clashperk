@@ -5,11 +5,6 @@ const fetch = require('node-fetch');
 const { ObjectId } = require('mongodb');
 const moment = require('moment');
 
-const MODE = {
-	JOINED: 0x38d863, // green
-	LEFT: 0xeb3508 // red
-};
-
 class ClanWarEvent {
 	constructor(client) {
 		this.client = client;
@@ -62,16 +57,22 @@ class ClanWarEvent {
 	}
 
 	async handleMessage(channel, clan) {
-		const embed = await this.embed(clan);
-		if (!embed) return;
+		const message = await this.message(clan).catch(() => null);
+		if (!message) return;
 
-		return channel.send(embed);
+		return channel.send(message);
 	}
 
-	async embed(clan, content = '') {
+	async message(clan, content = '') {
 		const data = await this.clanWar(clan.tag);
 		if (!data) return null;
 		if (data.state === 'notInWar') return null;
+
+		const db = await mongodb.db('clashperk')
+			.collection('clanwars')
+			.findOne({ tag: clan.tag });
+
+		if (db && db.opponent === data.clan.opponent.tag && db.posted && db.state === data.state) return null;
 
 		const embed = new MessageEmbed()
 			.setTitle(`${clan.name} (${clan.tag})`)
@@ -147,6 +148,15 @@ class ClanWarEvent {
 			`${data.opponent.name}`,
 			`${this.roster(data.opponent.members)}`
 		]);
+
+		await mongodb.db('clashperk')
+			.collection('clanwars')
+			.findOneAndUpdate({ tag: clan.tag }, {
+				tag: clan.tag,
+				opponent: data.opponent.tag,
+				posted: true,
+				state: data.state
+			});
 
 		return { content, embed };
 	}
