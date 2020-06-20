@@ -158,7 +158,7 @@ class ClanWarEvent {
 					posted: true,
 					state: data.state
 				}
-			});
+			}, { upsert: true });
 
 		return { content, embed };
 	}
