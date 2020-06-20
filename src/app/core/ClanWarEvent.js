@@ -57,7 +57,7 @@ class ClanWarEvent {
 	}
 
 	async handleMessage(channel, clan) {
-		const message = await this.message(clan).catch(() => null);
+		const message = await this.message(clan);
 		if (!message) return;
 
 		return channel.send(message);
@@ -152,10 +152,12 @@ class ClanWarEvent {
 		await mongodb.db('clashperk')
 			.collection('clanwars')
 			.findOneAndUpdate({ tag: clan.tag }, {
-				tag: clan.tag,
-				opponent: data.opponent.tag,
-				posted: true,
-				state: data.state
+				$set: {
+					tag: clan.tag,
+					opponent: data.opponent.tag,
+					posted: true,
+					state: data.state
+				}
 			});
 
 		return { content, embed };
