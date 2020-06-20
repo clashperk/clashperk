@@ -44,8 +44,8 @@ class PlayerCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setTitle(`${data.name} (${data.tag})`)
-			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`)
-			.setThumbnail(`https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`);
+			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setThumbnail(data.league ? data.league.iconUrls.small : townHallEmoji[data.townHallLevel].match(/<(?:a)?:(?:\w{2,32}):(\d{17,19})>?/)[1]);
 
 		embed.addField('Town Hall', `${townHallEmoji[data.townHallLevel]} ${data.townHallLevel}`, true);
 		embed.addField('Current League', [
@@ -59,7 +59,7 @@ class PlayerCommand extends Command {
 		embed.addField('Attacks/Defenses', `${emoji.attacksword} ${data.attackWins} ${emoji.shield} ${data.defenseWins}`, true);
 
 		embed.addField('Donations/Receives', [
-			`${emoji.troopsdonation} ${data.donations}${emoji.donated} / ${data.donationsReceived}${emoji.received}`
+			`${emoji.troopsdonation} ${data.donations}${emoji.donated} ${data.donationsReceived}${emoji.received}`
 		], true);
 
 		data.achievements.forEach(achievement => {
@@ -79,8 +79,8 @@ class PlayerCommand extends Command {
 				.replace(/coLeader/g, 'Co-Leader')
 				.replace(/member/g, 'Member')
 				.replace(/leader/g, 'Leader');
-			embed.addField('Clan', [
-				`${emoji.clan} ${role} of **${data.clan.name}** [${data.clan.tag}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.clan.tag.replace(/#/g, '')})`
+			embed.addField(`Clan ${role}`, [
+				`${emoji.clan} **${data.clan.name} [${data.clan.tag}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)})**`
 			]);
 		}
 
