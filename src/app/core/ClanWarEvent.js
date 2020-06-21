@@ -71,8 +71,7 @@ class ClanWarEvent {
 			.collection('clanwars')
 			.findOne({ clan_id: ObjectId(id) });
 
-		const states = ['warEnded', 'preparation'];
-		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && states.includes(data.state)) return null;
+		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'preparation') return null;
 
 		const embed = new MessageEmbed()
 			.setTitle(`${clan.name} (${clan.tag})`)
@@ -97,7 +96,7 @@ class ClanWarEvent {
 		}
 
 		if (data.state === 'inWar') {
-			content = `**Battle day started against ${data.opponent.name}**`;
+			content = `**War has been started against ${data.opponent.name}**`;
 			embed.setColor(0xFF0000)
 				.setDescription([
 					'**War Against**',
@@ -177,7 +176,7 @@ class ClanWarEvent {
 					opponent: data.opponent.tag,
 					posted: true,
 					state: data.state,
-					ending: ending && data.state === 'inWar' ? true : false,
+					ending: ending && (!db || (db && !db.ending)) ? true : false,
 					ended: data.state === 'warEnded' ? true : false
 				}
 			}, { upsert: true });
