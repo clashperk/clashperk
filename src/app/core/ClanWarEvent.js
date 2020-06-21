@@ -153,7 +153,7 @@ class ClanWarEvent {
 		]);
 
 		const time = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
-		const ending = data.state === 'inWar' && time <= 10 * 60 * 60 * 1000;
+		const ending = data.state === 'inWar' && time <= 2.5 * 60 * 60 * 1000;
 
 		if (db && !db.ending && ending && db.opponent === data.opponent.tag && db.state === data.state && data.state === 'inWar') {
 			const embed = this.attacks(data, clan);
