@@ -119,7 +119,7 @@ class ClanWarEvent {
 		}
 
 		if (data.state === 'warEnded') {
-			content = this.roster(data.clan, data.opponent) ? '**Congrats, you won the war...**' : '**Sorry, you lost the war...**';
+			content = this.result(data.clan, data.opponent) ? '**Congrats, you won the war...**' : '**Sorry, you lost the war...**';
 			embed.setColor(0x10ffc1)
 				.setDescription([
 					'**War Against**',
@@ -153,11 +153,18 @@ class ClanWarEvent {
 		]);
 
 		const time = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
-		const ending = data.state === 'inWar' && time <= 3 * 60 * 60 * 1000;
+		const ending = data.state === 'inWar' && time <= 10 * 60 * 60 * 1000;
 
 		if (db && !db.ending && ending && db.opponent === data.opponent.tag && db.state === data.state && data.state === 'inWar') {
 			const embed = this.attacks(data, clan);
 			await channel.send({ embed });
+
+			db.posted = Boolean(false);
+			await mongodb.db('clashperk')
+				.collection('clanwars')
+				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
+					$set: { clan_id: ObjectId(id), ending: true }
+				}, { upsert: true, returnOriginal: false });
 		}
 
 		if (db && db.opponent === data.opponent.tag && db.posted && data.state === 'warEnded' && !db.ended) {
@@ -165,7 +172,8 @@ class ClanWarEvent {
 			await channel.send({ embed });
 		}
 
-		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'inWar') return null;
+		const states = ['inWar', 'warEnded'].includes(data.state);
+		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && states) return null;
 
 		await mongodb.db('clashperk')
 			.collection('clanwars')
@@ -176,7 +184,6 @@ class ClanWarEvent {
 					opponent: data.opponent.tag,
 					posted: true,
 					state: data.state,
-					ending: ending && (!db || (db && !db.ending)) ? true : false,
 					ended: data.state === 'warEnded' ? true : false
 				}
 			}, { upsert: true });
