@@ -25,7 +25,7 @@ module.exports = {
 		'Lava Hound': '<:lavahound:696282183832305685>',
 		'Bowler': '<:bowler:696282213360074782>',
 		'Ice Golem': '<:icegolem:696282324798799892>',
-		'Headhunter': '<:Headhunter:724648182633726035>'
+		'Headhunter': '<:headhunter:724650414066106459>'
 	},
 
 	siegeMachinesEmoji: {
