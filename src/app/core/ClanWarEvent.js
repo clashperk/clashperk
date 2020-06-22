@@ -1,5 +1,5 @@
 const { mongodb } = require('../struct/Database');
-const { MessageEmbed, Message } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const { townHallEmoji, emoji, whiteNum, blueNum } = require('../util/emojis');
 const fetch = require('node-fetch');
 const { ObjectId } = require('mongodb');
@@ -283,12 +283,12 @@ class ClanWarEvent {
 
 	async init() {
 		const collection = await mongodb.db('clashperk')
-			.collection('playerlogs')
+			.collection('clanwarlogs')
 			.find()
 			.toArray();
 
 		collection.forEach(data => {
-			if (this.client.guilds.cache.has(data.guild) && data.war_updates) {
+			if (this.client.guilds.cache.has(data.guild)) {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					guild: data.guild,
 					channel: data.channel
@@ -299,7 +299,7 @@ class ClanWarEvent {
 
 	async add(id) {
 		const data = await mongodb.db('clashperk')
-			.collection('playerlogs')
+			.collection('clanwarlogs')
 			.findOne({ clan_id: ObjectId(id) });
 
 		if (!data) return null;

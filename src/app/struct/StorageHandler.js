@@ -99,6 +99,20 @@ class StorageHandler {
 						}
 					}, { upsert: true });
 				break;
+			case 'CLAN_WAR_LOG':
+				await mongodb.db('clashperk').collection('clanembedlogs')
+					.updateOne({ tag: data.tag, guild: data.guild }, {
+						$set: {
+							clan_id: ObjectId(id),
+							tag: data.tag,
+							guild: data.guild,
+							name: data.name,
+							channel: data.channel,
+							patron: data.patron,
+							createdAt: new Date()
+						}
+					}, { upsert: true });
+				break;
 			default:
 				break;
 		}
@@ -120,6 +134,9 @@ class StorageHandler {
 			.deleteOne({ clan_id: ObjectId(id) });
 
 		await mongodb.db('clashperk').collection('clanembedlogs')
+			.deleteOne({ clan_id: ObjectId(id) });
+
+		await mongodb.db('clashperk').collection('clanwarlogs')
 			.deleteOne({ clan_id: ObjectId(id) });
 
 		return mongodb.db('clashperk').collection('clanstores')
@@ -149,6 +166,11 @@ class StorageHandler {
 
 		if (data.mode === 'CLAN_EMBED_LOG') {
 			return mongodb.db('clashperk').collection('clanembedlogs')
+				.deleteOne({ clan_id: ObjectId(id) });
+		}
+
+		if (data.mode === 'CLAN_WAR_LOG') {
+			return mongodb.db('clashperk').collection('clanwarlogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 	}
