@@ -71,7 +71,8 @@ module.exports = {
 		2: 'PLAYER_LOG',
 		3: 'LAST_ONLINE_LOG',
 		4: 'CLAN_EMBED_LOG',
-		5: 'CLAN_GAMES_LOG'
+		5: 'CLAN_GAMES_LOG',
+		6: 'CLAN_WAR_LOG'
 	},
 
 	EVENTS: {
