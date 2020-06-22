@@ -300,6 +300,7 @@ class ClanGames {
 	}
 
 	event() {
+		const day = this.client.settings.get('global', 'cgday', 22);
 		const START = [
 			new Date()
 				.getFullYear(),
@@ -307,7 +308,7 @@ class ClanGames {
 				.getMonth() + 1)
 				.toString()
 				.padStart(2, '0'),
-			22
+			day
 		].join('-');
 
 		const END = [
@@ -317,7 +318,7 @@ class ClanGames {
 				.getMonth() + 1)
 				.toString()
 				.padStart(2, '0'),
-			'28T10:00:00Z'
+			`${day + 6}T10:00:00Z`
 		].join('-');
 
 		return new Date() >= new Date(START) && new Date() <= new Date(END);
