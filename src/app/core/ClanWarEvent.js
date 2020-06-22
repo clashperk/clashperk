@@ -32,7 +32,7 @@ class ClanWarEvent {
 
 	timer(cache) {
 		const patron = this.client.patron.get(cache.guild, 'guild', false);
-		return patron === true ? 10 * 60 * 1000 : 30 * 60 * 1000;
+		return patron === true ? 10.1 * 60 * 1000 : 20.1 * 60 * 1000;
 	}
 
 	async delay(ms) {
