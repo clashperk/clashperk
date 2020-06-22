@@ -56,7 +56,6 @@ class UnitsCommand extends Command {
 				await msg.edit({
 					embed: embed.setFooter('Level / Max Level')
 				});
-				await msg.reactions.removeAll();
 				return collector.stop();
 			}
 		});
