@@ -54,6 +54,7 @@ class ClansCommand extends Command {
 			const onlinelog = await db.collection('lastonlinelogs').findOne({ clan_id: item._id });
 			const clanembed = await db.collection('clanembedlogs').findOne({ clan_id: item._id });
 			const clangames = await db.collection('clangameslogs').findOne({ clan_id: item._id });
+			const clanwar = await db.collection('clanwarlogs').findOne({ clan_id: item._id });
 
 			return {
 				tag: item.tag,
@@ -72,6 +73,9 @@ class ClansCommand extends Command {
 					: null,
 				clangameslog: clangames
 					? clangames.channel
+					: null,
+				clanwarlog: clanwar
+					? clanwar.channel
 					: null
 			};
 		}));
@@ -162,6 +166,7 @@ class ClansCommand extends Command {
 			const onlinelog = this.client.channels.cache.has(item.onlinelog);
 			const clanembedlog = this.client.channels.cache.has(item.clanembedlog);
 			const clangameslog = this.client.channels.cache.has(item.clangameslog);
+			const clanwarlog = this.client.channels.cache.has(item.clanwarlog);
 			const logs = [
 				item.donationlog
 					? donationlog
@@ -187,6 +192,11 @@ class ClansCommand extends Command {
 					? clangameslog
 						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.clangameslog}>`
 						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.clangameslog}>`
+					: '',
+				item.clanwarlog
+					? clanwarlog
+						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.clanwarlog}>`
+						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.clanwarlog}>`
 					: ''
 			];
 			return [
@@ -195,7 +205,8 @@ class ClansCommand extends Command {
 				`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
 				`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`,
 				`${logs[3].length ? `**Clan Embed**\n${logs[3]}` : ''}`,
-				`${logs[4].length ? `**Clan Games Board**\n${logs[4]}` : ''}`
+				`${logs[4].length ? `**Clan Games Board**\n${logs[4]}` : ''}`,
+				`${logs[5].length ? `**Clan War Feed**\n${logs[5]}` : ''}`
 			].filter(item => item.length).join('\n');
 		}).join('\n\n');
 	}

@@ -101,7 +101,8 @@ class ToggleCommand extends Command {
 			db.collection('playerlogs').findOne({ clan_id: ObjectId(id) }),
 			db.collection('lastonlinelogs').findOne({ clan_id: ObjectId(id) }),
 			db.collection('clanembedlogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('clangameslogs').findOne({ clan_id: ObjectId(id) })
+			db.collection('clangameslogs').findOne({ clan_id: ObjectId(id) }),
+			db.collection('clanwarlogs').findOne({ clan_id: ObjectId(id) })
 		]).then(collection => collection.every(item => item == null));
 		if (data) {
 			this.client.cacheHandler.delete(id);
