@@ -100,7 +100,7 @@ class StorageHandler {
 					}, { upsert: true });
 				break;
 			case 'CLAN_WAR_LOG':
-				await mongodb.db('clashperk').collection('clanembedlogs')
+				await mongodb.db('clashperk').collection('clanwarlogs')
 					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
 							clan_id: ObjectId(id),
