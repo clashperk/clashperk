@@ -227,7 +227,7 @@ class RushedCommand extends Command {
 					if (spell.level < maxLevel) {
 						index++;
 						rushed++;
-						elixirSpells += `${elixirSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}|${this.padEnd(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
+						elixirSpells += `${elixirSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}|${this.padEnd(option, data.townHallLevel, spell)}\u200f\`\u2002`;
 						if (index === 4) {
 							elixirSpells += '#';
 							index = 0;
@@ -247,7 +247,7 @@ class RushedCommand extends Command {
 					if (spell.level < maxLevel) {
 						index++;
 						rushed++;
-						darkSpells += `${darkSpellEmoji[spell.name]} **\`\u200e${this.padStart(spell.level)}|${this.padEnd(option, data.townHallLevel, spell)}\u200f\`**\u2002`;
+						darkSpells += `${darkSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}|${this.padEnd(option, data.townHallLevel, spell)}\u200f\`\u2002`;
 						if (index === 4) {
 							darkSpells += '#';
 							index = 0;
@@ -265,7 +265,7 @@ class RushedCommand extends Command {
 					const maxLevel = buildertroops.find(t => t.name === hero.name)[data.builderHallLevel - 1];
 					if (hero.level < maxLevel) {
 						rushed++;
-						builderHero += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}|${this.padEnd_(option, data.builderHallLevel, hero)}\u200f\`**\u2002`;
+						builderHero += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}|${this.padEnd_(option, data.builderHallLevel, hero)}\u200f\`\u2002`;
 					}
 				}
 			}
