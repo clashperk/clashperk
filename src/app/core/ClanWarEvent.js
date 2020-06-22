@@ -139,7 +139,7 @@ class ClanWarEvent {
 					'',
 					'**War Stats**',
 					`${emoji.star} ${data.clan.stars} / ${data.opponent.stars}`,
-					`${emoji.fire} ${data.clan.destructionPercentage}% / ${data.opponent.destructionPercentage}%`,
+					`${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% / ${data.opponent.destructionPercentage.toFixed(2)}%`,
 					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`,
 					'',
 					'**Ended**',
@@ -169,12 +169,19 @@ class ClanWarEvent {
 				.collection('clanwars')
 				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
 					$set: { clan_id: ObjectId(id), ending: true }
-				}, { upsert: true, returnOriginal: false });
+				}, { upsert: true });
 		}
 
 		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'warEnded' && !db.ended) {
 			const embed = this.attacks(data, clan);
 			await channel.send({ embed });
+
+			db.posted = Boolean(false);
+			await mongodb.db('clashperk')
+				.collection('clanwars')
+				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
+					$set: { clan_id: ObjectId(id), ended: true }
+				}, { upsert: true });
 		}
 
 		const states = ['inWar', 'warEnded'];
@@ -188,11 +195,11 @@ class ClanWarEvent {
 					tag: clan.tag,
 					opponent: data.opponent.tag,
 					posted: true,
-					state: data.state,
-					ended: data.state === 'warEnded' ? true : false
+					state: data.state
 				}
 			}, { upsert: true });
 
+		if (!db && states.includes(data.state)) return null;
 		return { content: ending && !db.posted ? '' : content, embed };
 	}
 
