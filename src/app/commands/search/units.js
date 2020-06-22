@@ -39,47 +39,29 @@ class UnitsCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		const embed = await this.embed(data, true);
+		const embed = await this.embed(data, false);
 		const msg = await message.util.send({
 			embed: embed.setFooter(`Level / Town Hall ${data.townHallLevel}${data.builderHallLevel ? ` & Builder Hall ${data.builderHallLevel}` : ''} Max`)
 		});
 
-		for (const emoji of ['🏠', '🔥']) {
-			await msg.react(emoji);
-			await this.delay(250);
-		}
-
+		await msg.react('🔥');
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['🏠', '🔥'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 45000, max: 10 }
+			(reaction, user) => ['🔥'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 45000, max: 1 }
 		);
 
 		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '🏠') {
-				const embed = await this.embed(data, true);
-				await msg.edit({
-					embed: embed.setFooter(`Level / Town Hall ${data.townHallLevel}${data.builderHallLevel ? ` & Builder Hall ${data.builderHallLevel}` : ''} Max`)
-				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
-			}
 			if (reaction.emoji.name === '🔥') {
 				const embed = await this.embed(data, false);
 				await msg.edit({
 					embed: embed.setFooter('Level / Max Level')
 				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+				await msg.reactions.removeAll();
+				return collector.stop();
 			}
 		});
 
-		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
-		});
-		return message;
+		collector.on('end', () => msg.reactions.removeAll());
 	}
 
 	async embed(data, option) {
