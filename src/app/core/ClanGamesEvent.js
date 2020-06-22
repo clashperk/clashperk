@@ -329,6 +329,8 @@ class ClanGames {
 			await mongodb.db('clashperk')
 				.collection('clangameslogs')
 				.updateMany({}, { $unset: { message: '' } });
+
+			this.client.settings.delete('global', 'cgday');
 			return this.cached.clear();
 		}
 	}

@@ -73,6 +73,7 @@ class ClanWarEvent {
 
 		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'preparation') return null;
 
+		const time = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
 		const embed = new MessageEmbed()
 			.setTitle(`${clan.name} (${clan.tag})`)
 			.setURL(this.clanURL(data.clan.tag))
@@ -97,6 +98,16 @@ class ClanWarEvent {
 
 		if (data.state === 'inWar') {
 			content = `**War has been started against ${data.opponent.name}**`;
+			const stats = time <= 2.5 * 60 * 60 * 100
+				? [
+					'',
+					'**War Stats**',
+					`${emoji.star} ${data.clan.stars} / ${data.opponent.stars}`,
+					`${emoji.fire} ${data.clan.destructionPercentage}% / ${data.opponent.destructionPercentage}%`,
+					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`,
+					''
+				]
+				: [''];
 			embed.setColor(0xFF0000)
 				.setDescription([
 					'**War Against**',
@@ -107,12 +118,7 @@ class ClanWarEvent {
 					'',
 					'**War Size**',
 					`${data.teamSize} vs ${data.teamSize}`,
-					'',
-					'**War Stats**',
-					`${emoji.star} ${data.clan.stars} / ${data.opponent.stars}`,
-					`${emoji.fire} ${data.clan.destructionPercentage}% / ${data.opponent.destructionPercentage}%`,
-					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`,
-					'',
+					...stats,
 					'**End Time**',
 					moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })
 				]);
@@ -152,8 +158,7 @@ class ClanWarEvent {
 			`${this.roster(data.opponent.members)}`
 		]);
 
-		const time = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
-		const ending = data.state === 'inWar' && time <= 13 * 60 * 1000;
+		const ending = data.state === 'inWar' && time <= 2.5 * 60 * 60 * 1000;
 
 		if (db && !db.ending && ending && db.opponent === data.opponent.tag && db.state === data.state && data.state === 'inWar') {
 			const embed = this.attacks(data, clan);
@@ -167,13 +172,13 @@ class ClanWarEvent {
 				}, { upsert: true, returnOriginal: false });
 		}
 
-		if (db && db.opponent === data.opponent.tag && db.posted && data.state === 'warEnded' && !db.ended) {
+		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'warEnded' && !db.ended) {
 			const embed = this.attacks(data, clan);
 			await channel.send({ embed });
 		}
 
-		const states = ['inWar', 'warEnded'].includes(data.state);
-		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && states) return null;
+		const states = ['inWar', 'warEnded'];
+		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && states.includes(data.state)) return null;
 
 		await mongodb.db('clashperk')
 			.collection('clanwars')
@@ -188,7 +193,7 @@ class ClanWarEvent {
 				}
 			}, { upsert: true });
 
-		return { content: ending ? '' : content, embed };
+		return { content: ending && !db.posted ? '' : content, embed };
 	}
 
 	attacks(data, clan) {
