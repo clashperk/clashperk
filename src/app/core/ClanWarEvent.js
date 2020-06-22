@@ -194,7 +194,7 @@ class ClanWarEvent {
 	attacks(data, clan) {
 		const [OneRem, TwoRem] = [
 			data.clan.members.filter(m => m.attacks && m.attacks.length === 1),
-			data.clan.members.filter(m => m.attacks && m.attacks.length === 0)
+			data.clan.members.filter(m => !m.attacks)
 		];
 
 		const embed = new MessageEmbed()
