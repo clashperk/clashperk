@@ -224,7 +224,7 @@ class ClanWarEvent {
 
 		if (OneRem.length) {
 			embed.setDescription([
-				embed.description,
+				embed.description || '',
 				`**1 ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
 				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `${blueNum[m.mapPosition]} ${m.name}`)
 			]);
