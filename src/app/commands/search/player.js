@@ -45,7 +45,7 @@ class PlayerCommand extends Command {
 			.setColor(0x5970c1)
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
-			.setThumbnail(data.league ? data.league.iconUrls.small : townHallEmoji[data.townHallLevel].match(/<(?:a)?:(?:\w{2,32}):(\d{17,19})>?/)[1]);
+			.setThumbnail(data.league ? data.league.iconUrls.small : null);
 
 		embed.addField('Town Hall', `${townHallEmoji[data.townHallLevel]} ${data.townHallLevel}`, true);
 		embed.addField('Current League', [
