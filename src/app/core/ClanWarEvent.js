@@ -98,7 +98,7 @@ class ClanWarEvent {
 
 		if (data.state === 'inWar') {
 			content = `**War has been started against ${data.opponent.name}**`;
-			const stats = time <= 2.5 * 60 * 60 * 100
+			const stats = time <= 2.5 * 60 * 60 * 1000
 				? [
 					'',
 					'**War Stats**',
