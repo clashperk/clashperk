@@ -164,7 +164,8 @@ class ClanGames {
 		const members = this.filter(items.collection, items.data);
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
-		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), '22T08:00:00Z'].join('-');
+		const day = this.client.settings.get('global', 'cgday', 22);
+		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), `${day + 1}T08:00:00Z`].join('-');
 		const createdAt = new Date(ObjectId(data._id).getTimestamp());
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
