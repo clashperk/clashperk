@@ -172,7 +172,7 @@ class ClanWarEvent {
 				}, { upsert: true });
 		}
 
-		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'warEnded' && !db.ended) {
+		if (db && db.opponent === data.opponent.tag && db.posted && data.state === 'warEnded' && !db.ended) {
 			const embed = this.attacks(data, clan);
 			await channel.send({ embed });
 
