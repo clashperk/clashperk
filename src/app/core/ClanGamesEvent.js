@@ -166,7 +166,13 @@ class ClanGames {
 
 		const day = this.client.settings.get('global', 'cgday', 22);
 		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), `${day + 1}T08:00:00Z`].join('-');
-		const createdAt = new Date(ObjectId(items.data._id).getTimestamp());
+		let createdAt = new Date();
+		try {
+			createdAt = new Date(ObjectId(items.data._id).getTimestamp());
+		} catch (error) {
+			console.log(error);
+			console.log(clan);
+		}
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
