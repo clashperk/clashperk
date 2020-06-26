@@ -156,6 +156,7 @@ class CacheHandler {
 		if (!cache) return;
 		const clan = await this.clan(cache.tag);
 		if (!clan) return;
+		if (!clan.memberList.length) return;
 
 		const CurrentMemberList = clan.memberList.map(m => m.tag);
 		const CurrentMemberSet = new Set(CurrentMemberList);
