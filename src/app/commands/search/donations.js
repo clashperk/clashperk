@@ -43,18 +43,24 @@ class DonationBoardCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
+		const sorted = this.sort(data.memberList);
+		let [ds, rs] = [5, 5];
+		if (sorted[0].donations > 99999) ds = 6;
+		if (sorted[0].donations > 999999) ds = 7;
+		if (sorted[0].donationsReceived > 99999) ds = 6;
+		if (sorted[0].donationsReceived > 999999) ds = 7;
 		// const header = `\`#    DON   REC   ${'RATIO'.padStart(8, ' ')}  ${'NAME'.padEnd(20, ' ')}\``;
-		const header = `**\`#    DON   REC  ${'NAME'.padEnd(16, ' ')}\`**`;
+		const header = `**\`#  ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(ds, ' ')}  ${'NAME'.padEnd(17, ' ')}\`**`;
 		const pages = [
-			this.paginate(this.sort(data.memberList), 0, 25)
+			this.paginate(sorted, 0, 25)
 				.items.map((member, index) => {
-					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
+					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
 					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
 					return `\`\u200e${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
 				}),
-			this.paginate(this.sort(data.memberList), 25, 50)
+			this.paginate(sorted, 25, 50)
 				.items.map((member, index) => {
-					const donation = `${this.donation(member.donations)} ${this.donation(member.donationsReceived)}`;
+					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
 					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
 					return `\`\u200e${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
 				})
@@ -108,8 +114,8 @@ class DonationBoardCommand extends Command {
 		return Util.escapeInlineCode(data).padEnd(16, ' ');
 	}
 
-	donation(data) {
-		return data.toString().padStart(5, ' ');
+	donation(data, space) {
+		return data.toString().padStart(space, ' ');
 	}
 
 	async delay(ms) {
