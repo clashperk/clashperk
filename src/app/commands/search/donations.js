@@ -43,25 +43,26 @@ class DonationBoardCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
-		const sorted = this.sort(data.memberList);
 		let [ds, rs] = [5, 5];
+
+		const _sorted = this.sort_received(data.memberList);
+		if (_sorted[0].donationsReceived > 99999) rs = 6;
+		if (_sorted[0].donationsReceived > 999999) rs = 7;
+
+		const sorted = this.sort_donations(data.memberList);
 		if (sorted[0].donations > 99999) ds = 6;
 		if (sorted[0].donations > 999999) ds = 7;
-		if (sorted[1].donationsReceived > 99999) rs = 6;
-		if (sorted[1].donationsReceived > 999999) rs = 7;
-		// const header = `\`#    DON   REC   ${'RATIO'.padStart(8, ' ')}  ${'NAME'.padEnd(20, ' ')}\``;
+
 		const header = `**\`#  ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(17, ' ')}\`**`;
 		const pages = [
 			this.paginate(sorted[0], 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
-					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
 					return `\`\u200e${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
 				}),
 			this.paginate(sorted[0], 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
-					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
 					return `\`\u200e${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
 				})
 		];
