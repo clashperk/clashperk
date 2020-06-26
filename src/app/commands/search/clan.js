@@ -57,7 +57,7 @@ class ClanCommand extends Command {
 		}
 		embed.addField('Level', data.clanLevel, true)
 			.addField('Members', data.members, true)
-			.addField('Leader', `${emoji.owner} ${data.memberList.find(m => m.role === 'leader').name}`, true)
+			.addField('Leader', `${emoji.owner} ${data.memberList.length ? data.memberList.find(m => m.role === 'leader').name : 'No Leader'}`, true)
 			.addField('Required Trophies', `${emoji.trophy} ${data.requiredTrophies}`, true)
 			.addField('Clan Type', clan_type, true)
 			.addField('Clan Points', `${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints}`, true)
