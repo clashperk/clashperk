@@ -47,8 +47,8 @@ class DonationBoardCommand extends Command {
 		let [ds, rs] = [5, 5];
 		if (sorted[0].donations > 99999) ds = 6;
 		if (sorted[0].donations > 999999) ds = 7;
-		if (sorted[0].donationsReceived > 99999) ds = 6;
-		if (sorted[0].donationsReceived > 999999) ds = 7;
+		if (sorted[0].donationsReceived > 99999) rs = 6;
+		if (sorted[0].donationsReceived > 999999) rs = 7;
 		// const header = `\`#    DON   REC   ${'RATIO'.padStart(8, ' ')}  ${'NAME'.padEnd(20, ' ')}\``;
 		const header = `**\`#  ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(ds, ' ')}  ${'NAME'.padEnd(17, ' ')}\`**`;
 		const pages = [
