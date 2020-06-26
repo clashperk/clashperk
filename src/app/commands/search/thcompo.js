@@ -3,7 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
 const { townHallEmoji, emoji, blueNum, redNum } = require('../../util/emojis');
-const API_TOKENS = process.env.API_TOKENS.split(',');
+const TOKENS = process.env.API_TOKENS.split(',');
 
 class ThCompoCommand extends Command {
 	constructor() {
@@ -42,21 +42,20 @@ class ThCompoCommand extends Command {
 	async exec(message, { data }) {
 		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
 
-		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const hrStart = process.hrtime();
 		const requests = data.memberList.map((m, i) => {
 			const req = {
 				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
 				option: {
 					method: 'GET',
-					headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[i % 10]}` }
+					headers: { accept: 'application/json', authorization: `Bearer ${TOKENS[i % 10]}` }
 				}
 			};
 			return req;
 		});
 
-		const fetched = await Promise.all(requests.map(req => fetch(req.url, req.option)))
-			.then(responses => Promise.all(responses.map(res => res.json())));
+		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));
+		const fetched = await Promise.all(responses.map(res => res.json()));
 		const reduced = fetched.reduce((count, member) => {
 			const townHall = member.townHallLevel;
 			count[townHall] = (count[townHall] || 0) + 1;
