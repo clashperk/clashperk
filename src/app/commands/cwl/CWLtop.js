@@ -39,7 +39,9 @@ class CWLTopCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		await message.util.send(`**Making list... ${emoji.loading}**`);
+		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
+
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
@@ -59,7 +61,7 @@ class CWLTopCommand extends Command {
 
 		const items = this.sort(memberList);
 		embed.setDescription([
-			'List of most valuable players, sorted by total stars of CWL',
+			'List of most valuable players, sorted by total stars in CWL',
 			'',
 			`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
 			items.slice(0, 30)

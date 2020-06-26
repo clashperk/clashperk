@@ -37,6 +37,8 @@ class DonationBoardCommand extends Command {
 	}
 
 	async exec(message, { data }) {
+		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
+
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);

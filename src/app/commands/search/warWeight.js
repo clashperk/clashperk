@@ -41,8 +41,9 @@ class WarWeightCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		await message.util.send(`**Fetching data... ${emoji.loading}**`);
+		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
 
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const list = data.memberList.map(m => m.tag);
 		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
 			.map((tags, index) => async (collection = []) => {
