@@ -71,7 +71,7 @@ class ClanWarEvent {
 			.collection('clanwars')
 			.findOne({ clan_id: ObjectId(id) });
 
-		if (db && db.opponent !== data.opponent.tag) {
+		if (db && db.opponent !== data.opponent.tag && db.state !== data.state) {
 			await mongodb.db('clashperk')
 				.collection('clanwars')
 				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
