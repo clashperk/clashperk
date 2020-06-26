@@ -47,18 +47,18 @@ class DonationBoardCommand extends Command {
 		let [ds, rs] = [5, 5];
 		if (sorted[0].donations > 99999) ds = 6;
 		if (sorted[0].donations > 999999) ds = 7;
-		if (sorted[0].donationsReceived > 99999) rs = 6;
-		if (sorted[0].donationsReceived > 999999) rs = 7;
+		if (sorted[1].donationsReceived > 99999) rs = 6;
+		if (sorted[1].donationsReceived > 999999) rs = 7;
 		// const header = `\`#    DON   REC   ${'RATIO'.padStart(8, ' ')}  ${'NAME'.padEnd(20, ' ')}\``;
 		const header = `**\`#  ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(17, ' ')}\`**`;
 		const pages = [
-			this.paginate(sorted, 0, 25)
+			this.paginate(sorted[0], 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
 					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
 					return `\`\u200e${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
 				}),
-			this.paginate(sorted, 25, 50)
+			this.paginate(sorted[0], 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
 					// const ratio = this.ratio(member.donations, member.donationsReceived).padStart(10, ' ');
@@ -107,7 +107,7 @@ class DonationBoardCommand extends Command {
 	}
 
 	sort(items) {
-		return items.sort((a, b) => b.donations - a.donations);
+		return [items.sort((a, b) => b.donations - a.donations), items.sort((a, b) => b.donationsReceived - a.donationsReceived)];
 	}
 
 	padEnd(data) {
