@@ -40,8 +40,9 @@ class ThCompoCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
+
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const hrStart = process.hrtime();
 		const requests = [];
 		let index = 0;
