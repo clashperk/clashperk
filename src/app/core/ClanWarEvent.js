@@ -101,11 +101,9 @@ class ClanWarEvent {
 					'Preparation Day',
 					'',
 					'**War Size**',
-					`${data.teamSize} vs ${data.teamSize}`,
-					'',
-					'**Start Time**',
-					`${moment.duration(new Date(moment(data.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`
+					`${data.teamSize} vs ${data.teamSize}`
 				]);
+			embed.setFooter(`Starts in ${moment.duration(new Date(moment(data.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`);
 		}
 
 		if (data.state === 'inWar') {
@@ -130,10 +128,9 @@ class ClanWarEvent {
 					'',
 					'**War Size**',
 					`${data.teamSize} vs ${data.teamSize}`,
-					...stats,
-					'**End Time**',
-					moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })
+					...stats
 				]);
+			embed.setFooter(`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`);
 		}
 
 		if (data.state === 'warEnded') {
@@ -152,11 +149,9 @@ class ClanWarEvent {
 					'**War Stats**',
 					`${emoji.star} ${data.clan.stars} / ${data.opponent.stars}`,
 					`${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% / ${data.opponent.destructionPercentage.toFixed(2)}%`,
-					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`,
-					'',
-					'**Ended**',
-					moment.duration(Date.now() - new Date(moment(data.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })
+					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
 				]);
+			embed.setFooter(`Ended ${moment.duration(Date.now() - new Date(moment(data.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })} ago`);
 		}
 
 		embed.setDescription([
