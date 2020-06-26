@@ -71,6 +71,18 @@ class ClanWarEvent {
 			.collection('clanwars')
 			.findOne({ clan_id: ObjectId(id) });
 
+		if (db && db.opponent !== data.opponent.tag) {
+			await mongodb.db('clashperk')
+				.collection('clanwars')
+				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
+					$set: {
+						clan_id: ObjectId(id),
+						ended: false,
+						ending: false
+					}
+				}, { upsert: true });
+		}
+
 		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'preparation') return null;
 
 		const time = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
