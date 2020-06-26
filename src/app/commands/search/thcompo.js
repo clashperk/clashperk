@@ -44,19 +44,16 @@ class ThCompoCommand extends Command {
 
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const hrStart = process.hrtime();
-		const requests = [];
-		let index = 0;
-		for (const tag of data.memberList.map(m => m.tag)) {
-			if (index === 9) index = 0;
-			requests.push({
-				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`,
+		const requests = data.memberList.map((m, i) => {
+			const req = {
+				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
 				option: {
 					method: 'GET',
-					headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[index]}` }
+					headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[i % 10]}` }
 				}
-			});
-			index += 1;
-		}
+			};
+			return req;
+		});
 
 		const fetched = await Promise.all(requests.map(req => fetch(req.url, req.option)))
 			.then(responses => Promise.all(responses.map(res => res.json())));
