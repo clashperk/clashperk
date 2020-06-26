@@ -107,8 +107,13 @@ class DonationBoardCommand extends Command {
 		return `${a}:${b}`;
 	}
 
-	sort(items) {
-		return [items.sort((a, b) => b.donations - a.donations), items.sort((a, b) => b.donationsReceived - a.donationsReceived)];
+
+	sort_donations(items) {
+		return items.sort((a, b) => b.donations - a.donations);
+	}
+
+	sort_received(items) {
+		return items.sort((a, b) => b.donationsReceived - a.donationsReceived);
 	}
 
 	padEnd(data) {
