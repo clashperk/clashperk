@@ -75,7 +75,6 @@ class ErrorListener extends Listener {
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
 			await message.channel.send([
 				`${emoji.wrong} Something went wrong, report us!`,
-				`${emoji.clashperk} https://discord.gg/ppuppun`,
 				`\`\`\`${error.toString()}\`\`\``
 			]);
 		}
