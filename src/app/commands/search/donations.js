@@ -50,7 +50,7 @@ class DonationBoardCommand extends Command {
 		if (sorted[0].donationsReceived > 99999) rs = 6;
 		if (sorted[0].donationsReceived > 999999) rs = 7;
 		// const header = `\`#    DON   REC   ${'RATIO'.padStart(8, ' ')}  ${'NAME'.padEnd(20, ' ')}\``;
-		const header = `**\`#  ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(ds, ' ')}  ${'NAME'.padEnd(17, ' ')}\`**`;
+		const header = `**\`#  ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(17, ' ')}\`**`;
 		const pages = [
 			this.paginate(sorted, 0, 25)
 				.items.map((member, index) => {
