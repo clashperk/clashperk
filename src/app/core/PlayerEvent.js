@@ -128,7 +128,7 @@ class PlayerEvent {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.PLAYER_EVENTS_API}`
+				authorization: `Bearer ${process.env.$KEY}`
 			},
 			timeout: 3000
 		}).catch(() => null);

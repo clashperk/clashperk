@@ -281,7 +281,7 @@ class ClanWarEvent {
 	async clanWar(tag) {
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar`, {
 			method: 'GET',
-			headers: { accept: 'application/json', authorization: `Bearer ${process.env.PLAYER_EVENTS_API}` }
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
 		}).catch(() => null);
 		if (!res) return null;
 		if (!res.ok) return null;

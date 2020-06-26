@@ -3,6 +3,7 @@ const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
 const { emoji, townHallEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
+const TOKENS = process.env.$KEYS.split(',');
 
 class CWLTopCommand extends Command {
 	constructor() {
@@ -42,37 +43,45 @@ class CWLTopCommand extends Command {
 		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
 
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
-		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
+		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
+		const requests = data.memberList.map((m, i) => {
+			const req = {
+				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
+				option: {
+					method: 'GET',
+					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % 5]}` }
+				}
+			};
+			return req;
+		});
 
-		const memberList = [];
-		for (const tag of data.memberList.map(m => m.tag)) {
-			const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-				method: 'GET',
-				headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
-			}).then(res => res.json());
-			if (!member) continue;
-			const star = member.achievements
-				? member.achievements.find(achievement => achievement.name === 'War League Legend')
+		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));
+		const fetched = await Promise.all(responses.map(res => res.json()));
+		const memberList = fetched.map(m => {
+			const star = m.achievements
+				? m.achievements.find(achievement => achievement.name === 'War League Legend')
 				: 0;
-			memberList.push({ townHallLevel: member.townHallLevel, name: member.name, cwlStar: star.value });
-		}
+			const member = { townHallLevel: m.townHallLevel, name: m.name, cwlStar: star.value };
+			return member;
+		});
 
 		const items = this.sort(memberList);
-		embed.setDescription([
-			'List of most valuable players, sorted by total stars in CWL',
-			'',
-			`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
-			items.slice(0, 30)
-				.filter(m => m.cwlStar !== 0)
-				.map(member => {
-					const name = this.padEnd(member.name);
-					const star = this.padStart(member.cwlStar.toString());
-					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name}\``;
-				})
-				.join('\n')
-		]);
+		const embed = this.client.util.embed()
+			.setColor(0x5970c1)
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+			.setDescription([
+				'List of most valuable players, sorted by total stars in CWL',
+				'',
+				`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
+				items.slice(0, 30)
+					.filter(m => m.cwlStar !== 0)
+					.map(member => {
+						const name = this.padEnd(member.name);
+						const star = this.padStart(member.cwlStar.toString());
+						return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name}\``;
+					})
+					.join('\n')
+			]);
 
 		return message.util.send({ embed });
 	}

@@ -4,8 +4,8 @@ const Resolver = require('../../struct/Resolver');
 const { troops, buildertroops } = require('../../util/troops.json');
 const { oneLine } = require('common-tags');
 const fetch = require('node-fetch');
-const API_TOKENS = process.env.API_TOKENS.split(',');
-const { emoji, heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
+const TOKENS = process.env.$KEYS.split(',');
+const { heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
 
 class RushedCommand extends Command {
 	constructor() {
@@ -58,27 +58,24 @@ class RushedCommand extends Command {
 	}
 
 	async clan(message, data) {
-		const list = data.memberList.map(m => m.tag);
-		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
-			.map((tags, index) => async (collection = []) => {
-				for (const tag of tags) {
-					const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-						method: 'GET',
-						headers: { accept: 'application/json', authorization: `Bearer ${API_TOKENS[index]}` }
-					}).then(res => res.json());
-					collection.push(member);
+		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
+		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
+		const requests = data.memberList.map((m, i) => {
+			const req = {
+				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
+				option: {
+					method: 'GET',
+					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % 5]}` }
 				}
-				return collection;
-			});
+			};
+			return req;
+		});
 
-		const requests = await Promise.all(funcs.map(func => func()));
-		const reduced = requests.reduce((a, b) => {
-			a.push(...b);
-			return a;
-		}, []);
+		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));
+		const fetched = await Promise.all(responses.map(res => res.json()));
 
 		const members = [];
-		for (const { name, troops, spells, heroes, townHallLevel } of reduced) {
+		for (const { name, troops, spells, heroes, townHallLevel } of fetched) {
 			let i = 0;
 			i += this.reduce(troops, townHallLevel);
 			i += this.reduce(spells, townHallLevel);

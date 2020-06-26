@@ -4,7 +4,7 @@ const Resolver = require('../../struct/Resolver');
 const { emoji, leagueEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
 const { stripIndent } = require('common-tags');
-const API = process.env.API_TOKENS.split(',');
+const TOKENS = process.env.$KEYS.split(',');
 
 class MembersCommand extends Command {
 	constructor() {
@@ -51,35 +51,32 @@ class MembersCommand extends Command {
 		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
 
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
-		const list = data.memberList.map(m => m.tag);
-		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
-			.map((tags, index) => async (collection = []) => {
-				for (const tag of tags) {
-					const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-						method: 'GET',
-						headers: { accept: 'application/json', authorization: `Bearer ${API[index]}` }
-					}).then(res => res.json());
-					collection.push({
-						name: member.name,
-						tag: member.tag,
-						townHallLevel: member.townHallLevel,
-						heroes: member.heroes,
-						league: member.league ? member.league.id : 29000000
-					});
+		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
+		const requests = data.memberList.map((m, i) => {
+			const req = {
+				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
+				option: {
+					method: 'GET',
+					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % 5]}` }
 				}
-				return collection;
-			});
+			};
+			return req;
+		});
 
-		const requests = await Promise.all(funcs.map(func => func()));
+		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));
+		const fetched = await Promise.all(responses.map(res => res.json()));
+		const members = fetched.map(m => {
+			const member = {
+				name: m.name,
+				tag: m.tag,
+				townHallLevel: m.townHallLevel,
+				heroes: m.heroes,
+				league: m.league ? m.league.id : 29000000
+			};
+			return member;
+		});
 
-		const array = [];
-		for (const arr of requests) {
-			for (const member of arr) {
-				array.push({ tag: member.tag, name: member.name, townHallLevel: member.townHallLevel, league: member.league });
-			}
-		}
-
-		const items = this.sort(array);
+		const items = this.sort(members);
 		const filter = items.filter(arr => arr.townHallLevel === townhall);
 
 		const embed = this.client.util.embed()

@@ -3,7 +3,6 @@ const { mongodb } = require('../struct/Database');
 const fetch = require('node-fetch');
 const { ObjectId } = require('mongodb');
 const moment = require('moment');
-const API_TOKENS = process.env.CLAN_GAMES_API_TOKENS.split(',');
 
 class ClanGames {
 	constructor(client) {
@@ -21,7 +20,7 @@ class ClanGames {
 				const db = mongodb.db('clashperk').collection('clangames');
 				const data = await db.findOne({ tag: clan.tag });
 				return this.getList(clan, data, tags.map(t => t.tag));
-			}, 2.5 * 60 * 1000);
+			}, 2.1 * 60 * 1000);
 		}
 
 		if (cache && cache.updatedAt) {
@@ -226,11 +225,9 @@ class ClanGames {
 	}
 
 	async getList(clan, data, tags) {
-		let index = 0;
 		const collection = [];
 		for (const tag of tags) {
-			if (index === 5) index = 0;
-			const player = await this.player(tag, index);
+			const player = await this.player(tag);
 			if (!player) continue;
 			if (!player.achievements) continue;
 			const value = player.achievements
@@ -241,7 +238,6 @@ class ClanGames {
 				tag: player.tag,
 				points: value
 			});
-			index += 1;
 		}
 
 		const updated = await this.update(clan, data, collection);
@@ -344,12 +340,12 @@ class ClanGames {
 		return new Promise(res => setTimeout(res, ms));
 	}
 
-	async player(tag, index) {
+	async player(tag) {
 		const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${API_TOKENS[index]}`
+				authorization: `Bearer ${process.env.$KEY}`
 			},
 			timeout: 3000
 		}).catch(() => null);

@@ -363,7 +363,7 @@ class CacheHandler {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.CLAN_EVENTS_API}`
+				authorization: `Bearer ${process.env.$DEV_TOKEN}`
 			},
 			timeout: 5000
 		}).catch(() => null);

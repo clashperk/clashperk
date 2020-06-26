@@ -2,8 +2,8 @@ const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
-const { townHallEmoji, emoji, blueNum, redNum } = require('../../util/emojis');
-const TOKENS = process.env.API_TOKENS.split(',');
+const { townHallEmoji, blueNum, redNum } = require('../../util/emojis');
+const TOKENS = process.env.$KEYS.split(',');
 
 class ThCompoCommand extends Command {
 	constructor() {
