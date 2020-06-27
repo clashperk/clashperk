@@ -2,7 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
 const fetch = require('node-fetch');
-const API = process.env.$KEYS.split(',');
+const TOKENS = process.env.$KEYS.split(',');
 const { emoji } = require('../../util/emojis');
 const { ObjectId } = require('mongodb');
 const moment = require('moment');
@@ -58,30 +58,29 @@ class ClanGamesCommand extends Command {
 			});
 		}
 
-		const list = data.memberList.map(m => m.tag);
-		const funcs = new Array(Math.ceil(list.length / 5)).fill().map(() => list.splice(0, 5))
-			.map((tags, index) => async (collection = []) => {
-				for (const tag of tags) {
-					const member = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-						method: 'GET',
-						headers: { accept: 'application/json', authorization: `Bearer ${API[index]}` }
-					}).then(res => res.json());
-					const points = member.achievements.find(achievement => achievement.name === 'Games Champion');
-					collection.push({ name: member.name, tag: member.tag, points: points.value });
+		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
+		const requests = data.memberList.map((m, i) => {
+			const req = {
+				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
+				option: {
+					method: 'GET',
+					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % 5]}` }
 				}
-				return collection;
-			});
+			};
+			return req;
+		});
 
-		const requests = await Promise.all(funcs.map(func => func()));
+		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));
+		const fetched = await Promise.all(responses.map(res => res.json()));
+		const memberList = fetched.map(m => {
+			const points = m.achievements
+				? m.achievements.find(achievement => achievement.name === 'Games Champion')
+				: 0;
+			const member = { tag: m.tag, name: m.name, points };
+			return member;
+		});
 
-		const array = [];
-		for (const arr of requests) {
-			for (const member of arr) {
-				array.push({ tag: member.tag, name: member.name, points: member.points });
-			}
-		}
-
-		const members = this.filter(array, clan);
+		const members = this.filter(memberList, clan);
 
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
