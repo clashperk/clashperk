@@ -106,7 +106,7 @@ class Reslover {
 	}
 
 	static async fetch(data) {
-		if (cached.has(data.tag)) return cached.get(data.tag).data;
+		// if (cached.has(data.tag)) return cached.get(data.tag).data;
 		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
 		const requests = data.memberList.map((m, i) => {
 			const req = {
@@ -120,9 +120,8 @@ class Reslover {
 		});
 
 		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));
-		const fetched = await Promise.all(responses.map(res => res.json()));
-		this.set(data.tag, fetched, data['max-age']);
-		return fetched;
+		return Promise.all(responses.map(res => res.json()));
+		// this.set(data.tag, fetched, data['max-age']);
 	}
 
 	static set(tag, fetched, time) {

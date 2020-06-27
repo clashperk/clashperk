@@ -1,9 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
-const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
 const { townHallEmoji, blueNum, redNum } = require('../../util/emojis');
-const TOKENS = process.env.$KEYS.split(',');
 
 class ThCompoCommand extends Command {
 	constructor() {
@@ -43,19 +41,6 @@ class ThCompoCommand extends Command {
 		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
 
 		const hrStart = process.hrtime();
-		/* const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
-		const requests = data.memberList.map((m, i) => {
-			const req = {
-				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
-				option: {
-					method: 'GET',
-					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % KEYS.length]}` }
-				}
-			};
-			return req;
-		});
-
-		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));*/
 		const fetched = await Resolver.fetch(data);
 		const reduced = fetched.reduce((count, member) => {
 			const townHall = member.townHallLevel;
@@ -64,7 +49,7 @@ class ThCompoCommand extends Command {
 		}, {});
 
 		const townHalls = Object.entries(reduced)
-			.map(entry => ({ level: entry[0], total: entry[1] }))
+			.map(arr => ({ level: arr[0], total: arr[1] }))
 			.sort((a, b) => b.level - a.level);
 		const avg = townHalls.reduce((p, c) => p + (c.total * c.level), 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
 
