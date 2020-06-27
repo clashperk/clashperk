@@ -76,7 +76,7 @@ class ClanGamesCommand extends Command {
 			const points = m.achievements
 				? m.achievements.find(achievement => achievement.name === 'Games Champion')
 				: 0;
-			const member = { tag: m.tag, name: m.name, points };
+			const member = { tag: m.tag, name: m.name, points: points.value };
 			return member;
 		});
 
