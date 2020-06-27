@@ -49,7 +49,7 @@ class WarWeightCommand extends Command {
 				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
 				option: {
 					method: 'GET',
-					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % 5]}` }
+					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % KEYS.length]}` }
 				}
 			};
 			return req;
