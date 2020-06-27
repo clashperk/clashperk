@@ -43,7 +43,7 @@ class ThCompoCommand extends Command {
 		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
 
 		const hrStart = process.hrtime();
-		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
+		/* const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
 		const requests = data.memberList.map((m, i) => {
 			const req = {
 				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
@@ -55,8 +55,8 @@ class ThCompoCommand extends Command {
 			return req;
 		});
 
-		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));
-		const fetched = await Promise.all(responses.map(res => res.json()));
+		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));*/
+		const fetched = await Resolver.fetch(data);
 		const reduced = fetched.reduce((count, member) => {
 			const townHall = member.townHallLevel;
 			count[townHall] = (count[townHall] || 0) + 1;

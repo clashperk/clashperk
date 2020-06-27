@@ -2,6 +2,8 @@ const fetch = require('node-fetch');
 const { mongodb } = require('./Database');
 const { status } = require('../util/constants');
 const { MessageEmbed } = require('discord.js');
+const TOKENS = process.env.$KEYS.split(',');
+const cached = new Map();
 
 class Reslover {
 	static async resolve(message, args, boolean = false) {
@@ -77,7 +79,7 @@ class Reslover {
 		if (!res) return { status: 504, embed: embed.setDescription(status(504)) };
 		if (!res.ok) return { status: res.status || 504, embed: embed.setDescription(status(res.status || 504)) };
 		const data = await res.json();
-		return this.assign(data);
+		return this.assign(data, res);
 	}
 
 	static async clan(tag) {
@@ -92,15 +94,46 @@ class Reslover {
 		if (!res) return { status: 504, embed: embed.setDescription(status(504)) };
 		if (!res.ok) return { status: res.status || 504, embed: embed.setDescription(status(res.status || 504)) };
 		const data = await res.json();
-		return this.assign(data);
+		return this.assign(data, res);
 	}
 
 	static format(tag) {
 		return tag.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0');
 	}
 
-	static assign(data) {
-		return Object.assign({ status: 200 }, data);
+	static assign(data, res) {
+		return Object.assign({ status: 200, 'max-age': Math.floor(res.headers.raw()['cache-control'][0].split('=')[1]) }, data);
+	}
+
+	static async fetch(data) {
+		if (cached.has(data.tag)) return cached.get(data.tag).data;
+		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
+		const requests = data.memberList.map((m, i) => {
+			const req = {
+				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
+				option: {
+					method: 'GET',
+					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % KEYS.length]}` }
+				}
+			};
+			return req;
+		});
+
+		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));
+		const fetched = await Promise.all(responses.map(res => res.json()));
+		this.set(data.tag, fetched, data['max-age']);
+		return fetched;
+	}
+
+	static set(tag, fetched, time) {
+		console.log(time);
+		return cached.set(tag, {
+			data: fetched,
+			timer: setTimeout(() => {
+				clearTimeout(tag);
+				cached.delete(tag);
+			}, time * 1000)
+		});
 	}
 }
 
