@@ -117,7 +117,7 @@ class ClanWarEvent {
 					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`,
 					''
 				]
-				: [''];
+				: [];
 			embed.setColor(0xFF0000)
 				.setDescription([
 					'**War Against**',
