@@ -224,7 +224,7 @@ class ClanWarEvent {
 		if (TwoRem.length) {
 			embed.setDescription([
 				`**2 ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
-				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `${blueNum[m.mapPosition]} ${m.name}`),
+				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`),
 				''
 			]);
 		}
@@ -233,7 +233,7 @@ class ClanWarEvent {
 			embed.setDescription([
 				embed.description || '',
 				`**1 ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
-				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `${blueNum[m.mapPosition]} ${m.name}`)
+				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`)
 			]);
 		}
 
