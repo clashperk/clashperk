@@ -2,7 +2,6 @@ const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../../struct/Database');
 const { MODES } = require('../../util/constants');
-const { oneLine } = require('common-tags');
 const Resolver = require('../../struct/Resolver');
 
 class PlayerLogCommand extends Command {
@@ -57,7 +56,7 @@ class PlayerLogCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 3000;
+		if (this.client.patron.isPatron(message.author, message.guild)) return 3000;
 		return 10000;
 	}
 
@@ -65,48 +64,14 @@ class PlayerLogCommand extends Command {
 		const clans = await this.clans(message);
 		const max = this.client.patron.get(message.guild.id, 'limit', 2);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
-			const embed = this.client.util.embed()
-				.setDescription([
-					'You can only claim 2 clans per guild!',
-					'',
-					'**Want more than that?**',
-					'Consider subscribing to one of our premium plans on Patreon',
-					'',
-					'[Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
-				])
-				.setColor(5861569);
+			const embed = Resolver.limitEmbed();
 			return message.util.send({ embed });
 		}
 
-		const isPatron = this.client.patron.isPatron(message.author, message.guild);
-		const isVoter = this.client.voteHandler.isVoter(message.author.id);
-		if (clans.length >= 1 && !clans.map(clan => clan.tag).includes(data.tag) && !(isVoter || isPatron)) {
-			const embed = this.client.util.embed()
-				.setDescription([
-					'**Not Voted!**',
-					'',
-					'Want to claim one more clan? Please consider voting us on Discord Bot List',
-					'',
-					'[Vote ClashPerk](https://top.gg/bot/526971716711350273/vote)'
-				])
-				.setColor(5861569);
-			return message.util.send({ embed });
-		}
-
-		const CODE = ['CP', message.guild.id.substr(-2)].join('');
+		const code = ['CP', message.guild.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) || { verified: false };
-		if (!clan.verified && !data.description.toUpperCase().includes(CODE)) {
-			const embed = this.client.util.embed()
-				.setAuthor(`${data.name}`, data.badgeUrls.small)
-				.setDescription([
-					'**Clan Description**',
-					`${data.description}`,
-					'',
-					'**Verify Your Clan**',
-					oneLine`Add the code \`${CODE}\` at the end of the clan description.
-					It's a security feature of the bot to ensure you are a Leader or Co-Leader in the clan.`,
-					'If you\'ve already added the code please wait at least 1 min before you run the command again and remove the code after verification.'
-				]);
+		if (!clan.verified && !data.description.toUpperCase().includes(code)) {
+			const embed = Resolver.verifyEmbed(data, code);
 			return message.util.send({ embed });
 		}
 

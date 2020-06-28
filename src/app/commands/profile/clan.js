@@ -45,7 +45,7 @@ class LinkClanCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.isPatron(message.author, message.guild) || this.client.voteHandler.isVoter(message.author.id)) return 1000;
+		if (this.client.patron.isPatron(message.author, message.guild)) return 1000;
 		return 3000;
 	}
 

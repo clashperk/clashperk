@@ -134,6 +134,35 @@ class Reslover {
 			}, time * 1000)
 		});
 	}
+
+	static verifyEmbed(data, code) {
+		const embed = new MessageEmbed()
+			.setAuthor(`${data.name}`, data.badgeUrls.small)
+			.setDescription([
+				'**Clan Description**',
+				`${data.description}`,
+				'',
+				'**Verify Your Clan**',
+				`Add the code \`${code}\` at the end of the clan description. It's a security feature of the bot to ensure you are a Leader or Co-Leader in the clan.`,
+				'If you\'ve already added the code please wait at least 1 min before you run the command again and remove the code after verification.'
+			]);
+		return embed;
+	}
+
+	static limitEmbed() {
+		const embed = new MessageEmbed()
+			.setDescription([
+				'You can only claim 2 clans per guild!',
+				'',
+				'**Want more than that?**',
+				'Consider subscribing to one of our premium plans on Patreon',
+				'',
+				'[Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
+			])
+			.setColor(5861569);
+
+		return embed;
+	}
 }
 
 module.exports = Reslover;

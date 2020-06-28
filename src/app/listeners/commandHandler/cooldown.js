@@ -45,9 +45,7 @@ class CooldownListener extends Listener {
 			} else {
 				embed.setDescription([
 					`You'll be able to use this command again in **${time}**`,
-					`The default cooldown is ${ms(cooldown, { long: true })}, but [voters](https://top.gg/bot/526971716711350273/vote) and [donators](https://www.patreon.com/join/clashperk) only need to wait ${this.default(command)} sec!`,
-					'',
-					'While you wait, go [vote us](https://top.gg/bot/526971716711350273/vote) and check out our [Patreon](https://www.patreon.com/join/clashperk)'
+					`The default cooldown is ${ms(cooldown, { long: true })}, but [donators](https://www.patreon.com/join/clashperk) only need to wait ${this.default(command)} sec!`
 				]);
 			}
 			return message.channel.send({ embed });
