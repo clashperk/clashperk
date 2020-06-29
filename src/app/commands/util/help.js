@@ -122,7 +122,7 @@ class HelpCommand extends Command {
 
 		let page = 0;
 		const embed = this.execHelpList(message, pages[page]);
-		const msg = await message.util.send({ embed: embed.setFooter(`Page ${page + 1}/2`) });
+		const msg = await message.util.send({ embed: embed.setFooter(`Page ${page + 1}/2`, this.client.user.displayAvatarURL()) });
 
 		for (const emoji of ['⬅️', '➡️', '➕']) {
 			await msg.react(emoji);
@@ -140,7 +140,7 @@ class HelpCommand extends Command {
 				if (page < 0) page = 1;
 				if (page > 1) page = 0;
 
-				await msg.edit({ embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`) });
+				await msg.edit({ embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`, this.client.user.displayAvatarURL()) });
 				await this.delay(250);
 				return reaction.users.remove(message.author.id);
 			}
@@ -150,7 +150,7 @@ class HelpCommand extends Command {
 				if (page < 0) page = 1;
 				if (page > 1) page = 0;
 
-				await msg.edit({ embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`) });
+				await msg.edit({ embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`, this.client.user.displayAvatarURL()) });
 				await this.delay(250);
 				return reaction.users.remove(message.author.id);
 			}
@@ -161,7 +161,7 @@ class HelpCommand extends Command {
 
 				await collector.stop();
 				return message.channel.send({
-					embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`)
+					embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`, this.client.user.displayAvatarURL())
 				});
 			}
 		});
