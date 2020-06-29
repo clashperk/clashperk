@@ -1,8 +1,7 @@
-const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag } = require('discord-akairo');
+const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } = require('discord-akairo');
 const Settings = require('../struct/SettingsProvider');
 const CacheHandler = require('../core/CacheHandler');
 const Storage = require('../struct/StorageHandler');
-const PostStats = require('../struct/PostStats');
 const Database = require('../struct/Database');
 const Firebase = require('../struct/Firebase');
 const { MessageEmbed } = require('discord.js');
@@ -101,7 +100,6 @@ class ClashPerk extends AkairoClient {
 		this.firebase = new Firebase(this);
 		this.firebase = new Firebase(this);
 		this.coc = new Client({ token: process.env.DEVELOPER_TOKEN });
-		this.postStats = new PostStats(this);
 
 		this.patron = new Patrons(this);
 		await this.settings.init();
@@ -114,7 +112,6 @@ class ClashPerk extends AkairoClient {
 			if (this.user.id === process.env.CLIENT_ID) {
 				this.patron.init();
 				this.firebase.init();
-				this.postStats.status();
 				this.cacheHandler.init();
 			}
 		});
