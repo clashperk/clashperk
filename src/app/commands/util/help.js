@@ -1,4 +1,4 @@
-const { Command, Argument } = require('discord-akairo');
+const { Command } = require('discord-akairo');
 
 class HelpCommand extends Command {
 	constructor() {
@@ -101,7 +101,7 @@ class HelpCommand extends Command {
 				config: 'Config',
 				util: 'Util'
 			};
-			const embed = await this.execHelpList(message, option);
+			const embed = this.execHelpList(message, option);
 			return message.util.send({ embed });
 		}
 
