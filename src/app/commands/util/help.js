@@ -105,34 +105,77 @@ class HelpCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const option = {
-			setup: 'Clan Management',
-			activity: 'Clan Activity',
-			cwl: 'War and CWL',
-			search: 'Clash Search',
-			profile: 'Profile'
-		};
-
-		const embed = await this.execHelpList(message, option);
-		const msg = await message.util.send({ embed });
-		await msg.react('➕');
-		const collector = await msg.awaitReactions(
-			(reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
-			{ max: 1, time: 90000, errors: ['time'] }
-		).catch(() => null);
-		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
-		if (!collector || !collector.size) return;
-
-		return message.channel.send({
-			embed: await this.execHelpList(message, {
+		const pages = [
+			{
+				setup: 'Clan Management',
+				activity: 'Clan Activity',
+				cwl: 'War and CWL',
+				search: 'Clash Search',
+				profile: 'Profile'
+			},
+			{
 				other: 'Other',
 				config: 'Config',
 				util: 'Util'
-			})
+			}
+		];
+
+		let page = 0;
+		const embed = this.execHelpList(message, pages[page]);
+		const msg = await message.util.send({ embed: embed.setFooter(`Page ${page + 1}/2`) });
+
+		for (const emoji of ['⬅️', '➡️', '➕']) {
+			await msg.react(emoji);
+			await this.delay(250);
+		}
+
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['➕', '⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 90000, max: 10 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '➡️') {
+				page += 1;
+				if (page < 0) page = 1;
+				if (page > 1) page = 0;
+				console.log(page);
+
+				await msg.edit({ embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`) });
+				await this.delay(250);
+				return reaction.users.remove(message.author.id);
+			}
+
+			if (reaction.emoji.name === '⬅️') {
+				page -= 1;
+				if (page < 0) page = 1;
+				if (page > 1) page = 0;
+				console.log(page);
+
+				await msg.edit({ embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`) });
+				await this.delay(250);
+				return reaction.users.remove(message.author.id);
+			}
+
+			if (reaction.emoji.name === '➕') {
+				if (page === 0) page = 1;
+				if (page === 1) page = 0;
+				await collector.stop();
+				return message.channel.send({
+					embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`)
+				});
+			}
 		});
+
+		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 	}
 
-	async execHelpList(message, option) {
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
+
+	execHelpList(message, option) {
+		console.log(option);
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
