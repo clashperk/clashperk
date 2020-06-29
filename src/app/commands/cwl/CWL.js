@@ -64,7 +64,7 @@ class CWLComamnd extends Command {
 					.values();
 				embed.addField('__**CWL**__', [
 					Array.from(commands)
-						.map(command => `\`${prefix}${command.id.replace(/-/g, '\u2002')}\`\n${command.description.content}`)
+						.map(command => `**\`${prefix}${command.id.replace(/-/g, '\u2002')}\`**\n${command.description.content}`)
 						.join('\n')
 				]);
 

@@ -196,7 +196,7 @@ class HelpCommand extends Command {
 						const description = Array.isArray(cmd.description.content)
 							? cmd.description.content[0]
 							: cmd.description.content;
-						return `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\`\n${description.replace(/{prefix}/g, `\\${prefix}`)}`;
+						return `**\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\`**\n${description.replace(/{prefix}/g, `\\${prefix}`)}`;
 					})
 					.join('\n')
 			]);
