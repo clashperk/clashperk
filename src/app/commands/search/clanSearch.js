@@ -8,7 +8,7 @@ const { status } = require('../../util/constants');
 class ClanSearchCommand extends Command {
 	constructor() {
 		super('clan-search', {
-			aliases: ['clan-search', 'cs'],
+			aliases: ['search', 'clan-search', 'cs'],
 			category: 'search',
 			description: {
 				content: 'Search in-game clans by name.',

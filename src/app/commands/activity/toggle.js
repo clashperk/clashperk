@@ -2,39 +2,54 @@ const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { ObjectId } = require('mongodb');
 
-class ToggleCommand extends Command {
+class StopCommand extends Command {
 	constructor() {
 		super('toggle', {
-			aliases: ['toggle', 'stop'],
+			aliases: ['stop', 'toggle'],
 			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Toggle logs and boards on the server.',
+				content: [
+					'Stop Logs and Boards in your guild.',
+					'',
+					'**Available Methods**',
+					'• donationlog `<clanTag>`',
+					'• playerlog `<clanTag>`',
+					'• lastonline `<clanTag>`',
+					'• clangames `<clanTag>`',
+					'• clanmebed `<clanTag>`',
+					'• all `<clanTag>` - remove all logs and boards for a clan.'
+				],
 				usage: '<method> <clanTag>',
-				examples: ['donationlog #8QU8J9LP', 'playerlog #8QU8J9LP', 'lastonline #8QU8J9LP']
+				examples: [
+					'donationlog #8QU8J9LP',
+					'playerlog #8QU8J9LP',
+					'lastonline #8QU8J9LP',
+					'clanembed #8QU8J9LP',
+					'clangames #8QU8J9LP',
+					'all #8QU8J9LP'
+				]
 			},
 			args: [
 				{
 					id: 'method',
+					match: 'phrase',
 					type: [
-						['DONATION_LOG', 'donationlog'],
-						['PLAYER_LOG', 'playerlog'],
-						['LAST_ONLINE_LOG', 'lastonline', 'lastonlineboard'],
-						['CLAN_EMBED_LOG', 'clanembed'],
-						['CLAN_GAMES_LOG', 'clangames', 'clangame', 'clangamesboard', 'clangameboard', 'cgboard']
+						['all'],
+						['DONATION_LOG', 'donationlog', 'dl'],
+						['PLAYER_LOG', 'playerlog', 'clanlog', 'pl'],
+						['LAST_ONLINE_LOG', 'lastonline', 'lastonlineboard', 'ob'],
+						['CLAN_EMBED_LOG', 'clanembed', 'ce'],
+						['CLAN_GAMES_LOG', 'clangames', 'clangame', 'clangamesboard', 'clangameboard', 'cgboard', 'cg']
 					],
-					prompt: {
-						start: 'What would you like to stop?'
-					}
+					default: ''
 				},
 				{
 					id: 'tag',
 					type: 'string',
-					prompt: {
-						start: 'What is the clan tag?'
-					}
+					default: ''
 				}
 			]
 		});
@@ -51,21 +66,32 @@ class ToggleCommand extends Command {
 			const embed = this.client.util.embed()
 				.setAuthor('No Method Selected')
 				.setDescription([
+					'Stop Logs and Boards in your guild.',
+					'',
+					'**Usage**',
+					`\`${prefix}stop <method> <clanTag>\``,
+					'',
 					'**Available Methods**',
 					'• donationlog `<clanTag>`',
 					'• playerlog `<clanTag>`',
 					'• lastonline `<clanTag>`',
-					'• clanembed <clanTag>',
-					'• clangames <clanTag>',
+					'• clangames `<clanTag>`',
+					'• clanmebed `<clanTag>`',
+					'• all `<clanTag>` - remove all logs and boards for a clan.',
 					'',
 					'**Examples**',
 					`\`${prefix}stop donationlog #8QU8J9LP\``,
 					`\`${prefix}stop playerlog #8QU8J9LP\``,
 					`\`${prefix}stop lastonline #8QU8J9LP\``,
 					`\`${prefix}stop clanembed #8QU8J9LP\``,
-					`\`${prefix}stop clangames #8QU8J9LP\``
+					`\`${prefix}stop clangames #8QU8J9LP\``,
+					`\`${prefix}stop all #8QU8J9LP\``
 				]);
 			return message.util.send({ embed });
+		}
+
+		if (method === 'all') {
+			return this.handler.handleDirectCommand(message, tag, this.handler.modules.get('remove'), false);
 		}
 
 		const db = mongodb.db('clashperk');
@@ -111,4 +137,4 @@ class ToggleCommand extends Command {
 	}
 }
 
-module.exports = ToggleCommand;
+module.exports = StopCommand;
