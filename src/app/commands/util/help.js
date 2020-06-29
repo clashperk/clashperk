@@ -139,7 +139,6 @@ class HelpCommand extends Command {
 				page += 1;
 				if (page < 0) page = 1;
 				if (page > 1) page = 0;
-				console.log(page);
 
 				await msg.edit({ embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`) });
 				await this.delay(250);
@@ -150,7 +149,6 @@ class HelpCommand extends Command {
 				page -= 1;
 				if (page < 0) page = 1;
 				if (page > 1) page = 0;
-				console.log(page);
 
 				await msg.edit({ embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`) });
 				await this.delay(250);
@@ -159,7 +157,8 @@ class HelpCommand extends Command {
 
 			if (reaction.emoji.name === '➕') {
 				if (page === 0) page = 1;
-				if (page === 1) page = 0;
+				else if (page === 1) page = 0;
+
 				await collector.stop();
 				return message.channel.send({
 					embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`)
@@ -175,7 +174,6 @@ class HelpCommand extends Command {
 	}
 
 	execHelpList(message, option) {
-		console.log(option);
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
