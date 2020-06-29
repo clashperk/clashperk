@@ -10,10 +10,10 @@ class CWLStarsComamnd extends Command {
 	constructor() {
 		super('cwl-stars', {
 			aliases: ['cwl-stars'],
-			category: 'hidden',
+			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows stars of current cwl.',
+				content: 'Shows stars of current CWL.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			}

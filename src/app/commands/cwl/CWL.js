@@ -55,7 +55,23 @@ class CWLComamnd extends Command {
 				['cwl-members', 'members', 'lineup'],
 				['cwl-stars', 'stars', 'star']
 			],
-			otherwise: new MessageEmbed()
+			otherwise: message => {
+				const prefix = this.handler.prefix(message);
+				const embed = new MessageEmbed()
+					.setColor(0x5970c1)
+					.setAuthor('CWL Commands')
+					.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
+				const commands = this.handler.categories.get('cwl-hidden')
+					.values();
+				embed.addField('__**CWL**__', [
+					Array.from(commands)
+						.map(command => `\`${prefix}${command.id.replace(/-/g, '\u2002')}\`\n${command.description.content}`)
+						.join('\n')
+				]);
+
+				return embed;
+			},
+			otherwie: new MessageEmbed()
 				.setAuthor('CWL Commands')
 				.setColor(0x5970c1)
 				.setDescription([

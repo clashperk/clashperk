@@ -10,7 +10,7 @@ class CWLMembersComamnd extends Command {
 	constructor() {
 		super('cwl-members', {
 			aliases: ['cwl-members', 'cwl-mem'],
-			category: 'hidden',
+			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'CWL members command.',

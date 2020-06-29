@@ -11,10 +11,10 @@ class CWLRemainingComamnd extends Command {
 	constructor() {
 		super('cwl-remaining', {
 			aliases: ['cwl-remaining', 'cwl-missing'],
-			category: 'hidden',
+			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows remaining attacks of current cwl.',
+				content: 'Shows remaining attacks of current CWL.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP'],
 				fields: [

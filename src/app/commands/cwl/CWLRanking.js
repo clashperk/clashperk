@@ -10,7 +10,7 @@ class CWLRankingComamnd extends Command {
 	constructor() {
 		super('cwl-ranking', {
 			aliases: ['cwl-ranking', 'cwl-rank'],
-			category: 'hidden',
+			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows clan Ranking.',

@@ -18,10 +18,10 @@ class CWLLineupComamnd extends Command {
 	constructor() {
 		super('cwl-lineup', {
 			aliases: ['cwl-lineup'],
-			category: 'hidden',
+			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows attacks of current cwl.',
+				content: 'Shows attacks of current CWL.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP'],
 				fields: [

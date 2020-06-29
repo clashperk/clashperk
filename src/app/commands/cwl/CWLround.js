@@ -10,10 +10,10 @@ class CWLRoundComamnd extends Command {
 	constructor() {
 		super('cwl-round', {
 			aliases: ['round', 'cwl-war', 'cwl-round'],
-			category: 'hidden',
+			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows info about current cwl war.',
+				content: 'Shows info about current round of CWL.',
 				usage: '<clanTag> [--round/-r] [round]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP -r 5', '#8QU8J9LP --round 4'],
 				fields: [

@@ -9,10 +9,10 @@ class CWLTopCommand extends Command {
 	constructor() {
 		super('cwl-top', {
 			aliases: ['cwl-top', 'cwl-mvp'],
-			category: 'hidden',
+			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
-				content: 'Most valuable clan members sorted by CWL stars.',
+				content: 'Most valuable clan members for CWL.',
 				usage: '<clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			}
@@ -70,7 +70,7 @@ class CWLTopCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				'List of most valuable players, sorted by total stars in CWL',
+				'List of most valuable clan members for CWL',
 				'',
 				`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
 				items.slice(0, 30)
