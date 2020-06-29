@@ -70,38 +70,7 @@ class CWLComamnd extends Command {
 				]);
 
 				return embed;
-			},
-			otherwie: new MessageEmbed()
-				.setAuthor('CWL Commands')
-				.setColor(0x5970c1)
-				.setDescription([
-					'**Usage**',
-					`\`${prefix}cwl <method> <...args>\``,
-					'',
-					'**Available Methods**',
-					'• roster `<clanTag>`',
-					'• round `<clanTag>`',
-					'• attacks `<clanTag>`',
-					'• remaining `<clanTag>`',
-					'• stats `<clanTag>`',
-					'• members `<clanTag>`',
-					'• stars `<clanTag>`',
-					'• ranks `<clanTag>`',
-					'• top `<clanTag>`',
-					'',
-					'For additional `<...args>` usage refer to the examples below.',
-					'',
-					'**Examples**',
-					`\`${prefix}cwl roster #8QU8J9LP\``,
-					`\`${prefix}cwl round #8QU8J9LP\``,
-					`\`${prefix}cwl attacks #8QU8J9LP\``,
-					`\`${prefix}cwl remaining #8QU8J9LP\``,
-					`\`${prefix}cwl stats #8QU8J9LP\``,
-					`\`${prefix}cwl members #8QU8J9LP\``,
-					`\`${prefix}cwl stars #8QU8J9LP\``,
-					`\`${prefix}cwl ranks #8QU8J9LP\``,
-					`\`${prefix}cwl top #8QU8J9LP\``
-				])
+			}
 		};
 
 		return Flag.continue(command);
