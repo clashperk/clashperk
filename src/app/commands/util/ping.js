@@ -4,7 +4,7 @@ class PingCommand extends Command {
 	constructor() {
 		super('ping', {
 			aliases: ['ping', 'pong'],
-			category: 'util',
+			category: 'hidden',
 			cooldown: 1000,
 			description: {
 				content: 'Pings me!'

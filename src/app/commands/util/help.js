@@ -4,7 +4,7 @@ class HelpCommand extends Command {
 	constructor() {
 		super('help', {
 			aliases: ['help', 'commands'],
-			category: 'util',
+			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS'],
 			cooldown: 1000,
 			args: [
