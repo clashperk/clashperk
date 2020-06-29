@@ -35,7 +35,7 @@ class Database {
 	}
 
 	static async connect() {
-		await mongodb.init();
+		return mongodb.init();
 	}
 
 	static get mongodb() {
