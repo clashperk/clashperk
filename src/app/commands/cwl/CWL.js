@@ -41,8 +41,7 @@ class CWLComamnd extends Command {
 		});
 	}
 
-	*args(message) {
-		const prefix = this.handler.prefix(message);
+	*args() {
 		const command = yield {
 			type: [
 				['cwl-attacks', 'attacks'],
