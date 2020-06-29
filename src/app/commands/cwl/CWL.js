@@ -9,7 +9,7 @@ class CWLComamnd extends Command {
 			cooldown: 0,
 			description: {
 				content: [
-					'Full list of CWL commands ({prefix}cwl for more info)',
+					'Full list of CWL commands',
 					'',
 					'**Available Methods**',
 					'• roster `<clanTag>`',

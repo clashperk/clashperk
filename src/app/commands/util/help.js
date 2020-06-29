@@ -5,7 +5,7 @@ class HelpCommand extends Command {
 		super('help', {
 			aliases: ['help', 'commands'],
 			category: 'util',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EMBED_LINKS'],
 			cooldown: 1000,
 			args: [
 				{
@@ -90,6 +90,49 @@ class HelpCommand extends Command {
 	}
 
 	async execCommandList(message) {
+		if (message.channel.type === 'dm' || !message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
+			const option = {
+				setup: 'Clan Management',
+				activity: 'Clan Activity',
+				cwl: 'CWL',
+				search: 'Clash Search',
+				profile: 'Profile',
+				other: 'Other',
+				config: 'Config',
+				util: 'Util'
+			};
+			const embed = await this.execHelpList(message, option);
+			return message.util.send({ embed });
+		}
+
+		const option = {
+			setup: 'Clan Management',
+			activity: 'Clan Activity',
+			cwl: 'War and CWL',
+			search: 'Clash Search',
+			profile: 'Profile'
+		};
+
+		const embed = await this.execHelpList(message, option);
+		const msg = await message.util.send({ embed });
+		await msg.react('➕');
+		const collector = await msg.awaitReactions(
+			(reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
+			{ max: 1, time: 90000, errors: ['time'] }
+		).catch(() => null);
+		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
+		if (!collector || !collector.size) return;
+
+		return message.channel.send({
+			embed: await this.execHelpList(message, {
+				other: 'Other',
+				config: 'Config',
+				util: 'Util'
+			})
+		});
+	}
+
+	async execHelpList(message, option) {
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
@@ -98,37 +141,26 @@ class HelpCommand extends Command {
 
 		const commands = [];
 		for (const category of this.handler.categories.values()) {
-			const name = {
-				setup: 'Clan Management',
-				activity: 'Clan Activity',
-				cwl: 'CWL',
-				search: 'Clash Search',
-				config: 'Config',
-				profile: 'Profile',
-				other: 'Other',
-				util: 'Util'
-			};
-			const title = name[category.id];
+			const title = option[category.id];
 
 			if (title) {
-				commands[Object.values(name).indexOf(title)] = { id: category.id, category, title };
+				commands[Object.values(option).indexOf(title)] = { id: category.id, category, title };
 			}
 		}
 
 		for (const cmd of commands) {
-			embed.addField(cmd.title, [
+			embed.addField(`**__${cmd.title}__**`, [
 				cmd.category.filter(cmd => cmd.aliases.length > 0)
 					.map(cmd => {
 						const description = Array.isArray(cmd.description.content)
 							? cmd.description.content[0]
 							: cmd.description.content;
-						return `[${prefix}${cmd.aliases[0].replace(/-/g, '')}](https://clashperk.xyz#${cmd.id}) - ${description.toLowerCase().replace(/{prefix}/g, `\\${prefix}`)}`;
+						return `\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\` \n${description.replace(/{prefix}/g, `\\${prefix}`)}`;
 					})
 					.join('\n')
 			]);
 		}
-		embed.setFooter('For more info click on the commands!');
-		return message.util.send({ embed });
+		return embed;
 	}
 }
 

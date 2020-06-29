@@ -10,7 +10,7 @@ class CWLRoundComamnd extends Command {
 	constructor() {
 		super('cwl-round', {
 			aliases: ['round', 'cwl-war', 'cwl-round'],
-			category: 'cwl',
+			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows info about current cwl war.',

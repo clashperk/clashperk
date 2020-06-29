@@ -10,7 +10,7 @@ class WarlogCommand extends Command {
 	constructor() {
 		super('warlog', {
 			aliases: ['warlog', 'wl'],
-			category: 'search',
+			category: 'cwl',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Shows your clan war log.',
