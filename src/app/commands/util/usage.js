@@ -1,16 +1,16 @@
-const { Command } = require("discord-akairo");
-const { firebase } = require("../../struct/Database");
+const { Command } = require('discord-akairo');
+const { firebase } = require('../../struct/Database');
 
 class UsageCommand extends Command {
 	constructor() {
-		super("usage", {
-			aliases: ["usage"],
-			category: "beta",
+		super('usage', {
+			aliases: ['usage'],
+			category: 'beta',
 			cooldown: 1000,
 			description: {
-				content: "Displays the usage statistics of the bot."
+				content: 'Displays the usage statistics of the bot.'
 			},
-			clientPermissions: ["EMBED_LINKS"]
+			clientPermissions: ['EMBED_LINKS']
 		});
 	}
 
@@ -22,26 +22,26 @@ class UsageCommand extends Command {
 		const embed = this.client.util.embed()
 			.setAuthor(`${this.client.user.username} Usage`, this.client.user.displayAvatarURL())
 			.setColor(0x5970c1)
-			.setFooter("Since August 2019")
+			.setFooter('Since August 2019')
 			.setTitle(`${total}x commands used`);
 		if (this.client.isOwner(message.author.id)) {
-			embed.addField("Users", [
+			embed.addField('Users', [
 				`\`\`\`${users.splice(0, 10).map(({ id, uses }, index) => {
 					const user = this.client.users.cache.get(id);
-					return `${(index + 1).toString().padStart(2, "0")} ${uses.toString().padStart(5, " ")}x  ${user.username}`;
-				}).join("\n")}\`\`\``
+					return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${user.username}`;
+				}).join('\n')}\`\`\``
 			]);
-			embed.addField("Servers", [
+			embed.addField('Servers', [
 				`\`\`\`${guilds.splice(0, 10).map(({ id, uses }, index) => {
 					const guild = this.client.guilds.cache.get(id);
-					return `${(index + 1).toString().padStart(2, "0")} ${uses.toString().padStart(5, " ")}x  ${guild.name}`;
-				}).join("\n")}\`\`\``
+					return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${guild.name}`;
+				}).join('\n')}\`\`\``
 			]);
-			embed.addField("Commands", [
+			embed.addField('Commands', [
 				`\`\`\`${commands.splice(0, 10).map(({ id, uses }, index) => {
-					const command = this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, "");
-					return `${(index + 1).toString().padStart(2, "0")} ${uses.toString().padStart(5, " ")}x  ${command}`;
-				}).join("\n")}\`\`\``
+					const command = this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '');
+					return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${command}`;
+				}).join('\n')}\`\`\``
 			]);
 		}
 
@@ -49,8 +49,8 @@ class UsageCommand extends Command {
 	}
 
 	async users() {
-		const ref = firebase.ref("users");
-		const data = await ref.once("value").then(snap => snap.val());
+		const ref = firebase.ref('users');
+		const data = await ref.once('value').then(snap => snap.val());
 		const users = [];
 		for (const [key, value] of Object.entries(data)) {
 			if (!this.client.users.cache.has(key)) continue;
@@ -61,8 +61,8 @@ class UsageCommand extends Command {
 	}
 
 	async guilds() {
-		const ref = firebase.ref("guilds");
-		const data = await ref.once("value").then(snap => snap.val());
+		const ref = firebase.ref('guilds');
+		const data = await ref.once('value').then(snap => snap.val());
 		const guilds = [];
 		for (const [key, value] of Object.entries(data)) {
 			if (!this.client.guilds.cache.has(key)) continue;
@@ -73,8 +73,8 @@ class UsageCommand extends Command {
 	}
 
 	async commands() {
-		const ref = firebase.ref("commands");
-		const data = await ref.once("value").then(snap => snap.val());
+		const ref = firebase.ref('commands');
+		const data = await ref.once('value').then(snap => snap.val());
 		const commands = [];
 		for (const [key, value] of Object.entries(data)) {
 			if (!this.client.commandHandler.modules.get(key) || !this.client.commandHandler.modules.get(key).aliases.length) continue;
@@ -85,8 +85,8 @@ class UsageCommand extends Command {
 	}
 
 	async commandsTotal() {
-		const ref = firebase.ref("stats");
-		const data = await ref.once("value").then(snap => snap.val());
+		const ref = firebase.ref('stats');
+		const data = await ref.once('value').then(snap => snap.val());
 
 		return data ? data.commands_used : 0;
 	}

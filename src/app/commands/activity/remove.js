@@ -1,25 +1,25 @@
-const { Command } = require("discord-akairo");
-const { mongodb } = require("../../struct/Database");
-const { ObjectId } = require("mongodb");
+const { Command } = require('discord-akairo');
+const { mongodb } = require('../../struct/Database');
+const { ObjectId } = require('mongodb');
 
 class RemoveClanCommand extends Command {
 	constructor() {
-		super("remove", {
-			aliases: ["remove", "remove-clan"],
-			category: "hidden",
-			channel: "guild",
-			userPermissions: ["MANAGE_GUILD"],
+		super('remove', {
+			aliases: ['remove', 'remove-clan'],
+			category: 'hidden',
+			channel: 'guild',
+			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: "Removes a clan from the server.",
-				usage: "<clanTag>",
-				examples: ["#8QU8J9LP"]
+				content: 'Removes a clan from the server.',
+				usage: '<clanTag>',
+				examples: ['#8QU8J9LP']
 			},
 			args: [
 				{
-					id: "tag",
-					type: "string",
+					id: 'tag',
+					type: 'string',
 					prompt: {
-						start: "What is the clan tag?"
+						start: 'What is the clan tag?'
 					}
 				}
 			]
@@ -32,14 +32,14 @@ class RemoveClanCommand extends Command {
 	}
 
 	async exec(message, { tag }) {
-		const db = mongodb.db("clashperk");
-		const clan = await db.collection("clanstores")
+		const db = mongodb.db('clashperk');
+		const clan = await db.collection('clanstores')
 			.findOne({ guild: message.guild.id, tag: tag.toUpperCase() });
 
 		if (!clan) {
 			return message.util.send({
 				embed: {
-					description: "ClanTag Not Found."
+					description: 'ClanTag Not Found.'
 				}
 			});
 		}

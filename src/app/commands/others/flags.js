@@ -1,16 +1,16 @@
-const { Command } = require("discord-akairo");
-const { mongodb } = require("../../struct/Database");
+const { Command } = require('discord-akairo');
+const { mongodb } = require('../../struct/Database');
 
 class FlagsCommand extends Command {
 	constructor() {
-		super("flags", {
-			aliases: ["flags"],
-			category: "other",
-			channel: "guild",
-			userPermissions: ["MANAGE_GUILD"],
+		super('flags', {
+			aliases: ['flags'],
+			category: 'other',
+			channel: 'guild',
+			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: "Shows the list of all flagged players.",
-				examples: [""]
+				content: 'Shows the list of all flagged players.',
+				examples: ['']
 			}
 		});
 	}
@@ -23,15 +23,15 @@ class FlagsCommand extends Command {
 	async exec(message) {
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1);
-		const data = await mongodb.db("clashperk")
-			.collection("flaggedusers")
+		const data = await mongodb.db('clashperk')
+			.collection('flaggedusers')
 			.find({ guild: message.guild.id })
 			.toArray();
 
 		if (data && data.length) {
-			embed.setAuthor("Flagged Players")
+			embed.setAuthor('Flagged Players')
 				.setDescription([
-					data.map((x, i) => `**${(++i).toString().padStart(2, "0")}.** ${x.name} ${x.tag}`).join("\n")
+					data.map((x, i) => `**${(++i).toString().padStart(2, '0')}.** ${x.name} ${x.tag}`).join('\n')
 				])
 				.setFooter(`Total: ${data.length}`);
 		} else {

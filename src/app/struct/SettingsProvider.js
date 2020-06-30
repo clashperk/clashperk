@@ -1,5 +1,5 @@
-const { Provider } = require("discord-akairo");
-const { Guild } = require("discord.js");
+const { Provider } = require('discord-akairo');
+const { Guild } = require('discord.js');
 
 class MongoDBProvider extends Provider {
 	constructor(database) {
@@ -40,7 +40,7 @@ class MongoDBProvider extends Provider {
 		delete data[key];
 
 		return this.database.updateOne({ id }, {
-			$unset: { [key]: "" }
+			$unset: { [key]: '' }
 		}, { upsert: true });
 	}
 
@@ -78,9 +78,9 @@ class Settings extends MongoDBProvider {
 
 	static getGuildID(guild) {
 		if (guild instanceof Guild) return guild.id;
-		if (guild === "global" || guild === null) return "global";
-		if (typeof guild === "string" && /^\d+$/.test(guild)) return guild;
-		throw new TypeError("Invalid guild specified. Must be a Guild instance, guild ID, \"global\", or null.");
+		if (guild === 'global' || guild === null) return 'global';
+		if (typeof guild === 'string' && /^\d+$/.test(guild)) return guild;
+		throw new TypeError('Invalid guild specified. Must be a Guild instance, guild ID, "global", or null.');
 	}
 }
 

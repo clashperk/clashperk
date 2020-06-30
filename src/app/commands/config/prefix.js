@@ -1,24 +1,24 @@
-const { Argument, Command } = require("discord-akairo");
+const { Argument, Command } = require('discord-akairo');
 
 class PrefixCommand extends Command {
 	constructor() {
-		super("prefix", {
-			aliases: ["prefix"],
-			category: "config",
+		super('prefix', {
+			aliases: ['prefix'],
+			category: 'config',
 			cooldown: 1000,
-			channel: "guild",
+			channel: 'guild',
 			quoted: false,
 			description: {
-				content: "Displays or changes the prefix of the guild.",
-				usage: "<prefix>",
-				examples: ["!", "?"]
+				content: 'Displays or changes the prefix of the guild.',
+				usage: '<prefix>',
+				examples: ['!', '?']
 			},
 			args: [
 				{
-					id: "prefix",
-					type: Argument.validate("string", (msg, p) => !/\s/.test(p) && p.length <= 3),
+					id: 'prefix',
+					type: Argument.validate('string', (msg, p) => !/\s/.test(p) && p.length <= 3),
 					prompt: {
-						retry: "Please provide a prefix without spaces and less than 3 characters.",
+						retry: 'Please provide a prefix without spaces and less than 3 characters.',
 						optional: true
 					}
 				}
@@ -30,13 +30,13 @@ class PrefixCommand extends Command {
 		if (!prefix) {
 			return message.util.send(`The current prefix for this guild is \`${this.handler.prefix(message)}\``);
 		}
-		if (prefix && !message.member.permissions.has("MANAGE_GUILD")) {
+		if (prefix && !message.member.permissions.has('MANAGE_GUILD')) {
 			return message.util.send([
 				`The current prefix for this guild is \`${this.handler.prefix(message)}\``,
-				"You are missing `Manage Server` to change the prefix."
+				'You are missing `Manage Server` to change the prefix.'
 			]);
 		}
-		this.client.settings.set(message.guild, "prefix", prefix);
+		this.client.settings.set(message.guild, 'prefix', prefix);
 		if (prefix === this.handler.prefix(message)) {
 			return message.util.reply(`the prefix has been reset to \`${prefix}\``);
 		}

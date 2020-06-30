@@ -1,31 +1,31 @@
-const { Command, Argument, Flag } = require("discord-akairo");
-const fetch = require("node-fetch");
-const moment = require("moment");
-const { MessageEmbed } = require("discord.js");
-const { status } = require("../../util/constants");
-const Resolver = require("../../struct/Resolver");
-const { emoji, townHallEmoji } = require("../../util/emojis");
+const { Command, Argument, Flag } = require('discord-akairo');
+const fetch = require('node-fetch');
+const moment = require('moment');
+const { MessageEmbed } = require('discord.js');
+const { status } = require('../../util/constants');
+const Resolver = require('../../struct/Resolver');
+const { emoji, townHallEmoji } = require('../../util/emojis');
 
 class CWLRoundComamnd extends Command {
 	constructor() {
-		super("cwl-round", {
-			aliases: ["round", "cwl-war", "cwl-round"],
-			category: "cwl-hidden",
-			clientPermissions: ["EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
+		super('cwl-round', {
+			aliases: ['round', 'cwl-war', 'cwl-round'],
+			category: 'cwl-hidden',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: "Shows info about current round of CWL.",
-				usage: "<clanTag> [--round/-r] [round]",
-				examples: ["#8QU8J9LP", "#8QU8J9LP -r 5", "#8QU8J9LP --round 4"],
+				content: 'Shows info about current round of CWL.',
+				usage: '<clanTag> [--round/-r] [round]',
+				examples: ['#8QU8J9LP', '#8QU8J9LP -r 5', '#8QU8J9LP --round 4'],
 				fields: [
 					{
-						name: "Flags",
+						name: 'Flags',
 						value: [
-							"`--round <num>` or `-r <num>` to see specific round."
+							'`--round <num>` or `-r <num>` to see specific round.'
 						]
 					}
 				]
 			},
-			optionFlags: ["--round", "-r"]
+			optionFlags: ['--round', '-r']
 		});
 	}
 
@@ -36,9 +36,9 @@ class CWLRoundComamnd extends Command {
 
 	*args() {
 		const round = yield {
-			match: "option",
-			flag: ["--round", "-r"],
-			type: Argument.range("integer", 1, 7, true)
+			match: 'option',
+			flag: ['--round', '-r'],
+			type: Argument.range('integer', 1, 7, true)
 		};
 
 		const data = yield {
@@ -58,15 +58,15 @@ class CWLRoundComamnd extends Command {
 	async exec(message, { data, round }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
-			method: "GET", timeout: 3000,
-			headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+			method: 'GET', timeout: 3000,
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		}).catch(() => null);
 
 		if (!res) {
 			return message.util.send({
 				embed: {
 					color: 0XF30C11,
-					author: { name: "Error" },
+					author: { name: 'Error' },
 					description: status(504)
 				}
 			});
@@ -80,7 +80,7 @@ class CWLRoundComamnd extends Command {
 		if (!(body.state || res.ok)) {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
-				.setDescription("Clan is not in CWL");
+				.setDescription('Clan is not in CWL');
 			return message.util.send({ embed });
 		}
 
@@ -88,35 +88,35 @@ class CWLRoundComamnd extends Command {
 	}
 
 	async rounds(message, body, clan_, round) {
-		const rounds_ = body.rounds.filter(r => !r.warTags.includes("#0")).length;
+		const rounds_ = body.rounds.filter(r => !r.warTags.includes('#0')).length;
 		if (round && round > rounds_) {
 			const embed = new MessageEmbed()
 				.setColor(0x5970c1)
 				.setAuthor(`${clan_.name} (${clan_.tag})`, clan_.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan_.tag}`)
 				.setDescription([
-					"This round is not available yet!",
-					"",
-					"**Available Rounds**",
-					"",
+					'This round is not available yet!',
+					'',
+					'**Available Rounds**',
+					'',
 					new Array(rounds_)
 						.fill(0)
 						.map((x, i) => `**\`${i + 1}\`** ${emoji.ok}`)
-						.join("\n"),
+						.join('\n'),
 					new Array(body.rounds.length - rounds_)
 						.fill(0)
 						.map((x, i) => `**\`${i + rounds_ + 1}\`** ${emoji.wrong}`)
-						.join("\n")
+						.join('\n')
 				]);
 			return message.util.send({ embed });
 		}
 
-		const rounds = body.rounds.filter(d => !d.warTags.includes("#0"));
+		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
 		const chunks = [];
 		let index = 0;
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
-					method: "GET", headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 				});
 				const data = await res.json();
 				if ((data.clan && data.clan.tag === clan_.tag) || (data.opponent && data.opponent.tag === clan_.tag)) {
@@ -125,40 +125,40 @@ class CWLRoundComamnd extends Command {
 					const embed = new MessageEmbed()
 						.setColor(0x5970c1);
 					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
-						.addField("War Against", `${opponent.name} (${opponent.tag})`)
-						.addField("Team Size", `${data.teamSize}`);
-					if (data.state === "warEnded") {
+						.addField('War Against', `${opponent.name} (${opponent.tag})`)
+						.addField('Team Size', `${data.teamSize}`);
+					if (data.state === 'warEnded') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
-						embed.addField("State", "War Ended")
-							.addField("War Ended", `${moment.duration(Date.now() - end).format("D [days], H [hours] m [mins]", { trim: "both mid" })} ago`)
-							.addField("Stats", [
+						embed.addField('State', 'War Ended')
+							.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+							.addField('Stats', [
 								`**${data.clan.name}**`,
 								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								"",
+								'',
 								`**${data.opponent.name}**`,
 								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
 							]);
 					}
-					if (data.state === "inWar") {
+					if (data.state === 'inWar') {
 						const started = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField("State", "In War")
-							.addField("Started", `${moment.duration(Date.now() - started).format("D [days], H [hours] m [mins]", { trim: "both mid" })} ago`)
-							.addField("Stats", [
+						embed.addField('State', 'In War')
+							.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+							.addField('Stats', [
 								`**${data.clan.name}**`,
 								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								"",
+								'',
 								`**${data.opponent.name}**`,
 								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
 							]);
 					}
-					if (data.state === "preparation") {
+					if (data.state === 'preparation') {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField("State", "Preparation")
-							.addField("Starting In", `${moment.duration(start - Date.now()).format("D [days], H [hours] m [mins]", { trim: "both mid" })}`);
+						embed.addField('State', 'Preparation')
+							.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
 					}
-					embed.addField("Rosters", [
+					embed.addField('Rosters', [
 						`**${data.clan.name}**\u200b ${this.count(data.clan.members)}`,
-						"",
+						'',
 						`**${data.opponent.name}**\u200b ${this.count(data.opponent.members)}`
 					]);
 					embed.setFooter(`Round #${++index}`);
@@ -171,7 +171,7 @@ class CWLRoundComamnd extends Command {
 		const item = round
 			? chunks[round - 1]
 			: chunks.length === 7
-				? chunks.find(c => c.state === "inWar") || chunks.slice(-1)[0]
+				? chunks.find(c => c.state === 'inWar') || chunks.slice(-1)[0]
 				: chunks.slice(-2)[0];
 		const pageIndex = chunks.indexOf(item);
 
@@ -182,18 +182,18 @@ class CWLRoundComamnd extends Command {
 			return message.util.send({ embed: paginated.items[0].embed });
 		}
 		const msg = await message.util.send({ embed: paginated.items[0].embed });
-		for (const emoji of ["⬅️", "➡️"]) {
+		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ["⬅️", "➡️"].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 60000, max: 10 }
 		);
 
-		collector.on("collect", async reaction => {
-			if (reaction.emoji.name === "➡️") {
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '➡️') {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
@@ -204,7 +204,7 @@ class CWLRoundComamnd extends Command {
 				return message;
 			}
 
-			if (reaction.emoji.name === "⬅️") {
+			if (reaction.emoji.name === '⬅️') {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
@@ -216,7 +216,7 @@ class CWLRoundComamnd extends Command {
 			}
 		});
 
-		collector.on("end", async () => {
+		collector.on('end', async () => {
 			await msg.reactions.removeAll().catch(() => null);
 			return message;
 		});
@@ -252,9 +252,9 @@ class CWLRoundComamnd extends Command {
 		const avg = townHalls.reduce((p, c) => p + (c.total * c.level), 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
 
 		return [`**(Avg: ${avg.toFixed(2)})**`, this.chunk(townHalls)
-			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, "0")}\``)
-				.join(" "))
-			.join("\n")].join("\n");
+			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
+				.join(' '))
+			.join('\n')].join('\n');
 	}
 
 	chunk(items = []) {

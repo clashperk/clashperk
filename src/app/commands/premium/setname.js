@@ -1,27 +1,27 @@
-const { Command, Flag } = require("discord-akairo");
-const Resolver = require("../../struct/Resolver");
+const { Command, Flag } = require('discord-akairo');
+const Resolver = require('../../struct/Resolver');
 
 class SetNickNameCommand extends Command {
 	constructor() {
-		super("setnick", {
-			aliases: ["setnick"],
-			category: "premium",
+		super('setnick', {
+			aliases: ['setnick'],
+			category: 'premium',
 			cooldown: 3000,
-			clientPermissions: ["EMBED_LINKS", "MANAGE_NICKNAMES"],
-			userPermissions: ["MANAGE_GUILD"],
+			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
+			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: "Sets nickname of a member",
-				usage: "<user> <playerTag> <prefix>"
+				content: 'Sets nickname of a member',
+				usage: '<user> <playerTag> <prefix>'
 			}
 		});
 	}
 
 	*args() {
 		const member = yield {
-			type: "member",
+			type: 'member',
 			prompt: {
-				start: "What member do you want to set nickname?",
-				retry: "Please mention a valid member to change nickname."
+				start: 'What member do you want to set nickname?',
+				retry: 'Please mention a valid member to change nickname.'
 			}
 		};
 
@@ -38,14 +38,14 @@ class SetNickNameCommand extends Command {
 				return resolved;
 			},
 			prompt: {
-				start: "What is the player tag?",
+				start: 'What is the player tag?',
 				retry: (msg, { failure }) => failure.value
 			}
 		};
 
 		const prefix = yield {
-			type: "string",
-			match: "rest"
+			type: 'string',
+			match: 'rest'
 		};
 
 		return { prefix, member, player };
@@ -55,17 +55,17 @@ class SetNickNameCommand extends Command {
 		if (message.guild.me.roles.highest.position <= member.roles.highest.position || member.id === message.guild.ownerID) {
 			const embed = this.client.util.embed()
 				.setDescription([
-					"I do not have permission to change nickname of this user ~"
+					'I do not have permission to change nickname of this user ~'
 				]);
 			return message.util.send({ embed });
 		}
 
-		const name = [prefix, player.name].join(" ");
+		const name = [prefix, player.name].join(' ');
 
 		if (name.length > 31) {
 			const embed = this.client.util.embed()
 				.setDescription([
-					"Too large name ~ < 31"
+					'Too large name ~ < 31'
 				]);
 			return message.util.send({ embed });
 		}

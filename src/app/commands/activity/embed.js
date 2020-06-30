@@ -1,17 +1,17 @@
-const { Command, Flag } = require("discord-akairo");
-const { emoji } = require("../../util/emojis");
-const Resolver = require("../../struct/Resolver");
+const { Command, Flag } = require('discord-akairo');
+const { emoji } = require('../../util/emojis');
+const Resolver = require('../../struct/Resolver');
 
 class ClanEmbedCommand extends Command {
 	constructor() {
-		super("simple-clanembed", {
-			category: "hidden",
+		super('simple-clanembed', {
+			category: 'hidden',
 			cooldown: 3000,
-			clientPermissions: ["EMBED_LINKS"],
-			userPermissions: ["MANAGE_GUILD"],
+			clientPermissions: ['EMBED_LINKS'],
+			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: "Creates a beautiful embed for a clan.",
-				usage: "<clanTag>"
+				content: 'Creates a beautiful embed for a clan.',
+				usage: '<clanTag>'
 			}
 		});
 	}
@@ -30,7 +30,7 @@ class ClanEmbedCommand extends Command {
 				return resolved;
 			},
 			prompt: {
-				start: "What is your clan tag?",
+				start: 'What is your clan tag?',
 				retry: (msg, { failure }) => failure.value
 			}
 		};
@@ -44,25 +44,25 @@ class ClanEmbedCommand extends Command {
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)
-			.setDescription(data.description || "No description available.")
-			.addField(`${emoji.owner} Leader`, `${data.memberList.filter(m => m.role === "leader").map(m => `${m.name} (${m.tag})`)[0]}`)
+			.setDescription(data.description || 'No description available.')
+			.addField(`${emoji.owner} Leader`, `${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name} (${m.tag})`)[0]}`)
 			.addField(`${emoji.clan} War Info`, [
-				`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses, ${data.warTies} ties,` : ""} win streak ${data.warWinStreak}`
+				`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses, ${data.warTies} ties,` : ''} win streak ${data.warWinStreak}`
 			])
 			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL())
 			.setTimestamp();
 
 		await message.channel.send({ embed });
-		if (!this.client.patron.get(message.guild.id, "guild", false)) {
+		if (!this.client.patron.get(message.guild.id, 'guild', false)) {
 			await this.delay(250);
 			return message.channel.send([
-				"Become a Patron to make this Embed Live!",
-				"",
-				"• Self-updaing embed",
-				"• Set custom description",
-				"• Set accepted town-halls",
-				"• Set custom clan leader",
-				"• Set custom embed color"
+				'Become a Patron to make this Embed Live!',
+				'',
+				'• Self-updaing embed',
+				'• Set custom description',
+				'• Set accepted town-halls',
+				'• Set custom clan leader',
+				'• Set custom embed color'
 			]);
 		}
 

@@ -1,5 +1,5 @@
-const { mongodb } = require("./Database");
-const { ObjectId } = require("mongodb");
+const { mongodb } = require('./Database');
+const { ObjectId } = require('mongodb');
 
 class StorageHandler {
 	constructor(client) {
@@ -7,7 +7,7 @@ class StorageHandler {
 	}
 
 	async register(data) {
-		const collection = await mongodb.db("clashperk").collection("clanstores")
+		const collection = await mongodb.db('clashperk').collection('clanstores')
 			.findOneAndUpdate({ tag: data.tag, guild: data.guild }, {
 				$set: {
 					tag: data.tag,
@@ -21,8 +21,8 @@ class StorageHandler {
 		const id = ObjectId(collection.value._id).toString();
 
 		switch (data.mode) {
-			case "DONATION_LOG":
-				await mongodb.db("clashperk").collection("donationlogs")
+			case 'DONATION_LOG':
+				await mongodb.db('clashperk').collection('donationlogs')
 					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
 							clan_id: ObjectId(id),
@@ -36,8 +36,8 @@ class StorageHandler {
 						}
 					}, { upsert: true });
 				break;
-			case "PLAYER_LOG":
-				await mongodb.db("clashperk").collection("playerlogs")
+			case 'PLAYER_LOG':
+				await mongodb.db('clashperk').collection('playerlogs')
 					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
 							clan_id: ObjectId(id),
@@ -50,24 +50,8 @@ class StorageHandler {
 						}
 					}, { upsert: true });
 				break;
-			case "LAST_ONLINE_LOG":
-				await mongodb.db("clashperk").collection("lastonlinelogs")
-					.updateOne({ tag: data.tag, guild: data.guild }, {
-						$set: {
-							clan_id: ObjectId(id),
-							tag: data.tag,
-							guild: data.guild,
-							name: data.name,
-							channel: data.channel,
-							color: data.color,
-							message: data.message,
-							patron: data.patron,
-							createdAt: new Date()
-						}
-					}, { upsert: true });
-				break;
-			case "CLAN_GAMES_LOG":
-				await mongodb.db("clashperk").collection("clangameslogs")
+			case 'LAST_ONLINE_LOG':
+				await mongodb.db('clashperk').collection('lastonlinelogs')
 					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
 							clan_id: ObjectId(id),
@@ -82,8 +66,24 @@ class StorageHandler {
 						}
 					}, { upsert: true });
 				break;
-			case "CLAN_EMBED_LOG":
-				await mongodb.db("clashperk").collection("clanembedlogs")
+			case 'CLAN_GAMES_LOG':
+				await mongodb.db('clashperk').collection('clangameslogs')
+					.updateOne({ tag: data.tag, guild: data.guild }, {
+						$set: {
+							clan_id: ObjectId(id),
+							tag: data.tag,
+							guild: data.guild,
+							name: data.name,
+							channel: data.channel,
+							color: data.color,
+							message: data.message,
+							patron: data.patron,
+							createdAt: new Date()
+						}
+					}, { upsert: true });
+				break;
+			case 'CLAN_EMBED_LOG':
+				await mongodb.db('clashperk').collection('clanembedlogs')
 					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
 							clan_id: ObjectId(id),
@@ -99,8 +99,8 @@ class StorageHandler {
 						}
 					}, { upsert: true });
 				break;
-			case "CLAN_WAR_LOG":
-				await mongodb.db("clashperk").collection("clanwarlogs")
+			case 'CLAN_WAR_LOG':
+				await mongodb.db('clashperk').collection('clanwarlogs')
 					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
 							clan_id: ObjectId(id),
@@ -121,56 +121,56 @@ class StorageHandler {
 	}
 
 	async delete(id) {
-		await mongodb.db("clashperk").collection("donationlogs")
+		await mongodb.db('clashperk').collection('donationlogs')
 			.deleteOne({ clan_id: ObjectId(id) });
 
-		await mongodb.db("clashperk").collection("playerlogs")
+		await mongodb.db('clashperk').collection('playerlogs')
 			.deleteOne({ clan_id: ObjectId(id) });
 
-		await mongodb.db("clashperk").collection("lastonlinelogs")
+		await mongodb.db('clashperk').collection('lastonlinelogs')
 			.deleteOne({ clan_id: ObjectId(id) });
 
-		await mongodb.db("clashperk").collection("clangameslogs")
+		await mongodb.db('clashperk').collection('clangameslogs')
 			.deleteOne({ clan_id: ObjectId(id) });
 
-		await mongodb.db("clashperk").collection("clanembedlogs")
+		await mongodb.db('clashperk').collection('clanembedlogs')
 			.deleteOne({ clan_id: ObjectId(id) });
 
-		await mongodb.db("clashperk").collection("clanwarlogs")
+		await mongodb.db('clashperk').collection('clanwarlogs')
 			.deleteOne({ clan_id: ObjectId(id) });
 
-		return mongodb.db("clashperk").collection("clanstores")
+		return mongodb.db('clashperk').collection('clanstores')
 			.deleteOne({ _id: ObjectId(id) });
 	}
 
 	async stop(id, data) {
-		if (data.mode === "DONATION_LOG") {
-			return mongodb.db("clashperk").collection("donationlogs")
+		if (data.mode === 'DONATION_LOG') {
+			return mongodb.db('clashperk').collection('donationlogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.mode === "PLAYER_LOG") {
-			return mongodb.db("clashperk").collection("playerlogs")
+		if (data.mode === 'PLAYER_LOG') {
+			return mongodb.db('clashperk').collection('playerlogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.mode === "LAST_ONLINE_LOG") {
-			return mongodb.db("clashperk").collection("lastonlinelogs")
+		if (data.mode === 'LAST_ONLINE_LOG') {
+			return mongodb.db('clashperk').collection('lastonlinelogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.mode === "CLAN_GAMES_LOG") {
-			return mongodb.db("clashperk").collection("clangameslogs")
+		if (data.mode === 'CLAN_GAMES_LOG') {
+			return mongodb.db('clashperk').collection('clangameslogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.mode === "CLAN_EMBED_LOG") {
-			return mongodb.db("clashperk").collection("clanembedlogs")
+		if (data.mode === 'CLAN_EMBED_LOG') {
+			return mongodb.db('clashperk').collection('clanembedlogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.mode === "CLAN_WAR_LOG") {
-			return mongodb.db("clashperk").collection("clanwarlogs")
+		if (data.mode === 'CLAN_WAR_LOG') {
+			return mongodb.db('clashperk').collection('clanwarlogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 	}

@@ -1,5 +1,5 @@
-const fetch = require("node-fetch");
-const { firestore } = require("../struct/Database");
+const fetch = require('node-fetch');
+const { firestore } = require('../struct/Database');
 
 class CWLTracker {
 	constructor(client) {
@@ -21,7 +21,7 @@ class CWLTracker {
 	}
 
 	async load() {
-		await firestore.collection("tracking_clans")
+		await firestore.collection('tracking_clans')
 			.get()
 			.then(snapshot => {
 				snapshot.forEach(doc => {
@@ -30,7 +30,7 @@ class CWLTracker {
 				});
 			});
 
-		await firestore.collection("clan_metadata")
+		await firestore.collection('clan_metadata')
 			.get()
 			.then(snapshot => {
 				snapshot.forEach(doc => {
@@ -55,20 +55,20 @@ class CWLTracker {
 			}
 
 			const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar/leaguegroup`, {
-				method: "GET", timeout: 3000,
-				headers: { accept: "application/json", authorization: `Bearer ${process.env.$DEV_TOKEN}` }
+				method: 'GET', timeout: 3000,
+				headers: { accept: 'application/json', authorization: `Bearer ${process.env.$DEV_TOKEN}` }
 			}).catch(() => null);
 
 			if (!res.ok) continue;
 
 			const body = await res.json();
 
-			const rounds = body.rounds.filter(d => !d.warTags.includes("#0")).length === body.rounds.length
+			const rounds = body.rounds.filter(d => !d.warTags.includes('#0')).length === body.rounds.length
 				? body.rounds
 				: null;
 
 			if (rounds && this.cached.get(tag)) {
-				await firestore.collection("clan_metadata")
+				await firestore.collection('clan_metadata')
 					.doc(tag)
 					.update({
 						tag,

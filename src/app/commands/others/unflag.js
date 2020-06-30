@@ -1,18 +1,18 @@
-const { Command, Flag } = require("discord-akairo");
-const { mongodb } = require("../../struct/Database");
-const Resolver = require("../../struct/Resolver");
+const { Command, Flag } = require('discord-akairo');
+const { mongodb } = require('../../struct/Database');
+const Resolver = require('../../struct/Resolver');
 
 class UnflagCommand extends Command {
 	constructor() {
-		super("unflag", {
-			aliases: ["unflag"],
-			category: "other",
-			channel: "guild",
-			userPermissions: ["MANAGE_GUILD"],
+		super('unflag', {
+			aliases: ['unflag'],
+			category: 'other',
+			channel: 'guild',
+			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: "Unflags a player from your server or clans.",
-				usage: "<playerTag>",
-				examples: ["#9Q92C8R20"]
+				content: 'Unflags a player from your server or clans.',
+				usage: '<playerTag>',
+				examples: ['#9Q92C8R20']
 			}
 		});
 	}
@@ -31,7 +31,7 @@ class UnflagCommand extends Command {
 				return resolved;
 			},
 			prompt: {
-				start: "What is the player tag?",
+				start: 'What is the player tag?',
 				retry: (msg, { failure }) => failure.value
 			}
 		};
@@ -45,7 +45,7 @@ class UnflagCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		await mongodb.db("clashperk").collection("flaggedusers")
+		await mongodb.db('clashperk').collection('flaggedusers')
 			.deleteOne({ guild: message.guild.id, tag: data.tag });
 
 		return message.util.send(`Successfully unflagged **${data.name} (${data.tag})**`);

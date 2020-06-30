@@ -1,18 +1,18 @@
-const { Command, Flag } = require("discord-akairo");
-const { MessageEmbed } = require("discord.js");
-const Resolver = require("../../struct/Resolver");
-const { townHallEmoji, blueNum, redNum } = require("../../util/emojis");
+const { Command, Flag } = require('discord-akairo');
+const { MessageEmbed } = require('discord.js');
+const Resolver = require('../../struct/Resolver');
+const { townHallEmoji, blueNum, redNum } = require('../../util/emojis');
 
 class ThCompoCommand extends Command {
 	constructor() {
-		super("th-compo", {
-			aliases: ["compo", "th-compo"],
-			category: "search",
-			clientPermissions: ["EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
+		super('th-compo', {
+			aliases: ['compo', 'th-compo'],
+			category: 'search',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: "Calculates TH compositions of a clan.",
-				usage: "<clanTag>",
-				examples: ["#2Q98URCGY", "2Q98URCGY"]
+				content: 'Calculates TH compositions of a clan.',
+				usage: '<clanTag>',
+				examples: ['#2Q98URCGY', '2Q98URCGY']
 			}
 		});
 	}
@@ -58,7 +58,7 @@ class ThCompoCommand extends Command {
 			.setColor(0x5970c1)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription(townHalls.map(th => `${townHallEmoji[th.level]} ${th.level < 9 ? redNum[th.total] : blueNum[th.total]}`))
-			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, "https://cdn.discordapp.com/emojis/696655174025871461.png");
+			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/696655174025871461.png');
 
 		const diff = process.hrtime(hrStart);
 		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;

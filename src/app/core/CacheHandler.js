@@ -1,14 +1,14 @@
-const fetch = require("node-fetch");
-const { mongodb } = require("../struct/Database");
-const ClanEmbed = require("./ClanEmbedEvent");
-const DonationEvent = require("./DonationEvent");
-const LastOnlineEvent = require("./LastOnlineEvent");
-const ClanGamesEvent = require("./ClanGamesEvent");
-const PlayerEvent = require("./PlayerEvent");
-const { ObjectId } = require("mongodb");
-const ClanWarEvent = require("./ClanWarEvent");
-const MaintenanceHandler = require("./MaintenanceHandler");
-const { MODES, EVENTS } = require("../util/constants");
+const fetch = require('node-fetch');
+const { mongodb } = require('../struct/Database');
+const ClanEmbed = require('./ClanEmbedEvent');
+const DonationEvent = require('./DonationEvent');
+const LastOnlineEvent = require('./LastOnlineEvent');
+const ClanGamesEvent = require('./ClanGamesEvent');
+const PlayerEvent = require('./PlayerEvent');
+const { ObjectId } = require('mongodb');
+const ClanWarEvent = require('./ClanWarEvent');
+const MaintenanceHandler = require('./MaintenanceHandler');
+const { MODES, EVENTS } = require('../util/constants');
 
 class CacheHandler {
 	constructor(client, { interval = 122 * 1000 } = {}) {
@@ -30,22 +30,22 @@ class CacheHandler {
 
 	async broadcast(data) {
 		switch (data.event) {
-			case "CLAN_DONATION_EVENT":
+			case 'CLAN_DONATION_EVENT':
 				await this.clanEvent.exec(data._id, data);
 				break;
-			case "LAST_ONLINE_EVENT":
+			case 'LAST_ONLINE_EVENT':
 				await this.lastOnline.exec(data._id, data.clan, data.update);
 				break;
-			case "CLAN_MEMBER_ACTION":
+			case 'CLAN_MEMBER_ACTION':
 				await this.playerEvent.exec(data._id, data);
 				break;
-			case "CLAN_EMBED_EVENT":
+			case 'CLAN_EMBED_EVENT':
 				await this.clanEmbed.exec(data._id, data.clan, data.forced);
 				break;
-			case "CLAN_GAMES_EVENT":
+			case 'CLAN_GAMES_EVENT':
 				await this.clanGame.exec(data._id, data.clan, data.forced, data.tags);
 				break;
-			case "CLAN_WAR_EVENT":
+			case 'CLAN_WAR_EVENT':
 				await this.clanwar.exec(data._id, data.clan);
 				break;
 			default:
@@ -61,8 +61,8 @@ class CacheHandler {
 		await this.clanGame.init();
 		await this.clanwar.init();
 
-		const collection = await mongodb.db("clashperk")
-			.collection("clanstores")
+		const collection = await mongodb.db('clashperk')
+			.collection('clanstores')
 			.find()
 			.toArray();
 
@@ -76,7 +76,7 @@ class CacheHandler {
 			}
 		}
 
-		this.client.logger.info(`Cache store Initialized ${this.cached.size}/${collection.length}`, { label: "CACHE_STORE" });
+		this.client.logger.info(`Cache store Initialized ${this.cached.size}/${collection.length}`, { label: 'CACHE_STORE' });
 
 		return this.launch();
 	}
@@ -229,7 +229,7 @@ class CacheHandler {
 		const $unset = {};
 		if (CurrentMemberSet.size && OldMemberSet.size) {
 			for (const member of oldMemberList.filter(tag => !CurrentMemberSet.has(tag))) {
-				$unset[`members.${member}`] = "";
+				$unset[`members.${member}`] = '';
 			}
 		}
 
@@ -274,17 +274,17 @@ class CacheHandler {
 				if (this.memberList[key] && this.memberList[key][tag]) {
 					tags.push({
 						tag,
-						mode: "LEFT",
+						mode: 'LEFT',
 						donated: this.memberList[key][tag].donations,
 						received: this.memberList[key][tag].donationsReceived
 					});
 				} else {
-					tags.push({ tag, mode: "LEFT" });
+					tags.push({ tag, mode: 'LEFT' });
 				}
 			}
 
 			for (const tag of CurrentMemberList.filter(tag => !OldMemberSet.has(tag))) {
-				tags.push({ tag, mode: "JOINED" });
+				tags.push({ tag, mode: 'JOINED' });
 			}
 
 			if (tags.length) {
@@ -322,12 +322,12 @@ class CacheHandler {
 					event: EVENTS[5]
 				});
 
-				temp.add("ON_HOLD");
+				temp.add('ON_HOLD');
 			}
 		}
 
 		// Clan Embed
-		if (!temp.delete("ON_HOLD")) {
+		if (!temp.delete('ON_HOLD')) {
 			await this.broadcast({
 				_id: key,
 				clan,
@@ -360,9 +360,9 @@ class CacheHandler {
 
 	async clan(tag) {
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}`, {
-			method: "GET",
+			method: 'GET',
 			headers: {
-				accept: "application/json",
+				accept: 'application/json',
 				authorization: `Bearer ${process.env.$DEV_TOKEN}`
 			},
 			timeout: 5000

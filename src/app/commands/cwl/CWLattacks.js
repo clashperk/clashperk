@@ -1,39 +1,39 @@
-const { Command, Argument, Flag } = require("discord-akairo");
-const fetch = require("node-fetch");
-const moment = require("moment");
-const { MessageEmbed } = require("discord.js");
-const { status } = require("../../util/constants");
-const Resolver = require("../../struct/Resolver");
-const { emoji } = require("../../util/emojis");
-const { Util } = require("discord.js");
+const { Command, Argument, Flag } = require('discord-akairo');
+const fetch = require('node-fetch');
+const moment = require('moment');
+const { MessageEmbed } = require('discord.js');
+const { status } = require('../../util/constants');
+const Resolver = require('../../struct/Resolver');
+const { emoji } = require('../../util/emojis');
+const { Util } = require('discord.js');
 
 const star = {
-	0: "☆☆☆",
-	1: "★☆☆",
-	2: "★★☆",
-	3: "★★★"
+	0: '☆☆☆',
+	1: '★☆☆',
+	2: '★★☆',
+	3: '★★★'
 };
 
 class CWLAttacksComamnd extends Command {
 	constructor() {
-		super("cwl-attacks", {
-			aliases: ["cwl-attacks"],
-			category: "cwl-hidden",
-			clientPermissions: ["EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
+		super('cwl-attacks', {
+			aliases: ['cwl-attacks'],
+			category: 'cwl-hidden',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: "Shows attacks of current CWL.",
-				usage: "<clanTag>",
-				examples: ["#8QU8J9LP"],
+				content: 'Shows attacks of current CWL.',
+				usage: '<clanTag>',
+				examples: ['#8QU8J9LP'],
 				fields: [
 					{
-						name: "Flags",
+						name: 'Flags',
 						value: [
-							"`--round <num>` or `-r <num>` to see specific round."
+							'`--round <num>` or `-r <num>` to see specific round.'
 						]
 					}
 				]
 			},
-			optionFlags: ["--round", "-r"]
+			optionFlags: ['--round', '-r']
 		});
 	}
 
@@ -44,9 +44,9 @@ class CWLAttacksComamnd extends Command {
 
 	*args() {
 		const round = yield {
-			match: "option",
-			flag: ["--round", "-r"],
-			type: Argument.range("integer", 1, Infinity, true)
+			match: 'option',
+			flag: ['--round', '-r'],
+			type: Argument.range('integer', 1, Infinity, true)
 		};
 
 		const data = yield {
@@ -67,15 +67,15 @@ class CWLAttacksComamnd extends Command {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
-			method: "GET", timeout: 3000,
-			headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+			method: 'GET', timeout: 3000,
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		}).catch(() => null);
 
 		if (!res) {
 			return message.util.send({
 				embed: {
 					color: 0xf30c11,
-					author: { name: "Error" },
+					author: { name: 'Error' },
 					description: status(504)
 				}
 			});
@@ -89,7 +89,7 @@ class CWLAttacksComamnd extends Command {
 		if (!(body.state || res.ok)) {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
-				.setDescription("Clan is not in CWL");
+				.setDescription('Clan is not in CWL');
 			return message.util.send({ embed });
 		}
 
@@ -97,35 +97,35 @@ class CWLAttacksComamnd extends Command {
 	}
 
 	async rounds(message, body, clan_, round) {
-		const rounds_ = body.rounds.filter(r => !r.warTags.includes("#0")).length;
+		const rounds_ = body.rounds.filter(r => !r.warTags.includes('#0')).length;
 		if (round && round > rounds_) {
 			const embed = new MessageEmbed()
 				.setColor(0x5970c1)
 				.setAuthor(`${clan_.name} (${clan_.tag})`, clan_.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan_.tag}`)
 				.setDescription([
-					"This round is not available yet!",
-					"",
-					"**Available Rounds**",
-					"",
+					'This round is not available yet!',
+					'',
+					'**Available Rounds**',
+					'',
 					Array(rounds_)
 						.fill(0)
 						.map((x, i) => `**\`${i + 1}\`** ${emoji.ok}`)
-						.join("\n"),
+						.join('\n'),
 					Array(body.rounds.length - rounds_)
 						.fill(0)
 						.map((x, i) => `**\`${i + rounds_ + 1}\`** ${emoji.wrong}`)
-						.join("\n")
+						.join('\n')
 				]);
 			return message.util.send({ embed });
 		}
 
-		const rounds = body.rounds.filter(d => !d.warTags.includes("#0"));
+		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
 		const chunks = [];
 		let i = 0;
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
-					method: "GET", headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 				});
 				const data = await res.json();
 				if ((data.clan && data.clan.tag === clan_.tag) || (data.opponent && data.opponent.tag === clan_.tag)) {
@@ -135,9 +135,9 @@ class CWLAttacksComamnd extends Command {
 					const opponent = data.clan.tag === clan_.tag ? data.opponent : data.clan;
 
 					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
-					if (data.state === "warEnded") {
+					if (data.state === 'warEnded') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
-						let attacks = "";
+						let attacks = '';
 						let index = 0;
 						const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 						for (const member of this.sort(clanMembers)) {
@@ -149,27 +149,27 @@ class CWLAttacksComamnd extends Command {
 						}
 
 						embed.setDescription([
-							"**War Against**",
+							'**War Against**',
 							`${opponent.name} (${opponent.tag})`,
-							"",
-							"**State**",
-							"War Ended",
-							"",
+							'',
+							'**State**',
+							'War Ended',
+							'',
 							`**Attacks** - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}`,
-							`${attacks || "Nobody Attacked"}`
+							`${attacks || 'Nobody Attacked'}`
 						]);
-						embed.addField("War Ended", `${moment.duration(Date.now() - end).format("D [days], H [hours] m [mins]", { trim: "both mid" })} ago`)
-							.addField("Stats", [
+						embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+							.addField('Stats', [
 								`**${data.clan.name}**`,
 								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								"",
+								'',
 								`**${data.opponent.name}**`,
 								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
 							]);
 					}
-					if (data.state === "inWar") {
+					if (data.state === 'inWar') {
 						const started = new Date(moment(data.startTime).toDate()).getTime();
-						let attacks = "";
+						let attacks = '';
 						let index = 0;
 						const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
 						for (const member of this.sort(clanMembers)) {
@@ -181,28 +181,28 @@ class CWLAttacksComamnd extends Command {
 						}
 
 						embed.setDescription([
-							"**War Against**",
+							'**War Against**',
 							`${opponent.name} (${opponent.tag})`,
-							"",
-							"**State**",
-							"In War",
-							"",
+							'',
+							'**State**',
+							'In War',
+							'',
 							`**Attacks** - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}`,
-							`${attacks || "Nobody Attacked Yet"}`
+							`${attacks || 'Nobody Attacked Yet'}`
 						]);
-						embed.addField("Started", `${moment.duration(Date.now() - started).format("D [days], H [hours] m [mins]", { trim: "both mid" })} ago`)
-							.addField("Stats", [
+						embed.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+							.addField('Stats', [
 								`**${data.clan.name}**`,
 								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								"",
+								'',
 								`**${data.opponent.name}**`,
 								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
 							]);
 					}
-					if (data.state === "preparation") {
+					if (data.state === 'preparation') {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField("State", "Preparation Day")
-							.addField("Starting In", `${moment.duration(start - Date.now()).format("D [days], H [hours] m [mins]", { trim: "both mid" })}`);
+						embed.addField('State', 'Preparation Day')
+							.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
 					}
 
 					embed.setFooter(`Round #${++i}`);
@@ -215,7 +215,7 @@ class CWLAttacksComamnd extends Command {
 		const item = round
 			? chunks[round - 1]
 			: chunks.length === 7
-				? chunks.find(c => c.state === "inWar") || chunks.slice(-1)[0]
+				? chunks.find(c => c.state === 'inWar') || chunks.slice(-1)[0]
 				: chunks.slice(-2)[0];
 		const pageIndex = chunks.indexOf(item);
 
@@ -226,18 +226,18 @@ class CWLAttacksComamnd extends Command {
 			return message.util.send({ embed: paginated.items[0].embed });
 		}
 		const msg = await message.util.send({ embed: paginated.items[0].embed });
-		for (const emoji of ["⬅️", "➡️"]) {
+		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ["⬅️", "➡️"].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 60000, max: 10 }
 		);
 
-		collector.on("collect", async reaction => {
-			if (reaction.emoji.name === "➡️") {
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '➡️') {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
@@ -248,7 +248,7 @@ class CWLAttacksComamnd extends Command {
 				return message;
 			}
 
-			if (reaction.emoji.name === "⬅️") {
+			if (reaction.emoji.name === '⬅️') {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
@@ -260,7 +260,7 @@ class CWLAttacksComamnd extends Command {
 			}
 		});
 
-		collector.on("end", async () => {
+		collector.on('end', async () => {
 			await msg.reactions.removeAll().catch(() => null);
 			return message;
 		});
@@ -272,15 +272,15 @@ class CWLAttacksComamnd extends Command {
 	}
 
 	padEnd(data) {
-		return Util.escapeInlineCode(data).padEnd(20, " ");
+		return Util.escapeInlineCode(data).padEnd(20, ' ');
 	}
 
 	index(num) {
-		return num.toString().padStart(2, "0");
+		return num.toString().padStart(2, '0');
 	}
 
 	percentage(num) {
-		return num.toString().padStart(3, " ");
+		return num.toString().padStart(3, ' ');
 	}
 
 	async delay(ms) {

@@ -1,20 +1,20 @@
-const { Listener } = require("discord-akairo");
-const { addBreadcrumb, Severity, captureException, setContext } = require("@sentry/node");
-const { emoji } = require("../../util/emojis");
+const { Listener } = require('discord-akairo');
+const { addBreadcrumb, Severity, captureException, setContext } = require('@sentry/node');
+const { emoji } = require('../../util/emojis');
 
 class ErrorListener extends Listener {
 	constructor() {
-		super("error", {
-			event: "error",
-			emitter: "commandHandler",
-			category: "commandHandler"
+		super('error', {
+			event: 'error',
+			emitter: 'commandHandler',
+			category: 'commandHandler'
 		});
 	}
 
 	async exec(error, message, command) {
 		addBreadcrumb({
-			message: "command_errored",
-			category: command ? command.category.id : "inhibitor",
+			message: 'command_errored',
+			category: command ? command.category.id : 'inhibitor',
 			level: Severity.Error,
 			data: {
 				user: {
@@ -41,7 +41,7 @@ class ErrorListener extends Listener {
 			}
 		});
 
-		setContext("command_started", {
+		setContext('command_started', {
 			user: {
 				id: message.author.id,
 				username: message.author.tag
@@ -72,7 +72,7 @@ class ErrorListener extends Listener {
 		this.client.logger.error(`${command.id} ~ ${error}`, { label });
 		this.client.logger.error(error, { label });
 
-		if (message.guild ? message.channel.permissionsFor(this.client.user).has("SEND_MESSAGES") : true) {
+		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
 			await message.channel.send([
 				`${emoji.wrong} Something went wrong, report us!`,
 				`\`\`\`${error.toString()}\`\`\``

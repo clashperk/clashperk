@@ -1,23 +1,23 @@
-const { Command, Flag } = require("discord-akairo");
-const { mongodb } = require("../../struct/Database");
-const Resolver = require("../../struct/Resolver");
-const fetch = require("node-fetch");
-const TOKENS = process.env.$KEYS.split(",");
-const { emoji } = require("../../util/emojis");
-const { ObjectId } = require("mongodb");
-const moment = require("moment");
+const { Command, Flag } = require('discord-akairo');
+const { mongodb } = require('../../struct/Database');
+const Resolver = require('../../struct/Resolver');
+const fetch = require('node-fetch');
+const TOKENS = process.env.$KEYS.split(',');
+const { emoji } = require('../../util/emojis');
+const { ObjectId } = require('mongodb');
+const moment = require('moment');
 
 class ClanGamesCommand extends Command {
 	constructor() {
-		super("clangames", {
-			aliases: ["clangames", "points", "cg"],
-			category: "activity",
-			channel: "guild",
-			clientPermissions: ["ADD_REACTIONS", "EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
+		super('clangames', {
+			aliases: ['clangames', 'points', 'cg'],
+			category: 'activity',
+			channel: 'guild',
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: "Shows clan game points of your clan members.",
-				usage: "<clanTag>",
-				examples: ["#8QU8J9LP"]
+				content: 'Shows clan game points of your clan members.',
+				usage: '<clanTag>',
+				examples: ['#8QU8J9LP']
 			}
 		});
 	}
@@ -44,16 +44,16 @@ class ClanGamesCommand extends Command {
 
 	async exec(message, { data }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
-		const db = mongodb.db("clashperk").collection("clangames");
+		const db = mongodb.db('clashperk').collection('clangames');
 		const prefix = this.handler.prefix(message);
 		const clan = await db.findOne({ tag: data.tag });
 		if (!clan) {
 			return message.util.send({
 				embed: {
 					description: [
-						"Setup a clan games board to use this command.",
+						'Setup a clan games board to use this command.',
 						`Type \`${prefix}help cgboard\` to know more.`
-					].join(" ")
+					].join(' ')
 				}
 			});
 		}
@@ -63,8 +63,8 @@ class ClanGamesCommand extends Command {
 			const req = {
 				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
 				option: {
-					method: "GET",
-					headers: { accept: "application/json", authorization: `Bearer ${KEYS[i % KEYS.length]}` }
+					method: 'GET',
+					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % KEYS.length]}` }
 				}
 			};
 			return req;
@@ -74,7 +74,7 @@ class ClanGamesCommand extends Command {
 		const fetched = await Promise.all(responses.map(res => res.json()));
 		const memberList = fetched.map(m => {
 			const points = m.achievements
-				? m.achievements.find(achievement => achievement.name === "Games Champion")
+				? m.achievements.find(achievement => achievement.name === 'Games Champion')
 				: 0;
 			const member = { tag: m.tag, name: m.name, points: points.value };
 			return member;
@@ -84,16 +84,16 @@ class ClanGamesCommand extends Command {
 
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
-		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, "0"), "22T08:00:00Z"].join("-");
+		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), '22T08:00:00Z'].join('-');
 		const createdAt = new Date(ObjectId(clan._id).getTimestamp());
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				`Clan Games Scoreboard [${data.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format("D MMMM YYYY, kk:mm")}` : ""}`,
-				`\`\`\`\u200e\u2002# POINTS \u2002 ${"NAME".padEnd(20, " ")}`,
-				members.map((m, i) => `\u200e${(++i).toString().padStart(2, "\u2002")} ${this.padStart(m.points || "0")} \u2002 ${this.padEnd(m.name)}`).join("\n"),
-				"```"
+				`Clan Games Scoreboard [${data.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`,
+				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
+				members.map((m, i) => `\u200e${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
+				'```'
 			])
 			.setFooter(`Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`);
 
@@ -101,11 +101,11 @@ class ClanGamesCommand extends Command {
 	}
 
 	padStart(num) {
-		return num.toString().padStart(6, " ");
+		return num.toString().padStart(6, ' ');
 	}
 
 	padEnd(data) {
-		return data.padEnd(16, " ");
+		return data.padEnd(16, ' ');
 	}
 
 	filter(memberList, clan) {

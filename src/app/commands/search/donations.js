@@ -1,17 +1,17 @@
-const { Command, Flag } = require("discord-akairo");
-const Resolver = require("../../struct/Resolver");
-const { Util } = require("discord.js");
+const { Command, Flag } = require('discord-akairo');
+const Resolver = require('../../struct/Resolver');
+const { Util } = require('discord.js');
 
 class DonationBoardCommand extends Command {
 	constructor() {
-		super("donations", {
-			aliases: ["donations", "donationboard", "db", "don"],
-			category: "activity",
-			clientPermissions: ["EMBED_LINKS", "USE_EXTERNAL_EMOJIS", "ADD_REACTIONS", "MANAGE_MESSAGES"],
+		super('donations', {
+			aliases: ['donations', 'donationboard', 'db', 'don'],
+			category: 'activity',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
-				content: "List of clan members with donations.",
-				usage: "<clanTag>",
-				examples: ["#2Q98URCGY", "2Q98URCGY"]
+				content: 'List of clan members with donations.',
+				usage: '<clanTag>',
+				examples: ['#2Q98URCGY', '2Q98URCGY']
 			}
 		});
 	}
@@ -53,17 +53,17 @@ class DonationBoardCommand extends Command {
 		if (sorted[0].donations > 99999) ds = 6;
 		if (sorted[0].donations > 999999) ds = 7;
 
-		const header = `**\`#  ${"DON".padStart(ds, " ")} ${"REC".padStart(rs, " ")}  ${"NAME".padEnd(17, " ")}\`**`;
+		const header = `**\`#  ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(17, ' ')}\`**`;
 		const pages = [
 			this.paginate(sorted, 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
-					return `\`\u200e${(index + 1).toString().padStart(2, "0")} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
+					return `\`\u200e${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
 				}),
 			this.paginate(sorted, 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
-					return `\`\u200e${(index + 26).toString().padStart(2, "0")} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
+					return `\`\u200e${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
 				})
 		];
 
@@ -71,7 +71,7 @@ class DonationBoardCommand extends Command {
 			return message.util.send({
 				embed: embed.setDescription([
 					header,
-					pages[0].join("\n")
+					pages[0].join('\n')
 				]).setFooter(`Page 1/1 (${data.members}/50)`)
 			});
 		}
@@ -79,20 +79,20 @@ class DonationBoardCommand extends Command {
 		const msg = await message.channel.send({
 			embed: embed.setDescription([
 				header,
-				pages[0].join("\n")
+				pages[0].join('\n')
 			]).setFooter(`Page 1/2 (${data.members}/50)`)
 		});
 
-		await msg.react("➕");
+		await msg.react('➕');
 		const collector = await msg.awaitReactions(
-			(reaction, user) => reaction.emoji.name === "➕" && user.id === message.author.id,
-			{ max: 1, time: 30000, errors: ["time"] }
+			(reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
+			{ max: 1, time: 30000, errors: ['time'] }
 		).catch(() => null);
 		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
 		if (!collector || !collector.size) return;
 
 		return message.channel.send({
-			embed: embed.setDescription([header, pages[1].join("\n")])
+			embed: embed.setDescription([header, pages[1].join('\n')])
 				.setFooter(`Page 2/2 (${data.members}/50)`)
 		});
 	}
@@ -117,11 +117,11 @@ class DonationBoardCommand extends Command {
 	}
 
 	padEnd(data) {
-		return Util.escapeInlineCode(data).padEnd(16, " ");
+		return Util.escapeInlineCode(data).padEnd(16, ' ');
 	}
 
 	donation(data, space) {
-		return data.toString().padStart(space, " ");
+		return data.toString().padStart(space, ' ');
 	}
 
 	async delay(ms) {

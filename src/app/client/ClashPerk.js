@@ -1,14 +1,14 @@
-const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } = require("discord-akairo");
-const Settings = require("../struct/SettingsProvider");
-const CacheHandler = require("../core/CacheHandler");
-const Storage = require("../struct/StorageHandler");
-const Database = require("../struct/Database");
-const Firebase = require("../struct/Firebase");
-const { MessageEmbed } = require("discord.js");
-const { Client } = require("clashofclans.js");
-const Patrons = require("../struct/Patrons");
-const Logger = require("../util/logger");
-const path = require("path");
+const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } = require('discord-akairo');
+const Settings = require('../struct/SettingsProvider');
+const CacheHandler = require('../core/CacheHandler');
+const Storage = require('../struct/StorageHandler');
+const Database = require('../struct/Database');
+const Firebase = require('../struct/Firebase');
+const { MessageEmbed } = require('discord.js');
+const { Client } = require('clashofclans.js');
+const Patrons = require('../struct/Patrons');
+const Logger = require('../util/logger');
+const path = require('path');
 
 class ClashPerk extends AkairoClient {
 	constructor(config) {
@@ -18,11 +18,11 @@ class ClashPerk extends AkairoClient {
 			messageSweepInterval: 150,
 			ws: {
 				intents: [
-					"GUILDS",
-					"GUILD_MESSAGES",
+					'GUILDS',
+					'GUILD_MESSAGES',
 					// 'GUILD_MEMBERS',
 					// 'GUILD_PRESENCES',
-					"GUILD_MESSAGE_REACTIONS"
+					'GUILD_MESSAGE_REACTIONS'
 				]
 			}
 		});
@@ -30,9 +30,9 @@ class ClashPerk extends AkairoClient {
 		this.logger = new Logger(this);
 
 		this.commandHandler = new CommandHandler(this, {
-			directory: path.join(__dirname, "..", "commands"),
+			directory: path.join(__dirname, '..', 'commands'),
 			aliasReplacement: /-/g,
-			prefix: message => this.settings.get(message.guild, "prefix", "*"),
+			prefix: message => this.settings.get(message.guild, 'prefix', '*'),
 			allowMention: true,
 			commandUtil: true,
 			commandUtilLifetime: 15e4,
@@ -44,28 +44,28 @@ class ClashPerk extends AkairoClient {
 					modifyStart: (msg, txt) => new MessageEmbed()
 						.setColor(3093046)
 						.setAuthor(txt)
-						.setFooter("Type `cancel` to cancel the command."),
+						.setFooter('Type `cancel` to cancel the command.'),
 					modifyRetry: (msg, txt) => new MessageEmbed()
 						.setColor(3093046)
 						.setAuthor(txt)
-						.setFooter("Type `cancel` to cancel the command."),
+						.setFooter('Type `cancel` to cancel the command.'),
 					timeout: new MessageEmbed()
 						.setColor(3093046)
-						.setAuthor("Time ran out, command has been cancelled!"),
+						.setAuthor('Time ran out, command has been cancelled!'),
 					ended: new MessageEmbed()
 						.setColor(3093046)
-						.setAuthor("Too many retries, command has been cancelled!"),
+						.setAuthor('Too many retries, command has been cancelled!'),
 					cancel: new MessageEmbed()
 						.setColor(3093046)
-						.setAuthor("Command has been cancelled!"),
+						.setAuthor('Command has been cancelled!'),
 					retries: 1,
 					time: 30000
 				}
 			}
 		});
 
-		this.inhibitorHandler = new InhibitorHandler(this, { directory: path.join(__dirname, "..", "inhibitors") });
-		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, "..", "listeners") });
+		this.inhibitorHandler = new InhibitorHandler(this, { directory: path.join(__dirname, '..', 'inhibitors') });
+		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
 
 		setInterval(() => {
 			for (const guild of this.guilds.cache.values()) {
@@ -94,7 +94,7 @@ class ClashPerk extends AkairoClient {
 		this.listenerHandler.loadAll();
 
 		await Database.connect();
-		this.settings = new Settings(Database.mongodb.db("clashperk").collection("settings"));
+		this.settings = new Settings(Database.mongodb.db('clashperk').collection('settings'));
 
 
 		this.firebase = new Firebase(this);
@@ -108,7 +108,7 @@ class ClashPerk extends AkairoClient {
 		this.cacheHandler = new CacheHandler(this);
 		this.storage = new Storage(this);
 
-		this.once("ready", () => {
+		this.once('ready', () => {
 			if (this.user.id === process.env.CLIENT_ID) {
 				this.patron.init();
 				this.firebase.init();

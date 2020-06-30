@@ -1,31 +1,31 @@
-const { Command, Flag, Argument } = require("discord-akairo");
-const fetch = require("node-fetch");
-const Resolver = require("../../struct/Resolver");
-const { emoji, leagueEmoji } = require("../../util/emojis");
-const { Util } = require("discord.js");
-const { stripIndent } = require("common-tags");
-const TOKENS = process.env.$KEYS.split(",");
+const { Command, Flag, Argument } = require('discord-akairo');
+const fetch = require('node-fetch');
+const Resolver = require('../../struct/Resolver');
+const { emoji, leagueEmoji } = require('../../util/emojis');
+const { Util } = require('discord.js');
+const { stripIndent } = require('common-tags');
+const TOKENS = process.env.$KEYS.split(',');
 
 class MembersCommand extends Command {
 	constructor() {
-		super("members", {
-			aliases: ["members", "mem"],
-			category: "search",
-			clientPermissions: ["EMBED_LINKS", "USE_EXTERNAL_EMOJIS", "MANAGE_MESSAGES", "ADD_REACTIONS"],
+		super('members', {
+			aliases: ['members', 'mem'],
+			category: 'search',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
-				content: "List of clan members (--th to view th levels)",
-				usage: "<clanTag>",
-				examples: ["#2Q98URCGY", "2Q98URCGY"]
+				content: 'List of clan members (--th to view th levels)',
+				usage: '<clanTag>',
+				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
-			optionFlags: ["--th", "-th", "th"]
+			optionFlags: ['--th', '-th', 'th']
 		});
 	}
 
 	*args() {
 		const townhall = yield {
-			match: "option",
-			flag: ["--th", "-th", "th"],
-			type: Argument.range("integer", 3, 13, true)
+			match: 'option',
+			flag: ['--th', '-th', 'th'],
+			type: Argument.range('integer', 3, 13, true)
 		};
 
 		const data = yield {
@@ -56,8 +56,8 @@ class MembersCommand extends Command {
 			const req = {
 				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
 				option: {
-					method: "GET",
-					headers: { accept: "application/json", authorization: `Bearer ${KEYS[i % KEYS.length]}` }
+					method: 'GET',
+					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % KEYS.length]}` }
 				}
 			};
 			return req;
@@ -83,31 +83,31 @@ class MembersCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
-		const header = stripIndent(`${emoji.trophy} **\`\u200eTH ${"TAG".padEnd(10, " ")} ${"NAME".padEnd(12, "\u2002")}\`**`);
+		const header = stripIndent(`${emoji.trophy} **\`\u200eTH ${'TAG'.padEnd(10, ' ')} ${'NAME'.padEnd(12, '\u2002')}\`**`);
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
-				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, "\u2002")} ${Util.escapeInlineCode(member.name.substring(0, 11)).padEnd(12, "\u2002")}\``),
+				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${Util.escapeInlineCode(member.name.substring(0, 11)).padEnd(12, '\u2002')}\``),
 			this.paginate(townhall ? filter : items, 25, 50)
-				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, "\u2002")} ${Util.escapeInlineCode(member.name.substring(0, 11)).padEnd(12, "\u2002")}\``)
+				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${Util.escapeInlineCode(member.name.substring(0, 11)).padEnd(12, '\u2002')}\``)
 		];
 
-		if (!pages[1].length) return message.util.send({ embed: embed.setDescription([header, pages[0].join("\n")]) });
+		if (!pages[1].length) return message.util.send({ embed: embed.setDescription([header, pages[0].join('\n')]) });
 
 		const msg = await message.util.send({
-			embed: embed.setDescription([header, pages[0].join("\n")])
+			embed: embed.setDescription([header, pages[0].join('\n')])
 				.setFooter(`Page 1/2 (${data.members}/50)`)
 		});
 
-		await msg.react("➕");
+		await msg.react('➕');
 		const collector = await msg.awaitReactions(
-			(reaction, user) => reaction.emoji.name === "➕" && user.id === message.author.id,
-			{ max: 1, time: 30000, errors: ["time"] }
+			(reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
+			{ max: 1, time: 30000, errors: ['time'] }
 		).catch(() => null);
 		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
 		if (!collector || !collector.size) return;
 
 		return message.channel.send({
-			embed: embed.setDescription([header, pages[1].join("\n")])
+			embed: embed.setDescription([header, pages[1].join('\n')])
 				.setFooter(`Page 2/2 (${data.members}/50)`)
 		});
 
@@ -158,7 +158,7 @@ class MembersCommand extends Command {
 	}
 
 	padStart(num) {
-		return num.toString().padStart(2, " ");
+		return num.toString().padStart(2, ' ');
 	}
 
 	sort(items) {

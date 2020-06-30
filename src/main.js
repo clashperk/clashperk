@@ -1,9 +1,9 @@
-require("../auth").config();
-require("dotenv").config();
+require('../auth').config();
+require('dotenv').config();
 
-const Client = require("./app/client/ClashPerk");
-const Sentry = require("@sentry/node");
-const package = require("../package.json");
+const Client = require('./app/client/ClashPerk');
+const Sentry = require('@sentry/node');
+const package = require('../package.json');
 
 const client = new Client({ owner: process.env.OWNER });
 
@@ -15,9 +15,9 @@ if (process.env.SENTRY) {
 	});
 }
 
-client.on("error", error => client.logger.error(error, { label: "CLIENT ERROR" }));
-client.on("warn", warn => client.logger.warn(warn, { label: "CLIENT WARN" }));
+client.on('error', error => client.logger.error(error, { label: 'CLIENT ERROR' }));
+client.on('warn', warn => client.logger.warn(warn, { label: 'CLIENT WARN' }));
 
 client.start(process.env.TOKEN);
 
-process.on("unhandledRejection", error => client.logger.error(error, { label: "UNHANDLED REJECTION" }));
+process.on('unhandledRejection', error => client.logger.error(error, { label: 'UNHANDLED REJECTION' }));

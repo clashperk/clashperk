@@ -1,29 +1,29 @@
-const { Listener } = require("discord-akairo");
-const ms = require("ms");
+const { Listener } = require('discord-akairo');
+const ms = require('ms');
 
 class CooldownListener extends Listener {
 	constructor() {
-		super("cooldown", {
-			event: "cooldown",
-			emitter: "commandHandler",
-			category: "commandHandler"
+		super('cooldown', {
+			event: 'cooldown',
+			emitter: 'commandHandler',
+			category: 'commandHandler'
 		});
 
 		this.commands = [
-			"donationlog",
-			"playerlog",
-			"lastonlineboard",
-			"clangamesboard",
-			"th-compo",
-			"members-th",
-			"warweight",
-			"cwl-top",
-			"cwl-members",
-			"cwl-remaining",
-			"cwl-round",
-			"cwl-stats",
-			"cwl-lineup",
-			"cwl-attacks"
+			'donationlog',
+			'playerlog',
+			'lastonlineboard',
+			'clangamesboard',
+			'th-compo',
+			'members-th',
+			'warweight',
+			'cwl-top',
+			'cwl-members',
+			'cwl-remaining',
+			'cwl-round',
+			'cwl-stats',
+			'cwl-lineup',
+			'cwl-attacks'
 		];
 	}
 
@@ -32,11 +32,11 @@ class CooldownListener extends Listener {
 		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		this.client.logger.debug(`${command.id} ~ ${time}`, { label });
 
-		const cooldown = typeof command.cooldown === "function" ? command.cooldown(message) : command.cooldown ? command.cooldown : this.client.commandHandler.defaultCooldown;
+		const cooldown = typeof command.cooldown === 'function' ? command.cooldown(message) : command.cooldown ? command.cooldown : this.client.commandHandler.defaultCooldown;
 
-		if (message.guild ? message.channel.permissionsFor(this.client.user).has("SEND_MESSAGES") : true) {
+		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
 			const embed = this.client.util.embed()
-				.setAuthor("Slow it down!")
+				.setAuthor('Slow it down!')
 				.setColor(0x5970c1);
 			if (this.client.patron.isPatron(message.author, message.guild)) {
 				embed.setDescription([

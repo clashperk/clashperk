@@ -1,18 +1,18 @@
-const { Listener } = require("discord-akairo");
-const { addBreadcrumb, Severity, setContext } = require("@sentry/node");
+const { Listener } = require('discord-akairo');
+const { addBreadcrumb, Severity, setContext } = require('@sentry/node');
 
 class CommandStartedListener extends Listener {
 	constructor() {
-		super("commandStarted", {
-			event: "commandStarted",
-			emitter: "commandHandler",
-			category: "commandHandler"
+		super('commandStarted', {
+			event: 'commandStarted',
+			emitter: 'commandHandler',
+			category: 'commandHandler'
 		});
 	}
 
 	async exec(message, command, args) {
 		addBreadcrumb({
-			message: "command_started",
+			message: 'command_started',
 			category: command.category.id,
 			level: Severity.Info,
 			data: {
@@ -39,7 +39,7 @@ class CommandStartedListener extends Listener {
 			}
 		});
 
-		setContext("command_started", {
+		setContext('command_started', {
 			user: {
 				id: message.author.id,
 				username: message.author.tag
@@ -74,11 +74,11 @@ class CommandStartedListener extends Listener {
 
 	counter(message, command) {
 		this.client.firebase.counter();
-		if (command.category.id === "owner") return;
+		if (command.category.id === 'owner') return;
 		if (this.client.isOwner(message.author.id)) return;
 		this.client.firebase.commandcounter();
 		this.client.firebase.users(message.author.id);
-		if (command.id !== "rank") this.client.firebase.ranks(message.author.id);
+		if (command.id !== 'rank') this.client.firebase.ranks(message.author.id);
 		this.client.firebase.commands(command.id);
 		if (message.guild) this.client.firebase.guilds(message.guild.id);
 	}

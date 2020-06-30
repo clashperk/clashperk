@@ -1,10 +1,10 @@
-const fetch = require("node-fetch");
-const { mongodb } = require("../struct/Database");
-const { ObjectId } = require("mongodb");
-const { emoji, townHallEmoji } = require("../util/emojis");
-const moment = require("moment");
-require("moment-duration-format");
-const { MessageEmbed } = require("discord.js");
+const fetch = require('node-fetch');
+const { mongodb } = require('../struct/Database');
+const { ObjectId } = require('mongodb');
+const { emoji, townHallEmoji } = require('../util/emojis');
+const moment = require('moment');
+require('moment-duration-format');
+const { MessageEmbed } = require('discord.js');
 
 class CWLEvent {
 	constructor(client) {
@@ -17,8 +17,8 @@ class CWLEvent {
 	}
 
 	async init() {
-		const collection = await mongodb.db("clashperk")
-			.collection("cwllogs")
+		const collection = await mongodb.db('clashperk')
+			.collection('cwllogs')
 			.find()
 			.toArray();
 
@@ -41,8 +41,8 @@ class CWLEvent {
 
 	async fetchCWL(id, clan) {
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(clan.tag)}/currentwar/leaguegroup`, {
-			method: "GET", timeout: 3000,
-			headers: { accept: "application/json", authorization: `Bearer ${process.env.CWL_API_TOKEN}` }
+			method: 'GET', timeout: 3000,
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.CWL_API_TOKEN}` }
 		}).catch(() => null);
 		if (!res) return;
 		if (res.ok) return;
@@ -54,14 +54,14 @@ class CWLEvent {
 
 	async rounds(id, body, clan_data) {
 		const [clanTag, clanName, clanBadge] = [clan_data.tag, clan_data.name, clan_data.badgeUrls.medium];
-		const rounds = body.rounds.filter(r => !r.warTags.includes("#0"));
+		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 
 		const chunks = [];
 		let index = 0;
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
-					method: "GET", headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 				});
 				const data = await res.json();
 
@@ -72,41 +72,41 @@ class CWLEvent {
 					const embed = new MessageEmbed()
 						.setColor(0x5970c1);
 					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
-						.addField("War Against", `${opponent.name} (${opponent.tag})`)
-						.addField("Team Size", `${data.teamSize}`);
-					if (data.state === "warEnded") {
+						.addField('War Against', `${opponent.name} (${opponent.tag})`)
+						.addField('Team Size', `${data.teamSize}`);
+					if (data.state === 'warEnded') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
-						embed.addField("State", "War Ended")
-							.addField("War Ended", `${moment.duration(Date.now() - end).format("D [days], H [hours] m [mins]", { trim: "both mid" })} ago`)
-							.addField("Stats", [
+						embed.addField('State', 'War Ended')
+							.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+							.addField('Stats', [
 								`**${data.clan.name}**`,
 								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								"",
+								'',
 								`**${data.opponent.name}**`,
 								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
 							]);
 					}
-					if (data.state === "inWar") {
+					if (data.state === 'inWar') {
 						const started = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField("State", "In War")
-							.addField("Started", `${moment.duration(Date.now() - started).format("D [days], H [hours] m [mins]", { trim: "both mid" })} ago`)
-							.addField("Stats", [
+						embed.addField('State', 'In War')
+							.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+							.addField('Stats', [
 								`**${data.clan.name}**`,
 								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								"",
+								'',
 								`**${data.opponent.name}**`,
 								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
 							]);
 					}
-					if (data.state === "preparation") {
+					if (data.state === 'preparation') {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField("State", "Preparation")
-							.addField("Starting In", `${moment.duration(start - Date.now()).format("D [days], H [hours] m [mins]", { trim: "both mid" })}`);
+						embed.addField('State', 'Preparation')
+							.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
 					}
-					embed.addField("Rosters", [
+					embed.addField('Rosters', [
 						`**${data.clan.name}**`,
 						await this.count(data.clan.members),
-						"",
+						'',
 						`**${data.opponent.name}**`,
 						await this.count(data.opponent.members)
 					]);
@@ -118,7 +118,7 @@ class CWLEvent {
 		}
 
 		const item = chunks.length === 7
-			? chunks.find(c => c.state === "inWar") || chunks.slice(-1)[0]
+			? chunks.find(c => c.state === 'inWar') || chunks.slice(-1)[0]
 			: chunks.slice(-2)[0];
 		const pageIndex = chunks.indexOf(item);
 	}
@@ -159,9 +159,9 @@ class CWLEvent {
 		].filter(townHall => townHall.total !== 0).reverse();
 
 		return this.chunk(townHalls)
-			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, "0")}\``)
-				.join(" "))
-			.join("\n");
+			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
+				.join(' '))
+			.join('\n');
 	}
 
 	chunk(items = []) {
@@ -175,7 +175,7 @@ class CWLEvent {
 
 	async rounds_(message, body, { clanTag, clanName, clanBadge } = {}) {
 		const collection = [];
-		const rounds = body.rounds.filter(r => !r.warTags.includes("#0"));
+		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [index, stars, destruction] = [0, 0, 0];
 		const ranking = body.clans.map(clan => ({ tag: clan.tag, stars: 0 }));
 		const members = body.clans.find(clan => clan.tag === clanTag)
@@ -184,7 +184,7 @@ class CWLEvent {
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
-					method: "GET", headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 				});
 				const data = await res.json();
 				this.ranking(data, ranking);
@@ -192,7 +192,7 @@ class CWLEvent {
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
-					if (data.state === "warEnded") {
+					if (data.state === 'warEnded') {
 						stars += this.winner(clan, opponent) ? clan.stars + 10 : clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const end = new Date(moment(data.endTime).toDate()).getTime();
@@ -210,14 +210,14 @@ class CWLEvent {
 
 						collection.push([[
 							`${this.winner(clan, opponent) ? emoji.ok : emoji.wrong} **${clan.name}** vs **${opponent.name}**`,
-							`${emoji.clock_small} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format("D[d], H[h] m[m]", { trim: "both mid" })} ago`
+							`${emoji.clock_small} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
 						], [
-							`\`${clan.stars.toString().padEnd(14, " ")} Stars ${opponent.stars.toString().padStart(14, " ")}\``,
-							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(13, " ")} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(13, " ")}\``,
-							`\`${this.destruction(clan.destructionPercentage).padEnd(11, " ")} Destruction ${this.destruction(opponent.destructionPercentage).padStart(11, " ")}\``
+							`\`${clan.stars.toString().padEnd(14, ' ')} Stars ${opponent.stars.toString().padStart(14, ' ')}\``,
+							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
+							`\`${this.destruction(clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(11, ' ')}\``
 						]]);
 					}
-					if (data.state === "inWar") {
+					if (data.state === 'inWar') {
 						stars += clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const started = new Date(moment(data.startTime).toDate()).getTime();
@@ -235,11 +235,11 @@ class CWLEvent {
 
 						collection.push([[
 							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
-							`${emoji.clock_small} [Round ${++index}] Started ${moment.duration(Date.now() - started).format("D[d], H[h] m[m]", { trim: "both mid" })} ago`
+							`${emoji.clock_small} [Round ${++index}] Started ${moment.duration(Date.now() - started).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
 						], [
-							`\`${clan.stars.toString().padEnd(14, " ")} Stars ${opponent.stars.toString().padStart(14, " ")}\``,
-							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(13, " ")} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(13, " ")}\``,
-							`\`${this.destruction(clan.destructionPercentage).padEnd(11, " ")} Destruction ${this.destruction(opponent.destructionPercentage).padStart(11, " ")}\``
+							`\`${clan.stars.toString().padEnd(14, ' ')} Stars ${opponent.stars.toString().padStart(14, ' ')}\``,
+							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
+							`\`${this.destruction(clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(11, ' ')}\``
 						]]);
 					}
 				}
@@ -247,10 +247,10 @@ class CWLEvent {
 		}
 
 		const description = collection.map(arr => {
-			const header = arr[0].join("\n");
-			const description = arr[1].join("\n");
-			return [header, description].join("\n");
-		}).join("\n\n");
+			const header = arr[0].join('\n');
+			const description = arr[1].join('\n');
+			return [header, description].join('\n');
+		}).join('\n\n');
 		const rank = ranking.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
 		const leaderboard = members.sort((a, b) => b.stars - a.stars);
 		const embed = new MessageEmbed()
@@ -259,12 +259,12 @@ class CWLEvent {
 			.setDescription(description)
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
 		const msg = await message.util.send({ embed });
-		msg.react("ℹ");
+		msg.react('ℹ');
 		let react;
 		try {
 			react = await msg.awaitReactions(
-				(reaction, user) => reaction.emoji.name === "ℹ" && user.id === message.author.id,
-				{ max: 1, time: 30000, errors: ["time"] }
+				(reaction, user) => reaction.emoji.name === 'ℹ' && user.id === message.author.id,
+				{ max: 1, time: 30000, errors: ['time'] }
 			);
 		} catch (error) {
 			await msg.reactions.removeAll().catch(() => null);
@@ -279,16 +279,16 @@ class CWLEvent {
 					icon_url: clanBadge
 				},
 				description: [
-					`\`\u200e # STAR  ⚔  ${"NAME".padEnd(20, " ")}\``,
+					`\`\u200e # STAR  ⚔  ${'NAME'.padEnd(20, ' ')}\``,
 					leaderboard.filter(m => m.attacks !== 0)
-						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, " ")} ${m.stars.toString().padStart(3, " ")}  ${this.attacks(m.attacks, m.of).padStart(6, " ")}   ${m.name.padEnd(20, " ")}\``).join("\n")
-				].join("\n")
+						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')} ${m.stars.toString().padStart(3, ' ')}  ${this.attacks(m.attacks, m.of).padStart(6, ' ')}   ${m.name.padEnd(20, ' ')}\``).join('\n')
+				].join('\n')
 			}
 		});
 	}
 
 	destruction(dest) {
-		return dest.toFixed(2).toString().concat("%");
+		return dest.toFixed(2).toString().concat('%');
 	}
 
 	attacks(num, team) {
@@ -309,7 +309,7 @@ class CWLEvent {
 	}
 
 	ranking(data, ranking) {
-		if (data.state === "warEnded") {
+		if (data.state === 'warEnded') {
 			ranking.find(({ tag }) => tag === data.clan.tag)
 				.stars += this.winner(data.clan, data.opponent)
 					? data.clan.stars + 10
@@ -321,7 +321,7 @@ class CWLEvent {
 					: data.opponent.stars;
 		}
 
-		if (data.state === "inWar") {
+		if (data.state === 'inWar') {
 			ranking.find(({ tag }) => tag === data.clan.tag)
 				.stars += data.clan.stars;
 

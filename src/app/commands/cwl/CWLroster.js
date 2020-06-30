@@ -1,20 +1,20 @@
-const { Command, Flag } = require("discord-akairo");
-const fetch = require("node-fetch");
-const Resolver = require("../../struct/Resolver");
-const moment = require("moment");
-const { status } = require("../../util/constants");
-const { townHallEmoji } = require("../../util/emojis");
+const { Command, Flag } = require('discord-akairo');
+const fetch = require('node-fetch');
+const Resolver = require('../../struct/Resolver');
+const moment = require('moment');
+const { status } = require('../../util/constants');
+const { townHallEmoji } = require('../../util/emojis');
 
 class CWLRosterComamnd extends Command {
 	constructor() {
-		super("cwl-roster", {
-			aliases: ["roster", "cwl-roster"],
-			category: "cwl-hidden",
-			clientPermissions: ["EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
+		super('cwl-roster', {
+			aliases: ['roster', 'cwl-roster'],
+			category: 'cwl-hidden',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: "Shows CWL roster & total number of th for each clan.",
-				usage: "<clanTag>",
-				examples: ["#8QU8J9LP"]
+				content: 'Shows CWL roster & total number of th for each clan.',
+				usage: '<clanTag>',
+				examples: ['#8QU8J9LP']
 			}
 		});
 	}
@@ -41,15 +41,15 @@ class CWLRosterComamnd extends Command {
 
 	async exec(message, { data }) {
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
-			method: "GET", timeout: 3000,
-			headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+			method: 'GET', timeout: 3000,
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		}).catch(() => null);
 
 		if (!res) {
 			return message.util.send({
 				embed: {
 					color: 0xf30c11,
-					author: { name: "Error" },
+					author: { name: 'Error' },
 					description: status(504)
 				}
 			});
@@ -63,13 +63,13 @@ class CWLRosterComamnd extends Command {
 		if (!(body.state || res.ok)) {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
-				.setDescription("Clan is not in CWL");
+				.setDescription('Clan is not in CWL');
 			return message.util.send({ embed });
 		}
 
-		embed.setFooter(`${moment(body.season).format("MMMM YYYY")}`)
-			.setAuthor("CWL Roster")
-			.setDescription("CWL Roster and Town-Hall Distribution");
+		embed.setFooter(`${moment(body.season).format('MMMM YYYY')}`)
+			.setAuthor('CWL Roster')
+			.setDescription('CWL Roster and Town-Hall Distribution');
 
 		let index = 0;
 		for (const clan of body.clans) {
@@ -86,9 +86,9 @@ class CWLRosterComamnd extends Command {
 
 			embed.addField(`\u200e${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
 				this.chunk(townHalls)
-					.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, "0")}\``)
-						.join(" "))
-					.join("\n")
+					.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
+						.join(' '))
+					.join('\n')
 			]);
 		}
 
