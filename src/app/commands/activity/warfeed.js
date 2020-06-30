@@ -8,7 +8,7 @@ class WarFeedLogCommand extends Command {
 	constructor() {
 		super('warfeedlog', {
 			aliases: ['warfeed'],
-			category: 'premium',
+			category: 'setup-hidden',
 			channel: 'guild',
 			ownerOnly: true,
 			userPermissions: ['MANAGE_GUILD'],

@@ -8,7 +8,7 @@ class PlayerLogCommand extends Command {
 	constructor() {
 		super('playerlog', {
 			aliases: ['clanlog', 'playerlog'],
-			category: 'setup',
+			category: 'setup-hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
