@@ -40,7 +40,7 @@ class SetupCommand extends Command {
 				['lastonlineboard', 'onlineboard'],
 				['clangamesboard', 'cgboard'],
 				['clanembed', 'cembed'],
-				['warfeed'],
+				// ['warfeed'],
 				['playerlog', 'clanlog']
 			],
 			otherwise: message => {
