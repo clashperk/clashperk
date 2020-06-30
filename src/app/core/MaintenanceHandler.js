@@ -32,11 +32,11 @@ class MaintenanceHandler {
 
 	async send() {
 		if (this.isMaintenance) {
-			return this.client.channels.get('609074828707758150').send(`**${emoji.clash} Maintenance Break Started!**`);
+			return this.client.channels.cache.get('609074828707758150').send(`**${emoji.clash} Maintenance Break Started!**`);
 		}
 
 		if (!this.isMaintenance) {
-			return this.client.channels.get('609074828707758150').send(`**${emoji.clash} Maintenance Break is Over!**`);
+			return this.client.channels.cache.get('609074828707758150').send(`**${emoji.clash} Maintenance Break is Over!**`);
 		}
 	}
 }
