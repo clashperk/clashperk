@@ -37,17 +37,17 @@ class SetupCommand extends Command {
 		const method = yield {
 			type: [
 				['donationlog'],
-				['lastonlineboard'],
-				['clangamesboard'],
-				['clanembed'],
-				['warfeed']
+				['lastonlineboard', 'onlineboard'],
+				['clangamesboard', 'cgboard'],
+				['clanembed', 'cembed'],
+				['warfeed'],
+				['playerlog', 'clanlog']
 			],
 			otherwise: message => {
 				const prefix = this.handler.prefix(message);
 				const embed = this.client.util.embed()
 					.setColor(0x5970c1)
-					.setFooter('Page 1/1', this.client.user.displayAvatarURL())
-					.setAuthor('Setup Command List')
+					.setAuthor('Command List', this.client.user.displayAvatarURL())
 					.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
 				const commands = this.handler.categories.get('setup-hidden')
 					.values();
