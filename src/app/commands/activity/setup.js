@@ -37,6 +37,8 @@ class SetupCommand extends Command {
 						.map(command => `**\`${prefix}setup ${command.aliases[0]}\`**\n${command.description.content}`)
 						.join('\n')
 				]);
+
+				return embed;
 			}
 		};
 
