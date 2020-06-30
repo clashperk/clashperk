@@ -12,7 +12,7 @@ class ProfileCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
 			description: {
-				content: 'Shows information about your profile.',
+				content: 'Shows info about your linked accounts.',
 				usage: '<member>',
 				examples: ['', 'Suvajit', 'Reza', '@gop']
 			},
