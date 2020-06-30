@@ -1,21 +1,21 @@
-const { Command, Argument, Flag } = require('discord-akairo');
-const fetch = require('node-fetch');
-const moment = require('moment');
-const { MessageEmbed } = require('discord.js');
-const { status } = require('../../util/constants');
-const Resolver = require('../../struct/Resolver');
-const { emoji } = require('../../util/emojis');
+const { Command, Argument, Flag } = require("discord-akairo");
+const fetch = require("node-fetch");
+const moment = require("moment");
+const { MessageEmbed } = require("discord.js");
+const { status } = require("../../util/constants");
+const Resolver = require("../../struct/Resolver");
+const { emoji } = require("../../util/emojis");
 
 class CWLStarsComamnd extends Command {
 	constructor() {
-		super('cwl-stars', {
-			aliases: ['cwl-stars'],
-			category: 'cwl-hidden',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+		super("cwl-stars", {
+			aliases: ["cwl-stars"],
+			category: "cwl-hidden",
+			clientPermissions: ["EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
 			description: {
-				content: 'Shows stars of current CWL.',
-				usage: '<clanTag>',
-				examples: ['#8QU8J9LP']
+				content: "Shows stars of current CWL.",
+				usage: "<clanTag>",
+				examples: ["#8QU8J9LP"]
 			}
 		});
 	}
@@ -43,15 +43,15 @@ class CWLStarsComamnd extends Command {
 	async exec(message, { data }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
-			method: 'GET', timeout: 3000,
-			headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+			method: "GET", timeout: 3000,
+			headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		}).catch(() => null);
 
 		if (!res) {
 			return message.util.send({
 				embed: {
 					color: 0xf30c11,
-					author: { name: 'Error' },
+					author: { name: "Error" },
 					description: status(504)
 				}
 			});
@@ -65,7 +65,7 @@ class CWLStarsComamnd extends Command {
 		if (!(body.state || res.ok)) {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
-				.setDescription('Clan is not in CWL');
+				.setDescription("Clan is not in CWL");
 			return message.util.send({ embed });
 		}
 
@@ -73,20 +73,20 @@ class CWLStarsComamnd extends Command {
 	}
 
 	async rounds(message, body, { clanTag, clanName, clanBadge } = {}) {
-		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
+		const rounds = body.rounds.filter(r => !r.warTags.includes("#0"));
 		const members = body.clans.find(clan => clan.tag === clanTag)
 			.members.map(member => ({ name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0, dest: 0 }));
 
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
-					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+					method: "GET", headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 				});
 				const data = await res.json();
 
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
-					if (data.state === 'warEnded') {
+					if (data.state === "warEnded") {
 						for (const member of clan.members) {
 							members.find(m => m.tag === member.tag)
 								.of += 1;
@@ -102,7 +102,7 @@ class CWLStarsComamnd extends Command {
 							}
 						}
 					}
-					if (data.state === 'inWar') {
+					if (data.state === "inWar") {
 						for (const member of clan.members) {
 							members.find(m => m.tag === member.tag)
 								.of += 1;
@@ -131,12 +131,12 @@ class CWLStarsComamnd extends Command {
 					icon_url: clanBadge
 				},
 				description: [
-					`\`\`\`\u200e # STR DEST ATT ${'NAME'}`,
+					`\`\`\`\u200e # STR DEST ATT ${"NAME"}`,
 					leaderboard.filter(m => m.attacks !== 0)
-						.map((m, i) => `\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')} ${this.destruction(m.dest)} ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.substring(0, 12)}`)
-						.join('\n'),
-					'```'
-				].join('\n')
+						.map((m, i) => `\u200e${(++i).toString().padStart(2, " ")}  ${m.stars.toString().padEnd(2, " ")} ${this.destruction(m.dest)} ${this.attacks(m.attacks, m.of).padEnd(3, " ")} ${m.name.substring(0, 12)}`)
+						.join("\n"),
+					"```"
+				].join("\n")
 			}
 		});
 	}
@@ -144,8 +144,8 @@ class CWLStarsComamnd extends Command {
 	destruction(dest) {
 		return dest.toFixed()
 			.toString()
-			.concat('%')
-			.padEnd(4, ' ');
+			.concat("%")
+			.padEnd(4, " ");
 	}
 
 	attacks(num, team) {

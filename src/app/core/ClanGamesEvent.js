@@ -1,8 +1,8 @@
-const { MessageEmbed, Message } = require('discord.js');
-const { mongodb } = require('../struct/Database');
-const fetch = require('node-fetch');
-const { ObjectId } = require('mongodb');
-const moment = require('moment');
+const { MessageEmbed, Message } = require("discord.js");
+const { mongodb } = require("../struct/Database");
+const fetch = require("node-fetch");
+const { ObjectId } = require("mongodb");
+const moment = require("moment");
 
 class ClanGames {
 	constructor(client) {
@@ -17,7 +17,7 @@ class ClanGames {
 		const cache = this.cached.get(id);
 		if (cache && forced) {
 			return setTimeout(async () => {
-				const db = mongodb.db('clashperk').collection('clangames');
+				const db = mongodb.db("clashperk").collection("clangames");
 				const data = await db.findOne({ tag: clan.tag });
 				return this.getList(clan, data, tags.map(t => t.tag));
 			}, 2.1 * 60 * 1000);
@@ -41,18 +41,18 @@ class ClanGames {
 	}
 
 	timer(cache) {
-		const patron = this.client.patron.get(cache.guild, 'guild', false);
+		const patron = this.client.patron.get(cache.guild, "guild", false);
 		return patron === true ? 15 * 60 * 1000 : 30 * 60 * 1000;
 	}
 
 	permissionsFor(id, cache, clan) {
 		const permissions = [
-			'READ_MESSAGE_HISTORY',
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
+			"READ_MESSAGE_HISTORY",
+			"SEND_MESSAGES",
+			"EMBED_LINKS",
+			"USE_EXTERNAL_EMOJIS",
+			"ADD_REACTIONS",
+			"VIEW_CHANNEL"
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
@@ -89,7 +89,7 @@ class ClanGames {
 
 		const message = await channel.messages.fetch(cache.message, false)
 			.catch(error => {
-				this.client.logger.warn(error, { label: 'CLAN_GAMES_FETCH_MESSAGE' });
+				this.client.logger.warn(error, { label: "CLAN_GAMES_FETCH_MESSAGE" });
 				if (error.code === 10008) {
 					return { deleted: true };
 				}
@@ -124,10 +124,10 @@ class ClanGames {
 				const cache = this.cached.get(id);
 				cache.message = message.id;
 				this.cached.set(id, cache);
-				const collection = mongodb.db('clashperk').collection('clangameslogs');
+				const collection = mongodb.db("clashperk").collection("clangameslogs");
 				await collection.updateOne({ clan_id: ObjectId(id) }, { $set: { message: message.id } });
 			} catch (error) {
-				this.client.logger.warn(error, { label: 'MONGODB_ERROR' });
+				this.client.logger.warn(error, { label: "MONGODB_ERROR" });
 			}
 		}
 
@@ -157,14 +157,14 @@ class ClanGames {
 	}
 
 	async embed(clan) {
-		const db = mongodb.db('clashperk').collection('clangames');
+		const db = mongodb.db("clashperk").collection("clangames");
 		const data = await db.findOne({ tag: clan.tag });
 		const items = await this.getList(clan, data, clan.memberList.map(m => m.tag));
 		const members = this.filter(items.collection, items.data);
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
-		const day = this.client.settings.get('global', 'cgday', 22);
-		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), `${day + 1}T08:00:00Z`].join('-');
+		const day = this.client.settings.get("global", "cgday", 22);
+		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, "0"), `${day + 1}T08:00:00Z`].join("-");
 		let createdAt = new Date();
 		try {
 			createdAt = new Date(ObjectId(items.data._id).getTimestamp());
@@ -176,10 +176,10 @@ class ClanGames {
 			.setColor(0x5970c1)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
-				`Clan Games Scoreboard [${clan.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`,
-				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-				members.map((m, i) => `\u200e${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
-				'```'
+				`Clan Games Scoreboard [${clan.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format("D MMMM YYYY, kk:mm")}` : ""}`,
+				`\`\`\`\u200e\u2002# POINTS \u2002 ${"NAME".padEnd(20, " ")}`,
+				members.map((m, i) => `\u200e${(++i).toString().padStart(2, "\u2002")} ${this.padStart(m.points || "0")} \u2002 ${this.padEnd(m.name)}`).join("\n"),
+				"```"
 			])
 			.setFooter(`Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]`)
 			.setTimestamp();
@@ -214,8 +214,8 @@ class ClanGames {
 		}
 
 		if (Object.keys($set).length) {
-			const data = await mongodb.db('clashperk')
-				.collection('clangames')
+			const data = await mongodb.db("clashperk")
+				.collection("clangames")
 				.findOneAndUpdate({ tag: clan.tag }, { $set }, { upsert: true, returnOriginal: false });
 
 			return data.value;
@@ -231,7 +231,7 @@ class ClanGames {
 			if (!player) continue;
 			if (!player.achievements) continue;
 			const value = player.achievements
-				.find(achievement => achievement.name === 'Games Champion')
+				.find(achievement => achievement.name === "Games Champion")
 				.value;
 			collection.push({
 				name: player.name,
@@ -245,11 +245,11 @@ class ClanGames {
 	}
 
 	padStart(num) {
-		return num.toString().padStart(6, ' ');
+		return num.toString().padStart(6, " ");
 	}
 
 	padEnd(data) {
-		return data.padEnd(15, ' ');
+		return data.padEnd(15, " ");
 	}
 
 	filter(memberList, data) {
@@ -281,8 +281,8 @@ class ClanGames {
 	async init() {
 		const intervalId = setInterval(async () => {
 			if (this.event()) {
-				const collection = await mongodb.db('clashperk')
-					.collection('clangameslogs')
+				const collection = await mongodb.db("clashperk")
+					.collection("clangameslogs")
 					.find()
 					.toArray();
 
@@ -303,16 +303,16 @@ class ClanGames {
 	}
 
 	event() {
-		const day = this.client.settings.get('global', 'cgday', 22);
+		const day = this.client.settings.get("global", "cgday", 22);
 		const START = [
 			new Date()
 				.getFullYear(),
 			(new Date()
 				.getMonth() + 1)
 				.toString()
-				.padStart(2, '0'),
+				.padStart(2, "0"),
 			day
-		].join('-');
+		].join("-");
 
 		const END = [
 			new Date()
@@ -320,18 +320,18 @@ class ClanGames {
 			(new Date()
 				.getMonth() + 1)
 				.toString()
-				.padStart(2, '0'),
+				.padStart(2, "0"),
 			`${day + 6}T10:00:00Z`
-		].join('-');
+		].join("-");
 
 		return new Date() >= new Date(START) && new Date() <= new Date(END);
 	}
 
 	async flush() {
 		if (!this.event()) {
-			await mongodb.db('clashperk')
-				.collection('clangameslogs')
-				.updateMany({}, { $unset: { message: '' } });
+			await mongodb.db("clashperk")
+				.collection("clangameslogs")
+				.updateMany({}, { $unset: { message: "" } });
 			return this.cached.clear();
 		}
 	}
@@ -342,9 +342,9 @@ class ClanGames {
 
 	async player(tag) {
 		const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-			method: 'GET',
+			method: "GET",
 			headers: {
-				accept: 'application/json',
+				accept: "application/json",
 				authorization: `Bearer ${process.env.$KEY}`
 			},
 			timeout: 3000
@@ -357,8 +357,8 @@ class ClanGames {
 
 	async add(id) {
 		if (!this.event()) return this.flush();
-		const data = await mongodb.db('clashperk')
-			.collection('clangameslogs')
+		const data = await mongodb.db("clashperk")
+			.collection("clangameslogs")
 			.findOne({ clan_id: ObjectId(id) });
 
 		if (!data) return null;

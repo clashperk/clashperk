@@ -1,9 +1,9 @@
-const { mongodb } = require('../struct/Database');
-const { MessageEmbed } = require('discord.js');
-const { townHallEmoji, emoji, leagueEmoji, heroEmoji } = require('../util/emojis');
-const fetch = require('node-fetch');
-const { ObjectId } = require('mongodb');
-const moment = require('moment');
+const { mongodb } = require("../struct/Database");
+const { MessageEmbed } = require("discord.js");
+const { townHallEmoji, emoji, leagueEmoji, heroEmoji } = require("../util/emojis");
+const fetch = require("node-fetch");
+const { ObjectId } = require("mongodb");
+const moment = require("moment");
 
 const MODE = {
 	JOINED: 0x38d863, // green
@@ -29,11 +29,11 @@ class ClanLogEvent {
 
 	permissionsFor(cache, data, id) {
 		const permissions = [
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
+			"SEND_MESSAGES",
+			"EMBED_LINKS",
+			"USE_EXTERNAL_EMOJIS",
+			"ADD_REACTIONS",
+			"VIEW_CHANNEL"
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
@@ -70,8 +70,8 @@ class ClanLogEvent {
 	async embed(item, data, id) {
 		const cache = this.cached.get(id);
 		const member = await this.player(item.tag);
-		const flag = await mongodb.db('clashperk')
-			.collection('flaggedusers')
+		const flag = await mongodb.db("clashperk")
+			.collection("flaggedusers")
 			.findOne({ guild: cache.guild, tag: item.tag });
 
 		if (!member) return null;
@@ -79,23 +79,23 @@ class ClanLogEvent {
 			.setColor(MODE[item.mode])
 			.setTitle(`${member.name} (${member.tag})`)
 			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`);
-		if (item.mode === 'LEFT') {
+		if (item.mode === "LEFT") {
 			embed.setDescription([
 				`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
 				`${emoji.xp} ${member.expLevel}`,
 				`${emoji.troopsdonation} ${item.donated}${emoji.donated} ${item.received}${emoji.received}`
-			].join(' '));
+			].join(" "));
 		} else {
 			embed.setDescription([
 				`${townHallEmoji[member.townHallLevel]}${member.townHallLevel}`,
 				`${this.formatHeroes(member)}`,
 				`${emoji.warstar}${member.warStars}`,
 				`${leagueEmoji[member.league ? member.league.id : 29000000]}${member.trophies}`
-			].join(' '));
+			].join(" "));
 			if (flag) {
 				const user = await this.client.users.fetch(flag.user).catch(() => null);
-				embed.addField('Flag', flag.reason)
-					.addField('Author', `${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})`);
+				embed.addField("Flag", flag.reason)
+					.addField("Author", `${user ? user.tag : "Unknown#0000"} (${moment.utc(flag.createdAt).format("MMMM D, YYYY, kk:mm")})`);
 			}
 		}
 		embed.setFooter(data.clan.name, data.clan.badge)
@@ -106,11 +106,11 @@ class ClanLogEvent {
 
 	formatHeroes(member) {
 		if (member.heroes) {
-			const heroes = member.heroes.filter(({ village }) => village === 'home');
+			const heroes = member.heroes.filter(({ village }) => village === "home");
 			return heroes.length
 				? heroes.length > 3
-					? heroes.map(hero => `${heroEmoji[hero.name]}${hero.level}`).join(' ')
-					: `${emoji.xp}${member.expLevel} ${heroes.map(hero => `${heroEmoji[hero.name]}${hero.level}`).join(' ')}`
+					? heroes.map(hero => `${heroEmoji[hero.name]}${hero.level}`).join(" ")
+					: `${emoji.xp}${member.expLevel} ${heroes.map(hero => `${heroEmoji[hero.name]}${hero.level}`).join(" ")}`
 				: `${emoji.xp} ${member.expLevel}`;
 		}
 
@@ -119,9 +119,9 @@ class ClanLogEvent {
 
 	async player(tag) {
 		const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-			method: 'GET',
+			method: "GET",
 			headers: {
-				accept: 'application/json',
+				accept: "application/json",
 				authorization: `Bearer ${process.env.$KEY}`
 			},
 			timeout: 3000
@@ -134,8 +134,8 @@ class ClanLogEvent {
 	}
 
 	async init() {
-		const collection = await mongodb.db('clashperk')
-			.collection('playerlogs')
+		const collection = await mongodb.db("clashperk")
+			.collection("playerlogs")
 			.find()
 			.toArray();
 
@@ -150,8 +150,8 @@ class ClanLogEvent {
 	}
 
 	async add(id) {
-		const data = await mongodb.db('clashperk')
-			.collection('playerlogs')
+		const data = await mongodb.db("clashperk")
+			.collection("playerlogs")
 			.findOne({ clan_id: ObjectId(id) });
 
 		if (!data) return null;

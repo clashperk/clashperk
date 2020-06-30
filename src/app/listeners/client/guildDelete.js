@@ -1,26 +1,26 @@
-const { Listener } = require('discord-akairo');
-const { mongodb } = require('../../struct/Database');
-const { emoji } = require('../../util/emojis');
+const { Listener } = require("discord-akairo");
+const { mongodb } = require("../../struct/Database");
+const { emoji } = require("../../util/emojis");
 
 class GuildDeleteListener extends Listener {
 	constructor() {
-		super('guildDelete', {
-			emitter: 'client',
-			event: 'guildDelete',
-			category: 'client'
+		super("guildDelete", {
+			emitter: "client",
+			event: "guildDelete",
+			category: "client"
 		});
 	}
 
 	async fetchWebhook() {
 		if (this.webhook) return this.webhook;
-		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'webhook', undefined)).catch(() => null);
+		const webhook = await this.client.fetchWebhook(this.client.settings.get("global", "webhook", undefined)).catch(() => null);
 		this.webhook = webhook;
 		return webhook;
 	}
 
 	async exec(guild) {
 		if (!guild.available) return;
-		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_DELETE' });
+		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: "GUILD_DELETE" });
 
 		await this.client.firebase.post();
 		await this.delete(guild);
@@ -35,13 +35,13 @@ class GuildDeleteListener extends Listener {
 				.setColor(0xeb3508)
 				.setTimestamp();
 
-			return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user.displayAvatarURL() });
+			return webhook.send({ embeds: [embed], username: "ClashPerk", avatarURL: this.client.user.displayAvatarURL() });
 		}
 	}
 
 	async delete(guild) {
-		const collection = await mongodb.db('clashperk')
-			.collection('clanstores')
+		const collection = await mongodb.db("clashperk")
+			.collection("clanstores")
 			.find({ guild: guild.id })
 			.toArray();
 

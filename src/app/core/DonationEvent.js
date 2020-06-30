@@ -1,7 +1,7 @@
-const { mongodb } = require('../struct/Database');
-const { MessageEmbed } = require('discord.js');
-const { leagueEmoji, blueNum, redNum, emoji } = require('../util/emojis');
-const { ObjectId } = require('mongodb');
+const { mongodb } = require("../struct/Database");
+const { MessageEmbed } = require("discord.js");
+const { leagueEmoji, blueNum, redNum, emoji } = require("../util/emojis");
+const { ObjectId } = require("mongodb");
 
 class ClanEvent {
 	constructor(client) {
@@ -18,11 +18,11 @@ class ClanEvent {
 
 	permissionsFor(id, cache, data) {
 		const permissions = [
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
+			"SEND_MESSAGES",
+			"EMBED_LINKS",
+			"USE_EXTERNAL_EMOJIS",
+			"ADD_REACTIONS",
+			"VIEW_CHANNEL"
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
@@ -49,11 +49,11 @@ class ClanEvent {
 					if (m.donated > 200) {
 						const [div, mod] = this.divmod(m.donated);
 						const list = [`\u200e${leagueEmoji[m.league]} ${blueNum[div > 900 ? 900 : div]} ${m.name}`];
-						if (mod > 0) return list.concat(`\u200e${leagueEmoji[m.league]} ${blueNum[mod]} ${m.name}`).join('\n');
-						return list.join('\n');
+						if (mod > 0) return list.concat(`\u200e${leagueEmoji[m.league]} ${blueNum[mod]} ${m.name}`).join("\n");
+						return list.join("\n");
 					}
 					return `\u200e${leagueEmoji[m.league]} ${blueNum[m.donated]} ${m.name}`;
-				}).join('\n').substring(0, 1024)
+				}).join("\n").substring(0, 1024)
 			]);
 		}
 
@@ -63,11 +63,11 @@ class ClanEvent {
 					if (m.received > 100) {
 						const [div, mod] = this.divmod(m.received);
 						const list = [`\u200e${leagueEmoji[m.league]} ${redNum[div > 900 ? 900 : div]} ${m.name}`];
-						if (mod > 0) return list.concat(`\u200e${leagueEmoji[m.league]} ${redNum[mod]} ${m.name}`).join('\n');
-						return list.join('\n');
+						if (mod > 0) return list.concat(`\u200e${leagueEmoji[m.league]} ${redNum[mod]} ${m.name}`).join("\n");
+						return list.join("\n");
 					}
 					return `\u200e${leagueEmoji[m.league]} ${redNum[m.received]} ${m.name}`;
-				}).join('\n').substring(0, 1024)
+				}).join("\n").substring(0, 1024)
 			]);
 		}
 
@@ -75,10 +75,10 @@ class ClanEvent {
 			embed.addField(`${emoji.wrong} Unmatched`, [
 				data.unmatched.joined > 0
 					? `${emoji.mem_blue} ${blueNum[data.unmatched.joined]} Joined`
-					: '',
+					: "",
 				data.unmatched.left > 0
 					? `${emoji.mem_red} ${redNum[data.unmatched.left]} Left`
-					: ''
+					: ""
 			]);
 		}
 
@@ -90,8 +90,8 @@ class ClanEvent {
 	}
 
 	async init() {
-		const collection = await mongodb.db('clashperk')
-			.collection('donationlogs')
+		const collection = await mongodb.db("clashperk")
+			.collection("donationlogs")
 			.find()
 			.toArray();
 
@@ -107,8 +107,8 @@ class ClanEvent {
 	}
 
 	async add(id) {
-		const data = await mongodb.db('clashperk')
-			.collection('donationlogs')
+		const data = await mongodb.db("clashperk")
+			.collection("donationlogs")
 			.findOne({ clan_id: ObjectId(id) });
 
 		if (!data) return null;

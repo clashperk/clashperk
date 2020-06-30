@@ -1,16 +1,16 @@
-const { Listener } = require('discord-akairo');
+const { Listener } = require("discord-akairo");
 
 class ShardReconnectListener extends Listener {
 	constructor() {
-		super('shardReconnecting', {
-			event: 'shardReconnecting',
-			emitter: 'client',
-			category: 'client'
+		super("shardReconnecting", {
+			event: "shardReconnecting",
+			emitter: "client",
+			category: "client"
 		});
 	}
 
 	exec(id) {
-		this.client.logger.info(`Shard ${id} Reconnecting`, { label: 'SHARD RECONNECTING' });
+		this.client.logger.info(`Shard ${id} Reconnecting`, { label: "SHARD RECONNECTING" });
 	}
 }
 

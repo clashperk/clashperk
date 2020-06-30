@@ -1,20 +1,20 @@
-const { Command, Flag } = require('discord-akairo');
-const { mongodb } = require('../../struct/Database');
-const Resolver = require('../../struct/Resolver');
-const moment = require('moment');
-require('moment-duration-format');
+const { Command, Flag } = require("discord-akairo");
+const { mongodb } = require("../../struct/Database");
+const Resolver = require("../../struct/Resolver");
+const moment = require("moment");
+require("moment-duration-format");
 
 class LastOnlineCommand extends Command {
 	constructor() {
-		super('lastonline', {
-			aliases: ['lastonline'],
-			category: 'activity',
-			channel: 'guild',
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+		super("lastonline", {
+			aliases: ["lastonline"],
+			category: "activity",
+			channel: "guild",
+			clientPermissions: ["ADD_REACTIONS", "EMBED_LINKS", "USE_EXTERNAL_EMOJIS"],
 			description: {
-				content: 'Shows an approximate last-online time of clan members.',
-				usage: '<clanTag>',
-				examples: ['#8QU8J9LP']
+				content: "Shows an approximate last-online time of clan members.",
+				usage: "<clanTag>",
+				examples: ["#8QU8J9LP"]
 			}
 		});
 	}
@@ -40,16 +40,16 @@ class LastOnlineCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		const db = mongodb.db('clashperk').collection('lastonlines');
+		const db = mongodb.db("clashperk").collection("lastonlines");
 		const prefix = this.handler.prefix(message);
 		const clan = await db.findOne({ tag: data.tag });
 		if (!clan) {
 			return message.util.send({
 				embed: {
 					description: [
-						'Setup a clan last-online board to use this command.',
+						"Setup a clan last-online board to use this command.",
 						`Type \`${prefix}help onlineboard\` to know more.`
-					].join(' ')
+					].join(" ")
 				}
 			});
 		}
@@ -59,16 +59,16 @@ class LastOnlineCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				`Last Online Board [${data.members}/50]`,
-				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'}\n${this.filter(data, clan)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${m.name}`)
-					.join('\n')}\`\`\``
+				`\`\`\`\u200e${"Last On".padStart(7, " ")}   ${"Name"}\n${this.filter(data, clan)
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, " ") : "".padStart(7, " ")}   ${m.name}`)
+					.join("\n")}\`\`\``
 			]);
 
 		return message.util.send({ embed });
 	}
 
 	padEnd(data) {
-		return data.padEnd(20, ' ');
+		return data.padEnd(20, " ");
 	}
 
 	filter(data, clan) {
@@ -86,11 +86,11 @@ class LastOnlineCommand extends Command {
 
 	format(time) {
 		if (time > 864e5) {
-			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' });
+			return moment.duration(time).format("d[d] H[h]", { trim: "both mid" });
 		} else if (time > 36e5) {
-			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
+			return moment.duration(time).format("H[h] m[m]", { trim: "both mid" });
 		}
-		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
+		return moment.duration(time).format("m[m] s[s]", { trim: "both mid" });
 	}
 }
 

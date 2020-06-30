@@ -1,13 +1,13 @@
-const { Command } = require('discord-akairo');
+const { Command } = require("discord-akairo");
 
 class ReloadCommand extends Command {
 	constructor() {
-		super('reload', {
-			aliases: ['reload', 'r'],
-			category: 'owner',
+		super("reload", {
+			aliases: ["reload", "r"],
+			category: "owner",
 			ownerOnly: true,
 			description: {
-				content: 'You can\'t use this anyway, so why explain?'
+				content: "You can't use this anyway, so why explain?"
 			}
 		});
 	}

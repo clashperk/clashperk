@@ -1,18 +1,18 @@
-const { Command, Flag } = require('discord-akairo');
-const { mongodb } = require('../../struct/Database');
-const Resolver = require('../../struct/Resolver');
+const { Command, Flag } = require("discord-akairo");
+const { mongodb } = require("../../struct/Database");
+const Resolver = require("../../struct/Resolver");
 
 class FlagCommand extends Command {
 	constructor() {
-		super('flag', {
-			aliases: ['flag'],
-			category: 'other',
-			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
+		super("flag", {
+			aliases: ["flag"],
+			category: "other",
+			channel: "guild",
+			userPermissions: ["MANAGE_GUILD"],
 			description: {
-				content: 'Flags a player in your server or clans.',
-				usage: '<playerTag> <reason>',
-				examples: ['#9Q92C8R20 Hopper']
+				content: "Flags a player in your server or clans.",
+				usage: "<playerTag> <reason>",
+				examples: ["#9Q92C8R20 Hopper"]
 			}
 		});
 	}
@@ -31,16 +31,16 @@ class FlagCommand extends Command {
 				return resolved;
 			},
 			prompt: {
-				start: 'What is the player tag?',
+				start: "What is the player tag?",
 				retry: (msg, { failure }) => failure.value
 			}
 		};
 
 		const reason = yield {
-			type: 'string',
-			match: 'rest',
+			type: "string",
+			match: "rest",
 			prompt: {
-				start: 'What is the reason?'
+				start: "What is the reason?"
 			}
 		};
 
@@ -53,8 +53,8 @@ class FlagCommand extends Command {
 	}
 
 	async exec(message, { data, reason }) {
-		if (reason.length > 900) return message.util.send('Reason must be 1024 or fewer in length.');
-		await mongodb.db('clashperk').collection('flaggedusers')
+		if (reason.length > 900) return message.util.send("Reason must be 1024 or fewer in length.");
+		await mongodb.db("clashperk").collection("flaggedusers")
 			.findOneAndUpdate({ guild: message.guild.id, tag: data.tag }, {
 				$set: {
 					guild: message.guild.id,

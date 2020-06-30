@@ -1,22 +1,22 @@
-const { Command } = require('discord-akairo');
-const fetch = require('node-fetch');
-const { emoji } = require('../../util/emojis');
-const { firestore } = require('../../struct/Database');
+const { Command } = require("discord-akairo");
+const fetch = require("node-fetch");
+const { emoji } = require("../../util/emojis");
+const { firestore } = require("../../struct/Database");
 
 class RedeemCommand extends Command {
 	constructor() {
-		super('redeem', {
-			aliases: ['redeem'],
-			category: 'util',
+		super("redeem", {
+			aliases: ["redeem"],
+			category: "util",
 			cooldown: 3000,
 			description: {
-				content: 'Redeems your patreon subscription.'
+				content: "Redeems your patreon subscription."
 			}
 		});
 	}
 
 	async exec(message) {
-		const res = await fetch('https://www.patreon.com/api/oauth2/api/campaigns/2589569/pledges?include=patron.null', {
+		const res = await fetch("https://www.patreon.com/api/oauth2/api/campaigns/2589569/pledges?include=patron.null", {
 			headers: {
 				authorization: `Bearer ${process.env.PATREON_API}`
 			}
@@ -32,23 +32,23 @@ class RedeemCommand extends Command {
 		if (!patreon_user) {
 			const embed = this.client.util.embed()
 				.setColor(16345172)
-				.setAuthor('Oh my!')
+				.setAuthor("Oh my!")
 				.setDescription([
-					'I could not find any patreon account connected to your discord.',
-					'',
-					'Make sure that you are connected and subscribed to ClashPerk.',
-					'Not subscribed yet? [Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
+					"I could not find any patreon account connected to your discord.",
+					"",
+					"Make sure that you are connected and subscribed to ClashPerk.",
+					"Not subscribed yet? [Become a Patron](https://www.patreon.com/bePatron?u=14584309)"
 				])
-				.addField('How to connect?', [
-					'https://www.patreon.com/settings/apps'
+				.addField("How to connect?", [
+					"https://www.patreon.com/settings/apps"
 				])
-				.setImage('https://i.imgur.com/APME0CX.png');
+				.setImage("https://i.imgur.com/APME0CX.png");
 
 			return message.util.send({ embed });
 		}
 
 		if (patreon_user) {
-			const user = await firestore.collection('patrons')
+			const user = await firestore.collection("patrons")
 				.doc(patreon_user.id)
 				.get()
 				.then(snap => snap.data());
@@ -60,7 +60,7 @@ class RedeemCommand extends Command {
 					entry.relationships.patron.data &&
 					entry.relationships.patron.data.id === patreon_user.id);
 
-				await firestore.collection('patrons')
+				await firestore.collection("patrons")
 					.doc(patreon_user.id)
 					.update({
 						name: patreon_user.attributes.full_name,
@@ -88,14 +88,14 @@ class RedeemCommand extends Command {
 				const embed = this.client.util.embed()
 					.setColor(16345172)
 					.setDescription([
-						'You\'ve already claimed.'
+						"You've already claimed."
 					]);
 
 				return message.util.send({ embed });
 			}
 
 			if (user && !user.redeemed) {
-				await firestore.collection('patrons')
+				await firestore.collection("patrons")
 					.doc(patreon_user.id)
 					.update({
 						guilds: [{ id: message.guild.id, limit: user.entitled_amount >= 3 ? 50 : 3 }],
@@ -116,7 +116,7 @@ class RedeemCommand extends Command {
 
 	async isNew(user, message, patreon_user) {
 		if (user && user.discord_id !== message.author.id) {
-			await firestore.collection('patrons')
+			await firestore.collection("patrons")
 				.doc(patreon_user.id)
 				.update({
 					discord_id: message.author.id

@@ -1,20 +1,20 @@
-const { Command, Flag } = require('discord-akairo');
-const fetch = require('node-fetch');
-const Resolver = require('../../struct/Resolver');
-const { emoji, townHallEmoji } = require('../../util/emojis');
-const { Util } = require('discord.js');
-const TOKENS = process.env.$KEYS.split(',');
+const { Command, Flag } = require("discord-akairo");
+const fetch = require("node-fetch");
+const Resolver = require("../../struct/Resolver");
+const { emoji, townHallEmoji } = require("../../util/emojis");
+const { Util } = require("discord.js");
+const TOKENS = process.env.$KEYS.split(",");
 
 class CWLTopCommand extends Command {
 	constructor() {
-		super('cwl-top', {
-			aliases: ['cwl-top', 'cwl-mvp'],
-			category: 'cwl-hidden',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
+		super("cwl-top", {
+			aliases: ["cwl-top", "cwl-mvp"],
+			category: "cwl-hidden",
+			clientPermissions: ["EMBED_LINKS", "USE_EXTERNAL_EMOJIS", "ADD_REACTIONS", "MANAGE_MESSAGES"],
 			description: {
-				content: 'Most valuable clan members for CWL.',
-				usage: '<clanTag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				content: "Most valuable clan members for CWL.",
+				usage: "<clanTag>",
+				examples: ["#2Q98URCGY", "2Q98URCGY"]
 			}
 		});
 	}
@@ -48,8 +48,8 @@ class CWLTopCommand extends Command {
 			const req = {
 				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
 				option: {
-					method: 'GET',
-					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % KEYS.length]}` }
+					method: "GET",
+					headers: { accept: "application/json", authorization: `Bearer ${KEYS[i % KEYS.length]}` }
 				}
 			};
 			return req;
@@ -59,7 +59,7 @@ class CWLTopCommand extends Command {
 		const fetched = await Promise.all(responses.map(res => res.json()));
 		const memberList = fetched.map(m => {
 			const star = m.achievements
-				? m.achievements.find(achievement => achievement.name === 'War League Legend')
+				? m.achievements.find(achievement => achievement.name === "War League Legend")
 				: 0;
 			const member = { townHallLevel: m.townHallLevel, name: m.name, cwlStar: star.value };
 			return member;
@@ -70,9 +70,9 @@ class CWLTopCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				'List of most valuable clan members for CWL',
-				'',
-				`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
+				"List of most valuable clan members for CWL",
+				"",
+				`${emoji.townhall}\`\u200e STAR  ${this.padEnd("NAME")}\``,
 				items.slice(0, 30)
 					.filter(m => m.cwlStar !== 0)
 					.map(member => {
@@ -80,7 +80,7 @@ class CWLTopCommand extends Command {
 						const star = this.padStart(member.cwlStar.toString());
 						return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name}\``;
 					})
-					.join('\n')
+					.join("\n")
 			]);
 
 		return message.util.send({ embed });
@@ -91,11 +91,11 @@ class CWLTopCommand extends Command {
 	}
 
 	padStart(msg) {
-		return msg.padStart(4, ' ');
+		return msg.padStart(4, " ");
 	}
 
 	padEnd(data) {
-		return Util.escapeInlineCode(data).padEnd(20, ' ');
+		return Util.escapeInlineCode(data).padEnd(20, " ");
 	}
 }
 

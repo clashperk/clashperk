@@ -1,27 +1,27 @@
-const { Command } = require('discord-akairo');
+const { Command } = require("discord-akairo");
 
 class BlacklistCommand extends Command {
 	constructor() {
-		super('blacklist', {
-			aliases: ['blacklist', 'unblacklist'],
+		super("blacklist", {
+			aliases: ["blacklist", "unblacklist"],
 			description: {
-				content: 'You can\'t use this anyway, so why explain?',
-				usage: '<user>',
-				examples: ['81440962496172032']
+				content: "You can't use this anyway, so why explain?",
+				usage: "<user>",
+				examples: ["81440962496172032"]
 			},
-			category: 'owner',
+			category: "owner",
 			ownerOnly: true,
 			args: [
 				{
-					id: 'user',
-					match: 'content',
+					id: "user",
+					match: "content",
 					type: async (msg, id) => {
 						if (!id) return null;
 						return this.client.users.fetch(id, false).catch(() => null);
 					},
 					prompt: {
-						start: 'Who would you like to blacklist/unblacklist?',
-						retry: 'Please provide a valid userId.'
+						start: "Who would you like to blacklist/unblacklist?",
+						retry: "Please provide a valid userId."
 					}
 				}
 			]
@@ -29,18 +29,18 @@ class BlacklistCommand extends Command {
 	}
 
 	exec(message, { user }) {
-		const blacklist = this.client.settings.get('global', 'blacklist', []);
+		const blacklist = this.client.settings.get("global", "blacklist", []);
 		if (blacklist.includes(user.id)) {
 			const index = blacklist.indexOf(user.id);
 			blacklist.splice(index, 1);
-			if (blacklist.length === 0) this.client.settings.delete('global', 'blacklist');
-			else this.client.settings.set('global', 'blacklist', blacklist);
+			if (blacklist.length === 0) this.client.settings.delete("global", "blacklist");
+			else this.client.settings.set("global", "blacklist", blacklist);
 
 			return message.util.send(`**${user.tag}** has been removed from the ${this.client.user.username}'s blacklist.`);
 		}
 
 		blacklist.push(user.id);
-		this.client.settings.set('global', 'blacklist', blacklist);
+		this.client.settings.set("global", "blacklist", blacklist);
 
 		return message.util.send(`**${user.tag}** has been blacklisted from using ${this.client.user.username}'s command.`);
 	}

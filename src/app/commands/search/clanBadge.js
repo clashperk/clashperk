@@ -1,18 +1,18 @@
-const { Command, Flag } = require('discord-akairo');
-const { MessageEmbed } = require('discord.js');
-const Resolver = require('../../struct/Resolver');
+const { Command, Flag } = require("discord-akairo");
+const { MessageEmbed } = require("discord.js");
+const Resolver = require("../../struct/Resolver");
 
 class ClanBadgeCommand extends Command {
 	constructor() {
-		super('clan-badge', {
-			aliases: ['badge', 'clan-badge', 'cb'],
-			category: 'search',
+		super("clan-badge", {
+			aliases: ["badge", "clan-badge", "cb"],
+			category: "search",
 			description: {
-				content: 'In-game clan badge in high resolution.',
-				usage: '<clanTag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				content: "In-game clan badge in high resolution.",
+				usage: "<clanTag>",
+				examples: ["#2Q98URCGY", "2Q98URCGY"]
 			},
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS']
+			clientPermissions: ["EMBED_LINKS", "USE_EXTERNAL_EMOJIS"]
 		});
 	}
 

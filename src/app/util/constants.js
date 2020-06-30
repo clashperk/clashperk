@@ -1,11 +1,11 @@
 const codes = {
-	504: '504 Request Timeout',
-	400: 'Client provided incorrect parameters for the request.',
-	403: 'Access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
-	404: 'Invalid tag, resource was not found.',
-	429: 'Request was throttled, because amount of requests was above the threshold defined for the used API token.',
-	500: 'Unknown error happened when handling the request.',
-	503: 'Service is temprorarily unavailable because of maintenance.'
+	504: "504 Request Timeout",
+	400: "Client provided incorrect parameters for the request.",
+	403: "Access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.",
+	404: "Invalid tag, resource was not found.",
+	429: "Request was throttled, because amount of requests was above the threshold defined for the used API token.",
+	500: "Unknown error happened when handling the request.",
+	503: "Service is temprorarily unavailable because of maintenance."
 };
 
 module.exports = {
@@ -67,20 +67,20 @@ module.exports = {
 	},
 
 	MODES: {
-		1: 'DONATION_LOG',
-		2: 'PLAYER_LOG',
-		3: 'LAST_ONLINE_LOG',
-		4: 'CLAN_EMBED_LOG',
-		5: 'CLAN_GAMES_LOG',
-		6: 'CLAN_WAR_LOG'
+		1: "DONATION_LOG",
+		2: "PLAYER_LOG",
+		3: "LAST_ONLINE_LOG",
+		4: "CLAN_EMBED_LOG",
+		5: "CLAN_GAMES_LOG",
+		6: "CLAN_WAR_LOG"
 	},
 
 	EVENTS: {
-		1: 'CLAN_DONATION_EVENT',
-		2: 'CLAN_MEMBER_ACTION',
-		3: 'LAST_ONLINE_EVENT',
-		4: 'CLAN_EMBED_EVENT',
-		5: 'CLAN_GAMES_EVENT',
-		6: 'CLAN_WAR_EVENT'
+		1: "CLAN_DONATION_EVENT",
+		2: "CLAN_MEMBER_ACTION",
+		3: "LAST_ONLINE_EVENT",
+		4: "CLAN_EMBED_EVENT",
+		5: "CLAN_GAMES_EVENT",
+		6: "CLAN_WAR_EVENT"
 	}
 };

@@ -1,14 +1,14 @@
-const { Command } = require('discord-akairo');
-const FACTS = require('./clashfacts');
+const { Command } = require("discord-akairo");
+const FACTS = require("./clashfacts");
 
 class FactsCommand extends Command {
 	constructor() {
-		super('facts', {
-			aliases: ['facts', 'fact'],
-			category: 'other',
-			clientPermissions: ['EMBED_LINKS'],
+		super("facts", {
+			aliases: ["facts", "fact"],
+			category: "other",
+			clientPermissions: ["EMBED_LINKS"],
 			description: {
-				content: 'Shows random clash of clans facts.'
+				content: "Shows random clash of clans facts."
 			}
 		});
 	}

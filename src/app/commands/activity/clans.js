@@ -1,29 +1,29 @@
-const { Command, Argument } = require('discord-akairo');
-const { MessageEmbed } = require('discord.js');
-const { emoji } = require('../../util/emojis');
-const { mongodb } = require('../../struct/Database');
+const { Command, Argument } = require("discord-akairo");
+const { MessageEmbed } = require("discord.js");
+const { emoji } = require("../../util/emojis");
+const { mongodb } = require("../../struct/Database");
 
 class ClansCommand extends Command {
 	constructor() {
-		super('clans', {
-			aliases: ['clans', 'tracking', 'info'],
-			category: 'setup',
-			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+		super("clans", {
+			aliases: ["clans", "tracking", "info"],
+			category: "setup",
+			channel: "guild",
+			clientPermissions: ["EMBED_LINKS"],
 			description: {
-				usage: '<page>',
-				examples: ['2'],
-				content: 'Shows all clans related to the guild.'
+				usage: "<page>",
+				examples: ["2"],
+				content: "Shows all clans related to the guild."
 			},
 			args: [
 				{
-					id: 'page',
-					type: Argument.range('number', 1, 100),
+					id: "page",
+					type: Argument.range("number", 1, 100),
 					default: 1,
 					unordered: true
 				},
 				{
-					id: 'guild',
+					id: "guild",
 					type: (msg, id) => {
 						if (!id) return null;
 						if (!this.client.isOwner(msg.author.id)) return null;
@@ -45,16 +45,16 @@ class ClansCommand extends Command {
 
 	async exec(message, { guild, page }) {
 		await message.util.send(`**Feching data... ${emoji.loading}**`);
-		const premium = this.client.patron.get(guild.id, 'guild', false);
+		const premium = this.client.patron.get(guild.id, "guild", false);
 		const collection = await this.findAll(guild);
-		const db = mongodb.db('clashperk');
+		const db = mongodb.db("clashperk");
 		const data = await Promise.all(collection.map(async item => {
-			const donationlog = await db.collection('donationlogs').findOne({ clan_id: item._id });
-			const playerlog = await db.collection('playerlogs').findOne({ clan_id: item._id });
-			const onlinelog = await db.collection('lastonlinelogs').findOne({ clan_id: item._id });
-			const clanembed = await db.collection('clanembedlogs').findOne({ clan_id: item._id });
-			const clangames = await db.collection('clangameslogs').findOne({ clan_id: item._id });
-			const clanwar = await db.collection('clanwarlogs').findOne({ clan_id: item._id });
+			const donationlog = await db.collection("donationlogs").findOne({ clan_id: item._id });
+			const playerlog = await db.collection("playerlogs").findOne({ clan_id: item._id });
+			const onlinelog = await db.collection("lastonlinelogs").findOne({ clan_id: item._id });
+			const clanembed = await db.collection("clanembedlogs").findOne({ clan_id: item._id });
+			const clangames = await db.collection("clangameslogs").findOne({ clan_id: item._id });
+			const clanwar = await db.collection("clanwarlogs").findOne({ clan_id: item._id });
 
 			return {
 				tag: item.tag,
@@ -92,11 +92,11 @@ class ClansCommand extends Command {
 			const paginated = this.paginate(data, page);
 
 			embed.setDescription([
-				`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
-				'',
+				`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ""}`,
+				"",
 				this.desc(paginated)
 			]).setFooter([
-				`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
+				`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? "clan" : "clans"})`
 			]);
 
 			if (collection.length <= 2) {
@@ -105,26 +105,26 @@ class ClansCommand extends Command {
 
 			const msg = await message.util.send({ embed });
 
-			for (const emoji of ['⬅️', '➡️']) {
+			for (const emoji of ["⬅️", "➡️"]) {
 				await msg.react(emoji);
 				await this.delay(250);
 			}
 
 			const collector = msg.createReactionCollector(
-				(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+				(reaction, user) => ["⬅️", "➡️"].includes(reaction.emoji.name) && user.id === message.author.id,
 				{ time: 60000, max: 10 }
 			);
 
-			collector.on('collect', async reaction => {
-				if (reaction.emoji.name === '➡️') {
+			collector.on("collect", async reaction => {
+				if (reaction.emoji.name === "➡️") {
 					page += 1;
 					if (page < 1) page = paginated.maxPage;
 					if (page > paginated.maxPage) page = 1;
 					await msg.edit({
-						embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
+						embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? "clan" : "clans"})`)
 							.setDescription([
-								`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
-								'',
+								`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ""}`,
+								"",
 								this.desc(this.paginate(data, page))
 							])
 					});
@@ -133,15 +133,15 @@ class ClansCommand extends Command {
 					return message;
 				}
 
-				if (reaction.emoji.name === '⬅️') {
+				if (reaction.emoji.name === "⬅️") {
 					page -= 1;
 					if (page < 1) page = paginated.maxPage;
 					if (page > paginated.maxPage) page = 1;
 					await msg.edit({
-						embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
+						embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? "clan" : "clans"})`)
 							.setDescription([
-								`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ''}`,
-								'',
+								`${premium ? `**Subscription** \nActive ${emoji.authorize}` : ""}`,
+								"",
 								this.desc(this.paginate(data, page))
 							])
 					});
@@ -151,7 +151,7 @@ class ClansCommand extends Command {
 				}
 			});
 
-			collector.on('end', async () => {
+			collector.on("end", async () => {
 				await msg.reactions.removeAll().catch(() => null);
 				return message;
 			});
@@ -172,43 +172,43 @@ class ClansCommand extends Command {
 					? donationlog
 						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.donationlog}>`
 						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.donationlog}>`
-					: '',
+					: "",
 				item.playerlog
 					? playerlog
 						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.playerlog}>`
 						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.playerlog}>`
-					: '',
+					: "",
 				item.onlinelog
 					? onlinelog
 						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.onlinelog}>`
 						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.onlinelog}>`
-					: '',
+					: "",
 				item.clanembedlog
 					? clanembedlog
 						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.clanembedlog}>`
 						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.clanembedlog}>`
-					: '',
+					: "",
 				item.clangameslog
 					? clangameslog
 						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.clangameslog}>`
 						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.clangameslog}>`
-					: '',
+					: "",
 				item.clanwarlog
 					? clanwarlog
 						? `${emoji.ok} Enabled \n${emoji.channel} <#${item.clanwarlog}>`
 						: `${emoji.wrong} Disabled \n${emoji.channel} <#${item.clanwarlog}>`
-					: ''
+					: ""
 			];
 			return [
 				`**[${item.name} (${item.tag})](${this.openInGame(item.tag)})**`,
-				`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
-				`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
-				`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`,
-				`${logs[3].length ? `**Clan Embed**\n${logs[3]}` : ''}`,
-				`${logs[4].length ? `**Clan Games Board**\n${logs[4]}` : ''}`,
-				`${logs[5].length ? `**Clan War Feed**\n${logs[5]}` : ''}`
-			].filter(item => item.length).join('\n');
-		}).join('\n\n');
+				`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ""}`,
+				`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ""}`,
+				`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ""}`,
+				`${logs[3].length ? `**Clan Embed**\n${logs[3]}` : ""}`,
+				`${logs[4].length ? `**Clan Games Board**\n${logs[4]}` : ""}`,
+				`${logs[5].length ? `**Clan War Feed**\n${logs[5]}` : ""}`
+			].filter(item => item.length).join("\n");
+		}).join("\n\n");
 	}
 
 	openInGame(tag) {
@@ -216,8 +216,8 @@ class ClansCommand extends Command {
 	}
 
 	async findAll(guild) {
-		const db = mongodb.db('clashperk');
-		const collection = await db.collection('clanstores')
+		const db = mongodb.db("clashperk");
+		const collection = await db.collection("clanstores")
 			.find({ guild: guild.id })
 			.toArray();
 

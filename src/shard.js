@@ -1,9 +1,9 @@
-const { ShardingManager } = require('discord.js');
-const path = require('path');
+const { ShardingManager } = require("discord.js");
+const path = require("path");
 
 class Manager extends ShardingManager {
 	constructor() {
-		super(path.join(__dirname, 'main.js'), {
+		super(path.join(__dirname, "main.js"), {
 			token: process.env.TOKEN
 		});
 	}

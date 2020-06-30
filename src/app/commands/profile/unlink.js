@@ -1,18 +1,18 @@
-const { Command, Flag } = require('discord-akairo');
-const { mongodb } = require('../../struct/Database');
-const Resolver = require('../../struct/Resolver');
+const { Command, Flag } = require("discord-akairo");
+const { mongodb } = require("../../struct/Database");
+const Resolver = require("../../struct/Resolver");
 
 class UnlinkCommand extends Command {
 	constructor() {
-		super('unlink', {
-			aliases: ['unlink'],
-			category: 'profile',
-			channel: 'guild',
-			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
+		super("unlink", {
+			aliases: ["unlink"],
+			category: "profile",
+			channel: "guild",
+			clientPermissions: ["USE_EXTERNAL_EMOJIS", "ADD_REACTIONS", "EMBED_LINKS"],
 			description: {
-				content: 'Unlinks profile from your account.',
-				usage: '<tag>',
-				examples: ['#9Q92C8R20']
+				content: "Unlinks profile from your account.",
+				usage: "<tag>",
+				examples: ["#9Q92C8R20"]
 			}
 		});
 	}
@@ -31,7 +31,7 @@ class UnlinkCommand extends Command {
 				return resolved;
 			},
 			prompt: {
-				start: 'What is your player tag?',
+				start: "What is your player tag?",
 				retry: (msg, { failure }) => failure.value
 			}
 		};
@@ -62,8 +62,8 @@ class UnlinkCommand extends Command {
 	}
 
 	async delete(id, tag) {
-		const data = await mongodb.db('clashperk')
-			.collection('linkedusers')
+		const data = await mongodb.db("clashperk")
+			.collection("linkedusers")
 			.findOneAndUpdate({ user: id }, { $pull: { tags: tag } });
 		return data.value && data.value.tags && data.value.tags.includes(tag);
 	}

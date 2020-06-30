@@ -1,25 +1,25 @@
-const { Command } = require('discord-akairo');
-const { MessageEmbed } = require('discord.js');
-const fetch = require('node-fetch');
-const { mongodb } = require('../../struct/Database');
-const { emoji, townHallEmoji, heroEmoji } = require('../../util/emojis');
+const { Command } = require("discord-akairo");
+const { MessageEmbed } = require("discord.js");
+const fetch = require("node-fetch");
+const { mongodb } = require("../../struct/Database");
+const { emoji, townHallEmoji, heroEmoji } = require("../../util/emojis");
 
 class ProfileCommand extends Command {
 	constructor() {
-		super('profile', {
-			aliases: ['profile', 'whois'],
-			category: 'profile',
-			channel: 'guild',
-			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
+		super("profile", {
+			aliases: ["profile", "whois"],
+			category: "profile",
+			channel: "guild",
+			clientPermissions: ["USE_EXTERNAL_EMOJIS", "ADD_REACTIONS", "EMBED_LINKS"],
 			description: {
-				content: 'Shows info about your linked accounts.',
-				usage: '<member>',
-				examples: ['', 'Suvajit', 'Reza', '@gop']
+				content: "Shows info about your linked accounts.",
+				usage: "<member>",
+				examples: ["", "Suvajit", "Reza", "@gop"]
 			},
 			args: [
 				{
-					id: 'member',
-					type: 'member',
+					id: "member",
+					type: "member",
 					default: message => message.member
 				}
 			]
@@ -47,7 +47,7 @@ class ProfileCommand extends Command {
 			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL());
 
 		if (!data.tags.length) {
-			embed.setTitle('No Accounts are Linked');
+			embed.setTitle("No Accounts are Linked");
 		}
 
 		let index = 0;
@@ -55,8 +55,8 @@ class ProfileCommand extends Command {
 		for (const tag of data.tags) {
 			index += 1;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-				method: 'GET',
-				headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+				method: "GET",
+				headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 			});
 			if (!res.ok) continue;
 			const data = await res.json();
@@ -72,25 +72,25 @@ class ProfileCommand extends Command {
 		let page = 1;
 		const paginated = this.paginate(collection, page);
 
-		embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n\n'))
+		embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join("\n")}`).join("\n\n"))
 			.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
 		if (collection.length <= 5) {
 			return message.util.send({ embed });
 		}
 
 		const msg = await message.util.send({ embed });
-		for (const emoji of ['⬅️', '➡️']) {
+		for (const emoji of ["⬅️", "➡️"]) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ["⬅️", "➡️"].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 60000, max: 10 }
 		);
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
+		collector.on("collect", async reaction => {
+			if (reaction.emoji.name === "➡️") {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
@@ -98,8 +98,8 @@ class ProfileCommand extends Command {
 					embed: embed.setFooter(`Page ${this.paginate(collection, page).page}/${paginated.maxPage} (${index} accounts)`)
 						.setDescription([
 							this.paginate(collection, page).items
-								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
-								.join('\n\n')
+								.map(({ field, values }) => `${field}\n${values.join("\n")}`)
+								.join("\n\n")
 						])
 				});
 				await this.delay(250);
@@ -107,7 +107,7 @@ class ProfileCommand extends Command {
 				return message;
 			}
 
-			if (reaction.emoji.name === '⬅️') {
+			if (reaction.emoji.name === "⬅️") {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
@@ -115,8 +115,8 @@ class ProfileCommand extends Command {
 					embed: embed.setFooter(`Page ${this.paginate(collection, page).page}/${paginated.maxPage} (${index} accounts)`)
 						.setDescription([
 							this.paginate(collection, page).items
-								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
-								.join('\n\n')
+								.map(({ field, values }) => `${field}\n${values.join("\n")}`)
+								.join("\n\n")
 						])
 				});
 				await this.delay(250);
@@ -125,7 +125,7 @@ class ProfileCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on("end", async () => {
 			await msg.reactions.removeAll().catch(() => null);
 			return message;
 		});
@@ -138,31 +138,31 @@ class ProfileCommand extends Command {
 
 	clanName(data) {
 		if (!data.clan) return `${emoji.clan} Not in a Clan`;
-		const clanRole = data.role.replace(/admin/g, 'Elder')
-			.replace(/coLeader/g, 'Co-Leader')
-			.replace(/member/g, 'Member')
-			.replace(/leader/g, 'Leader');
+		const clanRole = data.role.replace(/admin/g, "Elder")
+			.replace(/coLeader/g, "Co-Leader")
+			.replace(/member/g, "Member")
+			.replace(/leader/g, "Leader");
 
 		return `${emoji.clan} ${clanRole} of ${data.clan.name}`;
 	}
 
 	heroes(data) {
-		if (!data.heroes) return '';
-		return data.heroes.filter(hero => hero.village === 'home')
-			.map(hero => `${heroEmoji[hero.name]} ${hero.level}`).join(' ');
+		if (!data.heroes) return "";
+		return data.heroes.filter(hero => hero.village === "home")
+			.map(hero => `${heroEmoji[hero.name]} ${hero.level}`).join(" ");
 	}
 
 	async getProfile(id) {
-		const data = await mongodb.db('clashperk')
-			.collection('linkedusers')
+		const data = await mongodb.db("clashperk")
+			.collection("linkedusers")
 			.findOne({ user: id });
 
 		return data;
 	}
 
 	async getClan(id) {
-		const data = await mongodb.db('clashperk')
-			.collection('linkedclans')
+		const data = await mongodb.db("clashperk")
+			.collection("linkedclans")
 			.findOne({ user: id });
 
 		return data;

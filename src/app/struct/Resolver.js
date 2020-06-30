@@ -1,8 +1,8 @@
-const fetch = require('node-fetch');
-const { mongodb } = require('./Database');
-const { status } = require('../util/constants');
-const { MessageEmbed } = require('discord.js');
-const TOKENS = process.env.$KEYS.split(',');
+const fetch = require("node-fetch");
+const { mongodb } = require("./Database");
+const { status } = require("../util/constants");
+const { MessageEmbed } = require("discord.js");
+const TOKENS = process.env.$KEYS.split(",");
 const cached = new Map();
 
 class Reslover {
@@ -10,8 +10,8 @@ class Reslover {
 		const member = this.isMember(message, args);
 		if (boolean) {
 			if (member) {
-				const data = await mongodb.db('clashperk')
-					.collection('linkedusers')
+				const data = await mongodb.db("clashperk")
+					.collection("linkedusers")
 					.findOne({ user: member.id });
 
 				if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);
@@ -23,7 +23,7 @@ class Reslover {
 					]);
 				} else {
 					embed.setDescription([
-						'Please provide a player tag and try again!'
+						"Please provide a player tag and try again!"
 					]);
 				}
 
@@ -34,8 +34,8 @@ class Reslover {
 		}
 
 		if (member) {
-			const data = await mongodb.db('clashperk')
-				.collection('linkedclans')
+			const data = await mongodb.db("clashperk")
+				.collection("linkedclans")
 				.findOne({ user: member.id });
 
 			if (data) return this.clan(data.tag);
@@ -47,7 +47,7 @@ class Reslover {
 				]);
 			} else {
 				embed.setDescription([
-					'Please provide a clan tag and try again!'
+					"Please provide a clan tag and try again!"
 				]);
 			}
 
@@ -69,11 +69,11 @@ class Reslover {
 
 	static async player(tag) {
 		const res = await fetch(`https://api.clashofclans.com/v1/players/%23${this.format(tag)}`, {
-			method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+			method: "GET", timeout: 3000, headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		}).catch(() => null);
 
 		const embed = new MessageEmbed()
-			.setAuthor('Error')
+			.setAuthor("Error")
 			.setColor(0xf30c11);
 
 		if (!res) return { status: 504, embed: embed.setDescription(status(504)) };
@@ -84,11 +84,11 @@ class Reslover {
 
 	static async clan(tag) {
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/%23${this.format(tag)}`, {
-			method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+			method: "GET", timeout: 3000, headers: { accept: "application/json", authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		}).catch(() => null);
 
 		const embed = new MessageEmbed()
-			.setAuthor('Error')
+			.setAuthor("Error")
 			.setColor(0xf30c11);
 
 		if (!res) return { status: 504, embed: embed.setDescription(status(504)) };
@@ -98,11 +98,11 @@ class Reslover {
 	}
 
 	static format(tag) {
-		return tag.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0');
+		return tag.toUpperCase().replace(/#/g, "").replace(/O|o/g, "0");
 	}
 
 	static assign(data, res) {
-		return Object.assign({ status: 200, 'max-age': Math.floor(res.headers.raw()['cache-control'][0].split('=')[1]) }, data);
+		return Object.assign({ status: 200, "max-age": Math.floor(res.headers.raw()["cache-control"][0].split("=")[1]) }, data);
 	}
 
 	static async fetch(data) {
@@ -112,8 +112,8 @@ class Reslover {
 			const req = {
 				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
 				option: {
-					method: 'GET',
-					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % KEYS.length]}` }
+					method: "GET",
+					headers: { accept: "application/json", authorization: `Bearer ${KEYS[i % KEYS.length]}` }
 				}
 			};
 			return req;
@@ -139,12 +139,12 @@ class Reslover {
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name}`, data.badgeUrls.small)
 			.setDescription([
-				'**Clan Description**',
+				"**Clan Description**",
 				`${data.description}`,
-				'',
-				'**Verify Your Clan**',
+				"",
+				"**Verify Your Clan**",
 				`Add the code \`${code}\` at the end of the clan description. It's a security feature of the bot to ensure you are a Leader or Co-Leader in the clan.`,
-				'If you\'ve already added the code please wait at least 1 min before you run the command again and remove the code after verification.'
+				"If you've already added the code please wait at least 1 min before you run the command again and remove the code after verification."
 			]);
 		return embed;
 	}
@@ -152,12 +152,12 @@ class Reslover {
 	static limitEmbed() {
 		const embed = new MessageEmbed()
 			.setDescription([
-				'You can only claim 2 clans per guild!',
-				'',
-				'**Want more than that?**',
-				'Consider subscribing to one of our premium plans on Patreon',
-				'',
-				'[Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
+				"You can only claim 2 clans per guild!",
+				"",
+				"**Want more than that?**",
+				"Consider subscribing to one of our premium plans on Patreon",
+				"",
+				"[Become a Patron](https://www.patreon.com/bePatron?u=14584309)"
 			])
 			.setColor(5861569);
 

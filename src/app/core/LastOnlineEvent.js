@@ -1,7 +1,7 @@
-const { mongodb } = require('../struct/Database');
-const { MessageEmbed, Message } = require('discord.js');
-const moment = require('moment');
-const { ObjectId } = require('mongodb');
+const { mongodb } = require("../struct/Database");
+const { MessageEmbed, Message } = require("discord.js");
+const moment = require("moment");
+const { ObjectId } = require("mongodb");
 
 class LastOnlineEvent {
 	constructor(client) {
@@ -13,10 +13,10 @@ class LastOnlineEvent {
 		const cache = this.cached.get(id);
 		if (Object.keys(update).length) {
 			try {
-				const collection = mongodb.db('clashperk').collection('lastonlines');
+				const collection = mongodb.db("clashperk").collection("lastonlines");
 				await collection.updateOne({ tag: clan.tag }, update, { upsert: true });
 			} catch (error) {
-				this.logger.error(error, { label: 'MONGODB_ERROR' });
+				this.logger.error(error, { label: "MONGODB_ERROR" });
 			}
 		}
 
@@ -27,12 +27,12 @@ class LastOnlineEvent {
 
 	permissionsFor(id, cache, clan) {
 		const permissions = [
-			'READ_MESSAGE_HISTORY',
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
+			"READ_MESSAGE_HISTORY",
+			"SEND_MESSAGES",
+			"EMBED_LINKS",
+			"USE_EXTERNAL_EMOJIS",
+			"ADD_REACTIONS",
+			"VIEW_CHANNEL"
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
@@ -65,7 +65,7 @@ class LastOnlineEvent {
 
 		const message = await channel.messages.fetch(cache.message, false)
 			.catch(error => {
-				this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
+				this.client.logger.warn(error, { label: "LAST_ONLINE_FETCH_MESSAGE" });
 				if (error.code === 10008) {
 					return { deleted: true };
 				}
@@ -100,10 +100,10 @@ class LastOnlineEvent {
 				const cache = this.cached.get(id);
 				cache.message = message.id;
 				this.cached.set(id, cache);
-				const collection = mongodb.db('clashperk').collection('lastonlinelogs');
+				const collection = mongodb.db("clashperk").collection("lastonlinelogs");
 				await collection.updateOne({ clan_id: ObjectId(id) }, { $set: { message: message.id } });
 			} catch (error) {
-				this.client.logger.warn(error, { label: 'MONGODB_ERROR' });
+				this.client.logger.warn(error, { label: "MONGODB_ERROR" });
 			}
 		}
 
@@ -132,8 +132,8 @@ class LastOnlineEvent {
 	}
 
 	async embed(clan) {
-		const data = await mongodb.db('clashperk')
-			.collection('lastonlines')
+		const data = await mongodb.db("clashperk")
+			.collection("lastonlines")
 			.findOne({ tag: clan.tag });
 
 		const embed = new MessageEmbed()
@@ -141,13 +141,13 @@ class LastOnlineEvent {
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Last Online Board [${clan.members}/50]`,
-				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}`,
+				`\`\`\`\u200e${"Last On".padStart(7, " ")}   ${"Name".padEnd(20, " ")}`,
 				this.filter(data, clan)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}   ${m.name}`)
-					.join('\n'),
-				'\`\`\`'
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : "".padStart(7, " ")}   ${m.name}`)
+					.join("\n"),
+				"\`\`\`"
 			])
-			.setFooter('Last Updated')
+			.setFooter("Last Updated")
 			.setTimestamp();
 
 		return embed;
@@ -176,17 +176,17 @@ class LastOnlineEvent {
 
 	format(time) {
 		if (time > 864e5) {
-			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' }).padStart(7, ' ');
+			return moment.duration(time).format("d[d] H[h]", { trim: "both mid" }).padStart(7, " ");
 		} else if (time > 36e5) {
-			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' }).padStart(7, ' ');
+			return moment.duration(time).format("H[h] m[m]", { trim: "both mid" }).padStart(7, " ");
 		}
 
-		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' }).padStart(7, ' ');
+		return moment.duration(time).format("m[m] s[s]", { trim: "both mid" }).padStart(7, " ");
 	}
 
 	async init() {
-		const collection = await mongodb.db('clashperk')
-			.collection('lastonlinelogs')
+		const collection = await mongodb.db("clashperk")
+			.collection("lastonlinelogs")
 			.find()
 			.toArray();
 
@@ -202,8 +202,8 @@ class LastOnlineEvent {
 	}
 
 	async add(id) {
-		const data = await mongodb.db('clashperk')
-			.collection('lastonlinelogs')
+		const data = await mongodb.db("clashperk")
+			.collection("lastonlinelogs")
 			.findOne({ clan_id: ObjectId(id) });
 
 		if (!data) return null;

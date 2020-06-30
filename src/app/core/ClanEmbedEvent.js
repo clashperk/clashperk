@@ -1,7 +1,7 @@
-const { mongodb } = require('../struct/Database');
-const { MessageEmbed, Message } = require('discord.js');
-const { ObjectId } = require('mongodb');
-const { emoji } = require('../util/emojis');
+const { mongodb } = require("../struct/Database");
+const { MessageEmbed, Message } = require("discord.js");
+const { ObjectId } = require("mongodb");
+const { emoji } = require("../util/emojis");
 
 class ClanEmbed {
 	constructor(client) {
@@ -30,12 +30,12 @@ class ClanEmbed {
 
 	permissionsFor(id, cache, clan) {
 		const permissions = [
-			'READ_MESSAGE_HISTORY',
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
+			"READ_MESSAGE_HISTORY",
+			"SEND_MESSAGES",
+			"EMBED_LINKS",
+			"USE_EXTERNAL_EMOJIS",
+			"ADD_REACTIONS",
+			"VIEW_CHANNEL"
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
@@ -68,7 +68,7 @@ class ClanEmbed {
 
 		const message = await channel.messages.fetch(cache.message, false)
 			.catch(error => {
-				this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
+				this.client.logger.warn(error, { label: "LAST_ONLINE_FETCH_MESSAGE" });
 				if (error.code === 10008) {
 					return { deleted: true };
 				}
@@ -103,10 +103,10 @@ class ClanEmbed {
 				const cache = this.cached.get(id);
 				cache.message = message.id;
 				this.cached.set(id, cache);
-				const collection = mongodb.db('clashperk').collection('clanembedlogs');
+				const collection = mongodb.db("clashperk").collection("clanembedlogs");
 				await collection.updateOne({ clan_id: ObjectId(id) }, { $set: { message: message.id } });
 			} catch (error) {
-				this.client.logger.warn(error, { label: 'MONGODB_ERROR' });
+				this.client.logger.warn(error, { label: "MONGODB_ERROR" });
 			}
 		}
 
@@ -156,7 +156,7 @@ class ClanEmbed {
 		}
 
 		embed.addField(`${emoji.clan} War Info`, [
-			`${clan.warWins} wins, ${clan.isWarLogPublic ? `${clan.warLosses} losses, ${clan.warTies} ties,` : ''} win streak ${clan.warWinStreak}`
+			`${clan.warWins} wins, ${clan.isWarLogPublic ? `${clan.warLosses} losses, ${clan.warTies} ties,` : ""} win streak ${clan.warWinStreak}`
 		]);
 
 		embed.setFooter(`Members [${clan.members}/50]`, this.client.user.displayAvatarURL());
@@ -165,8 +165,8 @@ class ClanEmbed {
 	}
 
 	async init() {
-		const collection = await mongodb.db('clashperk')
-			.collection('clanembedlogs')
+		const collection = await mongodb.db("clashperk")
+			.collection("clanembedlogs")
 			.find()
 			.toArray();
 
@@ -184,8 +184,8 @@ class ClanEmbed {
 	}
 
 	async add(id) {
-		const data = await mongodb.db('clashperk')
-			.collection('clanembedlogs')
+		const data = await mongodb.db("clashperk")
+			.collection("clanembedlogs")
 			.findOne({ clan_id: ObjectId(id) });
 
 		if (!data) return null;

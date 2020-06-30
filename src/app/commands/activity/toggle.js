@@ -1,57 +1,57 @@
-const { Command } = require('discord-akairo');
-const { mongodb } = require('../../struct/Database');
-const { ObjectId } = require('mongodb');
+const { Command } = require("discord-akairo");
+const { mongodb } = require("../../struct/Database");
+const { ObjectId } = require("mongodb");
 
 class StopCommand extends Command {
 	constructor() {
-		super('toggle', {
-			aliases: ['stop', 'toggle'],
-			category: 'setup',
-			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['EMBED_LINKS'],
+		super("toggle", {
+			aliases: ["stop", "toggle"],
+			category: "setup",
+			channel: "guild",
+			userPermissions: ["MANAGE_GUILD"],
+			clientPermissions: ["EMBED_LINKS"],
 			description: {
 				content: [
-					'Stop logs and boards in your guild.',
-					'',
-					'**Available Methods**',
-					'• donationlog `<clanTag>`',
-					'• playerlog `<clanTag>`',
-					'• lastonline `<clanTag>`',
-					'• clangames `<clanTag>`',
-					'• clanmebed `<clanTag>`',
-					'• all `<clanTag>` - remove all logs and boards for a clan.',
-					'',
-					'For additional `<...args>` usage refer to the examples below.'
+					"Stop logs and boards in your guild.",
+					"",
+					"**Available Methods**",
+					"• donationlog `<clanTag>`",
+					"• playerlog `<clanTag>`",
+					"• lastonline `<clanTag>`",
+					"• clangames `<clanTag>`",
+					"• clanmebed `<clanTag>`",
+					"• all `<clanTag>` - remove all logs and boards for a clan.",
+					"",
+					"For additional `<...args>` usage refer to the examples below."
 				],
-				usage: '<method> <clanTag>',
+				usage: "<method> <clanTag>",
 				examples: [
-					'donationlog #8QU8J9LP',
-					'playerlog #8QU8J9LP',
-					'lastonline #8QU8J9LP',
-					'clanembed #8QU8J9LP',
-					'clangames #8QU8J9LP',
-					'all #8QU8J9LP'
+					"donationlog #8QU8J9LP",
+					"playerlog #8QU8J9LP",
+					"lastonline #8QU8J9LP",
+					"clanembed #8QU8J9LP",
+					"clangames #8QU8J9LP",
+					"all #8QU8J9LP"
 				]
 			},
 			args: [
 				{
-					id: 'method',
-					match: 'phrase',
+					id: "method",
+					match: "phrase",
 					type: [
-						['all'],
-						['DONATION_LOG', 'donationlog', 'dl'],
-						['PLAYER_LOG', 'playerlog', 'clanlog', 'pl'],
-						['LAST_ONLINE_LOG', 'lastonline', 'lastonlineboard', 'ob'],
-						['CLAN_EMBED_LOG', 'clanembed', 'ce'],
-						['CLAN_GAMES_LOG', 'clangames', 'clangame', 'clangamesboard', 'clangameboard', 'cgboard', 'cg']
+						["all"],
+						["DONATION_LOG", "donationlog", "dl"],
+						["PLAYER_LOG", "playerlog", "clanlog", "pl"],
+						["LAST_ONLINE_LOG", "lastonline", "lastonlineboard", "ob"],
+						["CLAN_EMBED_LOG", "clanembed", "ce"],
+						["CLAN_GAMES_LOG", "clangames", "clangame", "clangamesboard", "clangameboard", "cgboard", "cg"]
 					],
-					default: ''
+					default: ""
 				},
 				{
-					id: 'tag',
-					type: 'string',
-					default: ''
+					id: "tag",
+					type: "string",
+					default: ""
 				}
 			]
 		});
@@ -66,22 +66,22 @@ class StopCommand extends Command {
 		if (!method) {
 			const prefix = this.handler.prefix(message);
 			const embed = this.client.util.embed()
-				.setAuthor('No Method Selected')
+				.setAuthor("No Method Selected")
 				.setDescription([
-					'Stop Logs and Boards in your guild.',
-					'',
-					'**Usage**',
+					"Stop Logs and Boards in your guild.",
+					"",
+					"**Usage**",
 					`\`${prefix}stop <method> <clanTag>\``,
-					'',
-					'**Available Methods**',
-					'• donationlog `<clanTag>`',
-					'• playerlog `<clanTag>`',
-					'• lastonline `<clanTag>`',
-					'• clangames `<clanTag>`',
-					'• clanmebed `<clanTag>`',
-					'• all `<clanTag>` - remove all logs and boards for a clan.',
-					'',
-					'**Examples**',
+					"",
+					"**Available Methods**",
+					"• donationlog `<clanTag>`",
+					"• playerlog `<clanTag>`",
+					"• lastonline `<clanTag>`",
+					"• clangames `<clanTag>`",
+					"• clanmebed `<clanTag>`",
+					"• all `<clanTag>` - remove all logs and boards for a clan.",
+					"",
+					"**Examples**",
 					`\`${prefix}stop donationlog #8QU8J9LP\``,
 					`\`${prefix}stop playerlog #8QU8J9LP\``,
 					`\`${prefix}stop lastonline #8QU8J9LP\``,
@@ -92,18 +92,18 @@ class StopCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		if (method === 'all') {
-			return this.handler.handleDirectCommand(message, tag, this.handler.modules.get('remove'), false);
+		if (method === "all") {
+			return this.handler.handleDirectCommand(message, tag, this.handler.modules.get("remove"), false);
 		}
 
-		const db = mongodb.db('clashperk');
-		const data = await db.collection('clanstores')
+		const db = mongodb.db("clashperk");
+		const data = await db.collection("clanstores")
 			.findOne({ tag: tag.toUpperCase(), guild: message.guild.id });
 
 		if (!data) {
 			return message.util.send({
 				embed: {
-					description: 'ClanTag Not Found.'
+					description: "ClanTag Not Found."
 				}
 			});
 		}
@@ -123,18 +123,18 @@ class StopCommand extends Command {
 	}
 
 	async delete(id) {
-		const db = mongodb.db('clashperk');
+		const db = mongodb.db("clashperk");
 		const data = await Promise.all([
-			db.collection('donationlogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('playerlogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('lastonlinelogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('clanembedlogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('clangameslogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('clanwarlogs').findOne({ clan_id: ObjectId(id) })
+			db.collection("donationlogs").findOne({ clan_id: ObjectId(id) }),
+			db.collection("playerlogs").findOne({ clan_id: ObjectId(id) }),
+			db.collection("lastonlinelogs").findOne({ clan_id: ObjectId(id) }),
+			db.collection("clanembedlogs").findOne({ clan_id: ObjectId(id) }),
+			db.collection("clangameslogs").findOne({ clan_id: ObjectId(id) }),
+			db.collection("clanwarlogs").findOne({ clan_id: ObjectId(id) })
 		]).then(collection => collection.every(item => item == null));
 		if (data) {
 			this.client.cacheHandler.delete(id);
-			return db.collection('clanstores').deleteOne({ _id: ObjectId(id) });
+			return db.collection("clanstores").deleteOne({ _id: ObjectId(id) });
 		}
 	}
 }

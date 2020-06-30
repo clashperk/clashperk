@@ -1,21 +1,21 @@
-const { Command, Flag } = require('discord-akairo');
-const fetch = require('node-fetch');
-const Resolver = require('../../struct/Resolver');
-const { townHallEmoji, emoji } = require('../../util/emojis');
-const { stripIndent } = require('common-tags');
-const { Util } = require('discord.js');
-const TOKENS = process.env.$KEYS.split(',');
+const { Command, Flag } = require("discord-akairo");
+const fetch = require("node-fetch");
+const Resolver = require("../../struct/Resolver");
+const { townHallEmoji, emoji } = require("../../util/emojis");
+const { stripIndent } = require("common-tags");
+const { Util } = require("discord.js");
+const TOKENS = process.env.$KEYS.split(",");
 
 class WarWeightCommand extends Command {
 	constructor() {
-		super('warweight', {
-			aliases: ['warweight', 'ww'],
-			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+		super("warweight", {
+			aliases: ["warweight", "ww"],
+			category: "cwl",
+			clientPermissions: ["EMBED_LINKS", "USE_EXTERNAL_EMOJIS", "MANAGE_MESSAGES", "ADD_REACTIONS"],
 			description: {
-				content: 'List of clan members with townhall & heroes.',
-				usage: '<clanTag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				content: "List of clan members with townhall & heroes.",
+				usage: "<clanTag>",
+				examples: ["#2Q98URCGY", "2Q98URCGY"]
 			}
 		});
 	}
@@ -48,8 +48,8 @@ class WarWeightCommand extends Command {
 			const req = {
 				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
 				option: {
-					method: 'GET',
-					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % KEYS.length]}` }
+					method: "GET",
+					headers: { accept: "application/json", authorization: `Bearer ${KEYS[i % KEYS.length]}` }
 				}
 			};
 			return req;
@@ -62,7 +62,7 @@ class WarWeightCommand extends Command {
 				name: m.name,
 				tag: m.tag,
 				townHallLevel: m.townHallLevel,
-				heroes: m.heroes ? m.heroes.filter(a => a.village === 'home') : []
+				heroes: m.heroes ? m.heroes.filter(a => a.village === "home") : []
 			};
 			return member;
 		});
@@ -72,16 +72,16 @@ class WarWeightCommand extends Command {
 			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
-		const header = stripIndent(`**${emoji.townhall}\`\u200e BK AQ GW RC  ${'NAME'.padEnd(20, ' ')}\`**`);
+		const header = stripIndent(`**${emoji.townhall}\`\u200e BK AQ GW RC  ${"NAME".padEnd(20, " ")}\`**`);
 		const pages = [
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
-					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
+					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(" ");
 					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 12))}\``;
 				}),
 			this.paginate(memberList, 25, 50)
 				.items.map(member => {
-					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
+					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(" ");
 					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 12))}\``;
 				})
 		];
@@ -90,7 +90,7 @@ class WarWeightCommand extends Command {
 			return message.util.send({
 				embed: embed.setDescription([
 					header,
-					pages[0].join('\n')
+					pages[0].join("\n")
 				])
 			});
 		}
@@ -98,38 +98,38 @@ class WarWeightCommand extends Command {
 		const msg = await message.util.send({
 			embed: embed.setDescription([
 				header,
-				pages[0].join('\n')
-			]).setFooter('Page 1/2')
+				pages[0].join("\n")
+			]).setFooter("Page 1/2")
 		});
 
-		for (const emoji of ['⬅️', '➡️']) {
+		for (const emoji of ["⬅️", "➡️"]) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ["⬅️", "➡️"].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 45000, max: 10 }
 		);
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
+		collector.on("collect", async reaction => {
+			if (reaction.emoji.name === "➡️") {
 				await msg.edit({
 					embed: embed.setDescription([
 						header,
-						pages[1].join('\n')
-					]).setFooter('Page 2/2')
+						pages[1].join("\n")
+					]).setFooter("Page 2/2")
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
 				return message;
 			}
-			if (reaction.emoji.name === '⬅️') {
+			if (reaction.emoji.name === "⬅️") {
 				await msg.edit({
 					embed: embed.setDescription([
 						header,
-						pages[0].join('\n')
-					]).setFooter('Page 1/2')
+						pages[0].join("\n")
+					]).setFooter("Page 1/2")
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -137,7 +137,7 @@ class WarWeightCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on("end", async () => {
 			await msg.reactions.removeAll().catch(() => null);
 			return message;
 		});
@@ -146,19 +146,19 @@ class WarWeightCommand extends Command {
 
 	heroes(items) {
 		return Object.assign([
-			{ level: '  ' },
-			{ level: '  ' },
-			{ level: '  ' },
-			{ level: '  ' }
+			{ level: "  " },
+			{ level: "  " },
+			{ level: "  " },
+			{ level: "  " }
 		], items);
 	}
 
 	padStart(data) {
-		return data.toString().padStart(2, ' ');
+		return data.toString().padStart(2, " ");
 	}
 
 	padEnd(data) {
-		return Util.escapeInlineCode(data).padEnd(20, ' ');
+		return Util.escapeInlineCode(data).padEnd(20, " ");
 	}
 
 	paginate(items, start, end) {
