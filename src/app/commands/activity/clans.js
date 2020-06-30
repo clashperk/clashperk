@@ -13,7 +13,7 @@ class ClansCommand extends Command {
 			description: {
 				usage: '<page>',
 				examples: ['2'],
-				content: 'Shows all clans related to the server.'
+				content: 'Shows all clans related to the guild.'
 			},
 			args: [
 				{

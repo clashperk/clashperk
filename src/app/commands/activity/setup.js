@@ -8,9 +8,27 @@ class SetupCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: '',
+				content: [
+					'Setup logs and live boards.',
+					'',
+					'**Available Methods**',
+					'• donationlog `<clanTag> [channel/color]`',
+					'• onlineboard `<clanTag> [channel/color]`',
+					'• cgboard `<clanTag> [channel/color]`',
+					'• warfeed `<clanTag> [channel/color]`',
+					'• playerlog `<clanTag> [channel/color]`',
+					'',
+					'**Required: `<>` | Optional: `[]`**',
+					'For additional `<...args>` usage refer to the examples below.'
+				],
 				usage: '<method> <...args>',
-				examples: ['']
+				examples: [
+					'donationlog #8QU8J9LP',
+					'onlineboard #8QU8J9L',
+					'cgboard #8QU8J9L',
+					'warfeed #8QU8J9L',
+					'playerlog #8QU8J9L'
+				]
 			}
 		});
 	}
@@ -27,9 +45,10 @@ class SetupCommand extends Command {
 			otherwise: message => {
 				const prefix = this.handler.prefix(message);
 				const embed = this.client.util.embed()
-					.setColor(3093046)
+					.setColor(0x5970c1)
+					.setFooter('Page 1/1', this.client.user.displayAvatarURL())
 					.setAuthor('Setup Command List')
-					.setDescription();
+					.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
 				const commands = this.handler.categories.get('setup-hidden')
 					.values();
 				embed.addField('__**Setup**__', [

@@ -12,7 +12,7 @@ class StopCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Stop Logs and Boards in your guild.',
+					'Stop logs and boards in your guild.',
 					'',
 					'**Available Methods**',
 					'• donationlog `<clanTag>`',
@@ -20,7 +20,9 @@ class StopCommand extends Command {
 					'• lastonline `<clanTag>`',
 					'• clangames `<clanTag>`',
 					'• clanmebed `<clanTag>`',
-					'• all `<clanTag>` - remove all logs and boards for a clan.'
+					'• all `<clanTag>` - remove all logs and boards for a clan.',
+					'',
+					'For additional `<...args>` usage refer to the examples below.'
 				],
 				usage: '<method> <clanTag>',
 				examples: [

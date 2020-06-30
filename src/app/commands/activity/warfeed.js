@@ -14,7 +14,7 @@ class WarFeedLogCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Setup War Feed in a channel.',
+				content: 'Setup clan war & CWL feed in a channel.',
 				usage: '<clanTag> [channel]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-log']
 			}

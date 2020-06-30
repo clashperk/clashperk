@@ -54,11 +54,12 @@ class HelpCommand extends Command {
 		const fields = [];
 		for (const field of description.fields) fields.push(...[`**${field.name}**`, field.value, '']);
 
-		embed.setDescription([embed.description, '', ...fields]);
+		if (fields.length) embed.setDescription([embed.description, '', ...fields]);
 
 		if (command.aliases.length > 1) {
 			embed.setDescription([
 				embed.description,
+				'',
 				'**Aliases**',
 				`\`${command.aliases.join('`, `')}\``
 			]);
