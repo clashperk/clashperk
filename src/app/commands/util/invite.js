@@ -7,7 +7,7 @@ class InviteCommand extends Command {
 			category: 'util',
 			cooldown: 1000,
 			clientPermissions: ['EMBED_LINKS'],
-			description: { content: 'Displays the bot [invite](https://clashperk.xyz/invite) link.' }
+			description: { content: 'Shows bot invite & support server link.' }
 		});
 	}
 

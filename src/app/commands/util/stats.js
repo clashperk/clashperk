@@ -13,7 +13,7 @@ class StatsCommand extends Command {
 			cooldown: 1000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Displays statistics about the bot.'
+				content: 'Shows some statistics of the bot.'
 			}
 		});
 	}

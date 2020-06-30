@@ -9,7 +9,7 @@ class SetupCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Setup logs and live boards.',
+					'Setup different logs and live boards.',
 					'',
 					'**Available Methods**',
 					'• donationlog `<clanTag> [channel/color]`',

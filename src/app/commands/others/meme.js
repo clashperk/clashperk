@@ -9,7 +9,7 @@ class MemeCommand extends Command {
 			category: 'other',
 			cooldown: 3000,
 			description: {
-				content: 'Receives random Memes.'
+				content: 'Shows some random reddit memes.'
 			}
 		});
 	}

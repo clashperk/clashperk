@@ -10,7 +10,7 @@ class UnflagCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: 'Unflags a player from your server / clans.',
+				content: 'Unflags a player from your server or clans.',
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			}

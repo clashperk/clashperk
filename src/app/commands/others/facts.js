@@ -8,7 +8,7 @@ class FactsCommand extends Command {
 			category: 'other',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Displays random Clash of Clans facts.'
+				content: 'Shows random clash of clans facts.'
 			}
 		});
 	}

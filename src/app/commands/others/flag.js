@@ -10,7 +10,7 @@ class FlagCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: 'Flags a player in your server / clans.',
+				content: 'Flags a player in your server or clans.',
 				usage: '<playerTag> <reason>',
 				examples: ['#9Q92C8R20 Hopper']
 			}

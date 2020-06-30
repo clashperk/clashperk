@@ -9,7 +9,7 @@ class LinkCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
 			description: {
 				content: [
-					'Links a clan or player to your Discord.',
+					'Links a clan or player to your account.',
 					'',
 					'**Available Methods**',
 					'• clan `<clanTag>`',

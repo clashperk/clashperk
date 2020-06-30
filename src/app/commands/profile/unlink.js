@@ -10,7 +10,7 @@ class UnlinkCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
 			description: {
-				content: 'Unlinks profile from your Discord.',
+				content: 'Unlinks profile from your account.',
 				usage: '<tag>',
 				examples: ['#9Q92C8R20']
 			}
