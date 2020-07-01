@@ -47,7 +47,7 @@ class ProfileCommand extends Command {
 			if (clan) {
 				collection.push({
 					field: `[${clan.name} (${clan.name})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)})`,
-					values: `Level ${clan.clanLevel}, ${clan.requiredTrophies} Trophies Required`
+					values: [`Level ${clan.clanLevel}, ${clan.requiredTrophies} Trophies Required`]
 				});
 			}
 		}
@@ -55,7 +55,7 @@ class ProfileCommand extends Command {
 		if (!data.tags.length) {
 			collection.push({
 				field: 'No Player accounts are Linked.',
-				values: 'Why not add some?'
+				values: ['Why not add some?']
 			});
 		}
 
