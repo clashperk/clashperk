@@ -104,8 +104,22 @@ class LastOnlineBoardCommand extends Command {
 		});
 
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)
-			.setDescription(`Started last-online board in ${channel} (${channel.id})`)
+			.setTitle(`${data.name}`)
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setThumbnail(data.badgeUrls.small)
+			.setDescription([
+				'**Wait Time**',
+				'120 sec',
+				'',
+				'**Color**',
+				`\`#${color.toString(16)}\``,
+				'',
+				'**Channel**',
+				`${channel}`,
+				'',
+				'**Last Online Board**',
+				`[Enabled](${msg.url})`
+			])
 			.setColor(color);
 		if (message.channel.id !== channel.id) return message.util.send({ embed });
 		return message;

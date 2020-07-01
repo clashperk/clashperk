@@ -104,13 +104,21 @@ class ClanGamesBoardCommand extends Command {
 		});
 
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)
+			.setTitle(`${data.name}`)
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
+				'**Wait Time**',
+				`${this.client.patron.get(message.guild.id, 'guild', false) ? 15 : 30} min`,
+				'',
+				'**Color**',
+				`\`#${color.toString(16)}\``,
+				'',
 				'**Channel**',
 				`${channel}`,
 				'',
 				'**Clan Games Board**',
-				`[Enabled](${msg.url})`
+				`[Enabled](${message.url})`
 			])
 			.setColor(color);
 		if (message.channel.id !== channel.id) return message.util.send({ embed });

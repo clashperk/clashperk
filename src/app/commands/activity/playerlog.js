@@ -96,8 +96,22 @@ class PlayerLogCommand extends Command {
 		});
 
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)
-			.setDescription(`Started tracking in ${channel} (${channel.id})`)
+			.setTitle(`${data.name}`)
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setThumbnail(data.badgeUrls.small)
+			.setDescription([
+				'**Wait Time**',
+				'120 sec',
+				'',
+				'**Color**',
+				`\`#${color.toString(16)}\``,
+				'',
+				'**Channel**',
+				`${channel}`,
+				'',
+				'**Player Log**',
+				`[Enabled](${message.url})`
+			])
 			.setColor(color);
 		return message.util.send({ embed });
 	}
