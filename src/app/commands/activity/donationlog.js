@@ -97,7 +97,9 @@ class DonationLogCommand extends Command {
 		});
 
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)
+			.setURL(`${data.name}`)
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setThumbnail(data.badgeUrls.medium)
 			.setDescription([
 				'**Channel**',
 				`${channel}`,
