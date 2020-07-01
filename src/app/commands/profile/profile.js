@@ -35,10 +35,9 @@ class ProfileCommand extends Command {
 		const data = await this.getProfile(member.id);
 		const clanData = await this.getClan(member.id);
 
-		const patron = this.client.patron.get(member.id, 'user', false);
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
-			.setAuthor(`${member.user.tag} ${patron ? emoji.authorize : ''}`, member.user.displayAvatarURL());
+			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL());
 
 		let index = 0;
 		const collection = [];
