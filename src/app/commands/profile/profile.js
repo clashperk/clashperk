@@ -33,25 +33,32 @@ class ProfileCommand extends Command {
 
 	async exec(message, { member }) {
 		const data = await this.getProfile(member.id);
-		if (!data) {
-			return message.util.send({
-				embed: {
-					color: 3093046,
-					description: `Couldn\'t find a player linked to **${member.user.tag}**!`
-				}
-			});
-		}
+		const clanData = await this.getClan(member.id);
 
+		const patron = this.client.patron.get(message.guild, 'user', false);
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
-			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL());
-
-		if (!data.tags.length) {
-			embed.setTitle('No Accounts are Linked');
-		}
+			.setAuthor(`${member.user.tag} ${patron ? emoji.authorize : ''}`, member.user.displayAvatarURL());
 
 		let index = 0;
 		const collection = [];
+		if (clanData) {
+			const clan = await this.client.coc.clan(clanData.tag).catch(() => null);
+			if (clan) {
+				collection.push({
+					field: `[${clan.name} (${clan.name})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)})`,
+					values: `Level ${clan.clanLevel}, ${clan.data.requiredTrophies} Trophies Required`
+				});
+			}
+		}
+
+		if (!data.tags.length) {
+			collection.push({
+				field: 'No Player accounts are Linked.',
+				values: 'Why not add some?'
+			});
+		}
+
 		for (const tag of data.tags) {
 			index += 1;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
@@ -72,8 +79,10 @@ class ProfileCommand extends Command {
 		let page = 1;
 		const paginated = this.paginate(collection, page);
 
-		embed.setDescription(paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n\n'))
-			.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
+		embed.setDescription([
+			paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n\n')
+		]);
+		embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
 		if (collection.length <= 5) {
 			return message.util.send({ embed });
 		}
