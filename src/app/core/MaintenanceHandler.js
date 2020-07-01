@@ -31,12 +31,13 @@ class MaintenanceHandler {
 	}
 
 	async send() {
-		if (this.isMaintenance) {
-			return this.client.channels.cache.get('609074828707758150').send(`**${emoji.clash} Maintenance Break Started!**`);
+		const channel = this.client.channels.cache.get('609074828707758150');
+		if (this.isMaintenance && channel) {
+			return channel.send(`**${emoji.clash} Maintenance Break Started!**`);
 		}
 
-		if (!this.isMaintenance) {
-			return this.client.channels.cache.get('609074828707758150').send(`**${emoji.clash} Maintenance Break is Over!**`);
+		if (!this.isMaintenance && channel) {
+			return channel.send(`**${emoji.clash} Maintenance Break is Over!**`);
 		}
 	}
 }

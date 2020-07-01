@@ -13,7 +13,7 @@ class GuildDeleteListener extends Listener {
 
 	async fetchWebhook() {
 		if (this.webhook) return this.webhook;
-		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'webhook', undefined)).catch(() => null);
+		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'defaultWebhook', undefined)).catch(() => null);
 		this.webhook = webhook;
 		return webhook;
 	}

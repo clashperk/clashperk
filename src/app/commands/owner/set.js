@@ -39,18 +39,18 @@ class SetCommand extends Command {
 	async exec(message, { method, user }) {
 		if (method === 'patron') return;
 		if (method === 'beta') {
-			const beta = this.client.settings.get('global', 'beta', []);
-			if (beta.includes(user.id)) {
-				const index = beta.indexOf(user.id);
-				beta.splice(index, 1);
-				if (beta.length === 0) this.client.settings.delete('global', 'beta');
-				else this.client.settings.set('global', 'beta', beta);
+			const users = this.client.settings.get('global', 'betaUsers', []);
+			if (users.includes(user.id)) {
+				const index = users.indexOf(user.id);
+				users.splice(index, 1);
+				if (users.length === 0) this.client.settings.delete('global', 'betaUsers');
+				else this.client.settings.set('global', 'betaUsers', users);
 
 				return message.util.send(`${user.tag} has been removed from beta.`);
 			}
 
-			beta.push(user.id);
-			this.client.settings.set('global', 'beta', beta);
+			users.push(user.id);
+			this.client.settings.set('global', 'betaUsers', users);
 
 			return message.util.send(`${user.tag} has been add to beta.`);
 		}

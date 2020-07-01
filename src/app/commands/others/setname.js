@@ -5,7 +5,7 @@ class SetNickNameCommand extends Command {
 	constructor() {
 		super('setnick', {
 			aliases: ['setnick'],
-			category: 'premium',
+			category: 'patron',
 			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			userPermissions: ['MANAGE_GUILD'],

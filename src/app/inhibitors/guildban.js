@@ -10,7 +10,7 @@ class GuildBanInhibitor extends Inhibitor {
 	exec(message) {
 		if (this.client.isOwner(message.author.id)) return false;
 		if (!message.guild) return false;
-		const blacklist = this.client.settings.get('global', 'guildban', []);
+		const blacklist = this.client.settings.get('global', 'guildBans', []);
 		return blacklist.includes(message.guild.id);
 	}
 }
