@@ -47,7 +47,7 @@ class ProfileCommand extends Command {
 			if (clan) {
 				collection.push({
 					field: `[${clan.name} (${clan.name})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)})`,
-					values: `Level ${clan.clanLevel}, ${clan.data.requiredTrophies} Trophies Required`
+					values: `Level ${clan.clanLevel}, ${clan.requiredTrophies} Trophies Required`
 				});
 			}
 		}
