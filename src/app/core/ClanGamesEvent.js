@@ -172,9 +172,9 @@ class ClanGames {
 			console.log(error);
 			console.log(clan);
 		}
-		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
-			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+		const embed = new MessageEmbed();
+		embed.color = 0x5970c1;
+		embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Clan Games Scoreboard [${clan.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`,
 				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,

@@ -136,9 +136,9 @@ class LastOnlineEvent {
 			.collection('lastonlines')
 			.findOne({ tag: clan.tag });
 
-		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
-			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+		const embed = new MessageEmbed();
+		embed.color = 0x5970c1;
+		embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Last Online Board [${clan.members}/50]`,
 				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}`,

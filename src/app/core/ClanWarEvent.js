@@ -92,17 +92,17 @@ class ClanWarEvent {
 			.setThumbnail(clan.badgeUrls.small);
 		if (data.state === 'preparation') {
 			content = `**War has been declared against ${data.opponent.name}**`;
-			embed.setColor(0xfdaf18)
-				.setDescription([
-					'**War Against**',
-					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
-					'',
-					'**War State**',
-					'Preparation Day',
-					'',
-					'**War Size**',
-					`${data.teamSize} vs ${data.teamSize}`
-				]);
+			embed.color = 0xfdaf18;
+			embed.setDescription([
+				'**War Against**',
+				`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
+				'',
+				'**War State**',
+				'Preparation Day',
+				'',
+				'**War Size**',
+				`${data.teamSize} vs ${data.teamSize}`
+			]);
 			embed.setFooter(`Starts in ${moment.duration(new Date(moment(data.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`);
 		}
 
@@ -118,39 +118,39 @@ class ClanWarEvent {
 					''
 				]
 				: [];
-			embed.setColor(0xFF0000)
-				.setDescription([
-					'**War Against**',
-					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
-					'',
-					'**War State**',
-					'Battle Day',
-					'',
-					'**War Size**',
-					`${data.teamSize} vs ${data.teamSize}`,
-					...stats
-				]);
+			embed.color = 0xFF0000;
+			embed.setDescription([
+				'**War Against**',
+				`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
+				'',
+				'**War State**',
+				'Battle Day',
+				'',
+				'**War Size**',
+				`${data.teamSize} vs ${data.teamSize}`,
+				...stats
+			]);
 			embed.setFooter(`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`);
 		}
 
 		if (data.state === 'warEnded') {
 			content = this.result(data.clan, data.opponent) ? '**Congrats, you won the war...**' : '**Sorry, you lost the war...**';
-			embed.setColor(0x10ffc1)
-				.setDescription([
-					'**War Against**',
-					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
-					'',
-					'**War State**',
-					'War Ended',
-					'',
-					'**War Size**',
-					`${data.teamSize} vs ${data.teamSize}`,
-					'',
-					'**War Stats**',
-					`${emoji.star} ${data.clan.stars} / ${data.opponent.stars}`,
-					`${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% / ${data.opponent.destructionPercentage.toFixed(2)}%`,
-					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
-				]);
+			embed.color = 0x10ffc1;
+			embed.setDescription([
+				'**War Against**',
+				`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
+				'',
+				'**War State**',
+				'War Ended',
+				'',
+				'**War Size**',
+				`${data.teamSize} vs ${data.teamSize}`,
+				'',
+				'**War Stats**',
+				`${emoji.star} ${data.clan.stars} / ${data.opponent.stars}`,
+				`${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% / ${data.opponent.destructionPercentage.toFixed(2)}%`,
+				`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
+			]);
 			embed.setFooter(`Ended ${moment.duration(Date.now() - new Date(moment(data.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })} ago`);
 		}
 
