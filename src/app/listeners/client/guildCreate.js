@@ -33,9 +33,9 @@ class GuildCreateListener extends Listener {
 				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL())
 				.setTitle(`${emoji.owner_} ${user.tag} (${user.id})`)
 				.setFooter(`${guild.memberCount} members`, user.displayAvatarURL())
-				.setColor(0x38d863)
 				.setTimestamp();
 
+			embed.color = 0x38d863;
 			return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user.displayAvatarURL() });
 		}
 	}
