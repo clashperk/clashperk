@@ -32,7 +32,7 @@ class ProfileCommand extends Command {
 	}
 
 	async exec(message, { member }) {
-		const data = await this.getProfile(member.id);
+		let data = await this.getProfile(member.id);
 		const clanData = await this.getClan(member.id);
 
 		const embed = new MessageEmbed()
@@ -51,10 +51,11 @@ class ProfileCommand extends Command {
 			}
 		}
 
-		if (!data.tags.length) {
+		if (!data || (data && !data.tags.length)) {
+			data = { tags: [] };
 			collection.push({
-				field: 'No Player accounts are Linked.',
-				values: ['Why not add some?']
+				field: 'No accounts are linked. Why not add some?',
+				values: ['']
 			});
 		}
 
