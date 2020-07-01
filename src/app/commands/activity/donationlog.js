@@ -98,7 +98,13 @@ class DonationLogCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)
-			.setDescription(`Started tracking in ${channel} (${channel.id})`)
+			.setDescription([
+				'**Channel**',
+				`${channel}`,
+				'',
+				'**Donation Log**',
+				`[Enabled](${message.url})`
+			])
 			.setColor(color);
 		return message.util.send({ embed });
 	}

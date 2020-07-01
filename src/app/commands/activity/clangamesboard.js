@@ -105,7 +105,13 @@ class ClanGamesBoardCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} ${data.tag}`, data.badgeUrls.small)
-			.setDescription(`Started clan games board in ${channel} (${channel.id})`)
+			.setDescription([
+				'**Channel**',
+				`${channel}`,
+				'',
+				'**Clan Games Board**',
+				`[Enabled](${msg.url})`
+			])
 			.setColor(color);
 		if (message.channel.id !== channel.id) return message.util.send({ embed });
 		return message;
