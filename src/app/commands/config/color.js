@@ -10,7 +10,13 @@ class ColorCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			quoted: false,
 			description: {
-				content: 'Sets display color of the guild.',
+				content: [
+					'Sets display color of the guild.',
+					'',
+					'**Patron only Feature**',
+					'',
+					'[Become a Patron](https://www.patreon.com/clashperk)'
+				],
 				usage: '<color>',
 				examples: ['#0080ff']
 			},
@@ -25,7 +31,9 @@ class ColorCommand extends Command {
 	}
 
 	async exec(message, { hexColor }) {
-		if (!this.client.patron.isPatron(message.author, message.guild)) return;
+		if (!this.client.patron.isPatron(message.author, message.guild)) {
+			return this.handler.handleDirectCommand(message, 'color', this.handler.modules.get('color'), false);
+		}
 		this.client.settings.set(message.guild, 'displayColor', hexColor);
 		return message.util.send({
 			embed: {
