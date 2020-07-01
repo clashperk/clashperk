@@ -1,5 +1,4 @@
 const { Listener } = require('discord-akairo');
-const { MessageEmbed } = require('discord.js');
 
 class MessageListener extends Listener {
 	constructor() {
