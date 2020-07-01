@@ -136,7 +136,9 @@ class Reslover {
 
 	static verifyEmbed(data, code) {
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name}`, data.badgeUrls.small)
+			.setTitle(`${data.name} (${data.tag})`)
+			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
 				'**Clan Description**',
 				`${data.description}`,
