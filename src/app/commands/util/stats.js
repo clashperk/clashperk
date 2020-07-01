@@ -38,7 +38,7 @@ class StatsCommand extends Command {
 
 		const owner = await this.client.users.fetch(this.client.ownerID, false);
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setTitle('Stats')
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)

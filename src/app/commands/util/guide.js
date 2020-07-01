@@ -15,7 +15,7 @@ class GuideCommand extends Command {
 	async exec(message) {
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor('Guide', this.client.user.displayAvatarURL(), 'https://clashperk.xyz')
 			.setDescription([
 				'\u200e**Required Permissions**',

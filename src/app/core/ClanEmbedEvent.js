@@ -138,9 +138,9 @@ class ClanEmbed {
 
 	async embed(id, clan) {
 		const cache = this.cached.get(id);
-		const embed = new MessageEmbed();
-		embed.color = cache.color;
-		embed.setTimestamp()
+		const embed = new MessageEmbed()
+			.setTimestamp()
+			.setColor(cache.color)
 			.setTitle(`${clan.name} (${clan.tag})`)
 			.setThumbnail(clan.badgeUrls.medium)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`);

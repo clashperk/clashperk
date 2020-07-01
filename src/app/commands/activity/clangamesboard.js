@@ -120,7 +120,7 @@ class ClanGamesBoardCommand extends Command {
 				'**Clan Games Board**',
 				`[Enabled](${message.url})`
 			])
-			.setColor(color);
+			.setColor(this.client.embed(message, color));
 		if (message.channel.id !== channel.id) return message.util.send({ embed });
 		return message;
 	}

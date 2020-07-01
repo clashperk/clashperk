@@ -23,7 +23,7 @@ class CooldownListener extends Listener {
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
 			const embed = this.client.util.embed()
 				.setAuthor('Slow it down!')
-				.setColor(0x5970c1);
+				.setColor(this.client.embed(message));
 			if (this.client.patron.isPatron(message.author, message.guild)) {
 				embed.setDescription([
 					'The default cooldown is **3 seconds**, but as a donator you only need to wait **1 second**.'

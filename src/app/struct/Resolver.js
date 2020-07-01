@@ -15,8 +15,8 @@ class Reslover {
 					.findOne({ user: member.id });
 
 				if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);
-				const embed = new MessageEmbed();
-				embed.color = 0xf30c11;
+				const embed = new MessageEmbed()
+					.setColor(0xf30c11);
 				if (message.author.id !== member.id) {
 					embed.setDescription([
 						`Couldn't find a player linked to **${member.user.tag}!**`
@@ -39,8 +39,8 @@ class Reslover {
 				.findOne({ user: member.id });
 
 			if (data) return this.clan(data.tag);
-			const embed = new MessageEmbed();
-			embed.color = 0xf30c11;
+			const embed = new MessageEmbed()
+				.setColor(0xf30c11);
 			if (message.author.id !== member.id) {
 				embed.setDescription([
 					`Couldn't find a clan linked to **${member.user.tag}!**`
@@ -73,8 +73,8 @@ class Reslover {
 		}).catch(() => null);
 
 		const embed = new MessageEmbed()
+			.setColor(0xf30c11)
 			.setAuthor('Error');
-		embed.color = 0xf30c11;
 
 		if (!res) return { status: 504, embed: embed.setDescription(status(504)) };
 		if (!res.ok) return { status: res.status || 504, embed: embed.setDescription(status(res.status || 504)) };
@@ -88,8 +88,8 @@ class Reslover {
 		}).catch(() => null);
 
 		const embed = new MessageEmbed()
+			.setColor(0xf30c11)
 			.setAuthor('Error');
-		embed.color = 0xf30c11;
 
 		if (!res) return { status: 504, embed: embed.setDescription(status(504)) };
 		if (!res.ok) return { status: res.status || 504, embed: embed.setDescription(status(res.status || 504)) };

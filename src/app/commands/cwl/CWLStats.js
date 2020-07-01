@@ -60,7 +60,7 @@ class CWLStatsComamnd extends Command {
 		const body = await res.json();
 
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1);
+			.setColor(this.client.embed(message));
 
 		if (!(body.state || res.ok)) {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
@@ -159,7 +159,7 @@ class CWLStatsComamnd extends Command {
 		const rank = ranking.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
 		const leaderboard = members.sort((a, b) => b.stars - a.stars);
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`${clanName} CWL`, clanBadge)
 			.setDescription(description)
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);

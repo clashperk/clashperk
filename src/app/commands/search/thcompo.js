@@ -55,7 +55,7 @@ class ThCompoCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription(townHalls.map(th => `${townHallEmoji[th.level]} ${th.level < 9 ? redNum[th.total] : blueNum[th.total]}`))
 			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/696655174025871461.png');

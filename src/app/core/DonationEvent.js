@@ -35,9 +35,9 @@ class ClanEvent {
 
 	async handleMessage(id, channel, data) {
 		const cache = this.cached.get(id);
-		const embed = new MessageEmbed();
-		embed.color = cache.color;
-		embed.setTitle(`${data.clan.name} (${data.clan.tag})`)
+		const embed = new MessageEmbed()
+			.setColor(cache.color)
+			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`)
 			.setThumbnail(data.clan.badge)
 			.setFooter(`${data.clan.members}/50`, this.client.user.displayAvatarURL())

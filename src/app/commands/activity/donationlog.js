@@ -113,7 +113,7 @@ class DonationLogCommand extends Command {
 				'**Donation Log**',
 				`[Enabled](${message.url})`
 			])
-			.setColor(color);
+			.setColor(this.client.embed(message, color));
 		return message.util.send({ embed });
 	}
 

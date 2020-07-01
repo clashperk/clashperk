@@ -42,7 +42,7 @@ class ClanSearchCommand extends Command {
 		if (!data.ok) return message.util.send(status(data.status));
 
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`Showing Top ${data.items.length} Results`)
 			.setTitle(`Searching clans with name ${name}`)
 			.setDescription([

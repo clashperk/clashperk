@@ -93,7 +93,7 @@ class ClanEmbedCommand extends Command {
 		}
 
 		const embed = this.client.util.embed()
-			.setColor(color)
+			.setColor(this.client.embed(message, color))
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)

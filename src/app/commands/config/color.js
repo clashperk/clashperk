@@ -34,7 +34,7 @@ class ColorCommand extends Command {
 		if (!this.client.patron.isPatron(message.author, message.guild)) {
 			return this.handler.handleDirectCommand(message, 'color', this.handler.modules.get('color'), false);
 		}
-		this.client.settings.set(message.guild, 'displayColor', hexColor);
+		this.client.settings.set(message.guild, 'color', hexColor);
 		return message.util.send({
 			embed: {
 				description: 'Display color updated.',

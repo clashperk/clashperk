@@ -60,7 +60,7 @@ class CWLRankingComamnd extends Command {
 		const body = await res.json();
 
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1);
+			.setColor(this.client.embed(message));
 
 		if (!(body.state || res.ok)) {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
@@ -105,7 +105,7 @@ class CWLRankingComamnd extends Command {
 
 		const rank = ranking.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`${clanName} CWL Ranking`, clanBadge)
 			.setDescription([
 				`\`\`\`#  STAR DEST${''.padEnd(padding - 2, ' ')}${'NAME'.padEnd(15, ' ')}`,

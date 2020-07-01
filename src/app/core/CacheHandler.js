@@ -16,8 +16,6 @@ class CacheHandler {
 		this.memberList = {};
 		this.interval = interval;
 		this.cached = new Map();
-
-
 		this.clanEmbed = new ClanEmbed(client);
 		this.clanEvent = new DonationEvent(client);
 		this.lastOnline = new LastOnlineEvent(client);

@@ -55,7 +55,7 @@ class RemainingAttacksCommand extends Command {
 			return this.client.commandHandler.runCommand(message, command, { data });
 		}
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`);
 
 		if (data.isWarLogPublic === false) {

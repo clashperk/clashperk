@@ -18,7 +18,7 @@ class ConfigCommand extends Command {
 	exec(message) {
 		const color = this.client.settings.get(message.guild, 'displayColor', null);
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`Settings of ${message.guild.name}`)
 			.addField('Prefix', this.handler.prefix(message))
 			.addField('Patron', this.client.patron.get(message.guild.id, 'guild', false) ? `Active ${emoji.authorize}` : 'None')

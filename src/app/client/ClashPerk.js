@@ -42,21 +42,16 @@ class ClashPerk extends AkairoClient {
 			argumentDefaults: {
 				prompt: {
 					modifyStart: (msg, txt) => new MessageEmbed()
-						.setColor(3093046)
 						.setAuthor(txt)
 						.setFooter('Type `cancel` to cancel the command.'),
 					modifyRetry: (msg, txt) => new MessageEmbed()
-						.setColor(3093046)
 						.setAuthor(txt)
 						.setFooter('Type `cancel` to cancel the command.'),
 					timeout: new MessageEmbed()
-						.setColor(3093046)
 						.setAuthor('Time ran out, command has been cancelled!'),
 					ended: new MessageEmbed()
-						.setColor(3093046)
 						.setAuthor('Too many retries, command has been cancelled!'),
 					cancel: new MessageEmbed()
-						.setColor(3093046)
 						.setAuthor('Command has been cancelled!'),
 					retries: 1,
 					time: 30000
@@ -100,6 +95,7 @@ class ClashPerk extends AkairoClient {
 		this.firebase = new Firebase(this);
 		this.firebase = new Firebase(this);
 		this.coc = new Client({ token: process.env.DEVELOPER_TOKEN });
+		this.embed = message => this.settings.get(message.guild, 'color', 0x5970c1);
 
 		this.patron = new Patrons(this);
 		await this.settings.init();

@@ -50,8 +50,7 @@ class RemoveClanCommand extends Command {
 
 		return message.util.send({
 			embed: {
-				title: `Successfully deleted **${clan.name} (${clan.tag})**`,
-				color: 5861569
+				title: `Successfully deleted **${clan.name} (${clan.tag})**`
 			}
 		});
 	}

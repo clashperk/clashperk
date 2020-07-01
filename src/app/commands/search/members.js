@@ -80,7 +80,7 @@ class MembersCommand extends Command {
 		const filter = items.filter(arr => arr.townHallLevel === townhall);
 
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
 		const header = stripIndent(`${emoji.trophy} **\`\u200eTH ${'TAG'.padEnd(10, ' ')} ${'NAME'.padEnd(12, '\u2002')}\`**`);

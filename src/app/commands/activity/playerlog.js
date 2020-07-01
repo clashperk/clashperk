@@ -112,7 +112,7 @@ class PlayerLogCommand extends Command {
 				'**Player Log**',
 				`[Enabled](${message.url})`
 			])
-			.setColor(color);
+			.setColor(this.client.embed(message, color));
 		return message.util.send({ embed });
 	}
 

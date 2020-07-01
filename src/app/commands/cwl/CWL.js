@@ -57,7 +57,7 @@ class CWLComamnd extends Command {
 			otherwise: message => {
 				const prefix = this.handler.prefix(message);
 				const embed = new MessageEmbed()
-					.setColor(0x5970c1)
+					.setColor(this.client.embed(message))
 					.setAuthor('Command List', this.client.user.displayAvatarURL())
 					.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
 				const commands = this.handler.categories.get('cwl-hidden')

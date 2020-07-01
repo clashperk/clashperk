@@ -40,6 +40,7 @@ class UpgradesCommand extends Command {
 
 	async exec(message, { data }) {
 		const embed = await this.embed(data, true);
+		embed.setColor(this.client.embed(message));
 		return message.util.send({ embed });
 	}
 

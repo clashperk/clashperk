@@ -18,7 +18,7 @@ class PatronCommand extends Command {
 	async exec(message) {
 		const patrons = await this.patrons();
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor('ClashPerk', this.client.user.displayAvatarURL(), 'https://www.patreon.com/clashperk')
 			.setDescription([
 				oneLine`Help us with our hosting related expenses. Any help is beyond appreciated.`,

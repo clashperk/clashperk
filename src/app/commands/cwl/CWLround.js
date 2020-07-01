@@ -75,7 +75,7 @@ class CWLRoundComamnd extends Command {
 		const body = await res.json();
 
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1);
+			.setColor(this.client.embed(message));
 
 		if (!(body.state || res.ok)) {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
@@ -91,7 +91,7 @@ class CWLRoundComamnd extends Command {
 		const rounds_ = body.rounds.filter(r => !r.warTags.includes('#0')).length;
 		if (round && round > rounds_) {
 			const embed = new MessageEmbed()
-				.setColor(0x5970c1)
+				.setColor(this.client.embed(message))
 				.setAuthor(`${clan_.name} (${clan_.tag})`, clan_.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan_.tag}`)
 				.setDescription([
 					'This round is not available yet!',
@@ -123,7 +123,7 @@ class CWLRoundComamnd extends Command {
 					const clan = data.clan.tag === clan_.tag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
 					const embed = new MessageEmbed()
-						.setColor(0x5970c1);
+						.setColor(this.client.embed(message));
 					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 						.addField('War Against', `${opponent.name} (${opponent.tag})`)
 						.addField('Team Size', `${data.teamSize}`);

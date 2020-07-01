@@ -22,7 +22,7 @@ class FlagsCommand extends Command {
 
 	async exec(message) {
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1);
+			.setColor(this.client.embed(message));
 		const data = await mongodb.db('clashperk')
 			.collection('flaggedusers')
 			.find({ guild: message.guild.id })

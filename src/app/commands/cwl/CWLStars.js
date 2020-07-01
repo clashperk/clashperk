@@ -60,7 +60,7 @@ class CWLStarsComamnd extends Command {
 		const body = await res.json();
 
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1);
+			.setColor(this.client.embed(message));
 
 		if (!(body.state || res.ok)) {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)

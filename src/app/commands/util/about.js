@@ -16,7 +16,7 @@ class AboutCommand extends Command {
 	async exec(message) {
 		const owner = await this.client.users.fetch(this.client.ownerID, false);
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL(), 'https://clashperk.xyz')
 			.setDescription([
 				'Feature-Rich and Powerful Clash of Clans Discord bot with everything you will ever need.'

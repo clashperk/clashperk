@@ -50,7 +50,7 @@ class ClanCommand extends Command {
 		const embed = new MessageEmbed()
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setThumbnail(data.badgeUrls.medium);
 		if (data.description && data.description.length) {
 			embed.setDescription(data.description);

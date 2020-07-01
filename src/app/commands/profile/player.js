@@ -54,7 +54,6 @@ class LinkPlayerCommand extends Command {
 		if (doc && doc.user === member.id) {
 			return message.util.send({
 				embed: {
-					color: 3093046,
 					description: `**${member.user.tag}** is already linked to **${data.name} (${data.tag})**`
 				}
 			});
@@ -63,7 +62,6 @@ class LinkPlayerCommand extends Command {
 		if (doc && doc.user !== member.id) {
 			return message.util.send({
 				embed: {
-					color: 3093046,
 					description: `**${data.name} (${data.tag})** is already linked to another Discord.`
 				}
 			});
@@ -72,7 +70,6 @@ class LinkPlayerCommand extends Command {
 		if (doc && doc.tags.length >= 30) {
 			return message.util.send({
 				embed: {
-					color: 3093046,
 					description: 'You can only link 25 accounts to your Discord.'
 				}
 			});
@@ -91,7 +88,7 @@ class LinkPlayerCommand extends Command {
 
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setDescription([
 				`Linked **${member.user.tag}** to **${data.name}** (${data.tag})`,
 				'',

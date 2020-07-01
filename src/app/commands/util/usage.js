@@ -21,7 +21,7 @@ class UsageCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setAuthor(`${this.client.user.username} Usage`, this.client.user.displayAvatarURL())
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setFooter('Since August 2019')
 			.setTitle(`${total}x commands used`);
 		if (this.client.isOwner(message.author.id)) {

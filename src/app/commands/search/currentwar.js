@@ -42,7 +42,7 @@ class CurrentWarCommand extends Command {
 
 	async exec(message, { data }) {
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 		// .setThumbnail(data.badgeUrls.medium);
 

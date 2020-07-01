@@ -54,6 +54,7 @@ class RushedCommand extends Command {
 	async exec(message, { data, clan }) {
 		if (clan) return this.clan(message, data);
 		const embed = await this.embed(data, true);
+		embed.setColor(this.client.embed(message));
 		return message.util.send({ embed });
 	}
 

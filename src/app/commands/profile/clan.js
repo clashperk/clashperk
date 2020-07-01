@@ -62,7 +62,7 @@ class LinkClanCommand extends Command {
 
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setDescription([
 				`Linked **${member.user.tag}** to **${data.name}** (${data.tag})`,
 				'',

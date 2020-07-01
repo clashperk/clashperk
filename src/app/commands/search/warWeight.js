@@ -69,7 +69,7 @@ class WarWeightCommand extends Command {
 
 		const memberList = this.sort(members);
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
 
 		const header = stripIndent(`**${emoji.townhall}\`\u200e BK AQ GW RC  ${'NAME'.padEnd(20, ' ')}\`**`);

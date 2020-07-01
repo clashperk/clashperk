@@ -113,7 +113,7 @@ class WarFeedLogCommand extends Command {
 				'**War Feed Log**',
 				`[Enabled](${message.url})`
 			])
-			.setColor(color);
+			.setColor(this.client.embed(message, color));
 		return message.util.send({ embed });
 	}
 

@@ -102,7 +102,7 @@ class CWLMembersComamnd extends Command {
 
 		let members = '';
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag}) ~ ${memberList.length}`, data.badgeUrls.medium);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {

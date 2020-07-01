@@ -49,14 +49,12 @@ class UnlinkCommand extends Command {
 		if (!deleted) {
 			return message.util.send({
 				embed: {
-					color: 3093046,
 					description: `Couldn\'t find a player linked to **${message.author.tag}**!`
 				}
 			});
 		}
 
 		const embed = this.client.util.embed()
-			.setColor(0x10ffc1)
 			.setAuthor(`Successfully deleted ${data.tag}`);
 		return message.util.send({ embed });
 	}

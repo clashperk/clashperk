@@ -116,8 +116,7 @@ class StopCommand extends Command {
 
 		return message.util.send({
 			embed: {
-				title: `Successfully disabled **${data.name} (${data.tag})**`,
-				color: 5861569
+				title: `Successfully disabled **${data.name} (${data.tag})**`
 			}
 		});
 	}

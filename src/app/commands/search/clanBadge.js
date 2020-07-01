@@ -39,7 +39,7 @@ class ClanBadgeCommand extends Command {
 	async exec(message, { data }) {
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setImage(data.badgeUrls.large);
 
 		return message.util.send({ embed });

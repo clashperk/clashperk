@@ -82,7 +82,7 @@ class ClansCommand extends Command {
 
 		if (data) {
 			const embed = new MessageEmbed()
-				.setColor(0x5970c1)
+				.setColor(this.client.embed(message))
 				.setAuthor(`${guild.name}`, guild.iconURL());
 			if (!data.length) {
 				embed.setDescription(`${message.guild.name} doesn't have any clans. Why not add some?`);

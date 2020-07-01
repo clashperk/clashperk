@@ -87,7 +87,7 @@ class ClanGamesCommand extends Command {
 		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), '22T08:00:00Z'].join('-');
 		const createdAt = new Date(ObjectId(clan._id).getTimestamp());
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				`Clan Games Scoreboard [${data.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`,

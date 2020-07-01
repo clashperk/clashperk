@@ -42,7 +42,7 @@ class PlayerCommand extends Command {
 
 	async exec(message, { data }) {
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.league ? data.league.iconUrls.small : null);

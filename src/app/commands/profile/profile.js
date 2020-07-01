@@ -36,7 +36,7 @@ class ProfileCommand extends Command {
 		const clanData = await this.getClan(member.id);
 
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
+			.setColor(this.client.embed(message))
 			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL());
 
 		let index = 0;
