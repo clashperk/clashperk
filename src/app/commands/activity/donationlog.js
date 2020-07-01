@@ -105,7 +105,7 @@ class DonationLogCommand extends Command {
 				'120 sec',
 				'',
 				'**Color**',
-				`#${color.toString(16)}`,
+				`\`#${color.toString(16)}\``,
 				'',
 				'**Channel**',
 				`${channel}`,
