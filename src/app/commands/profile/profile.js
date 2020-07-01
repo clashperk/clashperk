@@ -45,7 +45,7 @@ class ProfileCommand extends Command {
 			const clan = await this.client.coc.clan(clanData.tag).catch(() => null);
 			if (clan) {
 				collection.push({
-					field: `${emoji.clan} [${clan.name} (${clan.tag})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)})`,
+					field: `${emoji.clan} [${clan.name} (${clan.tag})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
 					values: [`${emoji.empty} Level ${clan.clanLevel} ${emoji.users_small} ${clan.members} Members`]
 				});
 			}
