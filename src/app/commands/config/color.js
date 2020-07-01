@@ -5,7 +5,7 @@ class ColorCommand extends Command {
 		super('color', {
 			aliases: ['color'],
 			category: 'config',
-			cooldown: 1000,
+			cooldown: 3000,
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			quoted: false,

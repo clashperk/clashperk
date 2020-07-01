@@ -38,8 +38,8 @@ class CWLLineupComamnd extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.isPatron(message.author, message.guild)) return 2000;
-		return 10000;
+		if (this.client.patron.isPatron(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	*args() {

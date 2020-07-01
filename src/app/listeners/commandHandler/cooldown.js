@@ -8,23 +8,6 @@ class CooldownListener extends Listener {
 			emitter: 'commandHandler',
 			category: 'commandHandler'
 		});
-
-		this.commands = [
-			'donationlog',
-			'playerlog',
-			'lastonlineboard',
-			'clangamesboard',
-			'th-compo',
-			'members-th',
-			'warweight',
-			'cwl-top',
-			'cwl-members',
-			'cwl-remaining',
-			'cwl-round',
-			'cwl-stats',
-			'cwl-lineup',
-			'cwl-attacks'
-		];
 	}
 
 	exec(message, command, remaining) {
@@ -32,7 +15,11 @@ class CooldownListener extends Listener {
 		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		this.client.logger.debug(`${command.id} ~ ${time}`, { label });
 
-		const cooldown = typeof command.cooldown === 'function' ? command.cooldown(message) : command.cooldown ? command.cooldown : this.client.commandHandler.defaultCooldown;
+		const cooldown = typeof command.cooldown === 'function'
+			? command.cooldown(message)
+			: command.cooldown
+				? command.cooldown
+				: this.client.commandHandler.defaultCooldown;
 
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
 			const embed = this.client.util.embed()
@@ -40,15 +27,23 @@ class CooldownListener extends Listener {
 				.setColor(0x5970c1);
 			if (this.client.patron.isPatron(message.author, message.guild)) {
 				embed.setDescription([
-					`The default cooldown is ${this.donator(command)} sec, but as a donator you only need to wait ${ms(cooldown, { long: true })} sec.`
+					'The default cooldown is 3 sec, but as a donator you only need to wait 1 second.'
 				]);
 			} else {
 				embed.setDescription([
 					`You'll be able to use this command again in **${time}**`,
-					`The default cooldown is ${ms(cooldown, { long: true })}, but [donators](https://www.patreon.com/join/clashperk) only need to wait ${this.default(command)} sec!`
+					`The default cooldown is ${ms(cooldown, { long: true })} sec but [donators](https://www.patreon.com/join/clashperk) only need to wait 1 second.`
 				]);
 			}
-			return message.channel.send({ embed });
+
+			if (message.channel.permissionsFor(this.client.user).has('EMBED_LINKS')) {
+				return message.channel.send({ embed });
+			}
+
+			return message.channel.send([
+				`**${embed.author.name}**`,
+				`${embed.description}`
+			]);
 		}
 	}
 

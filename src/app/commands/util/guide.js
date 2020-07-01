@@ -6,7 +6,7 @@ class GuideCommand extends Command {
 		super('guide', {
 			aliases: ['guide'],
 			category: 'util',
-			cooldown: 1000,
+			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows info about how to use bot.' }
 		});

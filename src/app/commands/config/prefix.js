@@ -5,7 +5,7 @@ class PrefixCommand extends Command {
 		super('prefix', {
 			aliases: ['prefix'],
 			category: 'config',
-			cooldown: 1000,
+			cooldown: 3000,
 			channel: 'guild',
 			quoted: false,
 			description: {

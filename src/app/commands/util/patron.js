@@ -8,7 +8,7 @@ class PatronCommand extends Command {
 			aliases: ['patron', 'donate', 'patreon'],
 			category: 'util',
 			clientPermissions: ['EMBED_LINKS'],
-			cooldown: 1000,
+			cooldown: 3000,
 			description: {
 				content: 'Get info about the our Patreon.'
 			}

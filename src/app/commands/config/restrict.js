@@ -5,7 +5,7 @@ class RestrictCommand extends Command {
 		super('restrict', {
 			aliases: ['restrict', 'unrestrict'],
 			category: 'config',
-			cooldown: 1000,
+			cooldown: 3000,
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			quoted: false,

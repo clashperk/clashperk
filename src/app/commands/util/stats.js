@@ -10,7 +10,7 @@ class StatsCommand extends Command {
 		super('stats', {
 			aliases: ['stats', 'bot-info'],
 			category: 'util',
-			cooldown: 1000,
+			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Shows some statistics of the bot.'

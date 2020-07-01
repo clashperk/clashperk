@@ -6,7 +6,7 @@ class UsageCommand extends Command {
 		super('usage', {
 			aliases: ['usage'],
 			category: 'beta',
-			cooldown: 1000,
+			cooldown: 3000,
 			description: {
 				content: 'Displays the usage statistics of the bot.'
 			},

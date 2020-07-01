@@ -5,7 +5,7 @@ class PingCommand extends Command {
 		super('ping', {
 			aliases: ['ping', 'pong'],
 			category: 'hidden',
-			cooldown: 1000,
+			cooldown: 3000,
 			description: {
 				content: 'Pings me!'
 			}

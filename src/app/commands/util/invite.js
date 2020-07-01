@@ -5,7 +5,7 @@ class InviteCommand extends Command {
 		super('invite', {
 			aliases: ['invite', 'support'],
 			category: 'util',
-			cooldown: 1000,
+			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows bot invite & support server link.' }
 		});

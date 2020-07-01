@@ -6,7 +6,7 @@ class HelpCommand extends Command {
 			aliases: ['help', 'commands'],
 			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS'],
-			cooldown: 1000,
+			cooldown: 3000,
 			args: [
 				{
 					id: 'command',

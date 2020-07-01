@@ -7,7 +7,7 @@ class AboutCommand extends Command {
 		super('about', {
 			aliases: ['about'],
 			category: 'util',
-			cooldown: 1000,
+			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows information about the bot.' }
 		});

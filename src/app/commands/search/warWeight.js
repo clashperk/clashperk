@@ -36,8 +36,8 @@ class WarWeightCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.isPatron(message.author, message.guild)) return 3000;
-		return 10000;
+		if (this.client.patron.isPatron(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	async exec(message, { data }) {

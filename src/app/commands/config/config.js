@@ -7,7 +7,7 @@ class ConfigCommand extends Command {
 			aliases: ['config', 'settings'],
 			category: 'config',
 			channel: 'guild',
-			cooldown: 1000,
+			cooldown: 3000,
 			description: {
 				content: 'Displays settings of the guild.',
 				examples: ['']
@@ -16,13 +16,13 @@ class ConfigCommand extends Command {
 	}
 
 	exec(message) {
-		const restrict = this.client.settings.get(message.guild, 'restrict', []);
+		const color = this.client.settings.get(message.guild, 'displayColor', null);
 		const embed = this.client.util.embed()
 			.setColor(0x5970c1)
 			.setAuthor(`Settings of ${message.guild.name}`)
 			.addField('Prefix', this.handler.prefix(message))
-			.addField('Subscription', this.client.patron.get(message.guild.id, 'guild', false) ? `Active ${emoji.authorize}` : 'None')
-			.addField('Restriction', restrict.join(', ') || 'None');
+			.addField('Patron', this.client.patron.get(message.guild.id, 'guild', false) ? `Active ${emoji.authorize}` : 'None')
+			.addField('Color', `#${color.toString(16)}` || `#${0x5970c1.toString(16)} (default)`);
 
 		return message.util.send({ embed });
 	}

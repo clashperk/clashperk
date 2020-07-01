@@ -6,7 +6,7 @@ class CWLComamnd extends Command {
 		super('cwl', {
 			aliases: ['cwl'],
 			category: 'cwl',
-			cooldown: 0,
+			cooldown: 3000,
 			description: {
 				content: [
 					'Full list of CWL commands',
