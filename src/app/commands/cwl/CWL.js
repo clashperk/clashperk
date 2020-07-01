@@ -45,13 +45,13 @@ class CWLComamnd extends Command {
 		const command = yield {
 			type: [
 				['cwl-attacks', 'attacks'],
-				['cwl-remaining', 'remaining', 'missing'],
+				['cwl-remaining', 'remaining', 'missing', 'rem'],
 				['cwl-round', 'round'],
 				['cwl-roster', 'roster'],
 				['cwl-stats', 'stats'],
 				['cwl-top', 'top', 'mvp'],
 				['cwl-ranking', 'rank', 'ranks', 'ranking'],
-				['cwl-members', 'members', 'lineup'],
+				['cwl-members', 'members', 'lineup', 'mem'],
 				['cwl-stars', 'stars', 'star']
 			],
 			otherwise: message => {
