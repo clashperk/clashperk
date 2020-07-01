@@ -7,7 +7,7 @@ const { emoji, townHallEmoji, heroEmoji } = require('../../util/emojis');
 class ProfileCommand extends Command {
 	constructor() {
 		super('profile', {
-			aliases: ['profile', 'whois'],
+			aliases: ['profile', 'whois', 'user'],
 			category: 'profile',
 			channel: 'guild',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
@@ -35,7 +35,7 @@ class ProfileCommand extends Command {
 		const data = await this.getProfile(member.id);
 		const clanData = await this.getClan(member.id);
 
-		const patron = this.client.patron.get(message.guild, 'user', false);
+		const patron = this.client.patron.get(member.id, 'user', false);
 		const embed = new MessageEmbed()
 			.setColor(0x5970c1)
 			.setAuthor(`${member.user.tag} ${patron ? emoji.authorize : ''}`, member.user.displayAvatarURL());
@@ -46,8 +46,8 @@ class ProfileCommand extends Command {
 			const clan = await this.client.coc.clan(clanData.tag).catch(() => null);
 			if (clan) {
 				collection.push({
-					field: `[${clan.name} (${clan.name})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)})`,
-					values: [`Level ${clan.clanLevel}, ${clan.requiredTrophies} Trophies Required`]
+					field: `${emoji.clan} [${clan.name} (${clan.tag})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)})`,
+					values: [`${emoji.empty} Level ${clan.clanLevel}, ${clan.members} Members`]
 				});
 			}
 		}
