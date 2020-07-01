@@ -99,16 +99,6 @@ class CWLMembersComamnd extends Command {
 			a.push(...b);
 			return a;
 		}, []);*/
-		for (const array of requests) {
-			for (const member of array) {
-				memberList.push({
-					tag: member.tag,
-					name: member.name,
-					townHallLevel: member.townHallLevel,
-					heroes: member.heroes.filter(a => a.village === 'home')
-				});
-			}
-		}
 
 		let members = '';
 		const embed = this.client.util.embed()
