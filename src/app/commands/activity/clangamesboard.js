@@ -49,7 +49,7 @@ class ClanGamesBoardCommand extends Command {
 		const color = yield {
 			type: 'color',
 			unordered: [1, 2],
-			default: 5861569
+			default: message => this.client.embed(message)
 		};
 
 		return { data, channel, color };
@@ -120,7 +120,7 @@ class ClanGamesBoardCommand extends Command {
 				'**Clan Games Board**',
 				`[Enabled](${message.url})`
 			])
-			.setColor(this.client.embed(message, color));
+			.setColor(color);
 		if (message.channel.id !== channel.id) return message.util.send({ embed });
 		return message;
 	}

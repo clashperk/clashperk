@@ -71,7 +71,7 @@ class ClanEmbedCommand extends Command {
 			match: 'option',
 			flag: ['--color'],
 			type: 'color',
-			default: 5861569
+			default: message => this.client.embed(message)
 		};
 
 		return { data, user, accepts, description, color };
@@ -93,7 +93,7 @@ class ClanEmbedCommand extends Command {
 		}
 
 		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message, color))
+			.setColor(color)
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)

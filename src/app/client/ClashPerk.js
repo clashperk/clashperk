@@ -95,7 +95,7 @@ class ClashPerk extends AkairoClient {
 		this.firebase = new Firebase(this);
 		this.firebase = new Firebase(this);
 		this.coc = new Client({ token: process.env.DEVELOPER_TOKEN });
-		this.embed = message => this.settings.get(message.guild, 'color', 0x5970c1);
+		this.embed = message => this.settings.get(message.guild, 'color', 5861569);
 
 		this.patron = new Patrons(this);
 		await this.settings.init();

@@ -49,7 +49,7 @@ class DonationLogCommand extends Command {
 		const color = yield {
 			type: 'color',
 			unordered: [1, 2],
-			default: 5861569
+			default: message => this.client.embed(message)
 		};
 
 		return { data, channel, color };
@@ -113,7 +113,7 @@ class DonationLogCommand extends Command {
 				'**Donation Log**',
 				`[Enabled](${message.url})`
 			])
-			.setColor(this.client.embed(message, color));
+			.setColor(color);
 		return message.util.send({ embed });
 	}
 
