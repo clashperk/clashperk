@@ -5,7 +5,6 @@ class ColorCommand extends Command {
 		super('color', {
 			aliases: ['color'],
 			category: 'config',
-			ownerOnly: true,
 			cooldown: 1000,
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
@@ -26,7 +25,8 @@ class ColorCommand extends Command {
 	}
 
 	async exec(message, { hexColor }) {
-		this.client.settings.set(message.guild, 'color', hexColor);
+		if (!this.client.patron.isPatron(message.author, message.guild)) return;
+		this.client.settings.set(message.guild, 'displayColor', hexColor);
 		return message.util.send({
 			embed: {
 				description: 'Display color updated.',

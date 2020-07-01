@@ -11,7 +11,7 @@ class MessageListener extends Listener {
 	}
 
 	async exec(message) {
-		const color = this.client.settings.get(message.guild, 'color', null);
+		const color = this.client.settings.get(message.guild, 'displayColor', null);
 		/* eslint-disable func-name-matching */
 		Object.defineProperty(MessageEmbed.prototype, 'setColor', {
 			value: function setColor(colour) {
