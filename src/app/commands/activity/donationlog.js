@@ -97,10 +97,13 @@ class DonationLogCommand extends Command {
 		});
 
 		const embed = new MessageEmbed()
-			.setURL(`${data.name}`)
+			.setTitle(`${data.name}`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
-			.setThumbnail(data.badgeUrls.medium)
+			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
+				'**Wait Time**',
+				'120 sec',
+				'',
 				'**Channel**',
 				`${channel}`,
 				'',
