@@ -23,7 +23,6 @@ class ReloadCommand extends Command {
 			const inhibitor = await this.client.inhibitorHandler.modules.size;
 			return message.util.send({
 				embed: {
-					color: 3093046,
 					title: `Reloaded (Shard ${message.guild.shard.id}/${this.client.shard.count})`,
 					description: `${cmd} commands, ${listener} listeners & ${inhibitor} inhibitors`
 				}
