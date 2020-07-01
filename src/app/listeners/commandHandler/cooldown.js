@@ -11,9 +11,8 @@ class CooldownListener extends Listener {
 	}
 
 	exec(message, command, remaining) {
-		const time = ms(remaining, { long: true });
 		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
-		this.client.logger.debug(`${command.id} ~ ${time}`, { label });
+		this.client.logger.debug(`${command.id} ~ ${ms(remaining, { long: true })}`, { label });
 
 		const cooldown = typeof command.cooldown === 'function'
 			? command.cooldown(message)
@@ -27,12 +26,13 @@ class CooldownListener extends Listener {
 				.setColor(0x5970c1);
 			if (this.client.patron.isPatron(message.author, message.guild)) {
 				embed.setDescription([
-					'The default cooldown is 3 sec, but as a donator you only need to wait 1 second.'
+					'The default cooldown is **3 seconds**, but as a donator you only need to wait **1 second**.'
 				]);
 			} else {
 				embed.setDescription([
-					`You'll be able to use this command again in **${time}**`,
-					`The default cooldown is ${ms(cooldown, { long: true })} sec but [donators](https://www.patreon.com/join/clashperk) only need to wait 1 second.`
+					`You'll be able to use this command again in **${ms(remaining, { long: true })}**`,
+					`The default cooldown is **${ms(cooldown, { long: true })}** but donators only need to wait **1 second**.`,
+					'<https://www.patreon.com/join/clashperk>'
 				]);
 			}
 
@@ -45,16 +45,6 @@ class CooldownListener extends Listener {
 				`${embed.description}`
 			]);
 		}
-	}
-
-	default(command) {
-		if (this.commands.includes(command.id)) return 3;
-		return 1;
-	}
-
-	donator(command) {
-		if (this.commands.includes(command.id)) return 10;
-		return 3;
 	}
 }
 
