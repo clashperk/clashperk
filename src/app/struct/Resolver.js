@@ -15,15 +15,15 @@ class Reslover {
 					.findOne({ user: member.id });
 
 				if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);
-				const embed = new MessageEmbed()
-					.setColor(0xf30c11);
+				const embed = new MessageEmbed();
+				embed.color = 0xf30c11;
 				if (message.author.id !== member.id) {
 					embed.setDescription([
 						`Couldn't find a player linked to **${member.user.tag}!**`
 					]);
 				} else {
 					embed.setDescription([
-						'Please provide a player tag and try again!'
+						'**Please provide a player tag and try again!**'
 					]);
 				}
 
@@ -39,15 +39,15 @@ class Reslover {
 				.findOne({ user: member.id });
 
 			if (data) return this.clan(data.tag);
-			const embed = new MessageEmbed()
-				.setColor(0xf30c11);
+			const embed = new MessageEmbed();
+			embed.color = 0xf30c11;
 			if (message.author.id !== member.id) {
 				embed.setDescription([
 					`Couldn't find a clan linked to **${member.user.tag}!**`
 				]);
 			} else {
 				embed.setDescription([
-					'Please provide a clan tag and try again!'
+					'**Please provide a clan tag and try again!**'
 				]);
 			}
 
@@ -73,8 +73,8 @@ class Reslover {
 		}).catch(() => null);
 
 		const embed = new MessageEmbed()
-			.setAuthor('Error')
-			.setColor(0xf30c11);
+			.setAuthor('Error');
+		embed.color = 0xf30c11;
 
 		if (!res) return { status: 504, embed: embed.setDescription(status(504)) };
 		if (!res.ok) return { status: res.status || 504, embed: embed.setDescription(status(res.status || 504)) };
@@ -88,8 +88,8 @@ class Reslover {
 		}).catch(() => null);
 
 		const embed = new MessageEmbed()
-			.setAuthor('Error')
-			.setColor(0xf30c11);
+			.setAuthor('Error');
+		embed.color = 0xf30c11;
 
 		if (!res) return { status: 504, embed: embed.setDescription(status(504)) };
 		if (!res.ok) return { status: res.status || 504, embed: embed.setDescription(status(res.status || 504)) };
@@ -125,7 +125,6 @@ class Reslover {
 	}
 
 	static set(tag, fetched, time) {
-		console.log(time);
 		return cached.set(tag, {
 			data: fetched,
 			timer: setTimeout(() => {
@@ -158,8 +157,7 @@ class Reslover {
 				'Consider subscribing to one of our premium plans on Patreon',
 				'',
 				'[Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
-			])
-			.setColor(5861569);
+			]);
 
 		return embed;
 	}
