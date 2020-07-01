@@ -46,7 +46,7 @@ class ProfileCommand extends Command {
 			if (clan) {
 				collection.push({
 					field: `${emoji.clan} [${clan.name} (${clan.tag})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)})`,
-					values: [`${emoji.empty} Level ${clan.clanLevel}, ${clan.members} Members`]
+					values: [`${emoji.empty} Level ${clan.clanLevel} ${emoji.users_small} ${clan.members} Members`]
 				});
 			}
 		}
