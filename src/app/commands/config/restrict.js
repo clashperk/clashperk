@@ -56,4 +56,4 @@ class RestrictCommand extends Command {
 	}
 }
 
-module.exports = RestrictCommand;
+// module.exports = RestrictCommand;

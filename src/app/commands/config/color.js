@@ -11,9 +11,9 @@ class ColorCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			quoted: false,
 			description: {
-				content: 'Restricts or unrestricts someone from using commands.',
-				usage: '<member>',
-				examples: ['@Suvajit', '444432489818357760']
+				content: 'Sets display color of the guild.',
+				usage: '<color>',
+				examples: ['#0080ff']
 			},
 			args: [
 				{

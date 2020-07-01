@@ -16,4 +16,4 @@ class RestrictInhibitor extends Inhibitor {
 	}
 }
 
-module.exports = RestrictInhibitor;
+// module.exports = RestrictInhibitor;
