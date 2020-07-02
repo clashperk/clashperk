@@ -15,7 +15,7 @@ class SetupCommand extends Command {
 					'• donationlog `<clanTag> [channel/color]`',
 					'• onlineboard `<clanTag> [channel/color]`',
 					'• cgboard `<clanTag> [channel/color]`',
-					'• warfeed `<clanTag> [channel/color]`',
+					// '• warfeed `<clanTag> [channel/color]`',
 					'• playerlog `<clanTag> [channel/color]`',
 					'',
 					'**Required: `<>` | Optional: `[]`**',
@@ -26,7 +26,7 @@ class SetupCommand extends Command {
 					'donationlog #8QU8J9LP',
 					'onlineboard #8QU8J9L',
 					'cgboard #8QU8J9L',
-					'warfeed #8QU8J9L',
+					// 'warfeed #8QU8J9L',
 					'playerlog #8QU8J9L'
 				]
 			}
@@ -52,7 +52,7 @@ class SetupCommand extends Command {
 				const commands = this.handler.categories.get('setup-hidden')
 					.values();
 				embed.addField('__**Setup**__', [
-					Array.from(commands)
+					Array.from(commands).filter(command => !command.ownerOnly)
 						.map(command => `**\`${prefix}setup ${command.aliases[0]}\`**\n${command.description.content}`)
 						.join('\n')
 				]);
