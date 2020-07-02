@@ -15,17 +15,19 @@ class UsageCommand extends Command {
 	}
 
 	async exec(message) {
-		const guilds = await this.guilds();
-		const users = await this.users();
+		// const guilds = await this.guilds();
+		// const users = await this.users();
 		const { commands, total } = await this.commands();
 
 		const embed = this.client.util.embed()
-			.setAuthor(`${this.client.user.username} Usage`, this.client.user.displayAvatarURL())
+			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.setColor(this.client.embed(message))
-			.setFooter('Since August 2019')
-			.setTitle(`${total}x commands used`);
+			.setTitle('Usage')
+			.setURL('https://clashperk.statuspage.io/')
+			.setTimestamp(new Date('2019-07-31T18:30:00Z'))
+			.setFooter(`${total}x Total`);
 		if (this.client.isOwner(message.author.id)) {
-			embed.addField('Users', [
+			/* embed.addField('Users', [
 				`\`\`\`${users.splice(0, 10).map(({ id, uses }, index) => {
 					const user = this.client.users.cache.get(id);
 					return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${user.username}`;
@@ -36,12 +38,15 @@ class UsageCommand extends Command {
 					const guild = this.client.guilds.cache.get(id);
 					return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${guild.name}`;
 				}).join('\n')}\`\`\``
-			]);
-			embed.addField('Commands', [
-				`\`\`\`${commands.splice(0, 10).map(({ id, uses }, index) => {
-					const command = this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '');
-					return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${command}`;
-				}).join('\n')}\`\`\``
+			]);*/
+			embed.setDescription([
+				'\`\`\`',
+				...commands.splice(0, 20)
+					.map(({ id, uses }, index) => {
+						const command = this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '');
+						return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${command}`;
+					}),
+				'\`\`\`'
 			]);
 		}
 
