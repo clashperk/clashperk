@@ -25,7 +25,7 @@ class PatronCommand extends Command {
 				'',
 				'**Benefits**',
 				'• Faster updates and 1 sec cooldown',
-				'• Claim more than 2 clans per servers',
+				'• Claim more than 2 clans per server',
 				'• Unlocks all patron only commands',
 				'• Patron role on our support discord',
 				'',
