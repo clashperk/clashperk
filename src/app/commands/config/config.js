@@ -16,7 +16,7 @@ class ConfigCommand extends Command {
 	}
 
 	exec(message) {
-		const color = this.client.settings.get(message.guild, 'displayColor', null);
+		const color = this.client.settings.get(message.guild, 'color', null);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`Settings of ${message.guild.name}`)
