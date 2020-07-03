@@ -12,7 +12,7 @@ class CWLTopCommand extends Command {
 			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
-				content: 'Most valuable clan members for CWL.',
+				content: 'War League Legend scoreboard of the clan.',
 				usage: '<clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			}
