@@ -13,7 +13,7 @@ class CWLStatsComamnd extends Command {
 			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows stats about current CWL.',
+				content: 'Shows some statistics for each round.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			}
