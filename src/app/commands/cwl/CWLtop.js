@@ -70,7 +70,7 @@ class CWLTopCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				'List of most valuable clan members for CWL',
+				'War League Legend Scoreboard',
 				'',
 				`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
 				items.slice(0, 30)
