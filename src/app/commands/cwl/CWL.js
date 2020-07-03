@@ -20,7 +20,7 @@ class CWLComamnd extends Command {
 					'• members `<clanTag>`',
 					'• stars `<clanTag>`',
 					'• ranks `<clanTag>`',
-					'• top `<clanTag>`',
+					'• legends `<clanTag>`',
 					'',
 					'For additional `<...args>` usage refer to the examples below.'
 				],
@@ -34,7 +34,7 @@ class CWLComamnd extends Command {
 					'members #8QU8J9LP',
 					'stars #8QU8J9LP',
 					'ranks #8QU8J9LP',
-					'top #8QU8J9LP'
+					'legends #8QU8J9LP'
 				],
 				usage: '<method> <...args>'
 			}
@@ -49,7 +49,7 @@ class CWLComamnd extends Command {
 				['cwl-round', 'round'],
 				['cwl-roster', 'roster'],
 				['cwl-stats', 'stats'],
-				['cwl-top', 'top', 'mvp'],
+				['cwl-top', 'top', 'mvp', 'legends'],
 				['cwl-ranking', 'rank', 'ranks', 'ranking'],
 				['cwl-members', 'members', 'lineup', 'mem'],
 				['cwl-stars', 'stars', 'star']
