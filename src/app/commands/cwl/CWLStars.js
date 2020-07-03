@@ -13,7 +13,7 @@ class CWLStarsComamnd extends Command {
 			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows stars of current CWL.',
+				content: 'Shows total stars, attacks & destruction.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			}
