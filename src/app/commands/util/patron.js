@@ -10,7 +10,7 @@ class PatronCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			cooldown: 3000,
 			description: {
-				content: 'Get info about the bot's patreon.'
+				content: 'Get info about the bot\'s patreon.'
 			}
 		});
 	}
