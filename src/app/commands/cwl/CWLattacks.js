@@ -185,9 +185,9 @@ class CWLAttacksComamnd extends Command {
 							`${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
-							'In War',
+							'Battle Day',
 							'',
-							`**Attacks** - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}`,
+							`**Attacks - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}**`,
 							`${attacks || 'Nobody Attacked Yet'}`
 						]);
 						embed.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
