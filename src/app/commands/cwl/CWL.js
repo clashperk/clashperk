@@ -49,7 +49,7 @@ class CWLComamnd extends Command {
 				['cwl-round', 'round'],
 				['cwl-roster', 'roster'],
 				['cwl-stats', 'stats'],
-				['cwl-top', 'top', 'mvp', 'legends'],
+				['cwl-legends', 'top', 'mvp', 'legends'],
 				['cwl-ranking', 'rank', 'ranks', 'ranking'],
 				['cwl-members', 'members', 'lineup', 'mem'],
 				['cwl-stars', 'stars', 'star']
