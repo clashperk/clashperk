@@ -71,7 +71,6 @@ class CWLTopCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				'War League Legend Scoreboard',
-				'',
 				`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
 				items.slice(0, 30)
 					.filter(m => m.cwlStar !== 0)
