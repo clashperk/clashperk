@@ -8,7 +8,7 @@ const TOKENS = process.env.$KEYS.split(',');
 class CWLTopCommand extends Command {
 	constructor() {
 		super('cwl-top', {
-			aliases: ['cwl-top', 'cwl-mvp'],
+			aliases: ['cwl-legends', 'cwl-top', 'cwl-mvp'],
 			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
