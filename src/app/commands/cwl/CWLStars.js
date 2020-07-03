@@ -125,7 +125,7 @@ class CWLStarsComamnd extends Command {
 		const leaderboard = members.sort((a, b) => b.stars - a.stars);
 		return message.util.send({
 			embed: {
-				color: 0x5970c1,
+				color: this.client.embed(message),
 				author: {
 					name: `${clanName} CWL`,
 					icon_url: clanBadge
