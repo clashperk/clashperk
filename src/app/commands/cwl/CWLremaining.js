@@ -14,7 +14,7 @@ class CWLRemainingComamnd extends Command {
 			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows remaining attacks of current CWL.',
+				content: 'Shows remaining attacks of the current round.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP'],
 				fields: [
