@@ -12,7 +12,7 @@ class CWLRosterComamnd extends Command {
 			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows CWL roster & total number of th for each clan.',
+				content: 'Shows CWL roster and Town-Hall distribution.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			}
