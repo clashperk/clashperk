@@ -13,7 +13,7 @@ class CWLMembersComamnd extends Command {
 			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'CWL members command.',
+				content: 'Shows the full list of participants.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			}
