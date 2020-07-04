@@ -132,27 +132,19 @@ class CWLRoundComamnd extends Command {
 						embed.addField('State', 'War Ended')
 							.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 							.addField('Stats', [
-								`**${data.clan.name}**`,
-								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								'',
-								`**${data.opponent.name}**`,
-								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
+								`\`\u200e${data.clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
+								`\`\u200e${data.clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+								`\`\u200e${`${data.clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${data.opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
 							]);
 					}
 					if (data.state === 'inWar') {
 						const started = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField('State', 'In War')
+						embed.addField('State', 'Battle Day')
 							.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 							.addField('Stats', [
 								`\`\u200e${data.clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
 								`\`\u200e${data.clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
 								`\`\u200e${`${data.clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${data.opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
-
-								/* `**${data.clan.name}**`,
-								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								'',
-								`**${data.opponent.name}**`,
-								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`*/
 							]);
 					}
 					if (data.state === 'preparation') {
@@ -161,9 +153,11 @@ class CWLRoundComamnd extends Command {
 							.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
 					}
 					embed.addField('Rosters', [
-						`**${data.clan.name}**\u200b ${this.count(data.clan.members)}`,
+						`**${data.clan.name}**`,
+						`${this.count(data.clan.members)}`,
 						'',
-						`**${data.opponent.name}**\u200b ${this.count(data.opponent.members)}`
+						`**${data.opponent.name}**`,
+						`${this.count(data.opponent.members)}`
 					]);
 					embed.setFooter(`Round #${++index} (${warTag})`);
 
@@ -253,12 +247,11 @@ class CWLRoundComamnd extends Command {
 		const townHalls = Object.entries(reduced)
 			.map(entry => ({ level: entry[0], total: entry[1] }))
 			.sort((a, b) => b.level - a.level);
-		const avg = townHalls.reduce((p, c) => p + (c.total * c.level), 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
 
-		return [`**(Avg: ${avg.toFixed(2)})**`, this.chunk(townHalls)
+		return this.chunk(townHalls)
 			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
 				.join(' '))
-			.join('\n')].join('\n');
+			.join('\n');
 	}
 
 	chunk(items = []) {
