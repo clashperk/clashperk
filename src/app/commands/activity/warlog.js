@@ -1,13 +1,12 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../../struct/Database');
-const { MODES } = require('../../util/constants');
+const { Modes } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 
-class WarFeedLogCommand extends Command {
+class WarLogCommand extends Command {
 	constructor() {
-		super('warfeedlog', {
-			aliases: ['warfeed'],
+		super('clan-warlog', {
 			category: 'setup-hidden',
 			channel: 'guild',
 			ownerOnly: true,
@@ -82,7 +81,7 @@ class WarFeedLogCommand extends Command {
 		}
 
 		const id = await this.client.storage.register({
-			mode: MODES[6],
+			mode: Modes.CLAN_WAR_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
@@ -91,7 +90,7 @@ class WarFeedLogCommand extends Command {
 		});
 
 		this.client.cacheHandler.add(id, {
-			mode: MODES[6],
+			mode: Modes.CLAN_WAR_LOG,
 			guild: message.guild.id,
 			tag: data.tag
 		});
@@ -138,4 +137,4 @@ class WarFeedLogCommand extends Command {
 	}
 }
 
-module.exports = WarFeedLogCommand;
+module.exports = WarLogCommand;

@@ -1,6 +1,7 @@
 const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { ObjectId } = require('mongodb');
+const { Modes } = require('../../util/constants');
 
 class StopCommand extends Command {
 	constructor() {
@@ -16,7 +17,7 @@ class StopCommand extends Command {
 					'',
 					'**Available Methods**',
 					'• donationlog `<clanTag>`',
-					'• playerlog `<clanTag>`',
+					'• clanlog `<clanTag>`',
 					'• lastonline `<clanTag>`',
 					'• clangames `<clanTag>`',
 					'• clanmebed `<clanTag>`',
@@ -27,7 +28,7 @@ class StopCommand extends Command {
 				usage: '<method> <clanTag>',
 				examples: [
 					'donationlog #8QU8J9LP',
-					'playerlog #8QU8J9LP',
+					'clanlog #8QU8J9LP',
 					'lastonline #8QU8J9LP',
 					'clanembed #8QU8J9LP',
 					'clangames #8QU8J9LP',
@@ -40,11 +41,12 @@ class StopCommand extends Command {
 					match: 'phrase',
 					type: [
 						['all'],
-						['DONATION_LOG', 'donationlog', 'dl'],
-						['PLAYER_LOG', 'playerlog', 'clanlog', 'pl'],
-						['LAST_ONLINE_LOG', 'lastonline', 'lastonlineboard', 'ob'],
-						['CLAN_EMBED_LOG', 'clanembed', 'ce'],
-						['CLAN_GAMES_LOG', 'clangames', 'clangame', 'clangamesboard', 'clangameboard', 'cgboard', 'cg']
+						[Modes.DONATION_LOG, 'donationlog', 'dl'],
+						[Modes.CLAN_LOG, 'playerlog', 'clanlog', 'pl'],
+						[Modes.ACTIVITY_LOG, 'lastonline', 'lastonlineboard', 'ob'],
+						[Modes.CLAN_EMBED_LOG, 'clanembed', 'ce'],
+						[Modes.CLAN_GAMES_LOG, 'clangames', 'clangame', 'clangamesboard', 'clangameboard', 'cgboard', 'cg'],
+						[Modes.CLAN_WAR_LOG, 'clangames', 'clangame', 'clangamesboard', 'clangameboard', 'cgboard', 'cg']
 					],
 					default: ''
 				},

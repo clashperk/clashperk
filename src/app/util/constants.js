@@ -66,21 +66,12 @@ module.exports = {
 		return codes[code];
 	},
 
-	MODES: {
-		1: 'DONATION_LOG',
-		2: 'PLAYER_LOG',
-		3: 'LAST_ONLINE_LOG',
-		4: 'CLAN_EMBED_LOG',
-		5: 'CLAN_GAMES_LOG',
-		6: 'CLAN_WAR_LOG'
-	},
-
-	EVENTS: {
-		1: 'CLAN_DONATION_EVENT',
-		2: 'CLAN_MEMBER_ACTION',
-		3: 'LAST_ONLINE_EVENT',
-		4: 'CLAN_EMBED_EVENT',
-		5: 'CLAN_GAMES_EVENT',
-		6: 'CLAN_WAR_EVENT'
+	Modes: {
+		DONATION_LOG: 'donationLog',
+		CLAN_LOG: 'clanLog',
+		ACTIVITY_LOG: 'activityLog',
+		CLAN_EMBED_LOG: 'clanembedLog',
+		CLAN_GAMES_LOG: 'clangamesLog',
+		CLAN_WAR_LOG: 'clanwarLog'
 	}
 };
