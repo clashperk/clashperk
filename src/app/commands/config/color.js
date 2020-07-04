@@ -5,7 +5,6 @@ class ColorCommand extends Command {
 		super('color', {
 			aliases: ['color'],
 			category: 'config',
-			cooldown: 3000,
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			quoted: false,
@@ -30,8 +29,13 @@ class ColorCommand extends Command {
 		});
 	}
 
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
+	}
+
 	async exec(message, { hexColor }) {
-		if (!this.client.patron.isPatron(message.author, message.guild)) {
+		if (!this.client.patron.check(message.author, message.guild)) {
 			return this.handler.handleDirectCommand(message, 'color', this.handler.modules.get('color'), false);
 		}
 		this.client.settings.set(message.guild, 'color', hexColor);

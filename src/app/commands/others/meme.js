@@ -7,11 +7,15 @@ class MemeCommand extends Command {
 		super('meme', {
 			aliases: ['meme', 'memes', 'jokes'],
 			category: 'other',
-			cooldown: 3000,
 			description: {
 				content: 'Shows some random reddit memes.'
 			}
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	async exec(message) {

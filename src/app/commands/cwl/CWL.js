@@ -6,7 +6,6 @@ class CWLComamnd extends Command {
 		super('cwl', {
 			aliases: ['cwl'],
 			category: 'cwl',
-			cooldown: 3000,
 			description: {
 				content: [
 					'Full list of CWL commands',
@@ -39,6 +38,11 @@ class CWLComamnd extends Command {
 				usage: '<method> <...args>'
 			}
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	*args() {

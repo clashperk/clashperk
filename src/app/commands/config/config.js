@@ -7,12 +7,16 @@ class ConfigCommand extends Command {
 			aliases: ['config', 'settings'],
 			category: 'config',
 			channel: 'guild',
-			cooldown: 3000,
 			description: {
 				content: 'Displays settings of the guild.',
 				examples: ['']
 			}
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	exec(message) {

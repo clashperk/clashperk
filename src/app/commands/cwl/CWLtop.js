@@ -35,7 +35,7 @@ class CWLTopCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.isPatron(message.author, message.guild)) return 1000;
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
 		return 3000;
 	}
 
@@ -73,10 +73,10 @@ class CWLTopCommand extends Command {
 				'War League Legend Scoreboard',
 				`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
 				items.filter(m => m.cwlStar !== 0).slice(0, 30).map(member => {
-						const name = this.padEnd(member.name);
-						const star = this.padStart(member.cwlStar.toString());
-						return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name}\``;
-					})
+					const name = this.padEnd(member.name);
+					const star = this.padStart(member.cwlStar.toString());
+					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name}\``;
+				})
 					.join('\n')
 			]);
 

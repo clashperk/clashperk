@@ -33,6 +33,11 @@ class SetupCommand extends Command {
 		});
 	}
 
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
+	}
+
 	*args() {
 		const method = yield {
 			type: [

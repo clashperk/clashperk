@@ -8,11 +8,15 @@ class PatronCommand extends Command {
 			aliases: ['patron', 'donate', 'patreon'],
 			category: 'util',
 			clientPermissions: ['EMBED_LINKS'],
-			cooldown: 3000,
 			description: {
 				content: 'Get information about the bot\'s patreon.'
 			}
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	async exec(message) {

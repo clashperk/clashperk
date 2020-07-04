@@ -5,7 +5,6 @@ class PrefixCommand extends Command {
 		super('prefix', {
 			aliases: ['prefix'],
 			category: 'config',
-			cooldown: 3000,
 			channel: 'guild',
 			quoted: false,
 			description: {
@@ -24,6 +23,11 @@ class PrefixCommand extends Command {
 				}
 			]
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	exec(message, { prefix }) {

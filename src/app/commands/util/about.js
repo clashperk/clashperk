@@ -7,10 +7,14 @@ class AboutCommand extends Command {
 		super('about', {
 			aliases: ['about'],
 			category: 'util',
-			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows information about the bot.' }
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	async exec(message) {
@@ -22,7 +26,7 @@ class AboutCommand extends Command {
 				'Feature-Rich and Powerful Clash of Clans Discord bot with everything you will ever need.'
 			])
 			.addField('Owner', `${emoji.botdev} **${owner.tag}**`)
-			.addField('Library', '<:587374156539232277:723162041095028797> [discord.js](https://discord.js.org)')
+			.addField('Library', '<:bot_dev:723162041095028797> [discord.js](https://discord.js.org)')
 			.addField('Need help?', 'Join [Official Discord](https://discord.gg/ppuppun)')
 			.addField('Do you like the bot?', 'Please support on us [Patreon](https://www.patreon.com/bePatron?u=14584309)')
 			.addField('Legal Notice', [

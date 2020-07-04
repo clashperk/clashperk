@@ -5,11 +5,15 @@ class PingCommand extends Command {
 		super('ping', {
 			aliases: ['ping', 'pong'],
 			category: 'hidden',
-			cooldown: 3000,
 			description: {
 				content: 'Pings me!'
 			}
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	async exec(message) {

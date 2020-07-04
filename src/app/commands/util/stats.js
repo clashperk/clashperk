@@ -10,12 +10,16 @@ class StatsCommand extends Command {
 		super('stats', {
 			aliases: ['stats', 'bot-info'],
 			category: 'util',
-			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Shows some statistics of the bot.'
 			}
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	async exec(message) {

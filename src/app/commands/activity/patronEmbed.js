@@ -8,7 +8,6 @@ class ClanEmbedCommand extends Command {
 	constructor() {
 		super('patron-clanembed', {
 			category: 'hidden',
-			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
@@ -75,6 +74,11 @@ class ClanEmbedCommand extends Command {
 		};
 
 		return { data, user, accepts, description, color };
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	async exec(message, { data, accepts, user, description, color }) {

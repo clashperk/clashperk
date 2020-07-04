@@ -5,10 +5,14 @@ class InviteCommand extends Command {
 		super('invite', {
 			aliases: ['invite', 'support'],
 			category: 'util',
-			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows bot invite & support server link.' }
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	async fetchInvite() {

@@ -60,7 +60,7 @@ class StopCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.isPatron(message.author, message.guild)) return 1000;
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
 		return 3000;
 	}
 

@@ -35,7 +35,7 @@ class LastOnlineCommand extends Command {
 	}
 
 	cooldown(message) {
-		if (this.client.patron.isPatron(message.author, message.guild)) return 3000;
+		if (this.client.patron.check(message.author, message.guild)) return 3000;
 		return 5000;
 	}
 

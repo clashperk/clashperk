@@ -6,12 +6,16 @@ class UsageCommand extends Command {
 		super('usage', {
 			aliases: ['usage'],
 			category: 'beta',
-			cooldown: 3000,
 			description: {
 				content: 'Displays the usage statistics of the bot.'
 			},
 			clientPermissions: ['EMBED_LINKS']
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	async exec(message) {

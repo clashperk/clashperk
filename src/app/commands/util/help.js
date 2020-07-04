@@ -6,7 +6,6 @@ class HelpCommand extends Command {
 			aliases: ['help', 'commands'],
 			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS'],
-			cooldown: 3000,
 			args: [
 				{
 					id: 'command',
@@ -24,6 +23,11 @@ class HelpCommand extends Command {
 				examples: ['', 'start']
 			}
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	exec(message, { command }) {

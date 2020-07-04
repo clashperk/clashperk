@@ -6,10 +6,14 @@ class GuideCommand extends Command {
 		super('guide', {
 			aliases: ['guide'],
 			category: 'util',
-			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows info about how to use the bot.' }
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	async exec(message) {

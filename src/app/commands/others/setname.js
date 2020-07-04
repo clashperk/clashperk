@@ -6,7 +6,6 @@ class SetNickNameCommand extends Command {
 		super('setnick', {
 			aliases: ['setnick'],
 			category: 'patron',
-			cooldown: 3000,
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
@@ -14,6 +13,11 @@ class SetNickNameCommand extends Command {
 				usage: '<user> <playerTag> <prefix>'
 			}
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	*args() {

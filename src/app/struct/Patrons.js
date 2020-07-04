@@ -20,7 +20,7 @@ class Patron {
 		return def;
 	}
 
-	isPatron(user, guild) {
+	check(user, guild) {
 		return this.get(guild.id, 'guild', false) || this.get(user.id, 'user', false);
 	}
 

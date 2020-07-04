@@ -8,11 +8,15 @@ class RedeemCommand extends Command {
 		super('redeem', {
 			aliases: ['redeem'],
 			category: 'util',
-			cooldown: 3000,
 			description: {
 				content: 'Redeems your patreon subscription.'
 			}
 		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
 	}
 
 	async exec(message) {
