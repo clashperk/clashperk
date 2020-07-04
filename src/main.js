@@ -1,7 +1,7 @@
 require('../auth').config();
 require('dotenv').config();
 
-const Client = require('./app/client/ClashPerk');
+const Client = require('./app/struct/Client');
 const Sentry = require('@sentry/node');
 const package = require('../package.json');
 

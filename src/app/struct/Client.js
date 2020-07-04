@@ -1,13 +1,13 @@
 const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } = require('discord-akairo');
-const Settings = require('../struct/SettingsProvider');
 const CacheHandler = require('../core/CacheHandler');
-const Storage = require('../struct/StorageHandler');
-const Database = require('../struct/Database');
-const Firebase = require('../struct/Firebase');
 const { MessageEmbed } = require('discord.js');
+const Settings = require('./SettingsProvider');
 const { Client } = require('clashofclans.js');
-const Patrons = require('../struct/Patrons');
+const Storage = require('./StorageHandler');
 const Logger = require('../util/logger');
+const Database = require('./Database');
+const Firebase = require('./Firebase');
+const Patrons = require('./Patrons');
 const path = require('path');
 
 class ClashPerk extends AkairoClient {
