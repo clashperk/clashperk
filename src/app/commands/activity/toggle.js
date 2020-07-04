@@ -46,7 +46,7 @@ class StopCommand extends Command {
 						[Modes.ACTIVITY_LOG, 'lastonline', 'lastonlineboard', 'ob'],
 						[Modes.CLAN_EMBED_LOG, 'clanembed', 'ce'],
 						[Modes.CLAN_GAMES_LOG, 'clangames', 'clangame', 'clangamesboard', 'clangameboard', 'cgboard', 'cg'],
-						[Modes.CLAN_WAR_LOG, 'clangames', 'clangame', 'clangamesboard', 'clangameboard', 'cgboard', 'cg']
+						[Modes.CLAN_WAR_LOG, 'warlog']
 					],
 					default: ''
 				},
