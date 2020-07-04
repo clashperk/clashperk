@@ -144,6 +144,7 @@ class CWLRoundComamnd extends Command {
 						embed.addField('State', 'In War')
 							.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 							.addField('Stats', [
+								`\`\u200e${data.clan.stars.toString().padStart(6, ' ')} \u200f\`\u200e ${emoji.star}  \` ${data.opponent.stars.toString().padEnd(6, ' ')}\u200f\``,
 								`**${data.clan.name}**`,
 								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
 								'',
