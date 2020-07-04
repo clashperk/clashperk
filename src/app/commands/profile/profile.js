@@ -146,7 +146,7 @@ class ProfileCommand extends Command {
 	}
 
 	clanName(data) {
-		if (!data.clan) return `${emoji.clan} Not in a Clan`;
+		if (!data.clan) return '';
 		const clanRole = data.role.replace(/admin/g, 'Elder')
 			.replace(/coLeader/g, 'Co-Leader')
 			.replace(/member/g, 'Member')
