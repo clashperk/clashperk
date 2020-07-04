@@ -114,7 +114,7 @@ class CWLStatsComamnd extends Command {
 							`${this.winner(clan, opponent) ? emoji.ok : emoji.wrong} **${clan.name}** vs **${opponent.name}**`,
 							`${emoji.clock_small} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
 						], [
-							`\`\u200e${clan.stars.toString().padEnd(15, ' ')} \u200f\`\u200e \u2002 ${emoji.stars} \u2002 \`\u200e ${opponent.stars.toString().padStart(15, ' ')}\u200f\``,
+							`\`\u200e${clan.stars.toString().padEnd(15, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padStart(15, ' ')}\u200f\``,
 							`\`\u200e${this.attacks(clan.attacks, data.teamSize).padEnd(15, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${this.attacks(opponent.attacks, data.teamSize).padStart(15, ' ')}\u200f\``,
 							`\`\u200e${this.destruction(clan.destructionPercentage).padEnd(15, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${this.destruction(opponent.destructionPercentage).padStart(15, ' ')}\u200f\``
 						]]);
@@ -142,7 +142,7 @@ class CWLStatsComamnd extends Command {
 							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
 							`${emoji.clock_small} [Round ${++index}] Started ${moment.duration(Date.now() - started).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
 						], [
-							`\`\u200e${clan.stars.toString().padEnd(15, ' ')} \u200f\`\u200e \u2002 ${emoji.stars} \u2002 \`\u200e ${opponent.stars.toString().padStart(15, ' ')}\u200f\``,
+							`\`\u200e${clan.stars.toString().padEnd(15, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padStart(15, ' ')}\u200f\``,
 							`\`\u200e${this.attacks(clan.attacks, data.teamSize).padEnd(15, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${this.attacks(opponent.attacks, data.teamSize).padStart(15, ' ')}\u200f\``,
 							`\`\u200e${this.destruction(clan.destructionPercentage).padEnd(15, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${this.destruction(opponent.destructionPercentage).padStart(15, ' ')}\u200f\``
 						]]);
