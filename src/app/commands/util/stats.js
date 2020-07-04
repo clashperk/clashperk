@@ -47,8 +47,8 @@ class StatsCommand extends Command {
 			], true)
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }), true)
 			.addField('Servers', guilds, true)
+			.addField('Shard', `${message.guild.shard.id}/${this.client.shard.count}`, true)
 			.addField('Version', `v${version}`, true)
-			.addField('Node.js', process.version, true)
 			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL());
 
 		if (message.channel.type === 'dm' || !message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
