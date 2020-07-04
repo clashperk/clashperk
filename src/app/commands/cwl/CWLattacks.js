@@ -153,20 +153,13 @@ class CWLAttacksComamnd extends Command {
 							`${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
-							'War Ended',
+							`War ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
 							'',
 							`**Attacks** - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}`,
 							`${attacks || 'Nobody Attacked'}`
 						]);
-						embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-							.addField('Stats', [
-								`**${data.clan.name}**`,
-								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								'',
-								`**${data.opponent.name}**`,
-								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
-							]);
 					}
+
 					if (data.state === 'inWar') {
 						const started = new Date(moment(data.startTime).toDate()).getTime();
 						let attacks = '';
@@ -185,24 +178,22 @@ class CWLAttacksComamnd extends Command {
 							`${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
-							'Battle Day',
+							`Battle day started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
 							'',
 							`**Attacks - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}**`,
 							`${attacks || 'Nobody Attacked Yet'}`
 						]);
-						embed.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-							.addField('Stats', [
-								`**${data.clan.name}**`,
-								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								'',
-								`**${data.opponent.name}**`,
-								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
-							]);
 					}
+
 					if (data.state === 'preparation') {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField('State', 'Preparation Day')
-							.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
+						embed.setDescription([
+							'**War Against**',
+							`${opponent.name} (${opponent.tag})`,
+							'',
+							'State',
+							`Preparation day starting in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+						]);
 					}
 
 					embed.setFooter(`Round #${++i}`);
