@@ -1,7 +1,7 @@
-const { mongodb } = require('../struct/Database');
 const { MessageEmbed, Message } = require('discord.js');
-const moment = require('moment');
+const { mongodb } = require('../struct/Database');
 const { ObjectId } = require('mongodb');
+const moment = require('moment');
 
 class LastOnlineEvent {
 	constructor(client) {

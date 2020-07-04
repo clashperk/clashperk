@@ -1,6 +1,6 @@
+const { leagueEmoji, blueNum, redNum, emoji } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
-const { leagueEmoji, blueNum, redNum, emoji } = require('../util/emojis');
 const { ObjectId } = require('mongodb');
 
 class ClanEvent {

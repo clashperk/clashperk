@@ -1,5 +1,5 @@
-const https = require('https');
 const { emoji } = require('../util/emojis');
+const https = require('https');
 
 class MaintenanceHandler {
 	constructor(client) {
@@ -8,7 +8,7 @@ class MaintenanceHandler {
 	}
 
 	init() {
-		return https.request('https://api.clashofclans.com/v1/locations?limit=1', {
+		return https.request('https://api.clashofclans.com/v1/locations', {
 			method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${process.env.DEVELOPER_TOKEN}`,

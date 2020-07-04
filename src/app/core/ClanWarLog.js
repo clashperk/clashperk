@@ -1,8 +1,8 @@
+const { townHallEmoji, emoji, whiteNum, blueNum } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
-const { townHallEmoji, emoji, whiteNum, blueNum } = require('../util/emojis');
-const fetch = require('node-fetch');
 const { ObjectId } = require('mongodb');
+const fetch = require('node-fetch');
 const moment = require('moment');
 
 class ClanWarEvent {

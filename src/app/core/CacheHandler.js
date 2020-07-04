@@ -1,27 +1,29 @@
-const fetch = require('node-fetch');
+const MaintenanceHandler = require('./MaintenanceHandler');
+const ClanActivityLog = require('./ClanActivityLog');
 const { mongodb } = require('../struct/Database');
 const ClanEmbedLog = require('./ClanEmbedLog');
-const DonationLog = require('./DonationLog');
-const ClanActivityLog = require('./ClanActivityLog');
-const ClanGamesLog = require('./ClanGamesLog');
-const ClanLog = require('./ClanLog');
-const { ObjectId } = require('mongodb');
-const ClanWarLog = require('./ClanWarLog');
-const MaintenanceHandler = require('./MaintenanceHandler');
 const { Modes } = require('../util/constants');
+const ClanGamesLog = require('./ClanGamesLog');
+const DonationLog = require('./DonationLog');
+const ClanWarLog = require('./ClanWarLog');
+const { ObjectId } = require('mongodb');
+const ClanLog = require('./ClanLog');
+const fetch = require('node-fetch');
 
 class CacheHandler {
 	constructor(client, { interval = 122 * 1000 } = {}) {
 		this.client = client;
 		this.memberList = {};
-		this.interval = interval;
 		this.cached = new Map();
-		this.clanembedLog = new ClanEmbedLog(client);
-		this.donationLog = new DonationLog(client);
-		this.activityLog = new ClanActivityLog(client);
+		this.interval = interval;
+
 		this.clanLog = new ClanLog(client);
-		this.clangamesLog = new ClanGamesLog(client);
 		this.clanwarLog = new ClanWarLog(client);
+		this.donationLog = new DonationLog(client);
+		this.clanembedLog = new ClanEmbedLog(client);
+		this.clangamesLog = new ClanGamesLog(client);
+		this.activityLog = new ClanActivityLog(client);
+
 		this.maintenanceHandler = new MaintenanceHandler(client);
 		this.maintenanceHandler.init();
 	}
@@ -96,11 +98,12 @@ class CacheHandler {
 		if (data && data.mode) {
 			await this.addLogs(_id, data.mode);
 		} else {
+			await this.clanLog.add(id);
+			await this.clanwarLog.add(id);
 			await this.donationLog.add(id);
 			await this.activityLog.add(id);
 			await this.clanembedLog.add(id);
 			await this.clangamesLog.add(id);
-			await this.clanLog.add(id);
 		}
 
 		if (!this.cached.has(id)) {
@@ -118,6 +121,7 @@ class CacheHandler {
 		if (mode === Modes.ACTIVITY_LOG) return this.activityLog.add(_id);
 		if (mode === Modes.CLAN_EMBED_LOG) return this.clanembedLog.add(_id);
 		if (mode === Modes.CLAN_GAMES_LOG) return this.clangamesLog.add(_id);
+		if (mode === Modes.CLAN_WAR_LOG) return this.clanwarLog.add(_id);
 	}
 
 	delete(_id, data) {
@@ -132,6 +136,7 @@ class CacheHandler {
 			this.clanLog.delete(id);
 			this.activityLog.delete(id);
 			this.clangamesLog.delete(id);
+			this.clanwarLog.delete(id);
 		}
 
 		if (!data) {
@@ -147,6 +152,7 @@ class CacheHandler {
 		if (mode === Modes.ACTIVITY_LOG) return this.activityLog.delete(id);
 		if (mode === Modes.CLAN_EMBED_LOG) return this.clanembedLog.delete(id);
 		if (mode === Modes.CLAN_GAMES_LOG) return this.clangamesLog.delete(id);
+		if (mode === Modes.CLAN_WAR_LOG) return this.clanwarLog.delete(id);
 	}
 
 	async start(key) {
