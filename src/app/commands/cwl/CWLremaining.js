@@ -141,26 +141,19 @@ class CWLRemainingComamnd extends Command {
 							missing += `\`${this.index(++index)} ${this.padEnd(member.name)}\`\n`;
 						}
 
+						const end = new Date(moment(data.endTime).toDate()).getTime();
 						embed.setDescription([
 							'**War Against**',
 							`${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
-							'War Ended',
+							`War ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
 							'',
 							`**Missed Attacks** - ${clan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
 							missing || 'All Players Attacked'
 						]);
-						const end = new Date(moment(data.endTime).toDate()).getTime();
-						embed.addField('War Ended', `${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-							.addField('Stats', [
-								`**${data.clan.name}**`,
-								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								'',
-								`**${data.opponent.name}**`,
-								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
-							]);
 					}
+
 					if (data.state === 'inWar') {
 						const started = new Date(moment(data.startTime).toDate()).getTime();
 						let missing = '';
@@ -178,25 +171,22 @@ class CWLRemainingComamnd extends Command {
 							`${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
-							'In War',
+							`Battle day started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
 							'',
 							`**Missing Attacks** - ${clan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
 							missing || 'All Players Attacked'
 						]);
-						embed.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-							.addField('Stats', [
-								`**${data.clan.name}**`,
-								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
-								'',
-								`**${data.opponent.name}**`,
-								`${emoji.star} ${data.opponent.stars} ${emoji.fire} ${data.opponent.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.opponent.attacks}`
-							]);
 					}
+
 					if (data.state === 'preparation') {
-						embed.addField('War Against', `${opponent.name} (${opponent.tag})`);
 						const start = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField('State', 'Preparation Day')
-							.addField('Starting In', `${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
+						embed.setDescription([
+							'**War Against**',
+							`${opponent.name} (${opponent.tag})`,
+							'',
+							'**State**',
+							`Preparation day strting ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+						]);
 					}
 
 					embed.setFooter(`Round #${++i}`);

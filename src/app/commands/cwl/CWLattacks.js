@@ -191,7 +191,7 @@ class CWLAttacksComamnd extends Command {
 							'**War Against**',
 							`${opponent.name} (${opponent.tag})`,
 							'',
-							'State',
+							'**State**',
 							`Preparation day starting in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
 						]);
 					}
