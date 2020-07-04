@@ -145,8 +145,8 @@ class CWLRoundComamnd extends Command {
 							.addField('Started', `${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 							.addField('Stats', [
 								`\`\u200e${data.clan.stars.toString().padStart(12, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(12, ' ')}\u200f\``,
-								`\`\u200e${data.clan.destructionPercentage.toFixed(2).toString().padStart(12, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${data.opponent.destructionPercentage.toFixed(2).toString().padEnd(12, ' ')}\u200f\``,
-								`\`\u200e${data.clan.attacks.toString().padStart(12, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padStart(12, ' ')}\u200f\``,
+								`\`\u200e${`${data.clan.destructionPercentage.toFixed(2)}%`.padStart(12, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${data.opponent.destructionPercentage.toFixed(2)}%`.padEnd(12, ' ')}\u200f\``,
+								`\`\u200e${data.clan.attacks.toString().padStart(12, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(12, ' ')}\u200f\``,
 								`**${data.clan.name}**`,
 								`${emoji.star} ${data.clan.stars} ${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% ${emoji.attacksword} ${data.clan.attacks}`,
 								'',
