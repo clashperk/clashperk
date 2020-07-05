@@ -13,9 +13,9 @@ class ClanWarEvent {
 
 	exec(id, clan) {
 		const cache = this.cached.get(id);
-		if (cache && cache.updatedAt) {
-			if (new Date() - new Date(cache.updatedAt) >= this.timer(cache)) {
-				cache.updatedAt = new Date();
+		if (cache && cache.updated) {
+			if (new Date() - new Date(cache.updated) >= this.timer(cache)) {
+				cache.updated = new Date();
 				this.cached.set(id, cache);
 				return this.permissionsFor(id, cache, clan);
 			}
@@ -24,7 +24,7 @@ class ClanWarEvent {
 		}
 
 		if (cache) {
-			cache.updatedAt = new Date();
+			cache.updated = new Date();
 			this.cached.set(id, cache);
 			return this.permissionsFor(id, cache, clan);
 		}
@@ -60,6 +60,7 @@ class ClanWarEvent {
 		let message = null;
 		if (this.isCWL) {
 			message = await this.fetchCWL(id, channel, clan);
+			if (message && message.queued) return;
 		} else if (!message) {
 			message = await this.fetchClanWar(id, channel, clan);
 		}
@@ -78,7 +79,14 @@ class ClanWarEvent {
 		const data = await res.json().catch(() => null);
 		if (!data) return null;
 		const warTag = await this.getWarTags(id, clan.tag, data);
-		return this.roundCWL(id, channel, clan, data, warTag);
+		if (!warTag) return { queued: true };
+		return this.roundCWL(id, channel, clan.tag, data, warTag);
+	}
+
+	cacheUpdate(id) {
+		const cache = this.cached.get(id);
+		delete cache.updated;
+		return this.cached.set(id, cache);
 	}
 
 	async getWarTags(id, clanTag, body) {
@@ -91,21 +99,32 @@ class ClanWarEvent {
 			if (data.rounds.length > 1) {
 				const rounds = data.rounds.filter(round => round.state !== 'warEnded');
 
-				const warEnded = rounds.find(r => r.state === 'inWar' && r.posted);
-				if (warEnded) return warEnded;
-
-				const inWar = rounds.find(r => r.state === 'inWar' && !r.posted);
-				if (inWar) return inWar;
+				const inWars = rounds.filter(r => r.state === 'inWar');
+				if (inWars.length > 1) {
+					this.cacheUpdate(id);
+					return inWars[0];
+				}
 
 				const preparation = rounds.find(r => r.state === 'preparation' && !r.posted);
-				if (preparation) return preparation;
+				if (preparation) {
+					this.cacheUpdate(id);
+					return preparation;
+				}
+
+				const inWar = rounds.find(r => r.state === 'inWar' && !r.posted);
+				if (inWar) {
+					this.cacheUpdate(id);
+					return inWar;
+				}
+
+				return null;
 			}
 		}
 
 		const collection = [];
 		let index = 0;
 		for (const { warTags } of rounds) {
-			if (data && data.warTags && data.warTags.length < index) continue;
+			if (data && data.rounds && data.rounds.length <= index) continue;
 			index += 1;
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
@@ -131,21 +150,21 @@ class ClanWarEvent {
 		}
 
 		if (!data && rounds.length > 1) {
-			return collection.find(war => war.state === 'inWar');
+			return collection.find(war => war.state === 'inWar') || collection.find(war => war.state === 'warEnded');
 		}
 		return collection.slice(-1)[0];
 	}
 
-	async roundCWL(id, channel, clan_data, body, warTag) {
-		const round = body.rounds.findIndex(round => round.warTags.includes(warTag)) + 1;
+	async roundCWL(id, channel, clanTag, body, warTag) {
+		const round = body.rounds.findIndex(round => round.warTags.includes(warTag.tag)) + 1;
 		const chunks = [];
 
-		const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
+		const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag.tag)}`, {
 			method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		});
 		const data = await res.json();
 
-		const clan = data.clan.tag === clan_data.tag ? data.clan : data.opponent;
+		const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 		const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
 		const embed = new MessageEmbed()
 			.setColor(/*  COLOR   */);
@@ -187,13 +206,14 @@ class ClanWarEvent {
 		embed.setFooter(`Round #${round}`);
 		chunks.push({ state: data.state, embed });
 
-		if (warTag.state !== data.state) {
+		if (warTag.state !== data.state || !warTag.posted) {
 			await mongodb.db('clashperk')
 				.collection('clanwars')
-				.findOneAndUpdate({ clan_id: ObjectId(id), 'warTags.tag': warTag.tag }, {
+				.findOneAndUpdate({ clan_id: ObjectId(id), 'rounds.tag': warTag.tag }, {
 					$set: {
 						clan_id: ObjectId(id),
-						'warTags.$.state': data.state
+						'rounds.$.state': data.state,
+						'rounds.$.posted': true
 					}
 				}, { upsert: true });
 		}
