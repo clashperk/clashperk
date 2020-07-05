@@ -124,8 +124,8 @@ class ClanWarEvent {
 		const collection = [];
 		let index = 0;
 		for (const { warTags } of rounds) {
-			if (data && data.rounds && data.rounds.length <= index) continue;
 			index += 1;
+			if (data && data.rounds && data.rounds.length > index - 1) continue;
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
 					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
@@ -149,10 +149,7 @@ class ClanWarEvent {
 			}
 		}
 
-		if (!data && rounds.length > 1) {
-			return collection.find(war => war.state === 'inWar') || collection.find(war => war.state === 'warEnded');
-		}
-		return collection.slice(-1)[0];
+		return this.getWarTags(id, clanTag, body);
 	}
 
 	async roundCWL(id, channel, clanTag, body, warTag) {
