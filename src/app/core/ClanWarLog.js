@@ -102,6 +102,8 @@ class ClanWarEvent {
 				const inWars = rounds.filter(r => r.state === 'inWar');
 				if (inWars.length > 1) {
 					this.cacheUpdate(id);
+					await inWars[0];
+					await this.delay(250);
 					return inWars[0];
 				}
 
@@ -127,7 +129,6 @@ class ClanWarEvent {
 			}
 		}
 
-		const collection = [];
 		let index = 0;
 		for (const { warTags } of rounds) {
 			index += 1;
@@ -138,14 +139,13 @@ class ClanWarEvent {
 				});
 				const data = await res.json();
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
-					collection.push({ tag: warTag, state: data.state });
-
 					// Push WarTags into Database
 					await mongodb.db('clashperk')
 						.collection('clanwars')
 						.findOneAndUpdate({ clan_id: ObjectId(id) }, {
 							$set: {
-								clan_id: ObjectId(id)
+								clan_id: ObjectId(id),
+								tag: clanTag
 							},
 							$push: { rounds: { tag: warTag, state: data.state } }
 						}, { upsert: true });
@@ -207,7 +207,6 @@ class ClanWarEvent {
 			`${this.roster(data.opponent.members)}`
 		]);
 		embed.setFooter(`Round #${round}`);
-		chunks.push({ state: data.state, embed });
 
 		if (warTag.state !== data.state || !warTag.posted) {
 			await mongodb.db('clashperk')
@@ -219,11 +218,14 @@ class ClanWarEvent {
 						'rounds.$.posted': true
 					}
 				}, { upsert: true });
+
+			if (warTag.state === 'warEnded') return this.attacks(data, data.clan, true);
 		}
 
 		return embed;
 	}
 
+	// For Normal Clan Wars
 	async fetchClanWar(id, channel, clan, content = '') {
 		const data = await this.clanWar(clan.tag);
 		if (!data) return null;
@@ -372,7 +374,32 @@ class ClanWarEvent {
 		return { content: ending && !db.posted ? '' : content, embed };
 	}
 
-	attacks(data, clan) {
+	// Build Remaining/Missed Attack Embed
+	attacks(data, clan, CWL = false) {
+		if (CWL) {
+			const embed = new MessageEmbed()
+				.setTitle(`${clan.name} (${clan.tag})`)
+				.setThumbnail(clan.badgeUrls.small)
+				.setURL(this.clanURL(clan.tag));
+
+			let index = 0;
+			const OneRem = [];
+			for (const member of data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition)) {
+				if (member.attacks && member.attacks.length === 1) {
+					++index;
+					continue;
+				}
+				OneRem.push({ mapPosition: ++index, name: member.name });
+			}
+			embed.setDescription([
+				`**${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
+				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`),
+				''
+			]);
+
+			return embed;
+		}
+
 		const [OneRem, TwoRem] = [
 			data.clan.members.filter(m => m.attacks && m.attacks.length === 1),
 			data.clan.members.filter(m => !m.attacks)
