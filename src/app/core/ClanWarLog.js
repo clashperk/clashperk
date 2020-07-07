@@ -102,8 +102,6 @@ class ClanWarEvent {
 				const inWars = rounds.filter(r => r.state === 'inWar');
 				if (inWars.length > 1) {
 					this.cacheUpdate(id);
-					await inWars[0];
-					await this.delay(250);
 					return inWars[0];
 				}
 
@@ -160,13 +158,10 @@ class ClanWarEvent {
 
 	async roundCWL(id, channel, clanTag, body, warTag) {
 		const round = body.rounds.findIndex(round => round.warTags.includes(warTag.tag)) + 1;
-		const chunks = [];
-
 		const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag.tag)}`, {
 			method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
 		});
 		const data = await res.json();
-
 		const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 		const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
 		const embed = new MessageEmbed()
@@ -220,9 +215,10 @@ class ClanWarEvent {
 				}, { upsert: true });
 
 			if (data.state === 'warEnded') {
-				const embed = new MessageEmbed(this.attacks(data, data.clan, true))
+				const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
+				const embed = new MessageEmbed(this.attacks(data, clan, true))
 					.setFooter(`Round #${round}`);
-				return embed;
+				return channel.send({ embed });
 			}
 		}
 
@@ -388,7 +384,7 @@ class ClanWarEvent {
 
 			let index = 0;
 			const OneRem = [];
-			for (const member of data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition)) {
+			for (const member of clan.members.sort((a, b) => a.mapPosition - b.mapPosition)) {
 				if (member.attacks && member.attacks.length === 1) {
 					++index;
 					continue;
