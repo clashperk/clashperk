@@ -118,7 +118,7 @@ class ClanWarEvent {
 				}
 
 				const preparations = rounds.filter(r => r.state === 'preparation');
-				if (inWars.length > 1) {
+				if (preparations.length > 1) {
 					this.cacheUpdate(id);
 					return preparations[0];
 				}
