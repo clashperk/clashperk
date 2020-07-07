@@ -51,7 +51,6 @@ class SetCommand extends Command {
 
 			users.push(user.id);
 			this.client.settings.set('global', 'betaUsers', users);
-
 			return message.util.send(`${user.tag} has been add to beta.`);
 		}
 	}
