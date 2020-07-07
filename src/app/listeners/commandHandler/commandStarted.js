@@ -44,25 +44,23 @@ class CommandStartedListener extends Listener {
 				id: message.author.id,
 				username: message.author.tag
 			},
-			extra: {
-				guild: message.guild
-					? {
-						id: message.guild.id,
-						name: message.guild.name,
-						channel_id: message.channel.id
-					}
-					: null,
-				command: {
-					id: command.id,
-					aliases: command.aliases,
-					category: command.category.id
-				},
-				message: {
-					id: message.id,
-					content: message.content
-				},
-				args
-			}
+			guild: message.guild
+				? {
+					id: message.guild.id,
+					name: message.guild.name,
+					channel_id: message.channel.id
+				}
+				: null,
+			command: {
+				id: command.id,
+				aliases: command.aliases,
+				category: command.category.id
+			},
+			message: {
+				id: message.id,
+				content: message.content
+			},
+			args
 		});
 
 		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
