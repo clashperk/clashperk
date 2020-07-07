@@ -132,7 +132,7 @@ class CWLStarsComamnd extends Command {
 				},
 				description: [
 					`\`\`\`\u200e # STR DEST ATT ${'NAME'}`,
-					leaderboard.filter(m => m.attacks !== 0 && m.of !== 0)
+					leaderboard.filter(m => m.of > 0)
 						.map((m, i) => `\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')} ${this.destruction(m.dest)} ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.substring(0, 12)}`)
 						.join('\n'),
 					'```'
