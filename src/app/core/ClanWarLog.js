@@ -69,6 +69,7 @@ class ClanWarEvent {
 		return channel.send(message);
 	}
 
+	// Fetch Clan-War-League-Group
 	async fetchCWL(id, channel, clan) {
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(clan.tag)}/currentwar/leaguegroup`, {
 			method: 'GET', timeout: 3000,
@@ -89,6 +90,7 @@ class ClanWarEvent {
 		return this.cached.set(id, cache);
 	}
 
+	// Fetch Clan-War-League-Rounds
 	async getWarTags(id, clanTag, body) {
 		const data = await mongodb.db('clashperk')
 			.collection('clanwars')
@@ -163,6 +165,7 @@ class ClanWarEvent {
 		return this.getWarTags(id, clanTag, body);
 	}
 
+	// For Clan-War-League Embed
 	async roundCWL(id, channel, clanTag, body, warTag) {
 		const round = body.rounds.findIndex(round => round.warTags.includes(warTag.tag)) + 1;
 		const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag.tag)}`, {
@@ -403,7 +406,8 @@ class ClanWarEvent {
 			}
 			embed.setDescription([
 				`**${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
-				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`),
+				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition)
+					.map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`) || 'All Members Attacked',
 				''
 			]);
 
@@ -443,6 +447,7 @@ class ClanWarEvent {
 		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 
+	// Decides War Result
 	result(clan, opponent) {
 		const stars = clan.stars !== opponent.stars && clan.stars > opponent.stars;
 		const destr = clan.stars === opponent.stars && clan.destructionPercentage > opponent.destructionPercentage;
@@ -450,6 +455,7 @@ class ClanWarEvent {
 		return false;
 	}
 
+	// Builds Clan Roster
 	roster(members = []) {
 		const reduced = members.reduce((count, member) => {
 			const townHall = member.townhallLevel;
