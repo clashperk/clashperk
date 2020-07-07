@@ -117,6 +117,12 @@ class ClanWarEvent {
 					return inWar;
 				}
 
+				const preparations = rounds.filter(r => r.state === 'preparation');
+				if (inWars.length > 1) {
+					this.cacheUpdate(id);
+					return preparations[0];
+				}
+
 				return null;
 			}
 		}

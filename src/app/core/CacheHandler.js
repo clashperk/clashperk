@@ -96,7 +96,15 @@ class CacheHandler {
 		const id = ObjectId(_id).toString();
 
 		if (data && data.mode) {
-			await this.addLogs(_id, data.mode);
+			const Op = {
+				[Modes.DONATION_LOG]: this.donationLog,
+				[Modes.CLAN_LOG]: this.clanLog,
+				[Modes.ACTIVITY_LOG]: this.activityLog,
+				[Modes.CLAN_EMBED_LOG]: this.clanembedLog,
+				[Modes.CLAN_GAMES_LOG]: this.clangamesLog,
+				[Modes.CLAN_WAR_LOG]: this.clanwarLog
+			}[data.mode];
+			await Op.init(_id);
 		} else {
 			await this.clanLog.add(id);
 			await this.clanwarLog.add(id);
@@ -115,28 +123,27 @@ class CacheHandler {
 		}
 	}
 
-	async addLogs(_id, mode) {
-		if (mode === Modes.DONATION_LOG) return this.donationLog.add(_id);
-		if (mode === Modes.CLAN_LOG) return this.clanLog.add(_id);
-		if (mode === Modes.ACTIVITY_LOG) return this.activityLog.add(_id);
-		if (mode === Modes.CLAN_EMBED_LOG) return this.clanembedLog.add(_id);
-		if (mode === Modes.CLAN_GAMES_LOG) return this.clangamesLog.add(_id);
-		if (mode === Modes.CLAN_WAR_LOG) return this.clanwarLog.add(_id);
-	}
-
 	delete(_id, data) {
 		const id = ObjectId(_id).toString();
 		const cache = this.cached.get(id);
 
 		if (data && data.mode) {
-			this.stopLogs(id, data.mode);
+			const Op = {
+				[Modes.DONATION_LOG]: this.donationLog,
+				[Modes.CLAN_LOG]: this.clanLog,
+				[Modes.ACTIVITY_LOG]: this.activityLog,
+				[Modes.CLAN_EMBED_LOG]: this.clanembedLog,
+				[Modes.CLAN_GAMES_LOG]: this.clangamesLog,
+				[Modes.CLAN_WAR_LOG]: this.clanwarLog
+			}[data.mode];
+			Op.delete(id);
 		} else {
-			this.clanembedLog.delete(id);
-			this.donationLog.delete(id);
 			this.clanLog.delete(id);
-			this.activityLog.delete(id);
-			this.clangamesLog.delete(id);
 			this.clanwarLog.delete(id);
+			this.donationLog.delete(id);
+			this.activityLog.delete(id);
+			this.clanembedLog.delete(id);
+			this.clangamesLog.delete(id);
 		}
 
 		if (!data) {
@@ -144,15 +151,6 @@ class CacheHandler {
 			if (cache && cache.intervalId) clearInterval(cache.intervalId);
 			return this.cached.delete(id);
 		}
-	}
-
-	async stopLogs(id, mode) {
-		if (mode === Modes.DONATION_LOG) return this.donationLog.delete(id);
-		if (mode === Modes.CLAN_LOG) return this.clanLog.delete(id);
-		if (mode === Modes.ACTIVITY_LOG) return this.activityLog.delete(id);
-		if (mode === Modes.CLAN_EMBED_LOG) return this.clanembedLog.delete(id);
-		if (mode === Modes.CLAN_GAMES_LOG) return this.clangamesLog.delete(id);
-		if (mode === Modes.CLAN_WAR_LOG) return this.clanwarLog.delete(id);
 	}
 
 	async start(key) {
