@@ -199,6 +199,7 @@ class CWLAttacksComamnd extends Command {
 					embed.setFooter(`Round #${++i}`);
 
 					chunks.push({ state: data.state, embed });
+					break;
 				}
 			}
 		}

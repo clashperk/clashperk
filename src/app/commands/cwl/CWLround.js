@@ -162,6 +162,7 @@ class CWLRoundComamnd extends Command {
 					embed.setFooter(`Round #${++index} (${warTag})`);
 
 					chunks.push({ state: data.state, embed });
+					break;
 				}
 			}
 		}

@@ -163,7 +163,7 @@ class ClanWarEvent {
 		const chunks = [];
 
 		const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag.tag)}`, {
-			method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+			method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
 		});
 		const data = await res.json();
 
@@ -219,7 +219,11 @@ class ClanWarEvent {
 					}
 				}, { upsert: true });
 
-			if (data.state === 'warEnded') return this.attacks(data, data.clan, true);
+			if (data.state === 'warEnded') {
+				const embed = new MessageEmbed(this.attacks(data, data.clan, true))
+					.setFooter(`Round #${round}`);
+				return embed;
+			}
 		}
 
 		return embed;

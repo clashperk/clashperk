@@ -118,6 +118,7 @@ class CWLStarsComamnd extends Command {
 							}
 						}
 					}
+					break;
 				}
 			}
 		}
