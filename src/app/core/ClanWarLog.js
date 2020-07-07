@@ -218,7 +218,10 @@ class ClanWarEvent {
 				const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 				const embed = new MessageEmbed(this.attacks(data, clan, true))
 					.setFooter(`Round #${round}`);
-				await channel.send({ embed });
+				const timeoutId = setTimeout(async () => {
+					clearTimeout(timeoutId);
+					return channel.send({ embed });
+				}, 250);
 			}
 		}
 
