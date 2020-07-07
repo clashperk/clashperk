@@ -119,8 +119,15 @@ class ClanWarEvent {
 
 				const preparations = rounds.filter(r => r.state === 'preparation');
 				if (preparations.length > 1) {
-					this.cacheUpdate(id);
-					return preparations[0];
+					await mongodb.db('clashperk')
+						.collection('clanwars')
+						.updateOne({ clan_id: ObjectId(id), 'rounds.tag': preparations[0].tag }, {
+							$set: {
+								'rounds.$.state': 'inWar',
+								'rounds.$.posted': false
+							}
+						}, { upsert: true });
+					return this.getWarTags(id, clanTag, body);
 				}
 
 				return null;
