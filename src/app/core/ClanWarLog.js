@@ -219,7 +219,7 @@ class ClanWarEvent {
 					}
 				}, { upsert: true });
 
-			if (warTag.state === 'warEnded') return this.attacks(data, data.clan, true);
+			if (data.state === 'warEnded') return this.attacks(data, data.clan, true);
 		}
 
 		return embed;
