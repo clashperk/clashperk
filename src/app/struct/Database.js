@@ -82,7 +82,7 @@ class Database {
 				.createIndex({ id: 1 }, { unique: true }),
 
 			db.collection('clanwars')
-				.createIndex({ tag: 1, guild: 1 }, { unique: true }),
+				.createIndex({ clan_id: 1 }, { unique: true }),
 
 			db.collection('clanstores').createIndex({ patron: 1 })
 		]);
