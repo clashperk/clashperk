@@ -1,6 +1,18 @@
 require('dotenv').config();
+const Discord = require('discord.js');
+const path = require('path');
 
-const Manager = require('./shard');
+class Manager extends Discord.ShardingManager {
+	constructor() {
+		super(path.join(__dirname, 'main.js'), {
+			token: process.env.TOKEN
+		});
+	}
+
+	init() {
+		return this.spawn();
+	}
+}
 
 const ShardingManager = new Manager();
 
