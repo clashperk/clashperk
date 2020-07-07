@@ -12,8 +12,10 @@ if (process.env.SENTRY) {
 		release: package.version
 	});
 }
-client.start(process.env.TOKEN);
 
 client.on('error', error => client.logger.error(error, { label: 'CLIENT ERROR' }));
 client.on('warn', warn => client.logger.warn(warn, { label: 'CLIENT WARN' }));
+
+client.start(process.env.TOKEN);
+
 process.on('unhandledRejection', error => client.logger.error(error, { label: 'UNHANDLED REJECTION' }));
