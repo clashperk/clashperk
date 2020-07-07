@@ -487,10 +487,4 @@ class ClanWarEvent {
 	}
 }
 
-class CWL {
-	constructor(client) {
-		this.client = client;
-	}
-}
-
 module.exports = ClanWarEvent;

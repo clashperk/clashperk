@@ -34,12 +34,58 @@ class Database {
 		return firebaseApp.firestore();
 	}
 
-	static async connect() {
-		return mongodb.init();
+	static async connect(client) {
+		return mongodb.init().then(() => {
+			client.logger.info('MongoDB Connected', { label: 'MONGODB' });
+			return mongodb;
+		});
 	}
 
 	static get mongodb() {
 		return mongodb;
+	}
+
+	static async createIndex() {
+		const db = mongodb.db('clashperk');
+		return Promise.all([
+			db.collection('clanstores')
+				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
+
+			db.collection('donationlogs')
+				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
+
+			db.collection('lastonlinelogs')
+				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
+
+			db.collection('lastonlines')
+				.createIndex({ tag: 1 }, { unique: true }),
+
+			db.collection('clangameslogs')
+				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
+
+			db.collection('clanembedlogs')
+				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
+
+			db.collection('flaggedusers')
+				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
+
+			db.collection('linkedclans')
+				.createIndex({ user: 1, tag: 1 }, { unique: true }),
+
+			db.collection('linkedusers')
+				.createIndex({ user: 1, tag: 1 }, { unique: true }),
+
+			db.collection('playerlogs')
+				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
+
+			db.collection('settings')
+				.createIndex({ id: 1 }, { unique: true }),
+
+			db.collection('clanwars')
+				.createIndex({ tag: 1, guild: 1 }, { unique: true }),
+
+			db.collection('clanstores').createIndex({ patron: 1 })
+		]);
 	}
 }
 
