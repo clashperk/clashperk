@@ -91,7 +91,14 @@ class PlayerEvent {
 						username: this.client.user.username,
 						avatarURL: this.client.user.displayAvatarURL()
 					});
-				} catch { }
+				} catch (error) {
+					if (error.code === 10015) {
+						delete cache.webhook;
+						this.cached.set(id, cache);
+						await this.createWebhook(channel, id);
+					}
+					break;
+				}
 				await this.delay(250);
 			}
 

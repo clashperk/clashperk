@@ -86,12 +86,20 @@ class ClanEvent {
 		if (cache.webhook) {
 			const webhook = new WebhookClient(cache.webhook.id, cache.webhook.token);
 			try {
-				return webhook.send({
+				await webhook.send({
 					embeds: [embed],
 					username: this.client.user.username,
 					avatarURL: this.client.user.displayAvatarURL()
 				});
-			} catch {}
+			} catch (error) {
+				if (error.code === 10015) {
+					delete cache.webhook;
+					this.cached.set(id, cache);
+					await this.createWebhook(channel, id);
+				}
+			}
+
+			return webhook;
 		}
 
 		return channel.send({ embed }).catch(() => null);
