@@ -87,8 +87,8 @@ class PlayerEvent {
 
 			if (flag) {
 				const user = await this.client.users.fetch(flag.user, false).catch(() => null);
-				if (channel.guild.roles.cache.has(flag.role)) {
-					const role = channel.guild.roles.cache.get(flag.role);
+				if (channel.guild.roles.cache.has(cache.role)) {
+					const role = channel.guild.roles.cache.get(cache.role);
 					content = `${role}`;
 				}
 				embed.setDescription([
@@ -96,7 +96,12 @@ class PlayerEvent {
 					'',
 					'**Flag**',
 					`${flag.reason}`,
-					`**${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D YYYY kk:mm')})**`
+					'',
+					'**Owner**',
+					`${user ? user.tag : 'Unknown#0000'}`,
+					'',
+					'**Date**',
+					`${moment.utc(flag.createdAt).format('MMMM Do YYYY kk:mm:ss')}`
 				]);
 			}
 		}
