@@ -103,13 +103,13 @@ class PlayerCommand extends Command {
 			const user = await this.client.users.fetch(body.user, false).catch(() => null);
 			embed.addField('Flag', [
 				body.reason,
-				'',
 				'**Owner**',
 				`${user ? user.tag : 'Unknown#0000'}`,
-				'',
 				'**Date**',
 				`${moment(body.createdAt).format('MMMM Do YYYY hh:mm:ss')}`
 			]);
+			// .addField('Owner', `${user ? user.tag : 'Unknown#0000'}`)
+			// .addField('Date', `${moment(body.createdAt).format('MMMM Do YYYY hh:mm:ss')}`)
 		}
 
 		return message.util.send({ embed });
