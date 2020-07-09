@@ -22,7 +22,6 @@ class ClanEvent {
 			'EMBED_LINKS',
 			'USE_EXTERNAL_EMOJIS',
 			'ADD_REACTIONS',
-			// 'MANAGE_WEBHOOKS',
 			'VIEW_CHANNEL'
 		];
 

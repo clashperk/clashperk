@@ -33,7 +33,6 @@ class PlayerEvent {
 			'EMBED_LINKS',
 			'USE_EXTERNAL_EMOJIS',
 			'ADD_REACTIONS',
-			// 'MANAGE_WEBHOOKS',
 			'VIEW_CHANNEL'
 		];
 
@@ -65,7 +64,7 @@ class PlayerEvent {
 		let content = '';
 		const embed = new MessageEmbed()
 			.setColor(MODE[item.mode])
-			.setTitle(`\u200e${member.name} - ${member.tag}`)
+			.setTitle(`\u200e${member.name} (${member.tag})`)
 			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`);
 		if (item.mode === 'LEFT') {
 			embed.setDescription([
@@ -96,12 +95,7 @@ class PlayerEvent {
 					'',
 					'**Flag**',
 					`${flag.reason}`,
-					'',
-					'**Owner**',
-					`${user ? user.tag : 'Unknown#0000'}`,
-					'',
-					'**Date**',
-					`${moment.utc(flag.createdAt).format('MMMM Do YYYY kk:mm:ss')}`
+					`\`${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('DD-MM-YYYY kk:mm')})\``
 				]);
 			}
 		}
