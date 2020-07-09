@@ -47,12 +47,14 @@ class PlayerCommand extends Command {
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.league ? data.league.iconUrls.small : null);
 
-		embed.addField('Town Hall', `${townHallEmoji[data.townHallLevel]} ${data.townHallLevel}`, true);
+		embed.addField('Town Hall', [
+			`${townHallEmoji[data.townHallLevel]} ${data.townHallLevel}`,
+			`${emoji.xp} ${data.expLevel}`
+		], true);
 		embed.addField('Current League', [
 			`${emoji.trophy} ${data.trophies}`,
 			`${leagueEmoji[data.league ? data.league.id : 29000000]} ${data.league ? data.league.name : 'Unranked'}`
 		], true);
-		embed.addField('XP Level', `${emoji.xp} ${data.expLevel}`, true);
 
 		embed.addField('Best Trophies', `${leagueEmoji[leagueId(data.bestTrophies)]} **${data.bestTrophies}**`, true);
 
@@ -81,7 +83,8 @@ class PlayerCommand extends Command {
 				.replace(/member/g, 'Member')
 				.replace(/leader/g, 'Leader');
 			embed.addField(`Clan ${role}`, [
-				`${emoji.clan} ${data.clan.name} [${data.clan.tag}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)})`
+				`${emoji.clan} ${data.clan.name}`,
+				`${emoji.channel} [${data.clan.tag}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)})`
 			]);
 		}
 
