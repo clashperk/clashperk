@@ -82,7 +82,7 @@ class PlayerCommand extends Command {
 				.replace(/coLeader/g, 'Co-Leader')
 				.replace(/member/g, 'Member')
 				.replace(/leader/g, 'Leader');
-			embed.addField(`Clan ${role}`, `[${emoji.clan} ${data.clan.name}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)})`);
+			embed.addField(`Clan ${role}`, `${emoji.clan} [${data.clan.name}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)})`);
 		}
 
 		let heroLevels = '';
