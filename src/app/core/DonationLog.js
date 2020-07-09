@@ -83,56 +83,8 @@ class ClanEvent {
 			]);
 		}
 
-		if (!cache.webhook) await this.createWebhook(channel, id);
-		if (cache.webhook) {
-			const webhook = new WebhookClient(cache.webhook.id, cache.webhook.token);
-			try {
-				await webhook.send({
-					embeds: [embed],
-					username: this.client.user.username,
-					avatarURL: this.client.user.displayAvatarURL()
-				});
-			} catch (error) {
-				if (error.code === 10015) {
-					delete cache.webhook;
-					this.cached.set(id, cache);
-					await this.createWebhook(channel, id);
-				}
-			}
-
-			return webhook;
-		}
-
 		return channel.send({ embed }).catch(() => null);
 	}
-
-	async createWebhook(channel, id) {
-		if (!channel.permissionsFor(channel.guild.me).has(['MANAGE_WEBHOOKS'], false)) return null;
-		const webhooks = await channel.fetchWebhooks().catch(() => null);
-		let webhook = null;
-		if (webhooks) {
-			webhook = webhooks.filter(w => w.owner && w.owner.id === this.client.user.id).first();
-		}
-
-		if (!webhook && webhooks.size >= 10) {
-			return null;
-		}
-
-		if (!webhook) {
-			webhook = await channel.createWebhook(this.client.user.username, {
-				avatar: this.client.user.displayAvatarURL(),
-				reason: 'Webhook Created for Clan Log'
-			});
-		}
-
-		const cache = this.cached.get(id);
-		cache.webhook = { id: webhook.id, token: webhook.token };
-		this.cached.set(id, cache);
-		await mongodb.db('clashperk')
-			.collection('donationlogs')
-			.updateOne({ clan_id: ObjectId(id) }, { $set: { webhook: { id: webhook.id, token: webhook.token } } });
-	}
-
 
 	divmod(num) {
 		return [Math.floor(num / 100) * 100, num % 100];

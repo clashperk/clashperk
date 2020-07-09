@@ -45,66 +45,7 @@ class PlayerEvent {
 		}
 	}
 
-	async createWebhook(channel, id) {
-		if (!channel.permissionsFor(channel.guild.me).has(['MANAGE_WEBHOOKS'], false)) return null;
-		const webhooks = await channel.fetchWebhooks().catch(() => null);
-		let webhook = null;
-		if (webhooks) {
-			webhook = webhooks.filter(w => w.owner && w.owner.id === this.client.user.id).first();
-		}
-
-		if (!webhook && webhooks.size >= 10) {
-			return null;
-		}
-
-		if (!webhook) {
-			webhook = await channel.createWebhook(this.client.user.username, {
-				avatar: this.client.user.displayAvatarURL(),
-				reason: 'Webhook Created for Clan Log'
-			});
-		}
-
-		const cache = this.cached.get(id);
-		cache.webhook = { id: webhook.id, token: webhook.token };
-		this.cached.set(id, cache);
-		await mongodb.db('clashperk')
-			.collection('playerlogs')
-			.updateOne({ clan_id: ObjectId(id) }, { $set: { webhook: { id: webhook.id, token: webhook.token } } });
-	}
-
 	async handleMessage(channel, data, id) {
-		const cache = this.cached.get(id);
-		if (!cache.webhook) await this.createWebhook(channel, id);
-		if (cache.webhook) {
-			const embeds = [];
-			const webhook = new WebhookClient(cache.webhook.id, cache.webhook.token);
-			for (const item of data.tags.sort((a, b) => a.value - b.value)) {
-				const embed = await this.embed(item, data, id);
-				if (!embed) continue;
-				embeds.push(embed);
-			}
-			const chunks = this.chunk(embeds);
-			for (const chunk of chunks) {
-				try {
-					await webhook.send({
-						embeds: [...chunk],
-						username: this.client.user.username,
-						avatarURL: this.client.user.displayAvatarURL()
-					});
-				} catch (error) {
-					if (error.code === 10015) {
-						delete cache.webhook;
-						this.cached.set(id, cache);
-						await this.createWebhook(channel, id);
-					}
-					break;
-				}
-				await this.delay(250);
-			}
-
-			return data.tags.length;
-		}
-
 		const ms = data.tags.length >= 5 ? 2000 : 250;
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
 			const embed = await this.embed(item, data, id);
@@ -114,15 +55,6 @@ class PlayerEvent {
 		}
 
 		return data.tags.length;
-	}
-
-	chunk(items = []) {
-		const chunk = 10;
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
-		}
-		return array;
 	}
 
 	async embed(item, data, id) {
