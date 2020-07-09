@@ -47,7 +47,7 @@ class PlayerCommand extends Command {
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.league ? data.league.iconUrls.small : null);
 
-		embed.addField('Town Hall', [
+		embed.addField('Town Hall & XP', [
 			`${townHallEmoji[data.townHallLevel]} ${data.townHallLevel}`,
 			`${emoji.xp} ${data.expLevel}`
 		], true);
