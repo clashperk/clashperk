@@ -101,8 +101,7 @@ class ClanEvent {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					// guild: data.guild,
 					channel: data.channel,
-					color: data.color,
-					webhook: data.webhook
+					color: data.color
 				});
 			}
 		});
@@ -117,8 +116,7 @@ class ClanEvent {
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			// guild: data.guild,
 			channel: data.channel,
-			color: data.color,
-			webhook: data.webhook
+			color: data.color
 		});
 	}
 

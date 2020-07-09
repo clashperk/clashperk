@@ -138,8 +138,7 @@ class PlayerEvent {
 			if (this.client.guilds.cache.has(data.guild)) {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					guild: data.guild,
-					channel: data.channel,
-					webhook: data.webhook
+					channel: data.channel
 				});
 			}
 		});
@@ -153,8 +152,7 @@ class PlayerEvent {
 		if (!data) return null;
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			guild: data.guild,
-			channel: data.channel,
-			webhook: data.webhook
+			channel: data.channel
 		});
 	}
 
