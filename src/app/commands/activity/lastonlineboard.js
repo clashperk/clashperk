@@ -46,13 +46,13 @@ class LastOnlineBoardCommand extends Command {
 			default: message => message.channel
 		};
 
-		const color = yield {
+		const hexColor = yield {
 			type: 'color',
 			unordered: [1, 2],
 			default: message => this.client.embed(message)
 		};
 
-		return { data, channel, color };
+		return { data, channel, hexColor };
 	}
 
 	cooldown(message) {
@@ -60,7 +60,7 @@ class LastOnlineBoardCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, channel, color }) {
+	async exec(message, { data, channel, hexColor }) {
 		const clans = await this.clans(message);
 		const max = this.client.patron.get(message.guild.id, 'limit', 2);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
@@ -92,7 +92,7 @@ class LastOnlineBoardCommand extends Command {
 			channel: channel.id,
 			tag: data.tag,
 			name: data.name,
-			color,
+			color: hexColor,
 			message: msg.id,
 			patron: this.client.patron.get(message.guild.id, 'guild', false)
 		});
@@ -112,7 +112,7 @@ class LastOnlineBoardCommand extends Command {
 				'120 sec',
 				'',
 				'**Color**',
-				`\`#${color.toString(16)}\``,
+				`\`#${hexColor.toString(16)}\``,
 				'',
 				'**Channel**',
 				`${channel}`,
@@ -120,7 +120,7 @@ class LastOnlineBoardCommand extends Command {
 				'**Last Online Board**',
 				`[Enabled](${msg.url})`
 			])
-			.setColor(color);
+			.setColor(hexColor);
 		if (message.channel.id !== channel.id) return message.util.send({ embed });
 		return message;
 	}

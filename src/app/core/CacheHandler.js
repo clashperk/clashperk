@@ -66,12 +66,12 @@ class CacheHandler {
 			.find()
 			.toArray();
 
-		for (const item of collection) {
-			if (this.client.guilds.cache.has(item.guild) && !item.frozen) {
-				this.cached.set(ObjectId(item._id).toString(), {
-					// _id: item._id,
-					// guild: item.guild,
-					tag: item.tag
+		for (const data of collection) {
+			if (this.client.guilds.cache.has(data.guild) && !data.active) {
+				this.cached.set(ObjectId(data._id).toString(), {
+					// _id: data._id,
+					guild: data.guild,
+					tag: data.tag
 				});
 			}
 		}

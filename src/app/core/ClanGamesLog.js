@@ -115,7 +115,7 @@ class ClanGames {
 	}
 
 	async sendNew(id, channel, clan) {
-		const embed = await this.embed(clan);
+		const embed = await this.embed(clan, id);
 		const message = await channel.send({ embed })
 			.catch(() => null);
 
@@ -135,7 +135,7 @@ class ClanGames {
 	}
 
 	async edit(id, message, clan) {
-		const embed = await this.embed(clan);
+		const embed = await this.embed(clan, id);
 		if (message instanceof Message === false) {
 			const cache = this.cached.get(id);
 			cache.msg = null;
@@ -156,7 +156,7 @@ class ClanGames {
 		return msg;
 	}
 
-	async embed(clan) {
+	async embed(clan, id) {
 		const db = mongodb.db('clashperk').collection('clangames');
 		const data = await db.findOne({ tag: clan.tag });
 		const items = await this.getList(clan, data, clan.memberList.map(m => m.tag));
@@ -165,15 +165,10 @@ class ClanGames {
 
 		const day = this.client.settings.get('global', 'clangamesDay', 22);
 		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), `${day + 1}T08:00:00Z`].join('-');
-		let createdAt = new Date();
-		try {
-			createdAt = new Date(ObjectId(items.data._id).getTimestamp());
-		} catch (error) {
-			console.log(error);
-			console.log(clan);
-		}
+		const createdAt = new Date(ObjectId(items.data._id).getTimestamp());
+		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
+			.setColor(cache.color)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Clan Games Scoreboard [${clan.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`,

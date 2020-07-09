@@ -46,13 +46,13 @@ class ClanGamesBoardCommand extends Command {
 			default: message => message.channel
 		};
 
-		const color = yield {
+		const hexColor = yield {
 			type: 'color',
 			unordered: [1, 2],
 			default: message => this.client.embed(message)
 		};
 
-		return { data, channel, color };
+		return { data, channel, hexColor };
 	}
 
 	cooldown(message) {
@@ -60,7 +60,7 @@ class ClanGamesBoardCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, channel, color }) {
+	async exec(message, { data, channel, hexColor }) {
 		const clans = await this.clans(message);
 		const max = this.client.patron.get(message.guild.id, 'limit', 2);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
@@ -94,7 +94,7 @@ class ClanGamesBoardCommand extends Command {
 			message: msg.id,
 			name: data.name,
 			tag: data.tag,
-			color
+			color: hexColor
 		});
 
 		await this.client.cacheHandler.add(id, {
@@ -112,7 +112,7 @@ class ClanGamesBoardCommand extends Command {
 				`${this.client.patron.get(message.guild.id, 'guild', false) ? 15 : 30} min`,
 				'',
 				'**Color**',
-				`\`#${color.toString(16)}\``,
+				`\`#${hexColor.toString(16)}\``,
 				'',
 				'**Channel**',
 				`${channel}`,
@@ -120,7 +120,7 @@ class ClanGamesBoardCommand extends Command {
 				'**Clan Games Board**',
 				`[Enabled](${message.url})`
 			])
-			.setColor(color);
+			.setColor(hexColor);
 		if (message.channel.id !== channel.id) return message.util.send({ embed });
 		return message;
 	}

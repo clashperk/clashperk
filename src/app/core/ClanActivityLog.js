@@ -91,7 +91,7 @@ class LastOnlineEvent {
 	}
 
 	async sendNew(id, channel, clan) {
-		const embed = await this.embed(clan);
+		const embed = await this.embed(clan, id);
 		const message = await channel.send({ embed })
 			.catch(() => null);
 
@@ -111,7 +111,7 @@ class LastOnlineEvent {
 	}
 
 	async edit(id, message, clan) {
-		const embed = await this.embed(clan);
+		const embed = await this.embed(clan, id);
 		if (message instanceof Message === false) {
 			const cache = this.cached.get(id);
 			cache.msg = null;
@@ -131,13 +131,14 @@ class LastOnlineEvent {
 		return msg;
 	}
 
-	async embed(clan) {
+	async embed(clan, id) {
 		const data = await mongodb.db('clashperk')
 			.collection('lastonlines')
 			.findOne({ tag: clan.tag });
 
+		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
+			.setColor(cache.color)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Last Online Board [${clan.members}/50]`,
@@ -195,7 +196,8 @@ class LastOnlineEvent {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					// guild: data.guild,
 					channel: data.channel,
-					message: data.message
+					message: data.message,
+					color: data.color
 				});
 			}
 		});
@@ -210,7 +212,8 @@ class LastOnlineEvent {
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			// guild: data.guild,
 			channel: data.channel,
-			message: data.message
+			message: data.message,
+			color: data.color
 		});
 	}
 

@@ -16,7 +16,7 @@ class SetupCommand extends Command {
 					'• onlineboard `<clanTag> [channel/color]`',
 					'• cgboard `<clanTag> [channel/color]`',
 					// '• warlog `<clanTag> [channel/color]`',
-					'• playerlog `<clanTag> [channel/color]`',
+					'• playerlog `<clanTag> [channel]`',
 					'',
 					'**Required: `<>` | Optional: `[]`**',
 					'For additional `<...args>` usage refer to the examples below.'
@@ -45,7 +45,7 @@ class SetupCommand extends Command {
 				['lastonlineboard', 'onlineboard'],
 				['clangamesboard', 'cgboard'],
 				['clanembed', 'cembed'],
-				// ['warlog'],
+				// ['clan-warlog', 'warlog'],
 				['playerlog', 'clanlog']
 			],
 			otherwise: message => {

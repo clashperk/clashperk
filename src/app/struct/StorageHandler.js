@@ -15,6 +15,8 @@ class StorageHandler {
 					guild: data.guild,
 					name: data.name,
 					verified: true,
+					patron: data.patron,
+					active: true,
 					createdAt: new Date()
 				}
 			}, { upsert: true, returnOriginal: false });
@@ -32,7 +34,6 @@ class StorageHandler {
 							name: data.name,
 							channel: data.channel,
 							color: data.color,
-							patron: data.patron,
 							webhook: data.webhook,
 							createdAt: new Date()
 						}
@@ -47,7 +48,6 @@ class StorageHandler {
 							guild: data.guild,
 							name: data.name,
 							channel: data.channel,
-							patron: data.patron,
 							webhook: data.webhook,
 							createdAt: new Date()
 						}
@@ -64,7 +64,6 @@ class StorageHandler {
 							channel: data.channel,
 							color: data.color,
 							message: data.message,
-							patron: data.patron,
 							createdAt: new Date()
 						}
 					}, { upsert: true });
@@ -80,7 +79,6 @@ class StorageHandler {
 							channel: data.channel,
 							color: data.color,
 							message: data.message,
-							patron: data.patron,
 							createdAt: new Date()
 						}
 					}, { upsert: true });
@@ -96,7 +94,6 @@ class StorageHandler {
 							channel: data.channel,
 							color: data.color,
 							message: data.message,
-							patron: data.patron,
 							embed: data.embed,
 							createdAt: new Date()
 						}
@@ -111,7 +108,6 @@ class StorageHandler {
 							guild: data.guild,
 							name: data.name,
 							channel: data.channel,
-							patron: data.patron,
 							createdAt: new Date()
 						}
 					}, { upsert: true });
