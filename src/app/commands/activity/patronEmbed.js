@@ -112,7 +112,7 @@ class ClanEmbedCommand extends Command {
 
 		const msg = await message.util.send({ embed });
 
-		const id = await this.client.storage.register({
+		const id = await this.client.storage.register(message, {
 			mode: Modes.CLAN_EMBED_LOG,
 			guild: message.guild.id,
 			channel: message.channel.id,

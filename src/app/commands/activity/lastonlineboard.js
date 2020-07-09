@@ -86,7 +86,7 @@ class LastOnlineBoardCommand extends Command {
 			}
 		});
 
-		const id = await this.client.storage.register({
+		const id = await this.client.storage.register(message, {
 			mode: Modes.ACTIVITY_LOG,
 			guild: message.guild.id,
 			channel: channel.id,

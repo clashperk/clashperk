@@ -80,7 +80,7 @@ class PlayerLogCommand extends Command {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
 		}
 
-		const id = await this.client.storage.register({
+		const id = await this.client.storage.register(message, {
 			mode: Modes.CLAN_LOG,
 			guild: message.guild.id,
 			channel: channel.id,

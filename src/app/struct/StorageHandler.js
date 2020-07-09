@@ -7,7 +7,7 @@ class StorageHandler {
 		this.client = client;
 	}
 
-	async register(data) {
+	async register(message, data) {
 		const collection = await mongodb.db('clashperk').collection('clanstores')
 			.findOneAndUpdate({ tag: data.tag, guild: data.guild }, {
 				$set: {
@@ -15,7 +15,7 @@ class StorageHandler {
 					guild: data.guild,
 					name: data.name,
 					verified: true,
-					patron: data.patron,
+					patron: this.client.patron.get(message.guild.id, 'guild', false),
 					active: true,
 					createdAt: new Date()
 				}
