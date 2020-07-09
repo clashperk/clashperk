@@ -135,7 +135,7 @@ class StopCommand extends Command {
 		]).then(collection => collection.every(item => item == null));
 		if (data) {
 			this.client.cacheHandler.delete(id);
-			return db.collection('clanstores').deleteOne({ _id: ObjectId(id) });
+			return db.collection('clanstores').updateOne({ _id: ObjectId(id) }, { $set: { active: false } });
 		}
 	}
 }
