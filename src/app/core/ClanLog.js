@@ -14,6 +14,7 @@ class PlayerEvent {
 	constructor(client) {
 		this.client = client;
 		this.cached = new Map();
+		this.count = 0;
 	}
 
 	exec(id, data) {
@@ -33,8 +34,8 @@ class PlayerEvent {
 			'EMBED_LINKS',
 			'USE_EXTERNAL_EMOJIS',
 			'ADD_REACTIONS',
-			'VIEW_CHANNEL',
-			'MANAGE_WEBHOOKS'
+			// 'MANAGE_WEBHOOKS',
+			'VIEW_CHANNEL'
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
@@ -45,8 +46,34 @@ class PlayerEvent {
 		}
 	}
 
+	async createWebhook(channel, id) {
+		if (!channel.permissionsFor(channel.guild.me).has(['MANAGE_WEBHOOKS'], false)) return null;
+		const webhooks = await channel.fetchWebhooks().catch(() => null);
+		let webhook = null;
+		if (webhooks) {
+			webhook = webhooks.filter(w => w.owner && w.owner.id === this.client.user.id).first();
+		}
+
+		if (!webhook && webhooks.size >= 10) {
+			return null;
+		}
+
+		if (!webhook) {
+			webhook = await channel.createWebhook(this.client.user.username, {
+				avatar: this.client.user.displayAvatarURL(),
+				reason: 'Webhook Created for Clan Log'
+			});
+		}
+
+		this.count += 1;
+		await mongodb.db('clashperk')
+			.collection('playerlogs')
+			.updateOne({ clan_id: ObjectId(id) }, { $set: { webhook: { id: webhook.id, token: webhook.token } } });
+	}
+
 	async handleMessage(channel, data, id) {
 		const cache = this.cached.get(id);
+		if (!cache.webhook) await this.createWebhook(channel, id);
 		if (cache.webhook) {
 			const embeds = [];
 			const webhook = new WebhookClient(cache.webhook.id, cache.webhook.token);
@@ -63,7 +90,7 @@ class PlayerEvent {
 						username: this.client.user.username,
 						avatarURL: this.client.user.displayAvatarURL()
 					});
-				} catch {}
+				} catch { }
 				await this.delay(250);
 			}
 
