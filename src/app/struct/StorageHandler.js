@@ -47,6 +47,7 @@ class StorageHandler {
 							guild: data.guild,
 							name: data.name,
 							channel: data.channel,
+							role: data.role,
 							createdAt: new Date()
 						}
 					}, { upsert: true });
