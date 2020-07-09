@@ -7,7 +7,6 @@ class ClanEvent {
 	constructor(client) {
 		this.client = client;
 		this.cached = new Map();
-		this.count = 0;
 	}
 
 	exec(id, data) {
@@ -117,7 +116,9 @@ class ClanEvent {
 			});
 		}
 
-		this.count += 1;
+		const cache = this.cached.get(id);
+		cache.webhook = { id: webhook.id, token: webhook.token };
+		this.cached.set(id, cache);
 		await mongodb.db('clashperk')
 			.collection('playerlogs')
 			.updateOne({ clan_id: ObjectId(id) }, { $set: { webhook: { id: webhook.id, token: webhook.token } } });
