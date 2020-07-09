@@ -65,21 +65,8 @@ class ClanGames {
 
 	async handleMessage(id, channel, clan) {
 		const cache = this.cached.get(id);
-		/* if (cache && cache.msg && cache.msg.deleted) {
-			const msg = await this.sendNew(id, channel, clan);
-			if (!msg) return;
-			cache.msg = msg;
-			return this.cached.set(id, cache);
-		}
 
-		if (cache && cache.msg && !cache.msg.deleted) {
-			const msg = await this.edit(id, cache.msg, clan);
-			if (!msg) return;
-			cache.msg = msg;
-			return this.cached.set(id, cache);
-		}*/
-
-		if (!cache.message) {
+		if (cache && !cache.message) {
 			return this.sendNew(id, channel, clan);
 		}
 
