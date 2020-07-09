@@ -30,7 +30,7 @@ class PrefixCommand extends Command {
 		return 3000;
 	}
 
-	regex(message) {
+	regex() {
 		return new RegExp(`^<@!?(${this.client.user.id})>$`, 'i');
 	}
 
