@@ -14,8 +14,8 @@ class PlayerLogCommand extends Command {
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Setup player log in a channel.',
-				usage: '<clanTag> [channel]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-log']
+				usage: '<clanTag> [channel/role]',
+				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-log @Mod']
 			}
 		});
 	}
@@ -46,13 +46,12 @@ class PlayerLogCommand extends Command {
 			default: message => message.channel
 		};
 
-		const color = yield {
-			type: 'color',
-			unordered: [1, 2],
-			default: message => this.client.embed(message)
+		const role = yield {
+			type: 'role',
+			unordered: [1, 2]
 		};
 
-		return { data, channel, color };
+		return { data, channel, role };
 	}
 
 	cooldown(message) {
@@ -60,7 +59,7 @@ class PlayerLogCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, channel, color }) {
+	async exec(message, { data, channel, role }) {
 		const clans = await this.clans(message);
 		const max = this.client.patron.get(message.guild.id, 'limit', 2);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
@@ -86,6 +85,7 @@ class PlayerLogCommand extends Command {
 			channel: channel.id,
 			tag: data.tag,
 			name: data.name,
+			role: role ? role.id : null,
 			patron: this.client.patron.get(message.guild.id, 'guild', false)
 		});
 
@@ -103,8 +103,8 @@ class PlayerLogCommand extends Command {
 				'**Wait Time**',
 				'120 sec',
 				'',
-				'**Color**',
-				`\`#${color.toString(16)}\``,
+				'**Role**',
+				`${role || 'None'}`,
 				'',
 				'**Channel**',
 				`${channel}`,
@@ -112,7 +112,7 @@ class PlayerLogCommand extends Command {
 				'**Player Log**',
 				`[Enabled](${message.url})`
 			])
-			.setColor(color);
+			.setColor(this.client.embed(message));
 		return message.util.send({ embed });
 	}
 

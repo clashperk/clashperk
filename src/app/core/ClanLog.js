@@ -48,20 +48,21 @@ class PlayerEvent {
 	async handleMessage(channel, data, id) {
 		const ms = data.tags.length >= 5 ? 2000 : 250;
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
-			const embed = await this.embed(item, data, id);
-			if (!embed) continue;
-			await channel.send({ embed }).catch(() => null);
+			const message = await this.embed(channel, item, data, id);
+			if (!message) continue;
+			await channel.send(message).catch(() => null);
 			await this.delay(ms);
 		}
 
 		return data.tags.length;
 	}
 
-	async embed(item, data, id) {
+	async embed(channel, item, data, id) {
 		const cache = this.cached.get(id);
 		const member = await this.player(item.tag);
 		if (!member) return null;
 
+		let content = '';
 		const embed = new MessageEmbed()
 			.setColor(MODE[item.mode])
 			.setTitle(`\u200e${member.name} - ${member.tag}`)
@@ -86,17 +87,21 @@ class PlayerEvent {
 
 			if (flag) {
 				const user = await this.client.users.fetch(flag.user, false).catch(() => null);
+				if (channel.guild.roles.cache.has(flag.role)) {
+					const role = channel.guild.roles.cache.get(flag.role);
+					content = `${role}`;
+				}
 				embed.setDescription([
 					embed.description,
 					'',
 					'**Flag**',
 					`${flag.reason}`,
-					`**${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})**`
+					`**${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D YYYY kk:mm')})**`
 				]);
 			}
 		}
 		embed.setFooter(`${data.clan.name}`, data.clan.badge).setTimestamp();
-		return embed;
+		return { content, embed };
 	}
 
 	formatHeroes(member) {
@@ -138,7 +143,8 @@ class PlayerEvent {
 			if (this.client.guilds.cache.has(data.guild)) {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					guild: data.guild,
-					channel: data.channel
+					channel: data.channel,
+					role: data.role
 				});
 			}
 		});
@@ -152,7 +158,8 @@ class PlayerEvent {
 		if (!data) return null;
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			guild: data.guild,
-			channel: data.channel
+			channel: data.channel,
+			role: data.role
 		});
 	}
 
