@@ -32,7 +32,7 @@ class PrefixCommand extends Command {
 	}
 
 	exec(message, { prefix }) {
-		if (!prefix && message.mentions.has(this.client.user.id) && /^<@!?(\d+)>$/.test(message)) {
+		if (!prefix || (message.mentions.has(this.client.user.id) && /^<@!?(\d+)>$/.test(message.content))) {
 			return message.util.send(`The current prefix for this guild is \`${this.handler.prefix(message)}\``);
 		}
 		if (prefix && !message.member.permissions.has('MANAGE_GUILD')) {

@@ -7,9 +7,10 @@ class PatronInhibitor extends Inhibitor {
 		});
 	}
 
-	exec(message) {
+	exec(message, command) {
 		if (this.client.isOwner(message.author.id)) return false;
-		if (message.util.parsed && message.util.parsed.command && message.util.parsed.command.categoryID !== 'patron') return false;
+		if (command.categoryID !== 'patron') return false;
+		// if (message.util.parsed && message.util.parsed.command && message.util.parsed.command.categoryID !== 'patron') return false;
 		return !this.client.patron.get(message.guild.id, 'guild', false);
 	}
 }
