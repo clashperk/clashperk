@@ -11,7 +11,7 @@ class PlayerLogCommand extends Command {
 			category: 'setup-hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_WEBHOOKS'],
 			description: {
 				content: 'Setup player log in a channel.',
 				usage: '<clanTag> [channel]',
@@ -75,9 +75,26 @@ class PlayerLogCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL'];
+		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL', 'MANAGE_WEBHOOKS'];
 		if (!channel.permissionsFor(channel.guild.me).has(permissions, false)) {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
+		}
+
+		const webhooks = await channel.fetchWebhooks().catch(() => null);
+		let webhook = null;
+		if (webhooks) {
+			webhook = webhooks.filter(w => w.owner && w.owner.id === this.client.user.id).first();
+		}
+
+		if (!webhook && webhooks.size >= 10) {
+			return message.util.send('I could not create a webhook.');
+		}
+
+		if (!webhook) {
+			webhook = await channel.createWebhook(this.client.user.username, {
+				avatar: this.client.user.displayAvatarURL(),
+				reason: 'Webhook Created for Clan Log'
+			});
 		}
 
 		const id = await this.client.storage.register({
@@ -86,6 +103,7 @@ class PlayerLogCommand extends Command {
 			channel: channel.id,
 			tag: data.tag,
 			name: data.name,
+			webhook: { id: webhook.id, token: webhook.token },
 			patron: this.client.patron.get(message.guild.id, 'guild', false)
 		});
 

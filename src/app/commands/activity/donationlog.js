@@ -11,7 +11,7 @@ class DonationLogCommand extends Command {
 			category: 'setup-hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_WEBHOOKS'],
 			description: {
 				content: 'Setup donation log in a channel.',
 				usage: '<clanTag> [channel/color]',
@@ -46,13 +46,13 @@ class DonationLogCommand extends Command {
 			default: message => message.channel
 		};
 
-		const color = yield {
-			type: 'color',
+		const hexColor = yield {
+			type: 'hexColor',
 			unordered: [1, 2],
 			default: message => this.client.embed(message)
 		};
 
-		return { data, channel, color };
+		return { data, channel, hexColor };
 	}
 
 	cooldown(message) {
@@ -60,7 +60,7 @@ class DonationLogCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, channel, color }) {
+	async exec(message, { data, channel, hexColor }) {
 		const clans = await this.clans(message);
 		const max = this.client.patron.get(message.guild.id, 'limit', 2);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
@@ -75,9 +75,26 @@ class DonationLogCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL'];
+		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL', 'MANAGE_WEBHOOKS'];
 		if (!channel.permissionsFor(channel.guild.me).has(permissions, false)) {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
+		}
+
+		const webhooks = await channel.fetchWebhooks().catch(() => null);
+		let webhook = null;
+		if (webhooks) {
+			webhook = webhooks.filter(w => w.owner && w.owner.id === this.client.user.id).first();
+		}
+
+		if (!webhook && webhooks.size >= 10) {
+			return message.util.send('I could not create a webhook.');
+		}
+
+		if (!webhook) {
+			webhook = await channel.createWebhook(this.client.user.username, {
+				avatar: this.client.user.displayAvatarURL(),
+				reason: 'Webhook Created for Donation Log'
+			});
 		}
 
 		const id = await this.client.storage.register({
@@ -86,7 +103,8 @@ class DonationLogCommand extends Command {
 			channel: channel.id,
 			tag: data.tag,
 			name: data.name,
-			color,
+			color: hexColor,
+			webhook: { id: webhook.id, token: webhook.token },
 			patron: this.client.patron.get(message.guild.id, 'guild', false)
 		});
 
@@ -105,7 +123,7 @@ class DonationLogCommand extends Command {
 				'120 sec',
 				'',
 				'**Color**',
-				`\`#${color.toString(16)}\``,
+				`\`#${hexColor.toString(16)}\``,
 				'',
 				'**Channel**',
 				`${channel}`,
@@ -113,7 +131,7 @@ class DonationLogCommand extends Command {
 				'**Donation Log**',
 				`[Enabled](${message.url})`
 			])
-			.setColor(color);
+			.setColor(hexColor);
 		return message.util.send({ embed });
 	}
 

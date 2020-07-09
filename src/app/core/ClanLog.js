@@ -1,6 +1,6 @@
 const { townHallEmoji, emoji, leagueEmoji, heroEmoji } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, WebhookClient } = require('discord.js');
 const { ObjectId } = require('mongodb');
 const fetch = require('node-fetch');
 const moment = require('moment');
@@ -33,7 +33,8 @@ class PlayerEvent {
 			'EMBED_LINKS',
 			'USE_EXTERNAL_EMOJIS',
 			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
+			'VIEW_CHANNEL',
+			'MANAGE_WEBHOOKS'
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
@@ -45,12 +46,33 @@ class PlayerEvent {
 	}
 
 	async handleMessage(channel, data, id) {
+		const cache = this.cached.get(id);
+		if (cache.webhook) {
+			const embeds = [];
+			const webhook = new WebhookClient(cache.webhook.id, cache.webhook.token);
+			for (const item of data.tags.sort((a, b) => a.value - b.value)) {
+				const embed = await this.embed(item, data, id);
+				if (!embed) continue;
+				embeds.push(embed);
+			}
+			const chunks = this.chunk(embeds);
+			for (const chunk of chunks) {
+				try {
+					await webhook.send({
+						embeds: [...chunk],
+						username: this.client.user.username,
+						avatarURL: this.client.user.displayAvatarURL()
+					});
+				} catch {}
+				await this.delay(250);
+			}
+		}
+
 		if (data.tags.length >= 5) return this.queue(channel, data, id);
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
-			const fetched = await this.embed(item, data, id);
-			if (!fetched) continue;
-			const { content, embed } = fetched;
-			await channel.send(content, { embed }).catch(() => null);
+			const embed = await this.embed(item, data, id);
+			if (!embed) continue;
+			await channel.send({ embed }).catch(() => null);
 			await this.delay(250);
 		}
 
@@ -59,14 +81,22 @@ class PlayerEvent {
 
 	async queue(channel, data, id) {
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
-			const fetched = await this.embed(item, data, id);
-			if (!fetched) continue;
-			const { content, embed } = fetched;
-			await channel.send(content, { embed }).catch(() => null);
+			const embed = await this.embed(item, data, id);
+			if (!embed) continue;
+			await channel.send({ embed }).catch(() => null);
 			await this.delay(2000);
 		}
 
 		return data.tags.length;
+	}
+
+	chunk(items = []) {
+		const chunk = 10;
+		const array = [];
+		for (let i = 0; i < items.length; i += chunk) {
+			array.push(items.slice(i, i + chunk));
+		}
+		return array;
 	}
 
 	async embed(item, data, id) {
@@ -74,7 +104,6 @@ class PlayerEvent {
 		const member = await this.player(item.tag);
 		if (!member) return null;
 
-		let content = '';
 		const embed = new MessageEmbed()
 			.setColor(MODE[item.mode])
 			.setTitle(`\u200e${member.name} - ${member.tag}`)
@@ -98,16 +127,18 @@ class PlayerEvent {
 			].join(' '));
 
 			if (flag) {
-				const user = await this.client.users.fetch(flag.user).catch(() => null);
-				content = [
-					`**Flag:** ${flag.reason}`,
+				const user = await this.client.users.fetch(flag.user, false).catch(() => null);
+				embed.setDescription([
+					embed.description,
+					'',
+					'**Flag**',
+					`${flag.reason}`,
 					`**${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('MMMM D, YYYY, kk:mm')})**`
-				];
+				]);
 			}
 		}
 		embed.setFooter(`${data.clan.name}`, data.clan.badge).setTimestamp();
-
-		return { embed, content };
+		return embed;
 	}
 
 	formatHeroes(member) {
@@ -149,7 +180,8 @@ class PlayerEvent {
 			if (this.client.guilds.cache.has(data.guild)) {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					guild: data.guild,
-					channel: data.channel
+					channel: data.channel,
+					webhook: data.webhook
 				});
 			}
 		});
@@ -163,7 +195,8 @@ class PlayerEvent {
 		if (!data) return null;
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			guild: data.guild,
-			channel: data.channel
+			channel: data.channel,
+			webhook: data.webhook
 		});
 	}
 

@@ -33,6 +33,7 @@ class StorageHandler {
 							channel: data.channel,
 							color: data.color,
 							patron: data.patron,
+							webhook: data.webhook,
 							createdAt: new Date()
 						}
 					}, { upsert: true });
@@ -47,6 +48,7 @@ class StorageHandler {
 							name: data.name,
 							channel: data.channel,
 							patron: data.patron,
+							webhook: data.webhook,
 							createdAt: new Date()
 						}
 					}, { upsert: true });

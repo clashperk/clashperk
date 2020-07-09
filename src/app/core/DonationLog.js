@@ -1,6 +1,6 @@
 const { leagueEmoji, blueNum, redNum, emoji } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, WebhookClient } = require('discord.js');
 const { ObjectId } = require('mongodb');
 
 class ClanEvent {
@@ -22,7 +22,8 @@ class ClanEvent {
 			'EMBED_LINKS',
 			'USE_EXTERNAL_EMOJIS',
 			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
+			'VIEW_CHANNEL',
+			'MANAGE_WEBHOOKS'
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
@@ -82,6 +83,17 @@ class ClanEvent {
 			]);
 		}
 
+		if (cache.webhook) {
+			const webhook = new WebhookClient(cache.webhook.id, cache.webhook.token);
+			try {
+				return webhook.send({
+					embeds: [embed],
+					username: this.client.user.username,
+					avatarURL: this.client.user.displayAvatarURL()
+				});
+			} catch {}
+		}
+
 		return channel.send({ embed }).catch(() => null);
 	}
 
@@ -100,7 +112,8 @@ class ClanEvent {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					// guild: data.guild,
 					channel: data.channel,
-					color: data.color
+					color: data.color,
+					webhook: data.webhook
 				});
 			}
 		});
@@ -115,7 +128,8 @@ class ClanEvent {
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			// guild: data.guild,
 			channel: data.channel,
-			color: data.color
+			color: data.color,
+			webhook: data.webhook
 		});
 	}
 
