@@ -82,6 +82,7 @@ class ClanEvent {
 					: ''
 			]);
 		}
+
 		if (!cache.webhook) await this.createWebhook(channel, id);
 		if (cache.webhook) {
 			const webhook = new WebhookClient(cache.webhook.id, cache.webhook.token);

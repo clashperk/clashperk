@@ -88,7 +88,7 @@ class CacheHandler {
 	async launch() {
 		for (const key of this.cached.keys()) {
 			await this.start(key);
-			await this.delay(500);
+			await this.delay(250);
 		}
 	}
 
