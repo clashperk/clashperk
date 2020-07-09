@@ -63,11 +63,12 @@ class CacheHandler {
 
 		const collection = await mongodb.db('clashperk')
 			.collection('clanstores')
-			.find()
+			.find({ active: true })
+			.sort({ patron: -1 })
 			.toArray();
 
 		for (const data of collection) {
-			if (this.client.guilds.cache.has(data.guild) && !data.active) {
+			if (this.client.guilds.cache.has(data.guild)) {
 				this.cached.set(ObjectId(data._id).toString(), {
 					// _id: data._id,
 					guild: data.guild,
