@@ -19,7 +19,7 @@ class PingCommand extends Command {
 	}
 
 	async exec(message) {
-		await mongodb.db('clashperk').collection('clanstores')
+		await mongodb.db('clashperk').collection('donationlogs')
 			.updateMany({}, {
 				$set: {
 					active: true,
@@ -28,7 +28,7 @@ class PingCommand extends Command {
 			})
 			.then(console.log());
 
-		await mongodb.db('clashperk').collection('clanstores')
+		await mongodb.db('clashperk').collection('donationlogs')
 			.updateMany({ frozen: true }, {
 				$set: {
 					active: false,
@@ -41,7 +41,7 @@ class PingCommand extends Command {
 		for (const guild of this.client.guilds.cache.values()) {
 			if (!this.client.patron.get(guild.id, 'guild', false)) continue;
 
-			await mongodb.db('clashperk').collection('clanstores')
+			await mongodb.db('clashperk').collection('donationlogs')
 				.updateMany({ guild: guild.id }, {
 					$set: {
 						active: true,
