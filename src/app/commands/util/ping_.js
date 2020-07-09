@@ -20,21 +20,10 @@ class PingCommand extends Command {
 
 	async exec(message) {
 		await mongodb.db('clashperk').collection('donationlogs')
-			.updateMany({}, {
-				$set: {
-					active: true,
-					patron: false
-				}
-			})
-			.then(console.log());
-
-		await mongodb.db('clashperk').collection('donationlogs')
 			.updateMany({ frozen: true }, {
 				$set: {
-					active: false,
 					patron: false
-				},
-				$unset: { frozen: '' }
+				}
 			})
 			.then(console.log());
 
