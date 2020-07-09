@@ -27,15 +27,26 @@ class RateLimitListener extends Listener {
 		const embed = new MessageEmbed()
 			.setColor(0xfaf5f5)
 			.setAuthor('Rate Limit')
-			.setTimestamp()
-			.addField('Time Out', timeout, true)
-			.addField('Limit', limit, true)
-			.addField('HTTP Method', method, true)
-			.addField('Route', route)
-			.addField('Path', decodeURIComponent(path));
+			.setDescription([
+				'**Time Out**',
+				timeout,
+				'',
+				'**Limit**',
+				limit,
+				'',
+				'**HTTP Method**',
+				method,
+				'',
+				'**Route**',
+				route,
+				'',
+				'**Path**',
+				decodeURIComponent(path)
+			])
+			.setTimestamp();
 
 		return webhook.send({
-			username: 'Rate Limit',
+			username: 'ClashPerk',
 			avatarURL: this.client.user.displayAvatarURL(),
 			embeds: [embed]
 		});

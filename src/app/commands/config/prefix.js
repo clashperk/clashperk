@@ -7,6 +7,7 @@ class PrefixCommand extends Command {
 			category: 'config',
 			channel: 'guild',
 			quoted: false,
+			regex: /^<@!?(\d+)>$/i,
 			description: {
 				content: 'Displays or changes the prefix of the guild.',
 				usage: '<prefix>',
@@ -31,7 +32,7 @@ class PrefixCommand extends Command {
 	}
 
 	exec(message, { prefix }) {
-		if (!prefix) {
+		if (!prefix && message.mentions.has(this.client.user.id) && /^<@!?(\d+)>$/.test(message)) {
 			return message.util.send(`The current prefix for this guild is \`${this.handler.prefix(message)}\``);
 		}
 		if (prefix && !message.member.permissions.has('MANAGE_GUILD')) {
