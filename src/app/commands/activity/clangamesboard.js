@@ -80,18 +80,12 @@ class ClanGamesBoardCommand extends Command {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
 		}
 
-		const msg = await channel.send({
-			embed: {
-				description: 'Placeholder for Clan Games Board.'
-			}
-		});
-
 		const id = await this.client.storage.register(message, {
 			mode: Modes.CLAN_GAMES_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
 			patron: this.client.patron.get(message.guild.id, 'guild', false),
-			message: msg.id,
+			message: null,
 			name: data.name,
 			tag: data.tag,
 			color: hexColor
@@ -121,8 +115,7 @@ class ClanGamesBoardCommand extends Command {
 				`[Enabled](${message.url})`
 			])
 			.setColor(hexColor);
-		if (message.channel.id !== channel.id) return message.util.send({ embed });
-		return message;
+		return message.util.send({ embed });
 	}
 
 	async clans(message) {

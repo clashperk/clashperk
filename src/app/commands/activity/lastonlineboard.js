@@ -80,12 +80,6 @@ class LastOnlineBoardCommand extends Command {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
 		}
 
-		const msg = await channel.send({
-			embed: {
-				description: ['Placeholder for Last Online board', 'Please do not delete this message.'].join('\n')
-			}
-		});
-
 		const id = await this.client.storage.register(message, {
 			mode: Modes.ACTIVITY_LOG,
 			guild: message.guild.id,
@@ -93,7 +87,7 @@ class LastOnlineBoardCommand extends Command {
 			tag: data.tag,
 			name: data.name,
 			color: hexColor,
-			message: msg.id,
+			message: null,
 			patron: this.client.patron.get(message.guild.id, 'guild', false)
 		});
 
@@ -118,11 +112,10 @@ class LastOnlineBoardCommand extends Command {
 				`${channel}`,
 				'',
 				'**Last Online Board**',
-				`[Enabled](${msg.url})`
+				`[Enabled](${message.url})`
 			])
 			.setColor(hexColor);
-		if (message.channel.id !== channel.id) return message.util.send({ embed });
-		return message;
+		return message.util.send({ embed });
 	}
 
 	missingPermissions(channel, user, permissions) {
