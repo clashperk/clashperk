@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const FACTS = require('./clashfacts');
+const FACTS = require('../../util/clashfacts');
 
 class FactsCommand extends Command {
 	constructor() {

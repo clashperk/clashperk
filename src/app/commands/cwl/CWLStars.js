@@ -5,6 +5,7 @@ const { MessageEmbed } = require('discord.js');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const { emoji } = require('../../util/emojis');
+const Excel = require('exceljs');
 
 class CWLStarsComamnd extends Command {
 	constructor() {
@@ -16,7 +17,8 @@ class CWLStarsComamnd extends Command {
 				content: 'Shows total stars, attacks & destruction.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
-			}
+			},
+			flags: ['--excel']
 		});
 	}
 
@@ -37,11 +39,16 @@ class CWLStarsComamnd extends Command {
 			}
 		};
 
-		return { data };
+		const excel = yield {
+			match: 'flag',
+			flag: ['--excel']
+		};
+
+		return { data, excel };
 	}
 
-	async exec(message, { data }) {
-		await message.util.send(`**Fetching data... ${emoji.loading}**`);
+	async exec(message, { data, excel }) {
+		// if (!excel) await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
 			method: 'GET', timeout: 3000,
 			headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
@@ -69,10 +76,10 @@ class CWLStarsComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, { clanTag: data.tag, clanName: data.name, clanBadge: data.badgeUrls.medium });
+		return this.rounds(message, body, { clanTag: data.tag, clanName: data.name, clanBadge: data.badgeUrls.medium }, excel);
 	}
 
-	async rounds(message, body, { clanTag, clanName, clanBadge } = {}) {
+	async rounds(message, body, { clanTag, clanName, clanBadge } = {}, excel) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		const members = body.clans.find(clan => clan.tag === clanTag)
 			.members.map(member => ({ name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0, dest: 0 }));
@@ -123,22 +130,31 @@ class CWLStarsComamnd extends Command {
 			}
 		}
 
+		const patron = this.client.patron.check(message.author, message.guild);
 		const leaderboard = members.sort((a, b) => b.stars - a.stars);
 		return message.util.send({
-			embed: {
-				color: this.client.embed(message),
-				author: {
-					name: `${clanName} CWL`,
-					icon_url: clanBadge
+			embed: excel
+				? null
+				: {
+					color: this.client.embed(message),
+					author: {
+						name: `${clanName} CWL`,
+						icon_url: clanBadge
+					},
+					description: [
+						`\`\`\`\u200e # STR DEST ATT ${'NAME'}`,
+						leaderboard.filter(m => m.of > 0)
+							.map((m, i) => `\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')} ${this.destruction(m.dest)} ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.substring(0, 12)}`)
+							.join('\n'),
+						'```'
+					].join('\n')
 				},
-				description: [
-					`\`\`\`\u200e # STR DEST ATT ${'NAME'}`,
-					leaderboard.filter(m => m.of > 0)
-						.map((m, i) => `\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')} ${this.destruction(m.dest)} ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.substring(0, 12)}`)
-						.join('\n'),
-					'```'
-				].join('\n')
-			}
+			files: patron && excel
+				? [{
+					attachment: Buffer.from(await this.excel(leaderboard.filter(m => m.of > 0))),
+					name: `${clanName.toLowerCase()}_cwl_stars.xlsx`
+				}]
+				: null
 		});
 	}
 
@@ -164,6 +180,38 @@ class CWLStarsComamnd extends Command {
 		} else if (clan.destructionPercentage < opponent.destructionPercentage) {
 			return false;
 		}
+	}
+
+	async excel(members) {
+		const workbook = new Excel.Workbook();
+		workbook.creator = 'ClashPerk';
+		workbook.lastModifiedBy = 'ClashPerk';
+		workbook.created = new Date(2020, 1, 1);
+		workbook.modified = new Date();
+		workbook.lastPrinted = new Date();
+		workbook.views = [
+			{
+				x: 0, y: 0, width: 10000, height: 20000,
+				firstSheet: 0, activeTab: 1, visibility: 'visible'
+			}
+		];
+		const sheet = workbook.addWorksheet('Member List');
+		sheet.columns = [
+			{ header: 'NAME', key: 'name', width: 16 },
+			{ header: 'TAG', key: 'tag', width: 16 },
+			{ header: 'STARS', key: 'th', width: 10 },
+			{ header: 'DEST', key: 'bk', width: 10 },
+			{ header: 'ATTACKS', key: 'aq', width: 10 }
+		];
+		sheet.getRow(1).font = { bold: true, size: 10 };
+		sheet.getColumn(1).alignment = { horizontal: 'left' };
+		sheet.getColumn(2).alignment = { horizontal: 'left' };
+		sheet.getColumn(3).alignment = { horizontal: 'right' };
+		sheet.getColumn(4).alignment = { horizontal: 'right' };
+		sheet.getColumn(5).alignment = { horizontal: 'right' };
+		sheet.addRows(members.map(m => [m.name, m.tag, m.stars, m.dest, `${m.attacks}/${m.of}`]));
+
+		return workbook.xlsx.writeBuffer();
 	}
 }
 

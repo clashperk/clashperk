@@ -5,6 +5,7 @@ const { townHallEmoji, emoji } = require('../../util/emojis');
 const { stripIndent } = require('common-tags');
 const { Util } = require('discord.js');
 const TOKENS = process.env.$KEYS.split(',');
+const Excel = require('exceljs');
 
 class WarWeightCommand extends Command {
 	constructor() {
@@ -16,7 +17,8 @@ class WarWeightCommand extends Command {
 				content: 'List of clan members with townhall & heroes.',
 				usage: '<clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
-			}
+			},
+			flags: ['--excel']
 		});
 	}
 
@@ -32,7 +34,12 @@ class WarWeightCommand extends Command {
 			}
 		};
 
-		return { data };
+		const excel = yield {
+			match: 'flag',
+			flag: ['--excel']
+		};
+
+		return { data, excel };
 	}
 
 	cooldown(message) {
@@ -40,9 +47,9 @@ class WarWeightCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data }) {
+	async exec(message, { data, excel }) {
 		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
-		await message.util.send(`**Fetching data... ${emoji.loading}**`);
+		// await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
 		const requests = data.memberList.map((m, i) => {
 			const req = {
@@ -68,6 +75,10 @@ class WarWeightCommand extends Command {
 		});
 
 		const memberList = this.sort(members);
+		if (excel) {
+			const buffer = await this.excel(memberList);
+			return message.util.send('', { files: [{ attachment: Buffer.from(buffer), name: `${data.name.toLowerCase()}_member_list.xlsx` }] });
+		}
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
@@ -173,6 +184,42 @@ class WarWeightCommand extends Command {
 		return items
 			.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
 			.sort((a, b) => b.townHallLevel - a.townHallLevel);
+	}
+
+	async excel(members) {
+		const workbook = new Excel.Workbook();
+		workbook.creator = 'ClashPerk';
+		workbook.lastModifiedBy = 'ClashPerk';
+		workbook.created = new Date(2020, 1, 1);
+		workbook.modified = new Date();
+		workbook.lastPrinted = new Date();
+		workbook.views = [
+			{
+				x: 0, y: 0, width: 10000, height: 20000,
+				firstSheet: 0, activeTab: 1, visibility: 'visible'
+			}
+		];
+		const sheet = workbook.addWorksheet('Member List');
+		sheet.columns = [
+			{ header: 'NAME', key: 'name', width: 16 },
+			{ header: 'TAG', key: 'tag', width: 16 },
+			{ header: 'Town-Hall', key: 'th', width: 10 },
+			{ header: 'BK', key: 'bk', width: 10 },
+			{ header: 'AQ', key: 'aq', width: 10 },
+			{ header: 'GW', key: 'gw', width: 10 },
+			{ header: 'RC', key: 'rc', width: 10 }
+		];
+		sheet.getRow(1).font = { bold: true, size: 10 };
+		sheet.getColumn(1).alignment = { horizontal: 'left' };
+		sheet.getColumn(2).alignment = { horizontal: 'left' };
+		sheet.getColumn(3).alignment = { horizontal: 'right' };
+		sheet.getColumn(4).alignment = { horizontal: 'right' };
+		sheet.getColumn(5).alignment = { horizontal: 'right' };
+		sheet.getColumn(6).alignment = { horizontal: 'right' };
+		sheet.getColumn(7).alignment = { horizontal: 'right' };
+		sheet.addRows(members.map(m => [m.name, m.tag, m.townHallLevel, ...m.heroes.map(h => h.level)]));
+
+		return workbook.xlsx.writeBuffer();
 	}
 }
 
