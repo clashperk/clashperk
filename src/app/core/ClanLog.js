@@ -105,23 +105,12 @@ class PlayerEvent {
 			return data.tags.length;
 		}
 
-		if (data.tags.length >= 5) return this.queue(channel, data, id);
+		const ms = data.tags.length >= 5 ? 2000 : 250;
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
 			const embed = await this.embed(item, data, id);
 			if (!embed) continue;
 			await channel.send({ embed }).catch(() => null);
-			await this.delay(250);
-		}
-
-		return data.tags.length;
-	}
-
-	async queue(channel, data, id) {
-		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
-			const embed = await this.embed(item, data, id);
-			if (!embed) continue;
-			await channel.send({ embed }).catch(() => null);
-			await this.delay(2000);
+			await this.delay(ms);
 		}
 
 		return data.tags.length;
