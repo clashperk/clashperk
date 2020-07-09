@@ -66,6 +66,8 @@ class PlayerEvent {
 				} catch {}
 				await this.delay(250);
 			}
+
+			return data.tags.length;
 		}
 
 		if (data.tags.length >= 5) return this.queue(channel, data, id);
