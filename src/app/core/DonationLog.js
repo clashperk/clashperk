@@ -128,7 +128,7 @@ class ClanEvent {
 		cache.webhook = { id: webhook.id, token: webhook.token };
 		this.cached.set(id, cache);
 		await mongodb.db('clashperk')
-			.collection('playerlogs')
+			.collection('donationlogs')
 			.updateOne({ clan_id: ObjectId(id) }, { $set: { webhook: { id: webhook.id, token: webhook.token } } });
 	}
 
