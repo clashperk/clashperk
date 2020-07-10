@@ -19,7 +19,8 @@ class FactsCommand extends Command {
 	}
 
 	exec(message) {
-		const embed = FACTS[Math.floor(Math.random() * FACTS.length)];
+		const embed = this.client.util.embed(FACTS[Math.floor(Math.random() * FACTS.length)]);
+		embed.setColor(this.client.embed(message));
 		return message.util.send({ embed });
 	}
 }
