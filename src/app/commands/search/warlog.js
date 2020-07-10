@@ -49,7 +49,8 @@ class WarlogCommand extends Command {
 				`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses,` : ''} win streak ${data.warWinStreak}`
 					.padEnd(50, '\u200b \u2002'),
 				'\u200f',
-				'\u200e'
+				'\u200e',
+				'\u200b'
 			].join(' '));
 
 		if (data.isWarLogPublic === false) {
