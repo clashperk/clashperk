@@ -90,12 +90,12 @@ class FlagsCommand extends Command {
 		sheet.columns = [
 			{ header: 'NAME', key: 'name', width: 16 },
 			{ header: 'TAG', key: 'tag', width: 16 },
-			{ header: 'AUTHOR', key: 'author', width: 16 },
+			{ header: 'AUTHOR', key: 'author', width: 20 },
 			{ header: 'DATE', key: 'date', width: 20 },
 			{ header: 'REASON', key: 'reason', width: 40 }
 		];
 		sheet.getRow(1).font = { bold: true, size: 10 };
-		sheet.addRows(members.map(m => [m.name, m.tag, m.user, m.createdAt, m.reason]));
+		sheet.addRows(members.map(m => [m.name, m.tag, m.user, new Date(m.createdAt).toUTCString(), m.reason]));
 
 		return workbook.xlsx.writeBuffer();
 	}
