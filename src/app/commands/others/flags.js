@@ -96,11 +96,12 @@ class FlagsCommand extends Command {
 			{ header: 'NAME', key: 'name', width: 16 },
 			{ header: 'TAG', key: 'tag', width: 16 },
 			{ header: 'AUTHOR', key: 'author', width: 20 },
+			{ header: 'AUTHOR ID', key: 'author_id', width: 20 },
 			{ header: 'DATE', key: 'date', width: 30 },
 			{ header: 'REASON', key: 'reason', width: 50 }
 		];
 		sheet.getRow(1).font = { bold: true, size: 10 };
-		sheet.addRows(members.map(m => [m.name, m.tag, m.user_tag || m.user, new Date(m.createdAt).toUTCString(), m.reason]));
+		sheet.addRows(members.map(m => [m.name, m.tag, m.user_tag, m.user, new Date(m.createdAt).toUTCString(), m.reason]));
 
 		return workbook.xlsx.writeBuffer();
 	}
