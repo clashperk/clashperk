@@ -56,22 +56,21 @@ class WarlogCommand extends Command {
 			headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		}).then(res => res.json());
 
-		let index = 0;
 		for (const item of body.items) {
 			const { clan, opponent } = item;
 			if (!opponent.name) {
 				const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
 				const result = item.result === 'win' ? emoji.ok : emoji.wrong;
-				embed.addField(`\u200e**${redNum[++index]} ${result} Clan War League**`, [
-					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}%`,
-					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
+				embed.addField(`\u200e**${result} Clan War League**`, [
+					`${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}%`,
+					`${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
 				]);
 			} else {
 				const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
 				const result = item.result.replace(/lose/g, 'Lost').replace(/win/g, 'Won').replace(/tie/g, 'Tied');
-				embed.addField(`\u200e**${redNum[++index]} ${this.result(result)} against ${this.name(opponent.name)}**`, [
-					`\u200b\u2002 \u2002${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}% / ${opponent.destructionPercentage.toFixed(2)}`,
-					`\u2002 \u2002${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
+				embed.addField(`\u200e**${this.result(result)} against ${this.name(opponent.name)}**`, [
+					`${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}% / ${opponent.destructionPercentage.toFixed(2)}`,
+					`${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
 				]);
 			}
 		}
