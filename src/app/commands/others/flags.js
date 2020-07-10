@@ -31,11 +31,12 @@ class FlagsCommand extends Command {
 		if (data && data.length) {
 			embed.setAuthor('Flagged Players')
 				.setDescription([
-					data.map((x, i) => `**${(++i).toString().padStart(2, '0')}.** ${x.name} ${x.tag}`).join('\n')
-				])
-				.setFooter(`Total: ${data.length}`);
+					data.slice(0, 100)
+						.map((x, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}\` ${x.name} (${x.tag})`)
+						.join('\n')
+				]);
 		} else {
-			embed.setDescription(`${message.guild.name} does not have any flagged players.`);
+			embed.setDescription(`${message.guild.name} does not have any flagged players. Why not add some?`);
 		}
 
 		return message.util.send({ embed });
