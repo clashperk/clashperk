@@ -12,7 +12,14 @@ class FlagsCommand extends Command {
 			description: {
 				content: 'Shows the list of all flagged players.',
 				examples: ['']
-			}
+			},
+			args: [
+				{
+					id: 'page',
+					type: 'integer',
+					default: 1
+				}
+			]
 		});
 	}
 
@@ -21,7 +28,7 @@ class FlagsCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message) {
+	async exec(message, { page }) {
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message));
 		const data = await mongodb.db('clashperk')
@@ -30,17 +37,31 @@ class FlagsCommand extends Command {
 			.toArray();
 
 		if (data && data.length) {
-			embed.setAuthor('Flagged Players')
+			const paginated = this.paginate(data, page);
+			let index = (paginated.page - 1) * 2;
+			embed.setAuthor(message.guild.name, message.guild.iconURL())
+				.setTitle('Flags')
 				.setDescription([
-					data.slice(0, 100)
-						.map((x, i) => `${redNum[++i]} ${x.name} (${x.tag})`)
-						.join('\n')
-				]);
+					paginated.items.map(x => `${redNum[++index]} ${x.name} ${x.tag}`).join('\n')
+				])
+				.setFooter(`Page ${paginated.page}/${paginated.maxPage}`);
 		} else {
 			embed.setDescription(`${message.guild.name} does not have any flagged players. Why not add some?`);
 		}
 
 		return message.util.send({ embed });
+	}
+
+	paginate(items, page = 1, pageLength = 2) {
+		const maxPage = Math.ceil(items.length / pageLength);
+		if (page < 1) page = 1;
+		if (page > maxPage) page = maxPage;
+		const startIndex = (page - 1) * pageLength;
+
+		return {
+			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
+			page, maxPage, pageLength
+		};
 	}
 }
 
