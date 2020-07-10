@@ -96,7 +96,7 @@ class FlagsCommand extends Command {
 			{ header: 'NAME', key: 'name', width: 16 },
 			{ header: 'TAG', key: 'tag', width: 16 },
 			{ header: 'AUTHOR', key: 'author', width: 20 },
-			{ header: 'DATE', key: 'date', width: 25 },
+			{ header: 'DATE', key: 'date', width: 30 },
 			{ header: 'REASON', key: 'reason', width: 50 }
 		];
 		sheet.getRow(1).font = { bold: true, size: 10 };
