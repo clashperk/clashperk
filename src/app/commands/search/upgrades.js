@@ -46,7 +46,6 @@ class UpgradesCommand extends Command {
 
 	async embed(data, option) {
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, `https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`);
 
 		let index = 0;

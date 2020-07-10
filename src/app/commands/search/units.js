@@ -53,6 +53,7 @@ class UnitsCommand extends Command {
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '🔥') {
 				const embed = await this.embed(data, false);
+				embed.setColor(this.client.embed(message));
 				await msg.edit({
 					embed: embed.setFooter('Level / Max Level')
 				});
@@ -65,7 +66,6 @@ class UnitsCommand extends Command {
 
 	async embed(data, option) {
 		const embed = new MessageEmbed()
-			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`, `https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`);
 
 		let index = 0;
