@@ -111,7 +111,7 @@ class FlagsCommand extends Command {
 			name: m.name,
 			tag: m.tag,
 			author: m.user_tag,
-			date: moment(new Date(m.createdAt)).format('DD MMM YYYY kk:mm:ss'),
+			date: moment(new Date(m.createdAt)).format('DD MMMM YYYY kk:mm:ss'),
 			reason: m.reason
 		})));
 
