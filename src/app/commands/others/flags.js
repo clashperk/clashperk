@@ -2,6 +2,7 @@ const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { redNum } = require('../../util/emojis');
 const Excel = require('exceljs');
+const moment = require('moment');
 
 class FlagsCommand extends Command {
 	constructor() {
@@ -101,7 +102,7 @@ class FlagsCommand extends Command {
 			{ header: 'NAME', key: 'name', width: 16 },
 			{ header: 'TAG', key: 'tag', width: 16 },
 			{ header: 'AUTHOR', key: 'author', width: 20 },
-			{ header: 'DATE', key: 'date', width: 30 },
+			{ header: 'DATE (UTC)', key: 'date', width: 30 },
 			{ header: 'REASON', key: 'reason', width: 50 }
 		];
 
@@ -110,7 +111,7 @@ class FlagsCommand extends Command {
 			name: m.name,
 			tag: m.tag,
 			author: m.user_tag,
-			date: new Date(m.createdAt).toUTCString(),
+			date: moment(new Date(m.createdAt)).format('DD MMM YYYY kk:mm:ss'),
 			reason: m.reason
 		})));
 
