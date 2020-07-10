@@ -55,6 +55,25 @@ class FlagCommand extends Command {
 
 	async exec(message, { data, reason }) {
 		if (reason.length > 900) return message.util.send('Reason must be 1024 or fewer in length.');
+		const flags = await mongodb.db('clashperk')
+			.collection('flaggedusers')
+			.find({ guild: message.guild.id })
+			.toArray();
+
+		if (flags.length >= 2) {
+			const embed = this.client.util.embed()
+				.setDescription([
+					'You can only flag 200 players per guild!',
+					'',
+					'**Want more than that?**',
+					'Please consider supporting us on patreon!',
+					'',
+					'[Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
+				]);
+
+			return message.util.send({ embed });
+		}
+
 		await mongodb.db('clashperk').collection('flaggedusers')
 			.findOneAndUpdate({ guild: message.guild.id, tag: data.tag }, {
 				$set: {

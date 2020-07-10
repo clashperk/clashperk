@@ -156,7 +156,7 @@ class Reslover {
 				'You can only claim 2 clans per guild!',
 				'',
 				'**Want more than that?**',
-				'Consider subscribing to one of our premium plans on Patreon',
+				'Please consider supporting us on patreon!',
 				'',
 				'[Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
 			]);
