@@ -44,7 +44,13 @@ class WarlogCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
-			.setDescription(`\u200e${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses,` : ''} win streak ${data.warWinStreak}`.padEnd(50, '\u2002'));
+			.setDescription([
+				'\u200e',
+				`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses,` : ''} win streak ${data.warWinStreak}`
+					.padEnd(50, '\u200b \u2002'),
+				'\u200f',
+				'\u200e'
+			].join(' '));
 
 		if (data.isWarLogPublic === false) {
 			embed.setDescription('War Log is Private');
