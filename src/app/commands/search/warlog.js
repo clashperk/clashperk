@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const moment = require('moment');
 require('moment-duration-format');
 const Resolver = require('../../struct/Resolver');
-const { emoji, redNum } = require('../../util/emojis');
+const { emoji } = require('../../util/emojis');
 
 class WarlogCommand extends Command {
 	constructor() {
