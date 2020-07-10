@@ -57,7 +57,7 @@ class ClanEmbedCommand extends Command {
 			.setTimestamp();
 
 		if (!this.client.patron.get(message.guild.id, 'guild', false)) {
-			return this.handler.handleDirectCommand(message, 'clanembed', this.handler.modules.get('help'), false);
+			await this.handler.handleDirectCommand(message, 'clanembed', this.handler.modules.get('help'), false);
 		}
 
 		return message.channel.send({ embed });
