@@ -57,7 +57,16 @@ class ClanEmbedCommand extends Command {
 			.setTimestamp();
 
 		if (!this.client.patron.get(message.guild.id, 'guild', false)) {
-			await this.handler.handleDirectCommand(message, 'clanembed', this.handler.modules.get('help'), false);
+			const embed = this.client.util.embed()
+				.setColor(this.client.embed(message))
+				.setImage('https://i.imgur.com/QNeOD2n.png')
+				.setDescription([
+					'**Patron only Feature**',
+					'Live Embed, Custom Description, Custom TH Levels, Set Clan Leader and Custom Colour',
+					'',
+					'[Become a Patron](https://www.patreon.com/join/clashperk)'
+				]);
+			await message.channel.send({ embed });
 		}
 
 		return message.channel.send({ embed });
