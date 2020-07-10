@@ -12,14 +12,19 @@ class FlagsCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: 'Shows the list of all flagged players.',
-				usage: '[page]',
-				examples: ['', '2']
+				usage: '[page] [--download/-dl]',
+				examples: ['', '2', '-dl', '2 --download']
 			},
 			args: [
 				{
 					id: 'page',
 					type: 'integer',
 					default: 1
+				},
+				{
+					id: 'download',
+					match: 'flag',
+					flag: ['--download', '-dl']
 				}
 			]
 		});
@@ -30,7 +35,7 @@ class FlagsCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { page }) {
+	async exec(message, { page, download }) {
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message));
 		const data = await mongodb.db('clashperk')
@@ -55,8 +60,8 @@ class FlagsCommand extends Command {
 
 		return message.util.send({
 			embed,
-			files: buffer
-				? [{ attachment: Buffer.from(buffer), name: `${message.guild.name}_flag_list.xlsx` }]
+			files: buffer && download
+				? [{ attachment: Buffer.from(buffer), name: `${message.guild.name.toLowerCase()}_flag_list.xlsx` }]
 				: null
 		});
 	}
