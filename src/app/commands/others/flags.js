@@ -11,7 +11,12 @@ class FlagsCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: 'Shows the list of all flagged players.',
+				content: [
+					'Shows the list of all flagged players.',
+					'',
+					'**Flags**',
+					'`--download` or `-dl` to export as excel.'
+				],
 				usage: '[page] [--download/-dl]',
 				examples: ['', '2', '-dl', '2 --download']
 			},
