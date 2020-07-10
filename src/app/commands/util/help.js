@@ -53,13 +53,6 @@ class HelpCommand extends Command {
 					: description.content.replace(/{prefix}/g, `\\${prefix}`)
 			]);
 
-		if (description.image) embed.setImage(description.image);
-
-		const fields = [];
-		for (const field of description.fields) fields.push(...[`**${field.name}**`, field.value, '']);
-
-		if (fields.length) embed.setDescription([embed.description, '', ...fields]);
-
 		if (command.aliases.length > 1) {
 			embed.setDescription([
 				embed.description,
@@ -89,6 +82,17 @@ class HelpCommand extends Command {
 					.toLowerCase()
 					.replace(/\b(\w)/g, char => char.toUpperCase())
 			]);
+		}
+
+		if (description.image) {
+			embed.setDescription([
+				embed.description,
+				'',
+				Array.isArray(description.image.text)
+					? description.image.text.join('\n')
+					: description.image.text
+			]);
+			embed.setImage(description.image.url);
 		}
 
 		return message.util.send({ embed });

@@ -13,17 +13,14 @@ class CWLRoundComamnd extends Command {
 			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows info about the current round.',
+				content: [
+					'Shows info about the current round.',
+					'',
+					'**Flags**',
+					'`--round <num>` or `-r <num>` to see specific round.'
+				],
 				usage: '<clanTag> [--round/-r] [round]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP -r 5', '#8QU8J9LP --round 4'],
-				fields: [
-					{
-						name: 'Flags',
-						value: [
-							'`--round <num>` or `-r <num>` to see specific round.'
-						]
-					}
-				]
+				examples: ['#8QU8J9LP', '#8QU8J9LP -r 5', '#8QU8J9LP --round 4']
 			},
 			optionFlags: ['--round', '-r']
 		});

@@ -56,21 +56,11 @@ class ClanEmbedCommand extends Command {
 			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL())
 			.setTimestamp();
 
-		await message.channel.send({ embed });
 		if (!this.client.patron.get(message.guild.id, 'guild', false)) {
-			await this.delay(250);
-			return message.channel.send([
-				'Become a Patron to make this Embed Live!',
-				'',
-				'• Self-updaing embed',
-				'• Set custom description',
-				'• Set accepted town-halls',
-				'• Set custom clan leader',
-				'• Set custom embed color'
-			]);
+			return this.handler.handleDirectCommand(message, 'clanembed', this.handler.modules.get('help'), false);
 		}
 
-		return message;
+		return message.channel.send({ embed });
 	}
 
 	async delay(ms) {

@@ -21,17 +21,14 @@ class CWLAttacksComamnd extends Command {
 			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows attacks of the current round.',
+				content: [
+					'Shows attacks of the current round.',
+					'',
+					'**Flags**',
+					'`--round <num>` or `-r <num>` to see specific round.'
+				],
 				usage: '<clanTag>',
-				examples: ['#8QU8J9LP'],
-				fields: [
-					{
-						name: 'Flags',
-						value: [
-							'`--round <num>` or `-r <num>` to see specific round.'
-						]
-					}
-				]
+				examples: ['#8QU8J9LP']
 			},
 			optionFlags: ['--round', '-r']
 		});

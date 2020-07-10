@@ -3,6 +3,7 @@ const { mongodb } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
 const { Modes } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
+const { Util } = require('discord.js');
 
 class ClanEmbedCommand extends Command {
 	constructor() {
@@ -40,16 +41,16 @@ class ClanEmbedCommand extends Command {
 		const user = yield {
 			type: 'member',
 			prompt: {
-				start: 'Who is the Leader of the clan?',
+				start: 'Who is the leader of the clan?',
 				retry: 'Please mention a valid member...'
 			}
 		};
 
 		const accepts = yield {
-			type: Argument.validate('string', (msg, txt) => txt.length <= 1024),
+			type: Argument.validate('string', (msg, txt) => txt.length <= 100),
 			prompt: {
-				start: 'What townhalls are accepted?',
-				retry: 'Embed field must be 1024 or fewer in length.',
+				start: 'What town-halls are accepted?',
+				retry: 'Embed field must be 100 or fewer in length.',
 				time: 1 * 60 * 1000
 			},
 			default: ' \u200b'
@@ -57,10 +58,10 @@ class ClanEmbedCommand extends Command {
 
 		const description = yield {
 			match: 'rest',
-			type: Argument.validate('string', (msg, txt) => txt.length <= 1024),
+			type: Argument.validate('string', (msg, txt) => txt.length <= 300),
 			prompt: {
 				start: 'What would you like to set the description?',
-				retry: 'Embed description must be 1024 or fewer in length.',
+				retry: 'Embed description must be 300 or fewer in length.',
 				time: 1.5 * 60 * 1000
 			},
 			default: ' \u200b'
@@ -101,7 +102,7 @@ class ClanEmbedCommand extends Command {
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)
-			.setDescription(description)
+			.setDescription(Util.cleanContent(description, message))
 			.addField(`${emoji.owner} Leader`, `${user}`)
 			.addField(`${emoji.townhall} Accepted Town-Hall`, accepts.split(',').map(x => x.trim()).join(', '))
 			.addField(`${emoji.clan} War Info`, [
@@ -121,7 +122,7 @@ class ClanEmbedCommand extends Command {
 			name: data.name,
 			patron: this.client.patron.get(message.guild.id, 'guild', false),
 			message: msg.id,
-			embed: { userId: user.id, accepts, description }
+			embed: { userId: user.id, accepts, description: Util.cleanContent(description) }
 		});
 
 		this.client.cacheHandler.add(id, {

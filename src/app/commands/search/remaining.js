@@ -12,13 +12,14 @@ class RemainingAttacksCommand extends Command {
 			category: 'cwl',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: 'Shows info about remaining attacks.',
+				content: [
+					'Shows info about remaining attacks.',
+					'',
+					'**Flags**',
+					'`--cwl` or `cwl` for cwl missing attacks.'
+				],
 				usage: '<clanTag> [--cwl/cwl]',
-				examples: ['#8QU8J9LP', '8QU8J9LP --cwl', '#8QU8J9LP cwl'],
-				fields: [{
-					name: 'Flags',
-					value: ['`--cwl` or `cwl` for cwl missing attacks.']
-				}]
+				examples: ['#8QU8J9LP', '8QU8J9LP --cwl', '#8QU8J9LP cwl']
 			},
 			flags: ['--cwl', '-cwl', 'cwl']
 		});

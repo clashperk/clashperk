@@ -3,7 +3,7 @@ const { Command } = require('discord-akairo');
 class ClanEmbedCommand extends Command {
 	constructor() {
 		super('clanembed', {
-			aliases: ['clanembed', 'cembed'],
+			aliases: ['clanembed'],
 			category: 'other',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
@@ -11,17 +11,17 @@ class ClanEmbedCommand extends Command {
 				usage: '<clanTag> [--color]',
 				examples: ['#8QU8J9LP --color #5970C1'],
 				content: [
-					'Creates a beautiful embed for a clan.',
-					'',
-					'**Become a Patron to make this Embed Live!**',
-					'• Self-updaing embed',
-					'• Set custom description',
-					'• Set accepted town-halls',
-					'• Set custom clan leader',
-					'• Set custom embed color',
-					'',
-					'[Become a Patron](https://www.patreon.com/join/clashperk)'
-				]
+					'Creates a beautiful embed for a clan.'
+				],
+				image: {
+					text: [
+						'**Patron only Feature**',
+						'Live Embed, Custom Description, Custom TH Levels, Set Clan Leader and Custom Colour',
+						'',
+						'[Become a Patron](https://www.patreon.com/join/clashperk)'
+					],
+					url: 'https://i.imgur.com/QNeOD2n.png'
+				}
 			},
 			args: [
 				{
