@@ -1,6 +1,7 @@
 const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { redNum } = require('../../util/emojis');
+const Excel = require('exceljs');
 
 class FlagsCommand extends Command {
 	constructor() {
@@ -37,7 +38,9 @@ class FlagsCommand extends Command {
 			.find({ guild: message.guild.id })
 			.toArray();
 
+		let buffer = null;
 		if (data && data.length) {
+			buffer = await this.excel(data);
 			const paginated = this.paginate(data, page);
 			let index = (paginated.page - 1) * 25;
 			embed.setAuthor(message.guild.name, message.guild.iconURL())
@@ -50,7 +53,12 @@ class FlagsCommand extends Command {
 			embed.setDescription(`${message.guild.name} does not have any flagged players. Why not add some?`);
 		}
 
-		return message.util.send({ embed });
+		return message.util.send({
+			embed,
+			files: buffer
+				? [{ attachment: Buffer.from(buffer), name: `${message.guild.name}_flag_list.xlsx` }]
+				: null
+		});
 	}
 
 	paginate(items, page = 1, pageLength = 25) {
@@ -63,6 +71,33 @@ class FlagsCommand extends Command {
 			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
 			page, maxPage, pageLength
 		};
+	}
+
+	async excel(members) {
+		const workbook = new Excel.Workbook();
+		workbook.creator = 'ClashPerk';
+		workbook.lastModifiedBy = 'ClashPerk';
+		workbook.created = new Date(2020, 1, 1);
+		workbook.modified = new Date();
+		workbook.lastPrinted = new Date();
+		workbook.views = [
+			{
+				x: 0, y: 0, width: 10000, height: 20000,
+				firstSheet: 0, activeTab: 1, visibility: 'visible'
+			}
+		];
+		const sheet = workbook.addWorksheet('Flag List');
+		sheet.columns = [
+			{ header: 'NAME', key: 'name', width: 16 },
+			{ header: 'TAG', key: 'tag', width: 16 },
+			{ header: 'AUTHOR', key: 'author', width: 16 },
+			{ header: 'DATE', key: 'date', width: 20 },
+			{ header: 'REASON', key: 'reason', width: 40 }
+		];
+		sheet.getRow(1).font = { bold: true, size: 10 };
+		sheet.addRows(members.map(m => [m.name, m.tag, m.user, m.createdAt, m.reason]));
+
+		return workbook.xlsx.writeBuffer();
 	}
 }
 
