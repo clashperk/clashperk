@@ -100,7 +100,7 @@ class FlagsCommand extends Command {
 			{ header: 'REASON', key: 'reason', width: 50 }
 		];
 		sheet.getRow(1).font = { bold: true, size: 10 };
-		sheet.addRows(members.map(m => [m.name, m.tag, m.user, new Date(m.createdAt).toUTCString(), m.reason]));
+		sheet.addRows(members.map(m => [m.name, m.tag, m.user_tag || m.user, new Date(m.createdAt).toUTCString(), m.reason]));
 
 		return workbook.xlsx.writeBuffer();
 	}

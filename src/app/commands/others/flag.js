@@ -1,6 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
+const { Util } = require('discord.js');
 
 class FlagCommand extends Command {
 	constructor() {
@@ -59,9 +60,10 @@ class FlagCommand extends Command {
 				$set: {
 					guild: message.guild.id,
 					user: message.author.id,
+					user_tag: message.author.tag,
 					tag: data.tag,
 					name: data.name,
-					reason,
+					reason: Util.cleanContent(reason, message),
 					createdAt: new Date()
 				}
 			}, { upsert: true });
