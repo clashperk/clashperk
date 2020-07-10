@@ -1,5 +1,6 @@
 const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
+const { redNum } = require('../../util/emojis');
 
 class FlagsCommand extends Command {
 	constructor() {
@@ -32,7 +33,7 @@ class FlagsCommand extends Command {
 			embed.setAuthor('Flagged Players')
 				.setDescription([
 					data.slice(0, 100)
-						.map((x, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}\` ${x.name} (${x.tag})`)
+						.map((x, i) => `${redNum[++i]} ${x.name} (${x.tag})`)
 						.join('\n')
 				]);
 		} else {
