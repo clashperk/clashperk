@@ -151,7 +151,7 @@ class RushedCommand extends Command {
 		});
 		if (troopLevels) {
 			embed.setDescription([
-				'**Elixir Troops**',
+				'\u200e**Elixir Troops**'.padEnd(50, '\u200b \u2002').concat('\u200f \u200e \u200b'),
 				troopLevels.split('#').join('\n')
 			]);
 		}
