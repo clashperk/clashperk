@@ -11,7 +11,8 @@ class FlagsCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: 'Shows the list of all flagged players.',
-				examples: ['']
+				usage: '[page]',
+				examples: ['', '2']
 			},
 			args: [
 				{
@@ -38,7 +39,7 @@ class FlagsCommand extends Command {
 
 		if (data && data.length) {
 			const paginated = this.paginate(data, page);
-			let index = (paginated.page - 1) * 2;
+			let index = (paginated.page - 1) * 25;
 			embed.setAuthor(message.guild.name, message.guild.iconURL())
 				.setTitle('Flags')
 				.setDescription([
@@ -52,7 +53,7 @@ class FlagsCommand extends Command {
 		return message.util.send({ embed });
 	}
 
-	paginate(items, page = 1, pageLength = 2) {
+	paginate(items, page = 1, pageLength = 25) {
 		const maxPage = Math.ceil(items.length / pageLength);
 		if (page < 1) page = 1;
 		if (page > maxPage) page = maxPage;
