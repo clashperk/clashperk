@@ -160,14 +160,14 @@ class CWLStarsComamnd extends Command {
 
 		const msg = await message.util.send({ embed });
 
-		await msg.react('🔥');
+		await msg.react('➕');
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['🔥'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['➕'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 45000, max: 1 }
 		);
 
 		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '🔥') {
+			if (reaction.emoji.name === '➕') {
 				leaderboard.sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
 				embed.setDescription([
 					`**\`\u200e # STAR LOST GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
@@ -178,9 +178,7 @@ class CWLStarsComamnd extends Command {
 						})
 						.join('\n')
 				]);
-				await msg.edit({
-					embed: embed.setFooter('Level / Max Level')
-				});
+				await message.util.send({ embed });
 				return collector.stop();
 			}
 		});
