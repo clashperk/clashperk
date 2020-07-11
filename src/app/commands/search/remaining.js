@@ -102,7 +102,7 @@ class RemainingAttacksCommand extends Command {
 				embed.description,
 				'',
 				`**2 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
-				...TwoRem.map(m => `\`\u200e${m.mapPosition.toString().padEnd(2, ' ')} ${m.name.padEnd(20, ' ')}\``)
+				...TwoRem.map(m => `\u200e${redNum[m.mapPosition]} ${m.name}`)
 			]);
 		}
 		if (OneRem.length) {
@@ -110,7 +110,7 @@ class RemainingAttacksCommand extends Command {
 				embed.description,
 				'',
 				`**1 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
-				...OneRem.map(m => `\`\u200e${m.mapPosition.toString().padEnd(2, ' ')} ${m.name.padEnd(20, ' ')}\``)
+				...OneRem.map(m => `\u200e${redNum[m.mapPosition]} ${m.name}`)
 			]);
 		}
 
