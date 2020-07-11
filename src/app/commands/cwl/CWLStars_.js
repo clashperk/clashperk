@@ -142,7 +142,7 @@ class CWLStarsComamnd extends Command {
 						icon_url: clanBadge
 					},
 					description: [
-						`${emoji.channel} __**\`\u200e STAR HIT ${'NAME'.padEnd(15, ' ')}\`**__`,
+						`${'<:cp_hash:731418702875983884>'} __**\`\u200e STAR HIT ${'NAME'.padEnd(15, ' ')}\u200f\`**__`,
 						leaderboard.filter(m => m.of > 0)
 							.map((m, i) => `${redNum[++i]} \`\u200e${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.padEnd(15, ' ')}\``)
 							.join('\n')
