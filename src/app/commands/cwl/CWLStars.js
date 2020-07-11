@@ -172,7 +172,7 @@ class CWLStarsComamnd extends Command {
 				embed.setDescription([
 					`**\`\u200e # STAR LOST GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
 					leaderboard.filter(m => m.of > 0)
-						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${m.lost.toString().padStart(2, ' ')}  ${(m.stars - m.lost).toString().padStart(2, ' ')}  ${m.name.padEnd(15, ' ')}\``)
+						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}   ${m.lost.toString().padStart(2, ' ')}  ${(m.stars - m.lost).toString().padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``)
 						.join('\n')
 				]);
 				await msg.edit({
