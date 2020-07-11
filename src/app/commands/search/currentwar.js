@@ -47,7 +47,12 @@ class CurrentWarCommand extends Command {
 		// .setThumbnail(data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
-			embed.setDescription('Private WarLog');
+			const isCWL = await this.client.coc.clanWarLeague(data.tag).catch(() => null);
+			if (isCWL) {
+				embed.setDescription(`Clan is in CWL. Run \`${this.handler.prefix(message)}cwl\` to get CWL commands.`);
+			} else {
+				embed.setDescription('Private WarLog');
+			}
 			return message.util.send({ embed });
 		}
 
@@ -57,7 +62,12 @@ class CurrentWarCommand extends Command {
 		}).then(res => res.json());
 
 		if (body.state === 'notInWar') {
-			embed.setDescription('Not in War');
+			const isCWL = await this.client.coc.clanWarLeague(data.tag).catch(() => null);
+			if (isCWL) {
+				embed.setDescription(`Clan is in CWL. Run \`${this.handler.prefix(message)}cwl\` to get CWL commands.`);
+			} else {
+				embed.setDescription('Not in War');
+			}
 			return message.util.send({ embed });
 		}
 
