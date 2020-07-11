@@ -69,10 +69,10 @@ class CWLStatsComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, { clanTag: data.tag, clanName: data.name, clanBadge: data.badgeUrls.medium });
+		return this.rounds(message, body, data.tag);
 	}
 
-	async rounds(message, body, { clanTag, clanName, clanBadge } = {}) {
+	async rounds(message, body, clanTag) {
 		const collection = [];
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [index, stars, destruction] = [0, 0, 0];
@@ -151,6 +151,7 @@ class CWLStatsComamnd extends Command {
 			}
 		}
 
+		const clan = body.clans.find(clan => clan.tag === clanTag);
 		const description = collection.map(arr => {
 			const header = arr[0].join('\n');
 			const description = arr[1].join('\n');
@@ -160,7 +161,7 @@ class CWLStatsComamnd extends Command {
 		const leaderboard = members.sort((a, b) => b.stars - a.stars);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${clanName} CWL`, clanBadge)
+			.setAuthor(`${clan.name} CWL`, clan.badgeUrls.small)
 			.setDescription(description)
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
 		const msg = await message.util.send({ embed });
@@ -173,10 +174,10 @@ class CWLStatsComamnd extends Command {
 		if (!collector || !collector.size) return;
 		return message.channel.send({
 			embed: {
-				color: 0x5970c1,
+				color: this.client.embed(message),
 				author: {
-					name: `${clanName} CWL`,
-					icon_url: clanBadge
+					name: `${clan.name} CWL`,
+					icon_url: clan.badgeUrls.small
 				},
 				description: [
 					`**\`\u200e # STAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,

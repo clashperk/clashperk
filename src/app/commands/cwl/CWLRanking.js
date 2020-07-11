@@ -69,10 +69,11 @@ class CWLRankingComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, { clanTag: data.tag, clanName: data.name, clanBadge: data.badgeUrls.medium });
+		return this.rounds(message, body, data.tag);
 	}
 
-	async rounds(message, body, { clanTag, clanName, clanBadge } = {}) {
+	async rounds(message, body, clanTag) {
+		const clan = body.clans.find(clan => clan.tag === clanTag);
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [stars, destruction, padding] = [0, 0, 5];
 		const ranking = body.clans.map(clan => ({ name: clan.name, tag: clan.tag, stars: 0, destruction: 0 }));
@@ -106,7 +107,7 @@ class CWLRankingComamnd extends Command {
 		const rank = ranking.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${clanName} CWL Ranking`, clanBadge)
+			.setAuthor(`${clan.name} CWL Ranking`, clan.badgeUrls.small)
 			.setDescription([
 				`${emoji.hash} **\`\u200eSTAR DEST${''.padEnd(padding - 2, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
 				ranking.sort((a, b) => b.stars - a.stars)

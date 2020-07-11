@@ -149,11 +149,11 @@ class CWLGainedComamnd extends Command {
 			.setAuthor(`${clan.name} CWL`, clan.badgeUrls.small)
 			.setColor(this.client.embed(message))
 			.setDescription([
-				`**\`\u200eSTAR LOST GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
+				`**\`\u200e # STAR GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
 				members.filter(m => m.of > 0)
 					.map((m, i) => {
 						const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
-						return `\`\u200e ${m.stars.toString().padEnd(2, ' ')}   ${m.lost.toString().padStart(2, ' ')}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
+						return `\`\u200e${(++i).toString().padStart(2, ' ')} ${m.stars.toString().padEnd(2, ' ')}   ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
 					})
 					.join('\n')
 			]);

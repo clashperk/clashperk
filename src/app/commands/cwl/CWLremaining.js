@@ -83,33 +83,33 @@ class CWLRemainingComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data, round);
+		return this.rounds(message, body, data.tag, round);
 	}
 
-	async rounds(message, body, clan_, round) {
-		const rounds_ = body.rounds.filter(r => !r.warTags.includes('#0')).length;
-		if (round && round > rounds_) {
+	async rounds(message, body, clanTag, round) {
+		const clan = body.clans.find(clan => clan.tag === clanTag);
+		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
+
+		if (round && round > rounds.length) {
 			const embed = new MessageEmbed()
 				.setColor(this.client.embed(message))
-				.setAuthor(`${clan_.name} (${clan_.tag})`, clan_.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${clan_.tag}`)
+				.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 				.setDescription([
 					'This round is not available yet!',
 					'',
 					'**Available Rounds**',
-					'',
-					new Array(rounds_)
+					new Array(rounds.length)
 						.fill(0)
 						.map((x, i) => `**\`${i + 1}\`** ${emoji.ok}`)
 						.join('\n'),
-					new Array(body.rounds.length - rounds_)
+					new Array(body.rounds.length - rounds.length)
 						.fill(0)
-						.map((x, i) => `**\`${i + rounds_ + 1}\`** ${emoji.wrong}`)
+						.map((x, i) => `**\`${i + rounds.length + 1}\`** ${emoji.wrong}`)
 						.join('\n')
 				]);
 			return message.util.send({ embed });
 		}
 
-		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		const chunks = [];
 		let i = 0;
 		for (const { warTags } of rounds) {
@@ -119,12 +119,12 @@ class CWLRemainingComamnd extends Command {
 					headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 				});
 				const data = await res.json();
-				if ((data.clan && data.clan.tag === clan_.tag) || (data.opponent && data.opponent.tag === clan_.tag)) {
+				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
 					const embed = new MessageEmbed()
 						.setColor(this.client.embed(message));
 
-					const clan = data.clan.tag === clan_.tag ? data.clan : data.opponent;
-					const opponent = data.clan.tag === clan_.tag ? data.opponent : data.clan;
+					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
+					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 
 					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
 					if (data.state === 'warEnded') {
