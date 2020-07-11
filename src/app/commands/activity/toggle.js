@@ -18,8 +18,8 @@ class StopCommand extends Command {
 					'**Available Methods**',
 					'• donationlog `<clanTag>`',
 					'• clanlog `<clanTag>`',
-					'• lastonline `<clanTag>`',
-					'• clangames `<clanTag>`',
+					'• onlineboard `<clanTag>`',
+					'• cgboard `<clanTag>`',
 					'• clanmebed `<clanTag>`',
 					'• all `<clanTag>` - remove all logs and boards for a clan.',
 					'',
@@ -29,9 +29,9 @@ class StopCommand extends Command {
 				examples: [
 					'donationlog #8QU8J9LP',
 					'clanlog #8QU8J9LP',
-					'lastonline #8QU8J9LP',
+					'onlineboard #8QU8J9LP',
 					'clanembed #8QU8J9LP',
-					'clangames #8QU8J9LP',
+					'cgboard #8QU8J9LP',
 					'all #8QU8J9LP'
 				]
 			},
@@ -43,7 +43,7 @@ class StopCommand extends Command {
 						['all'],
 						[Modes.DONATION_LOG, 'donationlog', 'dl'],
 						[Modes.CLAN_LOG, 'playerlog', 'clanlog', 'pl'],
-						[Modes.ACTIVITY_LOG, 'lastonline', 'lastonlineboard', 'ob'],
+						[Modes.ACTIVITY_LOG, 'lastonline', 'lastonlineboard', 'ob', 'onlineboard'],
 						[Modes.CLAN_EMBED_LOG, 'clanembed', 'ce'],
 						[Modes.CLAN_GAMES_LOG, 'clangames', 'clangame', 'clangamesboard', 'clangameboard', 'cgboard', 'cg'],
 						[Modes.CLAN_WAR_LOG, 'warlog']
@@ -77,18 +77,18 @@ class StopCommand extends Command {
 					'',
 					'**Available Methods**',
 					'• donationlog `<clanTag>`',
-					'• playerlog `<clanTag>`',
-					'• lastonline `<clanTag>`',
-					'• clangames `<clanTag>`',
+					'• clanlog `<clanTag>`',
+					'• onlineboard `<clanTag>`',
+					'• cgboard `<clanTag>`',
 					'• clanmebed `<clanTag>`',
 					'• all `<clanTag>` - remove all logs and boards for a clan.',
 					'',
 					'**Examples**',
 					`\`${prefix}stop donationlog #8QU8J9LP\``,
-					`\`${prefix}stop playerlog #8QU8J9LP\``,
-					`\`${prefix}stop lastonline #8QU8J9LP\``,
+					`\`${prefix}stop clanlog #8QU8J9LP\``,
+					`\`${prefix}stop onlineboard #8QU8J9LP\``,
 					`\`${prefix}stop clanembed #8QU8J9LP\``,
-					`\`${prefix}stop clangames #8QU8J9LP\``,
+					`\`${prefix}stop cgboard #8QU8J9LP\``,
 					`\`${prefix}stop all #8QU8J9LP\``
 				]);
 			return message.util.send({ embed });

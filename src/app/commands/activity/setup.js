@@ -16,7 +16,7 @@ class SetupCommand extends Command {
 					'• onlineboard `<clanTag> [channel/color]`',
 					'• cgboard `<clanTag> [channel/color]`',
 					// '• warlog `<clanTag> [channel/color]`',
-					'• playerlog `<clanTag> [channel/role]`',
+					'• clanlog `<clanTag> [channel/role]`',
 					'',
 					'**Required: `<>` | Optional: `[]`**',
 					'For additional `<...args>` usage refer to the examples below.'
@@ -27,7 +27,7 @@ class SetupCommand extends Command {
 					'onlineboard #8QU8J9L',
 					'cgboard #8QU8J9L',
 					// 'warlog #8QU8J9L',
-					'playerlog #8QU8J9L'
+					'clanlog #8QU8J9L'
 				]
 			}
 		});
