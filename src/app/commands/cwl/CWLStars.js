@@ -87,7 +87,7 @@ class CWLStarsComamnd extends Command {
 		const members = body.clans.find(clan => clan.tag === clanTag)
 			.members.map(member => ({
 				name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0, dest: 0,
-				opponent_stars: 0
+				lost: 0
 			}));
 
 		for (const { warTags } of rounds) {
@@ -147,8 +147,43 @@ class CWLStarsComamnd extends Command {
 		}
 
 		const patron = this.client.patron.check(message.author, message.guild);
-		const leaderboard = members.sort((a, b) => b.stars - a.stars);
-		return message.util.send({
+		const leaderboard = members.sort((a, b) => b.stars - a.stars)
+			.sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
+
+		const embed = this.client.util.embed()
+			.setColor(this.client.embed(message))
+			.setDescription([
+				`**\`\u200e # STAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,
+				leaderboard.filter(m => m.of > 0)
+					.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.padEnd(15, ' ')}\``)
+					.join('\n')
+			]);
+
+		const msg = await message.util.send({ embed });
+
+		await msg.react('🔥');
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['🔥'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 45000, max: 1 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '🔥') {
+				embed.setDescription([
+					`**\`\u200e # STAR LOST GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
+					leaderboard.filter(m => m.of > 0)
+						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${m.lost.toString().padEnd(2, ' ')}  ${(m.stars - m.lost).toString().padEnd(2, ' ')}  ${m.name.padEnd(15, ' ')}\``)
+						.join('\n')
+				]);
+				await msg.edit({
+					embed: embed.setFooter('Level / Max Level')
+				});
+				return collector.stop();
+			}
+		});
+
+		collector.on('end', () => msg.reactions.removeAll());
+		/* return message.util.send({
 			embed: excel
 				? null
 				: {
@@ -170,7 +205,7 @@ class CWLStarsComamnd extends Command {
 					name: `${clanName.toLowerCase()}_cwl_stars.xlsx`
 				}]
 				: null
-		});
+		});*/
 	}
 
 	destruction(dest) {
@@ -228,8 +263,7 @@ class CWLStarsComamnd extends Command {
 		sheet.getColumn(5).alignment = { horizontal: 'right' };
 		sheet.getColumn(6).alignment = { horizontal: 'right' };
 		sheet.getColumn(7).alignment = { horizontal: 'right' };
-		const sorted = members.sort((a, b) => (b.stars - b.opponent_stars) - (a.stars - a.opponent_stars));
-		sheet.addRows(sorted.map(m => [m.name, m.tag, m.stars, m.opponent_stars, m.stars - m.opponent_stars, m.dest, `${m.attacks}/${m.of}`]));
+		sheet.addRows(members.map(m => [m.name, m.tag, m.stars, m.lost, m.stars - m.lost, m.dest, `${m.attacks}/${m.of}`]));
 
 		return workbook.xlsx.writeBuffer();
 	}
