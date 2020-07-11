@@ -215,6 +215,7 @@ class CWLStarsComamnd extends Command {
 			{ header: 'NAME', key: 'name', width: 16 },
 			{ header: 'TAG', key: 'tag', width: 16 },
 			{ header: 'STARS', key: 'th', width: 10 },
+			{ header: 'DEFENCE', key: 'def', width: 10 },
 			{ header: 'GAINED', key: 'gained', width: 10 },
 			{ header: 'DEST', key: 'bk', width: 10 },
 			{ header: 'ATTACKS', key: 'aq', width: 10 }
@@ -225,7 +226,9 @@ class CWLStarsComamnd extends Command {
 		sheet.getColumn(3).alignment = { horizontal: 'right' };
 		sheet.getColumn(4).alignment = { horizontal: 'right' };
 		sheet.getColumn(5).alignment = { horizontal: 'right' };
-		sheet.addRows(members.map(m => [m.name, m.tag, m.stars, m.stars - m.opponent_stars, m.dest, `${m.attacks}/${m.of}`]));
+		sheet.getColumn(6).alignment = { horizontal: 'right' };
+		sheet.getColumn(7).alignment = { horizontal: 'right' };
+		sheet.addRows(members.map(m => [m.name, m.tag, m.stars, m.opponent_stars, m.stars - m.opponent_stars, m.dest, `${m.attacks}/${m.of}`]));
 
 		return workbook.xlsx.writeBuffer();
 	}
