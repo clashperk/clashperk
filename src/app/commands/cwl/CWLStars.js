@@ -47,10 +47,10 @@ class CWLStarsComamnd extends Command {
 			flag: ['--diff']
 		};
 
-		return { data, excel };
+		return { data, excel, diff };
 	}
 
-	async exec(message, { data, excel }) {
+	async exec(message, { data, excel, diff }) {
 		if (!excel) await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
 			method: 'GET', timeout: 3000,
@@ -228,7 +228,8 @@ class CWLStarsComamnd extends Command {
 		sheet.getColumn(5).alignment = { horizontal: 'right' };
 		sheet.getColumn(6).alignment = { horizontal: 'right' };
 		sheet.getColumn(7).alignment = { horizontal: 'right' };
-		sheet.addRows(members.map(m => [m.name, m.tag, m.stars, m.opponent_stars, m.stars - m.opponent_stars, m.dest, `${m.attacks}/${m.of}`]));
+		const sorted = members.sort((a, b) => (b.stars - b.opponent_stars) - (a.stars - a.opponent_stars));
+		sheet.addRows(sorted.map(m => [m.name, m.tag, m.stars, m.opponent_stars, m.stars - m.opponent_stars, m.dest, `${m.attacks}/${m.of}`]));
 
 		return workbook.xlsx.writeBuffer();
 	}
