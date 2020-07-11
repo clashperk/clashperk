@@ -196,7 +196,8 @@ module.exports = {
 		received: '<:received:712617494904438855>',
 		clash: '<:clash:716274886506709003>',
 		mem_red: '<:memred:721788624835838054>',
-		mem_blue: '<:memblue:721787113414197259>'
+		mem_blue: '<:memblue:721787113414197259>',
+		hash: '<:cp_hash:731418702875983884>'
 	},
 
 	blueNum: {

@@ -142,9 +142,9 @@ class CWLStarsComamnd extends Command {
 						icon_url: clanBadge
 					},
 					description: [
-						`${'<:cp_hash:731418702875983884>'} __**\`\u200e STAR HIT ${'NAME'.padEnd(15, ' ')}\u200f\`**__`,
+						`${'<:cp_hash:731418702875983884>'} **\`\u200eSTAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,
 						leaderboard.filter(m => m.of > 0)
-							.map((m, i) => `${redNum[++i]} \`\u200e \u2002${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.padEnd(15, ' ')}\``)
+							.map((m, i) => `${redNum[++i]} \`\u200e ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.padEnd(15, ' ')}\``)
 							.join('\n')
 					].join('\n')
 				},
