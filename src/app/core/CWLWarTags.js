@@ -27,7 +27,6 @@ class CWLWarTags {
 
 	static async pushWarTags(tag, rounds, body) {
 		const warTags = [];
-		const chunk = [];
 		for (const round of rounds) {
 			for (const warTag of round.warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
@@ -35,15 +34,13 @@ class CWLWarTags {
 				});
 				const data = await res.json();
 				if ((data.clan && data.clan.tag === tag) || (data.opponent && data.opponent.tag === tag)) {
-					warTags.push(warTag);
-					chunk.push(data);
+					warTags.push({ warTags: [warTag] });
 					break;
 				}
 			}
 		}
 
-		this.set(tag, warTags, rounds, body.clans.find(clan => clan.tag === tag));
-		return chunk;
+		return this.set(tag, warTags, rounds, body.clans.find(clan => clan.tag === tag));
 	}
 }
 
