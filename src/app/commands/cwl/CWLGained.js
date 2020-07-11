@@ -7,12 +7,12 @@ const { emoji } = require('../../util/emojis');
 
 class CWLStarsComamnd extends Command {
 	constructor() {
-		super('cwl-stars', {
-			aliases: ['cwl-stars'],
+		super('cwl-gained', {
+			aliases: ['cwl-gained'],
 			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows total stars and attacks of clan members.',
+				content: 'Shows gained and lost stars of clan members.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
@@ -142,53 +142,31 @@ class CWLStarsComamnd extends Command {
 		}
 
 		const patron = this.client.patron.check(message.author, message.guild);
-		const leaderboard = members.sort((a, b) => b.stars - a.stars);
+		members.sort((a, b) => b.stars - a.stars).sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
 		const clan = body.clans.find(clan => clan.tag === clanTag);
+
 		const embed = this.client.util.embed()
 			.setAuthor(`${clan.name} CWL`, clan.badgeUrls.small)
-			.setColor(this.client.embed(message));
+			.setColor(this.client.embed(message))
+			.setDescription([
+				`**\`\u200eSTAR LOST GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
+				members.filter(m => m.of > 0)
+					.map((m, i) => {
+						const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
+						return `\`\u200e ${m.stars.toString().padEnd(2, ' ')}   ${m.lost.toString().padStart(2, ' ')}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
+					})
+					.join('\n')
+			]);
 
-		embed.setDescription([
-			`**\`\u200e # STAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,
-			leaderboard.filter(m => m.of > 0)
-				.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.padEnd(15, ' ')}\``)
-				.join('\n')
-		]);
-
-		const msg = await message.util.send({
+		return message.util.send({
 			embed,
 			files: patron && excel
 				? [{
-					attachment: Buffer.from(await this.excel(leaderboard.filter(m => m.of > 0))),
+					attachment: Buffer.from(await this.excel(members.filter(m => m.of > 0))),
 					name: `${clan.name.toLowerCase()}_cwl_stars.xlsx`
 				}]
 				: null
 		});
-
-		await msg.react('➕');
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 45000, max: 1 }
-		);
-
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➕') {
-				leaderboard.sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
-				embed.setDescription([
-					`**\`\u200eSTAR LOST GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
-					leaderboard.filter(m => m.of > 0)
-						.map((m, i) => {
-							const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
-							return `\`\u200e ${m.stars.toString().padEnd(2, ' ')}   ${m.lost.toString().padStart(2, ' ')}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
-						})
-						.join('\n')
-				]);
-				await message.util.send({ embed });
-				return collector.stop();
-			}
-		});
-
-		collector.on('end', () => msg.reactions.removeAll());
 	}
 
 	destruction(dest) {

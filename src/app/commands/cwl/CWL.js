@@ -19,6 +19,7 @@ class CWLComamnd extends Command {
 					'• stats `<clanTag>`',
 					'• members `<clanTag>`',
 					'• stars `<clanTag>`',
+					'• gained `<clanTag>`',
 					'• ranks `<clanTag>`',
 					'• legends `<clanTag>`',
 					'',
@@ -34,6 +35,7 @@ class CWLComamnd extends Command {
 					'stats #8QU8J9LP',
 					'members #8QU8J9LP',
 					'stars #8QU8J9LP',
+					'gained #8QU8J9LP',
 					'ranks #8QU8J9LP',
 					'legends #8QU8J9LP'
 				],
@@ -59,7 +61,8 @@ class CWLComamnd extends Command {
 				['cwl-legends', 'top', 'mvp', 'legends'],
 				['cwl-ranking', 'rank', 'ranks', 'ranking'],
 				['cwl-members', 'members', 'lineup', 'mem'],
-				['cwl-stars', 'stars', 'star']
+				['cwl-stars', 'stars', 'star'],
+				['cwl-gained', 'gained']
 			],
 			otherwise: message => {
 				const prefix = this.handler.prefix(message);
