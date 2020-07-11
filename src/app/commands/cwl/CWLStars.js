@@ -16,7 +16,7 @@ class CWLStarsComamnd extends Command {
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			flags: ['--excel']
+			flags: ['--diff']
 		});
 	}
 
@@ -40,6 +40,11 @@ class CWLStarsComamnd extends Command {
 		const excel = yield {
 			match: 'flag',
 			flag: ['--excel']
+		};
+
+		const diff = yield {
+			match: 'flag',
+			flag: ['--diff']
 		};
 
 		return { data, excel };
@@ -80,7 +85,10 @@ class CWLStarsComamnd extends Command {
 	async rounds(message, body, { clanTag, clanName, clanBadge } = {}, excel) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		const members = body.clans.find(clan => clan.tag === clanTag)
-			.members.map(member => ({ name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0, dest: 0 }));
+			.members.map(member => ({
+				name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0, dest: 0,
+				opponent_stars: 0
+			}));
 
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -105,6 +113,11 @@ class CWLStarsComamnd extends Command {
 								members.find(m => m.tag === member.tag)
 									.dest += member.attacks[0].destructionPercentage;
 							}
+
+							if (member.bestOpponentAttack) {
+								members.find(m => m.tag === member.tag)
+									.opponent_stars += member.bestOpponentAttack.stars;
+							}
 						}
 					}
 					if (data.state === 'inWar') {
@@ -120,6 +133,11 @@ class CWLStarsComamnd extends Command {
 
 								members.find(m => m.tag === member.tag)
 									.dest += member.attacks[0].destructionPercentage;
+							}
+
+							if (member.bestOpponentAttack) {
+								members.find(m => m.tag === member.tag)
+									.opponent_stars += member.bestOpponentAttack.stars;
 							}
 						}
 					}
@@ -197,6 +215,7 @@ class CWLStarsComamnd extends Command {
 			{ header: 'NAME', key: 'name', width: 16 },
 			{ header: 'TAG', key: 'tag', width: 16 },
 			{ header: 'STARS', key: 'th', width: 10 },
+			{ header: 'GAINED', key: 'gained', width: 10 },
 			{ header: 'DEST', key: 'bk', width: 10 },
 			{ header: 'ATTACKS', key: 'aq', width: 10 }
 		];
@@ -206,7 +225,7 @@ class CWLStarsComamnd extends Command {
 		sheet.getColumn(3).alignment = { horizontal: 'right' };
 		sheet.getColumn(4).alignment = { horizontal: 'right' };
 		sheet.getColumn(5).alignment = { horizontal: 'right' };
-		sheet.addRows(members.map(m => [m.name, m.tag, m.stars, m.dest, `${m.attacks}/${m.of}`]));
+		sheet.addRows(members.map(m => [m.name, m.tag, m.stars, m.stars - m.opponent_stars, m.dest, `${m.attacks}/${m.of}`]));
 
 		return workbook.xlsx.writeBuffer();
 	}
