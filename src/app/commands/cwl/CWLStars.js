@@ -141,7 +141,7 @@ class CWLStarsComamnd extends Command {
 					description: [
 						`**\`\u200e # STAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,
 						leaderboard.filter(m => m.of > 0)
-							.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')} ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.padEnd(15, ' ')}\``)
+							.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.padEnd(15, ' ')}\``)
 							.join('\n')
 					].join('\n')
 				},
