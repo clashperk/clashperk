@@ -147,8 +147,7 @@ class CWLStarsComamnd extends Command {
 		}
 
 		const patron = this.client.patron.check(message.author, message.guild);
-		const leaderboard = members.sort((a, b) => b.stars - a.stars)
-			.sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
+		const leaderboard = members.sort((a, b) => b.stars - a.stars);
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
@@ -169,10 +168,11 @@ class CWLStarsComamnd extends Command {
 
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '🔥') {
+				leaderboard.sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
 				embed.setDescription([
 					`**\`\u200e # STAR LOST GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
 					leaderboard.filter(m => m.of > 0)
-						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${m.lost.toString().padEnd(2, ' ')}  ${(m.stars - m.lost).toString().padEnd(2, ' ')}  ${m.name.padEnd(15, ' ')}\``)
+						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${m.lost.toString().padStart(2, ' ')}  ${(m.stars - m.lost).toString().padStart(2, ' ')}  ${m.name.padEnd(15, ' ')}\``)
 						.join('\n')
 				]);
 				await msg.edit({
