@@ -174,7 +174,7 @@ class CWLStarsComamnd extends Command {
 					`**\`\u200eSTAR LOST GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
 					leaderboard.filter(m => m.of > 0)
 						.map((m, i) => {
-							const gained = m.stars - m.lost > 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
+							const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
 							return `\`\u200e ${m.stars.toString().padEnd(2, ' ')}   ${m.lost.toString().padStart(2, ' ')}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
 						})
 						.join('\n')
