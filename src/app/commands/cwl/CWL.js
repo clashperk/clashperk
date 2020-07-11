@@ -62,7 +62,7 @@ class CWLComamnd extends Command {
 				['cwl-ranking', 'rank', 'ranks', 'ranking'],
 				['cwl-members', 'members', 'lineup', 'mem'],
 				['cwl-stars', 'stars', 'star'],
-				['cwl-gained', 'gained']
+				['cwl-gained', 'gained', 'gain', 'lost']
 			],
 			otherwise: message => {
 				const prefix = this.handler.prefix(message);

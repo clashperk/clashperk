@@ -5,7 +5,7 @@ const Resolver = require('../../struct/Resolver');
 const Excel = require('exceljs');
 const { emoji } = require('../../util/emojis');
 
-class CWLStarsComamnd extends Command {
+class CWLGainedComamnd extends Command {
 	constructor() {
 		super('cwl-gained', {
 			aliases: ['cwl-gained'],
@@ -230,4 +230,4 @@ class CWLStarsComamnd extends Command {
 	}
 }
 
-module.exports = CWLStarsComamnd;
+module.exports = CWLGainedComamnd;
