@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 const moment = require('moment');
 require('moment-duration-format');
 const Resolver = require('../../struct/Resolver');
+const { redNum } = require('../../util/emojis');
 
 class RemainingAttacksCommand extends Command {
 	constructor() {
@@ -84,22 +85,34 @@ class RemainingAttacksCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		let missing = '';
-		missing = `**\`\u200e#  \u2002 X \u2002 ${'NAME'.padEnd(20, ' ')}\`**\n`;
-		for (const member of this.short(body.clan.members)) {
-			if (member.attacks && member.attacks.length === 2) continue;
-			missing += `\`\u200e${member.mapPosition.toString().padEnd(2, ' ')} \u2002 ${member.attacks ? 2 - member.attacks.length : 2} \u2002 ${member.name.padEnd(20, ' ')}\`\n`;
-		}
+		const [OneRem, TwoRem] = [
+			body.clan.members.filter(m => m.attacks && m.attacks.length === 1),
+			body.clan.members.filter(m => !m.attacks)
+		];
 		embed.setDescription([
 			'**War Against**',
 			`${body.opponent.name} (${body.opponent.tag})`,
 			'',
 			'**War State**',
-			`${body.state.replace(/warEnded/g, 'War Ended').replace(/inWar/g, 'Battle Day')}`,
-			'',
-			`**${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
-			`${missing}`
+			`${body.state.replace(/warEnded/g, 'War Ended').replace(/inWar/g, 'Battle Day')}`
 		]);
+		if (TwoRem.length) {
+			embed.setDescription([
+				embed.description,
+				'',
+				`**2 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
+				...TwoRem.map(m => `\`\u200e${m.mapPosition.toString().padEnd(2, ' ')} ${m.name.padEnd(20, ' ')}\``)
+			]);
+		}
+		if (OneRem.length) {
+			embed.setDescription([
+				embed.description,
+				'',
+				`**1 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
+				...OneRem.map(m => `\`\u200e${m.mapPosition.toString().padEnd(2, ' ')} ${m.name.padEnd(20, ' ')}\``)
+			]);
+		}
+
 		const endTime = new Date(moment(body.endTime).toDate()).getTime();
 		if (body.state === 'inWar') embed.setFooter(`Ends in ${moment.duration(endTime - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`);
 		else embed.setFooter(`Ended ${moment.duration(Date.now() - endTime).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })} ago`);
