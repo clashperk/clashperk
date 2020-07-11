@@ -85,9 +85,10 @@ class RemainingAttacksCommand extends Command {
 			// return message.util.send({ embed });
 		}
 
+		const m = body.clan.members.concat(body.clan.members);
 		const [OneRem, TwoRem] = [
-			body.clan.members.filter(m => m.attacks && m.attacks.length === 1),
-			body.clan.members.filter(m => !m.attacks)
+			m.filter(m => m.attacks && m.attacks.length === 1),
+			m.filter(m => !m.attacks)
 		];
 		embed.setDescription([
 			'**War Against**',
