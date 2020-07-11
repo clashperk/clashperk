@@ -16,7 +16,7 @@ class CWLStarsComamnd extends Command {
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			flags: ['--diff']
+			flags: ['--diff', '--excel', '--download', '-dl']
 		});
 	}
 
@@ -39,7 +39,7 @@ class CWLStarsComamnd extends Command {
 
 		const excel = yield {
 			match: 'flag',
-			flag: ['--excel']
+			flag: ['--excel', '--download', '-dl']
 		};
 
 		const diff = yield {
