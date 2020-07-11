@@ -221,6 +221,7 @@ class CWLStarsComamnd extends Command {
 			{ header: 'ATTACKS', key: 'aq', width: 10 }
 		];
 		sheet.getRow(1).font = { bold: true, size: 10 };
+		sheet.getRow(5).font = { bold: true, size: 10, color: 'ff1010' };
 		sheet.getColumn(1).alignment = { horizontal: 'left' };
 		sheet.getColumn(2).alignment = { horizontal: 'left' };
 		sheet.getColumn(3).alignment = { horizontal: 'right' };
