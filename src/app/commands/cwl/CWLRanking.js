@@ -4,7 +4,7 @@ const moment = require('moment');
 const { MessageEmbed } = require('discord.js');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
-const { emoji } = require('../../util/emojis');
+const { emoji, redNum } = require('../../util/emojis');
 
 class CWLRankingComamnd extends Command {
 	constructor() {
@@ -108,11 +108,10 @@ class CWLRankingComamnd extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${clanName} CWL Ranking`, clanBadge)
 			.setDescription([
-				`\`\`\`#  STAR DEST${''.padEnd(padding - 2, ' ')}${'NAME'.padEnd(15, ' ')}`,
+				`${emoji.hash} **\`\u200eSTAR DEST${''.padEnd(padding - 2, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
 				ranking.sort((a, b) => b.stars - a.stars)
-					.map((clan, i) => `\u200e${++i}  ${clan.stars.toString().padEnd(3, ' ')}  ${this.destruction(clan.destruction, padding)}  ${clan.name}`)
-					.join('\n'),
-				'```'
+					.map((clan, i) => `${redNum[++i]} \`\u200e${clan.stars.toString().padEnd(3, ' ')}  ${this.destruction(clan.destruction, padding)}  ${clan.name.padEnd(15, ' ')}`)
+					.join('\n')
 			])
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
 		return message.util.send({ embed });
