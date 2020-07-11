@@ -153,7 +153,7 @@ class CWLGainedComamnd extends Command {
 				members.filter(m => m.of > 0)
 					.map((m, i) => {
 						const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
-						return `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}   ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
+						return `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
 					})
 					.join('\n')
 			]);
