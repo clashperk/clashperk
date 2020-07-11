@@ -158,6 +158,46 @@ module.exports = {
 		'Bronze League III': '<:bronze_3:717735755815976981>'
 	},
 
+	clanLabelEmoji: {
+		'Clan Wars': '<:clan_wars:731494209449885738>',
+		'Clan War League': '<:clan_war_league:731494200205639750>',
+		'Trophy Pushing': '<:trophy_pushing:731494210703720571>',
+		'Friendly Wars': '<:friendly_wars:731494223416655892>',
+		'Clan Games': '<:clan_games:731494204668379216>',
+		'Builder Base': '<:builder_base:731494215309197352>',
+		'Base Designing': '<:base_designing:731494224763289620>',
+		'International': '<:international:731494220724043807>',
+		'Farming': '<:farming:731494200767676576>',
+		'Donations': '<:donations:731494220929564693>',
+		'Friendly': '<:friendly:731494222410022913>',
+		'Talkative': '<:talkative:731494207373574154>',
+		'Underdog': '<:underdog:731497811840991272>',
+		'Relaxed': '<:relaxed_:731498132839333992>',
+		'Competitive': '<:competitive:731494196359463014>',
+		'Newbie Friendly': '<:newbie:731494204072656916>'
+	},
+
+	playerLabelEmoji: {
+		'Clan Wars': '<:clan_wars:731494209449885738>',
+		'Clan War League': '<:clan_war_league:731494200205639750>',
+		'Trophy Pushing': '<:trophy_pushing:731494210703720571>',
+		'Friendly Wars': '<:friendly_wars:731494223416655892>',
+		'Clan Games': '<:clan_games:731494204668379216>',
+		'Builder Base': '<:builder_base:731494215309197352>',
+		'Base Designing': '<:base_designing:731494224763289620>',
+		'Farming': '<:farming:731494200767676576>',
+		'Active Donator': '<:donations:731494220929564693>',
+		'Active Daily': '<:active_daily:731494203418214400>',
+		'Hungry Learner': '<:hungry_learner:731494202952646706>',
+		'Friendly': '<:friendly:731494222410022913>',
+		'Talkative': '<:talkative:731494207373574154>',
+		'Teacher': '<:teacher:731494201849806900>',
+		'Competitive': '<:competitive:731494196359463014>',
+		'Veteran': '<:veteran:731494218111123527>',
+		'Newbie': '<:newbie:731494204072656916>',
+		'Amateur Attacker': '<:amateur_attacker:731494197940715550>'
+	},
+
 	emoji: {
 		xp: '<:eXP:706910526373888060>',
 		warstar: '<:warstar:696299067193425951>',
