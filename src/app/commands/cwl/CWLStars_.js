@@ -144,7 +144,7 @@ class CWLStarsComamnd extends Command {
 					description: [
 						`${emoji.channel} __**\`\u200e STAR HIT ${'NAME'.padEnd(15, ' ')}\`**__`,
 						leaderboard.filter(m => m.of > 0)
-							.map((m, i) => `${redNum[++i]} \`\u200e ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.padEnd(15, ' ')}\``)
+							.map((m, i) => `${redNum[++i]} \`\u200e${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.padEnd(15, ' ')}\``)
 							.join('\n')
 					].join('\n')
 				},
