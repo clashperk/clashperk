@@ -44,7 +44,6 @@ class CurrentWarCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
-		// .setThumbnail(data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
 			const isCWL = await this.client.coc.clanWarLeague(data.tag).catch(() => null);

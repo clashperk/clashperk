@@ -20,8 +20,7 @@ class RemainingAttacksCommand extends Command {
 				],
 				usage: '<clanTag> [--cwl/cwl]',
 				examples: ['#8QU8J9LP', '8QU8J9LP --cwl', '#8QU8J9LP cwl']
-			},
-			flags: ['--cwl', '-cwl', 'cwl']
+			}
 		});
 	}
 
@@ -37,12 +36,7 @@ class RemainingAttacksCommand extends Command {
 			}
 		};
 
-		const cwl = yield {
-			match: 'flag',
-			flag: ['--cwl', '-cwl', 'cwl']
-		};
-
-		return { data, cwl };
+		return { data };
 	}
 
 	cooldown(message) {
@@ -50,23 +44,34 @@ class RemainingAttacksCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, cwl }) {
-		if (cwl) {
-			const command = this.client.commandHandler.modules.get('cwl-remaining');
-			return this.client.commandHandler.runCommand(message, command, { data });
-		}
+	async exec(message, { data }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`);
 
 		if (data.isWarLogPublic === false) {
-			embed.setDescription('Private WarLog');
+			const isCWL = await this.client.coc.clanWarLeague(data.tag).catch(() => null);
+			if (isCWL) {
+				embed.setDescription(`Clan is in CWL. Run \`${this.handler.prefix(message)}cwl\` to get CWL commands.`);
+			} else {
+				embed.setDescription('Private WarLog');
+			}
 			return message.util.send({ embed });
 		}
 
 		const body = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar`, {
 			method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 		}).then(res => res.json());
+
+		if (body.state === 'notInWar') {
+			const isCWL = await this.client.coc.clanWarLeague(data.tag).catch(() => null);
+			if (isCWL) {
+				embed.setDescription(`Clan is in CWL. Run \`${this.handler.prefix(message)}cwl\` to get CWL commands.`);
+			} else {
+				embed.setDescription('Not in War');
+			}
+			return message.util.send({ embed });
+		}
 
 		if (body.state === 'preparation') {
 			embed.setDescription([
@@ -76,11 +81,6 @@ class RemainingAttacksCommand extends Command {
 				'**War State**',
 				'Preparation'
 			]);
-			return message.util.send({ embed });
-		}
-
-		if (body.state === 'notInWar') {
-			embed.setDescription('Not in War');
 			return message.util.send({ embed });
 		}
 
