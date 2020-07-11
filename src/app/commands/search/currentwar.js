@@ -81,8 +81,8 @@ class CurrentWarCommand extends Command {
 				'**War Size**',
 				`${body.teamSize} vs ${body.teamSize}`,
 				'',
-				'**Starts In**',
-				moment.duration(new Date(moment(body.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })
+				'**Time**',
+				`Starts in ${moment.duration(new Date(moment(body.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`
 			]);
 		} else if (body.state === 'inWar') {
 			embed.setDescription([
@@ -100,8 +100,8 @@ class CurrentWarCommand extends Command {
 				`${emoji.fire} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
 				`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`,
 				'',
-				'**End Time**',
-				moment.duration(new Date(moment(body.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })
+				'**Time**',
+				`Ends in ${moment.duration(new Date(moment(body.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`
 			]);
 		} else if (body.state === 'warEnded') {
 			embed.setDescription([
@@ -119,8 +119,8 @@ class CurrentWarCommand extends Command {
 				`${emoji.fire} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
 				`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`,
 				'',
-				'**End Time**',
-				moment.duration(Date.now() - new Date(moment(body.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })
+				'**Time**',
+				`Ended ${moment.duration(Date.now() - new Date(moment(body.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })} ago`
 			]);
 		}
 

@@ -134,9 +134,9 @@ class CWLRoundComamnd extends Command {
 							]);
 					}
 					if (data.state === 'inWar') {
-						const started = new Date(moment(data.startTime).toDate()).getTime();
+						const end = new Date(moment(data.endTime).toDate()).getTime();
 						embed.addField('State', 'Battle Day')
-							.addField('Time', `Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+							.addField('Time', `Ends in ${moment.duration(end - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`)
 							.addField('Stats', [
 								`\`\u200e${data.clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
 								`\`\u200e${data.clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
