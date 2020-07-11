@@ -154,7 +154,6 @@ class CWLRoundComamnd extends Command {
 				embed.setFooter(`Round #${++index}`);
 
 				chunks.push({ state: data.state, embed });
-				break;
 			}
 		}
 
