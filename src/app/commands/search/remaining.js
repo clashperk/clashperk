@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const moment = require('moment');
 require('moment-duration-format');
 const Resolver = require('../../struct/Resolver');
-const { redNum } = require('../../util/emojis');
+const { blueNum: redNum } = require('../../util/emojis');
 
 class RemainingAttacksCommand extends Command {
 	constructor() {
