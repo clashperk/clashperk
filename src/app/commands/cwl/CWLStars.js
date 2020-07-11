@@ -79,10 +79,10 @@ class CWLStarsComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, { clanTag: data.tag, clanName: data.name, clanBadge: data.badgeUrls.medium }, excel);
+		return this.rounds(message, body, data.tag, excel);
 	}
 
-	async rounds(message, body, { clanTag, clanName, clanBadge } = {}, excel) {
+	async rounds(message, body, clanTag, excel) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		const members = body.clans.find(clan => clan.tag === clanTag)
 			.members.map(member => ({
@@ -148,8 +148,9 @@ class CWLStarsComamnd extends Command {
 
 		const patron = this.client.patron.check(message.author, message.guild);
 		const leaderboard = members.sort((a, b) => b.stars - a.stars);
-
+		const clan = body.clans.find(clan => clan.tag === clanTag);
 		const embed = this.client.util.embed()
+			.setAuthor(`${clan.name}`, clan.badgeUrls.small)
 			.setColor(this.client.embed(message))
 			.setDescription([
 				`**\`\u200e # STAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,
@@ -170,11 +171,11 @@ class CWLStarsComamnd extends Command {
 			if (reaction.emoji.name === '➕') {
 				leaderboard.sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
 				embed.setDescription([
-					`**\`\u200e # STAR LOST GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
+					`**\`\u200eSTAR LOST GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
 					leaderboard.filter(m => m.of > 0)
 						.map((m, i) => {
 							const gained = m.stars - m.lost > 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
-							return `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}   ${m.lost.toString().padStart(2, ' ')}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
+							return `\`\u200e ${m.stars.toString().padEnd(2, ' ')}   ${m.lost.toString().padStart(2, ' ')}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
 						})
 						.join('\n')
 				]);
