@@ -105,13 +105,14 @@ class CWLMissedComamnd extends Command {
 			return message.util.send('This command is available after the end of a round.');
 		}
 
+		console.log(collection);
 		const clan = body.clans.find(clan => clan.tag === clanTag);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
 			.setTitle('Missed Attacks')
 			.setDescription([
-				collection.sort((a, b) => b.count - a.count)
+				...collection.sort((a, b) => b.count - a.count)
 					.map(m => `${redNum[m.count]} ${m.name}`)
 			])
 			.setFooter(`Upto Round #${round}`);
