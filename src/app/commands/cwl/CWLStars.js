@@ -142,9 +142,9 @@ class CWLStarsComamnd extends Command {
 						icon_url: clanBadge
 					},
 					description: [
-						`\`\`\`\u200e # STR DEST ATT ${'NAME'}`,
+						`\`\`\`\u200e # STAR HIT ${'NAME'}`,
 						leaderboard.filter(m => m.of > 0)
-							.map((m, i) => `\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')} ${this.destruction(m.dest)} ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.substring(0, 12)}`)
+							.map((m, i) => `\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')} ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name.substring(0, 12)}`)
 							.join('\n'),
 						'```'
 					].join('\n')
