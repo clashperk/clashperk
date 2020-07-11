@@ -2,7 +2,7 @@ const { mongodb } = require('../struct/Database');
 const fetch = require('node-fetch');
 
 class CWLWarTags {
-	static async set(tag, warTags, rounds) {
+	static async set(tag, warTags, rounds, clan) {
 		const season = [new Date().getMonth() + 1, new Date().getFullYear()].join('-');
 		return mongodb.db('clashperk').collection('cwlwartags')
 			.findOneAndUpdate({ tag }, {
@@ -10,7 +10,8 @@ class CWLWarTags {
 					tag,
 					season,
 					warTags,
-					[`attributes.${season}`]: rounds
+					rounds,
+					clans: [clan]
 				}
 			}, { upsert: true, returnOriginal: false });
 	}
@@ -21,39 +22,10 @@ class CWLWarTags {
 			.findOne({ tag });
 		if (!data) return null;
 		if (data && (data.season !== season || data.warTags.length !== 7)) return null;
-
-		const chunk = [];
-		for (const warTag of data.warTags) {
-			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
-				method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
-			});
-			const data = await res.json();
-			chunk.push(data);
-		}
-
-		return chunk;
+		return data;
 	}
 
-	static async fetch(tag, rounds) {
-		const season = [new Date().getMonth() + 1, new Date().getFullYear()].join('-');
-		const data = await mongodb.db('clashperk').collection('cwlwartags')
-			.findOne({ tag });
-		if (!data) return this.pushWarTags(tag, rounds);
-		if (data && (data.season !== season || data.warTags.length !== rounds.length)) return this.pushWarTags(tag, rounds);
-
-		const chunk = [];
-		for (const warTag of data.warTags) {
-			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
-				method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
-			});
-			const data = await res.json();
-			chunk.push(data);
-		}
-
-		return chunk;
-	}
-
-	static async pushWarTags(tag, rounds) {
+	static async pushWarTags(tag, rounds, body) {
 		const warTags = [];
 		const chunk = [];
 		for (const round of rounds) {
@@ -70,7 +42,7 @@ class CWLWarTags {
 			}
 		}
 
-		this.set(tag, warTags, rounds);
+		this.set(tag, warTags, rounds, body.clans.find(clan => clan.tag === tag));
 		return chunk;
 	}
 }
