@@ -20,7 +20,7 @@ class CWLWarTags {
 		const data = await mongodb.db('clashperk').collection('cwlwartags')
 			.findOne({ tag });
 		if (!data) return this.pushWarTags(tag, rounds);
-		if (data && !(data.season === season || data.warTags.length === rounds.length)) return this.pushWarTags(tag, rounds);
+		if (data && (data.season !== season || data.warTags.length !== rounds.length)) return this.pushWarTags(tag, rounds);
 
 		const chunk = [];
 		for (const warTag of data.warTags) {
