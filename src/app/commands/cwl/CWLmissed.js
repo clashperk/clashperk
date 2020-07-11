@@ -91,7 +91,10 @@ class CWLMissedComamnd extends Command {
 					if (data.state === 'warEnded') {
 						for (const member of clan.members) {
 							if (member.attacks && member.attacks.length === 1) continue;
-							object[member.tag] = { count: (object[member.tag] || 0) + 1, name: member.name };
+							object[member.tag] = {
+								count: (object[member.tag] || { count: 0 }).count + 1,
+								name: member.name
+							};
 						}
 						round += 1;
 					}
@@ -105,7 +108,6 @@ class CWLMissedComamnd extends Command {
 			return message.util.send('This command is available after the end of a round.');
 		}
 
-		console.log(object);
 		const clan = body.clans.find(clan => clan.tag === clanTag);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
