@@ -116,7 +116,7 @@ class CWLStarsComamnd extends Command {
 
 							if (member.bestOpponentAttack) {
 								members.find(m => m.tag === member.tag)
-									.opponent_stars += member.bestOpponentAttack.stars;
+									.lost += member.bestOpponentAttack.stars;
 							}
 						}
 					}
@@ -137,7 +137,7 @@ class CWLStarsComamnd extends Command {
 
 							if (member.bestOpponentAttack) {
 								members.find(m => m.tag === member.tag)
-									.opponent_stars += member.bestOpponentAttack.stars;
+									.lost += member.bestOpponentAttack.stars;
 							}
 						}
 					}
