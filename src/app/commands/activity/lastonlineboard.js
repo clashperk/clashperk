@@ -7,7 +7,7 @@ const Resolver = require('../../struct/Resolver');
 class LastOnlineBoardCommand extends Command {
 	constructor() {
 		super('lastonlineboard', {
-			aliases: ['onlineboard', 'lastonlineboard', ''],
+			aliases: ['onlineboard', 'lastonlineboard'],
 			category: 'setup-hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],

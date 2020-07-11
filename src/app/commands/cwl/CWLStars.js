@@ -1,10 +1,7 @@
-const { Command, Argument, Flag } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
-const moment = require('moment');
-const { MessageEmbed } = require('discord.js');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
-const { emoji } = require('../../util/emojis');
 const Excel = require('exceljs');
 
 class CWLStarsComamnd extends Command {
@@ -142,11 +139,10 @@ class CWLStarsComamnd extends Command {
 						icon_url: clanBadge
 					},
 					description: [
-						`\`\`\`\u200e # STAR HIT ${'NAME'}`,
+						`**\`\u200e # STAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,
 						leaderboard.filter(m => m.of > 0)
-							.map((m, i) => `\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')} ${m.name}`)
-							.join('\n'),
-						'```'
+							.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')} ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.padEnd(15, ' ')}\``)
+							.join('\n')
 					].join('\n')
 				},
 			files: patron && excel

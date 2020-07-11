@@ -7,7 +7,7 @@ require('moment-duration-format');
 class LastOnlineCommand extends Command {
 	constructor() {
 		super('lastonline', {
-			aliases: ['lastonline'],
+			aliases: ['lastonline', 'lastseen', 'lo'],
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
