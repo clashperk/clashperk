@@ -68,6 +68,7 @@ class StopCommand extends Command {
 		if (!method) {
 			const prefix = this.handler.prefix(message);
 			const embed = this.client.util.embed()
+				.setColor(this.client.embed(message))
 				.setAuthor('No Method Selected')
 				.setDescription([
 					'Stop Logs and Boards in your guild.',
