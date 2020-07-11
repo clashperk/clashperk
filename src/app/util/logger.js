@@ -24,7 +24,7 @@ class Logger {
 	}
 
 	write(message, { color, tag, label = 'UNKNOWN', error = false } = {}) {
-		const timestamp = chalk.cyan(moment().format('DD-MM-YYYY kk:mm:ss'));
+		const timestamp = chalk.cyan(moment().utcOffset('+05:30').format('DD-MM-YYYY kk:mm:ss'));
 		const content = this.clean(message);
 		const stream = error ? process.stderr : process.stdout;
 		const shard = this.shard(this.client);
