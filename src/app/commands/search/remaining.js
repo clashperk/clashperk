@@ -82,7 +82,7 @@ class RemainingAttacksCommand extends Command {
 				'**War State**',
 				'Preparation'
 			]);
-			return message.util.send({ embed });
+			// return message.util.send({ embed });
 		}
 
 		const [OneRem, TwoRem] = [
