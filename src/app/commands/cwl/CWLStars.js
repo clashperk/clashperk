@@ -3,6 +3,7 @@ const fetch = require('node-fetch');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const Excel = require('exceljs');
+const { emoji } = require('../../util/emojis');
 
 class CWLStarsComamnd extends Command {
 	constructor() {
@@ -45,7 +46,7 @@ class CWLStarsComamnd extends Command {
 	}
 
 	async exec(message, { data, excel }) {
-		// if (!excel) await message.util.send(`**Fetching data... ${emoji.loading}**`);
+		if (!excel) await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
 			method: 'GET', timeout: 3000,
 			headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
