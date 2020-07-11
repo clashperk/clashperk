@@ -15,7 +15,26 @@ class CWLWarTags {
 			}, { upsert: true, returnOriginal: false });
 	}
 
-	static async get(tag, rounds) {
+	static async get(tag) {
+		const season = [new Date().getMonth() + 1, new Date().getFullYear()].join('-');
+		const data = await mongodb.db('clashperk').collection('cwlwartags')
+			.findOne({ tag });
+		if (!data) return null;
+		if (data && (data.season !== season || data.warTags.length !== 7)) return null;
+
+		const chunk = [];
+		for (const warTag of data.warTags) {
+			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
+				method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
+			});
+			const data = await res.json();
+			chunk.push(data);
+		}
+
+		return chunk;
+	}
+
+	static async fetch(tag, rounds) {
 		const season = [new Date().getMonth() + 1, new Date().getFullYear()].join('-');
 		const data = await mongodb.db('clashperk').collection('cwlwartags')
 			.findOne({ tag });

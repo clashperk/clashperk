@@ -5,6 +5,8 @@ const { MessageEmbed } = require('discord.js');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const { emoji, townHallEmoji } = require('../../util/emojis');
+const CWL = require('../../core/CWLWarTags');
+const { clan } = require('../../struct/Resolver');
 
 class CWLRoundComamnd extends Command {
 	constructor() {
@@ -78,14 +80,18 @@ class CWLRoundComamnd extends Command {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
+			const cw = await CWL.get(data.tag);
+			if (cw) {
+				return this.rounds(message, cw, data, round);
+			}
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data.tag, round);
+		return this.rounds(message, body, data, round);
 	}
 
-	async rounds(message, body, clanTag, round) {
-		const clan = body.clans.find(clan => clan.tag === clanTag);
+	async rounds(message, body, clan, round) {
+		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
 		if (round && round > rounds.length) {
 			const embed = new MessageEmbed()
@@ -109,57 +115,50 @@ class CWLRoundComamnd extends Command {
 
 		const chunks = [];
 		let index = 0;
-		for (const { warTags } of rounds) {
-			for (const warTag of warTags) {
-				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
-					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
-				});
-				const data = await res.json();
-				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
-					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
-					const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
-					const embed = new MessageEmbed()
-						.setColor(this.client.embed(message));
-					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
-						.addField('War Against', `${opponent.name} (${opponent.tag})`)
-						.addField('Team Size', `${data.teamSize}`);
-					if (data.state === 'warEnded') {
-						const end = new Date(moment(data.endTime).toDate()).getTime();
-						embed.addField('State', 'War Ended')
-							.addField('Time', `Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-							.addField('Stats', [
-								`\`\u200e${data.clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${data.clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${`${data.clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${data.opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
-							]);
-					}
-					if (data.state === 'inWar') {
-						const end = new Date(moment(data.endTime).toDate()).getTime();
-						embed.addField('State', 'Battle Day')
-							.addField('Time', `Ends in ${moment.duration(end - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`)
-							.addField('Stats', [
-								`\`\u200e${data.clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${data.clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${`${data.clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${data.opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
-							]);
-					}
-					if (data.state === 'preparation') {
-						const start = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField('State', 'Preparation')
-							.addField('Time', `Starting in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
-					}
-					embed.addField('Rosters', [
-						`**${data.clan.name}**`,
-						`${this.count(data.clan.members)}`,
-						'',
-						`**${data.opponent.name}**`,
-						`${this.count(data.opponent.members)}`
-					]);
-					embed.setFooter(`Round #${++index}`);
-
-					chunks.push({ state: data.state, embed });
-					break;
+		for (const data of await CWL.fetch(clanTag, rounds)) {
+			if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
+				const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
+				const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
+				const embed = new MessageEmbed()
+					.setColor(this.client.embed(message));
+				embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+					.addField('War Against', `${opponent.name} (${opponent.tag})`)
+					.addField('Team Size', `${data.teamSize}`);
+				if (data.state === 'warEnded') {
+					const end = new Date(moment(data.endTime).toDate()).getTime();
+					embed.addField('State', 'War Ended')
+						.addField('Time', `Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+						.addField('Stats', [
+							`\`\u200e${data.clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
+							`\`\u200e${data.clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+							`\`\u200e${`${data.clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${data.opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
+						]);
 				}
+				if (data.state === 'inWar') {
+					const end = new Date(moment(data.endTime).toDate()).getTime();
+					embed.addField('State', 'Battle Day')
+						.addField('Time', `Ends in ${moment.duration(end - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`)
+						.addField('Stats', [
+							`\`\u200e${data.clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
+							`\`\u200e${data.clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+							`\`\u200e${`${data.clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${data.opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
+						]);
+				}
+				if (data.state === 'preparation') {
+					const start = new Date(moment(data.startTime).toDate()).getTime();
+					embed.addField('State', 'Preparation')
+						.addField('Time', `Starting in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
+				}
+				embed.addField('Rosters', [
+					`**${data.clan.name}**`,
+					`${this.count(data.clan.members)}`,
+					'',
+					`**${data.opponent.name}**`,
+					`${this.count(data.opponent.members)}`
+				]);
+				embed.setFooter(`Round #${++index}`);
+
+				chunks.push({ state: data.state, embed });
 			}
 		}
 
