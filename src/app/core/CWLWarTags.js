@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 
 class CWLWarTags {
 	static async set(tag, warTags, rounds) {
-		const season = [new Date().getMonth(), new Date().getFullYear()].join('-');
+		const season = [new Date().getMonth() + 1, new Date().getFullYear()].join('-');
 		return mongodb.db('clashperk').collection('cwlwartags')
 			.findOneAndUpdate({ tag }, {
 				$set: {
