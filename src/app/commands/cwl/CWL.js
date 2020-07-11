@@ -15,6 +15,7 @@ class CWLComamnd extends Command {
 					'• round `<clanTag>`',
 					'• attacks `<clanTag>`',
 					'• remaining `<clanTag>`',
+					'• missed `<clanTag>`',
 					'• stats `<clanTag>`',
 					'• members `<clanTag>`',
 					'• stars `<clanTag>`',
@@ -29,6 +30,7 @@ class CWLComamnd extends Command {
 					'round #8QU8J9LP',
 					'attacks #8QU8J9LP',
 					'remaining #8QU8J9LP',
+					'missed #8QU8J9LP',
 					'stats #8QU8J9LP',
 					'members #8QU8J9LP',
 					'stars #8QU8J9LP',
@@ -50,6 +52,7 @@ class CWLComamnd extends Command {
 			type: [
 				['cwl-attacks', 'attacks'],
 				['cwl-remaining', 'remaining', 'missing', 'rem'],
+				['cwl-missed', 'missed'],
 				['cwl-round', 'round'],
 				['cwl-roster', 'roster'],
 				['cwl-stats', 'stats'],
