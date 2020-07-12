@@ -68,7 +68,6 @@ class CWLStarsComamnd extends Command {
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message));
 
-		this._clan(data);
 		if (!(body.state || res.ok)) {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
