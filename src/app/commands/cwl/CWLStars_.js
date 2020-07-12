@@ -74,18 +74,18 @@ class CWLStarsComamnd extends Command {
 				.setDescription('Clan is not in CWL');
 			const cw = await CWL.get(data.tag);
 			if (cw) {
-				cw.rounds = cw.attribites['07-2020'];
-				return this.rounds(message, cw, data.tag, excel);
+				cw.rounds = cw.attributes['7-2020'];
+				return this.rounds(message, cw, data, excel);
 			}
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, excel);
+		return this.rounds(message, body, data, excel);
 	}
 
 	async rounds(message, body, clan, excel) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		const [members, clanTag] = [{}, clan];
+		const [members, clanTag] = [{}, clan.tag];
 
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -98,24 +98,26 @@ class CWLStarsComamnd extends Command {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					if (['inWar', 'warEnded'].includes(data.state)) {
 						for (const m of clan.members) {
-							members[m.tag] = {
-								name: m.name,
-								of: (members[m.tag] || { of: 0 }).of + 1
-							};
+							const member = members[m.tag]
+								? members[m.tag]
+								: members[m.tag] = {
+									name: m.name,
+									of: 0,
+									attacks: 0,
+									stars: 0,
+									dest: 0,
+									lost: 0
+								};
+							member.of += 1;
 
 							if (m.attacks) {
-								members[m.tag] = {
-									attacks: (members[m.tag] || { attacks: 0 }).attacks += 1,
-									stars: (members[m.tag] || { stars: 0 }).stars += m.attacks[0].stars,
-									dest: (members[m.tag] || { dest: 0 }).dest += m.attacks[0].destructionPercentage,
-									lost: (members[m.tag] || { lost: 0 }).lost += m.bestOpponentAttack.stars
-								};
+								member.attacks += 1;
+								member.stars += m.attacks[0].stars;
+								member.dest += m.attacks[0].destructionPercentage;
 							}
 
 							if (m.bestOpponentAttack) {
-								members[m.tag] = {
-									lost: (members[m.tag] || { lost: 0 }).lost += m.bestOpponentAttack.stars
-								};
+								member.lost += m.bestOpponentAttack.stars;
 							}
 						}
 					}
