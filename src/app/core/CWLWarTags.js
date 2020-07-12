@@ -17,7 +17,6 @@ class CWLWarTags {
 	}
 
 	static async get(tag) {
-		const season = [new Date().getFullYear(), new Date().getMonth() + 1].join('-');
 		const data = await mongodb.db('clashperk').collection('cwlwartags')
 			.findOne({ tag });
 		if (!data) return null;
