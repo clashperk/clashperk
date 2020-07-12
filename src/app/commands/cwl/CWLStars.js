@@ -68,7 +68,6 @@ class CWLStarsComamnd extends Command {
 		if (!(body.state || res.ok)) {
 			const cw = await CWL.get(data.tag);
 			if (cw) {
-				cw.rounds = cw.attributes['7-2020'];
 				return this.rounds(message, cw, data, excel);
 			}
 			const embed = this.client.util.embed()
