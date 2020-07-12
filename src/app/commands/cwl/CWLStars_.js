@@ -74,6 +74,7 @@ class CWLStarsComamnd extends Command {
 				.setDescription('Clan is not in CWL');
 			const cw = await CWL.get(data.tag);
 			if (cw) {
+				cw.rounds = cw.attribites['07-2020'];
 				return this.rounds(message, cw, data.tag, excel);
 			}
 			return message.util.send({ embed });
