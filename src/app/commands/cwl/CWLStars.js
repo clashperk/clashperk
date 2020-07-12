@@ -4,6 +4,7 @@ const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const Excel = require('exceljs');
 const { emoji } = require('../../util/emojis');
+const CWL = require('../../core/CWLWarTags');
 
 class CWLStarsComamnd extends Command {
 	constructor() {
@@ -64,26 +65,26 @@ class CWLStarsComamnd extends Command {
 
 		const body = await res.json();
 
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message));
-
 		if (!(body.state || res.ok)) {
-			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+			const cw = await CWL.get(data.tag);
+			if (cw) {
+				cw.rounds = cw.attributes['7-2020'];
+				return this.rounds(message, cw, data, excel);
+			}
+			const embed = this.client.util.embed()
+				.setColor(this.client.embed(message))
+				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data.tag, excel);
+		return this.rounds(message, body, data, excel);
 	}
 
-	async rounds(message, body, clanTag, excel) {
+	async rounds(message, body, clan, excel) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		const members = body.clans.find(clan => clan.tag === clanTag)
-			.members.map(member => ({
-				name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0, dest: 0,
-				lost: 0
-			}));
+		const [members, clanTag] = [{}, clan.tag];
 
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -94,45 +95,28 @@ class CWLStarsComamnd extends Command {
 
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
-					if (data.state === 'warEnded') {
-						for (const member of clan.members) {
-							members.find(m => m.tag === member.tag)
-								.of += 1;
-							if (member.attacks) {
-								members.find(m => m.tag === member.tag)
-									.attacks += 1;
+					if (['inWar', 'warEnded'].includes(data.state)) {
+						for (const m of clan.members) {
+							const member = members[m.tag]
+								? members[m.tag]
+								: members[m.tag] = {
+									name: m.name,
+									of: 0,
+									attacks: 0,
+									stars: 0,
+									dest: 0,
+									lost: 0
+								};
+							member.of += 1;
 
-								members.find(m => m.tag === member.tag)
-									.stars += member.attacks[0].stars;
-
-								members.find(m => m.tag === member.tag)
-									.dest += member.attacks[0].destructionPercentage;
+							if (m.attacks) {
+								member.attacks += 1;
+								member.stars += m.attacks[0].stars;
+								member.dest += m.attacks[0].destructionPercentage;
 							}
 
-							if (member.bestOpponentAttack) {
-								members.find(m => m.tag === member.tag)
-									.lost += member.bestOpponentAttack.stars;
-							}
-						}
-					}
-					if (data.state === 'inWar') {
-						for (const member of clan.members) {
-							members.find(m => m.tag === member.tag)
-								.of += 1;
-							if (member.attacks) {
-								members.find(m => m.tag === member.tag)
-									.attacks += 1;
-
-								members.find(m => m.tag === member.tag)
-									.stars += member.attacks[0].stars;
-
-								members.find(m => m.tag === member.tag)
-									.dest += member.attacks[0].destructionPercentage;
-							}
-
-							if (member.bestOpponentAttack) {
-								members.find(m => m.tag === member.tag)
-									.lost += member.bestOpponentAttack.stars;
+							if (m.bestOpponentAttack) {
+								member.lost += m.bestOpponentAttack.stars;
 							}
 						}
 					}
@@ -142,18 +126,17 @@ class CWLStarsComamnd extends Command {
 		}
 
 		const patron = this.client.patron.check(message.author, message.guild);
-		const leaderboard = members.sort((a, b) => b.stars - a.stars);
-		const clan = body.clans.find(clan => clan.tag === clanTag);
+		const leaderboard = Object.values(members).sort((a, b) => b.stars - a.stars);
+
 		const embed = this.client.util.embed()
 			.setAuthor(`${clan.name} CWL`, clan.badgeUrls.small)
-			.setColor(this.client.embed(message));
-
-		embed.setDescription([
-			`**\`\u200e # STAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,
-			leaderboard.filter(m => m.of > 0)
-				.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.padEnd(15, ' ')}\``)
-				.join('\n')
-		]);
+			.setColor(this.client.embed(message))
+			.setDescription([
+				`**\`\u200e # STAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,
+				leaderboard.filter(m => m.of > 0)
+					.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.padEnd(15, ' ')}\``)
+					.join('\n')
+			]);
 
 		const msg = await message.util.send({
 			embed,

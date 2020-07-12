@@ -5,6 +5,7 @@ const { MessageEmbed } = require('discord.js');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const { emoji } = require('../../util/emojis');
+const CWL = require('../../core/CWLWarTags');
 
 class CWLStatsComamnd extends Command {
 	constructor() {
@@ -59,26 +60,28 @@ class CWLStatsComamnd extends Command {
 
 		const body = await res.json();
 
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message));
-
 		if (!(body.state || res.ok)) {
-			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+			const cw = await CWL.get(data.tag);
+			if (cw) {
+				cw.rounds = cw.attributes['7-2020'];
+				return this.rounds(message, cw, data);
+			}
+			const embed = this.client.util.embed()
+				.setColor(this.client.embed(message))
+				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data.tag);
+		return this.rounds(message, body, data);
 	}
 
-	async rounds(message, body, clanTag) {
+	async rounds(message, body, clan) {
 		const collection = [];
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [index, stars, destruction] = [0, 0, 0];
-		const ranking = body.clans.map(clan => ({ tag: clan.tag, stars: 0 }));
-		const members = body.clans.find(clan => clan.tag === clanTag)
-			.members.map(member => ({ name: member.name, tag: member.tag, stars: 0, attacks: 0, of: 0, dest: 0 }));
+		const [members, clanTag, ranking] = [{}, clan.tag, {}];
 
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -95,18 +98,27 @@ class CWLStatsComamnd extends Command {
 						stars += this.winner(clan, opponent) ? clan.stars + 10 : clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const end = new Date(moment(data.endTime).toDate()).getTime();
-						for (const member of clan.members) {
-							members.find(m => m.tag === member.tag)
-								.of += 1;
-							if (member.attacks) {
-								members.find(m => m.tag === member.tag)
-									.attacks += 1;
+						for (const m of clan.members) {
+							const member = members[m.tag]
+								? members[m.tag]
+								: members[m.tag] = {
+									name: m.name,
+									of: 0,
+									attacks: 0,
+									stars: 0,
+									dest: 0,
+									lost: 0
+								};
+							member.of += 1;
 
-								members.find(m => m.tag === member.tag)
-									.stars += member.attacks[0].stars;
+							if (m.attacks) {
+								member.attacks += 1;
+								member.stars += m.attacks[0].stars;
+								member.dest += m.attacks[0].destructionPercentage;
+							}
 
-								members.find(m => m.tag === member.tag)
-									.dest += member.attacks[0].destructionPercentage;
+							if (m.bestOpponentAttack) {
+								member.lost += m.bestOpponentAttack.stars;
 							}
 						}
 
@@ -123,18 +135,27 @@ class CWLStatsComamnd extends Command {
 						stars += clan.stars;
 						destruction += clan.destructionPercentage * data.teamSize;
 						const started = new Date(moment(data.startTime).toDate()).getTime();
-						for (const member of clan.members) {
-							members.find(m => m.tag === member.tag)
-								.of += 1;
-							if (member.attacks) {
-								members.find(m => m.tag === member.tag)
-									.attacks += 1;
+						for (const m of clan.members) {
+							const member = members[m.tag]
+								? members[m.tag]
+								: members[m.tag] = {
+									name: m.name,
+									of: 0,
+									attacks: 0,
+									stars: 0,
+									dest: 0,
+									lost: 0
+								};
+							member.of += 1;
 
-								members.find(m => m.tag === member.tag)
-									.stars += member.attacks[0].stars;
+							if (m.attacks) {
+								member.attacks += 1;
+								member.stars += m.attacks[0].stars;
+								member.dest += m.attacks[0].destructionPercentage;
+							}
 
-								members.find(m => m.tag === member.tag)
-									.dest += member.attacks[0].destructionPercentage;
+							if (m.bestOpponentAttack) {
+								member.lost += m.bestOpponentAttack.stars;
 							}
 						}
 
@@ -151,27 +172,34 @@ class CWLStatsComamnd extends Command {
 			}
 		}
 
-		const clan = body.clans.find(clan => clan.tag === clanTag);
 		const description = collection.map(arr => {
 			const header = arr[0].join('\n');
 			const description = arr[1].join('\n');
 			return [header, description].join('\n');
 		}).join('\n\n');
-		const rank = ranking.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
-		const leaderboard = members.sort((a, b) => b.stars - a.stars);
+
+		const clans = [];
+		for (const [key, value] of Object.entries(ranking)) clans.push({ [key]: value });
+		const rank = clans.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
+		const leaderboard = Object.values(members).sort((a, b) => b.stars - a.stars);
+
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${clan.name} CWL`, clan.badgeUrls.small)
 			.setDescription(description)
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
+
 		const msg = await message.util.send({ embed });
 		await msg.react('➕');
+
 		const collector = await msg.awaitReactions(
 			(reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
 			{ max: 1, time: 30000, errors: ['time'] }
 		).catch(() => null);
+
 		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
 		if (!collector || !collector.size) return;
+
 		return message.channel.send({
 			embed: {
 				color: this.client.embed(message),
@@ -219,23 +247,19 @@ class CWLStatsComamnd extends Command {
 
 	ranking(data, ranking) {
 		if (data.state === 'warEnded') {
-			ranking.find(({ tag }) => tag === data.clan.tag)
-				.stars += this.winner(data.clan, data.opponent)
-					? data.clan.stars + 10
-					: data.clan.stars;
+			ranking[data.clan.tag] += this.winner(data.clan, data.opponent)
+				? data.clan.stars + 10
+				: data.clan.stars;
 
-			ranking.find(({ tag }) => tag === data.opponent.tag)
-				.stars += this.winner(data.opponent, data.clan)
-					? data.opponent.stars + 10
-					: data.opponent.stars;
+			ranking[data.opponent.tag] += this.winner(data.opponent, data.clan)
+				? data.opponent.stars + 10
+				: data.opponent.stars;
 		}
 
 		if (data.state === 'inWar') {
-			ranking.find(({ tag }) => tag === data.clan.tag)
-				.stars += data.clan.stars;
+			ranking[data.clan.tag] += data.clan.stars;
 
-			ranking.find(({ tag }) => tag === data.opponent.tag)
-				.stars += data.opponent.stars;
+			ranking[data.opponent.tag] += data.opponent.stars;
 		}
 
 		return ranking;
