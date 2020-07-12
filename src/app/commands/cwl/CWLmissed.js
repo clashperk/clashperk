@@ -4,6 +4,7 @@ const { MessageEmbed } = require('discord.js');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const { emoji, redNum } = require('../../util/emojis');
+const CWL = require('../../core/CWLWarTags');
 
 class CWLMissedComamnd extends Command {
 	constructor() {
@@ -62,22 +63,25 @@ class CWLMissedComamnd extends Command {
 
 		const body = await res.json();
 
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message));
-
 		if (!(body.state || res.ok)) {
-			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+			const cw = await CWL.get(data.tag);
+			if (cw) {
+				return this.rounds(message, cw, data);
+			}
+			const embed = this.client.util.embed()
+				.setColor(this.client.embed(message))
+				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data.tag);
+		return this.rounds(message, body, data);
 	}
 
-	async rounds(message, body, clanTag) {
+	async rounds(message, body, clan) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		const object = {};
+		const [object, clanTag] = [{}, clan.tag];
 		let round = 0;
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -112,7 +116,6 @@ class CWLMissedComamnd extends Command {
 			return message.util.send('Hmm! Looks like everyone attacked.');
 		}
 
-		const clan = body.clans.find(clan => clan.tag === clanTag);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
