@@ -77,10 +77,9 @@ class CWLStatsComamnd extends Command {
 	}
 
 	async rounds(message, body, clan) {
-		const collection = [];
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [index, stars, destruction] = [0, 0, 0];
-		const [members, clanTag, ranking] = [{}, clan.tag, {}];
+		const [members, clanTag, ranking, collection] = [{}, clan.tag, {}, []];
 
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -88,7 +87,45 @@ class CWLStatsComamnd extends Command {
 					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 				});
 				const data = await res.json();
-				this.ranking(data, ranking);
+				if (data.state === 'inWar') {
+					const clan = ranking[data.clan.tag]
+						? ranking[data.clan.tag]
+						: ranking[data.clan.tag] = {
+							tag: data.clan.tag,
+							stars: 0
+						};
+					clan.stars = data.clan.stars;
+
+					const opponent = ranking[data.opponent.tag]
+						? ranking[data.opponent.tag]
+						: ranking[data.opponent.tag] = {
+							tag: data.opponent.tag,
+							stars: 0
+						};
+					opponent.stars += data.opponent.stars;
+				}
+
+				if (data.state === 'warEnded') {
+					const clan = ranking[data.clan.tag]
+						? ranking[data.clan.tag]
+						: ranking[data.clan.tag] = {
+							tag: data.clan.tag,
+							stars: 0
+						};
+					clan.stars = this.winner(data.clan, data.opponent)
+						? data.clan.stars + 10
+						: data.clan.stars;
+
+					const opponent = ranking[data.opponent.tag]
+						? ranking[data.opponent.tag]
+						: ranking[data.opponent.tag] = {
+							tag: data.opponent.tag,
+							stars: 0
+						};
+					opponent.stars += this.winner(data.opponent, data.clan)
+						? data.opponent.stars + 10
+						: data.opponent.stars;
+				}
 
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
@@ -177,9 +214,7 @@ class CWLStatsComamnd extends Command {
 			return [header, description].join('\n');
 		}).join('\n\n');
 
-		const clans = [];
-		for (const [key, value] of Object.entries(ranking)) clans.push({ [key]: value });
-		const rank = clans.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
+		const rank = Object.values(ranking).sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
 		const leaderboard = Object.values(members).sort((a, b) => b.stars - a.stars);
 
 		const embed = new MessageEmbed()
@@ -242,26 +277,6 @@ class CWLStatsComamnd extends Command {
 		} else if (clan.destructionPercentage < opponent.destructionPercentage) {
 			return false;
 		}
-	}
-
-	ranking(data, ranking) {
-		if (data.state === 'warEnded') {
-			ranking[data.clan.tag] += this.winner(data.clan, data.opponent)
-				? data.clan.stars + 10
-				: data.clan.stars;
-
-			ranking[data.opponent.tag] += this.winner(data.opponent, data.clan)
-				? data.opponent.stars + 10
-				: data.opponent.stars;
-		}
-
-		if (data.state === 'inWar') {
-			ranking[data.clan.tag] += data.clan.stars;
-
-			ranking[data.opponent.tag] += data.opponent.stars;
-		}
-
-		return ranking;
 	}
 }
 
