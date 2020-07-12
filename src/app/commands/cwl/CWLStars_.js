@@ -4,6 +4,7 @@ const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const Excel = require('exceljs');
 const { emoji } = require('../../util/emojis');
+const CWL = require('../../core/CWLWarTags');
 
 class CWLStarsComamnd extends Command {
 	constructor() {
@@ -67,19 +68,24 @@ class CWLStarsComamnd extends Command {
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message));
 
+		this._clan(data);
 		if (!(body.state || res.ok)) {
 			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
+			const cw = await CWL.get(data.tag);
+			if (cw) {
+				return this.rounds(message, cw, data.tag, excel);
+			}
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data.tag, excel);
+		return this.rounds(message, body, excel);
 	}
 
-	async rounds(message, body, clanTag, excel) {
+	async rounds(message, body, clan, excel) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		const members = {};
+		const [members, clanTag] = [{}, clan];
 
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -90,33 +96,26 @@ class CWLStarsComamnd extends Command {
 
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
-					if (data.state === 'warEnded') {
-						for (const member of clan.members) {
-							members[member.tag].name = member.name;
-							members[member.tag].of += 1;
-							if (member.attacks) {
-								members[member.tag].attacks += 1;
-								members[member.tag].stars += member.attacks[0].stars;
-								members[member.tag].dest += member.attacks[0].destructionPercentage;
+					if (['inWar', 'warEnded'].includes(data.state)) {
+						for (const m of clan.members) {
+							members[m.tag] = {
+								name: m.name,
+								of: (members[m.tag] || { of: 0 }).of + 1
+							};
+
+							if (m.attacks) {
+								members[m.tag] = {
+									attacks: (members[m.tag] || { attacks: 0 }).attacks += 1,
+									stars: (members[m.tag] || { stars: 0 }).stars += m.attacks[0].stars,
+									dest: (members[m.tag] || { dest: 0 }).dest += m.attacks[0].destructionPercentage,
+									lost: (members[m.tag] || { lost: 0 }).lost += m.bestOpponentAttack.stars
+								};
 							}
 
-							if (member.bestOpponentAttack) {
-								members[member.tag].lost += member.bestOpponentAttack.stars;
-							}
-						}
-					}
-					if (data.state === 'inWar') {
-						for (const member of clan.members) {
-							members[member.tag].name = member.name;
-							members[member.tag].of += 1;
-							if (member.attacks) {
-								members[member.tag].attacks += 1;
-								members[member.tag].stars += member.attacks[0].stars;
-								members[member.tag].dest += member.attacks[0].destructionPercentage;
-							}
-
-							if (member.bestOpponentAttack) {
-								members[member.tag].lost += member.bestOpponentAttack.stars;
+							if (m.bestOpponentAttack) {
+								members[m.tag] = {
+									lost: (members[m.tag] || { lost: 0 }).lost += m.bestOpponentAttack.stars
+								};
 							}
 						}
 					}
@@ -127,7 +126,6 @@ class CWLStarsComamnd extends Command {
 
 		const patron = this.client.patron.check(message.author, message.guild);
 		const leaderboard = Object.values(members).sort((a, b) => b.stars - a.stars);
-		const clan = body.clans.find(clan => clan.tag === clanTag);
 		const embed = this.client.util.embed()
 			.setAuthor(`${clan.name} CWL`, clan.badgeUrls.small)
 			.setColor(this.client.embed(message));
