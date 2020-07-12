@@ -25,7 +25,11 @@ class CWLWarTags {
 		return data;
 	}
 
-	static async pushWarTags(tag, rounds, body) {
+	static async pushWarTags(tag, rounds) {
+		if (rounds.length !== 7) return null;
+		const season = [new Date().getFullYear(), new Date().getMonth() + 1].join('-');
+		const exists = await mongodb.db('clashperk').collection('cwlwartags').findOne({ tag, season });
+		if (exists) return null;
 		const warTags = [];
 		for (const round of rounds) {
 			for (const warTag of round.warTags) {
@@ -34,13 +38,13 @@ class CWLWarTags {
 				});
 				const data = await res.json();
 				if ((data.clan && data.clan.tag === tag) || (data.opponent && data.opponent.tag === tag)) {
-					warTags.push({ warTags: [warTag] });
+					warTags.push(warTag);
 					break;
 				}
 			}
 		}
 
-		return this.set(tag, warTags, rounds, body.clans.find(clan => clan.tag === tag));
+		return this.set(tag, warTags, rounds);
 	}
 }
 

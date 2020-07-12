@@ -81,6 +81,7 @@ class CWLMissedComamnd extends Command {
 
 	async rounds(message, body, clan) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
+		CWL.pushWarTags(clan.tag, rounds);
 		const [object, clanTag] = [{}, clan.tag];
 		let round = 0;
 		for (const { warTags } of rounds) {

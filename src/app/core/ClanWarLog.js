@@ -494,7 +494,7 @@ class ClanWarEvent {
 	}
 
 	get isCWL() {
-		return new Date().getDate() >= 1 && new Date().getDate() <= 10;
+		return new Date().getDate() >= 1 && new Date().getDate() <= 11;
 	}
 
 	async init() {

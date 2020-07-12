@@ -83,6 +83,7 @@ class CWLGainedComamnd extends Command {
 
 	async rounds(message, body, clan, excel) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
+		CWL.pushWarTags(clan.tag, rounds);
 		const [members, clanTag] = [{}, clan.tag];
 
 		for (const { warTags } of rounds) {

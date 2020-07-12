@@ -91,6 +91,7 @@ class CWLRoundComamnd extends Command {
 	async rounds(message, body, clan, round) {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
+		CWL.pushWarTags(clan.tag, rounds);
 		if (round && round > rounds.length) {
 			const embed = new MessageEmbed()
 				.setColor(this.client.embed(message))
