@@ -78,12 +78,12 @@ class CWLStarsComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
+		CWL.pushWarTags(data.tag, body.rounds);
 		return this.rounds(message, body, data, excel);
 	}
 
 	async rounds(message, body, clan, excel) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		CWL.pushWarTags(clan.tag, rounds);
 		const [members, clanTag] = [{}, clan.tag];
 
 		for (const { warTags } of rounds) {

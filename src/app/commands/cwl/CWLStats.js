@@ -73,12 +73,12 @@ class CWLStatsComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
+		CWL.pushWarTags(data.tag, body.rounds);
 		return this.rounds(message, body, data);
 	}
 
 	async rounds(message, body, clan) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		CWL.pushWarTags(clan.tag, rounds);
 		let [index, stars, destruction] = [0, 0, 0];
 		const [members, clanTag, ranking, collection] = [{}, clan.tag, {}, []];
 

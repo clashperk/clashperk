@@ -21,15 +21,15 @@ class CWLWarTags {
 		const data = await mongodb.db('clashperk').collection('cwlwartags')
 			.findOne({ tag });
 		if (!data) return null;
-		if (data && (data.season !== season || data.warTags.length !== 7)) return null;
+		if (data && data.warTags.length !== 7) return null;
 		return data;
 	}
 
 	static async pushWarTags(tag, rounds) {
+		rounds = rounds.filter(r => !r.warTags.includes('#0'));
 		if (rounds.length !== 7) return null;
-		const season = [new Date().getFullYear(), new Date().getMonth() + 1].join('-');
-		const exists = await mongodb.db('clashperk').collection('cwlwartags').findOne({ tag, season });
-		if (exists) return null;
+		const data = await mongodb.db('clashperk').collection('cwlwartags').findOne({ tag });
+		if (data && new Date().getMonth() <= new Date(data.season).getMonth()) return null;
 		const warTags = [];
 		for (const round of rounds) {
 			for (const warTag of round.warTags) {
