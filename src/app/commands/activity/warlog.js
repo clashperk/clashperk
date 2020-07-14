@@ -72,7 +72,7 @@ class WarLogCommand extends Command {
 		const clan = clans.find(clan => clan.tag === data.tag) || { verified: false };
 		if (!clan.verified && !data.description.toUpperCase().includes(code)) {
 			const embed = Resolver.verifyEmbed(data, code);
-			return message.util.send({ embed });
+			// return message.util.send({ embed });
 		}
 
 		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY', 'VIEW_CHANNEL'];
