@@ -137,6 +137,9 @@ class StorageHandler {
 		await mongodb.db('clashperk').collection('clanwarlogs')
 			.deleteOne({ clan_id: ObjectId(id) });
 
+		await mongodb.db('clashperk').collection('clanwars')
+			.deleteOne({ clan_id: ObjectId(id) });
+
 		return mongodb.db('clashperk').collection('clanstores')
 			.deleteOne({ _id: ObjectId(id) });
 	}

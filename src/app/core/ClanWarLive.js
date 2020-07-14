@@ -218,7 +218,7 @@ class ClanWarEvent {
 
 			if (data.state === 'warEnded') {
 				const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
-				const embed = new MessageEmbed(this.attacks(data, clan, true))
+				const embed = new MessageEmbed(this.missing(data, clan, true))
 					.setFooter(`Round #${round}`);
 				const timeoutId = setTimeout(async () => {
 					clearTimeout(timeoutId);
@@ -318,10 +318,10 @@ class ClanWarEvent {
 			embed.description,
 			'',
 			'**Rosters**',
-			`[${data.clan.name}](${this.clanURL(data.clan.tag)})`,
+			`${data.clan.name}`,
 			`${this.roster(data.clan.members)}`,
 			'',
-			`[${data.opponent.name}](${this.clanURL(data.opponent.tag)})`,
+			`${data.opponent.name}`,
 			`${this.roster(data.opponent.members)}`
 		]).setTimestamp();
 
@@ -332,8 +332,6 @@ class ClanWarEvent {
 				.collection('clanwars')
 				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
 					$set: {
-						clan_id: ObjectId(id),
-						tag: clan.tag,
 						opponent: data.opponent.tag,
 						posted: true,
 						state: data.state,
@@ -400,13 +398,26 @@ class ClanWarEvent {
 						state: data.state,
 						updatedAt: new Date()
 					}
-				}, { upsert: true });
-			return channel.send({ embed: this.attacks(data, clan) });
+				});
+			return channel.send({ embed: this.missing(data, clan) });
 		}
 	}
 
+	attacks(data, clan, CWL) {
+		const hits = [
+			...data.clan.members.filter(m => m.attacks)
+		];
+
+		const embed = new MessageEmbed()
+			.setTitle(`${clan.name} (${clan.tag})`)
+			.setThumbnail(clan.badgeUrls.small)
+			.setURL(this.clanURL(clan.tag));
+
+		return embed;
+	}
+
 	// Build Remaining/Missed Attack Embed
-	attacks(data, clan, CWL = false) {
+	missing(data, clan, CWL = false) {
 		if (CWL) {
 			const embed = new MessageEmbed()
 				.setTitle(`${clan.name} (${clan.tag})`)
@@ -535,11 +546,15 @@ class ClanWarEvent {
 		const data = await mongodb.db('clashperk')
 			.collection('clanwarlogs')
 			.findOne({ clan_id: ObjectId(id) });
+		const db = await mongodb.db('clashperk')
+			.collection('clanwars')
+			.findOne({ clan_id: ObjectId(id) });
 
 		if (!data) return null;
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			guild: data.guild,
-			channel: data.channel
+			channel: data.channel,
+			updated: db && db.updatedAt ? new Date(db.updatedAt) : null
 		});
 	}
 

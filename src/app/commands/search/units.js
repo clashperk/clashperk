@@ -127,24 +127,6 @@ class UnitsCommand extends Command {
 		});
 		if (SiegeMachines) embed.addField('Siege Machines', SiegeMachines.split('#').join('\n'));
 
-		let builderTroops = '';
-		index = 0;
-		data.troops.filter(troop => troop.name in builderTroopsEmoji).forEach(troop => {
-			if (troop.village === 'builderBase' && data.builderHallLevel) {
-				index++;
-				if (data.builderHallLevel === 9) {
-					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(false, data.builderHallLevel, troop)}\u200f\`\u2002`;
-				} else {
-					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
-				}
-				if (index === 4) {
-					builderTroops += '#';
-					index = 0;
-				}
-			}
-		});
-		if (builderTroops) embed.addField('Builder Base Troops', builderTroops.split('#').join('\n'));
-
 		let elixirSpells = '';
 		index = 0;
 		data.spells.filter(spell => spell.name in elixirSpellEmoji).forEach(spell => {
@@ -181,6 +163,19 @@ class UnitsCommand extends Command {
 		});
 		if (darkSpells) embed.addField('Dark Spells', darkSpells.split('#').join('\n'));
 
+		let heroLevels = '';
+		data.heroes.forEach(hero => {
+			if (hero.village === 'home') {
+				if (data.townHallLevel === 13) {
+					heroLevels += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd(false, data.townHallLevel, hero)}\u200f\`\u2002`;
+				} else {
+					heroLevels += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd(option, data.townHallLevel, hero)}\u200f\`\u2002`;
+				}
+			}
+		});
+
+		if (heroLevels) embed.addField('Heroes', heroLevels);
+
 		let builderHero = '';
 		data.heroes.forEach(hero => {
 			if (hero.village === 'builderBase' && data.builderHallLevel) {
@@ -194,18 +189,23 @@ class UnitsCommand extends Command {
 
 		if (builderHero) embed.addField('Buider Base Hero', builderHero);
 
-		let heroLevels = '';
-		data.heroes.forEach(hero => {
-			if (hero.village === 'home') {
-				if (data.townHallLevel === 13) {
-					heroLevels += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd(false, data.townHallLevel, hero)}\u200f\`\u2002`;
+		let builderTroops = '';
+		index = 0;
+		data.troops.filter(troop => troop.name in builderTroopsEmoji).forEach(troop => {
+			if (troop.village === 'builderBase' && data.builderHallLevel) {
+				index++;
+				if (data.builderHallLevel === 9) {
+					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(false, data.builderHallLevel, troop)}\u200f\`\u2002`;
 				} else {
-					heroLevels += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd(option, data.townHallLevel, hero)}\u200f\`\u2002`;
+					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
+				}
+				if (index === 4) {
+					builderTroops += '#';
+					index = 0;
 				}
 			}
 		});
-
-		if (heroLevels) embed.addField('Heroes', heroLevels);
+		if (builderTroops) embed.addField('Builder Base Troops', builderTroops.split('#').join('\n'));
 
 		return embed;
 	}
