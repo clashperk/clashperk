@@ -269,7 +269,7 @@ class ClanWarEvent {
 			.setThumbnail(clan.badgeUrls.small);
 		if (data.state === 'preparation') {
 			content = `**War has been declared against ${data.opponent.name}**`;
-			embed.setColor(0xfdaf18)
+			embed.setColor(null)
 				.setDescription([
 					'**War Against**',
 					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
@@ -295,7 +295,7 @@ class ClanWarEvent {
 					''
 				]
 				: [];
-			embed.setColor(0xFF0000)
+			embed.setColor(null)
 				.setDescription([
 					'**War Against**',
 					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
@@ -312,7 +312,7 @@ class ClanWarEvent {
 
 		if (data.state === 'warEnded') {
 			content = this.result(data.clan, data.opponent) ? '**Congrats, you won the war...**' : '**Sorry, you lost the war...**';
-			embed.setColor(0x10ffc1)
+			embed.setColor(null)
 				.setDescription([
 					'**War Against**',
 					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
