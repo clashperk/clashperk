@@ -95,7 +95,7 @@ class CWLStatsComamnd extends Command {
 							tag: data.clan.tag,
 							stars: 0
 						};
-					clan.stars = data.clan.stars;
+					clan.stars += data.clan.stars;
 
 					const opponent = ranking[data.opponent.tag]
 						? ranking[data.opponent.tag]
@@ -113,7 +113,7 @@ class CWLStatsComamnd extends Command {
 							tag: data.clan.tag,
 							stars: 0
 						};
-					clan.stars = this.winner(data.clan, data.opponent)
+					clan.stars += this.winner(data.clan, data.opponent)
 						? data.clan.stars + 10
 						: data.clan.stars;
 
