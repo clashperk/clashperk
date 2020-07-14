@@ -271,7 +271,7 @@ class ClanWarEvent {
 					'**War Size**',
 					`${data.teamSize} vs ${data.teamSize}`
 				]);
-			embed.setFooter(`Starts in ${moment.duration(new Date(moment(data.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`);
+			embed.setFooter(`Starts in ${moment.duration(new Date(moment(data.startTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`);
 		}
 
 		if (data.state === 'inWar') {
@@ -291,7 +291,7 @@ class ClanWarEvent {
 					`${emoji.fire} ${data.clan.destructionPercentage}% / ${data.opponent.destructionPercentage}%`,
 					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
 				]);
-			embed.setFooter(`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`);
+			embed.setFooter(`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`);
 		}
 
 		if (data.state === 'warEnded') {
@@ -311,7 +311,7 @@ class ClanWarEvent {
 					`${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% / ${data.opponent.destructionPercentage.toFixed(2)}%`,
 					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
 				]);
-			embed.setFooter(`Ended ${moment.duration(Date.now() - new Date(moment(data.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })} ago`);
+			embed.setFooter(`Ended ${moment.duration(Date.now() - new Date(moment(data.endTime).toDate()).getTime()).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`);
 		}
 
 		embed.setDescription([
@@ -323,7 +323,7 @@ class ClanWarEvent {
 			'',
 			`[${data.opponent.name}](${this.clanURL(data.opponent.tag)})`,
 			`${this.roster(data.opponent.members)}`
-		]);
+		]).setTimestamp();
 
 		if (data.state === 'preparation') {
 			const message = await channel.send({ embed }).catch(() => null);
@@ -378,6 +378,17 @@ class ClanWarEvent {
 		if (data.state === 'warEnded') {
 			if (!db) return null;
 			if (db && db.ended && db.opponent === data.opponent.tag) return null;
+			let message = null;
+			if (db && db.message) {
+				message = await channel.messages.fetch(db.message, false).catch(() => null);
+				if (message) {
+					await message.edit({ embed });
+				} else {
+					message = await channel.send({ embed });
+				}
+			} else {
+				message = await channel.send({ embed });
+			}
 			await mongodb.db('clashperk')
 				.collection('clanwars')
 				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
@@ -390,7 +401,7 @@ class ClanWarEvent {
 						updatedAt: new Date()
 					}
 				}, { upsert: true });
-			return channel.send({ embed });
+			return channel.send({ embed: this.attacks(data, clan) });
 		}
 	}
 
