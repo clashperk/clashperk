@@ -289,8 +289,7 @@ class ClanWarEvent {
 					'**War Stats**',
 					`${emoji.star} ${data.clan.stars} / ${data.opponent.stars}`,
 					`${emoji.fire} ${data.clan.destructionPercentage}% / ${data.opponent.destructionPercentage}%`,
-					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`,
-					''
+					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
 				]);
 			embed.setFooter(`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`);
 		}
@@ -342,6 +341,7 @@ class ClanWarEvent {
 						updatedAt: new Date()
 					}
 				}, { upsert: true });
+
 			return message;
 		}
 
