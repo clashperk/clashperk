@@ -283,18 +283,6 @@ class ClanGames {
 		return new Date() >= new Date(START) && new Date() <= new Date(END);
 	}
 
-	async flush() {
-		const intervalId = setInterval(this.flush.bind(this), 1 * 60 * 1000);
-		if (!this.event()) {
-			this.client.settings.delete('global', 'clangamesDay');
-			await mongodb.db('clashperk')
-				.collection('clangameslogs')
-				.updateMany({}, { $unset: { message: '' } });
-			clearInterval(intervalId);
-			return this.cached.clear();
-		}
-	}
-
 	async delay(ms) {
 		return new Promise(res => setTimeout(res, ms));
 	}
@@ -319,9 +307,8 @@ class ClanGames {
 		clearInterval(this.intervalId);
 		this.intervalId = setInterval(async () => {
 			if (this.event()) {
-				clearInterval(this.intervalId);
 				await this._init();
-				return this.flush();
+				return clearInterval(this.intervalId);
 			}
 		}, 5 * 60 * 1000);
 	}
@@ -343,6 +330,22 @@ class ClanGames {
 				});
 			}
 		});
+
+		const intervalId = setInterval(() => {
+			this.flush(intervalId);
+		}, 1 * 60 * 1000);
+	}
+
+	async flush(intervalId) {
+		if (!this.event()) {
+			this.client.settings.delete('global', 'clangamesDay');
+			await this.init();
+			await mongodb.db('clashperk')
+				.collection('clangameslogs')
+				.updateMany({}, { $unset: { message: '' } });
+			clearInterval(intervalId);
+			return this.cached.clear();
+		}
 	}
 
 	async add(id) {
