@@ -3,6 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const { mongodb } = require('../../struct/Database');
 const { emoji, townHallEmoji, heroEmoji } = require('../../util/emojis');
+const moment = require('moment');
 
 class ProfileCommand extends Command {
 	constructor() {
@@ -10,7 +11,7 @@ class ProfileCommand extends Command {
 			aliases: ['profile', 'whois', 'user'],
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
+			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Shows info about your linked accounts.',
 				usage: '<member>',
@@ -32,31 +33,37 @@ class ProfileCommand extends Command {
 	}
 
 	async exec(message, { member }) {
-		let data = await this.getProfile(member.id);
-		const clanData = await this.getClan(member.id);
+		const data = await this.getProfile(member.id);
+		const clan = await this.getClan(member.id);
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL());
+			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())
+			.setDescription([
+				`Created on ${moment(member.user.createdAt).format('DD-MM-YYYY kk:mm:ss')}`
+			]);
 
 		let index = 0;
 		const collection = [];
-		if (clanData) {
-			const clan = await this.client.coc.clan(clanData.tag).catch(() => null);
-			if (clan) {
-				collection.push({
-					field: `${emoji.clan} [${clan.name} (${clan.tag})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
-					values: [`${emoji.empty} Level ${clan.clanLevel} ${emoji.users} ${clan.members} Member${clan.members === 1 ? '' : 's'}`]
-				});
+		if (clan) {
+			const data = await this.client.coc.clan(clan.tag).catch(() => null);
+			if (data) {
+				embed.setDescription([
+					embed.description,
+					'',
+					`${emoji.clan} [${data.name} (${clan.tag})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
+					...[`${emoji.empty} Level ${data.clanLevel} ${emoji.users} ${data.members} Member${data.members === 1 ? '' : 's'}`]
+				]);
 			}
 		}
 
 		if (!data || (data && !data.tags.length)) {
-			data = { tags: [] };
-			collection.push({
-				field: 'No accounts are linked. Why not add some?',
-				values: ['']
-			});
+			embed.setDescription([
+				embed.description,
+				'',
+				'No accounts are linked. Why not add some?'
+			]);
+			return message.util.send({ embed });
 		}
 
 		for (const tag of data.tags) {
@@ -78,74 +85,6 @@ class ProfileCommand extends Command {
 
 		collection.map(a => embed.addField('\u200b', [a.field, ...a.values]));
 		return message.util.send({ embed });
-
-		/* let page = 1;
-		const paginated = this.paginate(collection, page);
-
-		embed.setDescription([
-			paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n\n')
-		]);
-		// embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
-		if (collection.length >= 1) {
-			return message.util.send({ embed });
-		}
-
-		const msg = await message.util.send({ embed });
-		for (const emoji of ['⬅️', '➡️']) {
-			await msg.react(emoji);
-			await this.delay(250);
-		}
-
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 60000, max: 10 }
-		);
-
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
-				page += 1;
-				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = 1;
-				await msg.edit({
-					embed: embed.setFooter(`Page ${this.paginate(collection, page).page}/${paginated.maxPage} (${index} accounts)`)
-						.setDescription([
-							this.paginate(collection, page).items
-								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
-								.join('\n\n')
-						])
-				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
-			}
-
-			if (reaction.emoji.name === '⬅️') {
-				page -= 1;
-				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = 1;
-				await msg.edit({
-					embed: embed.setFooter(`Page ${this.paginate(collection, page).page}/${paginated.maxPage} (${index} accounts)`)
-						.setDescription([
-							this.paginate(collection, page).items
-								.map(({ field, values }) => `${field}\n${values.join('\n')}`)
-								.join('\n\n')
-						])
-				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
-			}
-		});
-
-		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
-		});
-		return message;*/
-	}
-
-	async delay(ms) {
-		return new Promise(res => setTimeout(res, ms));
 	}
 
 	clanName(data) {
@@ -178,18 +117,6 @@ class ProfileCommand extends Command {
 			.findOne({ user: id });
 
 		return data;
-	}
-
-	paginate(items, page = 1, pageLength = 5) {
-		const maxPage = Math.ceil(items.length / pageLength);
-		if (page < 1) page = 1;
-		if (page > maxPage) page = maxPage;
-		const startIndex = (page - 1) * pageLength;
-
-		return {
-			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
-			page, maxPage, pageLength
-		};
 	}
 }
 
