@@ -60,7 +60,7 @@ class FlagCommand extends Command {
 			.find({ guild: message.guild.id })
 			.toArray();
 
-		if (flags.length >= 2) {
+		if (flags.length >= 200 && !this.client.patron.get(message.guild.id, 'guild', false)) {
 			const embed = this.client.util.embed()
 				.setDescription([
 					'You can only flag 200 players per guild!',
