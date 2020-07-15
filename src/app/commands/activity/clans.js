@@ -31,7 +31,7 @@ class ClansCommand extends Command {
 				if (!this.client.isOwner(msg.author.id)) return null;
 				const collection = await this.client.shard.broadcastEval(`this.guilds.cache.get(${id})`);
 				const guild = !collection.every(guild => guild == null)
-					? collection.filter(guild => guild != null)[0]
+					? collection.find(guild => typeof guild === 'object')
 					: null;
 				if (!guild) return null;
 				return guild;
@@ -39,6 +39,8 @@ class ClansCommand extends Command {
 			default: message => message.guild,
 			unordered: true
 		};
+
+		return { page, guild };
 	}
 
 	cooldown(message) {
