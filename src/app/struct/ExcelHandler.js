@@ -6,7 +6,7 @@ class Workbook extends Excel.Workbook {
 		super();
 		this.creator = 'ClashPerk';
 		this.lastModifiedBy = 'ClashPerk';
-		this.created = new Date(2020, 1, 1);
+		this.created = new Date();
 		this.modified = new Date();
 		this.lastPrinted = new Date();
 		this.views = [
