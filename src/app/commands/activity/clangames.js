@@ -81,18 +81,23 @@ class ClanGamesCommand extends Command {
 		});
 
 		const members = this.filter(memberList, clan);
-
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
-		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), '22T08:00:00Z'].join('-');
+		const DAY = this.client.settings.get('global', 'clangamesDay', 22);
+		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), `${DAY}T08:00:00Z`].join('-');
 		const createdAt = new Date(ObjectId(clan._id).getTimestamp());
+
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				`Clan Games Scoreboard [${data.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`,
 				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-				members.map((m, i) => `\u200e${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
+				members.slice(0, 55)
+					.map((m, i) => {
+						const points = this.padStart(m.points || '0');
+						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
+					}).join('\n'),
 				'```'
 			])
 			.setFooter(`Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`);
@@ -122,8 +127,8 @@ class ClanGamesCommand extends Command {
 		const excess = Object.values(clan.members)
 			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
 			.map(x => ({ name: x.name, tag: x.tag, points: x.gain > 4000 ? 4000 : x.gain }));
-		// const sorted = members.concat(excess).sort((a, b) => b.points - a.points);
-		const sorted = members.sort((a, b) => b.points - a.points);
+		const sorted = members.concat(excess).sort((a, b) => b.points - a.points);
+		// const sorted = members.sort((a, b) => b.points - a.points);
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
 }

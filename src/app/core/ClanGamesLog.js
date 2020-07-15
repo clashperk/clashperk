@@ -1,4 +1,4 @@
-const { MessageEmbed, Message } = require('discord.js');
+const { MessageEmbed, Message, Util } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const { ObjectId } = require('mongodb');
 const fetch = require('node-fetch');
@@ -11,9 +11,9 @@ class ClanGames {
 	}
 
 	async exec(id, clan, forced = false, tags = []) {
-		if (!this.event()) return this.flush();
+		if (!this.event()) return null;
 
-		// force update points
+		// force update
 		const cache = this.cached.get(id);
 		if (cache && forced) {
 			return setTimeout(async () => {
@@ -29,8 +29,7 @@ class ClanGames {
 				this.cached.set(id, cache);
 				return this.permissionsFor(id, cache, clan);
 			}
-
-			return;
+			return null;
 		}
 
 		if (cache) {
@@ -146,40 +145,46 @@ class ClanGames {
 	async embed(clan, id) {
 		const db = mongodb.db('clashperk').collection('clangames');
 		const data = await db.findOne({ tag: clan.tag });
-		const items = await this.getList(clan, data, clan.memberList.map(m => m.tag));
-		const members = this.filter(items.collection, items.data);
+
+		// update list
+		const updated = await this.getList(clan, data, clan.memberList.map(m => m.tag));
+
+		// filter members
+		const members = this.filter(updated.collection, updated.data);
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
-		const day = this.client.settings.get('global', 'clangamesDay', 22);
-		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), `${day + 1}T08:00:00Z`].join('-');
-		const createdAt = new Date(ObjectId(items.data._id).getTimestamp());
+		// build embed
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
-				`Clan Games Scoreboard [${clan.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`,
+				`Clan Games Scoreboard [${clan.members}/50]`,
 				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-				members.map((m, i) => `\u200e${(++i).toString().padStart(2, '\u2002')} ${this.padStart(m.points || '0')} \u2002 ${this.padEnd(m.name)}`).join('\n'),
+				members.slice(0, 55)
+					.map((m, i) => {
+						const points = this.padStart(m.points || '0');
+						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
+					}).join('\n'),
 				'```'
 			])
 			.setFooter(`Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]`)
 			.setTimestamp();
-
 		return embed;
 	}
 
 	async update(clan, data, collection) {
-		if (!this.event()) return this.flush();
 		const $set = {};
 		if (data) {
 			for (const member of collection) {
+				// update points of new clan members
 				if (member.tag in data.members === false) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
 					$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
 				}
 
+				// update points of missing clan members
 				if (member.tag in data.members) {
 					if (member.points === data.members[member.tag].points) continue;
 					$set.name = clan.name;
@@ -187,7 +192,8 @@ class ClanGames {
 					$set[`members.${member.tag}.gain`] = member.points - data.members[member.tag].points;
 				}
 			}
-		} else if (!data) {
+		} else {
+			// update points of new clan members if db does not exist
 			for (const member of collection) {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
@@ -261,59 +267,55 @@ class ClanGames {
 	}
 
 	async init() {
-		const intervalId = setInterval(async () => {
-			if (this.event()) {
-				const collection = await mongodb.db('clashperk')
-					.collection('clangameslogs')
-					.find()
-					.toArray();
+		const intervalId = setInterval(this.init.bind(this), 1 * 60 * 1000);
+		if (!this.event()) return null;
 
-				collection.forEach(data => {
-					if (this.client.guilds.cache.has(data.guild)) {
-						this.cached.set(ObjectId(data.clan_id).toString(), {
-							guild: data.guild,
-							channel: data.channel,
-							message: data.message,
-							color: data.color
-						});
-					}
+		// Initialize-Database
+		const collection = await mongodb.db('clashperk')
+			.collection('clangameslogs')
+			.find()
+			.toArray();
+
+		collection.forEach(data => {
+			if (this.client.guilds.cache.has(data.guild)) {
+				this.cached.set(ObjectId(data.clan_id).toString(), {
+					guild: data.guild,
+					channel: data.channel,
+					message: data.message,
+					color: data.color
 				});
-
-				return clearInterval(intervalId);
 			}
-		}, 1 * 60 * 1000);
+		});
+
+		this.flush();
+		return clearInterval(intervalId);
 	}
 
 	event() {
-		const day = this.client.settings.get('global', 'clangamesDay', 22);
+		const DAY = this.client.settings.get('global', 'clangamesDay', 22);
 		const START = [
-			new Date()
-				.getFullYear(),
-			(new Date()
-				.getMonth() + 1)
-				.toString()
-				.padStart(2, '0'),
-			day
+			new Date().getFullYear(),
+			(new Date().getMonth() + 1).toString().padStart(2, '0'),
+			DAY
 		].join('-');
 
 		const END = [
-			new Date()
-				.getFullYear(),
-			(new Date()
-				.getMonth() + 1)
-				.toString()
-				.padStart(2, '0'),
-			`${day + 6}T10:00:00Z`
+			new Date().getFullYear(),
+			(new Date().getMonth() + 1).toString().padStart(2, '0'),
+			`${DAY + 6}T10:00:00Z`
 		].join('-');
 
 		return new Date() >= new Date(START) && new Date() <= new Date(END);
 	}
 
 	async flush() {
+		const intervalId = setInterval(this.flush.bind(this), 1 * 60 * 1000);
 		if (!this.event()) {
+			this.client.settings.delete('global', 'clangamesDay');
 			await mongodb.db('clashperk')
 				.collection('clangameslogs')
 				.updateMany({}, { $unset: { message: '' } });
+			clearInterval(intervalId);
 			return this.cached.clear();
 		}
 	}
@@ -338,7 +340,7 @@ class ClanGames {
 	}
 
 	async add(id) {
-		if (!this.event()) return this.flush();
+		if (!this.event()) return null;
 		const data = await mongodb.db('clashperk')
 			.collection('clangameslogs')
 			.findOne({ clan_id: ObjectId(id) });
