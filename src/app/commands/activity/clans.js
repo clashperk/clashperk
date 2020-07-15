@@ -14,32 +14,28 @@ class ClansCommand extends Command {
 				usage: '<page>',
 				examples: ['2'],
 				content: 'Shows all clans related to the guild.'
-			}
-		});
-	}
-
-	*args() {
-		const page = yield {
-			type: Argument.range('number', 1, 100),
-			default: 1,
-			unordered: true
-		};
-
-		const guild = yield {
-			type: async (msg, id) => {
-				if (!id) return null;
-				if (!this.client.isOwner(msg.author.id)) return null;
-				const collection = await this.client.shard.broadcastEval(`this.guilds.cache.get('509784317598105619')`);
-				const guild = collection.find(guild => typeof guild === 'object');
-				console.log(guild.name, guild.iconURL());
-				if (!guild) return null;
-				return guild;
 			},
-			default: message => message.guild,
-			unordered: true
-		};
-
-		return { page, guild };
+			args: [
+				{
+					id: 'page',
+					type: Argument.range('number', 1, 100),
+					default: 1,
+					unordered: true
+				},
+				{
+					id: 'guild',
+					type: (msg, id) => {
+						if (!id) return null;
+						if (!this.client.isOwner(msg.author.id)) return null;
+						const guild = this.client.guilds.cache.get(id);
+						if (!guild) return null;
+						return guild;
+					},
+					default: message => message.guild,
+					unordered: true
+				}
+			]
+		});
 	}
 
 	cooldown(message) {
