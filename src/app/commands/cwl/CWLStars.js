@@ -2,7 +2,7 @@ const { Command, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
-const Excel = require('exceljs');
+const Excel = require('../../struct/ExcelHandler');
 const { emoji } = require('../../util/emojis');
 const CWL = require('../../core/CWLWarTags');
 
@@ -17,7 +17,7 @@ class CWLStarsComamnd extends Command {
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			flags: ['--download', '-dl']
+			flags: ['--download', '-dl', '--excel']
 		});
 	}
 
@@ -40,7 +40,7 @@ class CWLStarsComamnd extends Command {
 
 		const excel = yield {
 			match: 'flag',
-			flag: ['--download', '-dl']
+			flag: ['--download', '-dl', '--excel']
 		};
 
 		return { data, excel };
@@ -142,7 +142,7 @@ class CWLStarsComamnd extends Command {
 			embed,
 			files: patron && excel
 				? [{
-					attachment: Buffer.from(await this.excel(leaderboard.filter(m => m.of > 0))),
+					attachment: Buffer.from(await Excel.starList(leaderboard.filter(m => m.of > 0))),
 					name: `${clan.name.toLowerCase()}_cwl_stars.xlsx`
 				}]
 				: null
@@ -196,42 +196,6 @@ class CWLStarsComamnd extends Command {
 		} else if (clan.destructionPercentage < opponent.destructionPercentage) {
 			return false;
 		}
-	}
-
-	async excel(members) {
-		const workbook = new Excel.Workbook();
-		workbook.creator = 'ClashPerk';
-		workbook.lastModifiedBy = 'ClashPerk';
-		workbook.created = new Date(2020, 1, 1);
-		workbook.modified = new Date();
-		workbook.lastPrinted = new Date();
-		workbook.views = [
-			{
-				x: 0, y: 0, width: 10000, height: 20000,
-				firstSheet: 0, activeTab: 1, visibility: 'visible'
-			}
-		];
-		const sheet = workbook.addWorksheet('Member List');
-		sheet.columns = [
-			{ header: 'NAME', key: 'name', width: 16 },
-			{ header: 'TAG', key: 'tag', width: 16 },
-			{ header: 'STARS', key: 'th', width: 10 },
-			{ header: 'DEFENCE', key: 'def', width: 10 },
-			{ header: 'GAINED', key: 'gained', width: 10, style: { color: 'ff1010' } },
-			{ header: 'DEST', key: 'bk', width: 10 },
-			{ header: 'ATTACKS', key: 'aq', width: 10 }
-		];
-		sheet.getRow(1).font = { bold: true, size: 10 };
-		sheet.getColumn(1).alignment = { horizontal: 'left' };
-		sheet.getColumn(2).alignment = { horizontal: 'left' };
-		sheet.getColumn(3).alignment = { horizontal: 'right' };
-		sheet.getColumn(4).alignment = { horizontal: 'right' };
-		sheet.getColumn(5).alignment = { horizontal: 'right' };
-		sheet.getColumn(6).alignment = { horizontal: 'right' };
-		sheet.getColumn(7).alignment = { horizontal: 'right' };
-		sheet.addRows(members.map(m => [m.name, m.tag, m.stars, m.lost, m.stars - m.lost, m.dest, `${m.attacks}/${m.of}`]));
-
-		return workbook.xlsx.writeBuffer();
 	}
 }
 

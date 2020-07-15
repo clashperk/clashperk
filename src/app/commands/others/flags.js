@@ -2,7 +2,6 @@ const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { redNum } = require('../../util/emojis');
 const Excel = require('../../struct/ExcelHandler');
-const moment = require('moment');
 
 class FlagsCommand extends Command {
 	constructor() {
@@ -82,40 +81,6 @@ class FlagsCommand extends Command {
 			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
 			page, maxPage, pageLength
 		};
-	}
-
-	async excel(members) {
-		const workbook = new Excel.Workbook();
-		workbook.creator = 'ClashPerk';
-		workbook.lastModifiedBy = 'ClashPerk';
-		workbook.created = new Date(2020, 1, 1);
-		workbook.modified = new Date();
-		workbook.lastPrinted = new Date();
-		workbook.views = [
-			{
-				x: 0, y: 0, width: 10000, height: 20000,
-				firstSheet: 0, activeTab: 1, visibility: 'visible'
-			}
-		];
-		const sheet = workbook.addWorksheet('Flag List');
-		sheet.columns = [
-			{ header: 'NAME', key: 'name', width: 16 },
-			{ header: 'TAG', key: 'tag', width: 16 },
-			{ header: 'AUTHOR', key: 'author', width: 20 },
-			{ header: 'DATE (UTC)', key: 'date', width: 30 },
-			{ header: 'REASON', key: 'reason', width: 50 }
-		];
-
-		sheet.getRow(1).font = { bold: true, size: 10 };
-		sheet.addRows(members.map(m => ({
-			name: m.name,
-			tag: m.tag,
-			author: m.user_tag,
-			date: moment(new Date(m.createdAt)).format('DD MMMM YYYY kk:mm:ss'),
-			reason: m.reason
-		})));
-
-		return workbook.xlsx.writeBuffer();
 	}
 }
 

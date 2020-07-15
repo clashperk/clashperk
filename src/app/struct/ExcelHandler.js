@@ -77,6 +77,32 @@ class ExcelHandler {
 
 		return workbook.xlsx.writeBuffer();
 	}
+
+	static async starList(members = []) {
+		const workbook = new Workbook();
+
+		const sheet = workbook.addWorksheet('Member List');
+		sheet.columns = [
+			{ header: 'NAME', key: 'name', width: 16 },
+			{ header: 'TAG', key: 'tag', width: 16 },
+			{ header: 'STARS', key: 'th', width: 10 },
+			{ header: 'DEFENCE', key: 'def', width: 10 },
+			{ header: 'GAINED', key: 'gained', width: 10, style: { color: 'ff1010' } },
+			{ header: 'DEST', key: 'bk', width: 10 },
+			{ header: 'ATTACKS', key: 'aq', width: 10 }
+		];
+		sheet.getRow(1).font = { bold: true, size: 10 };
+		sheet.getColumn(1).alignment = { horizontal: 'left' };
+		sheet.getColumn(2).alignment = { horizontal: 'left' };
+		sheet.getColumn(3).alignment = { horizontal: 'right' };
+		sheet.getColumn(4).alignment = { horizontal: 'right' };
+		sheet.getColumn(5).alignment = { horizontal: 'right' };
+		sheet.getColumn(6).alignment = { horizontal: 'right' };
+		sheet.getColumn(7).alignment = { horizontal: 'right' };
+		sheet.addRows(members.map(m => [m.name, m.tag, m.stars, m.lost, m.stars - m.lost, m.dest, `${m.attacks}/${m.of}`]));
+
+		return workbook.xlsx.writeBuffer();
+	}
 }
 
 module.exports = ExcelHandler;

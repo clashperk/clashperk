@@ -5,6 +5,7 @@ const { emoji, leagueEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
 const { stripIndent } = require('common-tags');
 const TOKENS = process.env.$KEYS.split(',');
+const Excel = require('../../struct/ExcelHandler');
 
 class MembersCommand extends Command {
 	constructor() {
@@ -17,7 +18,8 @@ class MembersCommand extends Command {
 				usage: '<clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
-			optionFlags: ['--th', '-th', 'th']
+			optionFlags: ['--th', '-th', 'th'],
+			flags: ['--download', '-dl', '--excel']
 		});
 	}
 
@@ -39,7 +41,12 @@ class MembersCommand extends Command {
 			}
 		};
 
-		return { data, townhall };
+		const download = yield {
+			match: 'flag',
+			flag: ['--download', '-dl', '--excel']
+		};
+
+		return { data, townhall, download };
 	}
 
 	cooldown(message) {
@@ -47,7 +54,7 @@ class MembersCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, townhall }) {
+	async exec(message, { data, townhall, download }) {
 		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
 
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
@@ -77,8 +84,12 @@ class MembersCommand extends Command {
 		});
 
 		const items = this.sort(members);
-		const filter = items.filter(arr => arr.townHallLevel === townhall);
+		if (download) {
+			const buffer = await Excel.memberList(items);
+			return message.util.send('', { files: [{ attachment: Buffer.from(buffer), name: `${data.name.toLowerCase()}_member_list.xlsx` }] });
+		}
 
+		const filter = items.filter(arr => arr.townHallLevel === townhall);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
@@ -110,43 +121,6 @@ class MembersCommand extends Command {
 			embed: embed.setDescription([header, pages[1].join('\n')])
 				.setFooter(`Page 2/2 (${data.members}/50)`)
 		});
-
-		/* for (const emoji of ['⬅️', '➡️']) {
-			await msg.react(emoji);
-			await this.delay(250);
-		}
-
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 45000, max: 10 }
-		);
-
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
-				await msg.edit({
-					embed: embed.setDescription([header, pages[1].join('\n')])
-						.setFooter('Page 2/2')
-				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
-			}
-			if (reaction.emoji.name === '⬅️') {
-				await msg.edit({
-					embed: embed.setDescription([header, pages[0].join('\n')])
-						.setFooter('Page 1/2')
-				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
-			}
-		});
-
-		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
-		});
-		return message;*/
 	}
 
 	paginate(items, start, end) {
