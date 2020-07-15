@@ -266,31 +266,6 @@ class ClanGames {
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
 
-	async init() {
-		const intervalId = setInterval(this.init.bind(this), 1 * 60 * 1000);
-		if (!this.event()) return null;
-
-		// Initialize-Database
-		const collection = await mongodb.db('clashperk')
-			.collection('clangameslogs')
-			.find()
-			.toArray();
-
-		collection.forEach(data => {
-			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(ObjectId(data.clan_id).toString(), {
-					guild: data.guild,
-					channel: data.channel,
-					message: data.message,
-					color: data.color
-				});
-			}
-		});
-
-		this.flush();
-		return clearInterval(intervalId);
-	}
-
 	event() {
 		const DAY = this.client.settings.get('global', 'clangamesDay', 22);
 		const START = [
@@ -337,6 +312,36 @@ class ClanGames {
 		if (!res) return null;
 		if (!res.ok) return null;
 		return res.json().catch(() => null);
+	}
+
+	async init() {
+		if (this.event()) return this._init();
+		const intervalId = setInterval(async () => {
+			if (this.event()) {
+				clearInterval(intervalId);
+				await this._init();
+				return this.flush();
+			}
+		}, 5 * 60 * 1000);
+	}
+
+	async _init() {
+		// Initialize-Database
+		const collection = await mongodb.db('clashperk')
+			.collection('clangameslogs')
+			.find()
+			.toArray();
+
+		collection.forEach(data => {
+			if (this.client.guilds.cache.has(data.guild)) {
+				this.cached.set(ObjectId(data.clan_id).toString(), {
+					guild: data.guild,
+					channel: data.channel,
+					message: data.message,
+					color: data.color
+				});
+			}
+		});
 	}
 
 	async add(id) {
