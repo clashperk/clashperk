@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 const { mongodb } = require('../../struct/Database');
 const { emoji, townHallEmoji, heroEmoji } = require('../../util/emojis');
 const moment = require('moment');
+const ms = require('ms');
 
 const BADGES = {
 	'DISCORD_EMPLOYEE': '<:staff:314068430787706880>',
@@ -68,7 +69,8 @@ class ProfileCommand extends Command {
 		embed.setDescription([
 			embed.description,
 			'',
-			`**Created on ${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}**`
+			'**Created**',
+			`${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')} (${ms(Date.now() - member.user.createdAt)} ago)`
 		]);
 
 		let index = 0;
