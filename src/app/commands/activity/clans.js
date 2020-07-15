@@ -31,6 +31,7 @@ class ClansCommand extends Command {
 				if (!this.client.isOwner(msg.author.id)) return null;
 				const collection = await this.client.shard.broadcastEval(`this.guilds.cache.get(${id})`);
 				const guild = collection.find(guild => typeof guild === 'object');
+				console.log(collection, guild);
 				if (!guild) return null;
 				return guild;
 			},
