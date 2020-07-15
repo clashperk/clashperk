@@ -91,7 +91,7 @@ class ClanGamesCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				`Clan Games Scoreboard [${data.members}/50]${createdAt > new Date(START) ? `\nCreated on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`,
+				`Clan Games Scoreboard [${data.members}/50]`,
 				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
 				members.slice(0, 55)
 					.map((m, i) => {
@@ -102,7 +102,8 @@ class ClanGamesCommand extends Command {
 			])
 			.setFooter(`Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`);
 
-		return message.util.send({ embed });
+		const content = `${createdAt > new Date(START) ? `\nBoard created on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`;
+		return message.util.send(content, { embed });
 	}
 
 	padStart(num) {

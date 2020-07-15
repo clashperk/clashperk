@@ -2,7 +2,6 @@ const { MessageEmbed, Message, Util } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const { ObjectId } = require('mongodb');
 const fetch = require('node-fetch');
-const moment = require('moment');
 
 class ClanGames {
 	constructor(client) {
@@ -195,6 +194,7 @@ class ClanGames {
 		} else {
 			// update points of new clan members if db does not exist
 			for (const member of collection) {
+				$set.createdAt = new Date();
 				$set.name = clan.name;
 				$set.tag = clan.tag;
 				$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
