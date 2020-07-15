@@ -5,6 +5,22 @@ const { mongodb } = require('../../struct/Database');
 const { emoji, townHallEmoji, heroEmoji } = require('../../util/emojis');
 const moment = require('moment');
 
+const BADGES = {
+	'DISCORD_EMPLOYEE': '<:staff:314068430787706880>',
+	'DISCORD_PARTNER': '<:partner:314068430556758017>',
+	'HYPESQUAD_EVENTS': '<:hypesquad_events:585765895939424258>',
+	'BUGHUNTER_LEVEL_1': '<:bughunter:585765206769139723>',
+	'HOUSE_BRAVERY': '<:bravery:585763004218343426>',
+	'HOUSE_BRILLIANCE': '<:brilliance:585763004495298575>',
+	'HOUSE_BALANCE': '<:balance:585763004574859273>',
+	'EARLY_SUPPORTER': '<:supporter:585763690868113455> ',
+	'TEAM_USER': false,
+	'SYSTEM': false,
+	'BUGHUNTER_LEVEL_2': '<:bughunter:585765206769139723>',
+	'VERIFIED_BOT': false,
+	'VERIFIED_DEVELOPER': '<:botdev:707231318857089136>'
+};
+
 class ProfileCommand extends Command {
 	constructor() {
 		super('profile', {
@@ -36,10 +52,13 @@ class ProfileCommand extends Command {
 		const data = await this.getProfile(member.id);
 		const clan = await this.getClan(member.id);
 
+		const badges = Object.keys(BADGES).filter(badges => member.user.flags.serialize()[badges]);
+		const emojis = badges.filter(b => b !== false).map(badge => BADGES[badge]);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())
 			.setDescription([
+				...emojis || '',
 				`Created on ${moment(member.user.createdAt).format('DD-MM-YYYY kk:mm:ss')}`
 			]);
 
