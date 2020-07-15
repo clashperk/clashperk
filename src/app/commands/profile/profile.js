@@ -76,7 +76,7 @@ class ProfileCommand extends Command {
 			if (index === 25) break;
 		}
 
-		collection.map(a => embed.addField('\u200b', [a.field, a.value]));
+		collection.map(a => embed.addField('\u200b', [a.field, ...a.values]));
 		return message.util.send({ embed });
 
 		/* let page = 1;
