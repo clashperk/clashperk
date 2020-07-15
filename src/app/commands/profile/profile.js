@@ -68,7 +68,6 @@ class ProfileCommand extends Command {
 
 		embed.setDescription([
 			embed.description,
-			'',
 			'**Created**',
 			`${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')} (${ms(Date.now() - member.user.createdAt, { long: true })} ago)`
 		]);
@@ -113,6 +112,7 @@ class ProfileCommand extends Command {
 			if (index === 25) break;
 		}
 
+		embed.setFooter(`${collection.length} account${collection.length === 1 ? '' : 's'}`, member.user.displayAvatarURL());
 		collection.map(a => embed.addField('\u200b', [a.field, ...a.values]));
 		return message.util.send({ embed });
 	}
