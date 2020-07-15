@@ -72,6 +72,9 @@ class LastOnlineCommand extends Command {
 	}
 
 	filter(data, clan) {
+		if (data && !data.members) {
+			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null }));
+		}
 		const members = data.memberList.map(member => {
 			const lastOnline = member.tag in clan.members
 				? new Date() - new Date(clan.members[member.tag].lastOnline)
@@ -80,7 +83,6 @@ class LastOnlineCommand extends Command {
 		});
 
 		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
-
 		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
 	}
 
