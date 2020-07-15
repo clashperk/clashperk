@@ -5,6 +5,7 @@ class ReloadCommand extends Command {
 		super('reload', {
 			aliases: ['reload', 'r'],
 			category: 'owner',
+			clientPermissions: ['EMBED_LINKS'],
 			ownerOnly: true,
 			description: {
 				content: 'You can\'t use this anyway, so why explain?'
