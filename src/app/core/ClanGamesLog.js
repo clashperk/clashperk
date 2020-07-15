@@ -308,6 +308,7 @@ class ClanGames {
 		this.intervalId = setInterval(async () => {
 			if (this.event()) {
 				await this._init();
+				await this._flush();
 				return clearInterval(this.intervalId);
 			}
 		}, 5 * 60 * 1000);
@@ -330,22 +331,22 @@ class ClanGames {
 				});
 			}
 		});
-
-		const intervalId = setInterval(() => {
-			this.flush(intervalId);
-		}, 1 * 60 * 1000);
 	}
 
 	async flush(intervalId) {
-		if (!this.event()) {
-			this.client.settings.delete('global', 'clangamesDay');
-			await this.init();
-			await mongodb.db('clashperk')
-				.collection('clangameslogs')
-				.updateMany({}, { $unset: { message: '' } });
-			clearInterval(intervalId);
-			return this.cached.clear();
-		}
+		if (this.event()) return null;
+
+		await this.init();
+		this.cached.clear();
+		await mongodb.db('clashperk')
+			.collection('clangameslogs')
+			.updateMany({}, { $unset: { message: '' } });
+		this.client.settings.delete('global', 'clangamesDay');
+		return clearInterval(intervalId);
+	}
+
+	async _flush() {
+		const intervalId = setInterval(() => this.flush(intervalId), 5 * 60 * 1000);
 	}
 
 	async add(id) {
