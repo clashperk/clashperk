@@ -76,14 +76,17 @@ class ProfileCommand extends Command {
 			if (index === 25) break;
 		}
 
-		let page = 1;
+		collection.map(a => embed.addField('\u200b', [a.field, a.value]));
+		return message.util.send({ embed });
+
+		/* let page = 1;
 		const paginated = this.paginate(collection, page);
 
 		embed.setDescription([
 			paginated.items.map(({ field, values }) => `${field}\n${values.join('\n')}`).join('\n\n')
 		]);
-		embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
-		if (collection.length <= 5) {
+		// embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${index} accounts)`);
+		if (collection.length >= 1) {
 			return message.util.send({ embed });
 		}
 
@@ -138,7 +141,7 @@ class ProfileCommand extends Command {
 			await msg.reactions.removeAll().catch(() => null);
 			return message;
 		});
-		return message;
+		return message;*/
 	}
 
 	async delay(ms) {
