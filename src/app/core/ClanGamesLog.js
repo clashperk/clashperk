@@ -316,9 +316,10 @@ class ClanGames {
 
 	async init() {
 		if (this.event()) return this._init();
-		const intervalId = setInterval(async () => {
+		clearInterval(this.intervalId);
+		this.intervalId = setInterval(async () => {
 			if (this.event()) {
-				clearInterval(intervalId);
+				clearInterval(this.intervalId);
 				await this._init();
 				return this.flush();
 			}
