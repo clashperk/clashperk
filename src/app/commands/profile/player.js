@@ -50,6 +50,7 @@ class LinkPlayerCommand extends Command {
 	}
 
 	async exec(message, { data, member }) {
+		if (member.user.bot) return message.util.send('Bots can\'t link accounts.');
 		const doc = await this.getPlayer(data.tag);
 		if (doc && doc.user === member.id) {
 			return message.util.send({

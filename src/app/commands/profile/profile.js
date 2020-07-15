@@ -56,11 +56,20 @@ class ProfileCommand extends Command {
 		const emojis = badges.filter(b => b !== false).map(badge => BADGES[badge]);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())
-			.setDescription([
-				[...emojis].join(' ') || '',
-				`Created on ${moment(member.user.createdAt).format('DD-MM-YYYY kk:mm:ss')}`
+			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL());
+
+		if (emojis.length) {
+			embed.setDescription([
+				`**Badge${emojis.length === 1 ? '' : 's'}**`,
+				[...emojis].join(' ')
 			]);
+		}
+
+		embed.setDescription([
+			embed.description,
+			'',
+			`**Created on ${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}**`
+		]);
 
 		let index = 0;
 		const collection = [];

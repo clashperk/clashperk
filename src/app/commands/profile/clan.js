@@ -50,6 +50,7 @@ class LinkClanCommand extends Command {
 	}
 
 	async exec(message, { data, member }) {
+		if (member.user.bot) return message.util.send('Bots can\'t link accounts.');
 		await mongodb.db('clashperk').collection('linkedclans')
 			.updateOne({ user: member.id }, {
 				$set: {
