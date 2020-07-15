@@ -113,7 +113,7 @@ class ProfileCommand extends Command {
 			if (index === 25) break;
 		}
 
-		embed.setFooter(`${collection.length} account${collection.length === 1 ? '' : 's'}`, member.user.displayAvatarURL());
+		embed.setFooter(`${collection.length} account${collection.length === 1 ? '' : 's'}`, 'https://cdn.discordapp.com/emojis/658538492409806849.png');
 		collection.map(a => embed.addField('\u200b', [a.field, ...a.values]));
 		return message.util.send({ embed });
 	}
