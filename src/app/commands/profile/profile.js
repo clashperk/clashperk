@@ -54,7 +54,7 @@ class ProfileCommand extends Command {
 		const clan = await this.getClan(member.id);
 
 		const badges = Object.keys(BADGES).filter(badges => member.user.flags.serialize()[badges]);
-		const emojis = badges.filter(b => b !== false).map(badge => BADGES[badge]);
+		const emojis = badges.map(badge => BADGES[badge]).filter(b => b !== false);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL());
@@ -68,6 +68,7 @@ class ProfileCommand extends Command {
 
 		embed.setDescription([
 			embed.description,
+			'',
 			'**Created**',
 			`${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')} (${ms(Date.now() - member.user.createdAt, { long: true })} ago)`
 		]);
