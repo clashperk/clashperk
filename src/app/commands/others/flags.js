@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { redNum } = require('../../util/emojis');
-const Excel = require('exceljs');
+const Excel = require('../../struct/ExcelHandler');
 const moment = require('moment');
 
 class FlagsCommand extends Command {
@@ -51,7 +51,7 @@ class FlagsCommand extends Command {
 
 		let buffer = null;
 		if (data && data.length) {
-			buffer = await this.excel(data);
+			if (download) buffer = await Excel.flagList(data);
 			const paginated = this.paginate(data, page);
 			let index = (paginated.page - 1) * 25;
 			embed.setAuthor(message.guild.name, message.guild.iconURL())
