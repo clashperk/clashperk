@@ -3,19 +3,18 @@ const moment = require('moment');
 
 class Workbook extends Excel.Workbook {
 	constructor() {
-		super({
-			creator: 'ClashPerk',
-			lastModifiedBy: 'ClashPerk',
-			created: new Date(2020, 1, 1),
-			modified: new Date(),
-			lastPrinted: new Date(),
-			views: [
-				{
-					x: 0, y: 0, width: 10000, height: 20000,
-					firstSheet: 0, activeTab: 1, visibility: 'visible'
-				}
-			]
-		});
+		super();
+		this.creator = 'ClashPerk';
+		this.lastModifiedBy = 'ClashPerk';
+		this.created = new Date(2020, 1, 1);
+		this.modified = new Date();
+		this.lastPrinted = new Date();
+		this.views = [
+			{
+				x: 0, y: 0, width: 10000, height: 20000,
+				firstSheet: 0, activeTab: 1, visibility: 'visible'
+			}
+		];
 	}
 }
 
