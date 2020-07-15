@@ -58,7 +58,7 @@ class ProfileCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())
 			.setDescription([
-				...emojis || '',
+				[...emojis].join(' ') || '',
 				`Created on ${moment(member.user.createdAt).format('DD-MM-YYYY kk:mm:ss')}`
 			]);
 
