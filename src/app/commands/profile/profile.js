@@ -70,7 +70,7 @@ class ProfileCommand extends Command {
 			embed.description,
 			'',
 			'**Created**',
-			`${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')} (${ms(Date.now() - member.user.createdAt)} ago)`
+			`${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')} (${ms(Date.now() - member.user.createdAt, { long: true })} ago)`
 		]);
 
 		let index = 0;
