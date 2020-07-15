@@ -56,8 +56,7 @@ class MembersCommand extends Command {
 
 	async exec(message, { data, townhall, download }) {
 		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
-
-		await message.util.send(`**Fetching data... ${emoji.loading}**`);
+		if (!download) await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
 		const requests = data.memberList.map((m, i) => {
 			const req = {
