@@ -277,7 +277,8 @@ class ClanWarEvent {
 					'**War Size**',
 					`${data.teamSize} vs ${data.teamSize}`
 				]);
-			embed.setFooter(`Starts in ${moment.duration(new Date(moment(data.startTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`);
+			embed.setTimestamp()
+				.setFooter(`Starts in ${moment.duration(new Date(moment(data.startTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`);
 		}
 
 		if (data.state === 'inWar') {
@@ -297,7 +298,8 @@ class ClanWarEvent {
 					`${emoji.fire} ${data.clan.destructionPercentage}% / ${data.opponent.destructionPercentage}%`,
 					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
 				]);
-			embed.setFooter(`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`);
+			embed.setTimestamp()
+				.setFooter(`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`);
 		}
 
 		if (data.state === 'warEnded') {
@@ -329,7 +331,7 @@ class ClanWarEvent {
 			'',
 			`${data.opponent.name}`,
 			`${this.roster(data.opponent.members)}`
-		]).setTimestamp();
+		]);
 
 		if (data.state === 'preparation') {
 			const message = await channel.send({ embed }).catch(() => null);
