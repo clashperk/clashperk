@@ -91,7 +91,7 @@ class ClanWarEvent {
 					'**War Size**',
 					`${data.teamSize} vs ${data.teamSize}`
 				]);
-			embed.setTimestamp()
+			embed.setTimestamp(new Date(moment(data.startTime).toDate()))
 				.setFooter(`Starts in ${moment.duration(new Date(moment(data.startTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`);
 		}
 
