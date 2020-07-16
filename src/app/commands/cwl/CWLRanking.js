@@ -107,7 +107,8 @@ class CWLRankingComamnd extends Command {
 		const rank = ranking.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${clan.name} CWL Ranking`, clan.badgeUrls.small)
+			.setAuthor(`${clan.name} ${clan.tag}`, clan.badgeUrls.small)
+			.setTitle('CWL Ranking')
 			.setDescription([
 				`${emoji.hash} **\`\u200eSTAR DEST${''.padEnd(padding - 2, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
 				ranking.sort((a, b) => b.stars - a.stars)
