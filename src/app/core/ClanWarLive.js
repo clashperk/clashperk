@@ -171,7 +171,8 @@ class ClanWarEvent {
 		if (data.state === 'inWar') {
 			const cache = this.cached.get(id);
 			const endsIn = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
-			if (endsIn <= 36e5) this.overwriteTimer(id, cache.ms);
+			console.log(require('ms')(endsIn), endsIn <= 36e5);
+			// if (endsIn <= 36e5) this.overwriteTimer(id, cache.ms);
 		}
 
 		if (data.state === 'inWar') {
