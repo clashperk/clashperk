@@ -8,6 +8,7 @@ class WarLogCommand extends Command {
 	constructor() {
 		super('clan-warlog', {
 			category: 'setup-hidden',
+			aliases: ['clanwarlog'],
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],

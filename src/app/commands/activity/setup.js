@@ -15,7 +15,7 @@ class SetupCommand extends Command {
 					'• donationlog `<clanTag> [channel/color]`',
 					'• onlineboard `<clanTag> [channel/color]`',
 					'• cgboard `<clanTag> [channel/color]`',
-					'• warlog `<clanTag> [channel]`',
+					'• clanwarlog `<clanTag> [channel]`',
 					'• clanlog `<clanTag> [channel/role]`',
 					'',
 					'**Required: `<>` | Optional: `[]`**',
@@ -26,7 +26,7 @@ class SetupCommand extends Command {
 					'donationlog #8QU8J9LP',
 					'onlineboard #8QU8J9L',
 					'cgboard #8QU8J9L',
-					'warlog #8QU8J9L',
+					'clanwarlog #8QU8J9L',
 					'clanlog #8QU8J9L'
 				]
 			}
@@ -45,7 +45,7 @@ class SetupCommand extends Command {
 				['lastonlineboard', 'onlineboard'],
 				['clangamesboard', 'cgboard'],
 				['clanembed', 'cembed'],
-				['clan-warlog', 'warlog', 'livewar'],
+				['clan-warlog', 'warlog', 'livewar', 'clanwarlog'],
 				['playerlog', 'clanlog']
 			],
 			otherwise: message => {

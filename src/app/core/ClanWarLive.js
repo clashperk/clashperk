@@ -53,7 +53,7 @@ class ClanWarEvent {
 	// For Normal Clan Wars
 	async fetchClanWar(id, channel) {
 		const cache = this.cached.get(id);
-		const data = await this.clanWar(cache.tag, id);
+		const data = await this.clanWar(cache.tag);
 		if (!data) return this.setTimer(id);
 		if (data.state === 'notInWar') return null;
 
@@ -306,7 +306,7 @@ class ClanWarEvent {
 		return array;
 	}
 
-	async clanWar(tag, id) {
+	async clanWar(tag) {
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar`, {
 			method: 'GET',
 			headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
