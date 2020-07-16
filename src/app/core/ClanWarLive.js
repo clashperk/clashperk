@@ -18,20 +18,10 @@ class ClanWarEvent {
 		this.cached = new Map();
 	}
 
-	exec(id, clan) {
+	exec(id) {
 		const cache = this.cached.get(id);
-		if (cache && cache.updated) {
-			if (new Date() >= new Date(cache.updated)) {
-				this.setCache(Date.now(), id);
-				return this.permissionsFor(id, cache, clan);
-			}
-
-			return null;
-		}
-
 		if (cache) {
-			this.setCache(Date.now(), id);
-			return this.permissionsFor(id, cache, clan);
+			return this.permissionsFor(id, cache);
 		}
 	}
 
@@ -39,7 +29,7 @@ class ClanWarEvent {
 		return new Promise(res => setTimeout(res, ms));
 	}
 
-	permissionsFor(id, cache, clan) {
+	permissionsFor(id, cache) {
 		const permissions = [
 			'SEND_MESSAGES',
 			'EMBED_LINKS',
@@ -51,19 +41,20 @@ class ClanWarEvent {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				return this.handleMessage(id, channel, clan);
+				return this.handleMessage(id, channel);
 			}
 		}
 	}
 
-	async handleMessage(id, channel, clan) {
-		return this.fetchClanWar(id, channel, clan);
+	async handleMessage(id, channel) {
+		return this.fetchClanWar(id, channel);
 	}
 
 	// For Normal Clan Wars
-	async fetchClanWar(id, channel, clan) {
-		const data = await this.clanWar(clan.tag, id);
-		if (!data) return null;
+	async fetchClanWar(id, channel) {
+		const cache = this.cached.get(id);
+		const data = await this.clanWar(cache.tag, id);
+		if (!data) return this.setTimer(id);
 		if (data.state === 'notInWar') return null;
 
 		const db = await mongodb.db('clashperk')
@@ -85,9 +76,9 @@ class ClanWarEvent {
 		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'preparation') return null;
 
 		const embed = new MessageEmbed()
-			.setTitle(`${clan.name} (${clan.tag})`)
+			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setURL(this.clanURL(data.clan.tag))
-			.setThumbnail(clan.badgeUrls.small);
+			.setThumbnail(data.clan.badgeUrls.small);
 		if (data.state === 'preparation') {
 			embed.setColor(null)
 				.setDescription([
@@ -193,7 +184,7 @@ class ClanWarEvent {
 				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
 					$set: {
 						clan_id: ObjectId(id),
-						tag: clan.tag,
+						tag: data.clan.tag,
 						opponent: data.opponent.tag,
 						state: data.state,
 						message: message.id,
@@ -223,28 +214,28 @@ class ClanWarEvent {
 				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
 					$set: {
 						clan_id: ObjectId(id),
-						tag: clan.tag,
+						tag: data.clan.tag,
 						opponent: data.opponent.tag,
 						ended: true,
 						state: data.state,
 						updatedAt: new Date()
 					}
 				});
-			return channel.send({ embed: this.missing(data, clan) });
+			return channel.send({ embed: this.missing(data) });
 		}
 	}
 
 	// Build Remaining/Missed Attack Embed
-	missing(data, clan) {
+	missing(data) {
 		const [OneRem, TwoRem] = [
 			data.clan.members.filter(m => m.attacks && m.attacks.length === 1),
 			data.clan.members.filter(m => !m.attacks)
 		];
 
 		const embed = new MessageEmbed()
-			.setTitle(`${clan.name} (${clan.tag})`)
-			.setThumbnail(clan.badgeUrls.small)
-			.setURL(this.clanURL(clan.tag));
+			.setTitle(`${data.clan.name} (${data.clan.tag})`)
+			.setThumbnail(data.clan.badgeUrls.small)
+			.setURL(this.clanURL(data.clan.tag));
 
 		if (TwoRem.length) {
 			embed.setDescription([
@@ -312,17 +303,18 @@ class ClanWarEvent {
 		}).catch(() => null);
 		if (!res) return null;
 		if (!res.ok) return null;
-		const sec = Math.floor(res.headers.raw()['cache-control'][0].split('=')[1]);
-		this.setCache(Date.now() + (sec * 1000), id);
+		const ms = Math.floor(res.headers.raw()['cache-control'][0].split('=')[1]) * 1000;
+		this.setTimer(id, ms);
 		return res.json().catch(() => null);
 	}
 
-	setCache(ms, id) {
+	setTimer(id, ms = 15 * 60 * 1000) {
 		const cache = this.cached.get(id);
+		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 		if (!this.client.patron.get(cache.guild, 'guild', false)) ms += (10 * 60 * 1000) + 1000;
 		else ms += 1000;
-		cache.updated = new Date(ms);
-		this.client.logger.debug(cache.updated, { label: 'TIMESTAMP' });
+		console.log([new Date(), new Date(Date.now() + ms)]);
+		cache.intervalId = setInterval(this.exec.bind(this), ms, id);
 		return this.cached.set(id, cache);
 	}
 
@@ -336,29 +328,44 @@ class ClanWarEvent {
 			if (this.client.guilds.cache.has(data.guild)) {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					guild: data.guild,
-					channel: data.channel
+					channel: data.channel,
+					tag: data.tag
 				});
 			}
 		});
+
+		for (const id of this.cached.keys()) {
+			await this.exec(id);
+			await this.delay(100);
+		}
 	}
 
 	async add(id) {
 		const data = await mongodb.db('clashperk')
 			.collection('clanwarlogs')
 			.findOne({ clan_id: ObjectId(id) });
-		const db = await mongodb.db('clashperk')
-			.collection('clanwars')
-			.findOne({ clan_id: ObjectId(id) });
 
 		if (!data) return null;
-		return this.cached.set(ObjectId(data.clan_id).toString(), {
+		this.cached.set(ObjectId(data.clan_id).toString(), {
 			guild: data.guild,
 			channel: data.channel,
-			updated: db && db.updatedAt ? new Date(db.updatedAt) : null
+			tag: data.tag
 		});
+
+		return this.exec(ObjectId(id).toString());
+	}
+
+	clear() {
+		for (const key of this.cached.keys()) {
+			const cache = this.cached.get(key);
+			if (cache && cache.intervalId) clearInterval(cache.intervalId);
+		}
+		return this.cached.clear();
 	}
 
 	delete(id) {
+		const cache = this.cached.get(id);
+		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 		return this.cached.delete(id);
 	}
 }

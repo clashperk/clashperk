@@ -240,15 +240,6 @@ class CacheHandler {
 		if (Object.keys($set).length) $update.$set = $set;
 		if (Object.keys($unset).length) $update.$unset = $unset;
 
-		// Clan War
-		if (clan.isWarLogPublic) {
-			await this.broadcast({
-				_id: key,
-				clan,
-				event: Modes.CLAN_WAR_LOG
-			});
-		}
-
 		// Last Online
 		await this.broadcast({
 			_id: key,
@@ -387,6 +378,7 @@ class CacheHandler {
 		this.clanLog.cached.clear();
 		this.activityLog.cached.clear();
 		this.clangamesLog.cached.clear();
+		this.clanwarLog.clear();
 
 		this.memberList = {};
 		return this.cached.clear();
