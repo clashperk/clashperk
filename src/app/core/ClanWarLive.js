@@ -107,17 +107,19 @@ class ClanWarEvent {
 					'**War Size**',
 					`${data.teamSize} vs ${data.teamSize}`,
 					'',
+					'**Time**',
+					`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`,
+					'',
 					'**War Stats**',
 					`${emoji.star} ${data.clan.stars} / ${data.opponent.stars}`,
-					`${emoji.fire} ${data.clan.destructionPercentage}% / ${data.opponent.destructionPercentage}%`,
+					`${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% / ${data.opponent.destructionPercentage.toFixed(2)}%`,
 					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
 				]);
-			embed.setTimestamp()
-				.setFooter(`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`);
+			embed.setTimestamp().setFooter('Last Updated');
 		}
 
 		if (data.state === 'warEnded') {
-			embed.setColor(this.result(data.clan, data.opponent) ? color.green : color.red)
+			embed.setColor(this.result(data.clan, data.opponent))
 				.setDescription([
 					'**War Against**',
 					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
@@ -269,10 +271,12 @@ class ClanWarEvent {
 
 	// Decides War Result
 	result(clan, opponent) {
+		const tied = clan.stars === opponent.stars && clan.destructionPercentage === opponent.destructionPercentage;
+		if (tied) return null;
 		const stars = clan.stars !== opponent.stars && clan.stars > opponent.stars;
 		const destr = clan.stars === opponent.stars && clan.destructionPercentage > opponent.destructionPercentage;
-		if (stars || destr) return true;
-		return false;
+		if (stars || destr) return color.green;
+		return color.red;
 	}
 
 	// Builds Clan Roster
