@@ -105,7 +105,7 @@ class CacheHandler {
 				[Modes.CLAN_GAMES_LOG]: this.clangamesLog,
 				[Modes.CLAN_WAR_LOG]: this.clanwarLog
 			}[data.mode];
-			await Op.init(_id);
+			await Op.add(_id);
 		} else {
 			await this.clanLog.add(id);
 			await this.clanwarLog.add(id);
