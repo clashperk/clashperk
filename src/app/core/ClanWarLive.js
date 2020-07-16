@@ -317,7 +317,7 @@ class ClanWarEvent {
 					`${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% / ${data.opponent.destructionPercentage.toFixed(2)}%`,
 					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
 				]);
-			embed.setFooter(`Ended ${moment.duration(Date.now() - new Date(moment(data.endTime).toDate()).getTime()).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`);
+			embed.setFooter('Ended').setTimestamp(new Date(moment(data.endTime).toDate()));
 		}
 
 		embed.setDescription([
