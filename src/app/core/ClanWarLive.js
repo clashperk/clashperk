@@ -304,7 +304,7 @@ class ClanWarEvent {
 		if (!res) return null;
 		if (!res.ok) return null;
 		const ms = Math.floor(res.headers.raw()['cache-control'][0].split('=')[1]) * 1000;
-		console.log(ms / 1000);
+		this.client.logger.info(ms / 1000);
 		this.setTimer(id, ms);
 		return res.json().catch(() => null);
 	}
