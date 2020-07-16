@@ -9,8 +9,8 @@ const ms = require('ms');
 const color = {
 	red: 15158332,
 	green: 3066993,
-	inWar: 16745216,
-	prep: ''
+	inWar: 16345172,
+	prep: 16745216
 };
 
 class ClanWarEvent {
