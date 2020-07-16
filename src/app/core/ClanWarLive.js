@@ -163,16 +163,6 @@ class ClanWarEvent {
 						updatedAt: new Date()
 					}
 				}, { upsert: true });
-
-			return message;
-		}
-
-		// overwrite the timer for last 1 hour
-		if (data.state === 'inWar') {
-			const cache = this.cached.get(id);
-			const endsIn = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
-			console.log(require('ms')(endsIn), endsIn <= 36e5);
-			// if (endsIn <= 36e5) this.overwriteTimer(id, cache.ms);
 		}
 
 		if (data.state === 'inWar') {
@@ -201,8 +191,6 @@ class ClanWarEvent {
 						updatedAt: new Date()
 					}
 				}, { upsert: true });
-
-			return message;
 		}
 
 		if (data.state === 'warEnded') {
@@ -231,7 +219,14 @@ class ClanWarEvent {
 						updatedAt: new Date()
 					}
 				});
-			return channel.send({ embed: this.missing(data) });
+			await channel.send({ embed: this.missing(data) });
+		}
+
+		// overwrite the timer for last 1 hour
+		if (data.state === 'inWar') {
+			const endsIn = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
+			console.log(require('ms')(endsIn), endsIn <= 36e5, data.ms / 1000);
+			if (endsIn <= 36e5) this.setTimer(id, data.ms, false);
 		}
 	}
 
@@ -317,26 +312,24 @@ class ClanWarEvent {
 		if (!res.ok) return null;
 		const ms = Math.floor(res.headers.raw()['cache-control'][0].split('=')[1]) * 1000;
 		this.client.logger.info(`[${tag}] ${ms / 1000}`);
-		this.setTimer(id, ms);
-		return res.json().catch(() => null);
-	}
-
-	// overwrite cache-control header
-	overwriteTimer(id, ms) {
-		const cache = this.cached.get(id);
-		cache.ms = ms;
-		if (cache && cache.intervalId) clearInterval(cache.intervalId);
-		cache.intervalId = setInterval(this.exec.bind(this), ms, id);
-		return this.cached.set(id, cache);
+		const data = await res.json().catch(() => null);
+		if (!data) return null;
+		return Object.assign({ ms }, data);
 	}
 
 	// set timer according to cache-control header
-	setTimer(id, ms = 9e5) {
+	setTimer(id, ms = 9e5, filter = true) {
 		const cache = this.cached.get(id);
-		cache.ms = ms;
 		if (cache && cache.intervalId) clearInterval(cache.intervalId);
-		if (!this.client.patron.get(cache.guild, 'guild', false)) ms += 601e3;
+
+		if (filter) {
+			if (!this.client.patron.get(cache.guild, 'guild', false)) ms += 6e5;
+			else ms += 2000;
+		}
+
+		if (ms < 2000) ms += 6e5;
 		else ms += 2000;
+
 		cache.intervalId = setInterval(this.exec.bind(this), ms, id);
 		return this.cached.set(id, cache);
 	}
