@@ -326,11 +326,7 @@ class ClanWarEvent {
 		const cache = this.cached.get(id);
 		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 
-		if (filter) {
-			if (!this.client.patron.get(cache.guild, 'guild', false)) ms += 6e5;
-			else ms += 2000;
-		}
-
+		if (filter && !this.client.patron.get(cache.guild, 'guild', false)) ms += 6e5;
 		if (ms < 2000) ms += 6e5;
 		else ms += 2000;
 
