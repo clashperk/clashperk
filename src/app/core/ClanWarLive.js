@@ -6,6 +6,13 @@ const fetch = require('node-fetch');
 const moment = require('moment');
 const ms = require('ms');
 
+const color = {
+	red: 15158332,
+	green: 3066993,
+	inWar: 16745216,
+	prep: ''
+};
+
 class ClanWarEvent {
 	constructor(client) {
 		this.client = client;
@@ -254,7 +261,6 @@ class ClanWarEvent {
 
 		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'preparation') return null;
 
-		const time = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
 		const embed = new MessageEmbed()
 			.setTitle(`${clan.name} (${clan.tag})`)
 			.setURL(this.clanURL(data.clan.tag))
@@ -275,7 +281,7 @@ class ClanWarEvent {
 		}
 
 		if (data.state === 'inWar') {
-			embed.setColor(null)
+			embed.setColor(color.inWar)
 				.setDescription([
 					'**War Against**',
 					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
@@ -295,7 +301,7 @@ class ClanWarEvent {
 		}
 
 		if (data.state === 'warEnded') {
-			embed.setColor(null)
+			embed.setColor(this.result(data.clan, data.opponent) ? color.green : color.red)
 				.setDescription([
 					'**War Against**',
 					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
