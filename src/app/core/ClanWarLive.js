@@ -8,7 +8,7 @@ const moment = require('moment');
 const color = {
 	red: 15158332,
 	green: 3066993,
-	inWar: 16345172,
+	war: 16345172,
 	prep: 16745216
 };
 
@@ -80,7 +80,7 @@ class ClanWarEvent {
 			.setURL(this.clanURL(data.clan.tag))
 			.setThumbnail(data.clan.badgeUrls.small);
 		if (data.state === 'preparation') {
-			embed.setColor(null)
+			embed.setColor(color.prep)
 				.setDescription([
 					'**War Against**',
 					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
@@ -96,7 +96,7 @@ class ClanWarEvent {
 		}
 
 		if (data.state === 'inWar') {
-			embed.setColor(color.inWar)
+			embed.setColor(color.war)
 				.setDescription([
 					'**War Against**',
 					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
@@ -163,6 +163,13 @@ class ClanWarEvent {
 				}, { upsert: true });
 
 			return message;
+		}
+
+		// overwrite the timer for last 1 hour
+		if (data.state === 'inWar') {
+			const cache = this.cached.get(id);
+			const endsIn = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
+			if (endsIn <= 36e5) this.overwriteTimer(id, cache.ms);
 		}
 
 		if (data.state === 'inWar') {
@@ -309,10 +316,21 @@ class ClanWarEvent {
 		return res.json().catch(() => null);
 	}
 
-	setTimer(id, ms = 15 * 60 * 1000) {
+	// overwrite cache-control header
+	overwriteTimer(id, ms) {
 		const cache = this.cached.get(id);
+		cache.ms = ms;
 		if (cache && cache.intervalId) clearInterval(cache.intervalId);
-		if (!this.client.patron.get(cache.guild, 'guild', false)) ms += (10 * 60 * 1000) + 1000;
+		cache.intervalId = setInterval(this.exec.bind(this), ms, id);
+		return this.cached.set(id, cache);
+	}
+
+	// set timer according to cache-control header
+	setTimer(id, ms = 9e5) {
+		const cache = this.cached.get(id);
+		cache.ms = ms;
+		if (cache && cache.intervalId) clearInterval(cache.intervalId);
+		if (!this.client.patron.get(cache.guild, 'guild', false)) ms += 601e3;
 		else ms += 1000;
 		cache.intervalId = setInterval(this.exec.bind(this), ms, id);
 		return this.cached.set(id, cache);
