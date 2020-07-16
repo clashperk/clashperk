@@ -227,6 +227,7 @@ class ClanWarEvent {
 			const endsIn = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
 			console.log(require('ms')(endsIn), endsIn <= 36e5, data.ms / 1000);
 			if (endsIn <= 36e5) this.setTimer(id, data.ms, false);
+			else this.setTimer(id, data.ms, true);
 		} else {
 			console.log(data.ms, data.clan.tag);
 			this.setTimer(id, data.ms, true);
