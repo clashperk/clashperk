@@ -244,10 +244,16 @@ class ClanWarEvent {
 		const embed = new MessageEmbed()
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setThumbnail(data.clan.badgeUrls.small)
-			.setURL(this.clanURL(data.clan.tag));
+			.setURL(this.clanURL(data.clan.tag))
+			.setDescription([
+				'**War Against**',
+				`[${data.opponent.name}](${this.clanURL(data.opponent.tag)})`
+			]);
 
 		if (TwoRem.length) {
 			embed.setDescription([
+				embed.description,
+				'',
 				`**2 ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
 				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`),
 				''
@@ -256,7 +262,7 @@ class ClanWarEvent {
 
 		if (OneRem.length) {
 			embed.setDescription([
-				embed.description || '',
+				embed.description,
 				`**1 ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
 				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`)
 			]);
