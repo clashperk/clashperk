@@ -304,6 +304,7 @@ class ClanWarEvent {
 		if (!res) return null;
 		if (!res.ok) return null;
 		const ms = Math.floor(res.headers.raw()['cache-control'][0].split('=')[1]) * 1000;
+		console.log(ms / 1000);
 		this.setTimer(id, ms);
 		return res.json().catch(() => null);
 	}
@@ -313,7 +314,6 @@ class ClanWarEvent {
 		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 		if (!this.client.patron.get(cache.guild, 'guild', false)) ms += (10 * 60 * 1000) + 1000;
 		else ms += 1000;
-		console.log([new Date(), new Date(Date.now() + ms)]);
 		cache.intervalId = setInterval(this.exec.bind(this), ms, id);
 		return this.cached.set(id, cache);
 	}
