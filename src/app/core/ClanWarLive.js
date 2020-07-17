@@ -161,6 +161,7 @@ class ClanWarEvent {
 					.collection('clanwars')
 					.findOneAndUpdate({ clan_id: ObjectId(id) }, {
 						$set: {
+							clan_id: ObjectId(id),
 							opponent: data.opponent.tag,
 							posted: true,
 							state: data.state,
