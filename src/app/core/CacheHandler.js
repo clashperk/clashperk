@@ -175,7 +175,7 @@ class CacheHandler {
 			event: Modes.DONATION_LOG
 		};
 
-		const $set = {};
+		const [$set, $inc] = [{}, {}];
 		for (const member of clan.memberList) {
 			data.clan = {
 				name: clan.name,
@@ -220,11 +220,13 @@ class CacheHandler {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
 					$set[`members.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
+					$inc[`members.${member.tag}.count`] = 1;
 				}
 			} else if (OldMemberSet.size && !OldMemberSet.has(member.tag)) {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
 				$set[`members.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
+				$inc[`members.${member.tag}.count`] = 1;
 			}
 		}
 
@@ -238,6 +240,7 @@ class CacheHandler {
 
 		const $update = {};
 		if (Object.keys($set).length) $update.$set = $set;
+		if (Object.keys($inc).length) $update.$inc = $inc;
 		if (Object.keys($unset).length) $update.$unset = $unset;
 
 		// Last Online
