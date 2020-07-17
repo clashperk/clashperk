@@ -4,6 +4,7 @@ const { MessageEmbed } = require('discord.js');
 const { ObjectId } = require('mongodb');
 const fetch = require('node-fetch');
 const moment = require('moment');
+const ms = require('ms');
 
 const color = {
 	red: 15158332,
@@ -73,7 +74,11 @@ class ClanWarEvent {
 				}, { upsert: true });
 		}
 
-		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'preparation') return null;
+		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'preparation') {
+			const startsIn = new Date(moment(data.startTime).toDate()).getTime() - Date.now();
+			if (startsIn <= 36e5) return this.setTimer(id, data.ms, false);
+			return this.setTimer(id, 36e5, false);
+		}
 
 		const embed = new MessageEmbed()
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
@@ -151,18 +156,19 @@ class ClanWarEvent {
 
 		if (data.state === 'preparation') {
 			const message = await channel.send({ embed }).catch(() => null);
-			if (!message) return null;
-			await mongodb.db('clashperk')
-				.collection('clanwars')
-				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
-					$set: {
-						opponent: data.opponent.tag,
-						posted: true,
-						state: data.state,
-						message: message.id,
-						updatedAt: new Date()
-					}
-				}, { upsert: true });
+			if (message) {
+				await mongodb.db('clashperk')
+					.collection('clanwars')
+					.findOneAndUpdate({ clan_id: ObjectId(id) }, {
+						$set: {
+							opponent: data.opponent.tag,
+							posted: true,
+							state: data.state,
+							message: message.id,
+							updatedAt: new Date()
+						}
+					}, { upsert: true });
+			}
 		}
 
 		if (data.state === 'inWar') {
