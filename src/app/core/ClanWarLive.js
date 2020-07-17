@@ -163,6 +163,7 @@ class ClanWarEvent {
 						$set: {
 							clan_id: ObjectId(id),
 							opponent: data.opponent.tag,
+							tag: data.clan.tag,
 							posted: true,
 							state: data.state,
 							message: message.id,
