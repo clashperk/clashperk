@@ -25,7 +25,7 @@ class UnlinkCommand extends Command {
 					if (resolved.status === 404) {
 						return Flag.fail(resolved.embed.description);
 					}
-					await message.util.send({ embed: resolved.embed });
+					await message.channel.send({ embed: resolved.embed });
 					return Flag.cancel();
 				}
 				return resolved;

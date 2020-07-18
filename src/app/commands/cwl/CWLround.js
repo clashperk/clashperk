@@ -43,7 +43,7 @@ class CWLRoundComamnd extends Command {
 			type: async (message, args) => {
 				const resolved = await Resolver.resolve(message, args);
 				if (resolved.status !== 200) {
-					await message.util.send({ embed: resolved.embed });
+					await message.channel.send({ embed: resolved.embed });
 					return Flag.cancel();
 				}
 				return resolved;
