@@ -88,7 +88,7 @@ class ClanWarEvent {
 			embed.setColor(color.prep)
 				.setDescription([
 					'**War Against**',
-					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
+					`**[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 					'',
 					'**War State**',
 					'Preparation Day',
@@ -97,14 +97,14 @@ class ClanWarEvent {
 					`${data.teamSize} vs ${data.teamSize}`
 				]);
 			embed.setTimestamp(new Date(moment(data.startTime).toDate()))
-				.setFooter(`Starts in ${moment.duration(new Date(moment(data.startTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`);
+				.setFooter('Starting');
 		}
 
 		if (data.state === 'inWar') {
 			embed.setColor(color.war)
 				.setDescription([
 					'**War Against**',
-					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
+					`**[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 					'',
 					'**War State**',
 					'Battle Day',
@@ -127,7 +127,7 @@ class ClanWarEvent {
 			embed.setColor(this.result(data.clan, data.opponent))
 				.setDescription([
 					'**War Against**',
-					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
+					`**[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 					'',
 					'**War State**',
 					'War Ended',
