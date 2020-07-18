@@ -14,7 +14,7 @@
   "dependencies": {
     "@sentry/node": "^5.18.1",
     "chalk": "^4.1.0",
-    "clashofclans.js": "^1.1.8",
+    "clashofclans.js": "github:clashperk/clashofclans.js",
     "common-tags": "^1.8.0",
     "discord-akairo": "github:clashperk/discord-akairo",
     "discord.js": "^12.2.0",
@@ -29,8 +29,8 @@
     "shelljs": "^0.8.4"
   },
   "devDependencies": {
-		"pm2": "^4.4.0",
     "eslint": "^7.3.0",
-    "eslint-config-mars": "^1.0.5"
+    "eslint-config-mars": "^1.0.5",
+    "pm2": "^4.4.0"
   }
 }
