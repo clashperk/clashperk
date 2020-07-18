@@ -227,7 +227,7 @@ class ClanWarEvent {
 						updatedAt: new Date()
 					}
 				});
-			await channel.send({ embed: this.missing(data) });
+			if (this.missing(data)) await channel.send({ embed: this.missing(data) });
 		}
 
 		// overwrite the timer for last 1 hour
@@ -276,7 +276,8 @@ class ClanWarEvent {
 			]);
 		}
 
-		return embed;
+		if (OneRem.length || TwoRem.length) return embed;
+		return null;
 	}
 
 	clanURL(tag) {
