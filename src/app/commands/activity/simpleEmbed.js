@@ -25,9 +25,6 @@ class ClanEmbedCommand extends Command {
 			type: async (message, args) => {
 				const resolved = await Resolver.clan(args);
 				if (resolved.status !== 200) {
-					if (resolved.status === 404) {
-						return Flag.fail(resolved.embed.description);
-					}
 					await message.channel.send({ embed: resolved.embed });
 					return Flag.cancel();
 				}
