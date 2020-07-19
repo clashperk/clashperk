@@ -71,7 +71,7 @@ class Reslover {
 	}
 
 	static async player(tag) {
-		const data = await client.fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(this.tag(tag))}`, {
+		const data = await client.fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(this.format(tag))}`, {
 			token: process.env.DEVELOPER_TOKEN
 		}).catch(() => null);
 		const embed = new MessageEmbed()
@@ -83,7 +83,7 @@ class Reslover {
 	}
 
 	static async clan(tag) {
-		const data = await client.fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(this.tag(tag))}`, {
+		const data = await client.fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(this.format(tag))}`, {
 			token: process.env.DEVELOPER_TOKEN
 		}).catch(() => null);
 		const embed = new MessageEmbed()
