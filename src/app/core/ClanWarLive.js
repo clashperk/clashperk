@@ -59,7 +59,7 @@ class ClanWarEvent {
 		const cache = this.cached.get(id);
 		const data = await this.clanWar(cache.tag);
 		if (!data) return this.setTimer(id);
-		if (data.state === 'notInWar') return null;
+		if (data.state === 'notInWar') return this.setTimer(id);
 
 		const db = await mongodb.db('clashperk')
 			.collection('clanwars')
@@ -329,7 +329,7 @@ class ClanWarEvent {
 		}).catch(() => null);
 		if (!data) return null;
 		if (!data.ok) return null;
-		this.client.logger.info(`[${data.clan.name} ${data.clan.tag}] ${data.maxAge}`);
+		this.client.logger.info(`[${tag}] ${data.maxAge}`);
 		return data;
 	}
 

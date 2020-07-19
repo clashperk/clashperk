@@ -46,8 +46,8 @@ class CurrentWarCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
-			const isCWL = await this.client.coc.clanWarLeague(data.tag).catch(() => null);
-			if (isCWL) {
+			const res = await this.client.coc.clanWarLeague(data.tag).catch(() => null);
+			if (res && res.ok) {
 				embed.setDescription(`Clan is in CWL. Run \`${this.handler.prefix(message)}cwl\` to get CWL commands.`);
 			} else {
 				embed.setDescription('Private WarLog');
