@@ -1,9 +1,12 @@
-const fetch = require('node-fetch');
-const { mongodb } = require('./Database');
 const { status } = require('../util/constants');
 const { MessageEmbed } = require('discord.js');
+const { Client } = require('clashofclans.js');
 const TOKENS = process.env.$KEYS.split(',');
-const cached = new Map();
+const { mongodb } = require('./Database');
+const client = new Client({
+	timeout: 3000,
+	token: process.env.DEVELOPER_TOKEN
+});
 
 class Reslover {
 	static async resolve(message, args, boolean = false) {
@@ -68,70 +71,46 @@ class Reslover {
 	}
 
 	static async player(tag) {
-		const res = await fetch(`https://api.clashofclans.com/v1/players/%23${this.format(tag)}`, {
-			method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+		const data = await client.fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(this.tag(tag))}`, {
+			token: process.env.DEVELOPER_TOKEN
 		}).catch(() => null);
-
 		const embed = new MessageEmbed()
 			.setColor(0xf30c11)
 			.setAuthor('Error');
-
-		if (!res) return { status: 504, embed: embed.setDescription(status(504)) };
-		if (!res.ok) return { status: res.status || 504, embed: embed.setDescription(status(res.status || 504)) };
-		const data = await res.json();
-		return this.assign(data, res);
+		if (!data) return { status: 504, embed: embed.setDescription(status(504)) };
+		if (!data.ok) return { status: data.status, embed: embed.setDescription(status(data.status)) };
+		return data;
 	}
 
 	static async clan(tag) {
-		const res = await fetch(`https://api.clashofclans.com/v1/clans/%23${this.format(tag)}`, {
-			method: 'GET', timeout: 3000, headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+		const data = await client.fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(this.tag(tag))}`, {
+			token: process.env.DEVELOPER_TOKEN
 		}).catch(() => null);
-
 		const embed = new MessageEmbed()
 			.setColor(0xf30c11)
 			.setAuthor('Error');
-
-		if (!res) return { status: 504, embed: embed.setDescription(status(504)) };
-		if (!res.ok) return { status: res.status || 504, embed: embed.setDescription(status(res.status || 504)) };
-		const data = await res.json();
-		return this.assign(data, res);
+		if (!data) return { status: 504, embed: embed.setDescription(status(504)) };
+		if (!data.ok) return { status: data.status, embed: embed.setDescription(status(data.status)) };
+		return data;
 	}
 
 	static format(tag) {
-		return tag.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0');
-	}
-
-	static assign(data, res) {
-		return Object.assign({ status: 200, 'max-age': Math.floor(res.headers.raw()['cache-control'][0].split('=')[1]) }, data);
+		return `#${tag.replace(/#/g, '').replace(/O|o/g, '0')}`;
 	}
 
 	static async fetch(data) {
-		// if (cached.has(data.tag)) return cached.get(data.tag).data;
 		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
 		const requests = data.memberList.map((m, i) => {
 			const req = {
 				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
 				option: {
-					method: 'GET',
-					headers: { accept: 'application/json', authorization: `Bearer ${KEYS[i % KEYS.length]}` }
+					token: KEYS[i % KEYS.length]
 				}
 			};
 			return req;
 		});
 
-		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));
-		return Promise.all(responses.map(res => res.json()));
-		// this.set(data.tag, fetched, data['max-age']);
-	}
-
-	static set(tag, fetched, time) {
-		return cached.set(tag, {
-			data: fetched,
-			timer: setTimeout(() => {
-				clearTimeout(tag);
-				cached.delete(tag);
-			}, time * 1000)
-		});
+		return Promise.all(requests.map(req => client.fetch(req.url, req.option)));
 	}
 
 	static verifyEmbed(data, code) {
