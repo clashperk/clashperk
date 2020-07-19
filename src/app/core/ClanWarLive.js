@@ -1,10 +1,13 @@
 const { townHallEmoji, emoji, whiteNum, blueNum } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
+const { Client } = require('clashofclans.js');
 const { ObjectId } = require('mongodb');
-const fetch = require('node-fetch');
 const moment = require('moment');
-const ms = require('ms');
+const client = new Client({
+	timeout: 3000,
+	token: process.env.$KEY
+});
 
 const color = {
 	red: 15158332,
@@ -76,7 +79,7 @@ class ClanWarEvent {
 
 		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'preparation') {
 			const startsIn = new Date(moment(data.startTime).toDate()).getTime() - Date.now();
-			if (startsIn <= 36e5) return this.setTimer(id, data.ms, false);
+			if (startsIn <= 36e5) return this.setTimer(id, data.maxAge * 1000, false);
 			return this.setTimer(id, 36e5, false);
 		}
 
@@ -233,12 +236,10 @@ class ClanWarEvent {
 		// overwrite the timer for last 1 hour
 		if (data.state === 'inWar') {
 			const endsIn = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
-			console.log(require('ms')(endsIn), endsIn <= 36e5, data.ms / 1000);
-			if (endsIn <= 36e5) this.setTimer(id, data.ms, false);
-			else this.setTimer(id, data.ms, true);
+			if (endsIn <= 36e5) this.setTimer(id, data.maxAge * 1000, false);
+			else this.setTimer(id, data.maxAge * 1000, true);
 		} else {
-			console.log(data.ms / 1000, data.clan.tag);
-			this.setTimer(id, data.ms, true);
+			this.setTimer(id, data.maxAge * 1000, true);
 		}
 	}
 
@@ -323,17 +324,13 @@ class ClanWarEvent {
 	}
 
 	async clanWar(tag) {
-		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar`, {
-			method: 'GET',
-			headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
+		const data = await client.fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar`, {
+			token: process.env.$KEY
 		}).catch(() => null);
-		if (!res) return null;
-		if (!res.ok) return null;
-		const ms = Math.floor(res.headers.raw()['cache-control'][0].split('=')[1]) * 1000;
-		this.client.logger.info(`[${tag}] ${ms / 1000}`);
-		const data = await res.json().catch(() => null);
 		if (!data) return null;
-		return Object.assign({ ms }, data);
+		if (!data.ok) return null;
+		this.client.logger.info(`[${data.name} ${data.tag}] ${data.maxAge}`);
+		return data;
 	}
 
 	// set timer according to cache-control header
