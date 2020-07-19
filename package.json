@@ -14,9 +14,9 @@
   "dependencies": {
     "@sentry/node": "^5.18.1",
     "chalk": "^4.1.0",
-    "clashofclans.js": "github:clashperk/clashofclans.js",
+    "clashofclans.js": "clashperk/clashofclans.js",
     "common-tags": "^1.8.0",
-    "discord-akairo": "github:clashperk/discord-akairo",
+    "discord-akairo": "clashperk/discord-akairo",
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
     "exceljs": "^4.1.0",
