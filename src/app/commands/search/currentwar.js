@@ -61,8 +61,8 @@ class CurrentWarCommand extends Command {
 		}).then(res => res.json());
 
 		if (body.state === 'notInWar') {
-			const isCWL = await this.client.coc.clanWarLeague(data.tag).catch(() => null);
-			if (isCWL) {
+			const res = await this.client.coc.clanWarLeague(data.tag).catch(() => null);
+			if (res && res.ok) {
 				embed.setDescription(`Clan is in CWL. Run \`${this.handler.prefix(message)}cwl\` to get CWL commands.`);
 			} else {
 				embed.setDescription('Not in War');
