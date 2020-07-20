@@ -68,6 +68,8 @@ class SetNickNameCommand extends Command {
 			name = `${player.name} ${txt}`;
 		} else if (txt.length && txt.trim().endsWith('|')) {
 			name = `${txt} ${player.name}`;
+		} else {
+			name = `${player.name}`;
 		}
 
 		if (name.length > 31) {
