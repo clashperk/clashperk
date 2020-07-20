@@ -23,6 +23,7 @@ class WarLogCommand extends Command {
 	*args() {
 		const data = yield {
 			type: async (message, args) => {
+				if (!args) return null;
 				const resolved = await Resolver.clan(args);
 				if (resolved.status !== 200) {
 					await message.channel.send({ embed: resolved.embed });
