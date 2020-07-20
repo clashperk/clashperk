@@ -45,16 +45,16 @@ class SetNickNameCommand extends Command {
 			}
 		};
 
-		const prefix = yield {
+		const txt = yield {
 			type: 'string',
 			match: 'rest',
 			default: ''
 		};
 
-		return { prefix, member, player };
+		return { txt, member, player };
 	}
 
-	async exec(message, { prefix, member, player }) {
+	async exec(message, { txt, member, player }) {
 		if (message.guild.me.roles.highest.position <= member.roles.highest.position || member.id === message.guild.ownerID) {
 			const embed = this.client.util.embed()
 				.setDescription([
@@ -63,7 +63,9 @@ class SetNickNameCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const name = [prefix, player.name].filter(a => a.length).join(' ');
+		const name = [player.name];
+		if (txt.length && txt.trim().startsWith('|')) name.push(txt);
+		else if (txt.length && txt.trim().endsWith('|')) name.unshift(txt);
 
 		if (name.length > 31) {
 			const embed = this.client.util.embed()
@@ -73,7 +75,7 @@ class SetNickNameCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		await member.setNickname(name, `Nickname set by ${message.author.tag}`);
+		await member.setNickname(name.join(' '), `Nickname set by ${message.author.tag}`);
 
 		const embed = this.client.util.embed()
 			.setDescription([
