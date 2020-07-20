@@ -76,7 +76,7 @@ class MembersCommand extends Command {
 				name: m.name,
 				tag: m.tag,
 				townHallLevel: m.townHallLevel,
-				heroes: m.heroes,
+				heroes: m.heroes ? m.heroes.filter(a => a.village === 'home') : [],
 				league: m.league ? m.league.id : 29000000
 			};
 			return member;
