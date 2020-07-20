@@ -7,7 +7,7 @@ class SetNickNameCommand extends Command {
 			aliases: ['setnick', 'nick'],
 			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
-			userPermissions: ['MANAGE_GUILD'],
+			userPermissions: ['MANAGE_NICKNAMES'],
 			description: {
 				content: 'Sets nickname of a member',
 				usage: '<@user> <playerTag> [prefix]',
