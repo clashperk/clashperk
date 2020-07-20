@@ -21,6 +21,9 @@ class SetNickNameCommand extends Command {
 				usage: '<@user> <PlayerTag> [...extra]',
 				examples: ['@Suvajit #9Q92C8R20', '@Suvajit #9Q92C8R20 AH |', '@Suvajit #9Q92C8R20 | AH'],
 				image: {
+					text: [
+						'**More Examples**'
+					],
 					url: 'https://i.imgur.com/rrAK4uj.png'
 				}
 			}
