@@ -4,7 +4,7 @@ const Resolver = require('../../struct/Resolver');
 class SetNickNameCommand extends Command {
 	constructor() {
 		super('setnick', {
-			aliases: ['setnick', 'nick'],
+			aliases: ['nick', 'setnick'],
 			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			userPermissions: ['MANAGE_NICKNAMES'],
@@ -12,8 +12,15 @@ class SetNickNameCommand extends Command {
 				content: [
 					'Sets nickname of a member in discord.'
 				],
-				usage: '<@user> <PlayerTag> [prefix/suffix]',
-				examples: ['@Suvajit #9Q92C8R20', '@Suvajit #9Q92C8R20 AH |', '@Suvajit #9Q92C8R20 | AH']
+				usage: '<@user> <PlayerTag> [extra]',
+				examples: ['@Suvajit #9Q92C8R20', '@Suvajit #9Q92C8R20 AH |', '@Suvajit #9Q92C8R20 | AH'],
+				image: {
+					text: [
+						'**More Examples**',
+						'With Prefix and Suffix'
+					],
+					url: 'https://i.imgur.com/rrAK4uj.png'
+				}
 			}
 		});
 	}
