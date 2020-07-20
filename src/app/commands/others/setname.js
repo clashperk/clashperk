@@ -4,8 +4,8 @@ const Resolver = require('../../struct/Resolver');
 class SetNickNameCommand extends Command {
 	constructor() {
 		super('setnick', {
-			aliases: ['setnick'],
-			category: 'patron',
+			aliases: ['setnick', 'nick'],
+			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
