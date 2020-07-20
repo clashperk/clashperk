@@ -9,9 +9,11 @@ class SetNickNameCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			userPermissions: ['MANAGE_NICKNAMES'],
 			description: {
-				content: 'Sets nickname of a member',
-				usage: '<@user> <playerTag> [prefix]',
-				examples: ['@Suvajit #9Q92C8R20', '@Suvajit #9Q92C8R20 Air Hounds |']
+				content: [
+					'Sets nickname of a member in discord.'
+				],
+				usage: '<@user> <PlayerTag> [prefix/suffix]',
+				examples: ['@Suvajit #9Q92C8R20', '@Suvajit #9Q92C8R20 AH |', '@Suvajit #9Q92C8R20 | AH']
 			}
 		});
 	}
