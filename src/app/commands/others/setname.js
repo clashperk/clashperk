@@ -63,13 +63,11 @@ class SetNickNameCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const name = new Array(2);
+		let name = '';
 		if (txt.length && txt.trim().startsWith('|')) {
-			name[0] = player.name;
-			name[1] = txt;
+			name = `${player.name} ${txt}`;
 		} else if (txt.length && txt.trim().endsWith('|')) {
-			name[0] = txt;
-			name[1] = player.name;
+			name = `${txt} ${player.name}`;
 		}
 
 		if (name.length > 31) {
@@ -80,7 +78,7 @@ class SetNickNameCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		await member.setNickname(name.join(' '), `Nickname set by ${message.author.tag}`);
+		await member.setNickname(name, `Nickname set by ${message.author.tag}`);
 
 		const embed = this.client.util.embed()
 			.setDescription([
