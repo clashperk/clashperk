@@ -329,7 +329,7 @@ class ClanWarEvent {
 		}).catch(() => null);
 		if (!data) return null;
 		if (!data.ok) return null;
-		this.client.logger.info(`[${tag}] ${data.maxAge}`);
+		this.client.logger.info(`maxAge ${data.maxAge}`, { label: tag });
 		return data;
 	}
 
