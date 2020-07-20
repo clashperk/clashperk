@@ -10,7 +10,8 @@ class SetNickNameCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: 'Sets nickname of a member',
-				usage: '<user> <playerTag> <prefix>'
+				usage: '<@user> <playerTag> [prefix]',
+				examples: ['@Suvajit #9Q92C8R20', '@Suvajit #9Q92C8R20 Air Hounds |']
 			}
 		});
 	}
@@ -46,7 +47,8 @@ class SetNickNameCommand extends Command {
 
 		const prefix = yield {
 			type: 'string',
-			match: 'rest'
+			match: 'rest',
+			default: ''
 		};
 
 		return { prefix, member, player };
@@ -61,7 +63,7 @@ class SetNickNameCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const name = [prefix, player.name].join(' ');
+		const name = [prefix, player.name].filter(a => a.length).join(' ');
 
 		if (name.length > 31) {
 			const embed = this.client.util.embed()
