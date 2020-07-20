@@ -10,9 +10,15 @@ class SetNickNameCommand extends Command {
 			userPermissions: ['MANAGE_NICKNAMES'],
 			description: {
 				content: [
-					'Sets nickname of a member in discord.'
+					'Sets nickname of a member in discord.',
+					'',
+					'**Extra**',
+					'Must include "|" to add a prefix or suffix of the nickname.',
+					'Prefix ends with "|" and Suffix starts with "|"',
+					'',
+					'For additional `[...extra]` usage refer to the examples below.'
 				],
-				usage: '<@user> <PlayerTag> [extra]',
+				usage: '<@user> <PlayerTag> [...extra]',
 				examples: ['@Suvajit #9Q92C8R20', '@Suvajit #9Q92C8R20 AH |', '@Suvajit #9Q92C8R20 | AH'],
 				image: {
 					text: [
