@@ -5,7 +5,7 @@ class SetNickNameCommand extends Command {
 	constructor() {
 		super('setnick', {
 			aliases: ['nick', 'setnick'],
-			category: 'hidden',
+			category: 'other',
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			userPermissions: ['MANAGE_NICKNAMES'],
 			description: {
