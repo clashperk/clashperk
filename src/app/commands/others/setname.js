@@ -63,9 +63,14 @@ class SetNickNameCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const name = [player.name];
-		if (txt.length && txt.trim().startsWith('|')) name.push(txt);
-		else if (txt.length && txt.trim().endsWith('|')) name.unshift(txt);
+		const name = new Array(2);
+		if (txt.length && txt.trim().startsWith('|')) {
+			name[0] = player.name;
+			name[1] = txt;
+		} else if (txt.length && txt.trim().endsWith('|')) {
+			name[0] = txt;
+			name[1] = player.name;
+		}
 
 		if (name.length > 31) {
 			const embed = this.client.util.embed()
