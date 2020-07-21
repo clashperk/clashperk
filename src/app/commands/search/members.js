@@ -96,30 +96,69 @@ class MembersCommand extends Command {
 		const header = stripIndent(`${emoji.trophy} **\`\u200eTH ${'TAG'.padEnd(10, ' ')} ${'NAME'.padEnd(12, '\u2002')}\`**`);
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
-				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${Util.escapeInlineCode(member.name.substring(0, 11)).padEnd(12, '\u2002')}\``),
+				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${Util.escapeInlineCode(member.name.substring(0, 15)).padEnd(15, '\u2002')}\``),
 			this.paginate(townhall ? filter : items, 25, 50)
-				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${Util.escapeInlineCode(member.name.substring(0, 11)).padEnd(12, '\u2002')}\``)
+				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${Util.escapeInlineCode(member.name.substring(0, 15)).padEnd(15, '\u2002')}\``)
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription([header, pages[0].join('\n')]) });
 
+		let page = 0;
 		const msg = await message.util.send({
-			embed: embed.setDescription([header, pages[0].join('\n')])
+			embed: embed.setDescription([header, pages[page].join('\n')])
 				.setFooter(`Page 1/2 (${data.members}/50)`)
 		});
 
-		await msg.react('➕');
-		const collector = await msg.awaitReactions(
-			(reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
-			{ max: 1, time: 30000, errors: ['time'] }
-		).catch(() => null);
-		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
-		if (!collector || !collector.size) return;
+		for (const emoji of ['⬅️', '➡️', '➕']) {
+			await msg.react(emoji);
+			await this.delay(250);
+		}
 
-		return message.channel.send({
-			embed: embed.setDescription([header, pages[1].join('\n')])
-				.setFooter(`Page 2/2 (${data.members}/50)`)
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['➕', '⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 90000, max: 10 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '➡️') {
+				page += 1;
+				if (page < 0) page = 1;
+				if (page > 1) page = 0;
+
+				await msg.edit({
+					embed: embed.setDescription([header, pages[page].join('\n')])
+						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
+				});
+				await this.delay(250);
+				return reaction.users.remove(message.author.id);
+			}
+
+			if (reaction.emoji.name === '⬅️') {
+				page -= 1;
+				if (page < 0) page = 1;
+				if (page > 1) page = 0;
+
+				await msg.edit({
+					embed: embed.setDescription([header, pages[page].join('\n')])
+						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
+				});
+				await this.delay(250);
+				return reaction.users.remove(message.author.id);
+			}
+
+			if (reaction.emoji.name === '➕') {
+				if (page === 0) page = 1;
+				else if (page === 1) page = 0;
+
+				await collector.stop();
+				return message.channel.send({
+					embed: embed.setDescription([header, pages[page].join('\n')])
+						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
+				});
+			}
 		});
+
+		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 	}
 
 	paginate(items, start, end) {

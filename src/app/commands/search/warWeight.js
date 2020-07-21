@@ -88,12 +88,12 @@ class WarWeightCommand extends Command {
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
 					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 12))}\``;
+					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 15))}\``;
 				}),
 			this.paginate(memberList, 25, 50)
 				.items.map(member => {
 					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 12))}\``;
+					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 15))}\``;
 				})
 		];
 
@@ -106,53 +106,62 @@ class WarWeightCommand extends Command {
 			});
 		}
 
+		let page = 0;
 		const msg = await message.util.send({
-			embed: embed.setDescription([
-				header,
-				pages[0].join('\n')
-			]).setFooter('Page 1/2')
+			embed: embed.setDescription([header, pages[page].join('\n')])
+				.setFooter(`Page 1/2 (${data.members}/50)`)
 		});
 
-		for (const emoji of ['⬅️', '➡️']) {
+		for (const emoji of ['⬅️', '➡️', '➕']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 45000, max: 10 }
+			(reaction, user) => ['➕', '⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 90000, max: 10 }
 		);
 
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡️') {
+				page += 1;
+				if (page < 0) page = 1;
+				if (page > 1) page = 0;
+
 				await msg.edit({
-					embed: embed.setDescription([
-						header,
-						pages[1].join('\n')
-					]).setFooter('Page 2/2')
+					embed: embed.setDescription([header, pages[page].join('\n')])
+						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
 				});
 				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+				return reaction.users.remove(message.author.id);
 			}
+
 			if (reaction.emoji.name === '⬅️') {
+				page -= 1;
+				if (page < 0) page = 1;
+				if (page > 1) page = 0;
+
 				await msg.edit({
-					embed: embed.setDescription([
-						header,
-						pages[0].join('\n')
-					]).setFooter('Page 1/2')
+					embed: embed.setDescription([header, pages[page].join('\n')])
+						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
 				});
 				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+				return reaction.users.remove(message.author.id);
+			}
+
+			if (reaction.emoji.name === '➕') {
+				if (page === 0) page = 1;
+				else if (page === 1) page = 0;
+
+				await collector.stop();
+				return message.channel.send({
+					embed: embed.setDescription([header, pages[page].join('\n')])
+						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
+				});
 			}
 		});
 
-		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
-		});
-		return message;
+		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 	}
 
 	heroes(items) {
@@ -169,7 +178,7 @@ class WarWeightCommand extends Command {
 	}
 
 	padEnd(data) {
-		return Util.escapeInlineCode(data).padEnd(20, ' ');
+		return Util.escapeInlineCode(data).padEnd(15, ' ');
 	}
 
 	paginate(items, start, end) {
