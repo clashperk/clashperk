@@ -79,11 +79,11 @@ class WarHitrate {
 		}
 
 		for (const hit of data.clan.hitrate) {
-			if (hit.attacks > 0) data.clan.hitrate.find(a => a.th === hit.th && a.vs === hit.vs).hitrate = ((hit.star / hit.attacks) * 100).toFixed(2);
+			if (hit.attacks > 0) data.clan.hitrate.find(a => a.th === hit.th && a.vs === hit.vs).hitrate = ((hit.star / hit.attacks) * 100).toFixed();
 		}
 
 		for (const hit of data.opponent.hitrate) {
-			if (hit.attacks > 0) data.opponent.hitrate.find(a => a.th === hit.th && a.vs === hit.vs).hitrate = ((hit.star / hit.attacks) * 100).toFixed(2);
+			if (hit.attacks > 0) data.opponent.hitrate.find(a => a.th === hit.th && a.vs === hit.vs).hitrate = ((hit.star / hit.attacks) * 100).toFixed();
 		}
 
 		data.clan.hitrate.sort((a, b) => b.vs - a.vs).sort((a, b) => b.th - a.th);
