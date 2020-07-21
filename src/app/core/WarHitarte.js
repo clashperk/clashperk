@@ -1,10 +1,10 @@
-const data = {
-	clan: { hitrate: [] },
-	opponent: { hitrate: [] }
-};
-
 class WarHitrate {
 	static hitrate(clan, opponent, STAR = 3) {
+		const data = {
+			clan: { hitrate: [] },
+			opponent: { hitrate: [] }
+		};
+
 		// clan attacks
 		for (const member of clan.members) {
 			if (member.attacks) {
