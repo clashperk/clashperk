@@ -82,7 +82,7 @@ class WarWeightCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 		const header = stripIndent(`**${emoji.townhall}\`\u200e BK AQ GW RC  ${'NAME'.padEnd(20, ' ')}\`**`);
 		const pages = [
 			this.paginate(memberList, 0, 25)
