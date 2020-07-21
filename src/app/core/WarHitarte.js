@@ -69,7 +69,6 @@ class WarHitrate {
 			if (member.bestOpponentAttack && member.bestOpponentAttack.stars === STAR) {
 				const attackerTag = member.bestOpponentAttack.attackerTag;
 				const attacker = opponent.members.find(m => m.tag === attackerTag);
-				console.log(attacker);
 				if (attacker) {
 					const entry = data.opponent.hitrate.find(a => a.th === member.townhallLevel && a.vs === attacker.townhallLevel);
 					if (entry) {

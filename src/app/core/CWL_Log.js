@@ -71,23 +71,27 @@ class ClanWarEvent {
 			.findOne({ clan_id: ObjectId(id) });
 
 		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
+		if (db && db.warTags && rounds.length === Object.keys(db.warTags).length) return this.roundCWL(id, channel, body, db);
 
-		const warTags = [];
-		let index = 0;
+		const set = {};
+		// let index = 0;
 		for (const round of rounds) {
-			index += 1;
-			if (db && db.rounds && db.rounds.length > index - 1) continue;
-			for (const warTag of round.warTags) {
+			// index += 1;
+			// if (db && db.rounds && db.rounds.length > index - 1) continue;
+			for (const warTag of Object.keys(round.warTags)) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
 					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
 				});
 				const data = await res.json();
 				if ((data.clan && data.clan.tag === cache.tag) || (data.opponent && data.opponent.tag === cache.tag)) {
 					if (data.state === 'warEnded') {
-						const round = db.warTags.find(a => a.warTag === warTag && a.ended);
-						warTags.push({ warTag, state: data.state, ended: round ? true : false });
+						const ended = db.warTags[warTag] && db.warTags[warTag].ended;
+						set[`warTags.${warTag}.warTag`] = warTag;
+						set[`warTags.${warTag}.state`] = data.state;
+						set[`warTags.${warTag}.ended`] = ended;
 					} else {
-						warTags.push({ warTag, state: data.state });
+						set[`warTags.${warTag}.warTag`] = warTag;
+						set[`warTags.${warTag}.state`] = data.state;
 					}
 
 					break;
@@ -95,17 +99,16 @@ class ClanWarEvent {
 			}
 		}
 
-		await mongodb.db('clashperk')
+		const { value } = await mongodb.db('clashperk')
 			.collection('clanwars')
 			.findOneAndUpdate({ clan_id: ObjectId(id) }, {
-				$set: {
+				$set: Object.assign({
 					clan_id: ObjectId(id),
-					tag: cache.tag,
-					warTags
-				}
-			}, { upsert: true });
+					tag: cache.tag
+				}, set)
+			}, { upsert: true, returnOriginal: false });
 
-		return this.roundCWL(id, channel, body, db);
+		return this.roundCWL(id, channel, body, value);
 	}
 
 	// Fetch Clan-War-League-Rounds
@@ -183,8 +186,9 @@ class ClanWarEvent {
 	}
 
 	// For Clan-War-League Embed
-	async roundCWL(id, channel, body, warTags) {
+	async roundCWL(id, channel, body, db) {
 		const cache = this.cached.get(id);
+		const warTags = Object.values(db.warTags).filter(round => !round.ended).map(round => round.warTag);
 		for (const warTag of warTags) {
 			const round = body.rounds.findIndex(round => round.warTags.includes(warTag.tag)) + 1;
 			const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag.tag)}`, {
@@ -235,6 +239,14 @@ class ClanWarEvent {
 				`${this.roster(data.opponent.members)}`
 			]);
 			embed.setFooter(`Round #${round}`);
+
+			if (data.state === 'warEnded') {
+				// TODO: Final update
+			}
+
+			if (data.state === 'preparation') {}
+
+			if (data.state === 'inWar') {}
 		}
 	}
 
