@@ -44,10 +44,9 @@ class SetNickNameCommand extends Command {
 			}
 		};
 
-		const p = 
-
 		const player = yield {
 			type: async (message, args) => {
+				if (!args) return null;
 				const resolved = await Resolver.player(args);
 				if (resolved.status !== 200) {
 					await message.channel.send({ embed: resolved.embed });
