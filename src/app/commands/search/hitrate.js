@@ -42,7 +42,7 @@ class HitrateCommand extends Command {
 		const combinations = [...hit.clan.hitrate, ...hit.opponent.hitrate]
 			.map(({ th, vs }) => ({ th, vs }))
 			.reduce((a, b) => {
-				if (a.indexOf(b) < 0) a.push(b);
+				if (a.findIndex(x => x.th === b.th && x.vs === b.vs) < 0) a.push(b);
 				return a;
 			}, []);
 
