@@ -39,8 +39,12 @@ class HitrateCommand extends Command {
 		if (!body) return;
 		if (!body.ok) return;
 		const hit = hitrate(body.clan, body.opponent);
-		const { clan, opponent } = hitrate(body.clan, body.opponent);
-		const combinations = Object.assign(clan.hitrate, opponent.hitrate).map(({ th, vs }) => ({ th, vs }));
+		const combinations = [...hit.clan.hitrate, ...hit.opponent.hitrate]
+			.map(({ th, vs }) => ({ th, vs }))
+			.reduce((a, b) => {
+				if (a.indexOf(b) < 0) a.push(b);
+				return a;
+			}, []);
 
 		const arrrr = [];
 		for (const { th, vs } of combinations) {
