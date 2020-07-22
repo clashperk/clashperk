@@ -1,4 +1,4 @@
-const { Command, Flag } = require('discord-akairo');
+const { Command, Flag, Argument } = require('discord-akairo');
 const Resolver = require('../../struct/Resolver');
 
 class SetNickNameCommand extends Command {
@@ -46,7 +46,7 @@ class SetNickNameCommand extends Command {
 
 		const player = yield {
 			type: async (message, args) => {
-				const resolved = await Resolver.player(args);
+				const resolved = await Resolver.resolve(member && !args ? member.toString() : args);
 				if (resolved.status !== 200) {
 					await message.channel.send({ embed: resolved.embed });
 					return Flag.cancel();
@@ -56,13 +56,15 @@ class SetNickNameCommand extends Command {
 			prompt: {
 				start: 'What is the player tag?',
 				retry: (msg, { failure }) => failure.value
-			}
+			},
+			unordered: [1, 2]
 		};
 
 		const txt = yield {
-			type: 'string',
+			type: Argument.validate('string', (msg, txt) => txt.startsWith('|') || txt.endsWith('|')),
 			match: 'rest',
-			default: ''
+			default: '',
+			unordered: [1, 2]
 		};
 
 		return { txt, member, player };
