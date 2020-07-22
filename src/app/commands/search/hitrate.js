@@ -66,7 +66,7 @@ class HitrateCommand extends Command {
 			arrrr.push(d);
 		}
 		return message.util.send([
-			`**${body.clan.name} vs ${body.opponent.name} (${star} Hitrates)**`,
+			`**${body.clan.name} vs ${body.opponent.name} (Hitrates - ${star} Star)**`,
 			`${arrrr.map(d => `\`\u200e${d.clan.hitrate.padStart(3, ' ')}% ${`${d.clan.star}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${townHallEmoji[d.clan.th]} vs ${townHallEmoji[d.clan.vs]} \`\u200e ${`${d.opponent.star}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.hitrate.padStart(3, ' ')}% \u200f\``).join('\n')}`
 		]);
 	}
