@@ -42,7 +42,7 @@ class Reslover {
 			return { status: 404, embed };
 		}
 
-		if (tag) return this.player(args);
+		if (tag) return this.clan(args);
 		const member = await this.isMember(message, args);
 		const embed = new MessageEmbed().setColor(0xf30c11);
 		if (!member) {
