@@ -10,63 +10,76 @@ const client = new Client({
 
 class Reslover {
 	static async resolve(message, args, boolean = false) {
-		const member = this.isMember(message, args);
+		const tag = /^#?[PYLQGRJCUV0289]+$/i.test(args);
 		if (boolean) {
-			if (member) {
-				const data = await mongodb.db('clashperk')
-					.collection('linkedusers')
-					.findOne({ user: member.id });
-
-				if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);
-				const embed = new MessageEmbed()
-					.setColor(0xf30c11);
-				if (message.author.id !== member.id) {
-					embed.setDescription([
-						`Couldn't find a player linked to **${member.user.tag}!**`
-					]);
-				} else {
-					embed.setDescription([
-						'**Please provide a player tag and try again!**'
-					]);
-				}
-
-				return { status: 404, embed };
+			if (tag) return this.player(args);
+			const member = await this.isMember(message, args);
+			const embed = new MessageEmbed().setColor(0xf30c11);
+			if (!member) {
+				return {
+					status: 404,
+					embed: embed
+						.setAuthor('Error')
+						.setDescription(status(404))
+				};
 			}
-
-			return this.player(args);
-		}
-
-		if (member) {
 			const data = await mongodb.db('clashperk')
-				.collection('linkedclans')
+				.collection('linkedusers')
 				.findOne({ user: member.id });
 
-			if (data) return this.clan(data.tag);
-			const embed = new MessageEmbed()
-				.setColor(0xf30c11);
+			if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);
+
 			if (message.author.id !== member.id) {
 				embed.setDescription([
-					`Couldn't find a clan linked to **${member.user.tag}!**`
+					`Couldn't find a player linked to **${member.user.tag}!**`
 				]);
 			} else {
 				embed.setDescription([
-					'**Please provide a clan tag and try again!**'
+					'**Please provide a player tag and try again!**'
 				]);
 			}
 
 			return { status: 404, embed };
 		}
 
-		return this.clan(args);
+		if (tag) return this.player(args);
+		const member = await this.isMember(message, args);
+		const embed = new MessageEmbed().setColor(0xf30c11);
+		if (!member) {
+			return {
+				status: 404,
+				embed: embed
+					.setAuthor('Error')
+					.setDescription(status(404))
+			};
+		}
+
+		const data = await mongodb.db('clashperk')
+			.collection('linkedclans')
+			.findOne({ user: member.id });
+
+		if (data) return this.clan(data.tag);
+
+		if (message.author.id !== member.id) {
+			embed.setDescription([
+				`Couldn't find a clan linked to **${member.user.tag}!**`
+			]);
+		} else {
+			embed.setDescription([
+				'**Please provide a clan tag and try again!**'
+			]);
+		}
+
+		return { status: 404, embed };
 	}
 
 
-	static isMember(message, args) {
+	static async isMember(message, args) {
 		if (!args) return message.member;
 		const mention = args.match(/<@!?(\d{17,19})>/);
-		const id = args.match(/^\d+$/);
-		if (id) return message.guild.members.cache.get(id[0]) || null;
 		if (mention) return message.guild.members.cache.get(mention[1]) || null;
+		const id = args.match(/^\d{17,19}/);
+		if (id) return message.guild.members.fetch(id[0]).catch(() => null);
 		return null;
 	}
 
