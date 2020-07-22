@@ -35,8 +35,6 @@ class WarHitrate {
 						const entry = data.clan.hitrate.find(a => a.th === defender.townhallLevel && a.vs === member.townhallLevel);
 						if (entry) {
 							entry.attacks += 1;
-						} else {
-
 						}
 					}
 				}
@@ -55,8 +53,8 @@ class WarHitrate {
 						data.opponent.hitrate.push({
 							th: member.townhallLevel,
 							vs: attacker.townhallLevel,
-							attacks: 1,
-							star: 0
+							attacks: 0,
+							star: 1
 						});
 					}
 				}
@@ -72,8 +70,6 @@ class WarHitrate {
 						const entry = data.opponent.hitrate.find(a => a.th === defender.townhallLevel && a.vs === member.townhallLevel);
 						if (entry) {
 							entry.attacks += 1;
-						} else {
-
 						}
 					}
 				}
