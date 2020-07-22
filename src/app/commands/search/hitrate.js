@@ -1,4 +1,4 @@
-const { Command, Flag } = require('discord-akairo');
+const { Command, Flag, Argument } = require('discord-akairo');
 const Resolver = require('../../struct/Resolver');
 const { hitrate } = require('../../core/WarHitarte');
 const { townHallEmoji } = require('../../util/emojis');
@@ -26,7 +26,12 @@ class HitrateCommand extends Command {
 			}
 		};
 
-		return { data };
+		const star = yield {
+			type: Argument.range('integer', 1, 3, true),
+			default: 3
+		};
+
+		return { data, star };
 	}
 
 	cooldown(message) {
@@ -34,11 +39,11 @@ class HitrateCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data }) {
+	async exec(message, { data, star }) {
 		const body = await this.client.coc.currentWar(data.tag).catch(() => null);
 		if (!body) return;
 		if (!body.ok) return;
-		const hit = hitrate(body.clan, body.opponent);
+		const hit = hitrate(body.clan, body.opponent, star);
 		const combinations = [...hit.clan.hitrate, ...hit.opponent.hitrate]
 			.map(({ th, vs }) => ({ th, vs }))
 			.reduce((a, b) => {
@@ -61,7 +66,7 @@ class HitrateCommand extends Command {
 			arrrr.push(d);
 		}
 		return message.util.send([
-			`**${body.clan.name} vs ${body.opponent.name} Hitrates**`,
+			`**${body.clan.name} vs ${body.opponent.name} (${star} Hitrates)**`,
 			`${arrrr.map(d => `\`\u200e${d.clan.hitrate.padStart(3, ' ')}% ${`${d.clan.star}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${townHallEmoji[d.clan.th]} vs ${townHallEmoji[d.clan.vs]} \`\u200e ${`${d.opponent.star}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.hitrate.padStart(3, ' ')}% \u200f\``).join('\n')}`
 		]);
 	}
