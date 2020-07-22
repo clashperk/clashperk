@@ -47,6 +47,7 @@ class ClanWarEvent {
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
 				return this.handleMessage(id, channel);
 			}
+			return this.setTimer(id);
 		}
 	}
 
@@ -203,8 +204,8 @@ class ClanWarEvent {
 		}
 
 		if (data.state === 'warEnded') {
-			if (!db) return null;
-			if (db && db.ended && db.opponent === data.opponent.tag) return null;
+			if (!db) return this.setTimer(id);
+			if (db && db.ended && db.opponent === data.opponent.tag) return this.setTimer(id);
 			let message = null;
 			if (db && db.message) {
 				message = await channel.messages.fetch(db.message, false).catch(() => null);

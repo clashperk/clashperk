@@ -96,7 +96,7 @@ class CurrentWarCommand extends Command {
 				'',
 				'**War Stats**',
 				`${emoji.star} ${body.clan.stars} / ${body.opponent.stars}`,
-				`${emoji.fire} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+				`${emoji.fire} ${body.clan.destructionPercentage.toFixed(2)}% / ${body.opponent.destructionPercentage.toFixed(2)}%`,
 				`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`
 			]);
 		} else if (body.state === 'warEnded') {
@@ -113,7 +113,7 @@ class CurrentWarCommand extends Command {
 				'',
 				'**War Stats**',
 				`${emoji.star} ${body.clan.stars} / ${body.opponent.stars}`,
-				`${emoji.fire} ${body.clan.destructionPercentage}% / ${body.opponent.destructionPercentage}%`,
+				`${emoji.fire} ${body.clan.destructionPercentage.toFixed(2)}% / ${body.opponent.destructionPercentage.toFixed(2)}%`,
 				`${emoji.attacksword} ${body.clan.attacks} / ${body.opponent.attacks}`
 			]);
 		}
