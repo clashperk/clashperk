@@ -117,9 +117,7 @@ class ClanGamesCommand extends Command {
 	filter(memberList, clan) {
 		const members = memberList.map(member => {
 			const points = member.tag in clan.members
-				? (member.points - clan.members[member.tag].points) > 4000
-					? 4000
-					: member.points - clan.members[member.tag].points
+				? member.points - clan.members[member.tag].points
 				: null;
 			return { tag: member.tag, name: member.name, points };
 		});
@@ -127,9 +125,10 @@ class ClanGamesCommand extends Command {
 		const tags = memberList.map(m => m.tag);
 		const excess = Object.values(clan.members)
 			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
-			.map(x => ({ name: x.name, tag: x.tag, points: x.gain > 4000 ? 4000 : x.gain }));
-		const sorted = members.concat(excess).sort((a, b) => b.points - a.points);
-		// const sorted = members.sort((a, b) => b.points - a.points);
+			.map(x => ({ name: x.name, tag: x.tag, points: x.gain }));
+		const sorted = members.concat(excess)
+			.sort((a, b) => b.points - a.points)
+			.map(x => ({ name: x.name, tag: x.tag, points: x.points > 4000 ? 4000 : x.points }));
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
 }

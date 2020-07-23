@@ -8,8 +8,7 @@ const { Util } = require('discord.js');
 class ClanEmbedCommand extends Command {
 	constructor() {
 		super('patron-clanembed', {
-			aliases: ['liveembed'],
-			category: 'setup-hidden',
+			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
@@ -82,20 +81,6 @@ class ClanEmbedCommand extends Command {
 	}
 
 	async exec(message, { data, accepts, user, description, color }) {
-		if (!this.client.patron.get(message.guild.id, 'guild', false)) {
-			const embed = this.client.util.embed()
-				.setColor(this.client.embed(message))
-				.setDescription([
-					'Create a beautiful live embed for a clan.',
-					'',
-					'**Patron only Feature**',
-					'Live Embed **|** Custom Description **|** Custom TH Levels **|** Set Clan Leader **|** Custom Colour',
-					'',
-					'[Become a Patron](https://www.patreon.com/join/clashperk)'
-				]);
-			return message.util.send({ embed });
-		}
-
 		const clans = await this.clans(message);
 		const max = this.client.patron.get(message.guild.id, 'limit', 2);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {

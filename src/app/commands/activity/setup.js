@@ -14,7 +14,7 @@ class SetupCommand extends Command {
 					'**Available Methods**',
 					'• clanlog `<clanTag> [channel/role]`',
 					'• cgboard `<clanTag> [channel/color]`',
-					'• liveembed `<clanTag> [--color #hexcolor]`',
+					'• clanembed `<clanTag> [--color #hexcolor]`',
 					'• clanwarlog `<clanTag> [channel]`',
 					'• donationlog `<clanTag> [channel/color]`',
 					'• onlineboard `<clanTag> [channel/color]`',
@@ -26,7 +26,7 @@ class SetupCommand extends Command {
 				examples: [
 					'clanlog #8QU8J9LP',
 					'cgboard #8QU8J9LP',
-					'liveembed #8QU8J9LP',
+					'clanembed #8QU8J9LP',
 					'clanwarlog #8QU8J9LP',
 					'donationlog #8QU8J9LP',
 					'onlineboard #8QU8J9LP'
@@ -46,7 +46,7 @@ class SetupCommand extends Command {
 				['donationlog'],
 				['lastonlineboard', 'onlineboard'],
 				['clangamesboard', 'cgboard'],
-				['patron-clanembed', 'clanembed', 'liveembed', 'embed'],
+				['clanembed', 'clanembed', 'embed'],
 				['clan-warlog', 'warlog', 'livewar', 'clanwarlog'],
 				['playerlog', 'clanlog']
 			],
@@ -59,7 +59,9 @@ class SetupCommand extends Command {
 				const commands = this.handler.categories.get('setup-hidden')
 					.values();
 				embed.addField('__**Setup**__', [
-					Array.from(commands).filter(command => !command.ownerOnly)
+					Array.from(commands)
+						.concat(this.handler.modules.get('clanembed'))
+						.sort((a, b) => a.aliases[0].length - b.aliases[0].length)
 						.map(command => `**\`${prefix}setup ${command.aliases[0]}\`**\n${command.description.content}`)
 						.join('\n')
 				]);
