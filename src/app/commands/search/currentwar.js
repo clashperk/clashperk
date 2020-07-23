@@ -73,7 +73,7 @@ class CurrentWarCommand extends Command {
 		if (body.state === 'preparation') {
 			embed.setDescription([
 				'**War Against**',
-				`**[${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})](https://googel.com)**`,
+				`${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 				'',
 				'**War State**',
 				'Preparation Day',

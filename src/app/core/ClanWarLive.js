@@ -1,6 +1,6 @@
 const { townHallEmoji, emoji, whiteNum, blueNum } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, Util } = require('discord.js');
 const { Client } = require('clashofclans.js');
 const { ObjectId } = require('mongodb');
 const moment = require('moment');
@@ -92,7 +92,7 @@ class ClanWarEvent {
 			embed.setColor(color.prep)
 				.setDescription([
 					'**War Against**',
-					`**[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
+					`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 					'',
 					'**War State**',
 					'Preparation Day',
@@ -108,7 +108,7 @@ class ClanWarEvent {
 			embed.setColor(color.war)
 				.setDescription([
 					'**War Against**',
-					`**[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
+					`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 					'',
 					'**War State**',
 					'Battle Day',
@@ -129,7 +129,7 @@ class ClanWarEvent {
 			embed.setColor(this.result(data.clan, data.opponent))
 				.setDescription([
 					'**War Against**',
-					`**[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
+					`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 					'',
 					'**War State**',
 					'War Ended',
@@ -149,10 +149,10 @@ class ClanWarEvent {
 			embed.description,
 			'',
 			'**Rosters**',
-			`${data.clan.name}`,
+			`${Util.escapeMarkdown(data.clan.name)}`,
 			`${this.roster(data.clan.members)}`,
 			'',
-			`${data.opponent.name}`,
+			`${Util.escapeMarkdown(data.opponent.name)}`,
 			`${this.roster(data.opponent.members)}`
 		]);
 
@@ -255,7 +255,7 @@ class ClanWarEvent {
 			.setURL(this.clanURL(data.clan.tag))
 			.setDescription([
 				'**War Against**',
-				`[${data.opponent.name}](${this.clanURL(data.opponent.tag)})`
+				`**[${Util.escapeMarkdown(data.opponent.name)}](${this.clanURL(data.opponent.tag)}) (${data.opponent.tag})**`
 			]);
 
 		if (TwoRem.length) {
