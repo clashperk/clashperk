@@ -18,7 +18,8 @@ class ClanGamesCommand extends Command {
 				content: 'Shows clan game points of your clan members.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
-			}
+			},
+			flags: ['--force']
 		});
 	}
 
@@ -34,7 +35,12 @@ class ClanGamesCommand extends Command {
 			}
 		};
 
-		return { data };
+		const force = yield {
+			match: 'flag',
+			flag: ['--force']
+		};
+
+		return { data, force };
 	}
 
 	cooldown(message) {
@@ -42,7 +48,7 @@ class ClanGamesCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data }) {
+	async exec(message, { data, force }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const db = mongodb.db('clashperk').collection('clangames');
 		const prefix = this.handler.prefix(message);
@@ -80,7 +86,7 @@ class ClanGamesCommand extends Command {
 			return member;
 		});
 
-		const members = this.filter(memberList, clan);
+		const members = this.filter(memberList, clan, force);
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
 		const DAY = this.client.settings.get('global', 'clangamesDay', 22);
@@ -114,7 +120,7 @@ class ClanGamesCommand extends Command {
 		return data.padEnd(16, ' ');
 	}
 
-	filter(memberList, clan) {
+	filter(memberList, clan, force) {
 		const members = memberList.map(member => {
 			const points = member.tag in clan.members
 				? member.points - clan.members[member.tag].points
@@ -128,7 +134,7 @@ class ClanGamesCommand extends Command {
 			.map(x => ({ name: x.name, tag: x.tag, points: x.gain }));
 		const sorted = members.concat(excess)
 			.sort((a, b) => b.points - a.points)
-			.map(x => ({ name: x.name, tag: x.tag, points: x.points > 4000 ? 4000 : x.points }));
+			.map(x => ({ name: x.name, tag: x.tag, points: x.points && !force > 4000 ? 4000 : x.points }));
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
 }
