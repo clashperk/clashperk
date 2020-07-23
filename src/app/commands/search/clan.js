@@ -1,5 +1,5 @@
 const { Command, Flag } = require('discord-akairo');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, Util } = require('discord.js');
 const { emoji, CWLEmoji } = require('../../util/emojis');
 const Resolver = require('../../struct/Resolver');
 
@@ -48,7 +48,7 @@ class ClanCommand extends Command {
 		}
 
 		const embed = new MessageEmbed()
-			.setTitle(`${data.name} (${data.tag})`)
+			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setColor(this.client.embed(message))
 			.setThumbnail(data.badgeUrls.medium);
