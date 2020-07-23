@@ -14,6 +14,7 @@ class SetupCommand extends Command {
 					'**Available Methods**',
 					'• clanlog `<clanTag> [channel/role]`',
 					'• cgboard `<clanTag> [channel/color]`',
+					'• clanembed <clanTag> [--color hexColor]',
 					'• clanwarlog `<clanTag> [channel]`',
 					'• donationlog `<clanTag> [channel/color]`',
 					'• onlineboard `<clanTag> [channel/color]`',
@@ -25,6 +26,7 @@ class SetupCommand extends Command {
 				examples: [
 					'clanlog #8QU8J9LP',
 					'cgboard #8QU8J9LP',
+					'clanembed #8QU8J9LP',
 					'clanwarlog #8QU8J9LP',
 					'donationlog #8QU8J9LP',
 					'onlineboard #8QU8J9LP'
@@ -44,7 +46,7 @@ class SetupCommand extends Command {
 				['donationlog'],
 				['lastonlineboard', 'onlineboard'],
 				['clangamesboard', 'cgboard'],
-				['clanembed', 'cembed'],
+				['patron-clanembed', 'clanembed'],
 				['clan-warlog', 'warlog', 'livewar', 'clanwarlog'],
 				['playerlog', 'clanlog']
 			],
