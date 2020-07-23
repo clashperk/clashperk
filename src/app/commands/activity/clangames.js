@@ -80,10 +80,9 @@ class ClanGamesCommand extends Command {
 		const fetched = await Promise.all(responses.map(res => res.json()));
 		const memberList = fetched.map(m => {
 			const points = m.achievements
-				? m.achievements.find(achievement => achievement.name === 'Games Champion')
-				: 0;
-			const member = { tag: m.tag, name: m.name, points: points.value };
-			return member;
+				? m.achievements.find(a => a.name === 'Games Champion')
+				: { value: 0 };
+			return { tag: m.tag, name: m.name, points: points.value };
 		});
 
 		const members = this.filter(memberList, clan, force);

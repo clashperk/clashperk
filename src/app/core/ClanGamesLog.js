@@ -218,13 +218,13 @@ class ClanGames {
 			const player = await this.player(tag);
 			if (!player) continue;
 			if (!player.achievements) continue;
-			const value = player.achievements
-				.find(achievement => achievement.name === 'Games Champion')
-				.value;
+			const points = player.achievements
+				? player.achievements.find(a => a.name === 'Games Champion')
+				: { value: 0 };
 			collection.push({
 				name: player.name,
 				tag: player.tag,
-				points: value
+				points: points.value
 			});
 		}
 
