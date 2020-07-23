@@ -1,5 +1,5 @@
 const { Command, Flag } = require('discord-akairo');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, Util } = require('discord.js');
 const fetch = require('node-fetch');
 const moment = require('moment');
 require('moment-duration-format');
@@ -73,7 +73,7 @@ class CurrentWarCommand extends Command {
 		if (body.state === 'preparation') {
 			embed.setDescription([
 				'**War Against**',
-				`${body.opponent.name} (${body.opponent.tag})`,
+				`**[${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})](https://googel.com)**`,
 				'',
 				'**War State**',
 				'Preparation Day',
@@ -85,7 +85,7 @@ class CurrentWarCommand extends Command {
 		} else if (body.state === 'inWar') {
 			embed.setDescription([
 				'**War Against**',
-				`${body.opponent.name} (${body.opponent.tag})`,
+				`${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 				'',
 				'**War State**',
 				'Battle Day',
@@ -102,7 +102,7 @@ class CurrentWarCommand extends Command {
 		} else if (body.state === 'warEnded') {
 			embed.setDescription([
 				'**War Against**',
-				`${body.opponent.name} (${body.opponent.tag})`,
+				`${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 				'',
 				'**War State**',
 				'War Ended',
@@ -122,10 +122,10 @@ class CurrentWarCommand extends Command {
 			embed.description,
 			'',
 			'**Rosters**',
-			`${body.clan.name}`,
+			`${Util.escapeMarkdown(body.clan.name)}`,
 			`${this.count(body.clan.members)}`,
 			'',
-			`${body.opponent.name}`,
+			`${Util.escapeMarkdown(body.opponent.name)}`,
 			`${this.count(body.opponent.members)}`
 		]);
 
