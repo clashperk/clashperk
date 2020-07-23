@@ -12,22 +12,22 @@ class SetupCommand extends Command {
 					'Setup different logs and live boards.',
 					'',
 					'**Available Methods**',
-					'• donationlog `<clanTag> [channel/color]`',
-					'• onlineboard `<clanTag> [channel/color]`',
+					'• clanlog `<clanTag> [channel/role]`',
 					'• cgboard `<clanTag> [channel/color]`',
 					'• clanwarlog `<clanTag> [channel]`',
-					'• clanlog `<clanTag> [channel/role]`',
+					'• donationlog `<clanTag> [channel/color]`',
+					'• onlineboard `<clanTag> [channel/color]`',
 					'',
 					'**Required: `<>` | Optional: `[]`**',
 					'For additional `<...args>` usage refer to the examples below.'
 				],
 				usage: '<method> <...args>',
 				examples: [
+					'clanlog #8QU8J9LP',
+					'cgboard #8QU8J9LP',
+					'clanwarlog #8QU8J9LP',
 					'donationlog #8QU8J9LP',
-					'onlineboard #8QU8J9L',
-					'cgboard #8QU8J9L',
-					'clanwarlog #8QU8J9L',
-					'clanlog #8QU8J9L'
+					'onlineboard #8QU8J9LP'
 				]
 			}
 		});

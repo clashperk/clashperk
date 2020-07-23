@@ -16,23 +16,23 @@ class StopCommand extends Command {
 					'Stop logs and boards in your guild.',
 					'',
 					'**Available Methods**',
-					'• donationlog `<clanTag>`',
+					'• all `<clanTag>`',
 					'• clanlog `<clanTag>`',
-					'• onlineboard `<clanTag>`',
 					'• cgboard `<clanTag>`',
 					'• clanmebed `<clanTag>`',
-					'• all `<clanTag>` - remove all logs and boards for a clan.',
+					'• donationlog `<clanTag>`',
+					'• onlineboard `<clanTag>`',
 					'',
 					'For additional `<...args>` usage refer to the examples below.'
 				],
 				usage: '<method> <clanTag>',
 				examples: [
-					'donationlog #8QU8J9LP',
+					'all #8QU8J9LP',
 					'clanlog #8QU8J9LP',
-					'onlineboard #8QU8J9LP',
-					'clanembed #8QU8J9LP',
 					'cgboard #8QU8J9LP',
-					'all #8QU8J9LP'
+					'clanembed #8QU8J9LP',
+					'donationlog #8QU8J9LP',
+					'onlineboard #8QU8J9LP'
 				]
 			},
 			args: [
@@ -77,20 +77,20 @@ class StopCommand extends Command {
 					`\`${prefix}stop <method> <clanTag>\``,
 					'',
 					'**Available Methods**',
-					'• donationlog `<clanTag>`',
+					'• all `<clanTag>`',
 					'• clanlog `<clanTag>`',
-					'• onlineboard `<clanTag>`',
 					'• cgboard `<clanTag>`',
 					'• clanmebed `<clanTag>`',
-					'• all `<clanTag>` - remove all logs and boards for a clan.',
+					'• donationlog `<clanTag>`',
+					'• onlineboard `<clanTag>`',
 					'',
 					'**Examples**',
-					`\`${prefix}stop donationlog #8QU8J9LP\``,
+					`\`${prefix}stop all #8QU8J9LP\``,
 					`\`${prefix}stop clanlog #8QU8J9LP\``,
-					`\`${prefix}stop onlineboard #8QU8J9LP\``,
-					`\`${prefix}stop clanembed #8QU8J9LP\``,
 					`\`${prefix}stop cgboard #8QU8J9LP\``,
-					`\`${prefix}stop all #8QU8J9LP\``
+					`\`${prefix}stop clanembed #8QU8J9LP\``,
+					`\`${prefix}stop donationlog #8QU8J9LP\``,
+					`\`${prefix}stop onlineboard #8QU8J9LP\``
 				]);
 			return message.util.send({ embed });
 		}
