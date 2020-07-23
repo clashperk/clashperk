@@ -23,7 +23,7 @@ class ColorCommand extends Command {
 				{
 					id: 'hexColor',
 					type: 'color',
-					default: null
+					default: message => this.client.embed(message)
 				}
 			]
 		});
