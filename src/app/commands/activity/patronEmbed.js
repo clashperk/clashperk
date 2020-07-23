@@ -9,7 +9,7 @@ class ClanEmbedCommand extends Command {
 	constructor() {
 		super('patron-clanembed', {
 			aliases: ['liveembed'],
-			category: 'hidden',
+			category: 'setup',
 			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
