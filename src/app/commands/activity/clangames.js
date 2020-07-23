@@ -19,7 +19,7 @@ class ClanGamesCommand extends Command {
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			flags: ['--force']
+			flags: ['--max']
 		});
 	}
 
@@ -37,7 +37,7 @@ class ClanGamesCommand extends Command {
 
 		const force = yield {
 			match: 'flag',
-			flag: ['--force']
+			flag: ['--max']
 		};
 
 		return { data, force };
