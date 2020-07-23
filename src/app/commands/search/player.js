@@ -1,7 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, Util } = require('discord.js');
 const moment = require('moment');
-const { firestore, mongodb } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
 const { leagueId } = require('../../util/constants');
 const { emoji, townHallEmoji, heroEmoji, leagueEmoji, starEmoji } = require('../../util/emojis');
@@ -43,7 +43,7 @@ class PlayerCommand extends Command {
 	async exec(message, { data }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setTitle(`${data.name} (${data.tag})`)
+			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.league ? data.league.iconUrls.small : `https://cdn.clashperk.xyz/assets/townhalls/${data.townHallLevel}.png`);
 

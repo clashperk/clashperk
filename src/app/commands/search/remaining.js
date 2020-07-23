@@ -1,5 +1,5 @@
 const { Command, Flag } = require('discord-akairo');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, Util } = require('discord.js');
 const fetch = require('node-fetch');
 const moment = require('moment');
 require('moment-duration-format');
@@ -77,7 +77,7 @@ class RemainingAttacksCommand extends Command {
 		if (body.state === 'preparation') {
 			embed.setDescription([
 				'**War Against**',
-				`${body.opponent.name} (${body.opponent.tag})`,
+				`${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 				'',
 				'**War State**',
 				'Preparation'
@@ -91,7 +91,7 @@ class RemainingAttacksCommand extends Command {
 		];
 		embed.setDescription([
 			'**War Against**',
-			`${body.opponent.name} (${body.opponent.tag})`,
+			`${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 			'',
 			'**War State**',
 			`${body.state.replace(/warEnded/g, 'War Ended').replace(/inWar/g, 'Battle Day')}`
