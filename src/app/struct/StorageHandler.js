@@ -99,7 +99,7 @@ class StorageHandler {
 					}, { upsert: true });
 				break;
 			case Modes.CLAN_WAR_LOG:
-				await mongodb.db('clashperk').collection('clanwars').deleteOne({ clan_id: Object(id) });
+				await mongodb.db('clashperk').collection('clanwars').deleteOne({ clan_id: ObjectId(id) });
 				await mongodb.db('clashperk').collection('clanwarlogs')
 					.updateOne({ tag: data.tag, guild: data.guild }, {
 						$set: {
