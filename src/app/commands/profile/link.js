@@ -84,7 +84,7 @@ class LinkCommand extends Command {
 
 			const collector = msg.createReactionCollector(
 				(reaction, user) => [...Object.values(num)].includes(reaction.emoji.name) && user.id === message.author.id,
-				{ time: 90000, max: 1 }
+				{ time: 45000, max: 1 }
 			);
 
 			collector.on('collect', async reaction => {
