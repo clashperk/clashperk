@@ -64,7 +64,7 @@ class LinkClanCommand extends Command {
 			.setDescription([
 				`Linked **${member.user.tag}** to **${data.name}** (${data.tag})`,
 				'',
-				'If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.'
+				'If you don\'t provide the tag for other lookup comamnds, the bot will use the last one you linked.'
 			]);
 		return message.util.send({ embed });
 	}
