@@ -53,8 +53,8 @@ class LastOnlineCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				`Last Online Board [${data.members}/50]`,
-				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'}\n${this.filter(data, clan)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${m.name}`)
+				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  ${'NAME'}\n${this.filter(data, clan)
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${m.name}`)
 					.join('\n')}\`\`\``
 			]);
 
