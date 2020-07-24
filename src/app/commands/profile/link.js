@@ -119,7 +119,7 @@ class LinkCommand extends Command {
 		} else {
 			return message.util.send({
 				embed: {
-					description: 'I tried to search your tag as a clan and player but couldn\'t find a match.'
+					description: 'I tried to searching your tag as a clan and player but couldn\'t find a match.'
 				}
 			});
 		}
