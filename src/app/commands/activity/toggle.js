@@ -42,11 +42,11 @@ class StopCommand extends Command {
 					type: [
 						['all'],
 						[Modes.DONATION_LOG, 'donationlog', 'dl'],
-						[Modes.CLAN_LOG, 'playerlog', 'clanlog', 'pl'],
-						[Modes.ACTIVITY_LOG, 'lastonline', 'lastonlineboard', 'ob', 'onlineboard'],
+						[Modes.CLAN_LOG, 'playerlog', 'clanlog', 'cl', 'pl'],
+						[Modes.ACTIVITY_LOG, 'onlineboard', 'ob'],
 						[Modes.CLAN_EMBED_LOG, 'clanembed', 'ce'],
-						[Modes.CLAN_GAMES_LOG, 'clangames', 'clangame', 'clangamesboard', 'clangameboard', 'cgboard', 'cg'],
-						[Modes.CLAN_WAR_LOG, 'warlog']
+						[Modes.CLAN_GAMES_LOG, 'cgboard', 'cg'],
+						[Modes.CLAN_WAR_LOG, 'warlog', 'clanwarlog', 'wl']
 					],
 					default: ''
 				},
