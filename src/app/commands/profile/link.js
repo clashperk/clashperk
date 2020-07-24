@@ -6,12 +6,12 @@ class LinkCommand extends Command {
 			aliases: ['link'],
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
+			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [
 					'Links a clan or player to your account.'
 				],
-				usage: '<method> <tag> [@user]',
+				usage: '<tag> [@user]',
 				examples: ['#8QU8J9LP', '#9Q92C8R20 @Suvajit']
 			},
 			flags: ['clan', 'player']
@@ -44,12 +44,12 @@ class LinkCommand extends Command {
 	}
 
 	async exec(message, { flag1, flag2, rest, tag }) {
+		const command1 = this.handler.modules.get('link-clan');
+		const command2 = this.handler.modules.get('link-player');
 		if (flag1) {
-			const command = this.handler.modules.get('link-clan');
-			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command, true);
+			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command1, true);
 		} else if (flag2) {
-			const command = this.handler.modules.get('link-player');
-			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command, true);
+			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command2, true);
 		}
 
 		const tags = await Promise.all([
@@ -89,13 +89,11 @@ class LinkCommand extends Command {
 
 			collector.on('collect', async reaction => {
 				if (reaction.emoji.name === num[1]) {
-					const command = this.handler.modules.get('link-clan');
-					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command, true);
+					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command1, true);
 				}
 
 				if (reaction.emoji.name === num[2]) {
-					const command = this.handler.modules.get('link-player');
-					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command, true);
+					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command2, true);
 				}
 
 				if (reaction.emoji.name === num[3]) {
@@ -105,11 +103,9 @@ class LinkCommand extends Command {
 
 			collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 		} else if (tags[0].ok) {
-			const command = this.handler.modules.get('link-clan');
-			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command, true);
+			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command1, true);
 		} else if (tags[1].ok) {
-			const command = this.handler.modules.get('link-player');
-			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command, true);
+			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command2, true);
 		} else {
 			return message.util.send({
 				embed: {
