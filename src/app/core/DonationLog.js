@@ -1,6 +1,6 @@
 const { leagueEmoji, blueNum, redNum, emoji } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
-const { MessageEmbed, WebhookClient } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const { ObjectId } = require('mongodb');
 
 class ClanEvent {
@@ -71,13 +71,13 @@ class ClanEvent {
 			]);
 		}
 
-		if (data.unmatched && (data.unmatched.left || data.unmatched.joined)) {
+		if (data.unmatched && (data.unmatched.in || data.unmatched.out)) {
 			embed.addField(`${emoji.wrong} Unmatched`, [
-				data.unmatched.joined > 0
-					? `${emoji.mem_blue} ${blueNum[data.unmatched.joined]} Joined`
+				data.unmatched.in > 0
+					? `${emoji.mem_blue} ${blueNum[data.unmatched.in]} Joined`
 					: '',
-				data.unmatched.left > 0
-					? `${emoji.mem_red} ${redNum[data.unmatched.left]} Left`
+				data.unmatched.out > 0
+					? `${emoji.mem_red} ${redNum[data.unmatched.out]} Left`
 					: ''
 			]);
 		}

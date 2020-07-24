@@ -215,16 +215,19 @@ class CacheHandler {
 					this.memberList[key][member.tag].donationsReceived !== member.donationsReceived ||
 					this.memberList[key][member.tag].versusTrophies !== member.versusTrophies ||
 					this.memberList[key][member.tag].expLevel !== member.expLevel ||
-					this.memberList[key][member.tag].name !== member.name
+					this.memberList[key][member.tag].name !== member.name ||
+					(this.memberList[key][member.tag].trophies < member.trophies && member.trophies > 3400)
 				) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
 					$set[`members.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
+					$inc[`members.${member.tag}.count`] = 1;
 				}
 			} else if (OldMemberSet.size && !OldMemberSet.has(member.tag)) {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
 				$set[`members.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
+				$inc[`members.${member.tag}.count`] = 1;
 			}
 		}
 
@@ -253,8 +256,8 @@ class CacheHandler {
 		if (data.donated.length || data.received.length) {
 			if (CurrentMemberSet.size && OldMemberSet.size && data.donations !== data.receives) {
 				data.unmatched = {
-					joined: CurrentMemberList.filter(tag => !OldMemberSet.has(tag)).length,
-					left: oldMemberList.filter(tag => !CurrentMemberSet.has(tag)).length
+					in: CurrentMemberList.filter(tag => !OldMemberSet.has(tag)).length,
+					out: oldMemberList.filter(tag => !CurrentMemberSet.has(tag)).length
 				};
 			}
 
@@ -348,8 +351,7 @@ class CacheHandler {
 
 		// Callback
 		if (cache && cache.intervalId) clearInterval(cache.intervalId);
-		const intervalId = setInterval(this.start.bind(this), this.interval, key);
-		cache.intervalId = intervalId;
+		cache.intervalId = setInterval(this.start.bind(this), this.interval, key);
 		this.cached.set(key, cache);
 	}
 
