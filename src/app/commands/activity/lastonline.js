@@ -65,14 +65,15 @@ class LastOnlineCommand extends Command {
 		return data.padEnd(20, ' ');
 	}
 
-	filter(data, clan) {
+	filter(data, db) {
 		if (data && !data.members) {
-			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null }));
+			return data.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null, count: 0 }));
 		}
+
 		const members = data.memberList.map(member => {
 			const counts = [];
-			if (member.tag in clan.members && clan.members[member.tag].activities) {
-				for (const [key, value] of Object.entries(clan.members[member.tag].activities)) {
+			if (member.tag in db.members && db.members[member.tag].activities) {
+				for (const [key, value] of Object.entries(db.members[member.tag].activities)) {
 					if (new Date().getTime() - new Date(key).getTime() <= 864e5) {
 						counts.push(value);
 					}
@@ -82,8 +83,8 @@ class LastOnlineCommand extends Command {
 			return {
 				tag: member.tag,
 				name: member.name,
-				lastOnline: member.tag in clan.members
-					? new Date() - new Date(clan.members[member.tag].lastOnline)
+				lastOnline: member.tag in db.members
+					? new Date() - new Date(db.members[member.tag].lastOnline)
 					: null,
 				count: counts.reduce((p, c) => p + c, 0)
 			};

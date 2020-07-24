@@ -134,7 +134,7 @@ class LastOnlineEvent {
 			.setDescription([
 				`Last Online Board [${clan.members}/50]`,
 				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  1D  ${'NAME'.padEnd(18, ' ')}`,
-				this.filter(data, clan)
+				this.filter(clan, data)
 					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}  ${m.count.toString().padStart(2, ' ')} ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
@@ -145,19 +145,19 @@ class LastOnlineEvent {
 		return embed;
 	}
 
-	filter(data, clan) {
-		if (!data) {
-			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null }));
+	filter(clan, db) {
+		if (!db) {
+			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null, count: 0 }));
 		}
 
-		if (data && !data.members) {
-			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null }));
+		if (db && !db.members) {
+			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null, count: 0 }));
 		}
 
-		const members = data.memberList.map(member => {
+		const members = clan.memberList.map(member => {
 			const counts = [];
-			if (member.tag in clan.members && clan.members[member.tag].activities) {
-				for (const [key, value] of Object.entries(clan.members[member.tag].activities)) {
+			if (member.tag in db.members && db.members[member.tag].activities) {
+				for (const [key, value] of Object.entries(db.members[member.tag].activities)) {
 					if (new Date().getTime() - new Date(key).getTime() <= 864e5) {
 						counts.push(value);
 					}
@@ -167,8 +167,8 @@ class LastOnlineEvent {
 			return {
 				tag: member.tag,
 				name: member.name,
-				lastOnline: member.tag in clan.members
-					? new Date() - new Date(clan.members[member.tag].lastOnline)
+				lastOnline: member.tag in db.members
+					? new Date() - new Date(db.members[member.tag].lastOnline)
 					: null,
 				count: counts.reduce((p, c) => p + c, 0)
 			};
