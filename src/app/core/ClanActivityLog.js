@@ -11,7 +11,7 @@ class LastOnlineEvent {
 
 	async exec(id, clan, update) {
 		const cache = this.cached.get(id);
-		if (Object.keys(update).length) {
+		if (Object.keys(update).length && cache) {
 			try {
 				const collection = mongodb.db('clashperk').collection('lastonlines');
 				await collection.updateOne({ tag: clan.tag }, update, { upsert: true });
@@ -133,9 +133,9 @@ class LastOnlineEvent {
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Last Online Board [${clan.members}/50]`,
-				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'.padEnd(20, ' ')}`,
+				`\`\`\`\u200e${'LAST ON'.padStart(7, ' ')}  ${'NAME'.padEnd(20, ' ')}`,
 				this.filter(data, clan)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}   ${m.name}`)
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}  ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
 			])

@@ -209,6 +209,12 @@ class CacheHandler {
 			}
 
 			// Update MongoDB - Last Online
+			const date = new Date();
+			const date_string = [
+				date.getFullYear(),
+				(date.getMonth() + 1).toString().padStart(2, '0'),
+				date.getDate().toString().padStart(2, '0')
+			].join('-').concat(`T${date.getHours().toString().padStart(2, '0')}`);
 			if (this.memberList[key] && member.tag in this.memberList[key]) {
 				if (
 					this.memberList[key][member.tag].donations !== member.donations ||
@@ -216,18 +222,18 @@ class CacheHandler {
 					this.memberList[key][member.tag].versusTrophies !== member.versusTrophies ||
 					this.memberList[key][member.tag].expLevel !== member.expLevel ||
 					this.memberList[key][member.tag].name !== member.name ||
-					(this.memberList[key][member.tag].trophies < member.trophies && member.trophies > 3400)
+					(this.memberList[key][member.tag].trophies < member.trophies && member.trophies > 3500)
 				) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
 					$set[`members.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
-					$inc[`members.${member.tag}.count`] = 1;
+					$inc[`members.${member.tag}.activities.${date_string}`] = 1;
 				}
 			} else if (OldMemberSet.size && !OldMemberSet.has(member.tag)) {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
 				$set[`members.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
-				$inc[`members.${member.tag}.count`] = 1;
+				$inc[`members.${member.tag}.activities.${date_string}`] = 1;
 			}
 		}
 
