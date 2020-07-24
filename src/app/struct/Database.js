@@ -54,7 +54,7 @@ class Database {
 
 			db.collection('lastonlinelogs').createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
-			db.collection('lastonlines').createIndex({ tag: 1 }, { unique: true }),
+			db.collection('lastonlines').createIndex({ clan_id: 1 }, { unique: true }),
 
 			db.collection('clangameslogs').createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
