@@ -49,9 +49,7 @@ class ClanGamesCommand extends Command {
 	}
 
 	async exec(message, { data, force }) {
-		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const db = mongodb.db('clashperk').collection('clangames');
-		const prefix = this.handler.prefix(message);
 		const clan = await db.findOne({ tag: data.tag });
 		if (!clan) {
 			return message.util.send({
@@ -59,6 +57,7 @@ class ClanGamesCommand extends Command {
 			});
 		}
 
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
 		const requests = data.memberList.map((m, i) => {
 			const req = {
