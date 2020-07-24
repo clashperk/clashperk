@@ -108,6 +108,10 @@ class LinkCommand extends Command {
 			collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 		}
 	}
+
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
 }
 
 module.exports = LinkCommand;
