@@ -1,5 +1,4 @@
 const { Command } = require('discord-akairo');
-const { redNum } = require('../../util/emojis');
 
 class LinkCommand extends Command {
 	constructor() {
@@ -70,13 +69,16 @@ class LinkCommand extends Command {
 			3: '❌'
 		};
 
+		const types = {
+			1: 'Clan',
+			2: 'Player'
+		};
+
 		if (tags.every(a => a.ok)) {
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
 				.setDescription([
-					'',
-					'',
-					...tags.map((a, i) => `${num[++i]} ${a.name} ${a.tag}\n`)
+					...tags.map((a, i) => `**${types[++i]}**\n${num[++i]} ${a.name} ${a.tag}\n`)
 				]);
 			const msg = await message.util.send({ embed });
 
@@ -107,6 +109,18 @@ class LinkCommand extends Command {
 			});
 
 			collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+		} else if (tags[0].ok) {
+			const command = this.handler.modules.get('link-clan');
+			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command, true);
+		} else if (tags[1].ok) {
+			const command = this.handler.modules.get('link-player');
+			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command, true);
+		} else {
+			return message.util.send({
+				embed: {
+					description: 'I tried to search your tag as a clan and player but couldn\'t find a match.'
+				}
+			});
 		}
 	}
 
