@@ -90,7 +90,7 @@ class LinkPlayerCommand extends Command {
 			.setDescription([
 				`Linked **${member.user.tag}** to **${data.name}** (${data.tag})`,
 				'',
-				'If you don\'t provide the tag for other lookup comamnds, the bot will use the first one you linked.'
+				'If you don\'t provide the tag for other lookup commands, the bot will use the first one you linked.'
 			]);
 		return message.util.send({ embed });
 	}
