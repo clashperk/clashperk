@@ -53,8 +53,8 @@ class LastOnlineCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				`Last Online Board [${data.members}/50]`,
-				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  ${'NAME'}\n${this.filter(data, clan)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${m.name}`)
+				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  1D  ${'NAME'}\n${this.filter(data, clan)
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${m.count.toSting().padStart(2, ' ')}  ${m.name}`)
 					.join('\n')}\`\`\``
 			]);
 
@@ -73,7 +73,14 @@ class LastOnlineCommand extends Command {
 			const lastOnline = member.tag in clan.members
 				? new Date() - new Date(clan.members[member.tag].lastOnline)
 				: null;
-			return { tag: member.tag, name: member.name, lastOnline };
+			return {
+				tag: member.tag,
+				name: member.name,
+				lastOnline,
+				count: member.tag in clan.members && member.activities
+					? Object.values(member.activities).reduce((p, c) => p + c, 0)
+					: 0
+			};
 		});
 
 		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
