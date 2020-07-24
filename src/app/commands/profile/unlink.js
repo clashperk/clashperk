@@ -46,14 +46,12 @@ class UnlinkCommand extends Command {
 		if (!deleted) {
 			return message.util.send({
 				embed: {
-					description: `Couldn\'t find a player linked to **${message.author.tag}**!`
+					description: `Couldn\'t find this tag linked to **${message.author.tag}**!`
 				}
 			});
 		}
 
-		const embed = this.client.util.embed()
-			.setAuthor(`Successfully deleted ${data.tag}`);
-		return message.util.send({ embed });
+		return message.util.send({ embed: { description: `Successfully deleted **${data.name} (${data.tag})**` } });
 	}
 
 	async delete(id, tag) {

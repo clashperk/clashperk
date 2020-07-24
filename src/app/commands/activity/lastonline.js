@@ -41,16 +41,10 @@ class LastOnlineCommand extends Command {
 
 	async exec(message, { data }) {
 		const db = mongodb.db('clashperk').collection('lastonlines');
-		const prefix = this.handler.prefix(message);
 		const clan = await db.findOne({ tag: data.tag });
 		if (!clan) {
 			return message.util.send({
-				embed: {
-					description: [
-						'Setup a clan last-online board to use this command.',
-						`Type \`${prefix}help onlineboard\` to know more.`
-					].join(' ')
-				}
+				embed: { description: 'Setup a clan last-online board to use this command.' }
 			});
 		}
 

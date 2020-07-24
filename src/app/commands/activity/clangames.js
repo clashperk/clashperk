@@ -55,12 +55,7 @@ class ClanGamesCommand extends Command {
 		const clan = await db.findOne({ tag: data.tag });
 		if (!clan) {
 			return message.util.send({
-				embed: {
-					description: [
-						'Setup a clan games board to use this command.',
-						`Type \`${prefix}help cgboard\` to know more.`
-					].join(' ')
-				}
+				embed: { description: 'Setup a clan games board to use this command.' }
 			});
 		}
 
