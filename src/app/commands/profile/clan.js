@@ -64,9 +64,7 @@ class LinkClanCommand extends Command {
 			.setDescription([
 				`Linked **${member.user.tag}** to **${data.name}** (${data.tag})`,
 				'',
-				'If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.',
-				`For Examples **\u200b${prefix}clan** will return the info of *${data.name} (${data.tag})*.`,
-				`As well as **\u200b${prefix}compo** will return the townhall composition for the same clan (works with other comamnds too).`
+				'If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.'
 			]);
 		return message.util.send({ embed });
 	}
