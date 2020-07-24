@@ -117,7 +117,7 @@ class CacheHandler {
 
 		if (!this.cached.has(id)) {
 			this.cached.set(id, {
-				// guild: data.guild,
+				guild: data.guild,
 				tag: data.tag
 			});
 			return this.start(id);
