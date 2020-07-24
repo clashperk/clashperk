@@ -70,16 +70,22 @@ class LastOnlineCommand extends Command {
 			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null }));
 		}
 		const members = data.memberList.map(member => {
-			const lastOnline = member.tag in clan.members
-				? new Date() - new Date(clan.members[member.tag].lastOnline)
-				: null;
+			const counts = [];
+			if (member.tag in clan.members && clan.members[member.tag].activities) {
+				for (const [key, value] of Object.entries(clan.members[member.tag].activities)) {
+					if (new Date().getTime() - new Date(key).getTime() <= 864e5) {
+						counts.push(value);
+					}
+				}
+			}
+
 			return {
 				tag: member.tag,
 				name: member.name,
-				lastOnline,
-				count: member.tag in clan.members && member.activities
-					? Object.values(member.activities).reduce((p, c) => p + c, 0)
-					: 0
+				lastOnline: member.tag in clan.members
+					? new Date() - new Date(clan.members[member.tag].lastOnline)
+					: null,
+				count: counts.reduce((p, c) => p + c, 0)
 			};
 		});
 

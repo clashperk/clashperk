@@ -214,7 +214,7 @@ class CacheHandler {
 				date.getFullYear(),
 				(date.getMonth() + 1).toString().padStart(2, '0'),
 				date.getDate().toString().padStart(2, '0')
-			].join('-').concat(`T${date.getHours().toString().padStart(2, '0')}`);
+			].join('-').concat(`T${date.getHours().toString().padStart(2, '0')}:00`);
 			if (this.memberList[key] && member.tag in this.memberList[key]) {
 				if (
 					this.memberList[key][member.tag].donations !== member.donations ||
