@@ -59,7 +59,7 @@ class LastOnlineCommand extends Command {
 					.join('\n')}`,
 				data.members > members.length
 					? `.......  ${data.members - members.length}  Untracked members\`\`\``
-					: '````'
+					: '```'
 			])
 			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL());
 
