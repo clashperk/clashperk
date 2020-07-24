@@ -89,6 +89,7 @@ class ClashPerk extends AkairoClient {
 		this.listenerHandler.loadAll();
 
 		await Database.connect(this);
+		await Database.createIndex();
 		this.settings = new Settings(Database.mongodb.db('clashperk').collection('settings'));
 		this.mongodb = Database.mongodb.db('clashperk');
 
