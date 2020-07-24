@@ -6,19 +6,13 @@ class LinkCommand extends Command {
 			aliases: ['link'],
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [
-					'Links a clan or player to your account.',
-					'',
-					'**Available Methods**',
-					'• clan `<clanTag>`',
-					'• player `<playerTag>`',
-					'',
-					'For additional `<...args>` usage refer to the examples below.'
+					'Links a clan or player to your account.'
 				],
-				usage: '<method> <...args>',
-				examples: ['clan #8QU8J9LP', 'player #9Q92C8R20']
+				usage: '<method> <tag> [@user]',
+				examples: ['#8QU8J9LP', '#9Q92C8R20 @Suvajit']
 			},
 			flags: ['clan', 'player']
 		});
