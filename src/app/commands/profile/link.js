@@ -38,7 +38,7 @@ class LinkCommand extends Command {
 
 		const tag = yield {
 			match: 'phrase',
-			type: 'string'
+			type: (msg, tag) => tag ? `#${tag.replace(/#/g, '')}` : null
 		};
 
 		const rest = yield {
@@ -65,8 +65,8 @@ class LinkCommand extends Command {
 		]);
 
 		const num = {
-			1: '1⃣',
-			2: '2⃣',
+			1: '1️⃣',
+			2: '2️⃣',
 			3: '❌'
 		};
 
@@ -75,7 +75,8 @@ class LinkCommand extends Command {
 				.setColor(this.client.embed(message))
 				.setDescription([
 					'',
-					...tags.map((a, i) => `${num[++i]} ${a.name} ${a.tag}`)
+					'',
+					...tags.map((a, i) => `${num[++i]} ${a.name} ${a.tag}\n`)
 				]);
 			const msg = await message.util.send({ embed });
 
@@ -96,7 +97,7 @@ class LinkCommand extends Command {
 				}
 
 				if (reaction.emoji.name === num[2]) {
-					const command = this.handler.modules.get('link-clan');
+					const command = this.handler.modules.get('link-player');
 					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command, true);
 				}
 
