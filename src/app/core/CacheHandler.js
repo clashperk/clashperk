@@ -221,13 +221,11 @@ class CacheHandler {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
 					$set[`members.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
-					$inc[`members.${member.tag}.count`] = 1;
 				}
 			} else if (OldMemberSet.size && !OldMemberSet.has(member.tag)) {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
 				$set[`members.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
-				$inc[`members.${member.tag}.count`] = 1;
 			}
 		}
 
