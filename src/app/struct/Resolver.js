@@ -111,7 +111,7 @@ class Reslover {
 	}
 
 	static format(tag) {
-		return `#${tag.replace(/#/g, '').replace(/O|o/g, '0')}`;
+		return `#${tag.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0')}`;
 	}
 
 	static async fetch(data) {
