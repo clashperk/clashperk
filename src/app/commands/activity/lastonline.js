@@ -48,15 +48,20 @@ class LastOnlineCommand extends Command {
 			});
 		}
 
+		const members = this.filter(data, clan);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				`Last Online Board [${data.members}/50]`,
-				`\`\`\`\u200e${'Last On'.padStart(7, ' ')}   ${'Name'}\n${this.filter(data, clan)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}   ${m.name}`)
-					.join('\n')}\`\`\``
-			]);
+				'Last-Online Times and Last 24h Activities',
+				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')} 24H  ${'NAME'}\n${members
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${(m.count > 99 ? 99 : m.count).toString().padStart(2, ' ')}  ${m.name}`)
+					.join('\n')}`,
+				data.members > members.length
+					? `.......  ${data.members - members.length}  Untracked members\`\`\``
+					: '````'
+			])
+			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL());
 
 		return message.util.send({ embed });
 	}
@@ -65,15 +70,29 @@ class LastOnlineCommand extends Command {
 		return data.padEnd(20, ' ');
 	}
 
-	filter(data, clan) {
+	filter(data, db) {
 		if (data && !data.members) {
-			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null }));
+			return data.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null, count: 0 }));
 		}
+
 		const members = data.memberList.map(member => {
-			const lastOnline = member.tag in clan.members
-				? new Date() - new Date(clan.members[member.tag].lastOnline)
-				: null;
-			return { tag: member.tag, name: member.name, lastOnline };
+			const counts = [];
+			if (member.tag in db.members && db.members[member.tag].activities) {
+				for (const [key, value] of Object.entries(db.members[member.tag].activities)) {
+					if (new Date().getTime() - new Date(key).getTime() <= 864e5) {
+						counts.push(value);
+					}
+				}
+			}
+
+			return {
+				tag: member.tag,
+				name: member.name,
+				lastOnline: member.tag in db.members
+					? new Date() - new Date(db.members[member.tag].lastOnline)
+					: null,
+				count: counts.reduce((p, c) => p + c, 0)
+			};
 		});
 
 		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
