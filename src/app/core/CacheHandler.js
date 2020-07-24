@@ -11,7 +11,7 @@ const ClanLog = require('./ClanLog');
 const fetch = require('node-fetch');
 
 class CacheHandler {
-	constructor(client, { interval = 122 * 1000 } = {}) {
+	constructor(client, { interval = 61 * 1000 } = {}) {
 		this.client = client;
 		this.memberList = {};
 		this.cached = new Map();
@@ -226,13 +226,15 @@ class CacheHandler {
 				) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
-					$set[`members.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
+					$set[`members.${member.tag}.lastOnline`] = new Date();
+					$set[`members.${member.tag}.tag`] = member.tag;
 					$inc[`members.${member.tag}.activities.${date_string}`] = 1;
 				}
 			} else if (OldMemberSet.size && !OldMemberSet.has(member.tag)) {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
-				$set[`members.${member.tag}`] = { lastOnline: new Date(), tag: member.tag };
+				$set[`members.${member.tag}.lastOnline`] = new Date();
+				$set[`members.${member.tag}.tag`] = member.tag;
 				$inc[`members.${member.tag}.activities.${date_string}`] = 1;
 			}
 		}
