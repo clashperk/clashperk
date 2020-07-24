@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { yellow } = require('chalk');
+const { redNum } = require('../../util/emojis');
 
 class LinkCommand extends Command {
 	constructor() {
@@ -64,13 +64,48 @@ class LinkCommand extends Command {
 			this.client.coc.player(tag).catch(() => ({ ok: false }))
 		]);
 
+		const num = {
+			1: '1⃣',
+			2: '2⃣',
+			3: '❌'
+		};
+
 		if (tags.every(a => a.ok)) {
 			const embed = this.client.util.embed()
-				.setAuthor('..')
+				.setColor(this.client.embed(message))
 				.setDescription([
-					...tags.map((a, i) => `**${++i}** ${a.name} ${a.tag}`)
+					'',
+					...tags.map((a, i) => `${num[++i]} ${a.name} ${a.tag}`)
 				]);
-			return message.channel.send({ embed });
+			const msg = await message.util.send({ embed });
+
+			for (const emoji of [...Object.values(num)]) {
+				await msg.react(emoji);
+				await this.delay(250);
+			}
+
+			const collector = msg.createReactionCollector(
+				(reaction, user) => [...Object.values(num)].includes(reaction.emoji.name) && user.id === message.author.id,
+				{ time: 90000, max: 1 }
+			);
+
+			collector.on('collect', async reaction => {
+				if (reaction.emoji.name === num[1]) {
+					const command = this.handler.modules.get('link-clan');
+					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command, true);
+				}
+
+				if (reaction.emoji.name === num[2]) {
+					const command = this.handler.modules.get('link-clan');
+					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command, true);
+				}
+
+				if (reaction.emoji.name === num[3]) {
+					return message.util.send({ embed: { author: { name: 'Command has been cancelled.' } } });
+				}
+			});
+
+			collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 		}
 	}
 }
