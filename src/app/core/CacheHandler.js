@@ -221,8 +221,7 @@ class CacheHandler {
 					this.memberList[key][member.tag].donationsReceived !== member.donationsReceived ||
 					this.memberList[key][member.tag].versusTrophies !== member.versusTrophies ||
 					this.memberList[key][member.tag].expLevel !== member.expLevel ||
-					this.memberList[key][member.tag].name !== member.name ||
-					(this.memberList[key][member.tag].trophies < member.trophies && member.trophies > 3500)
+					this.memberList[key][member.tag].name !== member.name
 				) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
