@@ -48,15 +48,20 @@ class LastOnlineCommand extends Command {
 			});
 		}
 
+		const members = this.filter(data, clan);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				`Last Online Board [${data.members}/50]`,
-				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  1D  ${'NAME'}\n${this.filter(data, clan)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${m.count.toString().padStart(2, ' ')}  ${m.name}`)
-					.join('\n')}\`\`\``
-			]);
+				'Last-Online Times and Last 24h Activities',
+				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')} 24H  ${'NAME'}\n${members
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${(m.count > 99 ? 99 : m.count).toString().padStart(2, ' ')}  ${m.name}`)
+					.join('\n')}`,
+				data.members > members.length
+					? `.......  ${data.members - members.length}  Untracked members\`\`\``
+					: '````'
+			])
+			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL());
 
 		return message.util.send({ embed });
 	}
