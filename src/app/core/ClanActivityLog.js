@@ -16,7 +16,7 @@ class LastOnlineEvent {
 				const collection = mongodb.db('clashperk').collection('lastonlines');
 				await collection.updateOne({ tag: clan.tag }, update, { upsert: true });
 			} catch (error) {
-				this.logger.error(error, { label: 'MONGODB_ERROR' });
+				this.client.logger.error(error, { label: 'MONGODB_ERROR' });
 			}
 		}
 
