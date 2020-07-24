@@ -225,6 +225,8 @@ class CacheHandler {
 				) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
+					$set.guild = cache.guild;
+					$set.clan_id = ObjectId(key);
 					$set[`members.${member.tag}.lastOnline`] = new Date();
 					$set[`members.${member.tag}.tag`] = member.tag;
 					$inc[`members.${member.tag}.activities.${date_string}`] = 1;
@@ -232,6 +234,8 @@ class CacheHandler {
 			} else if (OldMemberSet.size && !OldMemberSet.has(member.tag)) {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
+				$set.guild = cache.guild;
+				$set.clan_id = ObjectId(key);
 				$set[`members.${member.tag}.lastOnline`] = new Date();
 				$set[`members.${member.tag}.tag`] = member.tag;
 				$inc[`members.${member.tag}.activities.${date_string}`] = 1;

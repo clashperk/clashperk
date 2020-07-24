@@ -74,7 +74,9 @@ class Database {
 
 			db.collection('clanstores').createIndex({ patron: 1 }),
 
-			db.collection('clangames').createIndex({ createdAt: 1 }, { expireAfterSeconds: 2160000 })
+			db.collection('clangames').createIndex({ createdAt: 1 }, { expireAfterSeconds: 2160000 }),
+
+			db.collection('lastonlines').createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 })
 		]);
 	}
 }

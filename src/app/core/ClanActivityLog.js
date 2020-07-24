@@ -13,8 +13,9 @@ class LastOnlineEvent {
 		const cache = this.cached.get(id);
 		if (Object.keys(update).length && cache) {
 			try {
-				const collection = mongodb.db('clashperk').collection('lastonlines');
-				await collection.updateOne({ tag: clan.tag }, update, { upsert: true });
+				await mongodb.db('clashperk')
+					.collection('lastonlines')
+					.updateOne({ clan_id: ObjectId(id) }, update, { upsert: true });
 			} catch (error) {
 				this.client.logger.error(error, { label: 'MONGODB_ERROR' });
 			}
@@ -125,7 +126,7 @@ class LastOnlineEvent {
 	async embed(clan, id) {
 		const data = await mongodb.db('clashperk')
 			.collection('lastonlines')
-			.findOne({ tag: clan.tag });
+			.findOne({ clan_id: ObjectId(id) });
 
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
