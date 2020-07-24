@@ -78,6 +78,8 @@ class LinkCommand extends Command {
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
 				.setDescription([
+					'Select a Player or Clan',
+					'',
 					...tags.map((a, i) => `**${types[i + 1]}**\n${num[i + 1]} ${a.name} (${a.tag})\n`)
 				]);
 			const msg = await message.util.send({ embed });
