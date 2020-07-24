@@ -11,7 +11,7 @@ const ClanLog = require('./ClanLog');
 const fetch = require('node-fetch');
 
 class CacheHandler {
-	constructor(client, { interval = 61 * 1000 } = {}) {
+	constructor(client, { interval = 122 * 1000 } = {}) {
 		this.client = client;
 		this.memberList = {};
 		this.cached = new Map();
