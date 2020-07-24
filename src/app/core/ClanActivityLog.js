@@ -133,9 +133,9 @@ class LastOnlineEvent {
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Last Online Board [${clan.members}/50]`,
-				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  1D  ${'NAME'.padEnd(18, ' ')}`,
+				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  ${'NAME'.padEnd(18, ' ')}`,
 				this.filter(clan, data)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}  ${m.count.toString().padStart(2, ' ')} ${m.name}`)
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}  ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
 			])
