@@ -66,7 +66,7 @@ class LinkClanCommand extends Command {
 				'',
 				'If you don\'t provide the tag for other lookup comamnds, the Bot will use the last one you linked.',
 				`For Examples **\u200b${prefix}clan** will return the info of *${data.name} (${data.tag})*.`,
-				`As well as **\u200b${prefix}thcompo** will return the townhall composition for the same clan (works with other comamnds too).`
+				`As well as **\u200b${prefix}compo** will return the townhall composition for the same clan (works with other comamnds too).`
 			]);
 		return message.util.send({ embed });
 	}
