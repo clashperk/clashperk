@@ -133,9 +133,9 @@ class LastOnlineEvent {
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Last Online Board [${clan.members}/50]`,
-				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  ${'NAME'.padEnd(20, ' ')}`,
+				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  1D  ${'NAME'.padEnd(18, ' ')}`,
 				this.filter(data, clan)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}  ${m.name}`)
+					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}  ${m.count.toString().padStart(2, ' ')} ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
 			])
@@ -154,15 +154,27 @@ class LastOnlineEvent {
 			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null }));
 		}
 
-		const members = clan.memberList.map(member => {
-			const lastOnline = member.tag in data.members
-				? new Date() - new Date(data.members[member.tag].lastOnline)
-				: null;
-			return { tag: member.tag, name: member.name, lastOnline };
+		const members = data.memberList.map(member => {
+			const counts = [];
+			if (member.tag in clan.members && clan.members[member.tag].activities) {
+				for (const [key, value] of Object.entries(clan.members[member.tag].activities)) {
+					if (new Date().getTime() - new Date(key).getTime() <= 864e5) {
+						counts.push(value);
+					}
+				}
+			}
+
+			return {
+				tag: member.tag,
+				name: member.name,
+				lastOnline: member.tag in clan.members
+					? new Date() - new Date(clan.members[member.tag].lastOnline)
+					: null,
+				count: counts.reduce((p, c) => p + c, 0)
+			};
 		});
 
 		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
-
 		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
 	}
 
