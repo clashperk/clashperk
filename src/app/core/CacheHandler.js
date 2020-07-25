@@ -54,10 +54,11 @@ class CacheHandler {
 	}
 
 	async session() {
+		const now = new Date();
 		let day = 0;
 		let unix = new Date();
 		while (true) {
-			unix = new Date(unix.getFullYear(), unix.getMonth(), day, 10, 30);
+			unix = new Date(now.getFullYear(), now.getMonth() + 1, day, 5, 0);
 			if (unix.getDay() === 1) break;
 			day -= 1;
 		}

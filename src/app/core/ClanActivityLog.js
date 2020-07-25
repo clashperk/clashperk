@@ -180,8 +180,19 @@ class LastOnlineEvent {
 	}
 
 	async purge(sessionId) {
-		const collection = await mongodb.db('clashperk').collection('clanactivities')
-			.find()
+		const db = mongodb.db('clashperk').collection('clanactivities');
+		const total = await db.find().count();
+		const shards = this.client.shard.count;
+		const { div, mod } = { div: Math.floor(total / shards), mod: total % shards };
+		const arr = new Array(shards).fill();
+		const { skip, limit } = arr.map((_, i) => {
+			const limit = arr.length - 1 === i ? (div * (i + 1)) + mod : div * (i + 1);
+			return { skip: i * div, limit };
+		})[this.client.shard.ids[0]];
+
+		const collection = await db.find()
+			.skip(skip)
+			.limit(limit)
 			.toArray();
 		for (const data of collection) {
 			if (!data.members) continue;
