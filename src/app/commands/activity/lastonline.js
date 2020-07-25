@@ -41,7 +41,7 @@ class LastOnlineCommand extends Command {
 
 	async exec(message, { data }) {
 		const db = await mongodb.db('clashperk')
-			.collection('lastonlines')
+			.collection('clanactivities')
 			.find({ tag: data.tag })
 			.toArray()
 			.then(collection => {

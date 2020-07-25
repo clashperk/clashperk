@@ -14,7 +14,7 @@ class LastOnlineEvent {
 		if (Object.keys(update).length && cache) {
 			try {
 				await mongodb.db('clashperk')
-					.collection('lastonlines')
+					.collection('clanactivities')
 					.updateOne({ clan_id: ObjectId(id) }, update, { upsert: true });
 			} catch (error) {
 				this.client.logger.error(error, { label: 'MONGODB_ERROR' });
@@ -125,7 +125,7 @@ class LastOnlineEvent {
 
 	async embed(clan, id) {
 		const data = await mongodb.db('clashperk')
-			.collection('lastonlines')
+			.collection('clanactivities')
 			.findOne({ clan_id: ObjectId(id) });
 
 		const cache = this.cached.get(id);
@@ -187,6 +187,21 @@ class LastOnlineEvent {
 		}
 
 		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' }).padStart(7, ' ');
+	}
+
+	session(month, hour = 10, min = 30) {
+		let day = 0;
+		let unix = new Date();
+		while (true) {
+			unix = new Date(new Date().getFullYear(), month, day, hour, min);
+			if (unix.getDay() === 1) break;
+			day -= 1;
+		}
+
+		if (unix > new Date()) {
+			this.session(new Date().getMonth() - 1);
+		}
+		this.default = unix;
 	}
 
 	async init() {
