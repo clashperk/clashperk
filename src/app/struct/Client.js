@@ -110,6 +110,7 @@ class ClashPerk extends AkairoClient {
 				this.patron.init();
 				this.firebase.init();
 				this.cacheHandler.init();
+				this.cacheHandler.session();
 			}
 		});
 	}

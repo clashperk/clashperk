@@ -53,6 +53,25 @@ class CacheHandler {
 		}
 	}
 
+	async session() {
+		const now = new Date();
+		let day = 0;
+		let unix = new Date();
+		while (true) {
+			unix = new Date(now.getFullYear(), now.getMonth() + 1, day, 5, 0);
+			if (unix.getDay() === 1) break;
+			day -= 1;
+		}
+
+		const ms = new Date(unix) - new Date();
+		if (ms > 0) {
+			const id = setTimeout(async () => {
+				clearTimeout(id);
+				return this.activityLog.purge(unix);
+			}, ms);
+		}
+	}
+
 	async init() {
 		await this.clanembedLog.init();
 		await this.donationLog.init();
@@ -117,7 +136,7 @@ class CacheHandler {
 
 		if (!this.cached.has(id)) {
 			this.cached.set(id, {
-				// guild: data.guild,
+				guild: data.guild,
 				tag: data.tag
 			});
 			return this.start(id);
@@ -221,11 +240,12 @@ class CacheHandler {
 					this.memberList[key][member.tag].donationsReceived !== member.donationsReceived ||
 					this.memberList[key][member.tag].versusTrophies !== member.versusTrophies ||
 					this.memberList[key][member.tag].expLevel !== member.expLevel ||
-					this.memberList[key][member.tag].name !== member.name ||
-					(this.memberList[key][member.tag].trophies < member.trophies && member.trophies > 3500)
+					this.memberList[key][member.tag].name !== member.name
 				) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
+					$set.guild = cache.guild;
+					$set.clan_id = ObjectId(key);
 					$set[`members.${member.tag}.lastOnline`] = new Date();
 					$set[`members.${member.tag}.tag`] = member.tag;
 					$inc[`members.${member.tag}.activities.${date_string}`] = 1;
@@ -233,6 +253,8 @@ class CacheHandler {
 			} else if (OldMemberSet.size && !OldMemberSet.has(member.tag)) {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
+				$set.guild = cache.guild;
+				$set.clan_id = ObjectId(key);
 				$set[`members.${member.tag}.lastOnline`] = new Date();
 				$set[`members.${member.tag}.tag`] = member.tag;
 				$inc[`members.${member.tag}.activities.${date_string}`] = 1;

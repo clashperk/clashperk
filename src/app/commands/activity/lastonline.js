@@ -40,15 +40,23 @@ class LastOnlineCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		const db = mongodb.db('clashperk').collection('lastonlines');
-		const clan = await db.findOne({ tag: data.tag });
-		if (!clan) {
+		const db = await mongodb.db('clashperk')
+			.collection('clanactivities')
+			.find({ tag: data.tag })
+			.toArray()
+			.then(collection => {
+				if (!collection.length) return null;
+				const item = collection.find(d => d.guild === message.guild.id);
+				if (item) return item;
+				return collection[0];
+			});
+		if (!db) {
 			return message.util.send({
 				embed: { description: 'Setup a clan last-online board to use this command.' }
 			});
 		}
 
-		const members = this.filter(data, clan);
+		const members = this.filter(data, db);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)

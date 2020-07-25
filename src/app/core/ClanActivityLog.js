@@ -13,8 +13,9 @@ class LastOnlineEvent {
 		const cache = this.cached.get(id);
 		if (Object.keys(update).length && cache) {
 			try {
-				const collection = mongodb.db('clashperk').collection('lastonlines');
-				await collection.updateOne({ tag: clan.tag }, update, { upsert: true });
+				await mongodb.db('clashperk')
+					.collection('clanactivities')
+					.updateOne({ clan_id: ObjectId(id) }, update, { upsert: true });
 			} catch (error) {
 				this.client.logger.error(error, { label: 'MONGODB_ERROR' });
 			}
@@ -124,8 +125,8 @@ class LastOnlineEvent {
 
 	async embed(clan, id) {
 		const data = await mongodb.db('clashperk')
-			.collection('lastonlines')
-			.findOne({ tag: clan.tag });
+			.collection('clanactivities')
+			.findOne({ clan_id: ObjectId(id) });
 
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
@@ -176,6 +177,44 @@ class LastOnlineEvent {
 
 		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
 		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
+	}
+
+	async purge(sessionId) {
+		const db = mongodb.db('clashperk').collection('clanactivities');
+		const total = await db.find().count();
+		const shards = this.client.shard.count;
+		const { div, mod } = { div: Math.floor(total / shards), mod: total % shards };
+		const arr = new Array(shards).fill();
+		const { skip, limit } = arr.map((_, i) => {
+			const limit = arr.length - 1 === i ? (div * (i + 1)) + mod : div * (i + 1);
+			return { skip: i * div, limit };
+		})[this.client.shard.ids[0]];
+
+		const collection = await db.find()
+			.skip(skip)
+			.limit(limit)
+			.toArray();
+		for (const data of collection) {
+			if (!data.members) continue;
+			const unset = {};
+			for (const m of Object.values(data.members)) {
+				if (!m.activities) continue;
+				if (new Date().getMonth() - new Date(m.lastOnline).getMonth() === 2) {
+					unset[`members.${m.tag}`] = '';
+				}
+				for (const date of Object.keys(m.activities)) {
+					if (new Date(date).getDate() < new Date(sessionId).getDate()) {
+						unset[`members.${m.tag}.activities.${date}`] = '';
+					}
+				}
+			}
+
+			if (Object.keys(unset).length) {
+				await mongodb.db('clashperk')
+					.collection('clanactivities')
+					.updateOne({ clan_id: ObjectId(data.clan_id) }, { $unset: unset });
+			}
+		}
 	}
 
 	format(time) {
