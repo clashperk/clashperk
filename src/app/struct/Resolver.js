@@ -10,7 +10,7 @@ const client = new Client({
 
 class Reslover {
 	static async resolve(message, args, boolean = false) {
-		const tag = /^#?[PYLQGRJCUV0289]+$/i.test(args);
+		const tag = /^#?[PYLQGRJCUV0O289]+$/i.test(args);
 		if (boolean) {
 			if (tag) return this.player(args);
 			const member = await this.isMember(message, args);
