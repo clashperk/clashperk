@@ -198,10 +198,10 @@ class LastOnlineEvent {
 			if (!data.members) continue;
 			const unset = {};
 			for (const m of Object.values(data.members)) {
-				if (!m.activities) continue;
 				if (new Date().getMonth() - new Date(m.lastOnline).getMonth() === 2) {
 					unset[`members.${m.tag}`] = '';
 				}
+				if (!m.activities) continue;
 				for (const date of Object.keys(m.activities)) {
 					if (new Date(date).getDate() < new Date(sessionId).getDate()) {
 						unset[`members.${m.tag}.activities.${date}`] = '';
@@ -210,11 +210,11 @@ class LastOnlineEvent {
 			}
 
 			if (Object.keys(unset).length) {
-				await mongodb.db('clashperk')
-					.collection('clanactivities')
-					.updateOne({ clan_id: ObjectId(data.clan_id) }, { $unset: unset });
+				await db.updateOne({ clan_id: ObjectId(data.clan_id) }, { $unset: unset });
 			}
 		}
+
+		return db.deleteMany({ members: {} });
 	}
 
 	format(time) {
