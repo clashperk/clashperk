@@ -54,7 +54,7 @@ class Database {
 
 			db.collection('lastonlinelogs').createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
-			db.collection('lastonlines').createIndex({ tag: 1 }, { unique: true }),
+			db.collection('clanactivities').createIndex({ clan_id: 1 }, { unique: true }),
 
 			db.collection('clangameslogs').createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
@@ -74,7 +74,9 @@ class Database {
 
 			db.collection('clanstores').createIndex({ patron: 1 }),
 
-			db.collection('clangames').createIndex({ createdAt: 1 }, { expireAfterSeconds: 2160000 })
+			db.collection('clangames').createIndex({ createdAt: 1 }, { expireAfterSeconds: 2160000 }),
+
+			db.collection('clanactivities').createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 })
 		]);
 	}
 }

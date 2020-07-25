@@ -141,6 +141,9 @@ class StorageHandler {
 		await mongodb.db('clashperk').collection('clanwars')
 			.deleteOne({ clan_id: ObjectId(id) });
 
+		await mongodb.db('clashperk').collection('clanactivities')
+			.updateOne({ clan_id: ObjectId(id) }, { createdAt: new Date() });
+
 		return mongodb.db('clashperk').collection('clanstores')
 			.deleteOne({ _id: ObjectId(id) });
 	}
@@ -157,6 +160,8 @@ class StorageHandler {
 		}
 
 		if (data.mode === Modes.ACTIVITY_LOG) {
+			await mongodb.db('clashperk').collection('clanactivities')
+				.updateOne({ clan_id: ObjectId(id) }, { createdAt: new Date() });
 			return mongodb.db('clashperk').collection('lastonlinelogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
