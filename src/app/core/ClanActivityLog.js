@@ -179,6 +179,33 @@ class LastOnlineEvent {
 		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
 	}
 
+	async purge(sessionId) {
+		const collection = await mongodb.db('clashperk').collection('clanactivities')
+			.find()
+			.toArray();
+		for (const data of collection) {
+			if (!data.members) continue;
+			const unset = {};
+			for (const m of Object.values(data.members)) {
+				if (!m.activities) continue;
+				if (new Date().getMonth() - new Date(m.lastOnline).getMonth() === 2) {
+					unset[`members.${m.tag}`] = '';
+				}
+				for (const date of Object.keys(m.activities)) {
+					if (new Date(date).getDate() < new Date(sessionId).getDate()) {
+						unset[`members.${m.tag}.activities.${date}`] = '';
+					}
+				}
+			}
+
+			if (Object.keys(unset).length) {
+				await mongodb.db('clashperk')
+					.collection('clanactivities')
+					.updateOne({ clan_id: ObjectId(data.clan_id) }, { $unset: unset });
+			}
+		}
+	}
+
 	format(time) {
 		if (time > 864e5) {
 			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' }).padStart(7, ' ');
@@ -187,21 +214,6 @@ class LastOnlineEvent {
 		}
 
 		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' }).padStart(7, ' ');
-	}
-
-	session(month, hour = 10, min = 30) {
-		let day = 0;
-		let unix = new Date();
-		while (true) {
-			unix = new Date(new Date().getFullYear(), month, day, hour, min);
-			if (unix.getDay() === 1) break;
-			day -= 1;
-		}
-
-		if (unix > new Date()) {
-			this.session(new Date().getMonth() - 1);
-		}
-		this.default = unix;
 	}
 
 	async init() {

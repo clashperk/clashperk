@@ -53,6 +53,24 @@ class CacheHandler {
 		}
 	}
 
+	async session() {
+		let day = 0;
+		let unix = new Date();
+		while (true) {
+			unix = new Date(unix.getFullYear(), unix.getMonth(), day, 10, 30);
+			if (unix.getDay() === 1) break;
+			day -= 1;
+		}
+
+		const ms = new Date(unix) - new Date();
+		if (ms > 0) {
+			const id = setTimeout(async () => {
+				clearTimeout(id);
+				return this.activityLog.purge(unix);
+			}, ms);
+		}
+	}
+
 	async init() {
 		await this.clanembedLog.init();
 		await this.donationLog.init();
