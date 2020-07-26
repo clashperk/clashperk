@@ -2,11 +2,7 @@ const fetch = require('node-fetch');
 const moment = require('moment');
 
 class Chart {
-	constructor(client) {
-		this.client = client;
-	}
-
-	build(data) {
+	static build(data) {
 		const dataSet = new Array(24).fill()
 			.map((_, i) => {
 				const decrement = new Date() - (60 * 60 * 1000 * i);
@@ -39,7 +35,7 @@ class Chart {
 		});
 	}
 
-	async chart(data, color) {
+	static async chart(data, color) {
 		const collection = [];
 		if (Array.isArray(data)) {
 			for (const d of data) {
@@ -62,7 +58,7 @@ class Chart {
 		}));
 
 		const body = {
-			backgroundColor: 'white',
+			backgroundColor: color ? 'transparent' : 'white',
 			width: 500,
 			height: 300,
 			format: 'png',
@@ -75,11 +71,12 @@ class Chart {
 				options: {
 					responsive: true,
 					legend: {
-						position: 'top'
+						position: 'top',
+						display: collection.length > 1 ? true : false
 					},
 					title: {
-						display: false,
-						text: ['Online Members Over Time']
+						display: collection.length > 1 ? false : true,
+						text: [`${collection[0].name}`]
 					}
 				}
 			}
