@@ -49,7 +49,7 @@ class Chart {
 			collection.push({ name: data.name, data: this.build(data) });
 		}
 
-		const colors = ['#f96854', '#50c878', '#266ef7'];
+		const colors = ['#266ef7', '#c63304', '#50c878'];
 
 		const datasets = collection.map((obj, i) => ({
 			label: obj.name,
