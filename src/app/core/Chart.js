@@ -6,7 +6,7 @@ class Chart {
 		this.client = client;
 	}
 
-	async build(data) {
+	build(data) {
 		const dataSet = new Array(24).fill()
 			.map((_, i) => {
 				const decrement = new Date() - (60 * 60 * 1000 * i);
@@ -25,17 +25,42 @@ class Chart {
 			}
 		}
 
-		const newSet = dataSet.map((a, i) => {
+		return dataSet.reverse().map((a, i) => {
+			const time = moment(new Date(a.time)).utcOffset('+05:30').format('kk:mm');
 			const short = (i + 1) % 2 === 0
-				? moment(new Date(a.time)).utcOffset('+05:30').format('kk:mm')
+				? time.includes('24') || time.includes('23')
+					? moment(new Date(a.time)).utcOffset('+05:30').format('DD MMM')
+					: time
 				: '';
-			return { short, time: a.time, count: a.count };
+			return {
+				short,
+				count: a.count
+			};
 		});
-
-		return this.chart(data, newSet);
 	}
 
-	async chart(data, collection = []) {
+	async chart(data, color) {
+		const collection = [];
+		if (Array.isArray(data)) {
+			for (const d of data) {
+				collection.push({ name: d.name, data: this.build(d) });
+			}
+		} else {
+			collection.push({ name: data.name, data: this.build(data) });
+		}
+
+		const colors = ['#0080ff', '#f30c11', '#00dbf3', '#f96854'];
+
+		const datasets = collection.map((obj, i) => ({
+			label: obj.name,
+			type: 'line',
+			fill: false,
+			backgroundColor: colors[i],
+			borderColor: colors[i],
+			borderWidth: 2,
+			data: [...obj.data.map(d => d.count)]
+		}));
+
 		const body = {
 			backgroundColor: 'white',
 			width: 500,
@@ -44,18 +69,8 @@ class Chart {
 			chart: {
 				type: 'bar',
 				data: {
-					labels: [...collection.map(d => d.short)],
-					datasets: [
-						{
-							label: 'Online Members',
-							type: 'line',
-							fill: false,
-							backgroundColor: 'rgba(54, 162, 235, 0.5)',
-							borderColor: 'rgb(54, 162, 235)',
-							borderWidth: 2,
-							data: [...collection.map(d => d.count)]
-						}
-					]
+					labels: [...collection[0].data.map(d => d.short)],
+					datasets
 				},
 				options: {
 					responsive: true,
@@ -64,7 +79,7 @@ class Chart {
 					},
 					title: {
 						display: true,
-						text: [data.name]
+						text: ['Online Members Over Time']
 					}
 				}
 			}

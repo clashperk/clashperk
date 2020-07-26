@@ -6,8 +6,8 @@ const Chart = require('../../core/Chart');
 
 class ActivityCommand extends Command {
 	constructor() {
-		super('activity', {
-			aliases: ['activity', 'av'],
+		super('activities', {
+			aliases: ['activities', 'avs'],
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
@@ -15,23 +15,15 @@ class ActivityCommand extends Command {
 				content: 'Shows an approximate last-online time of clan members.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
-			}
-		});
-	}
-
-	*args() {
-		const data = yield {
-			type: async (message, args) => {
-				const resolved = await Resolver.resolve(message, args);
-				if (resolved.status !== 200) {
-					await message.channel.send({ embed: resolved.embed });
-					return Flag.cancel();
+			},
+			args: [
+				{
+					id: 'tags',
+					type: (msg, args) => args ? args.split(/ +/g) : null,
+					match: 'content'
 				}
-				return resolved;
-			}
-		};
-
-		return { data };
+			]
+		});
 	}
 
 	cooldown(message) {
@@ -39,25 +31,23 @@ class ActivityCommand extends Command {
 		return 5000;
 	}
 
-	async exec(message, { data }) {
-		const db = await mongodb.db('clashperk')
-			.collection('clanactivities')
-			.find({ tag: data.tag })
-			.toArray()
-			.then(collection => {
-				if (!collection.length) return null;
-				const item = collection.find(d => d.guild === message.guild.id);
-				if (item) return item;
-				return collection[0];
-			});
-		if (!db) {
+	async exec(message, { tags }) {
+		console.log(tags);
+		if (!tags.length) return;
+		const db = mongodb.db('clashperk').collection('clanactivities');
+		const clans = await Promise.all([
+			...tags.map(tag => db.findOne({ tag }))
+		]).then(clans => clans.filter(clan => clan !== null));
+
+		console.log(clans);
+		if (!clans.length) {
 			return message.util.send({
 				embed: { description: 'Setup a clan last-online board to use this command.' }
 			});
 		}
 
 		const chart = new Chart(this.client);
-		const buffer = await chart.build(db);
+		const buffer = await chart.chart(clans, this.client.embed(message));
 		return message.util.send({ files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }] });
 	}
 }
