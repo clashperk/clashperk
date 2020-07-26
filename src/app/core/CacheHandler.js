@@ -13,7 +13,7 @@ const fetch = require('node-fetch');
 class CacheHandler {
 	constructor(client, { interval = 122 * 1000 } = {}) {
 		this.client = client;
-		this.memberList = {};
+		this.members = {};
 		this.cached = new Map();
 		this.interval = interval;
 
@@ -53,7 +53,7 @@ class CacheHandler {
 		}
 	}
 
-	async session() {
+	session() {
 		const now = new Date();
 		let day = 0;
 		let unix = new Date();
@@ -70,6 +70,8 @@ class CacheHandler {
 				return this.activityLog.purge(unix);
 			}, ms);
 		}
+
+		return { unix, ms };
 	}
 
 	async init() {
@@ -106,8 +108,8 @@ class CacheHandler {
 	}
 
 	async launch() {
-		for (const key of this.cached.keys()) {
-			await this.start(key);
+		for (const id of this.cached.keys()) {
+			await this.start(id);
 			await this.delay(250);
 		}
 	}
@@ -167,26 +169,26 @@ class CacheHandler {
 		}
 
 		if (!data) {
-			delete this.memberList[id];
+			delete this.members[id];
 			if (cache && cache.intervalId) clearInterval(cache.intervalId);
 			return this.cached.delete(id);
 		}
 	}
 
-	async start(key) {
-		const cache = this.cached.get(key);
-		if (!cache) return;
+	async start(id) {
+		const cache = this.cached.get(id);
+		if (!cache) return null;
 		const clan = await this.clan(cache.tag);
-		if (!clan) return;
-		if (!clan.memberList.length) return;
+		if (!clan) return null;
+		if (!clan.memberList.length) return null;
 
 		const CurrentMemberList = clan.memberList.map(m => m.tag);
 		const CurrentMemberSet = new Set(CurrentMemberList);
-		const oldMemberList = this.memberList[key] ? Object.keys(this.memberList[key]) : [];
+		const oldMemberList = this.members[id] ? Object.keys(this.members[id]) : [];
 		const OldMemberSet = new Set(oldMemberList);
 
 		const data = {
-			_id: key,
+			_id: id,
 			donated: [],
 			received: [],
 			donations: 0,
@@ -203,13 +205,13 @@ class CacheHandler {
 				badge: clan.badgeUrls.small
 			};
 
-			if (this.memberList[key] && member.tag in this.memberList[key]) {
-				const donations = member.donations - this.memberList[key][member.tag].donations;
+			if (this.members[id] && member.tag in this.members[id]) {
+				const donations = member.donations - this.members[id][member.tag].donations;
 				if (donations && donations > 0) {
 					data.donations += donations;
 					data.donated.push({ league: member.league.id, name: member.name, tag: member.tag, donated: donations });
 				}
-				const receives = member.donationsReceived - this.memberList[key][member.tag].donationsReceived;
+				const receives = member.donationsReceived - this.members[id][member.tag].donationsReceived;
 				if (receives && receives > 0) {
 					data.receives += receives;
 					data.received.push({ league: member.league.id, name: member.name, tag: member.tag, received: receives });
@@ -234,18 +236,18 @@ class CacheHandler {
 				(date.getMonth() + 1).toString().padStart(2, '0'),
 				date.getDate().toString().padStart(2, '0')
 			].join('-').concat(`T${date.getHours().toString().padStart(2, '0')}:00`);
-			if (this.memberList[key] && member.tag in this.memberList[key]) {
+			if (this.members[id] && member.tag in this.members[id]) {
 				if (
-					this.memberList[key][member.tag].donations !== member.donations ||
-					this.memberList[key][member.tag].donationsReceived !== member.donationsReceived ||
-					this.memberList[key][member.tag].versusTrophies !== member.versusTrophies ||
-					this.memberList[key][member.tag].expLevel !== member.expLevel ||
-					this.memberList[key][member.tag].name !== member.name
+					this.members[id][member.tag].donations !== member.donations ||
+					this.members[id][member.tag].donationsReceived !== member.donationsReceived ||
+					this.members[id][member.tag].versusTrophies !== member.versusTrophies ||
+					this.members[id][member.tag].expLevel !== member.expLevel ||
+					this.members[id][member.tag].name !== member.name
 				) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
 					$set.guild = cache.guild;
-					$set.clan_id = ObjectId(key);
+					$set.clan_id = ObjectId(id);
 					$set[`members.${member.tag}.lastOnline`] = new Date();
 					$set[`members.${member.tag}.tag`] = member.tag;
 					$inc[`members.${member.tag}.activities.${date_string}`] = 1;
@@ -254,7 +256,7 @@ class CacheHandler {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
 				$set.guild = cache.guild;
-				$set.clan_id = ObjectId(key);
+				$set.clan_id = ObjectId(id);
 				$set[`members.${member.tag}.lastOnline`] = new Date();
 				$set[`members.${member.tag}.tag`] = member.tag;
 				$inc[`members.${member.tag}.activities.${date_string}`] = 1;
@@ -276,7 +278,7 @@ class CacheHandler {
 
 		// Last Online
 		await this.broadcast({
-			_id: key,
+			_id: id,
 			clan,
 			update: $update,
 			event: Modes.ACTIVITY_LOG
@@ -299,12 +301,12 @@ class CacheHandler {
 		if (CurrentMemberSet.size && OldMemberSet.size) {
 			const tags = [];
 			for (const tag of oldMemberList.filter(tag => !CurrentMemberSet.has(tag))) {
-				if (this.memberList[key] && this.memberList[key][tag]) {
+				if (this.members[id] && this.members[id][tag]) {
 					tags.push({
 						tag,
 						mode: 'LEFT',
-						donated: this.memberList[key][tag].donations,
-						received: this.memberList[key][tag].donationsReceived
+						donated: this.members[id][tag].donations,
+						received: this.members[id][tag].donationsReceived
 					});
 				} else {
 					tags.push({ tag, mode: 'LEFT' });
@@ -317,7 +319,7 @@ class CacheHandler {
 
 			if (tags.length) {
 				await this.broadcast({
-					_id: key,
+					_id: id,
 					tags: tags.map(tag => ({
 						value: Math.random(),
 						tag: tag.tag,
@@ -335,7 +337,7 @@ class CacheHandler {
 
 				// Force update clan embed
 				await this.broadcast({
-					_id: key,
+					_id: id,
 					clan,
 					forced: true,
 					event: Modes.CLAN_EMBED_LOG
@@ -343,7 +345,7 @@ class CacheHandler {
 
 				// Clan Games
 				await this.broadcast({
-					_id: key,
+					_id: id,
 					clan,
 					forced: true,
 					tags,
@@ -357,23 +359,23 @@ class CacheHandler {
 		// Clan Embed
 		if (!temp.delete('ON_HOLD')) {
 			await this.broadcast({
-				_id: key,
+				_id: id,
 				clan,
 				event: Modes.CLAN_EMBED_LOG
 			});
 
 			// Clan Games
 			await this.broadcast({
-				_id: key,
+				_id: id,
 				clan,
 				event: Modes.CLAN_GAMES_LOG
 			});
 		}
 
 		// Purge Cache
-		this.memberList[key] = {};
+		this.members[id] = {};
 		for (const member of clan.memberList) {
-			this.memberList[key][member.tag] = member;
+			this.members[id][member.tag] = member;
 		}
 
 		OldMemberSet.clear();
@@ -381,8 +383,8 @@ class CacheHandler {
 
 		// Callback
 		if (cache && cache.intervalId) clearInterval(cache.intervalId);
-		cache.intervalId = setInterval(this.start.bind(this), this.interval, key);
-		this.cached.set(key, cache);
+		cache.intervalId = setInterval(this.start.bind(this), this.interval, id);
+		return this.cached.set(id, cache);
 	}
 
 	async clan(tag) {
@@ -413,7 +415,7 @@ class CacheHandler {
 		this.clangamesLog.cached.clear();
 		this.clanwarLog.clear();
 
-		this.memberList = {};
+		this.members = {};
 		return this.cached.clear();
 	}
 }
