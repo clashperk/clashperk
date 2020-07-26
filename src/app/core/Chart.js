@@ -25,8 +25,10 @@ class Chart {
 			}
 		}
 
-		const newSet = dataSet.reverse().map((a, i) => {
-			const short = moment(new Date(a.time)).utcOffset('+05:30').format('kk:mm');
+		const newSet = dataSet.map((a, i) => {
+			const short = (i + 1) % 2 === 0
+				? moment(new Date(a.time)).utcOffset('+05:30').format('kk:mm')
+				: '';
 			return { short, time: a.time, count: a.count };
 		});
 
@@ -35,14 +37,14 @@ class Chart {
 
 	async chart(data = []) {
 		const body = {
-			backgroundColor: 'transparent',
+			backgroundColor: 'white',
 			width: 500,
 			height: 300,
 			format: 'png',
 			chart: {
 				type: 'bar',
 				data: {
-					labels: [...data.map(a => a.short)],
+					labels: [...data.map(d => d.short)],
 					datasets: [
 						{
 							label: 'Online Members',
@@ -51,7 +53,7 @@ class Chart {
 							backgroundColor: 'rgba(255, 99, 132, 0.5)',
 							borderColor: 'rgb(255, 99, 132)',
 							borderWidth: 2,
-							data: [...data.map(a => a.short)]
+							data: [...data.map(d => d.count)]
 						}
 					]
 				},
@@ -68,12 +70,12 @@ class Chart {
 			}
 		};
 
-		const res = await fetch('https://quickchart.io/chart/create', {
+		const res = await fetch('https://quickchart.io/chart', {
 			method: 'POST',
-			body: JSON.stringify(body),
 			headers: {
 				'Content-Type': 'application/json'
-			}
+			},
+			body: JSON.stringify(body)
 		});
 
 		return res.buffer();
