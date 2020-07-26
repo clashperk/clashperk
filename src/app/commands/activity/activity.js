@@ -8,11 +8,11 @@ class ActivityCommand extends Command {
 	constructor() {
 		super('activity', {
 			aliases: ['activity', 'av'],
-			category: 'activity',
+			category: 'hidden',
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows an approximate last-online time of clan members.',
+				content: 'Shows a graph of active members over time.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			}

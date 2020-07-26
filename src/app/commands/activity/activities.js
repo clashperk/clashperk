@@ -7,13 +7,13 @@ class ActivityCommand extends Command {
 	constructor() {
 		super('activities', {
 			aliases: ['activities', 'avs'],
-			category: 'activity',
+			category: 'hidden',
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows an approximate last-online time of clan members.',
-				usage: '<clanTag>',
-				examples: ['#8QU8J9LP']
+				content: 'Shows a graph of active members over time for clans.',
+				usage: '<clanTags>',
+				examples: ['#8QU8J9LP #YVVCC92G']
 			},
 			args: [
 				{
