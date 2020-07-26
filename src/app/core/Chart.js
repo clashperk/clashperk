@@ -32,10 +32,10 @@ class Chart {
 			return { short, time: a.time, count: a.count };
 		});
 
-		return this.chart(newSet);
+		return this.chart(data, newSet);
 	}
 
-	async chart(data = []) {
+	async chart(data, collection = []) {
 		const body = {
 			backgroundColor: 'white',
 			width: 500,
@@ -44,16 +44,16 @@ class Chart {
 			chart: {
 				type: 'bar',
 				data: {
-					labels: [...data.map(d => d.short)],
+					labels: [...collection.map(d => d.short)],
 					datasets: [
 						{
 							label: 'Online Members',
 							type: 'line',
 							fill: false,
-							backgroundColor: 'rgba(255, 99, 132, 0.5)',
-							borderColor: 'rgb(255, 99, 132)',
+							backgroundColor: 'rgba(54, 162, 235, 0.5)',
+							borderColor: 'rgb(54, 162, 235)',
 							borderWidth: 2,
-							data: [...data.map(d => d.count)]
+							data: [...collection.map(d => d.count)]
 						}
 					]
 				},
@@ -64,7 +64,7 @@ class Chart {
 					},
 					title: {
 						display: true,
-						text: ['Air Hounds']
+						text: [data.name]
 					}
 				}
 			}
