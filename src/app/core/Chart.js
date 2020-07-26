@@ -49,7 +49,7 @@ class Chart {
 			collection.push({ name: data.name, data: this.build(data) });
 		}
 
-		const colors = ['#0080ff', '#f30c11', '#00dbf3', '#f96854'];
+		const colors = ['#f96854', '#50c878', '#00dbf3'];
 
 		const datasets = collection.map((obj, i) => ({
 			label: obj.name,
@@ -78,7 +78,7 @@ class Chart {
 						position: 'top'
 					},
 					title: {
-						display: true,
+						display: false,
 						text: ['Online Members Over Time']
 					}
 				}
