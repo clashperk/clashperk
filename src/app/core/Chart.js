@@ -25,13 +25,49 @@ class Chart {
 			}
 		}
 
-		return dataSet.map((a, i) => {
+		const newSet = dataSet.reverse().map((a, i) => {
 			const short = moment(new Date(a.time)).utcOffset('+05:30').format('kk:mm');
 			return { short, time: a.time, count: a.count };
 		});
+
+		return this.chart(newSet);
 	}
 
-	async chart(body) {
+	async chart(data = []) {
+		const body = {
+			backgroundColor: 'transparent',
+			width: 500,
+			height: 300,
+			format: 'png',
+			chart: {
+				type: 'bar',
+				data: {
+					labels: [...data.map(a => a.short)],
+					datasets: [
+						{
+							label: 'Online Members',
+							type: 'line',
+							fill: false,
+							backgroundColor: 'rgba(255, 99, 132, 0.5)',
+							borderColor: 'rgb(255, 99, 132)',
+							borderWidth: 2,
+							data: [...data.map(a => a.short)]
+						}
+					]
+				},
+				options: {
+					responsive: true,
+					legend: {
+						position: 'top'
+					},
+					title: {
+						display: true,
+						text: ['Air Hounds']
+					}
+				}
+			}
+		};
+
 		const res = await fetch('https://quickchart.io/chart/create', {
 			method: 'POST',
 			body: JSON.stringify(body),
