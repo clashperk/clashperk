@@ -63,7 +63,7 @@ class ActivityCommand extends Command {
 		}
 
 		const buffer = await Chart.chart(clans, dark);
-		return message.util.send('__**Online Members Over Time**__', { files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }] });
+		return message.util.send('**Active Members Over Time**', { files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }] });
 	}
 }
 
