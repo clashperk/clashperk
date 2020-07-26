@@ -28,8 +28,7 @@ class UsageCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setTitle('Usage')
 			.setURL('https://clashperk.statuspage.io/')
-			.setTimestamp(new Date('2019-03-31T18:30:00Z'))
-			.setFooter(`${total}x Total`);
+			.setFooter(`${total}x Total • Since April 2019`);
 		/* embed.addField('Users', [
 			`\`\`\`${users.splice(0, 10).map(({ id, uses }, index) => {
 				const user = this.client.users.cache.get(id);
