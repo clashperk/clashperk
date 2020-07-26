@@ -3,6 +3,7 @@ const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
 const moment = require('moment');
 require('moment-duration-format');
+const Chart = require('../../core/Chart');
 
 class LastOnlineCommand extends Command {
 	constructor() {
@@ -56,6 +57,8 @@ class LastOnlineCommand extends Command {
 			});
 		}
 
+		const chart = new Chart(this.client);
+		await chart.build(db).then(console.log);
 		const members = this.filter(data, db);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
