@@ -32,14 +32,12 @@ class ActivityCommand extends Command {
 	}
 
 	async exec(message, { tags }) {
-		console.log(tags);
 		if (!tags.length) return;
 		const db = mongodb.db('clashperk').collection('clanactivities');
 		const clans = await Promise.all([
-			...tags.map(tag => db.findOne({ tag }))
+			...tags.slice(0, 4).map(tag => db.findOne({ tag }))
 		]).then(clans => clans.filter(clan => clan !== null));
 
-		console.log(clans);
 		if (!clans.length) {
 			return message.util.send({
 				embed: { description: 'Setup a clan last-online board to use this command.' }
