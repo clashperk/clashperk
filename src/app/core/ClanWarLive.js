@@ -175,6 +175,9 @@ class ClanWarEvent {
 			}
 		}
 
+		const endsIn = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
+		if (data.state === 'inWar' && endsIn <= 0) data.state === 'warEnded';
+
 		if (data.state === 'inWar') {
 			// if (db && ((new Date() - new Date(db.updatedAt)) < 10 * 60 * 100)) return null;
 			let message = null;
@@ -234,8 +237,8 @@ class ClanWarEvent {
 
 		// overwrite the timer for last 1 hour
 		if (data.state === 'inWar') {
-			const endsIn = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
-			if (endsIn <= 36e5) this.setTimer(id, data.maxAge * 1000, false);
+			if (endsIn < 36e5 && endsIn > 6e5) this.setTimer(id, data.maxAge * 1000, false);
+			else if (endsIn <= 6e5) this.setTimer(id, endsIn + 2000, false);
 			else this.setTimer(id, data.maxAge * 1000, true);
 		} else {
 			this.setTimer(id, data.maxAge * 1000, true);
@@ -255,7 +258,7 @@ class ClanWarEvent {
 			.setURL(this.clanURL(data.clan.tag))
 			.setDescription([
 				'**War Against**',
-				`**[${Util.escapeMarkdown(data.opponent.name)}](${this.clanURL(data.opponent.tag)}) (${data.opponent.tag})**`
+				`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
 			]);
 
 		if (TwoRem.length) {
