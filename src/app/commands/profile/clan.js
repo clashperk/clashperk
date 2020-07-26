@@ -58,7 +58,6 @@ class LinkClanCommand extends Command {
 				}
 			}, { upsert: true });
 
-		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setDescription([

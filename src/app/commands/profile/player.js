@@ -60,7 +60,7 @@ class LinkPlayerCommand extends Command {
 		if (doc && doc.user !== member.id) {
 			return message.util.send({
 				embed: {
-					description: `**${data.name} (${data.tag})** is already linked to another Discord.`
+					description: `**${data.name} (${data.tag})** is already linked to another discord account.`
 				}
 			});
 		}
@@ -68,7 +68,7 @@ class LinkPlayerCommand extends Command {
 		if (doc && doc.tags.length >= 30) {
 			return message.util.send({
 				embed: {
-					description: 'You can only link 25 accounts to your Discord.'
+					description: 'You can only link 25 accounts.'
 				}
 			});
 		}
@@ -84,7 +84,6 @@ class LinkPlayerCommand extends Command {
 				$push: { tags: data.tag }
 			}, { upsert: true });
 
-		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setDescription([
