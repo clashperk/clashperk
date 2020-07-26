@@ -33,9 +33,10 @@ class ActivityCommand extends Command {
 
 	async exec(message, { tags }) {
 		if (!tags.length) return;
+		tags.splice(0, 3);
 		const db = mongodb.db('clashperk').collection('clanactivities');
 		const clans = await Promise.all([
-			...tags.slice(0, 4).map(tag => db.findOne({ tag }))
+			...tags.map(tag => db.findOne({ tag }))
 		]).then(clans => clans.filter(clan => clan !== null));
 
 		if (!clans.length) {
