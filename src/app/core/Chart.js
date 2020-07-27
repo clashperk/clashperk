@@ -24,7 +24,7 @@ class Chart {
 		return dataSet.reverse().map((a, i) => {
 			const time = new Date(new Date(a.time).getTime() + (330 * 60 * 1000));
 			let hour = this.parse(time);
-			if (time.getHours() === 24) hour = this.parse(time, time.getMonth());
+			if (time.getHours() === 0) hour = this.parse(time, time.getMonth());
 			if (time.getHours() === 1) hour = this.parse(time, time.getMonth());
 
 			return {
