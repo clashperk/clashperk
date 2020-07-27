@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const moment = require('moment');
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 class Chart {
 	static build(data) {
@@ -22,17 +22,24 @@ class Chart {
 		}
 
 		return dataSet.reverse().map((a, i) => {
-			const time = moment(new Date(a.time)).utcOffset('+05:30').format('kk:mm');
-			const short = (i + 1) % 2 === 0
-				? time.includes('24') || time.includes('23')
-					? moment(new Date(a.time)).utcOffset('+05:30').format('DD MMM')
-					: time
-				: '';
+			const time = new Date(new Date(a.time).getTime() + (330 * 60 * 1000));
+			let hour = this.parse(time);
+			if (time.getHours() === 24) hour = this.parse(time, time.getMonth());
+			if (time.getHours() === 1) hour = this.parse(time, time.getMonth());
+
 			return {
-				short,
+				short: (i + 1) % 2 === 0 ? hour : '',
 				count: a.count
 			};
 		});
+	}
+
+	static parse(time, month = null) {
+		const hour = time.getHours();
+		const min = time.getMinutes();
+		const date = time.getDate();
+		if (month) return `${date.toString().padStart(2, '0')} ${months[month]}`;
+		return `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
 	}
 
 	static async chart(data, color) {
