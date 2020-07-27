@@ -92,7 +92,7 @@ class Chart {
 			}
 		};
 
-		const res = await fetch('https://quickchart.io/chart', {
+		const res = await fetch('http://13.89.238.119:3400/chart', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
