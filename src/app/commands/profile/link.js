@@ -35,12 +35,12 @@ class LinkCommand extends Command {
 		};
 
 		const tag = yield {
-			match: offset ? 'content' : 'phrase',
+			match: offset ? 'none' : 'phrase',
 			type: (msg, tag) => tag ? `#${tag.replace(/#/g, '')}` : null
 		};
 
 		const rest = yield {
-			match: offset ? 'none' : 'rest',
+			match: 'rest',
 			type: 'string',
 			default: ''
 		};
@@ -57,7 +57,7 @@ class LinkCommand extends Command {
 		} else if (flag2) {
 			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command2, true);
 		} else if (offset) {
-			return this.handler.handleDirectCommand(message, `${tag}`, command3, true);
+			return this.handler.handleDirectCommand(message, `${rest}`, command3, true);
 		}
 
 		const tags = await Promise.all([
