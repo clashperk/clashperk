@@ -61,9 +61,11 @@ class ActivityCommand extends Command {
 				embed: { description: 'Setup a clan last online board to use this command.' }
 			});
 		}
-
+		const hrStart = process.hrtime();
 		const buffer = await Chart.chart(clans, dark);
-		return message.util.send('**Active Members Over Time**', { files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }] });
+		const diff = process.hrtime(hrStart);
+		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
+		return message.util.send(`*\u200b**Executed in ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**\u200b*`, { files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }] });
 	}
 }
 
