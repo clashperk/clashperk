@@ -54,6 +54,9 @@ class Chart {
 			backgroundColor: colors[i],
 			borderColor: colors[i],
 			borderWidth: 2,
+			pointBorderColor: colors[i],
+			pointBackgroundColor: colors[i],
+			// pointRadius: 0,
 			data: [...obj.data.map(d => d.count)]
 		}));
 
