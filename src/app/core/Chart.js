@@ -92,7 +92,7 @@ class Chart {
 			}
 		};
 
-		const res = await fetch('https://quickchart.io/chart', {
+		const res = await fetch('https://ndency-quickchart.glitch.me/chart', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
