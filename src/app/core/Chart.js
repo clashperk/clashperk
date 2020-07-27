@@ -76,7 +76,7 @@ class Chart {
 				type: 'bar',
 				data: {
 					labels: [...collection[0].data.map(d => d.short)],
-					datasets
+					datasets: [...datasets]
 				},
 				options: {
 					responsive: true,
