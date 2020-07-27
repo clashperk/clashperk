@@ -2,7 +2,7 @@ const fetch = require('node-fetch');
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 class Chart {
-	static build(data) {
+	static build(data, offset) {
 		const dataSet = new Array(24).fill()
 			.map((_, i) => {
 				const decrement = new Date() - (60 * 60 * 1000 * i);
@@ -22,7 +22,7 @@ class Chart {
 		}
 
 		return dataSet.reverse().map((a, i) => {
-			const time = new Date(new Date(a.time).getTime() + (330 * 60 * 1000));
+			const time = new Date(new Date(a.time).getTime() + (offset * 1000));
 			let hour = this.parse(time);
 			if (time.getHours() === 0) hour = this.parse(time, time.getMonth());
 			if (time.getHours() === 1) hour = this.parse(time, time.getMonth());
@@ -42,14 +42,14 @@ class Chart {
 		return `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
 	}
 
-	static async chart(data, color) {
+	static async chart(data, offset, color) {
 		const collection = [];
 		if (Array.isArray(data)) {
 			for (const d of data) {
-				collection.push({ name: d.name, data: this.build(d) });
+				collection.push({ name: d.name, data: this.build(d, offset) });
 			}
 		} else {
-			collection.push({ name: data.name, data: this.build(data) });
+			collection.push({ name: data.name, data: this.build(data, offset) });
 		}
 
 		const colors = ['#266ef7', '#c63304', '#50c878'];

@@ -62,8 +62,11 @@ class ActivityCommand extends Command {
 			});
 		}
 
+		const raw = await mongodb.db('clashperk')
+			.collection('timezoneoffset')
+			.findOne({ user: message.author.id });
 		const hrStart = process.hrtime();
-		const buffer = await Chart.chart(clans, dark);
+		const buffer = await Chart.chart(clans, raw ? raw.timezone.offset : 0, dark);
 		const diff = process.hrtime(hrStart);
 		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
 		return message.util.send({

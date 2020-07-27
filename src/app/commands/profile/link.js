@@ -14,7 +14,7 @@ class LinkCommand extends Command {
 				usage: '<tag> [@user]',
 				examples: ['#8QU8J9LP', '#9Q92C8R20 @Suvajit']
 			},
-			flags: ['clan', 'player']
+			flags: ['clan', 'player', 'timezone', 'offset']
 		});
 	}
 
@@ -29,27 +29,35 @@ class LinkCommand extends Command {
 			flag: 'player'
 		};
 
+		const offset = yield {
+			match: 'flag',
+			flag: ['timezone', 'offset']
+		};
+
 		const tag = yield {
-			match: 'phrase',
+			match: offset ? 'content' : 'phrase',
 			type: (msg, tag) => tag ? `#${tag.replace(/#/g, '')}` : null
 		};
 
 		const rest = yield {
-			match: 'rest',
+			match: offset ? 'none' : 'rest',
 			type: 'string',
 			default: ''
 		};
 
-		return { flag1, flag2, rest, tag };
+		return { flag1, flag2, rest, tag, offset };
 	}
 
-	async exec(message, { flag1, flag2, rest, tag }) {
+	async exec(message, { flag1, flag2, rest, tag, offset }) {
 		const command1 = this.handler.modules.get('link-clan');
 		const command2 = this.handler.modules.get('link-player');
+		const command3 = this.handler.modules.get('time-offset');
 		if (flag1) {
 			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command1, true);
 		} else if (flag2) {
 			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command2, true);
+		} else if (offset) {
+			return this.handler.handleDirectCommand(message, `${tag}`, command3, true);
 		}
 
 		const tags = await Promise.all([
