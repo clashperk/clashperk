@@ -92,7 +92,7 @@ class Chart {
 			}
 		};
 
-		const res = await fetch('https://chart.clashperk.xyz/chart', {
+		const res = await fetch('https://quickchart.io/chart', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
