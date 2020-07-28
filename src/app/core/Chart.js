@@ -42,14 +42,14 @@ class Chart {
 		return `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
 	}
 
-	static async chart(data, offset, color) {
+	static async chart(data, timezone, color) {
 		const collection = [];
 		if (Array.isArray(data)) {
 			for (const d of data) {
-				collection.push({ name: d.name, data: this.build(d, offset) });
+				collection.push({ name: d.name, data: this.build(d, timezone.offset) });
 			}
 		} else {
-			collection.push({ name: data.name, data: this.build(data, offset) });
+			collection.push({ name: data.name, data: this.build(data, timezone.offset) });
 		}
 
 		const colors = ['#266ef7', '#c63304', '#50c878'];
@@ -92,7 +92,7 @@ class Chart {
 						display: true,
 						fontSize: 10,
 						padding: 2,
-						text: ['Online Members Per Hour']
+						text: [`Online Members Per Hour (${timezone.name})`]
 					}
 				}
 			}
