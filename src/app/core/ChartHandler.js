@@ -100,7 +100,7 @@ class Chart {
 
 		const res = await fetch(process.env.CHART_API_URL, {
 			method: 'POST',
-			timeout: 3000,
+			timeout: 10000,
 			headers: {
 				'Content-Type': 'application/json'
 			},
