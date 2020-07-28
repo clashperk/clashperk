@@ -29,7 +29,7 @@ class ActivityCommand extends Command {
 	*args() {
 		const tags = yield {
 			type: async (message, args) => {
-				const tags = args ? args.toUpperCase().split(/ +/g) : [];
+				const tags = args ? args.split(/ +/g) : [];
 				if (args && tags.length > 1) return args.split(/ +/g);
 				const resolved = await Resolver.resolve(message, args);
 				if (resolved.status !== 200) {
@@ -59,7 +59,7 @@ class ActivityCommand extends Command {
 		tags.splice(3);
 		const db = mongodb.db('clashperk').collection('clanactivities');
 		const clans = await Promise.all([
-			...tags.map(tag => db.findOne({ tag }))
+			...tags.map(tag => db.findOne({ tag: `#${tag.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0')}` }))
 		]).then(clans => clans.filter(clan => clan !== null));
 
 		if (!clans.length) {
