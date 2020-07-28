@@ -52,7 +52,7 @@ class LastOnlineCommand extends Command {
 			});
 		if (!db) {
 			return message.util.send({
-				embed: { description: 'Setup a clan last-online board to use this command.' }
+				embed: { description: 'Setup a last-online board to use this command.' }
 			});
 		}
 
