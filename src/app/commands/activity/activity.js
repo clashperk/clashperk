@@ -29,7 +29,7 @@ class ActivityCommand extends Command {
 	*args() {
 		const tags = yield {
 			type: async (message, args) => {
-				const tags = args ? args.split(/ +/g) : [];
+				const tags = args ? args.toUpperCase().split(/ +/g) : [];
 				if (args && tags.length > 1) return args.split(/ +/g);
 				const resolved = await Resolver.resolve(message, args);
 				if (resolved.status !== 200) {
