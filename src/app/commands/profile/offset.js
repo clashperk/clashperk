@@ -43,7 +43,7 @@ class TimeOffsetCommand extends Command {
 					user: message.author.id,
 					timezone: {
 						id: raw.timezone.timeZoneId,
-						offset: raw.timezone.rawOffset,
+						offset: raw.timezone.rawOffset + raw.timezone.dstOffset,
 						name: raw.timezone.timeZoneName,
 						location: raw.location.results[0].formatted_address
 					}
@@ -57,7 +57,7 @@ class TimeOffsetCommand extends Command {
 				moment(new Date(Date.now() + (raw.timezone.rawOffset * 1000))).format('MM/DD/YYYY hh:mm A'),
 				'',
 				'**Offset**',
-				`${raw.timezone.rawOffset < 0 ? '-' : '+'}${this.timeString(raw.timezone.rawOffset * 1000)}`
+				`${raw.timezone.rawOffset + raw.timezone.dstOffset < 0 ? '-' : '+'}${this.timeString(raw.timezone.rawOffset * 1000)}`
 			])
 			.setFooter(`${message.author.tag}`, message.author.displayAvatarURL());
 		return message.util.send(`Time zone set to **${raw.timezone.timeZoneName}**`, { embed });
