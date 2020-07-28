@@ -8,13 +8,19 @@ class ActivityCommand extends Command {
 	constructor() {
 		super('activity', {
 			aliases: ['activity', 'av'],
-			category: 'hidden',
+			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
 			description: {
-				content: 'Shows a graph of active members over time.',
+				content: [
+					'Shows online members per hour graph for clans.',
+					'',
+					'Maximum 3 clan tags are accepted.',
+					'',
+					'Set your time zone using **offset** command for better experience.'
+				],
 				usage: '<clanTag>',
-				examples: ['#8QU8J9LP']
+				examples: ['#8QU8J9LP', '#8QU8J9LP #8UUYQ92L']
 			},
 			flags: ['--dark']
 		});
@@ -71,7 +77,11 @@ class ActivityCommand extends Command {
 		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
 		return message.util.send({
 			files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }],
-			content: `**Executed in ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**`
+			content: [
+				raw
+					? `**Rendered in ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**`
+					: `**Set your time zone using \`${this.handler.prefix(message)}offset <location>\` for better experience.**`
+			].join('\n')
 		});
 	}
 }

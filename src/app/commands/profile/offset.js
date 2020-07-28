@@ -6,12 +6,12 @@ const { mongodb } = require('../../struct/Database');
 class TimeOffsetCommand extends Command {
 	constructor() {
 		super('time-offset', {
-			aliases: ['t'],
-			category: 'hidden',
+			aliases: ['offset', 't'],
+			category: 'profile',
 			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
 			description: {
-				content: 'Links your timezone offset.',
+				content: 'Sets your time zone offset.',
 				usage: '<location>',
 				examples: ['Kolkata', 'New York']
 			},
