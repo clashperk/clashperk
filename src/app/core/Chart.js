@@ -82,11 +82,17 @@ class Chart {
 					responsive: true,
 					legend: {
 						position: 'top',
-						display: collection.length > 1 ? true : false
+						display: true,
+						labels: {
+							fontSize: 10,
+							padding: 4
+						}
 					},
 					title: {
-						display: collection.length > 1 ? false : true,
-						text: [`${collection[0].name}`]
+						display: true,
+						fontSize: 10,
+						padding: 2,
+						text: ['Online Members Per Hour']
 					}
 				}
 			}
