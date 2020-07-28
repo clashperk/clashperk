@@ -54,10 +54,10 @@ class TimeOffsetCommand extends Command {
 			.setTitle(`${raw.location.results[0].formatted_address}`)
 			.setDescription([
 				`**${raw.timezone.timeZoneName}**`,
-				moment(new Date(Date.now() + (raw.timezone.rawOffset * 1000))).format('MM/DD/YYYY hh:mm A'),
+				moment(new Date(Date.now() + ((raw.timezone.rawOffset + raw.timezone.dstOffset) * 1000))).format('MM/DD/YYYY hh:mm A'),
 				'',
 				'**Offset**',
-				`${raw.timezone.rawOffset + raw.timezone.dstOffset < 0 ? '-' : '+'}${this.timeString(raw.timezone.rawOffset * 1000)}`
+				`${raw.timezone.rawOffset + raw.timezone.dstOffset < 0 ? '-' : '+'}${this.timeString((raw.timezone.rawOffset + raw.timezone.dstOffset) * 1000)}`
 			])
 			.setFooter(`${message.author.tag}`, message.author.displayAvatarURL());
 		return message.util.send(`Time zone set to **${raw.timezone.timeZoneName}**`, { embed });
