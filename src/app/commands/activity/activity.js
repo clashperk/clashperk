@@ -1,8 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
-require('moment-duration-format');
-const Chart = require('../../core/Chart');
+const Chart = require('../../core/ChartHandler');
 
 class ActivityCommand extends Command {
 	constructor() {
