@@ -72,6 +72,7 @@ class ActivityCommand extends Command {
 			.findOne({ user: message.author.id });
 		const hrStart = process.hrtime();
 		const buffer = await Chart.chart(clans, raw ? raw.timezone : { offset: 0, name: 'Coordinated Universal Time' }, dark);
+		if (!buffer) return message.util.send({ embed: { description: '504 Request Timeout' } });
 		const diff = process.hrtime(hrStart);
 		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
 		return message.util.send({

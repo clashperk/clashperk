@@ -100,11 +100,15 @@ class Chart {
 
 		const res = await fetch(process.env.CHART_API_URL, {
 			method: 'POST',
+			timeout: 3000,
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify(body)
-		});
+		}).catch(() => null);
+
+		if (!res) return null;
+		if (!res.ok) return null;
 
 		return res.buffer();
 	}
