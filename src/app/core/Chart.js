@@ -79,7 +79,7 @@ class Chart {
 					datasets: [...datasets]
 				},
 				options: {
-					responsive: true,
+					responsive: false,
 					legend: {
 						position: 'top',
 						display: true,
