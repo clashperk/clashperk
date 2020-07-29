@@ -87,7 +87,7 @@ class Firebase {
 	}
 
 	async deletion() {
-		const now = new Date();
+		const now = new Date(Date.now() + 198e5);
 		const id = [now.getFullYear(), now.getMonth() + 1].join('-');
 		return firebase.ref('growth')
 			.child(id)
@@ -106,7 +106,7 @@ class Firebase {
 	}
 
 	async addition() {
-		const now = new Date();
+		const now = new Date(Date.now() + 198e5);
 		const id = [now.getFullYear(), now.getMonth() + 1].join('-');
 		return firebase.ref('growth')
 			.child(id)
