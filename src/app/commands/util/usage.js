@@ -22,6 +22,7 @@ class UsageCommand extends Command {
 		// const guilds = await this.guilds();
 		// const users = await this.users();
 		const { commands, total } = await this.commands();
+		const { addition, deletion, growth } = await this.growth();
 
 		const embed = this.client.util.embed()
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
@@ -48,6 +49,12 @@ class UsageCommand extends Command {
 					const command = this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '');
 					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${uses.toString().padStart(5, ' ')}x  ${command.padEnd(15, ' ')}\u200f\``;
 				})
+		]);
+		embed.addField('Per day Growth', [
+			'```diff',
+			`+ ${addition} addition`,
+			`- ${deletion} deletion`,
+			`${growth >= 0 ? '+' : '-'} ${growth} growth`
 		]);
 
 		return message.util.send({ embed });
@@ -87,6 +94,17 @@ class UsageCommand extends Command {
 		}
 
 		return { commands: this.sort(commands), total: this.total(commands) };
+	}
+
+	async growth() {
+		const now = new Date(new Date().getTime() + 198e5);
+		const id = [now.getFullYear(), now.getMonth() + 1].join('-');
+		const key = now.getDate();
+		const ref = firebase.ref('growth').child(id);
+		const data = await ref.once('value').then(snap => snap.val());
+		if (!data || (data && !data[key])) return { addition: 0, deletion: 0, growth: 0 };
+		const growth = data[key].addition + data[key].deletion;
+		return { addition: data[key].addition, deletion: data[key].deletion, growth };
 	}
 
 	async commandsTotal() {

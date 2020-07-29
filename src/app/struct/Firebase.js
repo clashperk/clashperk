@@ -89,13 +89,14 @@ class Firebase {
 	async deletion() {
 		const now = new Date(new Date().getTime() + 198e5);
 		const id = [now.getFullYear(), now.getMonth() + 1].join('-');
+		const key = now.getDate();
 		return firebase.ref('growth')
 			.child(id)
 			.transaction(data => {
-				if (data === null) return { [now.getDate()]: { deletion: -1, addition: 0 } };
-				data[now.getDate()]
-					? data[now.getDate()].deletion -= 1
-					: data[now.getDate()] = {
+				if (data === null) return { [key]: { deletion: -1, addition: 0 } };
+				data[key]
+					? data[key].deletion -= 1
+					: data[key] = {
 						deletion: -1,
 						addition: 0
 					};
@@ -108,13 +109,14 @@ class Firebase {
 	async addition() {
 		const now = new Date(new Date().getTime() + 198e5);
 		const id = [now.getFullYear(), now.getMonth() + 1].join('-');
+		const key = now.getDate();
 		return firebase.ref('growth')
 			.child(id)
 			.transaction(data => {
-				if (data === null) return { [now.getDate()]: { addition: 1, deletion: 0 } };
-				data[now.getDate()]
-					? data[now.getDate()].addition += 1
-					: data[now.getDate()] = {
+				if (data === null) return { [key]: { addition: 1, deletion: 0 } };
+				data[key]
+					? data[key].addition += 1
+					: data[key] = {
 						deletion: 0,
 						addition: 1
 					};
