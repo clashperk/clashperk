@@ -52,9 +52,9 @@ class UsageCommand extends Command {
 		]);
 		embed.addField('Per day Growth', [
 			'```diff',
-			`+ ${addition} addition`,
-			`- ${deletion} deletion`,
-			`${growth >= 0 ? '+' : '-'} ${growth} growth`,
+			`+ ${addition.toString().padStart(2, ' ')} | addition`,
+			`- ${deletion.toString().padStart(2, ' ')} | deletion`,
+			`${growth >= 0 ? '+' : '-'} | ${growth.toString().padStart(2, ' ')} growth`,
 			'```'
 		]);
 
