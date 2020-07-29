@@ -54,7 +54,8 @@ class UsageCommand extends Command {
 			'```diff',
 			`+ ${addition} addition`,
 			`- ${deletion} deletion`,
-			`${growth >= 0 ? '+' : '-'} ${growth} growth`
+			`${growth >= 0 ? '+' : '-'} ${growth} growth`,
+			'```'
 		]);
 
 		return message.util.send({ embed });
