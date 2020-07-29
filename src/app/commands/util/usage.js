@@ -44,7 +44,7 @@ class UsageCommand extends Command {
 		]);*/
 		embed.setDescription([
 			`__**\`\u200e # ${'Uses'.padStart(6, ' ')}  ${'CommandID'.padEnd(15, ' ')}\u200f\`**__`,
-			...commands.splice(0, 20)
+			...commands.splice(0, 15)
 				.map(({ id, uses }, index) => {
 					const command = this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '');
 					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${uses.toString().padStart(5, ' ')}x  ${command.padEnd(15, ' ')}\u200f\``;
