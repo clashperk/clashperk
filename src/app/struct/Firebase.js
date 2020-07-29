@@ -92,7 +92,7 @@ class Firebase {
 		return firebase.ref('growth')
 			.child(id)
 			.transaction(data => {
-				if (data === null || (data && !data[now.getDate()])) return { [now.getDate()]: { deletion: -1 } };
+				if (data === null) return { [now.getDate()]: { deletion: -1, addition: 0 } };
 				data[now.getDate()].deletion -= 1;
 				return data;
 			}, error => {
@@ -106,7 +106,7 @@ class Firebase {
 		return firebase.ref('growth')
 			.child(id)
 			.transaction(data => {
-				if (data === null || (data && !data[now.getDate()])) return { [now.getDate()]: { addition: 1 } };
+				if (data === null) return { [now.getDate()]: { addition: 1, deletion: 0 } };
 				data[now.getDate()].addition += 1;
 				return data;
 			}, error => {
