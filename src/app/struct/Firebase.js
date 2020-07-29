@@ -74,13 +74,29 @@ class Firebase {
 			});
 	}
 
-	async ranks(user) {
-		return firebase.ref('ranks')
-			.child(user)
-			.transaction(point => {
-				if (point === null) return { xp: Math.floor(Math.random() * 5) };
-				point.xp += Math.floor(Math.random() * 5);
-				return point;
+	async deletion() {
+		const now = new Date();
+		const id = [now.getFullYear(), now.getMonth() + 1].join('-');
+		return firebase.ref('growth')
+			.child(id)
+			.transaction(data => {
+				if (data === null) return { [now.getDate()]: { deletion: -1 } };
+				data[now.getDate()].deletion -= 1;
+				return data;
+			}, error => {
+				if (error) this.client.logger.error(error, { label: 'FIREBASE' });
+			});
+	}
+
+	async addition() {
+		const now = new Date();
+		const id = [now.getFullYear(), now.getMonth() + 1].join('-');
+		return firebase.ref('growth')
+			.child(id)
+			.transaction(data => {
+				if (data === null) return { [now.getDate()]: { addition: 1 } };
+				data[now.getDate()].addition += 1;
+				return data;
 			}, error => {
 				if (error) this.client.logger.error(error, { label: 'FIREBASE' });
 			});
