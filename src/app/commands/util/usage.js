@@ -54,7 +54,7 @@ class UsageCommand extends Command {
 			'```diff',
 			`+ ${addition.toString().padStart(2, ' ')} | addition`,
 			`- ${deletion.toString().padStart(2, ' ')} | deletion`,
-			`${growth >= 0 ? '+' : '-'} | ${growth.toString().padStart(2, ' ')} growth`,
+			`${growth >= 0 ? '+' : '-'} ${growth.toString().padStart(2, ' ')} | growth`,
 			'```'
 		]);
 
