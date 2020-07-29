@@ -11,7 +11,7 @@ class ClanEmbedCommand extends Command {
 				usage: '<clanTag> [--color]',
 				examples: ['#8QU8J9LP --color #5970C1'],
 				content: [
-					'Creates a beautiful embed for a clan.'
+					'Creates a promotional embed for a clan.'
 				],
 				image: {
 					text: [
