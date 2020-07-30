@@ -79,4 +79,4 @@ class GuideCommand extends Command {
 	}
 }
 
-module.exports = GuideCommand;
+// module.exports = GuideCommand;
