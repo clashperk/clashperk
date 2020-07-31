@@ -33,7 +33,7 @@ class StatsCommand extends Command {
 
 		for (const value of values) {
 			guilds += value[0];
-			memory += value[3];
+			memory += value[1];
 		}
 
 		const owner = await this.client.users.fetch(this.client.ownerID, false);
