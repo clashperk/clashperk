@@ -132,9 +132,9 @@ class RedeemCommand extends Command {
 	}
 
 	isRedeemed(user) {
-		if (user.entitled_amount >= 10 && user.guilds && user.guilds.length >= 5) return true;
-		else if (user.entitled_amount >= 5 && user.guilds && user.guilds.length >= 3) return true;
-		else if (user.entitled_amount >= 3 && user.guilds && user.guilds.length >= 1) return true;
+		if (user.entitled_amount === 10 && user.guilds && user.guilds.length >= 5) return true;
+		else if (user.entitled_amount === 5 && user.guilds && user.guilds.length >= 3) return true;
+		else if (user.entitled_amount === 3 && user.guilds && user.guilds.length >= 1) return true;
 		else if (user.entitled_amount < 3 && user.redeemed) return true;
 		return false;
 	}
