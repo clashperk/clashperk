@@ -52,8 +52,9 @@ class MongoDBProvider extends Provider {
 }
 
 class Settings extends MongoDBProvider {
-	constructor(database, { } = {}) {
-		super(database);
+	constructor(database) {
+		super();
+		this.database = database;
 	}
 
 	get(guild, key, defaultValue) {

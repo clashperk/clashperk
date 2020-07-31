@@ -2,7 +2,7 @@ const { firebase, firestore } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 
 class Patron {
-	constructor(client, { } = {}) {
+	constructor(client) {
 		this.client = client;
 		this.store = new Map();
 	}
