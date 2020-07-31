@@ -1,3 +1,4 @@
+/* eslint-disable */
 const { townHallEmoji, emoji, whiteNum, blueNum } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');

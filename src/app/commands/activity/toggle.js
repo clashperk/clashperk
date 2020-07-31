@@ -133,7 +133,7 @@ class StopCommand extends Command {
 			db.collection('clanembedlogs').findOne({ clan_id: ObjectId(id) }),
 			db.collection('clangameslogs').findOne({ clan_id: ObjectId(id) }),
 			db.collection('clanwarlogs').findOne({ clan_id: ObjectId(id) })
-		]).then(collection => collection.every(item => item == null));
+		]).then(collection => collection.every(item => item == null)); // eslint-disable-line no-eq-null
 		if (data) {
 			this.client.cacheHandler.delete(id);
 			return db.collection('clanstores').updateOne({ _id: ObjectId(id) }, { $set: { active: false } });

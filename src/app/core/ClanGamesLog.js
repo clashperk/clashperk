@@ -1,4 +1,4 @@
-const { MessageEmbed, Message, Util } = require('discord.js');
+const { MessageEmbed, Message } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const { ObjectId } = require('mongodb');
 const fetch = require('node-fetch');

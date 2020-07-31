@@ -142,7 +142,6 @@ class CurrentWarCommand extends Command {
 		const townHalls = Object.entries(reduced)
 			.map(entry => ({ level: entry[0], total: entry[1] }))
 			.sort((a, b) => b.level - a.level);
-		const avg = townHalls.reduce((p, c) => p + (c.total * c.level), 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
 
 		return this.chunk(townHalls)
 			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)

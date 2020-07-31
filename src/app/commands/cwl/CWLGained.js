@@ -118,9 +118,7 @@ class CWLGainedComamnd extends Command {
 			}
 		}
 
-		const patron = this.client.patron.check(message.author, message.guild);
 		const leaderboard = Object.values(members).sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
-
 		const embed = this.client.util.embed()
 			.setAuthor(`${clan.name} ${clan.tag}`, clan.badgeUrls.small)
 			.setColor(this.client.embed(message))

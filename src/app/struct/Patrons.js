@@ -14,7 +14,7 @@ class Patron {
 	get(id, key, def) {
 		if (this.store.has(id)) {
 			const value = this.store.get(id)[key];
-			return value == null ? def : value;
+			return value == null ? def : value; // eslint-disable-line no-eq-null
 		}
 
 		return def;

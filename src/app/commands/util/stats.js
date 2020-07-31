@@ -23,20 +23,16 @@ class StatsCommand extends Command {
 	}
 
 	async exec(message) {
-		let [guilds, users, channels, memory] = [0, 0, 0, 0];
+		let [guilds, memory] = [0, 0];
 		const values = await this.client.shard.broadcastEval(
 			`[
 				this.guilds.cache.size,
-				this.guilds.cache.reduce((previous, current) => current.memberCount + previous, 0),
-				this.channels.cache.size,
 				(process.memoryUsage().heapUsed / 1024 / 1024),
 			]`
 		);
 
 		for (const value of values) {
 			guilds += value[0];
-			users += value[1];
-			channels += value[2];
 			memory += value[3];
 		}
 

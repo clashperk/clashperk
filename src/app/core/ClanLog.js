@@ -1,6 +1,6 @@
 const { townHallEmoji, emoji, leagueEmoji, heroEmoji } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
-const { MessageEmbed, WebhookClient } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 const { ObjectId } = require('mongodb');
 const fetch = require('node-fetch');
 const moment = require('moment');

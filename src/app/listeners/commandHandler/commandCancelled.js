@@ -9,7 +9,7 @@ class CommandCancelledListener extends Listener {
 		});
 	}
 
-	async exec(message, command, retryMessage) {
+	async exec(message, command) {
 		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		this.client.logger.debug(`[COMMAND_CANCELLED] » ${command.id}`, { label });
 

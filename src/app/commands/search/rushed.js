@@ -1,8 +1,7 @@
-const { Command, Flag, Argument } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const Resolver = require('../../struct/Resolver');
 const { troops, buildertroops } = require('../../util/troops.json');
-const { oneLine } = require('common-tags');
 const fetch = require('node-fetch');
 const TOKENS = process.env.$KEYS.split(',');
 const { heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
@@ -102,7 +101,7 @@ class RushedCommand extends Command {
 				'```\u200eTH  NAME',
 				members.filter(m => !m.count)
 					.sort((a, b) => b.townHallLevel - a.townHallLevel)
-					.map(({ name, count, townHallLevel }) => `${this.padding(townHallLevel)}  ${name}`)
+					.map(({ name, townHallLevel }) => `${this.padding(townHallLevel)}  ${name}`)
 					.join('\n'),
 				'```'
 			]);

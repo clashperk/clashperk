@@ -22,17 +22,15 @@ class Firebase {
 	}
 
 	async post() {
-		let [guilds, users] = [0, 0];
+		let guilds = 0;
 		const values = await this.client.shard.broadcastEval(
 			`[
-				this.guilds.cache.size,
-				this.guilds.cache.reduce((previous, current) => current.memberCount + previous, 0),
+				this.guilds.cache.size
 			]`
 		);
 
 		for (const value of values) {
 			guilds += value[0];
-			users += value[1];
 		}
 
 		// https://top.gg/
@@ -172,7 +170,7 @@ class Firebase {
 			this.client.logger.error(error, { label: 'STATUS_PAGE' });
 		}
 
-		let [guilds, users, channels, memory] = [0, 0, 0, 0];
+		let [guilds, users, channels] = [0, 0, 0];
 		const values = await this.client.shard.broadcastEval(
 			`[
 				this.guilds.cache.size,

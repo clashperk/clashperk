@@ -1,10 +1,9 @@
 const { Command } = require('discord-akairo');
-const { stripIndents } = require('common-tags');
 
 class GuideCommand extends Command {
 	constructor() {
 		super('guide', {
-			aliases: ['guide'],
+			// aliases: ['guide'],
 			category: 'util',
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows info about how to use the bot.' }
@@ -79,4 +78,4 @@ class GuideCommand extends Command {
 	}
 }
 
-// module.exports = GuideCommand;
+module.exports = GuideCommand;
