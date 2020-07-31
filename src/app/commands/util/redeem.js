@@ -2,6 +2,7 @@ const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
 const { emoji } = require('../../util/emojis');
 const { firestore } = require('../../struct/Database');
+const qs = require('querystring');
 
 class RedeemCommand extends Command {
 	constructor() {
@@ -20,7 +21,12 @@ class RedeemCommand extends Command {
 	}
 
 	async exec(message) {
-		const res = await fetch('https://www.patreon.com/api/oauth2/api/campaigns/2589569/pledges?include=patron.null', {
+		const query = qs.stringify({
+			'include': 'patron.null',
+			'page[count]': 100,
+			'sort': 'created'
+		});
+		const res = await fetch(`https://www.patreon.com/api/oauth2/api/campaigns/2589569/pledges?${query}`, {
 			headers: {
 				authorization: `Bearer ${process.env.PATREON_API}`
 			}
@@ -36,7 +42,6 @@ class RedeemCommand extends Command {
 		if (!patreon_user) {
 			const embed = this.client.util.embed()
 				.setColor(16345172)
-				.setAuthor('Oh my!')
 				.setDescription([
 					'I could not find any patreon account connected to your discord.',
 					'',
