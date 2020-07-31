@@ -3,6 +3,7 @@ const fetch = require('node-fetch');
 const { emoji } = require('../../util/emojis');
 const { firestore } = require('../../struct/Database');
 const qs = require('querystring');
+const admin = require('firebase-admin');
 
 class RedeemCommand extends Command {
 	constructor() {
@@ -33,7 +34,6 @@ class RedeemCommand extends Command {
 		});
 
 		const data = await res.json();
-
 		const patreon_user = data.included.find(entry => entry.attributes &&
 			entry.attributes.social_connections &&
 			entry.attributes.social_connections.discord &&
@@ -82,50 +82,45 @@ class RedeemCommand extends Command {
 					}, { merge: true });
 
 				await this.client.patron.refresh();
-
 				const embed = this.client.util.embed()
 					.setColor(16345172)
 					.setDescription([`**Subscription for ${message.guild.name}**`, `Active ${emoji.authorize}`]);
-
 				return message.util.send({ embed });
 			}
 
-			if (user && user.redeemed) {
-				const isNew = this.isNew(user, message, patreon_user);
-				if (isNew) await this.client.patron.refresh();
-
+			const redeemed = this.isRedeemed(user);
+			if (user && redeemed) {
+				if (!this.isNew(user, message, patreon_user)) await this.client.patron.refresh();
 				const embed = this.client.util.embed()
 					.setColor(16345172)
-					.setDescription([
-						'You\'ve already claimed.'
-					]);
-
+					.setDescription('You\'ve already claimed.');
 				return message.util.send({ embed });
 			}
 
-			if (user && !user.redeemed) {
+			if (user && !redeemed) {
 				await firestore.collection('patrons')
 					.doc(patreon_user.id)
 					.update({
-						guilds: [{ id: message.guild.id, limit: user.entitled_amount >= 3 ? 50 : 3 }],
+						guilds: admin.firestore.FieldValue.arrayUnion({
+							id: message.guild.id,
+							limit: user.entitled_amount >= 3 ? 50 : 3
+						}),
 						discord_id: message.author.id,
 						redeemed: true
 					}, { merge: true });
 
 				await this.client.patron.refresh();
-
 				const embed = this.client.util.embed()
 					.setColor(16345172)
 					.setDescription([`**Subscription for ${message.guild.name}**`, `Active ${emoji.authorize}`]);
-
 				return message.channel.send({ embed });
 			}
 		}
 	}
 
-	async isNew(user, message, patreon_user) {
+	isNew(user, message, patreon_user) {
 		if (user && user.discord_id !== message.author.id) {
-			await firestore.collection('patrons')
+			firestore.collection('patrons')
 				.doc(patreon_user.id)
 				.update({
 					discord_id: message.author.id
@@ -133,6 +128,14 @@ class RedeemCommand extends Command {
 
 			return true;
 		}
+		return false;
+	}
+
+	isRedeemed(user) {
+		if (user.entitled_amount >= 10 && user.guilds && user.guilds.length >= 5) return true;
+		else if (user.entitled_amount >= 5 && user.guilds && user.guilds.length >= 3) return true;
+		else if (user.entitled_amount >= 3 && user.guilds && user.guilds.length >= 1) return true;
+		else if (user.entitled_amount < 3 && user.redeemed) return true;
 		return false;
 	}
 }
