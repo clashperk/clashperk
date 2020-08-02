@@ -186,8 +186,8 @@ class CacheHandler {
 	}
 
 	isReset(id, newMembers = []) {
-		const ms = new Date() - new Date(this.iso);
-		if (ms <= 9e5 || ms >= -9e5) {
+		const ms = new Date(this.iso) - new Date();
+		if ((ms >= 0 && ms <= 9e5) || (ms < 0 && ms >= -9e5)) {
 			const oldMembers = this.members[id] ? Object.values(this.members[id]) : [];
 			const Old = oldMembers.reduce((a, m) => {
 				const value = m.donations + m.donationsReceived;
