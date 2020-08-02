@@ -4,6 +4,7 @@ const { emoji } = require('../../util/emojis');
 const { firestore } = require('../../struct/Database');
 const qs = require('querystring');
 const admin = require('firebase-admin');
+const { status } = require('../../util/constants');
 
 class RedeemCommand extends Command {
 	constructor() {
@@ -30,8 +31,19 @@ class RedeemCommand extends Command {
 		const res = await fetch(`https://www.patreon.com/api/oauth2/api/campaigns/2589569/pledges?${query}`, {
 			headers: {
 				authorization: `Bearer ${process.env.PATREON_API}`
-			}
-		});
+			},
+			timeout: 5000
+		}).catch(() => null);
+
+		if (!res) {
+			return message.util.send({
+				embed: {
+					color: 0xf30c11,
+					author: { name: 'Error' },
+					description: status(504)
+				}
+			});
+		}
 
 		const data = await res.json();
 		const patreon_user = data.included.find(entry => entry.attributes &&
