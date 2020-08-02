@@ -11,7 +11,7 @@ class CWLMissedComamnd extends Command {
 		super('cwl-missed', {
 			aliases: ['cwl-missed'],
 			category: 'cwl-hidden',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [
 					'Shows missed attacks of all rounds.'

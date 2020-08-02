@@ -12,7 +12,7 @@ class CWLRemainingComamnd extends Command {
 		super('cwl-remaining', {
 			aliases: ['cwl-remaining', 'cwl-missing'],
 			category: 'cwl-hidden',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [
 					'Shows remaining attacks of the current round.',
