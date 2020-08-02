@@ -203,7 +203,7 @@ class LastOnlineEvent {
 				}
 				if (!m.activities) continue;
 				for (const date of Object.keys(m.activities)) {
-					if (new Date(date).getDate() < new Date(sessionId).getDate()) {
+					if (new Date(sessionId) - new Date(date) >= 864e5) {
 						unset[`members.${m.tag}.activities.${date}`] = '';
 					}
 				}
@@ -214,7 +214,7 @@ class LastOnlineEvent {
 			}
 		}
 
-		this.client.logger.info(`Purged Session: ${sessionId}`, { label: 'PURGED' });
+		this.client.logger.info(`Season Reset (${sessionId})`, { label: 'PURGED' });
 		return db.deleteMany({ members: {} });
 	}
 
