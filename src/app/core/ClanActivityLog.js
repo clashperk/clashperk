@@ -214,6 +214,7 @@ class LastOnlineEvent {
 			}
 		}
 
+		this.client.logger.info(`Purged Session: ${sessionId}`, { label: 'PURGED' });
 		return db.deleteMany({ members: {} });
 	}
 

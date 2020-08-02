@@ -64,7 +64,7 @@ class CacheHandler {
 		}
 
 		const ms = new Date(unix) - new Date();
-		if (ms > 0) {
+		if (ms > 0 && ms < Math.pow(2, 31)) {
 			const id = setTimeout(async () => {
 				clearTimeout(id);
 				return this.activityLog.purge(unix);
