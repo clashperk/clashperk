@@ -133,9 +133,9 @@ class CWLRoundComamnd extends Command {
 						embed.addField('State', 'War Ended')
 							.addField('Time', `Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
 							.addField('Stats', [
-								`\`\u200e${data.clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${data.clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${`${data.clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${data.opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
+								`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
+								`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+								`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
 							]);
 					}
 					if (data.state === 'inWar') {
@@ -143,9 +143,9 @@ class CWLRoundComamnd extends Command {
 						embed.addField('State', 'Battle Day')
 							.addField('Time', `Ends in ${moment.duration(end - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`)
 							.addField('Stats', [
-								`\`\u200e${data.clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${data.clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${`${data.clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${data.opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
+								`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
+								`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+								`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
 							]);
 					}
 					if (data.state === 'preparation') {
