@@ -220,7 +220,7 @@ class CWLStatsComamnd extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${clan.name} ${clan.tag}`, clan.badgeUrls.small)
+			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
 			.setTitle('CWL Stats')
 			.setDescription(description)
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
@@ -240,7 +240,7 @@ class CWLStatsComamnd extends Command {
 			embed: {
 				color: this.client.embed(message),
 				author: {
-					name: `${clan.name} CWL`,
+					name: `${clan.name} (${clan.tag})`,
 					icon_url: clan.badgeUrls.small
 				},
 				description: [

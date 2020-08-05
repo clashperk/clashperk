@@ -129,7 +129,7 @@ class CWLStarsComamnd extends Command {
 		const leaderboard = Object.values(members).sort((a, b) => b.stars - a.stars);
 
 		const embed = this.client.util.embed()
-			.setAuthor(`${clan.name} ${clan.tag}`, clan.badgeUrls.small)
+			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
 			.setTitle('CWL Stars')
 			.setColor(this.client.embed(message))
 			.setDescription([
