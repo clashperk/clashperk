@@ -45,7 +45,7 @@ class PlayerCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
-			.setThumbnail(data.league ? data.league.iconUrls.small : `https://cdn.clashperk.xyz/assets/townhalls/${data.townHallLevel}.png`);
+			.setThumbnail(data.league ? data.league.iconUrls.small : `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`);
 
 		embed.addField('Town Hall & XP', [
 			`${townHallEmoji[data.townHallLevel]} ${data.townHallLevel}`,

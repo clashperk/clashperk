@@ -54,7 +54,7 @@ class GuildCreateListener extends Listener {
 			])
 			.addField('Add to Discord', [
 				'ClashPerk can be added to as many servers as you want!',
-				'Please share the bot with your Friends. [Invite Link](https://clashperk.xyz/invite)'
+				'Please share the bot with your Friends. [Invite Link](https://clashperk.com/invite)'
 			])
 			.addField('Support', [
 				'Join [Support Server](https://discord.gg/ppuppun) if you need help.',

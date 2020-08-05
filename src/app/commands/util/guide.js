@@ -19,7 +19,7 @@ class GuideCommand extends Command {
 		const prefix = this.handler.prefix(message);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor('Guide', this.client.user.displayAvatarURL(), 'https://clashperk.xyz')
+			.setAuthor('Guide', this.client.user.displayAvatarURL(), 'https://clashperk.com')
 			.setDescription([
 				'\u200e**Required Permissions**',
 				'• \`Read Messages\`',
