@@ -239,6 +239,7 @@ class CWLStatsComamnd extends Command {
 		return message.channel.send({
 			embed: {
 				color: this.client.embed(message),
+				title: 'CWL Stars',
 				author: {
 					name: `${clan.name} (${clan.tag})`,
 					icon_url: clan.badgeUrls.small
