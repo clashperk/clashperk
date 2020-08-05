@@ -130,8 +130,10 @@ class CWLRoundComamnd extends Command {
 						.addField('Team Size', `${data.teamSize}`);
 					if (data.state === 'warEnded') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
-						embed.addField('State', 'War Ended')
-							.addField('Time', `Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
+						embed.addField('State', [
+							'War Ended',
+							`Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
+						])
 							.addField('Stats', [
 								`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
 								`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
@@ -140,8 +142,10 @@ class CWLRoundComamnd extends Command {
 					}
 					if (data.state === 'inWar') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
-						embed.addField('State', 'Battle Day')
-							.addField('Time', `Ends in ${moment.duration(end - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`)
+						embed.addField('State', [
+							'Battle Day',
+							`Ends in ${moment.duration(end - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+						])
 							.addField('Stats', [
 								`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
 								`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
@@ -150,8 +154,10 @@ class CWLRoundComamnd extends Command {
 					}
 					if (data.state === 'preparation') {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField('State', 'Preparation')
-							.addField('Time', `Starting in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
+						embed.addField('State', [
+							'Preparation',
+							`Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+						]);
 					}
 					embed.addField('Rosters', [
 						`**${clan.name}**`,
