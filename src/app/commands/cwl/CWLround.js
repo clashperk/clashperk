@@ -154,11 +154,11 @@ class CWLRoundComamnd extends Command {
 							.addField('Time', `Starting in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
 					}
 					embed.addField('Rosters', [
-						`**${data.clan.name}**`,
-						`${this.count(data.clan.members)}`,
+						`**${clan.name}**`,
+						`${this.count(clan.members)}`,
 						'',
-						`**${data.opponent.name}**`,
-						`${this.count(data.opponent.members)}`
+						`**${opponent.name}**`,
+						`${this.count(opponent.members)}`
 					]);
 					embed.setFooter(`Round #${++index}`);
 
