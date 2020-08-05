@@ -26,9 +26,10 @@ class AboutCommand extends Command {
 				'Feature-Rich and Powerful Clash of Clans Discord bot with everything you will ever need.'
 			])
 			.addField('Owner', `${emoji.botdev} **${owner.tag}**`)
-			.addField('Library', '<:bot_dev:723162041095028797> [discord.js](https://discord.js.org)')
+			.addField('Library', `${emoji.nodejs} [discord.js](https://discord.js.org)`)
+			.addField('Website', '[https://clashperk.com](https://clashperk.com \'Feature-Rich and Powerful Clash of Clans Discord bot with everything you will ever need.\')')
 			.addField('Need help?', 'Join [Official Discord](https://discord.gg/ppuppun)')
-			.addField('Do you like the bot?', 'Please support on us [Patreon](https://www.patreon.com/bePatron?u=14584309)')
+			.addField('Do you like the bot?', 'Please support on us [Patreon](https://www.patreon.com/clashperk)')
 			.addField('Legal Notice', [
 				oneLine(`This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it.
 				For more information see Supercell\'s [Fan Content Policy](https://www.supercell.com/fan-content-policy 'Fan Content Policy × Supercell')`)
