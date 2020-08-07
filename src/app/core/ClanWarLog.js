@@ -356,9 +356,11 @@ class ClanWarEvent {
 				`${this.roster(data.opponent.members)}`
 			]);
 
-			if (data.state === 'warEnded' && this.attacks(data, clan)) {
-				embed.addField('Remaining Attacks', this.attacks(clan).substring(0, 1020));
+			if (data.state === 'warEnded') {
+				const remaining = this.attacks(clan);
+				if (remaining) embed.addField('Remaining Attacks', remaining.substring(0, 1020));
 			}
+			
 			embed.setFooter(`Round #${round}`);
 
 			await this.send(id, db, data, warTag, channel, embed);
