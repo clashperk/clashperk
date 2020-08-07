@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
 const { emoji, townHallEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
-const TOKENS = process.env.$KEYS.split(',');
+const TOKENS = process.env.CLASH_TOKENS.split(',');
 
 class CWLTopCommand extends Command {
 	constructor() {

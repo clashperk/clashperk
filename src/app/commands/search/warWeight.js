@@ -4,7 +4,7 @@ const Resolver = require('../../struct/Resolver');
 const { townHallEmoji, emoji } = require('../../util/emojis');
 const { stripIndent } = require('common-tags');
 const { Util } = require('discord.js');
-const TOKENS = process.env.$KEYS.split(',');
+const TOKENS = process.env.CLASH_TOKENS.split(',');
 const Excel = require('../../struct/ExcelHandler');
 
 class WarWeightCommand extends Command {

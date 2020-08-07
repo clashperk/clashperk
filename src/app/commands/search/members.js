@@ -4,7 +4,7 @@ const Resolver = require('../../struct/Resolver');
 const { emoji, leagueEmoji } = require('../../util/emojis');
 const { Util } = require('discord.js');
 const { stripIndent } = require('common-tags');
-const TOKENS = process.env.$KEYS.split(',');
+const TOKENS = process.env.CLASH_TOKENS.split(',');
 const Excel = require('../../struct/ExcelHandler');
 
 class MembersCommand extends Command {

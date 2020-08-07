@@ -371,7 +371,7 @@ class CacheHandler {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.$DEV_TOKEN}`
+				authorization: `Bearer ${process.env.CLAN_AND_PLAYER_TOKEN}`
 			},
 			timeout: 5000
 		}).catch(() => null);

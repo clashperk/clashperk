@@ -4,7 +4,7 @@ const { Util } = require('discord.js');
 const Resolver = require('../../struct/Resolver');
 const { status } = require('../../util/constants');
 const { emoji } = require('../../util/emojis');
-const TOKENS = process.env.$KEYS.split(',');
+const TOKENS = process.env.CLASH_TOKENS.split(',');
 
 class CWLMembersComamnd extends Command {
 	constructor() {

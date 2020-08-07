@@ -33,7 +33,7 @@ class CWLWarTags {
 		for (const round of rounds) {
 			for (const warTag of round.warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
-					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
+					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 				});
 				const data = await res.json();
 				if ((data.clan && data.clan.tag === tag) || (data.opponent && data.opponent.tag === tag)) {

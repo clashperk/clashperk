@@ -292,7 +292,7 @@ class ClanGames {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.$KEY}`
+				authorization: `Bearer ${process.env.CWL_AND_CLAN_GAMES_TOKEN}`
 			},
 			timeout: 3000
 		}).catch(() => null);

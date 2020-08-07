@@ -3,7 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const Resolver = require('../../struct/Resolver');
 const { troops, buildertroops } = require('../../util/troops.json');
 const fetch = require('node-fetch');
-const TOKENS = process.env.$KEYS.split(',');
+const TOKENS = process.env.CLASH_TOKENS.split(',');
 const { heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
 
 class RushedCommand extends Command {

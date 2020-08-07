@@ -1,7 +1,7 @@
 const { status } = require('../util/constants');
 const { MessageEmbed } = require('discord.js');
 const { Client } = require('clashofclans.js');
-const TOKENS = process.env.$KEYS.split(',');
+const TOKENS = process.env.CLASH_TOKENS.split(',');
 const { mongodb } = require('./Database');
 const client = new Client({
 	timeout: 3000,

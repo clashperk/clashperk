@@ -6,7 +6,7 @@ const { ObjectId } = require('mongodb');
 const moment = require('moment');
 const client = new Client({
 	timeout: 3000,
-	token: process.env.$KEY
+	token: process.env.CLAN_WAR_TOKEN
 });
 
 const color = {
@@ -60,7 +60,7 @@ class ClanWarEvent {
 	async fetchCWL(id, channel) {
 		const cache = this.cached.get(id);
 		const data = await client.fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(cache.tag)}/currentwar/leaguegroup`, {
-			token: process.env.$KEY,
+			token: process.env.CWL_AND_CLAN_GAMES_TOKEN,
 			timeout: 3000
 		}).catch(() => null);
 		if (!data) return this.setTimer(id);
@@ -509,7 +509,7 @@ class ClanWarEvent {
 
 	async clanWar(tag) {
 		const data = await client.fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar`, {
-			token: process.env.$KEY
+			token: process.env.CLAN_WAR_TOKEN
 		}).catch(() => null);
 		if (!data) return null;
 		if (!data.ok) return null;
