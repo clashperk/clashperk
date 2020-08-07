@@ -12,11 +12,11 @@ const { CanvasRenderService } = require('chartjs-node-canvas');
 const DEFAULT_COLORS = {
 	blue: '#4D89F9',
 	green: '#00B88A',
-	orange: 'rgb(255, 159, 64)',
-	red: 'rgb(255, 99, 132)',
-	purple: 'rgb(153, 102, 255)',
+	orange: '#ffa040',
+	red: '#ff6384',
+	purple: '#99cbcf',
 	yellow: '#fc3',
-	grey: 'rgb(201, 203, 207)'
+	grey: '#c9cbcf'
 };
 
 const ROUND_CHART_TYPES = new Set([
