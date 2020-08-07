@@ -346,14 +346,14 @@ class ClanWarEvent {
 					]);
 			}
 
-			const [clanRoster, opponentRoster] = [this.roster(data.clan.members), this.roster(data.opponent.members)];
+			const [clanRoster, opponentRoster] = [this.roster(clan.members), this.roster(opponent.members)];
 			if (clanRoster.length + opponentRoster.length > 1000) {
 				embed.addField('Rosters', [
 					`${clan.name}`,
-					`${this.roster(data.clan.members, true)}`,
+					`${this.roster(clan.members, true)}`,
 					'',
 					`${opponent.name}`,
-					`${this.roster(data.opponent.members, true)}`
+					`${this.roster(opponent.members, true)}`
 				]);
 			} else {
 				embed.addField('Rosters', [
