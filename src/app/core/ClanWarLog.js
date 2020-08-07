@@ -269,23 +269,21 @@ class ClanWarEvent {
 		if (db && db.warTags && rounds.length === Object.keys(db.warTags).length) return this.roundCWL(id, channel, body, db);
 
 		const set = {};
-		// let index = 0;
+		let index = 0;
 		for (const round of rounds) {
-			// index += 1;
+			index += 1;
 			// if (db && db.rounds && db.rounds.length > index - 1) continue;
-			for (const warTag of Object.keys(round.warTags)) {
+			for (const warTag of round.warTags) {
 				const data = await client.fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`).catch(() => null);
 				if (!data || (data && !data.ok)) continue;
 				if ((data.clan && data.clan.tag === cache.tag) || (data.opponent && data.opponent.tag === cache.tag)) {
 					if (data.state === 'warEnded') {
-						const ended = db.warTags[warTag] && db.warTags[warTag].ended;
-						set[`warTags.${warTag}.warTag`] = warTag;
-						set[`warTags.${warTag}.state`] = data.state;
-						set[`warTags.${warTag}.ended`] = ended;
-					} else {
-						set[`warTags.${warTag}.warTag`] = warTag;
-						set[`warTags.${warTag}.state`] = data.state;
+						const ended = db && db.warTags && db.warTags[warTag] && db.warTags[warTag].ended;
+						set[`warTags.${warTag}.ended`] = ended ? true : false;
 					}
+					set[`warTags.${warTag}.warTag`] = warTag;
+					set[`warTags.${warTag}.state`] = data.state;
+					set[`warTags.${warTag}.round`] = index;
 
 					break;
 				}
@@ -307,7 +305,10 @@ class ClanWarEvent {
 	// For Clan-War-League Embed [CWL]
 	async roundCWL(id, channel, body, db) {
 		const cache = this.cached.get(id);
-		const warTags = Object.values(db.warTags).filter(round => !round.ended).map(round => round.warTag);
+		const warTags = Object.values(db.warTags)
+			.filter(round => !round.ended)
+			.sort((a, b) => a.round - b.round)
+			.map(round => round.warTag);
 		for (const warTag of warTags) {
 			const round = body.rounds.findIndex(round => round.warTags.includes(warTag)) + 1;
 			const data = await client.fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`).catch(() => null);
@@ -345,19 +346,22 @@ class ClanWarEvent {
 						`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
 						`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
 					]);
-				if (this.attacks(data, clan)) embed.addField('Remaining Attacks', this.attacks(data, clan).description.substring(0, 1020));
 			}
 
 			embed.addField('Rosters', [
-				`**${data.clan.name}**`,
+				`${data.clan.name}`,
 				`${this.roster(data.clan.members)}`,
 				'',
-				`**${data.opponent.name}**`,
+				`${data.opponent.name}`,
 				`${this.roster(data.opponent.members)}`
 			]);
+
+			if (data.state === 'warEnded' && this.attacks(data, clan)) {
+				embed.addField('Remaining Attacks', this.attacks(data, clan).description.substring(0, 1020));
+			}
 			embed.setFooter(`Round #${round}`);
 
-			await this.send(id, db, data, warTag, channel);
+			await this.send(id, db, data, warTag, channel, embed);
 			await this.delay(250);
 		}
 	}
