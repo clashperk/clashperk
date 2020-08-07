@@ -1,9 +1,20 @@
 const { townHallEmoji, emoji, whiteNum, blueNum } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
-const { MessageEmbed } = require('discord.js');
+const { MessageEmbed, Util } = require('discord.js');
+const { Client } = require('clashofclans.js');
 const { ObjectId } = require('mongodb');
-const fetch = require('node-fetch');
 const moment = require('moment');
+const client = new Client({
+	timeout: 3000,
+	token: process.env.$KEY
+});
+
+const color = {
+	red: 15158332,
+	green: 3066993,
+	war: 16345172,
+	prep: 16745216
+};
 
 class ClanWarEvent {
 	constructor(client) {
@@ -11,35 +22,18 @@ class ClanWarEvent {
 		this.cached = new Map();
 	}
 
-	exec(id, clan) {
+	exec(id) {
 		const cache = this.cached.get(id);
-		if (cache && cache.updated) {
-			if (new Date() - new Date(cache.updated) >= this.timer(cache)) {
-				cache.updated = new Date();
-				this.cached.set(id, cache);
-				return this.permissionsFor(id, cache, clan);
-			}
-
-			return;
-		}
-
 		if (cache) {
-			cache.updated = new Date();
-			this.cached.set(id, cache);
-			return this.permissionsFor(id, cache, clan);
+			return this.permissionsFor(id, cache);
 		}
-	}
-
-	timer(cache) {
-		const patron = this.client.patron.get(cache.guild, 'guild', false);
-		return patron === true ? 10.1 * 60 * 1000 : 20.1 * 60 * 1000;
 	}
 
 	async delay(ms) {
 		return new Promise(res => setTimeout(res, ms));
 	}
 
-	permissionsFor(id, cache, clan) {
+	permissionsFor(id, cache) {
 		const permissions = [
 			'SEND_MESSAGES',
 			'EMBED_LINKS',
@@ -51,198 +45,36 @@ class ClanWarEvent {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				return this.handleMessage(id, channel, clan);
+				return this.handleMessage(id, channel);
 			}
+			return this.setTimer(id);
 		}
 	}
 
-	async handleMessage(id, channel, clan) {
-		let message = null;
-		if (this.isCWL) {
-			message = await this.fetchCWL(id, channel, clan);
-			if (message && message.queued) return;
-		} else if (!message) {
-			message = await this.fetchClanWar(id, channel, clan);
-		}
-
-		if (!message) return;
-		return channel.send(message);
+	async handleMessage(id, channel) {
+		const now = new Date();
+		if (now.getDate() >= 1 && now.getDate() <= 10) return this.fetchCWL(id, channel);
+		return this.fetchClanWar(id, channel);
 	}
 
-	// Fetch Clan-War-League-Group
-	async fetchCWL(id, channel, clan) {
-		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(clan.tag)}/currentwar/leaguegroup`, {
-			method: 'GET', timeout: 3000,
-			headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
-		}).catch(() => null);
-		if (!res) return null;
-		if (!res.ok) return null;
-		const data = await res.json().catch(() => null);
-		if (!data) return null;
-		const warTag = await this.getWarTags(id, clan.tag, data);
-		if (!warTag) return { queued: true };
-		return this.roundCWL(id, channel, clan.tag, data, warTag);
-	}
-
-	cacheUpdate(id) {
+	async fetchCWL(id, channel) {
 		const cache = this.cached.get(id);
-		delete cache.updated;
-		return this.cached.set(id, cache);
+		if (cache.tag !== '#8QU8J9LP') return;
+		const data = await client.fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(cache.tag)}/currentwar/leaguegroup`, {
+			token: process.env.$KEY,
+			timeout: 3000
+		}).catch(() => null);
+		if (!data) return this.setTimer(id);
+		if (!data.ok) return this.fetchClanWar(id, channel);
+		return this.getWarTags(id, channel, data);
 	}
 
-	// Fetch Clan-War-League-Rounds
-	async getWarTags(id, clanTag, body) {
-		const data = await mongodb.db('clashperk')
-			.collection('clanwars')
-			.findOne({ clan_id: ObjectId(id) });
-		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
-		if (data && data.rounds && data.rounds.length === rounds.length) {
-			if (data.rounds.length === 1) return data.rounds[0];
-			if (data.rounds.length > 1) {
-				const rounds = data.rounds.filter(round => round.state !== 'warEnded');
-
-				const inWars = rounds.filter(r => r.state === 'inWar');
-				if (inWars.length > 1) {
-					this.cacheUpdate(id);
-					return inWars[0];
-				}
-
-				const preparation = rounds.find(r => r.state === 'preparation' && !r.posted);
-				if (preparation) {
-					this.cacheUpdate(id);
-					return preparation;
-				}
-
-				const inWar = rounds.find(r => r.state === 'inWar' && !r.posted);
-				if (inWar) {
-					this.cacheUpdate(id);
-					return inWar;
-				}
-
-				const preparations = rounds.filter(r => r.state === 'preparation');
-				if (preparations.length > 1) {
-					await mongodb.db('clashperk')
-						.collection('clanwars')
-						.updateOne({ clan_id: ObjectId(id), 'rounds.tag': preparations[0].tag }, {
-							$set: {
-								'rounds.$.state': 'inWar',
-								'rounds.$.posted': false
-							}
-						}, { upsert: true });
-					return this.getWarTags(id, clanTag, body);
-				}
-
-				return null;
-			}
-		}
-
-		let index = 0;
-		for (const { warTags } of rounds) {
-			index += 1;
-			if (data && data.rounds && data.rounds.length > index - 1) continue;
-			for (const warTag of warTags) {
-				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
-					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
-				});
-				const data = await res.json();
-				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
-					// Push WarTags into Database
-					await mongodb.db('clashperk')
-						.collection('clanwars')
-						.findOneAndUpdate({ clan_id: ObjectId(id) }, {
-							$set: {
-								clan_id: ObjectId(id),
-								tag: clanTag
-							},
-							$push: { rounds: { tag: warTag, state: data.state } }
-						}, { upsert: true });
-
-					break;
-				}
-			}
-		}
-
-		return this.getWarTags(id, clanTag, body);
-	}
-
-	// For Clan-War-League Embed
-	async roundCWL(id, channel, clanTag, body, warTag) {
-		const round = body.rounds.findIndex(round => round.warTags.includes(warTag.tag)) + 1;
-		const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag.tag)}`, {
-			method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
-		});
-		const data = await res.json();
-		const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
-		const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
-		const embed = new MessageEmbed()
-			.setColor(/*  COLOR   */);
-		embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
-			.addField('War Against', `${opponent.name} (${opponent.tag})`)
-			.addField('Team Size', `${data.teamSize}`);
-		if (data.state === 'warEnded') {
-			const end = new Date(moment(data.endTime).toDate()).getTime();
-			embed.addField('State', 'War Ended')
-				.addField('Time', `Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-				.addField('Stats', [
-					`\`\u200e${data.clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-					`\`\u200e${data.clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
-					`\`\u200e${`${data.clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${data.opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
-				]);
-		}
-		if (data.state === 'inWar') {
-			const started = new Date(moment(data.startTime).toDate()).getTime();
-			embed.addField('State', 'Battle Day')
-				.addField('Time', `Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`)
-				.addField('Stats', [
-					`\`\u200e${data.clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${data.opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-					`\`\u200e${data.clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${data.opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
-					`\`\u200e${`${data.clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${data.opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
-				]);
-		}
-		if (data.state === 'preparation') {
-			const start = new Date(moment(data.startTime).toDate()).getTime();
-			embed.addField('State', 'Preparation')
-				.addField('Time', `Starting in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`);
-		}
-		embed.addField('Rosters', [
-			`**${data.clan.name}**`,
-			`${this.roster(data.clan.members)}`,
-			'',
-			`**${data.opponent.name}**`,
-			`${this.roster(data.opponent.members)}`
-		]);
-		embed.setFooter(`Round #${round}`);
-
-		if (warTag.state !== data.state || !warTag.posted) {
-			await mongodb.db('clashperk')
-				.collection('clanwars')
-				.findOneAndUpdate({ clan_id: ObjectId(id), 'rounds.tag': warTag.tag }, {
-					$set: {
-						clan_id: ObjectId(id),
-						'rounds.$.state': data.state,
-						'rounds.$.posted': true
-					}
-				}, { upsert: true });
-
-			if (data.state === 'warEnded') {
-				const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
-				const embed = new MessageEmbed(this.attacks(data, clan, true))
-					.setFooter(`Round #${round}`);
-				const timeoutId = setTimeout(async () => {
-					clearTimeout(timeoutId);
-					return channel.send({ embed });
-				}, 250);
-			}
-		}
-
-		return embed;
-	}
-
-	// For Normal Clan Wars
-	async fetchClanWar(id, channel, clan, content = '') {
-		const data = await this.clanWar(clan.tag);
-		if (!data) return null;
-		if (data.state === 'notInWar') return null;
+	// For Normal Clan Wars [CLAN WAR]
+	async fetchClanWar(id, channel) {
+		const cache = this.cached.get(id);
+		const data = await this.clanWar(cache.tag);
+		if (!data) return this.setTimer(id);
+		if (data.state === 'notInWar') return this.setTimer(id);
 
 		const db = await mongodb.db('clashperk')
 			.collection('clanwars')
@@ -260,19 +92,21 @@ class ClanWarEvent {
 				}, { upsert: true });
 		}
 
-		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'preparation') return null;
+		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && data.state === 'preparation') {
+			const startsIn = new Date(moment(data.startTime).toDate()).getTime() - Date.now();
+			if (startsIn <= 36e5) return this.setTimer(id, data.maxAge * 1000, false);
+			return this.setTimer(id, 36e5, false);
+		}
 
-		const time = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
 		const embed = new MessageEmbed()
-			.setTitle(`${clan.name} (${clan.tag})`)
+			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setURL(this.clanURL(data.clan.tag))
-			.setThumbnail(clan.badgeUrls.small);
+			.setThumbnail(data.clan.badgeUrls.small);
 		if (data.state === 'preparation') {
-			content = `**War has been declared against ${data.opponent.name}**`;
-			embed.setColor(null)
+			embed.setColor(color.prep)
 				.setDescription([
 					'**War Against**',
-					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
+					`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 					'',
 					'**War State**',
 					'Preparation Day',
@@ -280,42 +114,36 @@ class ClanWarEvent {
 					'**War Size**',
 					`${data.teamSize} vs ${data.teamSize}`
 				]);
-			embed.setFooter(`Starts in ${moment.duration(new Date(moment(data.startTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`);
+			embed.setTimestamp(new Date(moment(data.startTime).toDate()))
+				.setFooter('Starting');
 		}
 
 		if (data.state === 'inWar') {
-			content = `**War has been started against ${data.opponent.name}**`;
-			const stats = time <= 2.5 * 60 * 60 * 1000
-				? [
-					'',
-					'**War Stats**',
-					`${emoji.star} ${data.clan.stars} / ${data.opponent.stars}`,
-					`${emoji.fire} ${data.clan.destructionPercentage}% / ${data.opponent.destructionPercentage}%`,
-					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`,
-					''
-				]
-				: [];
-			embed.setColor(null)
+			embed.setColor(color.war)
 				.setDescription([
 					'**War Against**',
-					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
+					`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 					'',
 					'**War State**',
 					'Battle Day',
+					`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`,
 					'',
 					'**War Size**',
 					`${data.teamSize} vs ${data.teamSize}`,
-					...stats
+					'',
+					'**War Stats**',
+					`${emoji.star} ${data.clan.stars} / ${data.opponent.stars}`,
+					`${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% / ${data.opponent.destructionPercentage.toFixed(2)}%`,
+					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
 				]);
-			embed.setFooter(`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })}`);
+			embed.setTimestamp().setFooter('Last Updated');
 		}
 
 		if (data.state === 'warEnded') {
-			content = this.result(data.clan, data.opponent) ? '**Congrats, you won the war...**' : '**Sorry, you lost the war...**';
-			embed.setColor(null)
+			embed.setColor(this.result(data.clan, data.opponent))
 				.setDescription([
 					'**War Against**',
-					`[${data.opponent.name} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})`,
+					`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 					'',
 					'**War State**',
 					'War Ended',
@@ -328,104 +156,283 @@ class ClanWarEvent {
 					`${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% / ${data.opponent.destructionPercentage.toFixed(2)}%`,
 					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
 				]);
-			embed.setFooter(`Ended ${moment.duration(Date.now() - new Date(moment(data.endTime).toDate()).getTime()).format('D [days], H [hours] m [minutes]', { trim: 'both mid' })} ago`);
+			embed.setFooter('Ended').setTimestamp(new Date(moment(data.endTime).toDate()));
 		}
 
 		embed.setDescription([
 			embed.description,
 			'',
 			'**Rosters**',
-			`[${data.clan.name}](${this.clanURL(data.clan.tag)})`,
+			`${Util.escapeMarkdown(data.clan.name)}`,
 			`${this.roster(data.clan.members)}`,
 			'',
-			`[${data.opponent.name}](${this.clanURL(data.opponent.tag)})`,
+			`${Util.escapeMarkdown(data.opponent.name)}`,
 			`${this.roster(data.opponent.members)}`
 		]);
 
-		const ending = data.state === 'inWar' && time <= 2.5 * 60 * 60 * 1000;
-
-		if (db && !db.ending && ending && db.opponent === data.opponent.tag && db.state === data.state && data.state === 'inWar') {
-			const embed = this.attacks(data, clan);
-			await channel.send({ embed });
-
-			db.posted = Boolean(false);
-			await mongodb.db('clashperk')
-				.collection('clanwars')
-				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
-					$set: { clan_id: ObjectId(id), ending: true }
-				}, { upsert: true });
+		if (data.state === 'preparation') {
+			const message = await channel.send({ embed }).catch(() => null);
+			if (message) {
+				await mongodb.db('clashperk')
+					.collection('clanwars')
+					.findOneAndUpdate({ clan_id: ObjectId(id) }, {
+						$set: {
+							clan_id: ObjectId(id),
+							opponent: data.opponent.tag,
+							tag: data.clan.tag,
+							posted: true,
+							state: data.state,
+							message: message.id,
+							updatedAt: new Date()
+						}
+					}, { upsert: true });
+			}
 		}
 
-		if (db && db.opponent === data.opponent.tag && db.posted && data.state === 'warEnded' && !db.ended) {
-			const embed = this.attacks(data, clan);
-			await channel.send({ embed });
-
-			db.posted = Boolean(false);
-			await mongodb.db('clashperk')
-				.collection('clanwars')
-				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
-					$set: { clan_id: ObjectId(id), ended: true }
-				}, { upsert: true });
-		}
-
-		const states = ['inWar', 'warEnded'];
-		if (db && db.opponent === data.opponent.tag && db.posted && db.state === data.state && states.includes(data.state)) return null;
-
-		await mongodb.db('clashperk')
-			.collection('clanwars')
-			.findOneAndUpdate({ clan_id: ObjectId(id) }, {
-				$set: {
-					clan_id: ObjectId(id),
-					tag: clan.tag,
-					opponent: data.opponent.tag,
-					posted: true,
-					state: data.state
+		if (data.state === 'inWar') {
+			let message = null;
+			if (db && db.message) {
+				message = await channel.messages.fetch(db.message, false).catch(() => null);
+				if (message) {
+					await message.edit({ embed });
+				} else {
+					message = await channel.send({ embed });
 				}
-			}, { upsert: true });
+			} else {
+				message = await channel.send({ embed });
+			}
 
-		if (!db && states.includes(data.state)) return null;
-		return { content: ending && !db.posted ? '' : content, embed };
+			await mongodb.db('clashperk')
+				.collection('clanwars')
+				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
+					$set: {
+						clan_id: ObjectId(id),
+						tag: data.clan.tag,
+						opponent: data.opponent.tag,
+						state: data.state,
+						message: message.id,
+						updatedAt: new Date()
+					}
+				}, { upsert: true });
+		}
+
+		if (data.state === 'warEnded') {
+			if (!db) return this.setTimer(id);
+			if (db && db.ended && db.opponent === data.opponent.tag) return this.setTimer(id);
+			let message = null;
+			if (db && db.message) {
+				message = await channel.messages.fetch(db.message, false).catch(() => null);
+				if (message) {
+					await message.edit({ embed });
+				} else {
+					message = await channel.send({ embed });
+				}
+			} else {
+				message = await channel.send({ embed });
+			}
+			await mongodb.db('clashperk')
+				.collection('clanwars')
+				.findOneAndUpdate({ clan_id: ObjectId(id) }, {
+					$set: {
+						clan_id: ObjectId(id),
+						tag: data.clan.tag,
+						opponent: data.opponent.tag,
+						ended: true,
+						state: data.state,
+						updatedAt: new Date()
+					}
+				});
+			if (this.missing(data)) await channel.send({ embed: this.missing(data) });
+		}
+
+		// overwrite the timer for last 1 hour
+		if (data.state === 'inWar') {
+			const endsIn = new Date(moment(data.endTime).toDate()).getTime() - Date.now();
+			if (endsIn <= 36e5) this.setTimer(id, data.maxAge * 1000, false);
+			else this.setTimer(id, data.maxAge * 1000, true);
+		} else {
+			this.setTimer(id, data.maxAge * 1000, true);
+		}
 	}
 
-	// Build Remaining/Missed Attack Embed
-	attacks(data, clan, CWL = false) {
-		if (CWL) {
-			const embed = new MessageEmbed()
-				.setTitle(`${clan.name} (${clan.tag})`)
-				.setThumbnail(clan.badgeUrls.small)
-				.setURL(this.clanURL(clan.tag));
+	// Fetch Clan-War-League-Rounds [CWL]
+	async getWarTags(id, channel, body) {
+		const cache = this.cached.get(id);
+		const db = await mongodb.db('clashperk')
+			.collection('clanwars')
+			.findOne({ clan_id: ObjectId(id) });
 
-			let index = 0;
-			const OneRem = [];
-			for (const member of clan.members.sort((a, b) => a.mapPosition - b.mapPosition)) {
-				if (member.attacks && member.attacks.length === 1) {
-					++index;
-					continue;
+		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
+
+		// Set Callback Timer
+		this.setTimer(id);
+		if (db && db.warTags && rounds.length === Object.keys(db.warTags).length) return this.roundCWL(id, channel, body, db);
+
+		const set = {};
+		// let index = 0;
+		for (const round of rounds) {
+			// index += 1;
+			// if (db && db.rounds && db.rounds.length > index - 1) continue;
+			for (const warTag of Object.keys(round.warTags)) {
+				const data = await client.fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`).catch(() => null);
+				if (!data || (data && !data.ok)) continue;
+				if ((data.clan && data.clan.tag === cache.tag) || (data.opponent && data.opponent.tag === cache.tag)) {
+					if (data.state === 'warEnded') {
+						const ended = db.warTags[warTag] && db.warTags[warTag].ended;
+						set[`warTags.${warTag}.warTag`] = warTag;
+						set[`warTags.${warTag}.state`] = data.state;
+						set[`warTags.${warTag}.ended`] = ended;
+					} else {
+						set[`warTags.${warTag}.warTag`] = warTag;
+						set[`warTags.${warTag}.state`] = data.state;
+					}
+
+					break;
 				}
-				OneRem.push({ mapPosition: ++index, name: member.name });
 			}
-			embed.setDescription([
-				`**${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
-				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition)
-					.map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`) || 'All Members Attacked',
-				''
-			]);
-
-			return embed;
 		}
 
+		const { value } = await mongodb.db('clashperk')
+			.collection('clanwars')
+			.findOneAndUpdate({ clan_id: ObjectId(id) }, {
+				$set: Object.assign({
+					clan_id: ObjectId(id),
+					tag: cache.tag
+				}, set)
+			}, { upsert: true, returnOriginal: false });
+
+		return this.roundCWL(id, channel, body, value);
+	}
+
+	// For Clan-War-League Embed [CWL]
+	async roundCWL(id, channel, body, db) {
+		const cache = this.cached.get(id);
+		const warTags = Object.values(db.warTags).filter(round => !round.ended).map(round => round.warTag);
+		for (const warTag of warTags) {
+			const round = body.rounds.findIndex(round => round.warTags.includes(warTag)) + 1;
+			const data = await client.fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`).catch(() => null);
+			if (!data || (data && !data.ok)) continue;
+			const clan = data.clan.tag === cache.tag ? data.clan : data.opponent;
+			const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
+			const embed = new MessageEmbed()
+				.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+				.addField('War Against', `${opponent.name} (${opponent.tag})`)
+				.addField('Team Size', `${data.teamSize}`);
+
+			if (data.state === 'inWar') {
+				const started = new Date(moment(data.startTime).toDate()).getTime();
+				embed.setColor(color.war);
+				embed.addField('State', ['Battle Day', `Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`])
+					.addField('Stats', [
+						`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
+						`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+						`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
+					]);
+			}
+
+			if (data.state === 'preparation') {
+				const start = new Date(moment(data.startTime).toDate()).getTime();
+				embed.setColor(color.prep);
+				embed.addField('State', ['Preparation', `Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`]);
+			}
+
+			if (data.state === 'warEnded') {
+				const end = new Date(moment(data.endTime).toDate()).getTime();
+				embed.setColor(this.result(clan, opponent));
+				embed.addField('State', ['War Ended', `Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`])
+					.addField('Stats', [
+						`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
+						`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+						`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
+					]);
+				if (this.attacks(data, clan)) embed.addField('Remaining Attacks', this.attacks(data, clan).description.substring(0, 1020));
+			}
+
+			embed.addField('Rosters', [
+				`**${data.clan.name}**`,
+				`${this.roster(data.clan.members)}`,
+				'',
+				`**${data.opponent.name}**`,
+				`${this.roster(data.opponent.members)}`
+			]);
+			embed.setFooter(`Round #${round}`);
+
+			await this.send(id, db, data, warTag, channel);
+			await this.delay(250);
+		}
+	}
+
+	// Send or Edit Messages [CWL]
+	async send(id, db, data, warTag, channel, embed) {
+		let message = null;
+		if (db && db.warTags[warTag].message) {
+			message = await channel.messages.fetch(db.warTags[warTag].message, false).catch(() => null);
+			if (message) {
+				await message.edit({ embed });
+			} else {
+				message = await channel.send({ embed });
+			}
+		} else {
+			message = await channel.send({ embed });
+		}
+
+		const set = {};
+		if (data.state === 'warEnded') set[`warTags.${warTag}.ended`] = true;
+		set[`warTags.${warTag}.message`] = message.id;
+		set[`warTags.${warTag}.state`] = data.state;
+
+		return mongodb.db('clashperk')
+			.collection('clanwars')
+			.updateOne({ clan_id: ObjectId(id) }, { $set: set });
+	}
+
+	// Build Remaining/Missed Attack Embed [CWL]
+	attacks(data, clan) {
+		const embed = new MessageEmbed()
+			.setTitle(`${clan.name} (${clan.tag})`)
+			.setThumbnail(clan.badgeUrls.small)
+			.setURL(this.clanURL(clan.tag));
+
+		let index = 0;
+		const OneRem = [];
+		for (const member of clan.members.sort((a, b) => a.mapPosition - b.mapPosition)) {
+			if (member.attacks && member.attacks.length === 1) {
+				++index;
+				continue;
+			}
+			OneRem.push({ mapPosition: ++index, name: member.name });
+		}
+		embed.setDescription([
+			`**${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
+			...OneRem.sort((a, b) => a.mapPosition - b.mapPosition)
+				.map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`) || 'All Members Attacked',
+			''
+		]);
+
+		if (OneRem.length) return embed;
+		return null;
+	}
+
+	// Build Remaining/Missed Attack Embed [CLAN WAR]
+	missing(data) {
 		const [OneRem, TwoRem] = [
 			data.clan.members.filter(m => m.attacks && m.attacks.length === 1),
 			data.clan.members.filter(m => !m.attacks)
 		];
 
 		const embed = new MessageEmbed()
-			.setTitle(`${clan.name} (${clan.tag})`)
-			.setThumbnail(clan.badgeUrls.small)
-			.setURL(this.clanURL(clan.tag));
+			.setTitle(`${data.clan.name} (${data.clan.tag})`)
+			.setThumbnail(data.clan.badgeUrls.small)
+			.setURL(this.clanURL(data.clan.tag))
+			.setDescription([
+				'**War Against**',
+				`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
+			]);
 
 		if (TwoRem.length) {
 			embed.setDescription([
+				embed.description,
+				'',
 				`**2 ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
 				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`),
 				''
@@ -434,13 +441,14 @@ class ClanWarEvent {
 
 		if (OneRem.length) {
 			embed.setDescription([
-				embed.description || '',
+				embed.description,
 				`**1 ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
 				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`)
 			]);
 		}
 
-		return embed;
+		if (OneRem.length || TwoRem.length) return embed;
+		return null;
 	}
 
 	clanURL(tag) {
@@ -449,10 +457,12 @@ class ClanWarEvent {
 
 	// Decides War Result
 	result(clan, opponent) {
+		const tied = clan.stars === opponent.stars && clan.destructionPercentage === opponent.destructionPercentage;
+		if (tied) return null;
 		const stars = clan.stars !== opponent.stars && clan.stars > opponent.stars;
 		const destr = clan.stars === opponent.stars && clan.destructionPercentage > opponent.destructionPercentage;
-		if (stars || destr) return true;
-		return false;
+		if (stars || destr) return color.green;
+		return color.red;
 	}
 
 	// Builds Clan Roster
@@ -484,17 +494,25 @@ class ClanWarEvent {
 	}
 
 	async clanWar(tag) {
-		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar`, {
-			method: 'GET',
-			headers: { accept: 'application/json', authorization: `Bearer ${process.env.$KEY}` }
+		const data = await client.fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(tag)}/currentwar`, {
+			token: process.env.$KEY
 		}).catch(() => null);
-		if (!res) return null;
-		if (!res.ok) return null;
-		return res.json().catch(() => null);
+		if (!data) return null;
+		if (!data.ok) return null;
+		return data;
 	}
 
-	get isCWL() {
-		return new Date().getDate() >= 1 && new Date().getDate() <= 11;
+	// set timer according to cache-control header
+	setTimer(id, ms = 9e5, filter = true) {
+		const cache = this.cached.get(id);
+		if (cache && cache.intervalId) clearInterval(cache.intervalId);
+
+		if (filter && !this.client.patron.get(cache.guild, 'guild', false)) ms += 6e5;
+		if (ms < 2000) ms += 6e5;
+		else ms += 2000;
+
+		cache.intervalId = setInterval(this.exec.bind(this), ms, id);
+		return this.cached.set(id, cache);
 	}
 
 	async init() {
@@ -507,10 +525,16 @@ class ClanWarEvent {
 			if (this.client.guilds.cache.has(data.guild)) {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					guild: data.guild,
-					channel: data.channel
+					channel: data.channel,
+					tag: data.tag
 				});
 			}
 		});
+
+		for (const id of this.cached.keys()) {
+			await this.exec(id);
+			await this.delay(100);
+		}
 	}
 
 	async add(id) {
@@ -519,13 +543,26 @@ class ClanWarEvent {
 			.findOne({ clan_id: ObjectId(id) });
 
 		if (!data) return null;
-		return this.cached.set(ObjectId(data.clan_id).toString(), {
+		this.cached.set(ObjectId(data.clan_id).toString(), {
 			guild: data.guild,
-			channel: data.channel
+			channel: data.channel,
+			tag: data.tag
 		});
+
+		return this.exec(ObjectId(id).toString());
+	}
+
+	clear() {
+		for (const key of this.cached.keys()) {
+			const cache = this.cached.get(key);
+			if (cache && cache.intervalId) clearInterval(cache.intervalId);
+		}
+		return this.cached.clear();
 	}
 
 	delete(id) {
+		const cache = this.cached.get(id);
+		if (cache && cache.intervalId) clearInterval(cache.intervalId);
 		return this.cached.delete(id);
 	}
 }
