@@ -59,7 +59,6 @@ class ClanWarEvent {
 
 	async fetchCWL(id, channel) {
 		const cache = this.cached.get(id);
-		if (cache.tag !== '#8QU8J9LP') return;
 		const data = await client.fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(cache.tag)}/currentwar/leaguegroup`, {
 			token: process.env.$KEY,
 			timeout: 3000
@@ -360,7 +359,6 @@ class ClanWarEvent {
 				const remaining = this.attacks(clan);
 				if (remaining) embed.addField('Remaining Attacks', remaining.substring(0, 1020));
 			}
-			
 			embed.setFooter(`Round #${round}`);
 
 			await this.send(id, db, data, warTag, channel, embed);
