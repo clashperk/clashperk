@@ -357,7 +357,7 @@ class ClanWarEvent {
 			]);
 
 			if (data.state === 'warEnded' && this.attacks(data, clan)) {
-				embed.addField('Remaining Attacks', this.attacks(data, clan).description.substring(0, 1020));
+				embed.addField('Remaining Attacks', this.attacks(data, clan).substring(0, 1020));
 			}
 			embed.setFooter(`Round #${round}`);
 
@@ -391,12 +391,7 @@ class ClanWarEvent {
 	}
 
 	// Build Remaining/Missed Attack Embed [CWL]
-	attacks(data, clan) {
-		const embed = new MessageEmbed()
-			.setTitle(`${clan.name} (${clan.tag})`)
-			.setThumbnail(clan.badgeUrls.small)
-			.setURL(this.clanURL(clan.tag));
-
+	attacks(clan) {
 		let index = 0;
 		const OneRem = [];
 		for (const member of clan.members.sort((a, b) => a.mapPosition - b.mapPosition)) {
@@ -406,14 +401,14 @@ class ClanWarEvent {
 			}
 			OneRem.push({ mapPosition: ++index, name: member.name });
 		}
-		embed.setDescription([
-			`**${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
-			...OneRem.sort((a, b) => a.mapPosition - b.mapPosition)
-				.map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`) || 'All Members Attacked',
-			''
-		]);
 
-		if (OneRem.length) return embed;
+		if (OneRem.length) {
+			return [
+				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition)
+					.map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`) || 'All Members Attacked',
+				''
+			].join('\n');
+		}
 		return null;
 	}
 
