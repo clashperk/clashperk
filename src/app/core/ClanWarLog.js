@@ -368,9 +368,9 @@ class ClanWarEvent {
 			if (data.state === 'warEnded') {
 				const remaining = this.attacks(clan);
 				if (remaining && remaining.length > 1024) {
-					embed.addField('Remaining Attacks', remaining);
-				} else if (remaining) {
 					embed.addField('Remaining Attacks', this.attacks(clan, true));
+				} else if (remaining) {
+					embed.addField('Remaining Attacks', remaining);
 				}
 			}
 			embed.setFooter(`Round #${round}`).setTimestamp();
