@@ -1,13 +1,13 @@
 const MaintenanceHandler = require('./MaintenanceHandler');
 const ClanActivityLog = require('./ClanActivityLog');
 const { mongodb } = require('../struct/Database');
+const ClanMemberLog = require('./ClanMemberLog');
 const ClanEmbedLog = require('./ClanEmbedLog');
 const { Modes } = require('../util/constants');
 const ClanGamesLog = require('./ClanGamesLog');
 const DonationLog = require('./DonationLog');
 const ClanWarLog = require('./ClanWarLog');
 const { ObjectId } = require('mongodb');
-const ClanLog = require('./ClanLog');
 const fetch = require('node-fetch');
 
 class CacheHandler {
@@ -17,7 +17,7 @@ class CacheHandler {
 		this.cached = new Map();
 		this.interval = interval;
 
-		this.clanLog = new ClanLog(client);
+		this.clanLog = new ClanMemberLog(client);
 		this.clanwarLog = new ClanWarLog(client);
 		this.donationLog = new DonationLog(client);
 		this.clanembedLog = new ClanEmbedLog(client);
