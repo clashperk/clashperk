@@ -367,10 +367,8 @@ class ClanWarEvent {
 
 			if (data.state === 'warEnded') {
 				const remaining = this.attacks(clan);
-				if (remaining && remaining.length > 1024) {
-					embed.addField('Remaining Attacks', this.attacks(clan, true));
-				} else if (remaining) {
-					embed.addField('Remaining Attacks', remaining);
+				if (remaining) {
+					embed.addField('Remaining Attacks', remaining.substring(0, 1024));
 				}
 			}
 			embed.setFooter(`Round #${round}`).setTimestamp();
@@ -405,7 +403,7 @@ class ClanWarEvent {
 	}
 
 	// Build Remaining/Missed Attack Embed [CWL]
-	attacks(clan, codeblock = false) {
+	attacks(clan) {
 		let index = 0;
 		const OneRem = [];
 		for (const member of clan.members.sort((a, b) => a.mapPosition - b.mapPosition)) {
@@ -419,7 +417,7 @@ class ClanWarEvent {
 		if (OneRem.length) {
 			return [
 				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition)
-					.map(m => `\u200e${codeblock ? `\`\u200e${m.mapPosition.toString().padStart(2, ' ')}\`` : blueNum[m.mapPosition]} ${m.name}`),
+					.map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`),
 				''
 			].join('\n');
 		}
