@@ -347,17 +347,32 @@ class ClanWarEvent {
 					]);
 			}
 
-			embed.addField('Rosters', [
-				`${data.clan.name}`,
-				`${this.roster(data.clan.members)}`,
-				'',
-				`${data.opponent.name}`,
-				`${this.roster(data.opponent.members)}`
-			]);
+			const [clanRoster, opponentRoster] = [this.roster(data.clan.members), this.roster(data.opponent.members)];
+			if (clanRoster.length + opponentRoster.length > 1000) {
+				embed.addField('Rosters', [
+					`${data.clan.name}`,
+					`${this.roster(data.clan.members, true)}`,
+					'',
+					`${data.opponent.name}`,
+					`${this.roster(data.opponent.members, true)}`
+				]);
+			} else {
+				embed.addField('Rosters', [
+					`${data.clan.name}`,
+					`${clanRoster}`,
+					'',
+					`${data.opponent.name}`,
+					`${opponentRoster}`
+				]);
+			}
 
 			if (data.state === 'warEnded') {
 				const remaining = this.attacks(clan);
-				if (remaining) embed.addField('Remaining Attacks', remaining.substring(0, 1020));
+				if (remaining && remaining.length > 1024) {
+					embed.addField('Remaining Attacks', remaining);
+				} else if (remaining) {
+					embed.addField('Remaining Attacks', this.attacks(clan, false));
+				}
 			}
 			embed.setFooter(`Round #${round}`);
 
@@ -391,7 +406,7 @@ class ClanWarEvent {
 	}
 
 	// Build Remaining/Missed Attack Embed [CWL]
-	attacks(clan) {
+	attacks(clan, codeblock = false) {
 		let index = 0;
 		const OneRem = [];
 		for (const member of clan.members.sort((a, b) => a.mapPosition - b.mapPosition)) {
@@ -405,7 +420,7 @@ class ClanWarEvent {
 		if (OneRem.length) {
 			return [
 				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition)
-					.map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`) || 'All Members Attacked',
+					.map(m => `\u200e${codeblock ? `\`\u200e${m.mapPosition.toString().padStart(2, ' ')}\`` : blueNum[m.mapPosition]} ${m.name}`),
 				''
 			].join('\n');
 		}
@@ -465,7 +480,7 @@ class ClanWarEvent {
 	}
 
 	// Builds Clan Roster
-	roster(members = []) {
+	roster(members = [], codeblock = false) {
 		const reduced = members.reduce((count, member) => {
 			const townHall = member.townhallLevel;
 			count[townHall] = (count[townHall] || 0) + 1;
@@ -478,7 +493,10 @@ class ClanWarEvent {
 
 		return this.chunk(townHalls)
 			.map(chunks => {
-				const list = chunks.map(th => `${townHallEmoji[th.level]} ${whiteNum[th.total]}`);
+				const list = chunks.map(th => {
+					const total = `\`\u200e${th.total.toString().padStart(2, ' ')}\``;
+					return `${townHallEmoji[th.level]} ${codeblock ? total : whiteNum[th.total]}`;
+				});
 				return list.join(' ');
 			}).join('\n');
 	}
