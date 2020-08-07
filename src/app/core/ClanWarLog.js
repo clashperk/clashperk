@@ -362,7 +362,7 @@ class ClanWarEvent {
 			embed.setFooter(`Round #${round}`);
 
 			await this.send(id, db, data, warTag, channel, embed);
-			await this.delay(250);
+			await this.delay(500);
 		}
 	}
 
