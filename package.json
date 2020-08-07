@@ -31,5 +31,16 @@
   "devDependencies": {
     "eslint": "^7.3.0",
     "eslint-config-mars": "^1.0.5"
-  }
+	},
+	"optionalDependencies": {
+		"chart.js": "^2.9.3",
+    "chartjs-chart-box-and-violin-plot": "^2.3.0",
+    "chartjs-chart-radial-gauge": "^1.0.3",
+    "chartjs-node-canvas": "^3.0.6",
+    "chartjs-plugin-annotation": "^0.5.7",
+    "chartjs-plugin-colorschemes": "^0.4.0",
+    "chartjs-plugin-datalabels": "^0.7.0",
+    "chartjs-plugin-doughnutlabel": "^2.0.3",
+    "chartjs-plugin-piechart-outlabels": "^0.1.4"
+	}
 }
