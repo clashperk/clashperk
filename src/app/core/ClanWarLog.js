@@ -349,18 +349,18 @@ class ClanWarEvent {
 			const [clanRoster, opponentRoster] = [this.roster(data.clan.members), this.roster(data.opponent.members)];
 			if (clanRoster.length + opponentRoster.length > 1000) {
 				embed.addField('Rosters', [
-					`${data.clan.name}`,
+					`${clan.name}`,
 					`${this.roster(data.clan.members, true)}`,
 					'',
-					`${data.opponent.name}`,
+					`${opponent.name}`,
 					`${this.roster(data.opponent.members, true)}`
 				]);
 			} else {
 				embed.addField('Rosters', [
-					`${data.clan.name}`,
+					`${clan.name}`,
 					`${clanRoster}`,
 					'',
-					`${data.opponent.name}`,
+					`${opponent.name}`,
 					`${opponentRoster}`
 				]);
 			}
@@ -372,10 +372,8 @@ class ClanWarEvent {
 				} else if (remaining) {
 					embed.addField('Remaining Attacks', this.attacks(clan, false));
 				}
-				embed.setFooter(`Round #${round} Ended`).setTimestamp();
-			} else {
-				embed.setFooter(`Round #${round}`).setTimestamp();
 			}
+			embed.setFooter(`Round #${round}`).setTimestamp();
 
 			await this.send(id, db, data, warTag, channel, embed);
 			await this.delay(1500);
