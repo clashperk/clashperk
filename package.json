@@ -30,7 +30,6 @@
   },
   "devDependencies": {
     "eslint": "^7.3.0",
-    "eslint-config-mars": "^1.0.5",
-    "pm2": "^4.4.0"
+    "eslint-config-mars": "^1.0.5"
   }
 }
