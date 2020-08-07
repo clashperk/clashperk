@@ -370,7 +370,7 @@ class ClanWarEvent {
 				if (remaining && remaining.length > 1024) {
 					embed.addField('Remaining Attacks', remaining);
 				} else if (remaining) {
-					embed.addField('Remaining Attacks', this.attacks(clan, false));
+					embed.addField('Remaining Attacks', this.attacks(clan, true));
 				}
 			}
 			embed.setFooter(`Round #${round}`).setTimestamp();
