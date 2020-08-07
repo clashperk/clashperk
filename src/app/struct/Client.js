@@ -106,7 +106,7 @@ class ClashPerk extends AkairoClient {
 		this.storage = new Storage(this);
 
 		this.once('ready', () => {
-			if (this.user.id === process.env.CLIENT_ID) {
+			if (process.env.NODE_ENV) {
 				this.patron.init();
 				this.firebase.init();
 				this.cacheHandler.init();
