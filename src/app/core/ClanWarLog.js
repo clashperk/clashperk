@@ -357,7 +357,7 @@ class ClanWarEvent {
 			]);
 
 			if (data.state === 'warEnded' && this.attacks(data, clan)) {
-				embed.addField('Remaining Attacks', this.attacks(data, clan).substring(0, 1020));
+				embed.addField('Remaining Attacks', this.attacks(clan).substring(0, 1020));
 			}
 			embed.setFooter(`Round #${round}`);
 
