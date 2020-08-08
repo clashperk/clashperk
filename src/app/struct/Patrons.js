@@ -27,39 +27,30 @@ class Patron {
 	async refresh() {
 		this.store.clear();
 		await firestore.collection('patrons')
-			.where('active', '==', true)
+			// .where('active', '==', true)
 			.get()
 			.then(snap => {
 				snap.forEach(doc => {
 					const data = doc.data();
-					if (data.active) {
-						if (data.discord_id) {
-							this.store.set(data.discord_id, {
-								user: true
-							});
-						}
+					if (data.discord_id) {
+						this.store.set(data.discord_id, { user: true });
+					}
 
-						if (data.shared) {
-							for (const id of data.shared) {
-								this.store.set(id, {
-									user: true
-								});
-							}
+					if (data.shared) {
+						for (const id of data.shared) {
+							this.store.set(id, { user: true });
 						}
+					}
 
-						if (data.guilds) {
-							for (const guild of data.guilds) {
-								this.store.set(guild.id, {
-									guild: true,
-									limit: guild.limit
-								});
-							}
+					if (data.active && data.guilds) {
+						for (const guild of data.guilds) {
+							this.store.set(guild.id, { guild: true, limit: guild.limit });
 						}
 					}
 				});
 			});
 
-		return true;
+		return Promise.resolve(0);
 	}
 
 	async incoming() {
