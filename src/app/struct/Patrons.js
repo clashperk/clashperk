@@ -27,7 +27,7 @@ class Patron {
 	async refresh() {
 		this.store.clear();
 		await firestore.collection('patrons')
-			// .where('active', '==', true)
+			.where('active', '==', true)
 			.get()
 			.then(snap => {
 				snap.forEach(doc => {
