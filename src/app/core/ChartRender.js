@@ -9,6 +9,10 @@ const { CanvasRenderService } = require('chartjs-node-canvas');
 // require('chartjs-plugin-colorschemes');
 // require('chart.js');
 
+// npm i chart.js canvas chartjs-node-canvas chartjs-chart-radial-gauge chartjs-plugin-datalabels
+// npm i chartjs-chart-box-and-violin-plot chartjs-plugin-annotation chartjs-plugin-piechart-outlabels
+// npm i chartjs-plugin-doughnutlabel chartjs-plugin-colorschemes
+
 const DEFAULT_COLORS = {
 	blue: '#4D89F9',
 	green: '#00B88A',

@@ -99,10 +99,10 @@ class Chart {
 			}
 		};
 
-		if (process.env.NODE_ENV) {
+		/* if (process.env.NODE_ENV) {
 			const { renderChart } = require('./ChartRender');
 			return renderChart(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart);
-		}
+		}*/
 
 		const res = await fetch(process.env.CHART_API_URL, {
 			method: 'POST',
