@@ -7,8 +7,8 @@ class Google {
 			address: query,
 			key: process.env.GOOGLE
 		});
-		const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?${search}`);
-		if (!res.ok) return null;
+		const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?${search}`).catch(() => null);
+		if (!res || (res && !res.ok)) return null;
 		const data = await res.json();
 		if (data.status !== 'OK') return null;
 		return data;
@@ -23,7 +23,8 @@ class Google {
 			key: process.env.GOOGLE,
 			timestamp: new Date() / 1000
 		});
-		const res = await fetch(`https://maps.googleapis.com/maps/api/timezone/json?${search}&location=${location.geometry.location.lat},${location.geometry.location.lng}`);
+		const res = await fetch(`https://maps.googleapis.com/maps/api/timezone/json?${search}&location=${location.geometry.location.lat},${location.geometry.location.lng}`).catch(() => null);
+		if (!res || (res && !res.ok)) return null;
 		const data = await res.json();
 
 		return { location: raw, timezone: data };
