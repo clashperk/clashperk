@@ -126,7 +126,9 @@ class CWLStarsComamnd extends Command {
 		}
 
 		const patron = this.client.patron.check(message.author, message.guild);
-		const leaderboard = Object.values(members).sort((a, b) => b.stars - a.stars);
+		const leaderboard = Object.values(members)
+			.sort((a, b) => b.stars - a.stars)
+			.sort((a, b) => b.dest - a.dest);
 
 		const embed = this.client.util.embed()
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
