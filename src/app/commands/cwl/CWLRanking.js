@@ -4,6 +4,7 @@ const { MessageEmbed } = require('discord.js');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const { emoji, redNum } = require('../../util/emojis');
+const CWL = require('../../core/CWLWarTags');
 
 class CWLRankingComamnd extends Command {
 	constructor() {
@@ -57,22 +58,26 @@ class CWLRankingComamnd extends Command {
 		}
 
 		const body = await res.json();
-
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message));
-
 		if (!(body.state || res.ok)) {
-			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+			const cw = await CWL.get(data.tag);
+			if (cw) {
+				return this.rounds(message, cw, data);
+			}
+
+			const embed = this.client.util.embed()
+				.setColor(this.client.embed(message))
+				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data.tag);
+		CWL.pushWarTags(data.tag, body.rounds);
+		return this.rounds(message, body, data);
 	}
 
-	async rounds(message, body, clanTag) {
-		const clan = body.clans.find(clan => clan.tag === clanTag);
+	async rounds(message, body, clan) {
+		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [stars, destruction, padding] = [0, 0, 5];
 		const ranking = body.clans.map(clan => ({ name: clan.name, tag: clan.tag, stars: 0, destruction: 0 }));
