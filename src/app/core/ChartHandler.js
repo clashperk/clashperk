@@ -104,7 +104,7 @@ class Chart {
 			return renderChart(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart);
 		}*/
 
-		const res = await fetch('https://chart.clashperk.com/chart/create', {
+		const res = await fetch(process.env.CHART_API_URL, {
 			method: 'POST',
 			timeout: 10000,
 			headers: {
@@ -112,13 +112,9 @@ class Chart {
 			},
 			body: JSON.stringify(body)
 		}).catch(() => null);
-
-		// console.log();
-
 		if (!res) return null;
 		if (!res.ok) return null;
-
-		return res.json();
+		return res.buffer();
 	}
 }
 
