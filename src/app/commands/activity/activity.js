@@ -75,14 +75,15 @@ class ActivityCommand extends Command {
 		if (!buffer) return message.util.send({ embed: { description: '504 Request Timeout' } });
 		const diff = process.hrtime(hrStart);
 		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
-		return message.util.send({
+		/* return message.util.send({
 			files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }],
 			content: [
 				raw
 					? `**Rendered in ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**`
 					: `**Set your time zone using \`${this.handler.prefix(message)}offset <location>\` for better experience.**`
 			].join('\n')
-		});
+		});*/
+		return message.channel.send(`https://chart.clashperk.com/chart/render/${buffer.id}`);
 	}
 }
 
