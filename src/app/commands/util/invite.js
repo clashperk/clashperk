@@ -1,4 +1,6 @@
 const { Command } = require('discord-akairo');
+const { Permissions } = require('discord.js');
+const { stringify } = require('querystring');
 
 class InviteCommand extends Command {
 	constructor() {
@@ -15,9 +17,8 @@ class InviteCommand extends Command {
 		return 3000;
 	}
 
-	async fetchInvite() {
-		if (this.invite) return this.invite;
-		const invite = await this.client.generateInvite([
+	get bitfield() {
+		const permissions = new Permissions([
 			'CREATE_INSTANT_INVITE',
 			'ADD_REACTIONS',
 			'VIEW_CHANNEL',
@@ -27,18 +28,23 @@ class InviteCommand extends Command {
 			'READ_MESSAGE_HISTORY',
 			'USE_EXTERNAL_EMOJIS',
 			'MANAGE_MESSAGES',
-			'MANAGE_WEBHOOKS'
+			'MANAGE_WEBHOOKS',
+			'MANAGE_NICKNAMES'
 		]);
 
-		this.invite = invite;
-		return invite;
+		return permissions.bitfield;
 	}
 
 	async exec(message) {
+		const query = stringify({
+			client_id: this.client.user.id,
+			permissions: this.bitfield,
+			scope: 'bot'
+		});
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setDescription([
-				`**[Invite Me](${await this.fetchInvite()})**`,
+				`**[Invite Me](https://discord.com/api/oauth2/authorize?${query})**`,
 				'**[Official Discord](https://discord.gg/ppuppun)**'
 			]);
 		return message.util.send({ embed });
