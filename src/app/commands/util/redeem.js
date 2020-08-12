@@ -68,6 +68,12 @@ class RedeemCommand extends Command {
 			return message.util.send({ embed });
 		}
 
+		if (this.client.patron.get(message.guild.id, 'guild', false)) {
+			return message.util.send([
+				'This server already has an active subscription.'
+			]);
+		}
+
 		if (patreon_user) {
 			const user = await firestore.collection('patrons')
 				.doc(patreon_user.id)
