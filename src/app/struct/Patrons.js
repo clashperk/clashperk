@@ -1,5 +1,7 @@
 const { firebase, firestore } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
+const qs = require('querystring');
+const fetch = require('node-fetch');
 
 class Patron {
 	constructor(client) {
@@ -83,8 +85,9 @@ class Patron {
 			.update({
 				name: patron_user.attributes.full_name,
 				id: patron_user.id,
-				discord_id: discord_id || null,
-				createdAt: attributes.pledge_relationship_start || new Date(),
+				discord_id: user ? user.id : null,
+				discord_username: user ? user.username : null,
+				createdAt: new Date(attributes.pledge_relationship_start) || new Date(),
 				active: true,
 				entitled_amount: attributes.currently_entitled_amount_cents / 100
 			}, { merge: true });
@@ -138,7 +141,8 @@ class Patron {
 			.update({
 				name: patron_user.attributes.full_name,
 				id: patron_user.id,
-				discord_id: discord_id || null,
+				discord_id: user ? user.id : null,
+				discord_username: user ? user.username : null,
 				updatedAt: new Date(),
 				active: true,
 				entitled_amount: attributes.currently_entitled_amount_cents / 100
@@ -182,9 +186,10 @@ class Patron {
 			.update({
 				name: patron_user.attributes.full_name,
 				id: patron_user.id,
-				discord_id: discord_id || null,
+				discord_id: user ? user.id : null,
+				discord_username: user ? user.username : null,
 				active: false,
-				expiedAt: new Date(),
+				expiredAt: new Date(),
 				lifetime_support: attributes.lifetime_support_cents / 100
 			}, { merge: true });
 
@@ -206,16 +211,39 @@ class Patron {
 		return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user.displayAvatarURL() });
 	}
 
-	delclans() {
-		firestore.collection('tracking_clans').where('guild', '==', '').limit()
-			.get()
-			.then(snap => {
-				snap.forEach(async doc => {
-					await doc.ref.delete();
-					clearInterval(this.client.tracker.cached.get(doc.id).intervalID);
-					this.client.tracker.cached.delete(doc.id);
-				});
+	async sync() {
+		const query = qs.stringify({
+			'include': 'patron.null',
+			'page[count]': 100,
+			'sort': 'created'
+		});
+		const res = await fetch(`https://www.patreon.com/api/oauth2/api/campaigns/2589569/pledges?${query}`, {
+			headers: {
+				authorization: `Bearer ${process.env.PATREON_API}`
+			},
+			timeout: 5000
+		}).catch(() => null);
+		const data = await res.json();
+		// const users = data.included.map(user => user.id);
+		for (const user of data.data) {
+			user.relationships.patron.data.id;
+			// eslint-disable-next-line no-eq-null
+			if (user.attributes.declined_since == null) continue;
+			if (new Date(user.attributes.declined_since).getMonth() === new Date().getMonth()) continue;
+			// TODO: Delete from Database
+		}
+	}
+
+	updateUsername() {
+		firestore.collection('patrons').get().then(snap => {
+			snap.forEach(async doc => {
+				const data = doc.data();
+				if (data.discord_id) {
+					const user = await this.client.users.fetch(data.discord_id).catch(() => null);
+					if (user) await firestore.collection('patrons').doc(data.id).update({ discord_username: user.username });
+				}
 			});
+		});
 	}
 
 	async fetchWebhook() {

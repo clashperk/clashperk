@@ -87,10 +87,12 @@ class RedeemCommand extends Command {
 						name: patreon_user.attributes.full_name,
 						id: patreon_user.id,
 						discord_id: message.author.id,
+						discord_username: message.author.username,
 						active: true,
 						guilds: [{ id: message.guild.id, limit: pledge.attributes.amount_cents >= 300 ? 50 : 3 }],
 						entitled_amount: pledge.attributes.amount_cents / 100,
-						redeemed: true
+						redeemed: true,
+						createdAt: new Date(pledge.attributes.created)
 					}, { merge: true });
 
 				await this.client.patron.refresh();
@@ -118,6 +120,7 @@ class RedeemCommand extends Command {
 							limit: user.entitled_amount >= 3 ? 50 : 3
 						}),
 						discord_id: message.author.id,
+						discord_username: message.author.username,
 						redeemed: true
 					}, { merge: true });
 
@@ -135,7 +138,8 @@ class RedeemCommand extends Command {
 			firestore.collection('patrons')
 				.doc(patreon_user.id)
 				.update({
-					discord_id: message.author.id
+					discord_id: message.author.id,
+					discord_username: message.author.username
 				}, { merge: true });
 
 			return true;

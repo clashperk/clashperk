@@ -44,11 +44,15 @@ class PatronCommand extends Command {
 
 	async patrons(patrons = []) {
 		await firestore.collection('patrons')
+			.orderBy('createdAt', 'asc')
 			.get()
 			.then(snapshot => {
 				snapshot.forEach(snap => {
 					const data = snap.data();
-					if (data.active) patrons.push(data.name);
+					if (data.active) {
+						if (data.discord_username) patrons.push(data.discord_username);
+						else patrons.push(data.name);
+					}
 				});
 				if (!snapshot.size) patrons = null;
 			});
