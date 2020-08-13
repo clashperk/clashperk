@@ -11,7 +11,6 @@ class PingCommand extends Command {
 				'USE_EXTERNAL_EMOJIS',
 				'ADD_REACTIONS',
 				'SEND_MESSAGES',
-				'READ_MESSAGE_HISTORY',
 				'READ_MESSAGE_HISTORY'
 			],
 			description: {
