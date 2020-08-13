@@ -29,7 +29,7 @@
     "shelljs": "^0.8.4"
   },
   "devDependencies": {
-    "eslint": "^7.3.0",
+    "eslint": "^7.6.0",
     "eslint-config-mars": "^1.0.5"
   }
 }
