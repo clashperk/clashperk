@@ -5,7 +5,6 @@ class ReloadCommand extends Command {
 		super('reload', {
 			aliases: ['reload', 'r'],
 			category: 'owner',
-			clientPermissions: ['EMBED_LINKS'],
 			ownerOnly: true,
 			description: {
 				content: 'You can\'t use this anyway, so why explain?'
@@ -22,12 +21,14 @@ class ReloadCommand extends Command {
 			const cmd = await this.client.commandHandler.modules.size;
 			const listener = await this.client.listenerHandler.modules.size;
 			const inhibitor = await this.client.inhibitorHandler.modules.size;
-			return message.util.send({
-				embed: {
-					title: `Reloaded (Shard ${message.guild.shard.id}/${this.client.shard.count})`,
-					description: `${cmd} commands, ${listener} listeners & ${inhibitor} inhibitors`
-				}
-			});
+			const embed = {
+				title: `Reloaded (Shard ${message.guild.shard.id}/${this.client.shard.count})`,
+				description: `${cmd} commands, ${listener} listeners & ${inhibitor} inhibitors`
+			};
+			if (message.channel.permissionsFor(message.guild.me).has('EMBED_LINKS')) {
+				return message.util.send({ embed });
+			}
+			return message.util.send([`**${embed.title}**`, `${embed.description}`]);
 		}
 	}
 }
