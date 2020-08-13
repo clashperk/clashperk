@@ -1,6 +1,5 @@
 const { Listener } = require('discord-akairo');
 const { addBreadcrumb, Severity, captureException, setContext } = require('@sentry/node');
-const { emoji } = require('../../util/emojis');
 
 class ErrorListener extends Listener {
 	constructor() {
@@ -72,7 +71,7 @@ class ErrorListener extends Listener {
 
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
 			await message.channel.send([
-				`${emoji.wrong} Something went wrong, report us!`,
+				'\\❌ Something went wrong, report us!',
 				`\`\`\`${error.toString()}\`\`\``
 			]);
 		}

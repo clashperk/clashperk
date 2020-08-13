@@ -1,5 +1,4 @@
 const { Command } = require('discord-akairo');
-const { emoji } = require('../../util/emojis');
 
 class ConfigCommand extends Command {
 	constructor() {
@@ -21,16 +20,16 @@ class ConfigCommand extends Command {
 	}
 
 	exec(message) {
-		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'];
+		const permissions = ['ADD_REACTIONS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'];
 		const color = this.client.settings.get(message.guild, 'color', null);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`Settings of ${message.guild.name}`)
 			.addField('Prefix', this.handler.prefix(message))
-			.addField('Patron', this.client.patron.get(message.guild.id, 'guild', false) ? `Active ${emoji.authorize}` : 'None')
+			.addField('Patron', this.client.patron.get(message.guild.id, 'guild', false) ? 'Yes' : 'No')
 			.addField('Color', color ? `#${color.toString(16)}` : null || `#${0x5970c1.toString(16)} (default)`);
 		if (!message.channel.permissionsFor(message.guild.me).has(permissions, false)) {
-			embed.addField('Required Permission', [
+			embed.addField('__Missing Permission__', [
 				this.missingPermissions(message.channel, this.client.user, permissions)
 			]);
 		}
@@ -44,7 +43,6 @@ class ConfigCommand extends Command {
 				if (str === 'VIEW_CHANNEL') return 'Read Messages';
 				return str.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase());
 			});
-
 		return missingPerms.join('\n');
 	}
 }
