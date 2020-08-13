@@ -6,6 +6,7 @@ class ConfigCommand extends Command {
 		super('config', {
 			aliases: ['config', 'settings'],
 			category: 'config',
+			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
 			description: {
 				content: 'Displays settings of the guild.',
@@ -20,6 +21,7 @@ class ConfigCommand extends Command {
 	}
 
 	exec(message) {
+		const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'];
 		const color = this.client.settings.get(message.guild, 'color', null);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
@@ -27,8 +29,23 @@ class ConfigCommand extends Command {
 			.addField('Prefix', this.handler.prefix(message))
 			.addField('Patron', this.client.patron.get(message.guild.id, 'guild', false) ? `Active ${emoji.authorize}` : 'None')
 			.addField('Color', color ? `#${color.toString(16)}` : null || `#${0x5970c1.toString(16)} (default)`);
+		if (!message.channel.permissionsFor(message.guild.me).has(permissions, false)) {
+			embed.addField('Required Permission', [
+				this.missingPermissions(message.channel, this.client.user, permissions)
+			]);
+		}
 
 		return message.util.send({ embed });
+	}
+
+	missingPermissions(channel, user, permissions) {
+		const missingPerms = channel.permissionsFor(user).missing(permissions)
+			.map(str => {
+				if (str === 'VIEW_CHANNEL') return 'Read Messages';
+				return str.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase());
+			});
+
+		return missingPerms.join('\n');
 	}
 }
 

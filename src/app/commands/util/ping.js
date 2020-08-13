@@ -17,23 +17,12 @@ class PingCommand extends Command {
 	}
 
 	async exec(message) {
-		// const permissions = ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'];
 		const msg = await message.util.send('Pinging~');
 		const latency = (msg.editedTimestamp || msg.createdTimestamp) - (message.editedTimestamp || message.createdTimestamp);
 		return message.util.send([
 			`**Gateway Ping~ ${latency.toString()}ms**`,
 			`**API Ping~ ${Math.round(this.client.ws.ping).toString()}ms**`
 		]);
-	}
-
-	missingPermissions(channel, user, permissions) {
-		const missingPerms = channel.permissionsFor(user).missing(permissions)
-			.map(str => {
-				if (str === 'VIEW_CHANNEL') return 'Read Messages';
-				return str.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase());
-			});
-
-		return missingPerms.join('\n');
 	}
 }
 
