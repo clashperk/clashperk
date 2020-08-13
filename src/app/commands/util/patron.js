@@ -1,6 +1,5 @@
 const { Command } = require('discord-akairo');
 const { firestore } = require('../../struct/Database');
-const { oneLine } = require('common-tags');
 
 class PatronCommand extends Command {
 	constructor() {
@@ -25,7 +24,8 @@ class PatronCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor('ClashPerk', this.client.user.displayAvatarURL(), 'https://www.patreon.com/clashperk')
 			.setDescription([
-				oneLine`Help us with our hosting related expenses. Any help is beyond appreciated.`,
+				'Help us with our hosting related expenses.',
+				'Any help is beyond appreciated.',
 				'',
 				'**Benefits**',
 				'• Faster updates and 1 sec cooldown',
