@@ -5,6 +5,15 @@ class PingCommand extends Command {
 		super('ping', {
 			aliases: ['ping', 'pong'],
 			category: 'hidden',
+			clientPermissions: [
+				'EMBED_LINKS',
+				'MANAGE_MESSAGES',
+				'USE_EXTERNAL_EMOJIS',
+				'ADD_REACTIONS',
+				'SEND_MESSAGES',
+				'READ_MESSAGE_HISTORY',
+				'READ_MESSAGE_HISTORY'
+			],
 			description: {
 				content: 'Pings me!'
 			}
