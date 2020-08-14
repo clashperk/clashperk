@@ -100,7 +100,6 @@ class CacheHandler {
 		}
 
 		this.client.logger.info(`Cache store Initialized ${this.cached.size}/${collection.length}`, { label: 'CACHE_STORE' });
-
 		return this.launch();
 	}
 
