@@ -58,7 +58,7 @@ class RushedCommand extends Command {
 	}
 
 	async clan(message, data) {
-		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
+		if (data.members < 1) return message.util.send(`\u200e**${data.name}** does not have any clan members...`);
 		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
 		const requests = data.memberList.map((m, i) => {
 			const req = {

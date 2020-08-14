@@ -38,7 +38,7 @@ class ThCompoCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
+		if (data.members < 1) return message.util.send(`\u200e**${data.name}** does not have any clan members...`);
 
 		const hrStart = process.hrtime();
 		const fetched = await Resolver.fetch(data);

@@ -37,7 +37,7 @@ class DonationBoardCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
+		if (data.members < 1) return message.util.send(`\u200e**${data.name}** does not have any clan members...`);
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))

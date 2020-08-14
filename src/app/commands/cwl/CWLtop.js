@@ -40,7 +40,7 @@ class CWLTopCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		if (data.members < 1) return message.util.send(`**${data.name}** does not have any clan members...`);
+		if (data.members < 1) return message.util.send(`\u200e**${data.name}** does not have any clan members...`);
 
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
