@@ -99,13 +99,11 @@ class UsageCommand extends Command {
 
 	async growth() {
 		const now = new Date(new Date().getTime() + 198e5);
-		const id = [now.getFullYear(), now.getMonth() + 1].join('-');
-		const key = now.getDate();
+		const id = [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('-');
 		const ref = firebase.ref('growth').child(id);
 		const data = await ref.once('value').then(snap => snap.val());
-		if (!data || (data && !data[key])) return { addition: 0, deletion: 0, growth: 0 };
-		const growth = data[key].addition + data[key].deletion;
-		return { addition: data[key].addition, deletion: data[key].deletion, growth };
+		if (!data) return { addition: 0, deletion: 0, growth: 0 };
+		return { addition: data.addition, deletion: data.deletion, growth: data.addition + data.deletion };
 	}
 
 	async commandsTotal() {

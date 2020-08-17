@@ -86,18 +86,12 @@ class Firebase {
 
 	async deletion() {
 		const now = new Date(new Date().getTime() + 198e5);
-		const id = [now.getFullYear(), now.getMonth() + 1].join('-');
-		const key = now.getDate();
+		const id = [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('-');
 		return firebase.ref('growth')
 			.child(id)
 			.transaction(data => {
-				if (data === null) return { [key]: { deletion: -1, addition: 0 } };
-				data[key]
-					? data[key].deletion -= 1
-					: data[key] = {
-						deletion: -1,
-						addition: 0
-					};
+				if (data === null) return { deletion: -1, addition: 0 };
+				data.deletion -= 1;
 				return data;
 			}, error => {
 				if (error) this.client.logger.error(error, { label: 'FIREBASE' });
@@ -106,18 +100,12 @@ class Firebase {
 
 	async addition() {
 		const now = new Date(new Date().getTime() + 198e5);
-		const id = [now.getFullYear(), now.getMonth() + 1].join('-');
-		const key = now.getDate();
+		const id = [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('-');
 		return firebase.ref('growth')
 			.child(id)
 			.transaction(data => {
-				if (data === null) return { [key]: { addition: 1, deletion: 0 } };
-				data[key]
-					? data[key].addition += 1
-					: data[key] = {
-						deletion: 0,
-						addition: 1
-					};
+				if (data === null) return { addition: 1, deletion: 0 };
+				data.addition += 1;
 				return data;
 			}, error => {
 				if (error) this.client.logger.error(error, { label: 'FIREBASE' });
