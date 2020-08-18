@@ -10,6 +10,7 @@ class Firebase {
 		this.client = client;
 		this.postRate = postRate;
 		this.count = 0;
+		this.clans = 0;
 	}
 
 	async init() {
@@ -135,7 +136,6 @@ class Firebase {
 	}
 
 	async clanCount() {
-		this.clans = 0;
 		if (this.clans) return this.clans;
 		this.clans = await mongodb.db('clashperk')
 			.collection('clanstores')
