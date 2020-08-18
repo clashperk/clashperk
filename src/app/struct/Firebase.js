@@ -1,4 +1,4 @@
-const { firebase } = require('./Database');
+const { firebase, mongodb } = require('./Database');
 const moment = require('moment');
 require('moment-duration-format');
 const https = require('https');
@@ -134,6 +134,20 @@ class Firebase {
 			});
 	}
 
+	async clanCount() {
+		this.clans = 0;
+		if (this.clans) return this.clans;
+		this.clans = await mongodb.db('clashperk')
+			.collection('clanstores')
+			.find()
+			.count();
+		const timeoutId = setTimeout(() => {
+			this.clans = 0;
+			clearTimeout(timeoutId);
+		}, 60 * 60 * 1000);
+		return this.clans;
+	}
+
 	async stats() {
 		if (this.client.user.id !== '526971716711350273') return;
 		const data = {
@@ -174,10 +188,11 @@ class Firebase {
 		}
 
 		return firebase.ref('stats').update({
-			uptime: moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }),
+			uptime: moment.duration(process.uptime() * 1000).format('D[d] H[h] m[m] s[s]', { trim: 'both mid' }),
 			users,
 			guilds,
-			channels
+			channels,
+			clans: await this.clanCount()
 		}, error => {
 			if (error) this.client.logger.error(error, { label: 'FIREBASE' });
 		});
