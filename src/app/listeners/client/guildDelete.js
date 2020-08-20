@@ -31,12 +31,11 @@ class GuildDeleteListener extends Listener {
 		const webhook = await this.fetchWebhook().catch(() => null);
 		if (webhook) {
 			const embed = this.client.util.embed()
+				.setColor(0xeb3508)
 				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL())
 				.setTitle(`${emoji.owner} ${user.tag} (${user.id})`)
 				.setFooter(`${guild.memberCount} members`, user.displayAvatarURL())
 				.setTimestamp();
-
-			embed.color = 0xeb3508;
 			return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user.displayAvatarURL() });
 		}
 	}
