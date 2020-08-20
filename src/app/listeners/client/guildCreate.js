@@ -25,7 +25,8 @@ class GuildCreateListener extends Listener {
 		await this.intro(guild);
 		await this.restore(guild);
 		await this.client.firebase.post();
-		await this.client.firebase.addition();
+		await this.client.firebase.addition(guild.id);
+		await this.client.firebase.guilds(guild.id, 0);
 
 		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
 		const webhook = await this.fetchWebhook().catch(() => null);

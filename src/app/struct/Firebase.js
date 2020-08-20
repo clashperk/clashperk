@@ -91,7 +91,7 @@ class Firebase {
 		return firebase.ref('growth')
 			.child(id)
 			.transaction(data => {
-				if (data === null) return { deletion: -1, addition: 0 };
+				if (data === null) return { deletion: -1, addition: 0, retention: 0 };
 				data.deletion -= 1;
 				return data;
 			}, error => {
@@ -99,13 +99,18 @@ class Firebase {
 			});
 	}
 
-	async addition() {
+	async addition(guild) {
 		const now = new Date(new Date().getTime() + 198e5);
 		const id = [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('-');
+		const old = await firebase.ref('guilds')
+			.child(guild)
+			.once('value')
+			.then(snap => snap.exists());
 		return firebase.ref('growth')
 			.child(id)
 			.transaction(data => {
-				if (data === null) return { addition: 1, deletion: 0 };
+				if (data === null) return { addition: 1, deletion: 0, retention: old ? 1 : 0 };
+				if (old) data.retention += 1;
 				data.addition += 1;
 				return data;
 			}, error => {
@@ -124,12 +129,12 @@ class Firebase {
 			});
 	}
 
-	async guilds(guild) {
+	async guilds(guild, count = 1) {
 		return firebase.ref('guilds')
 			.child(guild)
 			.transaction(usage => {
-				if (usage === null) return 1;
-				return usage + 1;
+				if (usage === null) return count;
+				return usage + count;
 			}, error => {
 				if (error) this.client.logger.error(error, { label: 'FIREBASE' });
 			});
