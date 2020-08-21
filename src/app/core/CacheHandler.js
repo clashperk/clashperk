@@ -161,7 +161,7 @@ class CacheHandler {
 
 		if (!data && cache && cache.count > 1) {
 			cache.count -= 1;
-			this.cached.set(data.tag, cache);
+			this.cached.set(tag, cache);
 		}
 
 		if (!data && cache && cache.count <= 1) {
