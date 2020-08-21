@@ -2,40 +2,45 @@ const { MessageEmbed, Message } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const { ObjectId } = require('mongodb');
 const fetch = require('node-fetch');
+const { Collection } = require('discord.js');
 
 class ClanGames {
 	constructor(client) {
 		this.client = client;
-		this.cached = new Map();
+		this.cached = new Collection();
 	}
 
-	async exec(id, clan, forced = false, tags = []) {
+	async exec(tag, clan, forced = false, tags = []) {
 		if (!this.event()) return null;
-
-		// force update
-		const cache = this.cached.get(id);
-		if (cache && forced) {
+		const clans = this.cached.filter(d => d.tag === tag);
+		if (forced && clans.size) {
 			return setTimeout(async () => {
 				const db = mongodb.db('clashperk').collection('clangames');
 				const data = await db.findOne({ tag: clan.tag });
 				return this.getList(clan, data, tags.map(t => t.tag));
-			}, 2.1 * 60 * 1000);
+			}, 122 * 1000);
 		}
 
-		if (cache && cache.updatedAt) {
-			if (new Date() - new Date(cache.updatedAt) >= this.timer(cache)) {
+		const db = mongodb.db('clashperk').collection('clangames');
+		const data = await db.findOne({ tag: clan.tag });
+		const updated = await this.getList(clan, data, clan.memberList.map(m => m.tag));
+
+		for (const id of clans.keys()) {
+			const cache = this.cached.get(id);
+			if (cache && cache.updatedAt) {
+				if (new Date() - new Date(cache.updatedAt) >= this.timer(cache)) {
+					cache.updatedAt = new Date();
+					this.cached.set(id, cache);
+					await this.permissionsFor(id, cache, clan, updated);
+				}
+			} else if (cache) {
 				cache.updatedAt = new Date();
 				this.cached.set(id, cache);
-				return this.permissionsFor(id, cache, clan);
+				await this.permissionsFor(id, cache, clan, updated);
 			}
-			return null;
 		}
 
-		if (cache) {
-			cache.updatedAt = new Date();
-			this.cached.set(id, cache);
-			return this.permissionsFor(id, cache, clan);
-		}
+		return Promise.resolve();
 	}
 
 	timer(cache) {
@@ -43,7 +48,7 @@ class ClanGames {
 		return patron === true ? 15 * 60 * 1000 : 30 * 60 * 1000;
 	}
 
-	permissionsFor(id, cache, clan) {
+	async permissionsFor(id, cache, clan, updated) {
 		const permissions = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -56,20 +61,20 @@ class ClanGames {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				return this.handleMessage(id, channel, clan);
+				return this.handleMessage(id, channel, clan, updated);
 			}
 		}
 	}
 
-	async handleMessage(id, channel, clan) {
+	async handleMessage(id, channel, clan, updated) {
 		const cache = this.cached.get(id);
 
 		if (cache && !cache.message) {
-			return this.sendNew(id, channel, clan);
+			return this.sendNew(id, channel, clan, updated);
 		}
 
 		if (cache && cache.msg) {
-			return this.edit(id, cache.msg, clan);
+			return this.edit(id, cache.msg, clan, updated);
 		}
 
 		const message = await channel.messages.fetch(cache.message, false)
@@ -85,22 +90,22 @@ class ClanGames {
 		if (!message) return;
 
 		if (message.deleted) {
-			const msg = await this.sendNew(id, channel, clan);
+			const msg = await this.sendNew(id, channel, clan, updated);
 			if (!msg) return;
 			cache.msg = message;
 			return this.cached.set(id, cache);
 		}
 
 		if (!message.deleted) {
-			const msg = await this.edit(id, message, clan);
+			const msg = await this.edit(id, message, clan, updated);
 			if (!msg) return;
 			cache.msg = message;
 			return this.cached.set(id, cache);
 		}
 	}
 
-	async sendNew(id, channel, clan) {
-		const embed = await this.embed(clan, id);
+	async sendNew(id, channel, clan, updated) {
+		const embed = await this.embed(clan, id, updated);
 		const message = await channel.send({ embed })
 			.catch(() => null);
 
@@ -119,8 +124,8 @@ class ClanGames {
 		return message;
 	}
 
-	async edit(id, message, clan) {
-		const embed = await this.embed(clan, id);
+	async edit(id, message, clan, updated) {
+		const embed = await this.embed(clan, id, updated);
 		if (message instanceof Message === false) {
 			const cache = this.cached.get(id);
 			cache.msg = null;
@@ -133,7 +138,7 @@ class ClanGames {
 					const cache = this.cached.get(id);
 					cache.msg = null;
 					this.cached.set(id, cache);
-					return this.sendNew(id, message.channel, clan);
+					return this.sendNew(id, message.channel, clan, updated);
 				}
 				return null;
 			});
@@ -141,18 +146,9 @@ class ClanGames {
 		return msg;
 	}
 
-	async embed(clan, id) {
-		const db = mongodb.db('clashperk').collection('clangames');
-		const data = await db.findOne({ tag: clan.tag });
-
-		// update list
-		const updated = await this.getList(clan, data, clan.memberList.map(m => m.tag));
-
-		// filter members
+	async embed(clan, id, updated) {
 		const members = this.filter(updated.collection, updated.data);
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
-
-		// build embed
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
@@ -194,7 +190,6 @@ class ClanGames {
 		} else {
 			// update points of new clan members if db does not exist
 			for (const member of collection) {
-				$set.createdAt = new Date();
 				$set.name = clan.name;
 				$set.tag = clan.tag;
 				$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
@@ -267,7 +262,7 @@ class ClanGames {
 	}
 
 	event() {
-		const DAY = this.client.settings.get('global', 'clangamesDay', 22);
+		const DAY = this.client.settings.get('global', 'gameEvent', 22);
 		const START = [
 			new Date().getFullYear(),
 			(new Date().getMonth() + 1).toString().padStart(2, '0'),
@@ -327,7 +322,8 @@ class ClanGames {
 					guild: data.guild,
 					channel: data.channel,
 					message: data.message,
-					color: data.color
+					color: data.color,
+					tag: data.tag
 				});
 			}
 		});
@@ -341,7 +337,10 @@ class ClanGames {
 		await mongodb.db('clashperk')
 			.collection('clangameslogs')
 			.updateMany({}, { $unset: { message: '' } });
-		this.client.settings.delete('global', 'clangamesDay');
+		await mongodb.db('clashperk')
+			.collection('clangames')
+			.updateMany({}, { $set: { expiresAt: new Date() } });
+		this.client.settings.delete('global', 'gameEvent');
 		return clearInterval(intervalId);
 	}
 
@@ -360,7 +359,8 @@ class ClanGames {
 			guild: data.guild,
 			channel: data.channel,
 			message: data.message,
-			color: data.color
+			color: data.color,
+			tag: data.tag
 		});
 	}
 

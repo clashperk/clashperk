@@ -82,7 +82,7 @@ class ClanGamesCommand extends Command {
 		const members = this.filter(memberList, clan, force);
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
-		const DAY = this.client.settings.get('global', 'clangamesDay', 22);
+		const DAY = this.client.settings.get('global', 'gameEvent', 22);
 		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), `${DAY}T08:00:00Z`].join('-');
 		const createdAt = new Date(ObjectId(clan._id).getTimestamp());
 

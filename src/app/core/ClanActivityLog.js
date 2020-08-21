@@ -2,28 +2,31 @@ const { MessageEmbed, Message } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const { ObjectId } = require('mongodb');
 const moment = require('moment');
+const { Collection } = require('discord.js');
 
 class LastOnlineEvent {
 	constructor(client) {
 		this.client = client;
-		this.cached = new Map();
+		this.cached = new Collection();
 	}
 
-	async exec(id, clan, update) {
-		const cache = this.cached.get(id);
-		if (Object.keys(update).length && cache) {
+	async exec(tag, clan, update) {
+		const clans = this.cached.filter(d => d.tag === tag);
+		if (Object.keys(update).length && clans.size) {
 			try {
-				await mongodb.db('clashperk')
-					.collection('clanactivities')
-					.updateOne({ clan_id: ObjectId(id) }, update, { upsert: true });
+				const db = mongodb.db('clashperk').collection('lastonlines');
+				await db.updateOne({ tag }, update, { upsert: true });
 			} catch (error) {
 				this.client.logger.error(error, { label: 'MONGODB_ERROR' });
 			}
 		}
 
-		if (cache) {
-			return this.permissionsFor(id, cache, clan);
+		for (const id of clans.keys()) {
+			const cache = this.cached.get(id);
+			if (cache) await this.permissionsFor(id, cache, clan);
 		}
+
+		return Promise.resolve();
 	}
 
 	permissionsFor(id, cache, clan) {
@@ -125,8 +128,8 @@ class LastOnlineEvent {
 
 	async embed(clan, id) {
 		const data = await mongodb.db('clashperk')
-			.collection('clanactivities')
-			.findOne({ clan_id: ObjectId(id) });
+			.collection('lastonlines')
+			.findOne({ tag: clan.tag });
 
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
@@ -180,7 +183,7 @@ class LastOnlineEvent {
 	}
 
 	async purge(sessionId) {
-		const db = mongodb.db('clashperk').collection('clanactivities');
+		const db = mongodb.db('clashperk').collection('lastonlines');
 		const total = await db.find().count();
 		const shards = this.client.shard.count;
 		const { div, mod } = { div: Math.floor(total / shards), mod: total % shards };
@@ -210,7 +213,7 @@ class LastOnlineEvent {
 			}
 
 			if (Object.keys(unset).length) {
-				await db.updateOne({ clan_id: ObjectId(data.clan_id) }, { $unset: unset });
+				await db.updateOne({ tag: data.tag }, { $unset: unset });
 			}
 		}
 
@@ -240,7 +243,8 @@ class LastOnlineEvent {
 					// guild: data.guild,
 					channel: data.channel,
 					message: data.message,
-					color: data.color
+					color: data.color,
+					tag: data.tag
 				});
 			}
 		});
@@ -256,7 +260,8 @@ class LastOnlineEvent {
 			// guild: data.guild,
 			channel: data.channel,
 			message: data.message,
-			color: data.color
+			color: data.color,
+			tag: data.tag
 		});
 	}
 

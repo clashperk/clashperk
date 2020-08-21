@@ -2,33 +2,34 @@ const { MessageEmbed, Message } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const { emoji } = require('../util/emojis');
 const { ObjectId } = require('mongodb');
+const { Collection } = require('discord.js');
 
 class ClanEmbed {
 	constructor(client) {
 		this.client = client;
-		this.cached = new Map();
+		this.cached = new Collection();
 	}
 
-	exec(id, clan, forced = false) {
-		const cache = this.cached.get(id);
-		if (cache && cache.updatedAt && !forced) {
-			if (new Date() - new Date(cache.updatedAt) > 10 * 60 * 1000) {
+	async exec(tag, clan, forced = false) {
+		for (const id of this.cached.filter(d => d.tag === tag).keys()) {
+			const cache = this.cached.get(id);
+			if (cache && cache.updatedAt && !forced) {
+				if (new Date() - new Date(cache.updatedAt) > 10 * 60 * 1000) {
+					cache.updatedAt = new Date();
+					this.cached.set(id, cache);
+					await this.permissionsFor(id, cache, clan);
+				}
+			} else if (cache) {
 				cache.updatedAt = new Date();
 				this.cached.set(id, cache);
-				return this.permissionsFor(id, cache, clan);
+				await this.permissionsFor(id, cache, clan);
 			}
-
-			return;
 		}
 
-		if (cache) {
-			cache.updatedAt = new Date();
-			this.cached.set(id, cache);
-			return this.permissionsFor(id, cache, clan);
-		}
+		return Promise.resolve();
 	}
 
-	permissionsFor(id, cache, clan) {
+	async permissionsFor(id, cache, clan) {
 		const permissions = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -168,7 +169,8 @@ class ClanEmbed {
 					channel: data.channel,
 					message: data.message,
 					color: data.color,
-					embed: data.embed
+					embed: data.embed,
+					tag: data.tag
 				});
 			}
 		});
@@ -185,7 +187,8 @@ class ClanEmbed {
 			channel: data.channel,
 			message: data.message,
 			color: data.color,
-			embed: data.embed
+			embed: data.embed,
+			tag: data.tag
 		});
 	}
 
