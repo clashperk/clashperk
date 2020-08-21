@@ -31,22 +31,22 @@ class CacheHandler {
 	async broadcast(data) {
 		switch (data.event) {
 			case Modes.DONATION_LOG:
-				await this.donationLog.exec(data._id, data);
+				await this.donationLog.exec(data.tag, data);
 				break;
 			case Modes.ACTIVITY_LOG:
-				await this.activityLog.exec(data._id, data.clan, data.update);
+				await this.activityLog.exec(data.tag, data.clan, data.update);
 				break;
 			case Modes.CLAN_LOG:
-				await this.clanLog.exec(data._id, data);
+				await this.clanLog.exec(data.tag, data);
 				break;
 			case Modes.CLAN_EMBED_LOG:
-				await this.clanembedLog.exec(data._id, data.clan, data.forced);
+				await this.clanembedLog.exec(data.tag, data.clan, data.forced);
 				break;
 			case Modes.CLAN_GAMES_LOG:
-				await this.clangamesLog.exec(data._id, data.clan, data.forced, data.tags);
+				await this.clangamesLog.exec(data.tag, data.clan, data.forced, data.tags);
 				break;
 			case Modes.CLAN_WAR_LOG:
-				await this.clanwarLog.exec(data._id, data.clan);
+				await this.clanwarLog.exec(data.tag, data.clan);
 				break;
 			default:
 				break;
@@ -75,6 +75,10 @@ class CacheHandler {
 		return { iso, ms };
 	}
 
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
+
 	async init() {
 		await this.clanembedLog.init();
 		await this.donationLog.init();
@@ -91,11 +95,9 @@ class CacheHandler {
 
 		for (const data of collection) {
 			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(ObjectId(data._id).toString(), {
-					// _id: data._id,
-					guild: data.guild,
-					tag: data.tag
-				});
+				const clan = this.cached.get(data.tag) || { count: 0 };
+				clan.count += 1;
+				this.cached.set(data.tag, clan);
 			}
 		}
 
@@ -103,13 +105,9 @@ class CacheHandler {
 		return this.launch();
 	}
 
-	async delay(ms) {
-		return new Promise(res => setTimeout(res, ms));
-	}
-
 	async launch() {
-		for (const id of this.cached.keys()) {
-			await this.start(id);
+		for (const tag of this.cached.keys()) {
+			await this.start(tag);
 			await this.delay(250);
 		}
 	}
@@ -117,61 +115,59 @@ class CacheHandler {
 	async add(_id, data) {
 		const id = ObjectId(_id).toString();
 
+		const Op = {
+			[Modes.DONATION_LOG]: this.donationLog,
+			[Modes.CLAN_LOG]: this.clanLog,
+			[Modes.ACTIVITY_LOG]: this.activityLog,
+			[Modes.CLAN_EMBED_LOG]: this.clanembedLog,
+			[Modes.CLAN_GAMES_LOG]: this.clangamesLog,
+			[Modes.CLAN_WAR_LOG]: this.clanwarLog
+		};
 		if (data && data.mode) {
-			const Op = {
-				[Modes.DONATION_LOG]: this.donationLog,
-				[Modes.CLAN_LOG]: this.clanLog,
-				[Modes.ACTIVITY_LOG]: this.activityLog,
-				[Modes.CLAN_EMBED_LOG]: this.clanembedLog,
-				[Modes.CLAN_GAMES_LOG]: this.clangamesLog,
-				[Modes.CLAN_WAR_LOG]: this.clanwarLog
-			}[data.mode];
-			await Op.add(_id);
+			await Op[data.mode].add(_id);
 		} else {
-			await this.clanLog.add(id);
-			await this.clanwarLog.add(id);
-			await this.donationLog.add(id);
-			await this.activityLog.add(id);
-			await this.clanembedLog.add(id);
-			await this.clangamesLog.add(id);
+			await Promise.all([...Object.values(Op).map(op => op.add(id))]);
 		}
 
-		if (!this.cached.has(id)) {
-			this.cached.set(id, {
-				guild: data.guild,
-				tag: data.tag
-			});
-			return this.start(id);
+		if (this.cached.has(data.tag)) {
+			const cache = this.cached.get(data.tag);
+			cache.count += 1;
+			this.cached.set(data.tag, cache);
+		}
+
+		if (!this.cached.has(data.tag)) {
+			this.cached.set(data.tag, { count: 1 });
+			return this.start(data.tag);
 		}
 	}
 
-	delete(_id, data) {
+	delete(_id, tag, data) {
 		const id = ObjectId(_id).toString();
-		const cache = this.cached.get(id);
+		const cache = this.cached.get(tag);
 
+		const Op = {
+			[Modes.DONATION_LOG]: this.donationLog,
+			[Modes.CLAN_LOG]: this.clanLog,
+			[Modes.ACTIVITY_LOG]: this.activityLog,
+			[Modes.CLAN_EMBED_LOG]: this.clanembedLog,
+			[Modes.CLAN_GAMES_LOG]: this.clangamesLog,
+			[Modes.CLAN_WAR_LOG]: this.clanwarLog
+		};
 		if (data && data.mode) {
-			const Op = {
-				[Modes.DONATION_LOG]: this.donationLog,
-				[Modes.CLAN_LOG]: this.clanLog,
-				[Modes.ACTIVITY_LOG]: this.activityLog,
-				[Modes.CLAN_EMBED_LOG]: this.clanembedLog,
-				[Modes.CLAN_GAMES_LOG]: this.clangamesLog,
-				[Modes.CLAN_WAR_LOG]: this.clanwarLog
-			}[data.mode];
-			Op.delete(id);
+			Op[data.mode].delete(id, tag);
 		} else {
-			this.clanLog.delete(id);
-			this.clanwarLog.delete(id);
-			this.donationLog.delete(id);
-			this.activityLog.delete(id);
-			this.clanembedLog.delete(id);
-			this.clangamesLog.delete(id);
+			Object.values(Op).map(op => op.delete(id, tag));
 		}
 
-		if (!data) {
-			delete this.members[id];
+		if (!data && cache && cache.count > 1) {
+			cache.count -= 1;
+			this.cached.set(data.tag, cache);
+		}
+
+		if (!data && cache && cache.count <= 1) {
+			delete this.members[tag];
 			if (cache && cache.intervalId) clearInterval(cache.intervalId);
-			return this.cached.delete(id);
+			return this.cached.delete(tag);
 		}
 	}
 
@@ -184,10 +180,10 @@ class CacheHandler {
 		].join('-').concat(`T${now.getHours().toString().padStart(2, '0')}:00`);
 	}
 
-	isReset(id, newMembers = []) {
+	isReset(tag, newMembers = []) {
 		const ms = new Date(this.iso) - new Date();
 		if ((ms >= 0 && ms <= 9e5) || (ms < 0 && ms >= -9e5)) {
-			const oldMembers = this.members[id] ? Object.values(this.members[id]) : [];
+			const oldMembers = this.members[tag] ? Object.values(this.members[tag]) : [];
 			const Old = oldMembers.reduce((a, m) => {
 				const value = m.donations + m.donationsReceived;
 				return a + value;
@@ -203,19 +199,19 @@ class CacheHandler {
 		return false;
 	}
 
-	async start(id) {
-		const cache = this.cached.get(id);
+	async start(tag) {
+		const cache = this.cached.get(tag);
 		if (!cache) return null;
-		const clan = await this.clan(cache.tag);
+		const clan = await this.clan(tag);
 		if (!clan) return null;
 		if (!clan.memberList.length) return null;
 
 		const CurrentMemberList = clan.memberList.map(m => m.tag);
 		const CurrentMemberSet = new Set(CurrentMemberList);
-		const oldMemberList = this.members[id] ? Object.keys(this.members[id]) : [];
+		const oldMemberList = this.members[tag] ? Object.keys(this.members[tag]) : [];
 		const OldMemberSet = new Set(oldMemberList);
 
-		const data = { _id: id, donated: [], received: [], donations: 0, receives: 0, event: Modes.DONATION_LOG };
+		const data = { tag, donated: [], received: [], donations: 0, receives: 0, event: Modes.DONATION_LOG };
 
 		const [update, set, inc, unset] = [{}, {}, {}, {}];
 		for (const member of clan.memberList) {
@@ -226,13 +222,13 @@ class CacheHandler {
 				badge: clan.badgeUrls.small
 			};
 
-			if (this.members[id] && member.tag in this.members[id]) {
-				const donations = member.donations - this.members[id][member.tag].donations;
+			if (this.members[tag] && member.tag in this.members[tag]) {
+				const donations = member.donations - this.members[tag][member.tag].donations;
 				if (donations && donations > 0) {
 					data.donations += donations;
 					data.donated.push({ league: member.league.id, name: member.name, tag: member.tag, donated: donations });
 				}
-				const receives = member.donationsReceived - this.members[id][member.tag].donationsReceived;
+				const receives = member.donationsReceived - this.members[tag][member.tag].donationsReceived;
 				if (receives && receives > 0) {
 					data.receives += receives;
 					data.received.push({ league: member.league.id, name: member.name, tag: member.tag, received: receives });
@@ -251,18 +247,18 @@ class CacheHandler {
 			}
 
 			const dateId = this.dateId();
-			if (this.members[id] && member.tag in this.members[id]) {
+			if (this.members[tag] && member.tag in this.members[tag]) {
 				if (
-					this.members[id][member.tag].donations !== member.donations ||
-					this.members[id][member.tag].donationsReceived !== member.donationsReceived ||
-					this.members[id][member.tag].versusTrophies !== member.versusTrophies ||
-					this.members[id][member.tag].expLevel !== member.expLevel ||
-					this.members[id][member.tag].name !== member.name
+					this.members[tag][member.tag].donations !== member.donations ||
+					this.members[tag][member.tag].donationsReceived !== member.donationsReceived ||
+					this.members[tag][member.tag].versusTrophies !== member.versusTrophies ||
+					this.members[tag][member.tag].expLevel !== member.expLevel ||
+					this.members[tag][member.tag].name !== member.name
 				) {
 					set.name = clan.name;
 					set.tag = clan.tag;
 					set.guild = cache.guild;
-					set.clan_id = ObjectId(id);
+					// set.clan_id = ObjectId(id);
 					set[`members.${member.tag}.lastOnline`] = new Date();
 					set[`members.${member.tag}.tag`] = member.tag;
 					inc[`members.${member.tag}.activities.${dateId}`] = 1;
@@ -271,7 +267,7 @@ class CacheHandler {
 				set.name = clan.name;
 				set.tag = clan.tag;
 				set.guild = cache.guild;
-				set.clan_id = ObjectId(id);
+				// set.clan_id = ObjectId(id);
 				set[`members.${member.tag}.lastOnline`] = new Date();
 				set[`members.${member.tag}.tag`] = member.tag;
 				inc[`members.${member.tag}.activities.${dateId}`] = 1;
@@ -281,15 +277,15 @@ class CacheHandler {
 		if (CurrentMemberSet.size && OldMemberSet.size) {
 			// eslint-disable-next-line no-unused-vars
 			for (const member of oldMemberList.filter(tag => !CurrentMemberSet.has(tag))) {
-				// unset[`members.${member}`] = '';
+				unset.purgeAt = '';
 			}
 		}
 
 		if (Object.keys(set).length) update.$set = set;
-		if (Object.keys(inc).length && !this.isReset(id, clan.memberList)) update.$inc = inc;
+		if (Object.keys(inc).length && !this.isReset(tag, clan.memberList)) update.$inc = inc;
 		if (Object.keys(unset).length) update.$unset = unset;
 
-		await this.broadcast({ _id: id, clan, update, event: Modes.ACTIVITY_LOG });
+		await this.broadcast({ tag, clan, update, event: Modes.ACTIVITY_LOG });
 
 		if (data.donated.length || data.received.length) {
 			if (CurrentMemberSet.size && OldMemberSet.size && data.donations !== data.receives) {
@@ -305,13 +301,13 @@ class CacheHandler {
 		const temp = new Set();
 		if (CurrentMemberSet.size && OldMemberSet.size) {
 			const tags = [];
-			for (const tag of oldMemberList.filter(tag => !CurrentMemberSet.has(tag))) {
-				if (this.members[id] && this.members[id][tag]) {
+			for (const mTag of oldMemberList.filter(tag => !CurrentMemberSet.has(tag))) {
+				if (this.members[tag] && this.members[tag][mTag]) {
 					tags.push({
 						tag,
 						mode: 'LEFT',
-						donated: this.members[id][tag].donations,
-						received: this.members[id][tag].donationsReceived
+						donated: this.members[tag][mTag].donations,
+						received: this.members[tag][mTag].donationsReceived
 					});
 				} else {
 					tags.push({ tag, mode: 'LEFT' });
@@ -324,7 +320,7 @@ class CacheHandler {
 
 			if (tags.length) {
 				await this.broadcast({
-					_id: id,
+					tag,
 					tags: tags.map(tag => ({
 						value: Math.random(),
 						tag: tag.tag,
@@ -340,20 +336,20 @@ class CacheHandler {
 					event: Modes.CLAN_LOG
 				});
 
-				await this.broadcast({ _id: id, clan, forced: true, event: Modes.CLAN_EMBED_LOG });
-				await this.broadcast({ _id: id, clan, forced: true, tags, event: Modes.CLAN_GAMES_LOG });
+				await this.broadcast({ tag, clan, forced: true, event: Modes.CLAN_EMBED_LOG });
+				await this.broadcast({ tag, clan, forced: true, tags, event: Modes.CLAN_GAMES_LOG });
 				temp.add('ON_HOLD');
 			}
 		}
 
 		if (!temp.delete('ON_HOLD')) {
-			await this.broadcast({ _id: id, clan, event: Modes.CLAN_EMBED_LOG });
-			await this.broadcast({ _id: id, clan, event: Modes.CLAN_GAMES_LOG });
+			await this.broadcast({ tag, clan, event: Modes.CLAN_EMBED_LOG });
+			await this.broadcast({ tag, clan, event: Modes.CLAN_GAMES_LOG });
 		}
 
-		this.members[id] = {};
+		this.members[tag] = {};
 		for (const member of clan.memberList) {
-			this.members[id][member.tag] = member;
+			this.members[tag][member.tag] = member;
 		}
 
 		OldMemberSet.clear();
@@ -361,8 +357,8 @@ class CacheHandler {
 
 		// callback
 		if (cache && cache.intervalId) clearInterval(cache.intervalId);
-		cache.intervalId = setInterval(this.start.bind(this), this.interval, id);
-		return this.cached.set(id, cache);
+		cache.intervalId = setInterval(this.start.bind(this), this.interval, tag);
+		return this.cached.set(tag, cache);
 	}
 
 	async clan(tag) {

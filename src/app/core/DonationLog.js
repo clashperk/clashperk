@@ -2,21 +2,24 @@ const { leagueEmoji, blueNum, redNum, emoji } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 const { ObjectId } = require('mongodb');
+const { Collection } = require('discord.js');
 
 class ClanEvent {
 	constructor(client) {
 		this.client = client;
-		this.cached = new Map();
+		this.cached = new Collection();
 	}
 
-	exec(id, data) {
-		const cache = this.cached.get(id);
-		if (cache) {
-			return this.permissionsFor(id, cache, data);
+	async exec(tag, data) {
+		for (const id of this.cached.filter(d => d.tag === tag).keys()) {
+			const cache = this.cached.get(id);
+			if (cache) await this.permissionsFor(id, cache, data);
 		}
+
+		return Promise.resolve();
 	}
 
-	permissionsFor(id, cache, data) {
+	async permissionsFor(id, cache, data) {
 		const permissions = [
 			'SEND_MESSAGES',
 			'EMBED_LINKS',

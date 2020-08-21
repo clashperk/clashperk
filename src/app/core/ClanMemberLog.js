@@ -4,6 +4,7 @@ const { MessageEmbed } = require('discord.js');
 const { ObjectId } = require('mongodb');
 const fetch = require('node-fetch');
 const moment = require('moment');
+const { Collection } = require('discord.js');
 
 const MODE = {
 	JOINED: 0x38d863, // green
@@ -13,21 +14,23 @@ const MODE = {
 class PlayerEvent {
 	constructor(client) {
 		this.client = client;
-		this.cached = new Map();
+		this.cached = new Collection();
 	}
 
-	exec(id, data) {
-		const cache = this.cached.get(id);
-		if (cache) {
-			return this.permissionsFor(cache, data, id);
+	async exec(tag, data) {
+		for (const id of this.cached.filter(d => d.tag === tag).keys()) {
+			const cache = this.cached.get(id);
+			if (cache) await this.permissionsFor(cache, data, id);
 		}
+
+		return Promise.resolve();
 	}
 
 	async delay(ms) {
 		return new Promise(res => setTimeout(res, ms));
 	}
 
-	permissionsFor(cache, data, id) {
+	async permissionsFor(cache, data, id) {
 		const permissions = [
 			'SEND_MESSAGES',
 			'EMBED_LINKS',

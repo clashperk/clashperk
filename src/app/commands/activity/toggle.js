@@ -114,8 +114,8 @@ class StopCommand extends Command {
 		const id = ObjectId(data._id).toString();
 
 		await this.client.storage.stop(data._id, { mode: method });
-		await this.client.cacheHandler.delete(id, { mode: method });
-		this.delete(id);
+		await this.client.cacheHandler.delete(id, data.tag, { mode: method });
+		this.delete(id, data.tag);
 
 		return message.util.send({
 			embed: {
@@ -124,7 +124,7 @@ class StopCommand extends Command {
 		});
 	}
 
-	async delete(id) {
+	async delete(id, tag) {
 		const db = mongodb.db('clashperk');
 		const data = await Promise.all([
 			db.collection('donationlogs').findOne({ clan_id: ObjectId(id) }),
@@ -135,7 +135,7 @@ class StopCommand extends Command {
 			db.collection('clanwarlogs').findOne({ clan_id: ObjectId(id) })
 		]).then(collection => collection.every(item => item == null)); // eslint-disable-line no-eq-null
 		if (data) {
-			this.client.cacheHandler.delete(id);
+			this.client.cacheHandler.delete(id, tag);
 			return db.collection('clanstores').updateOne({ _id: ObjectId(id) }, { $set: { active: false } });
 		}
 	}

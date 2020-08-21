@@ -2,28 +2,32 @@ const { MessageEmbed, Message } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const { ObjectId } = require('mongodb');
 const moment = require('moment');
+const Collection = require('../struct/Collection');
 
 class LastOnlineEvent {
 	constructor(client) {
 		this.client = client;
-		this.cached = new Map();
+		this.cached = new Collection();
 	}
 
-	async exec(id, clan, update) {
-		const cache = this.cached.get(id);
-		if (Object.keys(update).length && cache) {
+	async exec(tag, clan, update) {
+		const clans = this.cached.filter(d => d.tag === tag);
+		if (Object.keys(update).length && clans.size) {
 			try {
 				await mongodb.db('clashperk')
 					.collection('clanactivities')
-					.updateOne({ clan_id: ObjectId(id) }, update, { upsert: true });
+					.updateOne({ tag }, update, { upsert: true });
 			} catch (error) {
 				this.client.logger.error(error, { label: 'MONGODB_ERROR' });
 			}
 		}
 
-		if (cache) {
-			return this.permissionsFor(id, cache, clan);
+		for (const id of clans.keys()) {
+			const cache = this.cached.get(id);
+			if (cache) await this.permissionsFor(id, cache, clan);
 		}
+
+		return Promise.resolve();
 	}
 
 	permissionsFor(id, cache, clan) {
