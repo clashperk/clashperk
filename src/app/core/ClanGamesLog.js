@@ -211,6 +211,7 @@ class ClanGames {
 			for (const member of collection) {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
+				$set.expiresAt = new Date(this.ISO.START);
 				$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
 			}
 		}
@@ -280,21 +281,26 @@ class ClanGames {
 		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
 	}
 
-	event() {
-		const DAY = this.client.settings.get('global', 'gameEvent', 22);
+	get ISO() {
+		const date = this.client.settings.get('global', 'gameEvent', 22);
+		const now = new Date();
 		const START = [
-			new Date().getFullYear(),
-			(new Date().getMonth() + 1).toString().padStart(2, '0'),
-			DAY
+			`${now.getFullYear()}`,
+			`${now.getMonth() + 1}`.padStart(2, '0'),
+			`${date}`
 		].join('-');
 
 		const END = [
-			new Date().getFullYear(),
-			(new Date().getMonth() + 1).toString().padStart(2, '0'),
-			`${DAY + 6}T10:00:00Z`
+			`${now.getFullYear()}`,
+			`${now.getMonth() + 1}`.padStart(2, '0'),
+			`${date + 6}T10:00:00Z`
 		].join('-');
 
-		return new Date() >= new Date(START) && new Date() <= new Date(END);
+		return { START, END };
+	}
+
+	event() {
+		return new Date() >= new Date(this.ISO.START) && new Date() <= new Date(this.ISO.END);
 	}
 
 	async delay(ms) {
@@ -317,7 +323,11 @@ class ClanGames {
 	}
 
 	async init() {
-		if (this.event()) return this._init();
+		if (this.event()) {
+			await this._flush();
+			return this._init();
+		}
+
 		clearInterval(this.intervalId);
 		this.intervalId = setInterval(async () => {
 			if (this.event()) {

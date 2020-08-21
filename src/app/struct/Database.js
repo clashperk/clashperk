@@ -76,7 +76,7 @@ class Database {
 
 			// db.collection('lastonlines').createIndex({ expired: 1 }, { expireAfterSeconds: 86400 }),
 
-			db.collection('clangames').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 259200 })
+			db.collection('clangames').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 2505600 })
 		]);
 	}
 }
