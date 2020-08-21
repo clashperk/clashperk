@@ -15,22 +15,10 @@ class LastOnlineEvent {
 		if (Object.keys(update).length && clans.size) {
 			try {
 				const db = mongodb.db('clashperk').collection('lastonlines');
-				const old = await mongodb.db('clashperk')
-					.collection('clanactivities')
-					.findOne({ tag });
-
-				if (db) {
-					delete old._id;
-					delete old.clan_id;
-					await db.insertOne(old);
-				}
-
 				await db.updateOne({ tag }, update, { upsert: true });
 			} catch (error) {
 				this.client.logger.error(error, { label: 'MONGODB_ERROR' });
 			}
-
-			return;
 		}
 
 		for (const id of clans.keys()) {
