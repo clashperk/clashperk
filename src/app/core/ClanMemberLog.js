@@ -146,7 +146,8 @@ class PlayerEvent {
 				this.cached.set(ObjectId(data.clan_id).toString(), {
 					guild: data.guild,
 					channel: data.channel,
-					role: data.role
+					role: data.role,
+					tag: data.tag
 				});
 			}
 		});
@@ -161,7 +162,8 @@ class PlayerEvent {
 		return this.cached.set(ObjectId(data.clan_id).toString(), {
 			guild: data.guild,
 			channel: data.channel,
-			role: data.role
+			role: data.role,
+			tag: data.tag
 		});
 	}
 

@@ -244,7 +244,8 @@ class LastOnlineEvent {
 					// guild: data.guild,
 					channel: data.channel,
 					message: data.message,
-					color: data.color
+					color: data.color,
+					tag: data.tag
 				});
 			}
 		});
@@ -260,7 +261,8 @@ class LastOnlineEvent {
 			// guild: data.guild,
 			channel: data.channel,
 			message: data.message,
-			color: data.color
+			color: data.color,
+			tag: data.tag
 		});
 	}
 

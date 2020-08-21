@@ -169,7 +169,8 @@ class ClanEmbed {
 					channel: data.channel,
 					message: data.message,
 					color: data.color,
-					embed: data.embed
+					embed: data.embed,
+					tag: data.tag
 				});
 			}
 		});
@@ -186,7 +187,8 @@ class ClanEmbed {
 			channel: data.channel,
 			message: data.message,
 			color: data.color,
-			embed: data.embed
+			embed: data.embed,
+			tag: data.tag
 		});
 	}
 
