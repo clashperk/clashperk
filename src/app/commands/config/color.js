@@ -36,7 +36,7 @@ class ColorCommand extends Command {
 
 	async exec(message, { hexColor }) {
 		if (!this.client.patron.check(message.author, message.guild)) {
-			return this.handler.handleDirectCommand(message, 'color', this.handler.modules.get('color'), false);
+			return this.handler.handleDirectCommand(message, 'color', this.handler.modules.get('help'), false);
 		}
 		this.client.settings.set(message.guild, 'color', hexColor);
 		return message.util.send({
