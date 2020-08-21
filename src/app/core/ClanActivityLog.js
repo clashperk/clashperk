@@ -130,7 +130,7 @@ class LastOnlineEvent {
 	async embed(clan, id) {
 		const data = await mongodb.db('clashperk')
 			.collection('clanactivities')
-			.findOne({ clan_id: ObjectId(id) });
+			.findOne({ tag: clan.tag });
 
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
