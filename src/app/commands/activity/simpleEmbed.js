@@ -9,7 +9,7 @@ class ClanEmbedCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: 'Creates a beautiful embed for a clan.',
+				content: 'Creates a live promotional embed for a clan.',
 				usage: '<clanTag>'
 			}
 		});
@@ -41,6 +41,10 @@ class ClanEmbedCommand extends Command {
 	}
 
 	async exec(message, { data }) {
+		if (!this.client.patron.check(message.author, message.guild)) {
+			return this.handler.handleDirectCommand(message, 'clanembed', this.handler.modules.get('help'), false);
+		}
+
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setTitle(`${data.name} (${data.tag})`)
@@ -53,25 +57,7 @@ class ClanEmbedCommand extends Command {
 			])
 			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL())
 			.setTimestamp();
-
-		if (!this.client.patron.get(message.guild.id, 'guild', false)) {
-			const embed = this.client.util.embed()
-				.setColor(this.client.embed(message))
-				.setImage('https://i.imgur.com/QNeOD2n.png')
-				.setDescription([
-					'**Patron only Feature**',
-					'Live Embed, Custom Description, Custom TH Levels, Set Clan Leader and Custom Colour',
-					'',
-					'[Become a Patron](https://www.patreon.com/join/clashperk)'
-				]);
-			await message.channel.send({ embed });
-		}
-
 		return message.channel.send({ embed });
-	}
-
-	async delay(ms) {
-		return new Promise(res => setTimeout(res, ms));
 	}
 }
 

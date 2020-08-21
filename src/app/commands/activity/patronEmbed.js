@@ -81,6 +81,10 @@ class ClanEmbedCommand extends Command {
 	}
 
 	async exec(message, { data, accepts, user, description, color }) {
+		if (!this.client.patron.get(message.guild.id, 'guild', false)) {
+			return this.handler.handleDirectCommand(message, 'clanembed', this.handler.modules.get('help'), false);
+		}
+
 		const clans = await this.clans(message);
 		const max = this.client.patron.get(message.guild.id, 'limit', 2);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {

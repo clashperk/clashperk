@@ -11,12 +11,16 @@ class ClanEmbedCommand extends Command {
 				usage: '<clanTag> [--color]',
 				examples: ['#8QU8J9LP --color #5970C1'],
 				content: [
-					'Creates a promotional embed for a clan.'
+					'Creates a live promotional embed for a clan.'
 				],
 				image: {
 					text: [
 						'**Patron only Feature**',
-						'Live Embed, Custom Description, Custom TH Levels, Set Clan Leader and Custom Colour',
+						'Live Embed',
+						'Custom Colour',
+						'Set Clan Leader',
+						'Custom TH Level',
+						'Custom Description',
 						'',
 						'[Become a Patron](https://www.patreon.com/join/clashperk)'
 					],

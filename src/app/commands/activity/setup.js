@@ -46,7 +46,7 @@ class SetupCommand extends Command {
 				['donationlog', 'dl'],
 				['lastonlineboard', 'onlineboard', 'ob'],
 				['clangamesboard', 'cgboard', 'cg'],
-				['clanembed', 'clanembed', 'embed', 'ce'],
+				['patron-clanembed', 'clanembed', 'embed', 'ce'],
 				['clan-warlog', 'warlog', 'clanwarlog', 'wl'],
 				['playerlog', 'clanlog', 'cl', 'pl']
 			],
