@@ -172,21 +172,40 @@ class ClanGames {
 		const $set = {};
 		if (data) {
 			for (const member of collection) {
-				// update points of new clan members
+				// Update points of new clan members
 				if (member.tag in data.members === false) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
 					$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
 				}
 
-				// update points of missing clan members
+				// Update points of missing and existing clan members
 				if (member.tag in data.members) {
 					if (member.points === data.members[member.tag].points) continue;
 					$set.name = clan.name;
 					$set.tag = clan.tag;
 					$set[`members.${member.tag}.gain`] = member.points - data.members[member.tag].points;
+					if (member.points - data.members[member.tag].points >= 4000 && !data.members[member.tag].endedAt) {
+						$set[`members.${member.tag}.endedAt`] = new Date();
+					}
 				}
 			}
+
+			const tags = clan.memberList.map(m => m.tag);
+			const members = tags.map(member => {
+				const points = data.members && member.tag in data.members
+					? member.points - data.members[member.tag].points
+					: 0;
+				return points;
+			});
+			const gained = Object.values(data.members || {})
+				.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
+				.map(x => x.gain);
+			const total = members.concat(gained)
+				.map(x => x.points > 4000 ? 4000 : x.points)
+				.reduce((a, b) => a + b, 0);
+			$set.total = total;
+			if (total >= 50000 && !data.endedAt) $set.endedAt = new Date();
 		} else {
 			// update points of new clan members if db does not exist
 			for (const member of collection) {
