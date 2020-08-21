@@ -190,7 +190,6 @@ class ClanGames {
 		} else {
 			// update points of new clan members if db does not exist
 			for (const member of collection) {
-				$set.createdAt = new Date();
 				$set.name = clan.name;
 				$set.tag = clan.tag;
 				$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
@@ -263,7 +262,7 @@ class ClanGames {
 	}
 
 	event() {
-		const DAY = this.client.settings.get('global', 'clangamesDay', 22);
+		const DAY = this.client.settings.get('global', 'gameEvent', 22);
 		const START = [
 			new Date().getFullYear(),
 			(new Date().getMonth() + 1).toString().padStart(2, '0'),
@@ -338,7 +337,10 @@ class ClanGames {
 		await mongodb.db('clashperk')
 			.collection('clangameslogs')
 			.updateMany({}, { $unset: { message: '' } });
-		this.client.settings.delete('global', 'clangamesDay');
+		await mongodb.db('clashperk')
+			.collection('clangames')
+			.updateMany({}, { $set: { expiresAt: new Date() } });
+		this.client.settings.delete('global', 'gameEvent');
 		return clearInterval(intervalId);
 	}
 
