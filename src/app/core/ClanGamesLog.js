@@ -2,7 +2,7 @@ const { MessageEmbed, Message } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const { ObjectId } = require('mongodb');
 const fetch = require('node-fetch');
-const Collection = require('../struct/Collection');
+const { Collection } = require('discord.js');
 
 class ClanGames {
 	constructor(client) {

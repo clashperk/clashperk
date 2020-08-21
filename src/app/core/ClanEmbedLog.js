@@ -2,7 +2,7 @@ const { MessageEmbed, Message } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const { emoji } = require('../util/emojis');
 const { ObjectId } = require('mongodb');
-const Collection = require('../struct/Collection');
+const { Collection } = require('discord.js');
 
 class ClanEmbed {
 	constructor(client) {
