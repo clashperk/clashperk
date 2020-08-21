@@ -277,7 +277,7 @@ class CacheHandler {
 		if (CurrentMemberSet.size && OldMemberSet.size) {
 			// eslint-disable-next-line no-unused-vars
 			for (const member of oldMemberList.filter(tag => !CurrentMemberSet.has(tag))) {
-				unset.purgeAt = '';
+				// unset[`members.${member}`] = '';
 			}
 		}
 
