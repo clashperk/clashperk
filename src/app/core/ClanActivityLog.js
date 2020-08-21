@@ -213,7 +213,7 @@ class LastOnlineEvent {
 			}
 
 			if (Object.keys(unset).length) {
-				await db.updateOne({ clan_id: ObjectId(data.clan_id) }, { $unset: unset });
+				await db.updateOne({ tag: data.tag }, { $unset: unset });
 			}
 		}
 
