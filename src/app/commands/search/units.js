@@ -9,7 +9,7 @@ class UnitsCommand extends Command {
 		super('units', {
 			aliases: ['units', 'troops'],
 			category: 'search',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: 'Shows troop, spell & hero levels.',
 				usage: '<playerTag>',
