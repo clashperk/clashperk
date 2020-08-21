@@ -258,7 +258,7 @@ class CacheHandler {
 					set.name = clan.name;
 					set.tag = clan.tag;
 					set.guild = cache.guild;
-					// set.clan_id = ObjectId(id);
+					set.updatedAt = new Date();
 					set[`members.${member.tag}.lastOnline`] = new Date();
 					set[`members.${member.tag}.tag`] = member.tag;
 					inc[`members.${member.tag}.activities.${dateId}`] = 1;
@@ -267,7 +267,7 @@ class CacheHandler {
 				set.name = clan.name;
 				set.tag = clan.tag;
 				set.guild = cache.guild;
-				// set.clan_id = ObjectId(id);
+				set.updatedAt = new Date();
 				set[`members.${member.tag}.lastOnline`] = new Date();
 				set[`members.${member.tag}.tag`] = member.tag;
 				inc[`members.${member.tag}.activities.${dateId}`] = 1;

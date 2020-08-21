@@ -14,12 +14,23 @@ class LastOnlineEvent {
 		const clans = this.cached.filter(d => d.tag === tag);
 		if (Object.keys(update).length && clans.size) {
 			try {
-				await mongodb.db('clashperk')
+				const db = mongodb.db('clashperk').collection('lastonlines');
+				const old = await mongodb.db('clashperk')
 					.collection('clanactivities')
-					.updateOne({ tag }, update, { upsert: true });
+					.findOne({ tag });
+
+				if (db) {
+					delete old._id;
+					delete old.clan_id;
+					await db.insertOne(old);
+				}
+
+				await db.updateOne({ tag }, update, { upsert: true });
 			} catch (error) {
 				this.client.logger.error(error, { label: 'MONGODB_ERROR' });
 			}
+
+			return;
 		}
 
 		for (const id of clans.keys()) {
@@ -129,7 +140,7 @@ class LastOnlineEvent {
 
 	async embed(clan, id) {
 		const data = await mongodb.db('clashperk')
-			.collection('clanactivities')
+			.collection('lastonlines')
 			.findOne({ tag: clan.tag });
 
 		const cache = this.cached.get(id);
@@ -184,7 +195,7 @@ class LastOnlineEvent {
 	}
 
 	async purge(sessionId) {
-		const db = mongodb.db('clashperk').collection('clanactivities');
+		const db = mongodb.db('clashperk').collection('lastonlines');
 		const total = await db.find().count();
 		const shards = this.client.shard.count;
 		const { div, mod } = { div: Math.floor(total / shards), mod: total % shards };
