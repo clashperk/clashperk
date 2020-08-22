@@ -12,6 +12,9 @@ class ClanGames {
 	constructor(client) {
 		this.client = client;
 		this.cached = new Collection();
+		this.maxPoint = 5000;
+		this.maxTotal = 75000;
+		this.gameDay = 22;
 	}
 
 	async exec(tag, clan, forced = false, tags = []) {
@@ -193,7 +196,7 @@ class ClanGames {
 					$set.tag = clan.tag;
 					$set.updatedAt = new Date();
 					$set[`members.${member.tag}.gain`] = member.points - data.members[member.tag].points;
-					if (member.points - data.members[member.tag].points >= 4000 && !data.members[member.tag].endedAt) {
+					if (member.points - data.members[member.tag].points >= this.maxPoint && !data.members[member.tag].endedAt) {
 						$set[`members.${member.tag}.endedAt`] = new Date();
 					}
 				}
@@ -204,14 +207,14 @@ class ClanGames {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
 				$set.updatedAt = new Date();
-				$set.expiresAt = new Date(now.getFullYear(), now.getMonth(), 22);
+				$set.expiresAt = new Date(now.getFullYear(), now.getMonth(), this.gameDay);
 				$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
 			}
 		}
 
 		const { members, total } = this.filter(collection, data);
 		$set.total = total;
-		if (total >= 50000 && data && !data.endedAt) $set.endedAt = new Date();
+		if (total >= this.maxTotal && data && !data.endedAt) $set.endedAt = new Date();
 
 		if (Object.keys($set).length) {
 			const data = await mongodb.db('clashperk')
@@ -246,14 +249,6 @@ class ClanGames {
 		return { collection, data: updated.data, members: updated.members, total: updated.total };
 	}
 
-	padStart(num) {
-		return num.toString().padStart(6, ' ');
-	}
-
-	padEnd(data) {
-		return data.padEnd(15, ' ');
-	}
-
 	filter(memberList, data) {
 		if (!data || (data && !data.members)) {
 			return {
@@ -275,7 +270,7 @@ class ClanGames {
 			.map(x => ({ name: x.name, tag: x.tag, points: x.gain }));
 		const sorted = members.concat(excess)
 			.sort((a, b) => b.points - a.points)
-			.map(x => ({ name: x.name, tag: x.tag, points: x.points >= 4000 ? 4000 : x.points }));
+			.map(x => ({ name: x.name, tag: x.tag, points: x.points >= this.maxPoint ? this.maxPoint : x.points }));
 
 		return {
 			total: sorted.reduce((a, b) => a + b.points, 0),
@@ -284,21 +279,28 @@ class ClanGames {
 	}
 
 	event() {
-		const date = this.client.settings.get('global', 'gameEvent', 22);
 		const now = new Date();
 		const START = [
 			`${now.getFullYear()}`,
 			`${now.getMonth() + 1}`.padStart(2, '0'),
-			`${date}`
+			`${this.gameDay}`
 		].join('-');
 
 		const END = [
 			`${now.getFullYear()}`,
 			`${now.getMonth() + 1}`.padStart(2, '0'),
-			`${date + 6}T10:00:00Z`
+			`${this.gameDay + 6}T10:00:00Z`
 		].join('-');
 
 		return new Date() >= new Date(START) && new Date() <= new Date(END);
+	}
+
+	padStart(num) {
+		return num.toString().padStart(6, ' ');
+	}
+
+	padEnd(data) {
+		return data.padEnd(15, ' ');
 	}
 
 	async delay(ms) {
@@ -334,6 +336,8 @@ class ClanGames {
 				return clearInterval(this.intervalId);
 			}
 		}, 5 * 60 * 1000);
+
+		return Promise.resolve(0);
 	}
 
 	async _init() {
@@ -350,11 +354,12 @@ class ClanGames {
 					channel: data.channel,
 					message: data.message,
 					color: data.color,
-					tag: data.tag,
-					id: ObjectId(data.clan_id).toString()
+					tag: data.tag
 				});
 			}
 		});
+
+		return collection.length;
 	}
 
 	async flush(intervalId) {
@@ -365,15 +370,12 @@ class ClanGames {
 		await mongodb.db('clashperk')
 			.collection('clangameslogs')
 			.updateMany({}, { $unset: { message: '' } });
-		await mongodb.db('clashperk')
-			.collection('clangames')
-			.updateMany({}, { $set: { expiresAt: new Date() } });
-		this.client.settings.delete('global', 'gameEvent');
 		return clearInterval(intervalId);
 	}
 
 	async _flush() {
 		const intervalId = setInterval(() => this.flush(intervalId), 5 * 60 * 1000);
+		return Promise.resolve(0);
 	}
 
 	async add(id) {
@@ -388,8 +390,7 @@ class ClanGames {
 			channel: data.channel,
 			message: data.message,
 			color: data.color,
-			tag: data.tag,
-			id: ObjectId(data.clan_id).toString()
+			tag: data.tag
 		});
 	}
 

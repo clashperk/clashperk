@@ -14,8 +14,8 @@ class ClanGameStatsCommand extends Command {
 				content: [
 					'Compare clan games scoreboard among clans.',
 					'',
-					'Scoreboard is based on highest sores & completion times.',
-					'Performance is based on completing 4000 points.',
+					'Scoreboard is based on highest scores & completion times.',
+					'Performance is based on completing maximum points.',
 					'',
 					'**Patron only Feature**',
 					'',
@@ -49,9 +49,10 @@ class ClanGameStatsCommand extends Command {
 		const clans = await db.collection('clangames').find({ tag: { $in: [...tags.map(d => d.tag)] } }).toArray();
 		if (clans.length <= 1) return message.util.send('Minimum 2 clans are required to use this command.');
 
+		const maxPoint = this.client.cacheHandler.clangamesLog.maxPoint;
 		const performances = clans.map(d => {
 			const members = Object.values(d.members)
-				.filter(m => m.gain >= 4000);
+				.filter(m => m.gain >= maxPoint);
 			return {
 				count: members.length,
 				name: d.name,
@@ -70,13 +71,13 @@ class ClanGameStatsCommand extends Command {
 			.setFooter(`${moment(clans[0].updatedAt).format('MMMM YYYY')}`, this.client.user.displayAvatarURL())
 			.setDescription([
 				'**Scoreboard**',
-				'Based on highest sores & completion times.',
+				'Based on highest scores & completion times.',
 				`${emoji.hash} \`\u200e ${'SCORE'}  ${'CLAN'.padEnd(16, ' ')}\u200f\``,
 				...clans.map((clan, i) => `${blueNum[++i]} \`\u200e ${(clan.total || 0).toString().padStart(5, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
 				'',
 				'**Performance**',
-				'Based on completing 4000 points.',
-				`${emoji.hash} \`\u200e ${'4K'}  ${'CLAN'.padEnd(20, ' ')}\u200f\``,
+				'Based on completing maximum points.',
+				`${emoji.hash} \`\u200e ${Math.floor(maxPoint / 1000)}K  ${'CLAN'.padEnd(20, ' ')}\u200f\``,
 				...performances.map((clan, i) => `${blueNum[++i]} \`\u200e ${clan.count.toString().padStart(2, ' ')}  ${clan.name.padEnd(20, ' ')}\u200f\``)
 			]);
 

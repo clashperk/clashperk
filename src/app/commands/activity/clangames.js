@@ -82,8 +82,9 @@ class ClanGamesCommand extends Command {
 		const members = this.filter(memberList, clan, force);
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
-		const DAY = this.client.settings.get('global', 'gameEvent', 22);
-		const START = [new Date().getFullYear(), (new Date().getMonth() + 1).toString().padStart(2, '0'), `${DAY}T08:00:00Z`].join('-');
+		const day = this.client.cacheHandler.clangamesLog.gameDay;
+		const now = new Date();
+		const iso = [now.getFullYear(), (now.getMonth() + 1).toString().padStart(2, '0'), `${day}T08:00:00Z`].join('-');
 		const createdAt = new Date(ObjectId(clan._id).getTimestamp());
 
 		const embed = this.client.util.embed()
@@ -99,9 +100,9 @@ class ClanGamesCommand extends Command {
 					}).join('\n'),
 				'```'
 			])
-			.setFooter(`Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`);
+			.setFooter(`Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`, this.client.user.displayAvatarURL());
 
-		const content = `${createdAt > new Date(START) ? `\nBoard created on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`;
+		const content = `${createdAt > new Date(iso) ? `\nBoard created on ${moment(createdAt).format('D MMMM YYYY, kk:mm')}` : ''}`;
 		return message.util.send(content, { embed });
 	}
 
@@ -125,9 +126,10 @@ class ClanGamesCommand extends Command {
 		const excess = Object.values(clan.members)
 			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
 			.map(x => ({ name: x.name, tag: x.tag, points: x.gain }));
+		const maxPoint = this.client.cacheHandler.clangamesLog.maxPoint;
 		const sorted = members.concat(excess)
 			.sort((a, b) => b.points - a.points)
-			.map(x => ({ name: x.name, tag: x.tag, points: x.points > 4000 && !force ? 4000 : x.points }));
+			.map(x => ({ name: x.name, tag: x.tag, points: x.points > maxPoint && !force ? maxPoint : x.points }));
 		return sorted.filter(item => item.points).concat(!force ? sorted.filter(item => !item.points) : []);
 	}
 }
