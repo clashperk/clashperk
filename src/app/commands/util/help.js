@@ -99,7 +99,7 @@ class HelpCommand extends Command {
 	}
 
 	async execCommandList(message) {
-		if (message.channel.type === 'dm' || !message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
+		if (!message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
 			const option = {
 				setup: 'Clan Management',
 				activity: 'Clan Activity',
