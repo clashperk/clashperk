@@ -243,7 +243,7 @@ class ClanGames {
 				tag: player.tag,
 				points: points.value
 			});
-			await this.delay(100);
+			await this.delay(250);
 		}
 
 		const updated = await this.update(clan, data, collection);
@@ -321,7 +321,10 @@ class ClanGames {
 		}).catch(() => null);
 
 		if (!res) return null;
-		if (!res.ok) return null;
+		if (!res.ok) {
+			console.log(res.status);
+			return null;
+		}
 		return res.json().catch(() => null);
 	}
 
