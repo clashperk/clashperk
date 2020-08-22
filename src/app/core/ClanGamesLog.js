@@ -3,7 +3,10 @@ const { mongodb } = require('../struct/Database');
 const { ObjectId } = require('mongodb');
 const fetch = require('node-fetch');
 const { Collection } = require('discord.js');
-const TOKENS = process.env.CLASH_TOKENS.split(',');
+const TOKENS = process.env.CLAN_GAMES_TOKENS.split(',')
+	.map(token => ({ n: Math.random(), token }))
+	.sort((a, b) => a.n - b.n)
+	.map(a => a.token);
 
 class ClanGames {
 	constructor(client) {
