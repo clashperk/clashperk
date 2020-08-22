@@ -29,7 +29,7 @@ class LastOnlineEvent {
 		return clans.clear();
 	}
 
-	permissionsFor(id, cache, clan) {
+	async permissionsFor(id, cache, clan) {
 		const permissions = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
