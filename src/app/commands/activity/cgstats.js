@@ -14,8 +14,8 @@ class ClanGameStatsCommand extends Command {
 				content: [
 					'Compare clan games scoreboard among clans.',
 					'',
-					'Scoreboard is based on completion times & highest sores.',
-					'Performance is based on 4000 points completion.',
+					'Scoreboard is based on highest sores & completion times.',
+					'Performance is based on completing 4000 points.',
 					'',
 					'**Patron only Feature**',
 					'',
@@ -63,12 +63,12 @@ class ClanGameStatsCommand extends Command {
 			.setFooter(`${moment(clans[0].updatedAt).format('MMMM YYYY')}`, this.client.user.displayAvatarURL())
 			.setDescription([
 				'**Scoreboard**',
-				'Based on completion times & highest sores.',
+				'Based on highest sores & completion times.',
 				`${emoji.hash} \`\u200e ${'SCORE'}  ${'CLAN'.padEnd(16, ' ')}\u200f\``,
 				...clans.map((clan, i) => `${blueNum[++i]} \`\u200e ${(clan.total || 0).toString().padStart(5, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
 				'',
 				'**Performance**',
-				'Based on 4000 points completion.',
+				'Based on completing 4000 points.',
 				`${emoji.hash} \`\u200e ${'4K'}  ${'CLAN'.padEnd(20, ' ')}\u200f\``,
 				...performances.map((clan, i) => `${blueNum[++i]} \`\u200e ${clan.count.toString().padStart(2, ' ')}  ${clan.name.padEnd(20, ' ')}\u200f\``)
 			]);
