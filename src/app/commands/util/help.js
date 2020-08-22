@@ -20,7 +20,7 @@ class HelpCommand extends Command {
 			description: {
 				content: 'Displays info about commands.',
 				usage: '[command]',
-				examples: ['', 'start']
+				examples: ['', 'clan', 'compo']
 			}
 		});
 	}
