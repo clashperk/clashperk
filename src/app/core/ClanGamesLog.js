@@ -26,10 +26,7 @@ class ClanGames {
 		if (!clans.size) return clans.clear();
 		const db = mongodb.db('clashperk').collection('clangames');
 		const data = await db.findOne({ tag: clan.tag });
-		if (data && new Date() - new Date(data.updatedAt) >= 20 * 60 * 1000) {
-			console.log('20 min');
-			return clans.clear();
-		}
+		if (data && new Date() - new Date(data.updatedAt) <= 20 * 60 * 1000) return clans.clear();
 		const updated = await this.getList(clan, data, clan.memberList.map(m => m.tag));
 
 		for (const id of clans.keys()) {
