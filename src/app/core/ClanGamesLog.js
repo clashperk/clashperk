@@ -21,6 +21,7 @@ class ClanGames {
 			}, 122 * 1000);
 		}
 
+		if (!clans.size) return null;
 		const db = mongodb.db('clashperk').collection('clangames');
 		const data = await db.findOne({ tag: clan.tag });
 		const updated = await this.getList(clan, data, clan.memberList.map(m => m.tag));
@@ -191,7 +192,7 @@ class ClanGames {
 				}
 			}
 
-			const tags = clan.memberList.map(m => m.tag);
+			/* const tags = clan.memberList.map(m => m.tag);
 			const members = tags.map(member => {
 				const points = data.members && member.tag in data.members
 					? member.points - data.members[member.tag].points
@@ -205,7 +206,7 @@ class ClanGames {
 				.map(x => x.points > 4000 ? 4000 : x.points)
 				.reduce((a, b) => a + b, 0);
 			$set.total = total;
-			if (total >= 50000 && !data.endedAt) $set.endedAt = new Date();
+			if (total >= 50000 && !data.endedAt) $set.endedAt = new Date();*/
 		} else {
 			// update points of new clan members if db does not exist
 			for (const member of collection) {
