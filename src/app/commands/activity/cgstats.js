@@ -1,6 +1,7 @@
 const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
-const { blueNum } = require('../../util/emojis');
+const { blueNum, emoji } = require('../../util/emojis');
+const moment = require('moment');
 
 class ClanGameStatsCommand extends Command {
 	constructor() {
@@ -11,8 +12,10 @@ class ClanGameStatsCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: [
-					'Compare clan games score among clans.',
-					'Sorted by completion time and highest scores.',
+					'Compare clan games scoreboard among clans.',
+					'',
+					'Scoreboard is based on completion times & highest sores.',
+					'Performance is based on 4000 points completion.',
 					'',
 					'**Patron only Feature**',
 					'',
@@ -54,18 +57,20 @@ class ClanGameStatsCommand extends Command {
 		clans.sort((a, b) => new Date(b?.endedAt ?? now) - new Date(a?.endedAt ?? now))
 			.sort((a, b) => b.total - a.total);
 
-		const padSize = [...clans.map(d => d?.total ?? 0)].sort((a, b) => b - a)[0].toString().length;
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor('Clan Games Stats')
+			.setAuthor('Clan Games Stats', message.guild.iconURL())
+			.setFooter(`${moment(clans[0].updatedAt).format('MMMM YYYY')}`, this.client.user.displayAvatarURL())
 			.setDescription([
-				'**Soreboard**',
+				'**Scoreboard**',
 				'Based on completion times & highest sores.',
-				...clans.map((clan, i) => `${blueNum[++i]} \`\u200e ${(clan.total || 0).toString().padEnd(padSize, ' ')} ${clan.name.padEnd(15, ' ')}\u200f\``),
+				`${emoji.hash} \`\u200e ${'POINTS'} ${'CLAN'}\u200f\``,
+				...clans.map((clan, i) => `${blueNum[++i]} \`\u200e ${(clan.total || 0).toString().padEnd(6, ' ')} ${clan.name.padEnd(16, ' ')}\u200f\``),
 				'',
 				'**Performance**',
-				'Based on 4K points completion.',
-				...performances.map((clan, i) => `${blueNum[++i]} \`\u200e ${clan.count.toString().padEnd(2, ' ')} ${clan.name.padEnd(15, ' ')}\u200f\``)
+				'Based on 4000 points completion.',
+				`${emoji.hash} \`\u200e ${'🎯'} ${'CLAN'}\u200f\``,
+				...performances.map((clan, i) => `${blueNum[++i]} \`\u200e ${clan.count.toString().padEnd(2, ' ')} ${clan.name.padEnd(20, ' ')}\u200f\``)
 			]);
 
 		return message.util.send({ embed });
