@@ -36,7 +36,7 @@ class ClanGameStatsCommand extends Command {
 		const db = mongodb.db('clashperk');
 		const tags = await db.collection('clangameslogs').find({ guild: message.guild.id }).toArray();
 		if (!tags.length) return message.util.send(`${message.guild.name} does not have any clans. Why not add some?`);
-		const clans = await db.collection('clangames').find({ tag: { $in: [tags.map(d => d.tag)] } }).toArray();
+		const clans = await db.collection('clangames').find({ tag: { $in: [...tags.map(d => d.tag)] } }).toArray();
 		if (clans.length <= 1) return message.util.send('Minimum 2 clans are required to use this command.');
 
 		const performances = clans.map(d => {
