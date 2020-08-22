@@ -64,13 +64,13 @@ class ClanGameStatsCommand extends Command {
 			.setDescription([
 				'**Scoreboard**',
 				'Based on completion times & highest sores.',
-				`${emoji.hash} \`\u200e ${'POINTS'} ${'CLAN'}\u200f\``,
-				...clans.map((clan, i) => `${blueNum[++i]} \`\u200e ${(clan.total || 0).toString().padEnd(6, ' ')} ${clan.name.padEnd(16, ' ')}\u200f\``),
+				`${emoji.hash} \`\u200e ${'SCORE'} ${'CLAN'.padEnd(16, ' ')}\u200f\``,
+				...clans.map((clan, i) => `${blueNum[++i]} \`\u200e ${(clan.total || 0).toString().padStart(5, ' ')} ${clan.name.padEnd(16, ' ')}\u200f\``),
 				'',
 				'**Performance**',
 				'Based on 4000 points completion.',
-				`${emoji.hash} \`\u200e ${'🎯'} ${'CLAN'}\u200f\``,
-				...performances.map((clan, i) => `${blueNum[++i]} \`\u200e ${clan.count.toString().padEnd(2, ' ')} ${clan.name.padEnd(20, ' ')}\u200f\``)
+				`${emoji.hash} \`\u200e ${'🎯'} ${'CLAN'.padEnd(20, ' ')}\u200f\``,
+				...performances.map((clan, i) => `${blueNum[++i]} \`\u200e ${clan.count.toString().padStart(2, ' ')} ${clan.name.padEnd(20, ' ')}\u200f\``)
 			]);
 
 		return message.util.send({ embed });
