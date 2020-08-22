@@ -243,6 +243,7 @@ class ClanGames {
 				tag: player.tag,
 				points: points.value
 			});
+			await this.delay(100);
 		}
 
 		const updated = await this.update(clan, data, collection);
