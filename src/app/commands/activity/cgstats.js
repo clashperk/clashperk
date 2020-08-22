@@ -61,9 +61,8 @@ class ClanGameStatsCommand extends Command {
 		});
 		performances.sort((a, b) => b.count - a.count);
 
-		const now = new Date();
 		clans.sort((a, b) => b.total - a.total)
-			.sort((a, b) => new Date(a?.endedAt ?? now) - new Date(b?.endedAt ?? now));
+			.sort((a, b) => new Date(a?.endedAt) - new Date(b?.endedAt));
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))

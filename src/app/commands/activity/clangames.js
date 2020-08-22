@@ -95,7 +95,7 @@ class ClanGamesCommand extends Command {
 				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
 				members.slice(0, 55)
 					.map((m, i) => {
-						const points = this.padStart(m.points || '0');
+						const points = this.padStart(m.points);
 						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
 					}).join('\n'),
 				'```'
@@ -115,10 +115,6 @@ class ClanGamesCommand extends Command {
 	}
 
 	filter(memberList, data, force) {
-		if (!data || (data && !data.members)) {
-			return memberList.map(member => ({ tag: member.tag, name: member.name, points: 0 }));
-		}
-
 		const members = memberList.map(m => {
 			const points = m.tag in data.members ? m.points - data.members[m.tag].points : 0;
 			return { tag: m.tag, name: m.name, points, endedAt: data.members[m.tag]?.endedAt };
@@ -130,11 +126,10 @@ class ClanGamesCommand extends Command {
 			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
 			.map(x => ({ name: x.name, tag: x.tag, points: x.gain, endedAt: x?.endedAt }));
 
-		const sorted = members.concat(excess)
+		return members.concat(excess)
 			.sort((a, b) => b.points - a.points)
 			.sort((a, b) => new Date(a.endedAt) - new Date(b.endedAt))
 			.map(x => ({ name: x.name, tag: x.tag, points: x.points > maxPoint && !force ? maxPoint : x.points }));
-		return sorted.filter(item => item.points).concat(!force ? sorted.filter(item => !item.points) : []);
 	}
 }
 
