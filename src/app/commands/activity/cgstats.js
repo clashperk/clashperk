@@ -22,7 +22,14 @@ class ClanGameStatsCommand extends Command {
 					'[Become a Patron](https://www.patreon.com/clashperk)'
 				],
 				examples: ['']
-			}
+			},
+			args: [
+				{
+					id: 'guild',
+					type: (msg, id) => this.client.guilds.cache.get(id) || null,
+					default: message => message.guild
+				}
+			]
 		});
 	}
 
@@ -31,13 +38,13 @@ class ClanGameStatsCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message) {
+	async exec(message, { guild }) {
 		if (!this.client.patron.check(message.author, message.guild)) {
 			return this.handler.handleDirectCommand(message, 'cgstats', this.handler.modules.get('help'), false);
 		}
 
 		const db = mongodb.db('clashperk');
-		const tags = await db.collection('clangameslogs').find({ guild: message.guild.id }).toArray();
+		const tags = await db.collection('clangameslogs').find({ guild: guild.id }).toArray();
 		if (!tags.length) return message.util.send(`${message.guild.name} does not have any clans. Why not add some?`);
 		const clans = await db.collection('clangames').find({ tag: { $in: [...tags.map(d => d.tag)] } }).toArray();
 		if (clans.length <= 1) return message.util.send('Minimum 2 clans are required to use this command.');
