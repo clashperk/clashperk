@@ -195,7 +195,7 @@ class ClanGames {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
 				$set.updatedAt = new Date();
-				$set.expiresAt = new Date(this.CG.START);
+				// $set.expiresAt = new Date(this.CG.START);
 				$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
 			}
 		}
@@ -289,8 +289,8 @@ class ClanGames {
 			`${date + 6}T10:00:00Z`
 		].join('-');
 
-		this.CG.START = START;
-		this.CG.END = END;
+		// this.CG.START = START;
+		// this.CG.END = END;
 		return new Date() >= new Date(this.ISO.START) && new Date() <= new Date(this.ISO.END);
 	}
 
