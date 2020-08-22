@@ -257,19 +257,18 @@ class ClanGames {
 			};
 		}
 
-		const members = memberList.map(member => {
-			const points = member.tag in data.members
-				? member.points - data.members[member.tag].points
-				: 0;
-			return { tag: member.tag, name: member.name, points };
+		const members = memberList.map(m => {
+			const points = m.tag in data.members ? m.points - data.members[m.tag].points : 0;
+			return { tag: m.tag, name: m.name, points, endedAt: data.members[m.tag]?.endedAt ?? new Date() };
 		});
 
 		const tags = memberList.map(m => m.tag);
 		const excess = Object.values(data.members)
 			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
-			.map(x => ({ name: x.name, tag: x.tag, points: x.gain }));
+			.map(x => ({ name: x.name, tag: x.tag, points: x.gain, endedAt: x?.endedAt ?? new Date() }));
 		const sorted = members.concat(excess)
 			.sort((a, b) => b.points - a.points)
+			.sort((a, b) => new Date(a.endedAt) - new Date(b.endedAt))
 			.map(x => ({ name: x.name, tag: x.tag, points: x.points >= this.maxPoint ? this.maxPoint : x.points }));
 
 		return {

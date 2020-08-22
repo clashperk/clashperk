@@ -114,19 +114,21 @@ class ClanGamesCommand extends Command {
 		return data.padEnd(16, ' ');
 	}
 
-	filter(memberList, clan, force) {
-		const members = memberList.map(member => {
-			const points = member.tag in clan.members
-				? member.points - clan.members[member.tag].points
-				: null;
-			return { tag: member.tag, name: member.name, points, endedAt: clan.members[member.tag]?.endedAt ?? new Date() };
+	filter(memberList, data, force) {
+		if (!data || (data && !data.members)) {
+			return memberList.map(member => ({ tag: member.tag, name: member.name, points: 0 }));
+		}
+
+		const members = memberList.map(m => {
+			const points = m.tag in data.members ? m.points - data.members[m.tag].points : 0;
+			return { tag: m.tag, name: m.name, points, endedAt: data.members[m.tag]?.endedAt };
 		});
 
 		const maxPoint = this.client.cacheHandler.clangamesLog.maxPoint;
 		const tags = memberList.map(m => m.tag);
-		const excess = Object.values(clan.members)
+		const excess = Object.values(data.members)
 			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
-			.map(x => ({ name: x.name, tag: x.tag, points: x.gain, endedAt: x.endedAt }));
+			.map(x => ({ name: x.name, tag: x.tag, points: x.gain, endedAt: x?.endedAt }));
 
 		const sorted = members.concat(excess)
 			.sort((a, b) => b.points - a.points)
