@@ -25,21 +25,12 @@ class ClanGames {
 		if (!clans.size) return clans.clear();
 		const db = mongodb.db('clashperk').collection('clangames');
 		const data = await db.findOne({ tag: clan.tag });
+		if (data && new Date() - new Date(data.updatedAt) >= 20 * 60 * 1000) return clans.clear();
 		const updated = await this.getList(clan, data, clan.memberList.map(m => m.tag));
 
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
-			if (cache && cache.updatedAt) {
-				if (new Date() - new Date(cache.updatedAt) >= this.timer(cache)) {
-					cache.updatedAt = new Date();
-					this.cached.set(id, cache);
-					await this.permissionsFor(id, cache, clan, updated);
-				}
-			} else if (cache) {
-				cache.updatedAt = new Date();
-				this.cached.set(id, cache);
-				await this.permissionsFor(id, cache, clan, updated);
-			}
+			if (cache) await this.permissionsFor(id, cache, clan, updated);
 		}
 
 		return clans.clear();
@@ -178,6 +169,7 @@ class ClanGames {
 				if (member.tag in data.members === false) {
 					$set.name = clan.name;
 					$set.tag = clan.tag;
+					$set.updatedAt = new Date();
 					$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
 				}
 
@@ -186,6 +178,7 @@ class ClanGames {
 					if (member.points === data.members[member.tag].points) continue;
 					$set.name = clan.name;
 					$set.tag = clan.tag;
+					$set.updatedAt = new Date();
 					$set[`members.${member.tag}.gain`] = member.points - data.members[member.tag].points;
 					if (member.points - data.members[member.tag].points >= 4000 && !data.members[member.tag].endedAt) {
 						$set[`members.${member.tag}.endedAt`] = new Date();
@@ -213,6 +206,7 @@ class ClanGames {
 			for (const member of collection) {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
+				$set.updatedAt = new Date();
 				$set.expiresAt = new Date(this.ISO.START);
 				$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
 			}
