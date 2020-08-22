@@ -82,8 +82,8 @@ class ClanGamesCommand extends Command {
 		const members = this.filter(memberList, clan, force);
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
-		const day = this.client.cacheHandler.clangamesLog.gameDay;
 		const now = new Date();
+		const day = this.client.cacheHandler.clangamesLog.gameDay;
 		const iso = [now.getFullYear(), (now.getMonth() + 1).toString().padStart(2, '0'), `${day}T08:00:00Z`].join('-');
 		const createdAt = new Date(ObjectId(clan._id).getTimestamp());
 
@@ -119,15 +119,17 @@ class ClanGamesCommand extends Command {
 			const points = member.tag in clan.members
 				? member.points - clan.members[member.tag].points
 				: null;
-			return { tag: member.tag, name: member.name, points };
+			return { tag: member.tag, name: member.name, points, endedAt: clan.members[member.tag]?.endedAt ?? new Date() };
 		});
 
+		const maxPoint = this.client.cacheHandler.clangamesLog.maxPoint;
 		const tags = memberList.map(m => m.tag);
 		const excess = Object.values(clan.members)
 			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
-			.map(x => ({ name: x.name, tag: x.tag, points: x.gain }));
-		const maxPoint = this.client.cacheHandler.clangamesLog.maxPoint;
+			.map(x => ({ name: x.name, tag: x.tag, points: x.gain, endedAt: x.endedAt }));
+
 		const sorted = members.concat(excess)
+			.reduce((a, b) => new Date(b.endedAt) - new Date(a.endedAt))
 			.sort((a, b) => b.points - a.points)
 			.map(x => ({ name: x.name, tag: x.tag, points: x.points > maxPoint && !force ? maxPoint : x.points }));
 		return sorted.filter(item => item.points).concat(!force ? sorted.filter(item => !item.points) : []);
