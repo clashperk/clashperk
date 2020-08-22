@@ -146,15 +146,6 @@ class ClanGames {
 	}
 
 	async embed(clan, id, updated) {
-		const { members, total } = this.filter(updated.collection, updated.data);
-		if (total >= 50000) {
-			const $set = {};
-			$set.total = total || 0;
-			if (total >= 50000 && !updated?.data?.endedAt) $set.endedAt = new Date();
-			const db = mongodb.db('clashperk').collection('clangames');
-			await db.updateOne({ tag: clan.tag }, { $set });
-		}
-
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
@@ -162,14 +153,14 @@ class ClanGames {
 			.setDescription([
 				`Clan Games Scoreboard [${clan.members}/50]`,
 				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-				members.slice(0, 55)
+				updated.members.slice(0, 55)
 					.map((m, i) => {
 						const points = this.padStart(m.points || '0');
 						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
 					}).join('\n'),
 				'```'
 			])
-			.setFooter(`Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]`)
+			.setFooter(`Points: ${updated.total} [Avg: ${(updated.total / clan.members).toFixed(2)}]`)
 			.setTimestamp();
 		return embed;
 	}
@@ -209,15 +200,19 @@ class ClanGames {
 			}
 		}
 
+		const { members, total } = this.filter(collection, data);
+		$set.total = total;
+		if (total >= 50000 && data && !data.endedAt) $set.endedAt = new Date();
+
 		if (Object.keys($set).length) {
 			const data = await mongodb.db('clashperk')
 				.collection('clangames')
 				.findOneAndUpdate({ tag: clan.tag }, { $set }, { upsert: true, returnOriginal: false });
 
-			return data.value;
+			return { data: data.value, members, total };
 		}
 
-		return data;
+		return { data, members, total };
 	}
 
 	async getList(clan, data, tags) {
@@ -239,7 +234,7 @@ class ClanGames {
 		}
 
 		const updated = await this.update(clan, data, collection);
-		return { collection, data: updated };
+		return { collection, data: updated.data, members: updated.members, total: updated.total };
 	}
 
 	padStart(num) {
@@ -254,14 +249,14 @@ class ClanGames {
 		if (!data || (data && !data.members)) {
 			return {
 				total: 0,
-				members: memberList.map(member => ({ tag: member.tag, name: member.name, points: null }))
+				members: memberList.map(member => ({ tag: member.tag, name: member.name, points: 0 }))
 			};
 		}
 
 		const members = memberList.map(member => {
 			const points = member.tag in data.members
 				? member.points - data.members[member.tag].points
-				: null;
+				: 0;
 			return { tag: member.tag, name: member.name, points };
 		});
 
@@ -271,11 +266,11 @@ class ClanGames {
 			.map(x => ({ name: x.name, tag: x.tag, points: x.gain }));
 		const sorted = members.concat(excess)
 			.sort((a, b) => b.points - a.points)
-			.map(x => ({ name: x.name, tag: x.tag, points: x.points > 4000 ? 4000 : x.points }));
+			.map(x => ({ name: x.name, tag: x.tag, points: x.points >= 4000 ? 4000 : x.points }));
 
 		return {
-			total: sorted.reduce((a, b) => a + b.points || 0, 0),
-			members: sorted.filter(item => item.points).concat(sorted.filter(item => !item.points))
+			total: sorted.reduce((a, b) => a + b.points, 0),
+			members: sorted.filter(item => item.points)
 		};
 	}
 
