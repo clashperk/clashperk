@@ -26,7 +26,7 @@ class LastOnlineEvent {
 			if (cache) await this.permissionsFor(id, cache, clan);
 		}
 
-		return Promise.resolve();
+		return clans.clear();
 	}
 
 	permissionsFor(id, cache, clan) {

@@ -18,12 +18,13 @@ class PlayerEvent {
 	}
 
 	async exec(tag, data) {
-		for (const id of this.cached.filter(d => d.tag === tag).keys()) {
+		const clans = this.cached.filter(d => d.tag === tag);
+		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
 			if (cache) await this.permissionsFor(cache, data, id);
 		}
 
-		return Promise.resolve();
+		return clans.clear();
 	}
 
 	async delay(ms) {

@@ -11,7 +11,8 @@ class ClanEmbed {
 	}
 
 	async exec(tag, clan, forced = false) {
-		for (const id of this.cached.filter(d => d.tag === tag).keys()) {
+		const clans = this.cached.filter(d => d.tag === tag);
+		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
 			if (cache && cache.updatedAt && !forced) {
 				if (new Date() - new Date(cache.updatedAt) > 10 * 60 * 1000) {
@@ -26,7 +27,7 @@ class ClanEmbed {
 			}
 		}
 
-		return Promise.resolve();
+		return clans.clear();
 	}
 
 	async permissionsFor(id, cache, clan) {
