@@ -206,7 +206,7 @@ class ClanGames {
 			const total = members.concat(gained)
 				.map(x => x.points > 4000 ? 4000 : x.points)
 				.reduce((a, b) => a + b, 0);
-			$set.total = total;
+			$set.total = total || 0;
 			if (total >= 50000 && !data.endedAt) $set.endedAt = new Date();
 		} else {
 			// update points of new clan members if db does not exist
