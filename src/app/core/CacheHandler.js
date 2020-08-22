@@ -304,13 +304,13 @@ class CacheHandler {
 			for (const mTag of oldMemberList.filter(tag => !CurrentMemberSet.has(tag))) {
 				if (this.members[tag] && this.members[tag][mTag]) {
 					tags.push({
-						tag,
+						tag: mTag,
 						mode: 'LEFT',
 						donated: this.members[tag][mTag].donations,
 						received: this.members[tag][mTag].donationsReceived
 					});
 				} else {
-					tags.push({ tag, mode: 'LEFT' });
+					tags.push({ tag: mTag, mode: 'LEFT' });
 				}
 			}
 
