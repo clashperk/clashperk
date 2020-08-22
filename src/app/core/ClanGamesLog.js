@@ -18,12 +18,14 @@ class ClanGames {
 		if (!this.event()) return null;
 		const clans = this.cached.filter(d => d.tag === tag);
 		if (forced && clans.size) {
-			clans.clear();
-			return setTimeout(async () => {
+			const timeoutId = setTimeout(async () => {
+				clearTimeout(timeoutId);
 				const db = mongodb.db('clashperk').collection('clangames');
 				const data = await db.findOne({ tag: clan.tag });
 				return this.getList(clan, data, tags.map(t => t.tag));
 			}, 122 * 1000);
+
+			return clans.clear();
 		}
 
 		if (!clans.size) return clans.clear();
@@ -144,8 +146,15 @@ class ClanGames {
 	}
 
 	async embed(clan, id, updated) {
-		const members = this.filter(updated.collection, updated.data);
-		const total = members.reduce((a, b) => a + b.points || 0, 0);
+		const { members, total } = this.filter(updated.collection, updated.data);
+		if (total >= 50000) {
+			const $set = {};
+			$set.total = total || 0;
+			if (total >= 50000 && !updated?.data?.endedAt) $set.endedAt = new Date();
+			const db = mongodb.db('clashperk').collection('clangames');
+			await db.updateOne({ tag: clan.tag }, { $set });
+		}
+
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
@@ -189,22 +198,6 @@ class ClanGames {
 					}
 				}
 			}
-
-			const tags = clan.memberList.map(m => m.tag);
-			const members = tags.map(member => {
-				const points = data.members && member.tag in data.members
-					? member.points - data.members[member.tag].points
-					: 0;
-				return points;
-			});
-			const gained = Object.values(data.members || {})
-				.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
-				.map(x => x.gain);
-			const total = members.concat(gained)
-				.map(x => x.points > 4000 ? 4000 : x.points)
-				.reduce((a, b) => a + b, 0);
-			$set.total = total || 0;
-			if (total >= 50000 && !data.endedAt) $set.endedAt = new Date();
 		} else {
 			// update points of new clan members if db does not exist
 			for (const member of collection) {
@@ -258,12 +251,11 @@ class ClanGames {
 	}
 
 	filter(memberList, data) {
-		if (!data) {
-			return memberList.map(member => ({ tag: member.tag, name: member.name, points: null }));
-		}
-
-		if (data && !data.members) {
-			return memberList.map(member => ({ tag: member.tag, name: member.name, points: null }));
+		if (!data || (data && !data.members)) {
+			return {
+				total: 0,
+				members: memberList.map(member => ({ tag: member.tag, name: member.name, points: null }))
+			};
 		}
 
 		const members = memberList.map(member => {
@@ -280,7 +272,11 @@ class ClanGames {
 		const sorted = members.concat(excess)
 			.sort((a, b) => b.points - a.points)
 			.map(x => ({ name: x.name, tag: x.tag, points: x.points > 4000 ? 4000 : x.points }));
-		return sorted.filter(item => item.points).concat(sorted.filter(item => !item.points));
+
+		return {
+			total: sorted.reduce((a, b) => a + b.points || 0, 0),
+			members: sorted.filter(item => item.points).concat(sorted.filter(item => !item.points))
+		};
 	}
 
 	get ISO() {
