@@ -291,7 +291,7 @@ class ClanGames {
 
 		// this.CG.START = START;
 		// this.CG.END = END;
-		return new Date() >= new Date(this.ISO.START) && new Date() <= new Date(this.ISO.END);
+		return new Date() >= new Date(START) && new Date() <= new Date(END);
 	}
 
 	async delay(ms) {
