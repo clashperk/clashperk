@@ -129,7 +129,7 @@ class ClanGamesCommand extends Command {
 			.map(x => ({ name: x.name, tag: x.tag, points: x.gain, endedAt: x.endedAt }));
 
 		const sorted = members.concat(excess)
-			.reduce((a, b) => new Date(b.endedAt) - new Date(a.endedAt))
+			.sort((a, b) => new Date(b.endedAt) - new Date(a.endedAt))
 			.sort((a, b) => b.points - a.points)
 			.map(x => ({ name: x.name, tag: x.tag, points: x.points > maxPoint && !force ? maxPoint : x.points }));
 		return sorted.filter(item => item.points).concat(!force ? sorted.filter(item => !item.points) : []);
