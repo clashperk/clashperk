@@ -16,6 +16,32 @@ class ClanGames {
 
 	async exec(tag, clan, forced = false, tags = []) {
 		if (!this.event()) return null;
+		if (forced) return this.force(tag, clan, tags, forced);
+
+		const clans = this.cached.filter(d => d.tag === tag && ((d.updatedAt && new Date() >= new Date(d.updatedAt)) || !d.updatedAt));
+		if (!clans.size) return clans.clear();
+		const db = mongodb.db('clashperk').collection('clangames');
+		const data = await db.findOne({ tag: clan.tag });
+		const updated = await this.getList(clan, data, clan.memberList.map(m => m.tag));
+
+		for (const id of clans.keys()) {
+			const cache = this.cached.get(id);
+			if (cache) {
+				cache.updatedAt = new Date(Date.now() + this.ms(cache));
+				this.cached.set(id, cache);
+				await this.permissionsFor(id, cache, clan, updated);
+			}
+		}
+
+		return clans.clear();
+	}
+
+	ms(cache) {
+		const patron = this.client.patron.get(cache.guild, 'guild', false);
+		return patron === true ? 15 * 60 * 1000 : 30 * 60 * 1000;
+	}
+
+	async force(tag, clan, tags, forced) {
 		const clans = this.cached.filter(d => d.tag === tag);
 		if (forced && clans.size) {
 			const timeoutId = setTimeout(async () => {
@@ -24,27 +50,9 @@ class ClanGames {
 				const data = await db.findOne({ tag: clan.tag });
 				return this.getList(clan, data, tags.map(t => t.tag));
 			}, 122 * 1000);
-
-			return clans.clear();
-		}
-
-		if (!clans.size) return clans.clear();
-		const db = mongodb.db('clashperk').collection('clangames');
-		const data = await db.findOne({ tag: clan.tag });
-		if (data && new Date() - new Date(data.updatedAt) <= 20 * 60 * 1000) return clans.clear();
-		const updated = await this.getList(clan, data, clan.memberList.map(m => m.tag));
-
-		for (const id of clans.keys()) {
-			const cache = this.cached.get(id);
-			if (cache) await this.permissionsFor(id, cache, clan, updated);
 		}
 
 		return clans.clear();
-	}
-
-	timer(cache) {
-		const patron = this.client.patron.get(cache.guild, 'guild', false);
-		return patron === true ? 15 * 60 * 1000 : 30 * 60 * 1000;
 	}
 
 	async permissionsFor(id, cache, clan, updated) {
@@ -166,6 +174,7 @@ class ClanGames {
 	}
 
 	async update(clan, data, collection) {
+		const now = new Date();
 		const $set = {};
 		if (data) {
 			for (const member of collection) {
@@ -195,7 +204,7 @@ class ClanGames {
 				$set.name = clan.name;
 				$set.tag = clan.tag;
 				$set.updatedAt = new Date();
-				// $set.expiresAt = new Date(this.CG.START);
+				$set.expiresAt = new Date(now.getFullYear(), now.getMonth(), 22);
 				$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
 			}
 		}
@@ -289,8 +298,6 @@ class ClanGames {
 			`${date + 6}T10:00:00Z`
 		].join('-');
 
-		// this.CG.START = START;
-		// this.CG.END = END;
 		return new Date() >= new Date(START) && new Date() <= new Date(END);
 	}
 
@@ -346,7 +353,8 @@ class ClanGames {
 					channel: data.channel,
 					message: data.message,
 					color: data.color,
-					tag: data.tag
+					tag: data.tag,
+					id: ObjectId(data.clan_id).toString()
 				});
 			}
 		});
@@ -383,7 +391,8 @@ class ClanGames {
 			channel: data.channel,
 			message: data.message,
 			color: data.color,
-			tag: data.tag
+			tag: data.tag,
+			id: ObjectId(data.clan_id).toString()
 		});
 	}
 
