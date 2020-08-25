@@ -12,13 +12,14 @@ const Patrons = require('./Patrons');
 const path = require('path');
 const grpc = require('grpc');
 
-const packageDefinition = loadSync(path.join(__dirname, 'grpc.proto'), {
+const packageDefinition = loadSync(path.join('grpc.proto'), {
 	keepCase: true,
 	longs: String,
 	enums: String,
 	defaults: true,
 	oneofs: true
 });
+
 const { routeguide } = grpc.loadPackageDefinition(packageDefinition);
 
 class ClashPerk extends AkairoClient {
