@@ -1,5 +1,6 @@
 const { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } = require('discord-akairo');
 const CacheHandler = require('../core/CacheHandler');
+const { loadSync } = require('@grpc/proto-loader');
 const { MessageEmbed } = require('discord.js');
 const Settings = require('./SettingsProvider');
 const { Client } = require('clashofclans.js');
@@ -9,6 +10,16 @@ const Database = require('./Database');
 const Firebase = require('./Firebase');
 const Patrons = require('./Patrons');
 const path = require('path');
+const grpc = require('grpc');
+
+const packageDefinition = loadSync(path.join(__dirname, 'grpc.proto'), {
+	keepCase: true,
+	longs: String,
+	enums: String,
+	defaults: true,
+	oneofs: true
+});
+const { routeguide } = grpc.loadPackageDefinition(packageDefinition);
 
 class ClashPerk extends AkairoClient {
 	constructor(config) {
@@ -97,6 +108,12 @@ class ClashPerk extends AkairoClient {
 		this.firebase = new Firebase(this);
 		this.coc = new Client({ timeout: 3000, token: process.env.DEVELOPER_TOKEN });
 		this.embed = message => this.settings.get(message.guild, 'color', 5861569);
+		this.grpc = new routeguide.RouteGuide(process.env.SERVER, grpc.credentials.createInsecure());
+
+		this.grpc.stats({}, (err, res) => {
+			const data = JSON.parse(res.data);
+			console.log(`Memory Usage: ${(data.heapUsed / 1024 / 1024).toFixed(2)} MB`);
+		});
 
 		this.patron = new Patrons(this);
 		await this.settings.init();
