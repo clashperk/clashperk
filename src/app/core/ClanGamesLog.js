@@ -201,9 +201,11 @@ class ClanGames {
 			});
 		});
 
-		return this.client.grpc.initClanGamesHandler({
-			data: JSON.stringify(filtered)
-		}, () => { });
+		return new Promise(resolve => {
+			this.client.grpc.initClanGamesHandler({
+				data: JSON.stringify(filtered)
+			}, (err, res) => resolve(res.data));
+		});
 	}
 
 	async flush(intervalId) {

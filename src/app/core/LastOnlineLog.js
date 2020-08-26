@@ -196,9 +196,11 @@ class LastOnlineEvent {
 			});
 		});
 
-		return this.client.grpc.initClanGamesHandler({
-			data: JSON.stringify(filtered)
-		}, () => { });
+		return new Promise(resolve => {
+			this.client.grpc.initOnlineHandler({
+				data: JSON.stringify(filtered)
+			}, (err, res) => resolve(res.data));
+		});
 	}
 
 	async add(id) {

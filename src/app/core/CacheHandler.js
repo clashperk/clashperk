@@ -71,9 +71,11 @@ class CacheHandler {
 			.sort({ patron: -1 })
 			.toArray();
 
-		await this.client.grpc.initCacheHandler({
-			data: JSON.stringify(collection.filter(data => this.client.guilds.cache.has(data.guild)))
-		}, () => { });
+		await new Promise(resolve => {
+			this.client.grpc.initCacheHandler({
+				data: JSON.stringify(collection.filter(data => this.client.guilds.cache.has(data.guild)))
+			}, (err, res) => resolve(res.data));
+		});
 		return this.client.grpc.init({ shardId: this.client.shard.ids[0], shards: this.client.shard.count }, () => { });
 	}
 
