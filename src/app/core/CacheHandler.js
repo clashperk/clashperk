@@ -57,7 +57,6 @@ class CacheHandler {
 	}
 
 	async init() {
-		await this.broadcast();
 		await this.clanEmbedLog.init();
 		await this.donationLog.init();
 		await this.clanMemberLog.init();
@@ -76,7 +75,10 @@ class CacheHandler {
 				data: JSON.stringify(collection.filter(data => this.client.guilds.cache.has(data.guild)))
 			}, (err, res) => resolve(res.data));
 		});
-		return this.client.grpc.init({ shardId: this.client.shard.ids[0], shards: this.client.shard.count }, () => { });
+		await new Promise(resolve => {
+			this.client.grpc.init({ shardId: this.client.shard.ids[0], shards: this.client.shard.count }, (err, res) => resolve(res.data));
+		});
+		return this.broadcast();
 	}
 
 	async add(Id, data) {
