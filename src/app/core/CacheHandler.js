@@ -34,7 +34,7 @@ class CacheHandler {
 					await this.donationLog.exec(data.tag, data);
 					break;
 				case Op.LAST_ONLINE_LOG:
-					await this.lastOnlineLog.exec(data.tag, data.clan, data.updated);
+					await this.lastOnlineLog.exec(data.tag, data.clan, data.members);
 					break;
 				case Op.CLAN_MEMBER_LOG:
 					await this.clanMemberLog.exec(data.tag, data);
