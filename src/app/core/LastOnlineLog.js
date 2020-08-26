@@ -10,17 +10,17 @@ class LastOnlineEvent {
 		this.cached = new Collection();
 	}
 
-	async exec(tag, clan, updated) {
+	async exec(tag, clan, members) {
 		const clans = this.cached.filter(d => d.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
-			if (cache) await this.permissionsFor(id, cache, clan, updated);
+			if (cache) await this.permissionsFor(id, cache, clan, members);
 		}
 
 		return clans.clear();
 	}
 
-	async permissionsFor(id, cache, clan, updated) {
+	async permissionsFor(id, cache, clan, members) {
 		const permissions = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -33,20 +33,20 @@ class LastOnlineEvent {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				return this.handleMessage(id, channel, clan, updated);
+				return this.handleMessage(id, channel, clan, members);
 			}
 		}
 	}
 
-	async handleMessage(id, channel, clan, updated) {
+	async handleMessage(id, channel, clan, members) {
 		const cache = this.cached.get(id);
 
 		if (cache && !cache.message) {
-			return this.sendNew(id, channel, clan, updated);
+			return this.sendNew(id, channel, clan, members);
 		}
 
 		if (cache && cache.msg) {
-			return this.edit(id, cache.msg, clan, updated);
+			return this.edit(id, cache.msg, clan, members);
 		}
 
 		const message = await channel.messages.fetch(cache.message, false)
@@ -62,22 +62,22 @@ class LastOnlineEvent {
 		if (!message) return;
 
 		if (message.deleted) {
-			const msg = await this.sendNew(id, channel, clan, updated);
+			const msg = await this.sendNew(id, channel, clan, members);
 			if (!msg) return;
 			cache.msg = message;
 			return this.cached.set(id, cache);
 		}
 
 		if (!message.deleted) {
-			const msg = await this.edit(id, message, clan, updated);
+			const msg = await this.edit(id, message, clan, members);
 			if (!msg) return;
 			cache.msg = message;
 			return this.cached.set(id, cache);
 		}
 	}
 
-	async sendNew(id, channel, clan, updated) {
-		const embed = await this.embed(clan, id, updated);
+	async sendNew(id, channel, clan, members) {
+		const embed = await this.embed(clan, id, members);
 		const message = await channel.send({ embed })
 			.catch(() => null);
 
@@ -96,8 +96,8 @@ class LastOnlineEvent {
 		return message;
 	}
 
-	async edit(id, message, clan, updated) {
-		const embed = await this.embed(clan, id, updated);
+	async edit(id, message, clan, members) {
+		const embed = await this.embed(clan, id, members);
 		if (message instanceof Message === false) {
 			const cache = this.cached.get(id);
 			cache.msg = null;
@@ -109,7 +109,7 @@ class LastOnlineEvent {
 					const cache = this.cached.get(id);
 					cache.msg = null;
 					this.cached.set(id, cache);
-					return this.sendNew(id, message.channel, clan, updated);
+					return this.sendNew(id, message.channel, clan, members);
 				}
 				return null;
 			});
@@ -117,7 +117,7 @@ class LastOnlineEvent {
 		return msg;
 	}
 
-	async embed(clan, id, updated) {
+	async embed(clan, id, members) {
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
@@ -125,8 +125,7 @@ class LastOnlineEvent {
 			.setDescription([
 				`Last Online Board [${clan.members}/50]`,
 				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  ${'NAME'.padEnd(18, ' ')}`,
-				this.filter(clan, updated)
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}  ${m.name}`)
+				members.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}  ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
 			])
@@ -134,39 +133,6 @@ class LastOnlineEvent {
 			.setTimestamp();
 
 		return embed;
-	}
-
-	filter(clan, db) {
-		if (!db) {
-			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null, count: 0 }));
-		}
-
-		if (db && !db.members) {
-			return clan.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null, count: 0 }));
-		}
-
-		const members = clan.memberList.map(member => {
-			const counts = [];
-			if (member.tag in db.members && db.members[member.tag].activities) {
-				for (const [key, value] of Object.entries(db.members[member.tag].activities)) {
-					if (new Date().getTime() - new Date(key).getTime() <= 864e5) {
-						counts.push(value);
-					}
-				}
-			}
-
-			return {
-				tag: member.tag,
-				name: member.name,
-				lastOnline: member.tag in db.members
-					? new Date() - new Date(db.members[member.tag].lastOnline)
-					: null,
-				count: counts.reduce((p, c) => p + c, 0)
-			};
-		});
-
-		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
-		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
 	}
 
 	format(time) {
