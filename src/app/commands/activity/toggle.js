@@ -113,7 +113,7 @@ class StopCommand extends Command {
 
 		const id = ObjectId(data._id).toString();
 		await this.client.storage.stop(data._id, { op: Number(method) });
-		await this.client.cacheHandler.delete(id, { op: Number(method) });
+		await this.client.cacheHandler.delete(id, { op: Number(method), tag: data.tag });
 		this.delete(id);
 
 		return message.util.send({
