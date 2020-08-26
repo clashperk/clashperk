@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { ObjectId } = require('mongodb');
-const { Modes } = require('../../util/constants');
+const { Op } = require('../../util/constants');
 
 class StopCommand extends Command {
 	constructor() {
@@ -41,12 +41,12 @@ class StopCommand extends Command {
 					match: 'phrase',
 					type: [
 						['all'],
-						[Modes.DONATION_LOG, 'donationlog', 'dl'],
-						[Modes.CLAN_LOG, 'playerlog', 'clanlog', 'cl', 'pl'],
-						[Modes.ACTIVITY_LOG, 'onlineboard', 'ob'],
-						[Modes.CLAN_EMBED_LOG, 'clanembed', 'ce'],
-						[Modes.CLAN_GAMES_LOG, 'cgboard', 'cg'],
-						[Modes.CLAN_WAR_LOG, 'warlog', 'clanwarlog', 'wl']
+						[Op.DONATION_LOG, 'donationlog', 'dl'],
+						[Op.CLAN_MEMBER_LOG, 'playerlog', 'clanlog', 'cl', 'pl'],
+						[Op.LAST_ONLINE_LOG, 'onlineboard', 'ob'],
+						[Op.CLAN_EMBED_LOG, 'clanembed', 'ce'],
+						[Op.CLAN_GAMES_LOG, 'cgboard', 'cg'],
+						[Op.CLAN_WAR_LOG, 'warlog', 'clanwarlog', 'wl']
 					],
 					default: ''
 				},

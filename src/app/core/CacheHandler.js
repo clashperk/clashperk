@@ -3,7 +3,7 @@ const ClanActivityLog = require('./ClanActivityLog');
 const { mongodb } = require('../struct/Database');
 const ClanMemberLog = require('./ClanMemberLog');
 const ClanEmbedLog = require('./ClanEmbedLog');
-const { Modes } = require('../util/constants');
+const { Op } = require('../util/constants');
 const ClanGamesLog = require('./ClanGamesLog');
 const DonationLog = require('./DonationLog');
 const ClanWarLog = require('./ClanWarLog');
@@ -30,22 +30,22 @@ class CacheHandler {
 
 	async broadcast(data) {
 		switch (data.event) {
-			case Modes.DONATION_LOG:
+			case Op.DONATION_LOG:
 				await this.donationLog.exec(data.tag, data);
 				break;
-			case Modes.ACTIVITY_LOG:
+			case Op.LAST_ONLINE_LOG:
 				await this.activityLog.exec(data.tag, data.clan, data.update);
 				break;
-			case Modes.CLAN_LOG:
+			case Op.CLAN_MEMBER_LOG:
 				await this.clanLog.exec(data.tag, data);
 				break;
-			case Modes.CLAN_EMBED_LOG:
+			case Op.CLAN_EMBED_LOG:
 				await this.clanembedLog.exec(data.tag, data.clan, data.forced);
 				break;
-			case Modes.CLAN_GAMES_LOG:
+			case Op.CLAN_GAMES_LOG:
 				await this.clangamesLog.exec(data.tag, data.clan, data.forced, data.tags);
 				break;
-			case Modes.CLAN_WAR_LOG:
+			case Op.CLAN_WAR_LOG:
 				await this.clanwarLog.exec(data.tag, data.clan);
 				break;
 			default:
@@ -115,18 +115,18 @@ class CacheHandler {
 	async add(_id, data) {
 		const id = ObjectId(_id).toString();
 
-		const Op = {
-			[Modes.DONATION_LOG]: this.donationLog,
-			[Modes.CLAN_LOG]: this.clanLog,
-			[Modes.ACTIVITY_LOG]: this.activityLog,
-			[Modes.CLAN_EMBED_LOG]: this.clanembedLog,
-			[Modes.CLAN_GAMES_LOG]: this.clangamesLog,
-			[Modes.CLAN_WAR_LOG]: this.clanwarLog
+		const OP = {
+			[Op.DONATION_LOG]: this.donationLog,
+			[Op.CLAN_MEMBER_LOG]: this.clanLog,
+			[Op.LAST_ONLINE_LOG]: this.activityLog,
+			[Op.CLAN_EMBED_LOG]: this.clanembedLog,
+			[Op.CLAN_GAMES_LOG]: this.clangamesLog,
+			[Op.CLAN_WAR_LOG]: this.clanwarLog
 		};
 		if (data && data.mode) {
-			await Op[data.mode].add(_id);
+			await OP[data.mode].add(_id);
 		} else {
-			await Promise.all([...Object.values(Op).map(op => op.add(id))]);
+			await Promise.all([...Object.values(OP).map(Op => Op.add(id))]);
 		}
 
 		if (this.cached.has(data.tag)) {
@@ -145,18 +145,18 @@ class CacheHandler {
 		const id = ObjectId(_id).toString();
 		const cache = this.cached.get(tag);
 
-		const Op = {
-			[Modes.DONATION_LOG]: this.donationLog,
-			[Modes.CLAN_LOG]: this.clanLog,
-			[Modes.ACTIVITY_LOG]: this.activityLog,
-			[Modes.CLAN_EMBED_LOG]: this.clanembedLog,
-			[Modes.CLAN_GAMES_LOG]: this.clangamesLog,
-			[Modes.CLAN_WAR_LOG]: this.clanwarLog
+		const OP = {
+			[Op.DONATION_LOG]: this.donationLog,
+			[Op.CLAN_MEMBER_LOG]: this.clanLog,
+			[Op.LAST_ONLINE_LOG]: this.activityLog,
+			[Op.CLAN_EMBED_LOG]: this.clanembedLog,
+			[Op.CLAN_GAMES_LOG]: this.clangamesLog,
+			[Op.CLAN_WAR_LOG]: this.clanwarLog
 		};
 		if (data && data.mode) {
-			Op[data.mode].delete(id, tag);
+			OP[data.mode].delete(id, tag);
 		} else {
-			Object.values(Op).map(op => op.delete(id, tag));
+			Object.values(OP).map(Op => Op.delete(id, tag));
 		}
 
 		if (!data && cache && cache.count > 1) {
@@ -211,7 +211,7 @@ class CacheHandler {
 		const oldMemberList = this.members[tag] ? Object.keys(this.members[tag]) : [];
 		const OldMemberSet = new Set(oldMemberList);
 
-		const data = { tag, donated: [], received: [], donations: 0, receives: 0, event: Modes.DONATION_LOG };
+		const data = { tag, donated: [], received: [], donations: 0, receives: 0, event: Op.DONATION_LOG };
 
 		const [update, set, inc, unset] = [{}, {}, {}, {}];
 		for (const member of clan.memberList) {
@@ -285,7 +285,7 @@ class CacheHandler {
 		if (Object.keys(inc).length && !this.isReset(tag, clan.memberList)) update.$inc = inc;
 		if (Object.keys(unset).length) update.$unset = unset;
 
-		await this.broadcast({ tag, clan, update, event: Modes.ACTIVITY_LOG });
+		await this.broadcast({ tag, clan, update, event: Op.LAST_ONLINE_LOG });
 
 		if (data.donated.length || data.received.length) {
 			if (CurrentMemberSet.size && OldMemberSet.size && data.donations !== data.receives) {
@@ -333,18 +333,18 @@ class CacheHandler {
 						tag: clan.tag,
 						badge: clan.badgeUrls.small
 					},
-					event: Modes.CLAN_LOG
+					event: Op.CLAN_MEMBER_LOG
 				});
 
-				await this.broadcast({ tag, clan, forced: true, event: Modes.CLAN_EMBED_LOG });
-				await this.broadcast({ tag, clan, forced: true, tags, event: Modes.CLAN_GAMES_LOG });
+				await this.broadcast({ tag, clan, forced: true, event: Op.CLAN_EMBED_LOG });
+				await this.broadcast({ tag, clan, forced: true, tags, event: Op.CLAN_GAMES_LOG });
 				temp.add('ON_HOLD');
 			}
 		}
 
 		if (!temp.delete('ON_HOLD')) {
-			await this.broadcast({ tag, clan, event: Modes.CLAN_EMBED_LOG });
-			await this.broadcast({ tag, clan, event: Modes.CLAN_GAMES_LOG });
+			await this.broadcast({ tag, clan, event: Op.CLAN_EMBED_LOG });
+			await this.broadcast({ tag, clan, event: Op.CLAN_GAMES_LOG });
 		}
 
 		this.members[tag] = {};

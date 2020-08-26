@@ -1,7 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../../struct/Database');
-const { Modes } = require('../../util/constants');
+const { Op } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 
 class PlayerLogCommand extends Command {
@@ -78,7 +78,7 @@ class PlayerLogCommand extends Command {
 		}
 
 		const id = await this.client.storage.register(message, {
-			mode: Modes.CLAN_LOG,
+			mode: Op.CLAN_MEMBER_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
@@ -88,7 +88,7 @@ class PlayerLogCommand extends Command {
 		});
 
 		this.client.cacheHandler.add(id, {
-			mode: Modes.CLAN_LOG,
+			mode: Op.CLAN_MEMBER_LOG,
 			guild: message.guild.id,
 			tag: data.tag
 		});
