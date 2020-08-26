@@ -72,7 +72,7 @@ class ClanGameStatsCommand extends Command {
 				'**Scoreboard**',
 				'Based on highest scores & completion times.',
 				`${emoji.hash} **\`\u200e ${'SCORE'}  ${'CLAN'.padEnd(16, ' ')}\u200f\`**`,
-				...clans.map((clan, i) => `${blueNum[++i]} \`\u200e ${(clan.total || 0).toString().padStart(5, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
+				...clans.map((clan, i) => `${blueNum[++i]} \`\u200e ${(clan.total || 0).toString().padStart(6, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
 				'',
 				'**Performance**',
 				'Based on completing maximum points.',
