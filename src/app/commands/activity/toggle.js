@@ -41,12 +41,12 @@ class StopCommand extends Command {
 					match: 'phrase',
 					type: [
 						['all'],
-						[Op.DONATION_LOG, 'donationlog', 'dl'],
-						[Op.CLAN_MEMBER_LOG, 'playerlog', 'clanlog', 'cl', 'pl'],
-						[Op.LAST_ONLINE_LOG, 'onlineboard', 'ob'],
-						[Op.CLAN_EMBED_LOG, 'clanembed', 'ce'],
-						[Op.CLAN_GAMES_LOG, 'cgboard', 'cg'],
-						[Op.CLAN_WAR_LOG, 'warlog', 'clanwarlog', 'wl']
+						[Op.DONATION_LOG.toString(), 'donationlog', 'dl'],
+						[Op.CLAN_MEMBER_LOG.toString(), 'playerlog', 'clanlog', 'cl', 'pl'],
+						[Op.LAST_ONLINE_LOG.toString(), 'onlineboard', 'ob'],
+						[Op.CLAN_EMBED_LOG.toString(), 'clanembed', 'ce'],
+						[Op.CLAN_GAMES_LOG.toString(), 'cgboard', 'cg'],
+						[Op.CLAN_WAR_LOG.toString(), 'warlog', 'clanwarlog', 'wl']
 					],
 					default: ''
 				},
@@ -112,10 +112,9 @@ class StopCommand extends Command {
 		}
 
 		const id = ObjectId(data._id).toString();
-
-		await this.client.storage.stop(data._id, { mode: method });
-		await this.client.cacheHandler.delete(id, data.tag, { mode: method });
-		this.delete(id, data.tag);
+		await this.client.storage.stop(data._id, { op: Number(method) });
+		await this.client.cacheHandler.delete(id, { op: Number(method) });
+		this.delete(id);
 
 		return message.util.send({
 			embed: {
@@ -124,7 +123,7 @@ class StopCommand extends Command {
 		});
 	}
 
-	async delete(id, tag) {
+	async delete(id) {
 		const db = mongodb.db('clashperk');
 		const data = await Promise.all([
 			db.collection('donationlogs').findOne({ clan_id: ObjectId(id) }),
@@ -135,7 +134,7 @@ class StopCommand extends Command {
 			db.collection('clanwarlogs').findOne({ clan_id: ObjectId(id) })
 		]).then(collection => collection.every(item => item == null)); // eslint-disable-line no-eq-null
 		if (data) {
-			this.client.cacheHandler.delete(id, tag);
+			this.client.cacheHandler.delete(id);
 			return db.collection('clanstores').updateOne({ _id: ObjectId(id) }, { $set: { active: false } });
 		}
 	}

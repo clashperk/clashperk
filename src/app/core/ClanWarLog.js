@@ -569,14 +569,14 @@ class ClanWarEvent {
 	clear() {
 		for (const key of this.cached.keys()) {
 			const cache = this.cached.get(key);
-			if (cache && cache.intervalId) clearInterval(cache.intervalId);
+			if (cache?.intervalId) clearInterval(cache.intervalId);
 		}
 		return this.cached.clear();
 	}
 
 	delete(id) {
 		const cache = this.cached.get(id);
-		if (cache && cache.intervalId) clearInterval(cache.intervalId);
+		if (cache?.intervalId) clearInterval(cache.intervalId);
 		return this.cached.delete(id);
 	}
 }

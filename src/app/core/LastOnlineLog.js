@@ -10,26 +10,17 @@ class LastOnlineEvent {
 		this.cached = new Collection();
 	}
 
-	async exec(tag, clan, update) {
+	async exec(tag, clan, updated) {
 		const clans = this.cached.filter(d => d.tag === tag);
-		if (Object.keys(update).length && clans.size) {
-			try {
-				const db = mongodb.db('clashperk').collection('lastonlines');
-				await db.updateOne({ tag }, update, { upsert: true });
-			} catch (error) {
-				this.client.logger.error(error, { label: 'MONGODB_ERROR' });
-			}
-		}
-
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
-			if (cache) await this.permissionsFor(id, cache, clan);
+			if (cache) await this.permissionsFor(id, cache, clan, updated);
 		}
 
 		return clans.clear();
 	}
 
-	async permissionsFor(id, cache, clan) {
+	async permissionsFor(id, cache, clan, updated) {
 		const permissions = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -42,20 +33,20 @@ class LastOnlineEvent {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				return this.handleMessage(id, channel, clan);
+				return this.handleMessage(id, channel, clan, updated);
 			}
 		}
 	}
 
-	async handleMessage(id, channel, clan) {
+	async handleMessage(id, channel, clan, updated) {
 		const cache = this.cached.get(id);
 
 		if (cache && !cache.message) {
-			return this.sendNew(id, channel, clan);
+			return this.sendNew(id, channel, clan, updated);
 		}
 
 		if (cache && cache.msg) {
-			return this.edit(id, cache.msg, clan);
+			return this.edit(id, cache.msg, clan, updated);
 		}
 
 		const message = await channel.messages.fetch(cache.message, false)
@@ -71,22 +62,22 @@ class LastOnlineEvent {
 		if (!message) return;
 
 		if (message.deleted) {
-			const msg = await this.sendNew(id, channel, clan);
+			const msg = await this.sendNew(id, channel, clan, updated);
 			if (!msg) return;
 			cache.msg = message;
 			return this.cached.set(id, cache);
 		}
 
 		if (!message.deleted) {
-			const msg = await this.edit(id, message, clan);
+			const msg = await this.edit(id, message, clan, updated);
 			if (!msg) return;
 			cache.msg = message;
 			return this.cached.set(id, cache);
 		}
 	}
 
-	async sendNew(id, channel, clan) {
-		const embed = await this.embed(clan, id);
+	async sendNew(id, channel, clan, updated) {
+		const embed = await this.embed(clan, id, updated);
 		const message = await channel.send({ embed })
 			.catch(() => null);
 
@@ -105,8 +96,8 @@ class LastOnlineEvent {
 		return message;
 	}
 
-	async edit(id, message, clan) {
-		const embed = await this.embed(clan, id);
+	async edit(id, message, clan, updated) {
+		const embed = await this.embed(clan, id, updated);
 		if (message instanceof Message === false) {
 			const cache = this.cached.get(id);
 			cache.msg = null;
@@ -118,7 +109,7 @@ class LastOnlineEvent {
 					const cache = this.cached.get(id);
 					cache.msg = null;
 					this.cached.set(id, cache);
-					return this.sendNew(id, message.channel, clan);
+					return this.sendNew(id, message.channel, clan, updated);
 				}
 				return null;
 			});
@@ -126,11 +117,7 @@ class LastOnlineEvent {
 		return msg;
 	}
 
-	async embed(clan, id) {
-		const data = await mongodb.db('clashperk')
-			.collection('lastonlines')
-			.findOne({ tag: clan.tag });
-
+	async embed(clan, id, updated) {
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
@@ -138,7 +125,7 @@ class LastOnlineEvent {
 			.setDescription([
 				`Last Online Board [${clan.members}/50]`,
 				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  ${'NAME'.padEnd(18, ' ')}`,
-				this.filter(clan, data)
+				this.filter(clan, updated)
 					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}  ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
@@ -182,45 +169,6 @@ class LastOnlineEvent {
 		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
 	}
 
-	async purge(sessionId) {
-		const db = mongodb.db('clashperk').collection('lastonlines');
-		const total = await db.find().count();
-		const shards = this.client.shard.count;
-		const { div, mod } = { div: Math.floor(total / shards), mod: total % shards };
-		const arr = new Array(shards).fill();
-		const { skip, limit } = arr.map((_, i) => {
-			const limit = arr.length - 1 === i ? (div * (i + 1)) + mod : div * (i + 1);
-			return { skip: i * div, limit };
-		})[this.client.shard.ids[0]];
-
-		const collection = await db.find()
-			.skip(skip)
-			.limit(limit)
-			.toArray();
-		for (const data of collection) {
-			if (!data.members) continue;
-			const unset = {};
-			for (const m of Object.values(data.members)) {
-				if (new Date().getMonth() - new Date(m.lastOnline).getMonth() === 2) {
-					unset[`members.${m.tag}`] = '';
-				}
-				if (!m.activities) continue;
-				for (const date of Object.keys(m.activities)) {
-					if (new Date(sessionId) - new Date(date) >= 864e5) {
-						unset[`members.${m.tag}.activities.${date}`] = '';
-					}
-				}
-			}
-
-			if (Object.keys(unset).length) {
-				await db.updateOne({ tag: data.tag }, { $unset: unset });
-			}
-		}
-
-		this.client.logger.info(`Season Reset (${sessionId})`, { label: 'PURGED' });
-		return db.deleteMany({ members: {} });
-	}
-
 	format(time) {
 		if (time > 864e5) {
 			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' }).padStart(7, ' ');
@@ -237,17 +185,20 @@ class LastOnlineEvent {
 			.find()
 			.toArray();
 
-		collection.forEach(data => {
-			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(ObjectId(data.clan_id).toString(), {
-					// guild: data.guild,
-					channel: data.channel,
-					message: data.message,
-					color: data.color,
-					tag: data.tag
-				});
-			}
+		const filtered = collection.filter(data => this.client.guilds.cache.get(data.guild));
+		filtered.forEach(data => {
+			this.cached.set(ObjectId(data.clan_id).toString(), {
+				// guild: data.guild,
+				channel: data.channel,
+				message: data.message,
+				color: data.color,
+				tag: data.tag
+			});
 		});
+
+		return this.client.grpc.initClanGamesHandler({
+			data: JSON.stringify(filtered)
+		}, () => { });
 	}
 
 	async add(id) {

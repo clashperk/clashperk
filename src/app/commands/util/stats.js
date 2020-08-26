@@ -37,14 +37,14 @@ class StatsCommand extends Command {
 		}
 
 		const owner = await this.client.users.fetch(this.client.ownerID, false);
+		const grpc = await new Promise(resolve => this.client.grpc.stats({}, (err, res) => resolve(JSON.parse(res.data))));
+
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setTitle('Stats')
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
-			.addField('Free Memory', [
-				this.freemem > 1024 ? `${(this.freemem / 1024).toFixed(2)} GB` : `${Math.round(this.freemem)} MB`
-			], true)
+			.addField('RPC Usage', `${(grpc.heapUsed / 1024 / 1024).toFixed(2)} MB`, true)
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }), true)
 			.addField('Servers', guilds, true)
 			.addField('Shard', `${message.guild.shard.id}/${this.client.shard.count}`, true)

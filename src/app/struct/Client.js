@@ -111,11 +111,6 @@ class ClashPerk extends AkairoClient {
 		this.embed = message => this.settings.get(message.guild, 'color', 5861569);
 		this.grpc = new routeguide.RouteGuide(process.env.SERVER, grpc.credentials.createInsecure());
 
-		this.grpc.stats({}, (err, res) => {
-			const data = JSON.parse(res.data);
-			console.log(`Memory Usage: ${(data.heapUsed / 1024 / 1024).toFixed(2)} MB`);
-		});
-
 		this.patron = new Patrons(this);
 		await this.settings.init();
 		await this.patron.refresh();
@@ -128,7 +123,6 @@ class ClashPerk extends AkairoClient {
 				this.patron.init();
 				this.firebase.init();
 				this.cacheHandler.init();
-				this.cacheHandler.season();
 			}
 		});
 	}

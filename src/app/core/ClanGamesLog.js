@@ -1,12 +1,7 @@
 const { MessageEmbed, Message } = require('discord.js');
 const { mongodb } = require('../struct/Database');
 const { ObjectId } = require('mongodb');
-const fetch = require('node-fetch');
 const { Collection } = require('discord.js');
-const TOKENS = process.env.CLAN_GAMES_TOKENS.split(',')
-	.map(token => ({ n: Math.random(), token }))
-	.sort((a, b) => a.n - b.n)
-	.map(a => a.token);
 
 class ClanGames {
 	constructor(client) {
@@ -17,42 +12,11 @@ class ClanGames {
 		this.gameDay = 22;
 	}
 
-	async exec(tag, clan, forced = false, tags = []) {
-		if (!this.event()) return null;
-		if (forced) return this.force(tag, clan, tags, forced);
-
-		const clans = this.cached.filter(d => d.tag === tag && ((d.updatedAt && new Date() >= new Date(d.updatedAt)) || !d.updatedAt));
-		if (!clans.size) return clans.clear();
-		const db = mongodb.db('clashperk').collection('clangames');
-		const data = await db.findOne({ tag: clan.tag });
-		const updated = await this.getList(clan, data, clan.memberList.map(m => m.tag));
-
+	async exec(tag, clan, updated) {
+		const clans = this.cached.filter(d => d.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
-			if (cache) {
-				cache.updatedAt = new Date(Date.now() + this.ms(cache));
-				this.cached.set(id, cache);
-				await this.permissionsFor(id, cache, clan, updated);
-			}
-		}
-
-		return clans.clear();
-	}
-
-	ms(cache) {
-		const patron = this.client.patron.get(cache.guild, 'guild', false);
-		return patron === true ? 15 * 60 * 1000 : 30 * 60 * 1000;
-	}
-
-	async force(tag, clan, tags, forced) {
-		const clans = this.cached.filter(d => d.tag === tag);
-		if (forced && clans.size) {
-			const timeoutId = setTimeout(async () => {
-				clearTimeout(timeoutId);
-				const db = mongodb.db('clashperk').collection('clangames');
-				const data = await db.findOne({ tag: clan.tag });
-				return this.getList(clan, data, tags.map(t => t.tag));
-			}, 122 * 1000);
+			if (cache) await this.permissionsFor(id, cache, clan, updated);
 		}
 
 		return clans.clear();
@@ -173,108 +137,8 @@ class ClanGames {
 			])
 			.setFooter(`Points: ${updated.total} [Avg: ${(updated.total / clan.members).toFixed(2)}]`)
 			.setTimestamp();
+
 		return embed;
-	}
-
-	async update(clan, data, collection) {
-		const now = new Date();
-		const $set = {};
-		if (data) {
-			for (const member of collection) {
-				// Update points of new clan members
-				if (member.tag in data.members === false) {
-					$set.name = clan.name;
-					$set.tag = clan.tag;
-					$set.updatedAt = new Date();
-					$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
-				}
-
-				// Update points of missing and existing clan members
-				if (member.tag in data.members) {
-					if (member.points === data.members[member.tag].points) continue;
-					$set.name = clan.name;
-					$set.tag = clan.tag;
-					$set.updatedAt = new Date();
-					$set[`members.${member.tag}.gain`] = member.points - data.members[member.tag].points;
-					if (member.points - data.members[member.tag].points >= this.maxPoint && !data.members[member.tag].endedAt) {
-						$set[`members.${member.tag}.endedAt`] = new Date();
-					}
-				}
-			}
-		} else {
-			// update points of new clan members if db does not exist
-			for (const member of collection) {
-				$set.name = clan.name;
-				$set.tag = clan.tag;
-				$set.updatedAt = new Date();
-				$set.expiresAt = new Date(now.getFullYear(), now.getMonth(), this.gameDay);
-				$set[`members.${member.tag}`] = { name: member.name, tag: member.tag, points: member.points };
-			}
-		}
-
-		const { members, total } = this.filter(collection, data);
-		$set.total = total;
-		if (total >= this.maxTotal && data && !data.endedAt) $set.endedAt = new Date();
-
-		if (Object.keys($set).length) {
-			const data = await mongodb.db('clashperk')
-				.collection('clangames')
-				.findOneAndUpdate({ tag: clan.tag }, { $set }, { upsert: true, returnOriginal: false });
-
-			return { data: data.value, members, total };
-		}
-
-		return { data, members, total };
-	}
-
-	async getList(clan, data, tags) {
-		let [collection, i] = [[], 0];
-		for (const tag of tags) {
-			const player = await this.player(tag, i);
-			i += 1;
-			if (!player) continue;
-			if (!player.achievements) continue;
-			const points = player.achievements
-				? player.achievements.find(a => a.name === 'Games Champion')
-				: { value: 0 };
-			collection.push({
-				name: player.name,
-				tag: player.tag,
-				points: points.value
-			});
-			await this.delay(100);
-		}
-
-		const updated = await this.update(clan, data, collection);
-		return { collection, data: updated.data, members: updated.members, total: updated.total };
-	}
-
-	filter(memberList, data) {
-		if (!data || (data && !data.members)) {
-			return {
-				total: 0,
-				members: memberList.map(member => ({ tag: member.tag, name: member.name, points: 0 }))
-			};
-		}
-
-		const members = memberList.map(m => {
-			const points = m.tag in data.members ? m.points - data.members[m.tag].points : 0;
-			return { tag: m.tag, name: m.name, points, endedAt: data.members[m.tag]?.endedAt };
-		});
-
-		const tags = memberList.map(m => m.tag);
-		const excess = Object.values(data.members)
-			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
-			.map(x => ({ name: x.name, tag: x.tag, points: x.gain, endedAt: x?.endedAt }));
-		const sorted = members.concat(excess)
-			.sort((a, b) => b.points - a.points)
-			.sort((a, b) => new Date(a.endedAt) - new Date(b.endedAt))
-			.map(x => ({ name: x.name, tag: x.tag, points: x.points >= this.maxPoint ? this.maxPoint : x.points }));
-
-		return {
-			total: sorted.reduce((a, b) => a + b.points, 0),
-			members: sorted
-		};
 	}
 
 	event() {
@@ -302,25 +166,6 @@ class ClanGames {
 		return data.padEnd(15, ' ');
 	}
 
-	async delay(ms) {
-		return new Promise(res => setTimeout(res, ms));
-	}
-
-	async player(tag, i) {
-		const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
-			method: 'GET',
-			headers: {
-				accept: 'application/json',
-				authorization: `Bearer ${TOKENS[i % TOKENS.length]}`
-			},
-			timeout: 3000
-		}).catch(() => null);
-
-		if (!res) return null;
-		if (!res.ok) return null;
-		return res.json().catch(() => null);
-	}
-
 	async init() {
 		if (this.event()) {
 			await this._flush();
@@ -340,36 +185,32 @@ class ClanGames {
 	}
 
 	async _init() {
-		// Initialize-Database
 		const collection = await mongodb.db('clashperk')
 			.collection('clangameslogs')
 			.find()
 			.toArray();
 
-		collection.forEach(data => {
-			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(ObjectId(data.clan_id).toString(), {
-					guild: data.guild,
-					channel: data.channel,
-					message: data.message,
-					color: data.color,
-					tag: data.tag
-				});
-			}
+		const filtered = collection.filter(data => this.client.guilds.cache.get(data.guild));
+		filtered.forEach(data => {
+			this.cached.set(ObjectId(data.clan_id).toString(), {
+				guild: data.guild,
+				channel: data.channel,
+				message: data.message,
+				color: data.color,
+				tag: data.tag
+			});
 		});
 
-		return collection.length;
+		return this.client.grpc.initClanGamesHandler({
+			data: JSON.stringify(filtered)
+		}, () => { });
 	}
 
 	async flush(intervalId) {
 		if (this.event()) return null;
-
 		await this.init();
-		this.cached.clear();
-		await mongodb.db('clashperk')
-			.collection('clangameslogs')
-			.updateMany({}, { $unset: { message: '' } });
-		return clearInterval(intervalId);
+		clearInterval(intervalId);
+		return this.cached.clear();
 	}
 
 	async _flush() {
