@@ -99,14 +99,14 @@ class StopCommand extends Command {
 			return this.handler.handleDirectCommand(message, tag, this.handler.modules.get('remove'), false);
 		}
 
-		const db = mongodb.db('clashperk');
-		const data = await db.collection('clanstores')
-			.findOne({ tag: tag.toUpperCase(), guild: message.guild.id });
+		const data = await mongodb.db('clashperk')
+			.collection('clanstores')
+			.findOne({ tag: `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}`, guild: message.guild.id });
 
 		if (!data) {
 			return message.util.send({
 				embed: {
-					description: 'ClanTag Not Found.'
+					description: 'Clan Not Found.'
 				}
 			});
 		}
