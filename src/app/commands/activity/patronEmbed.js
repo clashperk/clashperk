@@ -124,7 +124,7 @@ class ClanEmbedCommand extends Command {
 			name: data.name,
 			patron: this.client.patron.get(message.guild.id, 'guild', false),
 			message: msg.id,
-			embed: { userId: user.id, accepts, description: Util.cleanContent(description) }
+			embed: { userId: user.id, accepts, description: Util.cleanContent(description, message) }
 		});
 
 		this.client.cacheHandler.add(id, {
