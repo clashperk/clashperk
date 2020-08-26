@@ -82,7 +82,7 @@ class GuildCreateListener extends Listener {
 			.toArray();
 
 		collection.forEach(async data => {
-			await this.client.cacheHandler.add(data._id, { tag: data.tag, patron: data.patron });
+			await this.client.cacheHandler.add(data._id, { tag: data.tag, guild: guild.id });
 		});
 
 		return collection.length;

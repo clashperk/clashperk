@@ -94,8 +94,9 @@ class CacheHandler {
 			await Promise.all([...Object.values(OP).map(Op => Op.add(id))]);
 		}
 
+		const patron = this.client.patron.get(data.guild, 'guild', false);
 		return this.client.grpc.add({
-			data: JSON.stringify({ tag: data.tag, patron: Boolean(data.patron), op: data?.op })
+			data: JSON.stringify({ tag: data.tag, patron: Boolean(patron), op: data?.op })
 		}, () => { });
 	}
 
