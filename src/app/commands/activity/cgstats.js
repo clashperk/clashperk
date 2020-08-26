@@ -49,7 +49,7 @@ class ClanGameStatsCommand extends Command {
 		const clans = await db.collection('clangames').find({ tag: { $in: [...tags.map(d => d.tag)] } }).toArray();
 		if (clans.length <= 1) return message.util.send('Minimum 2 clans are required to use this command.');
 
-		const maxPoint = this.client.cacheHandler.clangamesLog.maxPoint;
+		const maxPoint = this.client.cacheHandler.clanGamesLog.maxPoint;
 		const performances = clans.map(d => {
 			const members = Object.values(d.members)
 				.filter(m => m.gain >= maxPoint);

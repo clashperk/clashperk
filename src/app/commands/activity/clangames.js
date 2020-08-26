@@ -83,7 +83,7 @@ class ClanGamesCommand extends Command {
 		const total = members.reduce((a, b) => a + b.points || 0, 0);
 
 		const now = new Date();
-		const day = this.client.cacheHandler.clangamesLog.gameDay;
+		const day = this.client.cacheHandler.clanGamesLog.gameDay;
 		const iso = [now.getFullYear(), (now.getMonth() + 1).toString().padStart(2, '0'), `${day}T08:00:00Z`].join('-');
 		const createdAt = new Date(ObjectId(clan._id).getTimestamp());
 
@@ -120,7 +120,7 @@ class ClanGamesCommand extends Command {
 			return { tag: m.tag, name: m.name, points, endedAt: data.members[m.tag]?.endedAt };
 		});
 
-		const maxPoint = this.client.cacheHandler.clangamesLog.maxPoint;
+		const maxPoint = this.client.cacheHandler.clanGamesLog.maxPoint;
 		const tags = memberList.map(m => m.tag);
 		const excess = Object.values(data.members)
 			.filter(x => x.gain && x.gain > 0 && !tags.includes(x.tag))
