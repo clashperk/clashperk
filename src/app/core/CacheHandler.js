@@ -71,9 +71,10 @@ class CacheHandler {
 			.sort({ patron: -1 })
 			.toArray();
 
-		return this.client.grpc.initCacheHandler({
+		await this.client.grpc.initCacheHandler({
 			data: JSON.stringify(collection.filter(data => this.client.guilds.cache.has(data.guild)))
 		}, () => { });
+		return this.client.grpc.init({ shardId: this.client.shard.ids[0], shards: this.client.shard.count }, () => { });
 	}
 
 	async add(Id, data) {
