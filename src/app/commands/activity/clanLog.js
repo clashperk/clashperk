@@ -78,7 +78,7 @@ class PlayerLogCommand extends Command {
 		}
 
 		const id = await this.client.storage.register(message, {
-			mode: Op.CLAN_MEMBER_LOG,
+			op: Op.CLAN_MEMBER_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
@@ -88,7 +88,7 @@ class PlayerLogCommand extends Command {
 		});
 
 		this.client.cacheHandler.add(id, {
-			mode: Op.CLAN_MEMBER_LOG,
+			op: Op.CLAN_MEMBER_LOG,
 			guild: message.guild.id,
 			tag: data.tag
 		});

@@ -79,7 +79,7 @@ class LastOnlineBoardCommand extends Command {
 		}
 
 		const id = await this.client.storage.register(message, {
-			mode: Op.LAST_ONLINE_LOG,
+			op: Op.LAST_ONLINE_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
@@ -90,7 +90,7 @@ class LastOnlineBoardCommand extends Command {
 		});
 
 		this.client.cacheHandler.add(id, {
-			mode: Op.LAST_ONLINE_LOG,
+			op: Op.LAST_ONLINE_LOG,
 			guild: message.guild.id,
 			tag: data.tag
 		});

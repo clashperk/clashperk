@@ -23,7 +23,7 @@ class StorageHandler {
 
 		const id = ObjectId(collection.value._id).toString();
 
-		switch (data.mode) {
+		switch (data.op) {
 			case Op.DONATION_LOG:
 				await mongodb.db('clashperk').collection('donationlogs')
 					.updateOne({ tag: data.tag, guild: data.guild }, {
@@ -146,32 +146,32 @@ class StorageHandler {
 	}
 
 	async stop(id, data) {
-		if (data.mode === Op.DONATION_LOG) {
+		if (data.op === Op.DONATION_LOG) {
 			return mongodb.db('clashperk').collection('donationlogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.mode === Op.CLAN_MEMBER_LOG) {
+		if (data.op === Op.CLAN_MEMBER_LOG) {
 			return mongodb.db('clashperk').collection('playerlogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.mode === Op.LAST_ONLINE_LOG) {
+		if (data.op === Op.LAST_ONLINE_LOG) {
 			return mongodb.db('clashperk').collection('lastonlinelogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.mode === Op.CLAN_GAMES_LOG) {
+		if (data.op === Op.CLAN_GAMES_LOG) {
 			return mongodb.db('clashperk').collection('clangameslogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.mode === Op.CLAN_EMBED_LOG) {
+		if (data.op === Op.CLAN_EMBED_LOG) {
 			return mongodb.db('clashperk').collection('clanembedlogs')
 				.deleteOne({ clan_id: ObjectId(id) });
 		}
 
-		if (data.mode === Op.CLAN_WAR_LOG) {
+		if (data.op === Op.CLAN_WAR_LOG) {
 			await mongodb.db('clashperk').collection('clanwars')
 				.deleteOne({ clan_id: ObjectId(id) });
 			return mongodb.db('clashperk').collection('clanwarlogs')

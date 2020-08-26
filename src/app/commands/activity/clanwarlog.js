@@ -73,7 +73,7 @@ class WarLogCommand extends Command {
 		}
 
 		const id = await this.client.storage.register(message, {
-			mode: Op.CLAN_WAR_LOG,
+			op: Op.CLAN_WAR_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
@@ -82,7 +82,7 @@ class WarLogCommand extends Command {
 		});
 
 		this.client.cacheHandler.add(id, {
-			mode: Op.CLAN_WAR_LOG,
+			op: Op.CLAN_WAR_LOG,
 			guild: message.guild.id,
 			tag: data.tag
 		});

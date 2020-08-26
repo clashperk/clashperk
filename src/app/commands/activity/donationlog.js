@@ -79,7 +79,7 @@ class DonationLogCommand extends Command {
 		}
 
 		const id = await this.client.storage.register(message, {
-			mode: Op.DONATION_LOG,
+			op: Op.DONATION_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
@@ -89,7 +89,7 @@ class DonationLogCommand extends Command {
 		});
 
 		await this.client.cacheHandler.add(id, {
-			mode: Op.DONATION_LOG,
+			op: Op.DONATION_LOG,
 			guild: message.guild.id,
 			tag: data.tag
 		});
