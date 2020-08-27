@@ -60,7 +60,7 @@ class ClanWarEvent {
 	async fetchCWL(id, channel) {
 		const cache = this.cached.get(id);
 		const data = await client.fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(cache.tag)}/currentwar/leaguegroup`, {
-			token: process.env.CWL_TOKEN,
+			token: process.env.CLAN_WAR_TOKEN,
 			timeout: 3000
 		}).catch(() => null);
 		if (!data) return this.setTimer(id);

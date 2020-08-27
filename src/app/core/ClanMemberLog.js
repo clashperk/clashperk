@@ -125,7 +125,7 @@ class PlayerEvent {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.CLAN_AND_PLAYER_TOKEN}`
+				authorization: `Bearer ${process.env.DEVELOPER_TOKEN}`
 			},
 			timeout: 3000
 		}).catch(() => null);
