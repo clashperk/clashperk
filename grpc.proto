@@ -19,7 +19,7 @@ service RouteGuide {
 
   rpc flush(Data) returns (Data) {}
 
-  rpc broadcast(stream Info) returns (stream Data) {}
+  rpc broadcast(stream Shards) returns (stream Data) {}
 
   rpc initCacheHandler(Data) returns (Data) {}
 
@@ -33,11 +33,7 @@ message Data {
   string data = 1;
 }
 
-message Info {
+message Shards {
   int32 shardId = 1;
   int32 shards = 2;
-}
-
-message Shards {
-  int32 shards = 1;
 }
