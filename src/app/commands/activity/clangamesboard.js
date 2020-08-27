@@ -78,15 +78,16 @@ class ClanGamesBoardCommand extends Command {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
 		}
 
+		const patron = this.client.patron.get(message.guild.id, 'guild', false);
 		const id = await this.client.storage.register(message, {
 			op: Op.CLAN_GAMES_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
-			patron: this.client.patron.get(message.guild.id, 'guild', false),
+			patron: patron ? true : false,
 			message: null,
 			name: data.name,
 			tag: data.tag,
-			color: hexColor
+			color: patron ? hexColor : this.client.embed(message)
 		});
 
 		await this.client.cacheHandler.add(id, {
