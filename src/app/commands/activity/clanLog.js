@@ -7,13 +7,13 @@ const Resolver = require('../../struct/Resolver');
 class PlayerLogCommand extends Command {
 	constructor() {
 		super('playerlog', {
-			aliases: ['clanlog', 'playerlog'],
+			aliases: ['memberlog', 'clanlog', 'playerlog'],
 			category: 'setup-hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Setup player log in a channel.',
+				content: 'Setup clan member log in a channel.',
 				usage: '<clanTag> [channel/role]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-log @Mod']
 			}
