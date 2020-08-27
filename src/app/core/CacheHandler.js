@@ -24,9 +24,7 @@ class CacheHandler {
 	}
 
 	async broadcast() {
-		const call = await this.client.grpc.broadcast();
-		call.write({ shardId: this.client.shard.ids[0], shards: this.client.shard.count });
-
+		const call = await this.client.grpc.broadcast({ shardId: this.client.shard.ids[0], shards: this.client.shard.count });
 		call.on('data', async chunk => {
 			const data = JSON.parse(chunk.data);
 			switch (data.op) {
