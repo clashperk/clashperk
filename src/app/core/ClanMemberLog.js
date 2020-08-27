@@ -62,6 +62,7 @@ class PlayerEvent {
 
 	async embed(channel, item, data, id) {
 		const cache = this.cached.get(id);
+		if (!cache) return null;
 		const member = await this.player(item.tag);
 		if (!member) return null;
 
