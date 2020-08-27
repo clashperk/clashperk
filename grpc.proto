@@ -19,7 +19,7 @@ service RouteGuide {
 
   rpc flush(Data) returns (Data) {}
 
-  rpc broadcast(stream Shards) returns (stream Data) {}
+  rpc broadcast(Shards) returns (stream Data) {}
 
   rpc initCacheHandler(Data) returns (Data) {}
 

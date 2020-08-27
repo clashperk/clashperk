@@ -53,6 +53,14 @@ class CacheHandler {
 			}
 		});
 
+		call.on('end', () => {
+			this.client.logger.warn('Server Disconnected', { label: 'GRPC' });
+		});
+
+		call.on('error', error => {
+			this.client.logger.warn(error.toString(), { label: 'GRPC' });
+		});
+
 		return Promise.resolve(0);
 	}
 
