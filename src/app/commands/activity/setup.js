@@ -45,10 +45,10 @@ class SetupCommand extends Command {
 			type: [
 				['donationlog', 'dl'],
 				['lastonlineboard', 'onlineboard', 'ob'],
-				['clangamesboard', 'cgboard', 'cg'],
+				['clangamesboard', 'cgboard', 'cg', 'gameboard'],
 				['patron-clanembed', 'clanembed', 'embed', 'ce'],
 				['clan-warlog', 'warlog', 'clanwarlog', 'wl'],
-				['playerlog', 'clanlog', 'cl', 'pl']
+				['playerlog', 'clanlog', 'cl', 'pl', 'memberlog']
 			],
 			otherwise: message => {
 				const prefix = this.handler.prefix(message);
