@@ -128,11 +128,6 @@ class CacheHandler {
 	}
 
 	async flush() {
-		for (const key of this.cached.keys()) {
-			const cache = this.cached.get(key);
-			if (cache?.intervalId) clearInterval(cache.intervalId);
-		}
-
 		this.clanWarLog.clear();
 		this.donationLog.cached.clear();
 		this.clanGamesLog.cached.clear();
