@@ -7,7 +7,7 @@ const { builderTroopsEmoji, heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siege
 class UnitsCommand extends Command {
 	constructor() {
 		super('units', {
-			aliases: ['units', 'troops'],
+			aliases: ['units', 'troops', 'u'],
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {

@@ -6,7 +6,7 @@ const Resolver = require('../../struct/Resolver');
 class ClanCommand extends Command {
 	constructor() {
 		super('clan', {
-			aliases: ['clan', 'myclan'],
+			aliases: ['clan', 'myclan', 'c'],
 			category: 'search',
 			description: {
 				content: 'Shows some basic info about your clan.',

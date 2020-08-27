@@ -6,7 +6,7 @@ const { townHallEmoji, blueNum, redNum } = require('../../util/emojis');
 class ThCompoCommand extends Command {
 	constructor() {
 		super('th-compo', {
-			aliases: ['compo', 'th-compo'],
+			aliases: ['compo', 'th-compo', 'th'],
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
