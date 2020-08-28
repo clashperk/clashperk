@@ -90,7 +90,6 @@ class CacheHandler {
 
 	async add(Id, data) {
 		const id = ObjectId(Id).toString();
-
 		const OP = {
 			[Op.DONATION_LOG]: this.donationLog,
 			[Op.CLAN_MEMBER_LOG]: this.clanMemberLog,
@@ -105,15 +104,14 @@ class CacheHandler {
 			await Promise.all([...Object.values(OP).map(Op => Op.add(id))]);
 		}
 
-		const patron = this.client.patron.get(data.guild, 'guild', false);
+		const patron = this.client.patron.get(data?.guild, 'guild', false);
 		return this.client.grpc.add({
-			data: JSON.stringify({ tag: data.tag, patron: Boolean(patron), op: data?.op })
+			data: JSON.stringify({ tag: data?.tag, patron: Boolean(patron), op: data?.op })
 		}, () => { });
 	}
 
 	delete(Id, data) {
 		const id = ObjectId(Id).toString();
-
 		const OP = {
 			[Op.DONATION_LOG]: this.donationLog,
 			[Op.CLAN_MEMBER_LOG]: this.clanMemberLog,
@@ -129,7 +127,7 @@ class CacheHandler {
 		}
 
 		return this.client.grpc.delete({
-			data: JSON.stringify({ tag: data.tag, op: data?.op })
+			data: JSON.stringify({ tag: data?.tag, op: data?.op })
 		}, () => { });
 	}
 
