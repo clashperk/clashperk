@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.clashperk.routeguide";
+option java_outer_classname = "RouteGuideProto";
+option objc_class_prefix = "RTG";
+
+package routeguide;
+
+service RouteGuide {
+
+  rpc stats(Data) returns (Data) {}
+
+  rpc add(Data) returns (Data) {}
+
+  rpc delete(Data) returns (Data) {}
+
+  rpc init(Shards) returns (Data) {}
+
+  rpc flush(Data) returns (Data) {}
+
+  rpc broadcast(Shards) returns (stream Data) {}
+
+  rpc initCacheHandler(Data) returns (Data) {}
+
+  rpc initOnlineHandler(Data) returns (Data) {}
+
+  rpc initClanGamesHandler(Data) returns (Data) {}
+
+}
+
+message Data {
+  string data = 1;
+}
+
+message Shards {
+  int32 shardId = 1;
+  int32 shards = 2;
+}

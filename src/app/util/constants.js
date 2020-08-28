@@ -66,12 +66,12 @@ module.exports = {
 		return codes[code];
 	},
 
-	Modes: {
-		DONATION_LOG: 'donationLog',
-		CLAN_LOG: 'clanLog',
-		ACTIVITY_LOG: 'activityLog',
-		CLAN_EMBED_LOG: 'clanembedLog',
-		CLAN_GAMES_LOG: 'clangamesLog',
-		CLAN_WAR_LOG: 'clanwarLog'
+	Op: {
+		DONATION_LOG: 0,
+		CLAN_MEMBER_LOG: 1,
+		LAST_ONLINE_LOG: 3,
+		CLAN_EMBED_LOG: 4,
+		CLAN_GAMES_LOG: 5,
+		CLAN_WAR_LOG: 6
 	}
 };

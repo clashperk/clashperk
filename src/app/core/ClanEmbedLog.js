@@ -10,21 +10,11 @@ class ClanEmbed {
 		this.cached = new Collection();
 	}
 
-	async exec(tag, clan, forced = false) {
+	async exec(tag, clan) {
 		const clans = this.cached.filter(d => d.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
-			if (cache && cache.updatedAt && !forced) {
-				if (new Date() - new Date(cache.updatedAt) > 10 * 60 * 1000) {
-					cache.updatedAt = new Date();
-					this.cached.set(id, cache);
-					await this.permissionsFor(id, cache, clan);
-				}
-			} else if (cache) {
-				cache.updatedAt = new Date();
-				this.cached.set(id, cache);
-				await this.permissionsFor(id, cache, clan);
-			}
+			await this.permissionsFor(id, cache, clan);
 		}
 
 		return clans.clear();

@@ -1,7 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../../struct/Database');
-const { Modes } = require('../../util/constants');
+const { Op } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 
 class DonationLogCommand extends Command {
@@ -78,18 +78,19 @@ class DonationLogCommand extends Command {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
 		}
 
+		const patron = this.client.patron.get(message.guild.id, 'guild', false);
 		const id = await this.client.storage.register(message, {
-			mode: Modes.DONATION_LOG,
+			op: Op.DONATION_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
 			name: data.name,
-			color: hexColor,
-			patron: this.client.patron.get(message.guild.id, 'guild', false)
+			color: patron ? hexColor : this.client.embed(message),
+			patron: patron ? true : false
 		});
 
 		await this.client.cacheHandler.add(id, {
-			mode: Modes.DONATION_LOG,
+			op: Op.DONATION_LOG,
 			guild: message.guild.id,
 			tag: data.tag
 		});

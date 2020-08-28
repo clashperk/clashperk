@@ -47,7 +47,7 @@ class GuildDeleteListener extends Listener {
 			.toArray();
 
 		collection.forEach(async data => {
-			await this.client.cacheHandler.delete(data._id, data.tag);
+			await this.client.cacheHandler.delete(data._id, { tag: data.tag });
 		});
 
 		return collection.length;

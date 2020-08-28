@@ -1,13 +1,13 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../../struct/Database');
-const { Modes } = require('../../util/constants');
+const { Op } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 
 class ClanGamesBoardCommand extends Command {
 	constructor() {
 		super('clangamesboard', {
-			aliases: ['cgboard', 'clangamesboard', 'clangameboard'],
+			aliases: ['gameboard', 'cgboard', 'clangamesboard', 'clangameboard'],
 			category: 'setup-hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
@@ -78,19 +78,20 @@ class ClanGamesBoardCommand extends Command {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
 		}
 
+		const patron = this.client.patron.get(message.guild.id, 'guild', false);
 		const id = await this.client.storage.register(message, {
-			mode: Modes.CLAN_GAMES_LOG,
+			op: Op.CLAN_GAMES_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
-			patron: this.client.patron.get(message.guild.id, 'guild', false),
+			patron: patron ? true : false,
 			message: null,
 			name: data.name,
 			tag: data.tag,
-			color: hexColor
+			color: patron ? hexColor : this.client.embed(message)
 		});
 
 		await this.client.cacheHandler.add(id, {
-			mode: Modes.CLAN_GAMES_LOG,
+			op: Op.CLAN_GAMES_LOG,
 			tag: data.tag,
 			guild: message.guild.id
 		});

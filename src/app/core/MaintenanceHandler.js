@@ -1,5 +1,4 @@
 const { emoji } = require('../util/emojis');
-const https = require('https');
 
 class MaintenanceHandler {
 	constructor(client) {
@@ -7,27 +6,21 @@ class MaintenanceHandler {
 		this.isMaintenance = Boolean(false);
 	}
 
-	init() {
-		return https.request('https://api.clashofclans.com/v1/locations', {
-			method: 'GET',
-			headers: {
-				'Authorization': `Bearer ${process.env.DEVELOPER_TOKEN}`,
-				'Content-Type': 'application/json'
-			}
-		}, async res => {
-			setTimeout(this.init.bind(this), 30 * 1000);
-			if (res.statusCode === 503 && !this.isMaintenance) {
-				this.isMaintenance = Boolean(true);
-				this.client.cacheHandler.flush();
-				return this.send();
-			}
-			if (res.statusCode === 200 && this.isMaintenance) {
-				this.isMaintenance = Boolean(false);
-				await this.client.cacheHandler.flush();
-				await this.client.cacheHandler.init();
-				return this.send();
-			}
-		}).end();
+	async init() {
+		const res = await this.client.coc.clans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 });
+		setTimeout(this.init.bind(this), 30000);
+		if (res.status === 503 && !this.isMaintenance) {
+			this.isMaintenance = Boolean(true);
+			this.client.cacheHandler.flush();
+			return this.send();
+		}
+		if (res.status === 200 && this.isMaintenance) {
+			this.isMaintenance = Boolean(false);
+			await this.client.cacheHandler.flush();
+			await this.client.cacheHandler.init();
+			return this.send();
+		}
+		return Promise.resolve();
 	}
 
 	async send() {

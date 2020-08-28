@@ -20,7 +20,8 @@ class RemoveClanCommand extends Command {
 					type: 'string',
 					prompt: {
 						start: 'What is the clan tag?'
-					}
+					},
+					default: ''
 				}
 			]
 		});
@@ -32,11 +33,11 @@ class RemoveClanCommand extends Command {
 	}
 
 	async exec(message, { tag }) {
-		const db = mongodb.db('clashperk');
-		const clan = await db.collection('clanstores')
-			.findOne({ guild: message.guild.id, tag: tag.toUpperCase() });
+		const data = await mongodb.db('clashperk')
+			.collection('clanstores')
+			.findOne({ guild: message.guild.id, tag: `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` });
 
-		if (!clan) {
+		if (!data) {
 			return message.util.send({
 				embed: {
 					description: 'ClanTag Not Found.'
@@ -44,13 +45,13 @@ class RemoveClanCommand extends Command {
 			});
 		}
 
-		const id = ObjectId(clan._id).toString();
+		const id = ObjectId(data._id).toString();
 		await this.client.storage.delete(id);
-		await this.client.cacheHandler.delete(id, clan.tag);
+		await this.client.cacheHandler.delete(id, { tag: data.tag });
 
 		return message.util.send({
 			embed: {
-				title: `Successfully deleted **${clan.name} (${clan.tag})**`
+				title: `Successfully deleted **${data.name} (${data.tag})**`
 			}
 		});
 	}

@@ -62,6 +62,7 @@ class PlayerEvent {
 
 	async embed(channel, item, data, id) {
 		const cache = this.cached.get(id);
+		if (!cache) return null;
 		const member = await this.player(item.tag);
 		if (!member) return null;
 
@@ -125,7 +126,7 @@ class PlayerEvent {
 			method: 'GET',
 			headers: {
 				accept: 'application/json',
-				authorization: `Bearer ${process.env.CLAN_AND_PLAYER_TOKEN}`
+				authorization: `Bearer ${process.env.DEVELOPER_TOKEN}`
 			},
 			timeout: 3000
 		}).catch(() => null);

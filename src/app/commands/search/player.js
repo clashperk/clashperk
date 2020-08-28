@@ -9,7 +9,7 @@ const { emoji, townHallEmoji, heroEmoji, leagueEmoji, starEmoji } = require('../
 class PlayerCommand extends Command {
 	constructor() {
 		super('player', {
-			aliases: ['player'],
+			aliases: ['player', 'p'],
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {

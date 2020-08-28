@@ -1,6 +1,6 @@
 {
 	"name": "clashperk",
-	"version": "1.3.9",
+	"version": "1.4.0",
 	"author": "SUVAJIT (suvajit.me@gmail.com)",
 	"license": "MIT",
 	"description": "Clash of Clans Discord Bot",
@@ -12,6 +12,7 @@
 		"lint": "eslint --fix --ext .js --ignore-path .gitignore ."
 	},
 	"dependencies": {
+		"@grpc/proto-loader": "^0.5.5",
 		"@sentry/node": "^5.18.1",
 		"chalk": "^4.1.0",
 		"clashofclans.js": "github:clashperk/clashofclans.js",
@@ -21,6 +22,7 @@
 		"dotenv": "^8.2.0",
 		"exceljs": "^4.1.0",
 		"firebase-admin": "^8.13.0",
+		"grpc": "^1.24.3",
 		"moment": "^2.27.0",
 		"moment-duration-format": "^2.3.2",
 		"mongodb": "^3.5.9",

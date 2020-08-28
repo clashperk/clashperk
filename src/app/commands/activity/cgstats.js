@@ -49,7 +49,7 @@ class ClanGameStatsCommand extends Command {
 		const clans = await db.collection('clangames').find({ tag: { $in: [...tags.map(d => d.tag)] } }).toArray();
 		if (clans.length <= 1) return message.util.send('Minimum 2 clans are required to use this command.');
 
-		const maxPoint = this.client.cacheHandler.clangamesLog.maxPoint;
+		const maxPoint = this.client.cacheHandler.clanGamesLog.maxPoint;
 		const performances = clans.map(d => {
 			const members = Object.values(d.members)
 				.filter(m => m.gain >= maxPoint);
@@ -71,8 +71,8 @@ class ClanGameStatsCommand extends Command {
 			.setDescription([
 				'**Scoreboard**',
 				'Based on highest scores & completion times.',
-				`${emoji.hash} **\`\u200e ${'SCORE'}  ${'CLAN'.padEnd(16, ' ')}\u200f\`**`,
-				...clans.map((clan, i) => `${blueNum[++i]} \`\u200e ${(clan.total || 0).toString().padStart(5, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
+				`${emoji.hash} **\`\u200e ${'SCORE'.padEnd(6, ' ')}  ${'CLAN'.padEnd(16, ' ')}\u200f\`**`,
+				...clans.map((clan, i) => `${blueNum[++i]} \`\u200e ${(clan.total || 0).toString().padStart(6, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
 				'',
 				'**Performance**',
 				'Based on completing maximum points.',

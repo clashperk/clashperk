@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { ObjectId } = require('mongodb');
-const { Modes } = require('../../util/constants');
+const { Op } = require('../../util/constants');
 
 class StopCommand extends Command {
 	constructor() {
@@ -41,12 +41,12 @@ class StopCommand extends Command {
 					match: 'phrase',
 					type: [
 						['all'],
-						[Modes.DONATION_LOG, 'donationlog', 'dl'],
-						[Modes.CLAN_LOG, 'playerlog', 'clanlog', 'cl', 'pl'],
-						[Modes.ACTIVITY_LOG, 'onlineboard', 'ob'],
-						[Modes.CLAN_EMBED_LOG, 'clanembed', 'ce'],
-						[Modes.CLAN_GAMES_LOG, 'cgboard', 'cg'],
-						[Modes.CLAN_WAR_LOG, 'warlog', 'clanwarlog', 'wl']
+						[Op.DONATION_LOG.toString(), 'donationlog', 'dl'],
+						[Op.CLAN_MEMBER_LOG.toString(), 'playerlog', 'clanlog', 'cl', 'pl'],
+						[Op.LAST_ONLINE_LOG.toString(), 'onlineboard', 'ob'],
+						[Op.CLAN_EMBED_LOG.toString(), 'clanembed', 'ce'],
+						[Op.CLAN_GAMES_LOG.toString(), 'cgboard', 'cg'],
+						[Op.CLAN_WAR_LOG.toString(), 'warlog', 'clanwarlog', 'wl']
 					],
 					default: ''
 				},
@@ -99,23 +99,22 @@ class StopCommand extends Command {
 			return this.handler.handleDirectCommand(message, tag, this.handler.modules.get('remove'), false);
 		}
 
-		const db = mongodb.db('clashperk');
-		const data = await db.collection('clanstores')
-			.findOne({ tag: tag.toUpperCase(), guild: message.guild.id });
+		const data = await mongodb.db('clashperk')
+			.collection('clanstores')
+			.findOne({ tag: `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}`, guild: message.guild.id });
 
 		if (!data) {
 			return message.util.send({
 				embed: {
-					description: 'ClanTag Not Found.'
+					description: 'Clan Not Found.'
 				}
 			});
 		}
 
 		const id = ObjectId(data._id).toString();
-
-		await this.client.storage.stop(data._id, { mode: method });
-		await this.client.cacheHandler.delete(id, data.tag, { mode: method });
-		this.delete(id, data.tag);
+		await this.client.storage.stop(data._id, { op: Number(method) });
+		await this.client.cacheHandler.delete(id, { op: Number(method), tag: data.tag });
+		this.delete(id);
 
 		return message.util.send({
 			embed: {
@@ -124,7 +123,7 @@ class StopCommand extends Command {
 		});
 	}
 
-	async delete(id, tag) {
+	async delete(id) {
 		const db = mongodb.db('clashperk');
 		const data = await Promise.all([
 			db.collection('donationlogs').findOne({ clan_id: ObjectId(id) }),
@@ -135,7 +134,7 @@ class StopCommand extends Command {
 			db.collection('clanwarlogs').findOne({ clan_id: ObjectId(id) })
 		]).then(collection => collection.every(item => item == null)); // eslint-disable-line no-eq-null
 		if (data) {
-			this.client.cacheHandler.delete(id, tag);
+			this.client.cacheHandler.delete(id);
 			return db.collection('clanstores').updateOne({ _id: ObjectId(id) }, { $set: { active: false } });
 		}
 	}

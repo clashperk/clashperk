@@ -1,19 +1,19 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../../struct/Database');
-const { Modes } = require('../../util/constants');
+const { Op } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 
 class PlayerLogCommand extends Command {
 	constructor() {
 		super('playerlog', {
-			aliases: ['clanlog', 'playerlog'],
+			aliases: ['memberlog', 'clanlog', 'playerlog'],
 			category: 'setup-hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Setup player log in a channel.',
+				content: 'Setup clan member log in a channel.',
 				usage: '<clanTag> [channel/role]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-log @Mod']
 			}
@@ -78,7 +78,7 @@ class PlayerLogCommand extends Command {
 		}
 
 		const id = await this.client.storage.register(message, {
-			mode: Modes.CLAN_LOG,
+			op: Op.CLAN_MEMBER_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
@@ -88,7 +88,7 @@ class PlayerLogCommand extends Command {
 		});
 
 		this.client.cacheHandler.add(id, {
-			mode: Modes.CLAN_LOG,
+			op: Op.CLAN_MEMBER_LOG,
 			guild: message.guild.id,
 			tag: data.tag
 		});

@@ -1,7 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const { mongodb } = require('../../struct/Database');
-const { Modes } = require('../../util/constants');
+const { Op } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 
 class LastOnlineBoardCommand extends Command {
@@ -78,19 +78,20 @@ class LastOnlineBoardCommand extends Command {
 			return message.util.send(`I\'m missing ${this.missingPermissions(channel, this.client.user, permissions)} to run that command.`);
 		}
 
+		const patron = this.client.patron.get(message.guild.id, 'guild', false);
 		const id = await this.client.storage.register(message, {
-			mode: Modes.ACTIVITY_LOG,
+			op: Op.LAST_ONLINE_LOG,
 			guild: message.guild.id,
 			channel: channel.id,
 			tag: data.tag,
 			name: data.name,
-			color: hexColor,
+			color: patron ? hexColor : this.client.embed(message),
 			message: null,
-			patron: this.client.patron.get(message.guild.id, 'guild', false)
+			patron: patron ? true : false
 		});
 
 		this.client.cacheHandler.add(id, {
-			mode: Modes.ACTIVITY_LOG,
+			op: Op.LAST_ONLINE_LOG,
 			guild: message.guild.id,
 			tag: data.tag
 		});

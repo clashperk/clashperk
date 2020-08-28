@@ -1,7 +1,7 @@
 const { Command, Argument, Flag } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const { emoji } = require('../../util/emojis');
-const { Modes } = require('../../util/constants');
+const { Op } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const { Util } = require('discord.js');
 
@@ -116,7 +116,7 @@ class ClanEmbedCommand extends Command {
 		const msg = await message.util.send({ embed });
 
 		const id = await this.client.storage.register(message, {
-			mode: Modes.CLAN_EMBED_LOG,
+			op: Op.CLAN_EMBED_LOG,
 			guild: message.guild.id,
 			channel: message.channel.id,
 			tag: data.tag,
@@ -124,11 +124,11 @@ class ClanEmbedCommand extends Command {
 			name: data.name,
 			patron: this.client.patron.get(message.guild.id, 'guild', false),
 			message: msg.id,
-			embed: { userId: user.id, accepts, description: Util.cleanContent(description) }
+			embed: { userId: user.id, accepts, description: Util.cleanContent(description, message) }
 		});
 
 		this.client.cacheHandler.add(id, {
-			mode: Modes.CLAN_EMBED_LOG,
+			op: Op.CLAN_EMBED_LOG,
 			guild: message.guild.id,
 			tag: data.tag
 		});
