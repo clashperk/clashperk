@@ -56,10 +56,10 @@ class ActivityCommand extends Command {
 	async exec(message, { tags, dark }) {
 		if (!tags.length) return;
 		tags.splice(3);
-		const clans = await mongodb.db('clashperk').collection('lastonlines')
-			.find({ tag: { $in: [...tags.map(tag => `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`)] } })
-			.limit(3)
-			.toArray();
+		const db = mongodb.db('clashperk').collection('lastonlines');
+		const clans = await Promise.all([
+			...tags.map(tag => db.findOne({ tag: `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}` }))
+		]).then(clans => clans.filter(clan => clan !== null));
 
 		if (!clans.length) {
 			return message.util.send({
