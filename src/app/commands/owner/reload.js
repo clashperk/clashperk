@@ -27,7 +27,7 @@ class ReloadCommand extends Command {
 			const inhibitors = this.client.inhibitorHandler.modules.size;
 			const embed = {
 				title: `Reloaded (Shard ${message.guild.shard.id}/${this.client.shard.count})`,
-				description: `${commands} commands, ${listeners} listeners & ${inhibitors} inhibitors`
+				description: `${commands} commands, ${listeners} listeners and ${inhibitors} inhibitors`
 			};
 			if (message.channel.permissionsFor(message.guild.me).has('EMBED_LINKS')) {
 				return message.util.send({ embed });
