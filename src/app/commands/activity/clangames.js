@@ -49,11 +49,12 @@ class ClanGamesCommand extends Command {
 	}
 
 	async exec(message, { data, force }) {
-		const db = mongodb.db('clashperk').collection('clangames');
-		const clan = await db.findOne({ tag: data.tag });
+		const clan = await mongodb.db('clashperk').collection('clangames').findOne({ tag: data.tag });
 		if (!clan) {
 			return message.util.send({
-				embed: { description: 'Setup a clan games board to use this command.' }
+				embed: {
+					description: 'Not enough data available to show the board, make sure clan games board is enabled or try again after some hours.'
+				}
 			});
 		}
 

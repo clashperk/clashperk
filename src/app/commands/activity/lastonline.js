@@ -40,19 +40,12 @@ class LastOnlineCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		const db = await mongodb.db('clashperk')
-			.collection('lastonlines')
-			.find({ tag: data.tag })
-			.toArray()
-			.then(collection => {
-				if (!collection.length) return null;
-				const item = collection.find(d => d.guild === message.guild.id);
-				if (item) return item;
-				return collection[0];
-			});
+		const db = await mongodb.db('clashperk').collection('lastonlines').findOne({ tag: data.tag });
 		if (!db) {
 			return message.util.send({
-				embed: { description: 'Setup a last-online board to use this command.' }
+				embed: {
+					description: 'Not enough data available to show the board, make sure last online board is enabled or try again after some minutes.'
+				}
 			});
 		}
 

@@ -56,14 +56,16 @@ class ActivityCommand extends Command {
 	async exec(message, { tags, dark }) {
 		if (!tags.length) return;
 		tags.splice(3);
-		const db = mongodb.db('clashperk').collection('lastonlines');
-		const clans = await Promise.all([
-			...tags.map(tag => db.findOne({ tag: `#${tag.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0')}` }))
-		]).then(clans => clans.filter(clan => clan !== null));
+		const clans = await mongodb.db('clashperk').collection('lastonlines')
+			.find({ tag: { $in: [...tags.map(tag => `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`)] } })
+			.limit(3)
+			.toArray();
 
 		if (!clans.length) {
 			return message.util.send({
-				embed: { description: 'Setup a last online board to use this command.' }
+				embed: {
+					description: 'Not enough data available to show the graph, make sure last online board is enabled or try again after some minutes.'
+				}
 			});
 		}
 
