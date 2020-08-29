@@ -46,7 +46,7 @@ class RedeemCommand extends Command {
 		}
 
 		const data = await res.json();
-		const patron = data.included.find(entry => entry?.attributes?.social_connections?.discord?.user_id === '130523515148304384');
+		const patron = data.included.find(entry => entry?.attributes?.social_connections?.discord?.user_id === message.author.id);
 
 		if (!patron) {
 			const embed = this.client.util.embed()
