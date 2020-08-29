@@ -46,12 +46,9 @@ class RedeemCommand extends Command {
 		}
 
 		const data = await res.json();
-		const patreon_user = data.included.find(entry => entry.attributes &&
-			entry.attributes.social_connections &&
-			entry.attributes.social_connections.discord &&
-			entry.attributes.social_connections.discord.user_id === message.author.id);
+		const patron = data.included.find(entry => entry?.attributes?.social_connections?.discord?.user_id === '130523515148304384');
 
-		if (!patreon_user) {
+		if (!patron) {
 			const embed = this.client.util.embed()
 				.setColor(16345172)
 				.setDescription([
@@ -69,80 +66,79 @@ class RedeemCommand extends Command {
 		}
 
 		if (this.client.patron.get(message.guild.id, 'guild', false)) {
-			return message.util.send([
-				'This server already has an active subscription.'
-			]);
+			return message.util.send('This server already has an active subscription.');
 		}
 
-		if (patreon_user) {
-			const user = await firestore.collection('patrons')
-				.doc(patreon_user.id)
-				.get()
-				.then(snap => snap.data());
+		const user = await firestore.collection('patrons')
+			.doc(patron.id)
+			.get()
+			.then(snap => snap.data());
 
-			if (!user) {
-				const pledge = data.data.find(entry => entry.relationships &&
-					entry.relationships &&
-					entry.relationships.patron &&
-					entry.relationships.patron.data &&
-					entry.relationships.patron.data.id === patreon_user.id);
+		const pledge = data.data.find(entry => entry?.relationships?.patron?.data?.id === patron.id);
+		if (pledge.attributes.declined_since) {
+			return message.util.send({
+				embed: {
+					description: 'Something went wrong, please [contact us](https://discord.gg/ppuppun)'
+				}
+			});
+		}
 
-				await firestore.collection('patrons')
-					.doc(patreon_user.id)
-					.update({
-						name: patreon_user.attributes.full_name,
-						id: patreon_user.id,
-						discord_id: message.author.id,
-						discord_username: message.author.username,
-						active: true,
-						guilds: [{ id: message.guild.id, limit: pledge.attributes.amount_cents >= 300 ? 50 : 3 }],
-						entitled_amount: pledge.attributes.amount_cents / 100,
-						redeemed: true,
-						createdAt: new Date(pledge.attributes.created)
-					}, { merge: true });
+		if (!user) {
+			await firestore.collection('patrons')
+				.doc(patron.id)
+				.update({
+					name: patron.attributes.full_name,
+					id: patron.id,
+					discord_id: message.author.id,
+					discord_username: message.author.username,
+					active: true,
+					guilds: [{ id: message.guild.id, limit: pledge.attributes.amount_cents >= 300 ? 50 : 3 }],
+					entitled_amount: pledge.attributes.amount_cents / 100,
+					redeemed: true,
+					createdAt: new Date(pledge.attributes.created_at)
+				}, { merge: true });
 
-				await this.client.patron.refresh();
-				const embed = this.client.util.embed()
-					.setColor(16345172)
-					.setDescription([`**Subscription for ${message.guild.name}**`, `Active ${emoji.authorize}`]);
-				return message.util.send({ embed });
-			}
+			await this.client.patron.refresh();
+			const embed = this.client.util.embed()
+				.setColor(16345172)
+				.setDescription([`**Subscription for ${message.guild.name}**`, `Active ${emoji.authorize}`]);
+			return message.util.send({ embed });
+		}
 
-			const redeemed = this.isRedeemed(user);
-			if (user && redeemed) {
-				if (!this.isNew(user, message, patreon_user)) await this.client.patron.refresh();
-				const embed = this.client.util.embed()
-					.setColor(16345172)
-					.setDescription('You\'ve already claimed.');
-				return message.util.send({ embed });
-			}
+		const redeemed = this.redeemed(user);
+		if (user && redeemed) {
+			if (!this.isNew(user, message, patron)) await this.client.patron.refresh();
+			const embed = this.client.util.embed()
+				.setColor(16345172)
+				.setDescription('You\'ve already claimed.');
+			return message.util.send({ embed });
+		}
 
-			if (user && !redeemed) {
-				await firestore.collection('patrons')
-					.doc(patreon_user.id)
-					.update({
-						guilds: admin.firestore.FieldValue.arrayUnion({
-							id: message.guild.id,
-							limit: user.entitled_amount >= 3 ? 50 : 3
-						}),
-						discord_id: message.author.id,
-						discord_username: message.author.username,
-						redeemed: true
-					}, { merge: true });
+		if (user && !redeemed) {
+			await firestore.collection('patrons')
+				.doc(patron.id)
+				.update({
+					guilds: admin.firestore.FieldValue.arrayUnion({
+						id: message.guild.id,
+						limit: user.entitled_amount >= 3 ? 50 : 3
+					}),
+					discord_id: message.author.id,
+					discord_username: message.author.username,
+					redeemed: true
+				}, { merge: true });
 
-				await this.client.patron.refresh();
-				const embed = this.client.util.embed()
-					.setColor(16345172)
-					.setDescription([`**Subscription for ${message.guild.name}**`, `Active ${emoji.authorize}`]);
-				return message.channel.send({ embed });
-			}
+			await this.client.patron.refresh();
+			const embed = this.client.util.embed()
+				.setColor(16345172)
+				.setDescription([`**Subscription for ${message.guild.name}**`, `Active ${emoji.authorize}`]);
+			return message.channel.send({ embed });
 		}
 	}
 
-	isNew(user, message, patreon_user) {
+	isNew(user, message, patron) {
 		if (user && user.discord_id !== message.author.id) {
 			firestore.collection('patrons')
-				.doc(patreon_user.id)
+				.doc(patron.id)
 				.update({
 					discord_id: message.author.id,
 					discord_username: message.author.username
@@ -153,7 +149,7 @@ class RedeemCommand extends Command {
 		return false;
 	}
 
-	isRedeemed(user) {
+	redeemed(user) {
 		if (user.entitled_amount === 10 && user.guilds && user.guilds.length >= 5) return true;
 		else if (user.entitled_amount === 5 && user.guilds && user.guilds.length >= 3) return true;
 		else if (user.entitled_amount === 3 && user.guilds && user.guilds.length >= 1) return true;
