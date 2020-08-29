@@ -44,7 +44,7 @@ class LastOnlineCommand extends Command {
 		if (!db) {
 			return message.util.send({
 				embed: {
-					description: 'Not enough data available to show the board, make sure last online board is enabled or try again after some minutes.'
+					description: 'Not enough data available to show the board, make sure last online board is enabled or try again after some hours.'
 				}
 			});
 		}
