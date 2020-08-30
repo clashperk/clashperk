@@ -90,7 +90,7 @@ class ClanGamesBoardCommand extends Command {
 			color: patron ? hexColor : this.client.embed(message)
 		});
 
-		await this.client.cacheHandler.add({
+		await this.client.cacheHandler.add(id, {
 			op: Op.CLAN_GAMES_LOG,
 			tag: data.tag,
 			guild: message.guild.id
