@@ -87,7 +87,7 @@ class PlayerLogCommand extends Command {
 			patron: this.client.patron.get(message.guild.id, 'guild', false)
 		});
 
-		this.client.cacheHandler.add({
+		this.client.cacheHandler.add(id, {
 			op: Op.CLAN_MEMBER_LOG,
 			guild: message.guild.id,
 			tag: data.tag
