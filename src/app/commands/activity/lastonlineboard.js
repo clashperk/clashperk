@@ -90,7 +90,7 @@ class LastOnlineBoardCommand extends Command {
 			patron: patron ? true : false
 		});
 
-		this.client.cacheHandler.add(id, {
+		this.client.cacheHandler.add({
 			op: Op.LAST_ONLINE_LOG,
 			guild: message.guild.id,
 			tag: data.tag
