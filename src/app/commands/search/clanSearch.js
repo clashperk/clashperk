@@ -33,7 +33,7 @@ class ClanSearchCommand extends Command {
 	}
 
 	async exec(message, { name }) {
-		const data = await this.client.coc.clans(name, { limit: 10 }).catch(() => null);
+		const data = await this.client.coc.clans({ name, limit: 10 }).catch(() => null);
 		if (!data) return message.util.send(status(504));
 		if (!data.ok) return message.util.send(status(data.status));
 
