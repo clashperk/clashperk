@@ -4,7 +4,7 @@ const { Client } = require('clashofclans.js');
 const TOKENS = process.env.CLASH_TOKENS.split(',');
 const { mongodb } = require('./Database');
 const client = new Client({
-	timeout: 3000,
+	timeout: 5000,
 	token: process.env.DEVELOPER_TOKEN
 });
 
