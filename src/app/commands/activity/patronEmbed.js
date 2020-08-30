@@ -127,7 +127,7 @@ class ClanEmbedCommand extends Command {
 			embed: { userId: user.id, accepts, description: Util.cleanContent(description, message) }
 		});
 
-		this.client.cacheHandler.add({
+		this.client.cacheHandler.add(id, {
 			op: Op.CLAN_EMBED_LOG,
 			guild: message.guild.id,
 			tag: data.tag
