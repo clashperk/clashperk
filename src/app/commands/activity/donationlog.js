@@ -89,7 +89,7 @@ class DonationLogCommand extends Command {
 			patron: patron ? true : false
 		});
 
-		await this.client.cacheHandler.add({
+		await this.client.cacheHandler.add(id, {
 			op: Op.DONATION_LOG,
 			guild: message.guild.id,
 			tag: data.tag
