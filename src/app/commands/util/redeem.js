@@ -120,8 +120,9 @@ class RedeemCommand extends Command {
 				.update({
 					guilds: admin.firestore.FieldValue.arrayUnion({
 						id: message.guild.id,
-						limit: user.entitled_amount >= 3 ? 50 : 3
+						limit: pledge.attributes.amount_cents >= 300 ? 50 : 3
 					}),
+					entitled_amount: pledge.attributes.amount_cents / 100,
 					discord_id: message.author.id,
 					discord_username: message.author.username,
 					redeemed: true
