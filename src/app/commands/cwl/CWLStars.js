@@ -162,6 +162,7 @@ class CWLStarsComamnd extends Command {
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➕') {
 				leaderboard.sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
+				embed.setTitle(undefined);
 				embed.setDescription([
 					`**\`\u200e # STAR GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
 					leaderboard.filter(m => m.of > 0)
