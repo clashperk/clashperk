@@ -130,6 +130,7 @@ class CWLStarsComamnd extends Command {
 			.sort((a, b) => b.dest - a.dest)
 			.sort((a, b) => b.stars - a.stars);
 
+		if (!leaderboard.length) return message.util.send('Nobody attacked in your clan yet, try again after sometime.');
 
 		const embed = this.client.util.embed()
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)

@@ -145,12 +145,12 @@ class CWLAttacksComamnd extends Command {
 								++index;
 								continue;
 							}
-							attacks += `\`${this.index(++index)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
+							attacks += `\`\u200e${this.index(++index)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
 						}
 
 						embed.setDescription([
 							'**War Against**',
-							`${opponent.name} (${opponent.tag})`,
+							`\u200e${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
 							`War ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
@@ -161,7 +161,7 @@ class CWLAttacksComamnd extends Command {
 					}
 
 					if (data.state === 'inWar') {
-						const started = new Date(moment(data.startTime).toDate()).getTime();
+						const ends = new Date(moment(data.endTime).toDate()).getTime();
 						let attacks = '';
 						let index = 0;
 						const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
@@ -175,10 +175,10 @@ class CWLAttacksComamnd extends Command {
 
 						embed.setDescription([
 							'**War Against**',
-							`${opponent.name} (${opponent.tag})`,
+							`\u200e${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
-							`Battle day started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
+							`Battle day ends in ${moment.duration(ends - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
 							'',
 							`**Attacks - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}**`,
 							`${attacks || 'Nobody Attacked Yet'}`
@@ -189,10 +189,10 @@ class CWLAttacksComamnd extends Command {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
 						embed.setDescription([
 							'**War Against**',
-							`${opponent.name} (${opponent.tag})`,
+							`\u200e${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
-							`Preparation day starting in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+							`Preparation day ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
 						]);
 					}
 

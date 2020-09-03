@@ -126,7 +126,7 @@ class CWLRoundComamnd extends Command {
 					const embed = new MessageEmbed()
 						.setColor(this.client.embed(message));
 					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
-						.addField('War Against', `${opponent.name} (${opponent.tag})`)
+						.addField('War Against', `\u200e${opponent.name} (${opponent.tag})`)
 						.addField('Team Size', `${data.teamSize}`);
 					if (data.state === 'warEnded') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
@@ -160,10 +160,10 @@ class CWLRoundComamnd extends Command {
 						]);
 					}
 					embed.addField('Rosters', [
-						`**${clan.name}**`,
+						`\u200e**${clan.name}**`,
 						`${this.count(clan.members)}`,
 						'',
-						`**${opponent.name}**`,
+						`\u200e**${opponent.name}**`,
 						`${this.count(opponent.members)}`
 					]);
 					embed.setFooter(`Round #${++index}`);

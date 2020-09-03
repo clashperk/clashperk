@@ -140,13 +140,13 @@ class CWLRemainingComamnd extends Command {
 								++index;
 								continue;
 							}
-							missing += `\`${this.index(++index)} ${this.padEnd(member.name)}\`\n`;
+							missing += `\`\u200e${this.index(++index)} ${this.padEnd(member.name)}\`\n`;
 						}
 
 						const end = new Date(moment(data.endTime).toDate()).getTime();
 						embed.setDescription([
 							'**War Against**',
-							`${opponent.name} (${opponent.tag})`,
+							`\u200e${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
 							`War ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
@@ -157,7 +157,7 @@ class CWLRemainingComamnd extends Command {
 					}
 
 					if (data.state === 'inWar') {
-						const started = new Date(moment(data.startTime).toDate()).getTime();
+						const ends = new Date(moment(data.endTime).toDate()).getTime();
 						let missing = '';
 						let index = 0;
 						for (const member of this.sort(clan.members)) {
@@ -170,10 +170,10 @@ class CWLRemainingComamnd extends Command {
 
 						embed.setDescription([
 							'**War Against**',
-							`${opponent.name} (${opponent.tag})`,
+							`\u200e${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
-							`Battle day started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
+							`Battle day ends in ${moment.duration(ends - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
 							'',
 							`**Missing Attacks** - ${clan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
 							missing || 'All Players Attacked'
@@ -184,10 +184,10 @@ class CWLRemainingComamnd extends Command {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
 						embed.setDescription([
 							'**War Against**',
-							`${opponent.name} (${opponent.tag})`,
+							`\u200e${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
-							`Preparation day strting ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+							`Preparation day ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
 						]);
 					}
 

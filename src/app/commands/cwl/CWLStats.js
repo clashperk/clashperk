@@ -209,6 +209,8 @@ class CWLStatsComamnd extends Command {
 			}
 		}
 
+		if (!collection.length) return message.util.send('Nobody attacked in your clan yet, try again after sometime.');
+
 		const description = collection.map(arr => {
 			const header = arr[0].join('\n');
 			const description = arr[1].join('\n');
@@ -216,7 +218,9 @@ class CWLStatsComamnd extends Command {
 		}).join('\n\n');
 
 		const rank = Object.values(ranking).sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
-		const leaderboard = Object.values(members).sort((a, b) => b.stars - a.stars);
+		const leaderboard = Object.values(members)
+			.sort((a, b) => b.dest - a.dest)
+			.sort((a, b) => b.stars - a.stars);
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))

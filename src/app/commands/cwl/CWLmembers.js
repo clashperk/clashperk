@@ -106,7 +106,7 @@ class CWLMembersComamnd extends Command {
 			.setAuthor(`${data.name} (${data.tag}) ~ ${memberList.length}`, data.badgeUrls.medium);
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
-			members += `${this.padStart(member.townHallLevel)} ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join(' ')}  ${Util.escapeInlineCode(member.name)}`;
+			members += `\u200e${this.padStart(member.townHallLevel)} ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join(' ')}  ${Util.escapeInlineCode(member.name)}`;
 			members += '\n';
 		}
 
