@@ -59,22 +59,22 @@ class ClansCommand extends Command {
 			return {
 				tag: item.tag,
 				name: item.name,
-				donationlog: donationlog
+				donationlog: donationlog && item.active
 					? donationlog.channel
 					: null,
 				playerlog: playerlog
-					? playerlog.channel
+					? playerlog.channel && item.active
 					: null,
-				onlinelog: onlinelog
+				onlinelog: onlinelog && item.active
 					? onlinelog.channel
 					: null,
-				clanembedlog: clanembed
+				clanembedlog: clanembed && item.active
 					? clanembed.channel
 					: null,
-				clangameslog: clangames
+				clangameslog: clangames && item.active
 					? clangames.channel
 					: null,
-				clanwarlog: clanwar
+				clanwarlog: clanwar && item.active
 					? clanwar.channel
 					: null
 			};
