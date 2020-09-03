@@ -320,9 +320,9 @@ class ClanWarEvent {
 				.addField('Team Size', `${data.teamSize}`);
 
 			if (data.state === 'inWar') {
-				const started = new Date(moment(data.startTime).toDate()).getTime();
+				const ends = new Date(moment(data.endTime).toDate()).getTime();
 				embed.setColor(color.war);
-				embed.addField('State', ['Battle Day', `Started ${moment.duration(Date.now() - started).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`])
+				embed.addField('State', ['Battle Day', `Ends in ${moment.duration(ends - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`])
 					.addField('Stats', [
 						`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
 						`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
@@ -333,7 +333,7 @@ class ClanWarEvent {
 			if (data.state === 'preparation') {
 				const start = new Date(moment(data.startTime).toDate()).getTime();
 				embed.setColor(color.prep);
-				embed.addField('State', ['Preparation', `Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`]);
+				embed.addField('State', ['Preparation', `Ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`]);
 			}
 
 			if (data.state === 'warEnded') {

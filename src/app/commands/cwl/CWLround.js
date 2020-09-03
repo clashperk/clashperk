@@ -156,7 +156,7 @@ class CWLRoundComamnd extends Command {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
 						embed.addField('State', [
 							'Preparation',
-							`Starts in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+							`Ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
 						]);
 					}
 					embed.addField('Rosters', [
