@@ -1,5 +1,6 @@
-const fetch = require('node-fetch');
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const { renderChart } = require('./ChartRender');
+const { loadImage } = require('canvas');
 
 class Chart {
 	static build(data, offset) {
@@ -99,22 +100,14 @@ class Chart {
 			}
 		};
 
-		/* if (process.env.NODE_ENV) {
-			const { renderChart } = require('./ChartRender');
-			return renderChart(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart);
-		}*/
+		const buffer = await this.buffer();
+		return renderChart(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, buffer);
+	}
 
-		const res = await fetch(process.env.CHART_API_URL, {
-			method: 'POST',
-			timeout: 10000,
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(body)
-		}).catch(() => null);
-		if (!res) return null;
-		if (!res.ok) return null;
-		return res.buffer();
+	static async buffer() {
+		if (this.raw) return this.raw;
+		this.raw = await loadImage('https://i.imgur.com/ilZtmTU.png');
+		return this.raw;
 	}
 }
 

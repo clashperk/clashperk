@@ -75,7 +75,7 @@ function addBackgroundColors(chart) {
 	}
 }
 
-function renderChart(width, height, backgroundColor, devicePixelRatio, chart) {
+function renderChart(width, height, backgroundColor, devicePixelRatio, chart, buffer) {
 	chart.options = chart.options || {};
 
 	if (chart.type === 'donut') {
@@ -240,9 +240,10 @@ function renderChart(width, height, backgroundColor, devicePixelRatio, chart) {
 				const { ctx } = chartInstance.chart;
 				ctx.fillStyle = backgroundColor;
 				ctx.fillRect(0, 0, chartInstance.chart.width, chartInstance.chart.height);
-				ctx.font = '8px sans-serif';
+				ctx.drawImage(buffer, 425, 12, 15, 15);
+				ctx.font = 'bold 8px sans-serif';
 				ctx.fillStyle = '#666';
-				ctx.fillText('© ClashPerk', 440, 18);
+				ctx.fillText('ClashPerk', 442, 20);
 			}
 		}
 	});
