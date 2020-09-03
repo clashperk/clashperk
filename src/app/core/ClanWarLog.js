@@ -311,7 +311,7 @@ class ClanWarEvent {
 		for (const warTag of warTags) {
 			const round = body.rounds.findIndex(round => round.warTags.includes(warTag)) + 1;
 			const data = await client.fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`).catch(() => null);
-			if (!data || (data && !data.ok)) continue;
+			if (!data?.ok) continue;
 			const clan = data.clan.tag === cache.tag ? data.clan : data.opponent;
 			const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
 			const embed = new MessageEmbed()
@@ -367,14 +367,12 @@ class ClanWarEvent {
 
 			if (data.state === 'warEnded') {
 				const remaining = this.attacks(clan);
-				if (remaining) {
-					embed.addField('Remaining Attacks', remaining.substring(0, 1024));
-				}
+				if (remaining) embed.addField('Remaining Attacks', remaining.substring(0, 1024));
 			}
 			embed.setFooter(`Round #${round}`).setTimestamp();
 
 			await this.send(id, db, data, warTag, channel, embed);
-			await this.delay(1500);
+			await this.delay(2000);
 		}
 	}
 
