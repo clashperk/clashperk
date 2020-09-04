@@ -15,8 +15,8 @@ class WarWeightCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: 'List of clan members with townhall & heroes.',
-				usage: '<clanTag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				usage: '<clanTag> [-dl]',
+				examples: ['#8QU8J9LP', '#8QU8J9LP -dl']
 			},
 			flags: ['--download', '-dl', '--excel']
 		});
@@ -75,10 +75,7 @@ class WarWeightCommand extends Command {
 		});
 
 		const memberList = this.sort(members);
-		if (download) {
-			const buffer = await Excel.memberList(memberList);
-			return message.util.send('', { files: [{ attachment: Buffer.from(buffer), name: `${data.name.toLowerCase()}_member_list.xlsx` }] });
-		}
+		const patron = this.client.patron.check(message.author, message.guild);
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
@@ -112,13 +109,13 @@ class WarWeightCommand extends Command {
 				.setFooter(`Page 1/2 (${data.members}/50)`)
 		});
 
-		for (const emoji of ['⬅️', '➡️', '➕']) {
+		for (const emoji of ['⬅️', '➡️', '➕', '📥']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕', '⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['➕', '⬅️', '➡️', '📥'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 90000, max: 10 }
 		);
 
@@ -158,6 +155,24 @@ class WarWeightCommand extends Command {
 					embed: embed.setDescription([header, pages[page].join('\n')])
 						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
 				});
+			}
+
+			if (reaction.emoji.name === '📥') {
+				if (!patron) {
+					await message.channel.send({
+						embed: {
+							description: '[Become a Patron](https://patreon.com/clashperk) to export members to Excel.'
+						}
+					});
+				} else {
+					const buffer = await Excel.memberList(memberList);
+					await message.util.send({
+						files: [{
+							attachment: Buffer.from(buffer), name: `${data.name.toLowerCase()}_member_list.xlsx`
+						}]
+					});
+				}
+				return collector.stop();
 			}
 		});
 

@@ -15,11 +15,10 @@ class MembersCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: 'List of clan members (--th to view th levels)',
-				usage: '<clanTag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				usage: '<clanTag> [-dl]',
+				examples: ['#8QU8J9LP', '#8QU8J9LP -dl']
 			},
-			optionFlags: ['--th', '-th', 'th'],
-			flags: ['--download', '-dl', '--excel']
+			optionFlags: ['--th', '-th', 'th']
 		});
 	}
 
@@ -41,12 +40,7 @@ class MembersCommand extends Command {
 			}
 		};
 
-		const download = yield {
-			match: 'flag',
-			flag: ['--download', '-dl', '--excel']
-		};
-
-		return { data, townhall, download };
+		return { data, townhall };
 	}
 
 	cooldown(message) {
@@ -54,9 +48,9 @@ class MembersCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, townhall, download }) {
+	async exec(message, { data, townhall }) {
 		if (data.members < 1) return message.util.send(`\u200e**${data.name}** does not have any clan members...`);
-		if (!download) await message.util.send(`**Fetching data... ${emoji.loading}**`);
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
 		const requests = data.memberList.map((m, i) => {
 			const req = {
@@ -83,10 +77,7 @@ class MembersCommand extends Command {
 		});
 
 		const items = this.sort(members);
-		if (download) {
-			const buffer = await Excel.memberList(items);
-			return message.util.send('', { files: [{ attachment: Buffer.from(buffer), name: `${data.name.toLowerCase()}_member_list.xlsx` }] });
-		}
+		const patron = this.client.patron.check(message.author, message.guild);
 
 		const filter = items.filter(arr => arr.townHallLevel === townhall);
 		const embed = this.client.util.embed()
@@ -109,13 +100,13 @@ class MembersCommand extends Command {
 				.setFooter(`Page 1/2 (${data.members}/50)`)
 		});
 
-		for (const emoji of ['⬅️', '➡️', '➕']) {
+		for (const emoji of ['⬅️', '➡️', '➕', '📥']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕', '⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['➕', '⬅️', '➡️', '📥'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 90000, max: 10 }
 		);
 
@@ -155,6 +146,24 @@ class MembersCommand extends Command {
 					embed: embed.setDescription([header, pages[page].join('\n')])
 						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
 				});
+			}
+
+			if (reaction.emoji.name === '📥') {
+				if (!patron) {
+					await message.channel.send({
+						embed: {
+							description: '[Become a Patron](https://patreon.com/clashperk) to export members to Excel.'
+						}
+					});
+				} else {
+					const buffer = await Excel.memberList(items);
+					await message.util.send({
+						files: [{
+							attachment: Buffer.from(buffer), name: `${data.name.toLowerCase()}_member_list.xlsx`
+						}]
+					});
+				}
+				return collector.stop();
 			}
 		});
 
