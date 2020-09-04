@@ -16,8 +16,7 @@ class CWLStarsComamnd extends Command {
 				content: 'Shows total stars and attacks of clan members.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
-			},
-			flags: ['--download', '-dl', '--excel']
+			}
 		});
 	}
 
@@ -38,16 +37,11 @@ class CWLStarsComamnd extends Command {
 			}
 		};
 
-		const excel = yield {
-			match: 'flag',
-			flag: ['--download', '-dl', '--excel']
-		};
-
-		return { data, excel };
+		return { data };
 	}
 
-	async exec(message, { data, excel }) {
-		if (!excel) await message.util.send(`**Fetching data... ${emoji.loading}**`);
+	async exec(message, { data }) {
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const res = await fetch(`https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`, {
 			method: 'GET', timeout: 3000,
 			headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
@@ -68,7 +62,7 @@ class CWLStarsComamnd extends Command {
 		if (!(body.state || res.ok)) {
 			const cw = await CWL.get(data.tag);
 			if (cw) {
-				return this.rounds(message, cw, data, excel);
+				return this.rounds(message, cw, data);
 			}
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
@@ -79,10 +73,10 @@ class CWLStarsComamnd extends Command {
 		}
 
 		CWL.pushWarTags(data.tag, body.rounds);
-		return this.rounds(message, body, data, excel);
+		return this.rounds(message, body, data);
 	}
 
-	async rounds(message, body, clan, excel) {
+	async rounds(message, body, clan) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		const [members, clanTag] = [{}, clan.tag];
 
@@ -143,36 +137,30 @@ class CWLStarsComamnd extends Command {
 					.join('\n')
 			]);
 
-		const msg = await message.util.send({
-			embed,
-			files: patron && excel
-				? [{
-					attachment: Buffer.from(await Excel.starList(leaderboard.filter(m => m.of > 0))),
-					name: `${clan.name.toLowerCase()}_cwl_stars.xlsx`
-				}]
-				: null
-		});
-
-		await msg.react('➕');
+		const msg = await message.util.send({ embed });
+		await msg.react('📥');
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['📥'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 45000, max: 1 }
 		);
 
 		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➕') {
-				leaderboard.sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
-				embed.setTitle('CWL Gained');
-				embed.setDescription([
-					`**\`\u200e # STAR GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
-					leaderboard.filter(m => m.of > 0)
-						.map((m, i) => {
-							const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
-							return `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
-						})
-						.join('\n')
-				]);
-				await message.util.send({ embed });
+			if (reaction.emoji.name === '📥') {
+				if (!patron) {
+					await message.channel.send({
+						embed: {
+							description: '[Become a Patron](https://patreon.com/clashperk) to export CWL data to Excel.'
+						}
+					});
+				} else {
+					const buffer = await Excel.starList(leaderboard.filter(m => m.of > 0));
+					await message.util.send({
+						files: [{
+							attachment: Buffer.from(buffer),
+							name: `${clan.name.toLowerCase()}_cwl_stars.xlsx`
+						}]
+					});
+				}
 				return collector.stop();
 			}
 		});
