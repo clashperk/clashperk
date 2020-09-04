@@ -70,7 +70,7 @@ class PatronCommand extends Command {
 				'[Become a Patron](https://www.patreon.com/clashperk)',
 				'',
 				'**Our Current Patrons**',
-				patrons.map(name => `• ${name}`).join('\n')
+				patrons.filter(p => p.active).map(d => `• ${d.discord_username ?? d.name}`).join('\n')
 			]);
 
 		return message.util.send({ embed });
@@ -83,19 +83,15 @@ class PatronCommand extends Command {
 			.then(snapshot => {
 				snapshot.forEach(snap => {
 					const data = snap.data();
-					if (data.active) {
-						if (data.discord_username) patrons.push(data.discord_username);
-						else patrons.push(data.name);
-					}
+					patrons.push(data);
 				});
-				if (!snapshot.size) patrons = null;
 			});
 		return patrons;
 	}
 
 	async add(guild) {
 		const db = mongodb.db('clashperk').collection('clanstores');
-		await db.updateMany({ guild }, { active: true, patron: true });
+		await db.updateMany({ guild }, { $set: { active: true, patron: true } });
 		const collection = await db.find({ guild }).toArray();
 		collection.forEach(async data => {
 			await this.client.cacheHandler.add(data._id, { tag: data.tag, guild: data.guild });
@@ -105,10 +101,10 @@ class PatronCommand extends Command {
 
 	async del(guild) {
 		const db = mongodb.db('clashperk').collection('clanstores');
-		await db.updateMany({ guild }, { patron: false });
+		await db.updateMany({ guild }, { $set: { patron: false } });
 		const collection = await db.find({ guild }).skip(2).toArray();
 		collection.forEach(async data => {
-			await db.updateOne({ _id: data._id }, { active: false });
+			await db.updateOne({ _id: data._id }, { $set: { active: false } });
 			await this.client.cacheHandler.delete(data._id, { tag: data.tag });
 		});
 		return collection;
