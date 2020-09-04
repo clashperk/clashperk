@@ -17,7 +17,7 @@ service RouteGuide {
 
   rpc init(Shards) returns (Data) {}
 
-  rpc flush(Data) returns (Data) {}
+  rpc flush(Shards) returns (Data) {}
 
   rpc broadcast(Shards) returns (stream Data) {}
 
