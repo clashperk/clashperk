@@ -83,9 +83,10 @@ class CacheHandler {
 		});
 
 		await this.broadcast();
-		return new Promise(resolve => {
-			this.client.grpc.init({ shardId: this.client.shard.ids[0], shards: this.client.shard.count }, (err, res) => resolve(res.data));
-		});
+		return new Promise(resolve => this.client.grpc.init({
+			shardId: this.client.shard.ids[0],
+			shards: this.client.shard.count
+		}, (err, res) => resolve(res.data)));
 	}
 
 	async add(Id, data) {
@@ -140,7 +141,7 @@ class CacheHandler {
 		this.lastOnlineLog.cached.clear();
 
 		this.members = {};
-		return this.client.grpc.flush({}, () => { });
+		return this.client.grpc.flush({ shardId: this.client.shard.ids[0], shards: this.client.shard.count }, () => { });
 	}
 }
 

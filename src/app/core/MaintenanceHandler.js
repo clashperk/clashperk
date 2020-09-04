@@ -16,7 +16,6 @@ class MaintenanceHandler {
 		}
 		if (res.status === 200 && this.isMaintenance) {
 			this.isMaintenance = Boolean(false);
-			await this.client.cacheHandler.flush();
 			await this.client.cacheHandler.init();
 			return this.send();
 		}
