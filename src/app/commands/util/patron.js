@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firestore } = require('../../struct/Database');
+const { firestore, mongodb } = require('../../struct/Database');
 
 class PatronCommand extends Command {
 	constructor() {
@@ -9,7 +9,17 @@ class PatronCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Get information about the bot\'s patreon.'
-			}
+			},
+			args: [
+				{
+					id: 'action',
+					type: ['add', 'del']
+				},
+				{
+					id: 'id',
+					type: 'string'
+				}
+			]
 		});
 	}
 
@@ -18,8 +28,30 @@ class PatronCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message) {
+	async exec(message, { action, id }) {
 		const patrons = await this.patrons();
+		if (action && id && this.client.isOwner(message.author.id)) {
+			const patron = patrons.find(d => d?.discord_id === id);
+			for (const guild of patron?.guilds ?? []) {
+				if (action === 'add') await this.add(guild.id);
+				if (action === 'del') await this.del(guild.id);
+			}
+
+			if (action === 'add' && patron) {
+				await firestore.collection('patrons').doc(patron.id).update({ active: true });
+				await this.client.patron.refresh();
+				return message.util.send('Success!');
+			}
+
+			if (action === 'del' && patron) {
+				await firestore.collection('patrons').doc(patron.id).update({ active: false });
+				await this.client.patron.refresh();
+				return message.util.send('Success!');
+			}
+
+			return message.util.send('Failed!');
+		}
+
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor('ClashPerk', this.client.user.displayAvatarURL(), 'https://www.patreon.com/clashperk')
@@ -59,6 +91,27 @@ class PatronCommand extends Command {
 				if (!snapshot.size) patrons = null;
 			});
 		return patrons;
+	}
+
+	async add(guild) {
+		const db = mongodb.db('clashperk').collection('clanstores');
+		await db.updateMany({ guild }, { active: true, patron: true });
+		const collection = await db.find({ guild }).toArray();
+		collection.forEach(async data => {
+			await this.client.cacheHandler.add(data._id, { tag: data.tag, guild: data.guild });
+		});
+		return collection;
+	}
+
+	async del(guild) {
+		const db = mongodb.db('clashperk').collection('clanstores');
+		await db.updateMany({ guild }, { patron: false });
+		const collection = await db.find({ guild }).skip(2).toArray();
+		collection.forEach(async data => {
+			await db.updateOne({ _id: data._id }, { active: false });
+			await this.client.cacheHandler.delete(data._id, { tag: data.tag });
+		});
+		return collection;
 	}
 }
 
