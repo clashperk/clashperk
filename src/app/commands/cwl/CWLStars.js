@@ -95,6 +95,7 @@ class CWLStarsComamnd extends Command {
 								? members[m.tag]
 								: members[m.tag] = {
 									name: m.name,
+									tag: m.tag,
 									of: 0,
 									attacks: 0,
 									stars: 0,
