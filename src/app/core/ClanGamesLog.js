@@ -7,8 +7,8 @@ class ClanGames {
 	constructor(client) {
 		this.client = client;
 		this.cached = new Collection();
-		this.maxPoint = 5000;
-		this.maxTotal = 75000;
+		this.maxPoint = 4000;
+		this.maxTotal = 50000;
 		this.gameDay = 22;
 	}
 
