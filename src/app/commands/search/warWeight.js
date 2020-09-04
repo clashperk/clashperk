@@ -15,10 +15,9 @@ class WarWeightCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: 'List of clan members with townhall & heroes.',
-				usage: '<clanTag> [-dl]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP -dl']
-			},
-			flags: ['--download', '-dl', '--excel']
+				usage: '<clanTag>',
+				examples: ['#8QU8J9LP']
+			}
 		});
 	}
 
@@ -34,12 +33,7 @@ class WarWeightCommand extends Command {
 			}
 		};
 
-		const download = yield {
-			match: 'flag',
-			flag: ['--download', '-dl', '--excel']
-		};
-
-		return { data, download };
+		return { data };
 	}
 
 	cooldown(message) {
@@ -47,9 +41,9 @@ class WarWeightCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, download }) {
+	async exec(message, { data }) {
 		if (data.members < 1) return message.util.send(`\u200e**${data.name}** does not have any clan members...`);
-		if (!download) await message.util.send(`**Fetching data... ${emoji.loading}**`);
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
 		const requests = data.memberList.map((m, i) => {
 			const req = {

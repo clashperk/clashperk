@@ -15,8 +15,8 @@ class MembersCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: 'List of clan members (--th to view th levels)',
-				usage: '<clanTag> [-dl]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP -dl']
+				usage: '<clanTag>',
+				examples: ['#8QU8J9LP']
 			},
 			optionFlags: ['--th', '-th', 'th']
 		});
