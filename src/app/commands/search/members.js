@@ -159,7 +159,7 @@ class MembersCommand extends Command {
 					const buffer = await Excel.memberList(items);
 					await message.util.send({
 						files: [{
-							attachment: Buffer.from(buffer), name: `${data.name.toLowerCase()}_member_list.xlsx`
+							attachment: Buffer.from(buffer), name: `${data.name.toLowerCase()}_members.xlsx`
 						}]
 					});
 				}

@@ -162,7 +162,7 @@ class WarWeightCommand extends Command {
 					const buffer = await Excel.memberList(memberList);
 					await message.util.send({
 						files: [{
-							attachment: Buffer.from(buffer), name: `${data.name.toLowerCase()}_member_list.xlsx`
+							attachment: Buffer.from(buffer), name: `${data.name.toLowerCase()}_members.xlsx`
 						}]
 					});
 				}
