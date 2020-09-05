@@ -86,11 +86,15 @@ class ClanEmbedCommand extends Command {
 		const color = yield (
 			// eslint-disable-next-line multiline-ternary
 			yesNo ? {
-				type: 'color',
-				retry: {
-					start: 'What is the hex code of the color?'
+				match: 'none',
+				type: (msg, txt) => {
+					if (!txt) return null;
+					const resolver = this.handler.resolver.types.get('color');
+					return resolver(msg, txt) || this.client.embed(msg);
 				},
-				default: m => this.client.embed(m)
+				prompt: {
+					start: 'What is the hex code of the color?'
+				}
 			} : {
 				match: 'none'
 			}
@@ -140,7 +144,7 @@ class ClanEmbedCommand extends Command {
 			guild: message.guild.id,
 			channel: message.channel.id,
 			tag: data.tag,
-			color,
+			color: color || this.client.embed(message),
 			name: data.name,
 			patron: this.client.patron.get(message.guild.id, 'guild', false),
 			message: msg.id,

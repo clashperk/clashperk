@@ -14,7 +14,7 @@ class SetupCommand extends Command {
 					'**Available Methods**',
 					'• memberlog `<clanTag> [channel/role]`',
 					'• gameboard `<clanTag> [channel/color]`',
-					'• clanembed `<clanTag> [--color #hexcolor]`',
+					'• clanembed `<clanTag>`',
 					'• clanwarlog `<clanTag> [channel]`',
 					'• donationlog `<clanTag> [channel/color]`',
 					'• onlineboard `<clanTag> [channel/color]`',

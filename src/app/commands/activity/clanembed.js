@@ -8,8 +8,8 @@ class ClanEmbedCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				usage: '<clanTag> [--color]',
-				examples: ['#8QU8J9LP --color #5970C1'],
+				usage: '<clanTag>',
+				examples: ['#8QU8J9LP'],
 				content: [
 					'Creates a live promotional embed for a clan.'
 				],
