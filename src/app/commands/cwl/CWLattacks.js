@@ -20,7 +20,7 @@ class CWLAttacksComamnd extends Command {
 		super('cwl-attacks', {
 			aliases: ['cwl-attacks'],
 			category: 'cwl-hidden',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: [
 					'Shows attacks of the current round.',

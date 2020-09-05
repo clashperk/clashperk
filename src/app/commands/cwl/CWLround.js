@@ -12,7 +12,7 @@ class CWLRoundComamnd extends Command {
 		super('cwl-round', {
 			aliases: ['round', 'cwl-war', 'cwl-round'],
 			category: 'cwl-hidden',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: [
 					'Shows info about the current round.',

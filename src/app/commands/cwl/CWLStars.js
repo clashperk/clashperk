@@ -11,7 +11,7 @@ class CWLStarsComamnd extends Command {
 		super('cwl-stars', {
 			aliases: ['cwl-stars'],
 			category: 'cwl-hidden',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'ATTACH_FILES'],
 			description: {
 				content: 'Shows total stars and attacks of clan members.',
 				usage: '<clanTag>',

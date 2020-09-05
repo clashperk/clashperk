@@ -12,7 +12,7 @@ class MembersCommand extends Command {
 		super('members', {
 			aliases: ['members', 'mem'],
 			category: 'search',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES'],
 			description: {
 				content: 'List of clan members (--th to view th levels)',
 				usage: '<clanTag>',

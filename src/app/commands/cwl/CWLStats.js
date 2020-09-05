@@ -12,7 +12,7 @@ class CWLStatsComamnd extends Command {
 		super('cwl-stats', {
 			aliases: ['cwl-stats'],
 			category: 'cwl-hidden',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
 			description: {
 				content: 'Shows some statistics for each round.',
 				usage: '<clanTag>',

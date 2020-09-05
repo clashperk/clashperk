@@ -12,7 +12,7 @@ class WarWeightCommand extends Command {
 		super('warweight', {
 			aliases: ['warweight', 'ww'],
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES'],
 			description: {
 				content: 'List of clan members with townhall & heroes.',
 				usage: '<clanTag>',
