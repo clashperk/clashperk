@@ -86,11 +86,11 @@ class ClanEmbedCommand extends Command {
 		const color = yield (
 			// eslint-disable-next-line multiline-ternary
 			yesNo ? {
-				match: 'none',
 				type: 'color',
 				retry: {
 					start: 'What is the hex code of the color?'
-				}
+				},
+				default: m => this.client.embed(m)
 			} : {
 				match: 'none'
 			}
