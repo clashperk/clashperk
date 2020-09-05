@@ -12,7 +12,7 @@ class ClanEmbedCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: 'Setup a live updating clan embed.',
+				content: 'Creates a live promotional embed for a clan.',
 				usage: '<clanTag> [--color]'
 			},
 			optionFlags: ['--color']
@@ -22,6 +22,11 @@ class ClanEmbedCommand extends Command {
 	*args() {
 		const data = yield {
 			type: async (message, args) => {
+				if (!this.client.patron.get(message.guild.id, 'guild', false)) {
+					await this.handler.handleDirectCommand(message, 'clanembed', this.handler.modules.get('help'), false);
+					return Flag.cancel();
+				}
+
 				if (!args) return null;
 				const resolved = await Resolver.clan(args);
 				if (resolved.status !== 200) {
@@ -81,10 +86,6 @@ class ClanEmbedCommand extends Command {
 	}
 
 	async exec(message, { data, accepts, user, description, color }) {
-		if (!this.client.patron.get(message.guild.id, 'guild', false)) {
-			return this.handler.handleDirectCommand(message, 'clanembed', this.handler.modules.get('help'), false);
-		}
-
 		const clans = await this.clans(message);
 		const max = this.client.patron.get(message.guild.id, 'limit', 2);
 		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
