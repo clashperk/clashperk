@@ -93,7 +93,7 @@ class ClanEmbedCommand extends Command {
 					return resolver(msg, txt) || this.client.embed(msg);
 				},
 				prompt: {
-					start: 'What is the hex code of the color?'
+					start: 'What is the hex code of the color? (e.g. #f96854)'
 				}
 			} : {
 				match: 'none',
