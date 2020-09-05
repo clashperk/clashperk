@@ -96,7 +96,8 @@ class ClanEmbedCommand extends Command {
 					start: 'What is the hex code of the color?'
 				}
 			} : {
-				match: 'none'
+				match: 'none',
+				default: m => this.client.embed(m)
 			}
 		);
 
@@ -144,7 +145,7 @@ class ClanEmbedCommand extends Command {
 			guild: message.guild.id,
 			channel: message.channel.id,
 			tag: data.tag,
-			color: color || this.client.embed(message),
+			color,
 			name: data.name,
 			patron: this.client.patron.get(message.guild.id, 'guild', false),
 			message: msg.id,
