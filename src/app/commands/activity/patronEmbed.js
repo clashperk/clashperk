@@ -13,9 +13,8 @@ class ClanEmbedCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: 'Creates a live promotional embed for a clan.',
-				usage: '<clanTag> [--color]'
-			},
-			optionFlags: ['--color']
+				usage: '<clanTag>'
+			}
 		});
 	}
 
@@ -42,17 +41,19 @@ class ClanEmbedCommand extends Command {
 		};
 
 		const user = yield {
+			match: 'none',
 			type: 'member',
 			prompt: {
-				start: 'Who is the leader of the clan?',
+				start: 'Who is the leader of the clan? (mention clan leader)',
 				retry: 'Please mention a valid member...'
 			}
 		};
 
 		const accepts = yield {
+			match: 'none',
 			type: Argument.validate('string', (msg, txt) => txt.length <= 100),
 			prompt: {
-				start: 'What town-halls are accepted?',
+				start: 'What Town-Halls are accepted? (write anything)',
 				retry: 'Embed field must be 100 or fewer in length.',
 				time: 1 * 60 * 1000
 			},
@@ -60,22 +61,42 @@ class ClanEmbedCommand extends Command {
 		};
 
 		const description = yield {
-			match: 'rest',
+			match: 'none',
 			type: Argument.validate('string', (msg, txt) => txt.length <= 300),
 			prompt: {
-				start: 'What would you like to set the description?',
+				start: 'What would you like to set the description? (write anything)',
 				retry: 'Embed description must be 300 or fewer in length.',
 				time: 1.5 * 60 * 1000
 			},
 			default: ' \u200b'
 		};
 
-		const color = yield {
-			match: 'option',
-			flag: ['--color'],
-			type: 'color',
-			default: message => this.client.embed(message)
+		const yesNo = yield {
+			match: 'none',
+			type: (msg, txt) => {
+				if (!txt) return null;
+				if (/^y(?:e(?:a|s)?)?$/i.test(txt)) return true;
+				return false;
+			},
+			prompt: {
+				start: 'Would you like to set a custom color of the embed? (yes/no)'
+			}
 		};
+
+		const color = yield (
+			// eslint-disable-next-line multiline-ternary
+			yesNo ? {
+				match: 'none',
+				type: 'color',
+				retry: {
+					start: 'What is the hex code of the color?'
+				},
+				default: m => this.client.embed(m)
+			} : {
+				match: 'none',
+				default: m => this.client.embed(m)
+			}
+		);
 
 		return { data, user, accepts, description, color };
 	}
