@@ -90,11 +90,9 @@ class ClanEmbedCommand extends Command {
 				type: 'color',
 				retry: {
 					start: 'What is the hex code of the color?'
-				},
-				default: m => this.client.embed(m)
+				}
 			} : {
-				match: 'none',
-				default: m => this.client.embed(m)
+				match: 'none'
 			}
 		);
 
