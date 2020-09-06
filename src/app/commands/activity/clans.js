@@ -30,7 +30,7 @@ class ClansCommand extends Command {
 						const guilds = await this.client.shard.broadcastEval(
 							`
 							const guild = this.guilds.cache.get(\`${id}\`);
-							if (guild) ({ id: guild.id, name: guild.name, iconURL: guild.iconURL() });
+							if (guild) ({ id: guild.id, name: guild.name, iconURL: guild.iconURL(), memberCount: guild.memberCount });
 							`
 						);
 						const guild = guilds.find(guild => guild !== null);
@@ -89,7 +89,8 @@ class ClansCommand extends Command {
 		if (data) {
 			const embed = new MessageEmbed()
 				.setColor(this.client.embed(message))
-				.setAuthor(`${guild.name}`, typeof guild.iconURL === 'function' ? guild.iconURL() : guild.iconURL);
+				.setAuthor(`${guild.name}`, typeof guild.iconURL === 'function' ? guild.iconURL() : guild.iconURL)
+				.setTitle(`Members: ${guild.memberCount}`);
 			if (!data.length) {
 				embed.setDescription(`${message.guild.name} doesn't have any clans. Why not add some?`);
 				return message.util.send({ embed });
