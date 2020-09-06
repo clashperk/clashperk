@@ -153,7 +153,7 @@ class RedeemCommand extends Command {
 
 	async sync(guild) {
 		const db = mongodb.db('clashperk').collection('clanstores');
-		await db.updateMany({ guild }, { $set: { active: true, patron: true } });
+		await db.updateMany({ guild }, { $set: { patron: true } });
 		const collection = await db.find({ guild }).toArray();
 		collection.forEach(async data => {
 			await this.client.cacheHandler.add(data._id, { tag: data.tag, guild: data.guild });
