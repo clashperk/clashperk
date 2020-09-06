@@ -1,7 +1,7 @@
 const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
 const { emoji } = require('../../util/emojis');
-const { firestore } = require('../../struct/Database');
+const { firestore, mongodb } = require('../../struct/Database');
 const qs = require('querystring');
 const admin = require('firebase-admin');
 const { status } = require('../../util/constants');
@@ -129,6 +129,7 @@ class RedeemCommand extends Command {
 				}, { merge: true });
 
 			await this.client.patron.refresh();
+			await this.sync(message.guild.id);
 			const embed = this.client.util.embed()
 				.setColor(16345172)
 				.setDescription([`**Subscription for ${message.guild.name}**`, `Active ${emoji.authorize}`]);
@@ -148,6 +149,16 @@ class RedeemCommand extends Command {
 			return true;
 		}
 		return false;
+	}
+
+	async sync(guild) {
+		const db = mongodb.db('clashperk').collection('clanstores');
+		await db.updateMany({ guild }, { $set: { active: true, patron: true } });
+		const collection = await db.find({ guild }).toArray();
+		collection.forEach(async data => {
+			await this.client.cacheHandler.add(data._id, { tag: data.tag, guild: data.guild });
+		});
+		return collection;
 	}
 
 	redeemed(user) {
