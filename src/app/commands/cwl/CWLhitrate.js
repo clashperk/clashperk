@@ -60,6 +60,7 @@ class CWLHitrateComamnd extends Command {
 	}
 
 	async exec(message, { data, round, star }) {
+		star = typeof star === 'number' ? star : 3;
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
