@@ -15,7 +15,7 @@ class CWLHitrateComamnd extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: [
-					'Shows attacks of the current round.',
+					'Shows hitrates of the current round.',
 					'',
 					'**Flags**',
 					'`--round <num>` or `-r <num>` to see specific round.'
@@ -96,7 +96,7 @@ class CWLHitrateComamnd extends Command {
 		return this.rounds(message, body, data, round, star);
 	}
 
-	async rounds(message, body, clan, round, star = 3) {
+	async rounds(message, body, clan, round, star) {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		if (round && round > rounds.length) {
@@ -119,6 +119,7 @@ class CWLHitrateComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
+		const chunks = [];
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
@@ -126,6 +127,7 @@ class CWLHitrateComamnd extends Command {
 				});
 				const data = await res.json();
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
+					const hitrates = [];
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 
@@ -151,13 +153,81 @@ class CWLHitrateComamnd extends Command {
 
 						arrrr.push(d);
 					}
-					return message.util.send([
+
+					hitrates.push(...[
 						`**${clan.name} vs ${opponent.name} (Hitrates - ${star} Star)**`,
 						`${arrrr.map(d => `\`\u200e${d.clan.hitrate.padStart(3, ' ')}% ${`${d.clan.star}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${townHallEmoji[d.clan.th]} vs ${townHallEmoji[d.clan.vs]} \`\u200e ${`${d.opponent.star}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.hitrate.padStart(3, ' ')}% \u200f\``).join('\n')}`
 					]);
+
+					chunks.push({ state: data.state, hitrates });
+					break;
 				}
 			}
 		}
+
+		const item = round
+			? chunks[round - 1]
+			: chunks.length === 7
+				? chunks.find(c => c.state === 'inWar') || chunks.slice(-1)[0]
+				: chunks.slice(-2)[0];
+		const pageIndex = chunks.indexOf(item);
+
+		let page = pageIndex + 1;
+		const paginated = this.paginate(chunks, page);
+
+		if (chunks.length === 1) {
+			return message.util.send({ embed: paginated.items[0].embed });
+		}
+		const msg = await message.util.send({ embed: paginated.items[0].embed });
+		for (const emoji of ['⬅️', '➡️']) {
+			await msg.react(emoji);
+			await this.delay(250);
+		}
+
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 60000, max: 10 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '➡️') {
+				page += 1;
+				if (page < 1) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = 1;
+				const { embed } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embed });
+				await this.delay(250);
+				return reaction.users.remove(message.author.id);
+			}
+
+			if (reaction.emoji.name === '⬅️') {
+				page -= 1;
+				if (page < 1) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = 1;
+				const { embed } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embed });
+				await this.delay(250);
+				return reaction.users.remove(message.author.id);
+			}
+		});
+
+		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+	}
+
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
+
+	paginate(items, page = 1, pageLength = 1) {
+		const maxPage = Math.ceil(items.length / pageLength);
+		if (page < 1) page = 1;
+		if (page > maxPage) page = maxPage;
+		const startIndex = (page - 1) * pageLength;
+
+		return {
+			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
+			page, maxPage, pageLength
+		};
 	}
 }
 
