@@ -1,4 +1,4 @@
-const { townHallEmoji, emoji, SAFFRON_EMOJI, BLUE_EMOJI } = require('../util/emojis');
+const { townHallEmoji, emoji, RED_EMOJI, BLUE_EMOJI } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed, Util } = require('discord.js');
 const { Client } = require('clashofclans.js');
@@ -490,7 +490,7 @@ class ClanWarEvent {
 			.map(chunks => {
 				const list = chunks.map(th => {
 					const total = `\`\u200e${th.total.toString().padStart(2, ' ')}\``;
-					return `${townHallEmoji[th.level]} ${codeblock ? total : SAFFRON_EMOJI[th.total]}`;
+					return `${townHallEmoji[th.level]} ${codeblock ? total : RED_EMOJI[th.total]}`;
 				});
 				return list.join(' ');
 			}).join('\n');
