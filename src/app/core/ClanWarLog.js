@@ -1,4 +1,4 @@
-const { townHallEmoji, emoji, whiteNum, blueNum } = require('../util/emojis');
+const { townHallEmoji, emoji, SAFFRON_EMOJI, BLUE_EMOJI } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed, Util } = require('discord.js');
 const { Client } = require('clashofclans.js');
@@ -415,7 +415,7 @@ class ClanWarEvent {
 		if (OneRem.length) {
 			return [
 				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition)
-					.map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`),
+					.map(m => `\u200e${BLUE_EMOJI[m.mapPosition]} ${m.name}`),
 				''
 			].join('\n');
 		}
@@ -443,7 +443,7 @@ class ClanWarEvent {
 				embed.description,
 				'',
 				`**2 ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
-				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`),
+				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_EMOJI[m.mapPosition]} ${m.name}`),
 				''
 			]);
 		}
@@ -452,7 +452,7 @@ class ClanWarEvent {
 			embed.setDescription([
 				embed.description,
 				`**1 ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
-				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`)
+				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_EMOJI[m.mapPosition]} ${m.name}`)
 			]);
 		}
 
@@ -490,7 +490,7 @@ class ClanWarEvent {
 			.map(chunks => {
 				const list = chunks.map(th => {
 					const total = `\`\u200e${th.total.toString().padStart(2, ' ')}\``;
-					return `${townHallEmoji[th.level]} ${codeblock ? total : whiteNum[th.total]}`;
+					return `${townHallEmoji[th.level]} ${codeblock ? total : SAFFRON_EMOJI[th.total]}`;
 				});
 				return list.join(' ');
 			}).join('\n');

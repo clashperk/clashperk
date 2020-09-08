@@ -1,6 +1,6 @@
 const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
-const { redNum } = require('../../util/emojis');
+const { RED_EMOJI } = require('../../util/emojis');
 const Excel = require('../../struct/ExcelHandler');
 
 class FlagsCommand extends Command {
@@ -56,7 +56,7 @@ class FlagsCommand extends Command {
 			embed.setAuthor(message.guild.name, message.guild.iconURL())
 				.setTitle('Flags')
 				.setDescription([
-					paginated.items.map(x => `${redNum[++index]} ${x.name} ${x.tag}`).join('\n')
+					paginated.items.map(x => `${RED_EMOJI[++index]} ${x.name} ${x.tag}`).join('\n')
 				])
 				.setFooter(`Page ${paginated.page}/${paginated.maxPage}`);
 		} else {

@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const { MessageEmbed } = require('discord.js');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
-const { emoji, redNum } = require('../../util/emojis');
+const { emoji, RED_EMOJI } = require('../../util/emojis');
 const CWL = require('../../core/CWLWarTags');
 
 class CWLMissedComamnd extends Command {
@@ -121,7 +121,7 @@ class CWLMissedComamnd extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
 			.setTitle('Missed Attacks')
-			.setDescription(collection.sort((a, b) => b.count - a.count).map(m => `\u200e${redNum[m.count]} ${m.name}`))
+			.setDescription(collection.sort((a, b) => b.count - a.count).map(m => `\u200e${RED_EMOJI[m.count]} ${m.name}`))
 			.setFooter(`Upto Round #${round}`);
 
 		return message.util.send({ embed });

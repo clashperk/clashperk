@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const moment = require('moment');
 require('moment-duration-format');
 const Resolver = require('../../struct/Resolver');
-const { blueNum } = require('../../util/emojis');
+const { BLUE_EMOJI } = require('../../util/emojis');
 
 class RemainingAttacksCommand extends Command {
 	constructor() {
@@ -101,7 +101,7 @@ class RemainingAttacksCommand extends Command {
 				embed.description,
 				'',
 				`**2 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
-				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`)
+				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_EMOJI[m.mapPosition]} ${m.name}`)
 			]);
 		}
 		if (OneRem.length) {
@@ -109,7 +109,7 @@ class RemainingAttacksCommand extends Command {
 				embed.description,
 				'',
 				`**1 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
-				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${blueNum[m.mapPosition]} ${m.name}`)
+				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_EMOJI[m.mapPosition]} ${m.name}`)
 			]);
 		}
 

@@ -1,6 +1,6 @@
 const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
-const { blueNum, emoji } = require('../../util/emojis');
+const { BLUE_EMOJI, emoji } = require('../../util/emojis');
 const moment = require('moment');
 
 class ClanGameStatsCommand extends Command {
@@ -72,12 +72,12 @@ class ClanGameStatsCommand extends Command {
 				'**Scoreboard**',
 				'Based on highest scores & completion times.',
 				`${emoji.hash} **\`\u200e ${'SCORE'.padEnd(6, ' ')}  ${'CLAN'.padEnd(16, ' ')}\u200f\`**`,
-				...clans.map((clan, i) => `${blueNum[++i]} \`\u200e ${(clan.total || 0).toString().padStart(6, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
+				...clans.map((clan, i) => `${BLUE_EMOJI[++i]} \`\u200e ${(clan.total || 0).toString().padStart(6, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
 				'',
 				'**Performance**',
 				'Based on completing maximum points.',
 				`${emoji.hash} **\`\u200e ${Math.floor(maxPoint / 1000)}K  ${'CLAN'.padEnd(20, ' ')}\u200f\`**`,
-				...performances.map((clan, i) => `${blueNum[++i]} \`\u200e ${clan.count.toString().padStart(2, ' ')}  ${clan.name.padEnd(20, ' ')}\u200f\``)
+				...performances.map((clan, i) => `${BLUE_EMOJI[++i]} \`\u200e ${clan.count.toString().padStart(2, ' ')}  ${clan.name.padEnd(20, ' ')}\u200f\``)
 			]);
 
 		return message.util.send({ embed });
