@@ -65,34 +65,21 @@ class WarlogCommand extends Command {
 
 		for (const item of body.items) {
 			const { clan, opponent } = item;
-			if (!opponent.name) {
-				const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
-				const result = item.result === 'win' ? emoji.ok : emoji.wrong;
-				embed.addField(`\u200e**${result} Clan War League**`, [
-					`${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}%`,
-					`${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
-				]);
-			} else {
-				const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
-				const result = item.result.replace(/lose/g, 'Lost').replace(/win/g, 'Won').replace(/tie/g, 'Tied');
-				embed.addField(`\u200e**${this.result(result)} against ${this.name(opponent.name)}**`, [
-					`${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}% / ${opponent.destructionPercentage.toFixed(2)}`,
-					`${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
-				]);
-			}
+			const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
+			embed.addField(`\u200e**${this.result(item.result)} ${opponent?.name ?? 'Clan War League'}**`, [
+				`${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}% ${opponent?.destructionPercentage ?? `/ ${opponent.destructionPercentage.toFixed(2)}`}`,
+				`${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
+			]);
 		}
 
 		return message.util.send({ embed });
 	}
 
 	result(result) {
-		if (result === 'Won') return `${emoji.ok} Won`;
-		if (result === 'Lost') return `${emoji.wrong} Lost`;
-		if (result === 'Tied') return `${emoji.empty} Tied`;
-	}
-
-	name(data) {
-		return data.split('').slice(0, 10).join('');
+		if (result === 'win') return `${emoji.ok}`;
+		if (result === 'lose') return `${emoji.wrong}`;
+		if (result === 'tie') return `${emoji.empty}`;
+		return `${emoji.empty}`;
 	}
 
 	padEnd(num) {
