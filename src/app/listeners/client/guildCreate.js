@@ -42,6 +42,7 @@ class GuildCreateListener extends Listener {
 	}
 
 	async intro(guild) {
+		if (this.client.guilds.cache.has(guild.id)) return;
 		const prefix = this.client.settings.get(guild, 'prefix', '*');
 		const embed = this.client.util.embed()
 			.setAuthor('Thanks for inviting me, have a nice day!', this.client.user.displayAvatarURL())
@@ -50,7 +51,8 @@ class GuildCreateListener extends Listener {
 				`If you want to change my prefix, just type \`${prefix}prefix <new>\``,
 				'',
 				`To get the full list of commands type \`${prefix}help\``,
-				`To view more details for a command, type \`${prefix}help <command>\``
+				`To view more details for a command, type \`${prefix}help <command>\``,
+				`For a quick setup guide, type \`${prefix}guide\``
 			])
 			.addField('Add to Discord', [
 				'ClashPerk can be added to as many servers as you want!',
@@ -69,6 +71,7 @@ class GuildCreateListener extends Listener {
 		}
 
 		const channel = guild.channels.cache.filter(channel => channel.type === 'text')
+			.sort((a, b) => a.createdAt - b.createdAt)
 			.filter(channel => channel.permissionsFor(channel.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false))
 			.first();
 		if (channel) return channel.send({ embed });
