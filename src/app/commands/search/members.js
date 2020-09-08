@@ -83,12 +83,12 @@ class MembersCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
-		const header = stripIndent(`${emoji.trophy} **\`\u200eTH ${'TAG'.padEnd(10, ' ')} ${'NAME'.padEnd(15, '\u2002')}\u200f\`**`);
+		const header = stripIndent(`${emoji.trophy} **\`\u200eTH ${'TAG'.padEnd(10, ' ')} ${'NAME'.padEnd(15, '\u2002')}\`**`);
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
-				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}\u200f\``),
+				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}\``),
 			this.paginate(townhall ? filter : items, 25, 50)
-				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}\u200f\``)
+				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}\``)
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription([header, pages[0].join('\n')]) });

@@ -1,6 +1,5 @@
 const { Command, Flag } = require('discord-akairo');
 const Resolver = require('../../struct/Resolver');
-const { Util } = require('discord.js');
 
 class TrophyBoardCommand extends Command {
 	constructor() {
@@ -115,8 +114,8 @@ class TrophyBoardCommand extends Command {
 		return message;
 	}
 
-	padEnd(data) {
-		return Util.escapeInlineCode(data).padEnd(20, ' ');
+	padEnd(name) {
+		return name.replace(/\`/g, '\\').padEnd(20, ' ');
 	}
 
 	donation(data) {

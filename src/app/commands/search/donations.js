@@ -1,6 +1,5 @@
 const { Command, Flag } = require('discord-akairo');
 const Resolver = require('../../struct/Resolver');
-const { Util } = require('discord.js');
 
 class DonationBoardCommand extends Command {
 	constructor() {
@@ -58,12 +57,12 @@ class DonationBoardCommand extends Command {
 			this.paginate(sorted, 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
-					return `\`\u200e${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
+					return `\`\u200e${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
 				}),
 			this.paginate(sorted, 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
-					return `\`\u200e${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 12))}\``;
+					return `\`\u200e${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
 				})
 		];
 
@@ -116,8 +115,8 @@ class DonationBoardCommand extends Command {
 		return items.sort((a, b) => b.donationsReceived - a.donationsReceived);
 	}
 
-	padEnd(data) {
-		return Util.escapeInlineCode(data).padEnd(16, ' ');
+	padEnd(name) {
+		return name.replace(/\`/g, '\\').padEnd(16, ' ');
 	}
 
 	donation(data, space) {
