@@ -67,7 +67,7 @@ class WarlogCommand extends Command {
 			const { clan, opponent } = item;
 			const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
 			embed.addField(`\u200e**${this.result(item.result)} ${opponent?.name ?? 'Clan War League'}**`, [
-				`${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}% ${opponent?.destructionPercentage ?? `/ ${opponent.destructionPercentage.toFixed(2)}`}`,
+				`${emoji.star_small} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${emoji.fire_small} ${clan.destructionPercentage.toFixed(2)}% ${opponent.name ? `/ ${opponent.destructionPercentage.toFixed(2)}` : ''}`,
 				`${emoji.users_small} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${emoji.clock_small} ${time} ago ${emoji.attacksword} ${clan.attacks}`
 			]);
 		}
