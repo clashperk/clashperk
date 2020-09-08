@@ -68,8 +68,8 @@ class ClansCommand extends Command {
 				donationlog: donationlog && item.active
 					? donationlog.channel
 					: null,
-				playerlog: playerlog
-					? playerlog.channel && item.active
+				playerlog: playerlog && item.active
+					? playerlog.channel
 					: null,
 				onlinelog: onlinelog && item.active
 					? onlinelog.channel
