@@ -2,7 +2,6 @@ const { Command, Flag, Argument } = require('discord-akairo');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
 const { emoji, leagueEmoji } = require('../../util/emojis');
-const { Util } = require('discord.js');
 const { stripIndent } = require('common-tags');
 const TOKENS = process.env.CLASH_TOKENS.split(',');
 const Excel = require('../../struct/ExcelHandler');
@@ -84,12 +83,12 @@ class MembersCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
-		const header = stripIndent(`${emoji.trophy} **\`\u200eTH ${'TAG'.padEnd(10, ' ')} ${'NAME'.padEnd(15, '\u2002')}\`**`);
+		const header = stripIndent(`${emoji.trophy} **\`\u200eTH ${'TAG'.padEnd(10, ' ')} ${'NAME'.padEnd(15, '\u2002')}\u200f\`**`);
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
-				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}\u200b .\u200f\``),
+				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}\u200f\``),
 			this.paginate(townhall ? filter : items, 25, 50)
-				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${member.name.substring(0, 15).padEnd(15, '\u2002')}\u200b. \u200f\``)
+				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}\u200f\``)
 		];
 
 		if (!pages[1].length) return message.util.send({ embed: embed.setDescription([header, pages[0].join('\n')]) });
