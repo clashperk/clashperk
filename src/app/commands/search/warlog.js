@@ -88,7 +88,7 @@ class WarlogCommand extends Command {
 	result(result) {
 		if (result === 'Won') return `${emoji.ok} Won`;
 		if (result === 'Lost') return `${emoji.wrong} Lost`;
-		if (result === 'Tied') return `${emoji.empty} Tied `;
+		if (result === 'Tied') return `${emoji.empty} Tied`;
 	}
 
 	name(data) {
