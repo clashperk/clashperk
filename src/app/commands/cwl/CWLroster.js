@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
 const moment = require('moment');
 const { status } = require('../../util/constants');
-const { townHallEmoji, BLUE_EMOJI, SAFFRON_EMOJI } = require('../../util/emojis');
+const { townHallEmoji, BLUE_EMOJI, SAFFRON_EMOJI, RED_EMOJI } = require('../../util/emojis');
 
 class CWLRosterComamnd extends Command {
 	constructor() {
@@ -86,7 +86,7 @@ class CWLRosterComamnd extends Command {
 
 			embed.addField(`\u200e${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
 				this.chunk(townHalls)
-					.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} ${SAFFRON_EMOJI[th.total]}`)
+					.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} ${RED_EMOJI[th.total]}`)
 						.join(' '))
 					.join('\n')
 			]);
