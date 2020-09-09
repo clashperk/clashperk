@@ -120,7 +120,8 @@ class Reslover {
 			const req = {
 				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
 				option: {
-					token: KEYS[i % KEYS.length]
+					token: process.env.DEVELOPER_TOKEN, // KEYS[i % KEYS.length],
+					timeout: 8000
 				}
 			};
 			return req;
