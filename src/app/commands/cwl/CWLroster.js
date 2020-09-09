@@ -86,7 +86,7 @@ class CWLRosterComamnd extends Command {
 
 			embed.addField(`\u200e${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
 				this.chunk(townHalls)
-					.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} ${RED_EMOJI[th.total]}`)
+					.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} ${RED_EMOJI[th.total]}\u200b`)
 						.join(' '))
 					.join('\n')
 			]);
