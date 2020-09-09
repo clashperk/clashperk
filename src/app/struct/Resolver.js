@@ -4,7 +4,7 @@ const { Client } = require('clashofclans.js');
 const TOKENS = process.env.CLASH_TOKENS.split(',');
 const { mongodb } = require('./Database');
 const client = new Client({
-	timeout: 5000,
+	timeout: 10000,
 	token: process.env.DEVELOPER_TOKEN
 });
 
@@ -120,8 +120,8 @@ class Reslover {
 			const req = {
 				url: `https://api.clashofclans.com/v1/players/${encodeURIComponent(m.tag)}`,
 				option: {
-					token: process.env.DEVELOPER_TOKEN, // KEYS[i % KEYS.length],
-					timeout: 8000
+					token: KEYS[i % KEYS.length],
+					timeout: 10000
 				}
 			};
 			return req;
