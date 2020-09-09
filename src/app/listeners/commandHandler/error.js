@@ -28,9 +28,9 @@ class ErrorListener extends Listener {
 					: null,
 				command: command
 					? {
-						id: command.id,
-						aliases: command.aliases,
-						category: command.category.id
+						id: command?.id,
+						aliases: command?.aliases,
+						category: command?.category?.id
 					}
 					: null,
 				message: {
@@ -53,20 +53,20 @@ class ErrorListener extends Listener {
 				}
 				: null,
 			command: {
-				id: command.id,
-				aliases: command.aliases,
-				category: command.category.id
+				id: command?.id,
+				aliases: command?.aliases,
+				category: command?.category?.id
 			},
 			message: {
-				id: message.id,
-				content: message.content
+				id: message?.id,
+				content: message?.content
 			}
 		});
 
 		captureException(error);
 
 		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
-		this.client.logger.error(`${command.id} ~ ${error}`, { label });
+		this.client.logger.error(`${command?.id} ~ ${error}`, { label });
 		this.client.logger.error(error, { label });
 
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
