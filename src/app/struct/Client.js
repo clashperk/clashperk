@@ -107,7 +107,7 @@ class ClashPerk extends AkairoClient {
 
 		this.firebase = new Firebase(this);
 		this.firebase = new Firebase(this);
-		this.coc = new Client({ timeout: 5000, token: process.env.DEVELOPER_TOKEN });
+		this.coc = new Client({ timeout: 10000, token: process.env.DEVELOPER_TOKEN });
 		this.embed = message => this.settings.get(message.guild, 'color', 5861569);
 		this.grpc = new routeguide.RouteGuide(process.env.SERVER, grpc.credentials.createInsecure());
 
