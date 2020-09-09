@@ -5,7 +5,7 @@ const { Client } = require('clashofclans.js');
 const { ObjectId } = require('mongodb');
 const moment = require('moment');
 const client = new Client({
-	timeout: 3000,
+	timeout: 10000,
 	token: process.env.CLAN_WAR_TOKEN
 });
 
@@ -545,7 +545,7 @@ class ClanWarEvent {
 
 		for (const id of this.cached.keys()) {
 			await this.exec(id);
-			await this.delay(100);
+			await this.delay(250);
 		}
 	}
 
