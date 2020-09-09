@@ -46,11 +46,9 @@ class ClanEmbedCommand extends Command {
 				.setColor(this.client.embed(message))
 				.setImage('https://i.imgur.com/QNeOD2n.png')
 				.setDescription([
-					'Live Promotional Embed',
-					'',
 					'**Patron only Feature**',
 					'',
-					'[Become a Patron](https://www.patreon.com/join/clashperk)'
+					'[Become a Patron](https://www.patreon.com/join/clashperk) to create this **Live Promotional Embed**'
 				]);
 			return message.util.send({ embed });
 		}
