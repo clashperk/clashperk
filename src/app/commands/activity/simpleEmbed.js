@@ -42,7 +42,17 @@ class ClanEmbedCommand extends Command {
 
 	async exec(message, { data }) {
 		if (!this.client.patron.check(message.author, message.guild)) {
-			return this.handler.handleDirectCommand(message, 'clanembed', this.handler.modules.get('help'), false);
+			const embed = this.client.util.embed()
+				.setColor(this.client.embed(message))
+				.setColor('https://i.imgur.com/QNeOD2n.png')
+				.setDescription([
+					'Creates a live promotional embed for a clan.',
+					'',
+					'**Patron only Feature**',
+					'',
+					'[Become a Patron](https://www.patreon.com/join/clashperk)'
+				]);
+			return message.util.send({ embed });
 		}
 
 		const embed = this.client.util.embed()

@@ -16,11 +16,6 @@ class ClanEmbedCommand extends Command {
 				image: {
 					text: [
 						'**Patron only Feature**',
-						'Live Embed',
-						'Custom Colour',
-						'Set Clan Leader',
-						'Custom TH Level',
-						'Custom Description',
 						'',
 						'[Become a Patron](https://www.patreon.com/join/clashperk)'
 					],
