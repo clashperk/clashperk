@@ -24,9 +24,9 @@ class ClanEmbedCommand extends Command {
 				if (!this.client.patron.get(message.guild.id, 'guild', false)) {
 					const embed = this.client.util.embed()
 						.setColor(this.client.embed(message))
-						.setColor('https://i.imgur.com/QNeOD2n.png')
+						.setImage('https://i.imgur.com/QNeOD2n.png')
 						.setDescription([
-							'Creates a live promotional embed for a clan.',
+							'Live Promotional Embed',
 							'',
 							'**Patron only Feature**',
 							'',
