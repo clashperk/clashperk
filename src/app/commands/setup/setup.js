@@ -60,7 +60,7 @@ class SetupCommand extends Command {
 					.values();
 				embed.addField('__**Setup**__', [
 					Array.from(commands)
-						.concat(this.handler.modules.get('clanembed'))
+						.concat(this.handler.modules.get('setup-clanembed'))
 						.sort((a, b) => a.aliases[0].length - b.aliases[0].length)
 						.map(command => `**\`${prefix}setup ${command.aliases[0]}\`**\n${command.description.content}`)
 						.join('\n')
