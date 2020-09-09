@@ -55,7 +55,7 @@ class RedeemCommand extends Command {
 					'I could not find any patreon account connected to your discord.',
 					'',
 					'Make sure that you are connected and subscribed to ClashPerk.',
-					'Not subscribed yet? [Become a Patron](https://www.patreon.com/bePatron?u=14584309)'
+					'Not subscribed yet? [Become a Patron](https://www.patreon.com/join/clashperk)'
 				])
 				.addField('How to connect?', [
 					'https://www.patreon.com/settings/apps'

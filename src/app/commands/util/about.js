@@ -28,7 +28,7 @@ class AboutCommand extends Command {
 			.addField('Library', `${emoji.nodejs} [discord.js](https://discord.js.org)`)
 			.addField('Website', '[https://clashperk.com](https://clashperk.com/)')
 			.addField('Need help?', 'Join [Support Discord](https://discord.gg/ppuppun)')
-			.addField('Do you like the bot?', '[Become a Patron](https://www.patreon.com/clashperk)')
+			.addField('Do you like the bot?', '[Become a Patron](https://www.patreon.com/join/clashperk)')
 			.addField('Legal Notice', [
 				'This content is not affiliated with, endorsed, sponsored, or specifically approved by Supercell and Supercell is not responsible for it.',
 				'For more information see Supercell\'s [Fan Content Policy](https://www.supercell.com/fan-content-policy \'Fan Content Policy × Supercell\')'

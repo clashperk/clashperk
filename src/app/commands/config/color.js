@@ -14,7 +14,7 @@ class ColorCommand extends Command {
 					'',
 					'**Patron only Feature**',
 					'',
-					'[Become a Patron](https://www.patreon.com/clashperk)'
+					'[Become a Patron](https://www.patreon.com/join/clashperk)'
 				],
 				usage: '<color>',
 				examples: ['#0080ff']
