@@ -1,7 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const Resolver = require('../../struct/Resolver');
-const { townHallEmoji, BLUE_EMOJI, RED_EMOJI } = require('../../util/emojis');
+const { townHallEmoji, BLUE_EMOJI, RED_EMOJI, emoji } = require('../../util/emojis');
 const TOKENS = process.env.CLASH_TOKENS.split(',');
 const fetch = require('node-fetch');
 
@@ -41,7 +41,7 @@ class ThCompoCommand extends Command {
 
 	async exec(message, { data }) {
 		if (data.members < 1) return message.util.send(`\u200e**${data.name}** does not have any clan members...`);
-
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const hrStart = process.hrtime();
 		const KEYS = TOKENS.map(token => ({ n: Math.random(), token })).sort((a, b) => a.n - b.n).map(a => a.token);
 		const requests = data.memberList.map((m, i) => {
