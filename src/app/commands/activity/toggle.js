@@ -5,15 +5,15 @@ const { Op } = require('../../util/constants');
 
 class StopCommand extends Command {
 	constructor() {
-		super('toggle', {
-			aliases: ['stop', 'toggle'],
+		super('stop', {
+			aliases: ['stop', 'toggle', 'remove', 'delete'],
 			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Stop logs and boards in your guild.',
+					'Stops/removes logs and boards in your guild.',
 					'',
 					'**Available Methods**',
 					'• all `<clanTag>`',
@@ -95,10 +95,6 @@ class StopCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		if (method === 'all') {
-			return this.handler.handleDirectCommand(message, tag, this.handler.modules.get('remove'), false);
-		}
-
 		const data = await mongodb.db('clashperk')
 			.collection('clanstores')
 			.findOne({ tag: `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}`, guild: message.guild.id });
@@ -112,6 +108,11 @@ class StopCommand extends Command {
 		}
 
 		const id = ObjectId(data._id).toString();
+		if (method === 'all') {
+			await this.client.storage.delete(id);
+			return this.client.cacheHandler.delete(id, { tag: data.tag });
+		}
+
 		await this.client.storage.stop(data._id, { op: Number(method) });
 		await this.client.cacheHandler.delete(id, { op: Number(method), tag: data.tag });
 		this.delete(id);
