@@ -4,9 +4,9 @@ const { mongodb } = require('../../struct/Database');
 const { Op } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 
-class PlayerLogCommand extends Command {
+class MemberLogCommand extends Command {
 	constructor() {
-		super('playerlog', {
+		super('setup-memberlog', {
 			aliases: ['memberlog', 'clanlog', 'playerlog'],
 			category: 'setup-hidden',
 			channel: 'guild',
@@ -135,4 +135,4 @@ class PlayerLogCommand extends Command {
 	}
 }
 
-module.exports = PlayerLogCommand;
+module.exports = MemberLogCommand;

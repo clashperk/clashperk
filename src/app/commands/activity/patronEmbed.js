@@ -7,7 +7,7 @@ const { Util } = require('discord.js');
 
 class ClanEmbedCommand extends Command {
 	constructor() {
-		super('patron-clanembed', {
+		super('setup-patron-clanembed', {
 			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],

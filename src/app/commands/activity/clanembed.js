@@ -2,7 +2,7 @@ const { Command } = require('discord-akairo');
 
 class ClanEmbedCommand extends Command {
 	constructor() {
-		super('clanembed', {
+		super('setup-clanembed', {
 			aliases: ['clanembed'],
 			category: 'other',
 			channel: 'guild',

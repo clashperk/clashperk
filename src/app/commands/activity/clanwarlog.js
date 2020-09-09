@@ -6,7 +6,7 @@ const Resolver = require('../../struct/Resolver');
 
 class WarLogCommand extends Command {
 	constructor() {
-		super('clan-warlog', {
+		super('setup-clanwarlog', {
 			category: 'setup-hidden',
 			aliases: ['clanwarlog'],
 			channel: 'guild',

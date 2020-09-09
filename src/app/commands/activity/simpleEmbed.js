@@ -4,7 +4,7 @@ const Resolver = require('../../struct/Resolver');
 
 class ClanEmbedCommand extends Command {
 	constructor() {
-		super('simple-clanembed', {
+		super('setup-simple-clanembed', {
 			category: 'hidden',
 			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],

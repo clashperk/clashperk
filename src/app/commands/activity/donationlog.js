@@ -6,7 +6,7 @@ const Resolver = require('../../struct/Resolver');
 
 class DonationLogCommand extends Command {
 	constructor() {
-		super('donationlog', {
+		super('setup-donationlog', {
 			aliases: ['donationlog', 'start', 'setup-donationlog'],
 			category: 'setup-hidden',
 			channel: 'guild',
