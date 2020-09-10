@@ -40,10 +40,10 @@ class ClanEmbedCommand extends Command {
 	async exec(message, { args, simple }) {
 		const patron = this.client.patron.get(message.guild.id, 'guild', false);
 		if (patron && !simple) {
-			return this.handler.handleDirectCommand(message, args, this.handler.modules.get('patron-clanembed'), false);
+			return this.handler.handleDirectCommand(message, args, this.handler.modules.get('setup-patron-clanembed'), false);
 		}
 
-		return this.handler.handleDirectCommand(message, args, this.handler.modules.get('simple-clanembed'), false);
+		return this.handler.handleDirectCommand(message, args, this.handler.modules.get('setup-simple-clanembed'), false);
 	}
 }
 
