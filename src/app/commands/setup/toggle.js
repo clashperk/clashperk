@@ -110,18 +110,14 @@ class StopCommand extends Command {
 		const id = ObjectId(data._id).toString();
 		if (method === 'all') {
 			await this.client.storage.delete(id);
-			return this.client.cacheHandler.delete(id, { tag: data.tag });
+			await this.client.cacheHandler.delete(id, { tag: data.tag });
+			return message.util.send({ embed: { title: `Successfully deleted **${data.name} (${data.tag})**` } });
 		}
 
 		await this.client.storage.stop(data._id, { op: Number(method) });
 		await this.client.cacheHandler.delete(id, { op: Number(method), tag: data.tag });
 		this.delete(id);
-
-		return message.util.send({
-			embed: {
-				title: `Successfully disabled **${data.name} (${data.tag})**`
-			}
-		});
+		return message.util.send({ embed: { title: `Successfully disabled **${data.name} (${data.tag})**` } });
 	}
 
 	async delete(id) {
