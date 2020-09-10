@@ -118,7 +118,9 @@ class CWLGainedComamnd extends Command {
 			}
 		}
 
-		const leaderboard = Object.values(members).sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
+		const leaderboard = Object.values(members)
+			.sort((a, b) => b.stars - a.stars)
+			.sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
 		if (!leaderboard.length) return message.util.send('Nobody attacked in your clan yet, try again after sometime.');
 
 		const embed = this.client.util.embed()
