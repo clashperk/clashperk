@@ -52,12 +52,21 @@ class LinkCommand extends Command {
 		const command1 = this.handler.modules.get('link-clan');
 		const command2 = this.handler.modules.get('link-player');
 		const command3 = this.handler.modules.get('time-offset');
+
 		if (flag1) {
 			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command1, true);
 		} else if (flag2) {
 			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command2, true);
 		} else if (offset) {
 			return this.handler.handleDirectCommand(message, `${rest}`, command3, true);
+		}
+
+		if (!tag) {
+			return message.util.send({
+				embed: {
+					description: 'Provide a correct clan tag or player tag!'
+				}
+			});
 		}
 
 		const tags = await Promise.all([
@@ -117,7 +126,7 @@ class LinkCommand extends Command {
 		} else {
 			return message.util.send({
 				embed: {
-					description: 'I tried to searching your tag as a clan and player but couldn\'t find a match.'
+					description: 'I tried searching your tag as a clan and player but couldn\'t find a match.'
 				}
 			});
 		}
