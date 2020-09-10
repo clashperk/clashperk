@@ -42,7 +42,6 @@ class GuildCreateListener extends Listener {
 	}
 
 	async intro(guild) {
-		if (this.client.guilds.cache.has(guild.id)) return;
 		const prefix = this.client.settings.get(guild, 'prefix', '*');
 		const embed = this.client.util.embed()
 			.setAuthor('Thanks for inviting me, have a nice day!', this.client.user.displayAvatarURL())
