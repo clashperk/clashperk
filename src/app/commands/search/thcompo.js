@@ -7,7 +7,7 @@ const fetch = require('node-fetch');
 
 class ThCompoCommand extends Command {
 	constructor() {
-		super('th-compo', {
+		super('townhall-compo', {
 			aliases: ['compo', 'th-compo', 'th'],
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],

@@ -124,7 +124,7 @@ class CWLGainedComamnd extends Command {
 		if (!leaderboard.length) return message.util.send('Nobody attacked in your clan yet, try again after sometime.');
 
 		const embed = this.client.util.embed()
-			.setAuthor(`${clan.name} ${clan.tag}`, clan.badgeUrls.small)
+			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
 			.setColor(this.client.embed(message))
 			.setDescription([
 				`**\`\u200e # STAR GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
