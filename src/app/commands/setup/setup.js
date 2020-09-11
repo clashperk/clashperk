@@ -43,12 +43,12 @@ class SetupCommand extends Command {
 	*args() {
 		const method = yield {
 			type: [
-				['setup-donationlog', 'dl'],
+				['setup-donationlog', 'dl', 'donationlog'],
 				['setup-lastonlineboard', 'onlineboard', 'ob'],
 				['setup-clangamesboard', 'cgboard', 'cg', 'gameboard'],
 				['setup-patron-clanembed', 'clanembed', 'embed', 'ce'],
 				['setup-clanwarlog', 'warlog', 'clanwarlog', 'wl'],
-				['setup-memberlog', 'clanlog', 'cl', 'pl', 'memberlog']
+				['setup-memberlog', 'clanlog', 'cl', 'pl', 'memberlog', 'ml']
 			],
 			otherwise: message => {
 				const prefix = this.handler.prefix(message);
