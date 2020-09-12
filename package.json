@@ -37,7 +37,7 @@
 		"moment-duration-format": "^2.3.2",
 		"mongodb": "^3.5.9",
 		"ms": "^2.1.2",
-		"node-fetch": "^2.6.0",
+		"node-fetch": "^2.6.1",
 		"shelljs": "^0.8.4"
 	},
 	"devDependencies": {
