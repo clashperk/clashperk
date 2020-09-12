@@ -109,6 +109,7 @@ class CWLRankingComamnd extends Command {
 					const clan = ranking[data.clan.tag]
 						? ranking[data.clan.tag]
 						: ranking[data.clan.tag] = {
+							name: data.clan.name,
 							tag: data.clan.tag,
 							stars: 0,
 							destruction: 0
@@ -123,6 +124,7 @@ class CWLRankingComamnd extends Command {
 						? ranking[data.opponent.tag]
 						: ranking[data.opponent.tag] = {
 							tag: data.opponent.tag,
+							name: data.opponent.name,
 							stars: 0,
 							destruction: 0
 						};
@@ -151,7 +153,6 @@ class CWLRankingComamnd extends Command {
 		}
 
 		const ranks = Object.values(ranking);
-		console.log(ranks);
 		const rank = ranks.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
@@ -190,42 +191,6 @@ class CWLRankingComamnd extends Command {
 			return false;
 		}
 		return false;
-	}
-
-	ranking(data, ranking) {
-		if (data.state === 'warEnded') {
-			ranking.find(({ tag }) => tag === data.clan.tag)
-				.stars += this.winner(data.clan, data.opponent)
-					? data.clan.stars + 10
-					: data.clan.stars;
-
-			ranking.find(({ tag }) => tag === data.clan.tag)
-				.destruction += data.clan.destructionPercentage * data.teamSize;
-
-			ranking.find(({ tag }) => tag === data.opponent.tag)
-				.stars += this.winner(data.opponent, data.clan)
-					? data.opponent.stars + 10
-					: data.opponent.stars;
-
-			ranking.find(({ tag }) => tag === data.opponent.tag)
-				.destruction += data.opponent.destructionPercentage * data.teamSize;
-		}
-
-		if (data.state === 'inWar') {
-			ranking.find(({ tag }) => tag === data.clan.tag)
-				.stars += data.clan.stars;
-
-			ranking.find(({ tag }) => tag === data.clan.tag)
-				.destruction += data.clan.destructionPercentage * data.teamSize;
-
-			ranking.find(({ tag }) => tag === data.opponent.tag)
-				.stars += data.opponent.stars;
-
-			ranking.find(({ tag }) => tag === data.opponent.tag)
-				.destruction += data.opponent.destructionPercentage * data.teamSize;
-		}
-
-		return ranking;
 	}
 }
 
