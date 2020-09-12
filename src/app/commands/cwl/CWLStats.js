@@ -284,6 +284,7 @@ class CWLStatsComamnd extends Command {
 		} else if (clan.destructionPercentage < opponent.destructionPercentage) {
 			return false;
 		}
+		return false;
 	}
 }
 

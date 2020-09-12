@@ -110,21 +110,27 @@ class CWLRankingComamnd extends Command {
 						? ranking[data.clan.tag]
 						: ranking[data.clan.tag] = {
 							tag: data.clan.tag,
-							stars: 0
+							stars: 0,
+							destruction: 0
 						};
 					clan.stars += this.winner(data.clan, data.opponent)
 						? data.clan.stars + 10
 						: data.clan.stars;
 
+					clan.destruction += data.clan.destructionPercentage * data.teamSize;
+
 					const opponent = ranking[data.opponent.tag]
 						? ranking[data.opponent.tag]
 						: ranking[data.opponent.tag] = {
 							tag: data.opponent.tag,
-							stars: 0
+							stars: 0,
+							destruction: 0
 						};
 					opponent.stars += this.winner(data.opponent, data.clan)
 						? data.opponent.stars + 10
 						: data.opponent.stars;
+
+					opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
 				}
 
 				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
@@ -182,6 +188,7 @@ class CWLRankingComamnd extends Command {
 		} else if (clan.destructionPercentage < opponent.destructionPercentage) {
 			return false;
 		}
+		return false;
 	}
 
 	ranking(data, ranking) {
