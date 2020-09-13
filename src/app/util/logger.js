@@ -28,7 +28,7 @@ class Logger {
 		const content = this.clean(message);
 		const stream = error ? process.stderr : process.stdout;
 		const shard = this.shard(this.client);
-		stream.write(`[${timestamp}]${shard} ${chalk[color].bold(tag)} » [${label}] » ${content}\n`);
+		stream.write(`[${timestamp}] ${chalk[color].bold(tag)}${shard} » [${label}] » ${content}\n`);
 	}
 
 	clean(item) {
