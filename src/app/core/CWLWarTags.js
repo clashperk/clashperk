@@ -45,6 +45,33 @@ class CWLWarTags {
 
 		return this.set(tag, warTags, rounds);
 	}
+
+	static async warUpdate(tag, data) {
+		const db = mongodb.db('clashperk').collection('clanwarhistory');
+		const [set, inc] = [{}, {}];
+		set.name = data.clan.name;
+		set.tag = data.clan.tag;
+		for (const mem of data.clan.members) {
+			const { stars, destructions } = this.reduce(mem.attacks);
+			set[`members.${mem.tag}.tag`] = mem.tag;
+			set[`members.${mem.tag}.name`] = mem.name;
+			set[`mmebers.${mem.tag}.updatedAt`] = new Date();
+			inc[`members.${mem.tag}.stars`] = stars;
+			inc[`members.${mem.tag}.destructions`] = destructions;
+			inc[`members.${mem.tag}.wars`] = 1;
+		}
+
+		return db.updateOne({ tag }, { $set: set, $inc: inc }, { upsert: true });
+	}
+
+	static reduce(attacks = []) {
+		let [stars, destructions] = [0, 0];
+		for (const attack of attacks) {
+			stars += attack.stars;
+			destructions += attack.destructions;
+		}
+		return { stars, destructions };
+	}
 }
 
 module.exports = CWLWarTags;

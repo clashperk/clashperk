@@ -3,6 +3,7 @@ const { mongodb } = require('../struct/Database');
 const { MessageEmbed, Util } = require('discord.js');
 const { Client } = require('clashofclans.js');
 const { ObjectId } = require('mongodb');
+const WarHistory = require('./CWLWarTags');
 const moment = require('moment');
 const client = new Client({
 	timeout: 10000,
@@ -242,6 +243,7 @@ class ClanWarEvent {
 					}
 				});
 			if (this.missing(data)) await channel.send({ embed: this.missing(data) });
+			// await WarHistory.warUpdate(data.clan.tag, data).catch(() => null);
 		}
 
 		// overwrite the timer for last 1 hour
