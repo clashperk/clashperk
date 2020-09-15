@@ -167,7 +167,7 @@ class Reslover {
 	static players(id) {
 		return players.filter(d => d.discordId === id)
 			.filter(d => /^#?[PYLQGRJCUV0O289]+$/i.test(d?.playerTag))
-			.map(d => `#${d.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0')}`);
+			.map(d => `#${d.playerTag.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0')}`);
 	}
 }
 
