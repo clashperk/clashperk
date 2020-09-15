@@ -7,6 +7,7 @@ const client = new Client({
 	timeout: 10000,
 	token: process.env.DEVELOPER_TOKEN
 });
+const players = require('../../../players.json');
 
 class Reslover {
 	static async resolve(message, args, boolean = false) {
@@ -28,6 +29,9 @@ class Reslover {
 				.findOne({ user: member.id });
 
 			if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);
+
+			const list = this.players(member.id);
+			if (list) return this.player(list.playerTag);
 
 			if (message.author.id !== member.id) {
 				embed.setDescription([
@@ -158,6 +162,10 @@ class Reslover {
 			]);
 
 		return embed;
+	}
+
+	static players(id) {
+		return players.find(d => d.discordId === id);
 	}
 }
 
