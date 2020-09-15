@@ -50,7 +50,7 @@ class UsageCommand extends Command {
 					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${uses.toString().padStart(5, ' ')}x  ${command.padEnd(15, ' ')}\u200f\``;
 				})
 		]);
-		embed.addField('Per day Growth', [
+		embed.addField('Today\'s Growth', [
 			'```diff',
 			`+ | ${addition.toString().padStart(2, ' ')} addition`,
 			`- | ${Math.abs(deletion).toString().padStart(2, ' ')} deletion`,
