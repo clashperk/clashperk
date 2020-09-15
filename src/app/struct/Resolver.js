@@ -31,7 +31,7 @@ class Reslover {
 			if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);
 
 			const otherTags = this.players(member.id);
-			if (otherTags) return this.player(otherTags[0]);
+			if (otherTags.length) return this.player(otherTags[0]);
 
 			if (message.author.id !== member.id) {
 				embed.setDescription([
