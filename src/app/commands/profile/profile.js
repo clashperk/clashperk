@@ -3,6 +3,7 @@ const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const { mongodb } = require('../../struct/Database');
 const { emoji, townHallEmoji, heroEmoji } = require('../../util/emojis');
+const Resolver = require('../../struct/Resolver');
 const moment = require('moment');
 const ms = require('ms');
 
@@ -87,7 +88,8 @@ class ProfileCommand extends Command {
 			}
 		}
 
-		if (!data || (data && !data.tags.length)) {
+		const otherTags = Resolver.players(member.id).map(d => d.playerTag);
+		if (!data?.tags?.length && !otherTags?.length) {
 			embed.setDescription([
 				embed.description,
 				'',
@@ -96,7 +98,7 @@ class ProfileCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		for (const tag of data.tags) {
+		for (const tag of data?.tags ?? otherTags) {
 			index += 1;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',

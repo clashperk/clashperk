@@ -30,8 +30,8 @@ class Reslover {
 
 			if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);
 
-			const list = this.players(member.id);
-			if (list) return this.player(list.playerTag);
+			const lists = this.players(member.id);
+			if (lists) return this.player(lists[0].playerTag);
 
 			if (message.author.id !== member.id) {
 				embed.setDescription([
@@ -165,7 +165,9 @@ class Reslover {
 	}
 
 	static players(id) {
-		return players.find(d => d.discordId === id);
+		return players.filter(d => d.discordId === id)
+			.filter(d => /^#?[PYLQGRJCUV0O289]+$/i.test(d?.playerTag))
+			.map(d => `#${d.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0')}`);
 	}
 }
 
