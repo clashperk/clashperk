@@ -88,7 +88,7 @@ class ProfileCommand extends Command {
 			}
 		}
 
-		const otherTags = Resolver.players(member.id).map(d => d.playerTag);
+		const otherTags = Resolver.players(member.id);
 		if (!data?.tags?.length && !otherTags?.length) {
 			embed.setDescription([
 				embed.description,
