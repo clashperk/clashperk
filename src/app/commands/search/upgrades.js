@@ -46,7 +46,7 @@ class UpgradesCommand extends Command {
 
 	async embed(data, option) {
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`, `https://coc.guide/static/imgs/other/town-hall-${data.townHallLevel}.png`, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`);
+			.setAuthor(`${data.name} (${data.tag})`, `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`);
 
 		let index = 0;
 		let troopLevels = '';
