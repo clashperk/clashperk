@@ -98,7 +98,8 @@ class ProfileCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		for (const tag of data?.tags ?? otherTags) {
+		const tags = new Set([...data?.tags ?? [], ...otherTags]);
+		for (const tag of tags.values()) {
 			index += 1;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
@@ -114,6 +115,7 @@ class ProfileCommand extends Command {
 
 			if (index === 25) break;
 		}
+		tags.clear();
 
 		embed.setFooter(`${collection.length} Account${collection.length === 1 ? '' : 's'} Linked`, 'https://cdn.discordapp.com/emojis/658538492409806849.png');
 		collection.map(a => embed.addField('\u200b', [a.field, ...a.values]));
