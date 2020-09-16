@@ -240,10 +240,10 @@ function renderChart(width, height, backgroundColor, devicePixelRatio, chart, bu
 				const { ctx } = chartInstance.chart;
 				ctx.fillStyle = backgroundColor;
 				ctx.fillRect(0, 0, chartInstance.chart.width, chartInstance.chart.height);
-				ctx.drawImage(buffer, 425, 12, 15, 15);
+				ctx.drawImage(buffer, width - 75, 12, 15, 15);
 				ctx.font = 'bold 8px sans-serif';
 				ctx.fillStyle = '#666';
-				ctx.fillText('ClashPerk', 442, 20);
+				ctx.fillText('ClashPerk', width - 58, 20);
 			}
 		}
 	});

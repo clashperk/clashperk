@@ -1,5 +1,7 @@
 const { Command } = require('discord-akairo');
 const { firebase } = require('../../struct/Database');
+const Chart = require('../../core/ChartHandler');
+// const { MessageAttachment } = require('discord.js');
 
 class UsageCommand extends Command {
 	constructor() {
@@ -23,11 +25,14 @@ class UsageCommand extends Command {
 		// const users = await this.users();
 		const { commands, total } = await this.commands();
 		const { addition, deletion, growth } = await this.growth();
+		// const buffer = await this.buffer();
 
+		// const file = new MessageAttachment(buffer, 'growth.png');
 		const embed = this.client.util.embed()
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.setColor(this.client.embed(message))
 			.setTitle('Usage')
+			// .setImage('attachment://growth.png')
 			.setURL('https://clashperk.statuspage.io/')
 			.setFooter(`${total}x Total • Since April 2019`);
 		/* embed.addField('Users', [
@@ -44,7 +49,7 @@ class UsageCommand extends Command {
 		]);*/
 		embed.setDescription([
 			`__**\`\u200e # ${'Uses'.padStart(6, ' ')}  ${'CommandID'.padEnd(15, ' ')}\u200f\`**__`,
-			...commands.splice(0, 15)
+			...commands.splice(0, 10)
 				.map(({ id, uses }, index) => {
 					const command = this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '');
 					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${uses.toString().padStart(5, ' ')}x  ${command.padEnd(15, ' ')}\u200f\``;
@@ -58,7 +63,7 @@ class UsageCommand extends Command {
 			'```'
 		]);
 
-		return message.util.send({ embed });
+		return message.util.send({ embed /* files: [file]*/ });
 	}
 
 	async users() {
@@ -104,6 +109,18 @@ class UsageCommand extends Command {
 		const data = await ref.once('value').then(snap => snap.val());
 		if (!data) return { addition: 0, deletion: 0, growth: 0 };
 		return { addition: data.addition, deletion: data.deletion, growth: data.addition + data.deletion };
+	}
+
+	async buffer() {
+		const data = await firebase.ref('growth')
+			.once('value')
+			.then(snap => snap.val());
+		const collection = [];
+		for (const [key, value] of Object.entries(data)) {
+			collection.push({ date: new Date(key), value });
+		}
+		collection.sort((a, b) => a.date - b.date);
+		return Chart.growth(collection.slice(-10));
 	}
 
 	async commandsTotal() {
