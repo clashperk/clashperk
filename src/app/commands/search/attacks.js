@@ -92,14 +92,14 @@ class ClanAttacksCommand extends Command {
 					const name = `${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}`;
 					const attackWins = `${member.attackWins.toString().padStart(3, '\u2002')}`;
 					const defenseWins = `${member.defenseWins.toString().padStart(3, '\u2002')}`;
-					return `\`\u200e${this.padStart(member.townHallLevel)} ${attackWins} ${defenseWins} ${name}\``;
+					return `\`\u200e${this.padStart(member.townHallLevel)} ${attackWins} ${defenseWins}  ${name}\``;
 				}),
 			this.paginate(townhall ? filter : items, 25, 50)
 				.items.map(member => {
 					const name = `${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}`;
 					const attackWins = `${member.attackWins.toString().padStart(3, '\u2002')}`;
 					const defenseWins = `${member.defenseWins.toString().padStart(3, '\u2002')}`;
-					return `\`\u200e${this.padStart(member.townHallLevel)} ${attackWins} ${defenseWins}  ${name}\u200f\``;
+					return `\`\u200e${this.padStart(member.townHallLevel)} ${attackWins} ${defenseWins}  ${name}\``;
 				})
 		];
 
