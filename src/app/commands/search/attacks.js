@@ -85,21 +85,21 @@ class ClanAttacksCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
-		const header = stripIndent(`**\`\u200e${emoji.hash} ${'ATK'}  ${'DEF'}  ${'NAME'.padEnd(15, '\u2002')}\`**`);
+		const header = stripIndent(`${emoji.hash} **\`\u200e${'ATK'}  ${'DEF'}  ${'NAME'.padEnd(15, '\u2002')}\`**`);
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
 				.items.map((member, i) => {
 					const name = `${member.name.replace(/\`/g, '\\').padEnd(15, '\u2002')}`;
 					const attackWins = `${member.attackWins.toString().padStart(3, '\u2002')}`;
 					const defenseWins = `${member.defenseWins.toString().padStart(3, '\u2002')}`;
-					return `\`\u200e${RED_EMOJI[i + 1]} ${attackWins}  ${defenseWins}  ${name}\``;
+					return `${RED_EMOJI[i + 1]} \`\u200e${attackWins}  ${defenseWins}  ${name}\``;
 				}),
 			this.paginate(townhall ? filter : items, 25, 50)
 				.items.map((member, i) => {
 					const name = `${member.name.replace(/\`/g, '\\').padEnd(15, '\u2002')}`;
 					const attackWins = `${member.attackWins.toString().padStart(3, '\u2002')}`;
 					const defenseWins = `${member.defenseWins.toString().padStart(3, '\u2002')}`;
-					return `\`\u200e${RED_EMOJI[i + 26]} ${attackWins}  ${defenseWins}  ${name}\``;
+					return `${RED_EMOJI[i + 26]} \`\u200e${attackWins}  ${defenseWins}  ${name}\``;
 				})
 		];
 
