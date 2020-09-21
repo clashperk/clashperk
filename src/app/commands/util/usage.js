@@ -33,24 +33,24 @@ class UsageCommand extends Command {
 
 	async exec(message, { growth: graph, limit }) {
 		if (graph) {
+			const { addition, deletion, growth } = await this.growth();
 			const buffer = await this.buffer(limit);
 			const file = new MessageAttachment(buffer, 'growth.png');
 			const embed = new MessageEmbed()
-				.setImage('attachment://growth.png');
+				.setAuthor('ClashPerk Growth')
+				.setColor(this.client.embed(message))
+				.setImage('attachment://growth.png')
+				.setFooter(`Today's Growth: ${addition}/${Math.abs(deletion)}/${growth}`);
 			return message.util.send({ embed, files: [file] });
 		}
+
 		// const guilds = await this.guilds();
 		// const users = await this.users();
 		const { commands, total } = await this.commands();
-		const { addition, deletion, growth } = await this.growth();
-		// const buffer = await this.buffer();
-
-		// const file = new MessageAttachment(buffer, 'growth.png');
 		const embed = this.client.util.embed()
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
 			.setColor(this.client.embed(message))
 			.setTitle('Usage')
-			// .setImage('attachment://growth.png')
 			.setURL('https://clashperk.statuspage.io/')
 			.setFooter(`${total}x Total • Since April 2019`);
 		/* embed.addField('Users', [
@@ -67,21 +67,14 @@ class UsageCommand extends Command {
 		]);*/
 		embed.setDescription([
 			`__**\`\u200e # ${'Uses'.padStart(6, ' ')}  ${'CommandID'.padEnd(15, ' ')}\u200f\`**__`,
-			...commands.splice(0, 10)
+			...commands.splice(0, 15)
 				.map(({ id, uses }, index) => {
 					const command = this.client.commandHandler.modules.get(id).aliases[0].replace(/-/g, '');
 					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${uses.toString().padStart(5, ' ')}x  ${command.padEnd(15, ' ')}\u200f\``;
 				})
 		]);
-		embed.addField('Today\'s Growth', [
-			'```diff',
-			`+ | ${addition.toString().padStart(2, ' ')} addition`,
-			`- | ${Math.abs(deletion).toString().padStart(2, ' ')} deletion`,
-			`${growth >= 0 ? '+' : '-'} | ${growth.toString().padStart(2, ' ')} growth`,
-			'```'
-		]);
 
-		return message.util.send({ embed /* files: [file]*/ });
+		return message.util.send({ embed });
 	}
 
 	async users() {
@@ -121,7 +114,7 @@ class UsageCommand extends Command {
 	}
 
 	async growth() {
-		const now = new Date(new Date().getTime() + 198e5);
+		const now = new Date(Date.now() + 198e5);
 		const id = [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('-');
 		const ref = firebase.ref('growth').child(id);
 		const data = await ref.once('value').then(snap => snap.val());
