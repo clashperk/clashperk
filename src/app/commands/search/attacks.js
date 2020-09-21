@@ -103,7 +103,7 @@ class ClanAttacksCommand extends Command {
 				})
 		];
 
-		if (true) return message.util.send({ embed: embed.setDescription(['```', header, pages[0].join('\n')], '```') });
+		if (true) return message.util.send({ embed: embed.setDescription(['```', header, pages[0].join('\n'), '```']) });
 
 		let page = 0;
 		const msg = await message.util.send({
