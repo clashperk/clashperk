@@ -8,12 +8,12 @@ const Excel = require('../../struct/ExcelHandler');
 
 class ClanAttacksCommand extends Command {
 	constructor() {
-		super('clan-attacks', {
-			aliases: ['clan-attacks'],
+		super('attacks', {
+			aliases: ['attacks'],
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES'],
 			description: {
-				content: '',
+				content: 'Shows attacks and defense of all members.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
@@ -111,13 +111,13 @@ class ClanAttacksCommand extends Command {
 				.setFooter(`Page 1/2 (${data.members}/50)`)
 		});
 
-		for (const emoji of ['⬅️', '➡️', '➕', '📥']) {
+		for (const emoji of ['⬅️', '➡️', '➕']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕', '⬅️', '➡️', '📥'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['➕', '⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 90000, max: 10 }
 		);
 
