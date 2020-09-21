@@ -1,7 +1,7 @@
 const { Command, Flag, Argument } = require('discord-akairo');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
-const { emoji, RED_EMOJI } = require('../../util/emojis');
+const { emoji } = require('../../util/emojis');
 const { stripIndent } = require('common-tags');
 const TOKENS = process.env.CLASH_TOKENS.split(',');
 const Excel = require('../../struct/ExcelHandler');
@@ -85,21 +85,21 @@ class ClanAttacksCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
-		const header = stripIndent(`${emoji.hash} **\`\u200e${'ATK'}  ${'DEF'}  ${'NAME'.padEnd(15, '\u2002')}\`**`);
+		const header = stripIndent(`**\`\u200e${'#'}  ${'ATK'}  ${'DEF'}  ${'NAME'.padEnd(15, '\u2002')}\`**`);
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
 				.items.map((member, i) => {
 					const name = `${member.name.replace(/\`/g, '\\').padEnd(15, '\u2002')}`;
 					const attackWins = `${member.attackWins.toString().padStart(3, '\u2002')}`;
 					const defenseWins = `${member.defenseWins.toString().padStart(3, '\u2002')}`;
-					return `${RED_EMOJI[i + 1]} \`\u200e${attackWins}  ${defenseWins}  ${name}\``;
+					return `\`\u200e${(i + 1).toString().padStart(2, '0')} ${attackWins}  ${defenseWins}  ${name}\``;
 				}),
 			this.paginate(townhall ? filter : items, 25, 50)
 				.items.map((member, i) => {
 					const name = `${member.name.replace(/\`/g, '\\').padEnd(15, '\u2002')}`;
 					const attackWins = `${member.attackWins.toString().padStart(3, '\u2002')}`;
 					const defenseWins = `${member.defenseWins.toString().padStart(3, '\u2002')}`;
-					return `${RED_EMOJI[i + 26]} \`\u200e${attackWins}  ${defenseWins}  ${name}\``;
+					return `\`\u200e${(i + 26).toString().padStart(2, '0')} ${attackWins}  ${defenseWins}  ${name}\``;
 				})
 		];
 
