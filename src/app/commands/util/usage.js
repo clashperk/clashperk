@@ -1,7 +1,7 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 const { firebase } = require('../../struct/Database');
 const Chart = require('../../core/ChartHandler');
-// const { MessageAttachment } = require('discord.js');
+const { MessageAttachment, MessageEmbed } = require('discord.js');
 
 class UsageCommand extends Command {
 	constructor() {
@@ -11,7 +11,18 @@ class UsageCommand extends Command {
 			description: {
 				content: 'Displays the usage statistics of the bot.'
 			},
-			clientPermissions: ['EMBED_LINKS']
+			clientPermissions: ['EMBED_LINKS'],
+			args: [
+				{
+					id: 'growth',
+					type: ['growth']
+				},
+				{
+					id: 'limit',
+					type: Argument.range('integer', 10, 30, true),
+					default: 10
+				}
+			]
 		});
 	}
 
@@ -20,7 +31,14 @@ class UsageCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message) {
+	async exec(message, { growth: graph, limit }) {
+		if (graph) {
+			const buffer = await this.buffer(limit);
+			const file = new MessageAttachment(buffer, 'growth.png');
+			const embed = new MessageEmbed()
+				.setImage('attachment://growth.png');
+			return message.util.send({ embed, files: [file] });
+		}
 		// const guilds = await this.guilds();
 		// const users = await this.users();
 		const { commands, total } = await this.commands();
@@ -111,7 +129,7 @@ class UsageCommand extends Command {
 		return { addition: data.addition, deletion: data.deletion, growth: data.addition + data.deletion };
 	}
 
-	async buffer() {
+	async buffer(limit) {
 		const data = await firebase.ref('growth')
 			.once('value')
 			.then(snap => snap.val());
@@ -120,7 +138,7 @@ class UsageCommand extends Command {
 			collection.push({ date: new Date(key), value });
 		}
 		collection.sort((a, b) => a.date - b.date);
-		return Chart.growth(collection.slice(-10));
+		return Chart.growth(collection.slice(-limit));
 	}
 
 	async commandsTotal() {
