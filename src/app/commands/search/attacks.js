@@ -85,7 +85,7 @@ class ClanAttacksCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
-		const header = stripIndent(`**\`\u200eTH ${'ATK'} ${'DEF'} ${'NAME'.padEnd(15, '\u2002')}\`**`);
+		const header = stripIndent(`**\`\u200eTH ${'ATK'} ${'DEF'}  ${'NAME'.padEnd(15, '\u2002')}\`**`);
 		const pages = [
 			this.paginate(townhall ? filter : items, 0, 25)
 				.items.map(member => {
@@ -99,7 +99,7 @@ class ClanAttacksCommand extends Command {
 					const name = `${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}`;
 					const attackWins = `${member.attackWins.toString().padStart(3, '\u2002')}`;
 					const defenseWins = `${member.defenseWins.toString().padStart(3, '\u2002')}`;
-					return `\`\u200e${this.padStart(member.townHallLevel)} ${attackWins} ${defenseWins} ${name}\``;
+					return `\`\u200e${this.padStart(member.townHallLevel)} ${attackWins} ${defenseWins}  ${name}\u200f\``;
 				})
 		];
 
