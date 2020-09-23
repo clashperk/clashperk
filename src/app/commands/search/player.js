@@ -102,9 +102,10 @@ class PlayerCommand extends Command {
 		if (flag) {
 			const timeZone = await mongodb.db('clashperk').collection('timezoneoffset').findOne({ user: message.author.id });
 			const user = await this.client.users.fetch(flag.user, false).catch(() => null);
+			const createdAt = new Date(new Date(flag.createdAt).getTime() + (timeZone?.offset ?? 0 * 1000));
 			embed.addField('Flag', [
-				flag.reason,
-				`\`${user ? user.tag : 'Unknown#0000'} (${moment(new Date(flag.createdAt + (timeZone?.offset ?? 0 * 1000))).format('DD-MM-YYYY hh:mm')})\``
+				`${flag.reason}`,
+				`\`${user ? user.tag : 'Unknown#0000'} (${moment(createdAt).format('DD-MM-YYYY hh:mm')})\``
 			]);
 		}
 
