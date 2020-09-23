@@ -15,9 +15,9 @@ class ReloadCommand extends Command {
 	async exec(message) {
 		const reloaded = await this.client.shard.broadcastEval(
 			`
-			this.commandHandler.reloadAll();
-			this.listenerHandler.reloadAll();
-			this.inhibitorHandler.reloadAll();
+			this.commandHandler.removeAll() && this.commandHandler.loadAll();
+			this.listenerHandler.removeAll() && this.listenerHandler.loadAll();
+			this.inhibitorHandler.removeAll() && this.inhibitorHandler.loadAll();
 			`
 		).catch(() => null);
 
