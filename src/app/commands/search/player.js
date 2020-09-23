@@ -6,6 +6,13 @@ const Resolver = require('../../struct/Resolver');
 const { leagueId } = require('../../util/constants');
 const { emoji, townHallEmoji, heroEmoji, leagueEmoji, starEmoji } = require('../../util/emojis');
 
+const roles = {
+	member: 'Member',
+	admin: 'Elder',
+	coLeader: 'Co-Leader',
+	leader: 'Leader'
+};
+
 class PlayerCommand extends Command {
 	constructor() {
 		super('player', {
@@ -78,11 +85,7 @@ class PlayerCommand extends Command {
 		});
 
 		if (data.clan) {
-			const role = data.role.replace(/admin/g, 'Elder')
-				.replace(/coLeader/g, 'Co-Leader')
-				.replace(/member/g, 'Member')
-				.replace(/leader/g, 'Leader');
-			embed.addField(`Clan ${role}`, `${emoji.clan} [${data.clan.name}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)})`);
+			embed.addField(`Clan ${roles[data.role]}`, `${emoji.clan} [${data.clan.name}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)})`);
 		}
 
 		let heroLevels = '';
