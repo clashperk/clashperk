@@ -104,7 +104,7 @@ class PlayerCommand extends Command {
 			const offset = await this.offset(message);
 			embed.addField('Flag', [
 				`${flag.reason}`,
-				`\`${user ? user.tag : 'Unknown#0000'} (${moment(flag.createdAt).utcOffset(offset).format('DD-MM-YYYY hh:mm')})\``
+				`\`${user ? user.tag : 'Unknown#0000'} (${moment(flag.createdAt).utcOffset(offset).format('DD-MM-YYYY kk:mm')})\``
 			]);
 		}
 
