@@ -100,13 +100,11 @@ class PlayerCommand extends Command {
 
 		const flag = await this.flag(message, data.tag);
 		if (flag) {
-			const d = await mongodb.db('clashperk').collection('timezoneoffset').findOne({ user: message.author.id });
 			const user = await this.client.users.fetch(flag.user, false).catch(() => null);
-			const created = new Date(new Date(flag.createdAt) + (d.timezone.offset ?? 0 * 1000));
-
+			const offset = await this.offset(message);
 			embed.addField('Flag', [
 				`${flag.reason}`,
-				`\`${user ? user.tag : 'Unknown#0000'} (${moment(created).format('DD-MM-YYYY hh:mm')})\``
+				`\`${user ? user.tag : 'Unknown#0000'} (${moment(flag.createdAt).utcOffset(offset).format('DD-MM-YYYY hh:mm')})\``
 			]);
 		}
 
@@ -118,6 +116,15 @@ class PlayerCommand extends Command {
 			.collection('flaggedusers')
 			.findOne({ guild: message.guild.id, tag });
 		return data;
+	}
+
+	async offset(message) {
+		const data = await mongodb.db('clashperk').collection('timezoneoffset').findOne({ user: message.author.id });
+		const prefix = data?.timezone?.rawOffset + data?.timezone?.dstOffset < 0 ? '-' : '+';
+		const seconds = data?.timezone?.offset ?? 0;
+		const hours = Math.floor(seconds / 3600);
+		const minutes = Math.floor(seconds % 3600 / 60);
+		return `${prefix}${hours >= 1 ? `0${hours}`.slice(-2) : '00'}:${minutes >= 1 ? `0${minutes}`.slice(-2) : '00'}`;
 	}
 }
 

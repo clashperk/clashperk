@@ -57,18 +57,18 @@ class TimeOffsetCommand extends Command {
 				moment(new Date(Date.now() + ((raw.timezone.rawOffset + raw.timezone.dstOffset) * 1000))).format('MM/DD/YYYY hh:mm A'),
 				'',
 				'**Offset**',
-				`${raw.timezone.rawOffset + raw.timezone.dstOffset < 0 ? '-' : '+'}${this.timeString((raw.timezone.rawOffset + raw.timezone.dstOffset) * 1000)}`
+				`${raw.timezone.rawOffset + raw.timezone.dstOffset < 0 ? '-' : '+'}${this.offset((raw.timezone.rawOffset + raw.timezone.dstOffset) * 1000)}`
 			])
 			.setFooter(`${message.author.tag}`, message.author.displayAvatarURL());
 		return message.util.send(`Time zone set to **${raw.timezone.timeZoneName}**`, { embed });
 	}
 
-	timeString(seconds, ms = true) {
+	offset(seconds, ms = true) {
 		seconds = Math.abs(seconds);
 		if (ms) seconds /= 1000;
 		const hours = Math.floor(seconds / 3600);
 		const minutes = Math.floor(seconds % 3600 / 60);
-		return `${hours >= 1 ? `${hours}:` : ''}${hours >= 1 ? `0${minutes}`.slice(-2) : minutes}`;
+		return `${hours >= 1 ? `0${hours}`.slice(-2) : '00'}:${minutes >= 1 ? `0${minutes}`.slice(-2) : '00'}`;
 	}
 }
 
