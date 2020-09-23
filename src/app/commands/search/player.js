@@ -98,19 +98,20 @@ class PlayerCommand extends Command {
 		if (heroLevels) embed.addField('Heroes', heroLevels);
 
 
-		const body = await this.note(message, data.tag);
-		if (body) {
-			const user = await this.client.users.fetch(body.user, false).catch(() => null);
+		const flag = await this.flag(message, data.tag);
+		if (flag) {
+			const timeZone = await mongodb.db('clashperk').collection('timezoneoffset').findOne({ user: message.author.id });
+			const user = await this.client.users.fetch(flag.user, false).catch(() => null);
 			embed.addField('Flag', [
-				body.reason,
-				`\`${user ? user.tag : 'Unknown#0000'} (${moment(body.createdAt).format('DD-MM-YYYY hh:mm')})\``
+				flag.reason,
+				`\`${user ? user.tag : 'Unknown#0000'} (${moment(new Date(flag.createdAt + (timeZone?.offset ?? 0 * 1000))).format('DD-MM-YYYY hh:mm')})\``
 			]);
 		}
 
 		return message.util.send({ embed });
 	}
 
-	async note(message, tag) {
+	async flag(message, tag) {
 		const data = await mongodb.db('clashperk')
 			.collection('flaggedusers')
 			.findOne({ guild: message.guild.id, tag });
