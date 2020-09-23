@@ -120,8 +120,8 @@ class PlayerCommand extends Command {
 
 	async offset(message) {
 		const data = await mongodb.db('clashperk').collection('timezoneoffset').findOne({ user: message.author.id });
-		const prefix = data?.timezone?.rawOffset + data?.timezone?.dstOffset < 0 ? '-' : '+';
-		const seconds = data?.timezone?.offset ?? 0;
+		const prefix = data?.timezone?.offset < 0 ? '-' : '+';
+		const seconds = Math.abs(data?.timezone?.offset ?? 0);
 		const hours = Math.floor(seconds / 3600);
 		const minutes = Math.floor(seconds % 3600 / 60);
 		return `${prefix}${hours >= 1 ? `0${hours}`.slice(-2) : '00'}:${minutes >= 1 ? `0${minutes}`.slice(-2) : '00'}`;
