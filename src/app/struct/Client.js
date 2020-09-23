@@ -73,18 +73,6 @@ class ClashPerk extends AkairoClient {
 
 		this.inhibitorHandler = new InhibitorHandler(this, { directory: path.join(__dirname, '..', 'inhibitors') });
 		this.listenerHandler = new ListenerHandler(this, { directory: path.join(__dirname, '..', 'listeners') });
-
-		setInterval(() => {
-			for (const guild of this.guilds.cache.values()) {
-				guild.presences.cache.clear();
-				for (const id of guild.members.cache.keys()) {
-					if (this.user.id !== id) {
-						guild.members.cache.delete(id);
-					}
-				}
-				this.users.cache.clear();
-			}
-		}, 5 * 60 * 1000);
 	}
 
 	async init() {
