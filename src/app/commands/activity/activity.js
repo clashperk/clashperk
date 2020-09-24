@@ -134,7 +134,10 @@ class ActivityCommand extends Command {
 			},
 			{
 				$group: {
-					_id: '$dates.time',
+					_id: {
+						id: '$dates.time',
+						clan: '$clan'
+					},
 					count: {
 						$sum: 1
 					}
