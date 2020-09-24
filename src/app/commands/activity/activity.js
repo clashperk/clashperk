@@ -134,24 +134,15 @@ class ActivityCommand extends Command {
 			},
 			{
 				$group: {
-					_id: {
-						id: '$dates.time',
-						clan: '$clan'
-					},
+					_id: '$dates.time',
 					count: {
 						$sum: 1
 					}
 				}
 			},
 			{
-				'$addFields': {
-					'clan': '$_id.clan',
-					'_id': '$_id.id'
-				}
-			},
-			{
 				$group: {
-					_id: '$clan.tag',
+					_id: null,
 					entries: {
 						$addToSet: {
 							time_: {
@@ -162,9 +153,6 @@ class ActivityCommand extends Command {
 							time: '$_id',
 							count: '$count'
 						}
-					},
-					name: {
-						$first: '$clan.name'
 					}
 				}
 			}
