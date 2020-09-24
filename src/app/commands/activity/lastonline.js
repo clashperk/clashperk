@@ -104,7 +104,7 @@ class LastOnlineCommand extends Command {
 		const collection = await db.aggregate([
 			{
 				$match: {
-					'clan.tag': clan.tag,
+					// 'clan.tag': clan.tag,
 					tag: { $in: [...clan.memberList.map(m => m.tag)] }
 				}
 			},
@@ -136,7 +136,7 @@ class LastOnlineCommand extends Command {
 			},
 			{
 				$group: {
-					_id: '$clan.tag',
+					_id: null,
 					members: {
 						$addToSet: {
 							count: '$size',
