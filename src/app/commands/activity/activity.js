@@ -144,16 +144,22 @@ class ActivityCommand extends Command {
 				}
 			},
 			{
+				'$addFields': {
+					'clan': '$_id.clan',
+					'_id': '$_id.id'
+				}
+			},
+			{
 				$group: {
-					_id: '$_id.clan.tag',
+					_id: '$clan',
 					entries: {
 						$addToSet: {
 							time_: {
 								$dateFromString: {
-									dateString: '$_id.id'
+									dateString: '$_id'
 								}
 							},
-							time: '$_id.id',
+							time: '$_id',
 							count: '$count'
 						}
 					},
