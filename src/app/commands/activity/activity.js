@@ -85,7 +85,7 @@ class ActivityCommand extends Command {
 	}
 
 	async aggregationQuery(tags) {
-		const db = mongodb.db('clashperk').collection('last_onlines');
+		const db = mongodb.db('clashperk').collection('lastonlines');
 		return db.aggregate([
 			{
 				$match: { 'clan.tag': { $in: [...tags] } }
