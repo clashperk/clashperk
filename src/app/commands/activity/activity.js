@@ -56,10 +56,7 @@ class ActivityCommand extends Command {
 	async exec(message, { tags, dark }) {
 		if (!tags.length) return;
 		tags.splice(3);
-		const db = mongodb.db('clashperk').collection('lastonlines');
-		const clans = await Promise.all([
-			...tags.map(tag => db.findOne({ tag: `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}` }))
-		]).then(clans => clans.filter(clan => clan !== null));
+		const clans = await this.aggregationQuery(tags.map(tag => `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`));
 
 		if (!clans.length) {
 			return message.util.send({
@@ -85,6 +82,87 @@ class ActivityCommand extends Command {
 					: `**Set your time zone using \`${this.handler.prefix(message)}offset <location>\` for better experience.**`
 			].join('\n')
 		});
+	}
+
+	async aggregationQuery(tags) {
+		const db = mongodb.db('clashperk').collection('last_onlines');
+		return db.aggregate([
+			{
+				$match: { 'clan.tag': { $in: [...tags] } }
+			},
+			{
+				$project: {
+					clan: '$clan',
+					timestamps: {
+						$filter: {
+							input: '$timestamps',
+							as: 'timestamp',
+							cond: {
+								$gte: [
+									'$$timestamp', new Date(new Date().getTime() - (24 * 60 * 60 * 1000))
+								]
+							}
+						}
+					}
+				}
+			},
+			{
+				$project: {
+					clan: '$clan',
+					dates: {
+						$map: {
+							input: '$timestamps',
+							as: 'timestamp',
+							in: {
+								time: {
+									$dateToString: {
+										format: '%Y-%m-%dT%H:00',
+										date: '$$timestamp'
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			{
+				$unwind: {
+					path: '$dates'
+				}
+			},
+			{
+				$group: {
+					_id: {
+						id: '$dates.time',
+						clan: '$clan'
+					},
+					count: {
+						$sum: 1
+					}
+				}
+			},
+			{
+				$group: {
+					_id: '$_id.clan',
+					entries: {
+						$addToSet: {
+							time_: {
+								$dateFromString: {
+									dateString: '$_id.id'
+								}
+							},
+							time: '$_id.id',
+							count: '$count'
+						}
+					}
+				}
+			},
+			{
+				$addFields: {
+					name: '$_id.name'
+				}
+			}
+		]).toArray();
 	}
 }
 
