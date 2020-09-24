@@ -95,6 +95,7 @@ class ActivityCommand extends Command {
 			{
 				$project: {
 					clan: '$clan',
+					tag: '$tag',
 					timestamps: {
 						$filter: {
 							input: '$timestamps',
@@ -111,6 +112,7 @@ class ActivityCommand extends Command {
 			{
 				$project: {
 					clan: '$clan',
+					tag: '$tag',
 					dates: {
 						$map: {
 							input: '$timestamps',
@@ -136,7 +138,16 @@ class ActivityCommand extends Command {
 				$group: {
 					_id: {
 						id: '$dates.time',
-						clan: '$clan'
+						clan: '$clan',
+						tag: '$tag'
+					}
+				}
+			},
+			{
+				$group: {
+					_id: {
+						id: '$_id.id',
+						clan: '$_id.clan'
 					},
 					count: {
 						$sum: 1
