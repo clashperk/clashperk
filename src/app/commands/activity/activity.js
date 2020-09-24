@@ -151,7 +151,7 @@ class ActivityCommand extends Command {
 			},
 			{
 				$group: {
-					_id: '$clan',
+					_id: '$clan.tag',
 					entries: {
 						$addToSet: {
 							time_: {
@@ -164,7 +164,7 @@ class ActivityCommand extends Command {
 						}
 					},
 					name: {
-						$first: '$_id.clan.name'
+						$first: '$clan.name'
 					}
 				}
 			}
