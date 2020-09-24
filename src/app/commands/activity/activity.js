@@ -58,7 +58,7 @@ class ActivityCommand extends Command {
 		tags.splice(3);
 		const clans = await this.aggregationQuery(tags.map(tag => `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`));
 
-		console.log(clans[0].entries);
+		console.log(clans);
 		if (!clans.length) {
 			return message.util.send({
 				embed: {
@@ -134,7 +134,10 @@ class ActivityCommand extends Command {
 			},
 			{
 				$group: {
-					_id: '$dates.time',
+					_id: {
+						id: '$dates.time',
+						clan: '$clan'
+					},
 					count: {
 						$sum: 1
 					}
@@ -142,17 +145,20 @@ class ActivityCommand extends Command {
 			},
 			{
 				$group: {
-					_id: null,
+					_id: '$_id.clan.tag',
 					entries: {
 						$addToSet: {
 							time_: {
 								$dateFromString: {
-									dateString: '$_id'
+									dateString: '$_id.id'
 								}
 							},
-							time: '$_id',
+							time: '$_id.id',
 							count: '$count'
 						}
+					},
+					name: {
+						$first: '$_id.clan.name'
 					}
 				}
 			}
