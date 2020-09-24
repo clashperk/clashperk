@@ -58,7 +58,7 @@ class ActivityCommand extends Command {
 		tags.splice(3);
 		const clans = await this.aggregationQuery(tags.map(tag => `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`));
 
-		console.log(clans);
+		console.log(clans[0].entries);
 		if (!clans.length) {
 			return message.util.send({
 				embed: {
