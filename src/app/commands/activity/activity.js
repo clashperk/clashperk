@@ -156,12 +156,10 @@ class ActivityCommand extends Command {
 							time: '$_id.id',
 							count: '$count'
 						}
+					},
+					name: {
+						$first: '$_id.clan.name'
 					}
-				}
-			},
-			{
-				$addFields: {
-					name: '$_id'
 				}
 			}
 		]).toArray();
