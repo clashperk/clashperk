@@ -145,7 +145,7 @@ class ActivityCommand extends Command {
 			},
 			{
 				$group: {
-					_id: '$_id.clan',
+					_id: '$_id.clan.tag',
 					entries: {
 						$addToSet: {
 							time_: {
@@ -161,7 +161,7 @@ class ActivityCommand extends Command {
 			},
 			{
 				$addFields: {
-					name: '$_id.name'
+					name: '$_id'
 				}
 			}
 		]).toArray();
