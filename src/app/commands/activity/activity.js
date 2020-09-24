@@ -85,7 +85,6 @@ class ActivityCommand extends Command {
 	}
 
 	async aggregationQuery(tags) {
-		console.log(tags);
 		const db = mongodb.db('clashperk').collection('lastonlines');
 		return db.aggregate([
 			{
