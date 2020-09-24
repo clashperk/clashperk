@@ -136,7 +136,7 @@ class LastOnlineCommand extends Command {
 			},
 			{
 				$group: {
-					_id: '$clan',
+					_id: '$clan.tag',
 					members: {
 						$addToSet: {
 							count: '$size',
