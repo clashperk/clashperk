@@ -104,7 +104,7 @@ class LastOnlineCommand extends Command {
 		const collection = await db.aggregate([
 			{
 				$match: {
-					// 'clan.tag': clan.tag
+					'clan.tag': clan.tag,
 					tag: { $in: [...clan.memberList.map(m => m.tag)] }
 				}
 			},
