@@ -147,7 +147,6 @@ class LastOnlineCommand extends Command {
 				}
 			}
 		]).toArray();
-		console.log(collection);
 		return this.filter(clan, collection[0]);
 	}
 }
