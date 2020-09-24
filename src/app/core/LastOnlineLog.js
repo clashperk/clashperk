@@ -125,7 +125,7 @@ class LastOnlineEvent {
 			.setDescription([
 				`Last Online Board [${clan.members}/50]`,
 				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  ${'NAME'.padEnd(18, ' ')}`,
-				members.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3) : ''.padStart(7, ' ')}  ${m.name}`)
+				members.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3) : ''.padStart(7, ' ')}  ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
 			])
@@ -135,14 +135,13 @@ class LastOnlineEvent {
 		return embed;
 	}
 
-	format(time) {
-		if (time > 864e5) {
-			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' }).padStart(7, ' ');
-		} else if (time > 36e5) {
-			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' }).padStart(7, ' ');
+	format(ms) {
+		if (ms > 864e5) {
+			return moment.duration(ms).format('d[d] H[h]', { trim: 'both mid' }).padStart(7, ' ');
+		} else if (ms > 36e5) {
+			return moment.duration(ms).format('H[h] m[m]', { trim: 'both mid' }).padStart(7, ' ');
 		}
-
-		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' }).padStart(7, ' ');
+		return moment.duration(ms).format('m[m] s[s]', { trim: 'both mid' }).padStart(7, ' ');
 	}
 
 	async init() {
