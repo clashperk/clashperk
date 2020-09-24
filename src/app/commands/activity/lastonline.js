@@ -81,7 +81,7 @@ class LastOnlineCommand extends Command {
 			return {
 				tag: m.tag,
 				name: m.name,
-				count: data.count,
+				count: data ? data.count : 0,
 				lastSeen: data ? new Date() - new Date(data.lastSeen) : null
 			};
 		});
