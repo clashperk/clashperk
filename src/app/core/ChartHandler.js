@@ -7,20 +7,16 @@ class Chart {
 		const dataSet = new Array(24).fill()
 			.map((_, i) => {
 				const decrement = new Date() - (60 * 60 * 1000 * i);
-				const timeObj = new Date(decrement).toISOString();
+				const timeObj = new Date(decrement).toISOString()
+					.substring(0, 14)
+					.concat('00');
+				const id = data.entries.find(e => e.time === timeObj);
+				if (id) return { time: id.time, count: id.count };
 				return {
-					time: timeObj.substring(0, 14).concat('00'),
+					time: timeObj,
 					count: 0
 				};
 			});
-
-		for (const member of Object.values(data.members)) {
-			if (!member.activities) continue;
-			for (const date of Object.keys(member.activities)) {
-				const item = dataSet.find(a => a.time === date);
-				if (item) item.count += 1;
-			}
-		}
 
 		return dataSet.reverse().map((a, i) => {
 			const time = new Date(new Date(a.time).getTime() + (offset * 1000));

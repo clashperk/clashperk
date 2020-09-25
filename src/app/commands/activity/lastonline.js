@@ -40,7 +40,7 @@ class LastOnlineCommand extends Command {
 	}
 
 	async exec(message, { data }) {
-		const db = await mongodb.db('clashperk').collection('lastonlines').findOne({ tag: data.tag });
+		const db = await mongodb.db('clashperk').collection('lastonlines').countDocuments({ 'clan.tag': data.tag });
 		if (!db) {
 			return message.util.send({
 				embed: {
@@ -49,14 +49,14 @@ class LastOnlineCommand extends Command {
 			});
 		}
 
-		const members = this.filter(data, db);
+		const members = await this.aggregationQuery(data);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				'Last-Online Times & Last 24h Activities',
 				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  📊  ${'NAME'}\n${members
-					.map(m => `${m.lastOnline ? this.format(m.lastOnline + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${(m.count > 99 ? 99 : m.count).toString().padStart(2, ' ')}  ${m.name}`)
+					.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${(m.count > 99 ? 99 : m.count).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n')}`,
 				data.members > members.length
 					? `.......  ${data.members - members.length}  Untracked members\`\`\``
@@ -71,33 +71,23 @@ class LastOnlineCommand extends Command {
 		return data.padEnd(20, ' ');
 	}
 
-	filter(data, db) {
-		if (data && !data.members) {
-			return data.memberList.map(member => ({ tag: member.tag, name: member.name, lastOnline: null, count: 0 }));
+	filter(clan, db) {
+		if (!db?.members) {
+			return clan.memberList.map(m => ({ tag: m.tag, name: m.name, lastSeen: null, count: 0 }));
 		}
 
-		const members = data.memberList.map(member => {
-			const counts = [];
-			if (member.tag in db.members && db.members[member.tag].activities) {
-				for (const [key, value] of Object.entries(db.members[member.tag].activities)) {
-					if (new Date().getTime() - new Date(key).getTime() <= 864e5) {
-						counts.push(value);
-					}
-				}
-			}
-
+		const members = clan.memberList.map(m => {
+			const data = db.members.find(d => d.tag === m.tag);
 			return {
-				tag: member.tag,
-				name: member.name,
-				lastOnline: member.tag in db.members
-					? new Date() - new Date(db.members[member.tag].lastOnline)
-					: null,
-				count: counts.reduce((p, c) => p + c, 0)
+				tag: m.tag,
+				name: m.name,
+				count: data ? data.count : 0,
+				lastSeen: data ? new Date() - new Date(data.lastSeen) : null
 			};
 		});
 
-		const sorted = members.sort((a, b) => a.lastOnline - b.lastOnline);
-		return sorted.filter(item => item.lastOnline).concat(sorted.filter(item => !item.lastOnline));
+		members.sort((a, b) => a.lastSeen - b.lastSeen);
+		return members.filter(m => m.lastSeen).concat(members.filter(m => !m.lastSeen));
 	}
 
 	format(time) {
@@ -107,6 +97,57 @@ class LastOnlineCommand extends Command {
 			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
 		}
 		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
+	}
+
+	async aggregationQuery(clan) {
+		const db = mongodb.db('clashperk').collection('lastonlines');
+		const collection = await db.aggregate([
+			{
+				$match: {
+					// 'clan.tag': clan.tag,
+					tag: { $in: [...clan.memberList.map(m => m.tag)] }
+				}
+			},
+			{
+				$project: {
+					clan: '$clan',
+					tag: '$tag',
+					lastSeen: '$lastSeen',
+					timestamps: {
+						$filter: {
+							input: '$timestamps',
+							as: 'time',
+							cond: {
+								$gte: ['$$time', new Date(new Date().getTime() - (24 * 60 * 60 * 1000))]
+							}
+						}
+					}
+				}
+			},
+			{
+				$project: {
+					clan: '$clan',
+					tag: '$tag',
+					lastSeen: '$lastSeen',
+					size: {
+						$size: '$timestamps'
+					}
+				}
+			},
+			{
+				$group: {
+					_id: null,
+					members: {
+						$addToSet: {
+							count: '$size',
+							tag: '$tag',
+							lastSeen: '$lastSeen'
+						}
+					}
+				}
+			}
+		]).toArray();
+		return this.filter(clan, collection[0]);
 	}
 }
 
