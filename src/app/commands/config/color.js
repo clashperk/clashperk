@@ -22,7 +22,7 @@ class ColorCommand extends Command {
 			args: [
 				{
 					id: 'color',
-					type: Argument.union(['none'], 'color'),
+					type: Argument.union(['none', 'reset'], 'color'),
 					default: message => this.client.embed(message)
 				}
 			]
@@ -39,6 +39,7 @@ class ColorCommand extends Command {
 			return this.handler.handleDirectCommand(message, 'color', this.handler.modules.get('help'), false);
 		}
 
+		color = color === 'reset' ? this.client.embed(message) : color;
 		this.client.settings.set(message.guild, 'color', color);
 		return message.util.send({
 			embed: { description: 'Display color updated.', color }
