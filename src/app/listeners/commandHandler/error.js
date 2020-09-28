@@ -70,9 +70,10 @@ class ErrorListener extends Listener {
 		this.client.logger.error(error, { label });
 
 		if (message.guild ? message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES') : true) {
-			await message.channel.send([
+			return message.channel.send([
 				'\\❌ Something went wrong, report us!',
-				`\`\`\`${error.toString()}\`\`\``
+				`\`\`\`${error.toString()}\`\`\``,
+				'https://discord.gg/ppuppun'
 			]);
 		}
 	}
