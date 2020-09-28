@@ -317,8 +317,10 @@ class ClanWarEvent {
 			const clan = data.clan.tag === cache.tag ? data.clan : data.opponent;
 			const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
 			const embed = new MessageEmbed()
-				.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
-				.addField('War Against', `${opponent.name} (${opponent.tag})`)
+				.setTitle(`${clan.name} (${clan.tag})`)
+				.setURL(this.clanURL(clan.tag))
+				.setThumbnail(clan.badgeUrls.small)
+				.addField('War Against', `[${Util.escapeMarkdown(opponent.name)} (${opponent.tag})](${this.clanURL(opponent.tag)})`)
 				.addField('Team Size', `${data.teamSize}`);
 
 			if (data.state === 'inWar') {
