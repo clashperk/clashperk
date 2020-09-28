@@ -21,7 +21,7 @@ class ColorCommand extends Command {
 			},
 			args: [
 				{
-					id: 'hexColor',
+					id: 'color',
 					type: Argument.union(['none'], 'color'),
 					default: message => this.client.embed(message)
 				}
