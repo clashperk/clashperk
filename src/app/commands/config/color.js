@@ -3,7 +3,7 @@ const { Command, Argument } = require('discord-akairo');
 class ColorCommand extends Command {
 	constructor() {
 		super('color', {
-			aliases: ['color'],
+			aliases: ['color', 'colour'],
 			category: 'config',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
