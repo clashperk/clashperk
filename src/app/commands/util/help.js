@@ -99,21 +99,6 @@ class HelpCommand extends Command {
 	}
 
 	async execCommandList(message) {
-		if (!message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
-			const option = {
-				setup: 'Clan Management',
-				activity: 'Clan Activity',
-				cwl: 'CWL',
-				search: 'Clash Search',
-				profile: 'Profile',
-				other: 'Other',
-				config: 'Config',
-				util: 'Util'
-			};
-			const embed = this.execHelpList(message, option);
-			return message.util.send({ embed });
-		}
-
 		const pages = [
 			{
 				setup: 'Clan Management',
@@ -131,13 +116,14 @@ class HelpCommand extends Command {
 
 		let page = 0;
 		const embed = this.execHelpList(message, pages[page]);
-		const msg = await message.util.send({ embed: embed.setFooter(`Page ${page + 1}/2`, this.client.user.displayAvatarURL()) });
+		const msg = await message.util.send({ embed });
 
 		for (const emoji of ['⬅️', '➡️', '➕']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
+		// .setFooter(`Page ${page + 1}/2`, this.client.user.displayAvatarURL())
 		const collector = msg.createReactionCollector(
 			(reaction, user) => ['➕', '⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 90000, max: 10 }
@@ -149,7 +135,7 @@ class HelpCommand extends Command {
 				if (page < 0) page = 1;
 				if (page > 1) page = 0;
 
-				await msg.edit({ embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`, this.client.user.displayAvatarURL()) });
+				await msg.edit({ embed: this.execHelpList(message, pages[page]) });
 				await this.delay(250);
 				return reaction.users.remove(message.author.id);
 			}
@@ -159,7 +145,7 @@ class HelpCommand extends Command {
 				if (page < 0) page = 1;
 				if (page > 1) page = 0;
 
-				await msg.edit({ embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`, this.client.user.displayAvatarURL()) });
+				await msg.edit({ embed: this.execHelpList(message, pages[page]) });
 				await this.delay(250);
 				return reaction.users.remove(message.author.id);
 			}
@@ -170,7 +156,7 @@ class HelpCommand extends Command {
 
 				await collector.stop();
 				return message.channel.send({
-					embed: this.execHelpList(message, pages[page]).setFooter(`Page ${page + 1}/2`, this.client.user.displayAvatarURL())
+					embed: this.execHelpList(message, pages[page])
 				});
 			}
 		});
@@ -210,6 +196,10 @@ class HelpCommand extends Command {
 					.join('\n')
 			]);
 		}
+
+		embed.addField('\u200b', [
+			'**[Join Support Discord](https://discord.gg/ppuppun)** | **[Support us on Patreon](https://www.patreon.com/join/clashperk)**'
+		]);
 		return embed;
 	}
 }
