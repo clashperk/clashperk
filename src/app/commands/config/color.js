@@ -17,7 +17,7 @@ class ColorCommand extends Command {
 					'[Become a Patron](https://www.patreon.com/join/clashperk)'
 				],
 				usage: '<color>',
-				examples: ['#0080ff', 'none']
+				examples: ['#0080ff', 'none', 'reset']
 			},
 			args: [
 				{
