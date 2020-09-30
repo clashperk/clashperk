@@ -8,6 +8,9 @@ class RateLimitListener extends Listener {
 			emitter: 'client',
 			category: 'client'
 		});
+
+		this.count = 0;
+		setInterval(() => this.count = 0, 5000);
 	}
 
 	async fetchWebhook() {
@@ -18,6 +21,7 @@ class RateLimitListener extends Listener {
 	}
 
 	async exec({ timeout, limit, method, path, route }) {
+		if (this.count >= 5) return process.exit(1);
 		const msg = { timeout, limit, method, path, route };
 		this.client.logger.warn(msg, { label: 'RATELIMIT' });
 
