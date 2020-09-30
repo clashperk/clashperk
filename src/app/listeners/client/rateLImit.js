@@ -47,6 +47,7 @@ class RateLimitListener extends Listener {
 				'**Path**',
 				decodeURIComponent(path)
 			])
+			.setFooter(`Shard ${this.client.shard.ids[0]}`)
 			.setTimestamp();
 
 		return webhook.send({
