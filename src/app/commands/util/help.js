@@ -5,7 +5,7 @@ class HelpCommand extends Command {
 		super('help', {
 			aliases: ['help', 'commands'],
 			category: 'hidden',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES', 'EMBED_LINKS'],
 			args: [
 				{
 					id: 'command',

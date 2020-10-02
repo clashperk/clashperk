@@ -1,3 +1,4 @@
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const { Command, Flag } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
@@ -66,18 +67,22 @@ class ActivityCommand extends Command {
 			});
 		}
 
-		const raw = await mongodb.db('clashperk')
+		const Tz = await mongodb.db('clashperk')
 			.collection('timezoneoffset')
 			.findOne({ user: message.author.id });
+		const tz = Tz?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
+		const datasets = clans.map(clan => ({ name: clan.name, data: this.datasets(clan, tz.offset) }));
+
 		const hrStart = process.hrtime();
-		const buffer = await Chart.chart(clans, raw ? raw.timezone : { offset: 0, name: 'Coordinated Universal Time' }, dark);
+		const buffer = await Chart.clanActivity(datasets, dark, [`Online Members Per Hour (${tz.name})`]);
 		if (!buffer) return message.util.send({ embed: { description: '504 Request Timeout' } });
+
 		const diff = process.hrtime(hrStart);
 		const sec = diff[0] > 0 ? `${diff[0].toFixed(2)} sec` : null;
 		return message.util.send({
 			files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }],
 			content: [
-				raw
+				Tz
 					? `**Rendered in ${sec || `${(diff[1] / 1000000).toFixed(2)} ms`}**`
 					: `**Set your time zone using \`${this.handler.prefix(message)}offset <location>\` for better experience.**`
 			].join('\n')
@@ -157,6 +162,42 @@ class ActivityCommand extends Command {
 				}
 			}
 		]).toArray();
+	}
+
+	datasets(data, offset) {
+		const dataSet = new Array(24).fill()
+			.map((_, i) => {
+				const decrement = new Date() - (60 * 60 * 1000 * i);
+				const timeObj = new Date(decrement).toISOString()
+					.substring(0, 14)
+					.concat('00');
+				const id = data.entries.find(e => e.time === timeObj);
+				if (id) return { time: id.time, count: id.count };
+				return {
+					time: timeObj,
+					count: 0
+				};
+			});
+
+		return dataSet.reverse().map((a, i) => {
+			const time = new Date(new Date(a.time).getTime() + (offset * 1000));
+			let hour = this.format(time);
+			if (time.getHours() === 0) hour = this.format(time, time.getMonth());
+			if (time.getHours() === 1) hour = this.format(time, time.getMonth());
+
+			return {
+				short: (i + 1) % 2 === 0 ? hour : '',
+				count: a.count
+			};
+		});
+	}
+
+	format(time, month = null) {
+		const hour = time.getHours();
+		const min = time.getMinutes();
+		const date = time.getDate();
+		if (month) return `${date.toString().padStart(2, '0')} ${months[month]}`;
+		return `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
 	}
 }
 
