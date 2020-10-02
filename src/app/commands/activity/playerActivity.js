@@ -14,7 +14,7 @@ class ActivityCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
 			description: {
 				content: [
-					'Shows online members per hour graph for clans.',
+					'Shows per day activity graph for clan members.',
 					'',
 					'Maximum 3 clan tags are accepted.',
 					'',
@@ -32,7 +32,7 @@ class ActivityCommand extends Command {
 			type: async (message, args) => {
 				const tags = args ? args.split(/ +/g) : [];
 				if (args && tags.length > 1) return args.split(/ +/g);
-				const resolved = await Resolver.resolve(message, args);
+				const resolved = await Resolver.resolve(message, args, true);
 				if (resolved.status !== 200) {
 					await message.channel.send({ embed: resolved.embed });
 					return Flag.cancel();
