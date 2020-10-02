@@ -82,8 +82,9 @@ class ActivityCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setImage('attachment://activity.png');
 		if (items.length === 1) {
-			embed.setAuthor(items[0].name)
-				.addField('Last Seen', items[0].lastSeen);
+			embed.setAuthor(`${items[0].name} (${items[0]._id})`)
+				.setFooter('Last Seen')
+				.setTimestamp(items[0].lastSeen);
 		}
 		return message.util.send({ embed, files: [file] });
 	}
