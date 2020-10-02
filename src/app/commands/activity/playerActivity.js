@@ -28,7 +28,7 @@ class PlayerActivityCommand extends Command {
 	}
 
 	*args() {
-		const tags = yield {
+		const data = yield {
 			type: async (message, args) => {
 				const resolved = await Resolver.resolve(message, args, true);
 				if (resolved.status !== 200) {
@@ -40,7 +40,7 @@ class PlayerActivityCommand extends Command {
 			match: 'content'
 		};
 
-		return { tags };
+		return { data };
 	}
 
 	cooldown(message) {
