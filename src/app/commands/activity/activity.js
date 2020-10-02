@@ -88,19 +88,24 @@ class ActivityCommand extends Command {
 		const db = mongodb.db('clashperk').collection('lastonlines');
 		return db.aggregate([
 			{
-				$match: { 'clan.tag': { $in: [...tags] } }
+				'$match': {
+					'clan.tag': { '$in': [...tags] },
+					'entries': {
+						'$exists': true
+					}
+				}
 			},
 			{
-				$project: {
-					clan: '$clan',
-					tag: '$tag',
-					timestamps: {
-						$filter: {
-							input: '$timestamps',
-							as: 'timestamp',
-							cond: {
-								$gte: [
-									'$$timestamp', new Date(new Date().getTime() - (24 * 60 * 60 * 1000))
+				'$project': {
+					'tag': '$tag',
+					'clan': '$clan',
+					'entries': {
+						'$filter': {
+							'input': '$entries',
+							'as': 'en',
+							'cond': {
+								'$gte': [
+									'$$en.entry', new Date(new Date().getTime() - (24 * 60 * 60 * 1000))
 								]
 							}
 						}
@@ -108,66 +113,46 @@ class ActivityCommand extends Command {
 				}
 			},
 			{
-				$project: {
-					clan: '$clan',
-					tag: '$tag',
-					dates: {
-						$map: {
-							input: '$timestamps',
-							as: 'timestamp',
-							in: {
-								time: {
-									$dateToString: {
-										format: '%Y-%m-%dT%H:00',
-										date: '$$timestamp'
-									}
-								}
-							}
-						}
+				'$unwind': {
+					'path': '$entries'
+				}
+			},
+			{
+				'$group': {
+					'_id': {
+						'id': '$entries.entry',
+						'clan': '$clan',
+						'tag': '$tag'
 					}
 				}
 			},
 			{
-				$unwind: {
-					path: '$dates'
-				}
-			},
-			{
-				$group: {
-					_id: {
-						id: '$dates.time',
-						clan: '$clan',
-						tag: '$tag'
-					}
-				}
-			},
-			{
-				$group: {
-					_id: {
-						id: '$_id.id',
-						clan: '$_id.clan'
+				'$group': {
+					'_id': {
+						'id': '$_id.id',
+						'clan': '$_id.clan'
 					},
-					count: {
-						$sum: 1
+					'count': {
+						'$sum': 1
 					}
 				}
 			},
 			{
-				$group: {
-					_id: '$_id.clan.tag',
-					entries: {
-						$addToSet: {
-							time_: {
-								$dateFromString: {
-									dateString: '$_id.id'
+				'$group': {
+					'_id': '$_id.clan.tag',
+					'entries': {
+						'$addToSet': {
+							'time': {
+								'$dateToString': {
+									'format': '%Y-%m-%dT%H:00',
+									'date': '$_id.id'
 								}
 							},
-							time: '$_id.id',
-							count: '$count'
+							'count': '$count'
 						}
 					},
-					name: {
-						$first: '$_id.clan.name'
+					'name': {
+						'$first': '$_id.clan.name'
 					}
 				}
 			}

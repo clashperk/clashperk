@@ -103,45 +103,47 @@ class LastOnlineCommand extends Command {
 		const db = mongodb.db('clashperk').collection('lastonlines');
 		const collection = await db.aggregate([
 			{
-				$match: {
+				'$match': {
 					// 'clan.tag': clan.tag,
-					tag: { $in: [...clan.memberList.map(m => m.tag)] }
+					'tag': { '$in': [...clan.memberList.map(m => m.tag)] }
 				}
 			},
 			{
-				$project: {
-					clan: '$clan',
-					tag: '$tag',
-					lastSeen: '$lastSeen',
-					timestamps: {
-						$filter: {
-							input: '$timestamps',
-							as: 'time',
-							cond: {
-								$gte: ['$$time', new Date(new Date().getTime() - (24 * 60 * 60 * 1000))]
+				'$project': {
+					'tag': '$tag',
+					'clan': '$clan',
+					'lastSeen': '$lastSeen',
+					'entries': {
+						'$filter': {
+							'input': '$entries',
+							'as': 'en',
+							'cond': {
+								'$gte': [
+									'$$en.entry', new Date(new Date().getTime() - (24 * 60 * 60 * 1000))
+								]
 							}
 						}
 					}
 				}
 			},
 			{
-				$project: {
-					clan: '$clan',
-					tag: '$tag',
-					lastSeen: '$lastSeen',
-					size: {
-						$size: '$timestamps'
+				'$project': {
+					'tag': '$tag',
+					'clan': '$clan',
+					'lastSeen': '$lastSeen',
+					'count': {
+						'$sum': '$entries.count'
 					}
 				}
 			},
 			{
-				$group: {
-					_id: null,
-					members: {
-						$addToSet: {
-							count: '$size',
-							tag: '$tag',
-							lastSeen: '$lastSeen'
+				'$group': {
+					'_id': null,
+					'members': {
+						'$addToSet': {
+							'count': '$count',
+							'tag': '$tag',
+							'lastSeen': '$lastSeen'
 						}
 					}
 				}
