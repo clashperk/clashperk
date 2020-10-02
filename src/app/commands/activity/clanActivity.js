@@ -4,7 +4,7 @@ const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
 const Chart = require('../../core/ChartHandler');
 
-class ActivityCommand extends Command {
+class ClanActivityCommand extends Command {
 	constructor() {
 		super('activity', {
 			aliases: ['activity', 'av'],
@@ -201,4 +201,4 @@ class ActivityCommand extends Command {
 	}
 }
 
-module.exports = ActivityCommand;
+module.exports = ClanActivityCommand;

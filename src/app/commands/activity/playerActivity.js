@@ -5,11 +5,11 @@ const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
 const Chart = require('../../core/ChartHandler');
 
-class ActivityCommand extends Command {
+class PlayerActivityCommand extends Command {
 	constructor() {
 		super('player-activity', {
-			aliases: ['pav'],
-			category: 'activity',
+			aliases: ['pstats', 'pav'],
+			category: 'activity_',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
 			description: {
@@ -30,24 +30,17 @@ class ActivityCommand extends Command {
 	*args() {
 		const tags = yield {
 			type: async (message, args) => {
-				const tags = args ? args.split(/ +/g) : [];
-				if (args && tags.length > 1) return args.split(/ +/g);
 				const resolved = await Resolver.resolve(message, args, true);
 				if (resolved.status !== 200) {
 					await message.channel.send({ embed: resolved.embed });
 					return Flag.cancel();
 				}
-				return [resolved.tag];
+				return resolved;
 			},
 			match: 'content'
 		};
 
-		const dark = yield {
-			match: 'flag',
-			flag: ['--dark']
-		};
-
-		return { tags, dark };
+		return { tags };
 	}
 
 	cooldown(message) {
@@ -55,11 +48,8 @@ class ActivityCommand extends Command {
 		return 5000;
 	}
 
-	async exec(message, { tags, dark }) {
-		if (!tags.length) return;
-		tags.splice(2);
-		const items = await this.aggregationQuery(tags.map(tag => `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`));
-
+	async exec(message, { data }) {
+		const items = await this.aggregationQuery(data.tag);
 		if (!items.length) {
 			return message.util.send({
 				embed: {
@@ -74,27 +64,25 @@ class ActivityCommand extends Command {
 		const tz = Tz?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
 		const datasets = items.map(clan => ({ name: clan.name, data: this.datasets(clan, tz.offset) }));
 
-		const buffer = await Chart.playerActivity(datasets, dark, [`Per Day Activities (${tz.name})`]);
+		const buffer = await Chart.playerActivity(datasets, [`Per Day Activities (${tz.name})`]);
 		if (!buffer) return message.util.send({ embed: { description: '504 Request Timeout' } });
 
 		const file = new MessageAttachment(buffer, 'activity.png');
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setImage('attachment://activity.png');
-		if (items.length === 1) {
-			embed.setAuthor(`${items[0].name} (${items[0]._id})`)
-				.setFooter('Last Seen')
-				.setTimestamp(items[0].lastSeen);
-		}
+			.setImage('attachment://activity.png')
+			.setAuthor(`${items[0].name} (${items[0]._id})`)
+			.setFooter('Last Seen')
+			.setTimestamp(items[0].lastSeen);
 		return message.util.send({ embed, files: [file] });
 	}
 
-	async aggregationQuery(tags) {
+	async aggregationQuery(tag) {
 		const db = mongodb.db('clashperk').collection('lastonlines');
 		return db.aggregate([
 			{
 				'$match': {
-					'tag': { '$in': [...tags] }
+					'tag': { '$in': [tag] }
 				}
 			},
 			{
@@ -199,4 +187,4 @@ class ActivityCommand extends Command {
 	}
 }
 
-module.exports = ActivityCommand;
+module.exports = PlayerActivityCommand;

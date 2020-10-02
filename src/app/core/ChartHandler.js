@@ -54,7 +54,7 @@ class Chart {
 		return renderChart(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, buffer);
 	}
 
-	static async playerActivity(collection = [], color, title) {
+	static async playerActivity(collection = [], title) {
 		const colors = ['#266ef7', '#c63304', '#50c878'];
 		const datasets = collection.map((obj, i) => ({
 			label: obj.name,
@@ -70,7 +70,7 @@ class Chart {
 		}));
 
 		const body = {
-			backgroundColor: color ? 'transparent' : 'white',
+			backgroundColor: 'white',
 			width: 400,
 			height: 200,
 			devicePixelRatio: 2.0,
