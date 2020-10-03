@@ -92,17 +92,23 @@ class CWLRankingComamnd extends Command {
 						? ranking[data.clan.tag]
 						: ranking[data.clan.tag] = {
 							tag: data.clan.tag,
-							stars: 0
+							stars: 0,
+							destruction: 0
 						};
 					clan.stars += data.clan.stars;
+
+					clan.destruction += data.clan.destructionPercentage * data.teamSize;
 
 					const opponent = ranking[data.opponent.tag]
 						? ranking[data.opponent.tag]
 						: ranking[data.opponent.tag] = {
 							tag: data.opponent.tag,
-							stars: 0
+							stars: 0,
+							destruction: 0
 						};
 					opponent.stars += data.opponent.stars;
+
+					opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
 				}
 
 				if (data.state === 'warEnded') {
