@@ -1,27 +1,29 @@
-const { Command, Argument, Flag } = require('discord-akairo');
+const { Command, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const { MessageEmbed } = require('discord.js');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const { emoji } = require('../../util/emojis');
 
+const states = {
+	inWar: 'Battle Day',
+	preparation: 'Preparation Day',
+	warEnded: 'War Ended'
+};
+
 class CWLLineupComamnd extends Command {
 	constructor() {
 		super('cwl-lineup', {
 			aliases: ['cwl-lineup'],
-			category: 'cwl-hidden_',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			category: 'cwl-hidden',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [
-					'Shows attacks of current CWL.',
-					'',
-					'**Flags**',
-					'`--round <num>` or `-r <num>` to see specific round.'
+					'Shows lineup of current CWL.'
 				],
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
-			},
-			optionFlags: ['--round', '-r']
+			}
 		});
 	}
 
@@ -31,12 +33,6 @@ class CWLLineupComamnd extends Command {
 	}
 
 	*args() {
-		const round = yield {
-			match: 'option',
-			flag: ['--round', '-r'],
-			type: Argument.range('integer', 1, Infinity, true)
-		};
-
 		const data = yield {
 			type: async (message, args) => {
 				const resolved = await Resolver.resolve(message, args);
@@ -48,10 +44,10 @@ class CWLLineupComamnd extends Command {
 			}
 		};
 
-		return { data, round };
+		return { data };
 	}
 
-	async exec(message, { data, round }) {
+	async exec(message, { data }) {
 		await message.util.send(`**Fetching data... ${emoji.loading}**`);
 		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
 		const res = await fetch(uri, {
@@ -81,10 +77,10 @@ class CWLLineupComamnd extends Command {
 			return message.util.send({ embed });
 		}
 
-		return this.rounds(message, body, data, round);
+		return this.rounds(message, body, data);
 	}
 
-	async rounds(message, body, clan, round) {
+	async rounds(message, body, clan) {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
 		const chunks = [];
@@ -95,24 +91,28 @@ class CWLLineupComamnd extends Command {
 					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 				});
 				const data = await res.json();
-				if ((data.clan && data.clan.tag === clanTag.tag) || (data.opponent && data.opponent.tag === clanTag.tag)) {
+				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
 					const embed = new MessageEmbed()
 						.setColor(this.client.embed(message));
-					const clan = data.clan.tag === clanTag.tag ? data.clan : data.opponent;
-					const opponent = data.clan.tag === clanTag.tag ? data.opponent : data.clan;
+					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
+					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
-					embed.setDescription([
-						'**War Against**',
-						`${opponent.name} (${opponent.tag})`
-					]);
-					embed.addField(`Lineup: **${clan.name}**`, [
+					console.log(data.state);
+					embed.setDescription(`**War State: ${states[data.state]}**`);
+					embed.addField('\u200b', [
+						`**[${clan.name}](${this.clanURL(clan.tag)})**`,
 						'```',
-						...clan.members.map(m => m.name),
+						'\u200e #  TH  NAME',
+						...clan.members.sort((a, b) => a.mapPosition - b.mapPosition)
+							.map((m, i) => `\u200e${(i + 1).toString().padStart(2, ' ')}  ${m.townhallLevel.toString().padStart(2, ' ')}  ${m.name}`),
 						'```'
 					]);
-					embed.addField(`Lineup: ${opponent.members.map(m => m.name)}`, [
+					embed.addField('\u200b', [
+						`**[${opponent.name}](${this.clanURL(opponent.tag)})**`,
 						'```',
-						...opponent.members.map(m => m.name),
+						'\u200e #  TH  NAME',
+						...opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
+							.map((m, i) => `\u200e${(i + 1).toString().padStart(2, ' ')}  ${m.townhallLevel.toString().padStart(2, ' ')}  ${m.name}`),
 						'```'
 					]);
 
@@ -122,11 +122,9 @@ class CWLLineupComamnd extends Command {
 			}
 		}
 
-		const item = round
-			? chunks[round - 1]
-			: chunks.length === 7
-				? chunks.find(c => c.state === 'inWar') || chunks.slice(-1)[0]
-				: chunks.slice(-2)[0];
+		const item = chunks.length === 7
+			? chunks.find(c => c.state === 'preparation') || chunks.slice(-1)[0]
+			: chunks.slice(-2).reverse()[0];
 		const pageIndex = chunks.indexOf(item);
 
 		let page = pageIndex + 1;
@@ -154,8 +152,7 @@ class CWLLineupComamnd extends Command {
 				const { embed } = this.paginate(chunks, page).items[0];
 				await msg.edit({ embed });
 				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+				return reaction.users.remove(message.author.id);
 			}
 
 			if (reaction.emoji.name === '⬅️') {
@@ -165,20 +162,19 @@ class CWLLineupComamnd extends Command {
 				const { embed } = this.paginate(chunks, page).items[0];
 				await msg.edit({ embed });
 				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+				return reaction.users.remove(message.author.id);
 			}
 		});
 
-		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
-		});
-		return message;
+		collector.on('end', async () => msg.reactions.removeAll().catch(() => null));
 	}
 
 	async delay(ms) {
 		return new Promise(res => setTimeout(res, ms));
+	}
+
+	clanURL(tag) {
+		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 
 	paginate(items, page = 1, pageLength = 1) {
