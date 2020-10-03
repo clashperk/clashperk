@@ -75,7 +75,7 @@ class CWLTopCommand extends Command {
 				items.filter(m => m.cwlStar !== 0).slice(0, 30).map(member => {
 					const name = this.padEnd(member.name);
 					const star = this.padStart(member.cwlStar.toString());
-					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name}\``;
+					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name.replace(/\`/g, '\\')}\``;
 				})
 					.join('\n')
 			]);
