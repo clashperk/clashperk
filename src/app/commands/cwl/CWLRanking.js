@@ -161,7 +161,7 @@ class CWLRankingComamnd extends Command {
 			.setDescription([
 				`${emoji.hash} **\`\u200eSTAR DEST${''.padEnd(padding - 2, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
 				ranks.sort((a, b) => b.stars - a.stars)
-					.map((clan, i) => `${RED_EMOJI[++i]} \`\u200e${clan.stars.toString().padEnd(3, ' ')}  ${this.destruction(clan.destruction, padding)}  ${clan.name.padEnd(15, ' ')}\``)
+					.map((clan, i) => `${RED_EMOJI[++i]} \`\u200e${clan.stars.toString().padEnd(3, ' ')}  ${this.destruction(clan.destructionPercentage, padding)}  ${clan.name.padEnd(15, ' ')}\``)
 					.join('\n')
 			])
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
