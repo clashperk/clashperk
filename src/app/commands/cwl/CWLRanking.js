@@ -91,6 +91,7 @@ class CWLRankingComamnd extends Command {
 					const clan = ranking[data.clan.tag]
 						? ranking[data.clan.tag]
 						: ranking[data.clan.tag] = {
+							name: data.clan.name,
 							tag: data.clan.tag,
 							stars: 0,
 							destruction: 0
@@ -102,6 +103,7 @@ class CWLRankingComamnd extends Command {
 					const opponent = ranking[data.opponent.tag]
 						? ranking[data.opponent.tag]
 						: ranking[data.opponent.tag] = {
+							name: data.opponent.name,
 							tag: data.opponent.tag,
 							stars: 0,
 							destruction: 0
