@@ -161,7 +161,6 @@ class CWLRankingComamnd extends Command {
 		}
 
 		const ranks = Object.values(ranking);
-		console.log(ranks);
 		const rank = ranks.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
