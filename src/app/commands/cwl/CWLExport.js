@@ -1,6 +1,7 @@
 const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
-// const CWL = require('../../core/CWLWarTags');
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const CWL = require('../../core/CWLWarTags');
 const { Excel } = require('../../struct/ExcelHandler');
 
 class CWLExport extends Command {
@@ -15,7 +16,11 @@ class CWLExport extends Command {
 					type: ['clans', 'all', 'members'],
 					default: 'clans'
 				}
-			]
+			],
+			description: {
+				content: 'Export war stars to excel for all clans',
+				examples: ['']
+			}
 		});
 	}
 
@@ -38,17 +43,27 @@ class CWLExport extends Command {
 		const chunks = [];
 		for (const clan of clans) {
 			const res = await this.client.coc.clanWarLeague(clan.tag).catch(() => null);
-			if (!res?.ok) continue;
+			if (!res?.ok) {
+				const data = await CWL.get(clan.tag);
+				if (!data) continue;
+				const members = await this.rounds(res, clan);
+				if (!members.length) continue;
+				chunks.push({
+					name: clan.name, members,
+					id: `${months[new Date(data.season).getMonth()]} ${new Date().getFullYear(data.season)}`
+				});
+				continue;
+			}
 			const members = await this.rounds(res, clan);
 			if (!members.length) continue;
-			chunks.push({ name: clan.name, members });
+			chunks.push({ name: clan.name, members, id: `${months[new Date().getMonth()]} ${new Date().getFullYear()}` });
 		}
 
 		if (!chunks.length) return message.util.send('Nobody attacked in your clan yet, try again after sometime.');
 
 		const workbook = Excel();
-		for (const { members, name } of chunks) {
-			const sheet = workbook.addWorksheet(name);
+		for (const { members, name, id } of chunks) {
+			const sheet = workbook.addWorksheet(`${name} (${id})`);
 			sheet.columns = [
 				{ header: 'NAME', key: 'name', width: 16 },
 				{ header: 'TAG', key: 'tag', width: 16 },
