@@ -3,7 +3,7 @@ const { mongodb } = require('../struct/Database');
 const { MessageEmbed, Util } = require('discord.js');
 const { Client } = require('clashofclans.js');
 const { ObjectId } = require('mongodb');
-// const WarHistory = require('./CWLWarTags');
+const WarHistory = require('./CWLWarTags');
 const moment = require('moment');
 const client = new Client({
 	timeout: 10000,
@@ -300,6 +300,7 @@ class ClanWarEvent {
 				}, set)
 			}, { upsert: true, returnOriginal: false });
 
+		if (rounds.length === 7) await WarHistory.pushWarTags(cache.tag, body.rounds);
 		return this.roundCWL(id, channel, body, value);
 	}
 
