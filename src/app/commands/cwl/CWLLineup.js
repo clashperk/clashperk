@@ -97,7 +97,6 @@ class CWLLineupComamnd extends Command {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
-					console.log(data.state);
 					embed.setDescription(`**War State: ${states[data.state]}**`);
 					embed.addField('\u200b', [
 						`**[${clan.name}](${this.clanURL(clan.tag)})**`,
