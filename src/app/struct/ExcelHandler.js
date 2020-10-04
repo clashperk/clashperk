@@ -19,7 +19,7 @@ class Workbook extends Excel.Workbook {
 }
 
 class ExcelHandler {
-	static get Excel() {
+	static Excel() {
 		return new Workbook();
 	}
 
@@ -78,10 +78,9 @@ class ExcelHandler {
 		return workbook.xlsx.writeBuffer();
 	}
 
-	static async starList(members = []) {
+	static async starList(members = [], name = 'CWL STARS') {
 		const workbook = new Workbook();
-
-		const sheet = workbook.addWorksheet('Member List');
+		const sheet = workbook.addWorksheet(name);
 		sheet.columns = [
 			{ header: 'NAME', key: 'name', width: 16 },
 			{ header: 'TAG', key: 'tag', width: 16 },

@@ -72,11 +72,12 @@ class CWLTopCommand extends Command {
 			.setDescription([
 				'War League Legend Scoreboard',
 				`${emoji.townhall}\`\u200e STAR  ${this.padEnd('NAME')}\``,
-				items.filter(m => m.cwlStar !== 0).slice(0, 30).map(member => {
-					const name = this.padEnd(member.name);
-					const star = this.padStart(member.cwlStar.toString());
-					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name.replace(/\`/g, '\\')}\``;
-				})
+				items.filter(m => m.cwlStar !== 0).slice(0, 30)
+					.map(member => {
+						const name = this.padEnd(member.name);
+						const star = this.padStart(member.cwlStar.toString());
+						return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name.replace(/\`/g, '\\')}\``;
+					})
 					.join('\n')
 			]);
 
