@@ -18,7 +18,7 @@ class CWLExport extends Command {
 				}
 			],
 			description: {
-				content: 'Export war stars to excel for all clans',
+				content: 'Export war stats to excel for all clans.',
 				examples: ['']
 			}
 		});
@@ -46,7 +46,7 @@ class CWLExport extends Command {
 			if (!res?.ok) {
 				const data = await CWL.get(clan.tag);
 				if (!data) continue;
-				const members = await this.rounds(res, clan);
+				const members = await this.rounds(data, clan);
 				if (!members.length) continue;
 				chunks.push({
 					name: clan.name, members,

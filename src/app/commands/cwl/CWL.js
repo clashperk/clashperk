@@ -23,6 +23,7 @@ class CWLComamnd extends Command {
 					'• gained `<clanTag>`',
 					'• ranks `<clanTag>`',
 					'• legends `<clanTag>`',
+					'• export `<method>`',
 					'',
 					'For additional `<...args>` usage refer to the examples below.'
 				],
@@ -39,7 +40,8 @@ class CWLComamnd extends Command {
 					'stars #8QU8J9LP',
 					'gained #8QU8J9LP',
 					'ranks #8QU8J9LP',
-					'legends #8QU8J9LP'
+					'legends #8QU8J9LP',
+					'export clans/all'
 				],
 				usage: '<method> <...args>'
 			}
@@ -64,6 +66,7 @@ class CWLComamnd extends Command {
 				['cwl-ranking', 'rank', 'ranks', 'ranking'],
 				['cwl-members', 'members', 'mem'],
 				['cwl-lineup', 'lineup'],
+				['cwl-export', 'export'],
 				['cwl-stars', 'stars', 'star'],
 				['cwl-gained', 'gained', 'gain', 'lost']
 			],
