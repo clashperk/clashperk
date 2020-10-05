@@ -153,7 +153,7 @@ class Reslover {
 	static limitEmbed() {
 		const embed = new MessageEmbed()
 			.setDescription([
-				'You can only claim 2 clans per guild!',
+				'You can only claim 2 clans per server!',
 				'',
 				'**Want more than that?**',
 				'Please consider supporting us on patreon!',
