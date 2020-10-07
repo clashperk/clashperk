@@ -49,7 +49,7 @@ class StatsCommand extends Command {
 			.addField('Servers', guilds, true)
 			.addField('Shard', `${message.guild.shard.id}/${this.client.shard.count}`, true)
 			.addField('Version', `v${version}`, true)
-			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL());
+			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL({ dynamic: true }));
 
 		if (message.channel.type === 'dm' || !message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
 			return message.util.send({ embed });
