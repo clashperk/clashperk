@@ -1,6 +1,5 @@
-const { Command, Flag } = require('discord-akairo');
+const { Command } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
-const Resolver = require('../../struct/Resolver');
 
 class UnlinkCommand extends Command {
 	constructor() {
@@ -10,30 +9,25 @@ class UnlinkCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
 			description: {
-				content: 'Unlinks profile from your account.',
+				content: 'Unlinks player/clan from your account.',
 				usage: '<tag>',
-				examples: ['#9Q92C8R20']
+				examples: ['#9Q92C8R20', '#8QU8J9LP']
 			}
 		});
 	}
 
 	*args() {
-		const data = yield {
-			type: async (message, args) => {
-				const resolved = await Resolver.player(args);
-				if (resolved.status !== 200) {
-					await message.channel.send({ embed: resolved.embed });
-					return Flag.cancel();
-				}
-				return resolved;
+		const tag = yield {
+			type: async (msg, tag) => {
+				if (!tag) return null;
+				return `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}`;
 			},
 			prompt: {
-				start: 'What is your player tag?',
-				retry: (msg, { failure }) => failure.value
+				start: 'What is your player tag or clan tag?'
 			}
 		};
 
-		return { data };
+		return { tag };
 	}
 
 	cooldown(message) {
@@ -41,9 +35,14 @@ class UnlinkCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data }) {
-		const deleted = await this.delete(message.author.id, data.tag);
+	async exec(message, { tag }) {
+		const deleted = await this.delete(message.author.id, tag);
 		if (!deleted) {
+			const clan = await mongodb.db('clashperk')
+				.collection('linkedclans')
+				.findOneAndDelete({ user: message.author.id });
+			if (clan.value?.tag) return message.util.send({ embed: { description: `Successfully deleted **${clan.tag}**` } });
+
 			return message.util.send({
 				embed: {
 					description: `Couldn\'t find this tag linked to **${message.author.tag}**!`
@@ -51,14 +50,14 @@ class UnlinkCommand extends Command {
 			});
 		}
 
-		return message.util.send({ embed: { description: `Successfully deleted **${data.name} (${data.tag})**` } });
+		return message.util.send({ embed: { description: `Successfully deleted **${deleted.tag}**` } });
 	}
 
 	async delete(id, tag) {
 		const data = await mongodb.db('clashperk')
 			.collection('linkedusers')
 			.findOneAndUpdate({ user: id }, { $pull: { tags: tag } });
-		return data.value && data.value.tags && data.value.tags.includes(tag);
+		return data.value?.tags?.includes(tag) || { tag };
 	}
 }
 
