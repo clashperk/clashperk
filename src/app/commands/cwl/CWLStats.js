@@ -163,9 +163,9 @@ class CWLStatsComamnd extends Command {
 							`${this.winner(clan, opponent) ? emoji.ok : emoji.wrong} **${clan.name}** vs **${opponent.name}**`,
 							`${emoji.clock_small} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
 						], [
-							`\`${clan.stars.toString().padEnd(12, ' ')} Stars ${opponent.stars.toString().padStart(12, ' ')}\``,
-							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(11, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(11, ' ')}\``,
-							`\`${this.destruction(clan.destructionPercentage).padEnd(9, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(9, ' ')}\``
+							`\`${clan.stars.toString().padEnd(10, ' ')} Stars ${opponent.stars.toString().padStart(10, ' ')}\``,
+							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(9, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(9, ' ')}\``,
+							`\`${this.destruction(clan.destructionPercentage).padEnd(7, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(7, ' ')}\``
 						]]);
 					}
 					if (data.state === 'inWar') {
@@ -200,9 +200,9 @@ class CWLStatsComamnd extends Command {
 							`${emoji.loading} **${clan.name}** vs **${opponent.name}**`,
 							`${emoji.clock_small} [Round ${++index}] Started ${moment.duration(Date.now() - started).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
 						], [
-							`\`${clan.stars.toString().padEnd(12, ' ')} Stars ${opponent.stars.toString().padStart(12, ' ')}\``,
-							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(11, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(11, ' ')}\``,
-							`\`${this.destruction(clan.destructionPercentage).padEnd(9, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(9, ' ')}\``
+							`\`${clan.stars.toString().padEnd(10, ' ')} Stars ${opponent.stars.toString().padStart(10, ' ')}\``,
+							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(9, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(9, ' ')}\``,
+							`\`${this.destruction(clan.destructionPercentage).padEnd(7, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(7, ' ')}\``
 						]]);
 					}
 				}
