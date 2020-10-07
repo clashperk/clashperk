@@ -164,8 +164,8 @@ class CWLStatsComamnd extends Command {
 							`${emoji.clock_small} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
 						], [
 							`\`${clan.stars.toString().padEnd(14, ' ')} Stars ${opponent.stars.toString().padStart(14, ' ')}\``,
-							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
-							`\`${this.destruction(clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(11, ' ')}\``
+							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(11, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(11, ' ')}\``,
+							`\`${this.destruction(clan.destructionPercentage).padEnd(9, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(9, ' ')}\``
 						]]);
 					}
 					if (data.state === 'inWar') {
@@ -201,8 +201,8 @@ class CWLStatsComamnd extends Command {
 							`${emoji.clock_small} [Round ${++index}] Started ${moment.duration(Date.now() - started).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
 						], [
 							`\`${clan.stars.toString().padEnd(14, ' ')} Stars ${opponent.stars.toString().padStart(14, ' ')}\``,
-							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(13, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(13, ' ')}\``,
-							`\`${this.destruction(clan.destructionPercentage).padEnd(11, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(11, ' ')}\``
+							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(11, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(11, ' ')}\``,
+							`\`${this.destruction(clan.destructionPercentage).padEnd(9, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(9, ' ')}\``
 						]]);
 					}
 				}
