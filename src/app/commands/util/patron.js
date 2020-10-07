@@ -67,13 +67,30 @@ class PatronCommand extends Command {
 				'• Export members, wars & cwl to excel',
 				'• Patron role on our support discord',
 				'',
-				'[Become a Patron](https://www.patreon.com/join/clashperk)',
-				'',
-				'**Our Current Patrons**',
-				patrons.filter(p => p.active).map(d => `• ${d.discord_username ?? d.name}`).join('\n')
+				'[Become a Patron](https://www.patreon.com/join/clashperk)'
 			]);
 
-		return message.util.send({ embed });
+		const msg = await message.util.send({ embed });
+		await msg.react('➕');
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['➕'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 60000, max: 1 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '➕') {
+				await collector.stop();
+				embed.setDescription([
+					embed.description,
+					'',
+					'**Our Current Patrons**',
+					patrons.filter(p => p.active).map(d => `• ${d.discord_username ?? d.name}`).join('\n')
+				]);
+				return msg.edit({ embed });
+			}
+		});
+
+		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 	}
 
 	async patrons(patrons = []) {
