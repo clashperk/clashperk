@@ -43,9 +43,13 @@ class InviteCommand extends Command {
 		});
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
+			.setAuthor('ClashPerk', this.client.user.displayAvatarURL())
 			.setDescription([
-				`**[Invite Me](https://discord.com/api/oauth2/authorize?${query})**`,
-				'**[Official Discord](https://discord.gg/ppuppun)**'
+				'ClashPerk can be added to as many servers as you want! Please share the bot with your friends. Thanks in advance!',
+				'',
+				`**[Add to Discord](https://discord.com/api/oauth2/authorize?${query})**`,
+				'',
+				'**[Support Discord](https://discord.gg/ppuppun)** | **[Become a Patron](https://www.patreon.com/join/clashperk)**'
 			]);
 		return message.util.send({ embed });
 	}
