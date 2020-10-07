@@ -46,7 +46,7 @@ class Patron {
 
 					if (data.active && data.guilds) {
 						for (const guild of data.guilds) {
-							this.store.set(guild.id, { guild: true, limit: guild.limit });
+							this.store.set(guild.id, { guild: guild.ex ? false : true, limit: guild.limit });
 						}
 					}
 				});
