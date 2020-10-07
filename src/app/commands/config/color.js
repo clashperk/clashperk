@@ -39,7 +39,11 @@ class ColorCommand extends Command {
 			return this.handler.handleDirectCommand(message, 'color', this.handler.modules.get('help'), false);
 		}
 
-		color = color === 'reset' ? this.client.embed(message) : color;
+		if (color === 'reset') {
+			this.client.settings.delete(message.guild, 'color');
+			color = this.client.embed(message);
+		}
+
 		this.client.settings.set(message.guild, 'color', color);
 		return message.util.send({
 			embed: { description: 'Display color updated.', color }
