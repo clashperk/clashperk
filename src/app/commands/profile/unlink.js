@@ -41,7 +41,7 @@ class UnlinkCommand extends Command {
 			const clan = await mongodb.db('clashperk')
 				.collection('linkedclans')
 				.findOneAndDelete({ user: message.author.id });
-			if (clan.value?.tag) return message.util.send({ embed: { description: `Successfully deleted **${clan.tag}**` } });
+			if (clan.value?.tag) return message.util.send({ embed: { description: `Successfully deleted **${clan.value.tag}**` } });
 
 			return message.util.send({
 				embed: {
