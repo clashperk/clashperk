@@ -70,6 +70,10 @@ class PatronCommand extends Command {
 				'[Become a Patron](https://www.patreon.com/join/clashperk)'
 			]);
 
+		if (!message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS'], false)) {
+			return message.util.send({ embed });
+		}
+
 		const msg = await message.util.send({ embed });
 		await msg.react('➕');
 		const collector = msg.createReactionCollector(
