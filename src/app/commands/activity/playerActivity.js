@@ -166,7 +166,7 @@ class PlayerActivityCommand extends Command {
 	datasets(data, offset) {
 		const dataSet = new Array(7).fill()
 			.map((_, i) => {
-				const decrement = new Date() - (24 * 60 * 60 * 1000 * i);
+				const decrement = new Date().getTime() - (24 * 60 * 60 * 1000 * i);
 				const timeObj = new Date(decrement).toISOString()
 					.substring(0, 10);
 				const id = data.entries.find(e => e.time === timeObj);

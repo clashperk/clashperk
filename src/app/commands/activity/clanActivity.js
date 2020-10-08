@@ -167,7 +167,7 @@ class ClanActivityCommand extends Command {
 	datasets(data, offset) {
 		const dataSet = new Array(24).fill()
 			.map((_, i) => {
-				const decrement = new Date() - (60 * 60 * 1000 * i);
+				const decrement = new Date().getTime() - (60 * 60 * 1000 * i);
 				const timeObj = new Date(decrement).toISOString()
 					.substring(0, 14)
 					.concat('00');
