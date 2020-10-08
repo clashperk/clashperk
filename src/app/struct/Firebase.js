@@ -140,17 +140,26 @@ class Firebase {
 			});
 	}
 
-	async clanCount() {
-		if (this.clans) return this.clans;
+	async dbCount() {
+		if (this.clans && this.players) return { clans: this.clans, players: this.players };
+
 		this.clans = await mongodb.db('clashperk')
 			.collection('clanstores')
 			.find()
 			.count();
-		const timeoutId = setTimeout(() => {
+
+		this.players = await mongodb.db('clashperk')
+			.collection('lastonlines')
+			.find()
+			.count();
+
+		const id = setTimeout(() => {
 			this.clans = 0;
-			clearTimeout(timeoutId);
+			this.players = 0;
+			clearTimeout(id);
 		}, 60 * 60 * 1000);
-		return this.clans;
+
+		return { clans: this.clans, players: this.players };
 	}
 
 	async stats() {
@@ -192,12 +201,14 @@ class Firebase {
 			channels += value[2];
 		}
 
+		const { clans, players } = await this.dbCount();
 		return firebase.ref('stats').update({
 			uptime: moment.duration(process.uptime() * 1000).format('D[d] H[h] m[m] s[s]', { trim: 'both mid' }),
 			users,
 			guilds,
 			channels,
-			clans: await this.clanCount()
+			clans,
+			players
 		}, error => {
 			if (error) this.client.logger.error(error, { label: 'FIREBASE' });
 		});
