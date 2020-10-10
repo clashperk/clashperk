@@ -29,8 +29,8 @@ class PatronCommand extends Command {
 	}
 
 	async exec(message, { action, id }) {
-		const patrons = await this.patrons();
 		if (action && id && this.client.isOwner(message.author.id)) {
+			const patrons = await this.patrons();
 			const patron = patrons.find(d => d?.discord_id === id);
 			for (const guild of patron?.guilds ?? []) {
 				if (action === 'add') await this.add(guild.id);
@@ -81,14 +81,15 @@ class PatronCommand extends Command {
 			{ time: 60000, max: 1 }
 		);
 
+		const patrons = await this.patrons();
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➕') {
 				await collector.stop();
 				embed.setDescription([
 					embed.description,
 					'',
-					'**Our Current Patrons**',
-					patrons.filter(p => p.active).map(d => `• ${d.discord_username ?? d.name}`).join('\n')
+					`**Our Current Patrons (${patrons.filter(d => d.active).length})**`,
+					patrons.filter(d => d.active).map(d => `• ${d.discord_username ?? d.name}`).join('\n')
 				]);
 				return msg.edit({ embed });
 			}
