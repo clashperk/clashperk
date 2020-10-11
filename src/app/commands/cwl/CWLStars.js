@@ -150,7 +150,7 @@ class CWLStarsComamnd extends Command {
 				if (!patron) {
 					await message.channel.send({
 						embed: {
-							description: '[Become a Patron](https://www.patreon.com/join/clashperk) to export CWL data to Excel.'
+							description: '[Become a Patron](https://www.patreon.com/clashperk) to export CWL data to Excel.'
 						}
 					});
 				} else {

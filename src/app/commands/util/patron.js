@@ -54,7 +54,7 @@ class PatronCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor('ClashPerk', this.client.user.displayAvatarURL(), 'https://www.patreon.com/join/clashperk')
+			.setAuthor('ClashPerk', this.client.user.displayAvatarURL(), 'https://www.patreon.com/clashperk')
 			.setDescription([
 				'Help us with our hosting related expenses.',
 				'Any help is beyond appreciated.',
@@ -67,7 +67,7 @@ class PatronCommand extends Command {
 				'• Export members, wars & cwl to excel',
 				'• Patron role on our support discord',
 				'',
-				'[Become a Patron](https://www.patreon.com/join/clashperk)'
+				'[Become a Patron](https://www.patreon.com/clashperk)'
 			]);
 
 		if (!message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS'], false)) {

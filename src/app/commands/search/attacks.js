@@ -163,7 +163,7 @@ class ClanAttacksCommand extends Command {
 				if (!patron) {
 					await message.channel.send({
 						embed: {
-							description: '[Become a Patron](https://www.patreon.com/join/clashperk) to export members to Excel.'
+							description: '[Become a Patron](https://www.patreon.com/clashperk) to export members to Excel.'
 						}
 					});
 				} else {

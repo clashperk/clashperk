@@ -49,7 +49,7 @@ class InviteCommand extends Command {
 				'',
 				`**[Add to Discord](https://discord.com/api/oauth2/authorize?${query})**`,
 				'',
-				'**[Support Discord](https://discord.gg/ppuppun)** | **[Become a Patron](https://www.patreon.com/join/clashperk)**'
+				'**[Support Discord](https://discord.gg/ppuppun)** | **[Become a Patron](https://www.patreon.com/clashperk)**'
 			]);
 		return message.util.send({ embed });
 	}

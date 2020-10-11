@@ -17,7 +17,7 @@ class ClanEmbedCommand extends Command {
 					text: [
 						'**Patron only Feature**',
 						'',
-						'[Become a Patron](https://www.patreon.com/join/clashperk)'
+						'[Become a Patron](https://www.patreon.com/clashperk)'
 					],
 					url: 'https://i.imgur.com/QNeOD2n.png'
 				}

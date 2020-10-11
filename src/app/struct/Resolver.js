@@ -158,7 +158,7 @@ class Reslover {
 				'**Want more than that?**',
 				'Please consider supporting us on patreon!',
 				'',
-				'[Become a Patron](https://www.patreon.com/join/clashperk)'
+				'[Become a Patron](https://www.patreon.com/clashperk)'
 			]);
 
 		return embed;

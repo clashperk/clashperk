@@ -19,7 +19,7 @@ class ClanGameStatsCommand extends Command {
 					'',
 					'**Patron only Feature**',
 					'',
-					'[Become a Patron](https://www.patreon.com/join/clashperk)'
+					'[Become a Patron](https://www.patreon.com/clashperk)'
 				],
 				examples: ['']
 			},
