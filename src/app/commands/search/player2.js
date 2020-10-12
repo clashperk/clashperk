@@ -53,9 +53,7 @@ class PlayerCommand extends Command {
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setDescription([
-				`${townHallEmoji[data.townHallLevel]} **${data.townHallLevel}** ${leagueEmoji[data.league ? data.league.id : 29000000]} **${data.trophies}** ${emoji.warstar} **${data.warStars}**`,
-				'',
-				`Last Seen: ${2} days ago`,
+				`${townHallEmoji[data.townHallLevel]} **${data.townHallLevel}** ${emoji.trophy} **${data.trophies}** ${emoji.warstar} **${data.warStars}**`,
 				'',
 				'**Season Stats**',
 				`${emoji.troopsdonation} Donated: ${data.donations}`,
@@ -64,72 +62,16 @@ class PlayerCommand extends Command {
 				`${emoji.shield} Defense Won: ${data.defenseWins}`,
 				'',
 				'**Other Stats**',
-				`${emoji.trophy} Best Trophies: ${leagueEmoji[leagueId(data.bestTrophies)]} ${data.bestTrophies}`,
+				`${emoji.trophy} Best Trophies: ${data.bestTrophies}`,
+				`${emoji.clock_small} Last Seen: ${2} days ago`,
 				'',
 				'**Achievement Stats**',
-				`${emoji.troopsdonation} Troops Donated: 312`,
-				`${emoji.spelldonation} Spells Donated: 12`,
-				'<:cg:765244426444079115> Clan Games Points: 4,875',
+				`${emoji.troopsdonation} Troops Donated: ${data.achievements.find(d => d.name === 'Friend in Need').value}`,
+				`${emoji.spelldonation} Spells Donated: ${data.achievements.find(d => d.name === 'Friend in Need').value}`,
+				`<:cg:765244426444079115> Clan Games Points: ${data.achievements.find(d => d.name === 'Games Champion').value}`,
 				'',
-				`${emoji.warstar} CWL War Stars: 0`
+				`${emoji.warstar} CWL War Stars: ${data.achievements.find(d => d.name === 'War League Legend').value}`
 			]);
-
-		embed.addField('Town Hall & XP', [
-			`${townHallEmoji[data.townHallLevel]} ${data.townHallLevel}`,
-			`${emoji.xp} ${data.expLevel}`
-		], true);
-		embed.addField('Current League', [
-			`${emoji.trophy} ${data.trophies}`,
-			`${leagueEmoji[data.league ? data.league.id : 29000000]} ${data.league ? data.league.name : 'Unranked'}`
-		], true);
-
-		embed.addField('Best Trophies', `${leagueEmoji[leagueId(data.bestTrophies)]} **${data.bestTrophies}**`, true);
-
-		embed.addField('War Stars', `${emoji.warstar} ${data.warStars}`, true);
-		embed.addField('Attacks/Defenses', `${emoji.attacksword} ${data.attackWins} ${emoji.shield} ${data.defenseWins}`, true);
-
-		embed.addField('Donations/Receives', [
-			`${emoji.troopsdonation} ${data.donations}${emoji.donated} ${data.donationsReceived}${emoji.received}`
-		], true);
-
-		data.achievements.forEach(achievement => {
-			if (achievement.name === 'Friend in Need') {
-				embed.addField('Friend in Need', `${starEmoji[achievement.stars]} ${achievement.value}`, true);
-			}
-			if (achievement.name === 'Games Champion') {
-				embed.addField('Clan Games Points', `${starEmoji[achievement.stars]} ${achievement.value}`, true);
-			}
-			if (achievement.name === 'War League Legend') {
-				embed.addField('CWL Stars', `${starEmoji[achievement.stars]} ${achievement.value}`, true);
-			}
-		});
-
-		if (data.clan) {
-			embed.addField(`Clan ${roles[data.role]}`, `${emoji.clan} [${data.clan.name}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)})`);
-		}
-
-		let heroLevels = '';
-		data.heroes.forEach(hero => {
-			if (hero.village === 'home') {
-				if (hero.level === hero.maxLevel) {
-					heroLevels += `${heroEmoji[hero.name]} **${hero.level}**\u2002\u2002`;
-				} else {
-					heroLevels += `${heroEmoji[hero.name]} ${hero.level}\u2002\u2002`;
-				}
-			}
-		});
-		if (heroLevels) embed.addField('Heroes', heroLevels);
-
-
-		const flag = await this.flag(message, data.tag);
-		if (flag) {
-			const user = await this.client.users.fetch(flag.user, false).catch(() => null);
-			const offset = await this.offset(message);
-			embed.addField('Flag', [
-				`${flag.reason}`,
-				`\`${user ? user.tag : 'Unknown#0000'} (${moment(flag.createdAt).utcOffset(offset).format('DD-MM-YYYY kk:mm')})\``
-			]);
-		}
 
 		return message.util.send({ embed });
 	}
