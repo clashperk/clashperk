@@ -55,16 +55,23 @@ class PlayerCommand extends Command {
 			.setDescription([
 				`${townHallEmoji[data.townHallLevel]} **${data.townHallLevel}** ${leagueEmoji[data.league ? data.league.id : 29000000]} **${data.trophies}** ${emoji.warstar} **${data.warStars}**`,
 				'',
+				`Last Seen: ${2} days ago`,
+				'',
 				'**Season Stats**',
 				`${emoji.troopsdonation} Donated: ${data.donations}`,
 				`${emoji.troopsdonation} Received: ${data.donationsReceived}`,
 				`${emoji.attacksword} Attacks Won: ${data.attackWins}`,
 				`${emoji.shield} Defense Won: ${data.defenseWins}`,
 				'',
+				'**Other Stats**',
+				`${emoji.trophy} Best Trophies: ${leagueEmoji[leagueId(data.bestTrophies)]} ${data.bestTrophies}`,
+				'',
 				'**Achievement Stats**',
 				`${emoji.troopsdonation} Troops Donated: 312`,
 				`${emoji.spelldonation} Spells Donated: 12`,
-				'<:cg:765244426444079115> Clan Games Points: 4,875'
+				'<:cg:765244426444079115> Clan Games Points: 4,875',
+				'',
+				`${emoji.warstar} CWL War Stars: 0`
 			]);
 
 		embed.addField('Town Hall & XP', [
