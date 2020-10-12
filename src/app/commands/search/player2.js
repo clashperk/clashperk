@@ -55,8 +55,14 @@ class PlayerCommand extends Command {
 			.setDescription([
 				`${townHallEmoji[data.townHallLevel]} **${data.townHallLevel}** ${leagueEmoji[data.league ? data.league.id : 29000000]} **${data.trophies}** ${emoji.warstar} **${data.warStars}**`,
 				'',
+				'**Season Stats**',
+				`${emoji.troopsdonation} Troops Donated: ${data.donations} ${emoji.donated}`,
+				`${emoji.troopsdonation} Troops Received: ${data.donationsReceived} ${emoji.received}`,
+				`${emoji.attacksword} Attacks Won: ${data.attackWins}`,
+				`${emoji.shield} Defense Won: ${data.defenseWins}`,
+				'',
 				'**Achievement Stats**',
-				`${emoji.donated} Troops Donated: 312`,
+				`${emoji.troopsdonation} Troops Donated: 312`,
 				`${emoji.spelldonation} Spells Donated: 12`,
 				'<:cg:765244426444079115> Clan Games Points: 4,875'
 			]);
