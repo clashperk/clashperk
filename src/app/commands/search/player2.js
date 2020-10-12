@@ -67,7 +67,7 @@ class PlayerCommand extends Command {
 				'',
 				'**Achievement Stats**',
 				`${emoji.troopsdonation} Troops Donated: ${data.achievements.find(d => d.name === 'Friend in Need').value}`,
-				`${emoji.spelldonation} Spells Donated: ${data.achievements.find(d => d.name === 'Friend in Need').value}`,
+				`${emoji.spelldonation} Spells Donated: ${data.achievements.find(d => d.name === 'Sharing is caring').value}`,
 				`<:cg:765244426444079115> Clan Games Points: ${data.achievements.find(d => d.name === 'Games Champion').value}`,
 				'',
 				`${emoji.warstar} CWL War Stars: ${data.achievements.find(d => d.name === 'War League Legend').value}`
