@@ -142,8 +142,7 @@ class ClanEmbed {
 			`${clan.warWins} wins, ${clan.isWarLogPublic ? `${clan.warLosses} losses, ${clan.warTies} ties,` : ''} win streak ${clan.warWinStreak}`
 		]);
 
-		embed.setFooter(`Members [${clan.members}/50]`, this.client.user.displayAvatarURL());
-
+		embed.setFooter(`Members: ${clan.members}`, this.client.user.displayAvatarURL());
 		return embed;
 	}
 
