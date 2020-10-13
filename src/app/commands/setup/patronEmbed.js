@@ -140,7 +140,7 @@ class ClanEmbedCommand extends Command {
 			.addField(`${emoji.clan} War Info`, [
 				`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses, ${data.warTies} ties,` : ''} win streak ${data.warWinStreak}`
 			])
-			.setFooter(`Members: ${data.members}`, data.badgeUrls.medium)
+			.setFooter(`Members: ${data.members}`, this.client.user.displayAvatarURL())
 			.setTimestamp();
 
 		const msg = await message.util.send({ embed });
