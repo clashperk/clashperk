@@ -133,14 +133,14 @@ class ClanEmbedCommand extends Command {
 			.setColor(color)
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
-			.setThumbnail(data.badgeUrls.small)
+			.setThumbnail(data.badgeUrls.medium)
 			.setDescription(Util.cleanContent(description, message))
 			.addField(`${emoji.owner} Leader`, `${user}`)
 			.addField(`${emoji.townhall} Accepted Town-Hall`, accepts.split(',').map(x => x.trim()).join(', '))
 			.addField(`${emoji.clan} War Info`, [
 				`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses, ${data.warTies} ties,` : ''} win streak ${data.warWinStreak}`
 			])
-			.setFooter(`Members: ${data.members}/50`, this.client.user.displayAvatarURL())
+			.setFooter(`Members: ${data.members}`, data.badgeUrls.medium)
 			.setTimestamp();
 
 		const msg = await message.util.send({ embed });
