@@ -76,7 +76,7 @@ class LastOnlineCommand extends Command {
 				members.sort((a, b) => b.count - a.count);
 				embed.setDescription([
 					`Clan Member Activities (Last ${this.season()} Days)`,
-					`\`\`\`\u200e${'TOTAL'.padStart(4, ' ')} AGV  ${'NAME'}\n${members
+					`\`\`\`\u200e${'TOTAL'.padStart(4, ' ')} AVG  ${'NAME'}\n${members
 						.map(m => `${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / this.season()).toString().padStart(3, ' ')}  ${m.name}`)
 						.join('\n')}`,
 					'```'
