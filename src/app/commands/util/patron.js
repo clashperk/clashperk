@@ -81,16 +81,15 @@ class PatronCommand extends Command {
 			{ time: 60000, max: 1 }
 		);
 
-		const patrons = await this.patrons();
+		const patrons = (await this.patrons()).filter(patron => patron.active && patron?.discord_id !== this.client.ownerID);
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➕') {
 				await collector.stop();
 				embed.setDescription([
 					embed.description,
 					'',
-					`**Our Current Patrons (${patrons.filter(d => d.active && d?.discord_id !== this.client.ownerID).length})**`,
-					patrons.filter(d => d.active && d?.discord_id !== this.client.ownerID)
-						.map(d => `• ${d.discord_username ?? d.name}`)
+					`**Our Current Patrons (${patrons.length})**`,
+					patrons.map(patron => `• ${patron?.discord_username ?? patron?.name}`)
 						.join('\n')
 				]);
 				return msg.edit({ embed });
