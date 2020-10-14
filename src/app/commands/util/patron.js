@@ -88,8 +88,10 @@ class PatronCommand extends Command {
 				embed.setDescription([
 					embed.description,
 					'',
-					`**Our Current Patrons (${patrons.filter(d => d.active).length})**`,
-					patrons.filter(d => d.active).map(d => `• ${d.discord_username ?? d.name}`).join('\n')
+					`**Our Current Patrons (${patrons.filter(d => d.active && !this.client.isOwner(d.discord_id)).length})**`,
+					patrons.filter(d => d.active && !this.client.isOwner(d.discord_id))
+						.map(d => `• ${d.discord_username ?? d.name}`)
+						.join('\n')
 				]);
 				return msg.edit({ embed });
 			}
