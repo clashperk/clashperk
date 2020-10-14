@@ -10,7 +10,7 @@ class LastOnlineCommand extends Command {
 			aliases: ['lastonline', 'lastseen', 'lo'],
 			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
 			description: {
 				content: 'Shows an approximate last-online time of clan members.',
 				usage: '<clanTag>',
@@ -58,13 +58,34 @@ class LastOnlineCommand extends Command {
 				`\`\`\`\u200e${'LAST-ON'.padStart(7, ' ')}  📊  ${'NAME'}\n${members
 					.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${(m.count > 99 ? 99 : m.count).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n')}`,
-				data.members > members.length
-					? `.......  ${data.members - members.length}  Untracked members\`\`\``
-					: '```'
+				'```'
 			])
 			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL());
 
-		return message.util.send({ embed });
+		const msg = await message.util.send({ embed });
+		await msg.react('📊');
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['📊'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 60000, max: 1 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '📊') {
+				await collector.stop();
+				const members = await this.aggregationQuery(data, this.season());
+				members.sort((a, b) => b.count - a.count);
+				embed.setDescription([
+					`Clan Member Activities (Last ${this.season()} Days)`,
+					`\`\`\`\u200e${'TOTAL'.padStart(4, ' ')} AVG  ${'NAME'}\n${members
+						.map(m => `${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / this.season()).toString().padStart(3, ' ')}  ${m.name}`)
+						.join('\n')}`,
+					'```'
+				]);
+				return msg.edit({ embed });
+			}
+		});
+
+		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 	}
 
 	padEnd(data) {
@@ -99,7 +120,7 @@ class LastOnlineCommand extends Command {
 		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
 	}
 
-	async aggregationQuery(clan) {
+	async aggregationQuery(clan, days = 1) {
 		const db = mongodb.db('clashperk').collection('lastonlines');
 		const collection = await db.aggregate([
 			{
@@ -119,7 +140,7 @@ class LastOnlineCommand extends Command {
 							'as': 'en',
 							'cond': {
 								'$gte': [
-									'$$en.entry', new Date(new Date().getTime() - (24 * 60 * 60 * 1000))
+									'$$en.entry', new Date(new Date().getTime() - (days * 24 * 60 * 60 * 1000))
 								]
 							}
 						}
@@ -150,6 +171,10 @@ class LastOnlineCommand extends Command {
 			}
 		]).toArray();
 		return this.filter(clan, collection[0]);
+	}
+
+	season() {
+		return Math.floor((new Date() - new Date(2020, 9, 1)) / (24 * 60 * 60 * 1000));
 	}
 }
 

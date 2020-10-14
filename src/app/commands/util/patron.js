@@ -29,8 +29,8 @@ class PatronCommand extends Command {
 	}
 
 	async exec(message, { action, id }) {
-		const patrons = await this.patrons();
 		if (action && id && this.client.isOwner(message.author.id)) {
+			const patrons = await this.patrons();
 			const patron = patrons.find(d => d?.discord_id === id);
 			for (const guild of patron?.guilds ?? []) {
 				if (action === 'add') await this.add(guild.id);
@@ -54,7 +54,7 @@ class PatronCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor('ClashPerk', this.client.user.displayAvatarURL(), 'https://www.patreon.com/join/clashperk')
+			.setAuthor('ClashPerk', this.client.user.displayAvatarURL(), 'https://www.patreon.com/clashperk')
 			.setDescription([
 				'Help us with our hosting related expenses.',
 				'Any help is beyond appreciated.',
@@ -67,7 +67,7 @@ class PatronCommand extends Command {
 				'• Export members, wars & cwl to excel',
 				'• Patron role on our support discord',
 				'',
-				'[Become a Patron](https://www.patreon.com/join/clashperk)'
+				'[Become a Patron](https://www.patreon.com/clashperk)'
 			]);
 
 		if (!message.channel.permissionsFor(message.guild.me).has(['ADD_REACTIONS'], false)) {
@@ -81,14 +81,16 @@ class PatronCommand extends Command {
 			{ time: 60000, max: 1 }
 		);
 
+		const patrons = (await this.patrons()).filter(patron => patron.active && patron?.discord_id !== this.client.ownerID);
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➕') {
 				await collector.stop();
 				embed.setDescription([
 					embed.description,
 					'',
-					'**Our Current Patrons**',
-					patrons.filter(p => p.active).map(d => `• ${d.discord_username ?? d.name}`).join('\n')
+					`**Our Current Patrons (${patrons.length})**`,
+					patrons.map(patron => `• ${patron?.discord_username ?? patron?.name}`)
+						.join('\n')
 				]);
 				return msg.edit({ embed });
 			}

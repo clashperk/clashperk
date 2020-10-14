@@ -32,7 +32,7 @@ class CooldownListener extends Listener {
 				embed.setDescription([
 					`You'll be able to use this command again in **${ms(remaining, { long: true })}**`,
 					`The default cooldown is **${ms(cooldown, { long: true })}** but donators only need to wait **1 second**.`,
-					'<https://www.patreon.com/join/clashperk>'
+					'<https://www.patreon.com/clashperk>'
 				]);
 			}
 

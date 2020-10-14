@@ -60,7 +60,7 @@ class GuildCreateListener extends Listener {
 			.addField('Support', [
 				'Join [Support Server](https://discord.gg/ppuppun) if you need help.',
 				'',
-				'If you like the bot, please support us on [Patreon](https://www.patreon.com/join/clashperk)'
+				'If you like the bot, please support us on [Patreon](https://www.patreon.com/clashperk)'
 			]);
 		if (guild.systemChannelID) {
 			const channel = guild.channels.cache.get(guild.systemChannelID);

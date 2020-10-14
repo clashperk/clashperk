@@ -198,7 +198,7 @@ class HelpCommand extends Command {
 		}
 
 		embed.addField('\u200b', [
-			'**[Join Support Discord](https://discord.gg/ppuppun)** | **[Support us on Patreon](https://www.patreon.com/join/clashperk)**'
+			'**[Join Support Discord](https://discord.gg/ppuppun)** | **[Support us on Patreon](https://www.patreon.com/clashperk)**'
 		]);
 		return embed;
 	}

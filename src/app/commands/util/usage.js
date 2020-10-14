@@ -38,8 +38,6 @@ class UsageCommand extends Command {
 			const file = new MessageAttachment(buffer, 'growth.png');
 			const embed = new MessageEmbed()
 				.setAuthor('ClashPerk', this.client.user.displayAvatarURL())
-				.setTitle('Growth')
-				.setURL('https://clashperk.com')
 				.setColor(this.client.embed(message))
 				.setImage('attachment://growth.png')
 				.setFooter(`Today's Growth: ${addition}/${Math.abs(deletion)}/${growth}`);

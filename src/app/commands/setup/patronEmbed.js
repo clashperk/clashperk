@@ -25,7 +25,7 @@ class ClanEmbedCommand extends Command {
 					const embed = this.client.util.embed()
 						.setImage('https://i.imgur.com/QNeOD2n.png')
 						.setDescription([
-							'[Become a Patron](https://www.patreon.com/join/clashperk) to create Live auto updating Promotional Embed'
+							'[Become a Patron](https://www.patreon.com/clashperk) to create Live auto updating Promotional Embed'
 						]);
 					await message.util.send({ embed });
 					return Flag.cancel();
@@ -140,7 +140,7 @@ class ClanEmbedCommand extends Command {
 			.addField(`${emoji.clan} War Info`, [
 				`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses, ${data.warTies} ties,` : ''} win streak ${data.warWinStreak}`
 			])
-			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL())
+			.setFooter(`Members: ${data.members}`, this.client.user.displayAvatarURL())
 			.setTimestamp();
 
 		const msg = await message.util.send({ embed });

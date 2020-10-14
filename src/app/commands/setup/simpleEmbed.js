@@ -45,7 +45,7 @@ class ClanEmbedCommand extends Command {
 			const embed = this.client.util.embed()
 				.setImage('https://i.imgur.com/QNeOD2n.png')
 				.setDescription([
-					'[Become a Patron](https://www.patreon.com/join/clashperk) to create Live auto updating Promotional Embed'
+					'[Become a Patron](https://www.patreon.com/clashperk) to create Live auto updating Promotional Embed'
 				]);
 			return message.util.send({ embed });
 		}
