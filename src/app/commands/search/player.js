@@ -93,17 +93,18 @@ class PlayerCommand extends Command {
 			'\u200b\u2002'
 		]);
 		embed.addField('**Achievement Stats**', [
+			'**Total Loots**',
 			[
-				`${emoji.gold || '<:gold:766199291068416040>'} ${this.format(data.achievements.find(d => d.name === 'Gold Grab').value)}`,
-				`${emoji.elixir || '<:elixir:766199063145611301>'} ${this.format(data.achievements.find(d => d.name === 'Elixir Escapade').value)}`,
-				`${emoji.darkElixir || '<:darkelixir:766199057718706216>'} ${this.format(data.achievements.find(d => d.name === 'Heroic Heist').value)}`
+				`${emoji.gold} ${this.format(data.achievements.find(d => d.name === 'Gold Grab').value)}`,
+				`${emoji.elixir} ${this.format(data.achievements.find(d => d.name === 'Elixir Escapade').value)}`,
+				`${emoji.darkElixir} ${this.format(data.achievements.find(d => d.name === 'Heroic Heist').value)}`
 			].join(' '),
 			`**Troops Donated**\n${emoji.troopsdonation} ${data.achievements.find(d => d.name === 'Friend in Need').value}`,
 			`**Spells Donated**\n${emoji.spelldonation} ${data.achievements.find(d => d.name === 'Sharing is caring').value}`,
 			`**Attacks Won**\n${emoji.attacksword} ${data.achievements.find(d => d.name === 'Conqueror').value}`,
 			`**Defense Won**\n${emoji.shield} ${data.achievements.find(d => d.name === 'Unbreakable').value}`,
-			`**CWL War Stars**\n${emoji.cwlstar || '<:cwlstar:766189691716239360>'} ${data.achievements.find(d => d.name === 'War League Legend').value}`,
-			`**Clan Games Points**\n${emoji.clangames || '<:cg:765244426444079115>'} ${data.achievements.find(d => d.name === 'Games Champion').value}`,
+			`**CWL War Stars**\n${emoji.cwlstar} ${data.achievements.find(d => d.name === 'War League Legend').value}`,
+			`**Clan Games Points**\n${emoji.clangames} ${data.achievements.find(d => d.name === 'Games Champion').value}`,
 			'\u200b\u2002'
 		]);
 		embed.addField('**Heroes**', [
