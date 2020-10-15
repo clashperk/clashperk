@@ -240,7 +240,10 @@ module.exports = {
 		mem_blue: '<:memblue:721787113414197259>',
 		hash: '<:cp_hash:731418702875983884>',
 		nodejs: '<:nodejs:723162041095028797>',
-		clangames: '<:cg:765244426444079115>'
+		clangames: '<:cg:765244426444079115>',
+		gold: '<:gold:766199291068416040>',
+		elixir: '<:elixir:766199063145611301>',
+		darkElixir: '<:darkelixir:766199057718706216>'
 	},
 
 	blueNum: {

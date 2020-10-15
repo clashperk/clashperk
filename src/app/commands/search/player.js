@@ -93,6 +93,11 @@ class PlayerCommand extends Command {
 			'\u200b\u2002'
 		]);
 		embed.addField('**Achievement Stats**', [
+			[
+				`${emoji.gold || '<:gold:766199291068416040>'} ${this.format(data.achievements.find(d => d.name === 'Gold Grab').value)}`,
+				`${emoji.elixir || '<:elixir:766199063145611301>'} ${this.format(data.achievements.find(d => d.name === 'Elixir Escapade').value)}`,
+				`${emoji.darkElixir || '<:darkelixir:766199057718706216>'} ${this.format(data.achievements.find(d => d.name === 'Heroic Heist').value)}`
+			].join(' '),
 			`**Troops Donated**\n${emoji.troopsdonation} ${data.achievements.find(d => d.name === 'Friend in Need').value}`,
 			`**Spells Donated**\n${emoji.spelldonation} ${data.achievements.find(d => d.name === 'Sharing is caring').value}`,
 			`**CWL War Stars**\n${emoji.cwlstar || '<:cwlstar:766189691716239360>'} ${data.achievements.find(d => d.name === 'War League Legend').value}`,
@@ -136,6 +141,23 @@ class PlayerCommand extends Command {
 		const hours = Math.floor(seconds / 3600);
 		const minutes = Math.floor(seconds % 3600 / 60);
 		return `${prefix}${hours >= 1 ? `0${hours}`.slice(-2) : '00'}:${minutes >= 1 ? `0${minutes}`.slice(-2) : '00'}`;
+	}
+
+	format(num = 0) {
+		// Nine Zeroes for Billions
+		return Math.abs(num) >= 1.0e+9
+
+			? `${Math.abs(num) / 1.0e+9}B`
+			// Six Zeroes for Millions
+			: Math.abs(num) >= 1.0e+6
+
+				? `${Math.abs(num) / 1.0e+6}M`
+				// Three Zeroes for Thousands
+				: Math.abs(num) >= 1.0e+3
+
+					? `${Math.abs(num) / 1.0e+3}K`
+
+					: Math.abs(num);
 	}
 }
 
