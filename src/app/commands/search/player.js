@@ -4,7 +4,8 @@ const moment = require('moment');
 const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
 const { leagueId } = require('../../util/constants');
-const { emoji, townHallEmoji, heroEmoji, leagueEmoji, starEmoji } = require('../../util/emojis');
+const ms = require('ms');
+const { emoji, townHallEmoji, heroEmoji, leagueEmoji } = require('../../util/emojis');
 
 const roles = {
 	member: 'Member',
@@ -17,7 +18,7 @@ class PlayerCommand extends Command {
 	constructor() {
 		super('player', {
 			aliases: ['player', 'p'],
-			category: 'search',
+			category: 'search2',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows info about your in-game profile.',
@@ -48,64 +49,67 @@ class PlayerCommand extends Command {
 	}
 
 	async exec(message, { data }) {
+		const collection = await mongodb.db('clashperk')
+			.collection('lastonlines')
+			.aggregate([
+				{
+					'$match': {
+						'tag': data.tag
+					}
+				},
+				{
+					'$project': {
+						'tag': '$tag',
+						'lastSeen': '$lastSeen'
+					}
+				}
+			])
+			.toArray();
+
+		const lastSeen = collection[0]?.lastSeen
+			? `${ms(new Date().getTime() - new Date(collection[0]?.lastSeen).getTime(), { long: true })} ago`
+			: 'Unknown';
+		const clan = data.clan
+			? `**Clan Name**\n${emoji.clan} [${data.clan.name} (${data.clan.tag})](${this.clanURL(data.clan.tag)})\n**Clan Role**\n ${emoji.mem_blue} ${roles[data.role]}\n`
+			: '';
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
-			.setThumbnail(data.league ? data.league.iconUrls.small : `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`);
-
-		embed.addField('Town Hall & XP', [
-			`${townHallEmoji[data.townHallLevel]} ${data.townHallLevel}`,
-			`${emoji.xp} ${data.expLevel}`
-		], true);
-		embed.addField('Current League', [
-			`${emoji.trophy} ${data.trophies}`,
-			`${leagueEmoji[data.league ? data.league.id : 29000000]} ${data.league ? data.league.name : 'Unranked'}`
-		], true);
-
-		embed.addField('Best Trophies', `${leagueEmoji[leagueId(data.bestTrophies)]} **${data.bestTrophies}**`, true);
-
-		embed.addField('War Stars', `${emoji.warstar} ${data.warStars}`, true);
-		embed.addField('Attacks/Defenses', `${emoji.attacksword} ${data.attackWins} ${emoji.shield} ${data.defenseWins}`, true);
-
-		embed.addField('Donations/Receives', [
-			`${emoji.troopsdonation} ${data.donations}${emoji.donated} ${data.donationsReceived}${emoji.received}`
-		], true);
-
-		data.achievements.forEach(achievement => {
-			if (achievement.name === 'Friend in Need') {
-				embed.addField('Friend in Need', `${starEmoji[achievement.stars]} ${achievement.value}`, true);
-			}
-			if (achievement.name === 'Games Champion') {
-				embed.addField('Clan Games Points', `${starEmoji[achievement.stars]} ${achievement.value}`, true);
-			}
-			if (achievement.name === 'War League Legend') {
-				embed.addField('CWL Stars', `${starEmoji[achievement.stars]} ${achievement.value}`, true);
-			}
-		});
-
-		if (data.clan) {
-			embed.addField(`Clan ${roles[data.role]}`, `${emoji.clan} [${data.clan.name}](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)})`);
-		}
-
-		let heroLevels = '';
-		data.heroes.forEach(hero => {
-			if (hero.village === 'home') {
-				if (hero.level === hero.maxLevel) {
-					heroLevels += `${heroEmoji[hero.name]} **${hero.level}**\u2002\u2002`;
-				} else {
-					heroLevels += `${heroEmoji[hero.name]} ${hero.level}\u2002\u2002`;
-				}
-			}
-		});
-		if (heroLevels) embed.addField('Heroes', heroLevels);
-
+			.setThumbnail(data.league ? data.league.iconUrls.small : `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`)
+			.setDescription([
+				`${townHallEmoji[data.townHallLevel]} **${data.townHallLevel}** ${emoji.xp} **${data.expLevel}** ${emoji.trophy} **${data.trophies}** ${emoji.warstar} **${data.warStars}**`
+			]);
+		embed.addField('**Season Stats**', [
+			`**Donated**\n${emoji.troopsdonation} ${data.donations} ${emoji.donated}`,
+			`**Received**\n${emoji.troopsdonation} ${data.donationsReceived} ${emoji.received}`,
+			`**Attacks Won**\n${emoji.attacksword} ${data.attackWins}`,
+			`**Defense Won**\n${emoji.shield} ${data.defenseWins}`,
+			'\u200b\u2002'
+		]);
+		embed.addField('**Other Stats**', [
+			`**Best Trophies**\n${leagueEmoji[leagueId(data.bestTrophies)]} ${data.bestTrophies}`,
+			`${clan}**Last Seen**\n${emoji.clock_small} ${lastSeen}`,
+			'\u200b\u2002'
+		]);
+		embed.addField('**Achievement Stats**', [
+			`**Troops Donated**\n${emoji.troopsdonation} ${data.achievements.find(d => d.name === 'Friend in Need').value}`,
+			`**Spells Donated**\n${emoji.spelldonation} ${data.achievements.find(d => d.name === 'Sharing is caring').value}`,
+			`**Clan Games Points**\n${emoji.clangames || '<:cg:765244426444079115>'} ${data.achievements.find(d => d.name === 'Games Champion').value}`,
+			`**CWL War Stars**\n${emoji.warstar} ${data.achievements.find(d => d.name === 'War League Legend').value}`,
+			'\u200b\u2002'
+		]);
+		embed.addField('**Heroes**', [
+			data.heroes.filter(hero => hero.village === 'home')
+				.map(hero => `${heroEmoji[hero.name]} ${hero.level}`)
+				.join(' ')
+		]);
 
 		const flag = await this.flag(message, data.tag);
 		if (flag) {
 			const user = await this.client.users.fetch(flag.user, false).catch(() => null);
 			const offset = await this.offset(message);
-			embed.addField('Flag', [
+			embed.addField('**Flag**', [
 				`${flag.reason}`,
 				`\`${user ? user.tag : 'Unknown#0000'} (${moment(flag.createdAt).utcOffset(offset).format('DD-MM-YYYY kk:mm')})\``
 			]);
@@ -119,6 +123,10 @@ class PlayerCommand extends Command {
 			.collection('flaggedusers')
 			.findOne({ guild: message.guild.id, tag });
 		return data;
+	}
+
+	clanURL(tag) {
+		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 
 	async offset(message) {
