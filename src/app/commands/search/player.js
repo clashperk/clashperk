@@ -147,17 +147,17 @@ class PlayerCommand extends Command {
 		// Nine Zeroes for Billions
 		return Math.abs(num) >= 1.0e+9
 
-			? `${Math.abs(num) / 1.0e+9}B`
+			? `${Math.floor(Math.abs(num) / 1.0e+9)}B`
 			// Six Zeroes for Millions
 			: Math.abs(num) >= 1.0e+6
 
-				? `${Math.abs(num) / 1.0e+6}M`
+				? `${Math.floor(Math.abs(num) / 1.0e+6)}M`
 				// Three Zeroes for Thousands
 				: Math.abs(num) >= 1.0e+3
 
-					? `${Math.abs(num) / 1.0e+3}K`
+					? `${Math.floor(Math.abs(num) / 1.0e+3)}K`
 
-					: Math.abs(num);
+					: Math.floor(Math.abs(num));
 	}
 }
 
