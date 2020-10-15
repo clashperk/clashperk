@@ -4,7 +4,8 @@ const moment = require('moment');
 const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
 const { leagueId } = require('../../util/constants');
-const { emoji, townHallEmoji, heroEmoji, leagueEmoji, starEmoji } = require('../../util/emojis');
+const ms = require('ms');
+const { emoji, townHallEmoji, heroEmoji, leagueEmoji } = require('../../util/emojis');
 
 const roles = {
 	member: 'Member',
@@ -48,6 +49,29 @@ class PlayerCommand extends Command {
 	}
 
 	async exec(message, { data }) {
+		const collection = await mongodb.db('clashperk')
+			.collection('lastonlines')
+			.aggregate([
+				{
+					'$match': {
+						'tag': data.tag
+					}
+				},
+				{
+					'$project': {
+						'tag': '$tag',
+						'lastSeen': '$lastSeen'
+					}
+				}
+			])
+			.toArray();
+
+		const lastSeen = collection[0]?.lastSeen
+			? ms(new Date().getTime() - new Date(collection[0]?.lastSeen).getTime(), { long: true })
+			: 'Unknown';
+		const clan = data.clan
+			? `**Clan**\n${emoji.clan} [${data.clan.name} (${data.clan.tag})](${this.clanURL(data.clan.tag)})\n**Role**\n ${emoji.mem_blue} ${roles[data.role]}\n`
+			: '';
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
@@ -63,8 +87,8 @@ class PlayerCommand extends Command {
 			'\u200b\u2002'
 		]);
 		embed.addField('**Other Stats**', [
-			`**Best Trophies**\n${emoji.trophy} ${data.bestTrophies}`,
-			`**Last Seen**\n${emoji.clock_small} ${2} days ago`,
+			`**Best Trophies**\n${leagueEmoji[leagueId(data.bestTrophies)]} ${data.bestTrophies}`,
+			`${clan}**Last Seen**\n${emoji.clock_small} ${lastSeen} ago`,
 			'\u200b\u2002'
 		]);
 		embed.addField('**Achievement Stats**', [
@@ -80,6 +104,16 @@ class PlayerCommand extends Command {
 				.join(' ')
 		]);
 
+		const flag = await this.flag(message, data.tag);
+		if (flag) {
+			const user = await this.client.users.fetch(flag.user, false).catch(() => null);
+			const offset = await this.offset(message);
+			embed.addField('**Flag**', [
+				`${flag.reason}`,
+				`\`${user ? user.tag : 'Unknown#0000'} (${moment(flag.createdAt).utcOffset(offset).format('DD-MM-YYYY kk:mm')})\``
+			]);
+		}
+
 		return message.util.send({ embed });
 	}
 
@@ -88,6 +122,10 @@ class PlayerCommand extends Command {
 			.collection('flaggedusers')
 			.findOne({ guild: message.guild.id, tag });
 		return data;
+	}
+
+	clanURL(tag) {
+		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 
 	async offset(message) {
