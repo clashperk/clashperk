@@ -100,6 +100,8 @@ class PlayerCommand extends Command {
 			].join(' '),
 			`**Troops Donated**\n${emoji.troopsdonation} ${data.achievements.find(d => d.name === 'Friend in Need').value}`,
 			`**Spells Donated**\n${emoji.spelldonation} ${data.achievements.find(d => d.name === 'Sharing is caring').value}`,
+			`**Attacks Won**\n${emoji.attacksword} ${data.achievements.find(d => d.name === 'Conqueror').value}`,
+			`**Defense Won**\n${emoji.shield} ${data.achievements.find(d => d.name === 'Unbreakable').value}`,
 			`**CWL War Stars**\n${emoji.cwlstar || '<:cwlstar:766189691716239360>'} ${data.achievements.find(d => d.name === 'War League Legend').value}`,
 			`**Clan Games Points**\n${emoji.clangames || '<:cg:765244426444079115>'} ${data.achievements.find(d => d.name === 'Games Champion').value}`,
 			'\u200b\u2002'
@@ -138,8 +140,8 @@ class PlayerCommand extends Command {
 		const data = await mongodb.db('clashperk').collection('timezoneoffset').findOne({ user: message.author.id });
 		const prefix = data?.timezone?.offset < 0 ? '-' : '+';
 		const seconds = Math.abs(data?.timezone?.offset ?? 0);
-		const hours = (seconds / 3600);
-		const minutes = (seconds % 3600 / 60);
+		const hours = Math.floor(seconds / 3600);
+		const minutes = Math.floor(seconds % 3600 / 60);
 		return `${prefix}${hours >= 1 ? `0${hours}`.slice(-2) : '00'}:${minutes >= 1 ? `0${minutes}`.slice(-2) : '00'}`;
 	}
 
