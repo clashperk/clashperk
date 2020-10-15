@@ -96,7 +96,7 @@ class PlayerCommand extends Command {
 			`**Troops Donated**\n${emoji.troopsdonation} ${data.achievements.find(d => d.name === 'Friend in Need').value}`,
 			`**Spells Donated**\n${emoji.spelldonation} ${data.achievements.find(d => d.name === 'Sharing is caring').value}`,
 			`**Clan Games Points**\n${emoji.clangames || '<:cg:765244426444079115>'} ${data.achievements.find(d => d.name === 'Games Champion').value}`,
-			`**CWL War Stars**\n${emoji.warstar} ${data.achievements.find(d => d.name === 'War League Legend').value}`,
+			`**CWL War Stars**\n${emoji.cwlstar || '<:cwlstar:766189691716239360>'} ${data.achievements.find(d => d.name === 'War League Legend').value}`,
 			'\u200b\u2002'
 		]);
 		embed.addField('**Heroes**', [
