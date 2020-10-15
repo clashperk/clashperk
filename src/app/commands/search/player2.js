@@ -56,15 +56,15 @@ class PlayerCommand extends Command {
 				`${townHallEmoji[data.townHallLevel]} **${data.townHallLevel}** ${emoji.xp} **${data.expLevel}** ${emoji.trophy} **${data.trophies}** ${emoji.warstar} **${data.warStars}**`
 			]);
 		embed.addField('**Season Stats**', [
-			`Donated\n${emoji.troopsdonation} ${data.donations} ${emoji.donated}`,
-			`Received\n${emoji.troopsdonation} ${data.donationsReceived} ${emoji.received}`,
-			`Attacks Won\n${emoji.attacksword} ${data.attackWins}`,
-			`Defense Won\n${emoji.shield} ${data.defenseWins}`,
-			'\u200b\u2002'
+			`**Donated**\n${emoji.troopsdonation} ${data.donations} ${emoji.donated}`,
+			`**Received**\n${emoji.troopsdonation} ${data.donationsReceived} ${emoji.received}`,
+			`**Attacks Won**\n${emoji.attacksword} ${data.attackWins}`,
+			`**Defense Won**\n${emoji.shield} ${data.defenseWins}`
+			// '\u200b\u2002'
 		]);
 		embed.addField('**Other Stats**', [
-			`Best Trophies\n${emoji.trophy} ${data.bestTrophies}`,
-			`Last Seen\n${emoji.clock_small} ${2} days ago`,
+			`**Best Trophies**\n${emoji.trophy} ${data.bestTrophies}`,
+			`**Last Seen**\n${emoji.clock_small} ${2} days ago`,
 			'\u200b\u2002'
 		]);
 		embed.addField('**Achievement Stats**', [
