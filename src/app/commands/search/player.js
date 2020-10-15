@@ -95,14 +95,14 @@ class PlayerCommand extends Command {
 		embed.addField('**Achievement Stats**', [
 			`**Troops Donated**\n${emoji.troopsdonation} ${data.achievements.find(d => d.name === 'Friend in Need').value}`,
 			`**Spells Donated**\n${emoji.spelldonation} ${data.achievements.find(d => d.name === 'Sharing is caring').value}`,
-			`**Clan Games Points**\n${emoji.clangames || '<:cg:765244426444079115>'} ${data.achievements.find(d => d.name === 'Games Champion').value}`,
 			`**CWL War Stars**\n${emoji.cwlstar || '<:cwlstar:766189691716239360>'} ${data.achievements.find(d => d.name === 'War League Legend').value}`,
+			`**Clan Games Points**\n${emoji.clangames || '<:cg:765244426444079115>'} ${data.achievements.find(d => d.name === 'Games Champion').value}`,
 			'\u200b\u2002'
 		]);
 		embed.addField('**Heroes**', [
-			data.heroes.filter(hero => hero.village === 'home')
+			data?.heroes?.filter(hero => hero.village === 'home')
 				.map(hero => `${heroEmoji[hero.name]} ${hero.level}`)
-				.join(' ')
+				.join(' ') || 'None'
 		]);
 
 		const flag = await this.flag(message, data.tag);
