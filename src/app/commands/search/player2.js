@@ -74,6 +74,7 @@ class PlayerCommand extends Command {
 			`CWL War Stars\n${emoji.warstar} ${data.achievements.find(d => d.name === 'War League Legend').value}`,
 			'\u200b\u2002'
 		]);
+		embed.addField('**Heroes**', data.heroes.filter(hero => hero.village === 'home').map(hero => `${heroEmoji[hero.name]} ${hero.level}`));
 
 		return message.util.send({ embed });
 	}
