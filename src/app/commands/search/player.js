@@ -138,8 +138,8 @@ class PlayerCommand extends Command {
 		const data = await mongodb.db('clashperk').collection('timezoneoffset').findOne({ user: message.author.id });
 		const prefix = data?.timezone?.offset < 0 ? '-' : '+';
 		const seconds = Math.abs(data?.timezone?.offset ?? 0);
-		const hours = Math.floor(seconds / 3600);
-		const minutes = Math.floor(seconds % 3600 / 60);
+		const hours = (seconds / 3600);
+		const minutes = (seconds % 3600 / 60);
 		return `${prefix}${hours >= 1 ? `0${hours}`.slice(-2) : '00'}:${minutes >= 1 ? `0${minutes}`.slice(-2) : '00'}`;
 	}
 
@@ -147,17 +147,17 @@ class PlayerCommand extends Command {
 		// Nine Zeroes for Billions
 		return Math.abs(num) >= 1.0e+9
 
-			? `${Math.floor(Math.abs(num) / 1.0e+9)}B`
+			? `${(Math.abs(num) / 1.0e+9).toFixed(2)}B`
 			// Six Zeroes for Millions
 			: Math.abs(num) >= 1.0e+6
 
-				? `${Math.floor(Math.abs(num) / 1.0e+6)}M`
+				? `${(Math.abs(num) / 1.0e+6).toFixed(2)}M`
 				// Three Zeroes for Thousands
 				: Math.abs(num) >= 1.0e+3
 
-					? `${Math.floor(Math.abs(num) / 1.0e+3)}K`
+					? `${(Math.abs(num) / 1.0e+3).toFixed(2)}K`
 
-					: Math.floor(Math.abs(num));
+					: Math.abs(num).toFixed(2);
 	}
 }
 
