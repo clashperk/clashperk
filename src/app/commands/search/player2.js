@@ -59,17 +59,20 @@ class PlayerCommand extends Command {
 			`Donated\n${emoji.troopsdonation} ${data.donations} ${emoji.donated}`,
 			`Received\n${emoji.troopsdonation} ${data.donationsReceived} ${emoji.received}`,
 			`Attacks Won\n${emoji.attacksword} ${data.attackWins}`,
-			`Defense Won\n${emoji.shield} ${data.defenseWins}`
+			`Defense Won\n${emoji.shield} ${data.defenseWins}`,
+			'\u2002'
 		]);
 		embed.addField('**Other Stats**', [
 			`Best Trophies\n${emoji.trophy} ${data.bestTrophies}`,
-			`Last Seen\n${emoji.clock_small} ${2} days ago`
+			`Last Seen\n${emoji.clock_small} ${2} days ago`,
+			'\u2002'
 		]);
 		embed.addField('**Achievement Stats**', [
 			`Troops Donated\n${emoji.troopsdonation} ${data.achievements.find(d => d.name === 'Friend in Need').value}`,
 			`Spells Donated\n${emoji.spelldonation} ${data.achievements.find(d => d.name === 'Sharing is caring').value}`,
 			`Clan Games Points\n${emoji.clangames || '<:cg:765244426444079115>'} ${data.achievements.find(d => d.name === 'Games Champion').value}`,
-			`CWL War Stars\n${emoji.warstar} ${data.achievements.find(d => d.name === 'War League Legend').value}`
+			`CWL War Stars\n${emoji.warstar} ${data.achievements.find(d => d.name === 'War League Legend').value}`,
+			'\u2002'
 		]);
 
 		return message.util.send({ embed });
