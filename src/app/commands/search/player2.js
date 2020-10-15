@@ -70,7 +70,7 @@ class PlayerCommand extends Command {
 			? ms(new Date().getTime() - new Date(collection[0]?.lastSeen).getTime(), { long: true })
 			: 'Unknown';
 		const clan = data.clan
-			? `**Clan**\n${emoji.clan} [${data.clan.name} (${data.clan.tag})](${this.clanURL(data.clan.tag)})\n**Role**\n ${emoji.mem_blue} ${roles[data.role]}\n`
+			? `**Clan Name**\n${emoji.clan} [${data.clan.name} (${data.clan.tag})](${this.clanURL(data.clan.tag)})\n**Clan Role**\n ${emoji.mem_blue} ${roles[data.role]}\n`
 			: '';
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
