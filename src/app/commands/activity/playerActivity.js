@@ -9,7 +9,7 @@ class PlayerActivityCommand extends Command {
 	constructor() {
 		super('player-activity', {
 			aliases: ['pstats', 'pav'],
-			category: 'activity_',
+			category: 'beta',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
 			description: {
