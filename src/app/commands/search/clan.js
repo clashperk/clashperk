@@ -1,6 +1,6 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed, Util } = require('discord.js');
-const { emoji, CWLEmoji } = require('../../util/emojis');
+const { emoji, CWLEmoji, clanLabelEmoji } = require('../../util/emojis');
 const Resolver = require('../../struct/Resolver');
 
 const clanTypes = {
@@ -49,9 +49,12 @@ class ClanCommand extends Command {
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setColor(this.client.embed(message))
 			.setThumbnail(data.badgeUrls.medium);
-		if (data?.description?.length) {
-			embed.setDescription(data?.description);
-		}
+
+		embed.setDescription([
+			'**Clan Description**',
+			data?.description ?? 'No Description Available',
+			'\u200b\u2002'
+		]);
 
 		const location = data.location
 			? data.location.isCountry
@@ -76,6 +79,8 @@ class ClanCommand extends Command {
 			`${emoji.trophy} ${data.requiredTrophies}`,
 			'**Clan Type**',
 			`⚙️ ${clanTypes[data.type]}`,
+			'**Clan Labels**',
+			`${data?.labels?.length ? data.labels.map(d => `${clanLabelEmoji[d.name]} ${d.name}`).join('\n') : `${emoji.wrong} None`}`,
 			'\u200b\u2002'
 		]);
 
