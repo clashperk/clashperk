@@ -19,7 +19,7 @@ class CWLLineupComamnd extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [
-					'Shows lineup of current CWL.'
+					'Shows lineup of the current round.'
 				],
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
