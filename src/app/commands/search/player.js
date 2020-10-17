@@ -110,7 +110,7 @@ class PlayerCommand extends Command {
 		embed.addField('**Heroes**', [
 			data?.heroes?.filter(hero => hero.village === 'home')
 				.map(hero => `${heroEmoji[hero.name]} ${hero.level}`)
-				.join(' ') || 'None'
+				.join(' ') || `${emoji.wrong} None`
 		]);
 
 		const flag = await this.flag(message, data.tag);
