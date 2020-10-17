@@ -61,6 +61,8 @@ class ClanCommand extends Command {
 				: `:united_nations: ${data.location.name}`
 			: '🏳️‍🌈 None';
 
+		const leader = data?.memberList?.find(m => m?.role === 'leader');
+
 		embed.addField('**General**', [
 			'**Clan Level**',
 			`${emoji.clan} ${data.clanLevel}`,
@@ -69,7 +71,7 @@ class ClanCommand extends Command {
 			'**Clan Points**',
 			`${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints}`,
 			'**Leader**',
-			`${emoji.owner} ${data.memberList.length ? data.memberList.find(m => m.role === 'leader').name : 'No Leader'}`,
+			`${emoji.owner} ${leader ? `${leader.name} (${leader.tag})` : 'No Leader'}`,
 			'**Location**',
 			`${location}`,
 			'\u200b\u2002'
@@ -89,7 +91,7 @@ class ClanCommand extends Command {
 			'**War Log**',
 			`${data.isWarLogPublic ? '🔓 Public' : '🔒 Private'}`,
 			'**War Performance**',
-			`${emoji.ok} ${data.warWins} wins ${data.isWarLogPublic ? `, ${emoji.wrong} ${data?.warLosses} losses, ${emoji.empty} ${data?.warTies}` : ''}`,
+			`${emoji.ok} ${data.warWins} Wins ${data.isWarLogPublic ? `${emoji.wrong} ${data?.warLosses} Losses ${emoji.empty} ${data?.warTies} Ties` : ''}`,
 			'**War Win Streak**',
 			`🎯 ${data.warWinStreak}`,
 			'**War Frequency**',
