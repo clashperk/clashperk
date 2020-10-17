@@ -51,7 +51,6 @@ class ClanCommand extends Command {
 			.setThumbnail(data.badgeUrls.medium);
 
 		embed.setDescription([
-			'**Clan Description**',
 			data?.description ?? 'No Description Available',
 			'\u200b\u2002'
 		]);
@@ -63,7 +62,7 @@ class ClanCommand extends Command {
 			: '🏳️‍🌈 None';
 
 		embed.addField('**General**', [
-			'**Level**',
+			'**Clan Level**',
 			`${emoji.clan} ${data.clanLevel}`,
 			'**Members**',
 			`${emoji.users_small} ${data.members}`,
