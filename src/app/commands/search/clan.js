@@ -68,6 +68,8 @@ class ClanCommand extends Command {
 			`${emoji.users_small} ${data.members}`,
 			'**Clan Points**',
 			`${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints}`,
+			'**Leader**',
+			`${emoji.owner} ${data.memberList.length ? data.memberList.find(m => m.role === 'leader').name : 'No Leader'}`,
 			'**Location**',
 			`${location}`,
 			'\u200b\u2002'
@@ -86,12 +88,10 @@ class ClanCommand extends Command {
 		embed.addField('**War and League**', [
 			'**War Log**',
 			`${data.isWarLogPublic ? '🔓 Public' : '🔒 Private'}`,
-			'**War Wins**',
-			`${emoji.ok} ${data.warWins}`,
-			'**War Losses**',
-			`${emoji.wrong} ${data?.warLosses ?? 'Unknown'}`,
-			'**War Ties**',
-			`${emoji.empty} ${data?.warTies ?? 'Unknown'}`,
+			'**War Performance**',
+			`${emoji.ok} ${data.warWins} wins ${data.isWarLogPublic ? `, ${emoji.wrong} ${data?.warLosses} losses, ${emoji.empty} ${data?.warTies}` : ''}`,
+			'**War Win Streak**',
+			`🎯 ${data.warWinStreak}`,
 			'**War Frequency**',
 			data.warFrequency.toLowerCase() === 'morethanonceperweek'
 				? '🎟️ More Than Once Per Week'
