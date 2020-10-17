@@ -22,7 +22,7 @@ class CWLWarTags {
 		if (data?.warTags?.length !== 7) return null;
 		if (
 			(new Date().getMonth() === new Date(data?.season).getMonth()) ||
-			(new Date(data?.season).getMonth() === (new Date().getMonth() - 1) && new Date().getDate() <= 3)
+			(new Date(data?.season).getMonth() === (new Date().getMonth() - 1) && new Date().getDate() <= 8)
 		) return data;
 		return Promise.resolve(null);
 	}
