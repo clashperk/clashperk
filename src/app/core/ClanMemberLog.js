@@ -72,6 +72,7 @@ class PlayerEvent {
 			.setTitle(`\u200e${member.name} (${member.tag})`)
 			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`);
 		if (item.mode === 'LEFT') {
+			embed.setFooter(`Left ${data.clan.name}`, data.clan.badge);
 			embed.setDescription([
 				`${townHallEmoji[member.townHallLevel]} **${member.townHallLevel}**`,
 				`${emoji.xp} **${member.expLevel}**`,
@@ -82,6 +83,7 @@ class PlayerEvent {
 				.collection('flaggedusers')
 				.findOne({ guild: cache.guild, tag: item.tag });
 
+			embed.setFooter(`Joined ${data.clan.name}`, data.clan.badge);
 			embed.setDescription([
 				`${townHallEmoji[member.townHallLevel]}**${member.townHallLevel}**`,
 				`${this.formatHeroes(member)}`,
@@ -104,7 +106,7 @@ class PlayerEvent {
 				]);
 			}
 		}
-		embed.setFooter(`${data.clan.name}`, data.clan.badge).setTimestamp();
+		embed.setTimestamp();
 		return { content, embed };
 	}
 
