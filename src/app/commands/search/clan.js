@@ -55,28 +55,28 @@ class ClanCommand extends Command {
 		if (data.description && data.description.length) {
 			embed.setDescription(data.description);
 		}
-		embed.addField('Level', data.clanLevel, true)
-			.addField('Members', data.members, true)
-			.addField('Leader', `${emoji.owner} ${data.memberList.length ? data.memberList.find(m => m.role === 'leader').name : 'No Leader'}`, true)
-			.addField('Required Trophies', `${emoji.trophy} ${data.requiredTrophies}`, true)
-			.addField('Clan Type', clan_type, true)
-			.addField('Clan Points', `${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints}`, true)
-			.addField('War League', `${CWLEmoji[data.warLeague.name] || ''} ${data.warLeague.name}`, true)
-			.addField('War Log', data.isWarLogPublic ? 'Public' : 'Private', true)
-			.addField('War Wins', data.warWins, true)
-			.addField('Win Streak', data.warWinStreak, true)
+		embed.addField('Level', data.clanLevel)
+			.addField('Members', data.members)
+			.addField('Leader', `${emoji.owner} ${data.memberList.length ? data.memberList.find(m => m.role === 'leader').name : 'No Leader'}`)
+			.addField('Required Trophies', `${emoji.trophy} ${data.requiredTrophies}`)
+			.addField('Clan Type', clan_type)
+			.addField('Clan Points', `${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints}`)
+			.addField('War League', `${CWLEmoji[data.warLeague.name] || ''} ${data.warLeague.name}`)
+			.addField('War Log', data.isWarLogPublic ? 'Public' : 'Private')
+			.addField('War Wins', data.warWins)
+			.addField('Win Streak', data.warWinStreak)
 			.addField('War Frequency', [
 				data.warFrequency.toLowerCase() === 'morethanonceperweek'
 					? 'More Than Once Per Week'
 					: data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())
-			], true)
+			])
 			.addField('Location', [
 				data.location
 					? data.location.isCountry
 						? `:flag_${data.location.countryCode.toLowerCase()}: ${data.location.name}`
 						: `:united_nations: ${data.location.name}`
 					: 'None'
-			], true);
+			]);
 
 		return message.util.send({ embed });
 	}
