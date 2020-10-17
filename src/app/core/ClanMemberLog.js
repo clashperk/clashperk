@@ -73,9 +73,9 @@ class PlayerEvent {
 			.setURL(`https://www.clashofstats.com/players/${item.tag.substr(1)}`);
 		if (item.mode === 'LEFT') {
 			embed.setDescription([
-				`${townHallEmoji[member.townHallLevel]} ${member.townHallLevel}`,
-				`${emoji.xp} ${member.expLevel}`,
-				`${emoji.troopsdonation} ${item.donated}${emoji.donated} ${item.received}${emoji.received}`
+				`${townHallEmoji[member.townHallLevel]} **${member.townHallLevel}**`,
+				`${emoji.xp} **${member.expLevel}**`,
+				`${emoji.troopsdonation} **${item.donated}**${emoji.donated} **${item.received}**${emoji.received}`
 			].join(' '));
 		} else {
 			const flag = await mongodb.db('clashperk')
@@ -83,10 +83,10 @@ class PlayerEvent {
 				.findOne({ guild: cache.guild, tag: item.tag });
 
 			embed.setDescription([
-				`${townHallEmoji[member.townHallLevel]}${member.townHallLevel}`,
+				`${townHallEmoji[member.townHallLevel]}**${member.townHallLevel}**`,
 				`${this.formatHeroes(member)}`,
-				`${emoji.warstar}${member.warStars}`,
-				`${leagueEmoji[member.league ? member.league.id : 29000000]}${member.trophies}`
+				`${emoji.warstar}**${member.warStars}**`,
+				`${leagueEmoji[member.league ? member.league.id : 29000000]}**${member.trophies}**`
 			].join(' '));
 
 			if (flag) {
@@ -113,12 +113,12 @@ class PlayerEvent {
 			const heroes = member.heroes.filter(({ village }) => village === 'home');
 			return heroes.length
 				? heroes.length > 3
-					? heroes.map(hero => `${heroEmoji[hero.name]}${hero.level}`).join(' ')
-					: `${emoji.xp}${member.expLevel} ${heroes.map(hero => `${heroEmoji[hero.name]}${hero.level}`).join(' ')}`
-				: `${emoji.xp} ${member.expLevel}`;
+					? heroes.map(hero => `${heroEmoji[hero.name]}**${hero.level}**`).join(' ')
+					: `${emoji.xp}**${member.expLevel}** ${heroes.map(hero => `${heroEmoji[hero.name]}**${hero.level}**`).join(' ')}`
+				: `${emoji.xp} **${member.expLevel}**`;
 		}
 
-		return `${emoji.xp} ${member.expLevel}`;
+		return `${emoji.xp} **${member.expLevel}**`;
 	}
 
 	async player(tag) {
