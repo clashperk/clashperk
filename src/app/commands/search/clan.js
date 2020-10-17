@@ -91,7 +91,7 @@ class ClanCommand extends Command {
 			'**War Log**',
 			`${data.isWarLogPublic ? '🔓 Public' : '🔒 Private'}`,
 			'**War Performance**',
-			`${emoji.ok} ${data.warWins} Wins ${data.isWarLogPublic ? `${emoji.wrong} ${data?.warLosses} Losses\n${emoji.empty} ${data?.warTies} Ties` : ''} ${data.warWinStreak >= 1 ? emoji.ok : emoji.wrong} ${data.warWinStreak} Win Streak`,
+			`${emoji.ok} ${data.warWins} Wins ${data.isWarLogPublic ? `${emoji.wrong} ${data?.warLosses} Losses\n${emoji.empty} ${data?.warTies} Ties` : ''} and ${data.warWinStreak} Win Streak`,
 			'**War Frequency**',
 			data.warFrequency.toLowerCase() === 'morethanonceperweek'
 				? '🎟️ More Than Once Per Week'
