@@ -71,7 +71,7 @@ class ClanCommand extends Command {
 			'**Clan Points**',
 			`${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints}`,
 			'**Leader**',
-			`${emoji.owner} ${leader ? `${leader.name} (${leader.tag})` : 'No Leader'}`,
+			`${emoji.owner} ${leader ? `${leader.name}` : 'No Leader'}`,
 			'**Location**',
 			`${location}`,
 			'\u200b\u2002'
