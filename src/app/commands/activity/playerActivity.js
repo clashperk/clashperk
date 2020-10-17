@@ -16,12 +16,10 @@ class PlayerActivityCommand extends Command {
 				content: [
 					'Shows per day activity graph for clan members.',
 					'',
-					'Maximum 3 clan tags are accepted.',
-					'',
 					'Set your time zone using **offset** command for better experience.'
 				],
-				usage: '<clanTag>',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #8UUYQ92L']
+				usage: '<playerTag>',
+				examples: ['#8QU8J9LP']
 			},
 			flags: ['--dark']
 		});
