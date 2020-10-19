@@ -58,8 +58,8 @@ class ClanCommand extends Command {
 		const location = data.location
 			? data.location.isCountry
 				? `:flag_${data.location.countryCode.toLowerCase()}: ${data.location.name}`
-				: `:united_nations: ${data.location.name}`
-			: '🏳️‍🌈 None';
+				: `🌐 ${data.location.name}`
+			: `${emoji.wrong} None`;
 
 		const leader = data?.memberList?.find(m => m?.role === 'leader');
 
