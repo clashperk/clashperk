@@ -52,7 +52,7 @@ class RateLimitListener extends Listener {
 
 		return webhook.send({
 			username: 'ClashPerk',
-			avatarURL: this.client.user.displayAvatarURL(),
+			avatarURL: this.client?.user?.displayAvatarURL(),
 			embeds: [embed]
 		});
 	}
