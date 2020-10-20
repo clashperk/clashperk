@@ -8,7 +8,8 @@ class DeveloperMode extends Inhibitor {
 	}
 
 	async exec(message, command) {
-		if (process.env.NODE_ENV !== 'production' && !['setup-hidden', 'profile', 'activity'].includes(command.categoryID)) return false;
+		if (process.env.NODE_ENV === 'production') return false;
+		if (!['setup-hidden', 'profile', 'activity'].includes(command.categoryID)) return false;
 		await message.channel.send([
 			'**Due to some problem this command has been temporary disabled.**',
 			'',
