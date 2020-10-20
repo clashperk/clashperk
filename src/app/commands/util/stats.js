@@ -37,7 +37,10 @@ class StatsCommand extends Command {
 		}
 
 		const owner = await this.client.users.fetch(this.client.ownerID, false);
-		const grpc = await new Promise(resolve => this.client.grpc.stats({}, (err, res) => resolve(JSON.parse(res.data))));
+		const grpc = await new Promise(resolve => this.client.grpc.stats({}, (err, res) => {
+			if (res) resolve(JSON.parse(res?.data));
+			else resolve({ heapUsed: 0 });
+		}));
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
