@@ -19,4 +19,4 @@ class DeveloperMode extends Inhibitor {
 	}
 }
 
-module.exports = DeveloperMode;
+// module.exports = DeveloperMode;
