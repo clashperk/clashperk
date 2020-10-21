@@ -7,7 +7,7 @@
 	"main": "src/index.js",
 	"private": true,
 	"scripts": {
-		"start": "pm2 start src/index.js --name clashperk",
+		"start": "pm2 start src/index.js --name bot",
 		"test": "eslint --ext .js --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .js --ignore-path .gitignore ."
 	},
