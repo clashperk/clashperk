@@ -68,7 +68,7 @@ class CacheHandler {
 		await this.clanMemberLog.init();
 		await this.lastOnlineLog.init();
 		await this.clanGamesLog.init();
-		// this.clanWarLog.init();
+		this.clanWarLog.init();
 
 		const collection = await mongodb.db('clashperk')
 			.collection('clanstores')
