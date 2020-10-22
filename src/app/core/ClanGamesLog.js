@@ -203,7 +203,9 @@ class ClanGames {
 
 		return new Promise(resolve => {
 			this.client.grpc.initClanGamesHandler({
-				data: JSON.stringify(filtered)
+				data: JSON.stringify(filtered),
+				shardId: this.client.shard.ids[0],
+				shards: this.client.shard.count
 			}, (err, res) => resolve(res.data));
 		});
 	}
