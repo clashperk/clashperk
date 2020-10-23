@@ -7,14 +7,14 @@ class MaintenanceHandler {
 	}
 
 	async init() {
-		const res = await this.client.coc.clans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 });
+		const res = await this.client.coc.clans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 }).catch(() => null);
 		setTimeout(this.init.bind(this), 30000);
-		if (res.status === 503 && !this.isMaintenance) {
+		if (res?.status === 503 && !this.isMaintenance) {
 			this.isMaintenance = Boolean(true);
 			this.client.cacheHandler.flush();
 			return this.send();
 		}
-		if (res.status === 200 && this.isMaintenance) {
+		if (res?.status === 200 && this.isMaintenance) {
 			this.isMaintenance = Boolean(false);
 			await this.client.cacheHandler.init();
 			return this.send();
