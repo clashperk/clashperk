@@ -10,7 +10,22 @@ class RateLimitListener extends Listener {
 		});
 
 		this.count = 0;
-		setInterval(() => this.count = 0, 5000);
+		this.embeds = [];
+
+		setInterval(async () => {
+			this.count = 0;
+			if (!this.embeds.length) return;
+			const webhook = await this.fetchWebhook().catch(() => null);
+			if (!webhook) return this.embeds = [];
+
+			const embeds = [...this.embeds];
+			this.embeds = [];
+			return webhook.send({
+				username: 'ClashPerk',
+				avatarURL: this.client?.user?.displayAvatarURL(),
+				embeds: [...embeds]
+			});
+		}, 5000);
 	}
 
 	async fetchWebhook() {
@@ -49,11 +64,7 @@ class RateLimitListener extends Listener {
 			.setFooter(`Shard ${this.client.shard.ids[0]}`)
 			.setTimestamp();
 
-		return webhook.send({
-			username: 'ClashPerk',
-			avatarURL: this.client?.user?.displayAvatarURL(),
-			embeds: [embed]
-		});
+		return this.embeds.push(embed);
 	}
 }
 
