@@ -28,8 +28,8 @@ class ClashPerk extends AkairoClient {
 			messageCacheMaxSize: 10,
 			messageCacheLifetime: 150,
 			messageSweepInterval: 150,
-			restTimeOffset: 1000,
-			restRequestTimeout: 5000,
+			// restTimeOffset: 1000,
+			// restRequestTimeout: 5000,
 			ws: {
 				intents: [
 					'GUILDS',
