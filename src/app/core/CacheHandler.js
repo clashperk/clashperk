@@ -21,12 +21,23 @@ class CacheHandler {
 		this.clanMemberLog = new ClanMemberLog(client);
 		this.maintenanceHandler = new MaintenanceHandler(client);
 		this.maintenanceHandler.init();
+		this.paused = Boolean(false);
+	}
+
+	pause(forced = false, ms = 5 * 60 * 1000) {
+		if (this.paused) return this.paused;
+		if (forced) setTimeout(() => this.paused = Boolean(false), ms);
+		return this.paused;
 	}
 
 	async broadcast() {
 		const call = await this.client.grpc.broadcast({ shardId: this.client.shard.ids[0], shards: this.client.shard.count });
 		call.on('data', async chunk => {
 			const data = JSON.parse(chunk.data);
+
+			// Freeze for 5 min
+			if (this.paused) return;
+
 			switch (data.op) {
 				case Op.DONATION_LOG:
 					await this.donationLog.exec(data.tag, data);
