@@ -26,6 +26,7 @@ class CacheHandler {
 
 	pause(forced = false, ms = 5 * 60 * 1000) {
 		if (this.paused) return this.paused;
+		this.paused = Boolean(true);
 		if (forced) setTimeout(() => this.paused = Boolean(false), ms);
 		return this.paused;
 	}
