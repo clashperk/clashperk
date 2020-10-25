@@ -10,7 +10,7 @@ class DebugListener extends Listener {
 	}
 
 	async exec(info) {
-		if (process.env.DEBUG) this.client.logger.debug(`${info}`, { label: 'DEDUG' });
+		if (process.env.DEBUG) this.client.logger.debug(`${info}`, { label: 'DEBUG' });
 	}
 }
 
