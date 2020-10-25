@@ -24,6 +24,9 @@ class ClanWarEvent {
 	}
 
 	exec(id) {
+		// Freeze
+		if (this.client.cacheHandler.paused) return;
+
 		const cache = this.cached.get(id);
 		if (cache) {
 			return this.permissionsFor(id, cache);
