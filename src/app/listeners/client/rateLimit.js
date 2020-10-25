@@ -1,5 +1,5 @@
 const { Listener } = require('discord-akairo');
-const { MessageEmbed, Webhook } = require('discord.js');
+const { MessageEmbed } = require('discord.js');
 
 class RateLimitListener extends Listener {
 	constructor() {
@@ -37,10 +37,7 @@ class RateLimitListener extends Listener {
 	async exec({ timeout, limit, method, path, route }) {
 		this.count += 1;
 		if (this.count >= 5) return this.client.cacheHandler.pause(true);
-
 		this.client.logger.warn({ timeout, limit, method, path, route }, { label: 'RATELIMIT' });
-		const webhook = await this.fetchWebhook().catch(() => null);
-		if (webhook instanceof Webhook === false) return;
 
 		const embed = new MessageEmbed()
 			.setColor(0xfaf5f5)
