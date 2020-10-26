@@ -1,29 +1,31 @@
 class Queue {
 	constructor() {
-		this.queues = [];
+		this.promises = [];
+		this.totalReq = 0;
 	}
 
 	get remaining() {
-		return this.queues.length;
+		return this.promises.length;
 	}
 
 	wait() {
-		const next = this.queues.length ? this.queues[this.queues.length - 1].promise : Promise.resolve();
+		const next = this.promises.length ? this.promises[this.promises.length - 1].promise : Promise.resolve();
 		let resolve;
 		const promise = new Promise(res => {
 			resolve = res;
 		});
 
-		this.queues.push({
+		this.promises.push({
 			resolve,
 			promise
 		});
 
+		this.totalReq++;
 		return next;
 	}
 
 	shift() {
-		const fn = this.queues.shift();
+		const fn = this.promises.shift();
 		if (typeof fn !== 'undefined') fn.resolve();
 	}
 }
