@@ -4,7 +4,7 @@ class Queue {
 	}
 
 	get remaining() {
-		return this.promises.length;
+		return this.queues.length;
 	}
 
 	wait() {
