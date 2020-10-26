@@ -155,7 +155,7 @@ class Chart {
 						display: true,
 						fontSize: 10,
 						padding: 2,
-						text: [`Per day Growth 💙 (Last ${collection.length} days)`]
+						text: [`Per day Growth (Last ${collection.length} days)`]
 					}
 				}
 			}
