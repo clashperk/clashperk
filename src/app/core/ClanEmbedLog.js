@@ -37,7 +37,7 @@ class ClanEmbed {
 			this.lastReq.id = id;
 		}
 
-		if (this.lastReq.count >= 4) await this.delay(250);
+		if (this.lastReq.count >= 4) await this.delay(1000);
 		return Promise.resolve();
 	}
 
