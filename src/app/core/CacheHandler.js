@@ -75,6 +75,7 @@ class CacheHandler {
 			this.queue.shift();
 		}
 
+		console.log('/');
 		return this.delay(100);
 	}
 
