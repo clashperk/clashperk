@@ -13,6 +13,8 @@ const Queue = require('../struct/Queue');
 class CacheHandler {
 	constructor(client) {
 		this.client = client;
+
+		// An async queue that preserves the stack and prevents lock-ups
 		this.queue = new Queue();
 
 		this.clanWarLog = new ClanWarLog(client);
