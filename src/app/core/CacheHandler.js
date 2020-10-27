@@ -46,7 +46,7 @@ class CacheHandler {
 
 	async send() {
 		const data = this.queues.shift();
-		if (data) return;
+		if (!data) return;
 		await this.queue.wait();
 		try {
 			switch (data.op) {
