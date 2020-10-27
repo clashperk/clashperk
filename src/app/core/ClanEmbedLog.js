@@ -29,7 +29,7 @@ class ClanEmbed {
 	}
 
 	async throttle(id) {
-		if (this.lastReq.id === id) await this.delay(2000);
+		if (this.lastReq.id === id) await this.delay(250);
 
 		if (this.lastReq.id === id) {
 			this.lastReq.count += 1;
