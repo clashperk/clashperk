@@ -54,7 +54,7 @@ class ClanEmbed {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
-				await this.throttle();
+				await this.throttle(channel.id);
 				return this.handleMessage(id, channel, clan);
 			}
 		}
