@@ -8,6 +8,10 @@ class ClanEmbed {
 	constructor(client) {
 		this.client = client;
 		this.cached = new Collection();
+		this.lastReq = {
+			id: null,
+			count: 0
+		};
 	}
 
 	async exec(tag, clan) {
@@ -18,6 +22,23 @@ class ClanEmbed {
 		}
 
 		return clans.clear();
+	}
+
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
+
+	async throttle(id) {
+		if (this.lastReq.id === id) {
+			this.lastReq.count += 1;
+			this.lastReq.id = id;
+		} else {
+			this.lastReq.count = 0;
+			this.lastReq.id = id;
+		}
+
+		if (this.lastReq.count >= 4) await this.delay(250);
+		return Promise.resolve();
 	}
 
 	async permissionsFor(id, cache, clan) {
@@ -33,6 +54,7 @@ class ClanEmbed {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
+				await this.throttle();
 				return this.handleMessage(id, channel, clan);
 			}
 		}
