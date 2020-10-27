@@ -14,7 +14,6 @@ class CacheHandler {
 	constructor(client) {
 		this.client = client;
 		this.queue = new Queue();
-		this.queues = [];
 
 		this.clanWarLog = new ClanWarLog(client);
 		this.donationLog = new DonationLog(client);
@@ -34,62 +33,40 @@ class CacheHandler {
 		return this.paused;
 	}
 
-	async push(data) {
-		this.queues.push(data);
-		await this.queue.wait();
-		try {
-			await this.send();
-		} finally {
-			this.queue.shift();
-		}
-	}
-
-	async send() {
-		const data = this.queues.shift();
-		if (!data) return;
-		await this.queue.wait();
-		try {
-			switch (data.op) {
-				case Op.DONATION_LOG:
-					await this.donationLog.exec(data.tag, data);
-					break;
-				case Op.LAST_ONLINE_LOG:
-					await this.lastOnlineLog.exec(data.tag, data.clan, data.members);
-					break;
-				case Op.CLAN_MEMBER_LOG:
-					await this.clanMemberLog.exec(data.tag, data);
-					break;
-				case Op.CLAN_EMBED_LOG:
-					await this.clanEmbedLog.exec(data.tag, data.clan);
-					break;
-				case Op.CLAN_GAMES_LOG:
-					await this.clanGamesLog.exec(data.tag, data.clan, data.updated);
-					break;
-				case Op.CLAN_WAR_LOG:
-					await this.clanWarLog.exec(data.tag, data.clan);
-					break;
-				default:
-					break;
-			}
-		} finally {
-			this.queue.shift();
-		}
-
-		console.log('/');
-		return this.delay(100);
-	}
-
-	async delay(ms) {
-		return new Promise(res => setTimeout(res, ms));
-	}
-
 	async broadcast() {
 		const call = await this.client.grpc.broadcast({ shardId: this.client.shard.ids[0], shards: this.client.shard.count });
-		call.on('data', chunk => {
+		call.on('data', async chunk => {
 			const data = JSON.parse(chunk.data);
 			// Freeze for 5 min
 			if (this.paused) return;
-			return this.push(data);
+
+			await this.queue.wait();
+			try {
+				switch (data.op) {
+					case Op.DONATION_LOG:
+						await this.donationLog.exec(data.tag, data);
+						break;
+					case Op.LAST_ONLINE_LOG:
+						await this.lastOnlineLog.exec(data.tag, data.clan, data.members);
+						break;
+					case Op.CLAN_MEMBER_LOG:
+						await this.clanMemberLog.exec(data.tag, data);
+						break;
+					case Op.CLAN_EMBED_LOG:
+						await this.clanEmbedLog.exec(data.tag, data.clan);
+						break;
+					case Op.CLAN_GAMES_LOG:
+						await this.clanGamesLog.exec(data.tag, data.clan, data.updated);
+						break;
+					case Op.CLAN_WAR_LOG:
+						await this.clanWarLog.exec(data.tag, data.clan);
+						break;
+					default:
+						break;
+				}
+			} finally {
+				this.queue.shift();
+			}
 		});
 
 		call.on('end', () => {
