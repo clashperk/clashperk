@@ -92,7 +92,7 @@ class CacheHandler {
 		const collection = await mongodb.db('clashperk')
 			.collection('clanstores')
 			.find({ active: true })
-			.sort({ patron: -1 })
+			// .sort({ patron: -1 })
 			.toArray();
 
 		await new Promise(resolve => {
