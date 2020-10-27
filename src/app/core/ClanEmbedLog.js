@@ -29,6 +29,8 @@ class ClanEmbed {
 	}
 
 	async throttle(id) {
+		if (this.lastReq.count >= 4) await this.delay(250);
+
 		if (this.lastReq.id === id) {
 			this.lastReq.count += 1;
 			this.lastReq.id = id;
@@ -37,7 +39,6 @@ class ClanEmbed {
 			this.lastReq.id = id;
 		}
 
-		if (this.lastReq.count >= 4) await this.delay(1000);
 		return Promise.resolve();
 	}
 
