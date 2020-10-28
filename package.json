@@ -45,6 +45,6 @@
 		"eslint-config-mars": "^1.0.5"
 	},
 	"engines": {
-		"node": "14.x"
+		"node": ">=14.x"
 	}
 }
