@@ -24,7 +24,10 @@ if (process.env.SENTRY) {
 	Sentry.init({
 		dsn: process.env.SENTRY,
 		environment: package.name,
-		release: package.version
+		release: package.version,
+		integrations: [
+			new Sentry.Integrations.Http({ tracing: true })
+		]
 	});
 }
 
