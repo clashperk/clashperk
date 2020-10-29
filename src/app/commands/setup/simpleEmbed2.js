@@ -82,7 +82,7 @@ class ClanEmbedCommand extends Command {
 				`${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'}`
 			])
 			.addField('Requirements', [
-				`${emoji.trophy} ${data.requiredTrophies} Required`,
+				`${emoji.trophy} ${data.requiredTrophies === 0 ? `${data.requiredTrophies} Required` : ''}`,
 				'**Accepted Town Hall**',
 				`${emoji.townhall} TH 10+`,
 				'**Location**',
