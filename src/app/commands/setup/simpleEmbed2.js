@@ -63,7 +63,6 @@ class ClanEmbedCommand extends Command {
 			.sort((a, b) => b.level - a.level)
 			.filter(th => th.level >= 9);
 
-
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setTitle(`${data.name} (${data.tag})`)
@@ -74,7 +73,7 @@ class ClanEmbedCommand extends Command {
 				'',
 				data.description || 'No description available!'
 			])
-			.addField('Clan Leader', `${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name} (${m.tag})`)[0]}`)
+			.addField('Clan Leader', `${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'}`)
 			.addField('Requirements', [
 				`${emoji.trophy} ${data.requiredTrophies} Required`,
 				'**Accepted Town Hall**',
