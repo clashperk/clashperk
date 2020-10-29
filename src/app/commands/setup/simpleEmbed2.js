@@ -76,7 +76,7 @@ class ClanEmbedCommand extends Command {
 			.setDescription([
 				`${emoji.clan} **${data.clanLevel}** ${emoji.users_small} **${data.members}** ${emoji.trophy} **${data.clanPoints}** ${emoji.versustrophy} **${data.clanVersusPoints}**`,
 				'',
-				data.description || 'No description available!'
+				data.description || ''
 			])
 			.addField('Clan Leader', [
 				`${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'}`
@@ -84,18 +84,16 @@ class ClanEmbedCommand extends Command {
 			.addField('Requirements', [
 				`${emoji.trophy} ${data.requiredTrophies} Required`,
 				'**Accepted Town Hall**',
-				`${emoji.townhall} All`,
+				`${emoji.townhall} TH 10+`,
 				'**Location**',
 				`${location}`
 			])
 			.addField('War Performance', [
 				`${emoji.ok} ${data.warWins} Won ${data.isWarLogPublic ? `${emoji.wrong} ${data?.warLosses} Lost ${emoji.empty} ${data?.warTies} Tied` : ''}`,
-				'**Win Streak**',
-				`${'🏅'} ${data.warWinStreak}`,
-				'**War Frequency**',
-				data.warFrequency.toLowerCase() === 'morethanonceperweek'
+				'**War Frequency & Streak**',
+				`${data.warFrequency.toLowerCase() === 'morethanonceperweek'
 					? '🎟️ More Than Once Per Week'
-					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`,
+					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`} ${'🏅'} ${data.warWinStreak}`,
 				'**War League**', `${CWLEmoji[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
 			])
 			.addField('Town Halls', [
