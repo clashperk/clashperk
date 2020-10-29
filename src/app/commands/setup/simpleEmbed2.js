@@ -79,14 +79,14 @@ class ClanEmbedCommand extends Command {
 				data.description || 'No description available!'
 			])
 			.addField('Clan Leader', [
-				`${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'}`,
-				'**Location**',
-				`${location}`
+				`${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'}`
 			])
 			.addField('Requirements', [
 				`${emoji.trophy} ${data.requiredTrophies} Required`,
 				'**Accepted Town Hall**',
-				`${emoji.townhall} All`
+				`${emoji.townhall} All`,
+				'**Location**',
+				`${location}`
 			])
 			.addField('War Performance', [
 				`${emoji.ok} ${data.warWins} Won ${data.isWarLogPublic ? `${emoji.wrong} ${data?.warLosses} Lost ${emoji.empty} ${data?.warTies} Tied` : ''}`,
