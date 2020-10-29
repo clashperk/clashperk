@@ -1,5 +1,5 @@
 const { Command, Flag } = require('discord-akairo');
-const { emoji, CWLEmoji } = require('../../util/emojis');
+const { emoji, CWLEmoji, BLUE_EMOJI, townHallEmoji } = require('../../util/emojis');
 const Resolver = require('../../struct/Resolver');
 
 class ClanEmbedCommand extends Command {
@@ -52,6 +52,19 @@ class ClanEmbedCommand extends Command {
 			return message.util.send({ embed });
 		}
 
+		const fetched = await Resolver.fetch(data);
+		const reduced = fetched.reduce((count, member) => {
+			const townHall = member.townHallLevel;
+			count[townHall] = (count[townHall] || 0) + 1;
+			return count;
+		}, {});
+
+		const townHalls = Object.entries(reduced)
+			.map(arr => ({ level: arr[0], total: arr[1] }))
+			.sort((a, b) => b.level - a.level)
+			.filter(th => th.level >= 9);
+
+
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setTitle(`${data.name} (${data.tag})`)
@@ -66,7 +79,7 @@ class ClanEmbedCommand extends Command {
 			.addField('Requirements', [
 				'**Trophies Required**',
 				`${emoji.trophy} ${data.requiredTrophies}`,
-				'Accepted Town-Hall',
+				'Accepted Town Hall',
 				`${emoji.townhall} All`
 			])
 			.addField(`${emoji.clan} War Info`, [
@@ -80,7 +93,10 @@ class ClanEmbedCommand extends Command {
 				'**War League**',
 				`${CWLEmoji[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
 			])
-			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL())
+			.addField('Town Hall Compositions', [
+				townHalls.map(th => `${townHallEmoji[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ')
+			])
+			.setFooter(`Members: ${data.members}`, this.client.user.displayAvatarURL())
 			.setTimestamp();
 		return message.channel.send({ embed });
 	}
