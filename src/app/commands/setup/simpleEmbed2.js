@@ -6,7 +6,7 @@ class ClanEmbedCommand extends Command {
 	constructor() {
 		super('setup-simple-clanembed-2', {
 			aliases: ['emb'],
-			category: 'hidden',
+			category: 'beta',
 			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
