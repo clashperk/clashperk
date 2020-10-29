@@ -97,8 +97,9 @@ class ClanEmbedCommand extends Command {
 			])
 			.addField('Town Halls', [
 				townHalls.slice(0, 7).map(th => `${townHallEmoji[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ')
-			]);
-		// .setFooter(`Members: ${data.members}`, this.client.user.displayAvatarURL()).setTimestamp();
+			])
+			.setFooter('Synced', this.client.user.displayAvatarURL())
+			.setTimestamp();
 		return message.channel.send({ embed });
 	}
 }
