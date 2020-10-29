@@ -83,8 +83,7 @@ class ClanEmbedCommand extends Command {
 			])
 			.addField('Requirements', [
 				`${emoji.townhall} TH 10+`,
-				'**Trophies Required**',
-				`${emoji.trophy} ${data.requiredTrophies}`,
+				`${data.requiredTrophies > 0 ? `*Trophies Required**\n${emoji.trophy} ${data.requiredTrophies}` : ''}`,
 				'**Location**',
 				`${location}`
 			])
