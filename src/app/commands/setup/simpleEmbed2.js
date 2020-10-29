@@ -70,28 +70,30 @@ class ClanEmbedCommand extends Command {
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)
 			.setDescription([
-				`${emoji.clan} **${data.clanLevel}** ${emoji.trophy} **${data.clanPoints}** ${emoji.versustrophy} **${data.clanVersusPoints}** ${emoji.users_small} **${data.members}**`,
+				`${emoji.clan} **${data.clanLevel}** ${emoji.users_small} **${data.members}** ${emoji.trophy} **${data.clanPoints}** ${emoji.versustrophy} **${data.clanVersusPoints}**`,
 				'',
 				data.description || 'No description available!'
 			])
 			.addField('Clan Leader', `${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name} (${m.tag})`)[0]}`)
-			.addField('Trophies Required', `${emoji.trophy} ${data.requiredTrophies}`)
-			.addField('Accepted Town Hall', `${emoji.townhall} All`)
-			.addField('War Performance', [
-				`${emoji.ok} ${data.warWins} Won ${data.isWarLogPublic ? `${emoji.wrong} ${data?.warLosses} Lost ${emoji.empty} ${data?.warTies} Tied` : ''}`
+			.addField('Requirements', [
+				`${emoji.trophy} ${data.requiredTrophies} Required`,
+				'**Accepted Town Hall**',
+				`${emoji.townhall} All`
 			])
-			.addField('Win Streak', `${'🏅'} ${data.warWinStreak}`)
-			.addField('War Frequency', [
+			.addField('War Performance', [
+				`${emoji.ok} ${data.warWins} Won ${data.isWarLogPublic ? `${emoji.wrong} ${data?.warLosses} Lost ${emoji.empty} ${data?.warTies} Tied` : ''}`,
+				'**Win Streak**',
+				`${'🏅'} ${data.warWinStreak}`,
+				'**War Frequency**',
 				data.warFrequency.toLowerCase() === 'morethanonceperweek'
 					? '🎟️ More Than Once Per Week'
-					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`
+					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`,
+				'**War League**', `${CWLEmoji[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
 			])
-			.addField('War League', `${CWLEmoji[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`)
 			.addField('Town Halls', [
 				townHalls.map(th => `${townHallEmoji[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ')
-			])
-			.setFooter(`Members: ${data.members}`, this.client.user.displayAvatarURL())
-			.setTimestamp();
+			]);
+		// .setFooter(`Members: ${data.members}`, this.client.user.displayAvatarURL()).setTimestamp();
 		return message.channel.send({ embed });
 	}
 }
