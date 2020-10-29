@@ -60,8 +60,7 @@ class ClanEmbedCommand extends Command {
 
 		const townHalls = Object.entries(reduced)
 			.map(arr => ({ level: arr[0], total: arr[1] }))
-			.sort((a, b) => b.level - a.level)
-			.filter(th => th.level >= 9);
+			.sort((a, b) => b.level - a.level);
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
@@ -90,7 +89,7 @@ class ClanEmbedCommand extends Command {
 				'**War League**', `${CWLEmoji[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
 			])
 			.addField('Town Halls', [
-				townHalls.map(th => `${townHallEmoji[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ')
+				townHalls.slice(0, 7).map(th => `${townHallEmoji[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ')
 			]);
 		// .setFooter(`Members: ${data.members}`, this.client.user.displayAvatarURL()).setTimestamp();
 		return message.channel.send({ embed });
