@@ -108,8 +108,8 @@ class Chart {
 	static async growth(collection = []) {
 		const body = {
 			backgroundColor: 'white',
-			width: 400,
-			height: 250,
+			width: 500,
+			height: 300,
 			devicePixelRatio: 2.0,
 			format: 'png',
 			chart: {

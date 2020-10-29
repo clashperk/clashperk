@@ -19,8 +19,8 @@ class UsageCommand extends Command {
 				},
 				{
 					id: 'limit',
-					type: Argument.range('integer', 10, 30, true),
-					default: 10
+					type: Argument.range('integer', 15, 30, true),
+					default: 15
 				}
 			]
 		});
@@ -40,8 +40,8 @@ class UsageCommand extends Command {
 				.setAuthor('ClashPerk', this.client.user.displayAvatarURL())
 				.setColor(this.client.embed(message))
 				.setImage('attachment://growth.png')
-				.setFooter(`Today's Growth: ${addition}/${Math.abs(deletion)}/${growth}`);
-			return message.util.send({ embed, files: [file] });
+				.setFooter(`${'⚙️'} Today's Growth: ${addition}/${Math.abs(deletion)}/${growth}`);
+			return message.util.send(embed.footer.text, { /* embed, */ files: [file] });
 		}
 
 		// const guilds = await this.guilds();
