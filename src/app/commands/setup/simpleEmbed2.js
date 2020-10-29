@@ -83,9 +83,9 @@ class ClanEmbedCommand extends Command {
 			])
 			.addField('Requirements', [
 				`${emoji.townhall} TH 10+`,
-				`*Trophies Required**\n${emoji.trophy} ${data.requiredTrophies}`,
-				'**Location**',
-				`${location}`
+				'*Trophies Required**',
+				`${emoji.trophy} ${data.requiredTrophies}`,
+				`**Location** \n${location}`
 			])
 			.addField('War Performance', [
 				`${emoji.ok} ${data.warWins} Won ${data.isWarLogPublic ? `${emoji.wrong} ${data?.warLosses} Lost ${emoji.empty} ${data?.warTies} Tied` : ''}`,
