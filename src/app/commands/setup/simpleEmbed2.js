@@ -71,29 +71,28 @@ class ClanEmbedCommand extends Command {
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)
 			.setDescription([
-				`${emoji.clan} ${data.clanLevel} ${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints}`,
+				`${emoji.clan} ${data.clanLevel} ${emoji.trophy} ${data.clanPoints} ${emoji.versustrophy} ${data.clanVersusPoints} ${emoji.users_small} ${data.members}`,
 				'',
 				data.description || 'No description available!'
 			])
-			.addField(`${emoji.owner} Leader`, `${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name} (${m.tag})`)[0]}`)
-			.addField('Requirements', [
-				'**Trophies Required**',
+			.addField('Clan Leader', `${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name} (${m.tag})`)[0]}`)
+			.addField('Trophies Required', [
 				`${emoji.trophy} ${data.requiredTrophies}`,
-				'Accepted Town Hall',
+				'**Accepted Town Hall**',
 				`${emoji.townhall} All`
 			])
-			.addField(`${emoji.clan} War Info`, [
+			.addField('War Performance', [
 				`${emoji.ok} ${data.warWins} Won ${data.isWarLogPublic ? `${emoji.wrong} ${data?.warLosses} Lost ${emoji.empty} ${data?.warTies} Tied` : ''}`,
 				'**Win Streak**',
 				`${'🏅'} ${data.warWinStreak}`,
-				'**War Frequency**',
+				'**War Frequency and Streak**',
 				data.warFrequency.toLowerCase() === 'morethanonceperweek'
 					? '🎟️ More Than Once Per Week'
 					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`,
 				'**War League**',
 				`${CWLEmoji[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
 			])
-			.addField('Town Hall Compositions', [
+			.addField('Town Halls', [
 				townHalls.map(th => `${townHallEmoji[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ')
 			])
 			.setFooter(`Members: ${data.members}`, this.client.user.displayAvatarURL())
