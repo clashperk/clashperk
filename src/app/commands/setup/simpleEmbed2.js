@@ -62,6 +62,12 @@ class ClanEmbedCommand extends Command {
 			.map(arr => ({ level: arr[0], total: arr[1] }))
 			.sort((a, b) => b.level - a.level);
 
+		const location = data.location
+			? data.location.isCountry
+				? `:flag_${data.location.countryCode.toLowerCase()}: ${data.location.name}`
+				: `🌐 ${data.location.name}`
+			: `${emoji.wrong} None`;
+
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setTitle(`${data.name} (${data.tag})`)
@@ -72,7 +78,11 @@ class ClanEmbedCommand extends Command {
 				'',
 				data.description || 'No description available!'
 			])
-			.addField('Clan Leader', `${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'}`)
+			.addField('Clan Leader', [
+				`${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'}`,
+				'**Location**',
+				`${location}`
+			])
 			.addField('Requirements', [
 				`${emoji.trophy} ${data.requiredTrophies} Required`,
 				'**Accepted Town Hall**',
