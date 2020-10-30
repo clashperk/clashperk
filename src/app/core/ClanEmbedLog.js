@@ -174,7 +174,7 @@ class ClanEmbed {
 				clanDescription || ''
 			])
 			.addField('Clan Leader', [
-				`${emoji.owner} ${data.memberList?.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'} - <@!${cache.embed.userId}>`
+				`${emoji.owner} <@!${cache.embed.userId}> (${data.memberList?.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'})`
 			])
 			.addField('Requirements', [
 				`${emoji.townhall} ${cache.embed.accepts}`,

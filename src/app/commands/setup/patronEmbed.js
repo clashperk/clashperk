@@ -161,7 +161,7 @@ class ClanEmbedCommand extends Command {
 						: Util.cleanContent(description, message) || ''
 			])
 			.addField('Clan Leader', [
-				`${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'} - ${user}`
+				`${emoji.owner} ${user} (${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'})`
 			])
 			.addField('Requirements', [
 				`${emoji.townhall} ${accepts}`,
