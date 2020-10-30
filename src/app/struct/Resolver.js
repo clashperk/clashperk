@@ -131,7 +131,7 @@ class Reslover {
 			return req;
 		});
 
-		return Promise.all(requests.map(req => client.fetch(req.url, req.option)));
+		return Promise.all(requests.map(req => client.fetch(req.url, req.option))).catch(() => []);
 	}
 
 	static verifyEmbed(data, code) {

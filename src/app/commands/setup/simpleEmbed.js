@@ -1,5 +1,5 @@
 const { Command, Flag } = require('discord-akairo');
-const { emoji } = require('../../util/emojis');
+const { emoji, CWLEmoji, BLUE_EMOJI, townHallEmoji } = require('../../util/emojis');
 const Resolver = require('../../struct/Resolver');
 
 class ClanEmbedCommand extends Command {
@@ -50,17 +50,54 @@ class ClanEmbedCommand extends Command {
 			return message.util.send({ embed });
 		}
 
+		const fetched = await Resolver.fetch(data);
+		const reduced = fetched.reduce((count, member) => {
+			const townHall = member.townHallLevel;
+			count[townHall] = (count[townHall] || 0) + 1;
+			return count;
+		}, {});
+
+		const townHalls = Object.entries(reduced)
+			.map(arr => ({ level: arr[0], total: arr[1] }))
+			.sort((a, b) => b.level - a.level);
+
+		const location = data.location
+			? data.location.isCountry
+				? `:flag_${data.location.countryCode.toLowerCase()}: ${data.location.name}`
+				: `🌐 ${data.location.name}`
+			: `${emoji.wrong} None`;
+
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)
-			.setDescription(data.description || 'No description available.')
-			.addField(`${emoji.owner} Leader`, `${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name} (${m.tag})`)[0]}`)
-			.addField(`${emoji.clan} War Info`, [
-				`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses} losses, ${data.warTies} ties,` : ''} win streak ${data.warWinStreak}`
+			.setDescription([
+				`${emoji.clan} **${data.clanLevel}** ${emoji.users_small} **${data.members}** ${emoji.trophy} **${data.clanPoints}** ${emoji.versustrophy} **${data.clanVersusPoints}**`,
+				'',
+				data.description || ''
 			])
-			.setFooter(`Members [${data.members}/50]`, this.client.user.displayAvatarURL())
+			.addField('Clan Leader', [
+				`${emoji.owner} ${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'}`
+			])
+			.addField('Requirements', [
+				`${emoji.townhall} TH 10+`,
+				'**Trophies Required**',
+				`${emoji.trophy} ${data.requiredTrophies}`,
+				`**Location** \n${location}`
+			])
+			.addField('War Performance', [
+				`${emoji.ok} ${data.warWins} Won ${data.isWarLogPublic ? `${emoji.wrong} ${data?.warLosses} Lost ${emoji.empty} ${data?.warTies} Tied` : ''}`,
+				'**War Frequency & Streak**',
+				`${data.warFrequency.toLowerCase() === 'morethanonceperweek'
+					? '🎟️ More Than Once Per Week'
+					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`} ${'🏅'} ${data.warWinStreak}`,
+				'**War League**', `${CWLEmoji[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
+			])
+			.addField('Town Halls', [
+				townHalls.slice(0, 7).map(th => `${townHallEmoji[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ')
+			])
+			.setFooter('Synced', this.client.user.displayAvatarURL())
 			.setTimestamp();
 		return message.channel.send({ embed });
 	}
