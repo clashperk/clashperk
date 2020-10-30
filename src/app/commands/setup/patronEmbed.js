@@ -23,7 +23,7 @@ class ClanEmbedCommand extends Command {
 			type: async (message, args) => {
 				if (!this.client.patron.get(message.guild.id, 'guild', false)) {
 					const embed = this.client.util.embed()
-						.setImage('https://i.imgur.com/QNeOD2n.png')
+						.setImage('https://i.imgur.com/txkD6q7.png')
 						.setDescription([
 							'[Become a Patron](https://www.patreon.com/clashperk) to create Live auto updating Promotional Embed'
 						]);

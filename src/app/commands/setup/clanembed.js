@@ -19,7 +19,7 @@ class ClanEmbedCommand extends Command {
 						'',
 						'[Become a Patron](https://www.patreon.com/clashperk)'
 					],
-					url: 'https://i.imgur.com/QNeOD2n.png'
+					url: 'https://i.imgur.com/txkD6q7.png'
 				}
 			},
 			args: [
