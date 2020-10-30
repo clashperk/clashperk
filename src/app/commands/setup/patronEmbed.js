@@ -56,10 +56,10 @@ class ClanEmbedCommand extends Command {
 
 		const accepts = yield {
 			match: 'none',
-			type: Argument.validate('string', (msg, txt) => txt.length <= 100),
+			type: Argument.validate('string', (msg, txt) => txt.length <= 200),
 			prompt: {
 				start: 'What Town-Halls are accepted? (write anything)',
-				retry: 'Embed field must be 100 or fewer in length.',
+				retry: 'Embed field must be 200 or fewer in length.',
 				time: 1 * 60 * 1000
 			},
 			default: ' \u200b'
