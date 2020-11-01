@@ -22,12 +22,12 @@ class GuideCommand extends Command {
 			.setAuthor('Setup Guide', this.client.user.displayAvatarURL(), 'https://clashperk.com')
 			.setDescription([
 				'**🔸 Step 1 : Live Boards and Logs**',
-				'Create a new category (read-only for members) and get bot access to it. Create 5 channels within that category (if you need all of live boards and logs)',
+				'Create a new category (read-only for members) and get the bot access to it. Create 5 channels within that category (if you need all of live boards and logs)',
 				'',
 				'**Last Online Board**',
 				`\`${prefix}setup lastonline <#clanTag>\``,
 				'',
-				'> Once you do that, you will get message to verify that you actually are the Leader or Co-Leader of that clan, read and follow those instructions carefully. Verification is a one time process so you won\'t have to do it again for any other commands.',
+				'> Once you do that, you will get a message to verify that you actually are the Leader or Co-Leader of that clan, read and follow those instructions carefully. Verification is a one time process so you won\'t have to do it again for any other commands.',
 				'',
 				'**Clan Games Board**',
 				`\`${prefix}setup clangames <#clanTag>\``,
