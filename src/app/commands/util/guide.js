@@ -38,7 +38,7 @@ class GuideCommand extends Command {
 				'**Live War Board**',
 				`\`${prefix}setup clan-wars <#clanTag>\``,
 				'',
-				'**Member Log**',
+				'**Clan Feed (aka Clan Member Log)**',
 				`\`${prefix}setup clan-feed <#clanTag> [@role]\``,
 				'',
 				'**🔸 Step 2 : Linking Clan**',
