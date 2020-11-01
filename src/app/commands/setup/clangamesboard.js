@@ -6,8 +6,7 @@ const Resolver = require('../../struct/Resolver');
 
 class ClanGamesBoardCommand extends Command {
 	constructor() {
-		super('setup-clangamesboard', {
-			aliases: ['gameboard', 'cgboard', 'clangamesboard', 'clangameboard'],
+		super('setup-clangames', {
 			category: 'setup-hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],

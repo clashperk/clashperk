@@ -6,8 +6,7 @@ const Resolver = require('../../struct/Resolver');
 
 class MemberLogCommand extends Command {
 	constructor() {
-		super('setup-memberlog', {
-			aliases: ['memberlog', 'clanlog', 'playerlog'],
+		super('setup-clan-feed', {
 			category: 'setup-hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
@@ -15,7 +14,7 @@ class MemberLogCommand extends Command {
 			description: {
 				content: 'Setup clan member log in a channel.',
 				usage: '<clanTag> [channel/role]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-log @Mod']
+				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-feed @Mod']
 			}
 		});
 	}

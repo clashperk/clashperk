@@ -6,33 +6,35 @@ const { Op } = require('../../util/constants');
 class StopCommand extends Command {
 	constructor() {
 		super('stop', {
-			aliases: ['stop', 'toggle', 'remove', 'delete'],
+			aliases: ['stop', 'toggle', 'remove', 'delete', 'disable'],
 			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Stops/removes logs and boards in your guild.',
+					'Stops/removes logs and boards in your server.',
 					'',
 					'**Available Methods**',
-					'• all `<clanTag>`',
-					'• memberlog `<clanTag>`',
-					'• gameboard `<clanTag>`',
-					'• clanembed `<clanTag>`',
-					'• donationlog `<clanTag>`',
-					'• onlineboard `<clanTag>`',
+					'• `all <clanTag>`',
+					'• `clan-feed <clanTag>`',
+					'• `clangames <clanTag>`',
+					'• `clan-wars <clanTag>`',
+					'• `clanembed <clanTag>`',
+					'• `donations <clanTag>`',
+					'• `lastonline <clanTag>`',
 					'',
 					'For additional `<...args>` usage refer to the examples below.'
 				],
 				usage: '<method> <clanTag>',
 				examples: [
 					'all #8QU8J9LP',
-					'memberlog #8QU8J9LP',
-					'gameboard #8QU8J9LP',
+					'clan-feed #8QU8J9LP',
+					'clangames #8QU8J9LP',
 					'clanembed #8QU8J9LP',
-					'donationlog #8QU8J9LP',
-					'onlineboard #8QU8J9LP'
+					'clan-wars #8QU8J9LP',
+					'donations #8QU8J9LP',
+					'lastonline #8QU8J9LP'
 				]
 			},
 			args: [
@@ -41,12 +43,12 @@ class StopCommand extends Command {
 					match: 'phrase',
 					type: [
 						['all'],
-						[Op.DONATION_LOG.toString(), 'donationlog', 'dl'],
-						[Op.CLAN_MEMBER_LOG.toString(), 'playerlog', 'clanlog', 'cl', 'pl', 'memberlog'],
-						[Op.LAST_ONLINE_LOG.toString(), 'onlineboard', 'ob'],
-						[Op.CLAN_EMBED_LOG.toString(), 'clanembed', 'ce'],
-						[Op.CLAN_GAMES_LOG.toString(), 'cgboard', 'cg', 'gameboard'],
-						[Op.CLAN_WAR_LOG.toString(), 'warlog', 'clanwarlog', 'wl']
+						[Op.DONATION_LOG.toString(), 'donationlog', 'donations'],
+						[Op.CLAN_MEMBER_LOG.toString(), 'memberlog', 'clan-feed'],
+						[Op.LAST_ONLINE_LOG.toString(), 'onlineboard', 'lastonline'],
+						[Op.CLAN_EMBED_LOG.toString(), 'clanembed'],
+						[Op.CLAN_GAMES_LOG.toString(), 'gameboard', 'clangames'],
+						[Op.CLAN_WAR_LOG.toString(), 'clanwarlog', 'clan-wars']
 					],
 					default: ''
 				},
@@ -71,26 +73,28 @@ class StopCommand extends Command {
 				.setColor(this.client.embed(message))
 				.setAuthor('No Method Selected')
 				.setDescription([
-					'Stop Logs and Boards in your guild.',
+					'Stop Logs and Live Boards in your server.',
 					'',
 					'**Usage**',
 					`\`${prefix}stop <method> <clanTag>\``,
 					'',
 					'**Available Methods**',
-					'• all `<clanTag>`',
-					'• memberlog `<clanTag>`',
-					'• gameboard `<clanTag>`',
-					'• clanembed `<clanTag>`',
-					'• donationlog `<clanTag>`',
-					'• onlineboard `<clanTag>`',
+					'• `all <clanTag>`',
+					'• `clan-feed <clanTag>`',
+					'• `clan-wars <clanTag>`',
+					'• `clangames <clanTag>`',
+					'• `clanembed <clanTag>`',
+					'• `donations <clanTag>`',
+					'• `lastonline <clanTag>`',
 					'',
 					'**Examples**',
 					`\`${prefix}stop all #8QU8J9LP\``,
-					`\`${prefix}stop memberlog #8QU8J9LP\``,
-					`\`${prefix}stop gameboard #8QU8J9LP\``,
+					`\`${prefix}stop clan-feed #8QU8J9LP\``,
+					`\`${prefix}stop clangames #8QU8J9LP\``,
 					`\`${prefix}stop clanembed #8QU8J9LP\``,
-					`\`${prefix}stop donationlog #8QU8J9LP\``,
-					`\`${prefix}stop onlineboard #8QU8J9LP\``
+					`\`${prefix}stop donations #8QU8J9LP\``,
+					`\`${prefix}stop clan-wars #8QU8J9LP\``,
+					`\`${prefix}stop lastonline #8QU8J9LP\``
 				]);
 			return message.util.send({ embed });
 		}
@@ -102,7 +106,7 @@ class StopCommand extends Command {
 		if (!data) {
 			return message.util.send({
 				embed: {
-					description: 'Clan Not Found.'
+					description: 'I could not find this clan in this server!'
 				}
 			});
 		}

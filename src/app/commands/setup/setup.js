@@ -12,24 +12,24 @@ class SetupCommand extends Command {
 					'Setup different logs and live boards.',
 					'',
 					'**Available Methods**',
-					'• memberlog `<clanTag> [channel/role]`',
-					'• gameboard `<clanTag> [channel/color]`',
-					'• clanembed `<clanTag>`',
-					'• clanwarlog `<clanTag> [channel]`',
-					'• donationlog `<clanTag> [channel/color]`',
-					'• onlineboard `<clanTag> [channel/color]`',
+					'• `clangames <clanTag> [channel/color]`',
+					'• `clan-wars <clanTag> [channel]`',
+					'• `donations <clanTag> [channel/color]`',
+					'• `clan-feed <clanTag> [channel/role]`',
+					'• `clanembed <clanTag> [...args]`',
+					'• `lastonline <clanTag> [channel/color]`',
 					'',
 					'**Required: `<>` | Optional: `[]`**',
 					'For additional `<...args>` usage refer to the examples below.'
 				],
 				usage: '<method> <...args>',
 				examples: [
-					'memberlog #8QU8J9LP',
-					'gameboard #8QU8J9LP',
+					'clangames #8QU8J9LP',
+					'clan-wars #8QU8J9LP',
+					'donations #8QU8J9LP',
+					'clan-feed #8QU8J9LP',
 					'clanembed #8QU8J9LP',
-					'clanwarlog #8QU8J9LP',
-					'donationlog #8QU8J9LP',
-					'onlineboard #8QU8J9LP'
+					'lastonline #8QU8J9LP'
 				]
 			}
 		});
@@ -43,12 +43,12 @@ class SetupCommand extends Command {
 	*args() {
 		const method = yield {
 			type: [
-				['setup-donationlog', 'dl', 'donationlog'],
-				['setup-lastonlineboard', 'onlineboard', 'ob'],
-				['setup-clangamesboard', 'cgboard', 'cg', 'gameboard'],
-				['setup-patron-clanembed', 'clanembed', 'embed', 'ce'],
-				['setup-clanwarlog', 'warlog', 'clanwarlog', 'wl'],
-				['setup-memberlog', 'clanlog', 'cl', 'pl', 'memberlog', 'ml']
+				['setup-donationlog', 'donations', 'donationlog'],
+				['setup-lastonlineboard', 'lastonline', 'onlineboard'],
+				['setup-clangamesboard', 'clangames', 'cgboard'],
+				['setup-patron-clanembed', 'clanembed'],
+				['setup-clanwarlog', 'clanwarlog', 'clan-wars'],
+				['setup-memberlog', 'memberlog', 'clan-feed']
 			],
 			otherwise: message => {
 				const prefix = this.handler.prefix(message);
@@ -58,14 +58,13 @@ class SetupCommand extends Command {
 					.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
 				const commands = this.handler.categories.get('setup-hidden')
 					.values();
-				embed.addField('__**Setup**__', [
+				embed.addField('__**Setup Commands**__', [
 					Array.from(commands)
 						.concat(this.handler.modules.get('setup-clanembed'))
-						.sort((a, b) => a.aliases[0].length - b.aliases[0].length)
-						.map(command => `**\`${prefix}setup ${command.aliases[0]}\`**\n${command.description.content}`)
+						.sort((a, b) => a.id.length - b.id.length)
+						.map(command => `**\`${prefix}setup ${command.id.replace(/setup-/g, '')}\`**\n${command.description.content}`)
 						.join('\n')
 				]);
-
 				return embed;
 			}
 		};
