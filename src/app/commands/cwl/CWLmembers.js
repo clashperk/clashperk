@@ -95,6 +95,8 @@ class CWLMembersComamnd extends Command {
 			return member;
 		});
 
+		console.log(memberList);
+
 		/* [[1, 4], [2], [3]].reduce((a, b) => {
 			a.push(...b);
 			return a;
