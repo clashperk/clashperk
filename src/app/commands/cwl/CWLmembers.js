@@ -85,17 +85,16 @@ class CWLMembersComamnd extends Command {
 
 		const responses = await Promise.all(requests.map(req => fetch(req.url, req.option)));
 		const fetched = await Promise.all(responses.map(res => res.json()));
-		const memberList = fetched.map(m => {
-			const member = {
-				name: m.name,
-				tag: m.tag,
-				townHallLevel: m.townHallLevel,
-				heroes: m.heroes ? m.heroes.filter(a => a.village === 'home') : []
-			};
-			return member;
-		});
-
-		console.log(memberList);
+		const memberList = fetched.filter(m => typeof m.name === 'string')
+			.map(m => {
+				const member = {
+					name: m.name,
+					tag: m.tag,
+					townHallLevel: m.townHallLevel,
+					heroes: m.heroes ? m.heroes.filter(a => a.village === 'home') : []
+				};
+				return member;
+			});
 
 		/* [[1, 4], [2], [3]].reduce((a, b) => {
 			a.push(...b);
