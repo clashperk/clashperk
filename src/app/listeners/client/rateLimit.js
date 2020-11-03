@@ -40,7 +40,6 @@ class RateLimitListener extends Listener {
 		this.client.logger.warn({ timeout, limit, method, path, route }, { label: 'RATELIMIT' });
 
 		const embed = new MessageEmbed()
-			.setColor(0xfaf5f5)
 			.setAuthor('Rate Limit')
 			.setDescription([
 				'**Time Out**',
@@ -50,7 +49,7 @@ class RateLimitListener extends Listener {
 				limit,
 				'',
 				'**HTTP Method**',
-				method,
+				method.toUpperCase(),
 				'',
 				'**Route**',
 				route,
