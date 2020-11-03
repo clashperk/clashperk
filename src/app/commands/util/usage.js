@@ -19,7 +19,7 @@ class UsageCommand extends Command {
 				},
 				{
 					id: 'limit',
-					type: Argument.range('integer', 15, 30, true),
+					type: Argument.range('integer', 15, 60, true),
 					default: 15
 				}
 			]
