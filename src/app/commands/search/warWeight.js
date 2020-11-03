@@ -79,12 +79,12 @@ class WarWeightCommand extends Command {
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
 					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 15))}\``;
+					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 15).replace(/\`/g, '\\'))}\``;
 				}),
 			this.paginate(memberList, 25, 50)
 				.items.map(member => {
 					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 15))}\``;
+					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 15).replace(/\`/g, '\\'))}\``;
 				})
 		];
 
