@@ -34,7 +34,7 @@ class GuildDeleteListener extends Listener {
 				.setColor(0xeb3508)
 				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL())
 				.setTitle(`${emoji.owner} ${user.tag} (${user.id})`)
-				.setFooter(`${guild.memberCount} members`, user.displayAvatarURL())
+				.setFooter(`${guild.memberCount} members (Shard ${guild.shard.id})`, user.displayAvatarURL())
 				.setTimestamp();
 			return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user.displayAvatarURL() });
 		}
