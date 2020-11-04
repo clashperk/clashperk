@@ -310,6 +310,7 @@ class ClanWarEvent {
 	// For Clan-War-League Embed [CWL]
 	async roundCWL(id, channel, body, db) {
 		const cache = this.cached.get(id);
+		if (!cache) return;
 		const warTags = Object.values(db.warTags)
 			.filter(round => !round.ended)
 			.sort((a, b) => a.round - b.round)
