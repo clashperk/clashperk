@@ -72,12 +72,12 @@ class LastOnlineCommand extends Command {
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '📊') {
 				await collector.stop();
-				const members = await this.aggregationQuery(data, this.season());
+				const members = await this.aggregationQuery(data, 30);
 				members.sort((a, b) => b.count - a.count);
 				embed.setDescription([
-					`Clan Member Activities (Last ${this.season()} Days)`,
+					`Clan Member Activities (Last ${30} Days)`,
 					`\`\`\`\u200e${'TOTAL'.padStart(4, ' ')} AVG  ${'NAME'}\n${members
-						.map(m => `${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / this.season()).toString().padStart(3, ' ')}  ${m.name}`)
+						.map(m => `${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / 30).toString().padStart(3, ' ')}  ${m.name}`)
 						.join('\n')}`,
 					'```'
 				]);
@@ -171,10 +171,6 @@ class LastOnlineCommand extends Command {
 			}
 		]).toArray();
 		return this.filter(clan, collection[0]);
-	}
-
-	season() {
-		return Math.floor((new Date() - new Date(2020, 9, 1)) / (24 * 60 * 60 * 1000));
 	}
 }
 
