@@ -11,7 +11,8 @@ const players = require('../../../players.json');
 
 class Reslover {
 	static async resolve(message, args, boolean = false) {
-		const tag = args.match(/^#?[PYLQGRJCUV0O289]+$/i)?.[0] || args.match(/\(?<?(#[PYLQGRJCUV0O289]+)\)?>?/i)?.[1];
+		// const tag = args.match(/^#?[PYLQGRJCUV0O289]+$/i)?.[0] || args.match(/\(?<?(#[PYLQGRJCUV0O289]+)\)?>?/i)?.[1];
+		const tag = /[0289OPYLQGRJCUV]{3,10}/ig.test(args);
 		if (boolean) {
 			if (tag) return this.player(args);
 			const member = await this.isMember(message, args);
@@ -115,6 +116,7 @@ class Reslover {
 	}
 
 	static format(tag) {
+		tag = tag.match(/[0289PYLQGRJCUV]{3,9}/g)?.[0];
 		return `#${tag.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0')}`;
 	}
 
