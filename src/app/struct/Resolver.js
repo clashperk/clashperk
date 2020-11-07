@@ -14,7 +14,6 @@ class Reslover {
 		// const tag = args.match(/^#?[0289CGJLOPQRUVY]+$/i)?.[0] || args.match(/\(?<?(#[0289CGJLOPQRUVY]+)\)?>?/i)?.[1];
 		const parsed = await this.argumentParser(message, args);
 		const tag = parsed && typeof parsed === 'boolean';
-		console.log(tag, parsed);
 		if (boolean) {
 			if (tag) return this.player(args);
 			const embed = new MessageEmbed().setColor(0xf30c11);
