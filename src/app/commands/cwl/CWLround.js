@@ -161,8 +161,9 @@ class CWLRoundComamnd extends Command {
 					}
 					embed.addField('Rosters', [
 						`\u200e**${clan.name}**`,
-						`${this.count(clan.members)}`,
-						'',
+						`${this.count(clan.members)}`
+					]);
+					embed.addField('\u200e', [
 						`\u200e**${opponent.name}**`,
 						`${this.count(opponent.members)}`
 					]);
