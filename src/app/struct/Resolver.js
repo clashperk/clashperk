@@ -12,7 +12,8 @@ const players = require('../../../players.json');
 class Reslover {
 	static async resolve(message, args, boolean = false) {
 		// const tag = args.match(/^#?[PYLQGRJCUV0O289]+$/i)?.[0] || args.match(/\(?<?(#[PYLQGRJCUV0O289]+)\)?>?/i)?.[1];
-		const tag = /[PYLQGRJCUV0O289]{3,12}/gi.test(args);
+		const parsed = await this.argumentParser(message, args);
+		const tag = parsed && typeof parsed === 'boolean';
 		if (boolean) {
 			if (tag) return this.player(args);
 			const member = await this.isMember(message, args);
@@ -78,17 +79,14 @@ class Reslover {
 		return { status: 404, embed };
 	}
 
-
-	static async isMember(message, args) {
+	static async argumentParser(message, args) {
 		if (!args) return message.member;
-		const mention = args.match(/<@!?(\d{17,19})>/);
-		if (mention) return message.guild.members.cache.get(mention[1]) || null;
-		const id = args.match(/^\d{17,19}/);
+		const id = args.match(/<@!?(\d{17,19})>/)?.[1] || args.match(/^\d{17,19}/)?.[0];
 		if (id) {
-			if (message.guild.members.cache.has(id[0])) return message.guild.members.cache.get(id[0]);
-			return message.guild.members.fetch(id[0]).catch(() => null);
+			if (message.guild.members.cache.has(id)) return message.guild.members.cache.get(id);
+			return message.guild.members.fetch(id).catch(() => null);
 		}
-		return null;
+		return /[PYLQGRJCUV0O289]{3,12}/gi.test(args);
 	}
 
 	static async player(tag) {
