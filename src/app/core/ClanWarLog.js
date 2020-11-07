@@ -319,6 +319,17 @@ class ClanWarEvent {
 			const round = body.rounds.findIndex(round => round.warTags.includes(warTag)) + 1;
 			const data = await client.fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`).catch(() => null);
 			if (!data?.ok) continue;
+			if (data.state === 'notInWar') {
+				const set = {};
+				if (data.state === 'warEnded') set[`warTags.${warTag}.ended`] = true;
+				set[`warTags.${warTag}.state`] = 'warEnded';
+				await mongodb.db('clashperk')
+					.collection('clanwars')
+					.updateOne({ clan_id: ObjectId(id) }, { $set: set });
+
+				continue;
+			}
+
 			const clan = data.clan.tag === cache.tag ? data.clan : data.opponent;
 			const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
 			const embed = new MessageEmbed()
