@@ -9,7 +9,7 @@ const client = new Client({
 });
 const players = require('../../../players.json');
 
-class Reslover {
+class Resolver {
 	static async resolve(message, args, boolean = false) {
 		// const tag = args.match(/^#?[0289CGJLOPQRUVY]+$/i)?.[0] || args.match(/\(?<?(#[0289CGJLOPQRUVY]+)\)?>?/i)?.[1];
 		const parsed = await this.argumentParser(message, args);
@@ -166,4 +166,4 @@ class Reslover {
 	}
 }
 
-module.exports = Reslover;
+module.exports = Resolver;
