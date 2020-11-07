@@ -21,7 +21,6 @@ class Reslover {
 				return {
 					status: 404,
 					embed: embed
-						.setAuthor('Error')
 						.setDescription(status(404))
 				};
 			}
@@ -54,7 +53,6 @@ class Reslover {
 			return {
 				status: 404,
 				embed: embed
-					.setAuthor('Error')
 					.setDescription(status(404))
 			};
 		}
@@ -93,8 +91,7 @@ class Reslover {
 			token: process.env.DEVELOPER_TOKEN
 		}).catch(() => null);
 		const embed = new MessageEmbed()
-			.setColor(0xf30c11)
-			.setAuthor('Error');
+			.setColor(0xf30c11);
 		if (!data) return { status: 504, embed: embed.setDescription(status(504)) };
 		if (!data.ok) return { status: data.status, embed: embed.setDescription(status(data.status)) };
 		return data;
@@ -105,8 +102,7 @@ class Reslover {
 			token: process.env.DEVELOPER_TOKEN
 		}).catch(() => null);
 		const embed = new MessageEmbed()
-			.setColor(0xf30c11)
-			.setAuthor('Error');
+			.setColor(0xf30c11);
 		if (!data) return { status: 504, embed: embed.setDescription(status(504)) };
 		if (!data.ok) return { status: data.status, embed: embed.setDescription(status(data.status)) };
 		return data;
