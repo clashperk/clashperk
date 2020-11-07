@@ -16,9 +16,8 @@ class Reslover {
 		const tag = parsed && typeof parsed === 'boolean';
 		if (boolean) {
 			if (tag) return this.player(args);
-			const member = await this.isMember(message, args);
 			const embed = new MessageEmbed().setColor(0xf30c11);
-			if (!member) {
+			if (!parsed) {
 				return {
 					status: 404,
 					embed: embed
@@ -26,18 +25,19 @@ class Reslover {
 						.setDescription(status(404))
 				};
 			}
+
 			const data = await mongodb.db('clashperk')
 				.collection('linkedusers')
-				.findOne({ user: member.id });
+				.findOne({ user: parsed.id });
 
 			if (data && data.tags && data.tags[0]) return this.player(data.tags[0]);
 
-			const otherTags = this.players(member.id);
+			const otherTags = this.players(parsed.id);
 			if (otherTags.length) return this.player(otherTags[0]);
 
-			if (message.author.id !== member.id) {
+			if (message.author.id !== parsed.id) {
 				embed.setDescription([
-					`Couldn't find a player linked to **${member.user.tag}!**`
+					`Couldn't find a player linked to **${parsed.user.tag}!**`
 				]);
 			} else {
 				embed.setDescription([
@@ -49,9 +49,8 @@ class Reslover {
 		}
 
 		if (tag) return this.clan(args);
-		const member = await this.isMember(message, args);
 		const embed = new MessageEmbed().setColor(0xf30c11);
-		if (!member) {
+		if (!parsed) {
 			return {
 				status: 404,
 				embed: embed
@@ -62,13 +61,13 @@ class Reslover {
 
 		const data = await mongodb.db('clashperk')
 			.collection('linkedclans')
-			.findOne({ user: member.id });
+			.findOne({ user: parsed.id });
 
 		if (data) return this.clan(data.tag);
 
-		if (message.author.id !== member.id) {
+		if (message.author.id !== parsed.id) {
 			embed.setDescription([
-				`Couldn't find a clan linked to **${member.user.tag}!**`
+				`Couldn't find a clan linked to **${parsed.user.tag}!**`
 			]);
 		} else {
 			embed.setDescription([
