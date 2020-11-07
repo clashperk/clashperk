@@ -92,6 +92,7 @@ class Reslover {
 	}
 
 	static async player(tag) {
+		console.log(this.format(tag));
 		const data = await client.fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(this.format(tag))}`, {
 			token: process.env.DEVELOPER_TOKEN
 		}).catch(() => null);
