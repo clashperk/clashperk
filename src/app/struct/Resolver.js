@@ -11,7 +11,7 @@ const players = require('../../../players.json');
 
 class Reslover {
 	static async resolve(message, args, boolean = false) {
-		const tag = /^#?[PYLQGRJCUV0O289]+$/i.test(args);
+		const tag = args.match(/^#?[PYLQGRJCUV0O289]+$/i)?.[0] || args.match(/\(?<?(#[PYLQGRJCUV0O289]+)\)?>?/i)?.[1];
 		if (boolean) {
 			if (tag) return this.player(args);
 			const member = await this.isMember(message, args);
