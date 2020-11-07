@@ -11,9 +11,10 @@ const players = require('../../../players.json');
 
 class Reslover {
 	static async resolve(message, args, boolean = false) {
-		// const tag = args.match(/^#?[PYLQGRJCUV0O289]+$/i)?.[0] || args.match(/\(?<?(#[PYLQGRJCUV0O289]+)\)?>?/i)?.[1];
+		// const tag = args.match(/^#?[0289CGJLOPQRUVY]+$/i)?.[0] || args.match(/\(?<?(#[0289CGJLOPQRUVY]+)\)?>?/i)?.[1];
 		const parsed = await this.argumentParser(message, args);
 		const tag = parsed && typeof parsed === 'boolean';
+		console.log(tag, parsed);
 		if (boolean) {
 			if (tag) return this.player(args);
 			const embed = new MessageEmbed().setColor(0xf30c11);
@@ -85,7 +86,7 @@ class Reslover {
 			if (message.guild.members.cache.has(id)) return message.guild.members.cache.get(id);
 			return message.guild.members.fetch(id).catch(() => null);
 		}
-		return /[PYLQGRJCUV0O289]{3,12}/gi.test(args);
+		return /[0289CGJLOPQRUVY]{3,12}/gi.test(args);
 	}
 
 	static async player(tag) {
@@ -113,7 +114,7 @@ class Reslover {
 	}
 
 	static format(tag) {
-		tag = tag.match(/[0289PYLQGRJCUV]{3,12}/gi)?.[0];
+		tag = tag.match(/[0289CGJLOPQRUVY]{3,12}/gi)?.[0];
 		return `#${tag.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0')}`;
 	}
 
@@ -165,7 +166,7 @@ class Reslover {
 
 	static players(id) {
 		return players.filter(d => d.discordId === id)
-			.filter(d => /^#?[PYLQGRJCUV0O289]+$/i.test(d?.playerTag))
+			.filter(d => /^#?[0289CGJLOPQRUVY]+$/i.test(d?.playerTag))
 			.map(d => `#${d.playerTag.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0')}`);
 	}
 }
