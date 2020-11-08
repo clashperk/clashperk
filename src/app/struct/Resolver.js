@@ -110,7 +110,7 @@ class Resolver {
 
 	static format(tag) {
 		tag = tag.match(/[0289CGJLOPQRUVY]{3,12}/gi)?.[0];
-		return `#${tag.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0')}`;
+		return `#${tag?.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0')}`;
 	}
 
 	static async fetch(data) {
