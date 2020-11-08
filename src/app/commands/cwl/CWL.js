@@ -8,7 +8,7 @@ class CWLComamnd extends Command {
 			category: 'cwl',
 			description: {
 				content: [
-					'Full list of CWL commands',
+					'Full list of the CWL commands.',
 					'',
 					'**Available Methods**',
 					'• roster `<clanTag>`',

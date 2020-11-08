@@ -10,7 +10,7 @@ class ColorCommand extends Command {
 			quoted: false,
 			description: {
 				content: [
-					'Sets display color of the guild.',
+					'Sets display color of the server.',
 					'',
 					'**Patron only Feature**',
 					'',

@@ -108,6 +108,7 @@ class HelpCommand extends Command {
 			},
 			{
 				profile: 'Profile',
+				flag: 'Flags',
 				other: 'Other',
 				config: 'Config',
 				util: 'Util'

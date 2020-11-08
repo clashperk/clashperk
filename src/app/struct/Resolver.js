@@ -140,7 +140,7 @@ class Resolver {
 				'',
 				'**Verify Your Clan**',
 				`Add the code \`${code}\` at the end of the clan description. It's a security feature of the bot to ensure you are a Leader or Co-Leader in the clan.`,
-				'If you\'ve already added the code please wait at least 1 min before you run the command again and remove the code after verification.'
+				'If you\'ve already added the code please wait at least 2 min before you run the command again and remove the code after verification.'
 			]);
 		return embed;
 	}

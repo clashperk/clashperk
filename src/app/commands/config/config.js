@@ -8,7 +8,7 @@ class ConfigCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
 			description: {
-				content: 'Displays settings of the guild.',
+				content: 'Displays settings of the server.',
 				examples: ['']
 			}
 		});

@@ -13,7 +13,7 @@ class CurrentWarCommand extends Command {
 			category: 'cwl',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: 'Shows info about current war.',
+				content: 'Shows info and stats about current war.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP', '8QU8J9LP']
 			}

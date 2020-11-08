@@ -8,7 +8,7 @@ class PrefixCommand extends Command {
 			channel: 'guild',
 			quoted: false,
 			description: {
-				content: 'Displays or changes the prefix of the guild.',
+				content: 'Displays or changes the prefix of the server.',
 				usage: '<prefix>',
 				examples: ['!', '?']
 			},
@@ -37,11 +37,11 @@ class PrefixCommand extends Command {
 	exec(message, { prefix }) {
 		if (/^<@!?(\d+)>$/.test(message.content) && !message.mentions.has(this.client.user.id)) return;
 		if (!prefix) {
-			return message.util.send(`The current prefix for this guild is \`${this.handler.prefix(message)}\``);
+			return message.util.send(`The current prefix for this server is \`${this.handler.prefix(message)}\``);
 		}
 		if (prefix && !message.member.permissions.has('MANAGE_GUILD')) {
 			return message.util.send([
-				`The current prefix for this guild is \`${this.handler.prefix(message)}\``,
+				`The current prefix for this server is \`${this.handler.prefix(message)}\``,
 				'You are missing `Manage Server` to change the prefix.'
 			]);
 		}
