@@ -3,17 +3,26 @@ const { mongodb } = require('../../struct/Database');
 const { ObjectId } = require('mongodb');
 const { Op } = require('../../util/constants');
 
+const logType = {
+	0: 'Donation Log',
+	1: 'Clan Feed',
+	2: 'Last Online Board',
+	3: 'Clan Embed',
+	4: 'Clan Games Board',
+	5: 'Clan War Log'
+};
+
 class StopCommand extends Command {
 	constructor() {
 		super('stop', {
-			aliases: ['stop', 'toggle', 'remove', 'delete', 'disable'],
+			aliases: ['remove', 'stop', 'toggle', 'delete', 'disable'],
 			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Stops/removes logs and boards in your server.',
+					'Removes logs and boards from your server.',
 					'',
 					'**Available Methods**',
 					'• `all <clanTag>`',
@@ -88,13 +97,13 @@ class StopCommand extends Command {
 					'• `lastonline <clanTag>`',
 					'',
 					'**Examples**',
-					`\`${prefix}stop all #8QU8J9LP\``,
-					`\`${prefix}stop clan-feed #8QU8J9LP\``,
-					`\`${prefix}stop clangames #8QU8J9LP\``,
-					`\`${prefix}stop clanembed #8QU8J9LP\``,
-					`\`${prefix}stop donations #8QU8J9LP\``,
-					`\`${prefix}stop clan-wars #8QU8J9LP\``,
-					`\`${prefix}stop lastonline #8QU8J9LP\``
+					`\`${prefix}remove all #8QU8J9LP\``,
+					`\`${prefix}remove clan-feed #8QU8J9LP\``,
+					`\`${prefix}remove clangames #8QU8J9LP\``,
+					`\`${prefix}remove clanembed #8QU8J9LP\``,
+					`\`${prefix}remove donations #8QU8J9LP\``,
+					`\`${prefix}remove clan-wars #8QU8J9LP\``,
+					`\`${prefix}remove lastonline #8QU8J9LP\``
 				]);
 			return message.util.send({ embed });
 		}
@@ -121,7 +130,7 @@ class StopCommand extends Command {
 		await this.client.storage.stop(data._id, { op: Number(method) });
 		await this.client.cacheHandler.delete(id, { op: Number(method), tag: data.tag });
 		this.delete(id);
-		return message.util.send({ embed: { title: `Successfully disabled **${data.name} (${data.tag})**` } });
+		return message.util.send({ embed: { description: `Successfully removed ${logType[method]} for **${data.name} (${data.tag})**` } });
 	}
 
 	async delete(id) {
