@@ -22,7 +22,7 @@ class StopCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Removes clans or logs from servers.',
+					'Remove clans or logs from the server.',
 					'',
 					'**Available Methods**',
 					'• `all <clanTag>`',
@@ -82,7 +82,7 @@ class StopCommand extends Command {
 				.setColor(this.client.embed(message))
 				.setAuthor('No Method Selected')
 				.setDescription([
-					'Removes clans or logs from servers.',
+					'Remove clans or logs from the server.',
 					'',
 					'**Usage**',
 					`\`${prefix}remove <method> <clanTag>\``,
