@@ -6,10 +6,10 @@ const { Op } = require('../../util/constants');
 const logType = {
 	0: 'Donation Log',
 	1: 'Clan Feed',
-	2: 'Last Online Board',
-	3: 'Clan Embed',
-	4: 'Clan Games Board',
-	5: 'Clan War Log'
+	3: 'Last Online Board',
+	4: 'Clan Embed',
+	5: 'Clan Games Board',
+	6: 'Clan War Log'
 };
 
 class StopCommand extends Command {
