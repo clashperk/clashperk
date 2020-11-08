@@ -1,6 +1,5 @@
 const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
-const { emoji } = require('../../util/emojis');
 const { firestore, mongodb } = require('../../struct/Database');
 const qs = require('querystring');
 const admin = require('firebase-admin');
@@ -101,7 +100,10 @@ class RedeemCommand extends Command {
 			await this.client.patron.refresh();
 			const embed = this.client.util.embed()
 				.setColor(16345172)
-				.setDescription([`**Subscription for ${message.guild.name}**`, `Active ${emoji.authorize}`]);
+				.setDescription([
+					`Patron benefits applied to **${message.guild.name}**`,
+					`Thank you so much for the support ${message.author}`
+				]);
 			return message.util.send({ embed });
 		}
 
@@ -110,7 +112,10 @@ class RedeemCommand extends Command {
 			if (!this.isNew(user, message, patron)) await this.client.patron.refresh();
 			const embed = this.client.util.embed()
 				.setColor(16345172)
-				.setDescription('You\'ve already claimed.');
+				.setDescription([
+					'You\'ve already claimed your patron benefits!',
+					'If you think it\'s wrong, please [contact us](https://discord.gg/ppuppun)'
+				]);
 			return message.util.send({ embed });
 		}
 
@@ -132,7 +137,10 @@ class RedeemCommand extends Command {
 			await this.sync(message.guild.id);
 			const embed = this.client.util.embed()
 				.setColor(16345172)
-				.setDescription([`**Subscription for ${message.guild.name}**`, `Active ${emoji.authorize}`]);
+				.setDescription([
+					`Patron benefits applied to **${message.guild.name}**`,
+					`Thank you so much for the support ${message.author}`
+				]);
 			return message.channel.send({ embed });
 		}
 	}
