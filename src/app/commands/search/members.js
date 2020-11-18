@@ -1,10 +1,11 @@
 const { Command, Flag, Argument } = require('discord-akairo');
+const { Util } = require('discord.js');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
-const { emoji, leagueEmoji } = require('../../util/emojis');
-const { stripIndent } = require('common-tags');
+const { emoji } = require('../../util/emojis');
 const TOKENS = process.env.CLASH_TOKENS.split(',');
 const Excel = require('../../struct/ExcelHandler');
+const { table } = require('table');
 
 class MembersCommand extends Command {
 	constructor() {
@@ -83,19 +84,42 @@ class MembersCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
-		const header = stripIndent(`${emoji.trophy} **\`\u200eTH ${'TAG'.padEnd(10, ' ')} ${'NAME'.padEnd(15, '\u2002')}\`**`);
-		const pages = [
-			this.paginate(townhall ? filter : items, 0, 25)
-				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}\``),
-			this.paginate(townhall ? filter : items, 25, 50)
-				.items.map(member => `${leagueEmoji[member.league]} \`\u200e${this.padStart(member.townHallLevel)} ${member.tag.padEnd(10, '\u2002')} ${member.name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, '\u2002')}\``)
-		];
+		const header = ['TH', 'TAG', 'NAME'];
+		const arr = (townhall ? filter : items)
+			.map(member => [`${member.townHallLevel}`, `${member.tag}`, `${member.name.replace(/\`/g, '\\')}`]);
+		const desc = table([header, ...arr], {
+			border: {
+				bodyLeft: '`\u200e',
+				bodyRight: '\u200f`',
+				bodyJoin: '\u200f`\u200e\u2002`\u200e'
+			},
+			columnDefault: {
+				paddingLeft: 1,
+				paddingRight: 1
+			},
+			columns: {
+				0: {
+					paddingRight: 0
+				},
+				1: {
+					paddingRight: 0,
+					alignment: 'right'
+				},
+				2: {
+					alignment: 'right',
+					paddingLeft: 0
+				}
+			},
+			drawHorizontalLine: () => false
+		});
 
-		if (!pages[1].length) return message.util.send({ embed: embed.setDescription([header, pages[0].join('\n')]) });
+		const pages = Util.splitMessage(desc, { maxLength: Math.floor(desc.length / 2) + 35, prepend: `${desc.split('\n')[0]}\n` });
+
+		if (!pages[1]?.length) return message.util.send({ embed: embed.setDescription(pages[0]) });
 
 		let page = 0;
 		const msg = await message.util.send({
-			embed: embed.setDescription([header, pages[page].join('\n')])
+			embed: embed.setDescription(pages[page])
 				.setFooter(`Page 1/2 (${data.members}/50)`)
 		});
 
@@ -116,7 +140,7 @@ class MembersCommand extends Command {
 				if (page > 1) page = 0;
 
 				await msg.edit({
-					embed: embed.setDescription([header, pages[page].join('\n')])
+					embed: embed.setDescription(pages[page])
 						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
 				});
 				await this.delay(250);
@@ -129,7 +153,7 @@ class MembersCommand extends Command {
 				if (page > 1) page = 0;
 
 				await msg.edit({
-					embed: embed.setDescription([header, pages[page].join('\n')])
+					embed: embed.setDescription(pages[page])
 						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
 				});
 				await this.delay(250);
@@ -142,7 +166,7 @@ class MembersCommand extends Command {
 
 				await collector.stop();
 				return message.channel.send({
-					embed: embed.setDescription([header, pages[page].join('\n')])
+					embed: embed.setDescription(pages[page])
 						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
 				});
 			}

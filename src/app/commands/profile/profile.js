@@ -34,7 +34,7 @@ class ProfileCommand extends Command {
 	}
 
 	async exec(message, { member }) {
-		const data = await this.getProfile(member.id);
+		const player = await this.getProfile(member.id);
 		const clan = await this.getClan(member.id);
 
 		const embed = new MessageEmbed()
@@ -63,7 +63,7 @@ class ProfileCommand extends Command {
 		}
 
 		const otherTags = Resolver.players(member.id);
-		if (!data?.tags?.length && !otherTags?.length) {
+		if (!player?.tags?.length && !otherTags?.length) {
 			embed.setDescription([
 				embed.description,
 				'',
@@ -72,18 +72,21 @@ class ProfileCommand extends Command {
 			return message.util.send({ embed });
 		}
 
-		const tags = new Set([...data?.tags ?? [], ...otherTags]);
+		const tags = new Set([...player?.tags ?? [], ...otherTags]);
 		for (const tag of tags.values()) {
 			index += 1;
 			const res = await fetch(`https://api.clashofclans.com/v1/players/${encodeURIComponent(tag)}`, {
 				method: 'GET',
 				headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
 			});
+			if (res.status === 404) {
+				await mongodb.db('clashperk').collection('linkedusers').updateOne({ user: member.id }, { $pull: { tags: tag } });
+			}
 			if (!res.ok) continue;
-			const data = await res.json();
 
+			const data = await res.json();
 			collection.push({
-				field: `${townHallEmoji[data.townHallLevel]} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)})`,
+				field: `${townHallEmoji[data.townHallLevel]} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}) ${player?.tags?.includes(tag) ? emoji.ok : ''}`,
 				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
 			});
 

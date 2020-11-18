@@ -40,7 +40,7 @@ class DonationBoardCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${data.name} (${data.tag}) ~ ${data.members}/50`, data.badgeUrls.medium);
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
 		let [ds, rs] = [5, 5];
 
@@ -52,7 +52,7 @@ class DonationBoardCommand extends Command {
 		if (sorted[0].donations > 99999) ds = 6;
 		if (sorted[0].donations > 999999) ds = 7;
 
-		const header = `**\`#  ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(17, ' ')}\`**`;
+		const header = `**\`#  ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(16, ' ')}\`**`;
 		const pages = [
 			this.paginate(sorted, 0, 25)
 				.items.map((member, index) => {

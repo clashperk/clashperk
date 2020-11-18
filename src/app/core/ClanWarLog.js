@@ -333,10 +333,10 @@ class ClanWarEvent {
 			const clan = data.clan.tag === cache.tag ? data.clan : data.opponent;
 			const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
 			const embed = new MessageEmbed()
-				.setTitle(`${clan.name} (${clan.tag})`)
+				.setTitle(`\u200e${clan.name} (${clan.tag})`)
 				.setURL(this.clanURL(clan.tag))
 				.setThumbnail(clan.badgeUrls.small)
-				.addField('War Against', `[${Util.escapeMarkdown(opponent.name)} (${opponent.tag})](${this.clanURL(opponent.tag)})`)
+				.addField('War Against', `\u200e[${Util.escapeMarkdown(opponent.name)} (${opponent.tag})](${this.clanURL(opponent.tag)})`)
 				.addField('Team Size', `${data.teamSize}`);
 
 			if (data.state === 'inWar') {
@@ -369,18 +369,18 @@ class ClanWarEvent {
 			const [clanRoster, opponentRoster] = [this.roster(clan.members), this.roster(opponent.members)];
 			if (clanRoster.length + opponentRoster.length > 1000) {
 				embed.addField('Rosters', [
-					`${clan.name}`,
+					`\u200e${clan.name}`,
 					`${this.roster(clan.members, true)}`,
 					'',
-					`${opponent.name}`,
+					`\u200e${opponent.name}`,
 					`${this.roster(opponent.members, true)}`
 				]);
 			} else {
 				embed.addField('Rosters', [
-					`${clan.name}`,
+					`\u200e${clan.name}`,
 					`${clanRoster}`,
 					'',
-					`${opponent.name}`,
+					`\u200e${opponent.name}`,
 					`${opponentRoster}`
 				]);
 			}

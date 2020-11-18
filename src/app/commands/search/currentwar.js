@@ -43,7 +43,7 @@ class CurrentWarCommand extends Command {
 	async exec(message, { data }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
+			.setAuthor(`\u200e${data.name} (${data.tag})`, data.badgeUrls.medium);
 
 		if (data.isWarLogPublic === false) {
 			const res = await this.client.coc.clanWarLeague(data.tag).catch(() => null);
@@ -73,7 +73,7 @@ class CurrentWarCommand extends Command {
 		if (body.state === 'preparation') {
 			embed.setDescription([
 				'**War Against**',
-				`${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
+				`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 				'',
 				'**War State**',
 				'Preparation Day',
@@ -85,7 +85,7 @@ class CurrentWarCommand extends Command {
 		} else if (body.state === 'inWar') {
 			embed.setDescription([
 				'**War Against**',
-				`${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
+				`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 				'',
 				'**War State**',
 				'Battle Day',
@@ -102,7 +102,7 @@ class CurrentWarCommand extends Command {
 		} else if (body.state === 'warEnded') {
 			embed.setDescription([
 				'**War Against**',
-				`${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
+				`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 				'',
 				'**War State**',
 				'War Ended',
@@ -122,10 +122,10 @@ class CurrentWarCommand extends Command {
 			embed.description,
 			'',
 			'**Rosters**',
-			`${Util.escapeMarkdown(body.clan.name)}`,
+			`\u200e${Util.escapeMarkdown(body.clan.name)}`,
 			`${this.count(body.clan.members)}`,
 			'',
-			`${Util.escapeMarkdown(body.opponent.name)}`,
+			`\u200e${Util.escapeMarkdown(body.opponent.name)}`,
 			`${this.count(body.opponent.members)}`
 		]);
 
