@@ -52,25 +52,31 @@ class DonationBoardCommand extends Command {
 		if (sorted[0].donations > 99999) ds = 6;
 		if (sorted[0].donations > 999999) ds = 7;
 
-		const header = `**\`#  ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(16, ' ')}\`**`;
+		const donated = data.memberList.reduce((pre, mem) => mem.donations + pre, 0);
+		const received = data.memberList.reduce((pre, mem) => mem.donationsReceived + pre, 0);
+
+		const header = `**\`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(16, ' ')}\`**`;
 		const pages = [
 			this.paginate(sorted, 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
-					return `\`\u200e${(index + 1).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
+					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
 				}),
 			this.paginate(sorted, 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
-					return `\`\u200e${(index + 26).toString().padStart(2, '0')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
+					return `\`\u200e${(index + 26).toString().padStart(2, ' ')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
 				})
 		];
+
+		const total = `TOTAL: DON ${donated} | REC ${received}`;
 
 		if (!pages[1].length) {
 			return message.util.send({
 				embed: embed.setDescription([
 					header,
-					pages[0].join('\n')
+					pages[0].join('\n'),
+					`\`\u200e${total.padEnd(3 + ds + rs + 18, ' ')} \u200f\``
 				]).setFooter(`Page 1/1 (${data.members}/50)`)
 			});
 		}
@@ -91,8 +97,11 @@ class DonationBoardCommand extends Command {
 		if (!collector || !collector.size) return;
 
 		return message.channel.send({
-			embed: embed.setDescription([header, pages[1].join('\n')])
-				.setFooter(`Page 2/2 (${data.members}/50)`)
+			embed: embed.setFooter(`Page 2/2 (${data.members}/50)`)
+				.setDescription([
+					header, pages[1].join('\n'),
+					`\`\u200e${total.padEnd(3 + ds + rs + 18, ' ')} \u200f\``
+				])
 		});
 	}
 
