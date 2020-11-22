@@ -127,7 +127,7 @@ class ClanGames {
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Clan Games Scoreboard [${clan.members}/50]`,
-				`\`\`\`\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
+				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
 				updated.members.slice(0, 55)
 					.map((m, i) => {
 						const points = this.padStart(m.points || '0');
