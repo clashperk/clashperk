@@ -19,7 +19,7 @@ class ClanGamesCommand extends Command {
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			flags: ['--max']
+			flags: ['--max', '--filter']
 		});
 	}
 
@@ -40,7 +40,12 @@ class ClanGamesCommand extends Command {
 			flag: ['--max']
 		};
 
-		return { data, force };
+		const filter = yield {
+			match: 'flag',
+			flag: ['--filter']
+		};
+
+		return { data, force, filter };
 	}
 
 	cooldown(message) {
@@ -48,7 +53,7 @@ class ClanGamesCommand extends Command {
 		return 3000;
 	}
 
-	async exec(message, { data, force }) {
+	async exec(message, { data, force, filter }) {
 		const clan = await mongodb.db('clashperk').collection('clangames').findOne({ tag: data.tag });
 		if (!clan) {
 			return message.util.send({
@@ -95,10 +100,12 @@ class ClanGamesCommand extends Command {
 				`Clan Games Scoreboard [${data.members}/50]`,
 				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
 				members.slice(0, 55)
+					.filter(d => filter ? d.points > 0 : d.points >= 0)
 					.map((m, i) => {
 						const points = this.padStart(m.points);
 						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
-					}).join('\n'),
+					})
+					.join('\n'),
 				'```'
 			])
 			.setFooter(`Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`, this.client.user.displayAvatarURL());
