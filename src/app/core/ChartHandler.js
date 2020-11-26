@@ -1,8 +1,7 @@
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const { renderChart } = require('./ChartRender');
-const { loadImage } = require('canvas');
+const Chart = require('@clashperk/chartgen');
 
-class Chart {
+class ChartHandler {
 	static async clanActivity(collection = [], color, title) {
 		const colors = ['#266ef7', '#c63304', '#50c878'];
 		const datasets = collection.map((obj, i) => ({
@@ -50,8 +49,7 @@ class Chart {
 			}
 		};
 
-		const buffer = await this.buffer();
-		return renderChart(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, buffer);
+		return Chart.render(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, true);
 	}
 
 	static async playerActivity(collection = [], title) {
@@ -101,8 +99,7 @@ class Chart {
 			}
 		};
 
-		const buffer = await this.buffer();
-		return renderChart(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, buffer);
+		return Chart.render(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, true);
 	}
 
 	static async growth(collection = []) {
@@ -161,16 +158,8 @@ class Chart {
 			}
 		};
 
-		const buffer = await this.buffer();
-		return renderChart(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, buffer);
-	}
-
-	static async buffer() {
-		if (this.raw) return this.raw;
-		this.raw = await loadImage('https://i.imgur.com/ilZtmTU.png');
-		return this.raw;
+		return Chart.render(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, true);
 	}
 }
 
-module.exports = Chart;
-
+module.exports = ChartHandler;
