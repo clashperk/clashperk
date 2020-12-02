@@ -113,7 +113,8 @@ class MembersCommand extends Command {
 			drawHorizontalLine: () => false
 		});
 
-		const pages = Util.splitMessage(desc, { maxLength: Math.floor(desc.length / 2) + 35, prepend: `${desc.split('\n')[0]}\n` });
+		const len = desc.length > 2048 ? desc.length / 2 : desc.length;
+		const pages = Util.splitMessage(desc, { maxLength: Math.floor(len) + 35, prepend: `${desc.split('\n')[0]}\n` });
 
 		if (!pages[1]?.length) return message.util.send({ embed: embed.setDescription(pages[0]) });
 
