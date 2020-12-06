@@ -178,7 +178,7 @@ class CWLAttacksComamnd extends Command {
 							`\u200e${opponent.name} (${opponent.tag})`,
 							'',
 							'**State**',
-							`Battle day ends in ${moment.duration(ends - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
+							`Battle day ends in ${moment.duration(ends - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`,
 							'',
 							`**Attacks - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}**`,
 							`${attacks || 'Nobody Attacked Yet'}`
