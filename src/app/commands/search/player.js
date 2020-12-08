@@ -14,6 +14,14 @@ const roles = {
 	leader: 'Leader'
 };
 
+const weaponLevels = {
+	1: '¹',
+	2: '²',
+	3: '³',
+	4: '⁴',
+	5: '⁵'
+};
+
 class PlayerCommand extends Command {
 	constructor() {
 		super('player', {
@@ -72,13 +80,15 @@ class PlayerCommand extends Command {
 		const clan = data.clan
 			? `**Clan Name**\n${emoji.clan} [${data.clan.name} (${data.clan.tag})](${this.clanURL(data.clan.tag)})\n**Clan Role**\n ${emoji.mem_blue} ${roles[data.role]}\n`
 			: '';
+
+		const weaponLevel = weaponLevels[data?.townHallWeaponLevel] ?? '';
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.league ? data.league.iconUrls.small : `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`)
 			.setDescription([
-				`${townHallEmoji[data.townHallLevel]} **${data.townHallLevel}** ${emoji.xp} **${data.expLevel}** ${emoji.trophy} **${data.trophies}** ${emoji.warstar} **${data.warStars}**`
+				`${townHallEmoji[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${emoji.xp} **${data.expLevel}** ${emoji.trophy} **${data.trophies}** ${emoji.warstar} **${data.warStars}**`
 			]);
 		embed.addField('**Season Stats**', [
 			`**Donated**\n${emoji.troopsdonation} ${data.donations} ${emoji.donated}`,
