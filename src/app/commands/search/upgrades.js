@@ -101,7 +101,7 @@ class UpgradesCommand extends Command {
 						index++;
 						SiegeMachines += `${siegeMachinesEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`\u2002`;
 						if (index === 4) {
-							troopLevels += '#';
+							SiegeMachines += '#';
 							index = 0;
 						}
 					}
@@ -205,19 +205,19 @@ class UpgradesCommand extends Command {
 	}
 
 	padStart(num) {
-		return num.toString().padStart(2, '\u2002');
+		return num.toString().padStart(2, ' ');
 	}
 
 	padEnd_(option, builderHallLevel, troop) {
-		if (!option) return troop.maxLevel.toString().padEnd(2, '\u2002');
+		if (!option) return troop.maxLevel.toString().padEnd(2, ' ');
 		const num = buildertroops.find(t => t.name === troop.name)[builderHallLevel];
-		return num.toString().padEnd(2, '\u2002');
+		return num.toString().padEnd(2, ' ');
 	}
 
 	padEnd(option, townHallLevel, troop) {
-		if (!option) return troop.maxLevel.toString().padEnd(2, '\u2002');
+		if (!option) return troop.maxLevel.toString().padEnd(2, ' ');
 		const num = troops.find(t => t.name === troop.name)[townHallLevel];
-		return num.toString().padEnd(2, '\u2002');
+		return num.toString().padEnd(2, ' ');
 	}
 }
 
