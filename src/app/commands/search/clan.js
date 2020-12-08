@@ -45,7 +45,7 @@ class ClanCommand extends Command {
 
 	async clanRank(tag, clanPoints) {
 		if (clanPoints >= 50000) {
-			const clanRank = await this.client.coc.clanRanks('global').then(() => null);
+			const clanRank = await this.client.coc.clanRanks('global').catch(() => null);
 			if (!clanRank?.ok) return null;
 			const clan = clanRank.items?.find(clan => clan?.tag === tag);
 			if (!clan) return null;
