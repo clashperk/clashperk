@@ -43,6 +43,21 @@ class ClanCommand extends Command {
 		return 3000;
 	}
 
+	async clanRank(tag, clanPoints) {
+		if (clanPoints >= 50000) {
+			const clanRank = await this.client.coc.clanRanks('global').then(() => null);
+			if (!clanRank?.ok) return null;
+			const clan = clanRank.items?.find(clan => clan?.tag === tag);
+			if (!clan) return null;
+
+			return {
+				rank: clan.rank,
+				gain: clan.previousRank - clan.rank
+			};
+		}
+		return null;
+	}
+
 	async exec(message, { data }) {
 		const embed = new MessageEmbed()
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
@@ -63,6 +78,14 @@ class ClanCommand extends Command {
 
 		const leader = data?.memberList?.find(m => m?.role === 'leader');
 
+		const rankInfo = await this.clanRank(data.tag, data.clanPoints);
+
+		const rank = rankInfo
+			? rankInfo.gain > 0
+				? `**Global Rank**\n📈 ${rankInfo.rank} (+${rankInfo.gain})`
+				: `**Global Rank**\n📈 ${rankInfo.rank} (${rankInfo.gain})`
+			: '';
+
 		embed.addField('**General**', [
 			'**Clan Level**',
 			`${emoji.clan} ${data.clanLevel}`,
@@ -73,7 +96,7 @@ class ClanCommand extends Command {
 			'**Leader**',
 			`${emoji.owner} ${leader ? `${Util.escapeMarkdown(leader.name)}` : 'No Leader'}`,
 			'**Location**',
-			`${location}`,
+			`${location}${rank}`,
 			'\u200b\u2002'
 		]);
 
