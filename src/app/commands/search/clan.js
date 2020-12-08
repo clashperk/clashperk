@@ -82,8 +82,8 @@ class ClanCommand extends Command {
 
 		const rank = rankInfo
 			? rankInfo.gain > 0
-				? `**Global Rank**\n📈 #${rankInfo.rank} ${emoji.donated} ${rankInfo.gain}`
-				: `**Global Rank**\n📈 #${rankInfo.rank} ${emoji.donated} ${rankInfo.gain}`
+				? `\n**Global Rank**\n📈 #${rankInfo.rank} ${emoji.donated} ${rankInfo.gain}`
+				: `\n**Global Rank**\n📈 #${rankInfo.rank} ${emoji.donated} ${rankInfo.gain}`
 			: '';
 
 		embed.addField('**General**', [
