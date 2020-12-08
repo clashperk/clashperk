@@ -55,7 +55,7 @@ class LastOnlineCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				'Last-Online Times & Last 24h Activities',
-				`\`\`\`py\n\u200e${'LAST-ON'.padStart(7, ' ')}  📊  ${'NAME'}\n${members
+				`\`\`\`\n\u200e${'LAST-ON'.padStart(7, ' ')}  📊  ${'NAME'}\n${members
 					.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${(m.count > 99 ? 99 : m.count).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n')}`,
 				'```'

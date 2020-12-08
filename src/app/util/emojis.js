@@ -32,7 +32,8 @@ module.exports = {
 		'Wall Wrecker': '<:wallwrecker:696282434278522931>',
 		'Battle Blimp': '<:battleblimp:696282472480112731>',
 		'Stone Slammer': '<:stoneslammer:696282610472714271>',
-		'Siege Barracks': '<:siegebarracks:696282751988400199>'
+		'Siege Barracks': '<:siegebarracks:696282751988400199>',
+		'Log Luncher': '<:LogLauncher:785737986108162048>'
 	},
 
 	builderTroopsEmoji: {
@@ -84,7 +85,8 @@ module.exports = {
 		'Rage Spell': '<:rage:696302044343959572>',
 		'Jump Spell': '<:jump:696302055681425438>',
 		'Freeze Spell': '<:freeze:696302064992780299>',
-		'Clone Spell': '<:clone:696302107950710795>'
+		'Clone Spell': '<:clone:696302107950710795>',
+		'Invisibility Spell': '<:InvSpell:785738168862769152>'
 	},
 
 	darkSpellEmoji: {
