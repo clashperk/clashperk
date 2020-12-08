@@ -3,16 +3,11 @@ const fetch = require('node-fetch');
 
 class CWLWarTags {
 	static async set(tag, warTags, rounds) {
-		const season = [new Date().getFullYear(), new Date().getMonth() + 1].join('-');
+		const season = new Date().toISOString().substring(0, 7);
 		return mongodb.db('clashperk').collection('cwlwartags')
 			.findOneAndUpdate({ tag }, {
-				$set: {
-					tag,
-					season,
-					warTags,
-					rounds,
-					[`attributes.${season}`]: rounds
-				}
+				$set: { tag, season, warTags, rounds },
+				$min: { createdAt: new Date() }
 			}, { upsert: true, returnOriginal: false });
 	}
 
@@ -47,33 +42,6 @@ class CWLWarTags {
 		}
 
 		return this.set(tag, warTags, rounds);
-	}
-
-	static async warUpdate(tag, data) {
-		const db = mongodb.db('clashperk').collection('clanwarhistory');
-		const [set, inc] = [{}, {}];
-		set.name = data.clan.name;
-		set.tag = data.clan.tag;
-		for (const mem of data.clan.members) {
-			const { stars, destructions } = this.reduce(mem.attacks);
-			set[`members.${mem.tag}.tag`] = mem.tag;
-			set[`members.${mem.tag}.name`] = mem.name;
-			set[`mmebers.${mem.tag}.updatedAt`] = new Date();
-			inc[`members.${mem.tag}.stars`] = stars;
-			inc[`members.${mem.tag}.destructions`] = destructions;
-			inc[`members.${mem.tag}.wars`] = 1;
-		}
-
-		return db.updateOne({ tag }, { $set: set, $inc: inc }, { upsert: true });
-	}
-
-	static reduce(attacks = []) {
-		let [stars, destructions] = [0, 0];
-		for (const attack of attacks) {
-			stars += attack.stars;
-			destructions += attack.destructions;
-		}
-		return { stars, destructions };
 	}
 }
 

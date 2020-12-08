@@ -72,11 +72,19 @@ class Database {
 
 			db.collection('clanwars').createIndex({ clan_id: 1 }, { unique: true }),
 
+			db.collection('clanwarstores').createIndex({ 'clan.tag': 1, 'opponent.tag': 1, 'warID': -1 }, { unique: true }),
+
+			db.collection('clanwarstores').createIndex({ preparationStartTime: -1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 }),
+
 			db.collection('clanstores').createIndex({ patron: 1 }),
 
-			db.collection('clangames').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 2505600 }),
+			db.collection('clangames').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 20 * 24 * 60 * 60 }),
 
-			db.collection('clangames').createIndex({ tag: 1 }, { unique: true })
+			db.collection('clangames').createIndex({ tag: 1 }, { unique: true }),
+
+			db.collection('cwlwartags').createIndex({ tag: 1 }, { unique: true }),
+
+			db.collection('cwlwartags').createIndex({ createdAt: 1 }, { expireAfterSeconds: 45 * 24 * 60 * 60 })
 		]);
 	}
 }
