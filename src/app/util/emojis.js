@@ -33,7 +33,7 @@ module.exports = {
 		'Battle Blimp': '<:battleblimp:696282472480112731>',
 		'Stone Slammer': '<:stoneslammer:696282610472714271>',
 		'Siege Barracks': '<:siegebarracks:696282751988400199>',
-		'Log Luncher': '<:LogLauncher:785737986108162048>'
+		'Log Launcher': '<:LogLauncher:785737986108162048>'
 	},
 
 	builderTroopsEmoji: {
@@ -80,7 +80,7 @@ module.exports = {
 	},
 
 	elixirSpellEmoji: {
-		'Lightning Spell': '<:lightning:696301967953231913>',
+		'Lightning Spell': '<:lightning:785740412010364958>',
 		'Healing Spell': '<:healing:696302035913670737>',
 		'Rage Spell': '<:rage:696302044343959572>',
 		'Jump Spell': '<:jump:696302055681425438>',
