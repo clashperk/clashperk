@@ -289,12 +289,11 @@ class ClanWarEvent {
 
 			if (oneRem.length) {
 				const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
-				chunks.map((chunk, i) => embed.addField(i === 0 ? '1 Remaining Attacks' : '\u200e', chunk));
+				chunks.map((chunk, i) => embed.addField(i === 0 ? 'Remaining Attacks' : '\u200e', chunk));
 			}
 		}
 
 		embed.setFooter(`Round #${data.round}`).setTimestamp();
-
 		return embed;
 	}
 
