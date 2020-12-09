@@ -193,10 +193,10 @@ class ClanWarEvent {
 			'',
 			'**Rosters**',
 			`${Util.escapeMarkdown(data.clan.name)}`,
-			`${this.roster(data.clan.members)}`,
+			`${this.roster(data.clan.rosters)}`,
 			'',
 			`${Util.escapeMarkdown(data.opponent.name)}`,
-			`${this.roster(data.opponent.members)}`
+			`${this.roster(data.opponent.rosters)}`
 		]);
 
 		return embed;
@@ -269,10 +269,10 @@ class ClanWarEvent {
 
 		const rosters = [
 			`\u200e${clan.name}`,
-			`${this.getRoster(clan.members)}`,
+			`${this.getRoster(clan.rosters)}`,
 			'',
 			`\u200e${opponent.name}`,
-			`${this.getRoster(opponent.members)}`
+			`${this.getRoster(opponent.rosters)}`
 		];
 
 		if (rosters.join('\n').length > 1024) {
@@ -294,6 +294,8 @@ class ClanWarEvent {
 		}
 
 		embed.setFooter(`Round #${data.round}`).setTimestamp();
+
+		return embed;
 	}
 
 	clanURL(tag) {
