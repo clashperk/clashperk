@@ -25,8 +25,11 @@ class CWLWarTags {
 	static async pushWarTags(tag, rounds) {
 		rounds = rounds.filter(r => !r.warTags.includes('#0'));
 		if (rounds.length !== 7) return null;
+		const season = new Date().toISOString().substring(0, 7);
 		const data = await mongodb.db('clashperk').collection('cwlwartags').findOne({ tag });
+		if (data?.season === season) return null;
 		if (data && new Date().getMonth() <= new Date(data.season).getMonth()) return null;
+
 		const warTags = [];
 		for (const round of rounds) {
 			for (const warTag of round.warTags) {
