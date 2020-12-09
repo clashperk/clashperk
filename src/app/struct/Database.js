@@ -82,9 +82,9 @@ class Database {
 
 			db.collection('clangames').createIndex({ tag: 1 }, { unique: true }),
 
-			db.collection('leaguewartags').createIndex({ tag: 1 }, { unique: true }),
+			db.collection('cwlwartags').createIndex({ tag: 1 }, { unique: true }),
 
-			db.collection('leaguewartags').createIndex({ createdAt: 1 }, { expireAfterSeconds: 45 * 24 * 60 * 60 })
+			db.collection('cwlwartags').createIndex({ createdAt: 1 }, { expireAfterSeconds: 45 * 24 * 60 * 60 })
 		]);
 	}
 }

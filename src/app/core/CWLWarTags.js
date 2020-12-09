@@ -2,13 +2,13 @@ const { mongodb } = require('../struct/Database');
 const fetch = require('node-fetch');
 
 class CWLWarTags {
-	static async set(tag, warTags, rounds) {
+	static async pushToDB(tag, warTags, rounds) {
 		const season = new Date().toISOString().substring(0, 7);
 		return mongodb.db('clashperk').collection('cwlwartags')
-			.findOneAndUpdate({ tag }, {
+			.updateOne({ tag }, {
 				$set: { tag, season, warTags, rounds },
 				$min: { createdAt: new Date() }
-			}, { upsert: true, returnOriginal: false });
+			}, { upsert: true });
 	}
 
 	static async get(tag) {
@@ -44,7 +44,7 @@ class CWLWarTags {
 			}
 		}
 
-		return this.set(tag, warTags, rounds);
+		return this.pushToDB(tag, warTags, rounds);
 	}
 }
 
