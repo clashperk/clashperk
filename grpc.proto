@@ -25,7 +25,9 @@ service RouteGuide {
 
   rpc initOnlineHandler(Data) returns (Data) {}
 
-  rpc initClanGamesHandler(GameData) returns (Data) {}
+  rpc initClanWarHandler(BatchData) returns (Data) {}
+
+  rpc initClanGamesHandler(BatchData) returns (Data) {}
 
 }
 
@@ -38,7 +40,7 @@ message Shards {
   int32 shards = 2;
 }
 
-message GameData {
+message BatchData {
   int32 shardId = 1;
   int32 shards = 2;
   string data = 3;
