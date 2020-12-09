@@ -283,7 +283,7 @@ class ClanWarEvent {
 		}
 
 		if (data.remaining.length) {
-			const oneRem = data.remaining.filter(m => m?.attacks?.length === 1)
+			const oneRem = data.remaining.filter(m => !m.attacks)
 				.sort((a, b) => a.mapPosition - b.mapPosition)
 				.map(m => `\u200e${BLUE_EMOJI[m.mapPosition]} ${m.name}`);
 
