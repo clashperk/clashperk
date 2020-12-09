@@ -58,7 +58,7 @@ class CacheHandler {
 						await this.clanGamesLog.exec(data.tag, data.clan, data.updated);
 						break;
 					case Op.CLAN_WAR_LOG:
-						await this.clanWarLog.exec(data.tag, data.clan);
+						await this.clanWarLog.exec(data.clan.tag, data);
 						break;
 					default:
 						break;
