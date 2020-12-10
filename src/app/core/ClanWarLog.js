@@ -193,10 +193,10 @@ class ClanWarEvent {
 			'',
 			'**Rosters**',
 			`${Util.escapeMarkdown(data.clan.name)}`,
-			`${this.roster(data.clan.rosters)}`,
+			`${this.getRoster(data.clan.rosters)}`,
 			'',
 			`${Util.escapeMarkdown(data.opponent.name)}`,
-			`${this.roster(data.opponent.rosters)}`
+			`${this.getRoster(data.opponent.rosters)}`
 		]);
 
 		return embed;
