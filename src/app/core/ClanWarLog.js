@@ -320,14 +320,14 @@ class ClanWarEvent {
 			return [
 				WarStars.old.repeat(newStars),
 				WarStars.empty.repeat(3 - newStars)
-			].join(' ');
+			].filter(stars => stars.length).join(' ');
 		}
 		if (newStars >= oldStars) {
 			return [
 				WarStars.old.repeat(oldStars),
 				WarStars.new.repeat(newStars - oldStars),
 				WarStars.empty.repeat(3 - newStars)
-			].join(' ');
+			].filter(stars => stars.length).join(' ');
 		}
 	}
 
