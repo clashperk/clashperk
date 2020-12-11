@@ -61,7 +61,7 @@ class ClanWarEvent {
 		}
 
 		if (data.warID === cache.warID) {
-			return this.handleMessage(id, channel, data.messageID, data);
+			return this.handleMessage(id, channel, cache.messageID, data);
 		}
 
 		return this.handleMessage(id, channel, null, data);
