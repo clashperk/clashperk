@@ -168,7 +168,7 @@ class ClanWarEvent {
 				]);
 
 			if (data.recent?.length) {
-				const max = Math.max(...data.recent.map(atk => atk.attacker.attacker.destructionPercentage));
+				const max = Math.max(...data.recent.map(atk => atk.attacker.destructionPercentage));
 				const pad = max === 100 ? 4 : 3;
 				embed.addField('Recent Attacks', [
 					...data.recent.map(({ attacker, defender }) => {
@@ -320,14 +320,14 @@ class ClanWarEvent {
 			return [
 				WarStars.old.repeat(newStars),
 				WarStars.empty.repeat(3 - newStars)
-			].filter(stars => stars.length).join(' ');
+			].filter(stars => stars.length).join('');
 		}
 		if (newStars >= oldStars) {
 			return [
 				WarStars.old.repeat(oldStars),
 				WarStars.new.repeat(newStars - oldStars),
 				WarStars.empty.repeat(3 - newStars)
-			].filter(stars => stars.length).join(' ');
+			].filter(stars => stars.length).join('');
 		}
 	}
 
