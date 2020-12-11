@@ -201,6 +201,12 @@ module.exports = {
 		'Amateur Attacker': '<:amateur_attacker:731494197940715550>'
 	},
 
+	WarStars: {
+		old: '<:FadeStar:786650660564107324>',
+		new: '<:SolidStar:786651437089685544>',
+		empty: '<:EmptyStar:786649196886622209>'
+	},
+
 	emoji: {
 		xp: '<:eXP:706910526373888060>',
 		warstar: '<:warstar:696299067193425951>',

@@ -1,4 +1,4 @@
-const { townHallEmoji, emoji } = require('../util/emojis');
+const { townHallEmoji, emoji, WarStars } = require('../util/emojis');
 const { BLUE_EMOJIS, BROWN_EMOJIS } = require('../util/NumEmojis');
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed, Util, Collection } = require('discord.js');
@@ -166,6 +166,17 @@ class ClanWarEvent {
 					`${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% / ${data.opponent.destructionPercentage.toFixed(2)}%`,
 					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
 				]);
+
+			if (data.recent?.length) {
+				embed.addField('Recent Attacks', [
+					data.recent.map(({ attacker, defender }) => {
+						const name = Util.escapeMarkdown(attacker.name);
+						const stars = this.getStars(attacker.oldStars, attacker.stars);
+						const destruction = Math.forEach(attacker.destructionPercentage).toString().padStart(4, ' ');
+						return `${stars} \`\u200e${destruction}\` ${BLUE_EMOJIS[attacker.mapPosition]} ${name} ${BROWN_EMOJIS[attacker.townHallLevel]} ➡️ ${BLUE_EMOJIS[defender.mapPosition]} ${BROWN_EMOJIS[defender.townHallLevel]}`;
+					})
+				]);
+			}
 			embed.setFooter('Synced').setTimestamp();
 		}
 
@@ -300,6 +311,22 @@ class ClanWarEvent {
 
 	clanURL(tag) {
 		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
+	}
+
+	getStars(oldStars, newStars) {
+		if (oldStars > newStars) {
+			return [
+				WarStars.old.repeat(newStars),
+				WarStars.empty.repeat(3 - newStars)
+			].join(' ');
+		}
+		if (newStars >= oldStars) {
+			return [
+				WarStars.old.repeat(oldStars),
+				WarStars.new.repeat(newStars - oldStars),
+				WarStars.empty.repeat(3 - newStars)
+			].join(' ');
+		}
 	}
 
 	getRoster(townHalls = [], codeblock = false) {
