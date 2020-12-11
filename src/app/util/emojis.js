@@ -202,13 +202,15 @@ module.exports = {
 	},
 
 	WarStars: {
-		old: '<:FadeStar:786650660564107324>',
-		new: '<:SolidStar:786651437089685544>',
-		empty: '<:EmptyStar:786649196886622209>'
+		old: ' <:OldStar:786960157766058004>',
+		new: '<:NewStar:786960156633071627>',
+		empty: '<:EmptyStar:786960134911033405>'
 	},
 
 	emoji: {
-		rightArrow: '<:RightArrow:786923741279682570>',
+		rightArrow: '<:RightArrow:786960050664767498>',
+		redVs: '<:RedVS:786960014338293790>',
+		greenVs: '<:GreenVS:786960013192069150>',
 		xp: '<:eXP:706910526373888060>',
 		warstar: '<:warstar:696299067193425951>',
 		cwlstar: '<:cwlstar:766189691716239360>',
