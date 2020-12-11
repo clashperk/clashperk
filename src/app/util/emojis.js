@@ -208,6 +208,7 @@ module.exports = {
 	},
 
 	emoji: {
+		rightArrow: '<:RightArrow:786923741279682570>',
 		xp: '<:eXP:706910526373888060>',
 		warstar: '<:warstar:696299067193425951>',
 		cwlstar: '<:cwlstar:766189691716239360>',
