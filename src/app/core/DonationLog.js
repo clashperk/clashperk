@@ -1,4 +1,4 @@
-const { leagueEmoji, blueNum, redNum, emoji } = require('../util/emojis');
+const { PLAYER_LEAGUES, blueNum, redNum, emoji } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 const { ObjectId } = require('mongodb');
@@ -52,11 +52,11 @@ class ClanEvent {
 				data.donated.map(m => {
 					if (m.donated > 200) {
 						const [div, mod] = this.divmod(m.donated);
-						const list = [`\u200e${leagueEmoji[m.league]} ${blueNum[div > 900 ? 900 : div]} ${m.name}`];
-						if (mod > 0) return list.concat(`\u200e${leagueEmoji[m.league]} ${blueNum[mod]} ${m.name}`).join('\n');
+						const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${blueNum[div > 900 ? 900 : div]} ${m.name}`];
+						if (mod > 0) return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${blueNum[mod]} ${m.name}`).join('\n');
 						return list.join('\n');
 					}
-					return `\u200e${leagueEmoji[m.league]} ${blueNum[m.donated]} ${m.name}`;
+					return `\u200e${PLAYER_LEAGUES[m.league]} ${blueNum[m.donated]} ${m.name}`;
 				}).join('\n').substring(0, 1024)
 			]);
 		}
@@ -66,11 +66,11 @@ class ClanEvent {
 				data.received.map(m => {
 					if (m.received > 100) {
 						const [div, mod] = this.divmod(m.received);
-						const list = [`\u200e${leagueEmoji[m.league]} ${redNum[div > 900 ? 900 : div]} ${m.name}`];
-						if (mod > 0) return list.concat(`\u200e${leagueEmoji[m.league]} ${redNum[mod]} ${m.name}`).join('\n');
+						const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${redNum[div > 900 ? 900 : div]} ${m.name}`];
+						if (mod > 0) return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${redNum[mod]} ${m.name}`).join('\n');
 						return list.join('\n');
 					}
-					return `\u200e${leagueEmoji[m.league]} ${redNum[m.received]} ${m.name}`;
+					return `\u200e${PLAYER_LEAGUES[m.league]} ${redNum[m.received]} ${m.name}`;
 				}).join('\n').substring(0, 1024)
 			]);
 		}

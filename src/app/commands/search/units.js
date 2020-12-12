@@ -1,8 +1,8 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const Resolver = require('../../struct/Resolver');
-const { troops, buildertroops } = require('../../util/troops.json');
-const { builderTroopsEmoji, heroEmoji, darkTroopsEmoji, elixirTroopsEmoji, siegeMachinesEmoji, elixirSpellEmoji, darkSpellEmoji } = require('../../util/emojis');
+const { BUILDER_TROOPS, HOME_TROOPS } = require('../../util/emojis');
+const RAW_TROOPS_DATA = require('../../util/TroopsInfo');
 
 class UnitsCommand extends Command {
 	constructor() {
@@ -64,170 +64,129 @@ class UnitsCommand extends Command {
 		collector.on('end', () => msg.reactions.removeAll());
 	}
 
-	async embed(data, option) {
-		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`, `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`, `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${data.tag.replace(/#/g, '')}`);
+	chunk(items = [], chunk = 4) {
+		const array = [];
+		for (let i = 0; i < items.length; i += chunk) {
+			array.push(items.slice(i, i + chunk));
+		}
+		return array;
+	}
 
-		let index = 0;
-		let troopLevels = '';
-		data.troops.filter(troop => troop.name in elixirTroopsEmoji).forEach(troop => {
-			if (troop.village === 'home') {
-				index++;
-				if (data.townHallLevel === 13) {
-					troopLevels += `${elixirTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(false, data.townHallLevel, troop)}\u200f\`\u2002`;
-				} else {
-					troopLevels += `${elixirTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`\u2002`;
-				}
-				if (index === 4) {
-					troopLevels += '#';
-					index = 0;
-				}
-			}
-		});
-		if (troopLevels) {
-			embed.setDescription([
-				'\u200e**Elixir Troops**'.padEnd(70, '\u200b \u2002').concat('\u200f \u200e \u200b'),
-				troopLevels.split('#').join('\n')
-			]);
+	async embed(data, option = true) {
+		const embed = new MessageEmbed()
+			.setAuthor(
+				`${data.name} (${data.tag})`,
+				`https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`,
+				`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`
+			);
+
+		const Troops = RAW_TROOPS_DATA.TROOPS
+			.filter(unit => {
+				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > 0;
+				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel - 1] > 0;
+				return Boolean(homeTroops || builderTroops);
+			})
+			.reduce((prev, curr) => {
+				if (curr?.productionBuilding in prev === false) prev[curr?.productionBuilding] = [];
+				prev[curr?.productionBuilding].push(curr);
+				return prev;
+			}, {});
+
+		const titles = {
+			'Barracks': 'Elixir Troops',
+			'Dark Barracks': 'Dark Troops',
+			'Spell Factory': 'Elixier Spells',
+			'Dark Spell Factory': 'Dark Spells',
+			'Workshop': 'Siege Machines',
+			'Builder Hall': 'Builder Base Hero',
+			'Town Hall': 'Heroes',
+			'Builder Barracks': 'Builder Troops'
+		};
+
+		const apiTroops = this.apiTroops(data);
+		const units = [];
+		const indexes = Object.values(titles);
+		for (const [key, value] of Object.entries(Troops)) {
+			const title = titles[key];
+			units.push({
+				index: indexes.indexOf(title),
+				title,
+				units: value
+			});
 		}
 
-		index = 0;
-		let darkTroops = '';
-		data.troops.filter(troop => troop.name in darkTroopsEmoji).forEach(troop => {
-			if (troop.village === 'home') {
-				index++;
-				if (data.townHallLevel === 13) {
-					darkTroops += `${darkTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(false, data.townHallLevel, troop)}\u200f\`\u2002`;
-				} else {
-					darkTroops += `${darkTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`\u2002`;
-				}
-				if (index === 4) {
-					darkTroops += '#';
-					index = 0;
-				}
-			}
-		});
-		if (darkTroops) embed.addField('Dark Troops', darkTroops.split('#').join('\n'));
+		for (const category of units.sort((a, b) => a.index - b.index)) {
+			const unitsArray = category.units.map(
+				unit => {
+					const { maxLevel, level } = apiTroops
+						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) || { maxlevel: 0, level: 0 };
+					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
 
-		index = 0;
-		let SiegeMachines = '';
-		data.troops.filter(troop => troop.name in siegeMachinesEmoji).forEach(troop => {
-			if (troop.village === 'home') {
-				index++;
-				if (data.townHallLevel === 13) {
-					SiegeMachines += `${siegeMachinesEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(false, data.townHallLevel, troop)}\u200f\`\u2002`;
-				} else {
-					SiegeMachines += `${siegeMachinesEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd(option, data.townHallLevel, troop)}\u200f\`\u2002`;
+					return {
+						type: unit.type,
+						village: unit.village,
+						name: unit.name,
+						level,
+						hallMaxLevel: unit.levels[hallLevel - 1],
+						maxLevel
+					};
 				}
-				if (index === 4) {
-					SiegeMachines += '#';
-					index = 0;
-				}
-			}
-		});
-		if (SiegeMachines) embed.addField('Siege Machines', SiegeMachines.split('#').join('\n'));
+			);
 
-		let elixirSpells = '';
-		index = 0;
-		data.spells.filter(spell => spell.name in elixirSpellEmoji).forEach(spell => {
-			if (spell.village === 'home') {
-				index++;
-				if (data.townHallLevel === 13) {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(false, data.townHallLevel, spell)}\u200f\`\u2002`;
-				} else {
-					elixirSpells += `${elixirSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`\u2002`;
-				}
-				if (index === 4) {
-					elixirSpells += '#';
-					index = 0;
-				}
-			}
-		});
-		if (elixirSpells) embed.addField('Elixir Spells', `${elixirSpells.split('#').join('\n')}`);
-
-		let darkSpells = '';
-		index = 0;
-		data.spells.filter(spell => spell.name in darkSpellEmoji).forEach(spell => {
-			if (spell.village === 'home') {
-				index++;
-				if (data.townHallLevel === 13) {
-					darkSpells += `${darkSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(false, data.townHallLevel, spell)}\u200f\`\u2002`;
-				} else {
-					darkSpells += `${darkSpellEmoji[spell.name]} \`\u200e${this.padStart(spell.level)}/${this.padEnd(option, data.townHallLevel, spell)}\u200f\`\u2002`;
-				}
-				if (index === 4) {
-					darkSpells += '#';
-					index = 0;
-				}
-			}
-		});
-		if (darkSpells) embed.addField('Dark Spells', darkSpells.split('#').join('\n'));
-
-		let heroLevels = '';
-		data.heroes.forEach(hero => {
-			if (hero.village === 'home') {
-				if (data.townHallLevel === 13) {
-					heroLevels += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd(false, data.townHallLevel, hero)}\u200f\`\u2002`;
-				} else {
-					heroLevels += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd(option, data.townHallLevel, hero)}\u200f\`\u2002`;
-				}
-			}
-		});
-
-		if (heroLevels) embed.addField('Heroes', heroLevels);
-
-		let builderHero = '';
-		data.heroes.forEach(hero => {
-			if (hero.village === 'builderBase' && data.builderHallLevel) {
-				if (data.builderHallLevel === 9) {
-					builderHero += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd_(false, data.builderHallLevel, hero)}\u200f\`\u2002`;
-				} else {
-					builderHero += `${heroEmoji[hero.name]} \`\u200e${this.padStart(hero.level)}/${this.padEnd_(option, data.builderHallLevel, hero)}\u200f\`\u2002`;
-				}
-			}
-		});
-
-		if (builderHero) embed.addField('Buider Base Hero', builderHero);
-
-		let builderTroops = '';
-		index = 0;
-		data.troops.filter(troop => troop.name in builderTroopsEmoji).forEach(troop => {
-			if (troop.village === 'builderBase' && data.builderHallLevel) {
-				index++;
-				if (data.builderHallLevel === 9) {
-					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(false, data.builderHallLevel, troop)}\u200f\`\u2002`;
-				} else {
-					builderTroops += `${builderTroopsEmoji[troop.name]} \`\u200e${this.padStart(troop.level)}/${this.padEnd_(option, data.builderHallLevel, troop)}\u200f\`\u2002`;
-				}
-				if (index === 4) {
-					builderTroops += '#';
-					index = 0;
-				}
-			}
-		});
-		if (builderTroops) embed.addField('Builder Base Troops', builderTroops.split('#').join('\n'));
+			embed.addField(
+				category.title,
+				this.chunk(unitsArray)
+					.map(
+						chunks => chunks.map(unit => {
+							const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+							const level = this.padStart(unit.level);
+							const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
+							return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
+						}).join(' ')
+					)
+					.join('\n')
+			);
+		}
 
 		return embed;
 	}
 
-	async delay(ms) {
-		return new Promise(res => setTimeout(res, ms));
+	padEnd(num) {
+		return num.toString().padEnd(2, ' ');
 	}
 
 	padStart(num) {
 		return num.toString().padStart(2, ' ');
 	}
 
-	padEnd_(option, builderHallLevel, troop) {
-		if (!option) return troop.maxLevel.toString().padEnd(2, ' ');
-		const num = buildertroops.find(t => t.name === troop.name)[builderHallLevel];
-		return num.toString().padEnd(2, ' ');
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
 	}
 
-	padEnd(option, townHallLevel, troop) {
-		if (!option) return troop.maxLevel.toString().padEnd(2, ' ');
-		const num = troops.find(t => t.name === troop.name)[townHallLevel];
-		return num.toString().padEnd(2, ' ');
+	apiTroops(data) {
+		return [
+			...data.troops.map(u => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'troop',
+				village: u.village
+			})),
+			...data.heroes.map(u => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'hero',
+				village: u.village
+			})),
+			...data.spells.map(u => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'spell',
+				village: u.village
+			}))
+		];
 	}
 }
 

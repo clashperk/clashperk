@@ -1,7 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
-const { townHallEmoji, emoji } = require('../../util/emojis');
+const { TOWN_HALLS, emoji } = require('../../util/emojis');
 const { stripIndent } = require('common-tags');
 const { Util } = require('discord.js');
 const TOKENS = process.env.CLASH_TOKENS.split(',');
@@ -79,12 +79,12 @@ class WarWeightCommand extends Command {
 			this.paginate(memberList, 0, 25)
 				.items.map(member => {
 					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 15).replace(/\`/g, '\\'))}\``;
+					return `${TOWN_HALLS[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 15).replace(/\`/g, '\\'))}\``;
 				}),
 			this.paginate(memberList, 25, 50)
 				.items.map(member => {
 					const heroes = this.heroes(member.heroes).map(hero => this.padStart(hero.level)).join(' ');
-					return `${townHallEmoji[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 15).replace(/\`/g, '\\'))}\``;
+					return `${TOWN_HALLS[member.townHallLevel]}\`\u200e ${heroes}  ${this.padEnd(member.name.substring(0, 15).replace(/\`/g, '\\'))}\``;
 				})
 		];
 

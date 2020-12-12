@@ -2,7 +2,7 @@ const { Command } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const fetch = require('node-fetch');
 const { mongodb } = require('../../struct/Database');
-const { emoji, townHallEmoji, heroEmoji } = require('../../util/emojis');
+const { emoji, TOWN_HALLS, HEROES } = require('../../util/emojis');
 const Resolver = require('../../struct/Resolver');
 const moment = require('moment');
 
@@ -86,7 +86,7 @@ class ProfileCommand extends Command {
 
 			const data = await res.json();
 			collection.push({
-				field: `${townHallEmoji[data.townHallLevel]} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}) ${player?.tags?.includes(tag) ? emoji.ok : ''}`,
+				field: `${TOWN_HALLS[data.townHallLevel]} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}) ${player?.tags?.includes(tag) ? emoji.ok : ''}`,
 				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
 			});
 
@@ -112,7 +112,7 @@ class ProfileCommand extends Command {
 	heroes(data) {
 		if (!data.heroes) return '';
 		return data.heroes.filter(hero => hero.village === 'home')
-			.map(hero => `${heroEmoji[hero.name]} ${hero.level}`).join(' ');
+			.map(hero => `${HEROES[hero.name]} ${hero.level}`).join(' ');
 	}
 
 	async getProfile(id) {

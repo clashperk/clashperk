@@ -1,7 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
 const fetch = require('node-fetch');
 const Resolver = require('../../struct/Resolver');
-const { emoji, townHallEmoji } = require('../../util/emojis');
+const { emoji, TOWN_HALLS } = require('../../util/emojis');
 const { Util } = require('discord.js');
 const TOKENS = process.env.CLASH_TOKENS.split(',');
 
@@ -76,7 +76,7 @@ class CWLTopCommand extends Command {
 					.map(member => {
 						const name = this.padEnd(member.name);
 						const star = this.padStart(member.cwlStar.toString());
-						return `${townHallEmoji[member.townHallLevel]}\`\u200e ${star}  ${name.replace(/\`/g, '\\')}\``;
+						return `${TOWN_HALLS[member.townHallLevel]}\`\u200e ${star}  ${name.replace(/\`/g, '\\')}\``;
 					})
 					.join('\n')
 			]);

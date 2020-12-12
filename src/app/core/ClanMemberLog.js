@@ -1,4 +1,4 @@
-const { townHallEmoji, emoji, leagueEmoji, heroEmoji } = require('../util/emojis');
+const { TOWN_HALLS, emoji, PLAYER_LEAGUES, HEROES } = require('../util/emojis');
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed } = require('discord.js');
 const { ObjectId } = require('mongodb');
@@ -74,7 +74,7 @@ class PlayerEvent {
 		if (item.mode === 'LEFT') {
 			embed.setFooter(`Left ${data.clan.name}`, data.clan.badge);
 			embed.setDescription([
-				`${townHallEmoji[member.townHallLevel]} **${member.townHallLevel}**`,
+				`${TOWN_HALLS[member.townHallLevel]} **${member.townHallLevel}**`,
 				`${emoji.xp} **${member.expLevel}**`,
 				`${emoji.troopsdonation} **${item.donated}**${emoji.donated} **${item.received}**${emoji.received}`
 			].join(' '));
@@ -85,10 +85,10 @@ class PlayerEvent {
 
 			embed.setFooter(`Joined ${data.clan.name}`, data.clan.badge);
 			embed.setDescription([
-				`${townHallEmoji[member.townHallLevel]}**${member.townHallLevel}**`,
+				`${TOWN_HALLS[member.townHallLevel]}**${member.townHallLevel}**`,
 				`${this.formatHeroes(member)}`,
 				`${emoji.warstar}**${member.warStars}**`,
-				`${leagueEmoji[member.league ? member.league.id : 29000000]}**${member.trophies}**`
+				`${PLAYER_LEAGUES[member.league ? member.league.id : 29000000]}**${member.trophies}**`
 			].join(' '));
 
 			if (flag) {
@@ -115,8 +115,8 @@ class PlayerEvent {
 			const heroes = member.heroes.filter(({ village }) => village === 'home');
 			return heroes.length
 				? heroes.length > 3
-					? heroes.map(hero => `${heroEmoji[hero.name]}**${hero.level}**`).join(' ')
-					: `${emoji.xp}**${member.expLevel}** ${heroes.map(hero => `${heroEmoji[hero.name]}**${hero.level}**`).join(' ')}`
+					? heroes.map(hero => `${HEROES[hero.name]}**${hero.level}**`).join(' ')
+					: `${emoji.xp}**${member.expLevel}** ${heroes.map(hero => `${HEROES[hero.name]}**${hero.level}**`).join(' ')}`
 				: `${emoji.xp} **${member.expLevel}**`;
 		}
 

@@ -5,7 +5,7 @@ const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
 const { leagueId } = require('../../util/constants');
 const ms = require('ms');
-const { emoji, townHallEmoji, heroEmoji, leagueEmoji } = require('../../util/emojis');
+const { emoji, TOWN_HALLS, HEROES, PLAYER_LEAGUES } = require('../../util/emojis');
 
 const roles = {
 	member: 'Member',
@@ -88,7 +88,7 @@ class PlayerCommand extends Command {
 			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.league ? data.league.iconUrls.small : `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`)
 			.setDescription([
-				`${townHallEmoji[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${emoji.xp} **${data.expLevel}** ${emoji.trophy} **${data.trophies}** ${emoji.warstar} **${data.warStars}**`
+				`${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${emoji.xp} **${data.expLevel}** ${emoji.trophy} **${data.trophies}** ${emoji.warstar} **${data.warStars}**`
 			]);
 		embed.addField('**Season Stats**', [
 			`**Donated**\n${emoji.troopsdonation} ${data.donations} ${emoji.donated}`,
@@ -98,7 +98,7 @@ class PlayerCommand extends Command {
 			'\u200b\u2002'
 		]);
 		embed.addField('**Other Stats**', [
-			`**Best Trophies**\n${leagueEmoji[leagueId(data.bestTrophies)]} ${data.bestTrophies}`,
+			`**Best Trophies**\n${PLAYER_LEAGUES[leagueId(data.bestTrophies)]} ${data.bestTrophies}`,
 			`${clan}**Last Seen**\n${emoji.clock_small} ${lastSeen}`,
 			'\u200b\u2002'
 		]);
@@ -119,7 +119,7 @@ class PlayerCommand extends Command {
 		]);
 		embed.addField('**Heroes**', [
 			data?.heroes?.filter(hero => hero.village === 'home')
-				.map(hero => `${heroEmoji[hero.name]} ${hero.level}`)
+				.map(hero => `${HEROES[hero.name]} ${hero.level}`)
 				.join(' ') || `${emoji.wrong} None`
 		]);
 

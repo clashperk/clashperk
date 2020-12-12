@@ -1,6 +1,6 @@
 const { Command, Argument, Flag } = require('discord-akairo');
 const { mongodb } = require('../../struct/Database');
-const { emoji, CWLEmoji, townHallEmoji, BLUE_EMOJI } = require('../../util/emojis');
+const { emoji, CWL_LEAGUES, TOWN_HALLS, BLUE_EMOJI } = require('../../util/emojis');
 const { Op } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
 const { Util } = require('discord.js');
@@ -175,10 +175,10 @@ class ClanEmbedCommand extends Command {
 				`${data.warFrequency.toLowerCase() === 'morethanonceperweek'
 					? '🎟️ More Than Once Per Week'
 					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`} ${'🏅'} ${data.warWinStreak}`,
-				'**War League**', `${CWLEmoji[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
+				'**War League**', `${CWL_LEAGUES[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
 			])
 			.addField('Town Halls', [
-				townHalls.slice(0, 7).map(th => `${townHallEmoji[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ')
+				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ')
 			])
 			.setFooter('Synced', this.client.user.displayAvatarURL())
 			.setTimestamp();

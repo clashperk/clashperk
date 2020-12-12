@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const { Inhibitor } = require('discord-akairo');
 
 class DeveloperMode extends Inhibitor {

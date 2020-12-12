@@ -1,6 +1,6 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed, Util } = require('discord.js');
-const { emoji, CWLEmoji, clanLabelEmoji } = require('../../util/emojis');
+const { emoji, CWL_LEAGUES, CLAN_LABELS } = require('../../util/emojis');
 const Resolver = require('../../struct/Resolver');
 
 const clanTypes = {
@@ -106,7 +106,7 @@ class ClanCommand extends Command {
 			'**Clan Type**',
 			`⚙️ ${clanTypes[data.type]}`,
 			'**Clan Labels**',
-			`${data?.labels?.length ? data.labels.map(d => `${clanLabelEmoji[d.name]} ${d.name}`).join('\n') : `${emoji.wrong} None`}`,
+			`${data?.labels?.length ? data.labels.map(d => `${CLAN_LABELS[d.name]} ${d.name}`).join('\n') : `${emoji.wrong} None`}`,
 			'\u200b\u2002'
 		]);
 
@@ -122,7 +122,7 @@ class ClanCommand extends Command {
 				? '🎟️ More Than Once Per Week'
 				: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`,
 			'**War League**',
-			`${CWLEmoji[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
+			`${CWL_LEAGUES[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
 		]);
 
 		return message.util.send({ embed });

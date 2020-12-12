@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const moment = require('moment');
 require('moment-duration-format');
 const Resolver = require('../../struct/Resolver');
-const { emoji, townHallEmoji } = require('../../util/emojis');
+const { emoji, TOWN_HALLS } = require('../../util/emojis');
 
 class CurrentWarCommand extends Command {
 	constructor() {
@@ -144,7 +144,7 @@ class CurrentWarCommand extends Command {
 			.sort((a, b) => b.level - a.level);
 
 		return this.chunk(townHalls)
-			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
+			.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} \`${th.total.toString().padStart(2, '0')}\``)
 				.join(' '))
 			.join('\n');
 	}

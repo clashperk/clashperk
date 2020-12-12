@@ -1,5 +1,5 @@
-const { townHallEmoji, emoji, WarStars } = require('../util/emojis');
-const { BLUE_EMOJIS, BROWN_EMOJIS } = require('../util/NumEmojis');
+const { TOWN_HALLS, emoji, WarStars } = require('../util/emojis');
+const { CYAN_NUMBERS, BROWN_NUMBERS } = require('../util/NumEmojis');
 const { mongodb } = require('../struct/Database');
 const { MessageEmbed, Util, Collection } = require('discord.js');
 const { ObjectId } = require('mongodb');
@@ -175,7 +175,7 @@ class ClanWarEvent {
 						const name = Util.escapeMarkdown(attacker.name);
 						const stars = this.getStars(attacker.oldStars, attacker.stars);
 						const destruction = Math.floor(attacker.destructionPercentage).toString().concat('%');
-						return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${BLUE_EMOJIS[attacker.mapPosition]} ${name} ${BROWN_EMOJIS[attacker.townHallLevel]} ${emoji.rightArrow} ${BLUE_EMOJIS[defender.mapPosition]} ${BROWN_EMOJIS[defender.townHallLevel]}`;
+						return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${CYAN_NUMBERS[attacker.mapPosition]} ${name} ${BROWN_NUMBERS[attacker.townHallLevel]} ${emoji.rightArrow} ${CYAN_NUMBERS[defender.mapPosition]} ${BROWN_NUMBERS[defender.townHallLevel]}`;
 					})
 				]);
 			}
@@ -227,10 +227,10 @@ class ClanWarEvent {
 			]);
 		const twoRem = data.remaining.filter(m => !m.attacks)
 			.sort((a, b) => a.mapPosition - b.mapPosition)
-			.map(m => `\u200e${BLUE_EMOJIS[m.mapPosition]} ${m.name}`);
+			.map(m => `\u200e${CYAN_NUMBERS[m.mapPosition]} ${m.name}`);
 		const oneRem = data.remaining.filter(m => m?.attacks?.length === 1)
 			.sort((a, b) => a.mapPosition - b.mapPosition)
-			.map(m => `\u200e${BLUE_EMOJIS[m.mapPosition]} ${m.name}`);
+			.map(m => `\u200e${CYAN_NUMBERS[m.mapPosition]} ${m.name}`);
 
 		if (twoRem.length) {
 			const chunks = Util.splitMessage(twoRem.join('\n'), { maxLength: 1000 });
@@ -299,7 +299,7 @@ class ClanWarEvent {
 		if (data.remaining.length) {
 			const oneRem = data.remaining
 				.sort((a, b) => a.mapPosition - b.mapPosition)
-				.map(m => `\u200e${BLUE_EMOJIS[m.mapPosition]} ${m.name}`);
+				.map(m => `\u200e${CYAN_NUMBERS[m.mapPosition]} ${m.name}`);
 
 			if (oneRem.length) {
 				const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
@@ -336,7 +336,7 @@ class ClanWarEvent {
 			.map(chunks => {
 				const list = chunks.map(th => {
 					const total = `\`\u200e${th.total.toString().padStart(2, ' ')}\``;
-					return `${townHallEmoji[th.level]} ${codeblock ? total : BROWN_EMOJIS[th.total]}`;
+					return `${TOWN_HALLS[th.level]} ${codeblock ? total : BROWN_NUMBERS[th.total]}`;
 				});
 				return list.join(' ');
 			}).join('\n');

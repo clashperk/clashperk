@@ -4,7 +4,7 @@ const moment = require('moment');
 const { MessageEmbed } = require('discord.js');
 const { status } = require('../../util/constants');
 const Resolver = require('../../struct/Resolver');
-const { emoji, townHallEmoji, BLUE_EMOJI } = require('../../util/emojis');
+const { emoji, TOWN_HALLS, BLUE_EMOJI } = require('../../util/emojis');
 const CWL = require('../../core/CWLWarTags');
 
 class CWLRoundComamnd extends Command {
@@ -258,7 +258,7 @@ class CWLRoundComamnd extends Command {
 			.sort((a, b) => b.level - a.level);
 
 		return this.chunk(townHalls)
-			.map(chunks => chunks.map(th => `${townHallEmoji[th.level]} ${BLUE_EMOJI[th.total]}`)
+			.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${BLUE_EMOJI[th.total]}`)
 				.join(' '))
 			.join('\n');
 	}

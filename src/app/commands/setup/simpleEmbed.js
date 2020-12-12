@@ -1,5 +1,5 @@
 const { Command, Flag } = require('discord-akairo');
-const { emoji, CWLEmoji, BLUE_EMOJI, townHallEmoji } = require('../../util/emojis');
+const { emoji, CWL_LEAGUES, BLUE_EMOJI, TOWN_HALLS } = require('../../util/emojis');
 const Resolver = require('../../struct/Resolver');
 
 class ClanEmbedCommand extends Command {
@@ -92,10 +92,10 @@ class ClanEmbedCommand extends Command {
 				`${data.warFrequency.toLowerCase() === 'morethanonceperweek'
 					? '🎟️ More Than Once Per Week'
 					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`} ${'🏅'} ${data.warWinStreak}`,
-				'**War League**', `${CWLEmoji[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
+				'**War League**', `${CWL_LEAGUES[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
 			])
 			.addField('Town Halls', [
-				townHalls.slice(0, 7).map(th => `${townHallEmoji[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ')
+				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ')
 			])
 			.setFooter('Synced', this.client.user.displayAvatarURL())
 			.setTimestamp();

@@ -1,56 +1,132 @@
+const HOME_HEROES = {
+	'Barbarian King': '<:barbarianking:696305370682884111>',
+	'Archer Queen': '<:archerqueen:696305403046133780>',
+	'Grand Warden': '<:grandwarden:696305417994764298>',
+	'Royal Champion': '<:royalchampion:706899855703933037>'
+};
+
+const ELIXIER_TROOPS = {
+	'Barbarian': '<:barbarian:696280898122809344>',
+	'Archer': '<:archer:696280941005504592>',
+	'Giant': '<:giant:696280991697731585>',
+	'Goblin': '<:goblin:696281044764327966>',
+	'Wall Breaker': '<:wallbreaker:696281102637334539>',
+	'Balloon': '<:balloon:696281155250683915>',
+	'Wizard': '<:wizard:696281232971137084>',
+	'Healer': '<:healer:696281319394639982>',
+	'Dragon': '<:dragon:696281449820848158>',
+	'P.E.K.K.A': '<:pekka:696281471127912468>',
+	'Baby Dragon': '<:babydragon:696281500018278400>',
+	'Miner': '<:miner:696281535111757895>',
+	'Electro Dragon': '<:electrodragon:696281556930527352>',
+	'Yeti': '<:yeti:696281814293282857>'
+};
+
+const DARK_ELIXIER_TROOPS = {
+	'Minion': '<:minion:696281875794231326>',
+	'Hog Rider': '<:hogrider:696281961257238579>',
+	'Valkyrie': '<:valkyrie:696282003158597662>',
+	'Golem': '<:golem:696282074788659250>',
+	'Witch': '<:witch:696282143508267068>',
+	'Lava Hound': '<:lavahound:696282183832305685>',
+	'Bowler': '<:bowler:696282213360074782>',
+	'Ice Golem': '<:icegolem:696282324798799892>',
+	'Headhunter': '<:headhunter:724650414066106459>'
+};
+
+const SEIGE_MACHINES = {
+	'Wall Wrecker': '<:wallwrecker:696282434278522931>',
+	'Battle Blimp': '<:battleblimp:696282472480112731>',
+	'Stone Slammer': '<:stoneslammer:696282610472714271>',
+	'Siege Barracks': '<:siegebarracks:696282751988400199>',
+	'Log Launcher': '<:LogLauncher:785737986108162048>'
+};
+
+const ELIXIER_SPELLS = {
+	'Lightning Spell': '<:lightning:785740412010364958>',
+	'Healing Spell': '<:healing:696302035913670737>',
+	'Rage Spell': '<:rage:696302044343959572>',
+	'Jump Spell': '<:jump:696302055681425438>',
+	'Freeze Spell': '<:freeze:696302064992780299>',
+	'Clone Spell': '<:clone:696302107950710795>',
+	'Invisibility Spell': '<:invspell:787186410032463882>'
+};
+
+const DARK_SPELLS = {
+	'Poison Spell': '<:poison:696302119434846231>',
+	'Earthquake Spell': '<:earthquake:696302170957414460>',
+	'Haste Spell': '<:haste:696302178763276348>',
+	'Skeleton Spell': '<:skeleton:696302204348530698>',
+	'Bat Spell': '<:batspell:696303291176583198>'
+};
+
+const BUILDER_ELIXIR_TROOPS = {
+	'Raged Barbarian': '<:ragedbarbarian:696283193426575390>',
+	'Sneaky Archer': '<:sneakyarcher:696283216687923223>',
+	'Boxer Giant': '<:boxergiant:696283264968556555>',
+	'Beta Minion': '<:betaminion:696283283910295552>',
+	'Bomber': '<:bomber:696283305493921842>',
+	'Baby Dragon': '<:babydragon:696281500018278400>',
+	'Cannon Cart': '<:cannoncart:696283381654093854>',
+	'Night Witch': '<:nightwitch:696283537145462814>',
+	'Drop Ship': '<:dropship:696283560373387305>',
+	'Super P.E.K.K.A': '<:superpekka:696283614891081769>',
+	'Hog Glider': '<:hogglider:696289358780563489>'
+};
+
+const BUILDER_HEROES = {
+	'Battle Machine': '<:warmachine:696305434570522665>'
+};
+
 module.exports = {
-	elixirTroopsEmoji: {
-		'Barbarian': '<:barbarian:696280898122809344>',
-		'Archer': '<:archer:696280941005504592>',
-		'Giant': '<:giant:696280991697731585>',
-		'Goblin': '<:goblin:696281044764327966>',
-		'Wall Breaker': '<:wallbreaker:696281102637334539>',
-		'Balloon': '<:balloon:696281155250683915>',
-		'Wizard': '<:wizard:696281232971137084>',
-		'Healer': '<:healer:696281319394639982>',
-		'Dragon': '<:dragon:696281449820848158>',
-		'P.E.K.K.A': '<:pekka:696281471127912468>',
-		'Baby Dragon': '<:babydragon:696281500018278400>',
-		'Miner': '<:miner:696281535111757895>',
-		'Electro Dragon': '<:electrodragon:696281556930527352>',
-		'Yeti': '<:yeti:696281814293282857>'
+	HEROES: {
+		...HOME_HEROES,
+		...BUILDER_HEROES
 	},
 
-	darkTroopsEmoji: {
-		'Minion': '<:minion:696281875794231326>',
-		'Hog Rider': '<:hogrider:696281961257238579>',
-		'Valkyrie': '<:valkyrie:696282003158597662>',
-		'Golem': '<:golem:696282074788659250>',
-		'Witch': '<:witch:696282143508267068>',
-		'Lava Hound': '<:lavahound:696282183832305685>',
-		'Bowler': '<:bowler:696282213360074782>',
-		'Ice Golem': '<:icegolem:696282324798799892>',
-		'Headhunter': '<:headhunter:724650414066106459>'
+	HOME_TROOPS: {
+		...HOME_HEROES,
+		...ELIXIER_TROOPS,
+		...DARK_ELIXIER_TROOPS,
+		...SEIGE_MACHINES,
+		...ELIXIER_SPELLS,
+		...DARK_SPELLS
 	},
 
-	siegeMachinesEmoji: {
-		'Wall Wrecker': '<:wallwrecker:696282434278522931>',
-		'Battle Blimp': '<:battleblimp:696282472480112731>',
-		'Stone Slammer': '<:stoneslammer:696282610472714271>',
-		'Siege Barracks': '<:siegebarracks:696282751988400199>',
-		'Log Launcher': '<:LogLauncher:785737986108162048>'
+	BUILDER_TROOPS: {
+		...BUILDER_ELIXIR_TROOPS,
+		...BUILDER_HEROES
 	},
 
-	builderTroopsEmoji: {
-		'Raged Barbarian': '<:ragedbarbarian:696283193426575390>',
-		'Sneaky Archer': '<:sneakyarcher:696283216687923223>',
-		'Boxer Giant': '<:boxergiant:696283264968556555>',
-		'Beta Minion': '<:betaminion:696283283910295552>',
-		'Bomber': '<:bomber:696283305493921842>',
-		'Baby Dragon': '<:babydragon:696281500018278400>',
-		'Cannon Cart': '<:cannoncart:696283381654093854>',
-		'Night Witch': '<:nightwitch:696283537145462814>',
-		'Drop Ship': '<:dropship:696283560373387305>',
-		'Super P.E.K.K.A': '<:superpekka:696283614891081769>',
-		'Hog Glider': '<:hogglider:696289358780563489>'
+	TOWN_HALLS: {
+		1: '<:townhall1:696304616173993994>',
+		2: '<:townhall2:696304646771179540>',
+		3: '<:townhall3:696304661061173289>',
+		4: '<:townhall4:696304680468348968>',
+		5: '<:townhall5:696304696360435742>',
+		6: '<:townhall6:696304709144674315>',
+		7: '<:townhall7:696304727465394176>',
+		8: '<:townhall8:696304744414576640>',
+		9: '<:townhall9:696304757496610856>',
+		10: '<:townhall10:696304773225250858>',
+		11: '<:townhall11:696304807723663400>',
+		12: '<:townhall12:766206520492818482>',
+		13: '<:townhall13:766207117103071242>'
 	},
 
-	leagueEmoji: {
+	BUILDER_HALLS: {
+		1: '<:builderhall1:696304006590365705>',
+		2: '<:builderhall2:696304029872947211>',
+		3: '<:builderhall3:696304259297181756>',
+		4: '<:builderhall4:696304286233002035>',
+		5: '<:builderhall5:696304314897006662>',
+		6: '<:builderhall6:696304332068618320>',
+		7: '<:builderhall7:696304359209959494>',
+		8: '<:builderhall8:696304386183397396>',
+		9: '<:builderhall9:766206733541572618>'
+	},
+
+	PLAYER_LEAGUES: {
 		29000000: '<:no_league:696307595924996107>',
 		29000001: '<:bronzeone:696300871188742154>',
 		29000002: '<:bronzetwo:696300909218627614>',
@@ -79,68 +155,14 @@ module.exports = {
 		29000025: '<:legend:696301773513818162>'
 	},
 
-	elixirSpellEmoji: {
-		'Lightning Spell': '<:lightning:785740412010364958>',
-		'Healing Spell': '<:healing:696302035913670737>',
-		'Rage Spell': '<:rage:696302044343959572>',
-		'Jump Spell': '<:jump:696302055681425438>',
-		'Freeze Spell': '<:freeze:696302064992780299>',
-		'Clone Spell': '<:clone:696302107950710795>',
-		'Invisibility Spell': '<:InvSpell:785738168862769152>'
-	},
-
-	darkSpellEmoji: {
-		'Poison Spell': '<:poison:696302119434846231>',
-		'Earthquake Spell': '<:earthquake:696302170957414460>',
-		'Haste Spell': '<:haste:696302178763276348>',
-		'Skeleton Spell': '<:skeleton:696302204348530698>',
-		'Bat Spell': '<:batspell:696303291176583198>'
-	},
-
-	townHallEmoji: {
-		1: '<:townhall1:696304616173993994>',
-		2: '<:townhall2:696304646771179540>',
-		3: '<:townhall3:696304661061173289>',
-		4: '<:townhall4:696304680468348968>',
-		5: '<:townhall5:696304696360435742>',
-		6: '<:townhall6:696304709144674315>',
-		7: '<:townhall7:696304727465394176>',
-		8: '<:townhall8:696304744414576640>',
-		9: '<:townhall9:696304757496610856>',
-		10: '<:townhall10:696304773225250858>',
-		11: '<:townhall11:696304807723663400>',
-		12: '<:townhall12:766206520492818482>',
-		13: '<:townhall13:766207117103071242>'
-	},
-
-	builderHallEmoji: {
-		1: '<:builderhall1:696304006590365705>',
-		2: '<:builderhall2:696304029872947211>',
-		3: '<:builderhall3:696304259297181756>',
-		4: '<:builderhall4:696304286233002035>',
-		5: '<:builderhall5:696304314897006662>',
-		6: '<:builderhall6:696304332068618320>',
-		7: '<:builderhall7:696304359209959494>',
-		8: '<:builderhall8:696304386183397396>',
-		9: '<:builderhall9:766206733541572618>'
-	},
-
-	starEmoji: {
+	ACHIEVEMENT_STARS: {
 		0: '<:zerostar:696294293782003722>',
 		1: '<:onestar:696294317932675122>',
 		2: '<:twostar:696294341186158593>',
 		3: '<:threestar:696294365663985674>'
 	},
 
-	heroEmoji: {
-		'Barbarian King': '<:barbarianking:696305370682884111>',
-		'Archer Queen': '<:archerqueen:696305403046133780>',
-		'Grand Warden': '<:grandwarden:696305417994764298>',
-		'Battle Machine': '<:warmachine:696305434570522665>',
-		'Royal Champion': '<:royalchampion:706899855703933037>'
-	},
-
-	CWLEmoji: {
+	CWL_LEAGUES: {
 		'Champion League I': '<:champion_1:717735571933364334>',
 		'Champion League II': '<:champion_2:717735583962759228>',
 		'Champion League III': '<:champion_3:717735599184019598>',
@@ -161,7 +183,7 @@ module.exports = {
 		'Bronze League III': '<:bronze_3:717735755815976981>'
 	},
 
-	clanLabelEmoji: {
+	CLAN_LABELS: {
 		'Clan Wars': '<:clan_wars:731494209449885738>',
 		'Clan War League': '<:clan_war_league:731494200205639750>',
 		'Trophy Pushing': '<:trophy_pushing:731494210703720571>',
@@ -180,7 +202,7 @@ module.exports = {
 		'Newbie Friendly': '<:newbie:731494204072656916>'
 	},
 
-	playerLabelEmoji: {
+	PLAYER_LABELS: {
 		'Clan Wars': '<:clan_wars:731494209449885738>',
 		'Clan War League': '<:clan_war_league:731494200205639750>',
 		'Trophy Pushing': '<:trophy_pushing:731494210703720571>',
