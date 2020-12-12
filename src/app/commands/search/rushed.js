@@ -91,7 +91,7 @@ class RushedCommand extends Command {
 		const titles = {
 			'Barracks': 'Elixir Troops',
 			'Dark Barracks': 'Dark Troops',
-			'Spell Factory': 'Elixier Spells',
+			'Spell Factory': 'Elixir Spells',
 			'Dark Spell Factory': 'Dark Spells',
 			'Workshop': 'Siege Machines',
 			'Builder Hall': 'Builder Base Hero',

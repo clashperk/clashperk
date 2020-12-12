@@ -5,7 +5,7 @@ const HOME_HEROES = {
 	'Royal Champion': '<:royalchampion:706899855703933037>'
 };
 
-const ELIXIER_TROOPS = {
+const ELIXIR_TROOPS = {
 	'Barbarian': '<:barbarian:696280898122809344>',
 	'Archer': '<:archer:696280941005504592>',
 	'Giant': '<:giant:696280991697731585>',
@@ -22,7 +22,7 @@ const ELIXIER_TROOPS = {
 	'Yeti': '<:yeti:696281814293282857>'
 };
 
-const DARK_ELIXIER_TROOPS = {
+const DARK_ELIXIR_TROOPS = {
 	'Minion': '<:minion:696281875794231326>',
 	'Hog Rider': '<:hogrider:696281961257238579>',
 	'Valkyrie': '<:valkyrie:696282003158597662>',
@@ -42,7 +42,7 @@ const SEIGE_MACHINES = {
 	'Log Launcher': '<:LogLauncher:785737986108162048>'
 };
 
-const ELIXIER_SPELLS = {
+const ELIXIR_SPELLS = {
 	'Lightning Spell': '<:lightning:785740412010364958>',
 	'Healing Spell': '<:healing:696302035913670737>',
 	'Rage Spell': '<:rage:696302044343959572>',
@@ -86,10 +86,10 @@ module.exports = {
 
 	HOME_TROOPS: {
 		...HOME_HEROES,
-		...ELIXIER_TROOPS,
-		...DARK_ELIXIER_TROOPS,
+		...ELIXIR_TROOPS,
+		...DARK_ELIXIR_TROOPS,
 		...SEIGE_MACHINES,
-		...ELIXIER_SPELLS,
+		...ELIXIR_SPELLS,
 		...DARK_SPELLS
 	},
 
