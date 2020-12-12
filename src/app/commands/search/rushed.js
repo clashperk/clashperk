@@ -129,7 +129,7 @@ class RushedCommand extends Command {
 			);
 
 			embed.addField(
-				`${category.title} [${unitsArray.length}]`,
+				`${category.title} (${unitsArray.length})`,
 				this.chunk(unitsArray)
 					.map(
 						chunks => chunks.map(unit => {
