@@ -175,7 +175,7 @@ class ClanWarEvent {
 						const name = Util.escapeMarkdown(attacker.name);
 						const stars = this.getStars(attacker.oldStars, attacker.stars);
 						const destruction = Math.floor(attacker.destructionPercentage).toString().concat('%');
-						return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${CYAN_NUMBERS[attacker.mapPosition]} ${name} ${BROWN_NUMBERS[attacker.townHallLevel]} ${emoji.rightArrow} ${CYAN_NUMBERS[defender.mapPosition]} ${BROWN_NUMBERS[defender.townHallLevel]}`;
+						return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${CYAN_NUMBERS[attacker.mapPosition]} ${name} ${BROWN_NUMBERS[attacker.townHallLevel]} ${emoji.redVs} ${CYAN_NUMBERS[defender.mapPosition]} ${BROWN_NUMBERS[defender.townHallLevel]}`;
 					})
 				]);
 			}
