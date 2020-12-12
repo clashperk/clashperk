@@ -162,9 +162,7 @@ class ClanWarEvent {
 					`${data.teamSize} vs ${data.teamSize}`,
 					'',
 					'**War Stats**',
-					`${emoji.star} ${data.clan.stars} / ${data.opponent.stars}`,
-					`${emoji.fire} ${data.clan.destructionPercentage.toFixed(2)}% / ${data.opponent.destructionPercentage.toFixed(2)}%`,
-					`${emoji.attacksword} ${data.clan.attacks} / ${data.opponent.attacks}`
+					`${this.getLeaderBoard(data.clan, data.opponent)}`
 				]);
 
 			if (data.recent?.length) {
@@ -258,11 +256,7 @@ class ClanWarEvent {
 			const ends = new Date(moment(data.endTime).toDate()).getTime();
 			embed.setColor(states[data.state]);
 			embed.addField('State', ['Battle Day', `Ends in ${moment.duration(ends - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`])
-				.addField('Stats', [
-					`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-					`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
-					`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
-				]);
+				.addField('War Stats', this.getLeaderBoard(clan, opponent));
 		}
 
 		if (data.state === 'preparation') {
@@ -274,11 +268,7 @@ class ClanWarEvent {
 		if (data.state === 'warEnded') {
 			embed.setColor(results[data.result]);
 			embed.addField('State', 'War Ended')
-				.addField('Stats', [
-					`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-					`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
-					`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
-				]);
+				.addField('War Stats', this.getLeaderBoard(clan, opponent));
 		}
 
 		const rosters = [
@@ -313,6 +303,14 @@ class ClanWarEvent {
 
 	clanURL(tag) {
 		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
+	}
+
+	getLeaderBoard(clan, opponent) {
+		return [
+			`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.star} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
+			`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.attacksword} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+			`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${emoji.fire} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
+		].join('\n');
 	}
 
 	getStars(oldStars, newStars) {
