@@ -224,7 +224,7 @@ module.exports = {
 	},
 
 	WarStars: {
-		old: ' <:OldStar:786960157766058004>',
+		old: '<:OldStar:786960157766058004>',
 		new: '<:NewStar:786960156633071627>',
 		empty: '<:EmptyStar:786960134911033405>'
 	},
