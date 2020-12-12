@@ -115,7 +115,7 @@ class RushedCommand extends Command {
 				unit => {
 					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
 					const { maxLevel, level } = apiTroops
-						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) || { maxlevel: unit.levels[hallLevel - 1], level: 0 };
+						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) || { maxLevel: unit.levels[hallLevel - 1], level: 0 };
 
 					return {
 						type: unit.type,

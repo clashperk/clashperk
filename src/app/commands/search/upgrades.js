@@ -96,7 +96,7 @@ class UpgradesCommand extends Command {
 			const unitsArray = category.units.map(
 				unit => {
 					const { maxLevel, level } = apiTroops
-						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) || { maxlevel: 0, level: 0 };
+						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) || { maxLevel: 0, level: 0 };
 					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
 
 					return {
