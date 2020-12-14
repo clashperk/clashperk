@@ -191,7 +191,7 @@ class ClanEmbed {
 				'**War League**', `${CWL_LEAGUES[data.warLeague.name] || emoji.empty} ${data.warLeague.name}`
 			])
 			.addField('Town Halls', [
-				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${BLUE_EMOJI[th.total]}`).join(' ') || `${emoji.wrong} None`
+				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${BLUE_EMOJI[th.total]}\u200b`).join(' ') || `${emoji.wrong} None`
 			])
 			.setTimestamp()
 			.setFooter('Synced', this.client.user.displayAvatarURL());
