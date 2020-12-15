@@ -65,29 +65,25 @@ class CWLExport extends Command {
 		for (const { members, name, id } of chunks) {
 			const sheet = workbook.addWorksheet(`${name} (${id})`);
 			sheet.columns = [
-				{ header: 'Name', key: 'name', width: 16 },
-				{ header: 'Tag', key: 'tag', width: 16 },
-				{ header: 'Total\nAtatcks', key: 'th', width: 10 },
-				{ header: 'Total\nStats', key: 'def', width: 10 },
-				{ header: 'Avg\nDest %', key: 'gained', width: 10, style: { color: 'ff1010' } },
-				{ header: 'Three\nStars', key: 'bk', width: 10 },
-				{ header: 'One\nStars', key: 'aq', width: 10 },
-				{ header: 'Zero\nStars', key: 'aq', width: 10 },
-				{ header: 'Missed', key: 'aq', width: 10 },
-				{ header: 'Def\nStars', key: 'aq', width: 10 },
-				{ header: 'Avg Def\r\nDest %', key: 'aq', width: 10 }
+				{ header: 'Name', width: 16 },
+				{ header: 'Tag', width: 16 },
+				{ header: 'Total Atatcks', width: 8 },
+				{ header: 'Total Stats', width: 8 },
+				{ header: 'Avg Dest', width: 8 },
+				{ header: 'Three Stars', width: 8 },
+				{ header: 'One Stars', width: 8 },
+				{ header: 'Zero Stars', width: 8 },
+				{ header: 'Missed', width: 8 },
+				{ header: 'Def Stars', width: 8 },
+				{ header: 'Avg Def Dest', width: 8 }
 			];
 
 			sheet.getRow(1).font = { bold: true, size: 10 };
 			sheet.getRow(1).height = 40;
 
-			sheet.getColumn(1).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			sheet.getColumn(2).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			sheet.getColumn(3).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			sheet.getColumn(4).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			sheet.getColumn(5).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			sheet.getColumn(6).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			sheet.getColumn(7).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+			for (let i = 1; i <= sheet.columns.length; i++) {
+				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+			}
 
 			sheet.addRows(members.filter(m => m.of > 0)
 				.map(m => [
@@ -155,7 +151,7 @@ class CWLExport extends Command {
 							if (m.bestOpponentAttack) {
 								member.defStars += m.bestOpponentAttack.stars;
 								member.defDestruction += m.bestOpponentAttack.destructionPercentage;
-								member.defCount += m.defCount;
+								member.defCount += 1;
 							}
 						}
 					}
