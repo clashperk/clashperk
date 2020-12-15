@@ -75,19 +75,19 @@ class CWLExport extends Command {
 				{ header: 'Zero\nStars', key: 'aq', width: 10 },
 				{ header: 'Missed', key: 'aq', width: 10 },
 				{ header: 'Def\nStars', key: 'aq', width: 10 },
-				{ header: 'Avg Def\nDest %', key: 'aq', width: 10 }
+				{ header: 'Avg Def\r\nDest %', key: 'aq', width: 10 }
 			];
 
 			sheet.getRow(1).font = { bold: true, size: 10 };
 			sheet.getRow(1).height = 40;
 
-			sheet.getColumn(1).alignment = { horizontal: 'center', wrapText: true };
-			sheet.getColumn(2).alignment = { horizontal: 'center', wrapText: true };
-			sheet.getColumn(3).alignment = { horizontal: 'center', wrapText: true };
-			sheet.getColumn(4).alignment = { horizontal: 'center', wrapText: true };
-			sheet.getColumn(5).alignment = { horizontal: 'center', wrapText: true };
-			sheet.getColumn(6).alignment = { horizontal: 'center', wrapText: true };
-			sheet.getColumn(7).alignment = { horizontal: 'center', wrapText: true };
+			sheet.getColumn(1).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+			sheet.getColumn(2).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+			sheet.getColumn(3).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+			sheet.getColumn(4).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+			sheet.getColumn(5).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+			sheet.getColumn(6).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+			sheet.getColumn(7).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 
 			sheet.addRows(members.filter(m => m.of > 0)
 				.map(m => [
@@ -99,7 +99,7 @@ class CWLExport extends Command {
 					m.starTypes.filter(s => s === 3).length,
 					m.starTypes.filter(s => s === 1).length,
 					m.starTypes.filter(s => s === 0).length,
-					m.attacks - m.of,
+					m.of - m.attacks,
 					m.defStars,
 					(m.defDestruction / m.defCount).toFixed(2)
 				]));
