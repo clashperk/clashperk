@@ -159,7 +159,7 @@ class CWLExport extends Command {
 								member.attacks += 1;
 								member.stars += m.attacks[0].stars;
 								member.dest += m.attacks[0].destructionPercentage;
-								member.starTypes.push(m.stars);
+								member.starTypes.push(m.attacks[0].stars);
 							}
 
 							if (m.bestOpponentAttack) {
