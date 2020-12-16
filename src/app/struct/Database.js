@@ -84,7 +84,11 @@ class Database {
 
 			db.collection('cwlwartags').createIndex({ tag: 1 }, { unique: true }),
 
-			db.collection('cwlwartags').createIndex({ createdAt: 1 }, { expireAfterSeconds: 45 * 24 * 60 * 60 })
+			db.collection('cwlwartags').createIndex({ createdAt: 1 }, { expireAfterSeconds: 45 * 24 * 60 * 60 }),
+
+			db.collection('clanmembers').createIndex({ createdAt: -1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 }),
+
+			db.collection('clanmembers').createIndex({ tag: 1, season: -1, 'clan.tag': 1 }, { unique: true })
 		]);
 	}
 }
