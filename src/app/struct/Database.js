@@ -88,7 +88,7 @@ class Database {
 
 			db.collection('clanmembers').createIndex({ createdAt: -1 }, { expireAfterSeconds: 120 * 24 * 60 * 60 }),
 
-			db.collection('clanmembers').createIndex({ tag: 1, season: -1, 'clan.tag': 1 }, { unique: true })
+			db.collection('clanmembers').createIndex({ tag: 1, season: -1, clanTag: 1 }, { unique: true })
 		]);
 	}
 }
