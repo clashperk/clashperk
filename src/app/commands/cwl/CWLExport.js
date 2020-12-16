@@ -67,14 +67,18 @@ class CWLExport extends Command {
 			sheet.columns = [
 				{ header: 'Name', width: 16 },
 				{ header: 'Tag', width: 16 },
-				{ header: 'Total Atatcks', width: 8 },
-				{ header: 'Total Stats', width: 8 },
+				{ header: 'Total Attacks', width: 8 },
+				{ header: 'Total Stars', width: 8 },
+				{ header: 'Avg Stars', width: 8 },
+				{ header: 'Total Dest', width: 8 },
 				{ header: 'Avg Dest', width: 8 },
 				{ header: 'Three Stars', width: 8 },
 				{ header: 'One Stars', width: 8 },
 				{ header: 'Zero Stars', width: 8 },
 				{ header: 'Missed', width: 8 },
 				{ header: 'Def Stars', width: 8 },
+				{ header: 'Avg Def Stars', width: 8 },
+				{ header: 'Total Def Dest', width: 8 },
 				{ header: 'Avg Def Dest', width: 8 }
 			];
 
@@ -89,14 +93,18 @@ class CWLExport extends Command {
 				.map(m => [
 					m.name,
 					m.tag,
-					m.attacks,
+					m.of,
 					m.stars,
+					(m.stars / m.of).toFixed(2),
+					m.dest.toFixed(2),
 					(m.dest / m.of).toFixed(2),
-					m.starTypes.filter(s => s === 3).length,
-					m.starTypes.filter(s => s === 1).length,
-					m.starTypes.filter(s => s === 0).length,
+					this.starCount(m.starTypes, 3),
+					this.starCount(m.starTypes, 1),
+					this.starCount(m.starTypes, 0),
 					m.of - m.attacks,
 					m.defStars,
+					(m.defStars / m.defCount).toFixed(),
+					m.defDestruction.toFixed(2),
 					(m.defDestruction / m.defCount).toFixed(2)
 				]));
 		}
@@ -108,6 +116,10 @@ class CWLExport extends Command {
 				name: 'clan_war_league_stars.xlsx'
 			}]
 		});
+	}
+
+	starCount(stars = [], count) {
+		return stars.filter(star => star === count).length;
 	}
 
 	async rounds(body, clan) {
