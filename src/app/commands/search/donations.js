@@ -1,4 +1,5 @@
 const { Command, Flag } = require('discord-akairo');
+const { mongodb } = require('../../struct/Database');
 const Resolver = require('../../struct/Resolver');
 
 class DonationBoardCommand extends Command {
@@ -35,36 +36,68 @@ class DonationBoardCommand extends Command {
 		return 3000;
 	}
 
+	async fetch(clan) {
+		const db = mongodb.db('clashperk').collection('clanmembers');
+
+		const bulk = db.initializeUnorderedBulkOp();
+		for (const m of clan.memberList) {
+			bulk.find(m);
+		}
+
+		return bulk.execute();
+	}
+
 	async exec(message, { data }) {
 		if (data.members < 1) return message.util.send(`\u200e**${data.name}** does not have any clan members...`);
+
+		const dbMembers = await mongodb.db('clashperk').collection('clanmembers')
+			.find({ tag: { $in: data.memberList.map(m => m.tag) } })
+			.toArray();
+
+		const members = [];
+		for (const mem of data.memberList) {
+			if (!dbMembers.find(m => m.tag === mem.tag)) {
+				members.push({ name: mem.name, tag: mem.tag, donated: mem.donations, received: mem.donationsReceived });
+			} else {
+				const m = dbMembers.find(m => m.tag === mem.tag);
+				members.push({
+					name: mem.name,
+					tag: mem.tag,
+					donated: mem.donations >= m.donated ? mem.donations : m.donated,
+					received: mem.donationsReceived >= m.received ? mem.donationsReceived : m.received
+				});
+			}
+		}
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
 		let [ds, rs] = [5, 5];
+		const receivedMax = Math.max(members.map(m => m.received));
+		if (receivedMax > 99999) rs = 6;
+		if (receivedMax > 999999) rs = 7;
 
-		const _sorted = this.sort_received(data.memberList);
-		if (_sorted[0].donationsReceived > 99999) rs = 6;
-		if (_sorted[0].donationsReceived > 999999) rs = 7;
+		const donatedMax = Math.max(members.map(m => m.donated));
+		if (donatedMax > 99999) ds = 6;
+		if (donatedMax > 999999) ds = 7;
 
-		const sorted = this.sort_donations(data.memberList);
-		if (sorted[0].donations > 99999) ds = 6;
-		if (sorted[0].donations > 999999) ds = 7;
+		const sorted = members.sort((a, b) => b.received - a.received)
+			.sort((a, b) => b.donated - a.donated);
 
-		const donated = data.memberList.reduce((pre, mem) => mem.donations + pre, 0);
-		const received = data.memberList.reduce((pre, mem) => mem.donationsReceived + pre, 0);
+		const donated = members.reduce((pre, mem) => mem.donated + pre, 0);
+		const received = members.reduce((pre, mem) => mem.received + pre, 0);
 
 		const header = `**\`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(16, ' ')}\`**`;
 		const pages = [
 			this.paginate(sorted, 0, 25)
 				.items.map((member, index) => {
-					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
+					const donation = `${this.donation(member.donated, ds)} ${this.donation(member.received, rs)}`;
 					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
 				}),
 			this.paginate(sorted, 25, 50)
 				.items.map((member, index) => {
-					const donation = `${this.donation(member.donations, ds)} ${this.donation(member.donationsReceived, rs)}`;
+					const donation = `${this.donation(member.donated, ds)} ${this.donation(member.received, rs)}`;
 					return `\`\u200e${(index + 26).toString().padStart(2, ' ')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
 				})
 		];
@@ -113,15 +146,6 @@ class DonationBoardCommand extends Command {
 			}
 		}
 		return `${a}:${b}`;
-	}
-
-
-	sort_donations(items) {
-		return items.sort((a, b) => b.donations - a.donations);
-	}
-
-	sort_received(items) {
-		return items.sort((a, b) => b.donationsReceived - a.donationsReceived);
 	}
 
 	padEnd(name) {
