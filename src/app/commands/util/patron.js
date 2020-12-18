@@ -1,5 +1,5 @@
 const { Command } = require('discord-akairo');
-const { firestore, mongodb } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 
 class PatronCommand extends Command {
 	constructor() {
@@ -38,13 +38,25 @@ class PatronCommand extends Command {
 			}
 
 			if (action === 'add' && patron) {
-				await firestore.collection('patrons').doc(patron.id).update({ active: true });
+				await mongodb.db('clashperk')
+					.collection('patrons')
+					.updateOne(
+						{ id: patron.id },
+						{ $set: { active: true } }
+					);
+
 				await this.client.patron.refresh();
 				return message.util.send('Success!');
 			}
 
 			if (action === 'del' && patron) {
-				await firestore.collection('patrons').doc(patron.id).update({ active: false });
+				await mongodb.db('clashperk')
+					.collection('patrons')
+					.updateOne(
+						{ id: patron.id },
+						{ $set: { active: false } }
+					);
+
 				await this.client.patron.refresh();
 				return message.util.send('Success!');
 			}
@@ -99,17 +111,12 @@ class PatronCommand extends Command {
 		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 	}
 
-	async patrons(patrons = []) {
-		await firestore.collection('patrons')
-			.orderBy('createdAt', 'asc')
-			.get()
-			.then(snapshot => {
-				snapshot.forEach(snap => {
-					const data = snap.data();
-					patrons.push(data);
-				});
-			});
-		return patrons;
+	async patrons() {
+		return mongodb.db('clashperk')
+			.collection('patrons')
+			.find()
+			.sort({ createdAt: -1 })
+			.toArray();
 	}
 
 	async add(guild) {

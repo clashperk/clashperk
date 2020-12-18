@@ -71,14 +71,12 @@ class CommandStartedListener extends Listener {
 	}
 
 	counter(message, command) {
-		this.client.firebase.counter();
+		this.client.stats.counter();
 		if (command.category.id === 'owner') return;
 		if (this.client.isOwner(message.author.id)) return;
-		this.client.firebase.commandcounter();
-		this.client.firebase.users(message.author.id);
-		if (command.id !== 'rank') this.client.firebase.ranks(message.author.id);
-		this.client.firebase.commands(command.id);
-		if (message.guild) this.client.firebase.guilds(message.guild.id);
+		this.client.stats.users(message.author.id);
+		this.client.stats.commands(command.id);
+		if (message.guild) this.client.stats.guilds(message.guild.id);
 	}
 }
 

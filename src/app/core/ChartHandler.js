@@ -134,7 +134,7 @@ class ChartHandler {
 							backgroundColor: '#69c49a',
 							borderColor: '#69c49a',
 							fill: false,
-							data: [...collection.map(d => d.value.deletion + d.value.addition)]
+							data: [...collection.map(d => d.value.addition - d.value.deletion)]
 						}
 					]
 				},

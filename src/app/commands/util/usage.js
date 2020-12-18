@@ -1,5 +1,5 @@
 const { Command, Argument } = require('discord-akairo');
-const { firebase } = require('../../struct/Database');
+const { mongodb } = require('../../struct/Database');
 const Chart = require('../../core/ChartHandler');
 const { MessageAttachment, MessageEmbed } = require('discord.js');
 
@@ -44,8 +44,6 @@ class UsageCommand extends Command {
 			return message.util.send(embed.footer.text, { /* embed, */ files: [file] });
 		}
 
-		// const guilds = await this.guilds();
-		// const users = await this.users();
 		const { commands, total } = await this.commands();
 		const embed = this.client.util.embed()
 			.setAuthor(`${this.client.user.username}`, this.client.user.displayAvatarURL())
@@ -53,18 +51,6 @@ class UsageCommand extends Command {
 			.setTitle('Usage')
 			.setURL('https://clashperk.statuspage.io/')
 			.setFooter(`${total}x Total • Since April 2019`);
-		/* embed.addField('Users', [
-			`\`\`\`${users.splice(0, 10).map(({ id, uses }, index) => {
-				const user = this.client.users.cache.get(id);
-				return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${user.username}`;
-			}).join('\n')}\`\`\``
-		]);
-		embed.addField('Servers', [
-			`\`\`\`${guilds.splice(0, 10).map(({ id, uses }, index) => {
-				const guild = this.client.guilds.cache.get(id);
-				return `${(index + 1).toString().padStart(2, '0')} ${uses.toString().padStart(5, ' ')}x  ${guild.name}`;
-			}).join('\n')}\`\`\``
-		]);*/
 		embed.setDescription([
 			`__**\`\u200e # ${'Uses'.padStart(6, ' ')}  ${'CommandID'.padEnd(15, ' ')}\u200f\`**__`,
 			...commands.splice(0, 15)
@@ -77,35 +63,12 @@ class UsageCommand extends Command {
 		return message.util.send({ embed });
 	}
 
-	async users() {
-		const ref = firebase.ref('users');
-		const data = await ref.once('value').then(snap => snap.val());
-		const users = [];
-		for (const [key, value] of Object.entries(data)) {
-			if (!this.client.users.cache.has(key)) continue;
-			users.push({ uses: value, id: key });
-		}
-
-		return this.sort(users);
-	}
-
-	async guilds() {
-		const ref = firebase.ref('guilds');
-		const data = await ref.once('value').then(snap => snap.val());
-		const guilds = [];
-		for (const [key, value] of Object.entries(data)) {
-			if (!this.client.guilds.cache.has(key)) continue;
-			guilds.push({ uses: value, id: key });
-		}
-
-		return this.sort(guilds);
-	}
-
 	async commands() {
-		const ref = firebase.ref('commands');
-		const data = await ref.once('value').then(snap => snap.val());
+		const data = await mongodb.db('clashperk')
+			.collection('botstats')
+			.findOne({ id: 'stats' });
 		const commands = [];
-		for (const [key, value] of Object.entries(data)) {
+		for (const [key, value] of Object.entries(data?.commands ?? {})) {
 			if (!this.client.commandHandler.modules.get(key) || !this.client.commandHandler.modules.get(key).aliases.length) continue;
 			commands.push({ uses: value, id: key });
 		}
@@ -114,31 +77,32 @@ class UsageCommand extends Command {
 	}
 
 	async growth() {
-		const now = new Date(Date.now() + 198e5);
-		const id = [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('-');
-		const ref = firebase.ref('growth').child(id);
-		const data = await ref.once('value').then(snap => snap.val());
+		const data = await mongodb.db('clashperk')
+			.collection('botgrowth')
+			.findOne({ ISTDate: new Date(Date.now() + 198e5).toISOString().substring(0, 10) });
 		if (!data) return { addition: 0, deletion: 0, growth: 0 };
-		return { addition: data.addition, deletion: data.deletion, growth: data.addition + data.deletion };
+		return { addition: data.addition, deletion: data.deletion, growth: data.addition - data.deletion };
 	}
 
 	async buffer(limit) {
-		const data = await firebase.ref('growth')
-			.once('value')
-			.then(snap => snap.val());
-		const collection = [];
-		for (const [key, value] of Object.entries(data)) {
-			collection.push({ date: new Date(key), value });
-		}
-		collection.sort((a, b) => a.date - b.date);
-		return Chart.growth(collection.slice(-limit));
+		const collection = await mongodb.db('clashperk')
+			.collection('botgrowth')
+			.find({ createdAt: { $gte: new Date(Date.now() - ((limit + 1) * 24 * 60 * 60 * 1000)) } })
+			.sort({ createdAt: 1 })
+			.toArray();
+		return Chart.growth(
+			collection
+				.slice(-limit)
+				.map(growth => ({ date: new Date(growth.ISTDate), value: growth }))
+		);
 	}
 
 	async commandsTotal() {
-		const ref = firebase.ref('stats');
-		const data = await ref.once('value').then(snap => snap.val());
+		const data = await mongodb.db('clashperk')
+			.collection('botstats')
+			.findOne({ id: 'stats' });
 
-		return data ? data.commands_used : 0;
+		return data?.commands_used ?? 0;
 	}
 
 	sort(items) {
@@ -151,4 +115,3 @@ class UsageCommand extends Command {
 }
 
 module.exports = UsageCommand;
-

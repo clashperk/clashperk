@@ -1,9 +1,8 @@
+const { mongodb } = require('../../struct/Database');
+const { status } = require('../../util/constants');
 const { Command } = require('discord-akairo');
 const fetch = require('node-fetch');
-const { firestore, mongodb } = require('../../struct/Database');
 const qs = require('querystring');
-const admin = require('firebase-admin');
-const { status } = require('../../util/constants');
 
 class RedeemCommand extends Command {
 	constructor() {
@@ -68,10 +67,8 @@ class RedeemCommand extends Command {
 			return message.util.send('This server already has an active subscription.');
 		}
 
-		const user = await firestore.collection('patrons')
-			.doc(patron.id)
-			.get()
-			.then(snap => snap.data());
+		const db = mongodb.db('clashperk').collection('patrons');
+		const user = await db.findOne({ id: patron.id });
 
 		const pledge = data.data.find(entry => entry?.relationships?.patron?.data?.id === patron.id);
 		if (pledge.attributes.declined_since) {
@@ -83,19 +80,23 @@ class RedeemCommand extends Command {
 		}
 
 		if (!user) {
-			await firestore.collection('patrons')
-				.doc(patron.id)
-				.update({
-					name: patron.attributes.full_name,
-					id: patron.id,
-					discord_id: message.author.id,
-					discord_username: message.author.username,
-					active: true,
-					guilds: [{ id: message.guild.id, limit: pledge.attributes.amount_cents >= 300 ? 50 : 3 }],
-					entitled_amount: pledge.attributes.amount_cents / 100,
-					redeemed: true,
-					createdAt: new Date(pledge.attributes.created_at)
-				}, { merge: true });
+			await db.updateOne(
+				{ id: patron.id },
+				{
+					$set: {
+						name: patron.attributes.full_name,
+						id: patron.id,
+						discord_id: message.author.id,
+						discord_username: message.author.username,
+						active: true,
+						guilds: [{ id: message.guild.id, limit: pledge.attributes.amount_cents >= 300 ? 50 : 3 }],
+						entitled_amount: pledge.attributes.amount_cents / 100,
+						redeemed: true,
+						createdAt: new Date(pledge.attributes.created_at)
+					}
+				},
+				{ upsert: true }
+			);
 
 			await this.client.patron.refresh();
 			const embed = this.client.util.embed()
@@ -120,18 +121,23 @@ class RedeemCommand extends Command {
 		}
 
 		if (user && !redeemed) {
-			await firestore.collection('patrons')
-				.doc(patron.id)
-				.update({
-					guilds: admin.firestore.FieldValue.arrayUnion({
-						id: message.guild.id,
-						limit: pledge.attributes.amount_cents >= 300 ? 50 : 3
-					}),
-					entitled_amount: pledge.attributes.amount_cents / 100,
-					discord_id: message.author.id,
-					discord_username: message.author.username,
-					redeemed: true
-				}, { merge: true });
+			await db.updateOne(
+				{ id: patron.id },
+				{
+					$set: {
+						entitled_amount: pledge.attributes.amount_cents / 100,
+						discord_id: message.author.id,
+						discord_username: message.author.username,
+						redeemed: true
+					},
+					$push: {
+						guilds: {
+							id: message.guild.id,
+							limit: pledge.attributes.amount_cents >= 300 ? 50 : 3
+						}
+					}
+				}
+			);
 
 			await this.client.patron.refresh();
 			await this.sync(message.guild.id);
@@ -147,12 +153,17 @@ class RedeemCommand extends Command {
 
 	isNew(user, message, patron) {
 		if (user && user.discord_id !== message.author.id) {
-			firestore.collection('patrons')
-				.doc(patron.id)
-				.update({
-					discord_id: message.author.id,
-					discord_username: message.author.username
-				}, { merge: true });
+			mongodb.db('clashperk')
+				.collection('patrons')
+				.updateOne(
+					{ id: patron.id },
+					{
+						$set: {
+							discord_id: message.author.id,
+							discord_username: message.author.username
+						}
+					}
+				);
 
 			return true;
 		}

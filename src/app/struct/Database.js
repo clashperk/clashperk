@@ -88,7 +88,21 @@ class Database {
 
 			db.collection('clanmembers').createIndex({ createdAt: -1 }, { expireAfterSeconds: 120 * 24 * 60 * 60 }),
 
-			db.collection('clanmembers').createIndex({ tag: 1, season: -1, clanTag: 1 }, { unique: true })
+			db.collection('clanmembers').createIndex({ tag: 1, season: -1, clanTag: 1 }, { unique: true }),
+
+			db.collection('botgrowth').createIndex({ ISTDate: 1 }, { unique: true }),
+
+			db.collection('botgrowth').createIndex({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 }),
+
+			db.collection('botguilds').createIndex({ guild: 1 }, { unique: true }),
+
+			db.collection('botusers').createIndex({ user: 1 }, { unique: true }),
+
+			db.collection('botusage').createIndex({ ISTDate: 1 }, { unique: true }),
+
+			db.collection('botusage').createIndex({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 }),
+
+			db.collection('patrons').createIndex({ id: 1 }, { unique: true })
 		]);
 	}
 }

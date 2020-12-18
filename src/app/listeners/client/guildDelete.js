@@ -23,9 +23,9 @@ class GuildDeleteListener extends Listener {
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_DELETE' });
 
 		await this.delete(guild);
-		await this.client.firebase.post();
-		await this.client.firebase.deletion();
-		await this.client.firebase.guilds(guild.id, 0);
+		await this.client.stats.post();
+		await this.client.stats.deletion();
+		await this.client.stats.guilds(guild.id, 0);
 
 		const user = await this.client.users.fetch(guild.ownerID).catch(() => null);
 		const webhook = await this.fetchWebhook().catch(() => null);

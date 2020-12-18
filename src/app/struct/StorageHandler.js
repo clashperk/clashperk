@@ -16,7 +16,9 @@ class StorageHandler {
 					name: data.name,
 					verified: true,
 					patron: this.client.patron.get(message.guild.id, 'guild', false),
-					active: true,
+					active: true
+				},
+				$min: {
 					createdAt: new Date()
 				}
 			}, { upsert: true, returnOriginal: false });
@@ -33,7 +35,9 @@ class StorageHandler {
 							guild: data.guild,
 							name: data.name,
 							channel: data.channel,
-							color: data.color,
+							color: data.color
+						},
+						$min: {
 							createdAt: new Date()
 						}
 					}, { upsert: true });
@@ -47,7 +51,9 @@ class StorageHandler {
 							guild: data.guild,
 							name: data.name,
 							channel: data.channel,
-							role: data.role,
+							role: data.role
+						},
+						$min: {
 							createdAt: new Date()
 						}
 					}, { upsert: true });
@@ -62,7 +68,9 @@ class StorageHandler {
 							name: data.name,
 							channel: data.channel,
 							color: data.color,
-							message: data.message,
+							message: data.message
+						},
+						$min: {
 							createdAt: new Date()
 						}
 					}, { upsert: true });
@@ -77,7 +85,9 @@ class StorageHandler {
 							name: data.name,
 							channel: data.channel,
 							color: data.color,
-							message: data.message,
+							message: data.message
+						},
+						$min: {
 							createdAt: new Date()
 						}
 					}, { upsert: true });
@@ -93,7 +103,9 @@ class StorageHandler {
 							channel: data.channel,
 							color: data.color,
 							message: data.message,
-							embed: data.embed,
+							embed: data.embed
+						},
+						$min: {
 							createdAt: new Date()
 						}
 					}, { upsert: true });
@@ -107,7 +119,9 @@ class StorageHandler {
 							tag: data.tag,
 							guild: data.guild,
 							name: data.name,
-							channel: data.channel,
+							channel: data.channel
+						},
+						$min: {
 							createdAt: new Date()
 						}
 					}, { upsert: true });

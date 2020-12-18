@@ -6,8 +6,8 @@ const Settings = require('./SettingsProvider');
 const { Client } = require('clashofclans.js');
 const Storage = require('./StorageHandler');
 const Logger = require('../util/logger');
+const Stats = require('./StatsHandler');
 const Database = require('./Database');
-const Firebase = require('./Firebase');
 const Patrons = require('./Patrons');
 const path = require('path');
 const grpc = require('grpc');
@@ -107,8 +107,7 @@ class ClashPerk extends AkairoClient {
 		this.settings = new Settings(Database.mongodb.db('clashperk').collection('settings'));
 		this.mongodb = Database.mongodb.db('clashperk');
 
-		this.firebase = new Firebase(this);
-		this.firebase = new Firebase(this);
+		this.stats = new Stats(this);
 		this.coc = new Client({ timeout: 10000, token: process.env.DEVELOPER_TOKEN });
 		this.embed = message => this.settings.get(message.guild, 'color', 5861569);
 		this.grpc = new routeguide.RouteGuide(process.env.SERVER, grpc.credentials.createInsecure());
@@ -123,7 +122,7 @@ class ClashPerk extends AkairoClient {
 		this.once('ready', () => {
 			if (process.env.NODE_ENV) {
 				this.patron.init();
-				this.firebase.init();
+				this.stats.init();
 				this.cacheHandler.init();
 			}
 		});
