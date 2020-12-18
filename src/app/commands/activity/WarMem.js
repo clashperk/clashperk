@@ -124,7 +124,11 @@ class WarMemberExport extends Command {
 
 		const mem = Object.values(members)[0];
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`)
+			.setColor(this.client.embed(message))
+			.setAuthor(
+				`${data.name} (${data.tag})`,
+				data.league?.iconUrls.small ?? `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`
+			)
 			.setDescription([
 				'**Total Attacks**',
 				mem.of,
