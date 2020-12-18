@@ -47,7 +47,7 @@ class InviteCommand extends Command {
 			.setDescription([
 				'ClashPerk can be added to as many servers as you want! Please share the bot with your friends. Thanks in advance!',
 				'',
-				`**[Add to Discord](https://discord.com/api/oauth2/authorize?${query})**`,
+				`**[Add to Discord](https://discord.com/api/oauth2/authorize?${query}+applications.commands)**`,
 				'',
 				'**[Support Discord](https://discord.gg/ppuppun)** | **[Become a Patron](https://www.patreon.com/clashperk)**'
 			]);

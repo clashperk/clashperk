@@ -162,7 +162,7 @@ class WarMemberExport extends Command {
 			// { header: 'Tag', width: 16 },
 			{ header: 'Clan', width: 16 },
 			{ header: 'Date', width: 14 },
-			{ header: 'War Type', width: 8 },
+			{ header: 'War Type', width: 10 },
 			{ header: 'Team Size', width: 8 },
 			{ header: 'First Hit', width: 8 },
 			{ header: 'Dest %', width: 8 },
