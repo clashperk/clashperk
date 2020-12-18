@@ -142,7 +142,7 @@ class WarMemberExport extends Command {
 				'**Avg Destruction**',
 				`${(mem.dest / mem.of).toFixed(2)} %`,
 				'',
-				'3 Stars',
+				'**3 Stars**',
 				this.starCount(mem.starTypes, 3),
 				'',
 				'**Missed**',
