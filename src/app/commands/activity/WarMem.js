@@ -101,13 +101,13 @@ class WarMemberExport extends Command {
 						starTypes: [],
 						defCount: 0
 					};
-				member.of += 1;
+				member.of += war.groupWar ? 1 : 2;
 
 				if (m.attacks) {
-					member.attacks += 1;
-					member.stars += m.attacks[0].stars;
-					member.dest += m.attacks[0].destructionPercentage;
-					member.starTypes.push(m.attacks[0].stars);
+					member.attacks += m.attacks.length;
+					member.stars += m.attacks.reduce((prev, atk) => prev + atk.stars, 0);
+					member.dest += m.attacks.reduce((prev, atk) => prev + atk.destructionPercentage, 0);
+					member.starTypes.push(...m.attacks.map(atk => atk.stars));
 				}
 
 				if (m.bestOpponentAttack) {
@@ -130,14 +130,20 @@ class WarMemberExport extends Command {
 				data.league?.iconUrls.small ?? `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`
 			)
 			.setDescription([
-				'**Total Attacks**',
+				'**Total Wars**',
 				mem.of,
+				'',
+				'**Total Attacks**',
+				mem.attacks,
 				'',
 				'**Total Stars**',
 				mem.stars,
 				'',
 				'**Avg Destruction**',
-				(mem.dest / mem.of).toFixed(2),
+				`${(mem.dest / mem.of).toFixed(2)} %`,
+				'',
+				'3 Stars',
+				this.starCount(mem.stars, 3),
 				'',
 				'**Missed**',
 				mem.of - mem.attacks,
@@ -146,7 +152,7 @@ class WarMemberExport extends Command {
 				mem.defStars,
 				'',
 				'**Avg Def Destruction**',
-				(mem.defDestruction / mem.defCount).toFixed(2)
+				`${(mem.defDestruction / mem.defCount).toFixed(2)} %`
 			]);
 
 		const workbook = Excel();
