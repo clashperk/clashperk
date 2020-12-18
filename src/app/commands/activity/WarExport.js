@@ -1,24 +1,12 @@
-/* eslint-disable no-unused-vars */
-const { Command, Flag } = require('discord-akairo');
-const fetch = require('node-fetch');
-// const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-// const CWL = require('../../core/CWLWarTags');
+const { Command } = require('discord-akairo');
 const { Excel } = require('../../struct/ExcelHandler');
-const Resolver = require('../../struct/Resolver');
 
-class CWLExport extends Command {
+class WarExport extends Command {
 	constructor() {
 		super('war-export', {
 			aliases: ['war-export'],
 			category: 'activity',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
-			args: [
-				{
-					id: 'method',
-					type: ['clans', 'all', 'members'],
-					default: 'clans'
-				}
-			],
 			description: {
 				content: 'Export war stats to excel for all clans.',
 				examples: ['']
@@ -30,21 +18,6 @@ class CWLExport extends Command {
 		if (this.client.patron.check(message.author, message.guild)) return 1000;
 		return 3000;
 	}
-
-	/* *args() {
-		const data = yield {
-			type: async (message, args) => {
-				const resolved = await Resolver.resolve(message, args);
-				if (resolved.status !== 200) {
-					await message.channel.send({ embed: resolved.embed });
-					return Flag.cancel();
-				}
-				return resolved;
-			}
-		};
-
-		return { data };
-	}*/
 
 	async exec(message, { }) {
 		const patron = this.client.patron.check(message.author, message.guild);
@@ -59,19 +32,17 @@ class CWLExport extends Command {
 		const clans = await this.client.mongodb.collection('clanwarlogs').find({ guild: message.guild.id }).toArray();
 		const chunks = [];
 
-		for (const { tag } of clans) {
-			const wars = await this.client.mongodb.collection('clanmembers')
+		for (const { tag, name } of clans) {
+			const wars = await this.client.mongodb.collection('clanwarstores')
 				.find({
-					$or: [
-						{ 'clan.tag': tag },
-						{ 'opponent.tag': tag }
-					],
+					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 					state: { $in: ['inWar', 'warEnded'] }
-				}).toArray();
+				})
+				.toArray();
 
 			const members = {};
 			for (const war of wars) {
-				const clan = war.clan.tag === tag ? war.clan : war.opponent.clan;
+				const clan = war.clan.tag === tag ? war.clan : war.opponent;
 				for (const m of clan.members) {
 					const member = members[m.tag]
 						? members[m.tag]
@@ -87,13 +58,13 @@ class CWLExport extends Command {
 							starTypes: [],
 							defCount: 0
 						};
-					member.of += 1;
+					member.of += war.groupWar ? 1 : 2;
 
 					if (m.attacks) {
-						member.attacks += 1;
-						member.stars += m.attacks[0].stars;
-						member.dest += m.attacks[0].destructionPercentage;
-						member.starTypes.push(m.attacks[0].stars);
+						member.attacks += m.attacks.length;
+						member.stars += m.attacks.reduce((prev, atk) => prev + atk.stars, 0);
+						member.dest += m.attacks.reduce((prev, atk) => prev + atk.destructionPercentage, 0);
+						member.starTypes.push(...m.attacks.map(atk => atk.stars));
 					}
 
 					if (m.bestOpponentAttack) {
@@ -102,9 +73,14 @@ class CWLExport extends Command {
 						member.defCount += 1;
 					}
 				}
-
-				chunks.push({ name: clan.name, members: Object.values(members) });
 			}
+
+			chunks.push({
+				name,
+				members: Object.values(members)
+					.sort((a, b) => b.dest - a.dest)
+					.sort((a, b) => b.stars - a.stars)
+			});
 		}
 
 		if (!chunks.length) return message.util.send('No data available at this moment!');
@@ -173,4 +149,4 @@ class CWLExport extends Command {
 	}
 }
 
-module.exports = CWLExport;
+module.exports = WarExport;
