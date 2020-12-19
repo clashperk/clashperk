@@ -60,6 +60,20 @@ const DARK_SPELLS = {
 	'Bat Spell': '<:batspell:696303291176583198>'
 };
 
+const SUPER_TROOPS = {
+	'Super Barbarian': '<:subbarb:789730407360495646>',
+	'Sneaky Goblin': '<:supgoblin:789730408102232064>',
+	'Super Giant': '<:supgiant:789730409051193364>',
+	'Super Wall Breaker': '<:supwb:789730406206275595>',
+	'Super Archer': '<:suparch:789730408673181717>',
+	'Super Witch': '<:supwitch:789730409210576897>',
+	'Inferno Dragon': '<:supbaby:789730408878309376>',
+	'Super Valkyrie': '<:supervalk:789730405967462440>',
+	'Super Minion': '<:supminion:789730407930920990>',
+	'Super Wizard': '<:superwiz:789730402189049876>',
+	'Ice Hound': '<:IceHound:789730401816018945>'
+};
+
 const BUILDER_ELIXIR_TROOPS = {
 	'Raged Barbarian': '<:ragedbarbarian:696283193426575390>',
 	'Sneaky Archer': '<:sneakyarcher:696283216687923223>',
@@ -97,6 +111,8 @@ module.exports = {
 		...BUILDER_ELIXIR_TROOPS,
 		...BUILDER_HEROES
 	},
+
+	SUPER_TROOPS,
 
 	TOWN_HALLS: {
 		1: '<:townhall1:696304616173993994>',

@@ -1,7 +1,7 @@
 const { Command, Flag } = require('discord-akairo');
 const { MessageEmbed } = require('discord.js');
 const Resolver = require('../../struct/Resolver');
-const { BUILDER_TROOPS, HOME_TROOPS } = require('../../util/emojis');
+const { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS } = require('../../util/emojis');
 const RAW_TROOPS_DATA = require('../../util/TroopsInfo');
 
 class UnitsCommand extends Command {
@@ -147,6 +147,41 @@ class UnitsCommand extends Command {
 					.join('\n')
 			);
 		}
+
+		const superTrops = RAW_TROOPS_DATA.SUPER_TROOPS
+			.filter(unit => apiTroops.find(un => un.name === unit.original && un.level >= unit.minOriginalLevel))
+			.map(
+				unit => {
+					const { maxLevel, level, name } = apiTroops
+						.find(u => u.name === unit.original && u.village === unit.village) || { maxLevel: 0, level: 0 };
+					const hallLevel = data.townHallLevel;
+
+					const originalTroop = RAW_TROOPS_DATA.TROOPS
+						.find(un => un.name === name && un.type === 'troop' && un.village === 'home');
+
+					return {
+						type: unit.type,
+						village: unit.village,
+						name: unit.name,
+						level,
+						hallMaxLevel: originalTroop.levels[hallLevel - 1],
+						maxLevel
+					};
+				}
+			);
+
+		embed.addField('Super Troops', [
+			this.chunk(superTrops)
+				.map(
+					chunks => chunks.map(unit => {
+						const unitIcon = SUPER_TROOPS[unit.name];
+						const level = this.padStart(unit.level);
+						const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
+						return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
+					}).join(' ')
+				)
+				.join('\n')
+		]);
 
 		return embed;
 	}
