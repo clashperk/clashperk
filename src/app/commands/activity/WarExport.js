@@ -3,12 +3,12 @@ const { Excel } = require('../../struct/ExcelHandler');
 
 class WarExport extends Command {
 	constructor() {
-		super('war-export', {
-			aliases: ['war-export'],
+		super('export-wars', {
+			aliases: ['export'],
 			category: 'activity',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
-				content: 'Export war stats to excel for all clans.',
+				content: 'Export wars to excel for all clans.',
 				examples: ['']
 			}
 		});
@@ -19,17 +19,20 @@ class WarExport extends Command {
 		return 3000;
 	}
 
-	async exec(message, { }) {
+	async exec(message) {
 		const patron = this.client.patron.check(message.author, message.guild);
 		if (!patron) {
 			return message.channel.send({
 				embed: {
-					description: '[Become a Patron](https://www.patreon.com/clashperk) to export CWL data to Excel.'
+					description: '[Become a Patron](https://www.patreon.com/clashperk) to export wars to Excel.'
 				}
 			});
 		}
 
-		const clans = await this.client.mongodb.collection('clanwarlogs').find({ guild: message.guild.id }).toArray();
+		const clans = await this.client.mongodb.collection('clanwarlogs')
+			.find({ guild: message.guild.id })
+			// .sort({ preparationStartTime: 1 })
+			.toArray();
 		const chunks = [];
 
 		for (const { tag, name } of clans) {

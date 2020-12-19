@@ -1,17 +1,17 @@
-const { Command, Flag } = require('discord-akairo');
-const { MessageEmbed } = require('discord.js');
 const { Excel } = require('../../struct/ExcelHandler');
+const { Command, Flag } = require('discord-akairo');
 const Resolver = require('../../struct/Resolver');
+const { MessageEmbed } = require('discord.js');
 
-class WarMemberExport extends Command {
+class WarStatsExport extends Command {
 	constructor() {
-		super('war-member', {
-			aliases: ['war-mem'],
+		super('war-stats', {
+			aliases: ['war-stats'],
 			category: 'activity',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
-				content: 'Export war stats to excel for all clans.',
-				examples: ['']
+				content: 'Export war attacks of clan members.',
+				examples: ['#9Q92C8R20']
 			}
 		});
 	}
@@ -53,6 +53,7 @@ class WarMemberExport extends Command {
 				$or: [{ 'clan.members.tag': data.tag }, { 'opponent.members.tag': data.tag }],
 				state: { $in: ['inWar', 'warEnded'] }
 			})
+			.sort({ preparationStartTime: 1 })
 			.toArray();
 
 		const members = {};
@@ -205,4 +206,4 @@ class WarMemberExport extends Command {
 	}
 }
 
-module.exports = WarMemberExport;
+module.exports = WarStatsExport;
