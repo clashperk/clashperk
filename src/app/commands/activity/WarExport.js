@@ -92,7 +92,7 @@ class WarExport extends Command {
 		for (const { name, members } of chunks) {
 			const sheet = workbook.addWorksheet(name);
 			sheet.columns = [
-				{ header: 'Name', width: 16 },
+				{ header: 'Name', width: 16, filterButton: true },
 				{ header: 'Tag', width: 16 },
 				{ header: 'Total Attacks', width: 8 },
 				{ header: 'Total Stars', width: 8 },
