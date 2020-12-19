@@ -127,6 +127,7 @@ class UpgradesCommand extends Command {
 			}
 		}
 
+		if (!embed.fields.length) embed.setFooter('No Remaining Upgrades');
 		return message.util.send({ embed });
 	}
 

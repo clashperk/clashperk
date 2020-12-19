@@ -198,6 +198,7 @@ class RushedCommand extends Command {
 			]);
 		}
 
+		if (!embed.fields.length) embed.setFooter('No Rushed Troops');
 		return message.util.send({ embed });
 	}
 
