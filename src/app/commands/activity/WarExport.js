@@ -115,6 +115,7 @@ class WarExport extends Command {
 
 			for (let i = 1; i <= sheet.columns.length; i++) {
 				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+                                sheet.getColumn(i).filterButton = true;
 			}
 
 			sheet.addRows(members.filter(m => m.of > 0)
