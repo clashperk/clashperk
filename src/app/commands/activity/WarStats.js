@@ -73,12 +73,12 @@ class WarStatsExport extends Command {
 				}
 
 				if (m.attacks?.length === 1) {
-					mem.stars = m.attacks.map(m => [m.stars, m.destructionPercentage]).flat().concat(...[0, 0]);
+					mem.stars = m.attacks.map(m => [m.stars, m.destructionPercentage.toFixed(2)]).flat().concat(...[0, 0]);
 					mem.missed = war.groupWar ? 0 : 1;
 				}
 
 				if (m.attacks?.length === 2) {
-					mem.stars = m.attacks.map(m => [m.stars, m.destructionPercentage]).flat();
+					mem.stars = m.attacks.map(m => [m.stars, m.destructionPercentage.toFixed(2)]).flat();
 				}
 
 				const member = members[m.tag]
