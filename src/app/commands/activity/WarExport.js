@@ -139,7 +139,7 @@ class WarExport extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util.send(`War Export (${days} day${days === 1 ? '' : 's'})`, {
+		return message.util.send(`**War Export (${days} day${days === 1 ? '' : 's'})**`, {
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_war_stats.xlsx'

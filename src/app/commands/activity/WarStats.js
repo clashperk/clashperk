@@ -167,9 +167,9 @@ class WarStatsExport extends Command {
 					});
 				} else {
 					const buffer = await this.excel(data, chunks);
-					await message.util.send(`**${data.name} (${data.tag}) War Attack Stats**`, {
+					await message.util.send(`**${data.name} (${data.tag}) War Attack History**`, {
 						files: [{
-							attachment: Buffer.from(buffer), name: 'clan_member_stats.xlsx'
+							attachment: Buffer.from(buffer), name: 'war_attack_history.xlsx'
 						}]
 					});
 				}
