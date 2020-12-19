@@ -128,19 +128,21 @@ class RushedCommand extends Command {
 				}
 			);
 
-			embed.addField(
-				`${category.title} (${unitsArray.length})`,
-				this.chunk(unitsArray)
-					.map(
-						chunks => chunks.map(unit => {
-							const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-							const level = this.padStart(unit.level);
-							const maxLevel = this.padEnd(unit.hallMaxLevel);
-							return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
-						}).join(' ')
-					)
-					.join('\n')
-			);
+			if (unitsArray.length) {
+				embed.addField(
+					`${category.title} (${unitsArray.length})`,
+					this.chunk(unitsArray)
+						.map(
+							chunks => chunks.map(unit => {
+								const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+								const level = this.padStart(unit.level);
+								const maxLevel = this.padEnd(unit.hallMaxLevel);
+								return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
+							}).join(' ')
+						)
+						.join('\n')
+				);
+			}
 		}
 
 		return embed;

@@ -133,19 +133,21 @@ class UnitsCommand extends Command {
 				}
 			);
 
-			embed.addField(
-				category.title,
-				this.chunk(unitsArray)
-					.map(
-						chunks => chunks.map(unit => {
-							const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-							const level = this.padStart(unit.level);
-							const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
-							return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
-						}).join(' ')
-					)
-					.join('\n')
-			);
+			if (unitsArray.length) {
+				embed.addField(
+					category.title,
+					this.chunk(unitsArray)
+						.map(
+							chunks => chunks.map(unit => {
+								const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+								const level = this.padStart(unit.level);
+								const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
+								return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
+							}).join(' ')
+						)
+						.join('\n')
+				);
+			}
 		}
 
 		const superTrops = RAW_TROOPS_DATA.SUPER_TROOPS
@@ -170,18 +172,20 @@ class UnitsCommand extends Command {
 				}
 			);
 
-		embed.addField('Super Troops', [
-			this.chunk(superTrops)
-				.map(
-					chunks => chunks.map(unit => {
-						const unitIcon = SUPER_TROOPS[unit.name];
-						const level = this.padStart(unit.level);
-						const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
-						return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
-					}).join(' ')
-				)
-				.join('\n')
-		]);
+		if (superTrops.length) {
+			embed.addField('Super Troops', [
+				this.chunk(superTrops)
+					.map(
+						chunks => chunks.map(unit => {
+							const unitIcon = SUPER_TROOPS[unit.name];
+							const level = this.padStart(unit.level);
+							const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
+							return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
+						}).join(' ')
+					)
+					.join('\n')
+			]);
+		}
 
 		return embed;
 	}
