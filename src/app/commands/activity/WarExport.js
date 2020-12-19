@@ -1,4 +1,4 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 const { Excel } = require('../../struct/ExcelHandler');
 
 class WarExport extends Command {
@@ -10,7 +10,14 @@ class WarExport extends Command {
 			description: {
 				content: 'Export wars to excel for all clans.',
 				examples: ['']
-			}
+			},
+			args: [
+				{
+					id: 'days',
+					type: Argument.range('integer', 1, 120, true),
+					default: 30
+				}
+			]
 		});
 	}
 
@@ -19,28 +26,21 @@ class WarExport extends Command {
 		return 3000;
 	}
 
-	async exec(message) {
-		const patron = this.client.patron.check(message.author, message.guild);
-		if (!patron) {
-			return message.channel.send({
-				embed: {
-					description: '[Become a Patron](https://www.patreon.com/clashperk) to export wars to Excel.'
-				}
-			});
-		}
-
+	async exec(message, { days }) {
 		const clans = await this.client.mongodb.collection('clanwarlogs')
 			.find({ guild: message.guild.id })
-			// .sort({ preparationStartTime: 1 })
 			.toArray();
-		const chunks = [];
 
+		const chunks = [];
 		for (const { tag, name } of clans) {
 			const wars = await this.client.mongodb.collection('clanwarstores')
 				.find({
+					// $not: { isFreindly: true },
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 					state: { $in: ['inWar', 'warEnded'] }
 				})
+				.sort({ preparationStartTime: -1 })
+				.limit(days)
 				.toArray();
 
 			const members = {};
@@ -139,7 +139,7 @@ class WarExport extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util.send({
+		return message.util.send(`War Export (${days} day${days === 1 ? '' : 's'})`, {
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_war_stats.xlsx'

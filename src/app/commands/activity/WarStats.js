@@ -38,22 +38,15 @@ class WarStatsExport extends Command {
 
 	async exec(message, { data }) {
 		const patron = this.client.patron.check(message.author, message.guild);
-		if (!patron) {
-			return message.channel.send({
-				embed: {
-					description: '[Become a Patron](https://www.patreon.com/clashperk) to export CWL data to Excel.'
-				}
-			});
-		}
 
 		const chunks = [];
-
 		const wars = await this.client.mongodb.collection('clanwarstores')
 			.find({
+				// $not: { isFreindly: true },
 				$or: [{ 'clan.members.tag': data.tag }, { 'opponent.members.tag': data.tag }],
 				state: { $in: ['inWar', 'warEnded'] }
 			})
-			.sort({ preparationStartTime: 1 })
+			.sort({ preparationStartTime: -1 })
 			.toArray();
 
 		const members = {};
@@ -156,6 +149,39 @@ class WarStatsExport extends Command {
 				`${(mem.defDestruction / mem.defCount).toFixed(2)} %`
 			]);
 
+		const msg = await message.util.send({ embed });
+		await msg.react('📥');
+
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['📥'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 90000, max: 1 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '📥') {
+				if (!patron) {
+					await message.channel.send({
+						embed: {
+							description: '[Become a Patron](https://www.patreon.com/clashperk) to export attack stats to Excel.'
+						}
+					});
+				} else {
+					const buffer = await this.excel(data, chunks);
+					await message.util.send(`**${data.name} (${data.tag}) War Attack Stats**`, {
+						files: [{
+							attachment: Buffer.from(buffer), name: 'clan_member_stats.xlsx'
+						}]
+					});
+				}
+
+				return collector.stop();
+			}
+		});
+
+		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+	}
+
+	async excel(data, chunks) {
 		const workbook = Excel();
 		const sheet = workbook.addWorksheet(`${data.name} (${data.tag})`);
 		sheet.columns = [
@@ -191,14 +217,7 @@ class WarStatsExport extends Command {
 				m.missed
 			]));
 
-		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util.send({
-			embed,
-			files: [{
-				attachment: Buffer.from(buffer),
-				name: 'clan_member_stats.xlsx'
-			}]
-		});
+		return workbook.xlsx.writeBuffer();
 	}
 
 	starCount(stars = [], count) {
