@@ -3,7 +3,7 @@ module.exports = {
 		{
 			'name': 'Super Barbarian',
 			'original': 'Barbarian',
-			'minOriginalLevel': 7,
+			'minOriginalLevel': 8,
 			'village': 'home',
 			'duration': 72,
 			'cooldown': 72,
@@ -13,7 +13,7 @@ module.exports = {
 		{
 			'name': 'Sneaky Goblin',
 			'original': 'Goblin',
-			'minOriginalLevel': 6,
+			'minOriginalLevel': 7,
 			'village': 'home',
 			'duration': 72,
 			'cooldown': 72,
@@ -23,7 +23,7 @@ module.exports = {
 		{
 			'name': 'Super Giant',
 			'original': 'Giant',
-			'minOriginalLevel': 8,
+			'minOriginalLevel': 9,
 			'village': 'home',
 			'duration': 72,
 			'cooldown': 72,
@@ -33,7 +33,7 @@ module.exports = {
 		{
 			'name': 'Super Wall Breaker',
 			'original': 'Wall Breaker',
-			'minOriginalLevel': 6,
+			'minOriginalLevel': 7,
 			'village': 'home',
 			'duration': 72,
 			'cooldown': 72,
@@ -43,7 +43,7 @@ module.exports = {
 		{
 			'name': 'Super Archer',
 			'original': 'Archer',
-			'minOriginalLevel': 7,
+			'minOriginalLevel': 8,
 			'village': 'home',
 			'duration': 72,
 			'cooldown': 72,
@@ -53,7 +53,7 @@ module.exports = {
 		{
 			'name': 'Super Witch',
 			'original': 'Witch',
-			'minOriginalLevel': 4,
+			'minOriginalLevel': 5,
 			'village': 'home',
 			'duration': 72,
 			'cooldown': 72,
@@ -63,7 +63,7 @@ module.exports = {
 		{
 			'name': 'Inferno Dragon',
 			'original': 'Baby Dragon',
-			'minOriginalLevel': 5,
+			'minOriginalLevel': 6,
 			'village': 'home',
 			'duration': 72,
 			'cooldown': 72,
@@ -73,7 +73,7 @@ module.exports = {
 		{
 			'name': 'Super Valkyrie',
 			'original': 'Valkyrie',
-			'minOriginalLevel': 6,
+			'minOriginalLevel': 7,
 			'village': 'home',
 			'duration': 72,
 			'cooldown': 72,
@@ -83,7 +83,7 @@ module.exports = {
 		{
 			'name': 'Super Minion',
 			'original': 'Minion',
-			'minOriginalLevel': 7,
+			'minOriginalLevel': 8,
 			'village': 'home',
 			'duration': 72,
 			'cooldown': 72,
@@ -93,7 +93,7 @@ module.exports = {
 		{
 			'name': 'Super Wizard',
 			'original': 'Wizard',
-			'minOriginalLevel': 8,
+			'minOriginalLevel': 9,
 			'village': 'home',
 			'duration': 72,
 			'cooldown': 72,
@@ -103,7 +103,7 @@ module.exports = {
 		{
 			'name': 'Ice Hound',
 			'original': 'Lava Hound',
-			'minOriginalLevel': 4,
+			'minOriginalLevel': 5,
 			'village': 'home',
 			'duration': 72,
 			'cooldown': 72,
