@@ -67,7 +67,6 @@ class RushedCommand extends Command {
 
 	async embed(data) {
 		const embed = new MessageEmbed()
-			.setFooter('Rushed Troops')
 			.setAuthor(
 				`${data.name} (${data.tag})`,
 				`https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`,
@@ -145,6 +144,8 @@ class RushedCommand extends Command {
 			}
 		}
 
+		if (!embed.fields.length) embed.setFooter('No Rushed Troops');
+		else embed.setFooter('Rushed Troops');
 		return embed;
 	}
 
@@ -198,7 +199,6 @@ class RushedCommand extends Command {
 			]);
 		}
 
-		if (!embed.fields.length) embed.setFooter('No Rushed Troops');
 		return message.util.send({ embed });
 	}
 
