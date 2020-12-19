@@ -134,7 +134,7 @@ class WarStatsExport extends Command {
 				mem.stars,
 				'',
 				'**Avg Destruction**',
-				`${(mem.dest / mem.of).toFixed(2)} %`,
+				`${(mem.dest / mem.of || 0).toFixed(2)} %`,
 				'',
 				'**3 Stars**',
 				this.starCount(mem.starTypes, 3),
@@ -146,7 +146,7 @@ class WarStatsExport extends Command {
 				mem.defStars,
 				'',
 				'**Avg Def Destruction**',
-				`${(mem.defDestruction / mem.defCount).toFixed(2)} %`
+				`${(mem.defDestruction / mem.defCount || 0).toFixed(2)} %`
 			]);
 
 		const msg = await message.util.send({ embed });

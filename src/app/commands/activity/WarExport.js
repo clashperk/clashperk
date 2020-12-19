@@ -123,18 +123,18 @@ class WarExport extends Command {
 					m.tag,
 					m.of,
 					m.stars,
-					(m.stars / m.of).toFixed(2),
+					(m.stars / m.of || 0).toFixed(2),
 					m.dest.toFixed(2),
-					(m.dest / m.of).toFixed(2),
+					(m.dest / m.of || 0).toFixed(2),
 					this.starCount(m.starTypes, 3),
 					this.starCount(m.starTypes, 2),
 					this.starCount(m.starTypes, 1),
 					this.starCount(m.starTypes, 0),
 					m.of - m.attacks,
 					m.defStars,
-					(m.defStars / m.defCount).toFixed(),
+					(m.defStars / m.defCount || 0).toFixed(),
 					m.defDestruction.toFixed(2),
-					(m.defDestruction / m.defCount).toFixed(2)
+					(m.defDestruction / m.defCount || 0).toFixed(2)
 				]));
 		}
 
