@@ -11,20 +11,13 @@ class WarExport extends Command {
 				content: 'Export wars or missed attacks to excel for all clans.',
 				usage: '<days|missed>',
 				examples: ['20', 'missed']
-			},
-			args: [
-				{
-					id: 'days',
-					type: Argument.union(Argument.range('integer', 1, 120, true), 'string'),
-					default: 30
-				}
-			]
+			}
 		});
 	}
 
 	*args() {
 		const limit = yield {
-			type: Argument.union(Argument.range('integer', 1, 30, true), 'string'),
+			type: Argument.union('string', Argument.range('integer', 1, 30)),
 			default: 30
 		};
 
@@ -44,7 +37,7 @@ class WarExport extends Command {
 
 	async exec(message, { limit, next }) {
 		if (limit === 'missed') {
-			return this.handler.handleDirectCommand(
+			return this.client.commandHandler.handleDirectCommand(
 				message,
 				next,
 				this.handler.modules.get('export-missed-attacks'),
@@ -52,6 +45,7 @@ class WarExport extends Command {
 			);
 		}
 
+		limit = typeof limit === 'number' ? limit : 30;
 		const clans = await this.client.mongodb.collection('clanwarlogs')
 			.find({ guild: message.guild.id })
 			.toArray();
@@ -164,7 +158,7 @@ class WarExport extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util.send(`**War Export (${limit} day${limit === 1 ? '' : 's'})**`, {
+		return message.util.send(`**War Export ${message.guild.patron ? `(${limit} day${limit === 1 ? '' : 's'})` : ''}**`, {
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_war_stats.xlsx'
