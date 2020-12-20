@@ -8,17 +8,33 @@ class WarExport extends Command {
 			category: 'activity',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
-				content: 'Export wars to excel for all clans.',
-				examples: ['']
+				content: 'Export wars or missed attacks to excel for all clans.',
+				usage: '<days|missed>',
+				examples: ['20', 'missed']
 			},
 			args: [
 				{
 					id: 'days',
-					type: Argument.range('integer', 1, 120, true),
+					type: Argument.union(Argument.range('integer', 1, 120, true), 'string'),
 					default: 30
 				}
 			]
 		});
+	}
+
+	*args() {
+		const limit = yield {
+			type: Argument.union(Argument.range('integer', 1, 30, true), 'string'),
+			default: 30
+		};
+
+		const next = yield {
+			type: 'string',
+			match: 'rest',
+			default: ''
+		};
+
+		return { limit, next };
 	}
 
 	cooldown(message) {
@@ -26,7 +42,16 @@ class WarExport extends Command {
 		return 3000;
 	}
 
-	async exec(message, { days }) {
+	async exec(message, { limit, next }) {
+		if (limit === 'missed') {
+			return this.handler.handleDirectCommand(
+				message,
+				next,
+				this.handler.modules.get('export-missed-attacks'),
+				false
+			);
+		}
+
 		const clans = await this.client.mongodb.collection('clanwarlogs')
 			.find({ guild: message.guild.id })
 			.toArray();
@@ -40,7 +65,7 @@ class WarExport extends Command {
 					state: { $in: ['inWar', 'warEnded'] }
 				})
 				.sort({ preparationStartTime: -1 })
-				.limit(days)
+				.limit(message.guild.patron() ? 0 : limit)
 				.toArray();
 
 			const members = {};
@@ -92,22 +117,22 @@ class WarExport extends Command {
 		for (const { name, members } of chunks) {
 			const sheet = workbook.addWorksheet(name);
 			sheet.columns = [
-				{ header: 'Name', width: 16, filterButton: true },
+				{ header: 'Name', width: 20 },
 				{ header: 'Tag', width: 16 },
-				{ header: 'Total Attacks', width: 8 },
-				{ header: 'Total Stars', width: 8 },
-				{ header: 'Avg Stars', width: 8 },
-				{ header: 'Total Dest', width: 8 },
-				{ header: 'Avg Dest', width: 8 },
-				{ header: 'Three Stars', width: 8 },
-				{ header: 'Two Stars', width: 8 },
-				{ header: 'One Stars', width: 8 },
-				{ header: 'Zero Stars', width: 8 },
-				{ header: 'Missed', width: 8 },
-				{ header: 'Def Stars', width: 8 },
-				{ header: 'Avg Def Stars', width: 8 },
-				{ header: 'Total Def Dest', width: 8 },
-				{ header: 'Avg Def Dest', width: 8 }
+				{ header: 'Total Attacks', width: 10 },
+				{ header: 'Total Stars', width: 10 },
+				{ header: 'Avg Stars', width: 10 },
+				{ header: 'Total Dest', width: 10 },
+				{ header: 'Avg Dest', width: 10 },
+				{ header: 'Three Stars', width: 10 },
+				{ header: 'Two Stars', width: 10 },
+				{ header: 'One Stars', width: 10 },
+				{ header: 'Zero Stars', width: 10 },
+				{ header: 'Missed', width: 10 },
+				{ header: 'Def Stars', width: 10 },
+				{ header: 'Avg Def Stars', width: 10 },
+				{ header: 'Total Def Dest', width: 10 },
+				{ header: 'Avg Def Dest', width: 10 }
 			];
 
 			sheet.getRow(1).font = { bold: true, size: 10 };
@@ -115,7 +140,6 @@ class WarExport extends Command {
 
 			for (let i = 1; i <= sheet.columns.length; i++) {
 				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-                                sheet.getColumn(i).filterButton = true;
 			}
 
 			sheet.addRows(members.filter(m => m.of > 0)
@@ -140,7 +164,7 @@ class WarExport extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util.send(`**War Export (${days} day${days === 1 ? '' : 's'})**`, {
+		return message.util.send(`**War Export (${limit} day${limit === 1 ? '' : 's'})**`, {
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_war_stats.xlsx'

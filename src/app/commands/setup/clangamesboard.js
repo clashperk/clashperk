@@ -101,7 +101,7 @@ class ClanGamesBoardCommand extends Command {
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
 				'**Wait Time**',
-				`${this.client.patron.get(message.guild.id, 'guild', false) ? 15 : 30} min`,
+				`${message.guild.patron() ? 15 : 30} min`,
 				'',
 				'**Color**',
 				`\`#${hexColor.toString(16)}\``,

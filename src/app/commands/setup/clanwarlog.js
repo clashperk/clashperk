@@ -91,9 +91,6 @@ class WarLogCommand extends Command {
 			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
-				'**Wait Time**',
-				`${this.client.patron.get(message.guild.id, 'guild', false) ? 10 : 20} min`,
-				'',
 				'**War Log**',
 				`${data.isWarLogPublic ? 'Public' : 'Private'}`,
 				'',

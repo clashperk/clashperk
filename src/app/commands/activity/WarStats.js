@@ -190,12 +190,12 @@ class WarStatsExport extends Command {
 			{ header: 'Clan', width: 16 },
 			{ header: 'Date', width: 14 },
 			{ header: 'War Type', width: 10 },
-			{ header: 'Team Size', width: 8 },
-			{ header: 'First Hit', width: 8 },
-			{ header: 'Dest %', width: 8 },
-			{ header: 'Second Hit', width: 8 },
-			{ header: 'Dest %', width: 8 },
-			{ header: 'Missed', width: 8 }
+			{ header: 'Team Size', width: 10 },
+			{ header: 'First Hit', width: 10 },
+			{ header: 'Dest %', width: 10 },
+			{ header: 'Second Hit', width: 10 },
+			{ header: 'Dest %', width: 10 },
+			{ header: 'Missed', width: 10 }
 		];
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
