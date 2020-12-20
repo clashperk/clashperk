@@ -1,4 +1,4 @@
-const { Command, Argument } = require('discord-akairo');
+const { Command } = require('discord-akairo');
 const { Excel } = require('../../struct/ExcelHandler');
 
 class WarExport extends Command {
@@ -17,7 +17,11 @@ class WarExport extends Command {
 
 	*args() {
 		const limit = yield {
-			type: Argument.union('string', Argument.range('integer', 1, 30)),
+			type: (msg, num) => {
+				if (!num) return null;
+				if (num.toLowerCase() === 'missed') return 'missed';
+				return (Number(num) || 30) >= 30 ? 30 : Number(num);
+			},
 			default: 30
 		};
 
@@ -37,15 +41,15 @@ class WarExport extends Command {
 
 	async exec(message, { limit, next }) {
 		if (limit === 'missed') {
+			const command = this.handler.modules.get('export-missed-attacks');
 			return this.client.commandHandler.handleDirectCommand(
 				message,
 				next,
-				this.handler.modules.get('export-missed-attacks'),
+				command,
 				false
 			);
 		}
 
-		limit = typeof limit === 'number' ? limit : 30;
 		const clans = await this.client.mongodb.collection('clanwarlogs')
 			.find({ guild: message.guild.id })
 			.toArray();
@@ -158,7 +162,7 @@ class WarExport extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util.send(`**War Export ${message.guild.patron ? `(${limit} day${limit === 1 ? '' : 's'})` : ''}**`, {
+		return message.util.send(`**War Export ${!message.guild.patron() ? `(${limit} day${limit === 1 ? '' : 's'})` : ''}**`, {
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_war_stats.xlsx'
