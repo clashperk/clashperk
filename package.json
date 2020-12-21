@@ -22,7 +22,6 @@
 		"discord.js": "^12.4.0",
 		"dotenv": "^8.2.0",
 		"exceljs": "^4.2.0",
-		"firebase-admin": "^8.13.0",
 		"grpc": "^1.24.4",
 		"moment": "^2.29.1",
 		"moment-duration-format": "^2.3.2",
