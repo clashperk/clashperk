@@ -69,7 +69,7 @@ class ClanEmbedCommand extends Command {
 			match: 'none',
 			type: Argument.validate('string', (msg, txt) => txt.length <= 300),
 			prompt: {
-				start: 'What would you like to set the description? (write anything)',
+				start: 'What would you like to set the description? (write anything or `auto` to sync with clan description or `none` to leave it empty)',
 				retry: 'Embed description must be 300 or fewer in length.',
 				time: 1.5 * 60 * 1000
 			},
