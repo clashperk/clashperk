@@ -76,7 +76,7 @@ class PlayerEvent {
 			embed.setDescription([
 				`${TOWN_HALLS[member.townHallLevel]} **${member.townHallLevel}**`,
 				`${emoji.xp} **${member.expLevel}**`,
-				`${emoji.troopsdonation} **${item.donated}**${emoji.donated} **${item.received}**${emoji.received}`
+				`${emoji.troopsdonation} **${item.donated}**${emoji.donations} **${item.received}**${emoji.donationsReceived}`
 			].join(' '));
 		} else {
 			const flag = await mongodb.db('clashperk')
