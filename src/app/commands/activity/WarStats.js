@@ -64,7 +64,7 @@ class WarStatsExport extends Command {
 					clan: clan.name,
 					teamSize: war.teamSize,
 					warType: war.groupWar ? 'CWL' : 'Regular',
-					timestamp: new Date(war.preparationStartTime).toDateString()
+					timestamp: new Date(war.preparationStartTime)
 				};
 
 				if (!m.attacks) {
