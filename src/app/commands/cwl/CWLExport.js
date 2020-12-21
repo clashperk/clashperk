@@ -10,13 +10,6 @@ class CWLExport extends Command {
 			aliases: ['cwl-export'],
 			category: 'cwl-hidden',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
-			args: [
-				{
-					id: 'method',
-					type: ['clans', 'all', 'members'],
-					default: 'clans'
-				}
-			],
 			description: {
 				content: 'Export war stats to excel for all clans.',
 				examples: ['']
@@ -29,7 +22,7 @@ class CWLExport extends Command {
 		return 3000;
 	}
 
-	async exec(message, { }) {
+	async exec(message) {
 		const patron = this.client.patron.check(message.author, message.guild);
 		if (!patron) {
 			return message.channel.send({
