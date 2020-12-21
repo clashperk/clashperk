@@ -49,7 +49,7 @@ class ClanEmbedCommand extends Command {
 			match: 'none',
 			type: 'member',
 			prompt: {
-				start: 'Who is the leader of the clan? (mention clan leader)',
+				start: 'Who is the leader of the clan? (@mention clan leader)',
 				retry: 'Please mention a valid member...'
 			}
 		};
