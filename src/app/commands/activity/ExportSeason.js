@@ -5,7 +5,7 @@ class WarExport extends Command {
 	constructor() {
 		super('export-season', {
 			aliases: ['export-season'],
-			category: 'activity',
+			category: 'activity_',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
 				content: 'Export wars or missed attacks to excel for all clans.',
