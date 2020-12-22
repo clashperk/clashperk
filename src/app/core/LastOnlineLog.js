@@ -8,6 +8,10 @@ class LastOnlineEvent {
 	constructor(client) {
 		this.client = client;
 		this.cached = new Collection();
+		this.lastReq = {
+			id: null,
+			count: 0
+		};
 	}
 
 	async exec(tag, clan, members) {
@@ -18,6 +22,20 @@ class LastOnlineEvent {
 		}
 
 		return clans.clear();
+	}
+
+	async throttle(id) {
+		if (this.lastReq.id === id) await this.delay(1000);
+
+		if (this.lastReq.id === id) {
+			this.lastReq.count += 1;
+			this.lastReq.id = id;
+		} else {
+			this.lastReq.count = 0;
+			this.lastReq.id = id;
+		}
+
+		return Promise.resolve();
 	}
 
 	async permissionsFor(id, cache, clan, members) {
@@ -33,6 +51,7 @@ class LastOnlineEvent {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel);
 			if (channel.permissionsFor(channel.guild.me).has(permissions, false)) {
+				await this.throttle(channel.id);
 				return this.handleMessage(id, channel, clan, members);
 			}
 		}
