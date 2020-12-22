@@ -63,7 +63,7 @@ class DonationBoardCommand extends Command {
 				members.push({
 					name: mem.name,
 					tag: mem.tag,
-					donated: mem.donations >= m.donationsReceived ? mem.donations : m.donations,
+					donated: mem.donations >= m.donations ? mem.donations : m.donations,
 					received: mem.donationsReceived >= m.donationsReceived ? mem.donationsReceived : m.donationsReceived
 				});
 			}
