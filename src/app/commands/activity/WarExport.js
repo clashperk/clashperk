@@ -4,7 +4,6 @@ const { Excel } = require('../../struct/ExcelHandler');
 class WarExport extends Command {
 	constructor() {
 		super('export-wars', {
-			aliases: ['export'],
 			category: 'activity',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
