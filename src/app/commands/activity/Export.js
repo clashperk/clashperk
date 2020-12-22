@@ -63,7 +63,7 @@ class Export extends Command {
 		const command = this.handler.modules.get('export-wars');
 		return this.client.commandHandler.handleDirectCommand(
 			message,
-			next,
+			limit,
 			command,
 			false
 		);
