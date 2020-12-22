@@ -1,4 +1,4 @@
-const { Command } = require('discord-akairo');
+const { Command, Argument } = require('discord-akairo');
 const { Excel } = require('../../struct/ExcelHandler');
 
 class WarExport extends Command {
@@ -17,22 +17,11 @@ class WarExport extends Command {
 
 	*args() {
 		const limit = yield {
-			type: (msg, num) => {
-				if (!num) return null;
-				if (num.toLowerCase() === 'missed') return 'missed';
-				if (num.toLowerCase() === 'season') return 'season';
-				return (Number(num) || 30) >= 30 ? 30 : Number(num);
-			},
+			type: Argument.range('integer', 1, 30),
 			default: 30
 		};
 
-		const next = yield {
-			type: 'string',
-			match: 'rest',
-			default: ''
-		};
-
-		return { limit, next };
+		return { limit };
 	}
 
 	cooldown(message) {
@@ -40,27 +29,7 @@ class WarExport extends Command {
 		return 3000;
 	}
 
-	async exec(message, { limit, next }) {
-		if (limit === 'missed') {
-			const command = this.handler.modules.get('export-missed-attacks');
-			return this.client.commandHandler.handleDirectCommand(
-				message,
-				next,
-				command,
-				false
-			);
-		}
-
-		if (limit === 'season') {
-			const command = this.handler.modules.get('export-season');
-			return this.client.commandHandler.handleDirectCommand(
-				message,
-				next,
-				command,
-				false
-			);
-		}
-
+	async exec(message, { limit }) {
 		const clans = await this.client.mongodb.collection('clanwarlogs')
 			.find({ guild: message.guild.id })
 			.toArray();
