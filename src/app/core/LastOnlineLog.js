@@ -24,6 +24,10 @@ class LastOnlineEvent {
 		return clans.clear();
 	}
 
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
+
 	async throttle(id) {
 		if (this.lastReq.id === id) await this.delay(1000);
 
