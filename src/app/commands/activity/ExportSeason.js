@@ -4,13 +4,11 @@ const { Excel } = require('../../struct/ExcelHandler');
 class WarExport extends Command {
 	constructor() {
 		super('export-season', {
-			aliases: ['export-season'],
-			category: 'activity_',
+			category: 'activity',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
-				content: 'Export wars or missed attacks to excel for all clans.',
-				usage: '<days|missed>',
-				examples: ['20', 'missed']
+				content: 'Export season stats to excel for all clans.',
+				examples: ['']
 			}
 		});
 	}
@@ -34,7 +32,6 @@ class WarExport extends Command {
 			const members = await this.client.mongodb.collection('clanmembers')
 				.find({ tag: { $in: clan.memberList.map(m => m.tag) }, clanTag: clan.tag })
 				.sort({ createdAt: -1 })
-				.limit(1)
 				.toArray();
 			const sheet = workbook.addWorksheet(name);
 			sheet.columns = [
@@ -51,7 +48,8 @@ class WarExport extends Command {
 				{ header: 'CWL Stars Gained', width: 10 },
 				{ header: 'Gold Grab', width: 10 },
 				{ header: 'Elixir Escapade', width: 10 },
-				{ header: 'Heroic Heist', width: 10 }
+				{ header: 'Heroic Heist', width: 10 },
+				{ header: 'Clan Games', width: 10 }
 			];
 
 			sheet.getRow(1).font = { bold: true, size: 10 };
@@ -61,8 +59,8 @@ class WarExport extends Command {
 				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 			}
 
-			sheet.addRows(members.filter(m => m.of > 0)
-				.map(m => [
+			sheet.addRows(
+				members.map(m => [
 					m.name,
 					m.tag,
 					m.townHallLevel,
@@ -75,7 +73,8 @@ class WarExport extends Command {
 					m.warStars.gained,
 					...['War League Legend', 'Gold Grab', 'Elixir Escapade', 'Heroic Heist', 'Games Champion']
 						.map(ac => m.achievements.find(a => a.name === ac).gained)
-				]));
+				])
+			);
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();

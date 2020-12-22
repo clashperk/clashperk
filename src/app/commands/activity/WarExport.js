@@ -20,6 +20,7 @@ class WarExport extends Command {
 			type: (msg, num) => {
 				if (!num) return null;
 				if (num.toLowerCase() === 'missed') return 'missed';
+				if (num.toLowerCase() === 'season') return 'season';
 				return (Number(num) || 30) >= 30 ? 30 : Number(num);
 			},
 			default: 30
@@ -42,6 +43,16 @@ class WarExport extends Command {
 	async exec(message, { limit, next }) {
 		if (limit === 'missed') {
 			const command = this.handler.modules.get('export-missed-attacks');
+			return this.client.commandHandler.handleDirectCommand(
+				message,
+				next,
+				command,
+				false
+			);
+		}
+
+		if (limit === 'season') {
+			const command = this.handler.modules.get('export-season');
 			return this.client.commandHandler.handleDirectCommand(
 				message,
 				next,
