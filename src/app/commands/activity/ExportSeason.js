@@ -24,6 +24,8 @@ class WarExport extends Command {
 			.toArray();
 
 		const workbook = Excel();
+		const sheet = workbook.addWorksheet(new Date().toISOString().substring(0, 7));
+
 		for (const { tag, name } of clans) {
 			const clan = await this.client.coc.clan(tag).catch(() => null);
 			if (!clan?.ok) continue;
@@ -33,10 +35,11 @@ class WarExport extends Command {
 				.find({ tag: { $in: clan.memberList.map(m => m.tag) }, clanTag: clan.tag })
 				.sort({ createdAt: -1 })
 				.toArray();
-			const sheet = workbook.addWorksheet(name);
+			// const sheet = workbook.addWorksheet(name);
 			sheet.columns = [
 				{ header: 'Name', width: 20 },
 				{ header: 'Tag', width: 16 },
+				{ header: 'Clan', width: 20 },
 				{ header: 'Town Hall', width: 10 },
 				{ header: 'Total Donated', width: 10 },
 				{ header: 'Total Received', width: 10 },
@@ -63,6 +66,7 @@ class WarExport extends Command {
 				members.map(m => [
 					m.name,
 					m.tag,
+					name,
 					m.townHallLevel,
 					m.donations,
 					m.donationsReceived,
