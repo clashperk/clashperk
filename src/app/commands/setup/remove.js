@@ -4,12 +4,12 @@ const { ObjectId } = require('mongodb');
 const { Op } = require('../../util/constants');
 
 const logType = {
-	0: 'Donation Log',
-	1: 'Clan Feed',
-	3: 'Last Online Board',
-	4: 'Clan Embed',
-	5: 'Clan Games Board',
-	6: 'Clan War Log'
+	[Op.DONATION_LOG]: 'Donation Log',
+	[Op.CLAN_MEMBER_LOG]: 'Clan Feed',
+	[Op.LAST_ONLINE_LOG]: 'Last Online Board',
+	[Op.CLAN_EMBED_LOG]: 'Clan Embed',
+	[Op.CLAN_GAMES_LOG]: 'Clan Games Board',
+	[Op.CLAN_WAR_LOG]: 'Clan War Log'
 };
 
 class StopCommand extends Command {
@@ -127,7 +127,8 @@ class StopCommand extends Command {
 			return message.util.send({ embed: { title: `Successfully deleted **${data.name} (${data.tag})**` } });
 		}
 
-		await this.client.storage.stop(data._id, { op: Number(method) });
+		const deleted = await this.client.storage.stop(data._id, { op: Number(method) });
+		if (deleted?.deletedCount) await this.setFlag(id, Number(method));
 		await this.client.cacheHandler.delete(id, { op: Number(method), tag: data.tag });
 		this.delete(id);
 		return message.util.send({ embed: { description: `Successfully removed ${logType[method]} for **${data.name} (${data.tag})**` } });
@@ -136,17 +137,30 @@ class StopCommand extends Command {
 	async delete(id) {
 		const db = mongodb.db('clashperk');
 		const data = await Promise.all([
-			db.collection('donationlogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('playerlogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('lastonlinelogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('clanembedlogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('clangameslogs').findOne({ clan_id: ObjectId(id) }),
-			db.collection('clanwarlogs').findOne({ clan_id: ObjectId(id) })
-		]).then(collection => collection.every(item => item == null)); // eslint-disable-line no-eq-null
+			db.collection('donationlogs').countDocuments({ clan_id: ObjectId(id) }),
+			db.collection('playerlogs').countDocuments({ clan_id: ObjectId(id) }),
+			db.collection('lastonlinelogs').countDocuments({ clan_id: ObjectId(id) }),
+			db.collection('clanembedlogs').countDocuments({ clan_id: ObjectId(id) }),
+			db.collection('clangameslogs').countDocuments({ clan_id: ObjectId(id) }),
+			db.collection('clanwarlogs').countDocuments({ clan_id: ObjectId(id) })
+		]).then(collection => collection.every(num => num === 0)); // eslint-disable-line no-eq-null
 		if (data) {
 			this.client.cacheHandler.delete(id);
-			return db.collection('clanstores').updateOne({ _id: ObjectId(id) }, { $set: { active: false } });
+			return db.collection('clanstores').updateOne({ _id: ObjectId(id) }, { $set: { flag: 0 } });
 		}
+	}
+
+	async setFlag(id, bit) {
+		return mongodb.db('clashperk')
+			.collection('clanstores')
+			.updateOne(
+				{ _id: ObjectId(id) },
+				{
+					$bit: {
+						flag: { xor: bit }
+					}
+				}
+			);
 	}
 }
 

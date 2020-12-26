@@ -151,7 +151,7 @@ class UnitsCommand extends Command {
 		}
 
 		const superTrops = RAW_TROOPS_DATA.SUPER_TROOPS
-			.filter(unit => apiTroops.find(un => un.name === unit.original && un.level >= unit.minOriginalLevel))
+			.filter(unit => apiTroops.find(un => un.name === unit.original && un.village === unit.village && un.level >= unit.minOriginalLevel))
 			.map(
 				unit => {
 					const { maxLevel, level, name } = apiTroops

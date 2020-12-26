@@ -67,11 +67,11 @@ module.exports = {
 	},
 
 	Op: {
-		DONATION_LOG: 0,
-		CLAN_MEMBER_LOG: 1,
-		LAST_ONLINE_LOG: 3,
-		CLAN_EMBED_LOG: 4,
-		CLAN_GAMES_LOG: 5,
-		CLAN_WAR_LOG: 6
+		DONATION_LOG: 1 << 0,
+		CLAN_MEMBER_LOG: 1 << 1,
+		LAST_ONLINE_LOG: 1 << 2,
+		CLAN_EMBED_LOG: 1 << 3,
+		CLAN_GAMES_LOG: 1 << 4,
+		CLAN_WAR_LOG: 1 << 5
 	}
 };

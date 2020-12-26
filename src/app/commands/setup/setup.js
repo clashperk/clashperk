@@ -43,11 +43,11 @@ class SetupCommand extends Command {
 	*args() {
 		const method = yield {
 			type: [
-				['setup-donations', 'donations', 'donationlog'],
+				['setup-donations', 'donations', 'donation-log'],
 				['setup-lastonline', 'lastonline', 'onlineboard'],
 				['setup-clangames', 'clangames', 'cgboard'],
 				['setup-patron-clanembed', 'clanembed'],
-				['setup-clan-wars', 'clanwarlog', 'clan-wars'],
+				['setup-clan-wars', 'clanwarlog', 'clan-wars', 'war-feed'],
 				['setup-clan-feed', 'memberlog', 'clan-feed']
 			],
 			otherwise: message => {
