@@ -1,6 +1,6 @@
 require('../auth').config();
 require('dotenv').config();
-const Client = require('./app/struct/Client');
+const Client = require('./bot/struct/Client');
 const Sentry = require('@sentry/node');
 const package = require('../package.json');
 const { Guild, User } = require('discord.js');

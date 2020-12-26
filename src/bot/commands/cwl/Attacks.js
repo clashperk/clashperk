@@ -1,0 +1,295 @@
+const { Command, Argument, Flag } = require('discord-akairo');
+const fetch = require('node-fetch');
+const moment = require('moment');
+const { MessageEmbed } = require('discord.js');
+const { status } = require('../../util/Constants');
+const Resolver = require('../../struct/Resolver');
+const { emoji } = require('../../util/Emojis');
+const { Util } = require('discord.js');
+const CWL = require('../../core/CWLWarTags');
+
+const star = {
+	0: '☆☆☆',
+	1: '★☆☆',
+	2: '★★☆',
+	3: '★★★'
+};
+
+class CWLAttacksComamnd extends Command {
+	constructor() {
+		super('cwl-attacks', {
+			aliases: ['cwl-attacks'],
+			category: 'cwl-hidden',
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+			description: {
+				content: [
+					'Shows attacks of the current round.',
+					'',
+					'**Flags**',
+					'`--round <num>` or `-r <num>` to see specific round.'
+				],
+				usage: '<clanTag>',
+				examples: ['#8QU8J9LP']
+			},
+			optionFlags: ['--round', '-r']
+		});
+	}
+
+	cooldown(message) {
+		if (this.client.patron.check(message.author, message.guild)) return 1000;
+		return 3000;
+	}
+
+	*args() {
+		const round = yield {
+			match: 'option',
+			flag: ['--round', '-r'],
+			type: Argument.range('integer', 1, Infinity, true)
+		};
+
+		const data = yield {
+			type: async (message, args) => {
+				const resolved = await Resolver.resolve(message, args);
+				if (resolved.status !== 200) {
+					await message.channel.send({ embed: resolved.embed });
+					return Flag.cancel();
+				}
+				return resolved;
+			}
+		};
+
+		return { data, round };
+	}
+
+	async exec(message, { data, round }) {
+		await message.util.send(`**Fetching data... ${emoji.loading}**`);
+		const uri = `https://api.clashofclans.com/v1/clans/${encodeURIComponent(data.tag)}/currentwar/leaguegroup`;
+		const res = await fetch(uri, {
+			method: 'GET', timeout: 3000,
+			headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+		}).catch(() => null);
+
+		if (!res) {
+			return message.util.send({
+				embed: {
+					color: 0xf30c11,
+					author: { name: 'Error' },
+					description: status(504)
+				}
+			});
+		}
+
+		const body = await res.json();
+		if (!(body.state || res.ok)) {
+			const cw = await CWL.get(data.tag);
+			if (cw) {
+				return this.rounds(message, cw, data, round);
+			}
+			const embed = this.client.util.embed()
+				.setColor(this.client.embed(message))
+				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+				.setThumbnail(data.badgeUrls.medium)
+				.setDescription('Clan is not in CWL');
+			return message.util.send({ embed });
+		}
+
+		CWL.pushWarTags(data.tag, body.rounds);
+		return this.rounds(message, body, data, round);
+	}
+
+	async rounds(message, body, clan, round) {
+		const clanTag = clan.tag;
+		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
+		if (round && round > rounds.length) {
+			const embed = new MessageEmbed()
+				.setColor(this.client.embed(message))
+				.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+				.setDescription([
+					'This round is not available yet!',
+					'',
+					'**Available Rounds**',
+					Array(rounds.length)
+						.fill(0)
+						.map((x, i) => `**\`${i + 1}\`** ${emoji.ok}`)
+						.join('\n'),
+					Array(body.rounds.length - rounds.length)
+						.fill(0)
+						.map((x, i) => `**\`${i + rounds.length + 1}\`** ${emoji.wrong}`)
+						.join('\n')
+				]);
+			return message.util.send({ embed });
+		}
+
+		const chunks = [];
+		let i = 0;
+		for (const { warTags } of rounds) {
+			for (const warTag of warTags) {
+				const res = await fetch(`https://api.clashofclans.com/v1/clanwarleagues/wars/${encodeURIComponent(warTag)}`, {
+					method: 'GET', headers: { accept: 'application/json', authorization: `Bearer ${process.env.DEVELOPER_TOKEN}` }
+				});
+				const data = await res.json();
+				if ((data.clan && data.clan.tag === clanTag) || (data.opponent && data.opponent.tag === clanTag)) {
+					const embed = new MessageEmbed()
+						.setColor(this.client.embed(message));
+					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
+					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
+
+					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
+					if (data.state === 'warEnded') {
+						const end = new Date(moment(data.endTime).toDate()).getTime();
+						let attacks = '';
+						let index = 0;
+						const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
+						for (const member of this.sort(clanMembers)) {
+							if (!member.attacks) {
+								++index;
+								continue;
+							}
+							attacks += `\`\u200e${this.index(++index)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
+						}
+
+						embed.setDescription([
+							'**War Against**',
+							`\u200e${opponent.name} (${opponent.tag})`,
+							'',
+							'**State**',
+							`War ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`,
+							'',
+							`**Attacks** - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}`,
+							`${attacks || 'Nobody Attacked'}`
+						]);
+					}
+
+					if (data.state === 'inWar') {
+						const ends = new Date(moment(data.endTime).toDate()).getTime();
+						let attacks = '';
+						let index = 0;
+						const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
+						for (const member of this.sort(clanMembers)) {
+							if (!member.attacks) {
+								++index;
+								continue;
+							}
+							attacks += `\`${this.index(++index)} ${star[member.attacks[0].stars]} ${this.percentage(member.attacks[0].destructionPercentage)}% ${this.padEnd(member.name)}\`\n`;
+						}
+
+						embed.setDescription([
+							'**War Against**',
+							`\u200e${opponent.name} (${opponent.tag})`,
+							'',
+							'**State**',
+							`Battle day ends in ${moment.duration(ends - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`,
+							'',
+							`**Attacks - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}**`,
+							`${attacks || 'Nobody Attacked Yet'}`
+						]);
+					}
+
+					if (data.state === 'preparation') {
+						const start = new Date(moment(data.startTime).toDate()).getTime();
+						embed.setDescription([
+							'**War Against**',
+							`\u200e${opponent.name} (${opponent.tag})`,
+							'',
+							'**State**',
+							`Preparation day ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+						]);
+					}
+
+					embed.setFooter(`Round #${++i}`);
+
+					chunks.push({ state: data.state, embed });
+					break;
+				}
+			}
+		}
+
+		const item = round
+			? chunks[round - 1]
+			: chunks.length === 7
+				? chunks.find(c => c.state === 'inWar') || chunks.slice(-1)[0]
+				: chunks.slice(-2)[0];
+		const pageIndex = chunks.indexOf(item);
+
+		let page = pageIndex + 1;
+		const paginated = this.paginate(chunks, page);
+
+		if (chunks.length === 1) {
+			return message.util.send({ embed: paginated.items[0].embed });
+		}
+		const msg = await message.util.send({ embed: paginated.items[0].embed });
+		for (const emoji of ['⬅️', '➡️']) {
+			await msg.react(emoji);
+			await this.delay(250);
+		}
+
+		const collector = msg.createReactionCollector(
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			{ time: 60000, max: 10 }
+		);
+
+		collector.on('collect', async reaction => {
+			if (reaction.emoji.name === '➡️') {
+				page += 1;
+				if (page < 1) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = 1;
+				const { embed } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embed });
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+
+			if (reaction.emoji.name === '⬅️') {
+				page -= 1;
+				if (page < 1) page = paginated.maxPage;
+				if (page > paginated.maxPage) page = 1;
+				const { embed } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embed });
+				await this.delay(250);
+				await reaction.users.remove(message.author.id);
+				return message;
+			}
+		});
+
+		collector.on('end', async () => {
+			await msg.reactions.removeAll().catch(() => null);
+			return message;
+		});
+		return message;
+	}
+
+	sort(items) {
+		return items.sort((a, b) => a.mapPosition - b.mapPosition);
+	}
+
+	padEnd(data) {
+		return Util.escapeInlineCode(data).padEnd(20, ' ');
+	}
+
+	index(num) {
+		return num.toString().padStart(2, '0');
+	}
+
+	percentage(num) {
+		return num.toString().padStart(3, ' ');
+	}
+
+	async delay(ms) {
+		return new Promise(res => setTimeout(res, ms));
+	}
+
+	paginate(items, page = 1, pageLength = 1) {
+		const maxPage = Math.ceil(items.length / pageLength);
+		if (page < 1) page = 1;
+		if (page > maxPage) page = maxPage;
+		const startIndex = (page - 1) * pageLength;
+
+		return {
+			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
+			page, maxPage, pageLength
+		};
+	}
+}
+
+module.exports = CWLAttacksComamnd;
