@@ -115,7 +115,7 @@ class PatronCommand extends Command {
 		return mongodb.db('clashperk')
 			.collection('patrons')
 			.find()
-			.sort({ createdAt: -1 })
+			.sort({ createdAt: 1 })
 			.toArray();
 	}
 
