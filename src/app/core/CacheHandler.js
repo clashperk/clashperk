@@ -93,9 +93,11 @@ class CacheHandler {
 			// .sort({ patron: -1 })
 			.toArray();
 
+		const sorted = collection.map(data => ({ data, rand: Math.random() }))
+			.map(col => col.data);
 		await new Promise(resolve => {
 			this.client.grpc.initCacheHandler({
-				data: JSON.stringify(collection.filter(data => this.client.guilds.cache.has(data.guild)))
+				data: JSON.stringify(sorted.filter(data => this.client.guilds.cache.has(data.guild)))
 			}, (err, res) => resolve(res.data));
 		});
 
