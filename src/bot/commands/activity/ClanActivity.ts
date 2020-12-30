@@ -48,7 +48,7 @@ export default class ClanActivityCommand extends Command {
 
 	public async exec(message: Message, { tags, dark }: { tags: string[] | string; dark: boolean }) {
 		// @ts-expect-error
-		if (typeof tags === 'string') tags = [tags.tag];
+		if (!Array.isArray(tags)) tags = [tags.tag];
 		tags.splice(3);
 		if (!tags.length) return;
 
