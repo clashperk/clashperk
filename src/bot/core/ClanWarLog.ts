@@ -308,6 +308,19 @@ export default class ClanWarEvent {
 			embed.addField('Rosters', rosters);
 		}
 
+		if (data.recent?.length) {
+			const max = Math.max(...data.recent.map(atk => atk.attacker.destructionPercentage));
+			const pad = max === 100 ? 4 : 3;
+			embed.addField('Recent Attacks', [
+				...data.recent.map(({ attacker, defender }) => {
+					const name = Util.escapeMarkdown(attacker.name);
+					const stars = this.getStars(attacker.oldStars, attacker.stars);
+					const destruction = Math.floor(attacker.destructionPercentage).toString().concat('%');
+					return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${CYAN_NUMBERS[attacker.mapPosition]} ${name} ${BROWN_NUMBERS[attacker.townHallLevel]} ${EMOJIS.RED_VS} ${CYAN_NUMBERS[defender.mapPosition]} ${BROWN_NUMBERS[defender.townHallLevel]}`;
+				})
+			]);
+		}
+
 		if (data.remaining.length) {
 			const oneRem = data.remaining
 				.sort((a, b) => a.mapPosition - b.mapPosition)
