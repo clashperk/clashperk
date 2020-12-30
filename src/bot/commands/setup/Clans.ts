@@ -112,7 +112,7 @@ export default class ClansCommand extends Command {
 				await msg.edit({
 					embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
 						.setDescription([
-							`${premium ? `**Subscription** \nActive ${EMOJIS.AUTHORIZE}` : ''}`,
+							`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`,
 							'',
 							this.desc(this.paginate(data, page))
 						])

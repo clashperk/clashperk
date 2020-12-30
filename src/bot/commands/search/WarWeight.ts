@@ -21,7 +21,13 @@ export default class WarWeightCommand extends Command {
 				content: 'List of clan members with townhall & heroes.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
-			}
+			},
+			args: [
+				{
+					id: 'data',
+					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
+				}
+			]
 		});
 	}
 

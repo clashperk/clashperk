@@ -50,6 +50,6 @@ export default class ThCompoCommand extends Command {
 
 		const diff = process.hrtime(hrStart);
 
-		return message.util!.send(`*\u200b**Executed in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)} ms\u200b*`, { embed });
+		return message.util!.send(`*\u200b**Executed in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)} ms**\u200b*`, { embed });
 	}
 }
