@@ -43,7 +43,7 @@ export default class WarlogCommand extends Command {
 			return message.util!.send({ embed });
 		}
 
-		const body = await this.client.http.clanWarLog(data.tag);
+		const body = await this.client.http.clanWarLog(data.tag, { limit: 10 });
 
 		for (const item of body.items) {
 			const { clan, opponent } = item;
