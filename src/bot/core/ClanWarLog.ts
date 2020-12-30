@@ -414,30 +414,18 @@ export default class ClanWarEvent {
 	}
 
 	public async init() {
-		const collection = await this.client.db
-			.collection('clanwarlogs')
-			.find()
-			.toArray();
-
-		const filtered = collection.filter(data => this.client.guilds.cache.get(data.guild));
-		filtered.forEach(data => {
-			this.cached.set((data.clan_id as ObjectId).toHexString(), {
-				guild: data.guild,
-				channel: data.channel,
-				tag: data.tag,
-				rounds: data.rounds || {},
-				messageID: data.messageID,
-				warID: data.warID
+		await this.client.db.collection('clanwarlogs')
+			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
+			.forEach(data => {
+				this.cached.set((data.clan_id as ObjectId).toHexString(), {
+					guild: data.guild,
+					channel: data.channel,
+					tag: data.tag,
+					rounds: data.rounds || {},
+					messageID: data.messageID,
+					warID: data.warID
+				});
 			});
-		});
-
-		return new Promise(resolve => {
-			this.client.rpc.initClanWarHandler({
-				data: JSON.stringify(filtered),
-				shardId: this.client.shard!.ids[0],
-				shards: this.client.shard!.count
-			}, (err: any, res: any) => resolve(res.data));
-		});
 	}
 
 	public async add(id: string) {

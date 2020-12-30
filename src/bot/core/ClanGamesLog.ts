@@ -169,29 +169,17 @@ export default class ClanGames {
 	}
 
 	private async _init() {
-		const collection = await this.client.db.collection(COLLECTIONS.CLAN_GAMES_LOGS)
-			.find()
-			.toArray();
-
-		const filtered = collection.filter(data => this.client.guilds.cache.get(data.guild));
-
-		filtered.forEach(data => {
-			this.cached.set((data.clan_id as ObjectId).toHexString(), {
-				guild: data.guild,
-				channel: data.channel,
-				message: data.message,
-				color: data.color,
-				tag: data.tag
+		await this.client.db.collection(COLLECTIONS.CLAN_GAMES_LOGS)
+			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
+			.forEach(data => {
+				this.cached.set((data.clan_id as ObjectId).toHexString(), {
+					guild: data.guild,
+					channel: data.channel,
+					message: data.message,
+					color: data.color,
+					tag: data.tag
+				});
 			});
-		});
-
-		return new Promise(resolve => {
-			this.client.rpc.initClanGamesHandler({
-				data: JSON.stringify(filtered),
-				shardId: this.client.shard!.ids[0],
-				shards: this.client.shard!.count
-			}, (err: any, res: any) => resolve(res.data));
-		});
 	}
 
 	private async flush(intervalId: NodeJS.Timeout) {

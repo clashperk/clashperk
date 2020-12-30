@@ -13,21 +13,15 @@ service RouteGuide {
 
   rpc add(Data) returns (Data) {}
 
-  rpc delete(Data) returns (Data) {}
+  rpc remove(Data) returns (Data) {}
 
   rpc init(Shards) returns (Data) {}
 
   rpc flush(Shards) returns (Data) {}
 
+  rpc loadClans(Payload) returns (Data) {}
+
   rpc broadcast(Shards) returns (stream Data) {}
-
-  rpc initCacheHandler(Data) returns (Data) {}
-
-  rpc initOnlineHandler(Data) returns (Data) {}
-
-  rpc initClanWarHandler(BatchData) returns (Data) {}
-
-  rpc initClanGamesHandler(BatchData) returns (Data) {}
 
 }
 
@@ -40,7 +34,7 @@ message Shards {
   int32 shards = 2;
 }
 
-message BatchData {
+message Payload {
   int32 shardId = 1;
   int32 shards = 2;
   string data = 3;

@@ -120,7 +120,7 @@ export default class LastOnlineEvent {
 	}
 
 	private async edit(id: string, message: Message, clan: Clan, members: any[]) {
-		const embed = await this.embed(clan, id, members);
+		const embed = this.embed(clan, id, members);
 
 		return message.edit({ embed })
 			.catch(error => {
@@ -162,26 +162,17 @@ export default class LastOnlineEvent {
 	}
 
 	public async init() {
-		const collection = await this.client.db.collection('lastonlinelogs')
-			.find()
-			.toArray();
-
-		const filtered = collection.filter(data => this.client.guilds.cache.get(data.guild));
-		filtered.forEach(data => {
-			this.cached.set((data.clan_id as ObjectId).toHexString(), {
-				// guild: data.guild,
-				channel: data.channel,
-				message: data.message,
-				color: data.color,
-				tag: data.tag
+		await this.client.db.collection('lastonlinelogs')
+			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
+			.forEach(data => {
+				this.cached.set((data.clan_id as ObjectId).toHexString(), {
+					// guild: data.guild,
+					channel: data.channel,
+					message: data.message,
+					color: data.color,
+					tag: data.tag
+				});
 			});
-		});
-
-		return new Promise(resolve => {
-			this.client.rpc.initOnlineHandler({
-				data: JSON.stringify(filtered)
-			}, (err: any, res: any) => resolve(res.data));
-		});
 	}
 
 	public async add(id: string) {

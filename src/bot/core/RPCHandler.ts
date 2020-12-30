@@ -105,7 +105,7 @@ export default class RPCHandler {
 			.map(col => col.data);
 
 		await new Promise(resolve => {
-			this.client.rpc.initCacheHandler({
+			this.client.rpc.loadClans({
 				data: JSON.stringify(sorted)
 			}, (err: any, res: any) => resolve(res.data));
 		});
@@ -117,7 +117,7 @@ export default class RPCHandler {
 		}, (err: any, res: any) => resolve(res.data)));
 	}
 
-	public async add(id: string, data: any) {
+	public async add(id: string, data: { tag: string; guild: string; op: number }) {
 		const OP = {
 			[Op.DONATION_LOG]: this.donationLog,
 			[Op.CLAN_MEMBER_LOG]: this.clanMemberLog,
@@ -126,19 +126,19 @@ export default class RPCHandler {
 			[Op.CLAN_GAMES_LOG]: this.clanGamesLog,
 			[Op.CLAN_WAR_LOG]: this.clanWarLog
 		};
-		if (data?.op) {
+		if (data.op) {
 			await OP[data.op].add(id);
 		} else {
 			Object.values(OP).map(Op => Op.add(id));
 		}
 
-		const patron = this.client.patrons.get(data?.guild);
+		const patron = this.client.patrons.get(data.guild);
 		return this.client.rpc.add({
-			data: JSON.stringify({ tag: data?.tag, patron: Boolean(patron), op: data?.op })
+			data: JSON.stringify({ tag: data.tag, patron: Boolean(patron), op: data.op })
 		}, () => null);
 	}
 
-	public delete(id: string, data: any) {
+	public delete(id: string, data: { tag: string; op: number }) {
 		const OP = {
 			[Op.DONATION_LOG]: this.donationLog,
 			[Op.CLAN_MEMBER_LOG]: this.clanMemberLog,
@@ -147,14 +147,15 @@ export default class RPCHandler {
 			[Op.CLAN_GAMES_LOG]: this.clanGamesLog,
 			[Op.CLAN_WAR_LOG]: this.clanWarLog
 		};
-		if (data?.op) {
+
+		if (data.op) {
 			OP[data.op].delete(id);
 		} else {
 			Object.values(OP).map(Op => Op.delete(id));
 		}
 
-		return this.client.rpc.delete({
-			data: JSON.stringify({ tag: data?.tag, op: data?.op })
+		return this.client.rpc.remove({
+			data: JSON.stringify({ tag: data.tag, op: data.op })
 		}, () => null);
 	}
 
