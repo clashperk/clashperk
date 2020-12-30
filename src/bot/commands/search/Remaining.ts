@@ -20,7 +20,13 @@ export default class RemainingAttacksCommand extends Command {
 				],
 				usage: '<clanTag> [--cwl/cwl]',
 				examples: ['#8QU8J9LP', '8QU8J9LP --cwl', '#8QU8J9LP cwl']
-			}
+			},
+			args: [
+				{
+					id: 'data',
+					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
+				}
+			]
 		});
 	}
 
