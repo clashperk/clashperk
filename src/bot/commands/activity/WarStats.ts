@@ -17,7 +17,7 @@ export default class WarStatsExport extends Command {
 			args: [
 				{
 					id: 'data',
-					type: (msg, args) => this.client.resolver.resolveClan(msg, args)
+					type: (msg, args) => this.client.resolver.resolvePlayer(msg, args)
 				}
 			]
 		});
