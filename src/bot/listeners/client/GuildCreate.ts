@@ -83,6 +83,6 @@ export default class GuildCreateListener extends Listener {
 	private async restore(guild: Guild) {
 		await this.client.db.collection('clanstores')
 			.find({ guild: guild.id })
-			.forEach(data => this.client.rpcHandler.add(data._id?.toString(), { tag: data.tag, guild: guild.id }));
+			.forEach(data => this.client.rpcHandler.add(data._id?.toString(), { tag: data.tag, guild: guild.id, op: 0 }));
 	}
 }

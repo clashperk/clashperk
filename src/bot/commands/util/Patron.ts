@@ -130,7 +130,7 @@ export default class PatronCommand extends Command {
 
 		await this.client.db.collection('clanstores')
 			.find({ guild })
-			.forEach(data => this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild }));
+			.forEach(data => this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 }));
 	}
 
 	private async del(guild: string) {
@@ -141,7 +141,7 @@ export default class PatronCommand extends Command {
 			.skip(2)
 			.forEach(async data => {
 				await this.client.db.collection('clanstores').updateOne({ _id: data._id }, { $set: { active: false } });
-				await this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag });
+				await this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0 });
 			});
 	}
 }

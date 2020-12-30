@@ -117,7 +117,7 @@ export default class StopCommand extends Command {
 		const id = data._id.toHexString();
 		if (method === 'all') {
 			await this.client.storage.delete(id);
-			await this.client.rpcHandler.delete(id, { tag: data.tag });
+			await this.client.rpcHandler.delete(id, { tag: data.tag, op: 0 });
 			return message.util!.send({ embed: { title: `Successfully deleted **${data.name as string} (${data.tag as string})**` } });
 		}
 
@@ -125,7 +125,7 @@ export default class StopCommand extends Command {
 		if (deleted?.deletedCount) await this.bitField(id, Number(method));
 		await this.client.rpcHandler.delete(id, { op: Number(method), tag: data.tag });
 
-		await this.delete(id);
+		await this.delete(id, data.tag);
 		return message.util!.send({
 			embed: {
 				description: `Successfully removed ${logType[method]} for **${data.name as string} (${data.tag as string})**`
@@ -133,7 +133,7 @@ export default class StopCommand extends Command {
 		});
 	}
 
-	private async delete(id: string) {
+	private async delete(id: string, tag: string) {
 		const data = await Promise.all([
 			this.client.db.collection(COLLECTIONS.DONATION_LOGS)
 				.countDocuments({ clan_id: new ObjectId(id) }),
@@ -150,7 +150,7 @@ export default class StopCommand extends Command {
 		]).then(collection => collection.every(num => num === 0));
 
 		if (data) {
-			this.client.rpcHandler.delete(id, {});
+			this.client.rpcHandler.delete(id, { tag, op: 0 });
 			return this.client.db.collection('clanstores').updateOne({ _id: new ObjectId(id) }, { $set: { flag: 0 } });
 		}
 	}

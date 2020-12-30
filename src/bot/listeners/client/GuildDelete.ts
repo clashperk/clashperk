@@ -45,6 +45,6 @@ export default class GuildDeleteListener extends Listener {
 	private async delete(guild: Guild) {
 		await this.client.db.collection('clanstores')
 			.find({ guild: guild.id })
-			.forEach(data => this.client.rpcHandler.delete(data._id?.toString(), { tag: data.tag }));
+			.forEach(data => this.client.rpcHandler.delete(data._id?.toString(), { tag: data.tag, op: 0 }));
 	}
 }
