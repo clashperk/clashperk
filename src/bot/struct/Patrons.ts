@@ -1,6 +1,6 @@
+import { SETTINGS, COLLECTIONS } from '../util/Constants';
 import { Message } from 'discord.js';
 import Client from './Client';
-import { SETTINGS } from '../util/Constants';
 
 export interface Patron {
 	id: string;
@@ -24,17 +24,9 @@ export interface Patron {
 }
 
 export default class Patrons {
-	public store = new Map<string, any>();
-
-	private readonly users: Map<string, boolean>;
-
 	private readonly patrons: Set<string>;
 
 	public constructor(private readonly client: Client) {
-		this.store = new Map();
-
-		this.users = new Map();
-
 		this.patrons = new Set();
 	}
 
@@ -48,16 +40,15 @@ export default class Patrons {
 	}
 
 	public async refresh() {
-		this.store.clear();
+		this.patrons.clear(); // Clear old userId and guildId
 
-		return this.client.db.collection<Patron>('patrons')
-			.find({ active: true })
+		await this.client.db.collection<Patron>(COLLECTIONS.PATRONS).find({ active: true })
 			.forEach(data => {
 				if (data.discord_id) this.patrons.add(data.discord_id);
 
 				for (const guild of data.guilds) {
 					this.patrons.add(guild.id);
-					const limit = this.client.settings.get(guild.id, SETTINGS.LIMIT, guild.limit);
+					const limit = this.client.settings.get(guild.id, SETTINGS.LIMIT, 2);
 					if (limit !== guild.limit) this.client.settings.set(guild.id, SETTINGS.LIMIT, guild.limit);
 				}
 			});
