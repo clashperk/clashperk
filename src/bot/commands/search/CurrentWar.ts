@@ -15,7 +15,13 @@ export default class CurrentWarCommand extends Command {
 				content: 'Shows info and stats about current war.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP', '8QU8J9LP']
-			}
+			},
+			args: [
+				{
+					id: 'data',
+					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
+				}
+			]
 		});
 	}
 
