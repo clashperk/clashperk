@@ -19,7 +19,13 @@ export default class DonationBoardCommand extends Command {
 				content: 'List of clan members with donations.',
 				usage: '<clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
-			}
+			},
+			args: [
+				{
+					id: 'data',
+					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
+				}
+			]
 		});
 	}
 
