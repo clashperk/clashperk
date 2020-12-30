@@ -7,7 +7,7 @@
 	"main": "dist/index.js",
 	"private": true,
 	"scripts": {
-		"start": "pm2 start src/index.ts --name bot",
+		"start": "pm2 start dist/index.js --name bot",
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
 		"build": "tsc",

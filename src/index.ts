@@ -6,7 +6,7 @@ import path from 'path';
 
 class Manager extends Discord.ShardingManager {
 	public constructor() {
-		super(path.join(__dirname, `main${process.env.pmx ? '.ts' : '.js'}`), {
+		super(path.join(__dirname, 'main.js'), {
 			token: process.env.TOKEN
 		});
 	}
