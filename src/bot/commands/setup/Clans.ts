@@ -47,7 +47,7 @@ export default class ClansCommand extends Command {
 		await message.util!.send(`**Feching data... ${EMOJIS.LOADING}**`);
 
 		const premium = this.client.patrons.get(guild.id);
-		const clans = await this.client.storage.findAll(message.guild!.id);
+		const clans = await this.client.storage.findAll(guild.id);
 		const data = await Promise.all(clans.map(async doc => {
 			const donationlog = await this.client.db.collection('donationlogs').findOne({ clan_id: doc._id });
 			const playerlog = await this.client.db.collection('playerlogs').findOne({ clan_id: doc._id });
