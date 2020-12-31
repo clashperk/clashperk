@@ -138,9 +138,9 @@ export default class MembersCommand extends Command {
 			if (reaction.emoji.name === '📥') {
 				if (this.client.patrons.get(message)) {
 					const buffer = await this.excel(members);
-					await message.util!.send(`**${data.name} (${data.tag}) War Attack History**`, {
+					await message.util!.send(`**${data.name} (${data.tag})**`, {
 						files: [{
-							attachment: Buffer.from(buffer), name: 'war_attack_history.xlsx'
+							attachment: Buffer.from(buffer), name: 'clan_members.xlsx'
 						}]
 					});
 				} else {
