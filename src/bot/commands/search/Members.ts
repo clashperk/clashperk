@@ -1,5 +1,6 @@
 import { Util, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
+import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { table } from 'table';
@@ -86,13 +87,13 @@ export default class MembersCommand extends Command {
 				.setFooter(`Page 1/2 (${data.members}/50)`)
 		});
 
-		for (const emoji of ['⬅️', '➡️', '➕']) {
+		for (const emoji of ['⬅️', '➡️', '➕', '📥']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕', '⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['➕', '⬅️', '➡️', '📥'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 90000, max: 10 }
 		);
 
@@ -133,6 +134,25 @@ export default class MembersCommand extends Command {
 						.setFooter(`Page ${page + 1}/2 (${data.members}/50)`)
 				});
 			}
+
+			if (reaction.emoji.name === '📥') {
+				if (this.client.patrons.get(message)) {
+					const buffer = await this.excel(members);
+					await message.util!.send(`**${data.name} (${data.tag}) War Attack History**`, {
+						files: [{
+							attachment: Buffer.from(buffer), name: 'war_attack_history.xlsx'
+						}]
+					});
+				} else {
+					await message.channel.send({
+						embed: {
+							description: '[Become a Patron](https://www.patreon.com/clashperk) to clan members to Excel.'
+						}
+					});
+				}
+
+				return collector.stop();
+			}
 		});
 
 		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
@@ -140,5 +160,34 @@ export default class MembersCommand extends Command {
 
 	private async delay(ms: number) {
 		return new Promise(res => setTimeout(res, ms));
+	}
+
+	private excel(members: any[]) {
+		const workbook = new Workbook();
+		const sheet = workbook.addWorksheet('Member List');
+
+		sheet.columns = [
+			{ header: 'NAME', key: 'name', width: 16 },
+			{ header: 'TAG', key: 'tag', width: 16 },
+			{ header: 'Town-Hall', key: 'townHallLevel', width: 10 },
+			{ header: 'BK', key: 'Barbarian King', width: 10 },
+			{ header: 'AQ', key: 'Archer Queen', width: 10 },
+			{ header: 'GW', key: 'Grand Warden', width: 10 },
+			{ header: 'RC', key: 'Royal Champion', width: 10 }
+		] as any[];
+
+		sheet.getRow(1).font = { bold: true, size: 10 };
+		sheet.getColumn(1).alignment = { horizontal: 'left' };
+		sheet.getColumn(2).alignment = { horizontal: 'left' };
+		sheet.getColumn(3).alignment = { horizontal: 'right' };
+		sheet.getColumn(4).alignment = { horizontal: 'right' };
+		sheet.getColumn(5).alignment = { horizontal: 'right' };
+		sheet.getColumn(6).alignment = { horizontal: 'right' };
+		sheet.getColumn(7).alignment = { horizontal: 'right' };
+		sheet.addRows([
+			...members.map(m => [m.name, m.tag, m.townHallLevel, ...m.heroes.map((h: any) => h.level)])
+		]);
+
+		return workbook.xlsx.writeBuffer();
 	}
 }

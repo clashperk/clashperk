@@ -81,13 +81,13 @@ export default class WarWeightCommand extends Command {
 				.setFooter(`Page 1/2 (${data.members}/50)`)
 		});
 
-		for (const emoji of ['⬅️', '➡️', '➕', '📥']) {
+		for (const emoji of ['⬅️', '➡️', '➕']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕', '⬅️', '➡️', '📥'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['➕', '⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 90000, max: 10 }
 		);
 
