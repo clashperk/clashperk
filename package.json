@@ -7,11 +7,11 @@
 	"main": "dist/index.js",
 	"private": true,
 	"scripts": {
+		"build": "tsc",
 		"start": "pm2 start dist/index.js --name bot",
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
-		"build": "tsc",
-		"dev": "tsc && node ."
+		"dev": "node --enable-source-maps dist/index.js"
 	},
 	"dependencies": {
 		"@clashperk/chartgen": "github:clashperk/chartgen",

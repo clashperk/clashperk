@@ -7,7 +7,8 @@ import path from 'path';
 class Manager extends Discord.ShardingManager {
 	public constructor() {
 		super(path.join(__dirname, 'main.js'), {
-			token: process.env.TOKEN
+			token: process.env.TOKEN,
+			execArgv: ['--enable-source-maps']
 		});
 	}
 

@@ -1,15 +1,8 @@
 import { TOWN_HALLS, EMOJIS } from '../../util/Emojis';
-import { Clan, Player } from 'clashofclans.js';
+import { Clan, Hero } from 'clashofclans.js';
 import { Util, Message } from 'discord.js';
 import { stripIndent } from 'common-tags';
 import { Command } from 'discord-akairo';
-
-interface Member {
-	name: string;
-	tag: string;
-	townHallLevel: number;
-	heroes: Player['heroes'];
-}
 
 export default class WarWeightCommand extends Command {
 	public constructor() {
@@ -133,7 +126,7 @@ export default class WarWeightCommand extends Command {
 		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 	}
 
-	private heroes(items: Player['heroes']) {
+	private heroes(items: Hero[]) {
 		return Object.assign([
 			{ level: '  ' },
 			{ level: '  ' },
@@ -150,7 +143,7 @@ export default class WarWeightCommand extends Command {
 		return Util.escapeInlineCode(name).padEnd(15, ' ');
 	}
 
-	private paginate(items: Member[], start: number, end: number) {
+	private paginate<T>(items: Array<T>, start: number, end: number) {
 		return { items: items.slice(start, end) };
 	}
 
