@@ -16,6 +16,10 @@ export default class WarExport extends Command {
 		});
 	}
 
+	private get season() {
+		return new Date().toISOString().substring(0, 7);
+	}
+
 	public async exec(message: Message) {
 		const clans = await this.client.db.collection('clanstores')
 			.find({ guild: message.guild!.id })
@@ -30,7 +34,7 @@ export default class WarExport extends Command {
 			if (clan.members === 0) continue;
 
 			const members = await this.client.db.collection('clanmembers')
-				.find({ tag: { $in: clan.memberList.map(m => m.tag) }, clanTag: clan.tag })
+				.find({ tag: { $in: clan.memberList.map(m => m.tag) }, clanTag: clan.tag, season: this.season })
 				.sort({ createdAt: -1 })
 				.toArray();
 			// const sheet = workbook.addWorksheet(name);
