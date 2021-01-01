@@ -36,9 +36,8 @@ export default class DonationBoardCommand extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
 
-		console.log(this.seasonID);
 		const dbMembers = await this.client.db.collection('clanmembers')
-			.find({ season: this.seasonID, tag: { $in: data.memberList.map(m => m.tag) } })
+			.find({ season: this.seasonID, clanTag: data.tag, tag: { $in: data.memberList.map(m => m.tag) } })
 			.toArray();
 
 		const members: Member[] = [];
