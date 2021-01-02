@@ -39,7 +39,7 @@ export default class MemberLogCommand extends Command {
 	public async exec(message: Message, { data, channel, role }: { data: Clan; channel: TextChannel; role: Role | null }) {
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
-		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
+		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
 			const embed = Resolver.limitEmbed();
 			return message.util!.send({ embed });
 		}

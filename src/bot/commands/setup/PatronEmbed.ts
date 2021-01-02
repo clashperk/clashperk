@@ -94,7 +94,7 @@ export default class ClanEmbedCommand extends Command {
 		const clans = await this.clans(message);
 
 		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
-		if (clans.length >= max && !clans.map(clan => clan.tag).includes(data.tag)) {
+		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
 			const embed = Resolver.limitEmbed();
 			return message.util!.send({ embed });
 		}

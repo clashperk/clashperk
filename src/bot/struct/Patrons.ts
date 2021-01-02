@@ -42,7 +42,8 @@ export default class Patrons {
 	public async refresh() {
 		this.patrons.clear(); // Clear old userId and guildId
 
-		await this.client.db.collection<Patron>(COLLECTIONS.PATRONS).find({ active: true })
+		await this.client.db.collection<Patron>(COLLECTIONS.PATRONS)
+			.find({ active: true })
 			.forEach(data => {
 				if (data.discord_id) this.patrons.add(data.discord_id);
 

@@ -10,6 +10,7 @@ export interface ClanStore {
 	tag: string;
 	guild: string;
 	patron: boolean;
+	paused: boolean;
 	active: boolean;
 	createdAt: Date;
 	verified: boolean;
@@ -30,10 +31,11 @@ export default class StorageHandler {
 		const collection = await this.client.db.collection<ClanStore>(COLLECTIONS.CLAN_STORES)
 			.findOneAndUpdate({ tag: data.tag, guild: data.guild }, {
 				$set: {
-					tag: data.tag,
 					active: true,
-					name: data.name,
+					tag: data.tag,
+					paused: false,
 					verified: true,
+					name: data.name,
 					guild: message.guild!.id,
 					patron: this.client.patrons.get(message.guild!.id)
 				},

@@ -98,7 +98,10 @@ export default class RPCHandler {
 		await this.clanWarLog.init();
 
 		const collection = await this.client.db.collection('clanstores')
-			.find({ active: true, flag: { $gt: 0 }, guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
+			.find({
+				paused: false, active: true, flag: { $gt: 0 },
+				guild: { $in: this.client.guilds.cache.map(guild => guild.id) }
+			})
 			.toArray();
 		const sorted = collection.map(data => ({ data, rand: Math.random() }))
 			.sort((a, b) => a.rand - b.rand)

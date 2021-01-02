@@ -1,4 +1,5 @@
 import { Message, TextChannel } from 'discord.js';
+import { SETTINGS } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 
 interface Patron {
@@ -134,6 +135,8 @@ export default class PatronCommand extends Command {
 	}
 
 	private async del(guild: string) {
+		this.client.settings.delete(guild, SETTINGS.LIMIT); // Delete ClanLimit
+
 		await this.client.db.collection('clanstores').updateMany({ guild }, { $set: { patron: false } });
 
 		await this.client.db.collection('clanstores')

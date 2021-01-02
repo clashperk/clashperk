@@ -7,10 +7,27 @@ const [apiKey, pageId, metricId] = [process.env.API_KEY!, process.env.PAGE_ID!, 
 export default class StatsHandler {
 	public postRate: number;
 	public count: number;
+	public messages = new Map<string, NodeJS.Timeout>();
 
 	public constructor(private readonly client: Client, { postRate = 2.5 * 60 * 1000 } = {}) {
 		this.postRate = postRate;
 		this.count = 0;
+	}
+
+	public message(id: string) {
+		if (this.messages.has(id)) return null;
+		this.messages.set(id, setTimeout(() => this.messages.delete(id), 60 * 60 * 1000));
+
+		return this.client.db.collection('botguilds')
+			.updateOne(
+				{ guild: id },
+				{
+					$max: { updatedAt: new Date() },
+					$min: { createdAt: new Date() },
+					$inc: { usage: 0 }
+				},
+				{ upsert: true }
+			);
 	}
 
 	private get ISTDate() {
@@ -130,6 +147,7 @@ export default class StatsHandler {
 			.updateOne({ guild }, {
 				$set: { guild },
 				$inc: { usage: count },
+				$max: { updatedAt: new Date() },
 				$min: { createdAt: new Date() }
 			}, { upsert: true });
 	}
