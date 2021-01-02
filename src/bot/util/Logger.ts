@@ -45,7 +45,7 @@ export default class Logger {
 		const content = this.clean(message);
 		const stream = error ? process.stderr : process.stdout;
 		const color = COLORS[tag] as 'red' | 'cyan' | 'yellow' | 'magenta';
-		stream.write(`[${timestamp}]${this.shard} [SHARD 0] ${chalk[color].bold(TAGS[tag])} » ${label ? `[${label}] » ` : ''}${content}\n`);
+		stream.write(`[${timestamp}]${this.shard} ${chalk[color].bold(TAGS[tag])} » ${label ? `[${label}] » ` : ''}${content}\n`);
 	}
 
 	private clean(message: string | any) {
