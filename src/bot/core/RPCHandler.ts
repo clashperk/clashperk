@@ -126,6 +126,7 @@ export default class RPCHandler {
 			[Op.CLAN_GAMES_LOG]: this.clanGamesLog,
 			[Op.CLAN_WAR_LOG]: this.clanWarLog
 		};
+
 		if (data.op) {
 			await OP[data.op].add(id);
 		} else {

@@ -29,7 +29,7 @@ export default class WarWeightCommand extends Command {
 
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
-		const members = fetched.map(m => {
+		const members = fetched.filter(res => res.ok).map(m => {
 			const member = {
 				name: m.name,
 				tag: m.tag,

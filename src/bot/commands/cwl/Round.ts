@@ -41,9 +41,7 @@ export default class CWLRoundComamnd extends Command {
 
 		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
 		if (body.status === 504) {
-			return message.util!.send([
-				'504 Request Timeout'
-			]);
+			return message.util!.send('**504 Request Timeout!**');
 		}
 
 		if (!body.ok) {
@@ -146,6 +144,8 @@ export default class CWLRoundComamnd extends Command {
 				}
 			}
 		}
+
+		if (!chunks.length) return message.util!.send('**504 Request Timeout!**');
 
 		const item = round
 			? chunks[round - 1]
