@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../util/Constants';
 import Client from './Client';
 import qs from 'querystring';
 import https from 'https';
@@ -12,22 +13,6 @@ export default class StatsHandler {
 	public constructor(private readonly client: Client, { postRate = 2.5 * 60 * 1000 } = {}) {
 		this.postRate = postRate;
 		this.count = 0;
-	}
-
-	public message(id: string) {
-		if (this.messages.has(id)) return null;
-		this.messages.set(id, setTimeout(() => this.messages.delete(id), 60 * 60 * 1000));
-
-		return this.client.db.collection('botguilds')
-			.updateOne(
-				{ guild: id },
-				{
-					$max: { updatedAt: new Date() },
-					$min: { createdAt: new Date() },
-					$inc: { usage: 0 }
-				},
-				{ upsert: true }
-			);
 	}
 
 	private get ISTDate() {
@@ -72,8 +57,24 @@ export default class StatsHandler {
 		}).end(form);
 	}
 
+	public message(id: string) {
+		if (this.messages.has(id)) return null;
+		this.messages.set(id, setTimeout(() => this.messages.delete(id), 60 * 60 * 1000));
+
+		return this.client.db.collection(COLLECTIONS.BOT_GUILDS)
+			.updateOne(
+				{ guild: id },
+				{
+					$max: { updatedAt: new Date() },
+					$min: { createdAt: new Date() },
+					$inc: { usage: 0 }
+				},
+				{ upsert: true }
+			);
+	}
+
 	public historic() {
-		return this.client.db.collection('botusage')
+		return this.client.db.collection(COLLECTIONS.BOT_USAGE)
 			.updateOne({ ISTDate: this.ISTDate }, {
 				$inc: {
 					usage: 1
@@ -88,7 +89,7 @@ export default class StatsHandler {
 	}
 
 	public async commands(command: string) {
-		await this.client.db.collection('botstats')
+		await this.client.db.collection(COLLECTIONS.BOT_STATS)
 			.updateOne({ id: 'stats' }, {
 				$set: { id: 'stats' },
 				$inc: {
@@ -101,14 +102,16 @@ export default class StatsHandler {
 	}
 
 	public deletion() {
-		return this.client.db.collection('botgrowth')
+		return this.client.db.collection(COLLECTIONS.BOT_GROWTH)
 			.updateOne({ ISTDate: this.ISTDate }, {
 				$inc: {
 					addition: 0,
 					deletion: 1,
 					retention: 0
 				},
-				$set: { ISTDate: this.ISTDate },
+				$set: {
+					ISTDate: this.ISTDate
+				},
 				$min: {
 					createdAt: new Date()
 				}
@@ -116,25 +119,30 @@ export default class StatsHandler {
 	}
 
 	public async addition(guild: string) {
-		const old = await this.client.db.collection('botguilds')
+		const old = await this.client.db.collection(COLLECTIONS.BOT_GUILDS)
 			.countDocuments({ guild });
 
-		return this.client.db.collection('botgrowth')
+		return this.client.db.collection(COLLECTIONS.BOT_GROWTH)
 			.updateOne({ ISTDate: this.ISTDate }, {
 				$inc: {
 					addition: 1,
 					deletion: 0,
 					retention: old ? 1 : 0
 				},
-				$set: { ISTDate: this.ISTDate },
+				$set: {
+					ISTDate: this.ISTDate
+				},
 				$min: {
 					createdAt: new Date()
+				},
+				$max: {
+					updatedAt: new Date()
 				}
 			}, { upsert: true });
 	}
 
 	public users(user: string) {
-		return this.client.db.collection('botusers')
+		return this.client.db.collection(COLLECTIONS.BOT_USERS)
 			.updateOne({ user }, {
 				$set: { user },
 				$inc: { usage: 1 },

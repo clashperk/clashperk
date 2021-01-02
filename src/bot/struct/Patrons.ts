@@ -21,6 +21,7 @@ export interface Patron {
 	redeemed: boolean;
 	entitled_amount: number;
 	lifetime_support?: number;
+	shared?: string[];
 }
 
 export default class Patrons {
@@ -46,6 +47,7 @@ export default class Patrons {
 			.find({ active: true })
 			.forEach(data => {
 				if (data.discord_id) this.patrons.add(data.discord_id);
+				for (const id of data.shared ?? []) this.patrons.add(id);
 
 				for (const guild of data.guilds) {
 					this.patrons.add(guild.id);

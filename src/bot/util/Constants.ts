@@ -36,6 +36,7 @@ export const COLLECTIONS = {
 	BOT_USAGE: 'botusage',
 	BOT_GUILDS: 'botguilds',
 	BOT_USERS: 'botusers',
+	BOT_STATS: 'botstats',
 	PATRONS: 'patrons',
 	CLAN_WAR_LOGS: 'clanwarlogs'
 };
