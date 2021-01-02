@@ -19,7 +19,7 @@
 		"@grpc/proto-loader": "^0.5.5",
 		"@sentry/node": "^5.27.6",
 		"chalk": "^4.1.0",
-		"clashofclans.js": "github:clashperk/clashofclans.js#main",
+		"clashofclans.js": "github:clashperk/clashofclans.js",
 		"common-tags": "^1.8.0",
 		"discord-akairo": "github:clashperk/discord-akairo",
 		"discord.js": "^12.4.0",
