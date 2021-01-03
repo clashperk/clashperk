@@ -29,7 +29,7 @@ export default class CWLTopCommand extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
-		const members = fetched.map(m => {
+		const members = fetched.filter(res => res.ok).map(m => {
 			const value = m.achievements.find(achievement => achievement.name === 'War League Legend')?.value ?? 0;
 			return { townHallLevel: m.townHallLevel, name: m.name, stars: value };
 		});
