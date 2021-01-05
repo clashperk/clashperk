@@ -24,7 +24,7 @@ export default class MatchesCommand extends Command {
 		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
-		if (clans.length) return message.util!.send('No clans are linked. Why not add some?');
+		if (!clans.length) return message.util!.send('No clans are linked. Why not add some?');
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
