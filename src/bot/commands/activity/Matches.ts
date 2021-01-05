@@ -28,7 +28,7 @@ export default class MatchesCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${message.guild!.name} Wars`);
+			.setAuthor(`${message.guild!.name} Wars`, message.guild!.iconURL({ dynamic: true })!);
 		for (const clan of clans) {
 			const data: ClanWar = await this.getWAR(clan.tag);
 			if (data.status === 504) {
@@ -102,7 +102,7 @@ export default class MatchesCommand extends Command {
 
 	private async getCWL(clanTag: string) {
 		const res: ClanWarLeague = await this.client.http.clanWarLeague(clanTag);
-		if (res.status === 504) return 504;
+		if (res.status === 504) return { status: 504 };
 		if (!res.ok) return this.client.http.currentClanWar(clanTag);
 		const rounds = res.rounds.filter(d => !d.warTags.includes('#0'));
 
@@ -122,7 +122,7 @@ export default class MatchesCommand extends Command {
 			}
 		}
 
-		if (!chunks.length) return 504;
+		if (!chunks.length) return { status: 504 };
 		return chunks.find(en => ['inWar', ''].includes(en.state));
 	}
 
