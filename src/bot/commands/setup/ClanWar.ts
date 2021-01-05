@@ -41,7 +41,7 @@ export default class WarLogCommand extends Command {
 
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
-		if (!clan.verified && !data.description.toUpperCase().includes(code)) {
+		if (!clan.verified && !data.description.toUpperCase().includes(code) && !this.client.isOwner(message.author.id)) {
 			const embed = Resolver.verifyEmbed(data, code);
 			return message.util!.send({ embed });
 		}
