@@ -29,12 +29,17 @@ export default class ClanAttacksCommand extends Command {
 				{
 					id: 'data',
 					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
+				},
+				{
+					id: 'sort',
+					match: 'flag',
+					flag: ['defenses']
 				}
 			]
 		});
 	}
 
-	public async exec(message: Message, { data }: { data: Clan }) {
+	public async exec(message: Message, { data, sort }: { data: Clan; sort: boolean }) {
 		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
@@ -52,7 +57,8 @@ export default class ClanAttacksCommand extends Command {
 			return member;
 		});
 
-		members.sort((a, b) => b.defenseWins - a.defenseWins).sort((a, b) => b.attackWins - a.attackWins);
+		members.sort((a, b) => b.attackWins - a.attackWins);
+		if (sort) members.sort((a, b) => b.defenseWins - a.defenseWins);
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
