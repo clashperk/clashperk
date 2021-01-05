@@ -51,8 +51,8 @@ export default class DonationBoardCommand extends Command {
 				members.push({
 					name: mem.name,
 					tag: mem.tag,
-					donated: mem.donations >= m.donations ? mem.donations : m.donations,
-					received: mem.donationsReceived >= m.donationsReceived ? mem.donationsReceived : m.donationsReceived
+					donated: mem.donations >= m.donations?.gained ? mem.donations : m.donations?.gained,
+					received: mem.donationsReceived >= m.donationsReceived?.gained ? mem.donationsReceived : m.donationsReceived?.gained
 				});
 			}
 		}
