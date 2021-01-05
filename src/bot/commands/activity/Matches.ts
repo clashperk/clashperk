@@ -1,8 +1,8 @@
 import { Command } from 'discord-akairo';
-import { ClanWar, ClanWarLeague, ClanWarLeagueWar, ClanWarMember } from 'clashofclans.js';
+import { ClanWar, ClanWarClan, ClanWarLeague, ClanWarLeagueWar, ClanWarMember, ClanWarOpponent } from 'clashofclans.js';
 import { Message, MessageEmbed } from 'discord.js';
 import { COLLECTIONS } from '../../util/Constants';
-import { TOWN_HALLS } from '../../util/Emojis';
+import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 
 export default class MatchesCommand extends Command {
 	public constructor() {
@@ -20,9 +20,11 @@ export default class MatchesCommand extends Command {
 	}
 
 	public async exec(message: Message) {
+		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
+		if (clans.length) return message.util!.send('No clans are linked. Why not add some?');
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
@@ -160,5 +162,15 @@ export default class MatchesCommand extends Command {
 			array.push(items.slice(i, i + chunk));
 		}
 		return array;
+	}
+
+	// Calculates War Result
+	private result(clan: ClanWarClan, opponent: ClanWarOpponent) {
+		const tied = clan.stars === opponent.stars && clan.destructionPercentage === opponent.destructionPercentage;
+		if (tied) return 'tied';
+		const stars = clan.stars !== opponent.stars && clan.stars > opponent.stars;
+		const destr = clan.stars === opponent.stars && clan.destructionPercentage > opponent.destructionPercentage;
+		if (stars || destr) return 'won';
+		return 'lost';
 	}
 }
