@@ -24,6 +24,11 @@ export default class DonationBoardCommand extends Command {
 				{
 					id: 'data',
 					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
+				},
+				{
+					id: 'rev',
+					match: 'flag',
+					flag: ['donationsReceived']
 				}
 			]
 		});
@@ -33,7 +38,7 @@ export default class DonationBoardCommand extends Command {
 		return new Date().toISOString().substring(0, 7);
 	}
 
-	public async exec(message: Message, { data }: { data: Clan }) {
+	public async exec(message: Message, { data, rev }: { data: Clan; rev: boolean }) {
 		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
 
 		const dbMembers = await this.client.db.collection('clanmembers')
@@ -70,20 +75,20 @@ export default class DonationBoardCommand extends Command {
 		if (donatedMax > 99999) ds = 6;
 		if (donatedMax > 999999) ds = 7;
 
-		const sorted = members.sort((a, b) => b.received - a.received)
-			.sort((a, b) => b.donated - a.donated);
+		members.sort((a, b) => b.donated - a.donated);
+		if (rev) members.sort((a, b) => b.received - a.received);
 
 		const donated = members.reduce((pre, mem) => mem.donated + pre, 0);
 		const received = members.reduce((pre, mem) => mem.received + pre, 0);
 
 		const header = `**\`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(16, ' ')}\`**`;
 		const pages = [
-			this.paginate(sorted, 0, 25)
+			this.paginate(members, 0, 25)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donated, ds)} ${this.donation(member.received, rs)}`;
 					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
 				}),
-			this.paginate(sorted, 25, 50)
+			this.paginate(members, 25, 50)
 				.items.map((member, index) => {
 					const donation = `${this.donation(member.donated, ds)} ${this.donation(member.received, rs)}`;
 					return `\`\u200e${(index + 26).toString().padStart(2, ' ')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
