@@ -26,13 +26,13 @@ export default class MaintenanceHandler {
 	}
 
 	private send() {
-		const channel = this.client.channels.cache.get('609074828707758150') as TextChannel | null;
+		const channel = this.client.channels.cache.get('609074828707758150');
 		if (this.isMaintenance && channel) {
-			return channel.send(`**${EMOJIS.COC_LOGO} Maintenance Break has Started!**`);
+			return (channel as TextChannel).send(`**${EMOJIS.COC_LOGO} Maintenance Break has Started!**`);
 		}
 
 		if (!this.isMaintenance && channel) {
-			return channel.send(`**${EMOJIS.COC_LOGO} Maintenance Break has Finished!**`);
+			return (channel as TextChannel).send(`**${EMOJIS.COC_LOGO} Maintenance Break has Finished!**`);
 		}
 	}
 }

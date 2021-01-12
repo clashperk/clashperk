@@ -31,7 +31,7 @@ export default class MembersCommand extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const detailedMembers = await this.client.http.detailedClanMembers(data.memberList);
-		const members = detailedMembers.map(m => {
+		const members = detailedMembers.filter(res => res.ok).map(m => {
 			const member = {
 				name: m.name,
 				tag: m.tag,
