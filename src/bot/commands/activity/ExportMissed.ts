@@ -33,13 +33,13 @@ export default class WarExport extends Command {
 				.find({
 					// $not: { isFreindly: true },
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
-					state: { $in: ['inWar', 'warEnded'] }
+					state: 'warEnded'
 				})
 				.sort({ preparationStartTime: -1 })
 				.limit(this.client.patrons.get(message.guild!.id) ? 0 : days)
 				.toArray();
 
-			for (const war of wars) {
+			for (const war of wars.reverse()) {
 				const clan = war.clan.tag === tag ? war.clan : war.opponent;
 				for (const m of clan.members) {
 					if (war.groupWar && m.attacks?.length) continue;
@@ -53,7 +53,7 @@ export default class WarExport extends Command {
 						clan: clan.name,
 						teamSize: war.teamSize,
 						warType: war.groupWar ? 'CWL' : 'Regular',
-						timestamp: new Date(war.preparationStartTime)
+						timestamp: new Date(war.endTime)
 					};
 
 					if (!m.attacks) {
@@ -83,7 +83,7 @@ export default class WarExport extends Command {
 			{ header: 'Name', width: 16 },
 			{ header: 'Tag', width: 16 },
 			{ header: 'Clan', width: 16 },
-			{ header: 'Date', width: 14 },
+			{ header: 'Ended', width: 14 },
 			{ header: 'War Type', width: 10 },
 			{ header: 'Team Size', width: 10 },
 			{ header: 'Missed', width: 10 }
