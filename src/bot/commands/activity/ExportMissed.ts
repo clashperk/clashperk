@@ -23,7 +23,7 @@ export default class WarExport extends Command {
 	}
 
 	public async exec(message: Message, { days }: { days: number }) {
-		const clans = await this.client.db.collection('clanwarlogs')
+		const clans = await this.client.db.collection('clanstores')
 			.find({ guild: message.guild!.id })
 			.toArray();
 
