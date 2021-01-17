@@ -1,5 +1,5 @@
+import { Message, PermissionString, TextChannel } from 'discord.js';
 import { Command, PrefixSupplier } from 'discord-akairo';
-import { Message, PermissionString } from 'discord.js';
 
 interface Description {
 	content: string;
@@ -17,7 +17,7 @@ export default class HelpCommand extends Command {
 		super('help', {
 			aliases: ['help', 'commands'],
 			category: 'hidden',
-			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES', 'EMBED_LINKS'],
+			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES'],
 			args: [
 				{
 					id: 'command',
@@ -121,6 +121,10 @@ export default class HelpCommand extends Command {
 				util: 'Util'
 			}
 		];
+
+		if (!(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
+			return pages.map(async (_, page) => message.util!.send({ embed: this.execHelpList(message, pages[page]) }));
+		}
 
 		let page = 0;
 		const embed = this.execHelpList(message, pages[page]);
