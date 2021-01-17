@@ -3,29 +3,16 @@ import Client from './Client';
 import qs from 'querystring';
 import https from 'https';
 
-const [apiKey, pageId, metricId] = [process.env.API_KEY!, process.env.PAGE_ID!, process.env.METRIC_ID!];
-
 export default class StatsHandler {
-	public postRate: number;
-	public count: number;
 	public messages = new Map<string, NodeJS.Timeout>();
+	private readonly client: Client;
 
-	public constructor(private readonly client: Client, { postRate = 2.5 * 60 * 1000 } = {}) {
-		this.postRate = postRate;
-		this.count = 0;
+	public constructor(client: Client) {
+		this.client = client;
 	}
 
 	private get ISTDate() {
 		return new Date(Date.now() + 198e5).toISOString().substring(0, 10);
-	}
-
-	public async init() {
-		await this.stats();
-		this.client.setInterval(this.stats.bind(this), this.postRate);
-	}
-
-	public counter() {
-		return this.count += 1;
 	}
 
 	public async post() {
@@ -158,32 +145,5 @@ export default class StatsHandler {
 				$max: { updatedAt: new Date() },
 				$min: { createdAt: new Date() }
 			}, { upsert: true });
-	}
-
-	public stats() {
-		if (this.client.user!.id !== '526971716711350273') return;
-		const data = {
-			timestamp: Math.floor(new Date().getTime() / 1000),
-			value: this.count
-		};
-
-		try {
-			https.request(`https://api.statuspage.io/v1/pages/${pageId}/metrics/${metricId}/data.json`, {
-				method: 'POST', headers: { Authorization: `OAuth ${apiKey}` }
-			}, res => {
-				res.on('data', d => {
-					if (res.statusCode !== 201) {
-						this.client.logger.warn(d.toString(), { label: 'STATUS_PAGE' });
-					}
-				});
-				res.on('end', () => {
-					this.count = 0;
-				});
-			}).end(JSON.stringify({ data }));
-		} catch (error) {
-			this.client.logger.error(error, { label: 'STATUS_PAGE' });
-		}
-
-		return Promise.resolve();
 	}
 }

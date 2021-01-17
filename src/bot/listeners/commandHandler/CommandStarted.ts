@@ -72,7 +72,6 @@ export default class CommandStartedListener extends Listener {
 	}
 
 	private counter(message: Message, command: Command) {
-		this.client.stats.counter();
 		if (command.category.id === 'owner') return;
 		if (this.client.isOwner(message.author.id)) return;
 		this.client.stats.users(message.author.id);

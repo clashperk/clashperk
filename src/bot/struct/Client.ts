@@ -132,7 +132,7 @@ export default class Client extends AkairoClient {
 
 		await Connection.connect();
 		this.db = Connection.db('clashperk');
-		await Connection.createIndex(this.db);
+		// await Connection.createIndex(this.db);
 
 		this.settings = new Settings(this.db);
 
@@ -162,7 +162,6 @@ export default class Client extends AkairoClient {
 	}
 
 	private run() {
-		this.stats.init();
 		this.patrons.init();
 		this.rpcHandler.init();
 		return Promise.resolve();
