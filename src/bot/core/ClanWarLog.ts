@@ -135,7 +135,7 @@ export default class ClanWarEvent {
 		return message;
 	}
 
-	private edit(id: string, message: Message, data: any) {
+	private async edit(id: string, message: Message, data: any) {
 		const embed = this.embed(data);
 
 		return message.edit({ embed })
