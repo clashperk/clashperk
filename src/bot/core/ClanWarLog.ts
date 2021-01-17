@@ -62,6 +62,7 @@ export default class ClanWarEvent {
 
 	private permissionsFor(id: string, cache: any, data: any) {
 		const permissions = [
+			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
 			'EMBED_LINKS',
 			'USE_EXTERNAL_EMOJIS',
@@ -254,11 +255,11 @@ export default class ClanWarEvent {
 
 		if (twoRem.length) {
 			const chunks = Util.splitMessage(twoRem.join('\n'), { maxLength: 1000 });
-			chunks.map((chunk, i) => embed.addField(i === 0 ? '2 Remaining Attacks' : '\u200e', chunk));
+			chunks.map((chunk, i) => embed.addField(i === 0 ? '2 Missed Attacks' : '\u200e', chunk));
 		}
 		if (oneRem.length) {
 			const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
-			chunks.map((chunk, i) => embed.addField(i === 0 ? '1 Remaining Attacks' : '\u200e', chunk));
+			chunks.map((chunk, i) => embed.addField(i === 0 ? '1 Missed Attacks' : '\u200e', chunk));
 		}
 
 		if (oneRem.length || twoRem.length) return embed;
@@ -328,7 +329,7 @@ export default class ClanWarEvent {
 
 			if (oneRem.length) {
 				const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
-				chunks.map((chunk, i) => embed.addField(i === 0 ? 'Remaining Attacks' : '\u200e', chunk));
+				chunks.map((chunk, i) => embed.addField(i === 0 ? 'Missed Attacks' : '\u200e', chunk));
 			}
 		}
 
