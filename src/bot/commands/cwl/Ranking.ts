@@ -140,7 +140,7 @@ export default class CWLRankingComamnd extends Command {
 			.setAuthor(`${clan.name} ${clan.tag}`, clan.badgeUrls.small)
 			.setTitle('CWL Ranking')
 			.setDescription([
-				`${EMOJIS.CHANNEL} **\`\u200eSTAR DEST${''.padEnd(padding - 2, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
+				`${EMOJIS.HASH} **\`\u200eSTAR DEST${''.padEnd(padding - 2, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
 				ranks.sort((a, b) => b.stars - a.stars)
 					.map((clan, i) => `${RED_EMOJI[++i]} \`\u200e${clan.stars.toString().padEnd(3, ' ') as string}  ${this.destruction(clan.destruction, padding)}  ${clan.name.padEnd(15, ' ') as string}\``)
 					.join('\n')

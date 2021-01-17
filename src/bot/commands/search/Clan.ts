@@ -76,7 +76,7 @@ export default class ClanCommand extends Command {
 			'**Clan Level**',
 			`${EMOJIS.CLAN} ${data.clanLevel}`,
 			'**Members**',
-			`${EMOJIS.USERS_SMALL} ${data.members}`,
+			`${EMOJIS.USERS} ${data.members}`,
 			'**Clan Points**',
 			`${EMOJIS.TROPHY} ${data.clanPoints} ${EMOJIS.VERSUS_TROPHY} ${data.clanVersusPoints}`,
 			'**Leader**',

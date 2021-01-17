@@ -73,14 +73,14 @@ export default class ClanGameStatsCommand extends Command {
 			.setDescription([
 				'**Scoreboard**',
 				'Based on highest scores & completion times.',
-				`${EMOJIS.CHANNEL} **\`\u200e ${'SCORE'.padEnd(6, ' ')}  ${'CLAN'.padEnd(16, ' ')}\u200f\`**`,
+				`${EMOJIS.HASH} **\`\u200e ${'SCORE'.padEnd(6, ' ')}  ${'CLAN'.padEnd(16, ' ')}\u200f\`**`,
 				...performances
 					.sort((a, b) => b.total - a.total).sort((a, b) => a.endedAt - b.endedAt)
 					.map((clan, i) => `${BLUE_EMOJI[++i]} \`\u200e ${(clan.total || 0).toString().padStart(6, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
 				'',
 				'**Performance**',
 				'Based on completing maximum points.',
-				`${EMOJIS.CHANNEL} **\`\u200e ${Math.floor(MAX_POINT / 1000)}K  ${'CLAN'.padEnd(20, ' ')}\u200f\`**`,
+				`${EMOJIS.HASH} **\`\u200e ${Math.floor(MAX_POINT / 1000)}K  ${'CLAN'.padEnd(20, ' ')}\u200f\`**`,
 				...performances.sort((a, b) => b.count - a.count)
 					.map((clan, i) => `${BLUE_EMOJI[++i]} \`\u200e ${clan.count.toString().padStart(2, ' ')}  ${clan.name.padEnd(20, ' ')}\u200f\``)
 			]);

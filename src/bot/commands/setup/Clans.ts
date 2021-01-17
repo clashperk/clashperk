@@ -158,33 +158,33 @@ export default class ClansCommand extends Command {
 			const logs = [
 				item.donationlog
 					? donationlog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.CHANNEL} <#${item.donationlog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.CHANNEL} <#${item.donationlog as string}>`
+						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.donationlog as string}>`
+						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.donationlog as string}>`
 					: '',
 				item.playerlog
 					? playerlog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.CHANNEL} <#${item.playerlog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.CHANNEL} <#${item.playerlog as string}>`
+						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.playerlog as string}>`
+						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.playerlog as string}>`
 					: '',
 				item.onlinelog
 					? onlinelog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.CHANNEL} <#${item.onlinelog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.CHANNEL} <#${item.onlinelog as string}>`
+						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.onlinelog as string}>`
+						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.onlinelog as string}>`
 					: '',
 				item.clanembedlog
 					? clanembedlog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.CHANNEL} <#${item.clanembedlog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.CHANNEL} <#${item.clanembedlog as string}>`
+						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.clanembedlog as string}>`
+						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.clanembedlog as string}>`
 					: '',
 				item.clangameslog
 					? clangameslog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.CHANNEL} <#${item.clangameslog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.CHANNEL} <#${item.clangameslog as string}>`
+						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.clangameslog as string}>`
+						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.clangameslog as string}>`
 					: '',
 				item.clanwarlog
 					? clanwarlog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.CHANNEL} <#${item.clanwarlog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.CHANNEL} <#${item.clanwarlog as string}>`
+						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.clanwarlog as string}>`
+						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.clanwarlog as string}>`
 					: ''
 			];
 			return [
