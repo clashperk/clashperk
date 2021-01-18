@@ -1,4 +1,5 @@
 import { Command, Argument } from 'discord-akairo';
+import { COLLECTIONS } from '../../util/Constants';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
 
@@ -23,13 +24,13 @@ export default class WarExport extends Command {
 	}
 
 	public async exec(message: Message, { days }: { days: number }) {
-		const clans = await this.client.db.collection('clanstores')
+		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 
 		const chunks = [];
 		for (const { tag } of clans) {
-			const wars = await this.client.db.collection('clanwarstores')
+			const wars = await this.client.db.collection(COLLECTIONS.CLAN_WAR_STORES)
 				.find({
 					// $not: { isFreindly: true },
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],

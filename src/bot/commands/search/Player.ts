@@ -1,6 +1,6 @@
 import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES } from '../../util/Emojis';
+import { COLLECTIONS, leagueId } from '../../util/Constants';
 import { MessageEmbed, Util, Message } from 'discord.js';
-import { leagueId } from '../../util/Constants';
 import { Player } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
@@ -42,7 +42,7 @@ export default class PlayerCommand extends Command {
 	}
 
 	public async exec(message: Message, { data }: { data: Player }) {
-		const collection = await this.client.db.collection('lastonlines')
+		const collection = await this.client.db.collection(COLLECTIONS.LAST_ONLINES)
 			.aggregate([
 				{
 					$match: {
@@ -125,7 +125,7 @@ export default class PlayerCommand extends Command {
 	}
 
 	private async flag(message: Message, tag: string) {
-		const data = await this.client.db.collection('flaggedusers')
+		const data = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
 			.findOne({ guild: message.guild!.id, tag });
 		return data;
 	}
@@ -135,7 +135,7 @@ export default class PlayerCommand extends Command {
 	}
 
 	private async offset(message: Message) {
-		const data = await this.client.db.collection('timezoneoffset').findOne({ user: message.author.id });
+		const data = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS).findOne({ user: message.author.id });
 		const prefix = data?.timezone?.offset < 0 ? '-' : '+';
 		const seconds = Math.abs(data?.timezone?.offset ?? 0);
 		const hours = Math.floor(seconds / 3600);

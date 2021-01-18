@@ -1,4 +1,4 @@
-import { status } from '../../util/Constants';
+import { COLLECTIONS, status } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 import fetch from 'node-fetch';
@@ -63,7 +63,7 @@ export default class RedeemCommand extends Command {
 			return message.util!.send('This server already has an active subscription.');
 		}
 
-		const db = this.client.db.collection('patrons');
+		const db = this.client.db.collection(COLLECTIONS.PATRONS);
 		const user = await db.findOne({ id: patron.id });
 
 		const pledge = data.data.find((entry: any) => entry?.relationships?.patron?.data?.id === patron.id);
@@ -149,7 +149,7 @@ export default class RedeemCommand extends Command {
 
 	private isNew(user: any, message: Message, patron: any) {
 		if (user && user.discord_id !== message.author.id) {
-			this.client.db.collection('patrons')
+			this.client.db.collection(COLLECTIONS.PATRONS)
 				.updateOne(
 					{ id: patron.id },
 					{
@@ -166,9 +166,9 @@ export default class RedeemCommand extends Command {
 	}
 
 	private async sync(guild: string) {
-		await this.client.db.collection('clanstores').updateMany({ guild }, { $set: { active: true, patron: true } });
+		await this.client.db.collection(COLLECTIONS.CLAN_STORES).updateMany({ guild }, { $set: { active: true, patron: true } });
 
-		await this.client.db.collection('clanstores')
+		await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild })
 			.forEach(data => this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 }));
 	}

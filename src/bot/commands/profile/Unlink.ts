@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 
@@ -33,7 +34,7 @@ export default class UnlinkCommand extends Command {
 	public async exec(message: Message, { tag }: { tag: string }) {
 		const deleted = await this.delete(message.author.id, tag);
 		if (!deleted) {
-			const clan = await this.client.db.collection('linkedclans')
+			const clan = await this.client.db.collection(COLLECTIONS.LINKED_CLANS)
 				.findOneAndDelete({ user: message.author.id, tag });
 			if (clan.value?.tag) return message.util!.send({ embed: { description: `Successfully deleted **${clan.value.tag as string}**` } });
 
@@ -48,7 +49,7 @@ export default class UnlinkCommand extends Command {
 	}
 
 	private async delete(id: string, tag: string) {
-		const data = await this.client.db.collection('linkedusers')
+		const data = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.findOneAndUpdate({ user: id }, { $pull: { tags: tag } });
 		return data.value?.tags?.includes(tag) ? { tag } : null;
 	}

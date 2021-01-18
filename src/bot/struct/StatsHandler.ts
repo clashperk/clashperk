@@ -138,7 +138,7 @@ export default class StatsHandler {
 	}
 
 	public guilds(guild: string, count = 1) {
-		return this.client.db.collection('botguilds')
+		return this.client.db.collection(COLLECTIONS.BOT_GUILDS)
 			.updateOne({ guild }, {
 				$set: { guild },
 				$inc: { usage: count },

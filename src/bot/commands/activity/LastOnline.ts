@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { Message } from 'discord.js';
@@ -27,7 +28,7 @@ export default class LastOnlineCommand extends Command {
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
-		const db = await this.client.db.collection('lastonlines').countDocuments({ 'clan.tag': data.tag });
+		const db = await this.client.db.collection(COLLECTIONS.LAST_ONLINES).countDocuments({ 'clan.tag': data.tag });
 		if (!db) {
 			return message.util!.send({
 				embed: {
@@ -105,7 +106,7 @@ export default class LastOnlineCommand extends Command {
 	}
 
 	private async aggregationQuery(clan: Clan, days = 1) {
-		const db = this.client.db.collection('lastonlines');
+		const db = this.client.db.collection(COLLECTIONS.LAST_ONLINES);
 		const collection = await db.aggregate([
 			{
 				$match: {

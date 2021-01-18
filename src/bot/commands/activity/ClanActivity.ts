@@ -61,7 +61,7 @@ export default class ClanActivityCommand extends Command {
 			});
 		}
 
-		const Tz = await this.client.db.collection('timezoneoffset')
+		const Tz = await this.client.db.collection(COLLECTIONS.TIME_ZONES)
 			.findOne({ user: message.author.id });
 		const tz = Tz?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
 		const datasets = clans.map(clan => ({ name: clan.name, data: this.datasets(clan, tz.offset) }));

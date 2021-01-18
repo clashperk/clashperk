@@ -4,7 +4,7 @@ import ClanMemberLog from './ClanMemberLog';
 import ClanEmbedLog from './ClanEmbedLog';
 import ClanGamesLog from './ClanGamesLog';
 import DonationLog from './DonationLog';
-import { Op } from '../util/Constants';
+import { COLLECTIONS, Op } from '../util/Constants';
 import ClanWarLog from './ClanWarLog';
 import Client from '../struct/Client';
 import Queue from '../struct/Queue';
@@ -97,7 +97,7 @@ export default class RPCHandler {
 		await this.clanGamesLog.init();
 		await this.clanWarLog.init();
 
-		const collection = await this.client.db.collection('clanstores')
+		const collection = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({
 				paused: false, active: true, flag: { $gt: 0 },
 				guild: { $in: this.client.guilds.cache.map(guild => guild.id) }

@@ -1,4 +1,5 @@
 import { Clan, ClanWarLeague, ClanWar } from 'clashofclans.js';
+import { COLLECTIONS } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
@@ -31,7 +32,7 @@ export default class CWLExport extends Command {
 			});
 		}
 
-		const clans = await this.client.db.collection('clanwarlogs').find({ guild: message.guild!.id }).toArray();
+		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES).find({ guild: message.guild!.id }).toArray();
 		const chunks = [];
 		for (const clan of clans) {
 			const res = await this.client.http.clanWarLeague(clan.tag).catch(() => null);

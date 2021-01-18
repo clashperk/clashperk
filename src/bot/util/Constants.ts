@@ -38,7 +38,8 @@ export const COLLECTIONS = {
 	BOT_USERS: 'botusers',
 	BOT_STATS: 'botstats',
 	PATRONS: 'patrons',
-	CLAN_WAR_LOGS: 'clanwarlogs'
+	CLAN_WAR_LOGS: 'clanwarlogs',
+	TIME_ZONES: 'timezoneoffset'
 };
 
 export const SETTINGS = {

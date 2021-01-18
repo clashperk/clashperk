@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import Google from '../../struct/Google';
 import { Message } from 'discord.js';
@@ -33,7 +34,7 @@ export default class TimeOffsetCommand extends Command {
 		if (!raw) return message.util!.send('Location not found, make your search more specific and try again.');
 
 		const offset = (Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset));
-		await this.client.db.collection('timezoneoffset')
+		await this.client.db.collection(COLLECTIONS.TIME_ZONES)
 			.updateOne({ user: message.author.id }, {
 				$set: {
 					user: message.author.id,

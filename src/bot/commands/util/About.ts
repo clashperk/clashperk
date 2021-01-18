@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
@@ -17,8 +18,8 @@ export default class AboutCommand extends Command {
 		let guilds = 0;
 		const values = await this.client.shard!.broadcastEval('[this.guilds.cache.size]');
 		for (const value of values) guilds += value[0];
-		const clans = await this.client.db.collection('clanstores').find().count();
-		const players = await this.client.db.collection('lastonlines').find().count();
+		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES).find().count();
+		const players = await this.client.db.collection(COLLECTIONS.LAST_ONLINES).find().count();
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))

@@ -1,5 +1,6 @@
 import { MessageEmbed, PermissionString, TextChannel, Collection } from 'discord.js';
 import { TOWN_HALLS, EMOJIS, PLAYER_LEAGUES, HEROES } from '../util/Emojis';
+import { COLLECTIONS } from '../util/Constants';
 import { Player } from 'clashofclans.js';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
@@ -96,7 +97,7 @@ export default class PlayerEvent {
 				`${EMOJIS.TROOPS_DONATE} **${item.donations}**${EMOJIS.UP_KEY} **${item.donationsReceived}**${EMOJIS.DOWN_KEY}`
 			].join(' '));
 		} else {
-			const flag = await this.client.db.collection('flaggedusers')
+			const flag = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
 				.findOne({ guild: cache.guild, tag: item.tag });
 
 			embed.setFooter(`Joined ${data.clan.name}`, data.clan.badge);
@@ -140,25 +141,20 @@ export default class PlayerEvent {
 	}
 
 	public async init() {
-		const collection = await this.client.db
-			.collection('playerlogs')
-			.find()
-			.toArray();
-
-		collection.forEach(data => {
-			if (this.client.guilds.cache.has(data.guild)) {
+		await this.client.db.collection(COLLECTIONS.PLAYER_LOGS)
+			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
+			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
 					guild: data.guild,
 					channel: data.channel,
 					role: data.role,
 					tag: data.tag
 				});
-			}
-		});
+			});
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection('playerlogs')
+		const data = await this.client.db.collection(COLLECTIONS.PLAYER_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

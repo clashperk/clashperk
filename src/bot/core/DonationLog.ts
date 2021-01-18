@@ -1,5 +1,6 @@
 import { MessageEmbed, Collection, PermissionString, TextChannel } from 'discord.js';
 import { PLAYER_LEAGUES, BLUE_NUM, RED_NUM, EMOJIS } from '../util/Emojis';
+import { COLLECTIONS } from '../util/Constants';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
 
@@ -120,25 +121,20 @@ export default class ClanEvent {
 	}
 
 	public async init() {
-		const collection = await this.client.db
-			.collection('donationlogs')
-			.find()
-			.toArray();
-
-		collection.forEach(data => {
-			if (this.client.guilds.cache.has(data.guild)) {
+		await this.client.db.collection(COLLECTIONS.DONATION_LOGS)
+			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
+			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
 					// guild: data.guild,
 					channel: data.channel,
 					color: data.color,
 					tag: data.tag
 				});
-			}
-		});
+			});
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection('donationlogs')
+		const data = await this.client.db.collection(COLLECTIONS.DONATION_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

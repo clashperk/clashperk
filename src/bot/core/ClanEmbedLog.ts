@@ -1,5 +1,6 @@
 import { MessageEmbed, Message, Collection, TextChannel, PermissionString } from 'discord.js';
 import { EMOJIS, TOWN_HALLS, BLUE_EMOJI, CWL_LEAGUES } from '../util/Emojis';
+import { COLLECTIONS } from '../util/Constants';
 import { Clan } from 'clashofclans.js';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
@@ -119,7 +120,7 @@ export default class ClanEmbed {
 				cache.message = message.id;
 				cache.msg = message;
 				this.cached.set(id, cache);
-				await this.client.db.collection('clanembedlogs')
+				await this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS)
 					.updateOne(
 						{ clan_id: new ObjectId(id) },
 						{ $set: { message: message.id } }
@@ -204,25 +205,21 @@ export default class ClanEmbed {
 	}
 
 	public async init() {
-		const collection = await this.client.db.collection('clanembedlogs')
-			.find()
-			.toArray();
-
-		collection.forEach((data: any) => {
-			if (this.client.guilds.cache.has(data.guild)) {
-				this.cached.set(data.clan_id.toString(), {
+		await this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS)
+			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
+			.forEach(data => {
+				this.cached.set((data.clan_id as ObjectId).toHexString(), {
 					message: data.message,
 					color: data.color,
 					embed: data.embed,
 					tag: data.tag,
 					channel: data.channel
 				});
-			}
-		});
+			});
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection('clanembedlogs')
+		const data = await this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

@@ -1,9 +1,9 @@
 import { Command, PrefixSupplier } from 'discord-akairo';
-import { ObjectId } from 'mongodb';
-import { COLLECTIONS, Op, KeyValue } from '../../util/Constants';
+import { COLLECTIONS, Op } from '../../util/Constants';
 import { Message } from 'discord.js';
+import { ObjectId } from 'mongodb';
 
-const logType: KeyValue = {
+const logType: { [key: string]: string } = {
 	[Op.DONATION_LOG]: 'Donation Log',
 	[Op.CLAN_MEMBER_LOG]: 'Clan Feed',
 	[Op.LAST_ONLINE_LOG]: 'Last Online Board',
@@ -103,7 +103,7 @@ export default class StopCommand extends Command {
 			return message.util!.send({ embed });
 		}
 
-		const data = await this.client.db.collection('clanstores')
+		const data = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.findOne({ tag: `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}`, guild: message.guild!.id });
 
 		if (!data) {
@@ -151,7 +151,7 @@ export default class StopCommand extends Command {
 
 		if (data) {
 			this.client.rpcHandler.delete(id, { tag, op: 0 });
-			return this.client.db.collection('clanstores').updateOne({ _id: new ObjectId(id) }, { $set: { flag: 0 } });
+			return this.client.db.collection(COLLECTIONS.CLAN_STORES).updateOne({ _id: new ObjectId(id) }, { $set: { flag: 0 } });
 		}
 	}
 

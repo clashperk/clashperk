@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 
@@ -24,7 +25,7 @@ export default class UnflagCommand extends Command {
 	}
 
 	public async exec(message: Message, { tag }: { tag: string }) {
-		const data = await this.client.db.collection('flaggedusers')
+		const data = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
 			.deleteOne({ guild: message.guild!.id, tag });
 		if (!data.deletedCount) {
 			return message.util!.send('Tag not found!');

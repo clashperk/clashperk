@@ -1,5 +1,6 @@
 import { MessageEmbed, Message, Guild } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
+import { COLLECTIONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 
 export default class ClansCommand extends Command {
@@ -49,12 +50,12 @@ export default class ClansCommand extends Command {
 		const premium = this.client.patrons.get(guild.id);
 		const clans = await this.client.storage.findAll(guild.id);
 		const data = await Promise.all(clans.map(async doc => {
-			const donationlog = await this.client.db.collection('donationlogs').findOne({ clan_id: doc._id });
-			const playerlog = await this.client.db.collection('playerlogs').findOne({ clan_id: doc._id });
-			const onlinelog = await this.client.db.collection('lastonlinelogs').findOne({ clan_id: doc._id });
-			const clanembed = await this.client.db.collection('clanembedlogs').findOne({ clan_id: doc._id });
-			const clangames = await this.client.db.collection('clangameslogs').findOne({ clan_id: doc._id });
-			const clanwar = await this.client.db.collection('clanwarlogs').findOne({ clan_id: doc._id });
+			const donationlog = await this.client.db.collection(COLLECTIONS.DONATION_LOGS).findOne({ clan_id: doc._id });
+			const playerlog = await this.client.db.collection(COLLECTIONS.PLAYER_LOGS).findOne({ clan_id: doc._id });
+			const onlinelog = await this.client.db.collection(COLLECTIONS.LAST_ONLINE_LOGS).findOne({ clan_id: doc._id });
+			const clanembed = await this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS).findOne({ clan_id: doc._id });
+			const clangames = await this.client.db.collection(COLLECTIONS.CLAN_GAMES_LOGS).findOne({ clan_id: doc._id });
+			const clanwar = await this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS).findOne({ clan_id: doc._id });
 
 			return {
 				tag: doc.tag,

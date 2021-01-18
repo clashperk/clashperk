@@ -1,5 +1,6 @@
 import { MessageEmbed, GuildMember, Message } from 'discord.js';
 import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis';
+import { COLLECTIONS } from '../../util/Constants';
 import { Clan, Player } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
@@ -70,7 +71,7 @@ export default class ProfileCommand extends Command {
 			index += 1;
 			const data: Player = await this.client.http.player(tag);
 			if (data.status === 404) {
-				this.client.db.collection('linkedusers').updateOne({ user: member.id }, { $pull: { tags: tag } });
+				this.client.db.collection(COLLECTIONS.LINKED_USERS).updateOne({ user: member.id }, { $pull: { tags: tag } });
 			}
 			if (!data.ok) continue;
 
@@ -105,10 +106,10 @@ export default class ProfileCommand extends Command {
 	}
 
 	private getProfile(id: string) {
-		return this.client.db.collection('linkedusers').findOne({ user: id });
+		return this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ user: id });
 	}
 
 	private getClan(id: string) {
-		return this.client.db.collection('linkedclans').findOne({ user: id });
+		return this.client.db.collection(COLLECTIONS.LINKED_CLANS).findOne({ user: id });
 	}
 }

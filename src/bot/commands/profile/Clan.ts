@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { Message, GuildMember } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -30,7 +31,7 @@ export default class LinkClanCommand extends Command {
 
 	public async exec(message: Message, { data, member }: { data: Clan; member: GuildMember }) {
 		if (member.user.bot) return message.util!.send('Bots can\'t link accounts.');
-		await this.client.db.collection('linkedclans')
+		await this.client.db.collection(COLLECTIONS.LINKED_CLANS)
 			.updateOne({ user: member.id }, {
 				$set: {
 					user: member.id,

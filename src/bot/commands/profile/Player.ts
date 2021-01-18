@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { Message, GuildMember } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
@@ -55,7 +56,7 @@ export default class LinkPlayerCommand extends Command {
 			});
 		}
 
-		await this.client.db.collection('linkedusers')
+		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.updateOne({ user: member.id }, {
 				$set: {
 					'user': member.id,
@@ -77,7 +78,7 @@ export default class LinkPlayerCommand extends Command {
 	}
 
 	private async getPlayer(tag: string) {
-		return this.client.db.collection('linkedusers').findOne({ tags: tag });
+		return this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ tags: tag });
 	}
 }
 

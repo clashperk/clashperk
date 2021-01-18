@@ -146,7 +146,7 @@ export default class LastOnlineEvent {
 					.join('\n'),
 				'\`\`\`'
 			])
-			.setFooter('Last Updated')
+			.setFooter('Synced')
 			.setTimestamp();
 
 		return embed;
@@ -162,7 +162,7 @@ export default class LastOnlineEvent {
 	}
 
 	public async init() {
-		await this.client.db.collection('lastonlinelogs')
+		await this.client.db.collection(COLLECTIONS.LAST_ONLINE_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
@@ -176,8 +176,7 @@ export default class LastOnlineEvent {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db
-			.collection('lastonlinelogs')
+		const data = await this.client.db.collection(COLLECTIONS.LAST_ONLINE_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

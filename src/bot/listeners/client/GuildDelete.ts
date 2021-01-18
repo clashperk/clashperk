@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { Guild, Webhook } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Listener } from 'discord-akairo';
@@ -43,7 +44,7 @@ export default class GuildDeleteListener extends Listener {
 	}
 
 	private async delete(guild: Guild) {
-		const db = this.client.db.collection('clanstores');
+		const db = this.client.db.collection(COLLECTIONS.CLAN_STORES);
 
 		await db.find({ guild: guild.id })
 			.forEach(data => this.client.rpcHandler.delete(data._id?.toString(), { tag: data.tag, op: 0 }));

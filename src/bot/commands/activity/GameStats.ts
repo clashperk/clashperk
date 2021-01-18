@@ -1,4 +1,5 @@
 import { BLUE_EMOJI, EMOJIS } from '../../util/Emojis';
+import { COLLECTIONS } from '../../util/Constants';
 import { Message, Guild } from 'discord.js';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
@@ -48,12 +49,12 @@ export default class ClanGameStatsCommand extends Command {
 			return this.handler.handleDirectCommand(message, 'cgstats', this.handler.modules.get('help')!, false);
 		}
 
-		const tags = await this.client.db.collection('clanstores')
+		const tags = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild: guild.id })
 			.toArray();
 		if (!tags.length) return message.util!.send(`${message.guild!.name} does not have any clans. Why not add some?`);
 
-		const clans = await this.client.db.collection('clangames')
+		const clans = await this.client.db.collection(COLLECTIONS.CLAN_GAMES)
 			.find({ tag: { $in: [...tags.map(d => d.tag)] } })
 			.toArray();
 		if (clans.length < 2) return message.util!.send('Minimum 2 clans are required to use this command.');

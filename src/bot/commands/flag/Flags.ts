@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { RED_EMOJI } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
@@ -40,7 +41,7 @@ export default class FlagsCommand extends Command {
 	public async exec(message: Message, { page, download }: { page: number; download: boolean }) {
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message));
-		const data = await this.client.db.collection('flaggedusers')
+		const data = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
 			.find({ guild: message.guild!.id })
 			.toArray();
 

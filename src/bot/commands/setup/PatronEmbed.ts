@@ -1,6 +1,6 @@
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS, BLUE_EMOJI } from '../../util/Emojis';
 import { Command, Argument, Flag } from 'discord-akairo';
-import { Op, SETTINGS } from '../../util/Constants';
+import { COLLECTIONS, Op, SETTINGS } from '../../util/Constants';
 import { Util, Message, User } from 'discord.js';
 import Resolver from '../../struct/Resolver';
 import { Clan } from 'clashofclans.js';
@@ -199,8 +199,7 @@ export default class ClanEmbedCommand extends Command {
 	}
 
 	private async clans(message: Message) {
-		const collection = await this.client.db
-			.collection('clanstores')
+		const collection = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 		return collection;

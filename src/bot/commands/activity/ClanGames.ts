@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -98,7 +99,7 @@ export default class ClanGamesCommand extends Command {
 	}
 
 	private query(tag: string, clan: Clan) {
-		return this.client.db.collection('clanmembers')
+		return this.client.db.collection(COLLECTIONS.CLAN_MEMBERS)
 			.find({
 				clanTag: tag,
 				season: this.seasonID,

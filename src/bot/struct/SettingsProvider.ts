@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../util/Constants';
 import { Collection, Db } from 'mongodb';
 import { Guild } from 'discord.js';
 
@@ -7,7 +8,7 @@ export default class SettingsProvider {
 	public settings = new Map();
 
 	public constructor(db: Db) {
-		this.db = db.collection('settings');
+		this.db = db.collection(COLLECTIONS.SETTINGS);
 	}
 
 	public async init() {

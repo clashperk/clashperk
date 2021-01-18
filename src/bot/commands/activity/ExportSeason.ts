@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
 import { Clan } from 'clashofclans.js';
@@ -21,7 +22,7 @@ export default class WarExport extends Command {
 	}
 
 	public async exec(message: Message) {
-		const clans = await this.client.db.collection('clanstores')
+		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 
@@ -33,7 +34,7 @@ export default class WarExport extends Command {
 			if (!clan.ok) continue;
 			if (clan.members === 0) continue;
 
-			const members = await this.client.db.collection('clanmembers')
+			const members = await this.client.db.collection(COLLECTIONS.CLAN_MEMBERS)
 				.find({ tag: { $in: clan.memberList.map(m => m.tag) }, clanTag: clan.tag, season: this.season })
 				.sort({ createdAt: -1 })
 				.toArray();

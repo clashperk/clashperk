@@ -1,4 +1,5 @@
 import { Guild, TextChannel, Webhook } from 'discord.js';
+import { COLLECTIONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Listener } from 'discord-akairo';
 
@@ -81,7 +82,7 @@ export default class GuildCreateListener extends Listener {
 	}
 
 	private async restore(guild: Guild) {
-		const db = this.client.db.collection('clanstores');
+		const db = this.client.db.collection(COLLECTIONS.CLAN_STORES);
 
 		await db.find({ guild: guild.id, active: true })
 			.forEach(data => this.client.rpcHandler.add(data._id?.toString(), { tag: data.tag, guild: guild.id, op: 0 }));

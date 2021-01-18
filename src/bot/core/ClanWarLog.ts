@@ -2,6 +2,7 @@ import { MessageEmbed, Util, Collection, TextChannel, PermissionString, Message 
 import { CurrentWar, ClanWarClan, ClanWarOpponent, ClanWarMember } from 'clashofclans.js';
 import { CYAN_NUMBERS, BROWN_NUMBERS } from '../util/NumEmojis';
 import { TOWN_HALLS, EMOJIS, WAR_STARS } from '../util/Emojis';
+import { COLLECTIONS } from '../util/Constants';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
@@ -16,6 +17,11 @@ const results: { [key: string]: number } = {
 	lost: 15158332,
 	tied: 5861569
 };
+
+interface Roster {
+	total: number;
+	level: number;
+}
 
 interface WarRes extends CurrentWar {
 	recent?: {
@@ -33,8 +39,8 @@ interface WarRes extends CurrentWar {
 		};
 	}[];
 	result: string;
-	clan: ClanWarClan & { rosters: { total: number; level: number }[] };
-	opponent: ClanWarOpponent & { rosters: { total: number; level: number }[] };
+	clan: ClanWarClan & { rosters: Roster[] };
+	opponent: ClanWarOpponent & { rosters: Roster[] };
 	remaining: ClanWarMember[];
 	round: number;
 	groupWar: boolean;
@@ -363,18 +369,15 @@ export default class ClanWarEvent {
 		].filter(stars => stars.length).join('');
 	}
 
-	private getRoster(townHalls: WarRes['clan']['rosters'], codeblock = false) {
+	private getRoster(townHalls: Roster[]) {
 		return this.chunk(townHalls)
 			.map(chunks => {
-				const list = chunks.map(th => {
-					const total = `\`\u200e${th.total.toString().padStart(2, ' ')}\``;
-					return `${TOWN_HALLS[th.level]} ${codeblock ? total : BROWN_NUMBERS[th.total]}`;
-				});
+				const list = chunks.map(th => `${TOWN_HALLS[th.level]} ${BROWN_NUMBERS[th.total]}`);
 				return list.join(' ');
 			}).join('\n');
 	}
 
-	private chunk(items: WarRes['clan']['rosters'] = []) {
+	private chunk(items: Roster[] = []) {
 		const chunk = 5;
 		const array = [];
 		for (let i = 0; i < items.length; i += chunk) {
@@ -389,7 +392,7 @@ export default class ClanWarEvent {
 			cache.rounds[data.round] = { warTag: data.warTag, messageID, round: data.round };
 			this.cached.set(id, cache);
 
-			return this.client.db.collection('clanwarlogs')
+			return this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS)
 				.updateOne(
 					{ clan_id: new ObjectId(id) },
 					{
@@ -405,7 +408,7 @@ export default class ClanWarEvent {
 		cache.messageID = messageID;
 		this.cached.set(id, cache);
 
-		return this.client.db.collection('clanwarlogs')
+		return this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS)
 			.updateOne(
 				{ clan_id: new ObjectId(id) },
 				{
@@ -415,7 +418,7 @@ export default class ClanWarEvent {
 	}
 
 	public async init() {
-		await this.client.db.collection('clanwarlogs')
+		await this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
@@ -430,7 +433,7 @@ export default class ClanWarEvent {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection('clanwarlogs')
+		const data = await this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

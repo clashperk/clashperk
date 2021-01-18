@@ -1,5 +1,5 @@
+import { COLLECTIONS, SETTINGS } from '../../util/Constants';
 import { Message, TextChannel } from 'discord.js';
-import { SETTINGS } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 
 interface Patron {
@@ -46,7 +46,7 @@ export default class PatronCommand extends Command {
 			}
 
 			if (action === 'add' && patron) {
-				await this.client.db.collection('patrons')
+				await this.client.db.collection(COLLECTIONS.PATRONS)
 					.updateOne(
 						{ id: patron.id },
 						{ $set: { active: true } }
@@ -57,7 +57,7 @@ export default class PatronCommand extends Command {
 			}
 
 			if (action === 'del' && patron) {
-				await this.client.db.collection('patrons')
+				await this.client.db.collection(COLLECTIONS.PATRONS)
 					.updateOne(
 						{ id: patron.id },
 						{ $set: { active: false } }
@@ -127,9 +127,9 @@ export default class PatronCommand extends Command {
 	}
 
 	private async add(guild: string) {
-		await this.client.db.collection('clanstores').updateMany({ guild }, { $set: { active: true, patron: true } });
+		await this.client.db.collection(COLLECTIONS.CLAN_STORES).updateMany({ guild }, { $set: { active: true, patron: true } });
 
-		await this.client.db.collection('clanstores')
+		await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild })
 			.forEach(data => this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 }));
 	}
@@ -137,13 +137,13 @@ export default class PatronCommand extends Command {
 	private async del(guild: string) {
 		this.client.settings.delete(guild, SETTINGS.LIMIT); // Delete ClanLimit
 
-		await this.client.db.collection('clanstores').updateMany({ guild }, { $set: { patron: false } });
+		await this.client.db.collection(COLLECTIONS.CLAN_STORES).updateMany({ guild }, { $set: { patron: false } });
 
-		await this.client.db.collection('clanstores')
+		await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild })
 			.skip(2)
 			.forEach(async data => {
-				await this.client.db.collection('clanstores').updateOne({ _id: data._id }, { $set: { active: false } });
+				await this.client.db.collection(COLLECTIONS.CLAN_STORES).updateOne({ _id: data._id }, { $set: { active: false } });
 				await this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0 });
 			});
 	}

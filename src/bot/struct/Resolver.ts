@@ -1,7 +1,7 @@
 const players = require('../../../players.json'); // eslint-disable-line
 import { MessageEmbed, Message, GuildMember } from 'discord.js';
+import { COLLECTIONS, status } from '../util/Constants';
 import { Player, Clan } from 'clashofclans.js';
-import { status } from '../util/Constants';
 import { Flag } from 'discord-akairo';
 import Client from './Client';
 
@@ -24,7 +24,7 @@ export default class Resolver {
 			return this.fail(message, { embed });
 		}
 
-		const data = await this.client.db.collection('linkedusers')
+		const data = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.findOne({ user: (parsed as GuildMember).id });
 
 		if (data?.tags[0]) return this.getPlayer(message, data.tags[0]);
@@ -58,7 +58,7 @@ export default class Resolver {
 			return this.fail(message, { embed });
 		}
 
-		const data = await this.client.db.collection('linkedclans')
+		const data = await this.client.db.collection(COLLECTIONS.LINKED_CLANS)
 			.findOne({ user: (parsed as GuildMember).id });
 
 		if (data) return this.getClan(message, data.tag);

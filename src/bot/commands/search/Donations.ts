@@ -1,3 +1,4 @@
+import { COLLECTIONS } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { Message } from 'discord.js';
@@ -41,7 +42,7 @@ export default class DonationBoardCommand extends Command {
 	public async exec(message: Message, { data, rev }: { data: Clan; rev: boolean }) {
 		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
 
-		const dbMembers = await this.client.db.collection('clanmembers')
+		const dbMembers = await this.client.db.collection(COLLECTIONS.CLAN_MEMBERS)
 			.find({ season: this.seasonID, clanTag: data.tag, tag: { $in: data.memberList.map(m => m.tag) } })
 			.toArray();
 
