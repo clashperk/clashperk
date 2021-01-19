@@ -12,8 +12,8 @@ export default class LinkCommand extends Command {
 				content: [
 					'Links a clan or player to your account.'
 				],
-				usage: '<tag> [@user]',
-				examples: ['#8QU8J9LP', '#9Q92C8R20 @Suvajit']
+				usage: '<tag> [@user] [--default]',
+				examples: ['#8QU8J9LP', '#9Q92C8R20 @Suvajit', '#9Q92C8R20 --default']
 			},
 			flags: ['clan', 'player', 'timezone', 'offset']
 		});

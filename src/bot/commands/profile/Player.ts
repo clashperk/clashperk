@@ -24,12 +24,17 @@ export default class LinkPlayerCommand extends Command {
 					'id': 'member',
 					'type': 'member',
 					'default': (m: Message) => m.member
+				},
+				{
+					id: 'def',
+					match: 'flag',
+					flag: ['--default']
 				}
 			]
 		});
 	}
 
-	public async exec(message: Message, { data, member }: { data: Player; member: GuildMember }) {
+	public async exec(message: Message, { data, member, def }: { data: Player; member: GuildMember; def: boolean }) {
 		if (member.user.bot) return message.util!.send('Bots can\'t link accounts.');
 		const doc = await this.getPlayer(data.tag);
 		if (doc && doc.user === member.id) {
@@ -64,7 +69,14 @@ export default class LinkPlayerCommand extends Command {
 					'default': false,
 					'createdAt': new Date()
 				},
-				$push: { tags: data.tag }
+				$push: def
+					? {
+						tags: {
+							$each: [data.tag],
+							$position: 0
+						}
+					}
+					: { tags: data.tag }
 			}, { upsert: true });
 
 		const embed = this.client.util.embed()

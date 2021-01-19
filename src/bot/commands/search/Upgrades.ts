@@ -19,6 +19,7 @@ export default class UpgradesCommand extends Command {
 			args: [
 				{
 					id: 'data',
+					match: 'content',
 					type: (msg, tag) => this.client.resolver.resolvePlayer(msg, tag)
 				}
 			]

@@ -12,7 +12,14 @@ export default class Resolver {
 		this.client = client;
 	}
 
-	public async resolvePlayer(message: Message, args: string): Promise<Player | Flag> {
+	public async resolvePlayer(message: Message, args: string, num = 1): Promise<Player | Flag> {
+		const arr = args?.split(/ +/g) ?? []; // eslint-disable-line
+		if (arr.length > 1) num = Number(arr.pop()) || 1;
+		if (/^\d$|^1\d$|^2[0-5]$/.test(args)) {
+			num = Number(/^\d$|^1\d$|^2[0-5]$/.exec(args)?.shift()) || 1;
+			args = '';
+		}
+
 		const parsed = await this.argumentParser(message, args);
 		const tag = parsed && typeof parsed === 'boolean';
 
@@ -26,12 +33,13 @@ export default class Resolver {
 
 		const data = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.findOne({ user: (parsed as GuildMember).id });
-
-		if (data?.tags[0]) return this.getPlayer(message, data.tags[0]);
-
 		const otherTags = this.players((parsed as GuildMember).id);
-		if (otherTags.length) return this.getPlayer(message, otherTags[0]);
 
+		const tagSet = new Set([...data?.tags ?? [], ...otherTags]);
+		const tags = Array.from(tagSet);
+		tagSet.clear();
+
+		if (tags.length) return this.getPlayer(message, tags[Math.min(tags.length - 1, num - 1)]);
 		if (message.author.id === (parsed as GuildMember).id) {
 			embed.setDescription([
 				'**Please provide a player tag and try again!**'
