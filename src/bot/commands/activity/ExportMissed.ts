@@ -40,7 +40,7 @@ export default class WarExport extends Command {
 				.limit(this.client.patrons.get(message.guild!.id) ? 0 : days)
 				.toArray();
 
-			for (const war of wars.reverse()) {
+			for (const war of wars) {
 				const clan = war.clan.tag === tag ? war.clan : war.opponent;
 				for (const m of clan.members) {
 					if (war.groupWar && m.attacks?.length) continue;
@@ -97,16 +97,10 @@ export default class WarExport extends Command {
 			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 		}
 
-		sheet.addRows(chunks.reverse()
-			.map(m => [
-				m.name,
-				m.tag,
-				m.clan,
-				m.timestamp,
-				m.warType,
-				m.teamSize,
-				m.missed
-			]));
+		sheet.addRows(
+			chunks.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+				.map(m => [m.name, m.tag, m.clan, m.timestamp, m.warType, m.teamSize, m.missed])
+		);
 
 		const buffer = await workbook.xlsx.writeBuffer();
 		return message.util!.send('**Missed Attacks**', {
