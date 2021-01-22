@@ -2,18 +2,15 @@ import { Client, Player, ClanMember } from 'clashofclans.js';
 import fetch from 'node-fetch';
 
 export default class Http extends Client {
-	private readonly tokens: string[];
-
 	private tokenIndex: number;
 
 	public constructor() {
 		super();
 
 		this.timeout = 5000;
-		this.token = process.env.DEVELOPER_TOKEN!;
-		// this.baseURL = 'https://coc.clashperk.com/v1';
+		this.baseURL = 'https://coc.clashperk.com/v1';
 
-		this.tokens = [...process.env.CLASH_TOKENS!.split(',')];
+		this.token = [...process.env.CLASH_TOKENS!.split(',')];
 		this.tokenIndex = 0;
 	}
 
