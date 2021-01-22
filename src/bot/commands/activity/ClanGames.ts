@@ -99,26 +99,43 @@ export default class ClanGamesCommand extends Command {
 	}
 
 	private query(clanTag: string, clan: Clan) {
-		return this.client.db.collection(COLLECTIONS.CLAN_MEMBERS)
-			.find({
-				clanTag, season: this.seasonID,
-				$or: [
-					{
-						tag: {
-							$in: clan.memberList.map(m => m.tag)
-						}
-					},
-					{
-						achievements: {
-							$elemMatch: {
-								name: 'Games Champion',
-								gained: { $gt: 0 }
-							}
-						}
+		const cursor = this.client.db.collection(COLLECTIONS.CLAN_MEMBERS)
+			.aggregate([
+				{
+					$match: {
+						clanTag
 					}
-				]
+				},
+				{
+					$match: {
+						season: this.seasonID
+					}
+				},
+				{
+					$match: {
+						$or: [
+							{
+								tag: {
+									$in: clan.memberList.map(m => m.tag)
+								}
+							},
+							{
+								achievements: {
+									$elemMatch: {
+										name: 'Games Champion',
+										gained: { $gt: 0 }
+									}
+								}
+							}
+						]
+					}
+				},
+				{
+					$limit: 60
+				}
+			]);
 
-			}).toArray();
+		return cursor.toArray();
 	}
 
 
@@ -155,7 +172,7 @@ export default class ClanGamesCommand extends Command {
 
 		return {
 			total,
-			members: allMembers.sort((a, b) => b.points - a.points).sort((a, b) => b.endedAt - a.endedAt)
+			members: allMembers.sort((a, b) => a.endedAt - b.endedAt).sort((a, b) => b.points - a.points)
 		};
 	}
 }
