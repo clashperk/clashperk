@@ -155,7 +155,7 @@ export default class ClanGamesCommand extends Command {
 
 		return {
 			total,
-			members: allMembers.sort((a, b) => b.points - a.points).sort((a, b) => a.endedAt - b.endedAt)
+			members: allMembers.sort((a, b) => b.points - a.points).sort((a, b) => b.endedAt - a.endedAt)
 		};
 	}
 }
