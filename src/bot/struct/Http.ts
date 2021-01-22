@@ -8,7 +8,7 @@ export default class Http extends Client {
 		super();
 
 		this.timeout = 5000;
-		this.baseURL = 'https://coc.clashperk.com/v1';
+		// this.baseURL = 'https://coc.clashperk.com/v1';
 
 		this.token = [...process.env.CLASH_TOKENS!.split(',')];
 		this.tokenIndex = 0;
