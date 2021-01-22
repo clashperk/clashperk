@@ -1,6 +1,10 @@
 import { TextChannel, User, PermissionString, MessageEmbed } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 
+export const Util = {
+	escapeSheetName: (name: string) => name.replace(/[\*\?\:\[\]\\\/]/g, '')
+};
+
 export const codes = {
 	504: '504 Request Timeout',
 	400: 'Client provided incorrect parameters for the request.',

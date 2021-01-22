@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { COLLECTIONS, Util } from '../../util/Constants';
 import { Command, Argument } from 'discord-akairo';
 import { ClanWarClan } from 'clashofclans.js';
 import Excel from '../../struct/Excel';
@@ -89,7 +89,7 @@ export default class WarExport extends Command {
 
 		const workbook = new Excel();
 		for (const { name, members } of chunks) {
-			const sheet = workbook.addWorksheet(name);
+			const sheet = workbook.addWorksheet(Util.escapeSheetName(name));
 			sheet.columns = [
 				{ header: 'Name', width: 20 },
 				{ header: 'Tag', width: 16 },
