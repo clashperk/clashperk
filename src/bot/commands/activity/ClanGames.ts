@@ -98,11 +98,10 @@ export default class ClanGamesCommand extends Command {
 		return now.toISOString().substring(0, 7);
 	}
 
-	private query(tag: string, clan: Clan) {
+	private query(clanTag: string, clan: Clan) {
 		return this.client.db.collection(COLLECTIONS.CLAN_MEMBERS)
 			.find({
-				clanTag: tag,
-				season: this.seasonID,
+				clanTag, season: this.seasonID,
 				$or: [
 					{
 						tag: {
@@ -110,12 +109,16 @@ export default class ClanGamesCommand extends Command {
 						}
 					},
 					{
-						'achievements.name': 'Games Champion',
-						'achievements.gained': { $gt: 0 }
+						achievements: {
+							$elemMatch: {
+								name: 'Games Champion',
+								gained: { $gt: 0 }
+							}
+						}
 					}
 				]
-			})
-			.toArray();
+
+			}).toArray();
 	}
 
 
