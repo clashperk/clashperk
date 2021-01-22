@@ -72,6 +72,9 @@ class MongoDB extends MongoClient {
 			db.collection(COLLECTIONS.CLAN_MEMBERS)
 				.createIndex({ tag: 1, season: -1, clanTag: 1 }, { unique: true }),
 
+			db.collection(COLLECTIONS.CLAN_MEMBERS)
+				.createIndex({ clanGamesTotal: -1 }),
+
 			db.collection(COLLECTIONS.BOT_GROWTH)
 				.createIndex({ ISTDate: 1 }, { unique: true }),
 
