@@ -30,6 +30,8 @@ class MongoDB extends MongoClient {
 			db.collection(COLLECTIONS.LAST_ONLINES)
 				.createIndex({ tag: 1 }, { unique: true }),
 
+			db.collection(COLLECTIONS.LAST_ONLINES).createIndex({ 'entries.entry': 1 }),
+
 			db.collection(COLLECTIONS.CLAN_GAMES_LOGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
@@ -54,6 +56,8 @@ class MongoDB extends MongoClient {
 			db.collection(COLLECTIONS.CLAN_WAR_STORES)
 				.createIndex({ 'clan.tag': 1, 'opponent.tag': 1, 'warID': -1 }, { unique: true }),
 
+			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ state: 1 }),
+
 			db.collection(COLLECTIONS.CLAN_GAMES)
 				.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 20 * 24 * 60 * 60 }),
 
@@ -72,8 +76,11 @@ class MongoDB extends MongoClient {
 			db.collection(COLLECTIONS.CLAN_MEMBERS)
 				.createIndex({ tag: 1, season: -1, clanTag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.CLAN_MEMBERS)
-				.createIndex({ clanGamesTotal: -1 }),
+			db.collection(COLLECTIONS.CLAN_MEMBERS).createIndex({ clanGamesTotal: -1 }),
+
+			db.collection(COLLECTIONS.CLAN_MEMBERS).createIndex({ clanTag: 1 }),
+
+			db.collection(COLLECTIONS.CLAN_MEMBERS).createIndex({ season: -1 }),
 
 			db.collection(COLLECTIONS.BOT_GROWTH)
 				.createIndex({ ISTDate: 1 }, { unique: true }),

@@ -120,12 +120,7 @@ export default class ClanGamesCommand extends Command {
 								}
 							},
 							{
-								achievements: {
-									$elemMatch: {
-										name: 'Games Champion',
-										gained: { $gt: 0 }
-									}
-								}
+								clanGamesTotal: { $gt: 0 }
 							}
 						]
 					}
