@@ -136,21 +136,12 @@ export default class ClanGamesCommand extends Command {
 	private filter(dbMembers: DBMember[] = [], clanMembers: Member[] = []) {
 		const members = clanMembers.map(member => {
 			const mem = dbMembers.find(m => m.tag === member.tag);
-			if (mem) {
-				const ach = mem.achievements.find(m => m.name === 'Games Champion');
-				return {
-					tag: mem.tag,
-					name: mem.name,
-					points: member.points - ach!.value,
-					endedAt: mem.clanGamesEndTime
-				};
-			}
-
+			const ach = mem?.achievements.find(m => m.name === 'Games Champion');
 			return {
 				name: member.name,
 				tag: member.tag,
-				points: 0,
-				endedAt: null
+				points: mem ? member.points - ach!.value : 0,
+				endedAt: mem?.clanGamesEndTime
 			};
 		});
 
