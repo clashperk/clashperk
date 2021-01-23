@@ -6,22 +6,22 @@ import { Message } from 'discord.js';
 
 const MAX_POINT = 4000;
 
-interface Member {
+interface DBMember {
 	tag: string;
 	name: string;
 	achievements: {
 		gained: number;
 		name: string;
-		endedAt?: any;
 		value: number;
 	}[];
+	clanGamesEndTime?: Date;
 }
 
-interface Mem {
+interface Member {
 	tag: string;
 	name: string;
 	points: number;
-	endedAt?: any;
+	endedAt?: Date;
 }
 
 export default class ClanGamesCommand extends Command {
@@ -133,8 +133,7 @@ export default class ClanGamesCommand extends Command {
 		return cursor.toArray();
 	}
 
-
-	private filter(dbMembers: Member[] = [], clanMembers: Mem[] = []) {
+	private filter(dbMembers: DBMember[] = [], clanMembers: Member[] = []) {
 		const members = clanMembers.map(member => {
 			const mem = dbMembers.find(m => m.tag === member.tag);
 			if (mem) {
@@ -143,23 +142,24 @@ export default class ClanGamesCommand extends Command {
 					tag: mem.tag,
 					name: mem.name,
 					points: member.points - ach!.value,
-					endedAt: ach?.endedAt
+					endedAt: mem.clanGamesEndTime
 				};
 			}
 
 			return {
 				name: member.name,
 				tag: member.tag,
-				points: 0
+				points: 0,
+				endedAt: null
 			};
 		});
 
-		const missingMembers: Mem[] = dbMembers.filter(mem => !members.find(m => m.tag === mem.tag))
+		const missingMembers: Member[] = dbMembers.filter(mem => !members.find(m => m.tag === mem.tag))
 			.map(mem => ({
 				name: mem.name,
 				tag: mem.tag,
 				points: mem.achievements.find(m => m.name === 'Games Champion')!.gained,
-				endedAt: mem.achievements.find(m => m.name === 'Games Champion')?.endedAt
+				endedAt: mem.clanGamesEndTime
 			}));
 
 		const allMembers = [...members, ...missingMembers];
@@ -167,7 +167,13 @@ export default class ClanGamesCommand extends Command {
 
 		return {
 			total,
-			members: allMembers.sort((a, b) => a.endedAt - b.endedAt).sort((a, b) => b.points - a.points)
+			members: allMembers.sort((a, b) => b.points - a.points)
+				.sort((a, b) => {
+					if (a.endedAt && b.endedAt) {
+						return a.endedAt.getTime() - b.endedAt.getTime();
+					}
+					return 0;
+				})
 		};
 	}
 }
