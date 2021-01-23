@@ -40,7 +40,7 @@ export default class CWLRoundComamnd extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
-		if (body.status === 504) {
+		if (body.statusCode === 504) {
 			return message.util!.send('**504 Request Timeout!**');
 		}
 

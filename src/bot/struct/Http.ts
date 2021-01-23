@@ -1,4 +1,4 @@
-import { Client, Player, ClanMember } from 'clashofclans.js';
+import { Client, Player } from 'clashofclans.js';
 import fetch from 'node-fetch';
 
 export default class Http extends Client {
@@ -24,13 +24,13 @@ export default class Http extends Client {
 		}).catch(() => null);
 
 		const parsed = await res?.json().catch(() => null);
-		if (!parsed) return { ok: false, status: res?.status ?? 504 };
+		if (!parsed) return { ok: false, statusCode: res?.status ?? 504 };
 
 		const maxAge = res?.headers.get('cache-control')?.split('=')?.[1] ?? 0;
-		return Object.assign(parsed, { status: res?.status ?? 504, ok: res?.status === 200, maxAge: Number(maxAge) * 1000 });
+		return Object.assign(parsed, { statusCode: res?.status ?? 504, ok: res?.status === 200, maxAge: Number(maxAge) * 1000 });
 	}
 
-	public detailedClanMembers(members: ClanMember[] = []): Promise<Player[]> {
+	public detailedClanMembers(members: { tag: string }[] = []): Promise<Player[]> {
 		return Promise.all(members.map(mem => this.fetch(`/players/${encodeURIComponent(mem.tag)}`)));
 	}
 

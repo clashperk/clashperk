@@ -31,7 +31,7 @@ export default class MatchesCommand extends Command {
 			.setAuthor(`${message.guild!.name} Wars`, message.guild!.iconURL({ dynamic: true })!);
 		for (const clan of clans) {
 			const data: ClanWar = await this.getWAR(clan.tag);
-			if (data.status === 504) {
+			if (data.statusCode === 504) {
 				embed.addField('Searching for Battle', [
 					`${clan.name as string} (${clan.tag as string})`,
 					'\u200b'
@@ -102,7 +102,7 @@ export default class MatchesCommand extends Command {
 
 	private async getCWL(clanTag: string) {
 		const res: ClanWarLeague = await this.client.http.clanWarLeague(clanTag);
-		if (res.status === 504) return { status: 504 };
+		if (res.statusCode === 504) return { status: 504 };
 		if (!res.ok) return this.client.http.currentClanWar(clanTag);
 		const rounds = res.rounds.filter(d => !d.warTags.includes('#0'));
 

@@ -27,7 +27,7 @@ export default class CWLMembersComamnd extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
-		if (body.status === 504) {
+		if (body.statusCode === 504) {
 			return message.util!.send([
 				'504 Request Timeout'
 			]);
@@ -43,7 +43,7 @@ export default class CWLMembersComamnd extends Command {
 		}
 
 		const clanMembers = body.clans.find(clan => clan.tag === data.tag)!.members;
-		const fetched = await this.client.http.detailedClanMembers(clanMembers as any[]);
+		const fetched = await this.client.http.detailedClanMembers(clanMembers);
 		const memberList = fetched.filter(m => typeof m.name === 'string')
 			.map(m => {
 				const member = {

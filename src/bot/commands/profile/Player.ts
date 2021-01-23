@@ -93,5 +93,3 @@ export default class LinkPlayerCommand extends Command {
 		return this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ tags: tag });
 	}
 }
-
-module.exports = LinkPlayerCommand;

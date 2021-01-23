@@ -26,7 +26,7 @@ export default class CWLRosterComamnd extends Command {
 
 	public async exec(message: Message, { data }: { data: Clan }) {
 		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
-		if (body.status === 504) {
+		if (body.statusCode === 504) {
 			return message.util!.send([
 				'504 Request Timeout'
 			]);

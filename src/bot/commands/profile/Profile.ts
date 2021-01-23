@@ -70,7 +70,7 @@ export default class ProfileCommand extends Command {
 		for (const tag of tags.values()) {
 			index += 1;
 			const data: Player = await this.client.http.player(tag);
-			if (data.status === 404) {
+			if (data.statusCode === 404) {
 				this.client.db.collection(COLLECTIONS.LINKED_USERS).updateOne({ user: member.id }, { $pull: { tags: tag } });
 			}
 			if (!data.ok) continue;

@@ -12,12 +12,12 @@ export default class MaintenanceHandler {
 	public async init() {
 		const res = await this.client.http.clans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 }).catch(() => null);
 		setTimeout(this.init.bind(this), 30000);
-		if (res?.status === 503 && !this.isMaintenance) {
+		if (res?.statusCode === 503 && !this.isMaintenance) {
 			this.isMaintenance = Boolean(true);
 			this.client.rpcHandler.flush();
 			return this.send();
 		}
-		if (res?.status === 200 && this.isMaintenance) {
+		if (res?.statusCode === 200 && this.isMaintenance) {
 			this.isMaintenance = Boolean(false);
 			await this.client.rpcHandler.init();
 			return this.send();

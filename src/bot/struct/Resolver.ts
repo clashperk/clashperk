@@ -90,7 +90,7 @@ export default class Resolver {
 
 		const embed = new MessageEmbed()
 			.setColor(0xf30c11)
-			.setDescription(status(data.status));
+			.setDescription(status(data.statusCode));
 
 		return this.fail(message, { embed });
 	}
@@ -101,7 +101,7 @@ export default class Resolver {
 
 		const embed = new MessageEmbed()
 			.setColor(0xf30c11)
-			.setDescription(status(data.status));
+			.setDescription(status(data.statusCode));
 
 		return this.fail(message, { embed });
 	}
