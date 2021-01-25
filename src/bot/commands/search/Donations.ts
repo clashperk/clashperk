@@ -27,9 +27,9 @@ export default class DonationBoardCommand extends Command {
 					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
 				},
 				{
-					id: 'rev',
-					match: 'flag',
-					flag: ['donationsReceived']
+					id: 'season',
+					match: 'option',
+					flag: ['--season']
 				}
 			]
 		});
@@ -39,11 +39,11 @@ export default class DonationBoardCommand extends Command {
 		return new Date('2021-02').toISOString().substring(0, 7);
 	}
 
-	public async exec(message: Message, { data, rev }: { data: Clan; rev: boolean }) {
+	public async exec(message: Message, { data, rev, season }: { data: Clan; rev: boolean; season: string }) {
 		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
 
 		const dbMembers = await this.client.db.collection(COLLECTIONS.CLAN_MEMBERS)
-			.find({ season: this.seasonID, clanTag: data.tag, tag: { $in: data.memberList.map(m => m.tag) } })
+			.find({ season: season || this.seasonID, clanTag: data.tag, tag: { $in: data.memberList.map(m => m.tag) } })
 			.toArray();
 
 		const members: Member[] = [];
