@@ -36,7 +36,7 @@ export default class DonationBoardCommand extends Command {
 	}
 
 	private get seasonID() {
-		return new Date().toISOString().substring(0, 7);
+		return new Date('2021-02').toISOString().substring(0, 7);
 	}
 
 	public async exec(message: Message, { data, rev }: { data: Clan; rev: boolean }) {
