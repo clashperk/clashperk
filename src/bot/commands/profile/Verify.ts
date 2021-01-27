@@ -2,6 +2,7 @@ import { COLLECTIONS } from '../../util/Constants';
 import { Player } from 'clashofclans.js';
 import { Command, PrefixSupplier } from 'discord-akairo';
 import { Message } from 'discord.js';
+import { EMOJIS } from '../../util/Emojis';
 
 export default class VerifyPlayerCommand extends Command {
 	public constructor() {
@@ -65,7 +66,7 @@ export default class VerifyPlayerCommand extends Command {
 
 		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.updateOne(
-				{ user: { $ne: message.author.id } },
+				{ 'user': { $ne: message.author.id }, 'entries.tag': data.tag },
 				{ $pull: { entries: { tag: data.tag } } }
 			);
 		const up = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
@@ -92,16 +93,12 @@ export default class VerifyPlayerCommand extends Command {
 				}, { upsert: true });
 		}
 
-		await this.client.http.unlinkPlayerTag(data.tag);
-		await this.client.http.linkPlayerTag(message.author.id, data.tag);
+		this.resetLinkAPIData(message.author.id, data.tag);
+		return message.util!.send(`Successfully verified and linked **${message.author.tag}** to **${data.name}** (${data.tag}) ${EMOJIS.VERIFIED}`);
+	}
 
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message))
-			.setDescription([
-				`Linked **${message.author.tag}** to **${data.name}** (${data.tag})`,
-				'',
-				'If you don\'t provide the tag for other lookup commands, the bot will use the first one you linked.'
-			]);
-		return message.util!.send({ embed });
+	private async resetLinkAPIData(user: string, tag: string) {
+		await this.client.http.unlinkPlayerTag(tag);
+		await this.client.http.linkPlayerTag(user, tag);
 	}
 }
