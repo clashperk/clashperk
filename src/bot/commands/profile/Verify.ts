@@ -76,7 +76,7 @@ export default class VerifyPlayerCommand extends Command {
 
 		const post = await this.client.http.verifyPlayerToken(data.tag, token);
 		if (post.status !== 'ok') {
-			return this.retry(message, `You must provide a valid token!`);
+			return this.retry(message, `You must provide a valid API Token!`);
 		}
 
 		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
@@ -109,7 +109,10 @@ export default class VerifyPlayerCommand extends Command {
 		}
 
 		this.resetLinkAPIData(message.author.id, data.tag);
-		return message.util!.send(`Successfully verified and linked **${message.author.tag}** to **${data.name}** (${data.tag}) ${EMOJIS.VERIFIED}`);
+		return message.util!.send([
+			'**Verification successful!**',
+			`**${data.name} (${data.tag})** ${EMOJIS.VERIFIED}`
+		]);
 	}
 
 	private async resetLinkAPIData(user: string, tag: string) {
