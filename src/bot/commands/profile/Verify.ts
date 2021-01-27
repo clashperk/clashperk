@@ -66,7 +66,7 @@ export default class VerifyPlayerCommand extends Command {
 
 	public async exec(message: Message, { tag, token }: { tag?: string; token: string }) {
 		if (!tag) {
-			return this.retry(message, `You must provide a player tag${token ? '' : ' and a token'}!`);
+			return this.retry(message, `You must provide a player tag and a token!`);
 		}
 
 		const data: Player = await this.client.http.player(tag);
