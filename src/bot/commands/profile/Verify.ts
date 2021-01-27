@@ -1,8 +1,8 @@
-import { COLLECTIONS } from '../../util/Constants';
-import { Player } from 'clashofclans.js';
 import { Command, PrefixSupplier } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { COLLECTIONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
+import { Player } from 'clashofclans.js';
+import { Message } from 'discord.js';
 
 export default class VerifyPlayerCommand extends Command {
 	public constructor() {
@@ -33,35 +33,50 @@ export default class VerifyPlayerCommand extends Command {
 			},
 			args: [
 				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.getPlayer(msg, tag)
+					id: 'tag',
+					type: 'string'
 				},
 				{
-					'id': 'token',
-					'type': 'string',
-					'default': ''
+					id: 'token',
+					type: 'string'
 				}
 			]
 		});
 	}
 
-	public async exec(message: Message, { data, token }: { data: Player; token: string }) {
+	private retry(message: Message, text: string) {
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
+
+		return message.util!.send([
+			`**${text}**`,
+			'',
+			'A token can only be used just for once. So don\'t worry, others can\'t use it again!',
+			'',
+			'**Usage**',
+			`\`${prefix}verify <#playerTag> <token>\``,
+			'',
+			'**How to get this token?**',
+			'',
+			'- Go to **Settings >> More Settings**',
+			'- Scroll down and find **API Token**',
+			'- Tap **Show** and then **Copy**',
+			'- That\'s it!'
+		], { files: ['https://i.imgur.com/8dsoUB8.jpg'] });
+	}
+
+	public async exec(message: Message, { tag, token }: { tag?: string; token: string }) {
+		if (!tag) {
+			return this.retry(message, `You must provide a player tag${token ? '' : ' and a token'}!`);
+		}
+
+		const data: Player = await this.client.http.player(tag);
+		if (!data.ok) {
+			return this.retry(message, `You must provide a valid player tag${token ? '' : ' and a token'}!`);
+		}
+
 		const post = await this.client.http.verifyPlayerToken(data.tag, token);
 		if (post.status !== 'ok') {
-			return message.util!.send([
-				'**You must provide a valid token!**',
-				'',
-				'**Usage**',
-				`\`${prefix}verify <#playerTag> <token>\``,
-				'',
-				'**How to get this token?**',
-				'',
-				'- Go to **Settings >> More Settings**',
-				'- Scroll down and find **API Token**',
-				'- Tap **Show** and then **Copy**',
-				'- That\'s it!'
-			], { files: ['https://i.imgur.com/8dsoUB8.jpg'] });
+			return this.retry(message, `You must provide a valid token!`);
 		}
 
 		await this.client.db.collection(COLLECTIONS.LINKED_USERS)

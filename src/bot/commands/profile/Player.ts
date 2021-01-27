@@ -1,7 +1,7 @@
+import { Command, PrefixSupplier } from 'discord-akairo';
 import { COLLECTIONS } from '../../util/Constants';
 import { Message, GuildMember } from 'discord.js';
 import { Player } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
 
 export default class LinkPlayerCommand extends Command {
 	public constructor() {
@@ -40,19 +40,19 @@ export default class LinkPlayerCommand extends Command {
 		const doc = await this.getPlayer(data.tag);
 		// only owner can set default account
 		if (doc && doc.user === member.id && ((def && member.id !== message.author.id) || !def)) {
-			return message.util!.send({
-				embed: {
-					description: `**${member.user.tag}** is already linked to **${data.name} (${data.tag})**`
-				}
-			});
+			return message.util!.send([
+				`**${member.user.tag}** is already linked to **${data.name} (${data.tag})**`
+			]);
 		}
 
 		if (doc && doc.user !== member.id) {
-			return message.util!.send({
-				embed: {
-					description: `**${data.name} (${data.tag})** is already linked to another discord account.`
-				}
-			});
+			const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
+			return message.util!.send([
+				`**${data.name} (${data.tag})** is already linked to another Discord account.`,
+				'',
+				'If you own this player account, you can Force-Link using Player API Token.',
+				`Type \`${prefix}help verify\` to know more about the Player API Token.`
+			]);
 		}
 
 		if (doc && doc.entries.length >= 25) {
