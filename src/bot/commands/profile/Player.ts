@@ -36,8 +36,10 @@ export default class LinkPlayerCommand extends Command {
 
 	public async exec(message: Message, { data, member, def }: { data: Player; member: GuildMember; def: boolean }) {
 		if (member.user.bot) return message.util!.send('Bots can\'t link accounts.');
+
 		const doc = await this.getPlayer(data.tag);
-		if (doc && doc.user === member.id) {
+		// only owner can set default account
+		if (doc && doc.user === member.id && (!def && member.id !== message.author.id)) {
 			return message.util!.send({
 				embed: {
 					description: `**${member.user.tag}** is already linked to **${data.name} (${data.tag})**`
@@ -53,30 +55,39 @@ export default class LinkPlayerCommand extends Command {
 			});
 		}
 
-		if (doc && doc.tags.length >= 30) {
+		if (doc && doc.entries.length >= 25) {
 			return message.util!.send({
 				embed: {
-					description: 'You can only link 25 accounts.'
+					description: 'You can only link 25 player accounts.'
 				}
 			});
+		}
+
+		// only owner can set default account
+		if (def && member.id === message.author.id) {
+			await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+				.updateOne({ user: member.id }, { $pull: { entries: { tag: data.tag } } });
 		}
 
 		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.updateOne({ user: member.id }, {
 				$set: {
-					'user': member.id,
-					'hidden': false,
-					'default': false,
-					'createdAt': new Date()
+					user: member.id,
+					createdAt: new Date()
 				},
-				$push: def
+				$push: def && member.id === message.author.id // only owner can set default account
 					? {
-						tags: {
-							$each: [data.tag],
+						entries: {
+							$each: [{ tag: data.tag, verified: this.isVerified(doc, data.tag) }],
 							$position: 0
 						}
 					}
-					: { tags: data.tag }
+					: {
+						entries: {
+							tag: data.tag,
+							verified: false
+						}
+					}
 			}, { upsert: true });
 
 		this.client.http.linkPlayerTag(member.id, data.tag);
@@ -90,7 +101,11 @@ export default class LinkPlayerCommand extends Command {
 		return message.util!.send({ embed });
 	}
 
+	private isVerified(data: any, tag: string) {
+		return Boolean(data?.entries.find((en: any) => en.tag === tag && en.verified));
+	}
+
 	private async getPlayer(tag: string) {
-		return this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ tags: tag });
+		return this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ 'entries.tag': tag });
 	}
 }

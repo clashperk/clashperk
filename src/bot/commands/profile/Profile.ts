@@ -58,7 +58,7 @@ export default class ProfileCommand extends Command {
 		}
 
 		const otherTags = await this.client.http.getPlayerTags(member.id);
-		if (!player?.tags?.length && !otherTags.length) {
+		if (!player?.entries?.length && !otherTags.length) {
 			embed.setDescription([
 				embed.description,
 				'',
@@ -67,17 +67,26 @@ export default class ProfileCommand extends Command {
 			return message.util!.send({ embed });
 		}
 
-		const tags = new Set([...player?.tags ?? [], ...otherTags]);
+		const tags = new Set([...player?.entries.map((en: any) => en.tag) ?? [], ...otherTags]);
 		for (const tag of tags.values()) {
 			index += 1;
 			const data: Player = await this.client.http.player(tag);
 			if (data.statusCode === 404) {
-				this.client.db.collection(COLLECTIONS.LINKED_USERS).updateOne({ user: member.id }, { $pull: { tags: tag } });
+				this.client.db.collection(COLLECTIONS.LINKED_USERS)
+					.updateOne(
+						{ user: member.id },
+						{
+							$pull: {
+								entries: { tag }
+							}
+						}
+					);
 			}
 			if (!data.ok) continue;
 
+			const signature = this.isVerified(player, tag) ? EMOJIS.VERIFIED : this.isLinked(player, tag) ? EMOJIS.AUTHORIZE : '';
 			collection.push({
-				field: `${TOWN_HALLS[data.townHallLevel]} ${data.name} (${data.tag}) ${player?.tags?.includes(tag) ? EMOJIS.OK : ''}`,
+				field: `${TOWN_HALLS[data.townHallLevel]} ${data.name} (${data.tag}) ${signature}`,
 				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
 			});
 
@@ -85,9 +94,20 @@ export default class ProfileCommand extends Command {
 		}
 		tags.clear();
 
-		embed.setFooter(`${collection.length} Account${collection.length === 1 ? '' : 's'} Linked`, 'https://cdn.discordapp.com/emojis/658538492409806849.png');
+		embed.setFooter(
+			`${collection.length} Account${collection.length === 1 ? '' : 's'} Linked`,
+			'https://cdn.discordapp.com/emojis/658538492409806849.png'
+		);
 		collection.map(a => embed.addField(a.field, [...a.values, '\u200b']));
 		return message.util!.send({ embed });
+	}
+
+	private isLinked(data: any, tag: string) {
+		return Boolean(data?.entries.find((en: any) => en.tag === tag));
+	}
+
+	private isVerified(data: any, tag: string) {
+		return Boolean(data?.entries.find((en: any) => en.tag === tag && en.verified));
 	}
 
 	private clanName(data: Player) {

@@ -50,10 +50,9 @@ export default class UnlinkCommand extends Command {
 	}
 
 	private async delete(id: string, tag: string) {
-		this.client.http.unlinkPlayerTag(tag);
-
+		const dLink = await this.client.http.unlinkPlayerTag(tag);
 		const data = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
-			.findOneAndUpdate({ user: id }, { $pull: { tags: tag } });
-		return data.value?.tags?.includes(tag) ? { tag } : null;
+			.findOneAndUpdate({ user: id }, { $pull: { entries: { tag } } });
+		return data.value?.entries?.includes(tag) ? { tag } : dLink ? { tag } : null;
 	}
 }

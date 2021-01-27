@@ -34,7 +34,7 @@ export default class Resolver {
 			.findOne({ user: (parsed as GuildMember).id });
 		const otherTags = await this.client.http.getPlayerTags((parsed as GuildMember).id);
 
-		const tagSet = new Set([...data?.tags ?? [], ...otherTags]);
+		const tagSet = new Set([...data?.entries.map((en: any) => en.tag) ?? [], ...otherTags]);
 		const tags = Array.from(tagSet);
 		tagSet.clear();
 
