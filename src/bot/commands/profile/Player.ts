@@ -39,7 +39,7 @@ export default class LinkPlayerCommand extends Command {
 
 		const doc = await this.getPlayer(data.tag);
 		// only owner can set default account
-		if (doc && doc.user === member.id && (!def && member.id !== message.author.id)) {
+		if (doc && doc.user === member.id && ((def && member.id !== message.author.id) || !def)) {
 			return message.util!.send({
 				embed: {
 					description: `**${member.user.tag}** is already linked to **${data.name} (${data.tag})**`
