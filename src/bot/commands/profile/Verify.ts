@@ -13,7 +13,7 @@ export default class VerifyPlayerCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Verify & link a player using in-game API Token.',
+					'Verify and link a player using API Token.',
 					'',
 					'A token can only be used just for once. So don\'t worry, others can\'t use it again.'
 				],
