@@ -121,36 +121,6 @@ export default class Resolver {
 		return /[0289CGJLOPQRUVY]{3,12}/gi.test(args);
 	}
 
-	public static verifyEmbed(data: Clan, code: string) {
-		const embed = new MessageEmbed()
-			.setTitle(`${data.name} (${data.tag})`)
-			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
-			.setThumbnail(data.badgeUrls.small)
-			.setDescription([
-				'**Clan Description**',
-				`${data.description}`,
-				'',
-				'**Verify Your Clan**',
-				`Add the code \`${code}\` at the end of the clan description. It's a security feature of the bot to ensure you are a Leader or Co-Leader in the clan.`,
-				'If you\'ve already added the code please wait at least 2 min before you run the command again and remove the code after verification.'
-			]);
-		return embed;
-	}
-
-	public static limitEmbed() {
-		const embed = new MessageEmbed()
-			.setDescription([
-				'You can only claim 2 clans per server!',
-				'',
-				'**Want more than that?**',
-				'Please consider supporting us on patreon!',
-				'',
-				'[Become a Patron](https://www.patreon.com/clashperk)'
-			]);
-
-		return embed;
-	}
-
 	private parseTag(tag: string) {
 		const matched = tag.match(/[0289CGJLOPQRUVY]{3,12}/gi)?.[0];
 		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0') as string}`;

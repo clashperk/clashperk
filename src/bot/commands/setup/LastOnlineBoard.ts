@@ -1,7 +1,6 @@
 import { MessageEmbed, Message, TextChannel, User, PermissionString, Channel } from 'discord.js';
-import { Op, missingPermissions, SETTINGS } from '../../util/Constants';
-import Resolver from '../../struct/Resolver';
-import { Command } from 'discord-akairo';
+import { Op, missingPermissions, SETTINGS, COLLECTIONS, Util, EMBEDS } from '../../util/Constants';
+import { Command, PrefixSupplier } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 
 export default class LastOnlineBoardCommand extends Command {
@@ -41,14 +40,15 @@ export default class LastOnlineBoardCommand extends Command {
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
-			const embed = Resolver.limitEmbed();
-			return message.util!.send({ embed });
+			return message.util!.send({ embed: EMBEDS.CLAN_LIMIT });
 		}
 
+		const dbUser = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+			.findOne({ user: message.author.id });
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
-		if (!clan.verified && !data.description.toUpperCase().includes(code)) {
-			const embed = Resolver.verifyEmbed(data, code);
+		if (!clan.verified && !Util.verifyClan(code, data, dbUser?.entries ?? [])) {
+			const embed = EMBEDS.VERIFY_CLAN(data, code, (this.handler.prefix as PrefixSupplier)(message) as string);
 			return message.util!.send({ embed });
 		}
 

@@ -1,8 +1,7 @@
+import { COLLECTIONS, Op, SETTINGS, Util as Utility, EMBEDS } from '../../util/Constants';
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS, BLUE_EMOJI } from '../../util/Emojis';
-import { Command, Argument, Flag } from 'discord-akairo';
-import { COLLECTIONS, Op, SETTINGS } from '../../util/Constants';
+import { Command, Argument, Flag, PrefixSupplier } from 'discord-akairo';
 import { Util, Message, User } from 'discord.js';
-import Resolver from '../../struct/Resolver';
 import { Clan } from 'clashofclans.js';
 
 export default class ClanEmbedCommand extends Command {
@@ -95,14 +94,15 @@ export default class ClanEmbedCommand extends Command {
 
 		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
-			const embed = Resolver.limitEmbed();
-			return message.util!.send({ embed });
+			return message.util!.send({ embed: EMBEDS.CLAN_LIMIT });
 		}
 
+		const dbUser = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+			.findOne({ user: message.author.id });
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
-		const clan = clans.find(clan => clan.tag === data.tag) || { verified: false };
-		if (!clan.verified && !data.description.toUpperCase().includes(code)) {
-			const embed = Resolver.verifyEmbed(data, code);
+		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
+		if (!clan.verified && !Utility.verifyClan(code, data, dbUser?.entries ?? [])) {
+			const embed = EMBEDS.VERIFY_CLAN(data, code, (this.handler.prefix as PrefixSupplier)(message) as string);
 			return message.util!.send({ embed });
 		}
 

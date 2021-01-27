@@ -2,7 +2,13 @@ import { TextChannel, User, PermissionString, MessageEmbed } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 
 export const Util = {
-	escapeSheetName: (name: string) => name.replace(/[\*\?\:\[\]\\\/]/g, '')
+	escapeSheetName: (name: string) => name.replace(/[\*\?\:\[\]\\\/]/g, ''),
+	verifyClan: (code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) => {
+		// clan verification by unique code or verified co/leader
+		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
+		return clan.memberList.filter(m => ['coLeader', 'leader'].includes(m.role))
+			.some(m => verifiedTags.includes(m.tag)) || clan.description.toLowerCase().includes(code);
+	}
 };
 
 export const codes = {
@@ -72,7 +78,7 @@ export const EMBEDS = {
 			'[Become a Patron](https://www.patreon.com/clashperk)'
 		]),
 
-	VERIFY_CLAN: (clan: Clan, code: number) => new MessageEmbed()
+	VERIFY_CLAN: (clan: Clan, code: string, prefix: string) => new MessageEmbed()
 		.setTitle(`${clan.name} (${clan.tag})`)
 		.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
 		.setThumbnail(clan.badgeUrls.small)
@@ -81,8 +87,17 @@ export const EMBEDS = {
 			`${clan.description}`,
 			'',
 			'**Verify Your Clan**',
-			`Add the code \`${code}\` at the end of the clan description. It's a security feature of the bot to ensure you are a Leader or Co-Leader in the clan.`,
-			'If you\'ve already added the code please wait at least 2 min before you run the command again and remove the code after verification.'
+			'It\'s a security feature of the bot to ensure you are a **Leader** or **Co-Leader** in the clan.',
+			'',
+			'*You can use any of the following methods.*',
+			'',
+			'__**First Method (Recommended!)**__',
+			'Verify your Player account using Player API Token.',
+			`Type \`${prefix}help verify\` to know more about the Player API Token.`,
+			'',
+			'__**Second Method**__',
+			`Add the code \`${code}\` at the end of the clan description.`,
+			'If you\'ve already added the code please wait at least 2 minutes before you run the command again and remove the code after verification.'
 		])
 };
 
