@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 
 export default class Http extends Client {
 	private tokenIndex: number;
+	private bearerToken!: string;
 
 	public constructor() {
 		super();
@@ -38,5 +39,66 @@ export default class Http extends Client {
 		const token = this.tokens[this.tokenIndex];
 		this.tokenIndex = (this.tokenIndex + 1) >= this.tokens.length ? 0 : (this.tokenIndex + 1);
 		return token;
+	}
+
+	public async init() {
+		await this.login();
+		setInterval(this.login.bind(this), 1 * 60 * 60 * 1000);
+	}
+
+	private async login() {
+		const res = await fetch('https://cocdiscordlink.azurewebsites.net/api/login', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				username: process.env.DISCORD_LINK_USERNAME,
+				password: process.env.DISCORD_LINK_PASSWORD
+			})
+		}).catch(() => null);
+		const data = await res?.json().catch(() => null);
+
+		if (data?.token) this.bearerToken = data.token as string;
+		return Promise.resolve(res?.status === 200 && this.bearerToken);
+	}
+
+	public async linkPlayerTag(discordId: string, playerTag: string) {
+		const res = await fetch('https://cocdiscordlink.azurewebsites.net/api/links', {
+			method: 'POST',
+			headers: {
+				'Authorization': `Bearer ${this.bearerToken}`,
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ playerTag, discordId })
+		}).catch(() => null);
+
+		return Promise.resolve(res?.status === 200);
+	}
+
+	public async unlinkPlayerTag(playerTag: string) {
+		const res = await fetch(`https://cocdiscordlink.azurewebsites.net/api/links/${encodeURIComponent(playerTag)}`, {
+			method: 'DELETE',
+			headers: {
+				'Authorization': `Bearer ${this.bearerToken}`,
+				'Content-Type': 'application/json'
+			}
+		}).catch(() => null);
+
+		return Promise.resolve(res?.status === 200);
+	}
+
+	public async getPlayerTags(user: string) {
+		const res = await fetch(`https://cocdiscordlink.azurewebsites.net/api/links/${user}`, {
+			method: 'GET',
+			headers: {
+				'Authorization': `Bearer ${this.bearerToken}`,
+				'Content-Type': 'application/json'
+			}
+		}).catch(() => null);
+
+		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);
+		return data.filter(d => /^#?[0289CGJLOPQRUVY]+$/i.test(d.playerTag))
+			.map(d => `#${d.playerTag.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0')}`);
 	}
 }

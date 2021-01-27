@@ -51,12 +51,13 @@ export default class ProfileCommand extends Command {
 					embed.description,
 					'',
 					`${EMOJIS.CLAN} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
-					...[`${EMOJIS.EMPTY} Level ${data.clanLevel} ${EMOJIS.USERS} ${data.members} Member${data.members === 1 ? '' : 's'}`]
+					...[`${EMOJIS.EMPTY} Level ${data.clanLevel} ${EMOJIS.USERS} ${data.members} Member${data.members === 1 ? '' : 's'}`],
+					'\u200b'
 				]);
 			}
 		}
 
-		const otherTags = this.client.resolver.players(member.id);
+		const otherTags = await this.client.http.getPlayerTags(member.id);
 		if (!player?.tags?.length && !otherTags.length) {
 			embed.setDescription([
 				embed.description,
@@ -76,7 +77,7 @@ export default class ProfileCommand extends Command {
 			if (!data.ok) continue;
 
 			collection.push({
-				field: `${TOWN_HALLS[data.townHallLevel]} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}) ${player?.tags?.includes(tag) ? EMOJIS.OK : ''}`,
+				field: `${TOWN_HALLS[data.townHallLevel]} ${data.name} (${data.tag}) ${player?.tags?.includes(tag) ? EMOJIS.OK : ''}`,
 				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
 			});
 
@@ -85,7 +86,7 @@ export default class ProfileCommand extends Command {
 		tags.clear();
 
 		embed.setFooter(`${collection.length} Account${collection.length === 1 ? '' : 's'} Linked`, 'https://cdn.discordapp.com/emojis/658538492409806849.png');
-		collection.map(a => embed.addField('\u200b', [a.field, ...a.values]));
+		collection.map(a => embed.addField(a.field, [...a.values, '\u200b']));
 		return message.util!.send({ embed });
 	}
 

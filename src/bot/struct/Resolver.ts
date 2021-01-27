@@ -1,4 +1,3 @@
-const players = require('../../../players.json'); // eslint-disable-line
 import { MessageEmbed, Message, GuildMember } from 'discord.js';
 import { COLLECTIONS, status } from '../util/Constants';
 import { Player, Clan } from 'clashofclans.js';
@@ -33,7 +32,7 @@ export default class Resolver {
 
 		const data = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.findOne({ user: (parsed as GuildMember).id });
-		const otherTags = this.players((parsed as GuildMember).id);
+		const otherTags = await this.client.http.getPlayerTags((parsed as GuildMember).id);
 
 		const tagSet = new Set([...data?.tags ?? [], ...otherTags]);
 		const tags = Array.from(tagSet);
@@ -155,11 +154,5 @@ export default class Resolver {
 	private parseTag(tag: string) {
 		const matched = tag.match(/[0289CGJLOPQRUVY]{3,12}/gi)?.[0];
 		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0') as string}`;
-	}
-
-	public players(id: string): string[] {
-		return (players as any[]).filter(d => d.discordId === id)
-			.filter(d => /^#?[0289CGJLOPQRUVY]+$/i.test(d.playerTag))
-			.map(d => `#${d.playerTag.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0') as string}`);
 	}
 }

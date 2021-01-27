@@ -79,6 +79,7 @@ export default class LinkPlayerCommand extends Command {
 					: { tags: data.tag }
 			}, { upsert: true });
 
+		this.client.http.linkPlayerTag(member.id, data.tag);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setDescription([

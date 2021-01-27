@@ -139,6 +139,7 @@ export default class Client extends AkairoClient {
 		this.stats = new Stats(this);
 
 		this.http = new Http();
+		await this.http.init();
 
 		this.rpc = new (routeguide as any).RouteGuide(process.env.SERVER, grpc.credentials.createInsecure());
 

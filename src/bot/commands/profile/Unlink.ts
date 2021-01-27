@@ -33,6 +33,7 @@ export default class UnlinkCommand extends Command {
 
 	public async exec(message: Message, { tag }: { tag: string }) {
 		const deleted = await this.delete(message.author.id, tag);
+
 		if (!deleted) {
 			const clan = await this.client.db.collection(COLLECTIONS.LINKED_CLANS)
 				.findOneAndDelete({ user: message.author.id, tag });
@@ -49,6 +50,8 @@ export default class UnlinkCommand extends Command {
 	}
 
 	private async delete(id: string, tag: string) {
+		this.client.http.unlinkPlayerTag(tag);
+
 		const data = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.findOneAndUpdate({ user: id }, { $pull: { tags: tag } });
 		return data.value?.tags?.includes(tag) ? { tag } : null;
