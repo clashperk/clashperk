@@ -98,5 +98,3 @@ export default class CWLMembersComamnd extends Command {
 		return Util.splitMessage(content, { maxLength: 2048 });
 	}
 }
-
-module.exports = CWLMembersComamnd;

@@ -134,15 +134,15 @@ export default class LastOnlineEvent {
 			});
 	}
 
-	private embed(clan: Clan, id: string, members: any[]) {
+	private embed(clan: Clan, id: string, members: { name: string; count: number; lastSeen: number }[]) {
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
-				`Last Online Board [${clan.members}/50]`,
-				`\`\`\`\n\u200e${'LAST-ON'.padStart(7, ' ')}  ${'NAME'.padEnd(18, ' ')}`,
-				members.map(m => `${m.lastSeen ? this.format(Number(m.lastSeen) + 1e3) : ''.padStart(7, ' ')}  ${m.name as string}`)
+				`Last Seen and 24h Activity [${clan.members}/50]`,
+				`\`\`\`\n\u200e${'LAST-ON'.padStart(7, ' ')}  📊  ${'NAME'.padEnd(15, ' ')}`,
+				members.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3) : ''.padStart(7, ' ')}  ${Math.min(99, m.count).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
 			])

@@ -36,8 +36,6 @@ export default class ProfileCommand extends Command {
 			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL());
 
 		embed.setDescription([
-			embed.description,
-			'',
 			'**Created**',
 			`${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`
 		]);
@@ -51,8 +49,7 @@ export default class ProfileCommand extends Command {
 					embed.description,
 					'',
 					`${EMOJIS.CLAN} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
-					...[`${EMOJIS.EMPTY} Level ${data.clanLevel} ${EMOJIS.USERS} ${data.members} Member${data.members === 1 ? '' : 's'}`],
-					'\u200b'
+					...[`${EMOJIS.EMPTY} Level ${data.clanLevel} ${EMOJIS.USERS} ${data.members} Member${data.members === 1 ? '' : 's'}`]
 				]);
 			}
 		}

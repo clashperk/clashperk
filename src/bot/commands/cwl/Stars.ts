@@ -116,5 +116,3 @@ export default class CWLStarsComamnd extends Command {
 		return num.toString().concat(`/${team}`);
 	}
 }
-
-module.exports = CWLStarsComamnd;
