@@ -30,14 +30,18 @@ export default class WarExport extends Command {
 		const sheet = workbook.addWorksheet(new Date().toISOString().substring(0, 7));
 
 		for (const { tag, name } of clans) {
-			const clan = await this.client.http.clan(tag) as Clan;
+			const clan: Clan = await this.client.http.clan(tag);
 			if (!clan.ok) continue;
 			if (clan.members === 0) continue;
+			const lastseen = await this.aggregationQuery(clan);
 
 			const members = await this.client.db.collection(COLLECTIONS.CLAN_MEMBERS)
 				.find({ tag: { $in: clan.memberList.map(m => m.tag) }, clanTag: clan.tag, season: this.season })
 				.sort({ createdAt: -1 })
 				.toArray();
+
+			for (const mem of members) mem.totalActivity = lastseen.find(m => m.tag === mem.tag)?.count ?? 0;
+
 			// const sheet = workbook.addWorksheet(name);
 			sheet.columns = [
 				{ header: 'Name', width: 20 },
@@ -55,8 +59,9 @@ export default class WarExport extends Command {
 				{ header: 'Gold Grab', width: 10 },
 				{ header: 'Elixir Escapade', width: 10 },
 				{ header: 'Heroic Heist', width: 10 },
-				{ header: 'Clan Games', width: 10 }
-			] as any;
+				{ header: 'Clan Games', width: 10 },
+				{ header: 'Total Activity', width: 10 }
+			] as any[];
 
 			sheet.getRow(1).font = { bold: true, size: 10 };
 			sheet.getRow(1).height = 40;
@@ -79,7 +84,8 @@ export default class WarExport extends Command {
 					m.versusTrophies.gained,
 					m.warStars.gained,
 					...['War League Legend', 'Gold Grab', 'Elixir Escapade', 'Heroic Heist', 'Games Champion']
-						.map(ac => m.achievements.find((a: any) => a.name === ac).gained)
+						.map(ac => m.achievements.find((a: any) => a.name === ac).gained),
+					m.totalActivity
 				])
 			);
 		}
@@ -93,9 +99,54 @@ export default class WarExport extends Command {
 		});
 	}
 
-	private starCount(stars: number[] = [], count: number) {
-		return stars.filter(star => star === count).length;
+	private async aggregationQuery(clan: Clan): Promise<{ tag: string; count: number }[]> {
+		const db = this.client.db.collection(COLLECTIONS.LAST_ONLINES);
+		const cursor = db.aggregate([
+			{
+				$match: {
+					'clan.tag': clan.tag,
+					'tag': { $in: [...clan.memberList.map(m => m.tag)] }
+				}
+			},
+			{
+				$project: {
+					tag: '$tag',
+					clan: '$clan',
+					entries: {
+						$filter: {
+							input: '$entries',
+							as: 'en',
+							cond: {
+								$gte: [
+									'$$en.entry', new Date(new Date().getTime() - (30 * 24 * 60 * 60 * 1000))
+								]
+							}
+						}
+					}
+				}
+			},
+			{
+				$project: {
+					tag: '$tag',
+					clan: '$clan',
+					count: {
+						$sum: '$entries.count'
+					}
+				}
+			},
+			{
+				$group: {
+					_id: null,
+					members: {
+						$addToSet: {
+							count: '$count',
+							tag: '$tag'
+						}
+					}
+				}
+			}
+		]);
+
+		return (await cursor.toArray())[0]?.members ?? [];
 	}
 }
-
-module.exports = WarExport;
