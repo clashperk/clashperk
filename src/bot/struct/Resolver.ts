@@ -30,9 +30,10 @@ export default class Resolver {
 			return this.fail(message, { embed });
 		}
 
-		const data = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
-			.findOne({ user: (parsed as GuildMember).id });
-		const otherTags = await this.client.http.getPlayerTags((parsed as GuildMember).id);
+		const [data, otherTags] = await Promise.all([
+			this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ user: (parsed as GuildMember).id }),
+			this.client.http.getPlayerTags((parsed as GuildMember).id)
+		]);
 
 		const tagSet = new Set([...data?.entries.map((en: any) => en.tag) ?? [], ...otherTags]);
 		const tags = Array.from(tagSet);
