@@ -84,8 +84,12 @@ export default class ClanActivityCommand extends Command {
 		return this.client.db.collection(COLLECTIONS.LAST_ONLINES).aggregate([
 			{
 				$match: {
-					'clan.tag': { $in: [...tags] },
-					'entries': {
+					'clan.tag': { $in: [...tags] }
+				}
+			},
+			{
+				$match: {
+					entries: {
 						$exists: true
 					}
 				}

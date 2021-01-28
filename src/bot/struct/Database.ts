@@ -30,6 +30,8 @@ class MongoDB extends MongoClient {
 			db.collection(COLLECTIONS.LAST_ONLINES)
 				.createIndex({ tag: 1 }, { unique: true }),
 
+			db.collection(COLLECTIONS.LAST_ONLINES).createIndex({ 'clan.tag': 1 }),
+
 			db.collection(COLLECTIONS.LAST_ONLINES).createIndex({ 'entries.entry': 1 }),
 
 			db.collection(COLLECTIONS.CLAN_GAMES_LOGS)
@@ -81,6 +83,9 @@ class MongoDB extends MongoClient {
 			db.collection(COLLECTIONS.CLAN_MEMBERS).createIndex({ clanTag: 1 }),
 
 			db.collection(COLLECTIONS.CLAN_MEMBERS).createIndex({ season: -1 }),
+
+			db.collection(COLLECTIONS.TIME_ZONES)
+				.createIndex({ user: 1 }, { unique: true }),
 
 			db.collection(COLLECTIONS.BOT_GROWTH)
 				.createIndex({ ISTDate: 1 }, { unique: true }),
