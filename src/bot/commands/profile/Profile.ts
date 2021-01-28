@@ -68,25 +68,18 @@ export default class ProfileCommand extends Command {
 		}
 
 		const tags = new Set([...player?.entries.map((en: any) => en.tag) ?? [], ...otherTags]);
+		const showLink = Boolean(tags.size <= 16);
 		for (const tag of tags.values()) {
 			index += 1;
 			const data: Player = await this.client.http.player(tag);
 			if (data.statusCode === 404) {
-				this.client.db.collection(COLLECTIONS.LINKED_USERS)
-					.updateOne(
-						{ user: member.id },
-						{
-							$pull: {
-								entries: { tag }
-							}
-						}
-					);
+				this.client.db.collection(COLLECTIONS.LINKED_USERS).updateOne({ user: member.id }, { $pull: { entries: { tag } } });
 			}
 			if (!data.ok) continue;
 
 			const signature = this.isVerified(player, tag) ? EMOJIS.VERIFIED : this.isLinked(player, tag) ? EMOJIS.AUTHORIZE : '';
 			collection.push({
-				field: `${TOWN_HALLS[data.townHallLevel]} ${data.name} (${data.tag}) ${signature}`,
+				field: `${TOWN_HALLS[data.townHallLevel]} ${showLink ? '[' : ''}${data.name} (${data.tag})${showLink ? `](${this.profileURL(data.tag)})` : ''} ${signature}`,
 				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
 			});
 
@@ -98,7 +91,9 @@ export default class ProfileCommand extends Command {
 			`${collection.length} Account${collection.length === 1 ? '' : 's'} Linked`,
 			'https://cdn.discordapp.com/emojis/658538492409806849.png'
 		);
-		collection.map(a => embed.addField(a.field, [...a.values, '\u200b']));
+		if (showLink) collection.map(a => embed.addField('\u200b', [a.field, ...a.values]));
+		else collection.map(a => embed.addField(a.field, [...a.values, '\u200b']));
+
 		return message.util!.send({ embed });
 	}
 
@@ -132,5 +127,9 @@ export default class ProfileCommand extends Command {
 
 	private getClan(id: string) {
 		return this.client.db.collection(COLLECTIONS.LINKED_CLANS).findOne({ user: id });
+	}
+
+	private profileURL(tag: string) {
+		return `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(tag)}`;
 	}
 }
