@@ -55,7 +55,8 @@ export default class Http extends Client {
 			body: JSON.stringify({
 				username: process.env.DISCORD_LINK_USERNAME,
 				password: process.env.DISCORD_LINK_PASSWORD
-			})
+			}),
+			timeout: 8000
 		}).catch(() => null);
 		const data = await res?.json().catch(() => null);
 
@@ -70,7 +71,8 @@ export default class Http extends Client {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ playerTag, discordId })
+			body: JSON.stringify({ playerTag, discordId }),
+			timeout: 5000
 		}).catch(() => null);
 
 		return Promise.resolve(res?.status === 200);
@@ -82,7 +84,8 @@ export default class Http extends Client {
 			headers: {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
-			}
+			},
+			timeout: 5000
 		}).catch(() => null);
 
 		return Promise.resolve(res?.status === 200);
@@ -94,7 +97,8 @@ export default class Http extends Client {
 			headers: {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
-			}
+			},
+			timeout: 3000
 		}).catch(() => null);
 
 		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);
