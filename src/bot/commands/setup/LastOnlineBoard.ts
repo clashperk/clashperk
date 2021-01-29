@@ -37,10 +37,11 @@ export default class LastOnlineBoardCommand extends Command {
 	}
 
 	public async exec(message: Message, { data, channel, hexColor }: { data: Clan; channel: TextChannel; hexColor: number }) {
+		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
-			return message.util!.send({ embed: EMBEDS.CLAN_LIMIT });
+			return message.util!.send({ embed: EMBEDS.CLAN_LIMIT(prefix) });
 		}
 
 		const dbUser = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
@@ -48,7 +49,7 @@ export default class LastOnlineBoardCommand extends Command {
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
 		if (!clan.verified && !Util.verifyClan(code, data, dbUser?.entries ?? [])) {
-			const embed = EMBEDS.VERIFY_CLAN(data, code, (this.handler.prefix as PrefixSupplier)(message) as string);
+			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
 			return message.util!.send({ embed });
 		}
 

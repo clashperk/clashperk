@@ -6,15 +6,10 @@ import { Player } from 'clashofclans.js';
 export default class LinkPlayerCommand extends Command {
 	public constructor() {
 		super('link-player', {
-			aliases: ['link-profile', 'save-profile', 'link-player'],
-			category: 'hidden',
+			category: 'profile',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
-			description: {
-				content: 'Saves a player to your discord account.',
-				usage: '<tag> [member]',
-				examples: ['#9Q92C8R20', '#9Q92C8R20 Suvajit']
-			},
+			description: {},
 			args: [
 				{
 					id: 'data',

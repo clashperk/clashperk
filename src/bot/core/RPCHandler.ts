@@ -127,7 +127,8 @@ export default class RPCHandler {
 			[Op.LAST_ONLINE_LOG]: this.lastOnlineLog,
 			[Op.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[Op.CLAN_GAMES_LOG]: this.clanGamesLog,
-			[Op.CLAN_WAR_LOG]: this.clanWarLog
+			[Op.CLAN_WAR_LOG]: this.clanWarLog,
+			[Op.CHANNEL_LINKED]: this.lastOnlineLog
 		};
 
 		if (data.op) {
@@ -149,7 +150,8 @@ export default class RPCHandler {
 			[Op.LAST_ONLINE_LOG]: this.lastOnlineLog,
 			[Op.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[Op.CLAN_GAMES_LOG]: this.clanGamesLog,
-			[Op.CLAN_WAR_LOG]: this.clanWarLog
+			[Op.CLAN_WAR_LOG]: this.clanWarLog,
+			[Op.CHANNEL_LINKED]: this.lastOnlineLog
 		};
 
 		if (data.op) {

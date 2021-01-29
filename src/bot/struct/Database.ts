@@ -49,6 +49,11 @@ class MongoDB extends MongoClient {
 			db.collection(COLLECTIONS.LINKED_USERS)
 				.createIndex({ user: 1, tag: 1 }, { unique: true }),
 
+			db.collection(COLLECTIONS.LINKED_CHANNELS)
+				.createIndex({ channel: 1, tag: 1 }, { unique: true }),
+
+			db.collection(COLLECTIONS.LINKED_CHANNELS).createIndex({ guild: 1 }),
+
 			db.collection(COLLECTIONS.PLAYER_LOGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 

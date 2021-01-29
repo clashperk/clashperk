@@ -92,9 +92,10 @@ export default class ClanEmbedCommand extends Command {
 	public async exec(message: Message, { data, accepts, user, description, color }: { data: Clan; accepts: string; user: User; description: string; color: number }) {
 		const clans = await this.clans(message);
 
+		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
-			return message.util!.send({ embed: EMBEDS.CLAN_LIMIT });
+			return message.util!.send({ embed: EMBEDS.CLAN_LIMIT(prefix) });
 		}
 
 		const dbUser = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
@@ -102,7 +103,7 @@ export default class ClanEmbedCommand extends Command {
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
 		if (!clan.verified && !Utility.verifyClan(code, data, dbUser?.entries ?? [])) {
-			const embed = EMBEDS.VERIFY_CLAN(data, code, (this.handler.prefix as PrefixSupplier)(message) as string);
+			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
 			return message.util!.send({ embed });
 		}
 

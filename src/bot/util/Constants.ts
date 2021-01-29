@@ -35,6 +35,7 @@ export const COLLECTIONS = {
 	FLAGGED_USERS: 'flaggedusers',
 	LINKED_CLANS: 'linkedclans',
 	LINKED_USERS: 'linkedusers',
+	LINKED_CHANNELS: 'linkedchannels',
 	SETTINGS: 'settings',
 	CLAN_WARS: 'clanwars',
 	LAST_ONLINES: 'lastonlines',
@@ -64,18 +65,21 @@ export const Op = {
 	LAST_ONLINE_LOG: 1 << 2,
 	CLAN_EMBED_LOG: 1 << 3,
 	CLAN_GAMES_LOG: 1 << 4,
-	CLAN_WAR_LOG: 1 << 5
+	CLAN_WAR_LOG: 1 << 5,
+	CHANNEL_LINKED: 1 << 6
 };
 
 export const EMBEDS = {
-	CLAN_LIMIT: new MessageEmbed()
+	CLAN_LIMIT: (prefix: string) => new MessageEmbed()
 		.setDescription([
 			`You can only claim 2 clans per server!`,
 			'',
 			'**Want more than that?**',
 			'Please consider supporting us on patreon!',
 			'',
-			'[Become a Patron](https://www.patreon.com/clashperk)'
+			'[Become a Patron](https://www.patreon.com/clashperk)',
+			'',
+			`Use \`${prefix}clans\` command to view all linked clans and \`${prefix}help remove\` to know about the process of removing any clan.`
 		]),
 
 	VERIFY_CLAN: (clan: Clan, code: string, prefix: string) => new MessageEmbed()

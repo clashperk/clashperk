@@ -66,8 +66,10 @@ export default class Resolver {
 			return this.fail(message, { embed });
 		}
 
-		const data = await this.client.db.collection(COLLECTIONS.LINKED_CLANS)
-			.findOne({ user: (parsed as GuildMember).id });
+		const data = await this.client.db.collection(COLLECTIONS.LINKED_CHANNELS)
+			.findOne({ channel: message.channel.id }) ||
+			await this.client.db.collection(COLLECTIONS.LINKED_CLANS)
+				.findOne({ user: (parsed as GuildMember).id });
 
 		if (data) return this.getClan(message, data.tag);
 

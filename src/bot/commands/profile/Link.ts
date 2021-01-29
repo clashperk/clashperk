@@ -1,5 +1,5 @@
-import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Command, PrefixSupplier } from 'discord-akairo';
+import { Message, MessageEmbed } from 'discord.js';
 
 export default class LinkCommand extends Command {
 	public constructor() {
@@ -10,34 +10,40 @@ export default class LinkCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [
-					'Links a clan or player to your account.'
+					'Links Player or Clan to a Discord User or Channel.',
+					'',
+					'• __**Link Player Tag**__',
+					'• `link #PLAYER_TAG` (Self)',
+					'',
+					'• **Set default account**',
+					'• `link #PLAYER_TAG --default`',
+					'',
+					'• **On behalf of the @USER**',
+					'• `link PLAYER_TAG @USER`',
+					'',
+					'• __**Link Clan Tag**__',
+					'• `link #CLAN_TAG` (Self)',
+					'',
+					'• **On behalf of the @USER**',
+					'• `link #CLAN_TAG @USER`',
+					'',
+					'• **Link to a channel (Admin Only)**',
+					'• `link #CLAN_TAG #CHANNEL`'
 				],
-				usage: '<tag> [@user] [--default]',
-				examples: ['#8QU8J9LP', '#9Q92C8R20 @Suvajit', '#9Q92C8R20 --default']
-			},
-			flags: ['clan', 'player', 'timezone', 'offset']
+				usage: '<#tag> [@user|#channel] [--default]',
+				examples: [
+					'#8QU8J9LP',
+					'#9Q92C8R20 @Suvajit',
+					'#9Q92C8R20 --default',
+					'#8QU8J9LP #channel'
+				]
+			}
 		});
 	}
 
 	public *args() {
-		const flag1 = yield {
-			match: 'flag',
-			flag: 'clan'
-		};
-
-		const flag2 = yield {
-			match: 'flag',
-			flag: 'player'
-		};
-
-		const offset = yield {
-			match: 'flag',
-			flag: ['timezone', 'offset']
-		};
-
 		const tag = yield {
-			match: offset ? 'none' : 'phrase',
-			type: (msg: Message, tag: string) => tag ? `#${tag.replace(/#/g, '')}` : null
+			type: (msg: Message, tag: string) => this.parseTag(tag)
 		};
 
 		const rest = yield {
@@ -46,29 +52,31 @@ export default class LinkCommand extends Command {
 			'default': ''
 		};
 
-		return { flag1, flag2, rest, tag, offset };
+		return { tag, rest };
 	}
 
-	public async exec(message: Message, { flag1, flag2, rest, tag, offset }: { flag1: boolean; flag2: boolean; rest: string; tag: string; offset: boolean }) {
-		const command1 = this.handler.modules.get('link-clan')!;
-		const command2 = this.handler.modules.get('link-player')!;
-		const command3 = this.handler.modules.get('time-offset')!;
-
-		if (flag1) {
-			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command1, true);
-		} else if (flag2) {
-			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command2, true);
-		} else if (offset) {
-			return this.handler.handleDirectCommand(message, `${rest}`, command3, true);
-		}
-
+	public async exec(message: Message, { tag, rest }: { tag: string; rest: string }) {
 		if (!tag) {
-			return message.util!.send({
-				embed: {
-					description: 'Provide a correct clan tag or player tag!'
-				}
-			});
+			const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
+			const embed = new MessageEmbed()
+				.setColor(this.client.embed(message))
+				.setDescription([
+					`\`${prefix}link ${this.description.usage as string}\``,
+					'',
+					this.description.content.join('\n'),
+					'',
+					'**Examples**',
+					this.description.examples.map((en: string) => `\`${prefix}link ${en}\``).join('\n')
+				]);
+
+			return message.util!.send(
+				'**You must provide a valid argument to run this command. Check examples and usage below.**',
+				{ embed }
+			);
 		}
+
+		const clanCommand = this.handler.modules.get('link-clan')!;
+		const playerCommand = this.handler.modules.get('link-player')!;
 
 		const tags = await Promise.all([this.client.http.clan(tag), this.client.http.player(tag)]);
 
@@ -104,11 +112,11 @@ export default class LinkCommand extends Command {
 
 			collector.on('collect', async reaction => {
 				if (reaction.emoji.name === num[1]) {
-					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command1, true);
+					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, clanCommand, true);
 				}
 
 				if (reaction.emoji.name === num[2]) {
-					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command2, true);
+					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, playerCommand, true);
 				}
 
 				if (reaction.emoji.name === num[3]) {
@@ -118,19 +126,19 @@ export default class LinkCommand extends Command {
 
 			collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 		} else if (tags[0].ok) {
-			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command1, true);
+			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, clanCommand, true);
 		} else if (tags[1].ok) {
-			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, command2, true);
+			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, playerCommand, true);
 		} else {
-			return message.util!.send({
-				embed: {
-					description: 'I tried to search your tag as a clan and player but couldn\'t find a match.'
-				}
-			});
+			return message.util!.send('**I tried to search the tag as a clan and player but couldn\'t find a match.**');
 		}
 	}
 
 	private async delay(ms: number) {
 		return new Promise(res => setTimeout(res, ms));
+	}
+
+	private parseTag(tag?: string) {
+		return tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null;
 	}
 }
