@@ -53,13 +53,7 @@ export default class ClanActivityCommand extends Command {
 		if (!tags.length) return;
 
 		const clans = await this.aggregationQuery(tags.map(tag => `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`));
-		if (!clans.length) {
-			return message.util!.send({
-				embed: {
-					description: 'Not enough data available to show the graph, make sure last online board is enabled or try again after some hours.'
-				}
-			});
-		}
+		if (!clans.length) return message.util!.send('**Not enough data available a this moment!**');
 
 		const Tz = await this.client.db.collection(COLLECTIONS.TIME_ZONES)
 			.findOne({ user: message.author.id });

@@ -28,14 +28,9 @@ export default class LastOnlineCommand extends Command {
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
-		const db = await this.client.db.collection(COLLECTIONS.LAST_ONLINES).countDocuments({ 'clan.tag': data.tag });
-		if (!db) {
-			return message.util!.send({
-				embed: {
-					description: 'Not enough data available to show the board, make sure last online board is enabled or try again after some hours.'
-				}
-			});
-		}
+		const db = await this.client.db.collection(COLLECTIONS.LAST_ONLINES)
+			.countDocuments({ 'clan.tag': data.tag });
+		if (!db) return message.util!.send(`Not enough data available for **${data.name} (${data.tag})**`);
 
 		const members = await this.aggregationQuery(data);
 		const embed = this.client.util.embed()
