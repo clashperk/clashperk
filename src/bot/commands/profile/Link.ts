@@ -1,5 +1,5 @@
-import { Command, PrefixSupplier } from 'discord-akairo';
-import { Message, MessageEmbed } from 'discord.js';
+import { Message, MessageEmbed, GuildMember, TextChannel } from 'discord.js';
+import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 
 export default class LinkCommand extends Command {
 	public constructor() {
@@ -10,7 +10,7 @@ export default class LinkCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [
-					'Links Player or Clan to a Discord User or Channel.',
+					'Links a Player or Clan to a Discord User or Channel.',
 					'',
 					'• __**Link Player Tag**__',
 					'• `link #PLAYER_TAG` (Self)',
@@ -37,7 +37,8 @@ export default class LinkCommand extends Command {
 					'#9Q92C8R20 --default',
 					'#8QU8J9LP #channel'
 				]
-			}
+			},
+			flags: ['--default']
 		});
 	}
 
@@ -46,16 +47,21 @@ export default class LinkCommand extends Command {
 			type: (msg: Message, tag: string) => this.parseTag(tag)
 		};
 
-		const rest = yield {
+		const parsed = yield {
 			'match': 'rest',
-			'type': 'string',
-			'default': ''
+			'type': Argument.union('member', 'textChannel'),
+			'default': (msg: Message) => msg.member
 		};
 
-		return { tag, rest };
+		const def = yield {
+			match: 'flag',
+			flag: ['--default']
+		};
+
+		return { tag, parsed, def };
 	}
 
-	public async exec(message: Message, { tag, rest }: { tag: string; rest: string }) {
+	public async exec(message: Message, { tag, parsed, def }: { tag: string; parsed: GuildMember | TextChannel; def: boolean }) {
 		if (!tag) {
 			const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 			const embed = new MessageEmbed()
@@ -70,7 +76,7 @@ export default class LinkCommand extends Command {
 				]);
 
 			return message.util!.send(
-				'**You must provide a valid argument to run this command. Check examples and usage below.**',
+				'**You must provide a valid argument to run this command, check examples and usage below.**',
 				{ embed }
 			);
 		}
@@ -91,7 +97,7 @@ export default class LinkCommand extends Command {
 			2: 'Player'
 		};
 
-		if (tags.every(a => a.ok)) {
+		if (tags.every(a => a.ok) && !(parsed instanceof TextChannel)) {
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
 				.setAuthor('Select a Player or Clan')
@@ -112,11 +118,11 @@ export default class LinkCommand extends Command {
 
 			collector.on('collect', async reaction => {
 				if (reaction.emoji.name === num[1]) {
-					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, clanCommand, true);
+					return this.handler.runCommand(message, clanCommand, { data: tags[0], parsed });
 				}
 
 				if (reaction.emoji.name === num[2]) {
-					return this.handler.handleDirectCommand(message, `${tag} ${rest}`, playerCommand, true);
+					return this.handler.runCommand(message, playerCommand, { data: tags[1], member: parsed, def });
 				}
 
 				if (reaction.emoji.name === num[3]) {
@@ -126,9 +132,9 @@ export default class LinkCommand extends Command {
 
 			collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 		} else if (tags[0].ok) {
-			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, clanCommand, true);
+			return this.handler.runCommand(message, clanCommand, { data: tags[0], parsed });
 		} else if (tags[1].ok) {
-			return this.handler.handleDirectCommand(message, `${tag} ${rest}`, playerCommand, true);
+			return this.handler.runCommand(message, playerCommand, { data: tags[1], member: parsed, def });
 		} else {
 			return message.util!.send('**I tried to search the tag as a clan and player but couldn\'t find a match.**');
 		}

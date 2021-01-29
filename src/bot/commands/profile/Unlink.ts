@@ -11,7 +11,7 @@ export default class UnlinkCommand extends Command {
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
 			description: {
 				content: [
-					'Unlinks Player or Clan from a Discord User or Channel.',
+					'Unlinks a Player or Clan from a Discord User or Channel.',
 					'',
 					'• **Unlink Clan Tag**',
 					'• `unlink #CLAN_TAG`',
@@ -52,7 +52,7 @@ export default class UnlinkCommand extends Command {
 				]);
 
 			return message.util!.send(
-				'**You must provide a valid argument to run this command. Check the examples and usage below.**',
+				'**You must provide a valid argument to run this command, check the examples and usage below.**',
 				{ embed }
 			);
 		}
