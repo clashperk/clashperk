@@ -19,7 +19,7 @@ export default class UnlinkCommand extends Command {
 					'• **Unlink Player Tag**',
 					'• `unlink #PLAYER_TAG`',
 					'',
-					'• **Unlink Channel**',
+					'• **Unlink Channel (Admin Only)**',
 					'• `unlink #CHANNEL`',
 					'• `unlink #CHANNEL_ID`'
 				],

@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, Guild } from 'discord.js';
+import { MessageEmbed, Message, Guild, TextChannel } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { COLLECTIONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
@@ -6,7 +6,7 @@ import { EMOJIS } from '../../util/Emojis';
 export default class ClansCommand extends Command {
 	public constructor() {
 		super('clans', {
-			aliases: ['clans', 'tracking', 'info'],
+			aliases: ['clans'],
 			category: 'setup',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
@@ -56,6 +56,9 @@ export default class ClansCommand extends Command {
 			const clanembed = await this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS).findOne({ clan_id: doc._id });
 			const clangames = await this.client.db.collection(COLLECTIONS.CLAN_GAMES_LOGS).findOne({ clan_id: doc._id });
 			const clanwar = await this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS).findOne({ clan_id: doc._id });
+			const channels = await this.client.db.collection(COLLECTIONS.LINKED_CHANNELS)
+				.find({ guild: guild.id, tag: doc.tag })
+				.toArray();
 
 			return {
 				tag: doc.tag,
@@ -65,7 +68,8 @@ export default class ClansCommand extends Command {
 				onlinelog: onlinelog && doc.active && doc.flag > 0 ? onlinelog.channel : null,
 				clanembedlog: clanembed && doc.active && doc.flag > 0 ? clanembed.channel : null,
 				clangameslog: clangames && doc.active && doc.flag > 0 ? clangames.channel : null,
-				clanwarlog: clanwar && doc.active && doc.flag > 0 ? clanwar.channel : null
+				clanwarlog: clanwar && doc.active && doc.flag > 0 ? clanwar.channel : null,
+				channels: channels.length ? channels : []
 			};
 		}));
 
@@ -130,22 +134,17 @@ export default class ClansCommand extends Command {
 				await msg.edit({
 					embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
 						.setDescription([
-							`${premium ? `**Subscription** \nActive ${EMOJIS.AUTHORIZE}` : ''}`,
+							`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`,
 							'',
 							this.desc(this.paginate(data, page))
 						])
 				});
 				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+				return reaction.users.remove(message.author.id);
 			}
 		});
 
-		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
-		});
-		return message;
+		collector.on('end', async () => msg.reactions.removeAll().catch(() => null));
 	}
 
 	private desc(paginated: any) {
@@ -186,7 +185,10 @@ export default class ClansCommand extends Command {
 					? clanwarlog
 						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.clanwarlog as string}>`
 						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.clanwarlog as string}>`
-					: ''
+					: '',
+				(item.channels as any[]).filter((ch: any) => this.client.channels.cache.has(ch.channel))
+					.map(((ch: any) => `${EMOJIS.HASH} \`${(this.client.channels.cache.get(ch.channel)! as TextChannel).name}\``))
+					.join('\n')
 			];
 			return [
 				`**[${item.name as string} (${item.tag as string})](${this.openInGame(item.tag)})**`,
@@ -195,7 +197,8 @@ export default class ClansCommand extends Command {
 				`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`,
 				`${logs[3].length ? `**Clan Embed**\n${logs[3]}` : ''}`,
 				`${logs[4].length ? `**Clan Games Board**\n${logs[4]}` : ''}`,
-				`${logs[5].length ? `**Clan War Feed**\n${logs[5]}` : ''}`
+				`${logs[5].length ? `**Clan War Feed**\n${logs[5]}` : ''}`,
+				`${logs[6].length ? `**Linked Channels**\n${logs[6]}` : ''}`
 			].filter(item => item.length).join('\n');
 		}).join('\n\n');
 	}
