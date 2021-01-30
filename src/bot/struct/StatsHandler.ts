@@ -60,6 +60,21 @@ export default class StatsHandler {
 			);
 	}
 
+	public interactions() {
+		return this.client.db.collection(COLLECTIONS.BOT_INTERACTIONS)
+			.updateOne({ ISTDate: this.ISTDate }, {
+				$inc: {
+					usage: 1
+				},
+				$set: {
+					ISTDate: this.ISTDate
+				},
+				$min: {
+					createdAt: new Date()
+				}
+			}, { upsert: true });
+	}
+
 	public historic() {
 		return this.client.db.collection(COLLECTIONS.BOT_USAGE)
 			.updateOne({ ISTDate: this.ISTDate }, {
