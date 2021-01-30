@@ -16,14 +16,18 @@ export default class UnitsCommand extends Command {
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			},
-			args: [
-				{
-					id: 'data',
-					match: 'content',
-					type: (msg, tag) => this.client.resolver.resolvePlayer(msg, tag)
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolvePlayer(msg, tag)
+		};
+
+		return { data };
 	}
 
 	public async exec(message: Message, { data }: { data: Player }) {

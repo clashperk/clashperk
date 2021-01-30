@@ -21,18 +21,30 @@ export default class DonationBoardCommand extends Command {
 				usage: '<clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				},
-				{
-					id: 'season',
-					match: 'option',
-					flag: ['--season']
-				}
-			]
+			flags: ['--sort'],
+			optionFlags: ['--tag', '--season']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		const season = yield {
+			type: 'string',
+			flag: '--season',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		const rev = yield {
+			match: 'flag',
+			flag: '--sort'
+		};
+
+		return { data, season, rev };
 	}
 
 	private get seasonID() {
@@ -96,15 +108,12 @@ export default class DonationBoardCommand extends Command {
 				})
 		];
 
-		const total = `TOTAL: DON ${donated} | REC ${received}`;
-
 		if (!pages[1].length) {
 			return message.util!.send({
 				embed: embed.setDescription([
 					header,
-					pages[0].join('\n'),
-					`\`\u200e${total.padEnd(3 + ds + rs + 18, ' ')} \u200f\``
-				]).setFooter(`Page 1/1 (${data.members}/50)`)
+					pages[0].join('\n')
+				]).setFooter(`Page 1/1 (${data.members}/50) [DON ${donated} | REC ${received}]`)
 			});
 		}
 
@@ -112,7 +121,7 @@ export default class DonationBoardCommand extends Command {
 			embed: embed.setDescription([
 				header,
 				pages[0].join('\n')
-			]).setFooter(`Page 1/2 (${data.members}/50)`)
+			]).setFooter(`Page 1/2 (${data.members}/50) [DON ${donated} | REC ${received}]`)
 		});
 
 		await msg.react('➕');
@@ -124,10 +133,9 @@ export default class DonationBoardCommand extends Command {
 		if (!collector || !collector.size) return;
 
 		return message.channel.send({
-			embed: embed.setFooter(`Page 2/2 (${data.members}/50)`)
+			embed: embed.setFooter(`Page 2/2 (${data.members}/50) [DON ${donated} | REC ${received}]`)
 				.setDescription([
-					header, pages[1].join('\n'),
-					`\`\u200e${total.padEnd(3 + ds + rs + 18, ' ')} \u200f\``
+					header, pages[1].join('\n')
 				])
 		});
 	}

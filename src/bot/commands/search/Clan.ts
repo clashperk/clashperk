@@ -20,13 +20,18 @@ export default class ClanCommand extends Command {
 				examples: ['#8QU8J9LP', '8QU8J9LP']
 			},
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data };
 	}
 
 	private async clanRank(tag: string, clanPoints: number) {

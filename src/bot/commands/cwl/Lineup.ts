@@ -1,4 +1,4 @@
-import { Clan, ClanWar, ClanWarLeague } from 'clashofclans.js';
+import { Clan, ClanWar, ClanWarLeague, ClanWarMember, Player } from 'clashofclans.js';
 import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -12,7 +12,7 @@ const states: { [key: string]: string } = {
 export default class CWLLineupComamnd extends Command {
 	public constructor() {
 		super('cwl-lineup', {
-			aliases: ['cwl-lineup'],
+			aliases: ['cwl-lineup', 'lineup'],
 			category: 'cwl-hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
@@ -22,13 +22,18 @@ export default class CWLLineupComamnd extends Command {
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data };
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
@@ -56,8 +61,7 @@ export default class CWLLineupComamnd extends Command {
 		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
 
 		const chunks: any[] = [];
-		let i = 0;
-		for (const { warTags } of rounds) {
+		for (const { warTags } of rounds.slice(-2)) {
 			for (const warTag of warTags) {
 				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
 				if (!data.ok) continue;
@@ -67,26 +71,23 @@ export default class CWLLineupComamnd extends Command {
 						.setColor(this.client.embed(message));
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
+					const linups = await this.rosters(
+						clan.members.sort((a, b) => a.mapPosition - b.mapPosition),
+						opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
+					);
 					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
-					embed.setDescription(`**War State: ${states[data.state]}**`);
-					embed.addField('\u200b', [
-						`**[${clan.name}](${this.clanURL(clan.tag)})**`,
-						'```',
-						'\u200e #  TH  NAME',
-						...clan.members.sort((a, b) => a.mapPosition - b.mapPosition)
-							.map((m, i) => `\u200e${(i + 1).toString().padStart(2, ' ')}  ${m.townhallLevel.toString().padStart(2, ' ')}  ${m.name}`),
-						'```'
-					]);
-					embed.addField('\u200b', [
+
+					embed.setDescription([
+						'**War Against**',
 						`**[${opponent.name}](${this.clanURL(opponent.tag)})**`,
-						'```',
-						'\u200e #  TH  NAME',
-						...opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
-							.map((m, i) => `\u200e${(i + 1).toString().padStart(2, ' ')}  ${m.townhallLevel.toString().padStart(2, ' ')}  ${m.name}`),
-						'```'
+						'',
+						`\u200e\` #\` \u200b\u2002\`TH HERO\` \u2002 \u2002 \u2002 \`TH HERO\``,
+						linups.map(
+							(lineup, i) => `\u200e\`${(i + 1).toString().padStart(2, ' ')}\` \u200b\u2002${lineup.map(en => `\`${en.t.toString().padStart(2, ' ')} ${(en.h).toString().padStart(4, ' ')}\u200f\``).join(' \u2002vs\u2002 ')}`
+						).join('\n')
 					]);
 
-					embed.setFooter(`Round #${++i}`);
+					embed.setFooter(`Round #${rounds.findIndex(en => en.warTags.includes(warTag)) + 1} (${states[data.state]})`);
 					chunks.push({ state: data.state, embed });
 				}
 			}
@@ -94,7 +95,7 @@ export default class CWLLineupComamnd extends Command {
 
 		if (!chunks.length) return message.util!.send('**504 Request Timeout!**');
 
-		const item = chunks.length === 7
+		const item = rounds.length === 7
 			? chunks.find(c => c.state === 'preparation') || chunks.slice(-1)[0]
 			: chunks.slice(-2).reverse()[0];
 		const pageIndex = chunks.indexOf(item);
@@ -159,5 +160,43 @@ export default class CWLLineupComamnd extends Command {
 			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
 			page, maxPage, pageLength
 		};
+	}
+
+	private async rosters(clanMembers: ClanWarMember[], opponentMembers: ClanWarMember[]) {
+		const clanPlayers: Player[] = await this.client.http.detailedClanMembers(clanMembers as any);
+		const a = clanPlayers.map((m, i) => {
+			const heroes = m.heroes.filter(en => en.village === 'home');
+			return {
+				e: 0,
+				m: i + 1,
+				t: m.townHallLevel,
+				h: heroes.map(en => en.level).reduce((prev, en) => en + prev, 0)
+				// .concat(...Array(4 - heroes.length).fill(' '))
+			};
+		});
+
+		const opponentPlayers: Player[] = await this.client.http.detailedClanMembers(opponentMembers as any);
+
+		const b = opponentPlayers.map((m, i) => {
+			const heroes = m.heroes.filter(en => en.village === 'home');
+			return {
+				e: 1,
+				m: i + 1,
+				t: m.townHallLevel,
+				h: heroes.map(en => en.level).reduce((prev, en) => en + prev, 0)
+				// .concat(...Array(4 - heroes.length).fill(' '))
+			};
+		});
+
+		return this.chunk([...a, ...b].sort((a, b) => a.e - b.e).sort((a, b) => a.m - b.m));
+	}
+
+	private chunk<T>(items: T[] = []) {
+		const chunk = 2;
+		const array = [];
+		for (let i = 0; i < items.length; i += chunk) {
+			array.push(items.slice(i, i + chunk));
+		}
+		return array;
 	}
 }

@@ -6,11 +6,9 @@ export default class Http extends Client {
 	private bearerToken!: string;
 
 	public constructor() {
-		super();
+		super({ baseURL: process.env.BASE_URL });
 
 		this.timeout = 5000;
-		// this.baseURL = 'https://coc.clashperk.com/v1';
-
 		this.token = [...process.env.CLASH_TOKENS!.split(',')];
 		this.tokenIndex = 0;
 	}

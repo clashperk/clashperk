@@ -20,7 +20,7 @@ export default class CWLRoundComamnd extends Command {
 				usage: '<clanTag> [--round/-r] [round]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP -r 5', '#8QU8J9LP --round 4']
 			},
-			optionFlags: ['--round', '-r'],
+			optionFlags: ['--round', '--tag'],
 			args: [
 				{
 					id: 'data',
@@ -34,6 +34,22 @@ export default class CWLRoundComamnd extends Command {
 				}
 			]
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		const round = yield {
+			match: 'option',
+			flag: ['--round'],
+			type: Argument.range('integer', 1, 7, true)
+		};
+
+		return { data, round };
 	}
 
 	public async exec(message: Message, { data, round }: { data: Clan; round: number }) {

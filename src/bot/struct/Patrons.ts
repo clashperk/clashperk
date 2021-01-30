@@ -1,4 +1,5 @@
 import { SETTINGS, COLLECTIONS } from '../util/Constants';
+import Interaction from './Interaction';
 import { Message } from 'discord.js';
 import Client from './Client';
 
@@ -35,8 +36,10 @@ export default class Patrons {
 		return this.refresh();
 	}
 
-	public get(message: string | Message): boolean {
-		if (message instanceof Message) return this.patrons.has(message.author.id) || this.patrons.has(message.guild!.id);
+	public get(message: string | Message | Interaction): boolean {
+		if (message instanceof Message || message instanceof Interaction) {
+			return this.patrons.has(message.author.id) || this.patrons.has(message.guild!.id);
+		}
 		return this.patrons.has(message);
 	}
 

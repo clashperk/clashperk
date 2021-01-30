@@ -25,18 +25,24 @@ export default class ClanAttacksCommand extends Command {
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				},
-				{
-					id: 'sort',
-					match: 'flag',
-					flag: ['defenses']
-				}
-			]
+			flags: ['--sort'],
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		const sort = yield {
+			match: 'flag',
+			flag: '--sort'
+		};
+
+		return { data, sort };
 	}
 
 	public async exec(message: Message, { data, sort }: { data: Clan; sort: boolean }) {

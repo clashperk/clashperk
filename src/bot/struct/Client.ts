@@ -1,4 +1,6 @@
-import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } from 'discord-akairo';
+import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag, Command } from 'discord-akairo';
+import { APIApplicationCommandInteractionDataOption } from 'discord-api-types/v8';
+import Interaction, { InteractionParser } from './Interaction';
 import { MessageEmbed, Message } from 'discord.js';
 import { loadSync } from '@grpc/proto-loader';
 import RPCHandler from '../core/RPCHandler';
@@ -115,6 +117,42 @@ export default class Client extends AkairoClient {
 				]
 			}
 		});
+
+		// @ts-expect-error
+		this.ws.on('INTERACTION_CREATE', async res => {
+			const command = this.commandHandler.findCommand(res.data?.name);
+			if (!command) return; // eslint-disable-line
+			// @ts-expect-error
+			this.api.interactions(res.id, res.token).callback.post({ data: { type: 5 } });
+			const interaction = await new Interaction(this, res).parse(res);
+			return this.handleInteraction(interaction, command, interaction.options);
+		});
+	}
+
+	private contentParser(command: Command, content: string | APIApplicationCommandInteractionDataOption[]) {
+		if (Array.isArray(content)) {
+			// @ts-expect-error
+			const contentParser = new InteractionParser({ flagWords: command.contentParser.flagWords, optionFlagWords: command.contentParser.optionFlagWords });
+			return contentParser.parse(content as any);
+		}
+		// @ts-expect-error
+		return command.contentParser.parse(content);
+	}
+
+	private async handleInteraction(interaction: Interaction, command: Command, content: string | APIApplicationCommandInteractionDataOption[]): Promise<any> {
+		const parsed = this.contentParser(command, content);
+		// @ts-expect-error
+		const args = await command.argumentRunner.run(interaction, parsed, command.argumentGenerator);
+		if (Flag.is(args, 'cancel')) {
+			console.log('command_cancelled');
+			return true;
+		} else if (Flag.is(args, 'continue')) {
+			const continueCommand = this.commandHandler.modules.get(args.command)!;
+			return this.handleInteraction(interaction, continueCommand, args.rest);
+		}
+
+		// @ts-expect-error
+		return this.commandHandler.runCommand(interaction, command, args);
 	}
 
 	private async init() {
