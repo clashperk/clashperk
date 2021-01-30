@@ -125,6 +125,9 @@ export default class Client extends AkairoClient {
 			// @ts-expect-error
 			this.api.interactions(res.id, res.token).callback.post({ data: { type: 5 } });
 			const interaction = await new Interaction(this, res).parse(res);
+			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) return;
+			// @ts-expect-error
+			if (await this.commandHandler.runPermissionChecks(interaction, command)) return;
 			return this.handleInteraction(interaction, command, interaction.options);
 		});
 	}
