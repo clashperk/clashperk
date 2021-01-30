@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { APIInteraction, InteractionType, APIApplicationCommandInteractionData, APIApplicationCommandInteractionDataOption } from 'discord-api-types/v8';
-import { TextChannel, User, Guild, GuildMember, APIMessage, Collection, MessageOptions, MessageAdditions, StringResolvable, Message } from 'discord.js';
+import { TextChannel, User, Guild, GuildMember, APIMessage, Collection, MessageOptions, MessageAdditions, StringResolvable, Message, WebhookClient } from 'discord.js';
 import Client from './Client';
 
 export class CommandUtil {
@@ -96,7 +96,6 @@ export default class Interaction {
 		this.acknowledged = Boolean(false);
 		this.timeoutId = setTimeout(() => {
 			this.ack();
-			console.log('///');
 			this.acknowledged = Boolean(true);
 		}, 2000);
 	}
@@ -141,32 +140,17 @@ export default class Interaction {
 		return this.client.api.interactions(this.id, this.token).callback.post({ data: { type: 5 } });
 	}
 
-	public callback(data: any) {
-		clearTimeout(this.timeoutId);
-		// @ts-expect-error
-		return this.client.api.interactions(this.id, this.token)
-			.callback
-			.post({
-				auth: false,
-				data: { type: 4, data: { ...data } }
-			}).then((msg: any) => console.log(msg));
-	}
-
-	public webhook(data: any) {
+	public async webhook(data: any) {
 		if (!this.acknowledged) {
 			clearTimeout(this.timeoutId);
-			this.ack();
+			await this.ack();
+			this.acknowledged = Boolean(true);
 		}
-		// @ts-expect-error
-		return this.client.api.webhooks(this.client.user.id, this.token)
-			.post({
-				auth: false,
-				data: { ...data }
-			}).then((msg: any) => this.channel.messages.add(msg));
+		return new WebhookClient(this.client.user!.id, this.token)
+			.send(data).then(msg => this.channel.messages.add(msg));
 	}
 
 	public reply(data: any) {
-		// if (!this.acknowledged && !files) return this.callback(data);
 		return this.webhook(data);
 	}
 
