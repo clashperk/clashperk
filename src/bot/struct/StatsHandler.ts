@@ -2,6 +2,7 @@ import { COLLECTIONS } from '../util/Constants';
 import Client from './Client';
 import qs from 'querystring';
 import https from 'https';
+import Interaction from './Interaction';
 
 export default class StatsHandler {
 	public messages = new Map<string, NodeJS.Timeout>();
@@ -60,17 +61,21 @@ export default class StatsHandler {
 			);
 	}
 
-	public interactions() {
-		return this.client.db.collection(COLLECTIONS.BOT_INTERACTIONS)
-			.updateOne({ ISTDate: this.ISTDate }, {
+	public async interactions(interaction: Interaction, command: string) {
+		await this.client.db.collection(COLLECTIONS.BOT_INTERACTIONS)
+			.updateOne({ user: interaction.author.id }, {
 				$inc: {
 					usage: 1
 				},
 				$set: {
-					ISTDate: this.ISTDate
-				},
-				$min: {
-					createdAt: new Date()
+					guild: interaction.guild.id
+				}
+			}, { upsert: true });
+
+		return this.client.db.collection(COLLECTIONS.BOT_STATS)
+			.updateOne({ id: 'stats' }, {
+				$inc: {
+					[`interactions.${command}`]: 1
 				}
 			}, { upsert: true });
 	}
@@ -93,7 +98,6 @@ export default class StatsHandler {
 	public async commands(command: string) {
 		await this.client.db.collection(COLLECTIONS.BOT_STATS)
 			.updateOne({ id: 'stats' }, {
-				$set: { id: 'stats' },
 				$inc: {
 					commands_used: 1,
 					[`commands.${command}`]: 1

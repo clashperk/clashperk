@@ -108,6 +108,10 @@ export default class Interaction {
 		return util;
 	}
 
+	public get name() {
+		return this.data?.name ?? 'uwu';
+	}
+
 	public get isInteraction() {
 		return Boolean(this.type === 2);
 	}

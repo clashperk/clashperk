@@ -110,6 +110,8 @@ class MongoDB extends MongoClient {
 			db.collection(COLLECTIONS.BOT_USAGE)
 				.createIndex({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 }),
 
+			db.collection(COLLECTIONS.BOT_INTERACTIONS).createIndex({ user: 1 }, { unique: true }),
+
 			db.collection(COLLECTIONS.PATRONS)
 				.createIndex({ id: 1 }, { unique: true })
 		]);
