@@ -122,10 +122,11 @@ export default class Client extends AkairoClient {
 		this.ws.on('INTERACTION_CREATE', async res => {
 			const command = this.commandHandler.findCommand(res.data?.name);
 			if (!command) return; // eslint-disable-line
-			// @ts-expect-error
-			this.api.interactions(res.id, res.token).callback.post({ data: { type: 5 } });
 			const interaction = await new Interaction(this, res).parse(res);
-			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) return;
+			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) {
+				// @ts-expect-error
+				this.api.interactions(res.id, res.token).callback.post({ data: { type: 4 } });
+			}
 			// @ts-expect-error
 			if (await this.commandHandler.runPermissionChecks(interaction, command)) return;
 			return this.handleInteraction(interaction, command, interaction.options);
@@ -136,7 +137,7 @@ export default class Client extends AkairoClient {
 		if (Array.isArray(content)) {
 			// @ts-expect-error
 			const contentParser = new InteractionParser({ flagWords: command.contentParser.flagWords, optionFlagWords: command.contentParser.optionFlagWords });
-			return contentParser.parse(content as any);
+			return contentParser.parse(content);
 		}
 		// @ts-expect-error
 		return command.contentParser.parse(content);

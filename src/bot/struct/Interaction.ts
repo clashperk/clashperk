@@ -46,13 +46,6 @@ export class CommandUtil {
 		return sent;
 	}
 
-	private async sendNew(content: StringResolvable, options: MessageOptions | MessageAdditions) {
-		const sent = await this.message.reply((this.constructor as typeof CommandUtil).transformOptions(content, options));
-		const lastSent = this.setLastResponse(sent);
-		this.setEditable(!lastSent.attachments.size);
-		return sent;
-	}
-
 	private edit(data: any) {
 		return this.message.edit(this.lastResponse!.id, data);
 	}
@@ -77,9 +70,11 @@ export default class Interaction {
 	public author!: User;
 	public token: string;
 	public client!: Client;
+	public timeoutId: NodeJS.Timeout;
 	public channel: TextChannel;
 	public member!: GuildMember;
 	public type: InteractionType;
+	public acknowledged: boolean;
 	public commandUtils = new Collection();
 	public data?: APIApplicationCommandInteractionData;
 
@@ -97,6 +92,13 @@ export default class Interaction {
 		this.channel = client.channels.cache.get(data.channel_id) as TextChannel;
 
 		Object.defineProperty(this, 'client', { value: client, writable: true });
+
+		this.acknowledged = Boolean(false);
+		this.timeoutId = setTimeout(() => {
+			this.ack();
+			console.log('///');
+			this.acknowledged = Boolean(true);
+		}, 2000);
 	}
 
 	public get util() {
@@ -139,13 +141,33 @@ export default class Interaction {
 		return this.client.api.interactions(this.id, this.token).callback.post({ data: { type: 5 } });
 	}
 
-	public reply(data: any) {
+	public callback(data: any) {
+		clearTimeout(this.timeoutId);
+		// @ts-expect-error
+		return this.client.api.interactions(this.id, this.token)
+			.callback
+			.post({
+				auth: false,
+				data: { type: 4, data: { ...data } }
+			}).then((msg: any) => console.log(msg));
+	}
+
+	public webhook(data: any) {
+		if (!this.acknowledged) {
+			clearTimeout(this.timeoutId);
+			this.ack();
+		}
 		// @ts-expect-error
 		return this.client.api.webhooks(this.client.user.id, this.token)
 			.post({
 				auth: false,
 				data: { ...data }
 			}).then((msg: any) => this.channel.messages.add(msg));
+	}
+
+	public reply(data: any) {
+		// if (!this.acknowledged && !files) return this.callback(data);
+		return this.webhook(data);
 	}
 
 	public edit(id: string, data: any) {
