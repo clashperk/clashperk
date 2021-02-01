@@ -163,8 +163,8 @@ export default class CWLLineupComamnd extends Command {
 	}
 
 	private async rosters(clanMembers: ClanWarMember[], opponentMembers: ClanWarMember[]) {
-		const clanPlayers: Player[] = await this.client.http.detailedClanMembers(clanMembers as any);
-		const a = clanPlayers.map((m, i) => {
+		const clanPlayers: Player[] = await this.client.http.detailedClanMembers(clanMembers);
+		const a = clanPlayers.filter(res => res.ok).map((m, i) => {
 			const heroes = m.heroes.filter(en => en.village === 'home');
 			return {
 				e: 0,
@@ -177,7 +177,7 @@ export default class CWLLineupComamnd extends Command {
 
 		const opponentPlayers: Player[] = await this.client.http.detailedClanMembers(opponentMembers as any);
 
-		const b = opponentPlayers.map((m, i) => {
+		const b = opponentPlayers.filter(res => res.ok).map((m, i) => {
 			const heroes = m.heroes.filter(en => en.village === 'home');
 			return {
 				e: 1,
