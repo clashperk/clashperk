@@ -70,11 +70,9 @@ export default class Interaction {
 	public author!: User;
 	public token: string;
 	public client!: Client;
-	public timeoutId: NodeJS.Timeout;
 	public channel: TextChannel;
 	public member!: GuildMember;
 	public type: InteractionType;
-	public acknowledged: boolean;
 	public commandUtils = new Collection();
 	public data?: APIApplicationCommandInteractionData;
 
@@ -92,12 +90,6 @@ export default class Interaction {
 		this.channel = client.channels.cache.get(data.channel_id) as TextChannel;
 
 		Object.defineProperty(this, 'client', { value: client, writable: true });
-
-		this.acknowledged = Boolean(false);
-		this.timeoutId = setTimeout(() => {
-			this.ack();
-			this.acknowledged = Boolean(true);
-		}, 2000);
 	}
 
 	public get util() {
@@ -106,6 +98,10 @@ export default class Interaction {
 		}
 		const util = new CommandUtil(this);
 		this.commandUtils.set(this.id, util);
+		const timeoutId: NodeJS.Timeout = setTimeout(() => {
+			this.commandUtils.delete(this.id);
+			return clearTimeout(timeoutId);
+		}, 5 * 60 * 1000);
 		return util;
 	}
 
@@ -141,11 +137,6 @@ export default class Interaction {
 	}
 
 	public async webhook(data: any) {
-		if (!this.acknowledged) {
-			clearTimeout(this.timeoutId);
-			await this.ack();
-			this.acknowledged = Boolean(true);
-		}
 		return new WebhookClient(this.client.user!.id, this.token)
 			.send(data).then(msg => this.channel.messages.add(msg));
 	}
