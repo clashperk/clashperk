@@ -36,7 +36,7 @@ export default class ClanGamesBoardCommand extends Command {
 		});
 	}
 
-	public async exec(message: Message, { data, channel, hexColor }: { data: Clan; channel: TextChannel; hexColor: number }) {
+	public async exec(message: Message, { data, channel, hexColor }: { data: Clan; channel: TextChannel; hexColor?: number }) {
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
@@ -84,15 +84,15 @@ export default class ClanGamesBoardCommand extends Command {
 				`${patron ? 15 : 30} min`,
 				'',
 				'**Color**',
-				`\`#${hexColor.toString(16)}\``,
+				`\`#${hexColor?.toString(16) ?? 'NONE'}\``,
 				'',
 				'**Channel**',
 				`${(channel as Channel).toString()}`,
 				'',
 				'**Clan Games Board**',
 				`[Enabled](${message.url})`
-			])
-			.setColor(hexColor);
+			]);
+		if (hexColor) embed.setColor(hexColor);
 		return message.util!.send({ embed });
 	}
 }

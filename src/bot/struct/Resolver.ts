@@ -24,7 +24,7 @@ export default class Resolver {
 
 		if (tag) return this.getPlayer(message, args);
 
-		const embed = new MessageEmbed().setColor(0xf30c11);
+		const embed = new MessageEmbed();
 		if (!parsed) {
 			embed.setDescription(status(404));
 			return this.fail(message, { embed });
@@ -60,7 +60,7 @@ export default class Resolver {
 
 		if (tag) return this.getClan(message, args);
 
-		const embed = new MessageEmbed().setColor(0xf30c11);
+		const embed = new MessageEmbed();
 		if (!parsed) {
 			embed.setDescription(status(404));
 			return this.fail(message, { embed });
@@ -91,7 +91,7 @@ export default class Resolver {
 		if (data.ok) return data;
 
 		const embed = new MessageEmbed()
-			.setColor(0xf30c11)
+
 			.setDescription(status(data.statusCode));
 
 		return this.fail(message, { embed });
@@ -102,7 +102,7 @@ export default class Resolver {
 		if (data.ok) return data;
 
 		const embed = new MessageEmbed()
-			.setColor(0xf30c11)
+
 			.setDescription(status(data.statusCode));
 
 		return this.fail(message, { embed });

@@ -89,7 +89,7 @@ export default class ClanEmbedCommand extends Command {
 		return { data, user, accepts, description, color };
 	}
 
-	public async exec(message: Message, { data, accepts, user, description, color }: { data: Clan; accepts: string; user: User; description: string; color: number }) {
+	public async exec(message: Message, { data, accepts, user, description, color }: { data: Clan; accepts: string; user: User; description: string; color?: number }) {
 		const clans = await this.clans(message);
 
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
