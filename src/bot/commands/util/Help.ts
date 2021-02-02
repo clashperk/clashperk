@@ -17,7 +17,7 @@ export default class HelpCommand extends Command {
 		super('help', {
 			aliases: ['help', 'commands'],
 			category: 'hidden',
-			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES'],
+			clientPermissions: ['EMBED_LINKS'],
 			args: [
 				{
 					id: 'command',
