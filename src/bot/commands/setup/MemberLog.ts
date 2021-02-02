@@ -74,7 +74,7 @@ export default class MemberLogCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setTitle(`${data.name}`)
-			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
 				'**Wait Time**',

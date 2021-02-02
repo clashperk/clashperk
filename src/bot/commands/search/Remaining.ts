@@ -38,7 +38,7 @@ export default class RemainingAttacksCommand extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`);
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`);
 
 		if (!data.isWarLogPublic) {
 			const res = await this.client.http.clanWarLeague(data.tag).catch(() => null);

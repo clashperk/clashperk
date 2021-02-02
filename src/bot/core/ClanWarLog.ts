@@ -344,7 +344,7 @@ export default class ClanWarEvent {
 	}
 
 	private clanURL(tag: string) {
-		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
+		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 
 	private getLeaderBoard(clan: ClanWarClan, opponent: ClanWarOpponent) {

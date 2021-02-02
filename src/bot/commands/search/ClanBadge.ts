@@ -24,7 +24,7 @@ export default class ClanBadgeCommand extends Command {
 
 	public exec(message: Message, { data }: { data: Clan }) {
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 			.setColor(this.client.embed(message))
 			.setImage(data.badgeUrls.large);
 

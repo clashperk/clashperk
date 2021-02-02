@@ -66,7 +66,7 @@ export default class CWLHitrateComamnd extends Command {
 				.setAuthor(
 					`${data.name} (${data.tag})`,
 					`${data.badgeUrls.medium}`,
-					`https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`
+					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
 				)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
