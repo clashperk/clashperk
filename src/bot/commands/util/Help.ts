@@ -1,5 +1,5 @@
-import { Message, PermissionString, TextChannel } from 'discord.js';
 import { Command, PrefixSupplier } from 'discord-akairo';
+import { Message, PermissionString } from 'discord.js';
 
 interface Description {
 	content: string;
@@ -22,11 +22,7 @@ export default class HelpCommand extends Command {
 				{
 					id: 'command',
 					match: 'content',
-					type: (msg, cmd) => {
-						if (!cmd) return null;
-						const resolver = this.handler.resolver.type('commandAlias');
-						return resolver(msg, cmd.toLocaleLowerCase().replace(/ /g, '-'));
-					}
+					type: 'commandAlias'
 				}
 			],
 			description: {
@@ -83,7 +79,7 @@ export default class HelpCommand extends Command {
 			embed.setDescription([
 				embed.description,
 				'',
-				`**Required Permission${(command.userPermissions as PermissionString[]).length === 1 ? '' : 's'}**`,
+				`**Permission${(command.userPermissions as PermissionString[]).length === 1 ? '' : 's'} Required**`,
 				(command.userPermissions as PermissionString[]).join('\n')
 					.replace(/_/g, ' ')
 					.toLowerCase()
@@ -111,73 +107,14 @@ export default class HelpCommand extends Command {
 				setup: 'Clan Management',
 				activity: 'Clan Activity',
 				cwl: 'War and CWL',
-				search: 'Clash Search'
-			},
-			{
+				search: 'Clash Search',
 				profile: 'Profile',
 				flag: 'Flags',
-				other: 'Other',
-				config: 'Config',
-				util: 'Util'
+				config: 'Config'
 			}
 		];
 
-		if (!(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
-			return pages.map(async (_, page) => message.util!.send({ embed: this.execHelpList(message, pages[page]) }));
-		}
-
-		let page = 0;
-		const embed = this.execHelpList(message, pages[page]);
-		const msg = await message.util!.send({ embed });
-
-		for (const emoji of ['⬅️', '➡️', '➕']) {
-			await msg.react(emoji);
-			await this.delay(250);
-		}
-
-		// .setFooter(`Page ${page + 1}/2`, this.client.user.displayAvatarURL())
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕', '⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 90000, max: 10 }
-		);
-
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
-				page += 1;
-				if (page < 0) page = 1;
-				if (page > 1) page = 0;
-
-				await msg.edit({ embed: this.execHelpList(message, pages[page]) });
-				await this.delay(250);
-				return reaction.users.remove(message.author.id);
-			}
-
-			if (reaction.emoji.name === '⬅️') {
-				page -= 1;
-				if (page < 0) page = 1;
-				if (page > 1) page = 0;
-
-				await msg.edit({ embed: this.execHelpList(message, pages[page]) });
-				await this.delay(250);
-				return reaction.users.remove(message.author.id);
-			}
-
-			if (reaction.emoji.name === '➕') {
-				if (page === 0) page = 1;
-				else if (page === 1) page = 0;
-
-				collector.stop();
-				return message.channel.send({
-					embed: this.execHelpList(message, pages[page])
-				});
-			}
-		});
-
-		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
-	}
-
-	private async delay(ms: number) {
-		return new Promise(res => setTimeout(res, ms));
+		return message.util!.send({ embed: this.execHelpList(message, pages[0]) });
 	}
 
 	private execHelpList(message: Message, option: any) {

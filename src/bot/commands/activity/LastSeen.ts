@@ -9,7 +9,7 @@ import moment from 'moment';
 export default class LastOnlineCommand extends Command {
 	public constructor() {
 		super('lastonline', {
-			aliases: ['lastonline', 'lastseen', 'lo'],
+			aliases: ['lastseen', 'lastonline', 'lo'],
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],

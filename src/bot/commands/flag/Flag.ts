@@ -11,7 +11,17 @@ export default class FlagCommand extends Command {
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: 'Flags a player in your server or clans.',
+				content: [
+					'Flags a player in your server or clans.',
+					'',
+					'• This is a feature to mark players as banned or flagged and get notified whenever they join back to the clan or clan family.',
+					'',
+					'• Use clashperk `player` command to check the flag note.',
+					'',
+					'• To receive notification you must setup clan feed with a mentionable role.',
+					'',
+					'• Flags are per server basis. It doesn\'t travel among Discord servers and not accessible from other servers.'
+				],
 				usage: '<playerTag> <reason>',
 				examples: ['#9Q92C8R20 Hopper']
 			},

@@ -27,7 +27,7 @@ interface Member {
 export default class ClanGamesCommand extends Command {
 	public constructor() {
 		super('clangames', {
-			aliases: ['clangames', 'points', 'cg'],
+			aliases: ['points', 'clangames', 'cg'],
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],

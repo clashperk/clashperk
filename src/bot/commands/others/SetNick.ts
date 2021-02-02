@@ -6,7 +6,7 @@ export default class SetNickNameCommand extends Command {
 	public constructor() {
 		super('setnick', {
 			aliases: ['nick', 'setnick'],
-			category: 'other',
+			category: 'setup',
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			userPermissions: ['MANAGE_NICKNAMES'],
 			description: {

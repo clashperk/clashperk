@@ -14,10 +14,10 @@ interface Prop {
 	endedAt?: any;
 }
 
-export default class ClanGameStatsCommand extends Command {
+export default class ClanGamesScoresCommand extends Command {
 	public constructor() {
-		super('cgstats', {
-			aliases: ['cgstats'],
+		super('clan-games-scores', {
+			aliases: ['scores', 'cgstats'],
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],

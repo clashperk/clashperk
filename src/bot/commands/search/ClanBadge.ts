@@ -6,7 +6,7 @@ export default class ClanBadgeCommand extends Command {
 	public constructor() {
 		super('clan-badge', {
 			aliases: ['badge', 'clan-badge', 'cb'],
-			category: 'search',
+			category: '_search',
 			description: {
 				content: 'In-game clan badge in high resolution.',
 				usage: '<clanTag>',

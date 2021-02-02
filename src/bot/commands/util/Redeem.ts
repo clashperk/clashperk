@@ -8,7 +8,7 @@ export default class RedeemCommand extends Command {
 	public constructor() {
 		super('redeem', {
 			aliases: ['redeem'],
-			category: 'util',
+			category: 'config',
 			channel: 'guild',
 			description: {
 				content: 'Redeems your patreon subscription.'

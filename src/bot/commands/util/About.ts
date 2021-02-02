@@ -7,7 +7,7 @@ export default class AboutCommand extends Command {
 	public constructor() {
 		super('about', {
 			aliases: ['about'],
-			category: 'util',
+			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows information about the bot.' }
 		});

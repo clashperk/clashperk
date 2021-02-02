@@ -9,7 +9,7 @@ export default class StatsCommand extends Command {
 	public constructor() {
 		super('stats', {
 			aliases: ['stats', 'bot-info'],
-			category: 'hidden',
+			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Shows some statistics of the bot.'

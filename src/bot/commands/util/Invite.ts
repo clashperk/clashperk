@@ -6,7 +6,7 @@ export default class InviteCommand extends Command {
 	public constructor() {
 		super('invite', {
 			aliases: ['invite', 'support'],
-			category: 'util',
+			category: 'config',
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows bot invite & support server link.' }
 		});
