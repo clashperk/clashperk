@@ -32,28 +32,28 @@ export default class MatchesCommand extends Command {
 		for (const clan of clans) {
 			const data: ClanWar = await this.getWAR(clan.tag);
 			if (data.statusCode === 504) {
-				embed.addField('Searching for Battle', [
+				embed.addField('__Searching for Battle__', [
 					`${clan.name as string} (${clan.tag as string})`,
 					'\u200b'
 				]);
 			}
 
 			if (!data.ok) {
-				embed.addField('Private War Log', [
+				embed.addField('__Private War Log__', [
 					`${clan.name as string} (${clan.tag as string})`,
 					'\u200b'
 				]);
 			}
 
 			if (data.state === 'notInWar') {
-				embed.addField('Not in War', [
+				embed.addField('__Not in War__', [
 					`${clan.name as string} (${clan.tag as string})`,
 					'\u200b'
 				]);
 			}
 
 			// @ts-expect-error
-			const header = data.round ? `CWL (Round ${data.round as number})` : 'Regular War';
+			const header = data.round ? `__CWL (Round ${data.round as number})__` : '__Regular War__';
 			if (data.state === 'preparation') {
 				embed.addField(header, [
 					`\u200e${data.clan.name} (${data.clan.tag})`,
@@ -102,7 +102,7 @@ export default class MatchesCommand extends Command {
 
 	private async getCWL(clanTag: string) {
 		const res: ClanWarLeague = await this.client.http.clanWarLeague(clanTag);
-		if (res.statusCode === 504) return { status: 504 };
+		if (res.statusCode === 504) return { statusCode: 504 };
 		if (!res.ok) return this.client.http.currentClanWar(clanTag);
 		const rounds = res.rounds.filter(d => !d.warTags.includes('#0'));
 
@@ -122,8 +122,8 @@ export default class MatchesCommand extends Command {
 			}
 		}
 
-		if (!chunks.length) return { status: 504 };
-		return chunks.find(en => ['inWar', ''].includes(en.state));
+		if (!chunks.length) return { statusCode: 504 };
+		return chunks.find(en => en.state === 'inWar') ?? chunks.find(en => en.state === 'preparation') ?? chunks.find(en => en.state === 'warEnded');
 	}
 
 	private roster(members: ClanWarMember[]) {

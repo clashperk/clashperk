@@ -1,6 +1,7 @@
 import { Clan, ClanWar, ClanWarClan, ClanWarOpponent, ClanWarLeague } from 'clashofclans.js';
-import { EMOJIS, RED_EMOJI } from '../../util/Emojis';
+import { CYAN_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message } from 'discord.js';
+import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 
 export default class CWLRankingComamnd extends Command {
@@ -147,7 +148,7 @@ export default class CWLRankingComamnd extends Command {
 			.setDescription([
 				`${EMOJIS.HASH} **\`\u200eSTAR DEST${''.padEnd(padding - 2, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
 				ranks.sort((a, b) => b.stars - a.stars)
-					.map((clan, i) => `${RED_EMOJI[++i]} \`\u200e${clan.stars.toString().padEnd(3, ' ') as string}  ${this.destruction(clan.destruction, padding)}  ${clan.name.padEnd(15, ' ') as string}\``)
+					.map((clan, i) => `${CYAN_NUMBERS[++i]} \`\u200e${clan.stars.toString().padEnd(3, ' ') as string}  ${this.destruction(clan.destruction, padding)}  ${clan.name.padEnd(15, ' ') as string}\``)
 					.join('\n')
 			])
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);

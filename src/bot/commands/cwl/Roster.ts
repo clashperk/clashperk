@@ -1,5 +1,6 @@
-import { TOWN_HALLS, RED_EMOJI } from '../../util/Emojis';
 import { Clan, ClanWarLeague } from 'clashofclans.js';
+import { BROWN_NUMBERS } from '../../util/NumEmojis';
+import { TOWN_HALLS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 import moment from 'moment';
@@ -63,9 +64,9 @@ export default class CWLRosterComamnd extends Command {
 				.map(entry => ({ level: Number(entry[0]), total: Number(entry[1]) }))
 				.sort((a, b) => b.level - a.level);
 
-			embed.addField(`\u200e${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
+			embed.addField(`\u200e${++index}. ${clan.tag === data.tag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`, [
 				this.chunk(townHalls)
-					.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${RED_EMOJI[th.total]}\u200b`)
+					.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${BROWN_NUMBERS[th.total]}\u200b`)
 						.join(' '))
 					.join('\n')
 			]);

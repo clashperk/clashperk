@@ -200,7 +200,7 @@ export default class Client extends AkairoClient {
 	}
 
 	public embed(message: Message) {
-		return this.settings.get<number>(message.guild!, 'color', 5861569);
+		return this.settings.get<number>(message.guild!, 'color', undefined);
 	}
 
 	private run() {
