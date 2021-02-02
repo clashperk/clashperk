@@ -85,7 +85,7 @@ export const EMBEDS = {
 
 	VERIFY_CLAN: (clan: Clan, code: string, prefix: string) => new MessageEmbed()
 		.setTitle(`${clan.name} (${clan.tag})`)
-		.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
+		.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
 		.setThumbnail(clan.badgeUrls.small)
 		.setDescription([
 			'**Clan Description**',

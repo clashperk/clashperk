@@ -204,7 +204,7 @@ export default class ClansCommand extends Command {
 	}
 
 	private openInGame(tag: string) {
-		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
+		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 
 	private paginate(items: any[], page = 1, pageLength = 2) {

@@ -69,7 +69,7 @@ export default class ClanEvent {
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
-			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`)
+			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`)
 			.setThumbnail(data.clan.badge)
 			.setFooter(`${data.clan.members}/50`, this.client.user!.displayAvatarURL())
 			.setTimestamp();

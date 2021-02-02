@@ -48,7 +48,7 @@ export default class ProfileCommand extends Command {
 				embed.setDescription([
 					embed.description,
 					'',
-					`${EMOJIS.CLAN} [${data.name} (${data.tag})](https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
+					`${EMOJIS.CLAN} [${data.name} (${data.tag})](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
 					...[`${EMOJIS.EMPTY} Level ${data.clanLevel} ${EMOJIS.USERS} ${data.members} Member${data.members === 1 ? '' : 's'}`]
 				]);
 			}
@@ -127,6 +127,6 @@ export default class ProfileCommand extends Command {
 	}
 
 	private profileURL(tag: string) {
-		return `https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(tag)}`;
+		return `https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(tag)}`;
 	}
 }

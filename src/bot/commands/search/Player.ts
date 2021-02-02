@@ -74,7 +74,7 @@ export default class PlayerCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
-			.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(
 				data.league
 					? data.league.iconUrls.small
@@ -136,7 +136,7 @@ export default class PlayerCommand extends Command {
 	}
 
 	private clanURL(tag: string) {
-		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
+		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 
 	private async offset(message: Message) {

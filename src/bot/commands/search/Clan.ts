@@ -52,7 +52,7 @@ export default class ClanCommand extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		const embed = new MessageEmbed()
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
-			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setColor(this.client.embed(message))
 			.setThumbnail(data.badgeUrls.medium);
 

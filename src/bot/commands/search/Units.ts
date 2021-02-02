@@ -61,7 +61,7 @@ export default class UnitsCommand extends Command {
 			.setAuthor(
 				`${data.name} (${data.tag})`,
 				`https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`,
-				`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`
+				`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`
 			);
 
 		const Troops = RAW_TROOPS_DATA.TROOPS

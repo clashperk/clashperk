@@ -5,7 +5,7 @@ import { Command } from 'discord-akairo';
 
 const states: { [key: string]: string } = {
 	inWar: 'Battle Day',
-	preparation: 'Preparation Day',
+	preparation: 'Preparation',
 	warEnded: 'War Ended'
 };
 
@@ -47,7 +47,11 @@ export default class CWLLineupComamnd extends Command {
 		if (!body.ok) {
 			const embed = new MessageEmbed()
 				.setColor(this.client.embed(message))
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+				.setAuthor(
+					`${data.name} (${data.tag})`,
+					`${data.badgeUrls.medium}`,
+					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
+				)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embed });
@@ -94,47 +98,21 @@ export default class CWLLineupComamnd extends Command {
 		}
 
 		if (!chunks.length) return message.util!.send('**504 Request Timeout!**');
-
-		const item = rounds.length === 7
+		const data = rounds.length === 7
 			? chunks.find(c => c.state === 'preparation') || chunks.slice(-1)[0]
 			: chunks.slice(-2).reverse()[0];
-		const pageIndex = chunks.indexOf(item);
 
-		let page = pageIndex + 1;
-		const paginated = this.paginate(chunks, page);
-
-		if (chunks.length === 1) {
-			return message.util!.send({ embed: paginated.items[0].embed });
-		}
-		const msg = await message.util!.send({ embed: paginated.items[0].embed });
-		for (const emoji of ['⬅️', '➡️']) {
-			await msg.react(emoji);
-			await this.delay(250);
-		}
+		const msg = await message.util!.send({ embed: data.embed });
+		await msg.react('➕');
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['➕'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 60000, max: 10 }
 		);
 
 		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
-				page += 1;
-				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = 1;
-				const { embed } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embed });
-				await this.delay(250);
-				return reaction.users.remove(message.author.id);
-			}
-
-			if (reaction.emoji.name === '⬅️') {
-				page -= 1;
-				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = 1;
-				const { embed } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embed });
-				await this.delay(250);
+			if (reaction.emoji.name === '➕') {
+				this.handler.handleDirectCommand(message, clan.tag, this.handler.modules.get('cwl-lineup-list')!, false);
 				return reaction.users.remove(message.author.id);
 			}
 		});
@@ -142,24 +120,8 @@ export default class CWLLineupComamnd extends Command {
 		collector.on('end', async () => msg.reactions.removeAll().catch(() => null));
 	}
 
-	private async delay(ms: number) {
-		return new Promise(res => setTimeout(res, ms));
-	}
-
 	private clanURL(tag: string) {
-		return `https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
-	}
-
-	private paginate(items: any[], page = 1, pageLength = 1) {
-		const maxPage = Math.ceil(items.length / pageLength);
-		if (page < 1) page = 1;
-		if (page > maxPage) page = maxPage;
-		const startIndex = (page - 1) * pageLength;
-
-		return {
-			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
-			page, maxPage, pageLength
-		};
+		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 
 	private async rosters(clanMembers: ClanWarMember[], opponentMembers: ClanWarMember[]) {
