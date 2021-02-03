@@ -8,7 +8,7 @@ export default class TimeOffsetCommand extends Command {
 	public constructor() {
 		super('time-offset', {
 			aliases: ['offset', 't'],
-			category: 'profile',
+			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
 			description: {

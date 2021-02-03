@@ -10,7 +10,7 @@ export default class FlagsCommand extends Command {
 	public constructor() {
 		super('flags', {
 			aliases: ['flags'],
-			category: 'flag',
+			category: '_hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {

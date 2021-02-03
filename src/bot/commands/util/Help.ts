@@ -16,7 +16,7 @@ export default class HelpCommand extends Command {
 	public constructor() {
 		super('help', {
 			aliases: ['help', 'commands'],
-			category: 'hidden',
+			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS'],
 			args: [
 				{
@@ -109,7 +109,6 @@ export default class HelpCommand extends Command {
 				cwl: 'War and CWL',
 				search: 'Clash Search',
 				profile: 'Profile',
-				flag: 'Flags',
 				config: 'Config'
 			}
 		];

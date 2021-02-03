@@ -3,9 +3,9 @@ import { Message } from 'discord.js';
 
 export default class ColorCommand extends Command {
 	public constructor() {
-		super('color', {
+		super('config-color', {
 			aliases: ['color', 'colour'],
-			category: 'config',
+			category: '_hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			quoted: false,

@@ -5,7 +5,7 @@ import { Player } from 'clashofclans.js';
 
 export default class LinkPlayerCommand extends Command {
 	public constructor() {
-		super('link-player', {
+		super('link-add', {
 			category: 'profile',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],

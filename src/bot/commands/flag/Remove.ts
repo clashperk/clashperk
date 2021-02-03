@@ -3,11 +3,11 @@ import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 
 // TODO: Fix Reply
-export default class UnflagCommand extends Command {
+export default class FlagRemoveCommand extends Command {
 	public constructor() {
-		super('unflag', {
+		super('flag-remove', {
 			aliases: ['unflag'],
-			category: 'flag',
+			category: '_hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {

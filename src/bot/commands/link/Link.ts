@@ -1,5 +1,5 @@
 import { Message, MessageEmbed, GuildMember, TextChannel } from 'discord.js';
-import { Command, PrefixSupplier, Argument } from 'discord-akairo';
+import { Command, PrefixSupplier, Argument, Flag } from 'discord-akairo';
 
 export default class LinkCommand extends Command {
 	public constructor() {
@@ -44,8 +44,17 @@ export default class LinkCommand extends Command {
 
 	public *args() {
 		const tag = yield {
-			type: (msg: Message, tag: string) => this.parseTag(tag)
+			type: Argument.union(
+				[
+					['link-add', 'add'],
+					['link-list', 'list'],
+					['link-remove', 'remove']
+				],
+				(msg: Message, tag: string) => this.parseTag(tag)
+			)
 		};
+
+		if (['link-add', 'link-remove', 'link-list'].includes(tag)) return Flag.continue(tag);
 
 		const parsed = yield {
 			'match': 'rest',
@@ -82,7 +91,7 @@ export default class LinkCommand extends Command {
 		}
 
 		const clanCommand = this.handler.modules.get('link-clan')!;
-		const playerCommand = this.handler.modules.get('link-player')!;
+		const playerCommand = this.handler.modules.get('link-add')!;
 
 		const tags = await Promise.all([this.client.http.clan(tag), this.client.http.player(tag)]);
 
