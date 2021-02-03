@@ -13,7 +13,7 @@ export default class HitrateCommand extends Command {
 	public constructor() {
 		super('hitrate', {
 			aliases: ['hitrate'],
-			category: 'hidden',
+			category: 'beta',
 			description: {
 				content: 'Shows hitrate!'
 			},

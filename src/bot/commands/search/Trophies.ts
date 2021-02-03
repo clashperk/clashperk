@@ -6,7 +6,7 @@ export default class TrophyBoardCommand extends Command {
 	public constructor() {
 		super('trophies', {
 			aliases: ['trophies', 'trophyboard', 'tb'],
-			category: 'activity',
+			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: 'List of clan members with trophies.',

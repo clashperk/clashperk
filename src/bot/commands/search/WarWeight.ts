@@ -8,7 +8,7 @@ export default class WarWeightCommand extends Command {
 	public constructor() {
 		super('warweight', {
 			aliases: ['warweight', 'ww'],
-			category: 'cwl',
+			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES'],
 			description: {
 				content: 'List of clan members with townhall & heroes.',

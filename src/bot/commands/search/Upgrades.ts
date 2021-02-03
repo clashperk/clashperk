@@ -9,7 +9,7 @@ export default class UpgradesCommand extends Command {
 	public constructor() {
 		super('upgrades', {
 			aliases: ['upgrade', 'upgrades', 'ug'],
-			category: 'search',
+			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Remaining upgrades of troop/spell/hero.',
