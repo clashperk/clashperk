@@ -65,6 +65,16 @@ class MongoDB extends MongoClient {
 
 			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ state: 1 }),
 
+			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ warTag: 1 }),
+
+			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ preparationStartTime: -1 }),
+
+			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ 'clan.members.tag': 1 }),
+
+			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ 'opponent.members.tag': 1 }),
+
+			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ groupWar: 1 }),
+
 			db.collection(COLLECTIONS.CLAN_GAMES)
 				.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 20 * 24 * 60 * 60 }),
 
