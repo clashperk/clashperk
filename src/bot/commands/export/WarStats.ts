@@ -31,7 +31,7 @@ export default class WarStatsExport extends Command {
 		const wars = await this.client.db.collection(COLLECTIONS.CLAN_WAR_STORES)
 			.find({
 				// $not: { isFreindly: true },
-				$or: [{ 'clan.members.tag': data.tag }, { 'opponent.members.tag': data.tag }],
+				$or: [{ 'clan.members.tag': data.tag }, { 'opponent.members.tag': data.tag, 'groupWar': true }],
 				state: { $in: ['inWar', 'warEnded'] }
 			})
 			.sort({ preparationStartTime: -1 })

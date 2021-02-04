@@ -150,4 +150,20 @@ export default class Http extends Client {
 		return data.filter(d => /^#?[0289CGJLOPQRUVY]+$/i.test(d.playerTag))
 			.map(d => `#${d.playerTag.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0')}`);
 	}
+
+	public async getDiscordLinks(members: { tag: string }[]) {
+		const res = await fetch('https://cocdiscordlink.azurewebsites.net/api/links/batch', {
+			method: 'POST',
+			headers: {
+				'Authorization': `Bearer ${this.bearerToken}`,
+				'Content-Type': 'application/json'
+			},
+			timeout: 3000,
+			body: JSON.stringify(members.map(mem => mem.tag))
+		}).catch(() => null);
+
+		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);
+		return data.filter(d => /^#?[0289CGJLOPQRUVY]+$/i.test(d.playerTag) && /^\d{17,19}/.test(d.discordId))
+			.map(d => ({ tag: `#${d.playerTag.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0')}`, user: d.discordId }));
+	}
 }
