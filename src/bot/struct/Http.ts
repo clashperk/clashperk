@@ -147,6 +147,7 @@ export default class Http extends Client {
 		}).catch(() => null);
 
 		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);
+		if (!Array.isArray(data)) return [];
 		return data.filter(d => /^#?[0289CGJLOPQRUVY]+$/i.test(d.playerTag))
 			.map(d => `#${d.playerTag.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0')}`);
 	}
@@ -163,6 +164,7 @@ export default class Http extends Client {
 		}).catch(() => null);
 
 		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);
+		if (!Array.isArray(data)) return [];
 		return data.filter(d => /^#?[0289CGJLOPQRUVY]+$/i.test(d.playerTag) && /^\d{17,19}/.test(d.discordId))
 			.map(d => ({ tag: `#${d.playerTag.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0')}`, user: d.discordId }));
 	}

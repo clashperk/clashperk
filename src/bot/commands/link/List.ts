@@ -1,4 +1,5 @@
 import { Message, MessageEmbed, Util } from 'discord.js';
+import { COLLECTIONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -26,6 +27,18 @@ export default class LinkListCommand extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		const clan: Clan = await this.client.http.clan(data.tag);
 		const memberTags = await this.client.http.getDiscordLinks(clan.memberList);
+
+		const dbMembers = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+			.find({ 'entries.tag': { $in: clan.memberList.map(m => m.tag) } })
+			.toArray();
+
+		for (const member of dbMembers) {
+			for (const m of member.entries) {
+				if (!data.memberList.find(mem => mem.tag === m.tag)) continue;
+				if (memberTags.find(mem => mem.tag === m.tag)) continue;
+				memberTags.push({ tag: m.tag, user: member.user });
+			}
+		}
 
 		await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
 
