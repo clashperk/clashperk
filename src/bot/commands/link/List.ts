@@ -31,15 +31,17 @@ export default class LinkListCommand extends Command {
 
 		// ASCII /[^\x00-\x7F]+/
 		const chunks = Util.splitMessage([
+			`${EMOJIS.DISCORD} **Players on Discord**`,
 			memberTags.filter(mem => message.guild!.members.cache.has(mem.user))
 				.map(
 					mem => {
 						const member = clan.memberList.find(m => m.tag === mem.tag)!;
 						const user = message.guild!.members.cache.get(mem.user)!.displayName.substring(0, 10).padStart(10, ' ');
-						return `${EMOJIS.DISCORD} \`\u200e${this.parseName(member.name)}\u200f\` \u200e \` ${user} \u200f\``;
+						return `**✓** \`\u200e${this.parseName(member.name)}\u200f\` \u200e \` ${user} \u200f\``;
 					}
 				).join('\n'),
 			'',
+			`${EMOJIS.WRONG} **Players not on Discord**`,
 			clan.memberList.filter(m => !memberTags.some(en => en.tag === m.tag))
 				.sort((a, b) => {
 					const aName = a.name.toLowerCase();
@@ -47,7 +49,7 @@ export default class LinkListCommand extends Command {
 					return aName > bName ? 1 : aName < bName ? -1 : 0;
 				})
 				.map(
-					mem => `${EMOJIS.WRONG} \`\u200e${this.parseName(mem.name)}\u200f\` \u200e \` ${mem.tag.padStart(10, ' ')} \u200f\``
+					mem => `✘ \`\u200e${this.parseName(mem.name)}\u200f\` \u200e \` ${mem.tag.padStart(10, ' ')} \u200f\``
 				)
 				.join('\n')
 		]);
