@@ -4,7 +4,7 @@ import { Clan, ClanMember } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 
-// ASCII /[^\x00-\x7F]+/
+// ASCII /[^\x00-\xF7]+/
 export default class LinkListCommand extends Command {
 	public constructor() {
 		super('link-list', {
@@ -26,11 +26,10 @@ export default class LinkListCommand extends Command {
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
-		const clan: Clan = await this.client.http.clan(data.tag);
-		const memberTags = await this.client.http.getDiscordLinks(clan.memberList);
-
+		if (!data.members) return;
+		const memberTags = await this.client.http.getDiscordLinks(data.memberList);
 		const dbMembers = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
-			.find({ 'entries.tag': { $in: clan.memberList.map(m => m.tag) } })
+			.find({ 'entries.tag': { $in: data.memberList.map(m => m.tag) } })
 			.toArray();
 
 		for (const member of dbMembers) {
@@ -44,12 +43,14 @@ export default class LinkListCommand extends Command {
 		await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
 
 		const onDiscord = memberTags.filter(mem => message.guild!.members.cache.has(mem.user));
-		const offDiscord = clan.memberList.filter(m => !memberTags.some(en => en.tag === m.tag));
+		const offDiscord = data.memberList.filter(m => !memberTags.some(en => en.tag === m.tag));
 
-		const embed = this.buildEmbed(message, clan, false, onDiscord, offDiscord);
+		const embed = this.buildEmbed(message, data, false, onDiscord, offDiscord);
 		const msg = await message.util!.send({ embed });
-		await msg.react('🔗');
 
+		if (!onDiscord.length) return msg; // Let's stop right here!
+
+		await msg.react('🔗');
 		const collector = msg.createReactionCollector(
 			(reaction, user) => ['🔗'].includes(reaction.emoji.name) && user.id === message.author.id,
 			{ time: 60000, max: 1 }
@@ -57,7 +58,7 @@ export default class LinkListCommand extends Command {
 
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '🔗') {
-				const embed = this.buildEmbed(message, clan, true, onDiscord, offDiscord);
+				const embed = this.buildEmbed(message, data, true, onDiscord, offDiscord);
 				return message.util!.send({ embed });
 			}
 		});
@@ -65,12 +66,12 @@ export default class LinkListCommand extends Command {
 		collector.on('end', () => msg.reactions.removeAll());
 	}
 
-	private buildEmbed(message: Message, clan: Clan, showTag: boolean, onDiscord: { tag: string; user: string }[], offDiscord: ClanMember[]) {
+	private buildEmbed(message: Message, data: Clan, showTag: boolean, onDiscord: { tag: string; user: string }[], offDiscord: ClanMember[]) {
 		const chunks = Util.splitMessage([
 			`${EMOJIS.DISCORD} **Players on Discord: ${onDiscord.length}**`,
 			onDiscord.map(
 				mem => {
-					const member = clan.memberList.find(m => m.tag === mem.tag)!;
+					const member = data.memberList.find(m => m.tag === mem.tag)!;
 					const user = showTag ? member.tag : message.guild!.members.cache.get(mem.user)!.displayName.substring(0, 10).padStart(10, ' ');
 					return `**✓** \`\u200e${this.parseName(member.name)}\u200f\` \u200e \` ${user} \u200f\``;
 				}
@@ -88,7 +89,7 @@ export default class LinkListCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setDescription(chunks[0]);
 		if (chunks.length > 1) {
 			chunks.slice(1).map(chunk => embed.addField('\u200b', chunk));
