@@ -39,17 +39,14 @@ export default class UnitsCommand extends Command {
 		await msg.react('🔥');
 		const collector = msg.createReactionCollector(
 			(reaction, user) => ['🔥'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 45000, max: 1 }
+			{ time: 60000, max: 1 }
 		);
 
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '🔥') {
 				const embed = this.embed(data, false);
 				embed.setColor(this.client.embed(message));
-				await msg.edit({
-					embed: embed.setFooter('Level / Max Level')
-				});
-				return collector.stop();
+				return msg.edit({ embed: embed.setFooter('Level / Max Level') });
 			}
 		});
 

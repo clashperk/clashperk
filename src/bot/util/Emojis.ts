@@ -1,3 +1,39 @@
+import { GuildEmoji } from 'discord.js';
+import Client from '../struct/Client';
+
+export const emojis = new Map<string, GuildEmoji>();
+// const EMOJI_REGEX = /<(?:a)?:(?:\w{2,32}):(\d{17,19})>?/;
+
+const SHARD_EMOJIS = {
+	HASH: '731418702875983884',
+	DISCORD: '696317142307700747'
+};
+
+export const REACTION_EMOJI = {
+	get HASH() {
+		return emojis.get(SHARD_EMOJIS.HASH)!;
+	},
+
+	get DISCORD() {
+		return emojis.get(SHARD_EMOJIS.DISCORD)!;
+	}
+};
+
+export function LoadEmojis(client: Client) {
+	client.shard!.broadcastEval(
+		`[${Object.values(SHARD_EMOJIS).map(emoji => `this.emojis.cache.get('${emoji}')`).join(', ')}]`
+	).then(shards => {
+		shards.flat()
+			.filter(en => en)
+			.forEach(raw => {
+				// @ts-expect-error
+				const emoji = new GuildEmoji(this, raw, {});
+				emojis.set(emoji.id, emoji);
+			});
+		return emojis;
+	});
+}
+
 interface Emojis {
 	[key: string]: string;
 }
