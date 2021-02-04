@@ -1,5 +1,4 @@
 import { Message, MessageEmbed, Util } from 'discord.js';
-import { COLLECTIONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -14,21 +13,21 @@ export default class LinkListCommand extends Command {
 		});
 	}
 
-	public async exec(message: Message) {
-		const data = await this.client.db.collection(COLLECTIONS.LINKED_CHANNELS)
-			.findOne({ channel: message.channel.id });
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data };
+	}
+
+	public async exec(message: Message, { data }: { data: Clan }) {
 		const clan: Clan = await this.client.http.clan(data.tag);
-
 		const memberTags = await this.client.http.getDiscordLinks(clan.memberList);
-		console.log(memberTags);
 
-		await Promise.allSettled(
-			memberTags.map(
-				mem => message.guild?.members.cache.has(mem.user)
-					? Promise.resolve(message.guild.members.cache.get(mem.user))
-					: message.guild!.members.fetch(mem.user)
-			)
-		);
+		await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
 
 		// ASCII /[^\x00-\x7F]+/
 		const chunks = Util.splitMessage([
