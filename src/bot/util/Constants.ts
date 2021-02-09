@@ -1,5 +1,6 @@
 import { TextChannel, User, PermissionString, MessageEmbed } from 'discord.js';
 import { Clan } from 'clashofclans.js';
+import { Collections } from '@clashperk/node';
 
 export const Util = {
 	escapeSheetName: (name: string) => name.replace(/[\*\?\:\[\]\\\/]/g, ''),
@@ -25,7 +26,7 @@ export interface KeyValue {
 	[key: string]: string;
 }
 
-export const COLLECTIONS = {
+export const COLLECTIONS_ = {
 	CLAN_STORES: 'clanstores',
 	DONATION_LOGS: 'donationlogs',
 	LAST_ONLINE_LOGS: 'lastonlinelogs',
@@ -52,6 +53,34 @@ export const COLLECTIONS = {
 	PATRONS: 'patrons',
 	CLAN_WAR_LOGS: 'clanwarlogs',
 	TIME_ZONES: 'timezoneoffset'
+};
+
+export const COLLECTIONS = {
+	CLAN_STORES: Collections.CLAN_STORES,
+	DONATION_LOGS: Collections.DONATION_LOGS,
+	LAST_ONLINE_LOGS: Collections.LAST_SEEN_LOGS,
+	CLAN_GAMES_LOGS: Collections.CLAN_GAMES_LOGS,
+	CLAN_EMBED_LOGS: Collections.CLAN_EMBED_LOGS,
+	PLAYER_LOGS: Collections.CLAN_FEED_LOGS,
+	FLAGGED_USERS: Collections.FLAGS,
+	LINKED_CLANS: Collections.LINKED_CLANS,
+	LINKED_USERS: Collections.LINKED_PLAYERS,
+	LINKED_CHANNELS: Collections.LINKED_CHANNELS,
+	SETTINGS: Collections.SETTINGS,
+	LAST_ONLINES: Collections.LAST_SEEN,
+	CLAN_WAR_STORES: Collections.CLAN_WARS,
+	CLAN_GAMES: Collections.CLAN_GAMES,
+	CWL_WAR_TAGS: Collections.CWL_WAR_TAGS,
+	CLAN_MEMBERS: Collections.CLAN_MEMBERS,
+	BOT_GROWTH: Collections.BOT_GROWTH,
+	BOT_USAGE: Collections.BOT_USAGE,
+	BOT_GUILDS: Collections.BOT_GUILDS,
+	BOT_USERS: Collections.BOT_USERS,
+	BOT_STATS: Collections.BOT_STATS,
+	BOT_INTERACTIONS: Collections.BOT_INTERACTIONS,
+	PATRONS: Collections.PATRONS,
+	CLAN_WAR_LOGS: Collections.CLAN_WAR_LOGS,
+	TIME_ZONES: Collections.TIME_ZONES
 };
 
 export const SETTINGS = {

@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../util/Constants';
+import { Collections } from '@clashperk/node';
 import { Collection, Db } from 'mongodb';
 import { Guild } from 'discord.js';
 
@@ -8,7 +8,7 @@ export default class SettingsProvider {
 	public settings = new Map();
 
 	public constructor(db: Db) {
-		this.db = db.collection(COLLECTIONS.SETTINGS);
+		this.db = db.collection(Collections.SETTINGS);
 	}
 
 	public async init() {

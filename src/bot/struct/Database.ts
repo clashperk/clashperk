@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../util/Constants';
+import { Collections } from '@clashperk/node';
 import { MongoClient, Db } from 'mongodb';
 
 class MongoDB extends MongoClient {
@@ -15,117 +15,117 @@ class MongoDB extends MongoClient {
 
 	public async createIndex(db: Db) {
 		return Promise.all([
-			db.collection(COLLECTIONS.CLAN_STORES)
+			db.collection(Collections.CLAN_STORES)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.CLAN_WAR_LOGS)
+			db.collection(Collections.CLAN_WAR_LOGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.DONATION_LOGS)
+			db.collection(Collections.DONATION_LOGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.LAST_ONLINE_LOGS)
+			db.collection(Collections.LAST_SEEN_LOGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.LAST_ONLINES)
+			db.collection(Collections.LAST_SEEN)
 				.createIndex({ tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.LAST_ONLINES).createIndex({ 'clan.tag': 1 }),
+			db.collection(Collections.LAST_SEEN).createIndex({ 'clan.tag': 1 }),
 
-			db.collection(COLLECTIONS.LAST_ONLINES).createIndex({ 'entries.entry': 1 }),
+			db.collection(Collections.LAST_SEEN).createIndex({ 'entries.entry': 1 }),
 
-			db.collection(COLLECTIONS.CLAN_GAMES_LOGS)
+			db.collection(Collections.CLAN_GAMES_LOGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.CLAN_EMBED_LOGS)
+			db.collection(Collections.CLAN_EMBED_LOGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.FLAGGED_USERS)
+			db.collection(Collections.FLAGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.LINKED_CLANS)
+			db.collection(Collections.LINKED_CLANS)
 				.createIndex({ user: 1, tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.LINKED_USERS)
+			db.collection(Collections.LINKED_PLAYERS)
 				.createIndex({ user: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.LINKED_USERS)
+			db.collection(Collections.LINKED_PLAYERS)
 				.createIndex({ 'entries.tag': 1 }),
 
-			db.collection(COLLECTIONS.LINKED_CHANNELS)
+			db.collection(Collections.LINKED_CHANNELS)
 				.createIndex({ channel: 1, tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.LINKED_CHANNELS).createIndex({ guild: 1 }),
+			db.collection(Collections.LINKED_CHANNELS).createIndex({ guild: 1 }),
 
-			db.collection(COLLECTIONS.PLAYER_LOGS)
+			db.collection(Collections.CLAN_FEED_LOGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.SETTINGS)
+			db.collection(Collections.SETTINGS)
 				.createIndex({ id: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.CLAN_WAR_STORES)
+			db.collection(Collections.CLAN_WARS)
 				.createIndex({ 'clan.tag': 1, 'opponent.tag': 1, 'warID': -1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ state: 1 }),
+			db.collection(Collections.CLAN_WARS).createIndex({ state: 1 }),
 
-			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ warTag: 1 }),
+			db.collection(Collections.CLAN_WARS).createIndex({ warTag: 1 }),
 
-			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ preparationStartTime: -1 }),
+			db.collection(Collections.CLAN_WARS).createIndex({ preparationStartTime: -1 }),
 
-			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ 'clan.members.tag': 1 }),
+			db.collection(Collections.CLAN_WARS).createIndex({ 'clan.members.tag': 1 }),
 
-			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ 'opponent.members.tag': 1 }),
+			db.collection(Collections.CLAN_WARS).createIndex({ 'opponent.members.tag': 1 }),
 
-			db.collection(COLLECTIONS.CLAN_WAR_STORES).createIndex({ groupWar: 1 }),
+			db.collection(Collections.CLAN_WARS).createIndex({ groupWar: 1 }),
 
-			db.collection(COLLECTIONS.CLAN_GAMES)
+			db.collection(Collections.CLAN_GAMES)
 				.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 20 * 24 * 60 * 60 }),
 
-			db.collection(COLLECTIONS.CLAN_GAMES)
+			db.collection(Collections.CLAN_GAMES)
 				.createIndex({ tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.CWL_WAR_TAGS)
+			db.collection(Collections.CWL_WAR_TAGS)
 				.createIndex({ tag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.CWL_WAR_TAGS)
+			db.collection(Collections.CWL_WAR_TAGS)
 				.createIndex({ createdAt: 1 }, { expireAfterSeconds: 45 * 24 * 60 * 60 }),
 
-			db.collection(COLLECTIONS.CLAN_MEMBERS)
+			db.collection(Collections.CLAN_MEMBERS)
 				.createIndex({ createdAt: -1 }, { expireAfterSeconds: 120 * 24 * 60 * 60 }),
 
-			db.collection(COLLECTIONS.CLAN_MEMBERS)
+			db.collection(Collections.CLAN_MEMBERS)
 				.createIndex({ tag: 1, season: -1, clanTag: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.CLAN_MEMBERS).createIndex({ clanGamesTotal: -1 }),
+			db.collection(Collections.CLAN_MEMBERS).createIndex({ clanGamesTotal: -1 }),
 
-			db.collection(COLLECTIONS.CLAN_MEMBERS).createIndex({ clanTag: 1 }),
+			db.collection(Collections.CLAN_MEMBERS).createIndex({ clanTag: 1 }),
 
-			db.collection(COLLECTIONS.CLAN_MEMBERS).createIndex({ season: -1 }),
+			db.collection(Collections.CLAN_MEMBERS).createIndex({ season: -1 }),
 
-			db.collection(COLLECTIONS.TIME_ZONES)
+			db.collection(Collections.TIME_ZONES)
 				.createIndex({ user: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.BOT_GROWTH)
+			db.collection(Collections.BOT_GROWTH)
 				.createIndex({ ISTDate: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.BOT_GROWTH)
+			db.collection(Collections.BOT_GROWTH)
 				.createIndex({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 }),
 
-			db.collection(COLLECTIONS.BOT_GUILDS)
+			db.collection(Collections.BOT_GUILDS)
 				.createIndex({ guild: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.BOT_USERS)
+			db.collection(Collections.BOT_USERS)
 				.createIndex({ user: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.BOT_USAGE)
+			db.collection(Collections.BOT_USAGE)
 				.createIndex({ ISTDate: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.BOT_USAGE)
+			db.collection(Collections.BOT_USAGE)
 				.createIndex({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 }),
 
-			db.collection(COLLECTIONS.BOT_INTERACTIONS).createIndex({ user: 1 }, { unique: true }),
+			db.collection(Collections.BOT_INTERACTIONS).createIndex({ user: 1 }, { unique: true }),
 
-			db.collection(COLLECTIONS.PATRONS)
+			db.collection(Collections.PATRONS)
 				.createIndex({ id: 1 }, { unique: true })
 		]);
 	}

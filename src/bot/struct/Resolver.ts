@@ -1,8 +1,9 @@
 import { MessageEmbed, Message, GuildMember } from 'discord.js';
-import { COLLECTIONS, status } from '../util/Constants';
+import { status } from '../util/Constants';
 import { Player, Clan } from 'clashofclans.js';
 import { Flag } from 'discord-akairo';
 import Client from './Client';
+import { Collections } from '@clashperk/node';
 
 export default class Resolver {
 	private readonly client: Client;
@@ -31,7 +32,7 @@ export default class Resolver {
 		}
 
 		const [data, otherTags] = await Promise.all([
-			this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ user: (parsed as GuildMember).id }),
+			this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: (parsed as GuildMember).id }),
 			this.client.http.getPlayerTags((parsed as GuildMember).id)
 		]);
 
@@ -66,9 +67,9 @@ export default class Resolver {
 			return this.fail(message, { embed });
 		}
 
-		const data = await this.client.db.collection(COLLECTIONS.LINKED_CHANNELS)
+		const data = await this.client.db.collection(Collections.LINKED_CHANNELS)
 			.findOne({ channel: message.channel.id }) ||
-			await this.client.db.collection(COLLECTIONS.LINKED_CLANS)
+			await this.client.db.collection(Collections.LINKED_CLANS)
 				.findOne({ user: (parsed as GuildMember).id });
 
 		if (data) return this.getClan(message, data.tag);

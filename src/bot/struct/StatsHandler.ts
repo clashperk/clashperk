@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../util/Constants';
+import { Collections } from '@clashperk/node';
 import Client from './Client';
 import qs from 'querystring';
 import https from 'https';
@@ -49,7 +49,7 @@ export default class StatsHandler {
 		if (this.messages.has(id)) return null;
 		this.messages.set(id, setTimeout(() => this.messages.delete(id), 60 * 60 * 1000));
 
-		return this.client.db.collection(COLLECTIONS.BOT_GUILDS)
+		return this.client.db.collection(Collections.BOT_GUILDS)
 			.updateOne(
 				{ guild: id },
 				{
@@ -62,7 +62,7 @@ export default class StatsHandler {
 	}
 
 	public async interactions(interaction: Interaction, command: string) {
-		await this.client.db.collection(COLLECTIONS.BOT_INTERACTIONS)
+		await this.client.db.collection(Collections.BOT_INTERACTIONS)
 			.updateOne({ user: interaction.author.id }, {
 				$inc: {
 					usage: 1
@@ -72,7 +72,7 @@ export default class StatsHandler {
 				}
 			}, { upsert: true });
 
-		return this.client.db.collection(COLLECTIONS.BOT_STATS)
+		return this.client.db.collection(Collections.BOT_STATS)
 			.updateOne({ id: 'stats' }, {
 				$inc: {
 					[`interactions.${command}`]: 1
@@ -81,7 +81,7 @@ export default class StatsHandler {
 	}
 
 	public historic() {
-		return this.client.db.collection(COLLECTIONS.BOT_USAGE)
+		return this.client.db.collection(Collections.BOT_USAGE)
 			.updateOne({ ISTDate: this.ISTDate }, {
 				$inc: {
 					usage: 1
@@ -96,7 +96,7 @@ export default class StatsHandler {
 	}
 
 	public async commands(command: string) {
-		await this.client.db.collection(COLLECTIONS.BOT_STATS)
+		await this.client.db.collection(Collections.BOT_STATS)
 			.updateOne({ id: 'stats' }, {
 				$inc: {
 					commands_used: 1,
@@ -108,7 +108,7 @@ export default class StatsHandler {
 	}
 
 	public deletion() {
-		return this.client.db.collection(COLLECTIONS.BOT_GROWTH)
+		return this.client.db.collection(Collections.BOT_GROWTH)
 			.updateOne({ ISTDate: this.ISTDate }, {
 				$inc: {
 					addition: 0,
@@ -125,10 +125,10 @@ export default class StatsHandler {
 	}
 
 	public async addition(guild: string) {
-		const old = await this.client.db.collection(COLLECTIONS.BOT_GUILDS)
+		const old = await this.client.db.collection(Collections.BOT_GUILDS)
 			.countDocuments({ guild });
 
-		return this.client.db.collection(COLLECTIONS.BOT_GROWTH)
+		return this.client.db.collection(Collections.BOT_GROWTH)
 			.updateOne({ ISTDate: this.ISTDate }, {
 				$inc: {
 					addition: 1,
@@ -148,7 +148,7 @@ export default class StatsHandler {
 	}
 
 	public users(user: string) {
-		return this.client.db.collection(COLLECTIONS.BOT_USERS)
+		return this.client.db.collection(Collections.BOT_USERS)
 			.updateOne({ user }, {
 				$set: { user },
 				$inc: { usage: 1 },
@@ -157,7 +157,7 @@ export default class StatsHandler {
 	}
 
 	public guilds(guild: string, count = 1) {
-		return this.client.db.collection(COLLECTIONS.BOT_GUILDS)
+		return this.client.db.collection(Collections.BOT_GUILDS)
 			.updateOne({ guild }, {
 				$set: { guild },
 				$inc: { usage: count },
