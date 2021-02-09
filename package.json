@@ -33,7 +33,7 @@
 		"ms": "^2.1.2",
 		"node-fetch": "^2.6.1",
 		"shelljs": "^0.8.4",
-		"table": "^6.0.4"
+		"table": "^6.0.7"
 	},
 	"devDependencies": {
 		"@types/common-tags": "^1.8.0",

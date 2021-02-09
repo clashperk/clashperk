@@ -1,10 +1,8 @@
+import { ClanGames, Collections } from '@clashperk/node';
 import { BLUE_EMOJI, EMOJIS } from '../../util/Emojis';
-import { COLLECTIONS } from '../../util/Constants';
 import { Message, Guild } from 'discord.js';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
-
-const MAX_POINT = 4000;
 
 interface Prop {
 	count: number;
@@ -49,12 +47,12 @@ export default class ClanGamesScoresCommand extends Command {
 			return this.handler.handleDirectCommand(message, 'cgstats', this.handler.modules.get('help')!, false);
 		}
 
-		const tags = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		const tags = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: guild.id })
 			.toArray();
 		if (!tags.length) return message.util!.send(`${message.guild!.name} does not have any clans. Why not add some?`);
 
-		const clans = await this.client.db.collection(COLLECTIONS.CLAN_GAMES)
+		const clans = await this.client.db.collection(Collections.CLAN_GAMES)
 			.find({ tag: { $in: [...tags.map(d => d.tag)] } })
 			.toArray();
 		if (clans.length < 2) return message.util!.send('Minimum 2 clans are required to use this command.');
@@ -81,7 +79,7 @@ export default class ClanGamesScoresCommand extends Command {
 				'',
 				'**Performance**',
 				'Based on completing maximum points.',
-				`${EMOJIS.HASH} **\`\u200e ${Math.floor(MAX_POINT / 1000)}K  ${'CLAN'.padEnd(20, ' ')}\u200f\`**`,
+				`${EMOJIS.HASH} **\`\u200e ${Math.floor(ClanGames.MAX_POINT / 1000)}K  ${'CLAN'.padEnd(20, ' ')}\u200f\`**`,
 				...performances.sort((a, b) => b.count - a.count)
 					.map((clan, i) => `${BLUE_EMOJI[++i]} \`\u200e ${clan.count.toString().padStart(2, ' ')}  ${clan.name.padEnd(20, ' ')}\u200f\``)
 			]);

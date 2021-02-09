@@ -175,9 +175,6 @@ export default class StorageHandler {
 		await this.client.db.collection(Collections.CLAN_WAR_LOGS)
 			.deleteOne({ clan_id: new ObjectId(id) });
 
-		await this.client.db.collection(Collections.CLAN_WARS)
-			.deleteOne({ clan_id: new ObjectId(id) });
-
 		return this.client.db.collection(Collections.CLAN_STORES)
 			.deleteOne({ _id: new ObjectId(id) });
 	}
