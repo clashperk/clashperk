@@ -1,8 +1,8 @@
 import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES } from '../../util/Emojis';
 import { COLLECTIONS, leagueId } from '../../util/Constants';
 import { MessageEmbed, Util, Message } from 'discord.js';
+import { Command, Argument } from 'discord-akairo';
 import { Player } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
 import moment from 'moment';
 import ms from 'ms';
 
@@ -32,15 +32,23 @@ export default class PlayerCommand extends Command {
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			},
-			optionFlags: ['--tag']
+			optionFlags: ['--tag', '--base']
 		});
 	}
 
 	public *args(msg: Message) {
+		const base = yield {
+			flag: '--base',
+			unordered: true,
+			type: Argument.range('integer', 1, 25),
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
 		const data = yield {
 			flag: '--tag',
+			unordered: true,
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.resolvePlayer(msg, tag)
+			type: (msg: Message, tag: string) => this.client.resolver.resolvePlayer(msg, tag, base ?? 1)
 		};
 
 		return { data };

@@ -13,13 +13,6 @@ export default class Resolver {
 	}
 
 	public async resolvePlayer(message: Message, args: string, num = 1): Promise<Player | Flag> {
-		const arr = args?.split(/ +/g) ?? []; // eslint-disable-line
-		if (arr.length > 1) num = Number(arr.pop()) || 1;
-		if (/^\d$|^1\d$|^2[0-5]$/.test(args)) {
-			num = Number(/^\d$|^1\d$|^2[0-5]$/.exec(args)?.shift()) || 1;
-			args = '';
-		}
-
 		const parsed = await this.argumentParser(message, args);
 		const tag = parsed && typeof parsed === 'boolean';
 
@@ -36,7 +29,7 @@ export default class Resolver {
 			this.client.http.getPlayerTags((parsed as GuildMember).id)
 		]);
 
-		const tagSet = new Set([...data?.entries.map((en: any) => en.tag) ?? [], ...otherTags]);
+		const tagSet = new Set([...data?.entries?.map((en: any) => en.tag) ?? [], ...otherTags]);
 		const tags = Array.from(tagSet);
 		tagSet.clear();
 

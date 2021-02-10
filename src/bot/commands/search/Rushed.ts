@@ -1,9 +1,9 @@
 import { BUILDER_TROOPS, HOME_TROOPS } from '../../util/Emojis';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
+import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Message } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
 
 export default class RushedCommand extends Command {
 	public constructor() {
@@ -15,26 +15,36 @@ export default class RushedCommand extends Command {
 				content: [
 					'Shows all rushed troop/spell/hero.',
 					'',
-					'• `rushed clan <clanTag>` - list of rushed & non-rushed clan members.'
+					'• `rushed clan <clanTag>` - list of rushed and non-rushed clan members.'
 				],
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20', 'clan #8QU8J9LP']
 			},
-			flags: ['--clan', '-c', 'clan']
+			flags: ['--clan', '-c', 'clan'],
+			optionFlags: ['--tag', '--base']
 		});
 	}
 
-	public *args() {
+	public *args(msg: Message) {
 		const flag = yield {
 			match: 'flag',
 			flag: ['--clan', '-c', 'clan']
 		};
 
+		const base = yield {
+			flag: '--base',
+			unordered: true,
+			type: Argument.range('integer', 1, 25),
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
 		const data = yield {
-			match: 'content',
+			flag: '--tag',
+			unordered: true,
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			type: async (message: Message, args: string) => {
 				if (flag) return this.client.resolver.resolveClan(message, args);
-				return this.client.resolver.resolvePlayer(message, args);
+				return this.client.resolver.resolvePlayer(message, args, base ?? 1);
 			}
 		};
 

@@ -1,15 +1,16 @@
-import { BUILDER_TROOPS, HOME_TROOPS } from '../../util/Emojis';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS } from '../../util/Emojis';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { MessageEmbed, Message } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
+import ms from 'ms';
 
 export default class UpgradesCommand extends Command {
 	public constructor() {
 		super('upgrades', {
 			aliases: ['upgrade', 'upgrades', 'ug'],
-			category: '_hidden',
+			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Remaining upgrades of troop/spell/hero.',
@@ -29,12 +30,8 @@ export default class UpgradesCommand extends Command {
 	public exec(message: Message, { data }: { data: Player }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setFooter('Remaining Upgrades')
-			.setAuthor(
-				`${data.name} (${data.tag})`,
-				`https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`,
-				`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`
-			);
+			.setAuthor(`${data.name} (${data.tag})`)
+			.setDescription(`Remaining upgrades at TH ${data.townHallLevel} ${data.builderHallLevel ? `and BH ${data.builderHallLevel}` : ''}`);
 
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS
@@ -51,14 +48,14 @@ export default class UpgradesCommand extends Command {
 			}, {} as TroopJSON);
 
 		const titles: { [key: string]: string } = {
-			'Barracks': 'Elixir Troops',
-			'Dark Barracks': 'Dark Troops',
-			'Spell Factory': 'Elixir Spells',
-			'Dark Spell Factory': 'Dark Spells',
-			'Workshop': 'Siege Machines',
-			'Builder Hall': 'Builder Base Hero',
-			'Town Hall': 'Heroes',
-			'Builder Barracks': 'Builder Troops'
+			'Barracks': `${EMOJIS.ELIXIER} Elixir Troops`,
+			'Dark Barracks': `${EMOJIS.DARK_ELIXIR} Dark Troops`,
+			'Spell Factory': `${EMOJIS.ELIXIER} Elixir Spells`,
+			'Dark Spell Factory': `${EMOJIS.DARK_ELIXIR} Dark Spells`,
+			'Workshop': `${EMOJIS.ELIXIER} Siege Machines`,
+			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
+			'Town Hall': `${EMOJIS.DARK_ELIXIR} Heroes`,
+			'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
 		};
 
 		const units = [];
@@ -85,24 +82,23 @@ export default class UpgradesCommand extends Command {
 						name: unit.name,
 						level,
 						hallMaxLevel: unit.levels[hallLevel! - 1],
-						maxLevel
+						maxLevel,
+						resource: unit.upgrade.resource,
+						upgradeCost: level ? unit.upgrade.cost[level - 1] : unit.upgrade.unlockCost,
+						upgradeTime: level ? unit.upgrade.time[level - 1] : unit.upgrade.unlockTime
 					};
 				}
 			);
 
 			if (unitsArray.length) {
 				embed.addField(
-					category.title,
-					this.chunk(unitsArray)
-						.map(
-							chunks => chunks.map(unit => {
-								const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-								const level = this.padStart(unit.level);
-								const maxLevel = this.padEnd(unit.hallMaxLevel);
-								return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
-							}).join(' ')
-						)
-						.join('\n')
+					`\u200b\n${category.title}`,
+					unitsArray.map(unit => {
+						const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+						const level = this.padStart(unit.level);
+						const maxLevel = this.padEnd(unit.hallMaxLevel);
+						return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${ms(unit.upgradeTime * 60 * 1000).padStart(4, ' ')} \u200f\` \u2002 \u200e\`${this.format(unit.upgradeCost).padStart(6, ' ')} \u200f\``;
+					}).join('\n')
 				);
 			}
 		}
@@ -151,5 +147,22 @@ export default class UpgradesCommand extends Command {
 				village: u.village
 			}))
 		];
+	}
+
+	private format(num = 0) {
+		// Nine Zeroes for Billions
+		return Math.abs(num) >= 1.0e+9
+
+			? `${(Math.abs(num) / 1.0e+9).toFixed(2)}B`
+			// Six Zeroes for Millions
+			: Math.abs(num) >= 1.0e+6
+
+				? `${(Math.abs(num) / 1.0e+6).toFixed(2)}M`
+				// Three Zeroes for Thousands
+				: Math.abs(num) >= 1.0e+3
+
+					? `${(Math.abs(num) / 1.0e+3).toFixed(1)}K`
+
+					: Math.abs(num).toFixed(0);
 	}
 }

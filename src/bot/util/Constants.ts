@@ -212,6 +212,8 @@ export interface TroopJSON {
 		productionBuilding: string;
 		type: string;
 		upgrade: {
+			unlockCost: number;
+			unlockTime: number;
 			cost: number[];
 			time: number[];
 			resource: string;
