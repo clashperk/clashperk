@@ -1,9 +1,9 @@
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS } from '../../util/Emojis';
-import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { MessageEmbed, Message } from 'discord.js';
+import { Command, Argument } from 'discord-akairo';
+import { TroopJSON } from '../../util/Constants';
 import { Player } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
 import ms from 'ms';
 
 export default class UpgradesCommand extends Command {
@@ -13,25 +13,37 @@ export default class UpgradesCommand extends Command {
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Remaining upgrades of troop/spell/hero.',
+				content: 'Remaining upgrades of troops, spells and heroes.',
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			},
-			args: [
-				{
-					id: 'data',
-					match: 'content',
-					type: (msg, tag) => this.client.resolver.resolvePlayer(msg, tag)
-				}
-			]
+			optionFlags: ['--tag', '--base']
 		});
+	}
+
+	public *args(msg: Message) {
+		const base = yield {
+			flag: '--base',
+			unordered: true,
+			type: Argument.range('integer', 1, 25),
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		const data = yield {
+			flag: '--tag',
+			unordered: true,
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: async (msg: Message, args: string) => this.client.resolver.resolvePlayer(msg, args, base ?? 1)
+		};
+
+		return { data };
 	}
 
 	public exec(message: Message, { data }: { data: Player }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`)
-			.setDescription(`Remaining upgrades at TH ${data.townHallLevel} ${data.builderHallLevel ? `and BH ${data.builderHallLevel}` : ''}`);
+			.setDescription(`Remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? `& BH${data.builderHallLevel}` : ''}`);
 
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS
@@ -73,7 +85,7 @@ export default class UpgradesCommand extends Command {
 			const unitsArray = category.units.map(
 				unit => {
 					const { maxLevel, level } = apiTroops
-						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: 0, level: 0 };
+						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
 					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
 
 					return {
@@ -97,22 +109,20 @@ export default class UpgradesCommand extends Command {
 						const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
 						const level = this.padStart(unit.level);
 						const maxLevel = this.padEnd(unit.hallMaxLevel);
-						return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${ms(unit.upgradeTime * 60 * 1000).padStart(4, ' ')} \u200f\` \u2002 \u200e\`${this.format(unit.upgradeCost).padStart(6, ' ')} \u200f\``;
+						const upgradeTime = ms(unit.upgradeTime * 60 * 1000).padStart(5, ' ');
+						const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
+						return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
 					}).join('\n')
 				);
 			}
 		}
 
-		if (!embed.fields.length) embed.setFooter('No Remaining Upgrades');
-		return message.util!.send({ embed });
-	}
-
-	private chunk(items: TroopInfo[] = [], chunk = 4) {
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
+		if (!embed.fields.length) {
+			embed.setDescription(
+				`No remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? ` and BH${data.builderHallLevel}` : ''}`
+			);
 		}
-		return array;
+		return message.util!.send({ embed });
 	}
 
 	private padEnd(num: number) {

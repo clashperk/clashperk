@@ -12,7 +12,7 @@ export default class UnitsCommand extends Command {
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
-				content: 'Shows troop, spell & hero levels.',
+				content: 'Levels of troops, spells and heroes.',
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			},
@@ -41,7 +41,7 @@ export default class UnitsCommand extends Command {
 	public async exec(message: Message, { data }: { data: Player }) {
 		const embed = this.embed(data, true);
 		embed.setColor(this.client.embed(message))
-			.setFooter(`Level / Town Hall ${data.townHallLevel}${data.builderHallLevel ? ` & Builder Hall ${data.builderHallLevel}` : ''} Max`);
+			.setDescription(`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`);
 		const msg = await message.util!.send({ embed });
 
 		await msg.react('🔥');
@@ -54,7 +54,8 @@ export default class UnitsCommand extends Command {
 			if (reaction.emoji.name === '🔥') {
 				const embed = this.embed(data, false);
 				embed.setColor(this.client.embed(message));
-				return msg.edit({ embed: embed.setFooter('Level / Max Level') });
+				embed.setDescription(`Units for TH${data.townHallLevel} ${data.builderHallLevel ? `and BH${data.builderHallLevel}` : ''}`);
+				return msg.edit({ embed });
 			}
 		});
 
@@ -63,11 +64,7 @@ export default class UnitsCommand extends Command {
 
 	private embed(data: Player, option = true) {
 		const embed = new MessageEmbed()
-			.setAuthor(
-				`${data.name} (${data.tag})`,
-				`https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`,
-				`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`
-			);
+			.setAuthor(`${data.name} (${data.tag})`);
 
 		const Troops = RAW_TROOPS_DATA.TROOPS
 			.filter(unit => {
@@ -108,7 +105,7 @@ export default class UnitsCommand extends Command {
 			const unitsArray = category.units.map(
 				unit => {
 					const { maxLevel, level } = apiTroops
-						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: 0, level: 0 };
+						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
 					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
 
 					return {

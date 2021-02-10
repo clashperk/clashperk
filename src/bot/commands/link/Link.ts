@@ -27,7 +27,7 @@ export default class LinkCommand extends Command {
 					'• **On behalf of the @USER**',
 					'• `link #CLAN_TAG @USER`',
 					'',
-					'• **Link to a channel (Admin Only)**',
+					'• **Link to a Channel (Admin Only)**',
 					'• `link #CLAN_TAG #CHANNEL`'
 				],
 				usage: '<#tag> [@user|#channel] [--default]',

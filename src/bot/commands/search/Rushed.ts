@@ -13,7 +13,7 @@ export default class RushedCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: [
-					'Shows all rushed troop/spell/hero.',
+					'Rushed troops, spells, and heroes.',
 					'',
 					'• `rushed clan <clanTag>` - list of rushed and non-rushed clan members.'
 				],
@@ -60,11 +60,8 @@ export default class RushedCommand extends Command {
 
 	private embed(data: Player) {
 		const embed = new MessageEmbed()
-			.setAuthor(
-				`${data.name} (${data.tag})`,
-				`https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`,
-				`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`
-			);
+			.setAuthor(`${data.name} (${data.tag})`)
+			.setDescription(`Rushed units for TH${data.townHallLevel} ${data.builderHallLevel ? ` & BH${data.builderHallLevel}` : ''}`);
 
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS
@@ -107,7 +104,7 @@ export default class RushedCommand extends Command {
 				unit => {
 					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
 					const { maxLevel, level } = apiTroops
-						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: unit.levels[hallLevel! - 1], level: 0 };
+						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
 
 					return {
 						type: unit.type,
@@ -137,8 +134,11 @@ export default class RushedCommand extends Command {
 			}
 		}
 
-		embed.setFooter('Rushed Troops');
-		if (!embed.fields.length) embed.setFooter('No Rushed Troops');
+		if (!embed.fields.length) {
+			embed.setDescription(
+				`No rushed units for TH${data.townHallLevel} ${data.builderHallLevel ? ` and BH${data.builderHallLevel}` : ''}`
+			);
+		}
 		return embed;
 	}
 
