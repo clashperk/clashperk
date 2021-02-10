@@ -1,9 +1,9 @@
 import { BUILDER_TROOPS, HOME_TROOPS } from '../../util/Emojis';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
+import { Player, Clan, Troop } from 'clashofclans.js';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Message } from 'discord.js';
-import { Player, Clan } from 'clashofclans.js';
 
 export default class RushedCommand extends Command {
 	public constructor() {
@@ -60,8 +60,7 @@ export default class RushedCommand extends Command {
 
 	private embed(data: Player) {
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`)
-			.setDescription(`Rushed units for TH${data.townHallLevel} ${data.builderHallLevel ? ` & BH${data.builderHallLevel}` : ''}`);
+			.setAuthor(`${data.name} (${data.tag})`);
 
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS
@@ -70,12 +69,13 @@ export default class RushedCommand extends Command {
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
 				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
 				return Boolean(homeTroops || builderTroops);
-			})
-			.reduce((prev, curr) => {
-				if (!(curr.productionBuilding in prev)) prev[curr.productionBuilding] = [];
-				prev[curr.productionBuilding].push(curr);
-				return prev;
-			}, {} as TroopJSON);
+			});
+
+		const TroopsObj = Troops.reduce((prev, curr) => {
+			if (!(curr.productionBuilding in prev)) prev[curr.productionBuilding] = [];
+			prev[curr.productionBuilding].push(curr);
+			return prev;
+		}, {} as TroopJSON);
 
 		const titles: { [key: string]: string } = {
 			'Barracks': 'Elixir Troops',
@@ -83,14 +83,14 @@ export default class RushedCommand extends Command {
 			'Spell Factory': 'Elixir Spells',
 			'Dark Spell Factory': 'Dark Spells',
 			'Workshop': 'Siege Machines',
-			'Builder Hall': 'Builder Base Hero',
 			'Town Hall': 'Heroes',
+			'Builder Hall': 'Builder Base Hero',
 			'Builder Barracks': 'Builder Troops'
 		};
 
 		const units = [];
 		const indexes = Object.values(titles);
-		for (const [key, value] of Object.entries(Troops)) {
+		for (const [key, value] of Object.entries(TroopsObj)) {
 			const title = titles[key];
 			units.push({
 				index: indexes.indexOf(title),
@@ -133,6 +133,16 @@ export default class RushedCommand extends Command {
 				);
 			}
 		}
+
+		embed.setDescription([
+			`Rushed units for TH${data.townHallLevel} ${data.builderHallLevel ? ` & BH${data.builderHallLevel}` : ''}`,
+			'',
+			'**Percentage**',
+			`${this.troopsCount('home', data.townHallLevel, Troops.filter(u => u.village === 'home').length).padStart(5, '0')}% (Home Base)`,
+			data.builderHallLevel
+				? `${this.troopsCount('builderBase', data.builderHallLevel, Troops.filter(u => u.village === 'builderBase').length).padStart(5, '0')}% (Builder Base)\n\u200b`
+				: '\u200b'
+		]);
 
 		if (!embed.fields.length) {
 			embed.setDescription(
@@ -186,7 +196,7 @@ export default class RushedCommand extends Command {
 		return num > 0 ? num.toString().padEnd(2, '\u2002') : '🔥';
 	}
 
-	private reduce(collection: Player['troops'] = [], hallLevel: number, villageType: string) {
+	private reduce(collection: Troop[] = [], hallLevel: number, villageType: string) {
 		return collection.reduce((i, a) => {
 			if (a.village === villageType && a.level !== a.maxLevel) {
 				const min = RAW_TROOPS_DATA.TROOPS.find(unit => unit.name === a.name && unit.village === villageType);
@@ -236,5 +246,10 @@ export default class RushedCommand extends Command {
 				village: u.village
 			}))
 		];
+	}
+
+	private troopsCount(villageType: string, hallLevel: number, rushed: number) {
+		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(unit => unit.village === villageType && unit.levels[hallLevel - 1]);
+		return ((rushed * 100) / totalTroops.length).toFixed(2);
 	}
 }
