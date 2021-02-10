@@ -73,7 +73,7 @@ export default class LinkListCommand extends Command {
 				mem => {
 					const member = data.memberList.find(m => m.tag === mem.tag)!;
 					const user = showTag ? member.tag : message.guild!.members.cache.get(mem.user)!.displayName.substring(0, 10).padStart(10, ' ');
-					return `**✓** \`\u200e${this.parseName(member.name)}\u200f\` \u200e \` ${user} \u200f\``;
+					return `**✓** \`\u200e${this.parseName(member.name)}${data.members <= 45 ? `\u200f\` \u200e \`` : ' '} ${user} \u200f\``;
 				}
 			).join('\n'),
 			'',
@@ -83,7 +83,7 @@ export default class LinkListCommand extends Command {
 				const bName = b.name.toUpperCase();
 				return aName > bName ? 1 : aName < bName ? -1 : 0;
 			}).map(
-				mem => `✘ \`\u200e${this.parseName(mem.name)}\u200f\` \u200e \` ${mem.tag.padStart(10, ' ')} \u200f\``
+				mem => `✘ \`\u200e${this.parseName(mem.name)}${data.members <= 45 ? `\u200f\` \u200e \`` : ' '} ${mem.tag.padStart(10, ' ')} \u200f\``
 			).join('\n')
 		]);
 
