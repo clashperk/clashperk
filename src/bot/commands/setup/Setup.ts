@@ -1,5 +1,5 @@
-import { Command, Flag, PrefixSupplier } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Command, Flag } from 'discord-akairo';
+import { Message, TextChannel } from 'discord.js';
 
 export default class SetupCommand extends Command {
 	public constructor() {
@@ -10,61 +10,78 @@ export default class SetupCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Setup different logs and live boards.',
+					'Enable features and assign clans to channels.',
 					'',
-					'**Available Methods**',
-					'• `clangames <clanTag> [channel/color]`',
-					'• `clan-wars <clanTag> [channel]`',
-					'• `donations <clanTag> [channel/color]`',
-					'• `clan-feed <clanTag> [channel/role]`',
-					'• `clanembed <clanTag> [...args]`',
-					'• `lastonline <clanTag> [channel/color]`',
+					'• **[Commands Only](https://clashperk.com)**',
+					'• `#CLAN_TAG #CHANNEL`',
 					'',
-					'**Required: `<>` | Optional: `[]`**',
-					'For additional `<...args>` usage refer to the examples below.'
+					'• **[Clan Feed](https://clashperk.com)**',
+					'• `FEED #CLAN_TAG`',
+					'• `FEED #CLAN_TAG @ROLE`',
+					'',
+					'• **[War Feed](https://clashperk.com)**',
+					'• `WAR #CLAN_TAG`',
+					'',
+					'• **[Last Seen](https://clashperk.com)**',
+					'• `LASTSEEN #CLAN_TAG`',
+					'• `LASTSEEN #CLAN_TAG #HEX_COLOR`',
+					'',
+					'• **[Clan Games](https://clashperk.com)**',
+					'• `GAMES #CLAN_TAG`',
+					'• `GAMES #CLAN_TAG #HEX_COLOR`',
+					'',
+					'• **[Clan Embed](https://clashperk.com)**',
+					'• `EMBED #CLAN_TAG`',
+					'',
+					'• **[Donation Log](https://clashperk.com)**',
+					'• `DONATION #CLAN_TAG`',
+					'• `DONATION #CLAN_TAG #HEX_COLOR`'
 				],
-				usage: '<method> <...args>',
+				usage: '[#clanTag] [#channel] [...args]',
 				examples: [
-					'clangames #8QU8J9LP',
-					'clan-wars #8QU8J9LP',
-					'donations #8QU8J9LP',
-					'clan-feed #8QU8J9LP',
-					'clanembed #8QU8J9LP',
-					'lastonline #8QU8J9LP'
+					'#8QU8J9LP #clashperk',
+					'FEED #8QU8J9LP @ROLE',
+					'LASTSEEN #8QU8J9LP #ff0'
 				]
-			}
+			},
+			optionFlags: ['--option', '--tag', '--channel']
 		});
 	}
 
-	public *args() {
+	public *args(msg: Message) {
 		const method = yield {
 			type: [
-				['setup-donations', 'donations', 'donation-log'],
-				['setup-lastonline', 'lastonline', 'onlineboard'],
-				['setup-clangames', 'clangames', 'cgboard'],
-				['setup-patron-clanembed', 'clanembed'],
-				['setup-clan-wars', 'clanwarlog', 'clan-wars', 'war-feed'],
-				['setup-clan-feed', 'memberlog', 'clan-feed']
+				['setup-clan-embed', 'embed', 'clanembed'],
+				['setup-last-seen', 'lastseen', 'lastonline'],
+				['setup-clan-feed', 'feed', 'memberlog', 'clan-feed'],
+				['setup-donations', 'donation', 'donations', 'donation-log'],
+				['setup-clan-games', 'game', 'games', 'clangames', 'cgboard'],
+				['setup-clan-wars', 'war', 'wars', 'clanwarlog', 'clan-wars', 'war-feed']
 			],
-			otherwise: (message: Message) => {
-				const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
-				const embed = this.client.util.embed()
-					.setColor(this.client.embed(message))
-					.setAuthor('Command List', this.client.user!.displayAvatarURL())
-					.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
-				const commands = this.handler.categories.get('setup-hidden')!
-					.values();
-				embed.addField('__**Setup Commands**__', [
-					Array.from(commands)
-						.concat(this.handler.modules.get('setup-clanembed')!)
-						.sort((a, b) => a.id.length - b.id.length)
-						.map(command => `**\`${prefix}setup ${command.id.replace(/setup-/g, '')}\`**\n${command.description.content as string}`)
-						.join('\n')
-				]);
-				return embed;
-			}
+			flag: '--option',
+			unordered: msg.hasOwnProperty('token') ? false : [0, 1],
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
 		};
 
-		return Flag.continue(method);
+		if (method && (method as string).includes('setup')) return Flag.continue(method);
+
+		const tag = yield {
+			flag: '--tag',
+			unordered: msg.hasOwnProperty('token') ? false : [0, 1],
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
+		};
+
+		const channel = yield {
+			flag: '--channel',
+			type: 'textChannel',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		return { channel, tag };
+	}
+
+	public exec(message: Message, { channel, tag }: { channel?: TextChannel; tag?: string }) {
+		console.log(channel?.id, tag);
 	}
 }

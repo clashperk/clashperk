@@ -7,7 +7,7 @@ export default class ClansCommand extends Command {
 	public constructor() {
 		super('clans', {
 			aliases: ['clans'],
-			category: 'setup',
+			category: '_hidden',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {

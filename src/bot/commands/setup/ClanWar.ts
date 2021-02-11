@@ -6,28 +6,30 @@ import { Clan } from 'clashofclans.js';
 export default class WarLogCommand extends Command {
 	public constructor() {
 		super('setup-clan-wars', {
-			category: 'setup-hidden',
+			category: '_hidden',
+			description: {},
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
-			description: {
-				content: 'Setup live war and CWL feed in a channel.',
-				usage: '<clanTag> [channel]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #war-update']
-			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.getClan(msg, tag)
-				},
-				{
-					'id': 'channel',
-					'type': 'textChannel',
-					'unordered': [1, 2],
-					'default': (msg: Message) => msg.channel
-				}
-			]
+			optionFlags: ['--tag', '--channel'],
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.getClan(msg, tag)
+		};
+
+		const channel = yield {
+			'flag': '--channel',
+			'type': 'textChannel',
+			'default': (msg: Message) => msg.channel,
+			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		return { data, channel };
 	}
 
 	public async exec(message: Message, { data, channel }: { data: Clan; channel: TextChannel }) {

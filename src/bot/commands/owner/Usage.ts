@@ -7,8 +7,8 @@ import moment from 'moment';
 export default class UsageCommand extends Command {
 	public constructor() {
 		super('usage', {
-			aliases: ['_usage'],
-			category: 'beta',
+			aliases: ['usage'],
+			category: '_owner',
 			description: {
 				content: 'Displays the usage statistics of the bot.'
 			},
