@@ -21,6 +21,12 @@ export default class GuildCreateListener extends Listener {
 		return webhook;
 	}
 
+	private changeNickname(guild: Guild) {
+		if (!guild.me?.hasPermission('CHANGE_NICKNAME')) return;
+		const prefix = this.client.settings.get<string>(guild, 'prefix', '*');
+		return guild.me.setNickname(`${this.client.user!.username} [ ${prefix} ]`).catch(() => null);
+	}
+
 	public async exec(guild: Guild) {
 		if (!guild.available) return;
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
@@ -28,6 +34,7 @@ export default class GuildCreateListener extends Listener {
 		await this.intro(guild);
 		await this.restore(guild);
 		await this.client.stats.post();
+		await this.changeNickname(guild);
 		await this.client.stats.addition(guild.id);
 		await this.client.stats.guilds(guild.id, 0);
 
@@ -40,7 +47,7 @@ export default class GuildCreateListener extends Listener {
 				.setTitle(`${EMOJIS.OWNER} ${user.tag} (${user.id})`)
 				.setFooter(`${guild.memberCount} members (Shard ${guild.shard.id})`, user.displayAvatarURL())
 				.setTimestamp();
-			return webhook.send({ embeds: [embed], username: 'ClashPerk', avatarURL: this.client.user!.displayAvatarURL() });
+			return webhook.send({ embeds: [embed], username: this.client.user!.username, avatarURL: this.client.user!.displayAvatarURL() });
 		}
 	}
 
