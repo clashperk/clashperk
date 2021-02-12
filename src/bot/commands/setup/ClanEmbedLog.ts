@@ -9,13 +9,10 @@ export default class ClanEmbedCommand extends Command {
 		super('setup-clan-embed', {
 			category: 'setup',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			description: {},
+			optionFlags: ['--tag'],
 			userPermissions: ['MANAGE_GUILD'],
-			description: {
-				content: 'Creates a live promotional embed for a clan.',
-				usage: '<#clanTag>'
-			},
-			optionFlags: ['--tag']
+			clientPermissions: ['EMBED_LINKS']
 		});
 	}
 

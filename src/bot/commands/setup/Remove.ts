@@ -22,7 +22,7 @@ export default class StopCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Remove clans or logs from the server.',
+					'Remove clans or logs from the server or channel.',
 					'',
 					'**Available Methods**',
 					'• `all <clanTag>`',

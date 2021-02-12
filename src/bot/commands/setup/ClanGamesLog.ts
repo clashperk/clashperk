@@ -3,37 +3,42 @@ import { Op, missingPermissions, SETTINGS, COLLECTIONS, Util, EMBEDS } from '../
 import { Command, PrefixSupplier } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 
-export default class LastOnlineBoardCommand extends Command {
+export default class ClanGamesBoardCommand extends Command {
 	public constructor() {
-		super('setup-lastonline', {
-			category: 'setup-hidden',
+		super('setup-clan-games', {
+			category: 'setup',
 			channel: 'guild',
+			description: {},
+			optionFlags: ['--tag', '--channel', '--color'],
 			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
-			description: {
-				content: 'Set Live Updating Last-Online Board in a Channel.',
-				usage: '<clanTag> [channel/color]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-boards #5970C1', '#8QU8J9LP #5970C1 #clan-boards']
-			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.getClan(msg, tag)
-				},
-				{
-					'id': 'channel',
-					'type': 'textChannel',
-					'unordered': [1, 2],
-					'default': (msg: Message) => msg.channel
-				},
-				{
-					'id': 'hexColor',
-					'type': 'color',
-					'unordered': [1, 2],
-					'default': (msg: Message) => this.client.embed(msg)
-				}
-			]
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.getClan(msg, tag)
+		};
+
+		const channel = yield {
+			'flag': '--channel',
+			'unordered': [1, 2],
+			'type': 'textChannel',
+			'default': (msg: Message) => msg.channel,
+			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		const hexColor = yield {
+			'type': 'color',
+			'flag': '--color',
+			'unordered': [1, 2],
+			'default': (msg: Message) => this.client.embed(msg),
+			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		return { data, channel, hexColor };
 	}
 
 	public async exec(message: Message, { data, channel, hexColor }: { data: Clan; channel: TextChannel; hexColor?: number }) {
@@ -58,20 +63,21 @@ export default class LastOnlineBoardCommand extends Command {
 			return message.util!.send(`I\'m missing ${permission.missingPerms} to run that command.`);
 		}
 
+		const patron = this.client.patrons.get(message.guild!.id);
 		const id = await this.client.storage.register(message, {
-			op: Op.LAST_ONLINE_LOG,
+			op: Op.CLAN_GAMES_LOG,
 			guild: message.guild!.id,
 			channel: channel.id,
-			tag: data.tag,
-			name: data.name,
 			message: null,
+			name: data.name,
+			tag: data.tag,
 			color: hexColor
 		});
 
 		await this.client.rpcHandler.add(id, {
-			op: Op.LAST_ONLINE_LOG,
-			guild: message.guild!.id,
-			tag: data.tag
+			op: Op.CLAN_GAMES_LOG,
+			tag: data.tag,
+			guild: message.guild!.id
 		});
 
 		const embed = new MessageEmbed()
@@ -80,7 +86,7 @@ export default class LastOnlineBoardCommand extends Command {
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
 				'**Wait Time**',
-				'120 sec',
+				`${patron ? 15 : 30} min`,
 				'',
 				'**Color**',
 				`\`#${hexColor?.toString(16) ?? 'NONE'}\``,
@@ -88,7 +94,7 @@ export default class LastOnlineBoardCommand extends Command {
 				'**Channel**',
 				`${(channel as Channel).toString()}`,
 				'',
-				'**Last Online Board**',
+				'**Clan Games Board**',
 				`[Enabled](${message.url})`
 			]);
 		if (hexColor) embed.setColor(hexColor);

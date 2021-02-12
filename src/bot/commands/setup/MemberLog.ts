@@ -6,33 +6,38 @@ import { Clan } from 'clashofclans.js';
 export default class MemberLogCommand extends Command {
 	public constructor() {
 		super('setup-clan-feed', {
-			category: 'setup-hidden',
+			category: 'setup',
 			channel: 'guild',
+			description: {},
 			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
-			description: {
-				content: 'Set Clan Feed or Flag Notification Channel.',
-				usage: '<clanTag> [channel/role]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #clan-feed @Mod']
-			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.getClan(msg, tag)
-				},
-				{
-					'id': 'channel',
-					'type': 'textChannel',
-					'unordered': [1, 2],
-					'default': (msg: Message) => msg.channel
-				},
-				{
-					id: 'role',
-					type: 'role',
-					unordered: [1, 2]
-				}
-			]
+			optionFlags: ['--tag', '--channel', '--role'],
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.getClan(msg, tag)
+		};
+
+		const channel = yield {
+			'flag': '--channel',
+			'unordered': [1, 2],
+			'type': 'textChannel',
+			'default': (msg: Message) => msg.channel,
+			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		const role = yield {
+			type: 'role',
+			flag: '--role',
+			unordered: [1, 2],
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		return { data, channel, role };
 	}
 
 	public async exec(message: Message, { data, channel, role }: { data: Clan; channel: TextChannel; role?: Role }) {
