@@ -124,7 +124,7 @@ export default class Client extends AkairoClient {
 			if (!command) return; // eslint-disable-line
 			const interaction = await new Interaction(this, res).parse(res);
 			// @ts-expect-error
-			this.api.interactions(res.id, res.token).callback.post({ data: { type: 5 } });
+			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5 } });
 			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) return;
 			// @ts-expect-error
 			if (await this.commandHandler.runPermissionChecks(interaction, command)) return;

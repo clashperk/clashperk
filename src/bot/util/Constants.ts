@@ -1,6 +1,6 @@
 import { TextChannel, User, PermissionString, MessageEmbed } from 'discord.js';
-import { Clan } from 'clashofclans.js';
 import { Collections } from '@clashperk/node';
+import { Clan } from 'clashofclans.js';
 
 export const Util = {
 	escapeSheetName: (name: string) => name.replace(/[\*\?\:\[\]\\\/]/g, ''),
@@ -16,7 +16,7 @@ export const codes = {
 	504: '504 Request Timeout',
 	400: 'Client provided incorrect parameters for the request.',
 	403: 'Access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
-	404: 'Looks like the tag is invalid! Try again?',
+	404: 'No matches found for the specified tag!',
 	429: 'Request was throttled, because amount of requests was above the threshold defined for the used API token.',
 	500: 'Unknown error happened when handling the request.',
 	503: 'Service is temporarily unavailable because of maintenance.'

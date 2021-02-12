@@ -2,7 +2,7 @@ import { MessageEmbed, GuildMember, Message } from 'discord.js';
 import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis';
 import { COLLECTIONS } from '../../util/Constants';
 import { Clan, Player } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
+import { Command, Argument } from 'discord-akairo';
 import moment from 'moment';
 
 export default class ProfileCommand extends Command {
@@ -13,14 +13,18 @@ export default class ProfileCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: 'Shows info about your linked accounts.',
+				content: 'Shows info about linked accounts.',
 				usage: '<member>',
-				examples: ['', 'Suvajit', 'Reza', '@gop']
+				examples: ['', 'Suvajit']
 			},
 			args: [
 				{
 					'id': 'member',
-					'type': 'member',
+					'type': Argument.union('member', (msg, id) => {
+						if (!id) return null;
+						if (!/^\d{17,19}/.test(id)) return null;
+						return msg.guild!.members.fetch(id).catch(() => null);
+					}),
 					'default': (message: Message) => message.member
 				}
 			]

@@ -14,12 +14,15 @@ export default class ClanEmbedCommand extends Command {
 			description: {
 				content: 'Creates a live promotional embed for a clan.',
 				usage: '<#clanTag>'
-			}
+			},
+			optionFlags: ['--tag']
 		});
 	}
 
-	public *args() {
+	public *args(msg: Message) {
 		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			type: async (msg: Message, args: string) => {
 				if (!this.client.patrons.get(msg.guild!.id)) return this.bePatron(msg);
 				return this.client.resolver.resolveClan(msg, args);
@@ -126,7 +129,6 @@ export default class ClanEmbedCommand extends Command {
 			: `${EMOJIS.WRONG} None`;
 
 		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message))
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)
@@ -161,6 +163,7 @@ export default class ClanEmbedCommand extends Command {
 			])
 			.setFooter('Synced', this.client.user!.displayAvatarURL())
 			.setTimestamp();
+		if (color) embed.setColor(color);
 
 		description = description.toLowerCase() === 'auto'
 			? 'auto'

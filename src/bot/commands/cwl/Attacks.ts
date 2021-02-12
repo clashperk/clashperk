@@ -15,7 +15,7 @@ export default class CWLAttacksComamnd extends Command {
 	public constructor() {
 		super('cwl-attacks', {
 			aliases: ['cwl-attacks'],
-			category: 'cwl-hidden',
+			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: [

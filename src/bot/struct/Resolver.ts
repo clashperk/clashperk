@@ -1,9 +1,9 @@
-import { MessageEmbed, Message, GuildMember } from 'discord.js';
-import { status } from '../util/Constants';
+import { Message, GuildMember } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
+import { Collections } from '@clashperk/node';
+import { status } from '../util/Constants';
 import { Flag } from 'discord-akairo';
 import Client from './Client';
-import { Collections } from '@clashperk/node';
 
 export default class Resolver {
 	private readonly client: Client;
@@ -18,10 +18,8 @@ export default class Resolver {
 
 		if (tag) return this.getPlayer(message, args);
 
-		const embed = new MessageEmbed();
 		if (!parsed) {
-			embed.setDescription(status(404));
-			return this.fail(message, { embed });
+			return this.fail(message, `**${status(404)}**`);
 		}
 
 		const [data, otherTags] = await Promise.all([
@@ -35,16 +33,10 @@ export default class Resolver {
 
 		if (tags.length) return this.getPlayer(message, tags[Math.min(tags.length - 1, num - 1)]);
 		if (message.author.id === (parsed as GuildMember).id) {
-			embed.setDescription([
-				'**Please provide a player tag and try again!**'
-			]);
-		} else {
-			embed.setDescription([
-				`Couldn't find a player linked to **${(parsed as GuildMember).user.tag}!**`
-			]);
+			return this.fail(message, '**You must provide a player tag to run this command!**');
 		}
 
-		return this.fail(message, { embed });
+		return this.fail(message, `**No Player Linked to ${(parsed as GuildMember).user.tag}!**`);
 	}
 
 	public async resolveClan(message: Message, args: string): Promise<Clan | Flag> {
@@ -54,10 +46,8 @@ export default class Resolver {
 
 		if (tag) return this.getClan(message, args);
 
-		const embed = new MessageEmbed();
 		if (!parsed) {
-			embed.setDescription(status(404));
-			return this.fail(message, { embed });
+			return this.fail(message, `**${status(404)}**`);
 		}
 
 		const data = await this.client.db.collection(Collections.LINKED_CHANNELS)
@@ -68,42 +58,28 @@ export default class Resolver {
 		if (data) return this.getClan(message, data.tag);
 
 		if (message.author.id === (parsed as GuildMember).id) {
-			embed.setDescription([
-				'**Please provide a clan tag and try again!**'
-			]);
-		} else {
-			embed.setDescription([
-				`Couldn't find a clan linked to **${(parsed as GuildMember).user.tag}!**`
-			]);
+			return this.fail(message, '**You must provide a clan tag to run this command!**');
 		}
 
-		return this.fail(message, { embed });
+		return this.fail(message, `**No Clan Linked to ${(parsed as GuildMember).user.tag}!**`);
 	}
 
 	public async getPlayer(message: Message, tag: string): Promise<Player | Flag> {
 		const data: Player = await this.client.http.fetch(`/players/${encodeURIComponent(this.parseTag(tag))}`);
 		if (data.ok) return data;
 
-		const embed = new MessageEmbed()
-
-			.setDescription(status(data.statusCode));
-
-		return this.fail(message, { embed });
+		return this.fail(message, `**${status(data.statusCode)}**`);
 	}
 
 	public async getClan(message: Message, tag: string): Promise<Clan | Flag> {
 		const data: Clan = await this.client.http.fetch(`/clans/${encodeURIComponent(this.parseTag(tag))}`);
 		if (data.ok) return data;
 
-		const embed = new MessageEmbed()
-
-			.setDescription(status(data.statusCode));
-
-		return this.fail(message, { embed });
+		return this.fail(message, `**${status(data.statusCode)}**`);
 	}
 
-	private async fail(message: Message, res: any) {
-		return message.channel.send({ embed: res.embed })
+	private async fail(message: Message, content: string) {
+		return message.channel.send(content)
 			.catch(() => Flag.cancel())
 			.then(() => Flag.cancel());
 	}

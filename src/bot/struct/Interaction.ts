@@ -16,6 +16,10 @@ export class CommandUtil {
 		this.lastResponse = null;
 	}
 
+	public addMessage() {
+		// TODO
+	}
+
 	public setLastResponse(message: Message | Message[]) {
 		if (Array.isArray(message)) {
 			this.lastResponse = message.slice(-1)[0];

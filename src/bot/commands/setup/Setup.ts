@@ -1,5 +1,5 @@
 import { Message, TextChannel, MessageEmbed } from 'discord.js';
-import { Command, Flag, PrefixSupplier } from 'discord-akairo';
+import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
 import { BitField, Collections } from '@clashperk/node';
 
 const names: { [key: string]: string } = {
@@ -61,16 +61,18 @@ export default class SetupCommand extends Command {
 
 	public *args(msg: Message) {
 		const method = yield {
-			type: [
-				['setup-clan-embed', 'embed', 'clanembed'],
-				['setup-last-seen', 'lastseen', 'lastonline'],
-				['setup-clan-feed', 'feed', 'memberlog', 'clan-feed'],
-				['setup-donations', 'donation', 'donations', 'donation-log'],
-				['setup-clan-games', 'game', 'games', 'clangames', 'cgboard'],
-				['setup-clan-wars', 'war', 'wars', 'clanwarlog', 'clan-wars', 'war-feed']
-			],
+			type: Argument.union(
+				[
+					['setup-clan-embed', 'embed', 'clanembed'],
+					['setup-last-seen', 'lastseen', 'lastonline'],
+					['setup-clan-feed', 'feed', 'memberlog', 'clan-feed'],
+					['setup-donations', 'donation', 'donations', 'donation-log'],
+					['setup-clan-games', 'game', 'games', 'clangames', 'cgboard'],
+					['setup-clan-wars', 'war', 'wars', 'clanwarlog', 'clan-wars', 'war-feed']
+				],
+				(msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
+			),
 			flag: '--type',
-			unordered: msg.hasOwnProperty('token') ? false : [0, 1],
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
 		};
 
@@ -78,8 +80,7 @@ export default class SetupCommand extends Command {
 
 		const tag = yield {
 			flag: '--tag',
-			unordered: msg.hasOwnProperty('token') ? false : [0, 1],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.hasOwnProperty('token') ? 'option' : 'none',
 			type: (msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
 		};
 
@@ -89,7 +90,7 @@ export default class SetupCommand extends Command {
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
 		};
 
-		return { channel, tag };
+		return { channel, tag: tag ? tag : method };
 	}
 
 	public async exec(message: Message, { channel, tag }: { channel?: TextChannel; tag?: string }) {
@@ -109,7 +110,7 @@ export default class SetupCommand extends Command {
 				this.description.examples.map((en: string) => `\`${prefix}setup ${en}\``).join('\n')
 			]);
 
-		await message.util!.send({ embed });
+		await message.channel.send({ embed });
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const fetched = await Promise.all(
 			clans.map(
