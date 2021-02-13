@@ -12,9 +12,9 @@ const logType: { [key: string]: string } = {
 	[Op.CLAN_WAR_LOG]: 'Clan War Log'
 };
 
-export default class StopCommand extends Command {
+export default class RemoveCommand extends Command {
 	public constructor() {
-		super('stop', {
+		super('remove', {
 			aliases: ['remove', 'stop', 'toggle', 'delete', 'disable'],
 			category: 'setup',
 			channel: 'guild',
@@ -24,12 +24,13 @@ export default class StopCommand extends Command {
 				content: [
 					'Remove clans or logs from the server or channel.',
 					'',
-					'**Available Methods**',
-					'• `all <clanTag>`',
-					'• `clan-feed <clanTag>`',
-					'• `clangames <clanTag>`',
-					'• `clan-wars <clanTag>`',
-					'• `clanembed <clanTag>`',
+					'• **Unlink Channel**',
+					'• `#CHANNEL`',
+					'',
+					'• **Last Seen**',
+					'• `LASTSEEN #CLAN_TAG`',
+					'',
+					'• **',
 					'• `donations <clanTag>`',
 					'• `lastonline <clanTag>`',
 					'',

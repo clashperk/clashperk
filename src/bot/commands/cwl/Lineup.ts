@@ -14,7 +14,7 @@ export default class CWLLineupComamnd extends Command {
 	public constructor() {
 		super('cwl-lineup', {
 			aliases: ['cwl-lineup', 'lineup'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [

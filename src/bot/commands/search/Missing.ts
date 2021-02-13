@@ -5,21 +5,18 @@ import { BLUE_EMOJI } from '../../util/Emojis';
 import 'moment-duration-format';
 import moment from 'moment';
 
-export default class RemainingAttacksCommand extends Command {
+export default class MissingAttacksCommand extends Command {
 	public constructor() {
-		super('remaining', {
-			aliases: ['remaining', 'missing', 'missing-attacks', 'rem'],
-			category: 'cwl',
+		super('missing', {
+			aliases: ['missing', 'remaining', 'rem'],
+			category: 'war',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: [
-					'Shows info about remaining attacks.',
-					'',
-					'**Flags**',
-					'`--cwl` or `cwl` for cwl missing attacks.'
+					'Shows remaining or missed war attacks.'
 				],
-				usage: '<clanTag> [--cwl/cwl]',
-				examples: ['#8QU8J9LP', '8QU8J9LP --cwl', '#8QU8J9LP cwl']
+				usage: '<#clanTag>',
+				examples: ['#8QU8J9LP']
 			},
 			optionFlags: ['--tag']
 		});

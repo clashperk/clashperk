@@ -5,7 +5,7 @@ export default class CWLComamnd extends Command {
 	public constructor() {
 		super('cwl', {
 			aliases: ['cwl'],
-			category: 'cwl',
+			category: 'war',
 			description: {
 				content: [
 					'Full list of the CWL commands.',
@@ -71,7 +71,7 @@ export default class CWLComamnd extends Command {
 					.setColor(this.client.embed(message))
 					.setAuthor('Command List', this.client.user!.displayAvatarURL())
 					.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
-				const commands = this.handler.categories.get('cwl-hidden')!
+				const commands = this.handler.categories.get('cwl')!
 					.values();
 				embed.addField('__**CWL**__', [
 					Array.from(commands)

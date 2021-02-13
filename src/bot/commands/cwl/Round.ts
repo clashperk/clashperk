@@ -9,7 +9,7 @@ export default class CWLRoundComamnd extends Command {
 	public constructor() {
 		super('cwl-round', {
 			aliases: ['round', 'cwl-war', 'cwl-round'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: [

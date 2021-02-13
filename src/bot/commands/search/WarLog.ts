@@ -9,7 +9,7 @@ export default class WarlogCommand extends Command {
 	public constructor() {
 		super('warlog', {
 			aliases: ['warlog', 'wl'],
-			category: 'cwl',
+			category: 'war',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Shows your clan war log.',

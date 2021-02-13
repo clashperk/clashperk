@@ -9,7 +9,7 @@ export default class CWLRosterComamnd extends Command {
 	public constructor() {
 		super('cwl-roster', {
 			aliases: ['roster', 'cwl-roster'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows roster and Town-Hall distribution.',

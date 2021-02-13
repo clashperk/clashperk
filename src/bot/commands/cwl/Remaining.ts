@@ -8,7 +8,7 @@ export default class CWLRemainingComamnd extends Command {
 	public constructor() {
 		super('cwl-remaining', {
 			aliases: ['cwl-remaining', 'cwl-missing'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: [

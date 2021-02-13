@@ -72,7 +72,7 @@ export default class PatronCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor('ClashPerk', this.client.user!.displayAvatarURL(), 'https://www.patreon.com/clashperk')
+			.setAuthor(this.client.user!.username, this.client.user!.displayAvatarURL(), 'https://www.patreon.com/clashperk')
 			.setDescription([
 				'Help us with our hosting related expenses.',
 				'Any help is beyond appreciated.',
@@ -82,7 +82,7 @@ export default class PatronCommand extends Command {
 				'• Claim unlimited number of clans',
 				'• Create live clan promotional embeds',
 				'• Customize embed color in your discord',
-				'• Export members, wars & cwl to excel',
+				'• Export members, wars & season to excel',
 				'• Patron role on our support discord',
 				'',
 				'[Become a Patron](https://www.patreon.com/clashperk)'

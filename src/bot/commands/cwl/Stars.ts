@@ -7,7 +7,7 @@ export default class CWLStarsComamnd extends Command {
 	public constructor() {
 		super('cwl-stars', {
 			aliases: ['cwl-stars'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'ATTACH_FILES'],
 			description: {
 				content: 'Shows total stars and attacks of clan members.',

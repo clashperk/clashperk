@@ -14,7 +14,7 @@ export default class LastOnlineCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
 			description: {
-				content: 'Shows an approximate last-online time of clan members.',
+				content: 'Approximate last seen of clan all members.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},

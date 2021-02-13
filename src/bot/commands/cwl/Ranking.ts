@@ -8,7 +8,7 @@ export default class CWLRankingComamnd extends Command {
 	public constructor() {
 		super('cwl-ranking', {
 			aliases: ['cwl-ranking', 'cwl-rank'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows clan ranking.',

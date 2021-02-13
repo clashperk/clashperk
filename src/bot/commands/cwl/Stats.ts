@@ -8,7 +8,7 @@ export default class CWLStatsComamnd extends Command {
 	public constructor() {
 		super('cwl-stats', {
 			aliases: ['cwl-stats'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
 			description: {
 				content: 'Shows some statistics for each round.',

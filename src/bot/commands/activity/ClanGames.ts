@@ -30,7 +30,7 @@ export default class ClanGamesCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows clan game points of your clan members.',
+				content: 'Clan Games points of all clan members.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},

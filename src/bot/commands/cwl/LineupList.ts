@@ -6,7 +6,7 @@ import { Command } from 'discord-akairo';
 export default class CWLLineupComamnd extends Command {
 	public constructor() {
 		super('cwl-lineup-list', {
-			category: 'cwl-hidden_',
+			category: 'cwl_',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [

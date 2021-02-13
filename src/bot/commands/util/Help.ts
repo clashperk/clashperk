@@ -106,7 +106,7 @@ export default class HelpCommand extends Command {
 			{
 				setup: 'Clan Management',
 				activity: 'Clan Activity',
-				cwl: 'War and CWL',
+				war: 'War and CWL',
 				search: 'Clash Search',
 				profile: 'Profile',
 				config: 'Config'
@@ -123,18 +123,19 @@ export default class HelpCommand extends Command {
 			.setAuthor('Command List', this.client.user!.displayAvatarURL())
 			.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
 
-		const commands = [];
+		const categories = [];
 		for (const category of this.handler.categories.values()) {
 			const title = option[category.id];
 
 			if (title) {
-				commands[Object.values(option).indexOf(title)] = { id: category.id, category, title };
+				categories[Object.values(option).indexOf(title)] = { id: category.id, category, title };
 			}
 		}
 
-		for (const cmd of commands) {
-			embed.addField(`**__${cmd.title as string}__**`, [
-				cmd.category.filter(cmd => cmd.aliases.length > 0)
+		for (const { category, title } of categories) {
+			embed.addField(`**__${title as string}__**`, [
+				category.filter(cmd => cmd.aliases.length > 0)
+					.sort((a, b) => a.aliases[0].length - b.aliases[0].length)
 					.map(cmd => {
 						const description = Array.isArray(cmd.description.content)
 							? cmd.description.content[0]

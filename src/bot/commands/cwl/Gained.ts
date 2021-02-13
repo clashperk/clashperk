@@ -7,7 +7,7 @@ export default class CWLGainedComamnd extends Command {
 	public constructor() {
 		super('cwl-gained', {
 			aliases: ['cwl-gained'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows gained and lost stars of clan members.',

@@ -7,7 +7,7 @@ export default class CWLMembersComamnd extends Command {
 	public constructor() {
 		super('cwl-members', {
 			aliases: ['cwl-members', 'cwl-mem'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows the full list of participants.',

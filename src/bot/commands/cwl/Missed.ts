@@ -8,7 +8,7 @@ export default class CWLMissedComamnd extends Command {
 	public constructor() {
 		super('cwl-missed', {
 			aliases: ['cwl-missed'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [

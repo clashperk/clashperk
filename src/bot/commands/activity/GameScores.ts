@@ -21,7 +21,7 @@ export default class ClanGamesScoresCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: [
-					'Compare clan games scoreboard among clans.',
+					'Clan Games scoreboard for all clans.',
 					'',
 					'Scoreboard is based on highest scores & completion times.',
 					'Performance is based on completing maximum points.',

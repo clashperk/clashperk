@@ -33,7 +33,7 @@ export default class UsageCommand extends Command {
 			const buffer = await this.buffer(limit);
 			const file = new MessageAttachment(buffer, 'growth.png');
 			const embed = new MessageEmbed()
-				.setAuthor('ClashPerk', this.client.user!.displayAvatarURL())
+				.setAuthor(this.client.user!.username, this.client.user!.displayAvatarURL())
 				.setColor(this.client.embed(message))
 				.setImage('attachment://growth.png')
 				.setFooter(`${'⚙️'} Today's Growth: ${Number(addition)}/${Math.abs(deletion)}/${growth}`);
