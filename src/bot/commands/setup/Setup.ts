@@ -178,7 +178,7 @@ export default class SetupCommand extends Command {
 
 			fetched.map(
 				(clan, num) => {
-					const heads = clan.channels.filter(en => en).join(' ');
+					const heads = clan.channels.filter(en => en).join(', ');
 					const rest = num === (fetched.length - 1) ? '' : '\n\u200b';
 					const features = clan.entries.filter(en => en.ok && en.channel);
 					return embed.addField(
