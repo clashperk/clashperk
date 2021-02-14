@@ -1,15 +1,16 @@
-import { Command, PrefixSupplier } from 'discord-akairo';
-import { COLLECTIONS, Op } from '../../util/Constants';
-import { Message } from 'discord.js';
+import { Command, Argument, PrefixSupplier } from 'discord-akairo';
+import { Message, TextChannel, MessageEmbed } from 'discord.js';
+import { BitField, Collections } from '@clashperk/node';
 import { ObjectId } from 'mongodb';
 
-const logType: { [key: string]: string } = {
-	[Op.DONATION_LOG]: 'Donation Log',
-	[Op.CLAN_MEMBER_LOG]: 'Clan Feed',
-	[Op.LAST_ONLINE_LOG]: 'Last Online Board',
-	[Op.CLAN_EMBED_LOG]: 'Clan Embed',
-	[Op.CLAN_GAMES_LOG]: 'Clan Games Board',
-	[Op.CLAN_WAR_LOG]: 'Clan War Log'
+const names: { [key: string]: string } = {
+	[BitField.DONATION_LOG]: 'Donation Log',
+	[BitField.CLAN_FEED_LOG]: 'Clan Feed',
+	[BitField.LAST_SEEN_LOG]: 'Last Seen',
+	[BitField.CLAN_EMBED_LOG]: 'Clan Embed',
+	[BitField.CLAN_GAMES_LOG]: 'Clan Games',
+	[BitField.CLAN_WAR_LOG]: 'War Feed',
+	[BitField.CHANNEL_LINKED]: 'Linked Channel'
 };
 
 export default class RemoveCommand extends Command {
@@ -19,145 +20,141 @@ export default class RemoveCommand extends Command {
 			category: 'setup',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Remove clans or logs from the server or channel.',
+					'Disable features or remove clans from channels.',
 					'',
-					'• **Unlink Channel**',
+					'• **[Unlink Channel](https://clashperk.com)**',
 					'• `#CHANNEL`',
 					'',
-					'• **Last Seen**',
+					'• **[Clan Feed](https://clashperk.com)**',
+					'• `FEED #CLAN_TAG`',
+					'',
+					'• **[War Feed](https://clashperk.com)**',
+					'• `WAR #CLAN_TAG`',
+					'',
+					'• **[Last Seen](https://clashperk.com)**',
 					'• `LASTSEEN #CLAN_TAG`',
 					'',
-					'• **',
-					'• `donations <clanTag>`',
-					'• `lastonline <clanTag>`',
+					'• **[Clan Games](https://clashperk.com)**',
+					'• `GAMES #CLAN_TAG`',
 					'',
-					'For additional `<...args>` usage refer to the examples below.'
+					'• **[Clan Embed](https://clashperk.com)**',
+					'• `EMBED #CLAN_TAG`',
+					'',
+					'• **[Donation Log](https://clashperk.com)**',
+					'• `DONATION #CLAN_TAG`',
+					'',
+					'• **[Everything](https://clashperk.com)**',
+					'• `ALL #CLAN_TAG`'
 				],
-				usage: '<method> <clanTag>',
+				usage: '<#channel|Type> <#clanTag>',
 				examples: [
-					'all #8QU8J9LP',
-					'clan-feed #8QU8J9LP',
-					'clangames #8QU8J9LP',
-					'clanembed #8QU8J9LP',
-					'clan-wars #8QU8J9LP',
-					'donations #8QU8J9LP',
-					'lastonline #8QU8J9LP'
+					'#clashperk',
+					'FEED #8QU8J9LP',
+					'LASTSEEN #8QU8J9LP'
 				]
 			},
-			args: [
-				{
-					'id': 'method',
-					'match': 'phrase',
-					'type': [
-						['all'],
-						[Op.DONATION_LOG.toString(), 'donationlog', 'donations'],
-						[Op.CLAN_MEMBER_LOG.toString(), 'memberlog', 'clan-feed'],
-						[Op.LAST_ONLINE_LOG.toString(), 'onlineboard', 'lastonline'],
-						[Op.CLAN_EMBED_LOG.toString(), 'clanembed'],
-						[Op.CLAN_GAMES_LOG.toString(), 'gameboard', 'clangames'],
-						[Op.CLAN_WAR_LOG.toString(), 'clanwarlog', 'clan-wars']
-					],
-					'default': ''
-				},
-				{
-					'id': 'tag',
-					'type': 'string',
-					'default': ''
-				}
-			]
+			optionFlags: ['--channel', '--type', '--tag']
 		});
 	}
 
-	public async exec(message: Message, { method, tag }: { tag: string; method: string }) {
-		if (!method) {
+	public *args(msg: Message) {
+		const bit = yield {
+			flag: ['--type', '--channel'],
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: Argument.union(
+				[
+					['all'],
+					[BitField.CLAN_EMBED_LOG.toString(), 'embed', 'clanembed'],
+					[BitField.LAST_SEEN_LOG.toString(), 'lastseen', 'lastonline'],
+					[BitField.CLAN_WAR_LOG.toString(), 'war', 'wars', 'clan-wars'],
+					[BitField.CLAN_GAMES_LOG.toString(), 'game', 'games', 'clangames'],
+					[BitField.CLAN_FEED_LOG.toString(), 'feed', 'memberlog', 'clan-feed'],
+					[BitField.DONATION_LOG.toString(), 'donation', 'donations', 'donationlog']
+
+				],
+				'textChannel'
+			)
+		};
+
+		const tag = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
+		};
+
+		return { bit, tag };
+	}
+
+	public async exec(message: Message, { bit, tag }: { bit?: string | TextChannel; tag?: string }) {
+		if (!(bit && tag)) {
 			const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
-			const embed = this.client.util.embed()
+			const embed = new MessageEmbed()
 				.setColor(this.client.embed(message))
-				.setAuthor('No Method Selected')
 				.setDescription([
-					'Remove clans or logs from the server.',
+					`\`${prefix}remove ${this.description.usage as string}\``,
 					'',
-					'**Usage**',
-					`\`${prefix}remove <method> <clanTag>\``,
-					'',
-					'**Available Methods**',
-					'• `all <clanTag>`',
-					'• `clan-feed <clanTag>`',
-					'• `clan-wars <clanTag>`',
-					'• `clangames <clanTag>`',
-					'• `clanembed <clanTag>`',
-					'• `donations <clanTag>`',
-					'• `lastonline <clanTag>`',
+					this.description.content.join('\n'),
 					'',
 					'**Examples**',
-					`\`${prefix}remove all #8QU8J9LP\``,
-					`\`${prefix}remove clan-feed #8QU8J9LP\``,
-					`\`${prefix}remove clangames #8QU8J9LP\``,
-					`\`${prefix}remove clanembed #8QU8J9LP\``,
-					`\`${prefix}remove donations #8QU8J9LP\``,
-					`\`${prefix}remove clan-wars #8QU8J9LP\``,
-					`\`${prefix}remove lastonline #8QU8J9LP\``
+					this.description.examples.map((en: string) => `\`${prefix}remove ${en}\``).join('\n')
 				]);
 			return message.util!.send({ embed });
 		}
 
-		const data = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
-			.findOne({ tag: `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}`, guild: message.guild!.id });
+		if (bit instanceof TextChannel) {
+			return this.handler.handleDirectCommand(message, bit.id, this.handler.modules.get('unlink')!);
+		}
+
+		const data = await this.client.db.collection(Collections.CLAN_STORES)
+			.findOne({ tag, guild: message.guild!.id });
 
 		if (!data) {
-			return message.util!.send({
-				embed: {
-					description: 'I could not find this clan in this server!'
-				}
-			});
+			return message.util!.send('**I couldn\'t find this clan tag in this server!**');
 		}
 
 		const id = data._id.toHexString();
-		if (method === 'all') {
+		if (bit === 'all') {
 			await this.client.storage.delete(id);
 			await this.client.rpcHandler.delete(id, { tag: data.tag, op: 0 });
-			return message.util!.send({ embed: { title: `Successfully deleted **${data.name as string} (${data.tag as string})**` } });
+			return message.util!.send(`**Successfully Deleted ${data.name as string} (${data.tag as string})**`);
 		}
 
-		const deleted = await this.client.storage.remove(data._id, { op: Number(method) });
-		if (deleted?.deletedCount) await this.bitField(id, Number(method));
-		await this.client.rpcHandler.delete(id, { op: Number(method), tag: data.tag });
+		const deleted = await this.client.storage.remove(data._id, { op: Number(bit) });
+		if (deleted?.deletedCount) await this.updateFlag(id, Number(bit));
+		await this.client.rpcHandler.delete(id, { op: Number(bit), tag: data.tag });
 
-		await this.delete(id, data.tag);
-		return message.util!.send({
-			embed: {
-				description: `Successfully removed ${logType[method]} for **${data.name as string} (${data.tag as string})**`
-			}
-		});
+		await this.delete(id, data.tag, data.flag);
+		return message.util!.send(`**Successfully Removed ${names[bit]} for ${data.name as string} (${data.tag as string})**`);
 	}
 
-	private async delete(id: string, tag: string) {
+	private async delete(id: string, tag: string, flag: number) {
 		const data = await Promise.all([
-			this.client.db.collection(COLLECTIONS.DONATION_LOGS)
+			this.client.db.collection(Collections.DONATION_LOGS)
 				.countDocuments({ clan_id: new ObjectId(id) }),
-			this.client.db.collection(COLLECTIONS.PLAYER_LOGS)
+			this.client.db.collection(Collections.CLAN_FEED_LOGS)
 				.countDocuments({ clan_id: new ObjectId(id) }),
-			this.client.db.collection(COLLECTIONS.LAST_ONLINE_LOGS)
+			this.client.db.collection(Collections.LAST_SEEN_LOGS)
 				.countDocuments({ clan_id: new ObjectId(id) }),
-			this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS)
+			this.client.db.collection(Collections.CLAN_EMBED_LOGS)
 				.countDocuments({ clan_id: new ObjectId(id) }),
-			this.client.db.collection(COLLECTIONS.CLAN_GAMES_LOGS)
+			this.client.db.collection(Collections.CLAN_GAMES_LOGS)
 				.countDocuments({ clan_id: new ObjectId(id) }),
-			this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS)
+			this.client.db.collection(Collections.CLAN_WAR_LOGS)
 				.countDocuments({ clan_id: new ObjectId(id) })
 		]).then(collection => collection.every(num => num === 0));
 
-		if (data) {
+		const bit = BitField.CHANNEL_LINKED;
+		if (data && (flag & bit) !== bit) {
 			this.client.rpcHandler.delete(id, { tag, op: 0 });
-			return this.client.db.collection(COLLECTIONS.CLAN_STORES).updateOne({ _id: new ObjectId(id) }, { $set: { flag: 0 } });
+			return this.client.db.collection(Collections.CLAN_STORES)
+				.updateOne({ _id: new ObjectId(id) }, { $set: { flag: 0 } });
 		}
 	}
 
-	private bitField(id: string, bit: number) {
-		return this.client.db.collection(COLLECTIONS.CLAN_STORES)
+	private updateFlag(id: string, bit: number) {
+		return this.client.db.collection(Collections.CLAN_STORES)
 			.updateOne({ _id: new ObjectId(id) }, { $bit: { flag: { xor: bit } } });
 	}
 }

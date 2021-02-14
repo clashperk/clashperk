@@ -4,7 +4,7 @@ import { COLLECTIONS } from '../../util/Constants';
 
 export default class UnlinkCommand extends Command {
 	public constructor() {
-		super('link-remove', {
+		super('unlink', {
 			aliases: ['unlink'],
 			category: 'profile',
 			channel: 'guild',

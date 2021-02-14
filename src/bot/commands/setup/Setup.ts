@@ -21,7 +21,7 @@ export default class SetupCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Enable features and assign clans to channels.',
+					'Enable features or assign clans to channels.',
 					'',
 					'• **[Commands Only](https://clashperk.com)**',
 					'• `#CLAN_TAG #CHANNEL`',
@@ -48,7 +48,7 @@ export default class SetupCommand extends Command {
 					'• `DONATION #CLAN_TAG`',
 					'• `DONATION #CLAN_TAG #HEX_COLOR`'
 				],
-				usage: '[#clanTag] [#channel] [...args]',
+				usage: '[#clanTag|Type] [#channel] [args]',
 				examples: [
 					'#8QU8J9LP #clashperk',
 					'FEED #8QU8J9LP @ROLE',
