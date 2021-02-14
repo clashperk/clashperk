@@ -45,7 +45,7 @@ export default class RemoveCommand extends Command {
 					'• **[Donation Log](https://clashperk.com)**',
 					'• `DONATION #CLAN_TAG`',
 					'',
-					'• **[Everything](https://clashperk.com)**',
+					'• **[Everything^](https://clashperk.com)**',
 					'• `ALL #CLAN_TAG`'
 				],
 				usage: '<#channel|Type> <#clanTag>',

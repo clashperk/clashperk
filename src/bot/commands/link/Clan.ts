@@ -1,6 +1,7 @@
 import { COLLECTIONS, EMBEDS, Op, SETTINGS, Util } from '../../util/Constants';
 import { Command, Argument, PrefixSupplier } from 'discord-akairo';
 import { Message, GuildMember, TextChannel } from 'discord.js';
+import { BitField } from '@clashperk/node';
 import { Clan } from 'clashofclans.js';
 
 export default class LinkClanCommand extends Command {
@@ -32,24 +33,42 @@ export default class LinkClanCommand extends Command {
 			}
 			if (!await this.enforceSecurity(message, data)) return;
 
-			const store = await this.client.db.collection(COLLECTIONS.LINKED_CHANNELS)
-				.findOne({ channel: parsed.id });
+			const store = await this.client.storage.collection.findOne({ channels: parsed.id });
 
 			if (store) {
 				return message.util!.send([
 					// eslint-disable-next-line @typescript-eslint/no-base-to-string
-					`**${store.name as string} (${store.tag as string})** is already linked to ${parsed.toString()}`
+					`**${store.name} (${store.tag})** is already linked to ${parsed.toString()}`
 				]);
 			}
 
-			await this.client.db.collection(COLLECTIONS.LINKED_CHANNELS)
-				.updateOne({ channel: parsed.id }, {
+			const { upsertedCount, upsertedId } = await this.client.storage.collection.updateOne(
+				{ guild: message.guild!.id, tag: data.tag },
+				{
 					$set: {
-						tag: data.tag,
-						name: data.name,
-						guild: message.guild!.id
+						name: data.name, tag: data.tag,
+						paused: false, verified: true, active: true,
+						guild: message.guild!.id, patron: this.client.patrons.get(message.guild!.id)
+					},
+					$push: {
+						channels: parsed.id
+					},
+					$bit: {
+						flag: { or: BitField.CHANNEL_LINKED }
+					},
+					$min: {
+						createdAt: new Date()
 					}
-				}, { upsert: true });
+				}, { upsert: true }
+			);
+
+			if (upsertedCount) {
+				await this.client.rpcHandler.add(upsertedId._id.toHexString(), {
+					op: Op.CHANNEL_LINKED,
+					guild: message.guild!.id,
+					tag: data.tag
+				});
+			}
 
 			// eslint-disable-next-line @typescript-eslint/no-base-to-string
 			return message.util!.send(`Successfully linked **${data.name} (${data.tag})** to ${parsed.toString()}`);

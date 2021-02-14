@@ -18,6 +18,8 @@ class MongoDB extends MongoClient {
 			db.collection(Collections.CLAN_STORES)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
+			db.collection(Collections.CLAN_STORES).createIndex({ channels: 1 }),
+
 			db.collection(Collections.CLAN_WAR_LOGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
@@ -51,11 +53,6 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.LINKED_PLAYERS)
 				.createIndex({ 'entries.tag': 1 }),
-
-			db.collection(Collections.LINKED_CHANNELS)
-				.createIndex({ channel: 1, tag: 1 }, { unique: true }),
-
-			db.collection(Collections.LINKED_CHANNELS).createIndex({ guild: 1 }),
 
 			db.collection(Collections.CLAN_FEED_LOGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),

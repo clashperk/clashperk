@@ -127,13 +127,10 @@ export default class SetupCommand extends Command {
 						.findOne({ clan_id: clan._id });
 					const bit6 = await this.client.db.collection(Collections.CLAN_WAR_LOGS)
 						.findOne({ clan_id: clan._id });
-					const bit7 = await this.client.db.collection(Collections.LINKED_CHANNELS)
-						.find({ guild: clan.guild, tag: clan.tag })
-						.toArray();
 
 					return {
 						name: clan.name, tag: clan.tag,
-						channels: bit7.map((en: any) => this.client.channels.cache.get(en.channel)?.toString()),
+						channels: clan.channels?.map(id => this.client.channels.cache.get(id)?.toString()) ?? [],
 						entries: [
 							{
 								flag: BitField.DONATION_LOG,

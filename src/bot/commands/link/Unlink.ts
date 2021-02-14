@@ -62,11 +62,13 @@ export default class UnlinkCommand extends Command {
 				return message.util!.send('You are missing `Manage Server` permission to use this comamnd.');
 			}
 
-			const { value } = await this.client.db.collection(COLLECTIONS.LINKED_CHANNELS)
-				.findOneAndDelete({ channel: parsed.id });
+			const { value } = await this.client.storage.collection.findOneAndUpdate(
+				{ channels: parsed.id }, { $pull: { channels: parsed.id } }, { returnOriginal: false }
+			);
+
 			if (value) {
 				return message.util!.send(
-					`Successfully deleted **${value.name as string} (${value.tag as string})** from <#${value.channel as string}>`
+					`Successfully deleted **${value.name} (${value.tag})** from <#${parsed.id}>`
 				);
 			}
 

@@ -50,8 +50,8 @@ export default class Resolver {
 			return this.fail(message, `**${status(404)}**`);
 		}
 
-		const data = await this.client.db.collection(Collections.LINKED_CHANNELS)
-			.findOne({ channel: message.channel.id }) ||
+		const data = await this.client.db.collection(Collections.CLAN_STORES)
+			.findOne({ channels: message.channel.id }) ||
 			await this.client.db.collection(Collections.LINKED_CLANS)
 				.findOne({ user: (parsed as GuildMember).id });
 
