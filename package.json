@@ -32,8 +32,7 @@
 		"mongodb": "^3.6.3",
 		"ms": "^2.1.2",
 		"node-fetch": "^2.6.1",
-		"shelljs": "^0.8.4",
-		"table": "^6.0.7"
+		"shelljs": "^0.8.4"
 	},
 	"devDependencies": {
 		"@types/common-tags": "^1.8.0",
@@ -43,7 +42,6 @@
 		"@types/node": "^14.14.16",
 		"@types/node-fetch": "^2.5.7",
 		"@types/shelljs": "^0.8.8",
-		"@types/table": "^6.0.0",
 		"@typescript-eslint/eslint-plugin": "^4.11.0",
 		"@typescript-eslint/parser": "^4.11.0",
 		"eslint": "^7.14.0",
