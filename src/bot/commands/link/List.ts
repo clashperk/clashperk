@@ -8,6 +8,7 @@ import { Command } from 'discord-akairo';
 export default class LinkListCommand extends Command {
 	public constructor() {
 		super('link-list', {
+			aliases: ['links'],
 			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			channel: 'guild',
