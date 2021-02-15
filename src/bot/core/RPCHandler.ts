@@ -127,20 +127,17 @@ export default class RPCHandler {
 			[BitField.LAST_SEEN_LOG]: this.lastOnlineLog,
 			[BitField.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[BitField.CLAN_GAMES_LOG]: this.clanGamesLog,
-			[BitField.CLAN_WAR_LOG]: this.clanWarLog,
-			[BitField.CHANNEL_LINKED]: this.lastOnlineLog
+			[BitField.CLAN_WAR_LOG]: this.clanWarLog
 		};
 
-		if (data.op) {
+		if (data.op.toString() in OP) {
 			await OP[data.op].add(id);
 		} else {
 			Object.values(OP).map(Op => Op.add(id));
 		}
 
 		const patron = this.client.patrons.get(data.guild);
-		return this.client.rpc.add({
-			data: JSON.stringify({ tag: data.tag, patron: Boolean(patron), op: data.op })
-		}, () => null);
+		return this.client.rpc.add({ data: JSON.stringify({ tag: data.tag, patron: Boolean(patron), op: data.op }) }, () => null);
 	}
 
 	public delete(id: string, data: { tag: string; op: number }) {
@@ -150,19 +147,16 @@ export default class RPCHandler {
 			[BitField.LAST_SEEN_LOG]: this.lastOnlineLog,
 			[BitField.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[BitField.CLAN_GAMES_LOG]: this.clanGamesLog,
-			[BitField.CLAN_WAR_LOG]: this.clanWarLog,
-			[BitField.CHANNEL_LINKED]: this.lastOnlineLog
+			[BitField.CLAN_WAR_LOG]: this.clanWarLog
 		};
 
-		if (data.op) {
+		if (data.op.toString() in OP) {
 			OP[data.op].delete(id);
 		} else {
 			Object.values(OP).map(Op => Op.delete(id));
 		}
 
-		return this.client.rpc.remove({
-			data: JSON.stringify({ tag: data.tag, op: data.op })
-		}, () => null);
+		return this.client.rpc.remove({ data: JSON.stringify({ tag: data.tag, op: data.op }) }, () => null);
 	}
 
 	public flush() {
