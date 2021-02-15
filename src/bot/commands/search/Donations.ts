@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { Season, Collections } from '@clashperk/node';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { Message } from 'discord.js';
@@ -10,16 +10,20 @@ interface Member {
 	received: number;
 }
 
-export default class DonationBoardCommand extends Command {
+export default class DonationsCommand extends Command {
 	public constructor() {
 		super('donations', {
-			aliases: ['donations', 'donationboard', 'db', 'don'],
+			aliases: ['donations', 'don'],
 			category: 'activity',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
+			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'List of clan members with donations.',
-				usage: '<clanTag>',
-				examples: ['#2Q98URCGY', '2Q98URCGY']
+				content: [
+					'Clan members with donations for current / last season.',
+					'',
+					'• **Season ID must be under 3 months old and must follow `YYYY-MM` format.**'
+				],
+				usage: '<#clanTag> [season]',
+				examples: ['#8QU8J9LP', '#8QU8J9LP 2021-02']
 			},
 			flags: ['--sort'],
 			optionFlags: ['--tag', '--season']
@@ -27,16 +31,26 @@ export default class DonationBoardCommand extends Command {
 	}
 
 	public *args(msg: Message) {
-		const data = yield {
-			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		const season = yield {
+			flag: '--season',
+			type: [
+				Season.ID,
+				...Array(3).fill('').map((_, i) => {
+					const now = new Date();
+					now.setHours(0, 0, 0, 0);
+					now.setMonth(now.getMonth() - i, 0);
+					return Season.generateID(now);
+				})
+			],
+			unordered: msg.hasOwnProperty('token') ? false : [0, 1],
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
 		};
 
-		const season = yield {
-			type: 'string',
-			flag: '--season',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		const data = yield {
+			flag: '--tag',
+			unordered: msg.hasOwnProperty('token') ? false : [0, 1],
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
 		const rev = yield {
@@ -47,20 +61,23 @@ export default class DonationBoardCommand extends Command {
 		return { data, season, rev };
 	}
 
-	private get seasonID() {
-		return new Date('2021-02').toISOString().substring(0, 7);
-	}
-
 	public async exec(message: Message, { data, rev, season }: { data: Clan; rev: boolean; season: string }) {
 		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
 
-		const dbMembers = await this.client.db.collection(COLLECTIONS.CLAN_MEMBERS)
-			.find({ season: season || this.seasonID, clanTag: data.tag, tag: { $in: data.memberList.map(m => m.tag) } })
+		if (!season) season = Season.ID;
+		const sameSeason = Boolean(Season.ID === Season.generateID(season));
+
+		const dbMembers = await this.client.db.collection(Collections.CLAN_MEMBERS)
+			.find({ season, clanTag: data.tag, tag: { $in: data.memberList.map(m => m.tag) } })
 			.toArray();
+
+		if (!dbMembers.length && !sameSeason) {
+			return message.util!.send(`**No record found for the specified season ID \`${season}\`**`);
+		}
 
 		const members: Member[] = [];
 		for (const mem of data.memberList) {
-			if (!dbMembers.find(m => m.tag === mem.tag)) {
+			if (!dbMembers.find(m => m.tag === mem.tag) && sameSeason) {
 				members.push({ name: mem.name, tag: mem.tag, donated: mem.donations, received: mem.donationsReceived });
 			}
 
@@ -69,8 +86,16 @@ export default class DonationBoardCommand extends Command {
 				members.push({
 					name: mem.name,
 					tag: mem.tag,
-					donated: m.donations?.gained >= mem.donations ? m.donations?.gained : mem.donations,
-					received: m.donationsReceived?.gained >= mem.donationsReceived ? m.donationsReceived?.gained : mem.donationsReceived
+					donated: sameSeason
+						? m.donations?.gained >= mem.donations
+							? m.donations.gained
+							: mem.donations
+						: m.donations.gained,
+					received: sameSeason
+						? m.donationsReceived?.gained >= mem.donationsReceived
+							? m.donationsReceived.gained
+							: mem.donationsReceived
+						: m.donationsReceived.gained
 				});
 			}
 		}
@@ -94,50 +119,18 @@ export default class DonationBoardCommand extends Command {
 		const donated = members.reduce((pre, mem) => mem.donated + pre, 0);
 		const received = members.reduce((pre, mem) => mem.received + pre, 0);
 
-		const header = `**\`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(16, ' ')}\`**`;
-		const pages = [
-			this.paginate(members, 0, 25)
-				.items.map((member, index) => {
-					const donation = `${this.donation(member.donated, ds)} ${this.donation(member.received, rs)}`;
-					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
-				}),
-			this.paginate(members, 25, 50)
-				.items.map((member, index) => {
-					const donation = `${this.donation(member.donated, ds)} ${this.donation(member.received, rs)}`;
-					return `\`\u200e${(index + 26).toString().padStart(2, ' ')} ${donation}  ${this.padEnd(member.name.substring(0, 15))}\``;
-				})
-		];
+		embed.setDescription([
+			'```',
+			`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(16, ' ')}`,
+			members.map((mem, index) => {
+				const donation = `${this.donation(mem.donated, ds)} ${this.donation(mem.received, rs)}`;
+				return `${(index + 1).toString().padStart(2, ' ')} ${donation}  ${this.padEnd(mem.name.substring(0, 15))}`;
+			}).join('\n'),
+			'```'
+		]);
+		embed.setFooter(`[DON ${donated} | REC ${received}] (Season ${season})`);
 
-		if (!pages[1].length) {
-			return message.util!.send({
-				embed: embed.setDescription([
-					header,
-					pages[0].join('\n')
-				]).setFooter(`Page 1/1 (${data.members}/50) [DON ${donated} | REC ${received}]`)
-			});
-		}
-
-		const msg = await message.channel.send({
-			embed: embed.setDescription([
-				header,
-				pages[0].join('\n')
-			]).setFooter(`Page 1/2 (${data.members}/50) [DON ${donated} | REC ${received}]`)
-		});
-
-		await msg.react('➕');
-		const collector = await msg.awaitReactions(
-			(reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
-			{ max: 1, time: 30000, errors: ['time'] }
-		).catch(() => null);
-		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
-		if (!collector || !collector.size) return;
-
-		return message.channel.send({
-			embed: embed.setFooter(`Page 2/2 (${data.members}/50) [DON ${donated} | REC ${received}]`)
-				.setDescription([
-					header, pages[1].join('\n')
-				])
-		});
+		return message.util!.send({ embed });
 	}
 
 	private padEnd(name: string) {

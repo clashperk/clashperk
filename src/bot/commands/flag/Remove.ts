@@ -18,13 +18,14 @@ export default class FlagRemoveCommand extends Command {
 			args: [
 				{
 					id: 'tag',
-					type: 'uppercase'
+					type: (msg, tag) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
 				}
 			]
 		});
 	}
 
-	public async exec(message: Message, { tag }: { tag: string }) {
+	public async exec(message: Message, { tag }: { tag?: string }) {
+		if (!tag) return message.util!.send('**You must provide a player tag to run this command.**');
 		const data = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
 			.deleteOne({ guild: message.guild!.id, tag });
 		if (!data.deletedCount) {
