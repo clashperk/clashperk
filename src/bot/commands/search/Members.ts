@@ -7,7 +7,7 @@ import { Message } from 'discord.js';
 export default class MembersCommand extends Command {
 	public constructor() {
 		super('members', {
-			aliases: ['members', 'mem', 'warweight', 'ww'],
+			aliases: ['members', 'member', 'mem', 'warweight', 'ww'],
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES'],
 			description: {

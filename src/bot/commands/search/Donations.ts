@@ -13,7 +13,7 @@ interface Member {
 export default class DonationsCommand extends Command {
 	public constructor() {
 		super('donations', {
-			aliases: ['donations', 'don'],
+			aliases: ['donations', 'donation', 'don'],
 			category: 'activity',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
