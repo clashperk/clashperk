@@ -6,7 +6,7 @@ export default class ClanSearchCommand extends Command {
 	public constructor() {
 		super('clan-search', {
 			aliases: ['search', 'clan-search', 'cs'],
-			category: '_search',
+			category: 'search',
 			description: {
 				content: 'Search in-game clans by name.',
 				usage: '<clanName>',
