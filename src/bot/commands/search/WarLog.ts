@@ -12,9 +12,9 @@ export default class WarlogCommand extends Command {
 			category: 'war',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: 'Shows your clan war log.',
-				usage: '<clanTag>',
-				examples: ['#8QU8J9LP', '8QU8J9LP']
+				content: 'Shows last 10 Clan War Log.',
+				usage: '<#clanTag>',
+				examples: ['#8QU8J9LP']
 			},
 			args: [
 				{

@@ -88,7 +88,7 @@ export default class RemoveCommand extends Command {
 	}
 
 	public async exec(message: Message, { bit, tag }: { bit?: string | TextChannel; tag?: string }) {
-		if (!(bit && tag)) {
+		if (!bit) {
 			const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 			const embed = new MessageEmbed()
 				.setColor(this.client.embed(message))
@@ -106,6 +106,8 @@ export default class RemoveCommand extends Command {
 		if (bit instanceof TextChannel) {
 			return this.handler.handleDirectCommand(message, bit.id, this.handler.modules.get('unlink')!);
 		}
+
+		if (!tag) return message.util!.send('**You must specify a clan tag to run this command.**');
 
 		const data = await this.client.db.collection(Collections.CLAN_STORES)
 			.findOne({ tag, guild: message.guild!.id });
