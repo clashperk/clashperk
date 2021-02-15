@@ -84,16 +84,16 @@ export default class LastSeenBoardCommand extends Command {
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
-				'**Wait Time**',
-				'120 sec',
+				'**Sync Rate**',
+				`${this.client.patrons.get(message) ? 2 : 6} min`,
 				'',
 				'**Color**',
-				`\`#${hexColor?.toString(16) ?? 'NONE'}\``,
+				`\`${hexColor ? '#' : ''}${hexColor?.toString(16) ?? 'None'}\``,
 				'',
 				'**Channel**',
 				`${(channel as Channel).toString()}`,
 				'',
-				'**Last Online Board**',
+				'**Last Seen Board**',
 				`[Enabled](${message.url})`
 			]);
 		if (hexColor) embed.setColor(hexColor);

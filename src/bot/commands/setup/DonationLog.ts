@@ -83,11 +83,11 @@ export default class DonationLogCommand extends Command {
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
-				'**Wait Time**',
-				'120 sec',
+				'**Sync Rate**',
+				'2 min',
 				'',
 				'**Color**',
-				`\`#${hexColor?.toString(16) ?? 'NONE'}\``,
+				`\`${hexColor ? '#' : ''}${hexColor?.toString(16) ?? 'None'}\``,
 				'',
 				'**Channel**',
 				`${(channel as Channel).toString()}`,

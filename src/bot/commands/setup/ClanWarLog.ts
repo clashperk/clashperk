@@ -73,7 +73,7 @@ export default class WarLogCommand extends Command {
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
-				'**War Log**',
+				'**Sync Rate**',
 				`${data.isWarLogPublic ? 'Public' : 'Private'}`,
 				'',
 				'**Channel**',

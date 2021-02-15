@@ -85,11 +85,11 @@ export default class ClanGamesBoardCommand extends Command {
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
-				'**Wait Time**',
+				'**Sync Rate**',
 				`${patron ? 15 : 30} min`,
 				'',
 				'**Color**',
-				`\`#${hexColor?.toString(16) ?? 'NONE'}\``,
+				`\`${hexColor ? '#' : ''}${hexColor?.toString(16) ?? 'None'}\``,
 				'',
 				'**Channel**',
 				`${(channel as Channel).toString()}`,
