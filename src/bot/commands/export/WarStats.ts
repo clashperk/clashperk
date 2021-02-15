@@ -9,7 +9,7 @@ export default class WarStatsExport extends Command {
 	public constructor() {
 		super('war-stats', {
 			aliases: ['war-stats'],
-			category: 'activity',
+			category: '_hidden',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
 				content: 'Export war attacks of clan members.',

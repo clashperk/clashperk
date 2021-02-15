@@ -16,7 +16,7 @@ export default class ClanGamesScoresCommand extends Command {
 	public constructor() {
 		super('clan-games-scores', {
 			aliases: ['scores', 'cgstats'],
-			category: 'activity',
+			category: '_hidden',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
