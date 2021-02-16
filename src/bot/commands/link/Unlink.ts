@@ -17,11 +17,7 @@ export default class UnlinkCommand extends Command {
 					'• `unlink #CLAN_TAG`',
 					'',
 					'• **Unlink Player Tag**',
-					'• `unlink #PLAYER_TAG`',
-					'',
-					'• **Unlink Channel (Admin Only)**',
-					'• `unlink #CHANNEL`',
-					'• `unlink #CHANNEL_ID`'
+					'• `unlink #PLAYER_TAG`'
 				],
 				usage: '<#tag>',
 				examples: ['#8QU8J9LP', '#9Q92C8R20']
