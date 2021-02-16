@@ -2,9 +2,9 @@ import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES } from '../../util/Emojis';
 import { COLLECTIONS, leagueId } from '../../util/Constants';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
-import { Player } from 'clashofclans.js';
-import moment from 'moment';
+import { ClanWarClan, Player } from 'clashofclans.js';
 import ms from 'ms';
+import { Collections, Season } from '@clashperk/node';
 
 const roles: { [key: string]: string } = {
 	member: 'Member',
@@ -84,9 +84,7 @@ export default class PlayerCommand extends Command {
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(
-				data.league
-					? data.league.iconUrls.small
-					: `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`
+				data.league?.iconUrls.small ?? `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`
 			)
 			.setDescription([
 				`${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${EMOJIS.EXP} **${data.expLevel}** ${EMOJIS.TROPHY} **${data.trophies}** ${EMOJIS.WAR_STAR} **${data.warStars}**`
@@ -95,7 +93,7 @@ export default class PlayerCommand extends Command {
 			`**Donated**\n${EMOJIS.TROOPS_DONATE} ${data.donations} ${EMOJIS.UP_KEY}`,
 			`**Received**\n${EMOJIS.TROOPS_DONATE} ${data.donationsReceived} ${EMOJIS.DOWN_KEY}`,
 			`**Attacks Won**\n${EMOJIS.ATTACK_SWORD} ${data.attackWins}`,
-			`**Defense Won**\n${EMOJIS.ATTACK_SWORD} ${data.defenseWins}`,
+			`**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}`,
 			'\u200b\u2002'
 		]);
 		embed.addField('**Other Stats**', [
@@ -121,39 +119,14 @@ export default class PlayerCommand extends Command {
 		embed.addField('**Heroes**', [
 			data.heroes.filter(hero => hero.village === 'home')
 				.map(hero => `${HEROES[hero.name]} ${hero.level}`)
-				.join(' ') || `${EMOJIS.CLAN_GAMES} None`
+				.join(' ') || `${EMOJIS.WRONG} None`
 		]);
-
-		const flag = await this.flag(message, data.tag);
-		if (flag) {
-			const user = await this.client.users.fetch(flag.user, false).catch(() => null);
-			const offset = await this.offset(message);
-			embed.addField('**Flag**', [
-				`${flag.reason as string}`,
-				`\`${user ? user.tag : 'Unknown#0000'} (${moment(flag.createdAt).utcOffset(offset).format('DD-MM-YYYY kk:mm')})\``
-			]);
-		}
 
 		return message.util!.send({ embed });
 	}
 
-	private async flag(message: Message, tag: string) {
-		const data = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
-			.findOne({ guild: message.guild!.id, tag });
-		return data;
-	}
-
 	private clanURL(tag: string) {
 		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
-	}
-
-	private async offset(message: Message) {
-		const data = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS).findOne({ user: message.author.id });
-		const prefix = data?.timezone?.offset < 0 ? '-' : '+';
-		const seconds = Math.abs(data?.timezone?.offset ?? 0);
-		const hours = Math.floor(seconds / 3600);
-		const minutes = Math.floor(seconds % 3600 / 60);
-		return `${prefix}${hours >= 1 ? `0${hours}`.slice(-2) : '00'}:${minutes >= 1 ? `0${minutes}`.slice(-2) : '00'}`;
 	}
 
 	private format(num = 0) {
@@ -171,6 +144,58 @@ export default class PlayerCommand extends Command {
 					? `${(Math.abs(num) / 1.0e+3).toFixed(2)}K`
 
 					: Math.abs(num).toFixed(2);
+	}
+
+	private async getWars(tag: string) {
+		const member = {
+			tag,
+			of: 0,
+			attacks: 0,
+			stars: 0,
+			dest: 0,
+			defStars: 0,
+			defDestruction: 0,
+			starTypes: [] as number[],
+			defCount: 0
+		};
+
+		await this.client.db.collection(Collections.CLAN_WARS)
+			.find({
+				preparationStartTime: { $gte: Season.getTimestamp },
+				$or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag, 'groupWar': true }],
+				state: { $in: ['inWar', 'warEnded'] }
+			})
+			.sort({ preparationStartTime: -1 })
+			.forEach(data => {
+				const clan: ClanWarClan = data.clan.members.find((m: any) => m.tag === data.tag) ? data.clan : data.opponent;
+				for (const m of clan.members) {
+					if (m.tag !== data.tag) continue;
+					member.of += data.groupWar ? 1 : 2;
+
+					if (m.attacks) {
+						member.attacks += m.attacks.length;
+						member.stars += m.attacks.reduce((prev, atk) => prev + atk.stars, 0);
+						member.dest += m.attacks.reduce((prev, atk) => prev + atk.destructionPercentage, 0);
+						member.starTypes.push(...m.attacks.map(atk => atk.stars));
+					}
+
+					if (m.bestOpponentAttack) {
+						member.defStars += m.bestOpponentAttack.stars;
+						member.defDestruction += m.bestOpponentAttack.destructionPercentage;
+						member.defCount += 1;
+					}
+				}
+			});
+
+		return member;
+	}
+
+	private async getSeason(tag: string, clanTag: string) {
+		const data = await this.client.db.collection(Collections.CLAN_MEMBERS)
+			.findOne({ tag, season: Season.ID, clanTag });
+		if (!data) return null;
+
+		return {}; // TODO: Finish it
 	}
 }
 

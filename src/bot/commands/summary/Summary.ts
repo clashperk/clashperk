@@ -18,8 +18,8 @@ export default class SummaryCommand extends Command {
 	public *args() {
 		const sub = yield {
 			type: [
-				['summary-clan', 'clans', 'clan'],
 				['summary-wars', 'wars', 'war'],
+				['summary-clan', 'clans', 'clan'],
 				['summary-games', 'game', 'games', 'score', 'cg']
 			]
 		};

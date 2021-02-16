@@ -1,4 +1,4 @@
-import { COLLECTIONS, status } from '../../util/Constants';
+import { Collections } from '@clashperk/node';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 import fetch from 'node-fetch';
@@ -28,20 +28,12 @@ export default class RedeemCommand extends Command {
 			},
 			timeout: 5000
 		}).catch(() => null);
-
-		if (!res) {
-			return message.util!.send({
-				embed: {
-					color: 0xf30c11,
-					author: { name: 'Error' },
-					description: status(504)
-				}
-			});
+		const data = await res?.json().catch(() => null);
+		if (!data) {
+			return message.util!.send('**Something went wrong, please contact us!**');
 		}
 
-		const data = await res.json();
 		const patron = data.included.find((entry: any) => entry?.attributes?.social_connections?.discord?.user_id === message.author.id);
-
 		if (!patron) {
 			const embed = this.client.util.embed()
 				.setColor(16345172)
@@ -63,16 +55,12 @@ export default class RedeemCommand extends Command {
 			return message.util!.send('This server already has an active subscription.');
 		}
 
-		const db = this.client.db.collection(COLLECTIONS.PATRONS);
+		const db = this.client.db.collection(Collections.PATRONS);
 		const user = await db.findOne({ id: patron.id });
 
 		const pledge = data.data.find((entry: any) => entry?.relationships?.patron?.data?.id === patron.id);
 		if (pledge.attributes.declined_since) {
-			return message.util!.send({
-				embed: {
-					description: 'Something went wrong, please [contact us](https://discord.gg/ppuppun)'
-				}
-			});
+			return message.util!.send('**Something went wrong, please contact us!**');
 		}
 
 		if (!user) {
@@ -149,7 +137,7 @@ export default class RedeemCommand extends Command {
 
 	private isNew(user: any, message: Message, patron: any) {
 		if (user && user.discord_id !== message.author.id) {
-			this.client.db.collection(COLLECTIONS.PATRONS)
+			this.client.db.collection(Collections.PATRONS)
 				.updateOne(
 					{ id: patron.id },
 					{
@@ -166,9 +154,9 @@ export default class RedeemCommand extends Command {
 	}
 
 	private async sync(guild: string) {
-		await this.client.db.collection(COLLECTIONS.CLAN_STORES).updateMany({ guild }, { $set: { active: true, patron: true } });
+		await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild }, { $set: { active: true, patron: true } });
 
-		await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild })
 			.forEach(data => this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 }));
 	}

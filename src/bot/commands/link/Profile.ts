@@ -1,8 +1,8 @@
 import { MessageEmbed, GuildMember, Message } from 'discord.js';
 import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis';
-import { COLLECTIONS } from '../../util/Constants';
-import { Clan, Player } from 'clashofclans.js';
 import { Command, Argument } from 'discord-akairo';
+import { Clan, Player } from 'clashofclans.js';
+import { Collections } from '@clashperk/node';
 import moment from 'moment';
 
 export default class ProfileCommand extends Command {
@@ -14,8 +14,8 @@ export default class ProfileCommand extends Command {
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Shows info about linked accounts.',
-				usage: '<member>',
-				examples: ['', 'Suvajit']
+				usage: '[@user]',
+				examples: ['', '@Suvajit']
 			},
 			args: [
 				{
@@ -32,37 +32,39 @@ export default class ProfileCommand extends Command {
 	}
 
 	public async exec(message: Message, { member }: { member: GuildMember }) {
+		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 		const player = await this.getProfile(member.id);
 		const clan = await this.getClan(member.id);
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL());
-
-		embed.setDescription([
-			'**Created**',
-			`${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`
-		]);
+			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())
+			.setDescription([
+				'**Created**',
+				`${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`,
+				'\u200b'
+			]);
 
 		let index = 0;
 		const collection = [];
-		if (clan) {
-			const data: Clan = await this.client.http.clan(clan.tag);
-			if (data.ok) {
-				embed.setDescription([
-					embed.description,
-					'',
-					`${EMOJIS.CLAN} [${data.name} (${data.tag})](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
-					...[`${EMOJIS.EMPTY} Level ${data.clanLevel} ${EMOJIS.USERS} ${data.members} Member${data.members === 1 ? '' : 's'}`]
-				]);
-			}
+
+		const data: Clan = await this.client.http.clan(clan?.tag ?? '💩');
+		if (data.statusCode === 503) {
+			return message.util!.send('**Service is temporarily unavailable because of maintenance.**');
+		}
+
+		if (data.ok) {
+			embed.setDescription([
+				embed.description,
+				`${EMOJIS.CLAN} [${data.name} (${data.tag})](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
+				...[`${EMOJIS.EMPTY} Level ${data.clanLevel} ${EMOJIS.USERS} ${data.members} Member${data.members === 1 ? '' : 's'}`]
+			]);
 		}
 
 		const otherTags = await this.client.http.getPlayerTags(member.id);
 		if (!player?.entries?.length && !otherTags.length) {
 			embed.setDescription([
 				embed.description,
-				'',
 				'No accounts are linked. Why not add some?'
 			]);
 			return message.util!.send({ embed });
@@ -71,12 +73,11 @@ export default class ProfileCommand extends Command {
 		const tags = new Set([...player?.entries.map((en: any) => en.tag) ?? [], ...otherTags]);
 		const showLink = Boolean(tags.size <= 16);
 		for (const tag of tags.values()) {
-			index += 1;
 			const data: Player = await this.client.http.player(tag);
-			if (data.statusCode === 404) {
-				this.client.db.collection(COLLECTIONS.LINKED_USERS).updateOne({ user: member.id }, { $pull: { entries: { tag } } });
-			}
+			if (data.statusCode === 404) this.deleteBanned(member.id, tag);
 			if (!data.ok) continue;
+
+			index += 1; // Increment
 
 			const signature = this.isVerified(player, tag) ? EMOJIS.VERIFIED : this.isLinked(player, tag) ? EMOJIS.AUTHORIZE : '';
 			collection.push({
@@ -89,7 +90,7 @@ export default class ProfileCommand extends Command {
 		tags.clear();
 
 		embed.setFooter(
-			`${collection.length} Account${collection.length === 1 ? '' : 's'} Linked`,
+			`${collection.length} Player${collection.length === 1 ? '' : 's'} Linked`,
 			'https://cdn.discordapp.com/emojis/658538492409806849.png'
 		);
 		if (showLink) collection.map(a => embed.addField('\u200b', [a.field, ...a.values]));
@@ -122,12 +123,18 @@ export default class ProfileCommand extends Command {
 			.map(hero => `${HEROES[hero.name]} ${hero.level}`).join(' ');
 	}
 
+	private deleteBanned(user: string, tag: string) {
+		this.client.http.unlinkPlayerTag(tag);
+		return this.client.db.collection(Collections.LINKED_PLAYERS)
+			.updateOne({ user }, { $pull: { entries: { tag } } });
+	}
+
 	private getProfile(id: string) {
-		return this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ user: id });
+		return this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: id });
 	}
 
 	private getClan(id: string) {
-		return this.client.db.collection(COLLECTIONS.LINKED_CLANS).findOne({ user: id });
+		return this.client.db.collection(Collections.LINKED_CLANS).findOne({ user: id });
 	}
 
 	private profileURL(tag: string) {
