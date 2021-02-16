@@ -146,6 +146,7 @@ export default class LinkCommand extends Command {
 			if (parsed instanceof TextChannel) {
 				return message.util!.send('Player accounts cannot be linked to any text channel.');
 			}
+
 			return this.handler.runCommand(message, playerCommand, { data: tags[1], member: parsed, def });
 		} else {
 			return message.util!.send('**I tried to search the tag as a clan and player but couldn\'t find a match.**');
