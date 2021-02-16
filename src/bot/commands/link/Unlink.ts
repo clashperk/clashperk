@@ -1,5 +1,5 @@
-import { Command, Argument, PrefixSupplier } from 'discord-akairo';
-import { Message, TextChannel, MessageEmbed } from 'discord.js';
+import { Command, PrefixSupplier } from 'discord-akairo';
+import { Message, MessageEmbed } from 'discord.js';
 import { COLLECTIONS } from '../../util/Constants';
 
 export default class UnlinkCommand extends Command {
@@ -8,10 +8,10 @@ export default class UnlinkCommand extends Command {
 			aliases: ['unlink'],
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'EMBED_LINKS'],
+			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Unlinks a Player or Clan from a Discord User or Channel.',
+					'Unlinks a Player or Clan from a Discord account.',
 					'',
 					'• **Unlink Clan Tag**',
 					'• `unlink #CLAN_TAG`',
@@ -23,25 +23,25 @@ export default class UnlinkCommand extends Command {
 					'• `unlink #CHANNEL`',
 					'• `unlink #CHANNEL_ID`'
 				],
-				usage: '<#tag|#channel>',
-				examples: ['#channel', '#8QU8J9LP', '#9Q92C8R20']
+				usage: '<#tag>',
+				examples: ['#8QU8J9LP', '#9Q92C8R20']
 			},
 			optionFlags: ['--tag']
 		});
 	}
 
 	public *args(msg: Message) {
-		const parsed = yield {
+		const tag = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
-			type: Argument.union('textChannel', (msg, tag) => this.parseTag(tag))
+			type: (msg: Message, tag: string) => this.parseTag(tag),
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
 		};
 
-		return { parsed };
+		return { tag };
 	}
 
-	public async exec(message: Message, { parsed, parsed: tag }: { parsed?: TextChannel | string }) {
-		if (!parsed) {
+	public async exec(message: Message, { tag }: { tag?: string }) {
+		if (!tag) {
 			const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 			const embed = new MessageEmbed()
 				.setColor(this.client.embed(message))
@@ -60,26 +60,7 @@ export default class UnlinkCommand extends Command {
 			);
 		}
 
-		if (parsed && parsed instanceof TextChannel) {
-			if (!message.member!.permissions.has('MANAGE_GUILD')) {
-				return message.util!.send('You are missing `Manage Server` permission to use this comamnd.');
-			}
-
-			const { value } = await this.client.storage.collection.findOneAndUpdate(
-				{ channels: parsed.id }, { $pull: { channels: parsed.id } }, { returnOriginal: false }
-			);
-
-			if (value) {
-				return message.util!.send(
-					`Successfully deleted **${value.name} (${value.tag})** from <#${parsed.id}>`
-				);
-			}
-
-			// eslint-disable-next-line @typescript-eslint/no-base-to-string
-			return message.util!.send(`Couldn\'t find any clan linked to ${parsed.toString()}`);
-		}
-
-		const deleted = await this.delete(message.author.id, tag as string);
+		const deleted = await this.delete(message.author.id, tag);
 		if (!deleted) {
 			const clan = await this.client.db.collection(COLLECTIONS.LINKED_CLANS)
 				.findOneAndDelete({ user: message.author.id, tag });
