@@ -6,9 +6,9 @@ import { Message } from 'discord.js';
 import moment from 'moment';
 
 // TODO: Fix TS
-export default class FlagsCommand extends Command {
+export default class FlagListCommand extends Command {
 	public constructor() {
-		super('flags', {
+		super('flag-list', {
 			aliases: ['flags'],
 			category: '_hidden',
 			channel: 'guild',

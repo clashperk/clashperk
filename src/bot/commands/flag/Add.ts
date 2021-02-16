@@ -3,25 +3,30 @@ import { Util, Message } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
 
-export default class FlagCommand extends Command {
+export default class FlagAddCommand extends Command {
 	public constructor() {
 		super('flag-add', {
 			category: '_hidden',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
 			description: {},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.getPlayer(msg, tag)
-				},
-				{
-					id: 'reason',
-					match: 'rest',
-					type: 'string'
-				}
-			]
+			userPermissions: ['MANAGE_GUILD'],
+			optionFlags: ['--tag', '--reason']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.getPlayer(msg, tag)
+		};
+
+		const reason = yield {
+			flag: '--reason',
+			match: msg.hasOwnProperty('token') ? 'option' : 'rest'
+		};
+
+		return { data, reason };
 	}
 
 	public async exec(message: Message, { data, reason }: { data: Player; reason: string }) {

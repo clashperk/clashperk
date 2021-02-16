@@ -9,19 +9,20 @@ export default class FlagRemoveCommand extends Command {
 			aliases: ['unflag'],
 			category: '_hidden',
 			channel: 'guild',
+			description: {},
 			userPermissions: ['MANAGE_GUILD'],
-			description: {
-				content: 'Unflags a player from your server or clans.',
-				usage: '<playerTag>',
-				examples: ['#9Q92C8R20']
-			},
-			args: [
-				{
-					id: 'tag',
-					type: (msg, tag) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const tag = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
+		};
+
+		return { tag };
 	}
 
 	public async exec(message: Message, { tag }: { tag?: string }) {

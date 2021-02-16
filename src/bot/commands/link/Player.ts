@@ -10,23 +10,31 @@ export default class LinkPlayerCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
 			description: {},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.getPlayer(msg, tag)
-				},
-				{
-					'id': 'member',
-					'type': 'member',
-					'default': (m: Message) => m.member
-				},
-				{
-					id: 'def',
-					match: 'flag',
-					flag: ['--default']
-				}
-			]
+			flags: ['--default'],
+			optionFlags: ['--tag', '--user']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.getPlayer(msg, tag)
+		};
+
+		const member = yield {
+			'flag': '--user',
+			'type': 'member',
+			'default': (m: Message) => m.member,
+			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		const def = yield {
+			match: 'flag',
+			flag: ['--default']
+		};
+
+		return { data, member, def };
 	}
 
 	public async exec(message: Message, { data, member, def }: { data: Player; member: GuildMember; def: boolean }) {

@@ -3,20 +3,25 @@ import { Message, MessageEmbed } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
 
-export default class FlagCommand extends Command {
+export default class FlagShowCommand extends Command {
 	public constructor() {
 		super('flag-show', {
 			category: '_hidden',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.getPlayer(msg, tag)
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const tag = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.getPlayer(msg, tag)
+		};
+
+		return { tag };
 	}
 
 	public async exec(message: Message, { data }: { data: Player }) {
