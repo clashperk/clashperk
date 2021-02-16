@@ -15,13 +15,13 @@ export default class FlagShowCommand extends Command {
 	}
 
 	public *args(msg: Message) {
-		const tag = yield {
+		const data = yield {
 			flag: '--tag',
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.getPlayer(msg, tag)
 		};
 
-		return { tag };
+		return { data };
 	}
 
 	public async exec(message: Message, { data }: { data: Player }) {
