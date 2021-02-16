@@ -31,17 +31,24 @@ export default class VerifyPlayerCommand extends Command {
 				usage: '<#playerTag> <token>',
 				examples: ['#9Q92C8R20 pd3NN9x2']
 			},
-			args: [
-				{
-					id: 'tag',
-					type: 'string'
-				},
-				{
-					id: 'token',
-					type: 'string'
-				}
-			]
+			optionFlags: ['--tag', '--token']
 		});
+	}
+
+	public *args(msg: Message) {
+		const tag = yield {
+			flag: '--tag',
+			type: 'string',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		const token = yield {
+			flag: '--token',
+			type: 'string',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		return { tag, token };
 	}
 
 	private retry(message: Message, text: string) {
