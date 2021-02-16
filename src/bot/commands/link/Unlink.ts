@@ -25,12 +25,15 @@ export default class UnlinkCommand extends Command {
 				],
 				usage: '<#tag|#channel>',
 				examples: ['#channel', '#8QU8J9LP', '#9Q92C8R20']
-			}
+			},
+			optionFlags: ['--tag']
 		});
 	}
 
-	public *args() {
+	public *args(msg: Message) {
 		const parsed = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			type: Argument.union('textChannel', (msg, tag) => this.parseTag(tag))
 		};
 
