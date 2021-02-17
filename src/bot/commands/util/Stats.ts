@@ -1,5 +1,5 @@
-const { version } = require('../../../../package.json'); // eslint-disable-line
 import { MessageEmbed, TextChannel, Message } from 'discord.js';
+import { version } from '../../../../package.json';
 import { Command } from 'discord-akairo';
 import 'moment-duration-format';
 import moment from 'moment';
@@ -46,7 +46,7 @@ export default class StatsCommand extends Command {
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }), true)
 			.addField('Servers', guilds, true)
 			.addField('Shard', `${message.guild!.shard.id}/${this.client.shard!.count}`, true)
-			.addField('Version', `v${version as string}`, true)
+			.addField('Version', `v${version}`, true)
 			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL({ dynamic: true }));
 
 		if (message.channel.type === 'dm' || !(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {

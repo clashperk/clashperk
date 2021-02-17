@@ -4,14 +4,14 @@
 	"author": "SUVAJIT (suvajit.me@gmail.com)",
 	"license": "MIT",
 	"description": "Clash of Clans Discord Bot",
-	"main": "dist/index.js",
+	"main": "dist/src/index.js",
 	"private": true,
 	"scripts": {
 		"build": "tsc",
-		"start": "pm2 start dist/index.js --name bot",
+		"start": "pm2 start dist/src/index.js --name bot",
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
-		"dev": "node --enable-source-maps dist/index.js"
+		"dev": "node --enable-source-maps dist/src/index.js"
 	},
 	"dependencies": {
 		"@clashperk/chartgen": "github:clashperk/chartgen",

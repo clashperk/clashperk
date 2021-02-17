@@ -195,7 +195,7 @@ export default class Client extends AkairoClient {
 		this.resolver = new Resolver(this);
 
 		this.once('ready', () => {
-			if (process.env.NODE_ENV) return this.run();
+			if (process.env.NODE_ENV === 'production') return this.run();
 		});
 	}
 

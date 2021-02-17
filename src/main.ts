@@ -1,19 +1,20 @@
 import Env from 'dotenv';
 Env.config();
 
-const Auth = require('../auth.js'); // eslint-disable-line
+import Auth from '../auth';
 Auth.config();
 
 import Client from './bot/struct/Client';
+import { version } from '../package.json';
 import * as Sentry from '@sentry/node';
-const { name, version } = require('../package.json'); // eslint-disable-line
+
 const client = new Client({ owner: process.env.OWNER });
 
 if (process.env.SENTRY) {
 	Sentry.init({
-		dsn: process.env.SENTRY,
-		environment: name,
 		release: version,
+		dsn: process.env.SENTRY,
+		environment: process.env.NODE_ENV ?? 'development',
 		integrations: [new Sentry.Integrations.Http({ tracing: true })]
 	});
 }
