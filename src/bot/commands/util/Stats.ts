@@ -1,5 +1,6 @@
 import { MessageEmbed, TextChannel, Message } from 'discord.js';
 import { version } from '../../../../package.json';
+import { Collections } from '@clashperk/node';
 import { Command } from 'discord-akairo';
 import 'moment-duration-format';
 import moment from 'moment';
@@ -8,7 +9,7 @@ import os from 'os';
 export default class StatsCommand extends Command {
 	public constructor() {
 		super('stats', {
-			aliases: ['stats', 'bot-info'],
+			aliases: ['stats', 'about'],
 			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
@@ -31,7 +32,7 @@ export default class StatsCommand extends Command {
 			memory += value[1];
 		}
 
-		const owner = await this.client.users.fetch(this.client.ownerID as string, false);
+		const owner = await this.client.users.fetch(this.client.ownerID as string);
 		const grpc: any = await new Promise(resolve => this.client.rpc.stats({}, (err: any, res: any) => {
 			if (res) resolve(JSON.parse(res?.data));
 			else resolve({ heapUsed: 0 });
@@ -43,8 +44,11 @@ export default class StatsCommand extends Command {
 			.setAuthor(`${this.client.user!.username}`, this.client.user!.displayAvatarURL())
 			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
 			.addField('RPC Usage', `${(grpc.heapUsed / 1024 / 1024).toFixed(2)} MB`, true)
+			.addField('Free Memory', `${this.freemem.toFixed(2)} MB`, true)
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }), true)
-			.addField('Servers', guilds, true)
+			.addField('Servers', guilds.toLocaleString(), true)
+			.addField('Clans Total', `${(await this.client.db.collection(Collections.CLAN_STORES).find().count()).toLocaleString()}`, true)
+			.addField('Players Total', `${(await this.client.db.collection(Collections.LAST_SEEN).find().count()).toLocaleString()}`, true)
 			.addField('Shard', `${message.guild!.shard.id}/${this.client.shard!.count}`, true)
 			.addField('Version', `v${version}`, true)
 			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL({ dynamic: true }));
