@@ -4,18 +4,14 @@ import { Message, MessageEmbed } from 'discord.js';
 import { COLLECTIONS } from '../../util/Constants';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 
-export default class MatchesCommand extends Command {
+export default class WarSummaryCommand extends Command {
 	public constructor() {
 		super('matches', {
-			aliases: ['matches'],
+			aliases: ['matches', 'wars'],
 			category: 'activity_',
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
-			description: {
-				content: '',
-				usage: '',
-				examples: ['']
-			}
+			description: {}
 		});
 	}
 

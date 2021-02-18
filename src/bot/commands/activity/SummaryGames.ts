@@ -12,9 +12,9 @@ interface Prop {
 	endedAt?: any;
 }
 
-export default class ClanGamesScoresCommand extends Command {
+export default class ClanGamesSummaryCommand extends Command {
 	public constructor() {
-		super('clan-games-scores', {
+		super('clan-games-summary', {
 			aliases: ['scores', 'cgstats'],
 			category: '_hidden',
 			channel: 'guild',

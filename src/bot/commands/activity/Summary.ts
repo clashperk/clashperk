@@ -8,9 +8,9 @@ export default class SummaryCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Summary for all clans',
-				usage: '[key]',
-				examples: ['']
+				content: 'Summary of Wars/Clans/Clan Games for all clans.',
+				usage: '[war|clan|game]',
+				examples: ['summary war']
 			}
 		});
 	}
@@ -18,9 +18,9 @@ export default class SummaryCommand extends Command {
 	public *args() {
 		const sub = yield {
 			type: [
-				['summary-wars', 'wars', 'war'],
-				['summary-clan', 'clans', 'clan'],
-				['summary-games', 'game', 'games', 'score', 'cg']
+				['war-summary', 'war', 'wars'],
+				['clan-summary', 'clan', 'clans'],
+				['clan-games-summary', 'game', 'games', 'score', 'scores']
 			]
 		};
 

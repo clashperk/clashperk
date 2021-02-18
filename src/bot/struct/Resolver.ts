@@ -79,7 +79,7 @@ export default class Resolver {
 	}
 
 	private async fail(message: Message, content: string) {
-		return message.channel.send(content)
+		return message.util!.send(content)
 			.catch(() => Flag.cancel())
 			.then(() => Flag.cancel());
 	}
