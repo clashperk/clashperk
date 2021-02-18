@@ -67,6 +67,8 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.CLAN_WARS).createIndex({ warTag: 1 }),
 
+			db.collection(Collections.CLAN_WARS).createIndex({ endTime: -1 }),
+
 			db.collection(Collections.CLAN_WARS).createIndex({ preparationStartTime: -1 }),
 
 			db.collection(Collections.CLAN_WARS).createIndex({ 'clan.members.tag': 1 }),
@@ -74,6 +76,10 @@ class MongoDB extends MongoClient {
 			db.collection(Collections.CLAN_WARS).createIndex({ 'opponent.members.tag': 1 }),
 
 			db.collection(Collections.CLAN_WARS).createIndex({ groupWar: 1 }),
+
+			db.collection(Collections.CLAN_WARS).createIndex({ season: 1 }),
+
+			db.collection(Collections.CLAN_WARS).createIndex({ id: -1 }),
 
 			db.collection(Collections.CLAN_GAMES)
 				.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 20 * 24 * 60 * 60 }),
