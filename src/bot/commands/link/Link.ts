@@ -123,7 +123,7 @@ export default class LinkCommand extends Command {
 
 			collector.on('collect', async reaction => {
 				if (reaction.emoji.name === num[1]) {
-					return this.handler.runCommand(message, clanCommand, { data: tags[0], member });
+					return this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
 				}
 
 				if (reaction.emoji.name === num[2]) {
@@ -137,7 +137,7 @@ export default class LinkCommand extends Command {
 
 			collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 		} else if (tags[0].ok) {
-			return this.handler.runCommand(message, clanCommand, { data: tags[0], member });
+			return this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
 		} else if (tags[1].ok) {
 			return this.handler.runCommand(message, playerCommand, { data: tags[1], member: member, def });
 		} else {
