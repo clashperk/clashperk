@@ -128,6 +128,8 @@ export default class Client extends AkairoClient {
 			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) return;
 			// @ts-expect-error
 			if (await this.commandHandler.runPermissionChecks(interaction, command)) return;
+			// @ts-expect-error
+			if (await this.commandHandler.runPostTypeInhibitors(interaction, command)) return;
 			return this.handleInteraction(interaction, command, interaction.options);
 		});
 	}
