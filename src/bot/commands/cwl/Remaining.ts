@@ -15,25 +15,29 @@ export default class CWLRemainingComamnd extends Command {
 					'Shows remaining attacks of the current round.',
 					'',
 					'**Flags**',
-					'`--round <num>` or `-r <num>` to see specific round.'
+					'`--round <num>` to see specific round.'
 				],
-				usage: '<clanTag>',
+				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			optionFlags: ['--round', '-r'],
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				},
-				{
-					id: 'round',
-					match: 'option',
-					flag: ['--round', '-r'],
-					type: Argument.range('integer', 1, Infinity, true)
-				}
-			]
+			optionFlags: ['--round', '--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		const round = yield {
+			match: 'option',
+			flag: ['--round'],
+			type: Argument.range('integer', 1, 7, true)
+		};
+
+		return { data, round };
 	}
 
 	public async exec(message: Message, { data, round }: { data: Clan; round: number }) {

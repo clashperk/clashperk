@@ -44,12 +44,15 @@ export default class CWLComamnd extends Command {
 					'export clans/all'
 				],
 				usage: '<method> <...args>'
-			}
+			},
+			optionFlags: ['--option']
 		});
 	}
 
-	public *args() {
+	public *args(msg: Message) {
 		const command = yield {
+			flag: '--option',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			type: [
 				['cwl-attacks', 'attacks'],
 				['cwl-remaining', 'remaining', 'missing', 'rem'],

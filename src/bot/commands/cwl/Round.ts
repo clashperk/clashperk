@@ -16,24 +16,12 @@ export default class CWLRoundComamnd extends Command {
 					'Shows info about the current round.',
 					'',
 					'**Flags**',
-					'`--round <num>` or `-r <num>` to see specific round.'
+					'`--round <num>` to see specific round.'
 				],
 				usage: '<clanTag> [--round/-r] [round]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP -r 5', '#8QU8J9LP --round 4']
 			},
-			optionFlags: ['--round', '--tag'],
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				},
-				{
-					id: 'round',
-					match: 'option',
-					flag: ['--round', '-r'],
-					type: Argument.range('integer', 1, 7, true)
-				}
-			]
+			optionFlags: ['--round', '--tag']
 		});
 	}
 

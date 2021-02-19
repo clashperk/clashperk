@@ -18,19 +18,23 @@ export default class HelpCommand extends Command {
 			aliases: ['help', 'commands'],
 			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS'],
-			args: [
-				{
-					id: 'command',
-					match: 'content',
-					type: 'commandAlias'
-				}
-			],
 			description: {
-				content: 'Displays info about commands.',
+				content: 'Get all commands or info about a command',
 				usage: '[command]',
 				examples: ['', 'clan', 'compo']
-			}
+			},
+			optionFlags: ['--command']
 		});
+	}
+
+	public *args(msg: Message) {
+		const command = yield {
+			flag: '--command',
+			type: 'commandAlias',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		return { command };
 	}
 
 	public exec(message: Message, { command }: { command: Command | null }) {

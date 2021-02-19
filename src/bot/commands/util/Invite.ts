@@ -8,7 +8,7 @@ export default class InviteCommand extends Command {
 			aliases: ['invite', 'support'],
 			category: 'config',
 			clientPermissions: ['EMBED_LINKS'],
-			description: { content: 'Shows bot invite & support server link.' }
+			description: { content: 'Get ClashPerk\'s invite link.' }
 		});
 	}
 
