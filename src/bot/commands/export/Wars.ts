@@ -9,37 +9,43 @@ export default class WarExport extends Command {
 	public constructor() {
 		super('export-wars', {
 			category: 'activity',
+			channel: 'guild',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
-			description: {
-				content: 'Export wars or missed attacks to excel for all clans.',
-				usage: '<days|missed>',
-				examples: ['20', 'missed']
-			},
-			args: [
-				{
-					'id': 'limit',
-					'type': Argument.range('integer', 1, 30),
-					'default': 30
-				}
-			]
+			description: {},
+			optionFlags: ['--number']
 		});
 	}
 
-	public async exec(message: Message, { limit }: { limit: number }) {
+	public *args(msg: Message) {
+		const num = yield {
+			'flag': '--number',
+			'default': 25,
+			'type': Argument.range('integer', 1, Infinity, true),
+			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		return { num };
+	}
+
+	public async exec(message: Message, { num }: { num: number }) {
 		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 
+		if (!clans.length) {
+			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
+		}
+
+		num = this.client.patrons.get(message.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
 		const chunks = [];
 		for (const { tag, name } of clans) {
 			const wars = await this.client.db.collection(COLLECTIONS.CLAN_WAR_STORES)
 				.find({
-					// $not: { isFreindly: true },
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag, 'groupWar': true }],
 					state: { $in: ['inWar', 'warEnded'] }
 				})
 				.sort({ preparationStartTime: -1 })
-				.limit(this.client.patrons.get(message.guild!.id) ? 0 : limit)
+				.limit(num)
 				.toArray();
 
 			const members: { [key: string]: any } = {};
@@ -138,7 +144,7 @@ export default class WarExport extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send(`**War Export ${this.client.patrons.get(message.guild!.id) ? '' : `(${limit} day${limit === 1 ? '' : 's'})`}**`, {
+		return message.util!.send(`**War Export (Last ${num})**`, {
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_war_stats.xlsx'

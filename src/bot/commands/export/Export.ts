@@ -1,5 +1,5 @@
-import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Command, Flag, PrefixSupplier } from 'discord-akairo';
+import { Message, MessageEmbed } from 'discord.js';
 
 export default class Export extends Command {
 	public constructor() {
@@ -8,60 +8,57 @@ export default class Export extends Command {
 			category: 'activity',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
-				content: 'Export wars/war attacks/season stats to excel for all clans.',
-				usage: '<days|missed|season>',
-				examples: ['20', 'missed', 'season']
-			}
+				content: [
+					'Export war or season stats to excel for all clans.',
+					'',
+					'• **Missed Attacks**',
+					'• `MISSED [NUMBER]`',
+					'',
+					'• **Season Stats**',
+					'• `SEASON [SEASON_ID]`',
+					'',
+					'• **Export War Stats**',
+					'• `WARS [NUMBER]`',
+					'',
+					'- Season ID must be under 3 months old and must follow `YYYY-MM` format.',
+					'',
+					'**[Support us on Patreon](https://patreon.com/clashperk)**'
+				],
+				usage: '<wars|missed|season> [number|season]',
+				examples: ['wars', 'missed', 'season', 'wars 10', 'missed 10', 'season 2021-01']
+			},
+			optionFlags: ['--option']
 		});
 	}
 
-	public *args() {
-		const limit = yield {
-			'type': (msg: Message, num: string) => {
-				if (!num) return null;
-				if (num.toLowerCase() === 'missed') return 'missed';
-				if (num.toLowerCase() === 'season') return 'season';
-				return (Number(num) || 30) >= 30 ? 30 : Number(num);
-			},
-			'default': 30
+	public *args(msg: Message) {
+		const sub = yield {
+			flag: '--option',
+			type: [
+				['export-missed', 'missed'],
+				['export-season', 'season'],
+				['export-wars', 'war', 'wars']
+			],
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})
 		};
 
-		const next = yield {
-			'type': 'string',
-			'match': 'rest',
-			'default': ''
-		};
-
-		return { limit, next };
+		return Flag.continue(sub);
 	}
 
-	public async exec(message: Message, { limit, next }: { limit: number | string; next: string }) {
-		if (limit === 'missed') {
-			const command = this.handler.modules.get('export-missed-attacks');
-			return this.client.commandHandler.handleDirectCommand(
-				message,
-				next,
-				command!,
-				false
-			);
-		}
+	public exec(message: Message) {
+		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
+		const embed = new MessageEmbed()
+			.setColor(this.client.embed(message))
+			.setDescription([
+				`\`${prefix}export ${this.description.usage as string}\``,
+				'',
+				this.description.content.join('\n'),
+				'',
+				'**Examples**',
+				this.description.examples.map((en: string) => `\`${prefix}export ${en}\``).join('\n')
+			]);
 
-		if (limit === 'season') {
-			const command = this.handler.modules.get('export-season');
-			return this.client.commandHandler.handleDirectCommand(
-				message,
-				next,
-				command!,
-				false
-			);
-		}
-
-		const command = this.handler.modules.get('export-wars');
-		return this.client.commandHandler.handleDirectCommand(
-			message,
-			limit as string,
-			command!,
-			false
-		);
+		return message.util!.send({ embed });
 	}
 }

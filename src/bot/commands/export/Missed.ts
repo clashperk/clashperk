@@ -4,40 +4,47 @@ import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
 
 // TODO: Fix TS
-export default class WarExport extends Command {
+export default class ExportMissed extends Command {
 	public constructor() {
-		super('export-missed-attacks', {
+		super('export-missed', {
 			category: 'activity',
+			channel: 'guild',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
-			description: {
-				content: 'Export missed attacks to excel for all clans.',
-				examples: ['']
-			},
-			args: [
-				{
-					'id': 'days',
-					'type': Argument.range('integer', 1, 30, true),
-					'default': 30
-				}
-			]
+			description: {},
+			optionFlags: ['--number']
 		});
 	}
 
-	public async exec(message: Message, { days }: { days: number }) {
+	public *args(msg: Message) {
+		const num = yield {
+			'flag': '--number',
+			'default': 25,
+			'type': Argument.range('integer', 1, Infinity, true),
+			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		return { num };
+	}
+
+	public async exec(message: Message, { num }: { num: number }) {
 		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 
+		if (!clans.length) {
+			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
+		}
+
+		num = this.client.patrons.get(message.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
 		const chunks = [];
 		for (const { tag } of clans) {
 			const wars = await this.client.db.collection(COLLECTIONS.CLAN_WAR_STORES)
 				.find({
-					// $not: { isFreindly: true },
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag, 'groupWar': true }],
 					state: 'warEnded'
 				})
 				.sort({ preparationStartTime: -1 })
-				.limit(this.client.patrons.get(message.guild!.id) ? 0 : days)
+				.limit(num)
 				.toArray();
 
 			for (const war of wars) {
@@ -103,7 +110,7 @@ export default class WarExport extends Command {
 		);
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send('**Missed Attacks**', {
+		return message.util!.send(`**Missed Attacks (Last ${num})**`, {
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_war_missed.xlsx'

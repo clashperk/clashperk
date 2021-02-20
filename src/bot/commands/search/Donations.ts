@@ -72,7 +72,7 @@ export default class DonationsCommand extends Command {
 			.toArray();
 
 		if (!dbMembers.length && !sameSeason) {
-			return message.util!.send(`**No record found for the specified season ID \`${season}\`**`);
+			return message.util!.send(`**No record found for the specified Season ID \`${season}\`**`);
 		}
 
 		const members: Member[] = [];
