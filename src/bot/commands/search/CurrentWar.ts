@@ -1,28 +1,41 @@
 import { Clan, CurrentWar, ClanWarMember } from 'clashofclans.js';
-import { Command, PrefixSupplier } from 'discord-akairo';
+import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import 'moment-duration-format';
 import moment from 'moment';
 
-export default class CurrentWarCommand extends Command {
+export default class WarCommand extends Command {
 	public constructor() {
-		super('current-war', {
-			aliases: ['war', 'cw'],
+		super('war', {
+			aliases: ['war'],
 			category: 'war',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: 'Shows info and stats about current war.',
-				usage: '<clanTag>',
-				examples: ['#8QU8J9LP', '8QU8J9LP']
+				content: 'Current or previous clan war details.',
+				usage: '<#clanTag|warID>',
+				examples: ['#8QU8J9LP']
 			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				}
-			]
+			optionFlags: ['--tag', '--war-id']
 		});
+	}
+
+	public *args(msg: Message) {
+		const warID = yield {
+			flag: '--war-id',
+			type: Argument.range('integer', 1001, 1e5),
+			unordered: msg.hasOwnProperty('token') ? false : true,
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		const data = yield {
+			flag: '--tag',
+			unordered: msg.hasOwnProperty('token') ? false : true,
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data, warID };
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
@@ -35,7 +48,7 @@ export default class CurrentWarCommand extends Command {
 			if (res?.ok) {
 				embed.setDescription(`Clan is in CWL. Run \`${(this.handler.prefix as PrefixSupplier)(message) as string}cwl\` to get CWL commands.`);
 			} else {
-				embed.setDescription('Private WarLog');
+				embed.setDescription('Private War Log');
 			}
 			return message.util!.send({ embed });
 		}

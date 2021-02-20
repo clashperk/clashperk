@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { MessageEmbed, Message } from 'discord.js';
+import { Collections } from '@clashperk/node';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import 'moment-duration-format';
 import moment from 'moment';
 
-export default class WarlogCommand extends Command {
+export default class WarLogCommand extends Command {
 	public constructor() {
 		super('warlog', {
 			aliases: ['warlog', 'wl'],
@@ -28,36 +30,50 @@ export default class WarlogCommand extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
+			.setAuthor(
+				`${data.name} (${data.tag})`,
+				data.badgeUrls.medium,
+				`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`
+			)
 			.setDescription([
-				'\u200e',
-				`${data.warWins} wins, ${data.isWarLogPublic ? `${data.warLosses!} losses,` : ''} win streak ${data.warWinStreak}`
-					.padEnd(50, '\u200b \u2002'),
-				'\u200f',
-				'\u200e',
-				'\u200b'
-			].join(' '));
+				`${data.warWins} Wins, ${data.isWarLogPublic ? `${data.warLosses!} Losses,` : ''} ${data.warWinStreak} Win Streak`
+			]);
 
 		if (!data.isWarLogPublic) {
 			embed.setDescription('War Log is Private');
 			return message.util!.send({ embed });
 		}
 
-		const body = await this.client.http.clanWarLog(data.tag, { limit: 10 });
+		const wars = await this.client.db.collection(Collections.CLAN_WARS)
+			.find({ 'clan.tag': data.tag, 'groupWar': false })
+			.sort({ preparationStartTime: -1 })
+			.limit(11)
+			.toArray();
 
+		const body = await this.client.http.clanWarLog(data.tag, { limit: 10 });
 		for (const item of body.items) {
+			const extra = this.getWarInfo(wars, item);
 			const { clan, opponent } = item;
 			const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
-			embed.addField(`\u200e**${this.result(item.result)} ${opponent.name as string || 'Clan War League'}**`, [
-				`${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${EMOJIS.FIRE} ${clan.destructionPercentage.toFixed(2) as number}% ${opponent.name ? `/ ${opponent.destructionPercentage.toFixed(2) as number}` : ''}`,
-				`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${EMOJIS.CLOCK} ${time} ago ${EMOJIS.SWORD} ${clan.attacks as number}`
-			]);
+			embed.addField(
+				`\u200b\n\u200e${this.result(item.result)} ${opponent.name as string || 'Clan War League'} ${extra ? `\u200e(#${extra.id})` : ''}`,
+				[
+					`${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${EMOJIS.FIRE} ${clan.destructionPercentage.toFixed(2)}% ${opponent.name ? `/ ${opponent.destructionPercentage.toFixed(2)}%` : ''}`,
+					`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${EMOJIS.SWORD} ${clan.attacks}${extra ? ` / ${extra.attacks}` : ''} ${EMOJIS.CLOCK} ${time} ago`
+				]
+			);
 		}
 
 		return message.util!.send({ embed });
 	}
 
-	private result(result: string) {
+	private getWarInfo(wars: any[], war: any) {
+		const data = wars.find(en => en.clan.tag === war.clan.tag && en.opponent.tag === war.opponent?.tag);
+		if (!data) return null;
+		return { id: data.id, attacks: data.opponent.attacks };
+	}
+
+	private result(result: string | null) {
 		if (result === 'win') return `${EMOJIS.OK}`;
 		if (result === 'lose') return `${EMOJIS.WRONG}`;
 		return EMOJIS.EMPTY;
