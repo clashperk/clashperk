@@ -14,7 +14,7 @@ export default class WarLogCommand extends Command {
 			category: 'war',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: 'Shows last 10 Clan War Log.',
+				content: 'Shows last 10 Clan War Logs with War ID.',
 				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},

@@ -2,6 +2,7 @@ import { Clan, CurrentWar, ClanWarMember } from 'clashofclans.js';
 import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
+import { Collections } from '@clashperk/node';
 import 'moment-duration-format';
 import moment from 'moment';
 
@@ -12,9 +13,13 @@ export default class WarCommand extends Command {
 			category: 'war',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: 'Current or previous clan war details.',
-				usage: '<#clanTag|warID>',
-				examples: ['#8QU8J9LP']
+				content: [
+					'Current or previous clan war details.',
+					'',
+					'Get War ID from `warlog` comamnd.'
+				],
+				usage: '<#clanTag|last|warID>',
+				examples: ['36081', '#8QU8J9LP', '#8QU8J9LP last']
 			},
 			optionFlags: ['--tag', '--war-id']
 		});
@@ -23,7 +28,12 @@ export default class WarCommand extends Command {
 	public *args(msg: Message) {
 		const warID = yield {
 			flag: '--war-id',
-			type: Argument.range('integer', 1001, 1e5),
+			type: Argument.union(
+				[
+					['last', 'prev']
+				],
+				Argument.range('integer', 1001, 1e5)
+			),
 			unordered: msg.hasOwnProperty('token') ? false : true,
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
 		};
@@ -38,7 +48,9 @@ export default class WarCommand extends Command {
 		return { data, warID };
 	}
 
-	public async exec(message: Message, { data }: { data: Clan }) {
+	public async exec(message: Message, { data, warID }: { data: Clan; warID?: number }) {
+		if (warID) return this.getWar(message, warID, data.tag);
+
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`\u200e${data.name} (${data.tag})`, data.badgeUrls.medium);
@@ -64,6 +76,36 @@ export default class WarCommand extends Command {
 			}
 			return message.util!.send({ embed });
 		}
+
+		return this.sendResult(message, body);
+	}
+
+	private async getWar(message: Message, id: number | string, tag: string) {
+		let data: any = null;
+		if (typeof id === 'string' && tag) {
+			data = (
+				await this.client.db.collection(Collections.CLAN_WARS)
+					.find({ 'clan.tag': tag, 'groupWar': false, 'state': 'warEnded' })
+					.sort({ preparationStartTime: -1 })
+					.limit(1)
+					.toArray()
+			)[0];
+		} else if (typeof id === 'number') {
+			data = await this.client.db.collection(Collections.CLAN_WARS)
+				.findOne({ id });
+		}
+
+		if (!data) {
+			return message.util!.send('**No War found for the specified War ID.**');
+		}
+
+		return this.sendResult(message, data);
+	}
+
+	private sendResult(message: Message, body: CurrentWar) {
+		const embed = new MessageEmbed()
+			.setColor(this.client.embed(message))
+			.setAuthor(`\u200e${body.clan.name} (${body.clan.tag})`, body.clan.badgeUrls.medium);
 
 		if (body.state === 'preparation') {
 			embed.setDescription([
@@ -127,6 +169,11 @@ export default class WarCommand extends Command {
 			`\u200e${Util.escapeMarkdown(body.opponent.name)}`,
 			`${this.count(body.opponent.members)}`
 		]);
+
+		if (body.hasOwnProperty('id')) {
+			// @ts-expect-error
+			embed.setFooter(`War ID #${body.id as number}`);
+		}
 
 		return message.util!.send({ embed });
 	}
