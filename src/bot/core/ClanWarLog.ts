@@ -46,6 +46,7 @@ interface WarRes extends CurrentWar {
 	groupWar: boolean;
 	warTag?: string;
 	warID: number;
+	isFriendly: boolean;
 }
 
 export default class ClanWarEvent {
@@ -259,16 +260,18 @@ export default class ClanWarEvent {
 			.sort((a, b) => a.mapPosition - b.mapPosition)
 			.map(m => `\u200e${CYAN_NUMBERS[m.mapPosition]} ${m.name}`);
 
+		const friendly = Boolean(data.isFriendly && oneRem.length === data.teamSize && data.clan.destructionPercentage > 0);
 		if (twoRem.length) {
 			const chunks = Util.splitMessage(twoRem.join('\n'), { maxLength: 1000 });
-			chunks.map((chunk, i) => embed.addField(i === 0 ? '2 Missed Attacks' : '\u200e', chunk));
-		}
-		if (oneRem.length) {
-			const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
-			chunks.map((chunk, i) => embed.addField(i === 0 ? '1 Missed Attacks' : '\u200e', chunk));
+			chunks.map((chunk, i) => embed.addField(i === 0 ? `${friendly ? 1 : 2} Missed Attacks` : '\u200b', chunk));
 		}
 
-		if (oneRem.length || twoRem.length) return embed;
+		if (oneRem.length && !friendly) {
+			const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
+			chunks.map((chunk, i) => embed.addField(i === 0 ? '1 Missed Attacks' : '\u200b', chunk));
+		}
+
+		if ((oneRem.length && !friendly) || twoRem.length) return embed;
 		return null;
 	}
 
