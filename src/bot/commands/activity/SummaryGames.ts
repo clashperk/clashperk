@@ -15,23 +15,10 @@ interface Prop {
 export default class ClanGamesSummaryCommand extends Command {
 	public constructor() {
 		super('clan-games-summary', {
-			aliases: ['scores', 'cgstats'],
-			category: '_hidden',
+			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
-			description: {
-				content: [
-					'Clan Games scoreboard for all clans.',
-					'',
-					'Scoreboard is based on highest scores & completion times.',
-					'Performance is based on completing maximum points.',
-					'',
-					'**Patron only Feature**',
-					'',
-					'[Become a Patron](https://www.patreon.com/clashperk)'
-				],
-				examples: ['']
-			},
+			description: {},
 			args: [
 				{
 					'id': 'guild',
@@ -43,19 +30,19 @@ export default class ClanGamesSummaryCommand extends Command {
 	}
 
 	public async exec(message: Message, { guild }: { guild: Guild }) {
-		if (!this.client.patrons.get(message.guild!.id)) {
-			return this.handler.handleDirectCommand(message, 'cgstats', this.handler.modules.get('help')!, false);
-		}
-
 		const tags = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: guild.id })
 			.toArray();
-		if (!tags.length) return message.util!.send(`${message.guild!.name} does not have any clans. Why not add some?`);
+		if (!tags.length) return message.util!.send(`**${message.guild!.name} does not have any clans. Why not add some?**`);
 
 		const clans = await this.client.db.collection(Collections.CLAN_GAMES)
 			.find({ tag: { $in: [...tags.map(d => d.tag)] } })
 			.toArray();
-		if (clans.length < 2) return message.util!.send('Minimum 2 clans are required to use this command.');
+
+		const patron = this.client.patrons.get(message.guild!.id);
+		if ((clans.length < 3 && !patron) || clans.length < 2) {
+			return message.util!.send(`**You must have minimum ${patron ? 2 : 3} clans in your server to use this command.**`);
+		}
 
 		const performances: Prop[] = clans.map(clan => ({
 			count: clan.maxCount,
@@ -71,7 +58,7 @@ export default class ClanGamesSummaryCommand extends Command {
 			.setFooter(`${moment(clans[0].updatedAt).format('MMMM YYYY')}`, this.client.user!.displayAvatarURL())
 			.setDescription([
 				'**Scoreboard**',
-				'Based on highest scores & completion times.',
+				'Based on highest scores and completion times.',
 				`${EMOJIS.HASH} **\`\u200e ${'SCORE'.padEnd(6, ' ')}  ${'CLAN'.padEnd(16, ' ')}\u200f\`**`,
 				...performances
 					.sort((a, b) => b.total - a.total).sort((a, b) => a.endedAt - b.endedAt)

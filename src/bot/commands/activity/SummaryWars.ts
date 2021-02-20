@@ -1,14 +1,14 @@
-import { Command } from 'discord-akairo';
 import { ClanWar, ClanWarClan, ClanWarLeague, ClanWarLeagueWar, ClanWarMember, ClanWarOpponent } from 'clashofclans.js';
+import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { Message, MessageEmbed } from 'discord.js';
 import { COLLECTIONS } from '../../util/Constants';
-import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
+import { Command } from 'discord-akairo';
 
 export default class WarSummaryCommand extends Command {
 	public constructor() {
-		super('matches', {
+		super('war-summary', {
 			aliases: ['matches', 'wars'],
-			category: 'activity_',
+			category: '_hidden',
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
 			description: {}
@@ -20,7 +20,7 @@ export default class WarSummaryCommand extends Command {
 		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
-		if (!clans.length) return message.util!.send('No clans are linked. Why not add some?');
+		if (!clans.length) return message.util!.send(`**${message.guild!.name} does not have any clans. Why not add some?**`);
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
