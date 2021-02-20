@@ -69,7 +69,7 @@ export default class Client extends AkairoClient {
 	public commandHandler: CommandHandler = new CommandHandler(this, {
 		directory: path.join(__dirname, '..', 'commands'),
 		aliasReplacement: /-/g,
-		prefix: message => this.settings.get(message.guild!, 'prefix', '*'),
+		prefix: message => process.env.NODE_ENV === 'production' ? this.settings.get(message.guild!, 'prefix', '*') : '+',
 		allowMention: true,
 		commandUtil: true,
 		commandUtilLifetime: 15e4,

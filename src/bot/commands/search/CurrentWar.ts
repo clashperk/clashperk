@@ -81,7 +81,7 @@ export default class CurrentWarCommand extends Command {
 				'**War Stats**',
 				`${EMOJIS.STAR} ${body.clan.stars} / ${body.opponent.stars}`,
 				`${EMOJIS.FIRE} ${body.clan.destructionPercentage.toFixed(2)}% / ${body.opponent.destructionPercentage.toFixed(2)}%`,
-				`${EMOJIS.ATTACK_SWORD} ${body.clan.attacks} / ${body.opponent.attacks}`
+				`${EMOJIS.SWORD} ${body.clan.attacks} / ${body.opponent.attacks}`
 			]);
 		}
 
@@ -100,7 +100,7 @@ export default class CurrentWarCommand extends Command {
 				'**War Stats**',
 				`${EMOJIS.STAR} ${body.clan.stars} / ${body.opponent.stars}`,
 				`${EMOJIS.FIRE} ${body.clan.destructionPercentage.toFixed(2)}% / ${body.opponent.destructionPercentage.toFixed(2)}%`,
-				`${EMOJIS.ATTACK_SWORD} ${body.clan.attacks} / ${body.opponent.attacks}`
+				`${EMOJIS.SWORD} ${body.clan.attacks} / ${body.opponent.attacks}`
 			]);
 		}
 

@@ -75,9 +75,11 @@ export default class PlayerCommand extends Command {
 			? `${ms(new Date().getTime() - new Date(collection[0]?.lastSeen).getTime(), { 'long': true })} ago`
 			: 'Unknown';
 		const clan = data.clan
-			? `**Clan Name**\n${EMOJIS.CLAN} [${data.clan.name} (${data.clan.tag})](${this.clanURL(data.clan.tag)})\n**Clan Role**\n ${EMOJIS.USER_BLUE} ${roles[data.role!]}\n`
+			? `**Clan Info**\n${EMOJIS.CLAN} [${data.clan.name}](${this.clanURL(data.clan.tag)}) (${roles[data.role!]})\n`
 			: '';
 
+		const war = await this.getWars(data.tag);
+		const warStats = `${EMOJIS.CROSS_SWORD} ${war.total} ${EMOJIS.SWORD} ${war.attacks} ${EMOJIS.STAR} ${war.stars} ${EMOJIS.THREE_STARS} ${war.starTypes.filter(num => num === 3).length} ${EMOJIS.EMPTY_SWORD} ${war.of - war.attacks}`;
 		const weaponLevel = data.townHallWeaponLevel ? weaponLevels[data.townHallWeaponLevel] : '';
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
@@ -92,8 +94,8 @@ export default class PlayerCommand extends Command {
 		embed.addField('**Season Stats**', [
 			`**Donated**\n${EMOJIS.TROOPS_DONATE} ${data.donations} ${EMOJIS.UP_KEY}`,
 			`**Received**\n${EMOJIS.TROOPS_DONATE} ${data.donationsReceived} ${EMOJIS.DOWN_KEY}`,
-			`**Attacks Won**\n${EMOJIS.ATTACK_SWORD} ${data.attackWins}`,
-			`**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}`,
+			`**Attacks Won**\n${EMOJIS.SWORD} ${data.attackWins}`,
+			`**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}${war.total > 0 ? `\n**War Stats**\n${warStats}` : ''}`,
 			'\u200b\u2002'
 		]);
 		embed.addField('**Other Stats**', [
@@ -110,9 +112,9 @@ export default class PlayerCommand extends Command {
 			].join(' '),
 			`**Troops Donated**\n${EMOJIS.TROOPS_DONATE} ${data.achievements.find(d => d.name === 'Friend in Need')!.value}`,
 			`**Spells Donated**\n${EMOJIS.SPELL_DONATE} ${data.achievements.find(d => d.name === 'Sharing is caring')!.value}`,
-			`**Attacks Won**\n${EMOJIS.ATTACK_SWORD} ${data.achievements.find(d => d.name === 'Conqueror')!.value}`,
+			`**Attacks Won**\n${EMOJIS.SWORD} ${data.achievements.find(d => d.name === 'Conqueror')!.value}`,
 			`**Defense Won**\n${EMOJIS.SHIELD} ${data.achievements.find(d => d.name === 'Unbreakable')!.value}`,
-			`**CWL War Stars**\n${EMOJIS.CWL_STAR} ${data.achievements.find(d => d.name === 'War League Legend')!.value}`,
+			`**CWL War Stars**\n${EMOJIS.STAR} ${data.achievements.find(d => d.name === 'War League Legend')!.value}`,
 			`**Clan Games Points**\n${EMOJIS.CLAN_GAMES} ${data.achievements.find(d => d.name === 'Games Champion')!.value}`,
 			'\u200b\u2002'
 		]);
@@ -149,6 +151,7 @@ export default class PlayerCommand extends Command {
 	private async getWars(tag: string) {
 		const member = {
 			tag,
+			total: 0,
 			of: 0,
 			attacks: 0,
 			stars: 0,
@@ -159,33 +162,36 @@ export default class PlayerCommand extends Command {
 			defCount: 0
 		};
 
-		await this.client.db.collection(Collections.CLAN_WARS)
+		const wars = await this.client.db.collection(Collections.CLAN_WARS)
 			.find({
-				preparationStartTime: { $gte: Season.getTimestamp },
+				preparationStartTime: { $gte: Season.startTimestamp },
 				$or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag, 'groupWar': true }],
 				state: { $in: ['inWar', 'warEnded'] }
 			})
 			.sort({ preparationStartTime: -1 })
-			.forEach(data => {
-				const clan: ClanWarClan = data.clan.members.find((m: any) => m.tag === data.tag) ? data.clan : data.opponent;
-				for (const m of clan.members) {
-					if (m.tag !== data.tag) continue;
-					member.of += data.groupWar ? 1 : 2;
+			.toArray();
 
-					if (m.attacks) {
-						member.attacks += m.attacks.length;
-						member.stars += m.attacks.reduce((prev, atk) => prev + atk.stars, 0);
-						member.dest += m.attacks.reduce((prev, atk) => prev + atk.destructionPercentage, 0);
-						member.starTypes.push(...m.attacks.map(atk => atk.stars));
-					}
+		for (const data of wars) {
+			const clan: ClanWarClan = data.clan.members.find((m: any) => m.tag === tag) ? data.clan : data.opponent;
+			member.total += 1;
+			for (const m of clan.members) {
+				if (m.tag !== tag) continue;
+				member.of += data.groupWar ? 1 : 2;
 
-					if (m.bestOpponentAttack) {
-						member.defStars += m.bestOpponentAttack.stars;
-						member.defDestruction += m.bestOpponentAttack.destructionPercentage;
-						member.defCount += 1;
-					}
+				if (m.attacks) {
+					member.attacks += m.attacks.length;
+					member.stars += m.attacks.reduce((prev, atk) => prev + atk.stars, 0);
+					member.dest += m.attacks.reduce((prev, atk) => prev + atk.destructionPercentage, 0);
+					member.starTypes.push(...m.attacks.map(atk => atk.stars));
 				}
-			});
+
+				if (m.bestOpponentAttack) {
+					member.defStars += m.bestOpponentAttack.stars;
+					member.defDestruction += m.bestOpponentAttack.destructionPercentage;
+					member.defCount += 1;
+				}
+			}
+		}
 
 		return member;
 	}
