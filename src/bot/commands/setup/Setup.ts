@@ -180,7 +180,7 @@ export default class SetupCommand extends Command {
 					const features = clan.entries.filter(en => en.ok && en.channel);
 					return embed.addField(
 						`\u200e${clan.name} (${clan.tag})`,
-						`${heads ? `${heads}\n` : ''}${features.map(en => `**${names[en.flag]}**\n${en.channel!}`).join('\n')}${rest}`
+						`${heads ? `${heads}\n` : ''}${features.map(en => `**${names[en.flag]}**\n${en.channel!}`).join('\n')}${rest}\u200b`
 					);
 				}
 			);
