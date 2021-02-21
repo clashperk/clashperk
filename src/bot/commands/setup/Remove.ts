@@ -104,7 +104,7 @@ export default class RemoveCommand extends Command {
 		}
 
 		if (bit instanceof TextChannel) {
-			return this.handler.handleDirectCommand(message, bit.id, this.handler.modules.get('unlink')!);
+			return this.handler.handleDirectCommand(message, bit.id, this.handler.modules.get('link-remove')!);
 		}
 
 		if (!tag) return message.util!.send('**You must specify a clan tag to run this command.**');
