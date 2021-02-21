@@ -17,18 +17,23 @@ export default class ProfileCommand extends Command {
 				usage: '[@user]',
 				examples: ['', '@Suvajit']
 			},
-			args: [
-				{
-					'id': 'member',
-					'type': Argument.union('member', (msg, id) => {
-						if (!id) return null;
-						if (!/^\d{17,19}/.test(id)) return null;
-						return msg.guild!.members.fetch(id).catch(() => null);
-					}),
-					'default': (message: Message) => message.member
-				}
-			]
+			optionFlags: ['--user']
 		});
+	}
+
+	public *args(msg: Message) {
+		const member = yield {
+			'flag': '--user',
+			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			'type': Argument.union('member', (msg, id) => {
+				if (!id) return null;
+				if (!/^\d{17,19}/.test(id)) return null;
+				return msg.guild!.members.fetch(id).catch(() => null);
+			}),
+			'default': (message: Message) => message.member
+		};
+
+		return { member };
 	}
 
 	public async exec(message: Message, { member }: { member: GuildMember }) {
