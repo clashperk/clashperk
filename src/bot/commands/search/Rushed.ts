@@ -1,9 +1,16 @@
 import { BUILDER_TROOPS, HOME_TROOPS } from '../../util/Emojis';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
-import { Player, Clan, Troop } from 'clashofclans.js';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Message } from 'discord.js';
+import { Player, Clan } from 'clashofclans.js';
+
+const HEROES: { [key: string]: 'bk' | 'aq' | 'gw' | 'rc' } = {
+	'Barbarian King': 'bk',
+	'Archer Queen': 'aq',
+	'Grand Warden': 'gw',
+	'Royal Champion': 'rc'
+};
 
 export default class RushedCommand extends Command {
 	public constructor() {
@@ -20,7 +27,7 @@ export default class RushedCommand extends Command {
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20', 'clan #8QU8J9LP']
 			},
-			flags: ['--clan', '-c', 'clan'],
+			flags: ['--clan', 'clan'],
 			optionFlags: ['--tag', '--base']
 		});
 	}
@@ -28,7 +35,7 @@ export default class RushedCommand extends Command {
 	public *args(msg: Message) {
 		const flag = yield {
 			match: 'flag',
-			flag: ['--clan', '-c', 'clan']
+			flag: ['--clan', 'clan']
 		};
 
 		const base = yield {
@@ -164,56 +171,48 @@ export default class RushedCommand extends Command {
 		const embed = this.client.util.embed()
 			.setAuthor(`${data.name} (${data.tag})`)
 			.setDescription([
-				'Rushed Members [Troop, Spell & Hero Count]',
-				'```\u200eTH  👎  NAME',
-				members.filter(m => m.rushed.homeBase)
+				'Total Home Base Rushed Units (\\👎)',
+				'and Total Hero Levels Rushed (\\👑)',
+				'```\u200eTH  👎 (👑)  NAME',
+				members // .filter(m => m.rushed.homeBase)
 					.sort((a, b) => b.rushed.homeBase - a.rushed.homeBase)
-					.map(({ name, rushed, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding(rushed.homeBase)}  ${name}`)
+					.map(({ name, rushed, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding(rushed.homeBase)}  ${rushed.heroes.toString().padStart(3, ' ')}  ${name}`)
 					.join('\n'),
 				'```'
 			]);
-		if (members.filter(m => !m.rushed.homeBase).length) {
-			embed.addField('Non-Rushed Members', [
-				'```\u200eTH  NAME',
-				members.filter(m => !m.rushed.homeBase)
-					.sort((a, b) => b.townHallLevel - a.townHallLevel)
-					.map(({ name, townHallLevel }) => `${this.padding(townHallLevel)}  ${name}`)
-					.join('\n'),
-				'```'
-			]);
-		}
 
 		return message.util!.send({ embed });
 	}
 
 	private padding(num: number) {
-		return num > 0 ? num.toString().padEnd(2, '\u2002') : '🔥';
-	}
-
-	private reduce_(collection: Troop[] = [], hallLevel: number, villageType: string) {
-		return collection.reduce((i, a) => {
-			if (a.village === villageType && a.level !== a.maxLevel) {
-				const min = RAW_TROOPS_DATA.TROOPS.find(unit => unit.name === a.name && unit.village === villageType);
-				if (min && a.level < min.levels[hallLevel - 2]) i += 1;
-			}
-			return i;
-		}, 0);
+		return num.toFixed(0).padStart(2, ' ');
 	}
 
 	private reduce(data: Player) {
+		const apiTroops = this.apiTroops(data);
 		const Troop = RAW_TROOPS_DATA.TROOPS
 			.filter(unit => {
-				const apiTroop = this.apiTroops(data).find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type);
+				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type);
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
 				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
 				return Boolean(homeTroops || builderTroops);
 			});
 
-		return Troop.reduce((pre, unit) => {
+		// const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(unit => unit.village === 'home' && unit.levels[data.townHallLevel - 1]);
+		const { heroes, homeBase } = Troop.reduce((pre, unit) => {
 			if (unit.village === 'home') pre.homeBase += 1;
 			if (unit.village === 'builderBase') pre.builderBase += 1;
+			if (unit.village === 'home' && unit.type === 'hero') {
+				const requiredLevel = unit.levels[data.townHallLevel - 2] - (apiTroops.find(en => en.name === unit.name)?.level ?? 0);
+				pre.heroes[HEROES[unit.name]] += requiredLevel;
+			}
 			return pre;
-		}, { homeBase: 0, builderBase: 0 });
+		}, { homeBase: 0, builderBase: 0, heroes: { bk: 0, aq: 0, gw: 0, rc: 0 } });
+
+		return {
+			homeBase: homeBase,
+			heroes: Object.values(heroes).reduce((pre, num) => pre + num, 0) // totalTroops.filter(en => en.type === 'hero').reduce((pre, unit) => pre + unit.levels[data.townHallLevel - 1], 0)
+		};
 	}
 
 	private chunk(items: TroopInfo[] = [], chunk = 4) {
