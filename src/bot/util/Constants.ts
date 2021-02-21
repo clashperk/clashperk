@@ -26,35 +26,6 @@ export interface KeyValue {
 	[key: string]: string;
 }
 
-export const COLLECTIONS_ = {
-	CLAN_STORES: 'clanstores',
-	DONATION_LOGS: 'donationlogs',
-	LAST_ONLINE_LOGS: 'lastonlinelogs',
-	CLAN_GAMES_LOGS: 'clangameslogs',
-	CLAN_EMBED_LOGS: 'clanembedlogs',
-	PLAYER_LOGS: 'playerlogs',
-	FLAGGED_USERS: 'flaggedusers',
-	LINKED_CLANS: 'linkedclans',
-	LINKED_USERS: 'linkedusers',
-	LINKED_CHANNELS: 'linkedchannels',
-	SETTINGS: 'settings',
-	CLAN_WARS: 'clanwars',
-	LAST_ONLINES: 'lastonlines',
-	CLAN_WAR_STORES: 'clanwarstores',
-	CLAN_GAMES: 'clangames',
-	CWL_WAR_TAGS: 'cwlwartags',
-	CLAN_MEMBERS: 'clanmembers',
-	BOT_GROWTH: 'botgrowth',
-	BOT_USAGE: 'botusage',
-	BOT_GUILDS: 'botguilds',
-	BOT_USERS: 'botusers',
-	BOT_STATS: 'botstats',
-	BOT_INTERACTIONS: 'botinteractions',
-	PATRONS: 'patrons',
-	CLAN_WAR_LOGS: 'clanwarlogs',
-	TIME_ZONES: 'timezoneoffset'
-};
-
 export const COLLECTIONS = {
 	CLAN_STORES: Collections.CLAN_STORES,
 	DONATION_LOGS: Collections.DONATION_LOGS,
@@ -70,7 +41,7 @@ export const COLLECTIONS = {
 	LAST_ONLINES: Collections.LAST_SEEN,
 	CLAN_WAR_STORES: Collections.CLAN_WARS,
 	CLAN_GAMES: Collections.CLAN_GAMES,
-	CWL_WAR_TAGS: Collections.CWL_WAR_TAGS,
+	CWL_WAR_TAGS: Collections.CWL_GROUPS,
 	CLAN_MEMBERS: Collections.CLAN_MEMBERS,
 	BOT_GROWTH: Collections.BOT_GROWTH,
 	BOT_USAGE: Collections.BOT_USAGE,

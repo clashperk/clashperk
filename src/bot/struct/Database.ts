@@ -81,17 +81,20 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.CLAN_WARS).createIndex({ id: -1 }),
 
+			db.collection(Collections.CLAN_WARS).createIndex({ leagueGroupID: -1 }),
+
 			db.collection(Collections.CLAN_GAMES)
 				.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 20 * 24 * 60 * 60 }),
 
 			db.collection(Collections.CLAN_GAMES)
 				.createIndex({ tag: 1 }, { unique: true }),
 
-			db.collection(Collections.CWL_WAR_TAGS)
-				.createIndex({ tag: 1 }, { unique: true }),
+			db.collection(Collections.CWL_GROUPS)
+				.createIndex({ 'clans.tag': 1, 'season': 1 }, { unique: true }),
 
-			db.collection(Collections.CWL_WAR_TAGS)
-				.createIndex({ createdAt: 1 }, { expireAfterSeconds: 45 * 24 * 60 * 60 }),
+			db.collection(Collections.CWL_GROUPS).createIndex({ createdAt: 1 }),
+
+			db.collection(Collections.CWL_GROUPS).createIndex({ id: -1 }),
 
 			db.collection(Collections.CLAN_MEMBERS)
 				.createIndex({ createdAt: -1 }, { expireAfterSeconds: 120 * 24 * 60 * 60 }),

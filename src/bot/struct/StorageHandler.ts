@@ -1,4 +1,5 @@
 import { BitField, Collections } from '@clashperk/node';
+import { ClanWarLeague } from 'clashofclans.js';
 import { ObjectId, Collection } from 'mongodb';
 import { Message } from 'discord.js';
 import Client from './Client';
@@ -208,7 +209,11 @@ export default class StorageHandler {
 	}
 
 	public async getWarTags(tag: string) {
-		const data = await this.client.db.collection(Collections.CWL_WAR_TAGS).findOne({ tag });
+		const data = await this.client.db.collection(Collections.CWL_GROUPS)
+			.find({ 'clans.tag': tag })
+			.sort({ createdAt: -1 })
+			.limit(1)
+			.next();
 		if (data?.warTags?.length !== 7) return null;
 
 		if (
@@ -219,11 +224,15 @@ export default class StorageHandler {
 		return Promise.resolve(null);
 	}
 
-	public async pushWarTags(tag: string, rounds: any[]) {
-		rounds = rounds.filter(r => !r.warTags.includes('#0'));
+	public async pushWarTags(tag: string, body: ClanWarLeague) {
+		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		if (rounds.length !== 7) return null;
 
-		const data = await this.client.db.collection(Collections.CWL_WAR_TAGS).findOne({ tag });
+		const data = await this.client.db.collection(Collections.CWL_GROUPS)
+			.find({ 'clans.tag': tag })
+			.sort({ createdAt: -1 })
+			.limit(1)
+			.next();
 		if (data?.season === this.seasonID) return null;
 		if (data && new Date().getMonth() <= new Date(data.season).getMonth()) return null;
 
@@ -238,15 +247,31 @@ export default class StorageHandler {
 			}
 		}
 
-		return this.pushToDB(tag, warTags, rounds);
+		return this.pushToDB(tag, body.clans, warTags, rounds);
 	}
 
-	private pushToDB(tag: string, warTags: any[], rounds: any[]) {
-		return this.client.db.collection(Collections.CWL_WAR_TAGS)
-			.updateOne({ tag }, {
-				$set: { tag, season: this.seasonID, warTags, rounds },
-				$min: { createdAt: new Date() }
+	private async pushToDB(tag: string, clans: { tag: string; name: string }[], warTags: any[], rounds: any[]) {
+		return this.client.db.collection(Collections.CWL_GROUPS)
+			.updateOne({ 'clans.tag': tag, 'season': this.seasonID }, {
+				$set: {
+					warTags, rounds
+				},
+				$setOnInsert: {
+					id: await this.uuid(),
+					createdAt: new Date(),
+					clans: clans.map(clan => ({ tag: clan.tag, name: clan.name }))
+				}
 			}, { upsert: true });
+	}
+
+	private async uuid() {
+		const cursor = this.client.db.collection(Collections.CWL_GROUPS)
+			.find()
+			.sort({ id: -1 })
+			.limit(1);
+
+		const uuid: number = await cursor.hasNext() ? (await cursor.next()).id : 0;
+		return cursor.close().then(() => uuid + 1);
 	}
 
 	private get seasonID() {
