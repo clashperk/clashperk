@@ -2,19 +2,21 @@ import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { Clan, CurrentWar } from 'clashofclans.js';
 import { BLUE_EMOJI } from '../../util/Emojis';
+import { Collections } from '@clashperk/node';
 import 'moment-duration-format';
 import moment from 'moment';
-import { Collections } from '@clashperk/node';
 
-export default class MissingAttacksCommand extends Command {
+export default class MissedAttacksCommand extends Command {
 	public constructor() {
-		super('missing', {
-			aliases: ['missing', 'remaining', 'rem', 'missed'],
+		super('missed', {
+			aliases: ['missed', 'missing', 'remaining', 'rem'],
 			category: 'war',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: [
-					'Shows remaining or missed war attacks.'
+					'Remaining or missed clan war attacks.',
+					'',
+					'Get War ID from `warlog` comamnd.'
 				],
 				usage: '<#clanTag|last|warID>',
 				examples: ['36081', '#8QU8J9LP', '#8QU8J9LP last']
@@ -81,16 +83,13 @@ export default class MissingAttacksCommand extends Command {
 	private async getWar(message: Message, id: number | string, tag: string) {
 		let data: any = null;
 		if (typeof id === 'string' && tag) {
-			data = (
-				await this.client.db.collection(Collections.CLAN_WARS)
-					.find({ 'clan.tag': tag, 'groupWar': false, 'state': 'warEnded' })
-					.sort({ preparationStartTime: -1 })
-					.limit(1)
-					.toArray()
-			)[0];
-		} else if (typeof id === 'number') {
 			data = await this.client.db.collection(Collections.CLAN_WARS)
-				.findOne({ id });
+				.find({ 'clan.tag': tag, 'groupWar': false, 'state': 'warEnded' })
+				.sort({ preparationStartTime: -1 })
+				.limit(1)
+				.next();
+		} else if (typeof id === 'number') {
+			data = await this.client.db.collection(Collections.CLAN_WARS).findOne({ id });
 		}
 
 		if (!data) {

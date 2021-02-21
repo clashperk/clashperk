@@ -50,7 +50,7 @@ export default class WarLogCommand extends Command {
 		}
 
 		const wars = await this.client.db.collection(Collections.CLAN_WARS)
-			.find({ 'clan.tag': data.tag, 'groupWar': false })
+			.find({ 'clan.tag': data.tag, 'groupWar': false, 'state': 'warEnded' })
 			.sort({ preparationStartTime: -1 })
 			.limit(11)
 			.toArray();

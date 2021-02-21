@@ -83,16 +83,13 @@ export default class WarCommand extends Command {
 	private async getWar(message: Message, id: number | string, tag: string) {
 		let data: any = null;
 		if (typeof id === 'string' && tag) {
-			data = (
-				await this.client.db.collection(Collections.CLAN_WARS)
-					.find({ 'clan.tag': tag, 'groupWar': false, 'state': 'warEnded' })
-					.sort({ preparationStartTime: -1 })
-					.limit(1)
-					.toArray()
-			)[0];
-		} else if (typeof id === 'number') {
 			data = await this.client.db.collection(Collections.CLAN_WARS)
-				.findOne({ id });
+				.find({ 'clan.tag': tag, 'groupWar': false, 'state': 'warEnded' })
+				.sort({ preparationStartTime: -1 })
+				.limit(1)
+				.next();
+		} else if (typeof id === 'number') {
+			data = await this.client.db.collection(Collections.CLAN_WARS).findOne({ id });
 		}
 
 		if (!data) {
