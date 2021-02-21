@@ -1,18 +1,18 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '@clashperk/node';
 import { Command } from 'discord-akairo';
 import Google from '../../struct/Google';
 import { Message } from 'discord.js';
 import moment from 'moment';
 
-export default class TimeOffsetCommand extends Command {
+export default class OffsetCommand extends Command {
 	public constructor() {
-		super('time-offset', {
+		super('offset', {
 			aliases: ['offset', 't'],
 			category: '_hidden',
 			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
 			description: {
-				content: 'Sets your time zone offset.',
+				content: 'Sets your timezone offset.',
 				usage: '<location>',
 				examples: ['Kolkata', 'New York']
 			},
@@ -34,7 +34,7 @@ export default class TimeOffsetCommand extends Command {
 		if (!raw) return message.util!.send('Location not found, make your search more specific and try again.');
 
 		const offset = (Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset));
-		await this.client.db.collection(COLLECTIONS.TIME_ZONES)
+		await this.client.db.collection(Collections.TIME_ZONES)
 			.updateOne({ user: message.author.id }, {
 				$set: {
 					user: message.author.id,
@@ -42,14 +42,14 @@ export default class TimeOffsetCommand extends Command {
 						id: raw.timezone.timeZoneId,
 						offset: Number(offset),
 						name: raw.timezone.timeZoneName,
-						location: raw.location.results[0].formatted_address
+						location: raw.location.formatted_address
 					}
 				}
 			}, { upsert: true });
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setTitle(`${raw.location.results[0].formatted_address as string}`)
+			.setTitle(`${raw.location.formatted_address as string}`)
 			.setDescription([
 				`**${raw.timezone.timeZoneName as string}**`,
 				moment(new Date(Date.now() + (offset * 1000))).format('MM/DD/YYYY hh:mm A'),
