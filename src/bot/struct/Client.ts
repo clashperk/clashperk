@@ -149,8 +149,7 @@ export default class Client extends AkairoClient {
 		// @ts-expect-error
 		const args = await command.argumentRunner.run(interaction, parsed, command.argumentGenerator);
 		if (Flag.is(args, 'cancel')) {
-			console.log('command_cancelled');
-			return true;
+			return this.commandHandler.emit('commandCancelled', interaction, command);
 		} else if (Flag.is(args, 'continue')) {
 			const continueCommand = this.commandHandler.modules.get(args.command)!;
 			return this.handleInteraction(interaction, continueCommand, args.rest);
