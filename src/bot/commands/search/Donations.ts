@@ -22,8 +22,8 @@ export default class DonationsCommand extends Command {
 					'',
 					'• **Season ID must be under 3 months old and must follow `YYYY-MM` format.**'
 				],
-				usage: '<#clanTag> [season]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP 2021-02']
+				usage: '<#clanTag> [season|last]',
+				examples: ['#8QU8J9LP', '#8QU8J9LP LAST', '#8QU8J9LP 2021-02']
 			},
 			flags: ['--sort'],
 			optionFlags: ['--tag', '--season']
@@ -40,7 +40,8 @@ export default class DonationsCommand extends Command {
 					now.setHours(0, 0, 0, 0);
 					now.setMonth(now.getMonth() - i, 0);
 					return Season.generateID(now);
-				})
+				}),
+				['last', 'prev']
 			],
 			unordered: msg.hasOwnProperty('token') ? false : [0, 1],
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
@@ -65,6 +66,7 @@ export default class DonationsCommand extends Command {
 		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
 
 		if (!season) season = Season.ID;
+		if (season === 'last') season = Season.generateID(Season.startTimestamp);
 		const sameSeason = Boolean(Season.ID === Season.generateID(season));
 
 		const dbMembers = await this.client.db.collection(Collections.CLAN_MEMBERS)
