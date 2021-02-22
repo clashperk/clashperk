@@ -36,7 +36,7 @@ export default class DonationsCommand extends Command {
 			type: [
 				Season.ID,
 				...Array(3).fill('').map((_, i) => {
-					const now = new Date();
+					const now = new Date(Season.ID);
 					now.setHours(0, 0, 0, 0);
 					now.setMonth(now.getMonth() - i, 0);
 					return Season.generateID(now);
