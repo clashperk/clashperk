@@ -145,7 +145,7 @@ export default class WarSummaryCommand extends Command {
 			townHalls.push({ level: Number(key), total: val });
 		}
 
-		return this.chunk(townHalls)
+		return this.chunk(townHalls.sort((a, b) => b.level - a.level))
 			.map(chunks => chunks.map(en => `${TOWN_HALLS[en.level]} \`\u200e${en.total.toString().padStart(2, '0')}\``)
 				.join(' '))
 			.join('\n');

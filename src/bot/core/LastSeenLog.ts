@@ -96,7 +96,7 @@ export default class LastOnlineEvent {
 	}
 
 	private async sendNew(id: string, channel: TextChannel, clan: Clan, members: any[]) {
-		const embed = await this.embed(clan, id, members);
+		const embed = this.embed(clan, id, members);
 		const message = await channel.send({ embed })
 			.catch(() => null);
 
