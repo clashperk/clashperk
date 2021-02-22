@@ -92,7 +92,7 @@ export default class ClanGamesCommand extends Command {
 
 	private get seasonID() {
 		const now = new Date();
-		if (now.getDate() < 22) now.setMonth(now.getMonth() - 1);
+		if (now.getDate() < 20) now.setMonth(now.getMonth() - 1);
 		return now.toISOString().substring(0, 7);
 	}
 
@@ -106,7 +106,7 @@ export default class ClanGamesCommand extends Command {
 				},
 				{
 					$match: {
-						season: this.seasonID
+						season: '2021-03'
 					}
 				},
 				{
