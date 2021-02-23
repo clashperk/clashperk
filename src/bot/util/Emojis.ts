@@ -39,10 +39,10 @@ interface Emojis {
 }
 
 export const HOME_HEROES: Emojis = {
-	'Barbarian King': '<:barbarianking:696305370682884111>',
-	'Archer Queen': '<:archerqueen:696305403046133780>',
-	'Grand Warden': '<:grandwarden:696305417994764298>',
-	'Royal Champion': '<:royalchampion:706899855703933037>'
+	'Barbarian King': '<:Barbarian_King:696305370682884111>',
+	'Archer Queen': '<:Archer_Queen:696305403046133780>',
+	'Grand Warden': '<:Grand_Warden:696305417994764298>',
+	'Royal Champion': '<:Royal_Champion:813806447934308422>'
 };
 
 export const ELIXIR_TROOPS: Emojis = {
@@ -129,7 +129,7 @@ export const BUILDER_ELIXIR_TROOPS: Emojis = {
 };
 
 export const BUILDER_HEROES: Emojis = {
-	'Battle Machine': '<:warmachine:696305434570522665>'
+	'Battle Machine': '<:War_Machine:696305434570522665>'
 };
 
 export const HEROES: Emojis = {
@@ -312,7 +312,7 @@ export const EMOJIS = {
 	SPELL_DONATE: '<:spellsdonation:696314747989000293>',
 	SHIELD: '<:shield:696297690606075924>',
 	DISCORD: '<:discord:696317142307700747>',
-	CWL: '<:cwl:699837806129971202>',
+	CWL: '<:cwl:813807811028713523>',
 	CLOCK: '<:cpclock:701085554691014667>',
 	LOADING: '<a:loading:696328441146114050>',
 	USERS: '<:users:699834141931339777>',
