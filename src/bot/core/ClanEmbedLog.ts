@@ -1,5 +1,6 @@
 import { MessageEmbed, Message, Collection, TextChannel, PermissionString } from 'discord.js';
-import { EMOJIS, TOWN_HALLS, BLUE_EMOJI, CWL_LEAGUES } from '../util/Emojis';
+import { EMOJIS, TOWN_HALLS, CWL_LEAGUES } from '../util/Emojis';
+import { ORANGE_NUMBERS } from '../util/NumEmojis';
 import { COLLECTIONS } from '../util/Constants';
 import { Clan } from 'clashofclans.js';
 import Client from '../struct/Client';
@@ -196,7 +197,7 @@ export default class ClanEmbed {
 				'**War League**', `${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
 			])
 			.addField('Town Halls', [
-				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${BLUE_EMOJI[th.total]}\u200b`).join(' ') || `${EMOJIS.WRONG} None`
+				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`).join(' ') || `${EMOJIS.WRONG} None`
 			])
 			.setTimestamp()
 			.setFooter('Synced', this.client.user!.displayAvatarURL());

@@ -1,6 +1,6 @@
 import { MessageEmbed, Util, Collection, TextChannel, PermissionString, Message } from 'discord.js';
 import { CurrentWar, ClanWarClan, ClanWarOpponent, ClanWarMember } from 'clashofclans.js';
-import { CYAN_NUMBERS, BROWN_NUMBERS } from '../util/NumEmojis';
+import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/NumEmojis';
 import { TOWN_HALLS, EMOJIS, WAR_STARS } from '../util/Emojis';
 import { COLLECTIONS } from '../util/Constants';
 import Client from '../struct/Client';
@@ -205,7 +205,7 @@ export default class ClanWarEvent {
 						const name = Util.escapeMarkdown(attacker.name);
 						const stars = this.getStars(attacker.oldStars, attacker.stars);
 						const destruction = Math.floor(attacker.destructionPercentage).toString().concat('%');
-						return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${CYAN_NUMBERS[attacker.mapPosition]} ${name} ${BROWN_NUMBERS[attacker.townHallLevel]} ${EMOJIS.RED_VS} ${CYAN_NUMBERS[defender.mapPosition]} ${BROWN_NUMBERS[defender.townHallLevel]}`;
+						return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${BLUE_NUMBERS[attacker.mapPosition]} ${name} ${ORANGE_NUMBERS[attacker.townHallLevel]} ${'vs'} ${BLUE_NUMBERS[defender.mapPosition]} ${ORANGE_NUMBERS[defender.townHallLevel]}`;
 					})
 				]);
 			}
@@ -255,10 +255,10 @@ export default class ClanWarEvent {
 			]);
 		const twoRem = data.remaining.filter(m => !m.attacks)
 			.sort((a, b) => a.mapPosition - b.mapPosition)
-			.map(m => `\u200e${CYAN_NUMBERS[m.mapPosition]} ${m.name}`);
+			.map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`);
 		const oneRem = data.remaining.filter(m => m.attacks?.length === 1)
 			.sort((a, b) => a.mapPosition - b.mapPosition)
-			.map(m => `\u200e${CYAN_NUMBERS[m.mapPosition]} ${m.name}`);
+			.map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`);
 
 		const friendly = Boolean(data.isFriendly && oneRem.length === data.teamSize && data.clan.destructionPercentage > 0);
 		if (twoRem.length) {
@@ -326,7 +326,7 @@ export default class ClanWarEvent {
 					const name = Util.escapeMarkdown(attacker.name);
 					const stars = this.getStars(attacker.oldStars, attacker.stars);
 					const destruction = Math.floor(attacker.destructionPercentage).toString().concat('%');
-					return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${CYAN_NUMBERS[attacker.mapPosition]} ${name} ${BROWN_NUMBERS[attacker.townHallLevel]} ${EMOJIS.RED_VS} ${CYAN_NUMBERS[defender.mapPosition]} ${BROWN_NUMBERS[defender.townHallLevel]}`;
+					return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${BLUE_NUMBERS[attacker.mapPosition]} ${name} ${ORANGE_NUMBERS[attacker.townHallLevel]} ${'vs'} ${BLUE_NUMBERS[defender.mapPosition]} ${ORANGE_NUMBERS[defender.townHallLevel]}`;
 				})
 			]);
 		}
@@ -334,7 +334,7 @@ export default class ClanWarEvent {
 		if (data.remaining.length) {
 			const oneRem = data.remaining
 				.sort((a, b) => a.mapPosition - b.mapPosition)
-				.map(m => `\u200e${CYAN_NUMBERS[m.mapPosition]} ${m.name}`);
+				.map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`);
 
 			if (oneRem.length) {
 				const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
@@ -375,7 +375,7 @@ export default class ClanWarEvent {
 	private getRoster(townHalls: Roster[]) {
 		return this.chunk(townHalls)
 			.map(chunks => {
-				const list = chunks.map(th => `${TOWN_HALLS[th.level]} ${BROWN_NUMBERS[th.total]}`);
+				const list = chunks.map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}`);
 				return list.join(' ');
 			}).join('\n');
 	}

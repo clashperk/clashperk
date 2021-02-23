@@ -2,7 +2,7 @@ import { Clan, ClanWar, ClanWarLeague, ClanWarMember, Player } from 'clashofclan
 import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
-import { CYAN_NUMBERS } from '../../util/NumEmojis';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
 
 const states: { [key: string]: string } = {
 	inWar: 'Battle Day',
@@ -88,7 +88,7 @@ export default class CWLLineupComamnd extends Command {
 						'',
 						`\u200e${EMOJIS.HASH} \u200b\u2002\`TH HERO\` \u2002 \u2002 \u2002 \`TH HERO\``,
 						linups.map(
-							(lineup, i) => `\u200e${CYAN_NUMBERS[i + 1]} \u200b\u2002${lineup.map(en => `\`${en.t.toString().padStart(2, ' ')} ${(en.h).toString().padStart(4, ' ')}\u200f\``).join(' \u2002vs\u2002 ')}`
+							(lineup, i) => `\u200e${BLUE_NUMBERS[i + 1]} \u200b\u2002${lineup.map(en => `\`${en.t.toString().padStart(2, ' ')} ${(en.h).toString().padStart(4, ' ')}\u200f\``).join(' \u2002vs\u2002 ')}`
 						).join('\n')
 					]);
 

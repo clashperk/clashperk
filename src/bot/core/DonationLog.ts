@@ -1,8 +1,9 @@
 import { MessageEmbed, Collection, PermissionString, TextChannel } from 'discord.js';
-import { PLAYER_LEAGUES, BLUE_NUM, RED_NUM, EMOJIS } from '../util/Emojis';
+import { PLAYER_LEAGUES, EMOJIS } from '../util/Emojis';
 import { COLLECTIONS } from '../util/Constants';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
+import { BLUE_NUMBERS, RED_NUMBERS } from '../util/NumEmojis';
 
 interface Donation {
 	clan: {
@@ -79,11 +80,11 @@ export default class ClanEvent {
 				data.donated.map(m => {
 					if (m.donated > 200) {
 						const [div, mod] = this.divmod(m.donated);
-						const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUM[div > 900 ? 900 : div]} ${m.name}`];
-						if (mod > 0) return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUM[mod]} ${m.name}`).join('\n');
+						const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[div > 900 ? 900 : div]} ${m.name}`];
+						if (mod > 0) return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[mod]} ${m.name}`).join('\n');
 						return list.join('\n');
 					}
-					return `\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUM[m.donated]} ${m.name}`;
+					return `\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[m.donated]} ${m.name}`;
 				}).join('\n').substring(0, 1024)
 			]);
 		}
@@ -91,13 +92,13 @@ export default class ClanEvent {
 		if (data.received.length) {
 			embed.addField(`${EMOJIS.USER_RED} Received`, [
 				data.received.map(m => {
-					if (m.received > 100) {
+					if (m.received > 200) {
 						const [div, mod] = this.divmod(m.received);
-						const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUM[div > 900 ? 900 : div]} ${m.name}`];
-						if (mod > 0) return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUM[mod]} ${m.name}`).join('\n');
+						const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[div > 900 ? 900 : div]} ${m.name}`];
+						if (mod > 0) return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[mod]} ${m.name}`).join('\n');
 						return list.join('\n');
 					}
-					return `\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUM[m.received]} ${m.name}`;
+					return `\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[m.received]} ${m.name}`;
 				}).join('\n').substring(0, 1024)
 			]);
 		}
@@ -105,10 +106,10 @@ export default class ClanEvent {
 		if (data.unmatched && (data.unmatched.in || data.unmatched.out)) {
 			embed.addField(`${EMOJIS.WRONG} Unmatched`, [
 				data.unmatched.in > 0
-					? `${EMOJIS.USER_BLUE} ${BLUE_NUM[data.unmatched.in]} Joined`
+					? `${EMOJIS.USER_BLUE} ${BLUE_NUMBERS[data.unmatched.in]} Joined`
 					: '',
 				data.unmatched.out > 0
-					? `${EMOJIS.USER_RED} ${RED_NUM[data.unmatched.out]} Left`
+					? `${EMOJIS.USER_RED} ${RED_NUMBERS[data.unmatched.out]} Left`
 					: ''
 			]);
 		}

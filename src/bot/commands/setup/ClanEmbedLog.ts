@@ -1,6 +1,7 @@
 import { COLLECTIONS, Op, SETTINGS, Util as Utility, EMBEDS } from '../../util/Constants';
-import { EMOJIS, CWL_LEAGUES, TOWN_HALLS, BLUE_EMOJI } from '../../util/Emojis';
 import { Command, Argument, Flag, PrefixSupplier } from 'discord-akairo';
+import { EMOJIS, CWL_LEAGUES, TOWN_HALLS } from '../../util/Emojis';
+import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { Util, Message, User } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 
@@ -156,7 +157,7 @@ export default class ClanEmbedCommand extends Command {
 				'**War League**', `${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
 			])
 			.addField('Town Halls', [
-				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${BLUE_EMOJI[th.total]}\u200b`).join(' ')
+				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`).join(' ')
 			])
 			.setFooter('Synced', this.client.user!.displayAvatarURL())
 			.setTimestamp();

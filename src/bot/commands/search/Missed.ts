@@ -1,7 +1,7 @@
 import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { Clan, CurrentWar } from 'clashofclans.js';
-import { BLUE_EMOJI } from '../../util/Emojis';
 import { Collections } from '@clashperk/node';
 import 'moment-duration-format';
 import moment from 'moment';
@@ -131,7 +131,7 @@ export default class MissedAttacksCommand extends Command {
 				embed.description,
 				'',
 				`**2 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
-				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_EMOJI[m.mapPosition]} ${m.name}`)
+				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)
 			]);
 		}
 		if (OneRem.length) {
@@ -139,7 +139,7 @@ export default class MissedAttacksCommand extends Command {
 				embed.description,
 				'',
 				`**1 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
-				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_EMOJI[m.mapPosition]} ${m.name}`)
+				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)
 			]);
 		}
 

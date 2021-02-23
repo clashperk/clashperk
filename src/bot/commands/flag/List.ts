@@ -1,5 +1,5 @@
 import { COLLECTIONS } from '../../util/Constants';
-import { RED_EMOJI } from '../../util/Emojis';
+import { RED_NUMBERS } from '../../util/NumEmojis';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
@@ -53,7 +53,7 @@ export default class FlagListCommand extends Command {
 			embed.setAuthor(message.guild!.name, message.guild!.iconURL()!)
 				.setTitle('Flags')
 				.setDescription([
-					paginated.items.map(x => `${RED_EMOJI[++index]} ${x.name as string} ${x.tag as string}`).join('\n')
+					paginated.items.map(x => `${RED_NUMBERS[++index]} ${x.name as string} ${x.tag as string}`).join('\n')
 				])
 				.setFooter(`Page ${paginated.page}/${paginated.maxPage}`);
 		} else {

@@ -1,6 +1,7 @@
 import { ClanGames, Collections } from '@clashperk/node';
-import { BLUE_EMOJI, EMOJIS } from '../../util/Emojis';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { Message, Guild } from 'discord.js';
+import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
 
@@ -62,13 +63,13 @@ export default class ClanGamesSummaryCommand extends Command {
 				`${EMOJIS.HASH} **\`\u200e ${'SCORE'.padEnd(6, ' ')}  ${'CLAN'.padEnd(16, ' ')}\u200f\`**`,
 				...performances
 					.sort((a, b) => b.total - a.total).sort((a, b) => a.endedAt - b.endedAt)
-					.map((clan, i) => `${BLUE_EMOJI[++i]} \`\u200e ${(clan.total || 0).toString().padStart(6, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
+					.map((clan, i) => `${BLUE_NUMBERS[++i]} \`\u200e ${(clan.total || 0).toString().padStart(6, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
 				'',
 				'**Performance**',
 				'Based on completing maximum points.',
 				`${EMOJIS.HASH} **\`\u200e ${Math.floor(ClanGames.MAX_POINT / 1000)}K  ${'CLAN'.padEnd(20, ' ')}\u200f\`**`,
 				...performances.sort((a, b) => b.count - a.count)
-					.map((clan, i) => `${BLUE_EMOJI[++i]} \`\u200e ${clan.count.toString().padStart(2, ' ')}  ${clan.name.padEnd(20, ' ')}\u200f\``)
+					.map((clan, i) => `${BLUE_NUMBERS[++i]} \`\u200e ${clan.count.toString().padStart(2, ' ')}  ${clan.name.padEnd(20, ' ')}\u200f\``)
 			]);
 
 		return message.util!.send({ embed });

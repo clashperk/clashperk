@@ -1,5 +1,5 @@
 import { Clan, ClanWar, ClanWarLeague } from 'clashofclans.js';
-import { CYAN_NUMBERS } from '../../util/NumEmojis';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -102,7 +102,7 @@ export default class CWLMissedComamnd extends Command {
 			.setTitle('Missed Attacks')
 			.setDescription(
 				collection.sort((a, b) => b.count - a.count)
-					.map(m => `\u200e${CYAN_NUMBERS[m.count]} ${m.name as string}`)
+					.map(m => `\u200e${BLUE_NUMBERS[m.count]} ${m.name as string}`)
 			)
 			.setFooter(`Upto Round #${round}`);
 

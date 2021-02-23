@@ -1,6 +1,6 @@
 import { Clan, CurrentWar, ClanWarMember, ClanWarClan, ClanWarOpponent } from 'clashofclans.js';
 import { TOWN_HALLS, WAR_STARS } from '../../util/Emojis';
-import { BROWN_NUMBERS, CYAN_NUMBERS } from '../../util/NumEmojis';
+import { ORANGE_NUMBERS, BLUE_NUMBERS } from '../../util/NumEmojis';
 import { Command, PrefixSupplier } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import 'moment-duration-format';
@@ -76,7 +76,7 @@ export default class CurrentWarCommand extends Command {
 				const name = Util.escapeMarkdown(attacker.name);
 				const stars = this.getStars(attacker.oldStars, attacker.stars);
 				const destruction = Math.floor(attacker.destructionPercentage).toString().concat('%');
-				return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${CYAN_NUMBERS[attacker.mapPosition]} ${BROWN_NUMBERS[attacker.townHallLevel]} ${'vs'} ${CYAN_NUMBERS[defender.mapPosition]} ${BROWN_NUMBERS[defender.townHallLevel]} ${name}`;
+				return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${BLUE_NUMBERS[attacker.mapPosition]} ${ORANGE_NUMBERS[attacker.townHallLevel]} ${'vs'} ${BLUE_NUMBERS[defender.mapPosition]} ${ORANGE_NUMBERS[defender.townHallLevel]} ${name}`;
 			}).join('\n');
 
 			const chunks = Util.splitMessage(description);

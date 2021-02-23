@@ -1,6 +1,6 @@
 import { Clan, ClanWarLeague, ClanWar, ClanWarMember } from 'clashofclans.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
-import { BROWN_NUMBERS } from '../../util/NumEmojis';
+import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import moment from 'moment';
@@ -235,7 +235,7 @@ export default class CWLRoundComamnd extends Command {
 			.sort((a, b) => b.level - a.level);
 
 		return this.chunk(townHalls)
-			.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${BROWN_NUMBERS[th.total]}`)
+			.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}`)
 				.join(' '))
 			.join('\n');
 	}
