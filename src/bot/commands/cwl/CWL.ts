@@ -8,7 +8,7 @@ export default class CWLComamnd extends Command {
 			category: 'war',
 			description: {
 				content: [
-					'Full list of the CWL commands.',
+					'CWL season overview and summary.',
 					'',
 					'**Available Methods**',
 					'• roster `<clanTag>`',

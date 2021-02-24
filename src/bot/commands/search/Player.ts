@@ -3,8 +3,8 @@ import { COLLECTIONS, leagueId } from '../../util/Constants';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { ClanWarClan, Player } from 'clashofclans.js';
-import ms from 'ms';
 import { Collections, Season } from '@clashperk/node';
+import ms from 'ms';
 
 const roles: { [key: string]: string } = {
 	member: 'Member',
@@ -28,7 +28,7 @@ export default class PlayerCommand extends Command {
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows info about your in-game profile.',
+				content: 'Player summary and some basic details.',
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			},

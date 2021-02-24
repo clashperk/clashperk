@@ -13,7 +13,7 @@ export default class CWLRoundComamnd extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: [
-					'Shows info about the current round.',
+					'Info about the current CWL rounds.',
 					'',
 					'**Flags**',
 					'`--round <num>` to see specific round.'

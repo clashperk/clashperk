@@ -12,7 +12,7 @@ export default class CWLRosterComamnd extends Command {
 			category: 'war',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows roster and Town-Hall distribution.',
+				content: 'CWL Roster and Town-Hall distribution.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},

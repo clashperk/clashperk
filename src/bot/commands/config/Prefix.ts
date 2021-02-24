@@ -9,7 +9,7 @@ export default class PrefixCommand extends Command {
 			channel: 'guild',
 			quoted: false,
 			description: {
-				content: 'Displays or changes the prefix of the server.',
+				content: 'Get or change the server prefix.',
 				usage: '<prefix>',
 				examples: ['!', '?']
 			},
