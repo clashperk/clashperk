@@ -56,7 +56,9 @@ export default class WarLogCommand extends Command {
 			.toArray();
 
 		const body = await this.client.http.clanWarLog(data.tag, { limit: 10 });
+
 		for (const item of body.items) {
+			// console.log(item)
 			const extra = this.getWarInfo(wars, item);
 			const { clan, opponent } = item;
 			const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
@@ -73,7 +75,11 @@ export default class WarLogCommand extends Command {
 	}
 
 	private getWarInfo(wars: any[], war: any) {
-		const data = wars.find(en => en.clan.tag === war.clan.tag && en.opponent.tag === war.opponent?.tag);
+		const data = wars.find(
+			en => en.clan.tag === war.clan.tag &&
+				en.opponent.tag === war.opponent?.tag &&
+				this.compareDate(war.endTime, en.endTime)
+		);
 		if (!data) return null;
 		return { id: data.id, attacks: data.opponent.attacks };
 	}
@@ -90,6 +96,10 @@ export default class WarLogCommand extends Command {
 
 	private padStart(num: number) {
 		return num.toString().padStart(3, ' ');
+	}
+
+	private compareDate(apiDate: string, dbDate: Date) {
+		return (new Date(moment(apiDate).toDate()) >= dbDate);
 	}
 
 	private format(time: number) {
