@@ -49,6 +49,7 @@ export default class ExportMissed extends Command {
 
 			for (const war of wars) {
 				const clan = war.clan.tag === tag ? war.clan : war.opponent;
+				const opponent = war.clan.tag === tag ? war.opponent : war.clan;
 				for (const m of clan.members) {
 					if (war.groupWar && m.attacks?.length) continue;
 					if (!war.groupWar && m.attacks?.length === 2) continue;
@@ -57,10 +58,12 @@ export default class ExportMissed extends Command {
 						stars: [] as number[],
 						missed: 0,
 						name: m.name,
+						warID: war.id,
 						tag: m.tag,
 						clan: clan.name,
+						opponent: opponent.name,
 						teamSize: war.teamSize,
-						warType: war.groupWar ? 'CWL' : 'Regular',
+						warType: war.groupWar ? 'CWL' : war.isFriendly ? 'Friendly' : 'Regular',
 						timestamp: new Date(war.endTime)
 					};
 
@@ -91,6 +94,8 @@ export default class ExportMissed extends Command {
 			{ header: 'Name', width: 16 },
 			{ header: 'Tag', width: 16 },
 			{ header: 'Clan', width: 16 },
+			{ header: 'Enemy Clan', width: 16 },
+			{ header: 'War ID', width: 16 },
 			{ header: 'Ended', width: 14 },
 			{ header: 'War Type', width: 10 },
 			{ header: 'Team Size', width: 10 },
@@ -106,7 +111,7 @@ export default class ExportMissed extends Command {
 
 		sheet.addRows(
 			chunks.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-				.map(m => [m.name, m.tag, m.clan, m.timestamp, m.warType, m.teamSize, m.missed])
+				.map(m => [m.name, m.tag, m.clan, m.opponent, m.warID, m.timestamp, m.warType, m.teamSize, m.missed])
 		);
 
 		const buffer = await workbook.xlsx.writeBuffer();
