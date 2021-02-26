@@ -172,7 +172,7 @@ export default class Client extends AkairoClient {
 		this.inhibitorHandler.loadAll();
 		this.listenerHandler.loadAll();
 
-		await Connection.connect();
+		await Connection.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
 		this.db = Connection.db('clashperk');
 		// await Connection.createIndex(this.db);
 

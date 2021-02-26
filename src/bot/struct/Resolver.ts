@@ -22,10 +22,12 @@ export default class Resolver {
 			return this.fail(message, `**${status(404)}**`);
 		}
 
-		const [data, otherTags] = await Promise.all([
-			this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: (parsed as GuildMember).id }),
-			this.client.http.getPlayerTags((parsed as GuildMember).id)
-		]);
+		const otherTags: string[] = [];
+		const data = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: (parsed as GuildMember).id });
+
+		if (!data?.entries?.length || num > data?.entries?.length) {
+			otherTags.push(...(await this.client.http.getPlayerTags((parsed as GuildMember).id)));
+		}
 
 		const tagSet = new Set([...data?.entries?.map((en: any) => en.tag) ?? [], ...otherTags]);
 		const tags = Array.from(tagSet);
