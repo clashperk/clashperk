@@ -34,15 +34,12 @@ export default class MembersCommand extends Command {
 
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
-		const members = fetched.filter(res => res.ok).map(m => {
-			const member = {
-				name: m.name,
-				tag: m.tag,
-				townHallLevel: m.townHallLevel,
-				heroes: m.heroes.length ? m.heroes.filter(a => a.village === 'home') : []
-			};
-			return member;
-		});
+		const members = fetched.filter(res => res.ok).map(m => ({
+			name: m.name,
+			tag: m.tag,
+			townHallLevel: m.townHallLevel,
+			heroes: m.heroes.length ? m.heroes.filter(a => a.village === 'home') : []
+		}));
 
 		members.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
 			.sort((a, b) => b.townHallLevel - a.townHallLevel);
@@ -56,7 +53,7 @@ export default class MembersCommand extends Command {
 				members.map(
 					mem => {
 						const heroes = this.heroes(mem.heroes).map(hero => this.padStart(hero.level)).join(' ');
-						return `${mem.townHallLevel} ${heroes}  ${this.padEnd(mem.name)}`;
+						return `${mem.townHallLevel.toString().padStart(2, ' ')} ${heroes}  ${this.padEnd(mem.name)}`;
 					}
 				).join('\n'),
 				'```'

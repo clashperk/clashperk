@@ -60,7 +60,7 @@ export default class ClanGamesSummaryCommand extends Command {
 			.setDescription([
 				'**Scoreboard**',
 				'Based on highest scores and completion times.',
-				`${EMOJIS.HASH} **\`\u200e ${'SCORE'.padEnd(6, ' ')}  ${'CLAN'.padEnd(16, ' ')}\u200f\`**`,
+				`${EMOJIS.HASH} **\`\u200e  ${'SCORE'.padEnd(6, ' ')} ${'CLAN'.padEnd(16, ' ')}\u200f\`**`,
 				...performances
 					.sort((a, b) => b.total - a.total).sort((a, b) => a.endedAt - b.endedAt)
 					.map((clan, i) => `${BLUE_NUMBERS[++i]} \`\u200e ${(clan.total || 0).toString().padStart(6, ' ')}  ${clan.name.padEnd(16, ' ')}\u200f\``),
