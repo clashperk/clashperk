@@ -1,4 +1,4 @@
-import { BitField, Collections } from '@clashperk/node';
+import { BitField, Collections, Season } from '@clashperk/node';
 import { ClanWarLeague } from 'clashofclans.js';
 import { ObjectId, Collection } from 'mongodb';
 import { Message } from 'discord.js';
@@ -247,12 +247,12 @@ export default class StorageHandler {
 			}
 		}
 
-		return this.pushToDB(tag, body.clans, warTags, rounds);
+		return this.pushToDB(tag, body.clans, warTags, rounds, body.season);
 	}
 
-	private async pushToDB(tag: string, clans: { tag: string; name: string }[], warTags: any[], rounds: any[]) {
+	private async pushToDB(tag: string, clans: { tag: string; name: string }[], warTags: any[], rounds: any[], season: string) {
 		return this.client.db.collection(Collections.CWL_GROUPS)
-			.updateOne({ 'clans.tag': tag, 'season': this.seasonID }, {
+			.updateOne({ 'clans.tag': tag, 'season': Season.generateID(season) }, {
 				$set: {
 					warTags, rounds
 				},
