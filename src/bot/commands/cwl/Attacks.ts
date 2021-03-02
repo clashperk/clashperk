@@ -15,7 +15,7 @@ export default class CWLAttacksComamnd extends Command {
 	public constructor() {
 		super('cwl-attacks', {
 			aliases: ['cwl-attacks'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: [
@@ -62,14 +62,14 @@ export default class CWLAttacksComamnd extends Command {
 				.setAuthor(
 					`${data.name} (${data.tag})`,
 					`${data.badgeUrls.medium}`,
-					`https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`
+					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
 				)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embed });
 		}
 
-		this.client.storage.pushWarTags(data.tag, body.rounds);
+		this.client.storage.pushWarTags(data.tag, body);
 		return this.rounds(message, body, data, round);
 	}
 

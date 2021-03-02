@@ -1,5 +1,6 @@
 import { Clan, ClanWarLeague, ClanWar, ClanWarMember } from 'clashofclans.js';
-import { EMOJIS, TOWN_HALLS, BLUE_EMOJI } from '../../util/Emojis';
+import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
+import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import moment from 'moment';
@@ -7,33 +8,37 @@ import moment from 'moment';
 export default class CWLRoundComamnd extends Command {
 	public constructor() {
 		super('cwl-round', {
-			aliases: ['round', 'cwl-war', 'cwl-round'],
-			category: 'cwl-hidden',
+			aliases: ['round', 'cwl-round'],
+			category: 'war',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: [
-					'Shows info about the current round.',
+					'Info about the current CWL rounds.',
 					'',
 					'**Flags**',
-					'`--round <num>` or `-r <num>` to see specific round.'
+					'`--round <num>` to see specific round.'
 				],
 				usage: '<clanTag> [--round/-r] [round]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP -r 5', '#8QU8J9LP --round 4']
 			},
-			optionFlags: ['--round', '-r'],
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				},
-				{
-					id: 'round',
-					match: 'option',
-					flag: ['--round', '-r'],
-					type: Argument.range('integer', 1, 7, true)
-				}
-			]
+			optionFlags: ['--round', '--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		const round = yield {
+			match: 'option',
+			flag: ['--round'],
+			type: Argument.range('integer', 1, 7, true)
+		};
+
+		return { data, round };
 	}
 
 	public async exec(message: Message, { data, round }: { data: Clan; round: number }) {
@@ -50,13 +55,13 @@ export default class CWLRoundComamnd extends Command {
 
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embed });
 		}
 
-		this.client.storage.pushWarTags(data.tag, body.rounds);
+		this.client.storage.pushWarTags(data.tag, body);
 		return this.rounds(message, body, data, round);
 	}
 
@@ -106,7 +111,7 @@ export default class CWLRoundComamnd extends Command {
 						])
 							.addField('Stats', [
 								`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.ATTACK_SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+								`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
 								`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.FIRE} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
 							]);
 					}
@@ -118,7 +123,7 @@ export default class CWLRoundComamnd extends Command {
 						])
 							.addField('Stats', [
 								`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.ATTACK_SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+								`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
 								`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.FIRE} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
 							]);
 					}
@@ -230,7 +235,7 @@ export default class CWLRoundComamnd extends Command {
 			.sort((a, b) => b.level - a.level);
 
 		return this.chunk(townHalls)
-			.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${BLUE_EMOJI[th.total]}`)
+			.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}`)
 				.join(' '))
 			.join('\n');
 	}

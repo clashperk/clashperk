@@ -1,31 +1,56 @@
 import { Clan, CurrentWar, ClanWarMember } from 'clashofclans.js';
-import { Command, PrefixSupplier } from 'discord-akairo';
+import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
+import { Collections } from '@clashperk/node';
 import 'moment-duration-format';
 import moment from 'moment';
 
-export default class CurrentWarCommand extends Command {
+export default class WarCommand extends Command {
 	public constructor() {
-		super('current-war', {
-			aliases: ['war', 'cw', 'current-war'],
-			category: 'cwl',
+		super('war', {
+			aliases: ['war'],
+			category: 'war',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: 'Shows info and stats about current war.',
-				usage: '<clanTag>',
-				examples: ['#8QU8J9LP', '8QU8J9LP']
+				content: [
+					'Current or previous clan war details.',
+					'',
+					'Get War ID from `warlog` comamnd.'
+				],
+				usage: '<#clanTag|last|warID>',
+				examples: ['36081', '#8QU8J9LP', '#8QU8J9LP last']
 			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				}
-			]
+			optionFlags: ['--tag', '--war-id']
 		});
 	}
 
-	public async exec(message: Message, { data }: { data: Clan }) {
+	public *args(msg: Message) {
+		const warID = yield {
+			flag: '--war-id',
+			type: Argument.union(
+				[
+					['last', 'prev']
+				],
+				Argument.range('integer', 1001, 1e5)
+			),
+			unordered: msg.hasOwnProperty('token') ? false : true,
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		const data = yield {
+			flag: '--tag',
+			unordered: msg.hasOwnProperty('token') ? false : true,
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data, warID };
+	}
+
+	public async exec(message: Message, { data, warID }: { data: Clan; warID?: number }) {
+		if (warID) return this.getWar(message, warID, data.tag);
+
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`\u200e${data.name} (${data.tag})`, data.badgeUrls.medium);
@@ -35,7 +60,7 @@ export default class CurrentWarCommand extends Command {
 			if (res?.ok) {
 				embed.setDescription(`Clan is in CWL. Run \`${(this.handler.prefix as PrefixSupplier)(message) as string}cwl\` to get CWL commands.`);
 			} else {
-				embed.setDescription('Private WarLog');
+				embed.setDescription('Private War Log');
 			}
 			return message.util!.send({ embed });
 		}
@@ -51,6 +76,33 @@ export default class CurrentWarCommand extends Command {
 			}
 			return message.util!.send({ embed });
 		}
+
+		return this.sendResult(message, body);
+	}
+
+	private async getWar(message: Message, id: number | string, tag: string) {
+		let data: any = null;
+		if (typeof id === 'string' && tag) {
+			data = await this.client.db.collection(Collections.CLAN_WARS)
+				.find({ 'clan.tag': tag, 'groupWar': false, 'state': 'warEnded' })
+				.sort({ preparationStartTime: -1 })
+				.limit(1)
+				.next();
+		} else if (typeof id === 'number') {
+			data = await this.client.db.collection(Collections.CLAN_WARS).findOne({ id });
+		}
+
+		if (!data) {
+			return message.util!.send('**No War found for the specified War ID.**');
+		}
+
+		return this.sendResult(message, data);
+	}
+
+	private sendResult(message: Message, body: CurrentWar) {
+		const embed = new MessageEmbed()
+			.setColor(this.client.embed(message))
+			.setAuthor(`\u200e${body.clan.name} (${body.clan.tag})`, body.clan.badgeUrls.medium);
 
 		if (body.state === 'preparation') {
 			embed.setDescription([
@@ -81,7 +133,7 @@ export default class CurrentWarCommand extends Command {
 				'**War Stats**',
 				`${EMOJIS.STAR} ${body.clan.stars} / ${body.opponent.stars}`,
 				`${EMOJIS.FIRE} ${body.clan.destructionPercentage.toFixed(2)}% / ${body.opponent.destructionPercentage.toFixed(2)}%`,
-				`${EMOJIS.ATTACK_SWORD} ${body.clan.attacks} / ${body.opponent.attacks}`
+				`${EMOJIS.SWORD} ${body.clan.attacks} / ${body.opponent.attacks}`
 			]);
 		}
 
@@ -100,7 +152,7 @@ export default class CurrentWarCommand extends Command {
 				'**War Stats**',
 				`${EMOJIS.STAR} ${body.clan.stars} / ${body.opponent.stars}`,
 				`${EMOJIS.FIRE} ${body.clan.destructionPercentage.toFixed(2)}% / ${body.opponent.destructionPercentage.toFixed(2)}%`,
-				`${EMOJIS.ATTACK_SWORD} ${body.clan.attacks} / ${body.opponent.attacks}`
+				`${EMOJIS.SWORD} ${body.clan.attacks} / ${body.opponent.attacks}`
 			]);
 		}
 
@@ -114,6 +166,11 @@ export default class CurrentWarCommand extends Command {
 			`\u200e${Util.escapeMarkdown(body.opponent.name)}`,
 			`${this.count(body.opponent.members)}`
 		]);
+
+		if (body.hasOwnProperty('id')) {
+			// @ts-expect-error
+			embed.setFooter(`War ID #${body.id as number}`);
+		}
 
 		return message.util!.send({ embed });
 	}

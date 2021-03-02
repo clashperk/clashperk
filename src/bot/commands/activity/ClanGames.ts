@@ -1,10 +1,8 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { ClanGames, Collections } from '@clashperk/node';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { Message } from 'discord.js';
-
-const MAX_POINT = 4000;
 
 interface DBMember {
 	tag: string;
@@ -27,12 +25,12 @@ interface Member {
 export default class ClanGamesCommand extends Command {
 	public constructor() {
 		super('clangames', {
-			aliases: ['clangames', 'points', 'cg'],
+			aliases: ['points', 'clangames', 'cg'],
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows clan game points of your clan members.',
+				content: 'Clan Games points of all clan members.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
@@ -77,7 +75,7 @@ export default class ClanGamesCommand extends Command {
 				members.slice(0, 55)
 					.filter(d => filter ? d.points > 0 : d.points >= 0)
 					.map((m, i) => {
-						const points = this.padStart(force ? m.points : Math.min(MAX_POINT, m.points));
+						const points = this.padStart(force ? m.points : Math.min(ClanGames.MAX_POINT, m.points));
 						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
 					})
 					.join('\n'),
@@ -94,12 +92,12 @@ export default class ClanGamesCommand extends Command {
 
 	private get seasonID() {
 		const now = new Date();
-		if (now.getDate() < 22) now.setMonth(now.getMonth() - 1);
+		if (now.getDate() < 20) now.setMonth(now.getMonth() - 1);
 		return now.toISOString().substring(0, 7);
 	}
 
 	private query(clanTag: string, clan: Clan) {
-		const cursor = this.client.db.collection(COLLECTIONS.CLAN_MEMBERS)
+		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS)
 			.aggregate([
 				{
 					$match: {
@@ -108,7 +106,7 @@ export default class ClanGamesCommand extends Command {
 				},
 				{
 					$match: {
-						season: this.seasonID
+						season: '2021-03'
 					}
 				},
 				{
@@ -154,7 +152,7 @@ export default class ClanGamesCommand extends Command {
 			}));
 
 		const allMembers = [...members, ...missingMembers];
-		const total = allMembers.reduce((prev, mem) => prev + Math.min(mem.points, MAX_POINT), 0);
+		const total = allMembers.reduce((prev, mem) => prev + Math.min(mem.points, ClanGames.MAX_POINT), 0);
 
 		return {
 			total,

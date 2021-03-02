@@ -1,5 +1,5 @@
-import { Message, PermissionString, TextChannel } from 'discord.js';
 import { Command, PrefixSupplier } from 'discord-akairo';
+import { Message, PermissionString } from 'discord.js';
 
 interface Description {
 	content: string;
@@ -16,25 +16,25 @@ export default class HelpCommand extends Command {
 	public constructor() {
 		super('help', {
 			aliases: ['help', 'commands'],
-			category: 'hidden',
-			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES'],
-			args: [
-				{
-					id: 'command',
-					match: 'content',
-					type: (msg, cmd) => {
-						if (!cmd) return null;
-						const resolver = this.handler.resolver.type('commandAlias');
-						return resolver(msg, cmd.toLocaleLowerCase().replace(/ /g, '-'));
-					}
-				}
-			],
+			category: '_hidden',
+			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Displays info about commands.',
+				content: 'Get all commands or info about a command',
 				usage: '[command]',
 				examples: ['', 'clan', 'compo']
-			}
+			},
+			optionFlags: ['--command']
 		});
+	}
+
+	public *args(msg: Message) {
+		const command = yield {
+			flag: '--command',
+			type: 'commandAlias',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		return { command };
 	}
 
 	public exec(message: Message, { command }: { command: Command | null }) {
@@ -83,7 +83,7 @@ export default class HelpCommand extends Command {
 			embed.setDescription([
 				embed.description,
 				'',
-				`**Required Permission${(command.userPermissions as PermissionString[]).length === 1 ? '' : 's'}**`,
+				`**Permission${(command.userPermissions as PermissionString[]).length === 1 ? '' : 's'} Required**`,
 				(command.userPermissions as PermissionString[]).join('\n')
 					.replace(/_/g, ' ')
 					.toLowerCase()
@@ -110,74 +110,14 @@ export default class HelpCommand extends Command {
 			{
 				setup: 'Clan Management',
 				activity: 'Clan Activity',
-				cwl: 'War and CWL',
-				search: 'Clash Search'
-			},
-			{
+				war: 'War and CWL',
+				search: 'Clash Search',
 				profile: 'Profile',
-				flag: 'Flags',
-				other: 'Other',
-				config: 'Config',
-				util: 'Util'
+				config: 'Config'
 			}
 		];
 
-		if (!(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'MANAGE_MESSAGES'], false)) {
-			return pages.map(async (_, page) => message.util!.send({ embed: this.execHelpList(message, pages[page]) }));
-		}
-
-		let page = 0;
-		const embed = this.execHelpList(message, pages[page]);
-		const msg = await message.util!.send({ embed });
-
-		for (const emoji of ['⬅️', '➡️', '➕']) {
-			await msg.react(emoji);
-			await this.delay(250);
-		}
-
-		// .setFooter(`Page ${page + 1}/2`, this.client.user.displayAvatarURL())
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕', '⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 90000, max: 10 }
-		);
-
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
-				page += 1;
-				if (page < 0) page = 1;
-				if (page > 1) page = 0;
-
-				await msg.edit({ embed: this.execHelpList(message, pages[page]) });
-				await this.delay(250);
-				return reaction.users.remove(message.author.id);
-			}
-
-			if (reaction.emoji.name === '⬅️') {
-				page -= 1;
-				if (page < 0) page = 1;
-				if (page > 1) page = 0;
-
-				await msg.edit({ embed: this.execHelpList(message, pages[page]) });
-				await this.delay(250);
-				return reaction.users.remove(message.author.id);
-			}
-
-			if (reaction.emoji.name === '➕') {
-				if (page === 0) page = 1;
-				else if (page === 1) page = 0;
-
-				collector.stop();
-				return message.channel.send({
-					embed: this.execHelpList(message, pages[page])
-				});
-			}
-		});
-
-		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
-	}
-
-	private async delay(ms: number) {
-		return new Promise(res => setTimeout(res, ms));
+		return message.util!.send({ embed: this.execHelpList(message, pages[0]) });
 	}
 
 	private execHelpList(message: Message, option: any) {
@@ -187,18 +127,19 @@ export default class HelpCommand extends Command {
 			.setAuthor('Command List', this.client.user!.displayAvatarURL())
 			.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
 
-		const commands = [];
+		const categories = [];
 		for (const category of this.handler.categories.values()) {
 			const title = option[category.id];
 
 			if (title) {
-				commands[Object.values(option).indexOf(title)] = { id: category.id, category, title };
+				categories[Object.values(option).indexOf(title)] = { id: category.id, category, title };
 			}
 		}
 
-		for (const cmd of commands) {
-			embed.addField(`**__${cmd.title as string}__**`, [
-				cmd.category.filter(cmd => cmd.aliases.length > 0)
+		for (const { category, title } of categories) {
+			embed.addField(`**__${title as string}__**`, [
+				category.filter(cmd => cmd.aliases.length > 0)
+					.sort((a, b) => a.aliases[0].length - b.aliases[0].length)
 					.map(cmd => {
 						const description = Array.isArray(cmd.description.content)
 							? cmd.description.content[0]

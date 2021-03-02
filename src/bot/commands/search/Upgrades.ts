@@ -1,9 +1,10 @@
-import { BUILDER_TROOPS, HOME_TROOPS } from '../../util/Emojis';
-import { TroopInfo, TroopJSON } from '../../util/Constants';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS } from '../../util/Emojis';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { MessageEmbed, Message } from 'discord.js';
+import { Command, Argument } from 'discord-akairo';
+import { TroopJSON } from '../../util/Constants';
 import { Player } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
+import ms from 'ms';
 
 export default class UpgradesCommand extends Command {
 	public constructor() {
@@ -12,29 +13,37 @@ export default class UpgradesCommand extends Command {
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Remaining upgrades of troop/spell/hero.',
+				content: 'Remaining upgrades of troops, spells and heroes.',
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			},
-			args: [
-				{
-					id: 'data',
-					match: 'content',
-					type: (msg, tag) => this.client.resolver.resolvePlayer(msg, tag)
-				}
-			]
+			optionFlags: ['--tag', '--base']
 		});
+	}
+
+	public *args(msg: Message) {
+		const base = yield {
+			flag: '--base',
+			unordered: true,
+			type: Argument.range('integer', 1, 25),
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		const data = yield {
+			flag: '--tag',
+			unordered: true,
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: async (msg: Message, args: string) => this.client.resolver.resolvePlayer(msg, args, base ?? 1)
+		};
+
+		return { data };
 	}
 
 	public exec(message: Message, { data }: { data: Player }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setFooter('Remaining Upgrades')
-			.setAuthor(
-				`${data.name} (${data.tag})`,
-				`https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`,
-				`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`
-			);
+			.setAuthor(`${data.name} (${data.tag})`)
+			.setDescription(`Remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? `& BH${data.builderHallLevel}` : ''}`);
 
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS
@@ -51,14 +60,14 @@ export default class UpgradesCommand extends Command {
 			}, {} as TroopJSON);
 
 		const titles: { [key: string]: string } = {
-			'Barracks': 'Elixir Troops',
-			'Dark Barracks': 'Dark Troops',
-			'Spell Factory': 'Elixir Spells',
-			'Dark Spell Factory': 'Dark Spells',
-			'Workshop': 'Siege Machines',
-			'Builder Hall': 'Builder Base Hero',
-			'Town Hall': 'Heroes',
-			'Builder Barracks': 'Builder Troops'
+			'Barracks': `${EMOJIS.ELIXIER} Elixir Troops`,
+			'Dark Barracks': `${EMOJIS.DARK_ELIXIR} Dark Troops`,
+			'Spell Factory': `${EMOJIS.ELIXIER} Elixir Spells`,
+			'Dark Spell Factory': `${EMOJIS.DARK_ELIXIR} Dark Spells`,
+			'Workshop': `${EMOJIS.ELIXIER} Siege Machines`,
+			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
+			'Town Hall': `${EMOJIS.DARK_ELIXIR} Heroes`,
+			'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
 		};
 
 		const units = [];
@@ -76,7 +85,7 @@ export default class UpgradesCommand extends Command {
 			const unitsArray = category.units.map(
 				unit => {
 					const { maxLevel, level } = apiTroops
-						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: 0, level: 0 };
+						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
 					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
 
 					return {
@@ -85,38 +94,35 @@ export default class UpgradesCommand extends Command {
 						name: unit.name,
 						level,
 						hallMaxLevel: unit.levels[hallLevel! - 1],
-						maxLevel
+						maxLevel,
+						resource: unit.upgrade.resource,
+						upgradeCost: level ? unit.upgrade.cost[level - 1] : unit.upgrade.unlockCost,
+						upgradeTime: level ? unit.upgrade.time[level - 1] : unit.upgrade.unlockTime
 					};
 				}
 			);
 
 			if (unitsArray.length) {
 				embed.addField(
-					category.title,
-					this.chunk(unitsArray)
-						.map(
-							chunks => chunks.map(unit => {
-								const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-								const level = this.padStart(unit.level);
-								const maxLevel = this.padEnd(unit.hallMaxLevel);
-								return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
-							}).join(' ')
-						)
-						.join('\n')
+					`\u200b\n${category.title}`,
+					unitsArray.map(unit => {
+						const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+						const level = this.padStart(unit.level);
+						const maxLevel = this.padEnd(unit.hallMaxLevel);
+						const upgradeTime = ms(unit.upgradeTime * 60 * 1000).padStart(5, ' ');
+						const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
+						return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
+					}).join('\n')
 				);
 			}
 		}
 
-		if (!embed.fields.length) embed.setFooter('No Remaining Upgrades');
-		return message.util!.send({ embed });
-	}
-
-	private chunk(items: TroopInfo[] = [], chunk = 4) {
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
+		if (!embed.fields.length) {
+			embed.setDescription(
+				`No remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? ` and BH${data.builderHallLevel}` : ''}`
+			);
 		}
-		return array;
+		return message.util!.send({ embed });
 	}
 
 	private padEnd(num: number) {
@@ -151,5 +157,22 @@ export default class UpgradesCommand extends Command {
 				village: u.village
 			}))
 		];
+	}
+
+	private format(num = 0) {
+		// Nine Zeroes for Billions
+		return Math.abs(num) >= 1.0e+9
+
+			? `${(Math.abs(num) / 1.0e+9).toFixed(2)}B`
+			// Six Zeroes for Millions
+			: Math.abs(num) >= 1.0e+6
+
+				? `${(Math.abs(num) / 1.0e+6).toFixed(2)}M`
+				// Three Zeroes for Thousands
+				: Math.abs(num) >= 1.0e+3
+
+					? `${(Math.abs(num) / 1.0e+3).toFixed(1)}K`
+
+					: Math.abs(num).toFixed(0);
 	}
 }

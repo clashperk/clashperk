@@ -1,17 +1,17 @@
 {
 	"name": "clashperk",
-	"version": "1.4.4",
+	"version": "1.4.3",
 	"author": "SUVAJIT (suvajit.me@gmail.com)",
 	"license": "MIT",
 	"description": "Clash of Clans Discord Bot",
-	"main": "dist/index.js",
+	"main": "dist/src/index.js",
 	"private": true,
 	"scripts": {
 		"build": "tsc",
-		"start": "pm2 start dist/index.js --name bot",
+		"start": "pm2 start dist/src/index.js --name bot",
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
-		"dev": "node --enable-source-maps dist/index.js"
+		"dev": "node --enable-source-maps dist/src/index.js"
 	},
 	"dependencies": {
 		"@clashperk/chartgen": "github:clashperk/chartgen",
@@ -22,7 +22,8 @@
 		"clashofclans.js": "github:clashperk/clashofclans.js",
 		"common-tags": "^1.8.0",
 		"discord-akairo": "github:clashperk/discord-akairo",
-		"discord.js": "^12.4.0",
+		"discord-api-types": "^0.12.1",
+		"discord.js": "^12.5.1",
 		"dotenv": "^8.2.0",
 		"exceljs": "^4.2.0",
 		"grpc": "^1.24.4",
@@ -31,8 +32,7 @@
 		"mongodb": "^3.6.3",
 		"ms": "^2.1.2",
 		"node-fetch": "^2.6.1",
-		"shelljs": "^0.8.4",
-		"table": "^6.0.4"
+		"shelljs": "^0.8.4"
 	},
 	"devDependencies": {
 		"@types/common-tags": "^1.8.0",
@@ -42,7 +42,6 @@
 		"@types/node": "^14.14.16",
 		"@types/node-fetch": "^2.5.7",
 		"@types/shelljs": "^0.8.8",
-		"@types/table": "^6.0.0",
 		"@typescript-eslint/eslint-plugin": "^4.11.0",
 		"@typescript-eslint/parser": "^4.11.0",
 		"eslint": "^7.14.0",

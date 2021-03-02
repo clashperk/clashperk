@@ -1,5 +1,6 @@
-import { TOWN_HALLS, RED_EMOJI } from '../../util/Emojis';
 import { Clan, ClanWarLeague } from 'clashofclans.js';
+import { ORANGE_NUMBERS } from '../../util/NumEmojis';
+import { TOWN_HALLS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 import moment from 'moment';
@@ -8,20 +9,25 @@ export default class CWLRosterComamnd extends Command {
 	public constructor() {
 		super('cwl-roster', {
 			aliases: ['roster', 'cwl-roster'],
-			category: 'cwl-hidden',
+			category: 'war',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows roster and Town-Hall distribution.',
+				content: 'CWL Roster and Town-Hall distribution.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data };
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
@@ -36,7 +42,7 @@ export default class CWLRosterComamnd extends Command {
 			.setColor(this.client.embed(message));
 
 		if (!body.ok) {
-			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+			embed.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embed });
@@ -58,9 +64,9 @@ export default class CWLRosterComamnd extends Command {
 				.map(entry => ({ level: Number(entry[0]), total: Number(entry[1]) }))
 				.sort((a, b) => b.level - a.level);
 
-			embed.addField(`\u200e${++index}. ${clan.tag === data.tag ? `**${clan.name} (${clan.tag})**` : `${clan.name} (${clan.tag})`}`, [
+			embed.addField(`\u200e${++index}. ${clan.tag === data.tag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`, [
 				this.chunk(townHalls)
-					.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${RED_EMOJI[th.total]}\u200b`)
+					.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`)
 						.join(' '))
 					.join('\n')
 			]);

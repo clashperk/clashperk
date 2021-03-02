@@ -2,8 +2,8 @@ import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS } from '../../util/Emojis';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { MessageEmbed, Message } from 'discord.js';
+import { Command, Argument } from 'discord-akairo';
 import { Player } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
 
 export default class UnitsCommand extends Command {
 	public constructor() {
@@ -12,40 +12,50 @@ export default class UnitsCommand extends Command {
 			category: 'search',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
-				content: 'Shows troop, spell & hero levels.',
+				content: 'Levels of troops, spells and heroes.',
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20']
 			},
-			args: [
-				{
-					id: 'data',
-					match: 'content',
-					type: (msg, tag) => this.client.resolver.resolvePlayer(msg, tag)
-				}
-			]
+			optionFlags: ['--tag', '--base']
 		});
+	}
+
+	public *args(msg: Message) {
+		const base = yield {
+			flag: '--base',
+			unordered: true,
+			type: Argument.range('integer', 1, 25),
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		const data = yield {
+			flag: '--tag',
+			unordered: true,
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolvePlayer(msg, tag, base ?? 1)
+		};
+
+		return { data };
 	}
 
 	public async exec(message: Message, { data }: { data: Player }) {
 		const embed = this.embed(data, true);
 		embed.setColor(this.client.embed(message))
-			.setFooter(`Level / Town Hall ${data.townHallLevel}${data.builderHallLevel ? ` & Builder Hall ${data.builderHallLevel}` : ''} Max`);
+			.setDescription(`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`);
 		const msg = await message.util!.send({ embed });
 
 		await msg.react('🔥');
 		const collector = msg.createReactionCollector(
 			(reaction, user) => ['🔥'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 45000, max: 1 }
+			{ time: 60000, max: 1 }
 		);
 
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '🔥') {
 				const embed = this.embed(data, false);
 				embed.setColor(this.client.embed(message));
-				await msg.edit({
-					embed: embed.setFooter('Level / Max Level')
-				});
-				return collector.stop();
+				embed.setDescription(`Units for TH${data.townHallLevel} ${data.builderHallLevel ? `and BH${data.builderHallLevel}` : ''}`);
+				return msg.edit({ embed });
 			}
 		});
 
@@ -54,11 +64,7 @@ export default class UnitsCommand extends Command {
 
 	private embed(data: Player, option = true) {
 		const embed = new MessageEmbed()
-			.setAuthor(
-				`${data.name} (${data.tag})`,
-				`https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`,
-				`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`
-			);
+			.setAuthor(`${data.name} (${data.tag})`);
 
 		const Troops = RAW_TROOPS_DATA.TROOPS
 			.filter(unit => {
@@ -99,7 +105,7 @@ export default class UnitsCommand extends Command {
 			const unitsArray = category.units.map(
 				unit => {
 					const { maxLevel, level } = apiTroops
-						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: 0, level: 0 };
+						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
 					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
 
 					return {

@@ -1,4 +1,6 @@
-import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } from 'discord-akairo';
+import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag, Command } from 'discord-akairo';
+import { APIApplicationCommandInteractionDataOption } from 'discord-api-types/v8';
+import Interaction, { InteractionParser } from './Interaction';
 import { MessageEmbed, Message } from 'discord.js';
 import { loadSync } from '@grpc/proto-loader';
 import RPCHandler from '../core/RPCHandler';
@@ -67,7 +69,7 @@ export default class Client extends AkairoClient {
 	public commandHandler: CommandHandler = new CommandHandler(this, {
 		directory: path.join(__dirname, '..', 'commands'),
 		aliasReplacement: /-/g,
-		prefix: message => this.settings.get(message.guild!, 'prefix', '*'),
+		prefix: message => process.env.NODE_ENV === 'production' ? this.settings.get(message.guild!, 'prefix', '*') : '+',
 		allowMention: true,
 		commandUtil: true,
 		commandUtilLifetime: 15e4,
@@ -115,6 +117,46 @@ export default class Client extends AkairoClient {
 				]
 			}
 		});
+
+		// @ts-expect-error
+		this.ws.on('INTERACTION_CREATE', async res => {
+			const command = this.commandHandler.findCommand(res.data?.name);
+			if (!command) return; // eslint-disable-line
+			const interaction = await new Interaction(this, res).parse(res);
+			// @ts-expect-error
+			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5 } });
+			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) return;
+			// @ts-expect-error
+			if (await this.commandHandler.runPermissionChecks(interaction, command)) return;
+			// @ts-expect-error
+			if (await this.commandHandler.runPostTypeInhibitors(interaction, command)) return;
+			return this.handleInteraction(interaction, command, interaction.options);
+		});
+	}
+
+	private contentParser(command: Command, content: string | APIApplicationCommandInteractionDataOption[]) {
+		if (Array.isArray(content)) {
+			// @ts-expect-error
+			const contentParser = new InteractionParser({ flagWords: command.contentParser.flagWords, optionFlagWords: command.contentParser.optionFlagWords });
+			return contentParser.parse(content);
+		}
+		// @ts-expect-error
+		return command.contentParser.parse(content);
+	}
+
+	private async handleInteraction(interaction: Interaction, command: Command, content: string | APIApplicationCommandInteractionDataOption[]): Promise<any> {
+		const parsed = this.contentParser(command, content);
+		// @ts-expect-error
+		const args = await command.argumentRunner.run(interaction, parsed, command.argumentGenerator);
+		if (Flag.is(args, 'cancel')) {
+			return this.commandHandler.emit('commandCancelled', interaction, command);
+		} else if (Flag.is(args, 'continue')) {
+			const continueCommand = this.commandHandler.modules.get(args.command)!;
+			return this.handleInteraction(interaction, continueCommand, args.rest);
+		}
+
+		// @ts-expect-error
+		return this.commandHandler.runCommand(interaction, command, args);
 	}
 
 	private async init() {
@@ -130,7 +172,7 @@ export default class Client extends AkairoClient {
 		this.inhibitorHandler.loadAll();
 		this.listenerHandler.loadAll();
 
-		await Connection.connect();
+		await Connection.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
 		this.db = Connection.db('clashperk');
 		// await Connection.createIndex(this.db);
 
@@ -154,12 +196,12 @@ export default class Client extends AkairoClient {
 		this.resolver = new Resolver(this);
 
 		this.once('ready', () => {
-			if (process.env.NODE_ENV) return this.run();
+			if (process.env.NODE_ENV === 'production') return this.run();
 		});
 	}
 
 	public embed(message: Message) {
-		return this.settings.get<number>(message.guild!, 'color', 5861569);
+		return this.settings.get<number>(message.guild!, 'color', undefined);
 	}
 
 	private run() {

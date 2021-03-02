@@ -13,7 +13,7 @@ export default class CWLExport extends Command {
 	public constructor() {
 		super('cwl-export', {
 			aliases: ['cwl-export'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
 				content: 'Export war stats to excel for all clans.',

@@ -7,7 +7,7 @@ export default class CWLTopCommand extends Command {
 	public constructor() {
 		super('cwl-legends', {
 			aliases: ['cwl-legends', 'cwl-top', 'cwl-mvp'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
 			description: {
 				content: 'War League Legend scoreboard of the clan.',

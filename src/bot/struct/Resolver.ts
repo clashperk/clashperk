@@ -1,6 +1,7 @@
-import { MessageEmbed, Message, GuildMember } from 'discord.js';
-import { COLLECTIONS, status } from '../util/Constants';
+import { Message, GuildMember } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
+import { Collections } from '@clashperk/node';
+import { status } from '../util/Constants';
 import { Flag } from 'discord-akairo';
 import Client from './Client';
 
@@ -12,45 +13,32 @@ export default class Resolver {
 	}
 
 	public async resolvePlayer(message: Message, args: string, num = 1): Promise<Player | Flag> {
-		const arr = args?.split(/ +/g) ?? []; // eslint-disable-line
-		if (arr.length > 1) num = Number(arr.pop()) || 1;
-		if (/^\d$|^1\d$|^2[0-5]$/.test(args)) {
-			num = Number(/^\d$|^1\d$|^2[0-5]$/.exec(args)?.shift()) || 1;
-			args = '';
-		}
-
 		const parsed = await this.argumentParser(message, args);
 		const tag = parsed && typeof parsed === 'boolean';
 
 		if (tag) return this.getPlayer(message, args);
 
-		const embed = new MessageEmbed().setColor(0xf30c11);
 		if (!parsed) {
-			embed.setDescription(status(404));
-			return this.fail(message, { embed });
+			return this.fail(message, `**${status(404)}**`);
 		}
 
-		const [data, otherTags] = await Promise.all([
-			this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ user: (parsed as GuildMember).id }),
-			this.client.http.getPlayerTags((parsed as GuildMember).id)
-		]);
+		const otherTags: string[] = [];
+		const data = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: (parsed as GuildMember).id });
 
-		const tagSet = new Set([...data?.entries.map((en: any) => en.tag) ?? [], ...otherTags]);
+		if (!data?.entries?.length || num > data?.entries?.length) {
+			otherTags.push(...(await this.client.http.getPlayerTags((parsed as GuildMember).id)));
+		}
+
+		const tagSet = new Set([...data?.entries?.map((en: any) => en.tag) ?? [], ...otherTags]);
 		const tags = Array.from(tagSet);
 		tagSet.clear();
 
 		if (tags.length) return this.getPlayer(message, tags[Math.min(tags.length - 1, num - 1)]);
 		if (message.author.id === (parsed as GuildMember).id) {
-			embed.setDescription([
-				'**Please provide a player tag and try again!**'
-			]);
-		} else {
-			embed.setDescription([
-				`Couldn't find a player linked to **${(parsed as GuildMember).user.tag}!**`
-			]);
+			return this.fail(message, '**You must provide a player tag to run this command!**');
 		}
 
-		return this.fail(message, { embed });
+		return this.fail(message, `**No Player Linked to ${(parsed as GuildMember).user.tag}!**`);
 	}
 
 	public async resolveClan(message: Message, args: string): Promise<Clan | Flag> {
@@ -60,56 +48,40 @@ export default class Resolver {
 
 		if (tag) return this.getClan(message, args);
 
-		const embed = new MessageEmbed().setColor(0xf30c11);
 		if (!parsed) {
-			embed.setDescription(status(404));
-			return this.fail(message, { embed });
+			return this.fail(message, `**${status(404)}**`);
 		}
 
-		const data = await this.client.db.collection(COLLECTIONS.LINKED_CHANNELS)
-			.findOne({ channel: message.channel.id }) ||
-			await this.client.db.collection(COLLECTIONS.LINKED_CLANS)
+		const data = await this.client.db.collection(Collections.CLAN_STORES)
+			.findOne({ channels: message.channel.id }) ||
+			await this.client.db.collection(Collections.LINKED_CLANS)
 				.findOne({ user: (parsed as GuildMember).id });
 
 		if (data) return this.getClan(message, data.tag);
 
 		if (message.author.id === (parsed as GuildMember).id) {
-			embed.setDescription([
-				'**Please provide a clan tag and try again!**'
-			]);
-		} else {
-			embed.setDescription([
-				`Couldn't find a clan linked to **${(parsed as GuildMember).user.tag}!**`
-			]);
+			return this.fail(message, '**You must provide a clan tag to run this command!**');
 		}
 
-		return this.fail(message, { embed });
+		return this.fail(message, `**No Clan Linked to ${(parsed as GuildMember).user.tag}!**`);
 	}
 
 	public async getPlayer(message: Message, tag: string): Promise<Player | Flag> {
 		const data: Player = await this.client.http.fetch(`/players/${encodeURIComponent(this.parseTag(tag))}`);
 		if (data.ok) return data;
 
-		const embed = new MessageEmbed()
-			.setColor(0xf30c11)
-			.setDescription(status(data.statusCode));
-
-		return this.fail(message, { embed });
+		return this.fail(message, `**${status(data.statusCode)}**`);
 	}
 
 	public async getClan(message: Message, tag: string): Promise<Clan | Flag> {
 		const data: Clan = await this.client.http.fetch(`/clans/${encodeURIComponent(this.parseTag(tag))}`);
 		if (data.ok) return data;
 
-		const embed = new MessageEmbed()
-			.setColor(0xf30c11)
-			.setDescription(status(data.statusCode));
-
-		return this.fail(message, { embed });
+		return this.fail(message, `**${status(data.statusCode)}**`);
 	}
 
-	private async fail(message: Message, res: any) {
-		return message.channel.send({ embed: res.embed })
+	private async fail(message: Message, content: string) {
+		return message.util!.send(content)
 			.catch(() => Flag.cancel())
 			.then(() => Flag.cancel());
 	}

@@ -6,7 +6,7 @@ export default class ClanBadgeCommand extends Command {
 	public constructor() {
 		super('clan-badge', {
 			aliases: ['badge', 'clan-badge', 'cb'],
-			category: 'search',
+			category: '_search',
 			description: {
 				content: 'In-game clan badge in high resolution.',
 				usage: '<clanTag>',
@@ -24,7 +24,7 @@ export default class ClanBadgeCommand extends Command {
 
 	public exec(message: Message, { data }: { data: Clan }) {
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 			.setColor(this.client.embed(message))
 			.setImage(data.badgeUrls.large);
 

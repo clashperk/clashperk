@@ -1,4 +1,5 @@
-import { SETTINGS, COLLECTIONS } from '../util/Constants';
+import { Settings, Collections } from '@clashperk/node';
+import Interaction from './Interaction';
 import { Message } from 'discord.js';
 import Client from './Client';
 
@@ -35,15 +36,17 @@ export default class Patrons {
 		return this.refresh();
 	}
 
-	public get(message: string | Message): boolean {
-		if (message instanceof Message) return this.patrons.has(message.author.id) || this.patrons.has(message.guild!.id);
+	public get(message: string | Message | Interaction): boolean {
+		if (message instanceof Message || message instanceof Interaction) {
+			return this.patrons.has(message.author.id) || this.patrons.has(message.guild!.id);
+		}
 		return this.patrons.has(message);
 	}
 
 	public async refresh() {
 		this.patrons.clear(); // Clear old userId and guildId
 
-		await this.client.db.collection<Patron>(COLLECTIONS.PATRONS)
+		await this.client.db.collection<Patron>(Collections.PATRONS)
 			.find({ active: true })
 			.forEach(data => {
 				if (data.discord_id) this.patrons.add(data.discord_id);
@@ -51,8 +54,8 @@ export default class Patrons {
 
 				for (const guild of data.guilds) {
 					this.patrons.add(guild.id);
-					const limit = this.client.settings.get(guild.id, SETTINGS.LIMIT, 2);
-					if (limit !== guild.limit) this.client.settings.set(guild.id, SETTINGS.LIMIT, guild.limit);
+					const limit = this.client.settings.get(guild.id, Settings.CLAN_LIMIT, 2);
+					if (limit !== guild.limit) this.client.settings.set(guild.id, Settings.CLAN_LIMIT, guild.limit);
 				}
 			});
 	}

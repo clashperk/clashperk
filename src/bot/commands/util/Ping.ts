@@ -5,7 +5,7 @@ export default class PingCommand extends Command {
 	public constructor() {
 		super('ping', {
 			aliases: ['ping', 'pong'],
-			category: 'hidden',
+			category: '_hidden',
 			description: {
 				content: 'Pings me!'
 			}

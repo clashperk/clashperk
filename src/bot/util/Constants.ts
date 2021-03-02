@@ -1,4 +1,5 @@
 import { TextChannel, User, PermissionString, MessageEmbed } from 'discord.js';
+import { Collections } from '@clashperk/node';
 import { Clan } from 'clashofclans.js';
 
 export const Util = {
@@ -7,7 +8,7 @@ export const Util = {
 		// clan verification by unique code or verified co/leader
 		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
 		return clan.memberList.filter(m => ['coLeader', 'leader'].includes(m.role))
-			.some(m => verifiedTags.includes(m.tag)) || clan.description.toLowerCase().includes(code);
+			.some(m => verifiedTags.includes(m.tag)) || clan.description.toUpperCase().includes(code);
 	}
 };
 
@@ -15,7 +16,7 @@ export const codes = {
 	504: '504 Request Timeout',
 	400: 'Client provided incorrect parameters for the request.',
 	403: 'Access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
-	404: 'Looks like the tag is invalid! Try again?',
+	404: 'No matches found for the specified tag!',
 	429: 'Request was throttled, because amount of requests was above the threshold defined for the used API token.',
 	500: 'Unknown error happened when handling the request.',
 	503: 'Service is temporarily unavailable because of maintenance.'
@@ -26,31 +27,31 @@ export interface KeyValue {
 }
 
 export const COLLECTIONS = {
-	CLAN_STORES: 'clanstores',
-	DONATION_LOGS: 'donationlogs',
-	LAST_ONLINE_LOGS: 'lastonlinelogs',
-	CLAN_GAMES_LOGS: 'clangameslogs',
-	CLAN_EMBED_LOGS: 'clanembedlogs',
-	PLAYER_LOGS: 'playerlogs',
-	FLAGGED_USERS: 'flaggedusers',
-	LINKED_CLANS: 'linkedclans',
-	LINKED_USERS: 'linkedusers',
-	LINKED_CHANNELS: 'linkedchannels',
-	SETTINGS: 'settings',
-	CLAN_WARS: 'clanwars',
-	LAST_ONLINES: 'lastonlines',
-	CLAN_WAR_STORES: 'clanwarstores',
-	CLAN_GAMES: 'clangames',
-	CWL_WAR_TAGS: 'cwlwartags',
-	CLAN_MEMBERS: 'clanmembers',
-	BOT_GROWTH: 'botgrowth',
-	BOT_USAGE: 'botusage',
-	BOT_GUILDS: 'botguilds',
-	BOT_USERS: 'botusers',
-	BOT_STATS: 'botstats',
-	PATRONS: 'patrons',
-	CLAN_WAR_LOGS: 'clanwarlogs',
-	TIME_ZONES: 'timezoneoffset'
+	CLAN_STORES: Collections.CLAN_STORES,
+	DONATION_LOGS: Collections.DONATION_LOGS,
+	LAST_ONLINE_LOGS: Collections.LAST_SEEN_LOGS,
+	CLAN_GAMES_LOGS: Collections.CLAN_GAMES_LOGS,
+	CLAN_EMBED_LOGS: Collections.CLAN_EMBED_LOGS,
+	PLAYER_LOGS: Collections.CLAN_FEED_LOGS,
+	FLAGGED_USERS: Collections.FLAGS,
+	LINKED_CLANS: Collections.LINKED_CLANS,
+	LINKED_USERS: Collections.LINKED_PLAYERS,
+	LINKED_CHANNELS: Collections.LINKED_CHANNELS,
+	SETTINGS: Collections.SETTINGS,
+	LAST_ONLINES: Collections.LAST_SEEN,
+	CLAN_WAR_STORES: Collections.CLAN_WARS,
+	CLAN_GAMES: Collections.CLAN_GAMES,
+	CWL_WAR_TAGS: Collections.CWL_GROUPS,
+	CLAN_MEMBERS: Collections.CLAN_MEMBERS,
+	BOT_GROWTH: Collections.BOT_GROWTH,
+	BOT_USAGE: Collections.BOT_USAGE,
+	BOT_GUILDS: Collections.BOT_GUILDS,
+	BOT_USERS: Collections.BOT_USERS,
+	BOT_STATS: Collections.BOT_STATS,
+	BOT_INTERACTIONS: Collections.BOT_INTERACTIONS,
+	PATRONS: Collections.PATRONS,
+	CLAN_WAR_LOGS: Collections.CLAN_WAR_LOGS,
+	TIME_ZONES: Collections.TIME_ZONES
 };
 
 export const SETTINGS = {
@@ -84,7 +85,7 @@ export const EMBEDS = {
 
 	VERIFY_CLAN: (clan: Clan, code: string, prefix: string) => new MessageEmbed()
 		.setTitle(`${clan.name} (${clan.tag})`)
-		.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
+		.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
 		.setThumbnail(clan.badgeUrls.small)
 		.setDescription([
 			'**Clan Description**',
@@ -182,6 +183,8 @@ export interface TroopJSON {
 		productionBuilding: string;
 		type: string;
 		upgrade: {
+			unlockCost: number;
+			unlockTime: number;
 			cost: number[];
 			time: number[];
 			resource: string;

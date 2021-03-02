@@ -1,13 +1,14 @@
 import { Clan, ClanWar, ClanWarLeague } from 'clashofclans.js';
-import { EMOJIS, RED_EMOJI } from '../../util/Emojis';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message } from 'discord.js';
+import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 
 export default class CWLMissedComamnd extends Command {
 	public constructor() {
 		super('cwl-missed', {
 			aliases: ['cwl-missed'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [
@@ -16,13 +17,18 @@ export default class CWLMissedComamnd extends Command {
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data };
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
@@ -43,14 +49,14 @@ export default class CWLMissedComamnd extends Command {
 				.setAuthor(
 					`${data.name} (${data.tag})`,
 					`${data.badgeUrls.medium}`,
-					`https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`
+					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
 				)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embed });
 		}
 
-		this.client.storage.pushWarTags(data.tag, body.rounds);
+		this.client.storage.pushWarTags(data.tag, body);
 		return this.rounds(message, body, data);
 	}
 
@@ -96,7 +102,7 @@ export default class CWLMissedComamnd extends Command {
 			.setTitle('Missed Attacks')
 			.setDescription(
 				collection.sort((a, b) => b.count - a.count)
-					.map(m => `\u200e${RED_EMOJI[m.count]} ${m.name as string}`)
+					.map(m => `\u200e${BLUE_NUMBERS[m.count]} ${m.name as string}`)
 			)
 			.setFooter(`Upto Round #${round}`);
 

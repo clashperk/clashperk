@@ -5,10 +5,10 @@ export default class CWLComamnd extends Command {
 	public constructor() {
 		super('cwl', {
 			aliases: ['cwl'],
-			category: 'cwl',
+			category: 'war',
 			description: {
 				content: [
-					'Full list of the CWL commands.',
+					'CWL season overview and summary.',
 					'',
 					'**Available Methods**',
 					'• roster `<clanTag>`',
@@ -44,12 +44,15 @@ export default class CWLComamnd extends Command {
 					'export clans/all'
 				],
 				usage: '<method> <...args>'
-			}
+			},
+			optionFlags: ['--option']
 		});
 	}
 
-	public *args() {
+	public *args(msg: Message) {
 		const command = yield {
+			flag: '--option',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			type: [
 				['cwl-attacks', 'attacks'],
 				['cwl-remaining', 'remaining', 'missing', 'rem'],
@@ -71,7 +74,7 @@ export default class CWLComamnd extends Command {
 					.setColor(this.client.embed(message))
 					.setAuthor('Command List', this.client.user!.displayAvatarURL())
 					.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
-				const commands = this.handler.categories.get('cwl-hidden')!
+				const commands = this.handler.categories.get('cwl')!
 					.values();
 				embed.addField('__**CWL**__', [
 					Array.from(commands)

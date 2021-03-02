@@ -8,20 +8,25 @@ export default class CWLStatsComamnd extends Command {
 	public constructor() {
 		super('cwl-stats', {
 			aliases: ['cwl-stats'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
 			description: {
 				content: 'Shows some statistics for each round.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data };
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
@@ -40,13 +45,13 @@ export default class CWLStatsComamnd extends Command {
 
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embed });
 		}
 
-		this.client.storage.pushWarTags(data.tag, body.rounds);
+		this.client.storage.pushWarTags(data.tag, body);
 		return this.rounds(message, body, data);
 	}
 

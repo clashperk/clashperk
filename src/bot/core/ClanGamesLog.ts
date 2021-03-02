@@ -1,13 +1,20 @@
 import { MessageEmbed, Message, Collection, TextChannel, PermissionString } from 'discord.js';
-import { COLLECTIONS } from '../util/Constants';
+import { ClanGames, Collections } from '@clashperk/node';
 import { Clan } from 'clashofclans.js';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
 
-const EVENT_DATE = 22;
+interface Cache {
+	tag: string;
+	guild: string;
+	color?: number;
+	channel: string;
+	message: string;
+	msg?: Message | null;
+}
 
-export default class ClanGames {
-	public cached: Collection<string, any>;
+export default class ClanGamesLog {
+	public cached: Collection<string, Cache>;
 	public intervalId!: NodeJS.Timeout;
 
 	public constructor(private readonly client: Client) {
@@ -46,7 +53,7 @@ export default class ClanGames {
 	private async handleMessage(id: string, channel: TextChannel, clan: Clan, updated: any) {
 		const cache = this.cached.get(id);
 
-		if (cache && !cache.message) {
+		if (!cache?.message) {
 			return this.sendNew(id, channel, clan, updated);
 		}
 
@@ -81,11 +88,11 @@ export default class ClanGames {
 
 		if (message) {
 			try {
-				const cache = this.cached.get(id)!;
+				const cache = this.cached.get(id)!; // TODO: Fix
 				cache.message = message.id;
 				cache.msg = message;
 				this.cached.set(id, cache);
-				await this.client.db.collection(COLLECTIONS.CLAN_GAMES_LOGS)
+				await this.client.db.collection(Collections.CLAN_GAMES_LOGS)
 					.updateOne(
 						{ clan_id: new ObjectId(id) },
 						{ $set: { message: message.id } }
@@ -105,7 +112,7 @@ export default class ClanGames {
 			.catch(error => {
 				if (error.code === 10008) {
 					const cache = this.cached.get(id)!;
-					cache.msg = undefined;
+					cache.msg = null;
 					this.cached.set(id, cache);
 					return this.sendNew(id, message.channel as TextChannel, clan, updated);
 				}
@@ -116,7 +123,6 @@ export default class ClanGames {
 	private embed(clan: Clan, id: string, updated: any) {
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
-			.setColor(cache.color)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Clan Games Scoreboard [${clan.members}/50]`,
@@ -130,20 +136,9 @@ export default class ClanGames {
 			])
 			.setFooter(`Points: ${updated.total as number} [Avg: ${(updated.total / clan.members).toFixed(2)}]`)
 			.setTimestamp();
+		if (cache?.color) embed.setColor(cache.color);
 
 		return embed;
-	}
-
-	private get event() {
-		const START = new Date();
-		START.setDate(EVENT_DATE);
-		START.setHours(0, 0, 0, 0);
-
-		const END = new Date();
-		END.setDate(EVENT_DATE + 6);
-		END.setHours(10, 0, 0, 0);
-
-		return new Date() >= new Date(START) && new Date() <= new Date(END);
 	}
 
 	private padStart(num: number) {
@@ -151,14 +146,14 @@ export default class ClanGames {
 	}
 
 	public async init() {
-		if (this.event) {
+		if (ClanGames.Started) {
 			await this._flush();
 			return this._init();
 		}
 
 		clearInterval(this.intervalId);
 		this.intervalId = setInterval(async () => {
-			if (this.event) {
+			if (ClanGames.Started) {
 				await this._init();
 				await this._flush();
 				return clearInterval(this.intervalId);
@@ -169,21 +164,21 @@ export default class ClanGames {
 	}
 
 	private async _init() {
-		await this.client.db.collection(COLLECTIONS.CLAN_GAMES_LOGS)
+		await this.client.db.collection(Collections.CLAN_GAMES_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
+					tag: data.tag,
+					color: data.color,
 					guild: data.guild,
 					channel: data.channel,
-					message: data.message,
-					color: data.color,
-					tag: data.tag
+					message: data.message
 				});
 			});
 	}
 
 	private async flush(intervalId: NodeJS.Timeout) {
-		if (this.event) return null;
+		if (ClanGames.Started) return null;
 		await this.init();
 		clearInterval(intervalId);
 		return this.cached.clear();
@@ -195,17 +190,17 @@ export default class ClanGames {
 	}
 
 	public async add(id: string) {
-		if (!this.event) return null;
-		const data = await this.client.db.collection(COLLECTIONS.CLAN_GAMES_LOGS)
+		if (!ClanGames.Started) return null;
+		const data = await this.client.db.collection(Collections.CLAN_GAMES_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;
 		return this.cached.set(id, {
+			tag: data.tag,
+			color: data.color,
 			guild: data.guild,
 			channel: data.channel,
-			message: data.message,
-			color: data.color,
-			tag: data.tag
+			message: data.message
 		});
 	}
 

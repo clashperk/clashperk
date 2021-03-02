@@ -1,10 +1,10 @@
-import MaintenanceHandler from './MaintenanceHandler';
-import LastOnlineLog from './LastOnlineLog';
-import ClanMemberLog from './ClanMemberLog';
+import { Collections, BitField } from '@clashperk/node';
+import MaintenanceHandler from './Maintenance';
 import ClanEmbedLog from './ClanEmbedLog';
 import ClanGamesLog from './ClanGamesLog';
+import LastSeenLog from './LastSeenLog';
+import ClanFeedLog from './ClanFeedLog';
 import DonationLog from './DonationLog';
-import { COLLECTIONS, Op } from '../util/Constants';
 import ClanWarLog from './ClanWarLog';
 import Client from '../struct/Client';
 import Queue from '../struct/Queue';
@@ -24,9 +24,9 @@ export default class RPCHandler {
 
 	private readonly clanGamesLog = new ClanGamesLog(this.client);
 
-	private readonly lastOnlineLog = new LastOnlineLog(this.client);
+	private readonly lastOnlineLog = new LastSeenLog(this.client);
 
-	private readonly clanMemberLog = new ClanMemberLog(this.client);
+	private readonly clanMemberLog = new ClanFeedLog(this.client);
 
 	public constructor(private readonly client: Client) {
 		this.maintenance = new MaintenanceHandler(this.client);
@@ -52,22 +52,22 @@ export default class RPCHandler {
 			await this.queue.wait();
 			try {
 				switch (data.op) {
-					case Op.DONATION_LOG:
+					case BitField.DONATION_LOG:
 						await this.donationLog.exec(data.tag, data);
 						break;
-					case Op.LAST_ONLINE_LOG:
+					case BitField.LAST_SEEN_LOG:
 						await this.lastOnlineLog.exec(data.tag, data.clan, data.members);
 						break;
-					case Op.CLAN_MEMBER_LOG:
+					case BitField.CLAN_FEED_LOG:
 						await this.clanMemberLog.exec(data.tag, data);
 						break;
-					case Op.CLAN_EMBED_LOG:
+					case BitField.CLAN_EMBED_LOG:
 						await this.clanEmbedLog.exec(data.tag, data.clan);
 						break;
-					case Op.CLAN_GAMES_LOG:
+					case BitField.CLAN_GAMES_LOG:
 						await this.clanGamesLog.exec(data.tag, data.clan, data.updated);
 						break;
-					case Op.CLAN_WAR_LOG:
+					case BitField.CLAN_WAR_LOG:
 						await this.clanWarLog.exec(data.clan.tag, data);
 						break;
 					default:
@@ -97,7 +97,7 @@ export default class RPCHandler {
 		await this.clanGamesLog.init();
 		await this.clanWarLog.init();
 
-		const collection = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		const collection = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({
 				paused: false, active: true, flag: { $gt: 0 },
 				guild: { $in: this.client.guilds.cache.map(guild => guild.id) }
@@ -121,48 +121,42 @@ export default class RPCHandler {
 	}
 
 	public async add(id: string, data: { tag: string; guild: string; op: number }) {
-		const OP = {
-			[Op.DONATION_LOG]: this.donationLog,
-			[Op.CLAN_MEMBER_LOG]: this.clanMemberLog,
-			[Op.LAST_ONLINE_LOG]: this.lastOnlineLog,
-			[Op.CLAN_EMBED_LOG]: this.clanEmbedLog,
-			[Op.CLAN_GAMES_LOG]: this.clanGamesLog,
-			[Op.CLAN_WAR_LOG]: this.clanWarLog,
-			[Op.CHANNEL_LINKED]: this.lastOnlineLog
+		const OP: { [key: string]: any } = {
+			[BitField.DONATION_LOG]: this.donationLog,
+			[BitField.CLAN_FEED_LOG]: this.clanMemberLog,
+			[BitField.LAST_SEEN_LOG]: this.lastOnlineLog,
+			[BitField.CLAN_EMBED_LOG]: this.clanEmbedLog,
+			[BitField.CLAN_GAMES_LOG]: this.clanGamesLog,
+			[BitField.CLAN_WAR_LOG]: this.clanWarLog
 		};
 
-		if (data.op) {
+		if (data.op.toString() in OP) {
 			await OP[data.op].add(id);
 		} else {
 			Object.values(OP).map(Op => Op.add(id));
 		}
 
 		const patron = this.client.patrons.get(data.guild);
-		return this.client.rpc.add({
-			data: JSON.stringify({ tag: data.tag, patron: Boolean(patron), op: data.op })
-		}, () => null);
+		return this.client.rpc.add({ data: JSON.stringify({ tag: data.tag, patron: Boolean(patron), op: data.op }) }, () => null);
 	}
 
 	public delete(id: string, data: { tag: string; op: number }) {
-		const OP = {
-			[Op.DONATION_LOG]: this.donationLog,
-			[Op.CLAN_MEMBER_LOG]: this.clanMemberLog,
-			[Op.LAST_ONLINE_LOG]: this.lastOnlineLog,
-			[Op.CLAN_EMBED_LOG]: this.clanEmbedLog,
-			[Op.CLAN_GAMES_LOG]: this.clanGamesLog,
-			[Op.CLAN_WAR_LOG]: this.clanWarLog,
-			[Op.CHANNEL_LINKED]: this.lastOnlineLog
+		const OP: { [key: string]: any } = {
+			[BitField.DONATION_LOG]: this.donationLog,
+			[BitField.CLAN_FEED_LOG]: this.clanMemberLog,
+			[BitField.LAST_SEEN_LOG]: this.lastOnlineLog,
+			[BitField.CLAN_EMBED_LOG]: this.clanEmbedLog,
+			[BitField.CLAN_GAMES_LOG]: this.clanGamesLog,
+			[BitField.CLAN_WAR_LOG]: this.clanWarLog
 		};
 
-		if (data.op) {
+		if (data.op.toString() in OP) {
 			OP[data.op].delete(id);
 		} else {
 			Object.values(OP).map(Op => Op.delete(id));
 		}
 
-		return this.client.rpc.remove({
-			data: JSON.stringify({ tag: data.tag, op: data.op })
-		}, () => null);
+		return this.client.rpc.remove({ data: JSON.stringify({ tag: data.tag, op: data.op }) }, () => null);
 	}
 
 	public flush() {

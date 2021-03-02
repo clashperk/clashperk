@@ -8,32 +8,36 @@ export default class CWLRemainingComamnd extends Command {
 	public constructor() {
 		super('cwl-remaining', {
 			aliases: ['cwl-remaining', 'cwl-missing'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
 			description: {
 				content: [
 					'Shows remaining attacks of the current round.',
 					'',
 					'**Flags**',
-					'`--round <num>` or `-r <num>` to see specific round.'
+					'`--round <num>` to see specific round.'
 				],
-				usage: '<clanTag>',
+				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			optionFlags: ['--round', '-r'],
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				},
-				{
-					id: 'round',
-					match: 'option',
-					flag: ['--round', '-r'],
-					type: Argument.range('integer', 1, Infinity, true)
-				}
-			]
+			optionFlags: ['--round', '--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		const round = yield {
+			match: 'option',
+			flag: ['--round'],
+			type: Argument.range('integer', 1, 7, true)
+		};
+
+		return { data, round };
 	}
 
 	public async exec(message: Message, { data, round }: { data: Clan; round: number }) {
@@ -52,13 +56,13 @@ export default class CWLRemainingComamnd extends Command {
 
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embed });
 		}
 
-		this.client.storage.pushWarTags(data.tag, body.rounds);
+		this.client.storage.pushWarTags(data.tag, body);
 		return this.rounds(message, body, data, round);
 	}
 

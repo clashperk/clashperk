@@ -1,9 +1,16 @@
 import { BUILDER_TROOPS, HOME_TROOPS } from '../../util/Emojis';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
+import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Message } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
+
+const HEROES: { [key: string]: 'bk' | 'aq' | 'gw' | 'rc' } = {
+	'Barbarian King': 'bk',
+	'Archer Queen': 'aq',
+	'Grand Warden': 'gw',
+	'Royal Champion': 'rc'
+};
 
 export default class RushedCommand extends Command {
 	public constructor() {
@@ -13,28 +20,38 @@ export default class RushedCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: [
-					'Shows all rushed troop/spell/hero.',
+					'Rushed troops, spells, and heroes.',
 					'',
-					'• `rushed clan <clanTag>` - list of rushed & non-rushed clan members.'
+					'• `rushed clan <clanTag>` - list of rushed and non-rushed clan members.'
 				],
 				usage: '<playerTag>',
 				examples: ['#9Q92C8R20', 'clan #8QU8J9LP']
 			},
-			flags: ['--clan', '-c', 'clan']
+			flags: ['--clan', 'clan'],
+			optionFlags: ['--tag', '--base']
 		});
 	}
 
-	public *args() {
+	public *args(msg: Message) {
 		const flag = yield {
 			match: 'flag',
-			flag: ['--clan', '-c', 'clan']
+			flag: ['--clan', 'clan']
+		};
+
+		const base = yield {
+			flag: '--base',
+			unordered: true,
+			type: Argument.range('integer', 1, 25),
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
 		};
 
 		const data = yield {
-			match: 'content',
+			flag: '--tag',
+			unordered: true,
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			type: async (message: Message, args: string) => {
 				if (flag) return this.client.resolver.resolveClan(message, args);
-				return this.client.resolver.resolvePlayer(message, args);
+				return this.client.resolver.resolvePlayer(message, args, base ?? 1);
 			}
 		};
 
@@ -50,11 +67,7 @@ export default class RushedCommand extends Command {
 
 	private embed(data: Player) {
 		const embed = new MessageEmbed()
-			.setAuthor(
-				`${data.name} (${data.tag})`,
-				`https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`,
-				`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`
-			);
+			.setAuthor(`${data.name} (${data.tag})`);
 
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS
@@ -63,12 +76,13 @@ export default class RushedCommand extends Command {
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
 				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
 				return Boolean(homeTroops || builderTroops);
-			})
-			.reduce((prev, curr) => {
-				if (!(curr.productionBuilding in prev)) prev[curr.productionBuilding] = [];
-				prev[curr.productionBuilding].push(curr);
-				return prev;
-			}, {} as TroopJSON);
+			});
+
+		const TroopsObj = Troops.reduce((prev, curr) => {
+			if (!(curr.productionBuilding in prev)) prev[curr.productionBuilding] = [];
+			prev[curr.productionBuilding].push(curr);
+			return prev;
+		}, {} as TroopJSON);
 
 		const titles: { [key: string]: string } = {
 			'Barracks': 'Elixir Troops',
@@ -76,14 +90,14 @@ export default class RushedCommand extends Command {
 			'Spell Factory': 'Elixir Spells',
 			'Dark Spell Factory': 'Dark Spells',
 			'Workshop': 'Siege Machines',
-			'Builder Hall': 'Builder Base Hero',
 			'Town Hall': 'Heroes',
+			'Builder Hall': 'Builder Base Hero',
 			'Builder Barracks': 'Builder Troops'
 		};
 
 		const units = [];
 		const indexes = Object.values(titles);
-		for (const [key, value] of Object.entries(Troops)) {
+		for (const [key, value] of Object.entries(TroopsObj)) {
 			const title = titles[key];
 			units.push({
 				index: indexes.indexOf(title),
@@ -97,7 +111,7 @@ export default class RushedCommand extends Command {
 				unit => {
 					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
 					const { maxLevel, level } = apiTroops
-						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: unit.levels[hallLevel! - 1], level: 0 };
+						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
 
 					return {
 						type: unit.type,
@@ -127,8 +141,21 @@ export default class RushedCommand extends Command {
 			}
 		}
 
-		embed.setFooter('Rushed Troops');
-		if (!embed.fields.length) embed.setFooter('No Rushed Troops');
+		embed.setDescription([
+			`Rushed units for TH${data.townHallLevel} ${data.builderHallLevel ? ` & BH${data.builderHallLevel}` : ''}`,
+			'',
+			'**Percentage**',
+			`${this.troopsCount('home', data.townHallLevel, Troops.filter(u => u.village === 'home').length).padStart(5, '0')}% (Home Base)`,
+			data.builderHallLevel
+				? `${this.troopsCount('builderBase', data.builderHallLevel, Troops.filter(u => u.village === 'builderBase').length).padStart(5, '0')}% (Builder Base)\n\u200b`
+				: '\u200b'
+		]);
+
+		if (!embed.fields.length) {
+			embed.setDescription(
+				`No rushed units for TH${data.townHallLevel} ${data.builderHallLevel ? ` and BH${data.builderHallLevel}` : ''}`
+			);
+		}
 		return embed;
 	}
 
@@ -137,53 +164,55 @@ export default class RushedCommand extends Command {
 
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
 		const members = [];
-		for (const { name, troops, spells, heroes, townHallLevel } of fetched) {
-			let i = 0;
-			i += this.reduce(troops, townHallLevel, 'home');
-			i += this.reduce(spells, townHallLevel, 'home');
-			i += this.reduce(heroes, townHallLevel, 'home');
-
-			members.push({ name, count: i, townHallLevel });
+		for (const obj of fetched.filter(res => res.ok)) {
+			members.push({ name: obj.name, rushed: this.reduce(obj), townHallLevel: obj.townHallLevel });
 		}
 
 		const embed = this.client.util.embed()
-			.setColor(0x5970c1)
 			.setAuthor(`${data.name} (${data.tag})`)
 			.setDescription([
-				'Rushed Members [Troop, Spell & Hero Count]',
-				'```\u200eTH  👎  NAME',
-				members.filter(m => m.count)
-					.sort((a, b) => b.count - a.count)
-					.map(({ name, count, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding(count)}  ${name}`)
+				'Total Home Base Rushed Units (\\👎)',
+				'and Total Hero Levels Rushed (\\👑)',
+				'```\u200eTH  👎 (👑)  NAME',
+				members // .filter(m => m.rushed.homeBase)
+					.sort((a, b) => b.rushed.homeBase - a.rushed.homeBase)
+					.map(({ name, rushed, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding(rushed.homeBase)}  ${rushed.heroes.toString().padStart(3, ' ')}  ${name}`)
 					.join('\n'),
 				'```'
 			]);
-		if (members.filter(m => !m.count).length) {
-			embed.addField('Non-Rushed Members', [
-				'```\u200eTH  NAME',
-				members.filter(m => !m.count)
-					.sort((a, b) => b.townHallLevel - a.townHallLevel)
-					.map(({ name, townHallLevel }) => `${this.padding(townHallLevel)}  ${name}`)
-					.join('\n'),
-				'```'
-			]);
-		}
 
 		return message.util!.send({ embed });
 	}
 
 	private padding(num: number) {
-		return num > 0 ? num.toString().padEnd(2, '\u2002') : '🔥';
+		return num.toFixed(0).padStart(2, ' ');
 	}
 
-	private reduce(collection: Player['troops'] = [], hallLevel: number, villageType: string) {
-		return collection.reduce((i, a) => {
-			if (a.village === villageType && a.level !== a.maxLevel) {
-				const min = RAW_TROOPS_DATA.TROOPS.find(unit => unit.name === a.name && unit.village === villageType);
-				if (min && a.level < min.levels[hallLevel - 2]) i += 1;
+	private reduce(data: Player) {
+		const apiTroops = this.apiTroops(data);
+		const Troop = RAW_TROOPS_DATA.TROOPS
+			.filter(unit => {
+				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type);
+				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
+				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
+				return Boolean(homeTroops || builderTroops);
+			});
+
+		// const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(unit => unit.village === 'home' && unit.levels[data.townHallLevel - 1]);
+		const { heroes, homeBase } = Troop.reduce((pre, unit) => {
+			if (unit.village === 'home') pre.homeBase += 1;
+			if (unit.village === 'builderBase') pre.builderBase += 1;
+			if (unit.village === 'home' && unit.type === 'hero') {
+				const requiredLevel = unit.levels[data.townHallLevel - 2] - (apiTroops.find(en => en.name === unit.name)?.level ?? 0);
+				pre.heroes[HEROES[unit.name]] += requiredLevel;
 			}
-			return i;
-		}, 0);
+			return pre;
+		}, { homeBase: 0, builderBase: 0, heroes: { bk: 0, aq: 0, gw: 0, rc: 0 } });
+
+		return {
+			homeBase: homeBase,
+			heroes: Object.values(heroes).reduce((pre, num) => pre + num, 0) // totalTroops.filter(en => en.type === 'hero').reduce((pre, unit) => pre + unit.levels[data.townHallLevel - 1], 0)
+		};
 	}
 
 	private chunk(items: TroopInfo[] = [], chunk = 4) {
@@ -226,5 +255,10 @@ export default class RushedCommand extends Command {
 				village: u.village
 			}))
 		];
+	}
+
+	private troopsCount(villageType: string, hallLevel: number, rushed: number) {
+		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(unit => unit.village === villageType && unit.levels[hallLevel - 1]);
+		return ((rushed * 100) / totalTroops.length).toFixed(2);
 	}
 }

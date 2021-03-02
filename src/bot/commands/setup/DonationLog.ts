@@ -6,37 +6,42 @@ import { Clan } from 'clashofclans.js';
 export default class DonationLogCommand extends Command {
 	public constructor() {
 		super('setup-donations', {
-			category: 'setup-hidden',
+			category: 'setup',
 			channel: 'guild',
+			description: {},
 			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
-			description: {
-				content: 'Setup donation log in a channel.',
-				usage: '<clanTag> [channel/color]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #donations #5970C1', '#8QU8J9LP #5970C1 #donations']
-			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.getClan(msg, tag)
-				},
-				{
-					'id': 'channel',
-					'type': 'textChannel',
-					'unordered': [1, 2],
-					'default': (msg: Message) => msg.channel
-				},
-				{
-					'id': 'hexColor',
-					'type': 'color',
-					'unordered': [1, 2],
-					'default': (msg: Message) => this.client.embed(msg)
-				}
-			]
+			optionFlags: ['--tag', '--channel', '--color'],
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS']
 		});
 	}
 
-	public async exec(message: Message, { data, channel, hexColor }: { data: Clan; channel: TextChannel; hexColor: number }) {
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.getClan(msg, tag)
+		};
+
+		const channel = yield {
+			'flag': '--channel',
+			'unordered': [1, 2],
+			'type': 'textChannel',
+			'default': (msg: Message) => msg.channel,
+			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		const hexColor = yield {
+			'type': 'color',
+			'flag': '--color',
+			'unordered': [1, 2],
+			'default': (msg: Message) => this.client.embed(msg),
+			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		return { data, channel, hexColor };
+	}
+
+	public async exec(message: Message, { data, channel, hexColor }: { data: Clan; channel: TextChannel; hexColor?: number }) {
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
@@ -75,22 +80,22 @@ export default class DonationLogCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setTitle(`${data.name}`)
-			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
-				'**Wait Time**',
-				'120 sec',
+				'**Sync Rate**',
+				'2 min',
 				'',
 				'**Color**',
-				`\`#${hexColor.toString(16)}\``,
+				`\`${hexColor ? '#' : ''}${hexColor?.toString(16) ?? 'None'}\``,
 				'',
 				'**Channel**',
 				`${(channel as Channel).toString()}`,
 				'',
 				'**Donation Log**',
 				`[Enabled](${message.url})`
-			])
-			.setColor(hexColor);
+			]);
+		if (hexColor) embed.setColor(hexColor);
 		return message.util!.send({ embed });
 	}
 }

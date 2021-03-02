@@ -1,8 +1,8 @@
 node_modules/
 dist/
 yarn.lock
-package-lock.json
 .env
+auth.ts
 auth.js
 .vs
 .vscode

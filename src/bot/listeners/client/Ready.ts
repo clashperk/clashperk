@@ -10,6 +10,9 @@ export default class ReadyListener extends Listener {
 	}
 
 	public exec() {
-		this.client.logger.info(`${this.client.user!.tag} (${this.client.user!.id})`, { label: 'READY' });
+		this.client.logger.info(
+			`${this.client.user!.tag} (${this.client.user!.id}) [${(process.env.NODE_ENV ?? 'development').toUpperCase()}]`,
+			{ label: 'READY' }
+		);
 	}
 }

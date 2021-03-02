@@ -1,4 +1,5 @@
-import { TOWN_HALLS, BLUE_EMOJI, RED_EMOJI, EMOJIS } from '../../util/Emojis';
+import { TOWN_HALLS, EMOJIS } from '../../util/Emojis';
+import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -14,13 +15,18 @@ export default class ThCompoCommand extends Command {
 				usage: '<clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data };
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
@@ -45,7 +51,7 @@ export default class ThCompoCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setColor(this.client.embed(message))
 			.setThumbnail(data.badgeUrls.small)
-			.setDescription(townHalls.map(th => `${TOWN_HALLS[th.level]} ${th.level < 9 ? RED_EMOJI[th.total] : BLUE_EMOJI[th.total]}\u200b`))
+			.setDescription(townHalls.map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`))
 			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/696655174025871461.png');
 
 		const diff = process.hrtime(hrStart);

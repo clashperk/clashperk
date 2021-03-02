@@ -1,26 +1,32 @@
 import { Clan, ClanWar, ClanWarClan, ClanWarOpponent, ClanWarLeague } from 'clashofclans.js';
-import { EMOJIS, RED_EMOJI } from '../../util/Emojis';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message } from 'discord.js';
+import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 
 export default class CWLRankingComamnd extends Command {
 	public constructor() {
 		super('cwl-ranking', {
 			aliases: ['cwl-ranking', 'cwl-rank'],
-			category: 'cwl-hidden',
+			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows clan ranking.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data };
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
@@ -39,13 +45,13 @@ export default class CWLRankingComamnd extends Command {
 
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/?action=OpenClanProfile&tag=${data.tag}`)
+				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embed });
 		}
 
-		this.client.storage.pushWarTags(data.tag, body.rounds);
+		this.client.storage.pushWarTags(data.tag, body);
 		return this.rounds(message, body, data);
 	}
 
@@ -142,7 +148,7 @@ export default class CWLRankingComamnd extends Command {
 			.setDescription([
 				`${EMOJIS.HASH} **\`\u200eSTAR DEST${''.padEnd(padding - 2, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
 				ranks.sort((a, b) => b.stars - a.stars)
-					.map((clan, i) => `${RED_EMOJI[++i]} \`\u200e${clan.stars.toString().padEnd(3, ' ') as string}  ${this.destruction(clan.destruction, padding)}  ${clan.name.padEnd(15, ' ') as string}\``)
+					.map((clan, i) => `${BLUE_NUMBERS[++i]} \`\u200e${clan.stars.toString().padEnd(3, ' ') as string}  ${this.destruction(clan.destruction, padding)}  ${clan.name.padEnd(15, ' ') as string}\``)
 					.join('\n')
 			])
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);

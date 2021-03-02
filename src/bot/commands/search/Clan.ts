@@ -20,13 +20,18 @@ export default class ClanCommand extends Command {
 				examples: ['#8QU8J9LP', '8QU8J9LP']
 			},
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message) {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data };
 	}
 
 	private async clanRank(tag: string, clanPoints: number) {
@@ -47,7 +52,7 @@ export default class ClanCommand extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		const embed = new MessageEmbed()
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
-			.setURL(`https://link.clashofclans.com/?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
+			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setColor(this.client.embed(message))
 			.setThumbnail(data.badgeUrls.medium);
 
