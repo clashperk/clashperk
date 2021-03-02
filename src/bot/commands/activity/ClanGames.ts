@@ -30,8 +30,12 @@ export default class ClanGamesCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Clan Games points of all clan members.',
-				usage: '<clanTag>',
+				content: [
+					'Clan Games points of all clan members.',
+					'',
+					'**[How does it work?](https://clashperk.com/faq#how-does-clan-games-scoreboard-work)**'
+				],
+				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
 			flags: ['--max', '--filter'],

@@ -19,7 +19,7 @@ interface Compo {
 	[key: string]: number;
 }
 
-export default class ClanEmbed {
+export default class ClanEmbedLog {
 	public cached: Collection<string, Cache>;
 	public lastReq: any;
 

@@ -14,8 +14,12 @@ export default class LastOnlineCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
 			description: {
-				content: 'Approximate last seen of all clan members.',
-				usage: '<clanTag>',
+				content: [
+					'Approximate last seen of all clan members.',
+					'',
+					'**[How does it work?](https://clashperk.com/faq#how-does-last-seen-work)**'
+				],
+				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
 			optionFlags: ['--tag']
@@ -42,9 +46,9 @@ export default class LastOnlineCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				'Last-Online Times & Last 24h Activities',
+				'Last Seen and Last 24h Activities',
 				`\`\`\`\n\u200e${'LAST-ON'.padStart(7, ' ')}  📊  ${'NAME'}\n${members
-					.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${(m.count > 99 ? 99 : m.count).toString().padStart(2, ' ')}  ${m.name}`)
+					.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n')}`,
 				'```'
 			])

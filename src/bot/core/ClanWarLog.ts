@@ -49,7 +49,7 @@ interface WarRes extends CurrentWar {
 	isFriendly: boolean;
 }
 
-export default class ClanWarEvent {
+export default class ClanWarLog {
 	public cached: Collection<string, any>;
 
 	public constructor(private readonly client: Client) {

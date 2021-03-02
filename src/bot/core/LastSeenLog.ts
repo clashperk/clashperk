@@ -5,7 +5,7 @@ import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
 
-export default class LastOnlineEvent {
+export default class LastSeenLog {
 	public cached = new Collection<string, any>();
 	public lastReq: { id: string | null; count: number };
 

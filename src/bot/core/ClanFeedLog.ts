@@ -28,7 +28,7 @@ interface Resp {
 	tags: Member[];
 }
 
-export default class PlayerEvent {
+export default class ClanFeedLog {
 	public cached: Collection<string, any>;
 
 	public constructor(private readonly client: Client) {

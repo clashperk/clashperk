@@ -40,13 +40,13 @@ export default class UsageCommand extends Command {
 			return message.util!.send(embed.footer!.text, { /* embed, */ files: [file] });
 		}
 
-		const { commands, total } = await this.commands();
+		const { commands } = await this.commands();
 		const usage = await this.usage();
 		const embed = this.client.util.embed()
 			.setAuthor(`${this.client.user!.username}`, this.client.user!.displayAvatarURL())
 			.setColor(this.client.embed(message))
 			.setTitle('Usage')
-			.setFooter(`${Number(total)}x Total • Since April 2019`);
+			.setFooter(`${Number(await this.commandsTotal())}x Total • Since April 2019`);
 		embed.setDescription([
 			`__**\`\u200e${'Date'.padEnd(6, ' ')}  ${'Uses'.padEnd(18, ' ')}\u200f\`**__`,
 			...usage.map(en => `\`\u200e${moment(en.createdAt).format('DD MMM')}  ${en.usage.toString().padEnd(18, ' ')}\u200f\``),
@@ -67,7 +67,7 @@ export default class UsageCommand extends Command {
 			.findOne({ id: 'stats' });
 		const commands: { uses: number; id: string }[] = [];
 		for (const [key, value] of Object.entries(data?.commands ?? {})) {
-			if (!this.client.commandHandler.modules.get(key) || !this.client.commandHandler.modules.get(key)!.aliases.length) continue;
+			if (!this.client.commandHandler.modules.get(key)?.aliases.length) continue;
 			commands.push({ uses: Number(value), id: key });
 		}
 

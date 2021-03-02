@@ -30,7 +30,7 @@ interface Donation {
 	};
 }
 
-export default class ClanEvent {
+export default class DonationLog {
 	public cached: Collection<string, any>;
 
 	public constructor(private readonly client: Client) {

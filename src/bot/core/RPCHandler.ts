@@ -24,7 +24,7 @@ export default class RPCHandler {
 
 	private readonly clanGamesLog = new ClanGamesLog(this.client);
 
-	private readonly lastOnlineLog = new LastSeenLog(this.client);
+	private readonly lastSeenLog = new LastSeenLog(this.client);
 
 	private readonly clanMemberLog = new ClanFeedLog(this.client);
 
@@ -56,7 +56,7 @@ export default class RPCHandler {
 						await this.donationLog.exec(data.tag, data);
 						break;
 					case BitField.LAST_SEEN_LOG:
-						await this.lastOnlineLog.exec(data.tag, data.clan, data.members);
+						await this.lastSeenLog.exec(data.tag, data.clan, data.members);
 						break;
 					case BitField.CLAN_FEED_LOG:
 						await this.clanMemberLog.exec(data.tag, data);
@@ -93,7 +93,7 @@ export default class RPCHandler {
 		await this.clanEmbedLog.init();
 		await this.donationLog.init();
 		await this.clanMemberLog.init();
-		await this.lastOnlineLog.init();
+		await this.lastSeenLog.init();
 		await this.clanGamesLog.init();
 		await this.clanWarLog.init();
 
@@ -110,21 +110,21 @@ export default class RPCHandler {
 		await new Promise(resolve => {
 			this.client.rpc.loadClans({
 				data: JSON.stringify(sorted)
-			}, (err: any, res: any) => resolve(res.data));
+			}, (err: any, res: any) => resolve(res?.data));
 		});
 
 		await this.broadcast();
 		return new Promise(resolve => this.client.rpc.init({
 			shardId: this.client.shard!.ids[0],
 			shards: this.client.shard!.count
-		}, (err: any, res: any) => resolve(res.data)));
+		}, (err: any, res: any) => resolve(res?.data)));
 	}
 
 	public async add(id: string, data: { tag: string; guild: string; op: number }) {
 		const OP: { [key: string]: any } = {
 			[BitField.DONATION_LOG]: this.donationLog,
 			[BitField.CLAN_FEED_LOG]: this.clanMemberLog,
-			[BitField.LAST_SEEN_LOG]: this.lastOnlineLog,
+			[BitField.LAST_SEEN_LOG]: this.lastSeenLog,
 			[BitField.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[BitField.CLAN_GAMES_LOG]: this.clanGamesLog,
 			[BitField.CLAN_WAR_LOG]: this.clanWarLog
@@ -144,7 +144,7 @@ export default class RPCHandler {
 		const OP: { [key: string]: any } = {
 			[BitField.DONATION_LOG]: this.donationLog,
 			[BitField.CLAN_FEED_LOG]: this.clanMemberLog,
-			[BitField.LAST_SEEN_LOG]: this.lastOnlineLog,
+			[BitField.LAST_SEEN_LOG]: this.lastSeenLog,
 			[BitField.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[BitField.CLAN_GAMES_LOG]: this.clanGamesLog,
 			[BitField.CLAN_WAR_LOG]: this.clanWarLog
@@ -165,7 +165,7 @@ export default class RPCHandler {
 		this.clanGamesLog.cached.clear();
 		this.clanEmbedLog.cached.clear();
 		this.clanMemberLog.cached.clear();
-		this.lastOnlineLog.cached.clear();
+		this.lastSeenLog.cached.clear();
 		return this.client.rpc.flush({ shardId: this.client.shard!.ids[0], shards: this.client.shard!.count }, () => null);
 	}
 }
