@@ -205,7 +205,7 @@ export default class ClanWarEvent {
 						const name = Util.escapeMarkdown(attacker.name);
 						const stars = this.getStars(attacker.oldStars, attacker.stars);
 						const destruction = Math.floor(attacker.destructionPercentage).toString().concat('%');
-						return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${BLUE_NUMBERS[attacker.mapPosition]} ${name} ${ORANGE_NUMBERS[attacker.townHallLevel]} ${'vs'} ${BLUE_NUMBERS[defender.mapPosition]} ${ORANGE_NUMBERS[defender.townHallLevel]}`;
+						return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${BLUE_NUMBERS[attacker.mapPosition]}${ORANGE_NUMBERS[attacker.townHallLevel]}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]}${ORANGE_NUMBERS[defender.townHallLevel]} ${name}`;
 					})
 				]);
 			}
@@ -326,7 +326,7 @@ export default class ClanWarEvent {
 					const name = Util.escapeMarkdown(attacker.name);
 					const stars = this.getStars(attacker.oldStars, attacker.stars);
 					const destruction = Math.floor(attacker.destructionPercentage).toString().concat('%');
-					return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${BLUE_NUMBERS[attacker.mapPosition]} ${name} ${ORANGE_NUMBERS[attacker.townHallLevel]} ${'vs'} ${BLUE_NUMBERS[defender.mapPosition]} ${ORANGE_NUMBERS[defender.townHallLevel]}`;
+					return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${BLUE_NUMBERS[attacker.mapPosition]}${ORANGE_NUMBERS[attacker.townHallLevel]}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]}${ORANGE_NUMBERS[defender.townHallLevel]} ${name}`;
 				})
 			]);
 		}
