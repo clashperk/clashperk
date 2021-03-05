@@ -30,11 +30,17 @@ export default class LastSeenLog {
 	private async throttle(id: string) {
 		if (this.lastReq.has(id)) await this.delay(1000);
 
-		clearTimeout(this.lastReq.get(id)!);
-		this.lastReq.set(
-			id,
-			setTimeout(() => this.cached.delete(id), 1000)
-		);
+		const timeoutID = this.lastReq.get(id);
+		if (timeoutID) {
+			clearTimeout(timeoutID);
+			this.lastReq.delete(id);
+		}
+
+		const Timeout = setTimeout(() => {
+			this.lastReq.delete(id);
+			clearTimeout(Timeout);
+		}, 1000);
+		this.lastReq.set(id, Timeout);
 
 		return Promise.resolve(0);
 	}
