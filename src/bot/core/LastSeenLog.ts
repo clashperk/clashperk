@@ -7,13 +7,10 @@ import moment from 'moment';
 
 export default class LastSeenLog {
 	public cached = new Collection<string, any>();
-	public lastReq: { id: string | null; count: number };
+	public lastReq: Map<string, NodeJS.Timeout>;
 
 	public constructor(private readonly client: Client) {
-		this.lastReq = {
-			id: null,
-			count: 0
-		};
+		this.lastReq = new Map();
 	}
 
 	public async exec(tag: string, clan: Clan, members: any[]) {
@@ -31,17 +28,15 @@ export default class LastSeenLog {
 	}
 
 	private async throttle(id: string) {
-		if (this.lastReq.id === id) await this.delay(this.lastReq.count >= 4 ? 2000 : 1000);
+		if (this.lastReq.has(id)) await this.delay(1000);
 
-		if (this.lastReq.id === id) {
-			this.lastReq.count += 1;
-			this.lastReq.id = id;
-		} else {
-			this.lastReq.count = 0;
-			this.lastReq.id = id;
-		}
+		clearTimeout(this.lastReq.get(id)!);
+		this.lastReq.set(
+			id,
+			setTimeout(() => this.cached.delete(id), 1000)
+		);
 
-		return Promise.resolve();
+		return Promise.resolve(0);
 	}
 
 	private async permissionsFor(id: string, cache: any, clan: Clan, members: any[]) {

@@ -26,7 +26,7 @@ export default class RPCHandler {
 
 	private readonly lastSeenLog = new LastSeenLog(this.client);
 
-	private readonly clanMemberLog = new ClanFeedLog(this.client);
+	private readonly clanFeedLog = new ClanFeedLog(this.client);
 
 	public constructor(private readonly client: Client) {
 		this.maintenance = new MaintenanceHandler(this.client);
@@ -59,7 +59,7 @@ export default class RPCHandler {
 						await this.lastSeenLog.exec(data.tag, data.clan, data.members);
 						break;
 					case BitField.CLAN_FEED_LOG:
-						await this.clanMemberLog.exec(data.tag, data);
+						await this.clanFeedLog.exec(data.tag, data);
 						break;
 					case BitField.CLAN_EMBED_LOG:
 						await this.clanEmbedLog.exec(data.tag, data.clan);
@@ -92,7 +92,7 @@ export default class RPCHandler {
 	public async init() {
 		await this.clanEmbedLog.init();
 		await this.donationLog.init();
-		await this.clanMemberLog.init();
+		await this.clanFeedLog.init();
 		await this.lastSeenLog.init();
 		await this.clanGamesLog.init();
 		await this.clanWarLog.init();
@@ -123,7 +123,7 @@ export default class RPCHandler {
 	public async add(id: string, data: { tag: string; guild: string; op: number }) {
 		const OP: { [key: string]: any } = {
 			[BitField.DONATION_LOG]: this.donationLog,
-			[BitField.CLAN_FEED_LOG]: this.clanMemberLog,
+			[BitField.CLAN_FEED_LOG]: this.clanFeedLog,
 			[BitField.LAST_SEEN_LOG]: this.lastSeenLog,
 			[BitField.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[BitField.CLAN_GAMES_LOG]: this.clanGamesLog,
@@ -143,7 +143,7 @@ export default class RPCHandler {
 	public delete(id: string, data: { tag: string; op: number }) {
 		const OP: { [key: string]: any } = {
 			[BitField.DONATION_LOG]: this.donationLog,
-			[BitField.CLAN_FEED_LOG]: this.clanMemberLog,
+			[BitField.CLAN_FEED_LOG]: this.clanFeedLog,
 			[BitField.LAST_SEEN_LOG]: this.lastSeenLog,
 			[BitField.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[BitField.CLAN_GAMES_LOG]: this.clanGamesLog,
@@ -164,7 +164,7 @@ export default class RPCHandler {
 		this.donationLog.cached.clear();
 		this.clanGamesLog.cached.clear();
 		this.clanEmbedLog.cached.clear();
-		this.clanMemberLog.cached.clear();
+		this.clanFeedLog.cached.clear();
 		this.lastSeenLog.cached.clear();
 		return this.client.rpc.flush({ shardId: this.client.shard!.ids[0], shards: this.client.shard!.count }, () => null);
 	}
