@@ -31,7 +31,7 @@ export default class Export extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const sub = yield {
 			flag: '--option',
 			type: [

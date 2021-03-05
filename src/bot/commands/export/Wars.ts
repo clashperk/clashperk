@@ -16,7 +16,7 @@ export default class WarExport extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const num = yield {
 			'flag': '--number',
 			'default': 25,

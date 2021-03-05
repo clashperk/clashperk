@@ -1,5 +1,5 @@
-import { Clan, ClanWarLeague, ClanWar } from 'clashofclans.js';
-import { COLLECTIONS } from '../../util/Constants';
+import { Clan, ClanWarLeague, ClanWar, ClanWarClan } from 'clashofclans.js';
+import { COLLECTIONS, Util } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
@@ -32,24 +32,30 @@ export default class CWLExport extends Command {
 			});
 		}
 
-		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES).find({ guild: message.guild!.id }).toArray();
+		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+			.find({ guild: message.guild!.id })
+			.toArray();
 		const chunks = [];
 		for (const clan of clans) {
 			const res = await this.client.http.clanWarLeague(clan.tag).catch(() => null);
 			if (!res?.ok) {
 				const data = await this.client.storage.getWarTags(clan.tag);
 				if (!data) continue;
-				const members = await this.rounds(data, clan);
+				const { members, perRound } = await this.rounds(data, clan);
 				if (!members.length) continue;
 				chunks.push({
-					name: clan.name, members,
+					name: clan.name, members, perRound,
 					id: `${months[new Date(data.season).getMonth()]} ${new Date(data.season).getFullYear()}`
 				});
 				continue;
 			}
-			const members = await this.rounds(res, clan);
+
+			const { members, perRound } = await this.rounds(res, clan);
 			if (!members.length) continue;
-			chunks.push({ name: clan.name, members, id: `${months[new Date().getMonth()]} ${new Date().getFullYear()}` });
+			chunks.push({
+				name: clan.name, members, perRound,
+				id: `${months[new Date().getMonth()]} ${new Date().getFullYear()}`
+			});
 		}
 
 		if (!chunks.length) return message.util!.send('Nobody attacked in your clan yet, try again after sometime.');
@@ -106,11 +112,81 @@ export default class CWLExport extends Command {
 
 		const buffer = await workbook.xlsx.writeBuffer();
 		return message.util!.send({
-			files: [{
-				attachment: Buffer.from(buffer),
-				name: 'clan_war_league_stars.xlsx'
-			}]
+			files: [
+				{
+					attachment: Buffer.from(buffer),
+					name: 'clan_war_league_stars.xlsx'
+				},
+				{
+					attachment: Buffer.from(await this.perRoundStats(chunks).xlsx.writeBuffer()),
+					name: 'clan_war_league_per_round_stats.xlsx'
+				}
+			]
 		});
+	}
+
+	private perRoundStats(clans: { perRound: { clan: ClanWarClan; opponent: ClanWarClan }[] }[]) {
+		const workbook = new Excel();
+		for (const { perRound } of clans) {
+			let i = 0;
+			for (const round of perRound) {
+				// eslint-disable-next-line
+				const sheet = workbook.addWorksheet(
+					`Round ${++i} (${Util.escapeSheetName(round.clan.name)})`
+				);
+
+				sheet.columns = [
+					{ header: 'Clan', width: 18 },
+					{ header: 'Opponent', width: 18 },
+					{ header: 'Attacker', width: 18 },
+					{ header: 'Attacker Tag', width: 13 },
+					{ header: 'Stars', width: 8 },
+					{ header: 'Gained', width: 8 },
+					{ header: 'Destruction', width: 10 },
+					{ header: 'Defender', width: 18 },
+					{ header: 'Defender Tag', width: 13 },
+					{ header: 'Attacker Map', width: 10 },
+					{ header: 'Attacker TH', width: 10 },
+					{ header: 'Defender Map', width: 10 },
+					{ header: 'Defender TH', width: 10 },
+					{ header: 'Defender Stars', width: 10 },
+					{ header: 'Defender Destruction', width: 10 }
+				] as any;
+
+				sheet.getRow(1).font = { bold: true, size: 10 };
+				sheet.getRow(1).height = 40;
+
+				for (let i = 1; i <= sheet.columns.length; i++) {
+					sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+				}
+
+				sheet.addRows(
+					round.clan.members.map(m => {
+						const opponent = round.opponent.members.find(en => en.tag === m.attacks?.[0]?.defenderTag);
+						const gained = m.bestOpponentAttack && m.attacks?.length ? m.attacks[0].stars - m.bestOpponentAttack.stars : '';
+						return [
+							round.clan.name,
+							round.opponent.name,
+							m.name,
+							m.tag,
+							m.attacks?.length ? m.attacks[0].stars : '',
+							gained,
+							m.attacks?.length ? m.attacks[0].destructionPercentage.toFixed(2) : '',
+							opponent ? opponent.name : '',
+							opponent ? opponent.tag : '',
+							round.clan.members.findIndex(en => en.tag === m.tag) + 1,
+							m.townhallLevel,
+							opponent ? round.opponent.members.findIndex(en => en.tag === opponent.tag) + 1 : '',
+							opponent ? opponent.townhallLevel : '',
+							m.bestOpponentAttack?.stars ?? '',
+							m.bestOpponentAttack?.stars.toFixed(2) ?? ''
+						];
+					})
+				);
+			}
+		}
+
+		return workbook;
 	}
 
 	private starCount(stars = [], count: number) {
@@ -122,6 +198,7 @@ export default class CWLExport extends Command {
 		const clanTag = clan.tag;
 		const members: { [key: string]: any } = {};
 
+		const perRound = [];
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
@@ -129,6 +206,7 @@ export default class CWLExport extends Command {
 
 				if ((data.clan.tag === clanTag) || (data.opponent.tag === clanTag)) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
+					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 					if (['inWar', 'warEnded'].includes(data.state)) {
 						for (const m of clan.members) {
 							const member = members[m.tag]
@@ -160,12 +238,17 @@ export default class CWLExport extends Command {
 								member.defCount += 1;
 							}
 						}
+
+						perRound.push({ clan, opponent });
 					}
 					break;
 				}
 			}
 		}
 
-		return Object.values(members).sort((a, b) => b.dest - a.dest).sort((a, b) => b.stars - a.stars);
+		return {
+			perRound,
+			members: Object.values(members).sort((a, b) => b.dest - a.dest).sort((a, b) => b.stars - a.stars)
+		};
 	}
 }

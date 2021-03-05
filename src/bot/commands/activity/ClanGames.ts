@@ -110,7 +110,7 @@ export default class ClanGamesCommand extends Command {
 				},
 				{
 					$match: {
-						season: '2021-03'
+						season: this.seasonID
 					}
 				},
 				{

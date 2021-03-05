@@ -16,7 +16,7 @@ export default class ExportSeason extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const season = yield {
 			flag: '--season',
 			type: [

@@ -16,13 +16,13 @@ export default class ConfigCommand extends Command {
 		});
 	}
 
-	public *args() {
+	public *args(): unknown {
 		const sub = yield {
 			type: [
 				['config-color', 'color'],
 				['config-prefix', 'prefix']
 			],
-			otherwise: (msg: Message) => this.handler.runCommand(msg, this, '💩')
+			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})
 		};
 
 		return Flag.continue(sub);
