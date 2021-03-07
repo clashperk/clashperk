@@ -214,7 +214,7 @@ export default class StorageHandler {
 			.sort({ createdAt: -1 })
 			.limit(1)
 			.next();
-		if (data?.warTags?.length !== 7) return null;
+		if (data?.warTags?.[tag]?.length !== 7) return null;
 
 		if (
 			(new Date().getMonth() === new Date(data?.season).getMonth()) ||
@@ -236,21 +236,24 @@ export default class StorageHandler {
 		if (data?.season === this.seasonID) return null;
 		if (data && new Date().getMonth() <= new Date(data.season).getMonth()) return null;
 
-		const warTags = [];
+		const warTags = body.clans.reduce((pre, clan) => {
+			pre[clan.tag] = [];
+			return pre;
+		}, {} as { [key: string]: string[] });
+
 		for (const round of rounds) {
 			for (const warTag of round.warTags) {
 				const data = await this.client.http.clanWarLeagueWar(warTag);
-				if ((data.clan && data.clan.tag === tag) || (data.opponent && data.opponent.tag === tag)) {
-					warTags.push(warTag);
-					break;
-				}
+				if (!data?.ok) continue;
+				if (!warTags[data.clan.tag].includes(warTag)) warTags[data.clan.tag].push(warTag);
+				if (!warTags[data.opponent.tag].includes(warTag)) warTags[data.opponent.tag].push(warTag);
 			}
 		}
 
 		return this.pushToDB(tag, body.clans, warTags, rounds, body.season);
 	}
 
-	private async pushToDB(tag: string, clans: { tag: string; name: string }[], warTags: any[], rounds: any[], season: string) {
+	private async pushToDB(tag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
 		return this.client.db.collection(Collections.CWL_GROUPS)
 			.updateOne({ 'clans.tag': tag, 'season': Season.generateID(season) }, {
 				$set: {

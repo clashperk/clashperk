@@ -145,13 +145,22 @@ export default class ClanWarLog {
 	private async edit(id: string, message: Message, data: any) {
 		const embed = this.embed(data);
 
-		return message.edit({ embed })
+		const updated = await message.edit({ embed })
 			.catch(error => {
 				if (error.code === 10008) {
 					return this.sendNew(id, message.channel as TextChannel, data);
 				}
 				return null;
 			});
+
+		if (updated) {
+			await this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS).updateOne(
+				{ clan_id: new ObjectId(id) },
+				{ $set: { updatedAt: new Date() } }
+			);
+		}
+
+		return updated;
 	}
 
 	private embed(data: any) {
@@ -400,6 +409,7 @@ export default class ClanWarLog {
 					{ clan_id: new ObjectId(id) },
 					{
 						$set: {
+							updatedAt: new Date(),
 							[`rounds.${data.round}`]: { warTag: data.warTag, messageID, round: data.round }
 						}
 					}
@@ -415,7 +425,7 @@ export default class ClanWarLog {
 			.updateOne(
 				{ clan_id: new ObjectId(id) },
 				{
-					$set: { messageID, warID: data.warID }
+					$set: { messageID, warID: data.warID, updatedAt: new Date() }
 				}
 			);
 	}
