@@ -15,7 +15,7 @@ export default class LinkPlayerCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',

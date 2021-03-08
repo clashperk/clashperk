@@ -38,7 +38,7 @@ export default class LinkCommand extends Command {
 		});
 	}
 
-	public *args() {
+	public *args(): unknown {
 		const tag = yield {
 			type: Argument.union(
 				[

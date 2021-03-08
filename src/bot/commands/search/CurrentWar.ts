@@ -25,7 +25,7 @@ export default class WarCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const warID = yield {
 			flag: '--war-id',
 			type: Argument.union(

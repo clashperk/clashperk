@@ -35,7 +35,7 @@ export default class VerifyPlayerCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const tag = yield {
 			flag: '--tag',
 			type: 'string',

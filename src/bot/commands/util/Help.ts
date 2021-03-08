@@ -27,7 +27,7 @@ export default class HelpCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const command = yield {
 			flag: '--command',
 			type: 'commandAlias',

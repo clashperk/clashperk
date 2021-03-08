@@ -31,7 +31,7 @@ export default class SetNickNameCommand extends Command {
 		});
 	}
 
-	public *args() {
+	public *args(): unknown {
 		const member = yield {
 			type: 'member',
 			prompt: {
@@ -55,14 +55,10 @@ export default class SetNickNameCommand extends Command {
 
 	public async exec(message: Message, { txt, member, player }: { txt: string; member: GuildMember; player: Player }) {
 		if (message.guild!.me!.roles.highest.position <= member.roles.highest.position || member.id === message.guild!.ownerID) {
-			const embed = this.client.util.embed()
-				.setDescription([
-					'I do not have permission to change nickname of this user ~'
-				]);
-			return message.util!.send({ embed });
+			return message.util!.send('I do not have permission to change nickname.');
 		}
 
-		let name = '';
+		let name;
 		if (txt.length && txt.trim().startsWith('|')) {
 			name = `${player.name} ${txt}`;
 		} else if (txt.length && txt.trim().endsWith('|')) {
@@ -72,19 +68,10 @@ export default class SetNickNameCommand extends Command {
 		}
 
 		if (name.length > 31) {
-			const embed = this.client.util.embed()
-				.setDescription([
-					'Too large name ~ < 31'
-				]);
-			return message.util!.send({ embed });
+			return message.util!.send('Nickname must be 31 or fewer in length.');
 		}
 
 		await member.setNickname(name, `Nickname set by ${message.author.tag}`);
-
-		const embed = this.client.util.embed()
-			.setDescription([
-				`Nickname set to **${name}**`
-			]);
-		return message.util!.send({ embed });
+		return message.util!.send(`Nickname set to **${name}**`);
 	}
 }

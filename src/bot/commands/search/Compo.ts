@@ -19,7 +19,7 @@ export default class ThCompoCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
@@ -36,7 +36,7 @@ export default class ThCompoCommand extends Command {
 		const hrStart = process.hrtime();
 
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
-		const reduced = fetched.reduce((count, member) => {
+		const reduced = fetched.filter(res => res.ok).reduce((count, member) => {
 			const townHall = member.townHallLevel;
 			count[townHall] = (count[townHall] || 0) + 1;
 			return count;
@@ -55,7 +55,6 @@ export default class ThCompoCommand extends Command {
 			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/696655174025871461.png');
 
 		const diff = process.hrtime(hrStart);
-
-		return message.util!.send(`*\u200b**Executed in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)} ms**\u200b*`, { embed });
+		return message.util!.send(`*Executed in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)}ms*`, { embed });
 	}
 }

@@ -14,7 +14,7 @@ export default class SetCommand extends Command {
 		});
 	}
 
-	public *args() {
+	public *args(): unknown {
 		const method = yield {
 			type: ['patron', 'beta'],
 			prompt: {

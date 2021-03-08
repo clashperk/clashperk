@@ -28,7 +28,7 @@ export default class SummaryCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const sub = yield {
 			flag: '--option',
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',

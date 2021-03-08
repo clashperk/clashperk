@@ -34,7 +34,7 @@ export default class FlagCommand extends Command {
 		});
 	}
 
-	public *args() {
+	public *args(): unknown {
 		const sub = yield {
 			type: [
 				['flag-add', 'add'],

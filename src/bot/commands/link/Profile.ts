@@ -21,7 +21,7 @@ export default class ProfileCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const member = yield {
 			'flag': '--user',
 			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase',

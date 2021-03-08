@@ -59,7 +59,7 @@ export default class RemoveCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const bit = yield {
 			flag: ['--type', '--channel'],
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',

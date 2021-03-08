@@ -15,7 +15,7 @@ export default class FlagRemoveCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const tag = yield {
 			flag: '--tag',
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',

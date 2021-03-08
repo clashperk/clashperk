@@ -59,7 +59,7 @@ export default class SetupCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const method = yield {
 			type: Argument.union(
 				[

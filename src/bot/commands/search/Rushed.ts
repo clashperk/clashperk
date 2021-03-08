@@ -32,7 +32,7 @@ export default class RushedCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const flag = yield {
 			match: 'flag',
 			flag: ['--clan', 'clan']

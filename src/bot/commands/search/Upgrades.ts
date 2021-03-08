@@ -21,7 +21,7 @@ export default class UpgradesCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const base = yield {
 			flag: '--base',
 			unordered: true,

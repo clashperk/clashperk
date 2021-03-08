@@ -36,7 +36,7 @@ export default class PlayerCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message) {
+	public *args(msg: Message): unknown {
 		const base = yield {
 			flag: '--base',
 			unordered: true,

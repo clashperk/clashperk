@@ -76,7 +76,7 @@ export default class Http extends Client {
 			: rounds.length === 7 ? [-2] : [-1];
 	}
 
-	private get leagueWar() {
+	private get leagueGroup() {
 		return new Date().getDate() >= 1 && new Date().getDate() <= 10;
 	}
 
