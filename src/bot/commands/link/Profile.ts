@@ -76,7 +76,7 @@ export default class ProfileCommand extends Command {
 		}
 
 		const tags = new Set([...player?.entries.map((en: any) => en.tag) ?? [], ...otherTags]);
-		const showLink = Boolean(tags.size <= 16);
+		const hideLink = Boolean(tags.size >= 12);
 		for (const tag of tags.values()) {
 			const data: Player = await this.client.http.player(tag);
 			if (data.statusCode === 404) this.deleteBanned(member.id, tag);
@@ -86,7 +86,7 @@ export default class ProfileCommand extends Command {
 
 			const signature = this.isVerified(player, tag) ? EMOJIS.VERIFIED : this.isLinked(player, tag) ? EMOJIS.AUTHORIZE : '';
 			collection.push({
-				field: `${TOWN_HALLS[data.townHallLevel]} ${showLink ? '[' : ''}${data.name} (${data.tag})${showLink ? `](${this.profileURL(data.tag)})` : ''} ${signature}`,
+				field: `${TOWN_HALLS[data.townHallLevel]} ${hideLink ? '' : '['}${data.name} (${data.tag})${hideLink ? '' : `](${this.profileURL(data.tag)})`} ${signature}`,
 				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
 			});
 
@@ -98,8 +98,14 @@ export default class ProfileCommand extends Command {
 			`${collection.length} Player${collection.length === 1 ? '' : 's'} Linked`,
 			'https://cdn.discordapp.com/emojis/658538492409806849.png'
 		);
-		if (showLink) collection.map(a => embed.addField('\u200b', [a.field, ...a.values]));
-		else collection.map(a => embed.addField(a.field, [...a.values, '\u200b']));
+		if (hideLink) collection.map(a => embed.addField(a.field, [...a.values, '\u200b']));
+		else collection.map(a => embed.addField('\u200b', [a.field, ...a.values]));
+
+		const popEmbed = () => {
+			embed.fields.pop();
+			if (embed.length > 6000) popEmbed();
+		};
+		if (embed.length > 6000) popEmbed();
 
 		return message.util!.send({ embed });
 	}

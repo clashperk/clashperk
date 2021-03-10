@@ -3,6 +3,7 @@ import { COLLECTIONS, Util } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
+import { EMOJIS } from '../../util/Emojis';
 
 const months = [
 	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -32,6 +33,7 @@ export default class CWLExport extends Command {
 			});
 		}
 
+		await message.util!.send(`Fetching data... ${EMOJIS.LOADING}`);
 		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
@@ -62,7 +64,7 @@ export default class CWLExport extends Command {
 
 		const workbook = new Excel();
 		for (const { members, name, id } of chunks) {
-			const sheet = workbook.addWorksheet(`${name as string} (${id})`);
+			const sheet = workbook.addWorksheet(`${Util.escapeSheetName(name)} (${id})`);
 			sheet.columns = [
 				{ header: 'Name', width: 16 },
 				{ header: 'Tag', width: 16 },
