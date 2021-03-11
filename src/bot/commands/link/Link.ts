@@ -44,13 +44,14 @@ export default class LinkCommand extends Command {
 				[
 					['link-add', 'add'],
 					['link-list', 'list'],
+					['link-alias', 'alias'],
 					['link-remove', 'remove']
 				],
 				(msg: Message, tag: string) => this.parseTag(tag)
 			)
 		};
 
-		if (['link-add', 'link-remove', 'link-list'].includes(tag)) return Flag.continue(tag);
+		if (['link-add', 'link-remove', 'link-list', 'link-alias'].includes(tag)) return Flag.continue(tag);
 
 		const member = yield {
 			'match': 'rest',

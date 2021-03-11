@@ -55,7 +55,7 @@ export default class SetupCommand extends Command {
 					'LASTSEEN #8QU8J9LP #ff0'
 				]
 			},
-			optionFlags: ['--type', '--tag', '--channel']
+			optionFlags: ['--option', '--tag', '--channel', '--type']
 		});
 	}
 
@@ -72,7 +72,7 @@ export default class SetupCommand extends Command {
 				],
 				(msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
 			),
-			flag: '--type',
+			flag: ['--option', '--type'],
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
 		};
 
@@ -129,7 +129,7 @@ export default class SetupCommand extends Command {
 						.findOne({ clan_id: clan._id });
 
 					return {
-						name: clan.name, tag: clan.tag,
+						name: clan.name, tag: clan.tag, alias: clan.alias ? `(${clan.alias}) ` : '',
 						channels: clan.channels?.map(id => this.client.channels.cache.get(id)?.toString()) ?? [],
 						entries: [
 							{
@@ -171,7 +171,7 @@ export default class SetupCommand extends Command {
 		if (fetched.length) {
 			const embed = new MessageEmbed()
 				.setAuthor(`${message.guild!.name} (${message.guild!.id})`)
-				.setDescription(`Enabled Features and Linked Clans (${fetched.length})`);
+				.setDescription(`Enabled features and linked clans (${fetched.length})`);
 
 			fetched.map(
 				(clan, num) => {

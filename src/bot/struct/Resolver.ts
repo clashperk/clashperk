@@ -41,14 +41,23 @@ export default class Resolver {
 		return this.fail(message, `**No Player Linked to ${(parsed as GuildMember).user.tag}!**`);
 	}
 
+	private async clanAlias(guild: string, alias: string) {
+		return this.client.db.collection(Collections.CLAN_STORES)
+			.findOne(
+				{ guild, alias },
+				{ collation: { strength: 2, locale: 'en' } }
+			);
+	}
+
 	public async resolveClan(message: Message, args: string): Promise<Clan | Flag> {
 		const parsed = await this.argumentParser(message, args);
 
 		const tag = parsed && typeof parsed === 'boolean';
-
-		if (tag) return this.getClan(message, args);
+		if (tag) return this.getClan(message, args, true);
 
 		if (!parsed) {
+			const clan = await this.clanAlias(message.guild!.id, args.trim());
+			if (clan) return this.getClan(message, clan.tag);
 			return this.fail(message, `**${status(404)}**`);
 		}
 
@@ -73,9 +82,14 @@ export default class Resolver {
 		return this.fail(message, `**${status(data.statusCode)}**`);
 	}
 
-	public async getClan(message: Message, tag: string): Promise<Clan | Flag> {
+	public async getClan(message: Message, tag: string, checkAlias = false): Promise<Clan | Flag> {
 		const data: Clan = await this.client.http.fetch(`/clans/${encodeURIComponent(this.parseTag(tag))}`);
 		if (data.ok) return data;
+
+		if (checkAlias && data.statusCode === 404) {
+			const clan = await this.clanAlias(message.guild!.id, tag.replace('#', '').toLowerCase());
+			if (clan) return this.getClan(message, clan.tag);
+		}
 
 		return this.fail(message, `**${status(data.statusCode)}**`);
 	}
@@ -93,11 +107,11 @@ export default class Resolver {
 			if (message.guild!.members.cache.has(id)) return message.guild!.members.cache.get(id);
 			return message.guild!.members.fetch(id).catch(() => null);
 		}
-		return /[0289CGJLOPQRUVY]{3,12}/gi.test(args);
+		return /^#?[0289CGJLOPQRUVY]+$/gi.test(args);
 	}
 
 	private parseTag(tag: string) {
-		const matched = tag.match(/[0289CGJLOPQRUVY]{3,12}/gi)?.[0];
+		const matched = tag.match(/^#?[0289CGJLOPQRUVY]+$/gi)?.[0];
 		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0') as string}`;
 	}
 }

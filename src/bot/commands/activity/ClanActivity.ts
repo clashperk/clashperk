@@ -1,5 +1,5 @@
 import { Command, PrefixSupplier } from 'discord-akairo';
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '@clashperk/node';
 import Chart from '../../core/ChartHandler';
 import { Message } from 'discord.js';
 
@@ -18,11 +18,11 @@ export default class ClanActivityCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
 			description: {
 				content: [
-					'Shows online members per hour graph for clans.',
+					'Shows active members per hour graph for clans.',
 					'',
-					'Maximum 3 clan tags are accepted.',
+					'Maximum 3 clans are accepted.',
 					'',
-					'Set your time zone using **offset** command for better experience.'
+					'Set your timezone using **offset** command for better experience.'
 				],
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #8UUYQ92L']
@@ -46,39 +46,65 @@ export default class ClanActivityCommand extends Command {
 		});
 	}
 
+	private async getClans(message: Message, aliases: string[]) {
+		const clans = await this.client.db.collection(Collections.CLAN_STORES)
+			.find({
+				$or: [
+					{
+						tag: { $in: aliases.map(tag => this.fixTag(tag)) }
+					},
+					{
+						guild: message.guild!.id,
+						alias: { $in: aliases.map(alias => alias.toLowerCase()) }
+					}
+				]
+			})
+			.toArray();
+
+		return clans.map(clan => clan.tag);
+	}
+
+	private fixTag(tag: string) {
+		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`;
+	}
+
 	public async exec(message: Message, { tags, dark }: { tags: string[] | string; dark: boolean }) {
 		// @ts-expect-error
 		if (!Array.isArray(tags)) tags = [tags.tag];
 		tags.splice(3);
 		if (!tags.length) return;
 
-		const clans = await this.aggregationQuery(tags.map(tag => `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`));
-		if (!clans.length) return message.util!.send('**Not enough data available a this moment!**');
+		const clanTags = await this.getClans(message, tags);
+		if (!clanTags.length) {
+			return message.util!.send(`*No clans found in my database for the specified argument.*`);
+		}
 
-		const Tz = await this.client.db.collection(COLLECTIONS.TIME_ZONES)
-			.findOne({ user: message.author.id });
-		const tz = Tz?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
+		const clans = await this.aggregationQuery(clanTags);
+		if (!clans.length) return message.util!.send('*Not enough data available a this moment!*');
+
+		const timeZone = await this.client.db.collection(Collections.TIME_ZONES).findOne({ user: message.author.id });
+		const tz = timeZone?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
 		const datasets = clans.map(clan => ({ name: clan.name, data: this.datasets(clan, tz.offset) }));
 
 		const hrStart = process.hrtime();
-		const buffer = await Chart.clanActivity(datasets, dark as any, [`Online Members Per Hour (${tz.name as string})`] as any);
+		const buffer = await Chart.clanActivity(datasets, dark as any, [`Active Members Per Hour (${tz.name as string})`] as any);
 		const diff = process.hrtime(hrStart);
 
 		return message.util!.send({
 			files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }],
 			content: [
-				Tz
-					? `**Rendered in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)} ms**`
-					: `**Set your time zone using \`${(this.handler.prefix as PrefixSupplier)(message) as string}offset <location>\` for better experience.**`
+				timeZone
+					? `_Rendered in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)}ms_`
+					: `_Set your timezone using \`${(this.handler.prefix as PrefixSupplier)(message) as string}offset <location>\` for better experience._`
 			].join('\n')
 		});
 	}
 
-	private aggregationQuery(tags: any[]) {
-		return this.client.db.collection(COLLECTIONS.LAST_ONLINES).aggregate([
+	private aggregationQuery(clanTags: string[]) {
+		return this.client.db.collection(Collections.LAST_SEEN).aggregate([
 			{
 				$match: {
-					'clan.tag': { $in: [...tags] }
+					'clan.tag': { $in: clanTags }
 				}
 			},
 			{

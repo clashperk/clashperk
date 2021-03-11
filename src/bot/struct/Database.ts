@@ -20,6 +20,8 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.CLAN_STORES).createIndex({ channels: 1 }),
 
+			db.collection(Collections.CLAN_STORES).createIndex({ alias: 'text' }),
+
 			db.collection(Collections.CLAN_WAR_LOGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 

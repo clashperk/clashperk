@@ -9,6 +9,7 @@ export interface ClanStore {
 	flag: number;
 	name: string;
 	tag: string;
+	alias?: string;
 	guild: string;
 	patron: boolean;
 	paused: boolean;
