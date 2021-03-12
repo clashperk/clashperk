@@ -55,13 +55,13 @@ export default class RemoveCommand extends Command {
 					'LASTSEEN #8QU8J9LP'
 				]
 			},
-			optionFlags: ['--channel', '--option', '--tag', '--type']
+			optionFlags: ['--channel', '--option', '--tag']
 		});
 	}
 
 	public *args(msg: Message): unknown {
 		const bit = yield {
-			flag: ['--option', '--channel', '--type'],
+			flag: ['--option', '--channel'],
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			type: Argument.union(
 				[

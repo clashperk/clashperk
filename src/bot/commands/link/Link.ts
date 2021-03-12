@@ -44,7 +44,6 @@ export default class LinkCommand extends Command {
 				[
 					['link-add', 'add'],
 					['link-list', 'list'],
-					['link-alias', 'alias'],
 					['link-remove', 'remove']
 				],
 				(msg: Message, tag: string) => this.parseTag(tag)

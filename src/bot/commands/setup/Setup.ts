@@ -55,7 +55,7 @@ export default class SetupCommand extends Command {
 					'LASTSEEN #8QU8J9LP #ff0'
 				]
 			},
-			optionFlags: ['--option', '--tag', '--channel', '--type']
+			optionFlags: ['--option', '--tag', '--channel']
 		});
 	}
 
@@ -72,7 +72,7 @@ export default class SetupCommand extends Command {
 				],
 				(msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
 			),
-			flag: ['--option', '--type'],
+			flag: ['--option'],
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
 		};
 
