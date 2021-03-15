@@ -89,13 +89,14 @@ export default class DonationsCommand extends Command {
 					name: mem.name,
 					tag: mem.tag,
 					donated: sameSeason
-						? m.donations?.gained >= mem.donations
-							? m.donations.gained
+						? mem.donations >= m.donations?.value
+							? m.donations.gained as number + (mem.donations - m.donations.value)
 							: mem.donations
 						: m.donations.gained,
+
 					received: sameSeason
-						? m.donationsReceived?.gained >= mem.donationsReceived
-							? m.donationsReceived.gained
+						? mem.donationsReceived >= m.donationsReceived?.value
+							? m.donationsReceived.gained as number + (mem.donationsReceived - m.donationsReceived.value)
 							: mem.donationsReceived
 						: m.donationsReceived.gained
 				});
@@ -123,7 +124,7 @@ export default class DonationsCommand extends Command {
 
 		embed.setDescription([
 			'```',
-			`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'.padEnd(16, ' ')}`,
+			`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'}`,
 			members.map((mem, index) => {
 				const donation = `${this.donation(mem.donated, ds)} ${this.donation(mem.received, rs)}`;
 				return `${(index + 1).toString().padStart(2, ' ')} ${donation}  ${this.padEnd(mem.name.substring(0, 15))}`;
@@ -136,14 +137,10 @@ export default class DonationsCommand extends Command {
 	}
 
 	private padEnd(name: string) {
-		return name.replace(/\`/g, '\\').padEnd(16, ' ');
+		return name.replace(/\`/g, '\\');
 	}
 
 	private donation(num: number, space: number) {
 		return num.toString().padStart(space, ' ');
-	}
-
-	private paginate(items: Member[], start: number, end: number) {
-		return { items: items.slice(start, end) };
 	}
 }
