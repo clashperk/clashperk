@@ -1,5 +1,5 @@
 import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag, Command } from 'discord-akairo';
-import { APIApplicationCommandInteractionDataOption } from 'discord-api-types/v8';
+import { APIApplicationCommandInteractionDataOption, APIInteraction } from 'discord-api-types/v8';
 import Interaction, { InteractionParser } from './Interaction';
 import { MessageEmbed, Message } from 'discord.js';
 import { loadSync } from '@grpc/proto-loader';
@@ -119,9 +119,9 @@ export default class Client extends AkairoClient {
 		});
 
 		// @ts-expect-error
-		this.ws.on('INTERACTION_CREATE', async res => {
-			const command = this.commandHandler.findCommand(res.data?.name);
-			if (!command) return; // eslint-disable-line
+		this.ws.on('INTERACTION_CREATE', async (res: APIInteraction) => {
+			const command = this.commandHandler.findCommand(res.data!.name);
+			if (!command || !res.member) return; // eslint-disable-line
 			const interaction = await new Interaction(this, res).parse(res);
 			// @ts-expect-error
 			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5 } });
