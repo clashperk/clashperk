@@ -8,7 +8,6 @@ const months = [
 	'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ];
 
-// TODO: Fix TS
 export default class ClanActivityCommand extends Command {
 	public constructor() {
 		super('activity', {
@@ -24,26 +23,25 @@ export default class ClanActivityCommand extends Command {
 					'',
 					'Set your timezone using **offset** command for better experience.'
 				],
-				usage: '<clanTag>',
+				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #8UUYQ92L']
 			},
-			args: [
-				{
-					id: 'tags',
-					match: 'content',
-					type: async (msg, args) => {
-						const tags = args ? args.split(/ +/g) : [];
-						if (args && tags.length > 1) return args.split(/ +/g);
-						return this.client.resolver.resolveClan(msg, args);
-					}
-				},
-				{
-					id: 'dark',
-					match: 'flag',
-					flag: ['--dark']
-				}
-			]
+			optionFlags: ['--clans']
 		});
+	}
+
+	public *args(msg: Message): unknown {
+		const tags = yield {
+			flag: '--clans',
+			match: msg.hasOwnProperty('token') ? 'option' : 'content',
+			type: async (msg: Message, args: string) => {
+				const tags = args ? args.split(/ +/g) : [];
+				if (args && tags.length > 1) return args.split(/ +/g);
+				return this.client.resolver.resolveClan(msg, args);
+			}
+		};
+
+		return { tags };
 	}
 
 	private async getClans(message: Message, aliases: string[]) {

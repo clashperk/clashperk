@@ -5,13 +5,10 @@ import Client from './Client';
 
 export class CommandUtil {
 	public message: Interaction;
-	public shouldEdit: boolean;
 	public lastResponse?: Message;
 
 	public constructor(message: Interaction) {
 		this.message = message;
-		this.shouldEdit = false;
-
 		// @ts-expect-error
 		this.lastResponse = null;
 	}
@@ -30,28 +27,19 @@ export class CommandUtil {
 		return this.lastResponse;
 	}
 
-	public setEditable(state: boolean) {
-		this.shouldEdit = Boolean(state);
-		return this;
+	public setEditable() {
+		// TODO
 	}
 
 	public async send(content: StringResolvable, options?: MessageOptions | MessageAdditions): Promise<Message | Message[]> {
 		const transformedOptions = (this.constructor as typeof CommandUtil).transformOptions(content, options);
-		const hasFiles = transformedOptions?.files?.length > 0
-			|| transformedOptions?.embeds.reduce((p: any, c: any) => p + c?.files?.length ?? 0, 0) > 0; // eslint-disable-line
-
-		if (this.shouldEdit && !hasFiles && !this.lastResponse?.deleted && !this.lastResponse?.attachments.size) {
-			return this.edit(transformedOptions);
+		if (!this.lastResponse?.deleted) {
+			return this.message.edit(this.lastResponse!.id, transformedOptions);
 		}
 
-		const sent = await this.message.reply(transformedOptions);
-		const lastSent = this.setLastResponse(sent);
-		this.setEditable(!lastSent.attachments.size);
+		const sent = await this.message.resend(transformedOptions);
+		this.setLastResponse(sent);
 		return sent;
-	}
-
-	private edit(data: any) {
-		return this.message.edit(this.lastResponse!.id, data);
 	}
 
 	public static transformOptions(content: any, options?: any) {
@@ -135,28 +123,17 @@ export default class Interaction {
 		return Promise.resolve(this);
 	}
 
-	public ack() {
-		// @ts-expect-error
-		return this.client.api.interactions(this.id, this.token).callback.post({ data: { type: 5 } });
-	}
-
-	public async webhook(data: any) {
+	public async resend(data: any) {
 		return new WebhookClient(this.client.user!.id, this.token)
 			.send(data).then(msg => this.channel.messages.add(msg));
-	}
-
-	public reply(data: any) {
-		return this.webhook(data);
 	}
 
 	public edit(id: string, data: any) {
 		// @ts-expect-error
 		return this.client.api.webhooks(this.client.user.id, this.token)
 			.messages[id]
-			.patch({
-				auth: false,
-				data: { ...data }
-			}).then((msg: any) => this.channel.messages.add(msg));
+			.patch({ auth: false, data })
+			.then((msg: any) => this.channel.messages.add(msg));
 	}
 }
 
