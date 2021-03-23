@@ -8,7 +8,7 @@ export default class UsageCommand extends Command {
 	public constructor() {
 		super('usage', {
 			aliases: ['usage'],
-			category: '_owner',
+			category: 'beta',
 			description: {
 				content: 'Displays the usage statistics of the bot.'
 			},

@@ -14,7 +14,7 @@ export default class MissingPermissionsListener extends Listener {
 		const text = {
 			client: () => {
 				const name = this.missingPermissions(message.channel as TextChannel, this.client.user!, missing);
-				return `I'm missing ${name} to use that command.`;
+				return `I'm missing ${name} to run that command.`;
 			},
 			user: () => {
 				const name = this.missingPermissions(message.channel as TextChannel, message.author, missing);

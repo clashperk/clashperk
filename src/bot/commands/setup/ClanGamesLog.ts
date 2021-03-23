@@ -95,7 +95,7 @@ export default class ClanGamesBoardCommand extends Command {
 				`${(channel as Channel).toString()}`,
 				'',
 				'**Clan Games Board**',
-				`[Enabled](${message.url})`
+				'Enabled'
 			]);
 		if (hexColor) embed.setColor(hexColor);
 		return message.util!.send({ embed });

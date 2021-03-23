@@ -80,7 +80,7 @@ export default class WarLogCommand extends Command {
 				`${(channel as Channel).toString()}`,
 				'',
 				'**Live Clan War Log**',
-				`[Enabled](${message.url})`
+				'Enabled'
 			])
 			.setColor(this.client.embed(message));
 		return message.util!.send({ embed });

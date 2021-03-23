@@ -94,7 +94,7 @@ export default class LastSeenBoardCommand extends Command {
 				`${(channel as Channel).toString()}`,
 				'',
 				'**Last Seen Board**',
-				`[Enabled](${message.url})`
+				'Enabled'
 			]);
 		if (hexColor) embed.setColor(hexColor);
 		return message.util!.send({ embed });

@@ -92,7 +92,7 @@ export default class MemberLogCommand extends Command {
 				`${(channel as Channel).toString()}`,
 				'',
 				'**Clan Feed**',
-				`[Enabled](${message.url})`
+				'Enabled'
 			])
 			.setColor(this.client.embed(message));
 		return message.util!.send({ embed });

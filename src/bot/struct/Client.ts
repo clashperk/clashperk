@@ -47,23 +47,14 @@ const { routeguide } = grpc.loadPackageDefinition(packageDefinition);
 
 export default class Client extends AkairoClient {
 	public db!: Db;
-
 	public rpc!: any;
-
 	public http!: Http;
-
 	public stats!: Stats;
-
 	public patrons!: Patrons;
-
 	public storage!: Storage;
-
 	public resolver!: Resolver;
-
 	public settings!: Settings;
-
 	public rpcHandler!: RPCHandler;
-
 	public logger: Logger = new Logger(this);
 
 	public commandHandler: CommandHandler = new CommandHandler(this, {
@@ -123,9 +114,9 @@ export default class Client extends AkairoClient {
 			const command = this.commandHandler.findCommand(res.data!.name);
 			if (!command || !res.member) return; // eslint-disable-line
 			const interaction = await new Interaction(this, res).parse(res);
+			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) return;
 			// @ts-expect-error
 			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5 } });
-			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) return;
 			// @ts-expect-error
 			if (await this.commandHandler.runPermissionChecks(interaction, command)) return;
 			// @ts-expect-error
@@ -177,7 +168,6 @@ export default class Client extends AkairoClient {
 		// await Connection.createIndex(this.db);
 
 		this.settings = new Settings(this.db);
-
 		this.stats = new Stats(this);
 
 		this.http = new Http();
@@ -190,9 +180,7 @@ export default class Client extends AkairoClient {
 		await this.patrons.refresh();
 
 		this.rpcHandler = new RPCHandler(this);
-
 		this.storage = new Storage(this);
-
 		this.resolver = new Resolver(this);
 
 		this.once('ready', () => {

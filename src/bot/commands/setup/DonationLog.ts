@@ -93,7 +93,7 @@ export default class DonationLogCommand extends Command {
 				`${(channel as Channel).toString()}`,
 				'',
 				'**Donation Log**',
-				`[Enabled](${message.url})`
+				'Enabled'
 			]);
 		if (hexColor) embed.setColor(hexColor);
 		return message.util!.send({ embed });
