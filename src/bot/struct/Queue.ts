@@ -1,6 +1,6 @@
 export default class Queue {
-	public promises: any;
-	public totalReq: any;
+	public promises: any[];
+	public totalReq: number;
 
 	public constructor() {
 		this.promises = [];

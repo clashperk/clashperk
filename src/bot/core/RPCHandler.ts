@@ -11,27 +11,18 @@ import Queue from '../struct/Queue';
 
 export default class RPCHandler {
 	private paused = Boolean(false);
-
 	private readonly queue = new Queue();
-
 	private readonly maintenance: MaintenanceHandler;
-
 	private readonly clanWarLog = new ClanWarLog(this.client);
-
 	private readonly donationLog = new DonationLog(this.client);
-
 	private readonly clanEmbedLog = new ClanEmbedLog(this.client);
-
 	private readonly clanGamesLog = new ClanGamesLog(this.client);
-
 	private readonly lastSeenLog = new LastSeenLog(this.client);
-
 	private readonly clanFeedLog = new ClanFeedLog(this.client);
 
 	public constructor(private readonly client: Client) {
 		this.maintenance = new MaintenanceHandler(this.client);
 		this.maintenance.init();
-
 		this.paused = Boolean(false);
 	}
 
@@ -48,6 +39,7 @@ export default class RPCHandler {
 			const data = JSON.parse(chunk.data);
 			// Freeze for 5 min
 			if (this.paused) return;
+			if (this.queue.remaining >= 5000 && data.op === 4) return;
 
 			await this.queue.wait();
 			try {

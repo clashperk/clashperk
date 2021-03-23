@@ -4,7 +4,7 @@ import qs from 'querystring';
 const GOOGLE_MAPS_API_BASE_URL = 'https://maps.googleapis.com/maps/api';
 
 export default {
-	async location(query: any) {
+	async location(query: string) {
 		const search = qs.stringify({
 			address: query,
 			key: process.env.GOOGLE
@@ -14,7 +14,7 @@ export default {
 			.then(res => res.json()).catch(() => null);
 	},
 
-	async timezone(query: any) {
+	async timezone(query: string) {
 		const location = (await this.location(query))?.results[0];
 		if (!location) return null;
 
