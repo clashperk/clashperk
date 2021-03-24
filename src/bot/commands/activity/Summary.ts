@@ -19,10 +19,13 @@ export default class SummaryCommand extends Command {
 					'• `GAME`',
 					'',
 					'• **Clan Summary**',
-					'• `CLAN`'
+					'• `CLAN`',
+					'',
+					'• **Top Donations**',
+					'• `DONATION`'
 				],
-				usage: '[war|clan|game]',
-				examples: ['war', 'clan', 'game']
+				usage: '[war|clan|game|don]',
+				examples: ['war', 'clan', 'game', 'don']
 			},
 			optionFlags: ['--option']
 		});
@@ -35,6 +38,7 @@ export default class SummaryCommand extends Command {
 			type: [
 				['war-summary', 'war', 'wars'],
 				['clan-summary', 'clan', 'clans'],
+				['donation-summary', 'don', 'donation', 'donations'],
 				['clan-games-summary', 'game', 'games', 'score', 'scores']
 			],
 			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})
