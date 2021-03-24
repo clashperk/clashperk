@@ -16,7 +16,7 @@ export default class WarCommand extends Command {
 				content: [
 					'Current or previous clan war details.',
 					'',
-					'Get War ID from `warlog` comamnd.'
+					'Get War ID from `warlog` command.'
 				],
 				usage: '<#clanTag|last|warID>',
 				examples: ['36081', '#8QU8J9LP', '#8QU8J9LP last']

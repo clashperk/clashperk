@@ -16,7 +16,7 @@ export default class MissedAttacksCommand extends Command {
 				content: [
 					'Remaining or missed clan war attacks.',
 					'',
-					'Get War ID from `warlog` comamnd.'
+					'Get War ID from `warlog` command.'
 				],
 				usage: '<#clanTag|last|warID>',
 				examples: ['36081', '#8QU8J9LP', '#8QU8J9LP last']
