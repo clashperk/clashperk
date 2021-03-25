@@ -75,9 +75,9 @@ export default class DebugCommand extends Command {
 			'**Slash Command Permission**',
 			`${UEE_FOR_SLASH ? emojis.tick : emojis.cross} Use External Emojis ${UEE_FOR_SLASH ? '' : '(for @everyone)'}`,
 			'',
-			'**Loop Time**',
-			`${emojis.none} \` ${'CLANS'} \` \` ${'PLAYERS'} \` \` ${'WARS'} \``,
-			`${emojis.tick} \` ${this.fixTime(grpc.clans).padStart(5, ' ')} \` \` ${this.fixTime(grpc.players).padStart(7, ' ')} \` \` ${this.fixTime(grpc.wars).padStart(4, ' ')} \``,
+			`**Loop Time ${(grpc.clans && grpc.players && grpc.wars) ? '' : '(Processing...)'}**`,
+			`${emojis.none} \` ${'CLANS'.padStart(7, ' ')} \` \` ${'WARS'.padStart(7, ' ')} \` \` ${'PLAYERS'} \``,
+			`${emojis.tick} \` ${this.fixTime(grpc.clans, '2m').padStart(7, ' ')} \` \` ${this.fixTime(grpc.wars, '10m').padStart(7, ' ')} \` \` ${this.fixTime(grpc.players, '1h').padStart(7, ' ')} \``,
 			'',
 			'**Cluster Info**',
 			`${emojis.none} \`\u200e ${'CLAN NAME'.padEnd(15, ' ')} \u200f\` \`\u200e ${'UPDATED'} \u200f\` \`\u200e ${'WAR LOG'} \u200f\``,
@@ -90,8 +90,8 @@ export default class DebugCommand extends Command {
 		]);
 	}
 
-	private fixTime(num: number) {
-		return num === 0 ? '...' : ms(num);
+	private fixTime(num: number, total: string) {
+		return num === 0 ? `.../${total}` : `${ms(num)}/${total}`;
 	}
 
 	private fixName(perm: string) {
