@@ -1,4 +1,4 @@
-import { Message, TextChannel, PermissionString, User } from 'discord.js';
+import { Message } from 'discord.js';
 import { Command, PrefixSupplier, Flag } from 'discord-akairo';
 
 export default class ConfigCommand extends Command {
@@ -29,7 +29,6 @@ export default class ConfigCommand extends Command {
 	}
 
 	public exec(message: Message) {
-		const permissions = ['ADD_REACTIONS', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY'] as PermissionString[];
 		const color = this.client.settings.get<number>(message.guild!, 'color', undefined);
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const embed = this.client.util.embed()
@@ -38,12 +37,6 @@ export default class ConfigCommand extends Command {
 			.addField('Prefix', prefix)
 			.addField('Patron', this.client.patrons.get(message.guild!.id) ? 'Yes' : 'No')
 			.addField('Color', color ? `#${color.toString(16).toUpperCase()}` : 'None');
-
-		if (!(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(permissions, false)) {
-			embed.addField('Missing Permission', [
-				this.missingPermissions(message.channel as TextChannel, this.client.user as User, permissions)
-			]);
-		}
 
 		const embeds = [
 			embed,
@@ -60,14 +53,5 @@ export default class ConfigCommand extends Command {
 		];
 
 		return embeds.map(async embed => message.util!.send({ embed }));
-	}
-
-	private missingPermissions(channel: TextChannel, user: User, permissions: PermissionString[]) {
-		const missingPerms = channel.permissionsFor(user)!.missing(permissions)
-			.map(str => {
-				if (str === 'VIEW_CHANNEL') return 'Read Messages';
-				return str.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase());
-			});
-		return missingPerms.join('\n');
 	}
 }

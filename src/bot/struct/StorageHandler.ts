@@ -16,6 +16,7 @@ export interface ClanStore {
 	active: boolean;
 	createdAt: Date;
 	verified: boolean;
+	lastRan?: Date;
 	channels?: string[];
 }
 
