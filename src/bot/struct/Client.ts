@@ -114,7 +114,24 @@ export default class Client extends AkairoClient {
 			const command = this.commandHandler.findCommand(res.data!.name);
 			if (!command || !res.member) return; // eslint-disable-line
 			const interaction = await new Interaction(this, res).parse(res);
-			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) return;
+			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) {
+				const perms = interaction.channel.permissionsFor(this.user!)!.missing(['SEND_MESSAGES', 'VIEW_CHANNEL'])
+					.map(perm => {
+						if (perm === 'VIEW_CHANNEL') return 'Read Messages';
+						return perm.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase());
+					});
+
+				// @ts-expect-error
+				return this.api.interactions(res.id, res.token).callback.post({
+					data: {
+						type: 4,
+						data: {
+							content: `Missing **${perms.join('** and **')}** permission${perms.length > 1 ? 's' : ''}.`,
+							flags: 64
+						}
+					}
+				});
+			}
 			// @ts-expect-error
 			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5 } });
 			// @ts-expect-error

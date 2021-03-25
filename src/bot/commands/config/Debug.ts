@@ -1,8 +1,15 @@
-import { Clan } from 'clashofclans.js';
-import { Command, PrefixSupplier } from 'discord-akairo';
 import { Message, TextChannel, PermissionString, User } from 'discord.js';
+import { Command, PrefixSupplier } from 'discord-akairo';
 import { EMOJIS } from '../../util/Emojis';
+import { Clan } from 'clashofclans.js';
 import ms from 'ms';
+
+interface RPC {
+	wars: number;
+	clans: number;
+	players: number;
+	heapUsed: number;
+}
 
 export default class DebugCommand extends Command {
 	public constructor() {
@@ -40,7 +47,7 @@ export default class DebugCommand extends Command {
 			.guilds(message.guild!.id).commands.get()
 			.catch(() => null);
 
-		const grpc: any = await new Promise(resolve => this.client.rpc.stats({}, (err: any, res: any) => {
+		const rpc: RPC = await new Promise(resolve => this.client.rpc.stats({}, (err: any, res: any) => {
 			if (res) resolve(JSON.parse(res?.data));
 			else resolve({ heapUsed: 0, clans: 0, players: 0, wars: 0 });
 		}));
@@ -75,9 +82,9 @@ export default class DebugCommand extends Command {
 			'**Slash Command Permission**',
 			`${UEE_FOR_SLASH ? emojis.tick : emojis.cross} Use External Emojis ${UEE_FOR_SLASH ? '' : '(for @everyone)'}`,
 			'',
-			`**Loop Time ${(grpc.clans && grpc.players && grpc.wars) ? '' : '(Processing...)'}**`,
+			`**Loop Time ${(rpc.clans && rpc.players && rpc.wars) ? '' : '(Processing...)'}**`,
 			`${emojis.none} \` ${'CLANS'.padStart(7, ' ')} \` \` ${'WARS'.padStart(7, ' ')} \` \` ${'PLAYERS'} \``,
-			`${emojis.tick} \` ${this.fixTime(grpc.clans, '2m').padStart(7, ' ')} \` \` ${this.fixTime(grpc.wars, '10m').padStart(7, ' ')} \` \` ${this.fixTime(grpc.players, '1h').padStart(7, ' ')} \``,
+			`${emojis.tick} \` ${this.fixTime(rpc.clans, '2m').padStart(7, ' ')} \` \` ${this.fixTime(rpc.wars, '10m').padStart(7, ' ')} \` \` ${this.fixTime(rpc.players, '1h').padStart(7, ' ')} \``,
 			'',
 			'**Cluster Info**',
 			`${emojis.none} \`\u200e ${'CLAN NAME'.padEnd(15, ' ')} \u200f\` \`\u200e ${'UPDATED'} \u200f\` \`\u200e ${'WAR LOG'} \u200f\``,
@@ -87,7 +94,7 @@ export default class DebugCommand extends Command {
 				const sign = (clan.active && !clan.paused && clan.flag > 0 && warLog) ? emojis.tick : emojis.cross;
 				return `${sign} \`\u200e ${clan.name.padEnd(15, ' ')} \u200f\` \`\u200e ${lastRan.padStart(3, ' ')} ago \u200f\` \`\u200e ${(warLog ? 'Public' : 'Private').padStart(7, ' ')} \u200f\``;
 			}).join('\n')
-		]);
+		], { split: true });
 	}
 
 	private fixTime(num: number, total: string) {
