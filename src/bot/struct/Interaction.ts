@@ -19,9 +19,15 @@ export class CommandUtil {
 		// TODO
 	}
 
-	public setLastResponse(message: Message) {
+	public setLastResponse(message: Message | Message[]) {
 		this.shouldEdit = true;
-		return this.lastResponse = message;
+		if (Array.isArray(message)) {
+			this.lastResponse = message.slice(-1)[0];
+		} else {
+			this.lastResponse = message;
+		}
+
+		return this.lastResponse;
 	}
 
 	public setEditable() {
@@ -120,9 +126,16 @@ export default class Interaction {
 		return Promise.resolve(this);
 	}
 
+	private addMessage(message: Message | Message[]) {
+		if (Array.isArray(message)) {
+			return message.map(msg => this.channel.messages.add(msg));
+		}
+		return this.channel.messages.add(message);
+	}
+
 	public async resend(data: any) {
 		return new WebhookClient(this.client.user!.id, this.token)
-			.send(data).then(msg => this.channel.messages.add(msg));
+			.send(data).then(msg => this.addMessage(msg));
 	}
 
 	public edit(id: string, data: any) {
@@ -130,7 +143,7 @@ export default class Interaction {
 		return this.client.api.webhooks(this.client.user.id, this.token)
 			.messages[id]
 			.patch({ auth: false, data })
-			.then((msg: any) => this.channel.messages.add(msg));
+			.then((msg: any) => this.addMessage(msg));
 	}
 }
 
