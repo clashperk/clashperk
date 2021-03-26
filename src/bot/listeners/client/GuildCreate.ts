@@ -23,7 +23,7 @@ export default class GuildCreateListener extends Listener {
 
 	private changeNickname(guild: Guild) {
 		if (!guild.me?.hasPermission('CHANGE_NICKNAME')) return;
-		const prefix = this.client.settings.get<string>(guild, 'prefix', '*');
+		const prefix = this.client.settings.get<string>(guild, 'prefix', '!');
 		return guild.me.setNickname(`${this.client.user!.username} [ ${prefix} ]`).catch(() => null);
 	}
 
@@ -52,23 +52,20 @@ export default class GuildCreateListener extends Listener {
 	}
 
 	private intro(guild: Guild) {
-		const prefix = this.client.settings.get<string>(guild, 'prefix', '*');
+		const prefix = this.client.settings.get<string>(guild, 'prefix', '!');
 		const embed = this.client.util.embed()
 			.setAuthor('Thanks for inviting me, have a nice day!', this.client.user!.displayAvatarURL())
 			.setDescription([
-				`My default prefix is \`${prefix}\``,
-				`If you want to change my prefix, just type \`${prefix}prefix <new>\``,
+				`Use the prefix \`${prefix}\` to run my commands.`,
+				`To change my prefix, just type \`${prefix}prefix ?\``,
 				'',
-				`To get the full list of commands type \`${prefix}help\``,
-				`To view more details for a command, type \`${prefix}help <command>\``,
-				`For a quick setup guide, type \`${prefix}guide\``
+				`To get the full list of commands type \`${prefix}help\``
 			])
 			.addField('Add to Discord', [
-				'ClashPerk can be added to as many servers as you want!',
-				'Please share the bot with your Friends. [Invite Link](https://clashperk.com/invite)'
+				'ClashPerk can be added to as many servers as you want! Please share the bot with your friends. [Invite Link](https://clashperk.com/invite)'
 			])
 			.addField('Support', [
-				'Join [Support Server](https://discord.gg/ppuppun) if you need help.',
+				'Join [Support Server](https://discord.gg/ppuppun) if you need any help or visit our [Website](https://clashperk.com) for a guide.',
 				'',
 				'If you like the bot, please support us on [Patreon](https://www.patreon.com/clashperk)'
 			]);
