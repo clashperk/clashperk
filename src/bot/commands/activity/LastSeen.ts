@@ -1,9 +1,10 @@
 import { COLLECTIONS } from '../../util/Constants';
+import { Message, Util } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
-import { Message } from 'discord.js';
 import 'moment-duration-format';
 import moment from 'moment';
+import { EMOJIS } from '../../util/Emojis';
 
 // TODO: Fix TS
 export default class LastOnlineCommand extends Command {
@@ -55,14 +56,16 @@ export default class LastOnlineCommand extends Command {
 			.setFooter(`Members [${data.members}/50]`, this.client.user!.displayAvatarURL());
 
 		const msg = await message.util!.send({ embed });
-		await msg.react('📊');
+
+		await msg.react(EMOJIS.ACTIVITY);
+		const { id } = Util.parseEmoji(EMOJIS.ACTIVITY)!;
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['📊'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => [id].includes(reaction.emoji.id) && user.id === message.author.id,
 			{ time: 60000, max: 1 }
 		);
 
 		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '📊') {
+			if (reaction.emoji.id === id) {
 				collector.stop();
 				const members = await this.aggregationQuery(data, 30);
 

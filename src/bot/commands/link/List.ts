@@ -51,14 +51,15 @@ export default class LinkListCommand extends Command {
 
 		if (!onDiscord.length) return msg; // Let's stop right here!
 
-		await msg.react('🔗');
+		await msg.react(EMOJIS.HASH);
+		const { id } = Util.parseEmoji(EMOJIS.HASH)!;
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['🔗'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => [id].includes(reaction.emoji.id) && user.id === message.author.id,
 			{ time: 60000, max: 1 }
 		);
 
 		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '🔗') {
+			if (reaction.emoji.id === id) {
 				const embed = this.buildEmbed(message, data, true, onDiscord, offDiscord);
 				return message.util!.send({ embed });
 			}
