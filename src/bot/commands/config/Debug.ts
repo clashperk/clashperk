@@ -86,7 +86,7 @@ export default class DebugCommand extends Command {
 			`${emojis.none} \` ${'CLANS'.padStart(7, ' ')} \` \` ${'WARS'.padStart(7, ' ')} \` \` ${'PLAYERS'} \``,
 			`${emojis.tick} \` ${this.fixTime(rpc.clans, '2m').padStart(7, ' ')} \` \` ${this.fixTime(rpc.wars, '10m').padStart(7, ' ')} \` \` ${this.fixTime(rpc.players, '1h').padStart(7, ' ')} \``,
 			'',
-			'**Cluster Info**',
+			'**Clan Status and Player Loop Info**',
 			`${emojis.none} \`\u200e ${'CLAN NAME'.padEnd(15, ' ')} \u200f\` \`\u200e ${'UPDATED'} \u200f\` \`\u200e ${'WAR LOG'} \u200f\``,
 			clans.map(clan => {
 				const lastRan = clan.lastRan ? ms(Date.now() - clan.lastRan.getTime()) : 'Unknown';
