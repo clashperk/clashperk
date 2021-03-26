@@ -41,9 +41,9 @@ export default class PrefixCommand extends Command {
 
 		if (prefix && !message.member!.permissions.has('MANAGE_GUILD')) {
 			return message.util!.send([
-				`Use the prefix \`${oldPrefix}\` to run my commands`,
+				`Use the prefix \`${oldPrefix}\` to run my commands.`,
 				'',
-				'You are missing `Manage Server` permission to change the prefix'
+				'You are missing `Manage Server` permission to change the prefix.'
 			]);
 		}
 
@@ -52,6 +52,9 @@ export default class PrefixCommand extends Command {
 			await message.guild!.me.setNickname(`${this.client.user!.username} [ ${prefix} ]`).catch(() => null);
 		}
 
-		return message.util!.send(`Prefix has been reset to \`${prefix}\``);
+		return message.util!.send([
+			`Prefix has been reset to \`${prefix}\``,
+			`${prefix === '/' ? `\n**Tip:** The prefix \`${prefix}\` might conflict with slash commands, try to avoid it!` : ''}`
+		]);
 	}
 }
