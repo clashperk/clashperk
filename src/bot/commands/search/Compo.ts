@@ -1,6 +1,6 @@
 import { TOWN_HALLS, EMOJIS } from '../../util/Emojis';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, Message, Util } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 
@@ -47,12 +47,13 @@ export default class ThCompoCommand extends Command {
 			.sort((a, b) => b.level - a.level);
 		const avg = townHalls.reduce((p, c) => p + (c.total * c.level), 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
 
+		const { id } = Util.parseEmoji(EMOJIS.TOWNHALL)!;
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setColor(this.client.embed(message))
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription(townHalls.map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`))
-			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, 'https://cdn.discordapp.com/emojis/696655174025871461.png');
+			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, `https://cdn.discordapp.com/emojis/${id!}.png?v=1`);
 
 		const diff = process.hrtime(hrStart);
 		return message.util!.send(`*Executed in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)}ms*`, { embed });
