@@ -56,7 +56,7 @@ export default class DebugCommand extends Command {
 		const UEE_FOR_TEXT = channel.permissionsFor(this.client.user!)!.has('USE_EXTERNAL_EMOJIS');
 		const emojis = (message.hasOwnProperty('token') && UEE_FOR_SLASH) || (!message.hasOwnProperty('token') && UEE_FOR_TEXT)
 			? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
-			: { cross: '\\❌', tick: '\\✅', none: '\\⬛' };
+			: { cross: '❌', tick: '☑️', none: '⬛' };
 
 		return message.util!.send([
 			`**${this.client.user!.username} Debug Menu**`,
