@@ -1,4 +1,4 @@
-import Chart from '@clashperk/chartgen';
+import Chart from '@clashperk/quickchart';
 
 const months = [
 	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

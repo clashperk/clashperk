@@ -14,8 +14,8 @@
 		"dev": "node --enable-source-maps dist/src/index.js"
 	},
 	"dependencies": {
-		"@clashperk/chartgen": "github:clashperk/chartgen",
 		"@clashperk/node": "github:clashperk/node",
+		"@clashperk/quickchart": "github:clashperk/quickchart",
 		"@grpc/proto-loader": "^0.5.5",
 		"@sentry/node": "^5.30.0",
 		"chalk": "^4.1.0",
