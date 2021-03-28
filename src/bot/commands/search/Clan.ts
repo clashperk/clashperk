@@ -2,6 +2,7 @@ import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
+import { Collections, Season } from '@clashperk/node';
 
 const clanTypes: { [key: string]: string } = {
 	inviteOnly: 'Invite Only',
@@ -57,8 +58,9 @@ export default class ClanCommand extends Command {
 			.setThumbnail(data.badgeUrls.medium);
 
 		embed.setDescription([
-			data.description || 'No Description Available',
-			'\u200b\u2002'
+			`${EMOJIS.CLAN} **${data.clanLevel}** ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
+			'',
+			`${data.description}\n\n${data.labels.map(d => `${CLAN_LABELS[d.name]} ${d.name}`).join('\n')}`
 		]);
 
 		const location = data.location
@@ -68,38 +70,49 @@ export default class ClanCommand extends Command {
 			: `${EMOJIS.WRONG} None`;
 
 		const leader = data.memberList.find(m => m.role === 'leader');
-
 		const rankInfo = await this.clanRank(data.tag, data.clanPoints);
-
 		const rank = rankInfo
 			? rankInfo.gain > 0
 				? `\n**Global Rank**\n📈 #${rankInfo.rank} ${EMOJIS.UP_KEY} +${rankInfo.gain}`
 				: `\n**Global Rank**\n📈 #${rankInfo.rank} ${EMOJIS.DOWN_KEY} ${rankInfo.gain}`
 			: '';
 
-		embed.addField('**General**', [
-			'**Clan Level**',
-			`${EMOJIS.CLAN} ${data.clanLevel}`,
-			'**Members**',
-			`${EMOJIS.USERS} ${data.members}`,
-			'**Clan Points**',
-			`${EMOJIS.TROPHY} ${data.clanPoints} ${EMOJIS.VERSUS_TROPHY} ${data.clanVersusPoints}`,
-			'**Leader**',
+		embed.addField('\u200e', [
+			'**Clan Leader**',
 			`${EMOJIS.OWNER} ${leader ? `${Util.escapeMarkdown(leader.name)}` : 'No Leader'}`,
 			'**Location**',
 			`${location}${rank}`,
+			'**Requirements**',
+			`⚙️ ${clanTypes[data.type]} ${EMOJIS.TROPHY} ${data.requiredTrophies} Required`,
 			'\u200b\u2002'
 		]);
 
-		embed.addField('**Requirements**', [
-			'**Trophies Required**',
-			`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
-			'**Clan Type**',
-			`⚙️ ${clanTypes[data.type]}`,
-			'**Clan Labels**',
-			`${data.labels.length ? data.labels.map(d => `${CLAN_LABELS[d.name]} ${d.name}`).join('\n') : `${EMOJIS.WRONG} None`}`,
-			'\u200b\u2002'
-		]);
+		const [action, season, wars] = await Promise.all([this.getActivity(data), this.getSeason(data), this.getWars(data.tag)]);
+		const fields = [];
+		if (action) {
+			fields.push(...[
+				'**Daily Average**',
+				`${EMOJIS.ACTIVITY} ${action.avg_total.toFixed()} Activities`,
+				`${EMOJIS.USER_BLUE} ${action.avg_online.toFixed()} Active Members`
+			]);
+		}
+		if (season) {
+			fields.push(...[
+				'**Total Attacks**',
+				`${EMOJIS.SWORD} ${season.attackWins} ${EMOJIS.SHIELD} ${season.defenseWins}`,
+				'**Total Donations**',
+				`${EMOJIS.TROOPS_DONATE} ${season.donations} ${EMOJIS.UP_KEY} ${season.donationsReceived} ${EMOJIS.DOWN_KEY}`
+			]);
+		}
+		if (wars.length) {
+			const won = wars.filter(war => war.result).length;
+			const lost = wars.filter(war => !war.result).length;
+			fields.push(...[
+				'**Total Wars**',
+				`${EMOJIS.CROSS_SWORD} ${wars.length} Wars ${EMOJIS.OK} ${won} Won ${EMOJIS.WRONG} ${lost} Lost`
+			]);
+		}
+		if (fields.length) embed.addField(`**Season Stats (${Season.previousID})**`, [...fields, '\u200e']);
 
 		embed.addField('**War and League**', [
 			'**War Log**',
@@ -117,5 +130,128 @@ export default class ClanCommand extends Command {
 		]);
 
 		return message.util!.send({ embed });
+	}
+
+	private async getActivity(clan: Clan): Promise<{ avg_total: number; avg_online: number } | null> {
+		return this.client.db.collection(Collections.LAST_SEEN).aggregate([
+			{
+				$match: {
+					'clan.tag': clan.tag,
+					'tag': { $in: clan.memberList.map(m => m.tag) }
+				}
+			}, {
+				$sort: {
+					lastSeen: -1
+				}
+			}, {
+				$limit: 50
+			}, {
+				$unwind: {
+					path: '$entries'
+				}
+			}, {
+				$group: {
+					_id: {
+						date: {
+							$dateToString: {
+								date: '$entries.entry',
+								format: '%Y-%m-%d'
+							}
+						},
+						tag: '$tag'
+					},
+					count: {
+						$sum: '$entries.count'
+					}
+				}
+			}, {
+				$group: {
+					_id: '$_id.date',
+					online: {
+						$sum: 1
+					},
+					total: {
+						$sum: '$count'
+					}
+				}
+			}, {
+				$group: {
+					_id: null,
+					avg_online: {
+						$avg: '$online'
+					},
+					avg_total: {
+						$avg: '$total'
+					}
+				}
+			}
+		]).next();
+	}
+
+	private async getSeason(clan: Clan) {
+		return this.client.db.collection(Collections.CLAN_MEMBERS).aggregate([
+			{
+				$match: {
+					clanTag: clan.tag,
+					season: Season.previousID,
+					tag: { $in: clan.memberList.map(m => m.tag) }
+				}
+			}, {
+				$sort: {
+					'donations.gained': -1
+				}
+			}, {
+				$limit: 50
+			}, {
+				$group: {
+					_id: null,
+					donations: {
+						$sum: '$donations.gained'
+					},
+					donationsReceived: {
+						$sum: '$donationsReceived.gained'
+					},
+					attackWins: {
+						$sum: '$attackWins'
+					},
+					defenseWins: {
+						$sum: '$defenseWins'
+					}
+				}
+			}
+		]).next() as Promise<{ donations: number; donationsReceived: number; attackWins: number; defenseWins: number } | null>;
+	}
+
+	private async getWars(tag: string): Promise<{ result: boolean; stars: number[] }[]> {
+		return this.client.db.collection(Collections.CLAN_WARS).aggregate(
+			[
+				{
+					$match: {
+						'clan.tag': tag,
+						'groupWar': false,
+						'state': 'warEnded',
+						'season': Season.previousID
+					}
+				}, {
+					$project: {
+						result: {
+							$switch: {
+								'branches': [
+									{
+										'case': { $gt: ['$clan.stars', '$opponent.stars'] },
+										'then': true
+									},
+									{
+										'case': { $gt: ['$clan.destructionPercentage', '$opponent.destructionPercentage'] },
+										'then': true
+									}
+								],
+								'default': false
+							}
+						}
+					}
+				}
+			]
+		).toArray();
 	}
 }
