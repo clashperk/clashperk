@@ -8,7 +8,6 @@ export default class ClanSummaryCommand extends Command {
 		super('clan-summary', {
 			category: 'search',
 			channel: 'guild',
-			ownerOnly: true,
 			clientPermissions: ['EMBED_LINKS'],
 			description: {}
 		});

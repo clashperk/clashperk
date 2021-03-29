@@ -8,7 +8,6 @@ export default class ExportClansCommand extends Command {
 		super('export-clans', {
 			category: 'search',
 			channel: 'guild',
-			ownerOnly: true,
 			clientPermissions: ['EMBED_LINKS'],
 			description: {}
 		});
