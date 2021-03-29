@@ -20,12 +20,15 @@ export default class Export extends Command {
 					'• **Export War Stats**',
 					'• `WARS [NUMBER]`',
 					'',
+					'• **Export Clan Stats**',
+					'• `CLANS`',
+					'',
 					'- Season ID must be under 3 months old and must follow `YYYY-MM` format.',
 					'',
 					'**[Support us on Patreon](https://patreon.com/clashperk)**'
 				],
-				usage: '<wars|missed|season> [number|season]',
-				examples: ['wars', 'missed', 'season', 'wars 10', 'missed 10', 'season 2021-01']
+				usage: '<wars|missed|season|clans> [number|season]',
+				examples: ['wars', 'clans', 'missed', 'season', 'wars 10', 'missed 10', 'season 2021-01']
 			},
 			optionFlags: ['--option']
 		});
@@ -37,7 +40,8 @@ export default class Export extends Command {
 			type: [
 				['export-missed', 'missed'],
 				['export-season', 'season'],
-				['export-wars', 'war', 'wars']
+				['export-wars', 'war', 'wars'],
+				['export-clans', 'clan', 'clans']
 			],
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})

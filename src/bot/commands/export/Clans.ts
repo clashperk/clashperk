@@ -1,11 +1,11 @@
 import { Collections, Season } from '@clashperk/node';
-import { Message, MessageEmbed } from 'discord.js';
-import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
+import Workbook from '../../struct/Excel';
+import { Message } from 'discord.js';
 
-export default class ClanSummaryCommand extends Command {
+export default class ExportClansCommand extends Command {
 	public constructor() {
-		super('clan-summary', {
+		super('export-clans', {
 			category: 'search',
 			channel: 'guild',
 			ownerOnly: true,
@@ -23,50 +23,59 @@ export default class ClanSummaryCommand extends Command {
 			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
 		}
 
-		if (clans.length > 4) {
-			return this.handler.runCommand(message, this.handler.modules.get('export-clans')!, {});
-		}
-
-		const embeds = [];
+		const collection = [];
 		for (const clan of clans) {
 			const wars = await this.getWars(clan.tag);
 			const action = await this.getActivity(clan.tag);
 			const season = await this.getSeason(clan.tag);
 
-			if (!wars.length || !action || !season) break;
-
 			const won = wars.filter(war => war.result).length;
 			const lost = wars.filter(war => !war.result).length;
 
-			const embed = new MessageEmbed()
-				.setAuthor(`${clan.name} (${clan.tag})`)
-				.setDescription([
-					'**Total Wars**',
-					`${EMOJIS.CROSS_SWORD} ${wars.length} Wars ${EMOJIS.OK} ${won} Won ${EMOJIS.WRONG} ${lost} Lost`,
-					'',
-					'**Total Donation**',
-					`${EMOJIS.TROOPS_DONATE} ${season.donations} ${EMOJIS.UP_KEY} ${season.donationsReceived} ${EMOJIS.DOWN_KEY}`,
-					'',
-					'**Total Attacks**',
-					`${EMOJIS.SWORD} ${season.attackWins} ${EMOJIS.SHIELD} ${season.defenseWins}`,
-					'',
-					'**Avg. Activity**',
-					`${EMOJIS.ACTIVITY} ${action.avg_total.toFixed()}`,
-					'',
-					'**Active Members**',
-					`${EMOJIS.USER_BLUE} ${action.avg_online.toFixed()}`
-				])
-				.setFooter(`Season ${Season.previousID}`);
-
-			embeds.push(embed);
+			collection.push({
+				won, lost, avg_online: action?.avg_online, avg_total: action?.avg_total,
+				name: clan.name, attackWins: season?.attackWins, tag: clan.tag, wars: wars.length,
+				donations: season?.donations, donationsReceived: season?.donationsReceived, defenseWins: season?.defenseWins
+			});
 		}
 
-		if (!embeds.length) return message.util!.send('**No data available at this moment!**');
+		const workbook = new Workbook();
+		const sheet = workbook.addWorksheet('Clan Stats');
+		sheet.columns = [
+			{ header: 'Name', width: 16 },
+			{ header: 'Tag', width: 16 },
+			{ header: 'Wars', width: 10 },
+			{ header: 'Won', width: 10 },
+			{ header: 'Lost', width: 10 },
+			{ header: 'Donations', width: 10 },
+			{ header: 'Receives', width: 10 },
+			{ header: 'Attacks', width: 10 },
+			{ header: 'Defenses', width: 10 },
+			{ header: 'Avg. Activity', width: 10 },
+			{ header: 'Avg. Active Members', width: 16 }
+		] as any; // TODO: Fix Later
 
-		if (!message.hasOwnProperty('token')) {
-			return embeds.map(embed => message.channel.send({ embed }));
+		sheet.getRow(1).font = { bold: true, size: 10 };
+		sheet.getRow(1).height = 40;
+
+		for (let i = 1; i <= sheet.columns.length; i++) {
+			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 		}
-		return message.util!.send(embeds);
+
+		sheet.addRows(
+			collection.map(m => [
+				m.name, m.tag, m.wars, m.won, m.lost, m.donations,
+				m.donationsReceived, m.attackWins, m.defenseWins, m.avg_total?.toFixed(), m.avg_online?.toFixed()
+			])
+		);
+
+		const buffer = await workbook.xlsx.writeBuffer();
+		return message.util!.send(`**Clan Stats (Season ${Season.previousID})**`, {
+			files: [{
+				attachment: Buffer.from(buffer),
+				name: 'clan_stats.xlsx'
+			}]
+		});
 	}
 
 	private async getWars(tag: string): Promise<{ result: boolean; stars: number[] }[]> {
