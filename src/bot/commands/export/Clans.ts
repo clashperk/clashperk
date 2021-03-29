@@ -64,8 +64,8 @@ export default class ExportClansCommand extends Command {
 
 		sheet.addRows(
 			collection.map(m => [
-				m.name, m.tag, m.wars, m.won, m.lost, m.donations,
-				m.donationsReceived, m.attackWins, m.defenseWins, m.avg_total?.toFixed(), m.avg_online?.toFixed()
+				m.name, m.tag, m.wars, m.won, m.lost, m.donations, m.donationsReceived,
+				m.attackWins, m.defenseWins, Math.floor(m.avg_total ?? 0), Math.floor(m.avg_online ?? 0)
 			])
 		);
 
