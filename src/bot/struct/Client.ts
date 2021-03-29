@@ -134,10 +134,6 @@ export default class Client extends AkairoClient {
 			}
 			// @ts-expect-error
 			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5 } });
-			// @ts-expect-error
-			if (await this.commandHandler.runPermissionChecks(interaction, command)) return;
-			// @ts-expect-error
-			if (await this.commandHandler.runPostTypeInhibitors(interaction, command)) return;
 			return this.handleInteraction(interaction, command, interaction.options);
 		});
 	}
@@ -152,7 +148,11 @@ export default class Client extends AkairoClient {
 		return command.contentParser.parse(content);
 	}
 
-	private async handleInteraction(interaction: Interaction, command: Command, content: string | APIApplicationCommandInteractionDataOption[]): Promise<any> {
+	private async handleInteraction(interaction: Interaction, command: Command, content: string | APIApplicationCommandInteractionDataOption[], ignore = false): Promise<any> {
+		if (!ignore) {
+			// @ts-expect-error
+			if (await this.commandHandler.runPostTypeInhibitors(interaction, command)) return;
+		}
 		const parsed = this.contentParser(command, content);
 		// @ts-expect-error
 		const args = await command.argumentRunner.run(interaction, parsed, command.argumentGenerator);
@@ -160,7 +160,7 @@ export default class Client extends AkairoClient {
 			return this.commandHandler.emit('commandCancelled', interaction, command);
 		} else if (Flag.is(args, 'continue')) {
 			const continueCommand = this.commandHandler.modules.get(args.command)!;
-			return this.handleInteraction(interaction, continueCommand, args.rest);
+			return this.handleInteraction(interaction, continueCommand, args.rest, args.ignore);
 		}
 
 		// @ts-expect-error

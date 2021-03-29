@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { APIInteraction, InteractionType, APIApplicationCommandInteractionData, APIApplicationCommandInteractionDataOption } from 'discord-api-types/v8';
-import { TextChannel, User, Guild, GuildMember, APIMessage, Collection, MessageOptions, MessageAdditions, StringResolvable, Message, WebhookClient } from 'discord.js';
+import { TextChannel, User, Guild, GuildMember, APIMessage, Collection, MessageOptions, MessageAdditions, StringResolvable, Message, WebhookClient, SnowflakeUtil } from 'discord.js';
 import Client from './Client';
 
 export class CommandUtil {
@@ -68,22 +68,18 @@ export default class Interaction {
 	public channel: TextChannel;
 	public member!: GuildMember;
 	public type: InteractionType;
+	public createdTimestamp: number;
 	public commandUtils = new Collection();
 	public data?: APIApplicationCommandInteractionData;
 
 	public constructor(client: Client, data: APIInteraction) {
 		this.id = data.id;
-
 		this.data = data.data;
-
 		this.type = data.type;
-
 		this.token = data.token;
-
 		this.guild = client.guilds.cache.get(data.guild_id) as Guild;
-
+		this.createdTimestamp = SnowflakeUtil.deconstruct(this.id).timestamp;
 		this.channel = client.channels.cache.get(data.channel_id) as TextChannel;
-
 		Object.defineProperty(this, 'client', { value: client, writable: true });
 	}
 
