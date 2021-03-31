@@ -27,14 +27,14 @@ export default class CWLExport extends Command {
 	}
 
 	public *args(msg: Message): unknown {
-		const clans = yield {
+		const tags = yield {
 			'flag': '--tag',
 			'default': [],
 			'match': msg.hasOwnProperty('token') ? 'option' : 'content',
 			'type': (msg: Message, args?: string) => args?.split(/ +/g)
 		};
 
-		return { clans };
+		return { tags };
 	}
 
 	private async getClans(message: Message, aliases: string[]) {
