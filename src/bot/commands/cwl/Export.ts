@@ -1,9 +1,10 @@
 import { Clan, ClanWarLeague, ClanWar, ClanWarClan } from 'clashofclans.js';
-import { COLLECTIONS, Util } from '../../util/Constants';
+import { Collections } from '@clashperk/node';
+import { Util } from '../../util/Constants';
+import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
-import { EMOJIS } from '../../util/Emojis';
 
 const months = [
 	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -18,25 +19,59 @@ export default class CWLExport extends Command {
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
 				content: 'Export war stats to excel for all clans.',
-				examples: ['']
-			}
+				examples: [''],
+				usage: '[...#clanTag|...aliases]'
+			},
+			optionFlags: ['--tag']
 		});
 	}
 
-	public async exec(message: Message) {
-		const patron = this.client.patrons.get(message);
-		if (!patron) {
-			return message.channel.send({
-				embed: {
-					description: '[Become a Patron](https://www.patreon.com/clashperk) to export CWL data to Excel.'
-				}
+	public *args(msg: Message): unknown {
+		const clans = yield {
+			'flag': '--tag',
+			'default': [],
+			'match': msg.hasOwnProperty('token') ? 'option' : 'content',
+			'type': (msg: Message, args?: string) => args?.split(/ +/g)
+		};
+
+		return { clans };
+	}
+
+	private async getClans(message: Message, aliases: string[]) {
+		const cursor = this.client.db.collection(Collections.CLAN_STORES)
+			.find({
+				guild: message.guild!.id,
+				$or: [
+					{
+						tag: { $in: aliases.map(tag => this.fixTag(tag)) }
+					},
+					{
+						alias: { $in: aliases.map(alias => alias.toLowerCase()) }
+					}
+				]
 			});
+
+		return cursor.toArray();
+	}
+
+	private fixTag(tag: string) {
+		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`;
+	}
+
+	public async exec(message: Message, { tags }: { tags?: string[] }) {
+		if (!this.client.patrons.get(message)) {
+			return message.channel.send({ embed: { description: '[Become a Patron](https://www.patreon.com/clashperk) to export CWL data to Excel.' } });
+		}
+
+		let clans = [];
+		if (tags?.length) {
+			clans = await this.getClans(message, tags);
+			if (!clans.length) return message.util!.send(`*No clans found in my database for the specified argument.*`);
+		} else {
+			clans = await this.client.storage.findAll(message.guild!.id);
 		}
 
 		await message.util!.send(`Fetching data... ${EMOJIS.LOADING}`);
-		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
-			.find({ guild: message.guild!.id })
-			.toArray();
 		const chunks = [];
 		for (const clan of clans) {
 			const res = await this.client.http.clanWarLeague(clan.tag).catch(() => null);

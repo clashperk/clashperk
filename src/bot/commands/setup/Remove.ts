@@ -104,7 +104,20 @@ export default class RemoveCommand extends Command {
 		}
 
 		if (bit instanceof TextChannel) {
-			return this.handler.handleDirectCommand(message, bit.id, this.handler.modules.get('link-remove')!);
+			const { value } = await this.client.storage.collection.findOneAndUpdate(
+				{ channels: bit.id }, { $pull: { channels: bit.id } }, { returnOriginal: false }
+			);
+
+			if (value) {
+				const id = value._id.toHexString();
+				if (!value.channels?.length) await this.updateFlag(id, BitField.CHANNEL_LINKED);
+				return message.util!.send(
+					`Successfully deleted **${value.name} (${value.tag})** from <#${bit.id}>`
+				);
+			}
+
+			// eslint-disable-next-line
+			return message.util!.send(`Couldn\'t find any clan linked to ${bit.toString()}`);
 		}
 
 		if (!tag) return message.util!.send('**You must specify a clan tag to run this command.**');
