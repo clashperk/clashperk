@@ -20,6 +20,7 @@ interface Member {
 }
 
 interface Resp {
+	mode: string;
 	clan: {
 		tag: string;
 		name: string;
@@ -67,6 +68,7 @@ export default class ClanFeedLog {
 	}
 
 	private async handleMessage(channel: TextChannel, data: Resp, id: string) {
+		if (data.mode !== 'JOIN_LEAVE') return null;
 		const ms = data.tags.length >= 5 ? 2000 : 250;
 		for (const item of data.tags.sort((a, b) => a.value - b.value)) {
 			const message = await this.embed(channel, item, data, id);

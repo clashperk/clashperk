@@ -54,18 +54,20 @@ export default class ClanSummaryCommand extends Command {
 					'',
 					'**Active Members**',
 					`${EMOJIS.USER_BLUE} ${action.avg_online.toFixed()}`
-				])
-				.setFooter(`Season ${Season.previousID}`);
+				]);
+
+			if (!message.hasOwnProperty('token')) {
+				embed.setFooter(`Season ${Season.previousID}`);
+			}
 
 			embeds.push(embed);
 		}
-
 		if (!embeds.length) return message.util!.send('**No data available at this moment!**');
 
 		if (!message.hasOwnProperty('token')) {
 			return embeds.map(embed => message.channel.send({ embed }));
 		}
-		return message.util!.send(embeds);
+		return message.util!.send(`**Clan Summary (Season ${Season.previousID})**`, embeds);
 	}
 
 	private async getWars(tag: string): Promise<{ result: boolean; stars: number[] }[]> {
