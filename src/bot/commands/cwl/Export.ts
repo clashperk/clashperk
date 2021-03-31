@@ -71,7 +71,7 @@ export default class CWLExport extends Command {
 			clans = await this.client.storage.findAll(message.guild!.id);
 		}
 
-		await message.util!.send(`Fetching data... ${EMOJIS.LOADING}`);
+		const msg = await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 		const chunks = [];
 		for (const clan of clans) {
 			const res = await this.client.http.clanWarLeague(clan.tag).catch(() => null);
@@ -148,6 +148,7 @@ export default class CWLExport extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
+		if (!msg.deleted) await msg.delete();
 		return message.util!.send({
 			files: [
 				{
