@@ -113,7 +113,7 @@ export default class RPCHandler {
 	}
 
 	public async add(id: string, data: { tag: string; guild: string; op: number }) {
-		const OP: { [key: string]: any } = {
+		const OP = {
 			[BitField.DONATION_LOG]: this.donationLog,
 			[BitField.CLAN_FEED_LOG]: this.clanFeedLog,
 			[BitField.LAST_SEEN_LOG]: this.lastSeenLog,
@@ -123,7 +123,7 @@ export default class RPCHandler {
 		};
 
 		if (data.op.toString() in OP) {
-			await OP[data.op].add(id);
+			await OP[data.op as keyof typeof OP].add(id);
 		} else {
 			Object.values(OP).map(Op => Op.add(id));
 		}
@@ -133,7 +133,7 @@ export default class RPCHandler {
 	}
 
 	public delete(id: string, data: { tag: string; op: number }) {
-		const OP: { [key: string]: any } = {
+		const OP = {
 			[BitField.DONATION_LOG]: this.donationLog,
 			[BitField.CLAN_FEED_LOG]: this.clanFeedLog,
 			[BitField.LAST_SEEN_LOG]: this.lastSeenLog,
@@ -143,7 +143,7 @@ export default class RPCHandler {
 		};
 
 		if (data.op.toString() in OP) {
-			OP[data.op].delete(id);
+			OP[data.op as keyof typeof OP].delete(id);
 		} else {
 			Object.values(OP).map(Op => Op.delete(id));
 		}
