@@ -1,16 +1,16 @@
 import { MessageEmbed, Collection, PermissionString, TextChannel } from 'discord.js';
+import { BLUE_NUMBERS, RED_NUMBERS } from '../util/NumEmojis';
 import { PLAYER_LEAGUES, EMOJIS } from '../util/Emojis';
 import { COLLECTIONS } from '../util/Constants';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
-import { BLUE_NUMBERS, RED_NUMBERS } from '../util/NumEmojis';
 
-interface Donation {
+export interface Donation {
 	clan: {
-		name: string;
 		tag: string;
-		members: number;
+		name: string;
 		badge: string;
+		members: number;
 	};
 	donated: {
 		donated: number;
@@ -53,7 +53,6 @@ export default class DonationLog {
 			'SEND_MESSAGES',
 			'EMBED_LINKS',
 			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
 			'VIEW_CHANNEL'
 		];
 
@@ -65,14 +64,14 @@ export default class DonationLog {
 		}
 	}
 
-	private handleMessage(id: string, channel: TextChannel, data: Donation) {
+	private async handleMessage(id: string, channel: TextChannel, data: Donation) {
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`)
 			.setThumbnail(data.clan.badge)
-			.setFooter(`${data.clan.members}/50`, this.client.user!.displayAvatarURL())
+			.setFooter(`${data.clan.members} Members`, this.client.user!.displayAvatarURL())
 			.setTimestamp();
 
 		if (data.donated.length) {
@@ -100,17 +99,6 @@ export default class DonationLog {
 					}
 					return `\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[m.received]} ${m.name}`;
 				}).join('\n').substring(0, 1024)
-			]);
-		}
-
-		if (data.unmatched && (data.unmatched.in || data.unmatched.out)) {
-			embed.addField(`${EMOJIS.WRONG} Unmatched`, [
-				data.unmatched.in > 0
-					? `${EMOJIS.USER_BLUE} ${BLUE_NUMBERS[data.unmatched.in]} Joined`
-					: '',
-				data.unmatched.out > 0
-					? `${EMOJIS.USER_RED} ${RED_NUMBERS[data.unmatched.out]} Left`
-					: ''
 			]);
 		}
 

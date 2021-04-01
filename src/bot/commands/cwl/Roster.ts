@@ -1,5 +1,5 @@
 import { Clan, ClanWarLeague } from 'clashofclans.js';
-import { ORANGE_NUMBERS } from '../../util/NumEmojis';
+import { WHITE_NUMBERS } from '../../util/NumEmojis';
 import { TOWN_HALLS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
@@ -66,7 +66,7 @@ export default class CWLRosterComamnd extends Command {
 
 			embed.addField(`\u200e${++index}. ${clan.tag === data.tag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`, [
 				this.chunk(townHalls)
-					.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`)
+					.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`)
 						.join(' '))
 					.join('\n')
 			]);

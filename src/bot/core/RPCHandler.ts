@@ -35,10 +35,11 @@ export default class RPCHandler {
 
 	private async broadcast() {
 		const call = await this.client.rpc.broadcast({ shardId: this.client.shard!.ids[0], shards: this.client.shard!.count });
-		call.on('data', async (chunk: any) => {
+		call.on('data', async (chunk: { data: string }) => {
 			const data = JSON.parse(chunk.data);
 			// Freeze for 5 min
 			if (this.paused) return;
+			if (data.mode === 'ROLE_UPDATE') return;
 			if (this.queue.remaining >= 5000 && data.op === 4) return;
 
 			await this.queue.wait();
