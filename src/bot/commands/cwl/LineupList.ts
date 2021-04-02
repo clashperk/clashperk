@@ -79,7 +79,7 @@ export default class CWLLineupComamnd extends Command {
 				)
 				.setDescription(
 					data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition)
-						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](http://o.clashperk.com/${m.tag.replace('#', '')}) `)
+						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')}) `)
 				)
 				.setFooter(`Round #${data.round}`),
 
@@ -92,7 +92,7 @@ export default class CWLLineupComamnd extends Command {
 				)
 				.setDescription(
 					data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
-						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](http://o.clashperk.com/${m.tag.replace('#', '')}) `)
+						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')}) `)
 				)
 				.setFooter(`Round #${data.round}`)
 		];
