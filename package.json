@@ -23,7 +23,7 @@
 		"common-tags": "^1.8.0",
 		"discord-akairo": "github:clashperk/discord-akairo",
 		"discord-api-types": "^0.12.1",
-		"discord.js": "^12.5.1",
+		"discord.js": "^12.5.3",
 		"dotenv": "^8.2.0",
 		"exceljs": "^4.2.0",
 		"grpc": "^1.24.4",

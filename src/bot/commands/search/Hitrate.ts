@@ -1,8 +1,9 @@
 import { hitRate, HitRate } from '../../core/WarHitarte';
 import { Command, Argument } from 'discord-akairo';
 import { Clan, ClanWar } from 'clashofclans.js';
-import { TOWN_HALLS } from '../../util/Emojis';
 import { Message } from 'discord.js';
+import { ORANGE_NUMBERS } from '../../util/NumEmojis';
+import { EMOJIS } from '../../util/Emojis';
 
 interface Data {
 	clan: HitRate;
@@ -51,15 +52,15 @@ export default class HitrateCommand extends Command {
 
 			const d: Data = {
 				clan: {
-					townHall: 0,
-					defTownHall: 0,
+					townHall,
+					defTownHall,
 					stars: 0,
 					attacks: 0,
 					hitrate: '0'
 				},
 				opponent: {
-					townHall: 0,
-					defTownHall: 0,
+					townHall,
+					defTownHall,
 					stars: 0,
 					attacks: 0,
 					hitrate: '0'
@@ -67,15 +68,14 @@ export default class HitrateCommand extends Command {
 			};
 
 			if (clan) d.clan = clan;
-
 			if (opponent) d.opponent = opponent;
 
 			arrrr.push(d);
 		}
 
 		return message.util!.send([
-			`**${body.clan.name} vs ${body.opponent.name} (Hitrates - ${stars} Star)**`,
-			`${arrrr.map(d => `\`\u200e${d.clan.hitrate.padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${TOWN_HALLS[d.clan.townHall]} vs ${TOWN_HALLS[d.clan.defTownHall]} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.hitrate.padStart(3, ' ')}% \u200f\``).join('\n')}`
+			`**${body.clan.name} vs ${body.opponent.name}**`,
+			`${arrrr.map(d => `\`\u200e${d.clan.hitrate.padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${ORANGE_NUMBERS[d.clan.townHall]} ${EMOJIS.VS} ${ORANGE_NUMBERS[d.clan.defTownHall]} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.hitrate.padStart(3, ' ')}% \u200f\``).join('\n')}`
 		]);
 	}
 }

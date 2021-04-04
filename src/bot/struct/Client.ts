@@ -203,6 +203,8 @@ export default class Client extends AkairoClient {
 		this.once('ready', () => {
 			if (process.env.NODE_ENV === 'production') return this.run();
 		});
+
+		this.on('userUpdate', () => console.log('guildMemberAdd'));
 	}
 
 	public embed(message: Message) {
