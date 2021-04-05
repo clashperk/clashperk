@@ -10,6 +10,7 @@ export default class RedeemCommand extends Command {
 			aliases: ['redeem'],
 			category: '_hidden',
 			channel: 'guild',
+			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Redeems your patreon subscription.'
 			}
