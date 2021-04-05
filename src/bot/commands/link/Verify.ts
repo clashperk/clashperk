@@ -89,7 +89,7 @@ export default class VerifyPlayerCommand extends Command {
 		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.updateOne(
 				{ 'user': { $ne: message.author.id }, 'entries.tag': data.tag },
-				{ $pull: { entries: { tag: data.tag } } }
+				{ $pull: { entries: { tag: data.tag } }, $set: { user_tag: message.author.tag } }
 			);
 		const up = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.updateOne({ 'user': message.author.id, 'entries.tag': data.tag }, {
@@ -104,6 +104,7 @@ export default class VerifyPlayerCommand extends Command {
 			await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 				.updateOne({ user: message.author.id }, {
 					$set: {
+						user_tag: message.author.tag,
 						user: message.author.id,
 						createdAt: new Date()
 					},

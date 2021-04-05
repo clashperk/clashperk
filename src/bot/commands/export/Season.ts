@@ -46,6 +46,7 @@ export default class ExportSeason extends Command {
 
 		const workbook = new Excel();
 		const sheet = workbook.addWorksheet(season);
+		const patron = this.client.patrons.get(message.guild!.id);
 
 		let count = 0;
 		for (const { tag, name } of clans) {
@@ -54,18 +55,38 @@ export default class ExportSeason extends Command {
 			if (clan.members === 0) continue;
 			const lastseen = await this.aggregationQuery(clan);
 
+			const memberTags = [];
+			if (patron) {
+				memberTags.push(...(await this.client.http.getDiscordLinks(clan.memberList)));
+				const dbMembers = await this.client.db.collection(Collections.LINKED_PLAYERS)
+					.find({ 'entries.tag': { $in: clan.memberList.map(m => m.tag) } })
+					.toArray();
+				for (const member of dbMembers) {
+					for (const m of member.entries) {
+						if (!clan.memberList.find(mem => mem.tag === m.tag)) continue;
+						if (memberTags.find(mem => mem.tag === m.tag)) continue;
+						memberTags.push({ tag: m.tag, user: member.user });
+					}
+				}
+				await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
+			}
+
 			const members = await this.client.db.collection(Collections.CLAN_MEMBERS)
 				.find({ tag: { $in: clan.memberList.map(m => m.tag) }, clanTag: clan.tag, season })
 				.sort({ createdAt: -1 })
 				.toArray();
 
 			count += members.length;
-			for (const mem of members) mem.totalActivity = lastseen.find(m => m.tag === mem.tag)?.count ?? 0;
+			for (const mem of members) {
+				mem.activity_total = lastseen.find(m => m.tag === mem.tag)?.count ?? 0;
+				const user = memberTags.find(user => user.tag === mem.tag)?.user;
+				mem.user_tag = message.guild!.members.cache.get(user)?.user.tag;
+			}
 
-			// const sheet = workbook.addWorksheet(name);
-			sheet.columns = [
+			const columns = [
 				{ header: 'Name', width: 20 },
 				{ header: 'Tag', width: 16 },
+				{ header: 'Discord', width: 16 },
 				{ header: 'Clan', width: 20 },
 				{ header: 'Town Hall', width: 10 },
 				{ header: 'Total Donated', width: 10 },
@@ -81,8 +102,11 @@ export default class ExportSeason extends Command {
 				{ header: 'Heroic Heist', width: 10 },
 				{ header: 'Clan Games', width: 10 },
 				{ header: 'Total Activity', width: 10 }
-			] as any[];
+			];
 
+			if (!patron) columns.splice(2, 1);
+
+			sheet.columns = [...columns] as any[];
 			sheet.getRow(1).font = { bold: true, size: 10 };
 			sheet.getRow(1).height = 40;
 
@@ -91,22 +115,28 @@ export default class ExportSeason extends Command {
 			}
 
 			sheet.addRows(
-				members.map(m => [
-					m.name,
-					m.tag,
-					name,
-					m.townHallLevel,
-					m.donations.gained,
-					m.donationsReceived.gained,
-					m.attackWins,
-					m.versusBattleWins.gained,
-					m.trophies.gained,
-					m.versusTrophies.gained,
-					m.warStars.gained,
-					...['War League Legend', 'Gold Grab', 'Elixir Escapade', 'Heroic Heist', 'Games Champion']
-						.map(ac => m.achievements.find((a: any) => a.name === ac).gained),
-					m.totalActivity
-				])
+				members.map(m => {
+					const rows = [
+						m.name,
+						m.tag,
+						m.user_tag,
+						name,
+						m.townHallLevel,
+						m.donations.gained,
+						m.donationsReceived.gained,
+						m.attackWins,
+						m.versusBattleWins.gained,
+						m.trophies.gained,
+						m.versusTrophies.gained,
+						m.warStars.gained,
+						...['War League Legend', 'Gold Grab', 'Elixir Escapade', 'Heroic Heist', 'Games Champion']
+							.map(ac => m.achievements.find((a: any) => a.name === ac).gained),
+						m.activity_total
+					];
+
+					if (!patron) rows.splice(2, 1);
+					return rows;
+				})
 			);
 		}
 
@@ -171,6 +201,6 @@ export default class ExportSeason extends Command {
 			}
 		]);
 
-		return (await cursor.toArray())[0]?.members ?? [];
+		return (await cursor.next())?.members ?? [];
 	}
 }

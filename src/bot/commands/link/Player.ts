@@ -69,12 +69,13 @@ export default class LinkPlayerCommand extends Command {
 		// only owner can set default account
 		if (def && member.id === message.author.id) {
 			await this.client.db.collection(COLLECTIONS.LINKED_USERS)
-				.updateOne({ user: member.id }, { $pull: { entries: { tag: data.tag } } });
+				.updateOne({ user: member.id }, { $set: { user_tag: member.user.tag }, $pull: { entries: { tag: data.tag } } });
 		}
 
 		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.updateOne({ user: member.id }, {
 				$set: {
+					user_tag: member.user.tag,
 					user: member.id,
 					createdAt: new Date()
 				},
