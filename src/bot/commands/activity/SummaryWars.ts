@@ -10,7 +10,7 @@ export default class WarSummaryCommand extends Command {
 			aliases: ['matches', 'wars'],
 			category: '_hidden',
 			channel: 'guild',
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {}
 		});
 	}

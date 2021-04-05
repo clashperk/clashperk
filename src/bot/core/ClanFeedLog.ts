@@ -52,17 +52,18 @@ export default class ClanFeedLog {
 	}
 
 	private async permissionsFor(cache: any, data: any, id: string) {
-		const permissions = [
+		const permissions: PermissionString[] = [
 			'SEND_MESSAGES',
 			'EMBED_LINKS',
 			'USE_EXTERNAL_EMOJIS',
 			'ADD_REACTIONS',
+			'READ_MESSAGE_HISTORY',
 			'VIEW_CHANNEL'
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
-			if (channel.permissionsFor(channel.guild.me!)!.has(permissions as PermissionString[], false)) {
+			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
 				return this.handleMessage(channel, data, id);
 			}
 		}
@@ -70,8 +71,8 @@ export default class ClanFeedLog {
 
 	private async handleMessage(channel: TextChannel, data: Feed, id: string) {
 		return Promise.allSettled([
-			this.clanUpdate(channel, data, id),
-			this.clanMemberUpdate(channel, data)
+			this.clanUpdate(channel, data, id)
+			// this.clanMemberUpdate(channel, data)
 		]);
 	}
 

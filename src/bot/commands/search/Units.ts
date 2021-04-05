@@ -10,7 +10,7 @@ export default class UnitsCommand extends Command {
 		super('units', {
 			aliases: ['units', 'troops', 'u'],
 			category: 'search',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: 'Levels of troops, spells and heroes.',
 				usage: '<playerTag>',

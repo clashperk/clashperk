@@ -12,7 +12,7 @@ export default class UsageCommand extends Command {
 			description: {
 				content: 'Displays the usage statistics of the bot.'
 			},
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
 			args: [
 				{
 					id: 'growth',

@@ -13,7 +13,7 @@ export default class LastOnlineCommand extends Command {
 			aliases: ['lastseen', 'lastonline', 'lo'],
 			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: [
 					'Approximate last seen of all clan members.',

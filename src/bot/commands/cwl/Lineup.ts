@@ -15,7 +15,7 @@ export default class CWLLineupComamnd extends Command {
 		super('cwl-lineup', {
 			aliases: ['cwl-lineup', 'lineup'],
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: [
 					'Shows lineup of the current round.'

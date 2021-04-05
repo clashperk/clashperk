@@ -24,7 +24,8 @@ export default class InviteCommand extends Command {
 			'USE_EXTERNAL_EMOJIS',
 			'MANAGE_MESSAGES',
 			'MANAGE_WEBHOOKS',
-			'MANAGE_NICKNAMES'
+			'MANAGE_NICKNAMES',
+			'MANAGE_ROLES'
 		]);
 
 		return permissions.bitfield;

@@ -7,7 +7,7 @@ export default class LinkCommand extends Command {
 			aliases: ['link'],
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
+			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: [
 					'Links a Player or Clan to a Discord account.',

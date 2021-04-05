@@ -9,7 +9,7 @@ export default class CWLRemainingComamnd extends Command {
 		super('cwl-remaining', {
 			aliases: ['cwl-remaining', 'cwl-missing'],
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: [
 					'Shows remaining attacks of the current round.',

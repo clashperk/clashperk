@@ -10,7 +10,7 @@ export default class CWLRoundComamnd extends Command {
 		super('cwl-round', {
 			aliases: ['round', 'cwl-round'],
 			category: 'war',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: [
 					'Info about the current CWL rounds.',

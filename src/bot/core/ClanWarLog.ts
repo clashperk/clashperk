@@ -68,7 +68,7 @@ export default class ClanWarLog {
 	}
 
 	private permissionsFor(id: string, cache: any, data: any) {
-		const permissions = [
+		const permissions: PermissionString[] = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
 			'EMBED_LINKS',
@@ -79,7 +79,7 @@ export default class ClanWarLog {
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
-			if (channel.permissionsFor(channel.guild.me!)!.has(permissions as PermissionString[], false)) {
+			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
 				return this.getWarType(id, channel, data);
 			}
 		}

@@ -8,7 +8,7 @@ export default class LinkPlayerCommand extends Command {
 		super('link-add', {
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
 			description: {},
 			flags: ['--default'],
 			optionFlags: ['--tag', '--user']

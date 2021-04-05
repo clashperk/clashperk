@@ -8,7 +8,7 @@ export default class CWLStarsComamnd extends Command {
 		super('cwl-stars', {
 			aliases: ['cwl-stars'],
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'ATTACH_FILES'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: 'Shows total stars and attacks of clan members.',
 				usage: '<clanTag>',

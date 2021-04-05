@@ -14,7 +14,7 @@ export default class CWLHitrateComamnd extends Command {
 		super('cwl-hitrate', {
 			aliases: ['cwl-hitrate'],
 			category: '_owner',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [
 					'Shows hitrates of the current round.',

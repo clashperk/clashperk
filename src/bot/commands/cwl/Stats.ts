@@ -9,7 +9,7 @@ export default class CWLStatsComamnd extends Command {
 		super('cwl-stats', {
 			aliases: ['cwl-stats'],
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: 'Shows some statistics for each round.',
 				usage: '<clanTag>',

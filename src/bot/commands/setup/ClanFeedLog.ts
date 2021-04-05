@@ -11,7 +11,7 @@ export default class MemberLogCommand extends Command {
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],
 			optionFlags: ['--tag', '--channel', '--role'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS']
+			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY']
 		});
 	}
 
