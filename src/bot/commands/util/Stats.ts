@@ -27,14 +27,11 @@ export default class StatsCommand extends Command {
 
 	public async exec(message: Message, { more }: { more: boolean }) {
 		let [guilds, memory] = [0, 0];
-		const values = await this.client.shard!.broadcastEval(
-			`[
-				this.guilds.cache.size,
-				(process.memoryUsage().heapUsed / 1024 / 1024),
-			]`
+		const values = await this.client.shard?.broadcastEval(
+			`[this.guilds.cache.size, (process.memoryUsage().heapUsed / 1024 / 1024)]`
 		);
 
-		for (const value of values) {
+		for (const value of values ?? [this.client.guilds.cache.size, process.memoryUsage().heapUsed / 1024 / 1024]) {
 			guilds += value[0];
 			memory += value[1];
 		}
@@ -62,7 +59,7 @@ export default class StatsCommand extends Command {
 			.addField('Version', `v${version}`, true)
 			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL({ dynamic: true }));
 
-		if (message.channel.type === 'dm' || !(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'], false)) {
+		if (message.channel.type === 'dm' || !(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'])) {
 			return message.util!.send({ embed });
 		}
 		const msg = await message.util!.send({ embed });
@@ -74,9 +71,10 @@ export default class StatsCommand extends Command {
 				{ max: 1, time: 30000, errors: ['time'] }
 			);
 		} catch (error) {
-			return msg.reactions.removeAll().catch(() => null);
+			return msg.reactions.removeAll().catch(() => 0);
 		}
 
+		if (message.deletable) await message.delete();
 		return react.first()?.message.delete();
 	}
 

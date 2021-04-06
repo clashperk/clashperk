@@ -34,10 +34,10 @@ export default class DebugCommand extends Command {
 
 	public async exec(message: Message, { channel }: { channel: TextChannel }) {
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
-		const permissions = [
+		const permissions: PermissionString[] = [
 			'VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS', 'ADD_REACTIONS',
 			'ATTACH_FILES', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY'
-		] as PermissionString[];
+		];
 
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const fetched: Clan[] = (await Promise.all(clans.map(en => this.client.http.clan(en.tag)))).filter(res => res.ok);
