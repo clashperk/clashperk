@@ -128,7 +128,8 @@ export const TOWN_HALLS: Emojis = {
 	10: '<:townhall10:696304773225250858>',
 	11: '<:townhall11:696304807723663400>',
 	12: '<:townhall12:766206520492818482>',
-	13: '<:townhall13:766207117103071242>'
+	13: '<:townhall13:766207117103071242>',
+	14: '<:townhall14:829392900110549038>'
 };
 
 export const BUILDER_HALLS: Emojis = {
