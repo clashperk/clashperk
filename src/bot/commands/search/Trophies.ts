@@ -38,7 +38,7 @@ export default class TrophiesCommand extends Command {
 				`\u200e # TROPHY  ${'NAME'.padEnd(20, ' ')}`,
 				data.memberList.map((member, index) => {
 					const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
-					return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  ${this.padEnd(member.name)}`;
+					return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${this.padEnd(member.name)}`;
 				}).join('\n'),
 				'```'
 			]);

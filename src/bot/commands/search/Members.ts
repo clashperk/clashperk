@@ -49,11 +49,11 @@ export default class MembersCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				'```',
-				`\u200eTH BK AQ GW RC  ${'NAME'.padEnd(15, ' ')}`,
+				`TH BK AQ GW RC  ${'NAME'.padEnd(15, ' ')}`,
 				members.map(
 					mem => {
 						const heroes = this.heroes(mem.heroes).map(hero => this.padStart(hero.level)).join(' ');
-						return `${mem.townHallLevel.toString().padStart(2, ' ')} ${heroes}  ${this.padEnd(mem.name)}`;
+						return `${mem.townHallLevel.toString().padStart(2, ' ')} ${heroes}  \u200e${this.padEnd(mem.name)}`;
 					}
 				).join('\n'),
 				'```'
