@@ -94,8 +94,8 @@ export default class VerifyPlayerCommand extends Command {
 		const up = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.updateOne({ 'user': message.author.id, 'entries.tag': data.tag }, {
 				$set: {
-					'user': message.author.id,
-					'entries.$.verified': true,
+					'user': message.author.id, 'user_tag': message.author.tag,
+					'entries.$.verified': true, 'entries.$.name': data.name,
 					'createdAt': new Date()
 				}
 			});
@@ -109,9 +109,7 @@ export default class VerifyPlayerCommand extends Command {
 						createdAt: new Date()
 					},
 					$push: {
-						entries: {
-							tag: data.tag, verified: true
-						}
+						entries: { tag: data.tag, name: data.name, verified: true }
 					}
 				}, { upsert: true });
 		}

@@ -82,15 +82,12 @@ export default class LinkPlayerCommand extends Command {
 				$push: def && member.id === message.author.id // only owner can set default account
 					? {
 						entries: {
-							$each: [{ tag: data.tag, verified: this.isVerified(doc, data.tag) }],
+							$each: [{ tag: data.tag, name: data.name, verified: this.isVerified(doc, data.tag) }],
 							$position: 0
 						}
 					}
 					: {
-						entries: {
-							tag: data.tag,
-							verified: false
-						}
+						entries: { tag: data.tag, name: data.name, verified: false }
 					}
 			}, { upsert: true });
 
