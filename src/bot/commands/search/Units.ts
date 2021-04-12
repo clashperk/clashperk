@@ -86,6 +86,7 @@ export default class UnitsCommand extends Command {
 			'Workshop': 'Siege Machines',
 			'Builder Hall': 'Builder Base Hero',
 			'Town Hall': 'Heroes',
+			'Pet House': 'Pets',
 			'Builder Barracks': 'Builder Troops'
 		};
 

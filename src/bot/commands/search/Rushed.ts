@@ -91,6 +91,7 @@ export default class RushedCommand extends Command {
 			'Dark Spell Factory': 'Dark Spells',
 			'Workshop': 'Siege Machines',
 			'Town Hall': 'Heroes',
+			'Pet House': 'Pets',
 			'Builder Hall': 'Builder Base Hero',
 			'Builder Barracks': 'Builder Troops'
 		};

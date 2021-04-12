@@ -67,6 +67,7 @@ export default class UpgradesCommand extends Command {
 			'Workshop': `${EMOJIS.ELIXIER} Siege Machines`,
 			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
 			'Town Hall': `${EMOJIS.DARK_ELIXIR} Heroes`,
+			'Pet House': `${EMOJIS.DARK_ELIXIR} Pets`,
 			'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
 		};
 

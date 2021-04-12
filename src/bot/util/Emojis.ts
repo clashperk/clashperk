@@ -26,6 +26,13 @@ export const ELIXIR_TROOPS: Emojis = {
 	'Yeti': '<:yeti:696281814293282857>'
 };
 
+export const HEROE_PETS: Emojis = {
+	'Electro Owl': '<:Owl:831123515939356703>',
+	'L.A.S.S.I': '<:LASSI:831123509827731527>',
+	'Mighty Yak': '<:Yak:831123515067334707>',
+	'Unicorn': '<:Unicorn:831123514613694564>'
+};
+
 export const DARK_ELIXIR_TROOPS: Emojis = {
 	'Minion': '<:minion:696281875794231326>',
 	'Hog Rider': '<:hogrider:696281961257238579>',
@@ -107,7 +114,8 @@ export const HOME_TROOPS: Emojis = {
 	...DARK_ELIXIR_TROOPS,
 	...SEIGE_MACHINES,
 	...ELIXIR_SPELLS,
-	...DARK_SPELLS
+	...DARK_SPELLS,
+	...HEROE_PETS
 };
 
 export const BUILDER_TROOPS: Emojis = {

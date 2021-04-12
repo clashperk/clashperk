@@ -351,6 +351,62 @@ export default {
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 4]
 		},
 		{
+			name: 'L.A.S.S.I',
+			village: 'home',
+			type: 'troop',
+			productionBuilding: 'Pet House',
+			upgrade: {
+				unlockTime: 720,
+				unlockCost: 240000,
+				cost: [115000, 130000, 145000, 160000, 175000, 190000, 205000, 220000, 235000],
+				time: [4320, 5760, 7200, 7920, 8640, 9360, 10080, 10800, 11520],
+				resource: 'Pet House'
+			},
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
+		},
+		{
+			name: 'Mighty Yak',
+			village: 'home',
+			type: 'troop',
+			productionBuilding: 'Pet House',
+			upgrade: {
+				unlockTime: 3600,
+				unlockCost: 2000000,
+				cost: [165000, 185000, 205000, 225000, 245000, 255000, 265000, 275000, 285000],
+				time: [4320, 5760, 7200, 7920, 8640, 9360, 10080, 10800, 11520],
+				resource: 'Dark Elixir'
+			},
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
+		},
+		{
+			name: 'Electro Owl',
+			village: 'home',
+			type: 'troop',
+			productionBuilding: 'Pet House',
+			upgrade: {
+				unlockTime: 240,
+				unlockCost: 10000,
+				cost: [135000, 150000, 165000, 180000, 195000, 210000, 225000, 240000, 255000],
+				time: [4320, 5760, 7200, 7920, 8640, 9360, 10080, 10800, 11520],
+				resource: 'Dark Elixir'
+			},
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
+		},
+		{
+			name: 'Unicorn',
+			village: 'home',
+			type: 'troop',
+			productionBuilding: 'Pet House',
+			upgrade: {
+				unlockTime: 1440,
+				unlockCost: 1000000,
+				cost: [210000, 220000, 230000, 240000, 250000, 260000, 270000, 280000, 290000],
+				time: [4320, 5760, 7200, 7920, 8640, 9360, 10080, 10800, 11520],
+				resource: 'Dark Elixir'
+			},
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
+		},
+		{
 			name: 'Barbarian',
 			village: 'home',
 			productionBuilding: 'Barracks',
