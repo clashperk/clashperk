@@ -158,9 +158,11 @@ export default class UnitsCommand extends Command {
 				}
 			);
 
+		// @ts-expect-error
+		const activeSuperTroops = data.troops.filter(en => en.superTroopIsActive).map(en => en.name);
 		if (superTrops.length) {
-			embed.addField('Super Troops', [
-				this.chunk(superTrops)
+			embed.addField(`Super Troops (${activeSuperTroops.length ? 'Active' : 'Usable'})`, [
+				this.chunk(superTrops.filter(en => activeSuperTroops.length ? activeSuperTroops.includes(en.name) : true))
 					.map(
 						chunks => chunks.map(unit => {
 							const unitIcon = SUPER_TROOPS[unit.name];
@@ -190,10 +192,6 @@ export default class UnitsCommand extends Command {
 
 	private padStart(num: number) {
 		return num.toString().padStart(2, ' ');
-	}
-
-	private async delay(ms: number) {
-		return new Promise(res => setTimeout(res, ms));
 	}
 
 	private apiTroops(data: Player) {
