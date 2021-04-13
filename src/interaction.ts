@@ -708,7 +708,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 		name: 'debug',
 		description: 'Shows some basic debug informations.'
 	},
-	{
+	/* {
 		name: 'autorole',
 		description: 'Automatic Role management for clan members',
 		options: [
@@ -735,6 +735,18 @@ export const commands: { name: string; description: string; options?: APIApplica
 				required: false,
 				description: 'Player API Token verification will be required. Roles will be given to verified players only.',
 				type: ApplicationCommandOptionType.BOOLEAN
+			}
+		]
+	}*/
+	{
+		name: 'boosts',
+		description: 'Clan members with active Super Troops',
+		options: [
+			{
+				name: 'tag',
+				description: 'Tag of the clan',
+				type: ApplicationCommandOptionType.STRING,
+				required: false
 			}
 		]
 	}

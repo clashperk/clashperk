@@ -12,7 +12,7 @@
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
 		"dev": "node --enable-source-maps dist/src/index.js",
-		"build:intercation": "node dist/src/interaction.js"
+		"build:interaction": "node dist/src/interaction.js"
 	},
 	"dependencies": {
 		"@clashperk/node": "github:clashperk/node",

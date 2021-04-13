@@ -51,7 +51,8 @@ export default class BoostsCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
-			.setDescription('Members with Active Super Troops\n\u200b');
+			.setDescription('Members with Active Super Troops\n\u200b')
+			.setFooter(`${members.length}/${data.members} Boost${members.length === 1 ? '' : 's'}`);
 
 		for (const [key, val] of Object.entries(memObj)) {
 			embed.addField(`${SUPER_TROOPS[key]} ${key}`, `${val.map(mem => `\u200e${mem.name}`).join('\n')}`);
