@@ -1,7 +1,8 @@
 import { EMOJIS, SUPER_TROOPS } from '../../util/Emojis';
+import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { MessageEmbed, Message } from 'discord.js';
 import { Command } from 'discord-akairo';
-import { Clan } from 'clashofclans.js';
+import { Clan, Player } from 'clashofclans.js';
 
 export default class BoostsCommand extends Command {
 	public constructor() {
@@ -33,9 +34,11 @@ export default class BoostsCommand extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const members = (await this.client.http.detailedClanMembers(data.memberList))
-			.filter(res => res.ok) // @ts-expect-error
-			.filter(mem => mem.troops.filter(en => en.superTroopIsActive).length);
-		if (!members.length) return message.util!.send('No members found with active Super Troops!');
+			.filter(res => res.ok);
+
+		// @ts-expect-error
+		const boosting = members.filter(mem => mem.troops.filter(en => en.superTroopIsActive).length);
+		if (!boosting.length) return message.util!.send('No members found with active Super Troops!');
 
 		const memObj = members.reduce((pre, curr) => {
 			for (const troop of curr.troops) {
@@ -52,12 +55,22 @@ export default class BoostsCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setDescription('Members with Active Super Troops\n\u200b')
-			.setFooter(`${members.length}/${data.members} Boost${members.length === 1 ? '' : 's'}`);
+			.setFooter(`${boosting.length}/${this.boostable(members)} Booster${boosting.length === 1 ? '' : 's'}`);
 
 		for (const [key, val] of Object.entries(memObj)) {
 			embed.addField(`${SUPER_TROOPS[key]} ${key}`, `${val.map(mem => `\u200e${mem.name}`).join('\n')}`);
 		}
 
 		return message.util!.send({ embed });
+	}
+
+	private boostable(players: Player[]) {
+		const superTrops = RAW_TROOPS_DATA.SUPER_TROOPS;
+		return players.reduce((pre, curr) => {
+			const troops = superTrops.filter(
+				unit => curr.troops.find(un => un.village === 'home' && un.name === unit.original && un.level >= unit.minOriginalLevel)
+			);
+			return pre + (troops.length ? 1 : 0);
+		}, 0);
 	}
 }
