@@ -1,4 +1,4 @@
-import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES } from '../../util/Emojis';
+import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES, SEIGE_MACHINES } from '../../util/Emojis';
 import { COLLECTIONS, leagueId } from '../../util/Constants';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
@@ -112,6 +112,7 @@ export default class PlayerCommand extends Command {
 			].join(' '),
 			`**Troops Donated**\n${EMOJIS.TROOPS_DONATE} ${data.achievements.find(d => d.name === 'Friend in Need')!.value}`,
 			`**Spells Donated**\n${EMOJIS.SPELL_DONATE} ${data.achievements.find(d => d.name === 'Sharing is caring')!.value}`,
+			`**Siege Donated**\n${SEIGE_MACHINES['Wall Wrecker']} ${data.achievements.find(d => d.name === 'Siege Sharer')!.value}`,
 			`**Attacks Won**\n${EMOJIS.SWORD} ${data.achievements.find(d => d.name === 'Conqueror')!.value}`,
 			`**Defense Won**\n${EMOJIS.SHIELD} ${data.achievements.find(d => d.name === 'Unbreakable')!.value}`,
 			`**CWL War Stars**\n${EMOJIS.STAR} ${data.achievements.find(d => d.name === 'War League Legend')!.value}`,

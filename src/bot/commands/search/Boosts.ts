@@ -66,7 +66,7 @@ export default class BoostsCommand extends Command {
 
 	private boostable(players: Player[]) {
 		const superTrops = RAW_TROOPS_DATA.SUPER_TROOPS;
-		return players.reduce((pre, curr) => {
+		return players.filter(en => en.townHallLevel >= 11).reduce((pre, curr) => {
 			const troops = superTrops.filter(
 				unit => curr.troops.find(un => un.village === 'home' && un.name === unit.original && un.level >= unit.minOriginalLevel)
 			);
