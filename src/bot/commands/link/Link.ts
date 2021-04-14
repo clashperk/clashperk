@@ -25,10 +25,14 @@ export default class LinkCommand extends Command {
 					'• `link #CLAN_TAG` (Self)',
 					'',
 					'• **On behalf of the @USER**',
-					'• `link #CLAN_TAG @USER`'
+					'• `link #CLAN_TAG @USER`',
+					'',
+					'• **List all Members**',
+					'• `list #CLAN_TAG`'
 				],
-				usage: '<#tag> [@user] [--default]',
+				usage: '<#tag|list> [@user] [--default]',
 				examples: [
+					'list',
 					'#8QU8J9LP',
 					'#9Q92C8R20 @Suvajit',
 					'#9Q92C8R20 --default'
