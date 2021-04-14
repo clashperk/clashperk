@@ -3,6 +3,11 @@ import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { MessageEmbed, Message } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan, Player } from 'clashofclans.js';
+import { Collections, Season } from '@clashperk/node';
+import moment from 'moment';
+import 'moment-duration-format';
+
+const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
 
 export default class BoostsCommand extends Command {
 	public constructor() {
@@ -40,16 +45,22 @@ export default class BoostsCommand extends Command {
 		const boosting = members.filter(mem => mem.troops.filter(en => en.superTroopIsActive).length);
 		if (!boosting.length) return message.util!.send('No members found with active Super Troops!');
 
-		const memObj = members.reduce((pre, curr) => {
+		const boostTimes = await this.client.db.collection(Collections.CLAN_MEMBERS)
+			.find({ season: Season.ID, clanTag: data.tag, tag: { $in: data.memberList.map(mem => mem.tag) } })
+			.toArray() as { tag: string; superTroops?: { name: string; timestamp: number }[] }[];
+
+		const memObj = boosting.reduce((pre, curr) => {
 			for (const troop of curr.troops) {
 				// @ts-expect-error
 				if (troop.name in SUPER_TROOPS && troop.superTroopIsActive) {
 					if (!(troop.name in pre)) pre[troop.name] = [];
-					pre[troop.name].push({ name: curr.name });
+					const boosted = boostTimes.find(mem => mem.tag === curr.tag)?.superTroops?.find(en => en.name === troop.name);
+					const duration = boosted?.timestamp ? (BOOST_DURATION - (Date.now() - boosted.timestamp)) : 0;
+					pre[troop.name].push({ name: curr.name, duration });
 				}
 			}
 			return pre;
-		}, {} as { [key: string]: { name: string }[] });
+		}, {} as { [key: string]: { name: string; duration: number }[] });
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
@@ -58,7 +69,10 @@ export default class BoostsCommand extends Command {
 			.setFooter(`${boosting.length}/${this.boostable(members)} Booster${boosting.length === 1 ? '' : 's'}`);
 
 		for (const [key, val] of Object.entries(memObj)) {
-			embed.addField(`${SUPER_TROOPS[key]} ${key}`, `${val.map(mem => `\u200e${mem.name}`).join('\n')}`);
+			embed.addField(
+				`${SUPER_TROOPS[key]} ${key}`,
+				`${val.map(mem => `\u200e${mem.name}${mem.duration ? ` (${this.ms(mem.duration)})` : ''}`).join('\n')}`
+			);
 		}
 
 		return message.util!.send({ embed });
@@ -72,5 +86,14 @@ export default class BoostsCommand extends Command {
 			);
 			return pre + (troops.length ? 1 : 0);
 		}, 0);
+	}
+
+	private ms(ms: number) {
+		if (ms > 864e5) {
+			return moment.duration(ms).format('d[d] H[h]', { trim: 'both mid' });
+		} else if (ms > 36e5) {
+			return moment.duration(ms).format('H[h] m[m]', { trim: 'both mid' });
+		}
+		return moment.duration(ms).format('m[m] s[s]', { trim: 'both mid' });
 	}
 }
