@@ -106,7 +106,8 @@ export default {
 		return Chart.render(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, true);
 	},
 
-	growth(collection: any[] = []) {
+	growth(collection: any[] = [], { addition, deletion, growth }: { addition: number; deletion: number; growth: number }) {
+		const total = collection.reduce((pre, curr) => Number(pre) + Number(curr.value.addition - curr.value.deletion), 0);
 		const body = {
 			backgroundColor: 'white',
 			width: 500,
@@ -120,7 +121,7 @@ export default {
 					datasets: [
 						{
 							type: 'bar',
-							label: 'Addition',
+							label: `Addition`,
 							backgroundColor: '#36a2eb80',
 							borderColor: '#36a2eb',
 							data: [...collection.map(d => d.value.addition)]
@@ -156,7 +157,7 @@ export default {
 						display: true,
 						fontSize: 10,
 						padding: 2,
-						text: [`Per day Growth (Last ${collection.length} days)`]
+						text: [`Total ${total as number} | Server Growth (${collection.length}D) | Today ${addition}/${deletion}/${growth}`]
 					}
 				}
 			}
