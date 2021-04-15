@@ -73,8 +73,8 @@ export default class UnitsCommand extends Command {
 				return Boolean(homeTroops || builderTroops);
 			})
 			.reduce((prev, curr) => {
-				if (!(curr.productionBuilding in prev)) prev[curr.productionBuilding] = [];
-				prev[curr.productionBuilding].push(curr);
+				if (!(curr.unlock.building in prev)) prev[curr.unlock.building] = [];
+				prev[curr.unlock.building].push(curr);
 				return prev;
 			}, {} as TroopJSON);
 
@@ -83,10 +83,10 @@ export default class UnitsCommand extends Command {
 			'Dark Barracks': 'Dark Troops',
 			'Spell Factory': 'Elixir Spells',
 			'Dark Spell Factory': 'Dark Spells',
-			'Workshop': 'Siege Machines',
-			'Builder Hall': 'Builder Base Hero',
 			'Town Hall': 'Heroes',
 			'Pet House': 'Pets',
+			'Workshop': 'Siege Machines',
+			'Builder Hall': 'Builder Base Hero',
 			'Builder Barracks': 'Builder Troops'
 		};
 

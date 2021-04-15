@@ -180,11 +180,15 @@ export interface TroopJSON {
 	[key: string]: {
 		name: string;
 		village: string;
-		productionBuilding: string;
 		type: string;
+		unlock: {
+			hall: number;
+			cost: number;
+			time: number;
+			resource: string;
+			building: string;
+		};
 		upgrade: {
-			unlockCost: number;
-			unlockTime: number;
 			cost: number[];
 			time: number[];
 			resource: string;
