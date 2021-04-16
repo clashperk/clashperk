@@ -159,8 +159,8 @@ export default class CWLRosterComamnd extends Command {
 			]);
 		}
 
-		if (next?.round) {
-			embed.setFooter(`Rank #${rank + 1} ⭐${stars} 🔥 ${destruction.toFixed()}%`);
+		if (next?.round || rounds.length === 7) {
+			embed.setFooter(`Rank #${rank + 1} ⭐ ${stars} 🔥 ${destruction.toFixed()}%`);
 		}
 
 		const msg = await message.util!.send({ embed });
