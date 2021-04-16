@@ -94,7 +94,7 @@ export default class DebugCommand extends Command {
 				const sign = (clan.active && !clan.paused && clan.flag > 0 && warLog) ? emojis.tick : emojis.cross;
 				return `${sign} \`\u200e ${clan.name.padEnd(15, ' ')} \u200f\` \`\u200e ${lastRan.padStart(3, ' ')} ago \u200f\` \`\u200e ${(warLog ? 'Public' : 'Private').padStart(7, ' ')} \u200f\``;
 			}).join('\n')
-		], { split: true, disableMentions: 'everyone' });
+		], { split: true, allowedMentions: { parse: ['users'] } });
 	}
 
 	private fixTime(num: number, total: string) {

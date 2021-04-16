@@ -40,7 +40,7 @@ export class CommandUtil {
 			return this.message.edit(this.lastResponse!.id, transformedOptions);
 		}
 
-		const sent = await this.message.resend(transformedOptions);
+		const sent = await this.message.send(transformedOptions);
 		this.setLastResponse(sent);
 		return sent;
 	}
@@ -68,6 +68,7 @@ export default class Interaction {
 	public channel: TextChannel;
 	public member!: GuildMember;
 	public type: InteractionType;
+	public webhook: WebhookClient;
 	public createdTimestamp: number;
 	public commandUtils = new Collection();
 	public data?: APIApplicationCommandInteractionData;
@@ -78,6 +79,7 @@ export default class Interaction {
 		this.type = data.type;
 		this.token = data.token;
 		this.guild = client.guilds.cache.get(data.guild_id) as Guild;
+		this.webhook = new WebhookClient(client.user!.id, this.token);
 		this.createdTimestamp = SnowflakeUtil.deconstruct(this.id).timestamp;
 		this.channel = client.channels.cache.get(data.channel_id) as TextChannel;
 		Object.defineProperty(this, 'client', { value: client, writable: true });
@@ -129,16 +131,16 @@ export default class Interaction {
 		return this.channel.messages.add(message);
 	}
 
-	public async resend(data: any) {
-		return new WebhookClient(this.client.user!.id, this.token)
-			.send(data).then(msg => this.addMessage(msg));
+	public async send(data: any) {
+		return this.webhook.send(data).then((msg: any) => this.addMessage(msg));
 	}
 
-	public edit(id: string, data: any) {
+	public async edit(id: string, data: any) {
+		const { files } = await (APIMessage.create(this.webhook, data)).resolveFiles();
 		// @ts-expect-error
 		return this.client.api.webhooks(this.client.user.id, this.token)
 			.messages[id]
-			.patch({ auth: false, data })
+			.patch({ data, files })
 			.then((msg: any) => this.addMessage(msg));
 	}
 }

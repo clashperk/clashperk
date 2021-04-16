@@ -1,7 +1,7 @@
 import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag, Command } from 'discord-akairo';
 import { APIApplicationCommandInteractionDataOption, APIInteraction } from 'discord-api-types/v8';
 import Interaction, { InteractionParser } from './Interaction';
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, Message, Intents } from 'discord.js';
 import { loadSync } from '@grpc/proto-loader';
 import RPCHandler from '../core/RPCHandler';
 import Settings from './SettingsProvider';
@@ -96,15 +96,16 @@ export default class Client extends AkairoClient {
 	});
 
 	public constructor(config: any) {
-		super({ ownerID: config.owner }, {
+		super({
+			ownerID: config.owner,
 			messageCacheMaxSize: 10,
 			messageCacheLifetime: 150,
 			messageSweepInterval: 150,
 			ws: {
 				intents: [
-					'GUILDS',
-					'GUILD_MESSAGES',
-					'GUILD_MESSAGE_REACTIONS'
+					Intents.FLAGS.GUILDS,
+					Intents.FLAGS.GUILD_MESSAGES,
+					Intents.FLAGS.GUILD_MESSAGE_REACTIONS
 				]
 			}
 		});

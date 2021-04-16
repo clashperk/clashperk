@@ -48,7 +48,7 @@ export default class PrefixCommand extends Command {
 		}
 
 		this.client.settings.set(message.guild!, 'prefix', prefix);
-		if (message.guild!.me?.hasPermission('CHANGE_NICKNAME')) {
+		if (message.guild!.me?.permissions.has('CHANGE_NICKNAME')) {
 			await message.guild!.me.setNickname(`${this.client.user!.username} [ ${prefix} ]`).catch(() => null);
 		}
 

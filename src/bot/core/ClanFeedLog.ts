@@ -125,7 +125,7 @@ export default class ClanFeedLog {
 		const guild = this.client.guilds.cache.get(guild_id);
 
 		if (!role_id && !roles.length) return null;
-		if (!guild?.me?.hasPermission('MANAGE_ROLES')) return null;
+		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return null;
 
 		const member = await guild.members.fetch(user).catch(() => null);
 		if (member?.user.bot) return null;

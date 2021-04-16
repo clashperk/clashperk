@@ -22,7 +22,7 @@ export default class GuildCreateListener extends Listener {
 	}
 
 	private changeNickname(guild: Guild) {
-		if (!guild.me?.hasPermission('CHANGE_NICKNAME')) return;
+		if (!guild.me?.permissions.has('CHANGE_NICKNAME')) return;
 		const prefix = this.client.settings.get<string>(guild, 'prefix', '!');
 		return guild.me.setNickname(`${this.client.user!.username} [ ${prefix} ]`).catch(() => null);
 	}
@@ -72,7 +72,7 @@ export default class GuildCreateListener extends Listener {
 
 		if (guild.systemChannelID) {
 			const channel = guild.channels.cache.get(guild.systemChannelID) as TextChannel;
-			if (channel.permissionsFor(guild.me!)?.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false)) {
+			if (channel.permissionsFor(guild.me!)!.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false)) {
 				return channel.send({ embed });
 			}
 		}
