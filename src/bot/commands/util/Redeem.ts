@@ -84,6 +84,7 @@ export default class RedeemCommand extends Command {
 			);
 
 			await this.client.patrons.refresh();
+			await this.sync(message.guild!.id);
 			const embed = this.client.util.embed()
 				.setColor(16345172)
 				.setDescription([
