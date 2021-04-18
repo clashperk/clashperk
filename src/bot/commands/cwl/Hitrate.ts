@@ -1,14 +1,9 @@
 import { Clan, ClanWarLeague, ClanWar } from 'clashofclans.js';
-import { hitRate, HitRate } from '../../core/WarHitarte';
+import { parseHits } from '../../core/WarHitarte';
 import { EMOJIS } from '../../util/Emojis';
 import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Message } from 'discord.js';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
-
-interface Data {
-	clan: HitRate;
-	opponent: HitRate;
-}
 
 export default class CWLHitrateComamnd extends Command {
 	public constructor() {
@@ -111,46 +106,9 @@ export default class CWLHitrateComamnd extends Command {
 					const hitrates = [];
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
-
-					const hit = hitRate(clan, opponent, stars);
-					const combinations = [...hit.clan.hitrate, ...hit.opponent.hitrate]
-						.map(({ townHall, defTownHall }) => ({ townHall, defTownHall }))
-						.reduce((a, b) => {
-							if (a.findIndex(x => x.townHall === b.townHall && x.defTownHall === b.defTownHall) < 0) a.push(b);
-							return a;
-						}, [] as { townHall: number; defTownHall: number }[]);
-
-					const arrrr = [];
-					for (const { townHall, defTownHall } of combinations) {
-						const clan = hit.clan.hitrate.find(o => o.townHall === townHall && o.defTownHall === defTownHall);
-						const opponent = hit.opponent.hitrate.find(o => o.townHall === townHall && o.defTownHall === defTownHall);
-
-						const d: Data = {
-							clan: {
-								townHall,
-								defTownHall,
-								stars: 0,
-								attacks: 0,
-								hitrate: '0'
-							},
-							opponent: {
-								townHall,
-								defTownHall,
-								stars: 0,
-								attacks: 0,
-								hitrate: '0'
-							}
-						};
-
-						if (clan) d.clan = clan;
-						if (opponent) d.opponent = opponent;
-
-						arrrr.push(d);
-					}
-
 					hitrates.push(...[
 						`**${clan.name} vs ${opponent.name}**`,
-						`${arrrr.map(d => `\`\u200e${d.clan.hitrate.padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${ORANGE_NUMBERS[d.clan.townHall]} ${EMOJIS.VS} ${ORANGE_NUMBERS[d.clan.defTownHall]} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.hitrate.padStart(3, ' ')}% \u200f\``).join('\n')}`
+						`${parseHits(clan, opponent, stars).map(d => `\`\u200e${d.clan.hitrate.padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${ORANGE_NUMBERS[d.clan.townHall]} ${EMOJIS.VS} ${ORANGE_NUMBERS[d.clan.defTownHall]} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.hitrate.padStart(3, ' ')}% \u200f\``).join('\n')}`
 					]);
 
 					chunks.push({ state: data.state, hitrates });
