@@ -37,6 +37,7 @@ export default class WarSummaryCommand extends Command {
 			]);
 		}
 
+		if (!embed.length) return message.util!.send('Clans are not in war!');
 		return message.util!.send({ embed });
 	}
 
