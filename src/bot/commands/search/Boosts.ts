@@ -65,13 +65,13 @@ export default class BoostsCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
-			.setDescription('Members with Active Super Troops\n\u200b')
-			.setFooter(`${boosting.length}/${this.boostable(members)} Booster${boosting.length === 1 ? '' : 's'}`);
+			.setDescription('**Members with Active Super Troops**\n\u200b')
+			.setFooter(`Total ${boosting.length}/${this.boostable(members)}`);
 
 		for (const [key, val] of Object.entries(memObj)) {
 			embed.addField(
 				`${SUPER_TROOPS[key]} ${key}`,
-				`${val.map(mem => `\u200e${mem.name}${mem.duration ? ` (${this.ms(mem.duration)})` : ''}`).join('\n')}`
+				`${val.map(mem => `\u200e${mem.name}${mem.duration ? ` (${this.ms(mem.duration)})` : ''}`).join('\n')}\n\u200b`
 			);
 		}
 
