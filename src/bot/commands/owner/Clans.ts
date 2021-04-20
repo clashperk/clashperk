@@ -25,8 +25,8 @@ export default class ClansCommand extends Command {
 				{
 					'id': 'guild',
 					'type': async (msg, id) => {
-						if (!this.client.isOwner(msg.author.id) || !id) {
-							return this.handler.handleDirectCommand(msg, '', this.handler.modules.get('setup')!);
+						if (!this.client.isOwner(msg.author.id)) {
+							return this.handler.handleDirectCommand(msg, '-', this.handler.modules.get('setup')!);
 						}
 						const guilds = await this.client.shard!.broadcastEval(
 							`

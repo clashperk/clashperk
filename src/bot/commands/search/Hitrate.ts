@@ -27,7 +27,6 @@ export default class HitrateCommand extends Command {
 		});
 	}
 
-
 	public async exec(message: Message, { data, stars }: { data: Clan; stars: number }) {
 		const body: ClanWar = await this.client.http.currentClanWar(data.tag);
 		if (!body.ok) return;
@@ -37,12 +36,7 @@ export default class HitrateCommand extends Command {
 				'',
 				parseHits(body.clan, body.opponent, stars).map(d => {
 					const vs = `${ORANGE_NUMBERS[d.clan.townHall]}${EMOJIS.VS}${ORANGE_NUMBERS[d.clan.defTownHall]}`;
-					return `\`\u200e ${d.clan.hitrate.padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${vs} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.hitrate.padStart(3, ' ')}% \u200f\``;
-				}).join('\n'),
-				'',
-				parseHits(body.clan, body.opponent, 2).map(d => {
-					const vs = `${ORANGE_NUMBERS[d.clan.townHall]}${EMOJIS.VS}${ORANGE_NUMBERS[d.clan.defTownHall]}`;
-					return `\`\u200e ${d.clan.hitrate.padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${vs} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.hitrate.padStart(3, ' ')}% \u200f\``;
+					return `\`\u200e ${d.clan.rate.toFixed().padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${vs} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.rate.toFixed().padStart(3, ' ')}% \u200f\``;
 				}).join('\n')
 			], { split: true });
 		}

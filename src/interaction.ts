@@ -749,6 +749,18 @@ export const commands: { name: string; description: string; options?: APIApplica
 				required: false
 			}
 		]
+	},
+	{
+		name: 'lineup',
+		description: 'Shows current war lineup details',
+		options: [
+			{
+				name: 'tag',
+				description: 'Tag of the clan',
+				type: ApplicationCommandOptionType.STRING,
+				required: false
+			}
+		]
 	}
 ];
 

@@ -5,37 +5,38 @@ export interface Hit {
 	attacks: number;
 	defTownHall: number;
 	stars: number;
-	hitrate: string;
+	rate: number;
 }
 
 export interface HitRate {
-	clan: { hitRate: Hit[] };
-	opponent: { hitRate: Hit[] };
+	clan: { hitRates: Hit[] };
+	opponent: { hitRates: Hit[] };
 }
 
-export function getHitRate(clan: ClanWarClan, opponent: ClanWarOpponent, STAR = 3) {
+export function getHitRate(clan: ClanWarClan, opponent: ClanWarOpponent, stars = 3) {
 	const data: HitRate = {
-		clan: { hitRate: [] },
-		opponent: { hitRate: [] }
+		clan: { hitRates: [] },
+		opponent: { hitRates: [] }
 	};
 
 	for (const member of opponent.members) {
-		if (member.bestOpponentAttack && member.bestOpponentAttack.stars === STAR) {
+		if (member.bestOpponentAttack) {
 			const attackerTag = member.bestOpponentAttack.attackerTag;
 			const attacker = clan.members.find(m => m.tag === attackerTag);
-
 			if (attacker) {
-				const entry = data.clan.hitRate.find(a => a.townHall === member.townhallLevel && a.defTownHall === attacker.townhallLevel);
-				if (entry) {
+				data.clan.hitRates.push({
+					townHall: member.townhallLevel,
+					defTownHall: attacker.townhallLevel,
+					attacks: 0,
+					stars: 0,
+					rate: 0
+				});
+
+				const entry = data.clan.hitRates.find(
+					hit => hit.townHall === member.townhallLevel && hit.defTownHall === attacker.townhallLevel
+				);
+				if (entry && member.bestOpponentAttack.stars === stars) {
 					entry.stars += 1;
-				} else {
-					data.clan.hitRate.push({
-						townHall: member.townhallLevel,
-						defTownHall: attacker.townhallLevel,
-						attacks: 0,
-						stars: 1,
-						hitrate: '0'
-					});
 				}
 			}
 		}
@@ -47,7 +48,9 @@ export function getHitRate(clan: ClanWarClan, opponent: ClanWarOpponent, STAR = 
 				const attackerTag = attack.defenderTag;
 				const defender = opponent.members.find(m => m.tag === attackerTag);
 				if (defender) {
-					const entry = data.clan.hitRate.find(a => a.townHall === defender.townhallLevel && a.defTownHall === member.townhallLevel);
+					const entry = data.clan.hitRates.find(
+						hit => hit.townHall === defender.townhallLevel && hit.defTownHall === member.townhallLevel
+					);
 					if (entry) {
 						entry.attacks += 1;
 					}
@@ -57,21 +60,23 @@ export function getHitRate(clan: ClanWarClan, opponent: ClanWarOpponent, STAR = 
 	}
 
 	for (const member of clan.members) {
-		if (member.bestOpponentAttack && member.bestOpponentAttack.stars === STAR) {
+		if (member.bestOpponentAttack) {
 			const attackerTag = member.bestOpponentAttack.attackerTag;
 			const attacker = opponent.members.find(m => m.tag === attackerTag);
 			if (attacker) {
-				const entry = data.opponent.hitRate.find(a => a.townHall === member.townhallLevel && a.defTownHall === attacker.townhallLevel);
-				if (entry) {
+				data.opponent.hitRates.push({
+					townHall: member.townhallLevel,
+					defTownHall: attacker.townhallLevel,
+					attacks: 0,
+					stars: 0,
+					rate: 0
+				});
+
+				const entry = data.opponent.hitRates.find(
+					hit => hit.townHall === member.townhallLevel && hit.defTownHall === attacker.townhallLevel
+				);
+				if (entry && member.bestOpponentAttack.stars === stars) {
 					entry.stars += 1;
-				} else {
-					data.opponent.hitRate.push({
-						townHall: member.townhallLevel,
-						defTownHall: attacker.townhallLevel,
-						attacks: 0,
-						stars: 1,
-						hitrate: '0'
-					});
 				}
 			}
 		}
@@ -83,7 +88,9 @@ export function getHitRate(clan: ClanWarClan, opponent: ClanWarOpponent, STAR = 
 				const attacker = attack.defenderTag;
 				const defender = clan.members.find(m => m.tag === attacker);
 				if (defender) {
-					const entry = data.opponent.hitRate.find(a => a.townHall === defender.townhallLevel && a.defTownHall === member.townhallLevel);
+					const entry = data.opponent.hitRates.find(
+						hit => hit.townHall === defender.townhallLevel && hit.defTownHall === member.townhallLevel
+					);
 					if (entry) {
 						entry.attacks += 1;
 					}
@@ -93,41 +100,55 @@ export function getHitRate(clan: ClanWarClan, opponent: ClanWarOpponent, STAR = 
 	}
 
 
-	for (const hit of data.clan.hitRate) {
-		if (hit.attacks > 0) data.clan.hitRate.find(a => a.townHall === hit.townHall && a.defTownHall === hit.defTownHall)!.hitrate = ((hit.stars / hit.attacks) * 100).toFixed();
+	for (const hit of data.clan.hitRates) {
+		if (hit.attacks > 0) {
+			data.clan.hitRates.find(
+				a => a.townHall === hit.townHall && a.defTownHall === hit.defTownHall
+			)!.rate = ((hit.stars / hit.attacks) * 100);
+		}
 	}
 
-	for (const hit of data.opponent.hitRate) {
-		if (hit.attacks > 0) data.opponent.hitRate.find(a => a.townHall === hit.townHall && a.defTownHall === hit.defTownHall)!.hitrate = ((hit.stars / hit.attacks) * 100).toFixed();
+	for (const hit of data.opponent.hitRates) {
+		if (hit.attacks > 0) {
+			data.opponent.hitRates.find(
+				a => a.townHall === hit.townHall && a.defTownHall === hit.defTownHall
+			)!.rate = ((hit.stars / hit.attacks) * 100);
+		}
 	}
 
-	data.clan.hitRate.sort((a, b) => b.defTownHall - a.defTownHall).sort((a, b) => b.townHall - a.townHall);
-	data.opponent.hitRate.sort((a, b) => b.defTownHall - a.defTownHall).sort((a, b) => b.townHall - a.townHall);
+	data.clan.hitRates.sort((a, b) => b.defTownHall - a.defTownHall).sort((a, b) => b.townHall - a.townHall);
+	data.opponent.hitRates.sort((a, b) => b.defTownHall - a.defTownHall).sort((a, b) => b.townHall - a.townHall);
 	return data;
 }
 
 export function parseHits(clan: ClanWarClan, opponent: ClanWarOpponent, stars: number) {
 	const hit = getHitRate(clan, opponent, stars);
-	const combinations = [...hit.clan.hitRate, ...hit.opponent.hitRate]
+	const combinations = [...hit.clan.hitRates, ...hit.opponent.hitRates]
 		.map(({ townHall, defTownHall }) => ({ townHall, defTownHall }))
-		.reduce((a, b) => {
-			if (a.findIndex(x => x.townHall === b.townHall && x.defTownHall === b.defTownHall) < 0) a.push(b);
-			return a;
+		.reduce((previous, current) => {
+			const index = previous.findIndex(hit => hit.townHall === current.townHall && hit.defTownHall === current.defTownHall);
+			if (index < 0) previous.push(current);
+			return previous;
 		}, [] as { townHall: number; defTownHall: number }[]);
 
 	const collection = [];
 	for (const { townHall, defTownHall } of combinations) {
-		const clan = hit.clan.hitRate.find(o => o.townHall === townHall && o.defTownHall === defTownHall);
-		const opponent = hit.opponent.hitRate.find(o => o.townHall === townHall && o.defTownHall === defTownHall);
+		const clan = hit.clan.hitRates.find(
+			hit => hit.townHall === townHall && hit.defTownHall === defTownHall
+		);
+		const opponent = hit.opponent.hitRates.find(
+			hit => hit.townHall === townHall && hit.defTownHall === defTownHall
+		);
 
 		const data = {
-			clan: { townHall, defTownHall, stars: 0, attacks: 0, hitrate: '0' },
-			opponent: { townHall, defTownHall, stars: 0, attacks: 0, hitrate: '0' }
+			clan: { townHall, defTownHall, stars: 0, attacks: 0, rate: 0 },
+			opponent: { townHall, defTownHall, stars: 0, attacks: 0, rate: 0 }
 		};
 
 		if (clan) data.clan = clan;
 		if (opponent) data.opponent = opponent;
 
+		if (data.clan.stars === 0 && data.opponent.stars === 0) continue;
 		collection.push(data);
 	}
 

@@ -108,7 +108,7 @@ export default class CWLHitrateComamnd extends Command {
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 					hitrates.push(...[
 						`**${clan.name} vs ${opponent.name}**`,
-						`${parseHits(clan, opponent, stars).map(d => `\`\u200e${d.clan.hitrate.padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${ORANGE_NUMBERS[d.clan.townHall]} ${EMOJIS.VS} ${ORANGE_NUMBERS[d.clan.defTownHall]} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.hitrate.padStart(3, ' ')}% \u200f\``).join('\n')}`
+						`${parseHits(clan, opponent, stars).map(d => `\`\u200e${d.clan.rate.toFixed().padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${ORANGE_NUMBERS[d.clan.townHall]} ${EMOJIS.VS} ${ORANGE_NUMBERS[d.clan.defTownHall]} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.rate.toFixed().padStart(3, ' ')}% \u200f\``).join('\n')}`
 					]);
 
 					chunks.push({ state: data.state, hitrates });
@@ -128,9 +128,9 @@ export default class CWLHitrateComamnd extends Command {
 		const paginated = this.paginate(chunks, page);
 
 		if (chunks.length === 1) {
-			return message.util!.send(paginated.items[0].hitrates);
+			return message.util!.send(paginated.pages[0].hitrates);
 		}
-		const msg = await message.util!.send(paginated.items[0].hitrates);
+		const msg = await message.util!.send(paginated.pages[0].hitrates);
 		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
@@ -146,7 +146,7 @@ export default class CWLHitrateComamnd extends Command {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { hitrates } = this.paginate(chunks, page).items[0];
+				const { hitrates } = this.paginate(chunks, page).pages[0];
 				await msg.edit(hitrates);
 				await this.delay(250);
 				return reaction.users.remove(message.author.id);
@@ -156,7 +156,7 @@ export default class CWLHitrateComamnd extends Command {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { hitrates } = this.paginate(chunks, page).items[0];
+				const { hitrates } = this.paginate(chunks, page).pages[0];
 				await msg.edit(hitrates);
 				await this.delay(250);
 				return reaction.users.remove(message.author.id);
@@ -170,14 +170,14 @@ export default class CWLHitrateComamnd extends Command {
 		return new Promise(res => setTimeout(res, ms));
 	}
 
-	private paginate(items: any[], page = 1, pageLength = 1) {
-		const maxPage = Math.ceil(items.length / pageLength);
+	private paginate(pages: any[], page = 1, pageLength = 1) {
+		const maxPage = Math.ceil(pages.length / pageLength);
 		if (page < 1) page = 1;
 		if (page > maxPage) page = maxPage;
 		const startIndex = (page - 1) * pageLength;
 
 		return {
-			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
+			pages: pages.length > pageLength ? pages.slice(startIndex, startIndex + pageLength) : pages,
 			page, maxPage, pageLength
 		};
 	}
