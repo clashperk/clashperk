@@ -26,7 +26,7 @@ export const ELIXIR_TROOPS: Emojis = {
 	'Yeti': '<:yeti:696281814293282857>'
 };
 
-export const HEROE_PETS: Emojis = {
+export const HERO_PETS: Emojis = {
 	'Electro Owl': '<:Owl:831123515939356703>',
 	'L.A.S.S.I': '<:LASSI:831123509827731527>',
 	'Mighty Yak': '<:Yak:831123515067334707>',
@@ -115,7 +115,7 @@ export const HOME_TROOPS: Emojis = {
 	...SEIGE_MACHINES,
 	...ELIXIR_SPELLS,
 	...DARK_SPELLS,
-	...HEROE_PETS
+	...HERO_PETS
 };
 
 export const BUILDER_TROOPS: Emojis = {
