@@ -30,6 +30,9 @@ export default class GuildDeleteListener extends Listener {
 		await this.client.stats.deletion();
 		await this.client.stats.guilds(guild.id, 0);
 
+		const values: number[] = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]);
+		const guilds = values.reduce((prev, curr) => curr + prev, 0);
+
 		const user = await this.client.users.fetch(guild.ownerID);
 		const webhook = await this.fetchWebhook().catch(() => null);
 		if (webhook) {
@@ -39,8 +42,18 @@ export default class GuildDeleteListener extends Listener {
 				.setTitle(`${EMOJIS.OWNER} ${user.tag} (${user.id})`)
 				.setFooter(`${guild.memberCount} members (Shard ${guild.shard.id})`, user.displayAvatarURL())
 				.setTimestamp();
-			return webhook.send({ embeds: [embed], username: this.client.user!.username, avatarURL: this.client.user!.displayAvatarURL() });
+			return webhook.send(`**Total ${guilds} | Growth ${await this.growth()}**`, {
+				embeds: [embed],
+				username: this.client.user!.username,
+				avatarURL: this.client.user!.displayAvatarURL()
+			});
 		}
+	}
+
+	private async growth() {
+		const cursor = this.client.db.collection(COLLECTIONS.BOT_GROWTH).find();
+		const data = await cursor.sort({ createdAt: -1 }).limit(1).next();
+		return [data.addition, data.deletion, data.addition - data.deletion].join('/');
 	}
 
 	private async delete(guild: Guild) {
