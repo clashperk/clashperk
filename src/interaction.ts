@@ -658,6 +658,23 @@ export const commands: { name: string; description: string; options?: APIApplica
 				required: false,
 				description: 'Clan Tags or Aliases (Maximum 3)',
 				type: ApplicationCommandOptionType.STRING
+			},
+			{
+				name: 'days',
+				required: false,
+				description: 'Expand',
+				type: ApplicationCommandOptionType.INTEGER,
+				choices: [
+					{
+						name: '1', value: 1
+					},
+					{
+						name: '3', value: 3
+					},
+					{
+						name: '7', value: 7
+					}
+				]
 			}
 		]
 	},
@@ -771,7 +788,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			'Authorization': `Bot ${process.env.TOKEN!}`,
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify([])
+		body: JSON.stringify(commands)
 	});
 	const body = await res.json();
 	console.log(res.status, JSON.stringify(body));
