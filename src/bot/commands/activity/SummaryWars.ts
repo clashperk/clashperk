@@ -27,7 +27,7 @@ export default class WarSummaryCommand extends Command {
 		for (const clan of clans) {
 			const data: ClanWar = await this.getWAR(clan.tag);
 			if (!data.ok) continue;
-			if (!['inWar', 'warEnded'].includes(data.state)) continue;
+			if (data.state === 'notInWar') continue;
 
 			// @ts-expect-error
 			const header = data.round ? `\u200e${data.clan.name} (${data.clan.tag})` : `\u200e${data.clan.name} vs ${data.opponent.name}`;

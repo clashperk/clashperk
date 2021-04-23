@@ -123,10 +123,7 @@ export default class ClanEmbedLog {
 				cache.msg = message;
 				this.cached.set(id, cache);
 				await this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS)
-					.updateOne(
-						{ clan_id: new ObjectId(id) },
-						{ $set: { message: message.id } }
-					);
+					.updateOne({ clan_id: new ObjectId(id) }, { $set: { message: message.id } });
 			} catch (error) {
 				this.client.logger.warn(error, { label: 'MONGODB_ERROR' });
 			}
