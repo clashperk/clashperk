@@ -223,23 +223,23 @@ export default class WarCommand extends Command {
 	}
 
 	private warStats(round: ClanWar) {
+		const data = this.flatHits(round);
 		const workbook = new Workbook();
 		const sheet = workbook.addWorksheet('Current War');
 
 		sheet.columns = [
-			{ header: 'Attacker', width: 18 },
-			{ header: 'Attacker Tag', width: 13 },
-			{ header: 'Stars', width: 8 },
-			{ header: 'Gained', width: 8 },
-			{ header: 'Destruction', width: 10 },
-			{ header: 'Defender', width: 18 },
-			{ header: 'Defender Tag', width: 13 },
-			{ header: 'Attacker Map', width: 10 },
-			{ header: 'Attacker TH', width: 10 },
-			{ header: 'Defender Map', width: 10 },
-			{ header: 'Defender TH', width: 10 },
-			{ header: 'Defender Stars', width: 10 },
-			{ header: 'Defender Destruction', width: 10 }
+			{ header: 'NAME', width: 18 },
+			{ header: 'TAG', width: 13 },
+			{ header: 'STAR', width: 8 },
+			{ header: 'DESTRUCTION', width: 12 },
+			{ header: 'DEFENDER', width: 18 },
+			{ header: 'DEFENDER TAG', width: 13 },
+			{ header: 'ATTACKER MAP', width: 10 },
+			{ header: 'ATTACKER TH', width: 10 },
+			{ header: 'DEFENDER MAP', width: 10 },
+			{ header: 'DEFENDER TH', width: 10 },
+			{ header: 'DEFENSE STAR', width: 10 },
+			{ header: 'DEFENSE DESTRUCTION', width: 12 }
 		] as any;
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
@@ -250,25 +250,20 @@ export default class WarCommand extends Command {
 		}
 
 		sheet.addRows(
-			round.clan.members.map(m => {
-				const opponent = round.opponent.members.find(en => en.tag === m.attacks?.[0]?.defenderTag);
-				const gained = m.bestOpponentAttack && m.attacks?.length ? m.attacks[0].stars - m.bestOpponentAttack.stars : '';
-				return [
-					m.name,
-					m.tag,
-					m.attacks?.length ? m.attacks[0].stars : '',
-					gained,
-					m.attacks?.length ? m.attacks[0].destructionPercentage.toFixed(2) : '',
-					opponent ? opponent.name : '',
-					opponent ? opponent.tag : '',
-					round.clan.members.findIndex(en => en.tag === m.tag) + 1,
-					m.townhallLevel,
-					opponent ? round.opponent.members.findIndex(en => en.tag === opponent.tag) + 1 : '',
-					opponent ? opponent.townhallLevel : '',
-					m.bestOpponentAttack?.stars ?? '',
-					m.bestOpponentAttack?.destructionPercentage.toFixed(2) ?? ''
-				];
-			})
+			data.map(m => [
+				m.name,
+				m.tag,
+				m.attack?.stars,
+				m.attack?.destructionPercentage?.toFixed(2),
+				m.defender?.name,
+				m.defender?.tag,
+				m.mapPosition,
+				m.townhallLevel,
+				m.defender?.mapPosition,
+				m.defender?.townhallLevel,
+				m.bestOpponentAttack?.stars,
+				m.bestOpponentAttack?.destructionPercentage?.toFixed(2)
+			])
 		);
 
 		return workbook.xlsx.writeBuffer();
@@ -280,5 +275,34 @@ export default class WarCommand extends Command {
 			`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
 			`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.FIRE} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
 		].join('\n');
+	}
+
+	private flatHits(data: ClanWar) {
+		return data.clan.members.reduce((previous, member) => {
+			const atk: any = member.attacks?.map((attack, index) => ({
+				attack,
+				tag: member.tag,
+				name: member.name,
+				mapPosition: member.mapPosition,
+				townhallLevel: member.townhallLevel,
+				defender: data.opponent.members.find(m => m.tag === attack.defenderTag),
+				bestOpponentAttack: index === 0 ? member.bestOpponentAttack : {}
+			}));
+
+			if (atk) {
+				previous.push(...atk);
+			} else {
+				previous.push({
+					tag: member.tag,
+					name: member.name,
+					mapPosition: member.mapPosition,
+					townhallLevel: member.townhallLevel,
+					bestOpponentAttack: member.bestOpponentAttack
+				});
+			}
+
+			previous.push({});
+			return previous;
+		}, [] as any[]);
 	}
 }
