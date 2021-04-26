@@ -60,6 +60,7 @@ export default class MembersCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
+			.setFooter(`Total ${fetched.length === data.members ? data.members : `${fetched.length}/${data.members}`}/50`)
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				'```',
