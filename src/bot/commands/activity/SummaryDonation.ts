@@ -5,7 +5,7 @@ import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
 
-interface Aggregated {
+export interface Aggregated {
 	tag: string;
 	name: string;
 	donations: number;
@@ -52,7 +52,7 @@ export default class DonationSummaryCommand extends Command {
 			.aggregate([
 				{
 					$match: {
-						season: Season.previousID,
+						season: Season.ID,
 						clanTag: {
 							$in: fetched.map(clan => clan.tag)
 						},

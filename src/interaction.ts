@@ -658,6 +658,23 @@ export const commands: { name: string; description: string; options?: APIApplica
 				required: false,
 				description: 'Clan Tags or Aliases (Maximum 3)',
 				type: ApplicationCommandOptionType.STRING
+			},
+			{
+				name: 'days',
+				required: false,
+				description: 'Expand',
+				type: ApplicationCommandOptionType.INTEGER,
+				choices: [
+					{
+						name: '1', value: 1
+					},
+					{
+						name: '3', value: 3
+					},
+					{
+						name: '7', value: 7
+					}
+				]
 			}
 		]
 	},
@@ -708,7 +725,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 		name: 'debug',
 		description: 'Shows some basic debug informations.'
 	},
-	{
+	/* {
 		name: 'autorole',
 		description: 'Automatic Role management for clan members',
 		options: [
@@ -735,6 +752,30 @@ export const commands: { name: string; description: string; options?: APIApplica
 				required: false,
 				description: 'Player API Token verification will be required. Roles will be given to verified players only.',
 				type: ApplicationCommandOptionType.BOOLEAN
+			}
+		]
+	}*/
+	{
+		name: 'boosts',
+		description: 'Clan members with active Super Troops',
+		options: [
+			{
+				name: 'tag',
+				description: 'Tag of the clan',
+				type: ApplicationCommandOptionType.STRING,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'lineup',
+		description: 'Shows current war lineup details',
+		options: [
+			{
+				name: 'tag',
+				description: 'Tag of the clan',
+				type: ApplicationCommandOptionType.STRING,
+				required: false
 			}
 		]
 	}

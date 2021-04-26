@@ -17,16 +17,9 @@ export default class StatsHandler {
 	}
 
 	public async post() {
-		let guilds = 0;
-		const values = await this.client.shard!.broadcastEval(
-			`[
-				this.guilds.cache.size
-			]`
-		);
-
-		for (const value of values) {
-			guilds += value[0];
-		}
+		const values: number[] = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]);
+		const guilds = values.reduce((prev, curr) => prev + curr, 0);
+		if (!guilds) return;
 
 		// https://top.gg/
 		const form = qs.stringify({ server_count: guilds, shard_count: this.client.shard!.count });
@@ -45,7 +38,7 @@ export default class StatsHandler {
 		}).end(form);
 	}
 
-	public message(id: string) {
+	public async message(id: string) {
 		if (this.messages.has(id)) return null;
 		this.messages.set(id, setTimeout(() => this.messages.delete(id), 60 * 60 * 1000));
 
@@ -80,11 +73,12 @@ export default class StatsHandler {
 			}, { upsert: true });
 	}
 
-	public historic() {
+	public historic(command: string) {
 		return this.client.db.collection(Collections.BOT_USAGE)
 			.updateOne({ ISTDate: this.ISTDate }, {
 				$inc: {
-					usage: 1
+					usage: 1,
+					[`commands.${command}`]: 1
 				},
 				$set: {
 					ISTDate: this.ISTDate
@@ -104,7 +98,7 @@ export default class StatsHandler {
 				}
 			}, { upsert: true });
 
-		return this.historic();
+		return this.historic(command);
 	}
 
 	public deletion() {

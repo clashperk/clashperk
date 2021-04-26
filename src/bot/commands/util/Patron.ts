@@ -88,7 +88,7 @@ export default class PatronCommand extends Command {
 				'[Become a Patron](https://www.patreon.com/clashperk)'
 			]);
 
-		if (!(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS'], false)) {
+		if (!(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'READ_MESSAGE_HISTORY'], false)) {
 			return message.util!.send({ embed });
 		}
 

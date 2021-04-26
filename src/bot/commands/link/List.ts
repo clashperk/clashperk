@@ -10,7 +10,7 @@ export default class LinkListCommand extends Command {
 		super('link-list', {
 			aliases: ['links'],
 			category: '_hidden',
-			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
+			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			channel: 'guild',
 			description: {}
 		});
@@ -49,7 +49,7 @@ export default class LinkListCommand extends Command {
 		const embed = this.buildEmbed(message, data, false, onDiscord, offDiscord);
 		const msg = await message.util!.send({ embed });
 
-		if (!onDiscord.length) return msg; // Let's stop right here!
+		if (!onDiscord.length) return; // Let's stop right here!
 
 		await msg.react(EMOJIS.HASH);
 		const { id } = Util.parseEmoji(EMOJIS.HASH)!;

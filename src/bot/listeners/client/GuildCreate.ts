@@ -22,7 +22,7 @@ export default class GuildCreateListener extends Listener {
 	}
 
 	private changeNickname(guild: Guild) {
-		if (!guild.me?.hasPermission('CHANGE_NICKNAME')) return;
+		if (!guild.me?.permissions.has('CHANGE_NICKNAME')) return;
 		const prefix = this.client.settings.get<string>(guild, 'prefix', '!');
 		return guild.me.setNickname(`${this.client.user!.username} [ ${prefix} ]`).catch(() => null);
 	}
@@ -38,6 +38,9 @@ export default class GuildCreateListener extends Listener {
 		await this.client.stats.addition(guild.id);
 		await this.client.stats.guilds(guild.id, 0);
 
+		const values: number[] = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]);
+		const guilds = values.reduce((prev, curr) => curr + prev, 0);
+
 		const user = await this.client.users.fetch(guild.ownerID);
 		const webhook = await this.fetchWebhook().catch(() => null);
 		if (webhook) {
@@ -47,8 +50,18 @@ export default class GuildCreateListener extends Listener {
 				.setTitle(`${EMOJIS.OWNER} ${user.tag} (${user.id})`)
 				.setFooter(`${guild.memberCount} members (Shard ${guild.shard.id})`, user.displayAvatarURL())
 				.setTimestamp();
-			return webhook.send({ embeds: [embed], username: this.client.user!.username, avatarURL: this.client.user!.displayAvatarURL() });
+			return webhook.send(`**Total ${guilds} | Growth ${await this.growth()}**`, {
+				embeds: [embed],
+				username: this.client.user!.username,
+				avatarURL: this.client.user!.displayAvatarURL()
+			});
 		}
+	}
+
+	private async growth() {
+		const cursor = this.client.db.collection(COLLECTIONS.BOT_GROWTH).find();
+		const data = await cursor.sort({ createdAt: -1 }).limit(1).next();
+		return [data.addition, data.deletion, data.addition - data.deletion].join('/');
 	}
 
 	private intro(guild: Guild) {
@@ -72,7 +85,7 @@ export default class GuildCreateListener extends Listener {
 
 		if (guild.systemChannelID) {
 			const channel = guild.channels.cache.get(guild.systemChannelID) as TextChannel;
-			if (channel.permissionsFor(guild.me!)?.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false)) {
+			if (channel.permissionsFor(guild.me!)!.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false)) {
 				return channel.send({ embed });
 			}
 		}

@@ -8,7 +8,7 @@ export default class LinkPlayerCommand extends Command {
 		super('link-add', {
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
 			description: {},
 			flags: ['--default'],
 			optionFlags: ['--tag', '--user']
@@ -69,27 +69,25 @@ export default class LinkPlayerCommand extends Command {
 		// only owner can set default account
 		if (def && member.id === message.author.id) {
 			await this.client.db.collection(COLLECTIONS.LINKED_USERS)
-				.updateOne({ user: member.id }, { $pull: { entries: { tag: data.tag } } });
+				.updateOne({ user: member.id }, { $set: { user_tag: member.user.tag }, $pull: { entries: { tag: data.tag } } });
 		}
 
 		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.updateOne({ user: member.id }, {
 				$set: {
+					user_tag: member.user.tag,
 					user: member.id,
 					createdAt: new Date()
 				},
 				$push: def && member.id === message.author.id // only owner can set default account
 					? {
 						entries: {
-							$each: [{ tag: data.tag, verified: this.isVerified(doc, data.tag) }],
+							$each: [{ tag: data.tag, name: data.name, verified: this.isVerified(doc, data.tag) }],
 							$position: 0
 						}
 					}
 					: {
-						entries: {
-							tag: data.tag,
-							verified: false
-						}
+						entries: { tag: data.tag, name: data.name, verified: false }
 					}
 			}, { upsert: true });
 

@@ -11,7 +11,8 @@
 		"start": "pm2 start dist/src/index.js --name bot",
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
-		"dev": "node --enable-source-maps dist/src/index.js"
+		"dev": "node --enable-source-maps dist/src/index.js",
+		"build:interaction": "node dist/src/interaction.js"
 	},
 	"dependencies": {
 		"@clashperk/node": "github:clashperk/node",
@@ -23,7 +24,7 @@
 		"common-tags": "^1.8.0",
 		"discord-akairo": "github:clashperk/discord-akairo",
 		"discord-api-types": "^0.12.1",
-		"discord.js": "^12.5.1",
+		"discord.js": "^12.5.3",
 		"dotenv": "^8.2.0",
 		"exceljs": "^4.2.0",
 		"grpc": "^1.24.4",

@@ -61,14 +61,14 @@ export default class ClanEmbedLog {
 	}
 
 	private async permissionsFor(id: string, cache: Cache, clan: any) {
-		const permissions = [
+		const permissions: PermissionString[] = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
 			'EMBED_LINKS',
 			'USE_EXTERNAL_EMOJIS',
 			'ADD_REACTIONS',
 			'VIEW_CHANNEL'
-		] as PermissionString[];
+		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel) as TextChannel;
@@ -123,10 +123,7 @@ export default class ClanEmbedLog {
 				cache.msg = message;
 				this.cached.set(id, cache);
 				await this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS)
-					.updateOne(
-						{ clan_id: new ObjectId(id) },
-						{ $set: { message: message.id } }
-					);
+					.updateOne({ clan_id: new ObjectId(id) }, { $set: { message: message.id } });
 			} catch (error) {
 				this.client.logger.warn(error, { label: 'MONGODB_ERROR' });
 			}

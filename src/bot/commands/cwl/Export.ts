@@ -31,7 +31,7 @@ export default class CWLExport extends Command {
 			'flag': '--tag',
 			'default': [],
 			'match': msg.hasOwnProperty('token') ? 'option' : 'content',
-			'type': (msg: Message, args?: string) => args?.split(/ +/g)
+			'type': (msg: Message, args?: string) => args ? args.split(/ +/g) : null
 		};
 
 		return { tags };
@@ -63,6 +63,7 @@ export default class CWLExport extends Command {
 			return message.channel.send({ embed: { description: '[Become a Patron](https://www.patreon.com/clashperk) to export CWL data to Excel.' } });
 		}
 
+		console.log(tags);
 		let clans = [];
 		if (tags?.length) {
 			clans = await this.getClans(message, tags);
@@ -217,7 +218,7 @@ export default class CWLExport extends Command {
 							opponent ? round.opponent.members.findIndex(en => en.tag === opponent.tag) + 1 : '',
 							opponent ? opponent.townhallLevel : '',
 							m.bestOpponentAttack?.stars ?? '',
-							m.bestOpponentAttack?.stars.toFixed(2) ?? ''
+							m.bestOpponentAttack?.destructionPercentage.toFixed(2) ?? ''
 						];
 					})
 				);

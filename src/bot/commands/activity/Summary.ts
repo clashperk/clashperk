@@ -38,6 +38,7 @@ export default class SummaryCommand extends Command {
 			type: [
 				['war-summary', 'war', 'wars'],
 				['clan-summary', 'clan', 'clans'],
+				['trophy-summary', 'trophy', 'trophies'],
 				['donation-summary', 'don', 'donation', 'donations'],
 				['clan-games-summary', 'game', 'games', 'score', 'scores']
 			],

@@ -1,20 +1,16 @@
 import { Clan, ClanWarLeague, ClanWar } from 'clashofclans.js';
-import { hitRate, HitRate } from '../../core/WarHitarte';
-import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
+import { parseHits } from '../../core/WarHitarte';
+import { EMOJIS } from '../../util/Emojis';
 import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Message } from 'discord.js';
-
-interface Data {
-	clan: HitRate;
-	opponent: HitRate;
-}
+import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 
 export default class CWLHitrateComamnd extends Command {
 	public constructor() {
 		super('cwl-hitrate', {
 			aliases: ['cwl-hitrate'],
 			category: '_owner',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES'],
 			description: {
 				content: [
 					'Shows hitrates of the current round.',
@@ -22,7 +18,7 @@ export default class CWLHitrateComamnd extends Command {
 					'**Flags**',
 					'`--round <num>` or `-r <num>` to see specific round.'
 				],
-				usage: '<clanTag>',
+				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
 			args: [
@@ -110,47 +106,9 @@ export default class CWLHitrateComamnd extends Command {
 					const hitrates = [];
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
-
-					const hit = hitRate(clan, opponent, stars);
-					const combinations = [...hit.clan.hitrate, ...hit.opponent.hitrate]
-						.map(({ townHall, defTownHall }) => ({ townHall, defTownHall }))
-						.reduce((a, b) => {
-							if (a.findIndex(x => x.townHall === b.townHall && x.defTownHall === b.defTownHall) < 0) a.push(b);
-							return a;
-						}, [] as { townHall: number; defTownHall: number }[]);
-
-					const arrrr = [];
-					for (const { townHall, defTownHall } of combinations) {
-						const clan = hit.clan.hitrate.find(o => o.townHall === townHall && o.defTownHall === defTownHall);
-						const opponent = hit.opponent.hitrate.find(o => o.townHall === townHall && o.defTownHall === defTownHall);
-
-						const d: Data = {
-							clan: {
-								townHall: 0,
-								defTownHall: 0,
-								stars: 0,
-								attacks: 0,
-								hitrate: '0'
-							},
-							opponent: {
-								townHall: 0,
-								defTownHall: 0,
-								stars: 0,
-								attacks: 0,
-								hitrate: '0'
-							}
-						};
-
-						if (clan) d.clan = clan;
-
-						if (opponent) d.opponent = opponent;
-
-						arrrr.push(d);
-					}
-
 					hitrates.push(...[
-						`**${clan.name} vs ${opponent.name} (Hitrates - ${stars} Star)**`,
-						`${arrrr.map(d => `\`\u200e${d.clan.hitrate.padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${TOWN_HALLS[d.clan.townHall]} vs ${TOWN_HALLS[d.clan.defTownHall]} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.hitrate.padStart(3, ' ')}% \u200f\``).join('\n')}`
+						`**${clan.name} vs ${opponent.name}**`,
+						`${parseHits(clan, opponent, stars).map(d => `\`\u200e${d.clan.rate.toFixed().padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${ORANGE_NUMBERS[d.clan.townHall]} ${EMOJIS.VS} ${ORANGE_NUMBERS[d.clan.defTownHall]} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.rate.toFixed().padStart(3, ' ')}% \u200f\``).join('\n')}`
 					]);
 
 					chunks.push({ state: data.state, hitrates });
@@ -170,9 +128,9 @@ export default class CWLHitrateComamnd extends Command {
 		const paginated = this.paginate(chunks, page);
 
 		if (chunks.length === 1) {
-			return message.util!.send(paginated.items[0].hitrates);
+			return message.util!.send(paginated.pages[0].hitrates);
 		}
-		const msg = await message.util!.send(paginated.items[0].hitrates);
+		const msg = await message.util!.send(paginated.pages[0].hitrates);
 		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
@@ -188,7 +146,7 @@ export default class CWLHitrateComamnd extends Command {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { hitrates } = this.paginate(chunks, page).items[0];
+				const { hitrates } = this.paginate(chunks, page).pages[0];
 				await msg.edit(hitrates);
 				await this.delay(250);
 				return reaction.users.remove(message.author.id);
@@ -198,7 +156,7 @@ export default class CWLHitrateComamnd extends Command {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { hitrates } = this.paginate(chunks, page).items[0];
+				const { hitrates } = this.paginate(chunks, page).pages[0];
 				await msg.edit(hitrates);
 				await this.delay(250);
 				return reaction.users.remove(message.author.id);
@@ -212,14 +170,14 @@ export default class CWLHitrateComamnd extends Command {
 		return new Promise(res => setTimeout(res, ms));
 	}
 
-	private paginate(items: any[], page = 1, pageLength = 1) {
-		const maxPage = Math.ceil(items.length / pageLength);
+	private paginate(pages: any[], page = 1, pageLength = 1) {
+		const maxPage = Math.ceil(pages.length / pageLength);
 		if (page < 1) page = 1;
 		if (page > maxPage) page = maxPage;
 		const startIndex = (page - 1) * pageLength;
 
 		return {
-			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
+			pages: pages.length > pageLength ? pages.slice(startIndex, startIndex + pageLength) : pages,
 			page, maxPage, pageLength
 		};
 	}

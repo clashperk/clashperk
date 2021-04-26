@@ -23,16 +23,17 @@ export default class ClanActivityCommand extends Command {
 					'',
 					'Set your timezone using **offset** command for better experience.'
 				],
-				usage: '<#clanTag>',
+				usage: '[#clanTags]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #8UUYQ92L']
 			},
-			optionFlags: ['--clans']
+			optionFlags: ['--clans', '--days']
 		});
 	}
 
 	public *args(msg: Message): unknown {
 		const tags = yield {
 			flag: '--clans',
+			unordered: true,
 			match: msg.hasOwnProperty('token') ? 'option' : 'content',
 			type: async (msg: Message, args: string) => {
 				const tags = args ? args.split(/ +/g) : [];
@@ -41,7 +42,14 @@ export default class ClanActivityCommand extends Command {
 			}
 		};
 
-		return { tags };
+		const days = yield {
+			flag: '--days',
+			match: 'option',
+			unordered: true,
+			type: ['1', '3', '7', '24']
+		};
+
+		return { tags, days: Number(days) || 1 };
 	}
 
 	private async getClans(message: Message, aliases: string[]) {
@@ -66,7 +74,7 @@ export default class ClanActivityCommand extends Command {
 		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`;
 	}
 
-	public async exec(message: Message, { tags, dark }: { tags: string[] | string; dark: boolean }) {
+	public async exec(message: Message, { tags, days }: { tags: string[] | string; days: number }) {
 		// @ts-expect-error
 		if (!Array.isArray(tags)) tags = [tags.tag];
 		tags.splice(3);
@@ -77,15 +85,15 @@ export default class ClanActivityCommand extends Command {
 			return message.util!.send(`*No clans found in my database for the specified argument.*`);
 		}
 
-		const clans = await this.aggregationQuery(clanTags);
+		const clans = await this.aggregationQuery(clanTags, days);
 		if (!clans.length) return message.util!.send('*Not enough data available a this moment!*');
 
 		const timeZone = await this.client.db.collection(Collections.TIME_ZONES).findOne({ user: message.author.id });
 		const tz = timeZone?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
-		const datasets = clans.map(clan => ({ name: clan.name, data: this.datasets(clan, tz.offset) }));
+		const datasets = clans.map(clan => ({ name: clan.name, data: this.datasets(clan, tz.offset, days) }));
 
 		const hrStart = process.hrtime();
-		const buffer = await Chart.clanActivity(datasets, dark as any, [`Active Members Per Hour (${tz.name as string})`] as any);
+		const buffer = await Chart.clanActivity(datasets, [`Active Members Per Hour (${tz.name as string})`], days);
 		const diff = process.hrtime(hrStart);
 
 		return message.util!.send({
@@ -98,7 +106,7 @@ export default class ClanActivityCommand extends Command {
 		});
 	}
 
-	private aggregationQuery(clanTags: string[]) {
+	private aggregationQuery(clanTags: string[], days = 1) {
 		return this.client.db.collection(Collections.LAST_SEEN).aggregate([
 			{
 				$match: {
@@ -122,7 +130,7 @@ export default class ClanActivityCommand extends Command {
 							as: 'en',
 							cond: {
 								$gte: [
-									'$$en.entry', new Date(new Date().getTime() - (24 * 60 * 60 * 1000))
+									'$$en.entry', new Date(new Date().getTime() - (days * 24 * 60 * 60 * 1000))
 								]
 							}
 						}
@@ -176,8 +184,8 @@ export default class ClanActivityCommand extends Command {
 		]).toArray();
 	}
 
-	private datasets(data: any, offset: any) {
-		const dataSet = new Array(24).fill('💩')
+	private datasets(data: any, offset: any, days = 1) {
+		const dataSets: { count: number; time: string }[] = new Array(days * 24).fill(0)
 			.map((_, i) => {
 				const decrement = new Date().getTime() - (60 * 60 * 1000 * i);
 				const timeObj = new Date(decrement).toISOString()
@@ -191,14 +199,21 @@ export default class ClanActivityCommand extends Command {
 				};
 			});
 
-		return dataSet.reverse().map((a, i) => {
+		/* const avg = Array(24).fill(0).map(() => dataSets.splice(0, days))
+			.reduce((previous, current) => {
+				const count = current.reduce((prev, curr) => curr.count + prev, 0) / days;
+				previous.push({ count: Math.floor(count), time: current[0].time });
+				return previous;
+			}, []);*/
+
+		return dataSets.reverse().map((a, i) => {
 			const time = new Date(new Date(a.time).getTime() + (offset * 1000));
-			let hour = this.format(time);
+			let hour = this.format(time, days > 7 ? time.getMonth() : null);
 			if (time.getHours() === 0) hour = this.format(time, time.getMonth());
 			if (time.getHours() === 1) hour = this.format(time, time.getMonth());
 
 			return {
-				'short': (i + 1) % 2 === 0 ? hour : '',
+				'short': (i + 1) % 2 === 0 ? hour : [1].includes(days) ? '' : hour,
 				'count': a.count
 			};
 		});
@@ -208,7 +223,7 @@ export default class ClanActivityCommand extends Command {
 		const hour = time.getHours();
 		const min = time.getMinutes();
 		const date = time.getDate();
-		if (month) return `${date.toString().padStart(2, '0')} ${months[month]}`;
+		if (typeof month === 'number') return `${date.toString().padStart(2, '0')} ${months[month]}`;
 		return `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
 	}
 }

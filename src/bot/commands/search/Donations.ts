@@ -127,7 +127,7 @@ export default class DonationsCommand extends Command {
 			`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'}`,
 			members.map((mem, index) => {
 				const donation = `${this.donation(mem.donated, ds)} ${this.donation(mem.received, rs)}`;
-				return `${(index + 1).toString().padStart(2, ' ')} ${donation}  ${this.padEnd(mem.name.substring(0, 15))}`;
+				return `${(index + 1).toString().padStart(2, ' ')} ${donation}  \u200e${this.padEnd(mem.name.substring(0, 15))}`;
 			}).join('\n'),
 			'```'
 		]);

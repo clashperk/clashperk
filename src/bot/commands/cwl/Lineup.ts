@@ -13,9 +13,9 @@ const states: { [key: string]: string } = {
 export default class CWLLineupComamnd extends Command {
 	public constructor() {
 		super('cwl-lineup', {
-			aliases: ['cwl-lineup', 'lineup'],
+			aliases: ['cwl-lineup', 'lineup_'],
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: [
 					'Shows lineup of the current round.'

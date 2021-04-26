@@ -10,6 +10,7 @@ export default class RedeemCommand extends Command {
 			aliases: ['redeem'],
 			category: '_hidden',
 			channel: 'guild',
+			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Redeems your patreon subscription.'
 			}
@@ -83,6 +84,7 @@ export default class RedeemCommand extends Command {
 			);
 
 			await this.client.patrons.refresh();
+			await this.sync(message.guild!.id);
 			const embed = this.client.util.embed()
 				.setColor(16345172)
 				.setDescription([
@@ -92,7 +94,7 @@ export default class RedeemCommand extends Command {
 			return message.util!.send({ embed });
 		}
 
-		const redeemed = this.redeemed(user);
+		const redeemed = this.redeemed(Object.assign(user, { entitled_amount: pledge.attributes.amount_cents / 100 }));
 		if (user && redeemed) {
 			if (!this.isNew(user, message, patron)) await this.client.patrons.refresh();
 			const embed = this.client.util.embed()

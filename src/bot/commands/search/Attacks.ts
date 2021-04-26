@@ -59,7 +59,7 @@ export default class ClanAttacksCommand extends Command {
 					const name = `${member.name.replace(/\`/g, '\\').padEnd(15, ' ')}`;
 					const attackWins = `${member.attackWins.toString().padStart(3, ' ')}`;
 					const defenseWins = `${member.defenseWins.toString().padStart(3, ' ')}`;
-					return `${(i + 1).toString().padStart(2, ' ')}  ${attackWins}  ${defenseWins}  ${name}`;
+					return `${(i + 1).toString().padStart(2, ' ')}  ${attackWins}  ${defenseWins}  \u200e${name}`;
 				}).join('\n'),
 				'```'
 			]);

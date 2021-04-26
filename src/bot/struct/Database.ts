@@ -89,7 +89,7 @@ class MongoDB extends MongoClient {
 				.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 20 * 24 * 60 * 60 }),
 
 			db.collection(Collections.CLAN_GAMES)
-				.createIndex({ tag: 1 }, { unique: true }),
+				.createIndex({ tag: 1, season: 1 }, { unique: true }),
 
 			db.collection(Collections.CWL_GROUPS)
 				.createIndex({ 'clans.tag': 1, 'season': 1 }, { unique: true }),

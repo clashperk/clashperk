@@ -30,6 +30,12 @@ export default class ClanGamesSummaryCommand extends Command {
 		});
 	}
 
+	private get seasonID() {
+		const now = new Date();
+		if (now.getDate() < 20) now.setMonth(now.getMonth() - 1);
+		return now.toISOString().substring(0, 7);
+	}
+
 	public async exec(message: Message, { guild }: { guild: Guild }) {
 		const tags = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: guild.id })
@@ -37,7 +43,7 @@ export default class ClanGamesSummaryCommand extends Command {
 		if (!tags.length) return message.util!.send(`**${message.guild!.name} does not have any clans. Why not add some?**`);
 
 		const clans = await this.client.db.collection(Collections.CLAN_GAMES)
-			.find({ tag: { $in: [...tags.map(d => d.tag)] } })
+			.find({ season: this.seasonID, tag: { $in: [...tags.map(d => d.tag)] } })
 			.toArray();
 
 		const patron = this.client.patrons.get(message.guild!.id);

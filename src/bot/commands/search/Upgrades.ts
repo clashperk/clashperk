@@ -54,8 +54,8 @@ export default class UpgradesCommand extends Command {
 				return Boolean(homeTroops || builderTroops);
 			})
 			.reduce((prev, curr) => {
-				if (!(curr.productionBuilding in prev)) prev[curr.productionBuilding] = [];
-				prev[curr.productionBuilding].push(curr);
+				if (!(curr.unlock.building in prev)) prev[curr.unlock.building] = [];
+				prev[curr.unlock.building].push(curr);
 				return prev;
 			}, {} as TroopJSON);
 
@@ -64,9 +64,10 @@ export default class UpgradesCommand extends Command {
 			'Dark Barracks': `${EMOJIS.DARK_ELIXIR} Dark Troops`,
 			'Spell Factory': `${EMOJIS.ELIXIER} Elixir Spells`,
 			'Dark Spell Factory': `${EMOJIS.DARK_ELIXIR} Dark Spells`,
+			'Town Hall': `${EMOJIS.DARK_ELIXIR} Heroes`,
+			'Pet House': `${EMOJIS.DARK_ELIXIR} Pets`,
 			'Workshop': `${EMOJIS.ELIXIER} Siege Machines`,
 			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
-			'Town Hall': `${EMOJIS.DARK_ELIXIR} Heroes`,
 			'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
 		};
 
@@ -96,8 +97,8 @@ export default class UpgradesCommand extends Command {
 						hallMaxLevel: unit.levels[hallLevel! - 1],
 						maxLevel,
 						resource: unit.upgrade.resource,
-						upgradeCost: level ? unit.upgrade.cost[level - 1] : unit.upgrade.unlockCost,
-						upgradeTime: level ? unit.upgrade.time[level - 1] : unit.upgrade.unlockTime
+						upgradeCost: level ? unit.upgrade.cost[level - 1] : unit.unlock.cost,
+						upgradeTime: level ? unit.upgrade.time[level - 1] : unit.unlock.time
 					};
 				}
 			);
@@ -109,7 +110,7 @@ export default class UpgradesCommand extends Command {
 						const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
 						const level = this.padStart(unit.level);
 						const maxLevel = this.padEnd(unit.hallMaxLevel);
-						const upgradeTime = ms(unit.upgradeTime * 60 * 1000).padStart(5, ' ');
+						const upgradeTime = ms(unit.upgradeTime * 1000).padStart(5, ' ');
 						const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
 						return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
 					}).join('\n')

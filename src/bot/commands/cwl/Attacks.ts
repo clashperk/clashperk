@@ -16,7 +16,7 @@ export default class CWLAttacksComamnd extends Command {
 		super('cwl-attacks', {
 			aliases: ['cwl-attacks'],
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: [
 					'Shows attacks of the current round.',

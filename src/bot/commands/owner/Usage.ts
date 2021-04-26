@@ -1,4 +1,4 @@
-import { MessageAttachment, MessageEmbed, Message } from 'discord.js';
+import { MessageAttachment, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { COLLECTIONS } from '../../util/Constants';
 import Chart from '../../core/ChartHandler';
@@ -12,7 +12,7 @@ export default class UsageCommand extends Command {
 			description: {
 				content: 'Displays the usage statistics of the bot.'
 			},
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
 			args: [
 				{
 					id: 'growth',
@@ -20,7 +20,7 @@ export default class UsageCommand extends Command {
 				},
 				{
 					'id': 'limit',
-					'type': Argument.range('integer', 15, 60, true),
+					'type': Argument.range('integer', 15, 90, true),
 					'default': 15
 				}
 			]
@@ -29,15 +29,9 @@ export default class UsageCommand extends Command {
 
 	public async exec(message: Message, { growth: graph, limit }: { growth: string; limit: number }) {
 		if (graph) {
-			const { addition, deletion, growth } = await this.growth();
 			const buffer = await this.buffer(limit);
 			const file = new MessageAttachment(buffer, 'growth.png');
-			const embed = new MessageEmbed()
-				.setAuthor(this.client.user!.username, this.client.user!.displayAvatarURL())
-				.setColor(this.client.embed(message))
-				.setImage('attachment://growth.png')
-				.setFooter(`${'⚙️'} Today's Growth: ${Number(addition)}/${Math.abs(deletion)}/${growth}`);
-			return message.util!.send(embed.footer!.text, { /* embed, */ files: [file] });
+			return message.util!.send({ /* embed, */ files: [file] });
 		}
 
 		const { commands } = await this.commands();
@@ -75,22 +69,19 @@ export default class UsageCommand extends Command {
 	}
 
 	private async growth() {
-		const data = await this.client.db.collection(COLLECTIONS.BOT_GROWTH)
-			.findOne({ ISTDate: new Date(Date.now() + 198e5).toISOString().substring(0, 10) });
-		if (!data) return { addition: 0, deletion: 0, growth: 0 };
+		const cursor = this.client.db.collection(COLLECTIONS.BOT_GROWTH).find();
+		const data = await cursor.sort({ createdAt: -1 }).limit(1).next();
 		return { addition: data.addition, deletion: data.deletion, growth: data.addition - data.deletion };
 	}
 
 	private async buffer(limit: number) {
+		const growth = await this.growth();
 		const collection = await this.client.db.collection(COLLECTIONS.BOT_GROWTH)
-			.find({ createdAt: { $gte: new Date(Date.now() - ((limit + 1) * 24 * 60 * 60 * 1000)) } })
-			.sort({ createdAt: 1 })
+			.find()
+			.sort({ createdAt: -1 })
+			.limit(limit)
 			.toArray();
-		return Chart.growth(
-			collection
-				.slice(-limit)
-				.map(growth => ({ date: new Date(growth.ISTDate), value: growth }))
-		);
+		return Chart.growth(collection.reverse().map(growth => ({ date: new Date(growth.ISTDate), value: growth })), { ...growth });
 	}
 
 	private async commandsTotal() {

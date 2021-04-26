@@ -18,6 +18,9 @@ export interface ClanStore {
 	verified: boolean;
 	lastRan?: Date;
 	channels?: string[];
+	autoRole: boolean;
+	secureRole: boolean;
+	roles?: { coLeader?: string; admin?: string; member?: string }[];
 }
 
 export default class StorageHandler {

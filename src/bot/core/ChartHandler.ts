@@ -5,12 +5,19 @@ const months = [
 	'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ];
 
+const sizes = {
+	1: { width: 500, height: 300 },
+	3: { width: 800, height: 400 },
+	7: { width: 800, height: 400 },
+	24: { width: 800, height: 400 }
+};
+
 export default {
-	clanActivity(collection: any[] = [], color: string, title: string) {
+	clanActivity(collection: any[] = [], title: string[], days = 1) {
 		const colors = ['#266ef7', '#c63304', '#50c878'];
 		const datasets = collection.map((obj: any, i) => ({
 			label: obj.name,
-			type: 'line',
+			type: days > 7 ? 'bar' : 'line',
 			fill: false,
 			backgroundColor: colors[i],
 			borderColor: colors[i],
@@ -22,9 +29,9 @@ export default {
 		}));
 
 		const body = {
-			backgroundColor: color ? 'transparent' : 'white',
-			width: 500,
-			height: 300,
+			backgroundColor: 'white',
+			width: sizes[days as keyof typeof sizes].width,
+			height: sizes[days as keyof typeof sizes].height,
 			devicePixelRatio: 2.0,
 			format: 'png',
 			chart: {
@@ -106,7 +113,8 @@ export default {
 		return Chart.render(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, true);
 	},
 
-	growth(collection: any[] = []) {
+	growth(collection: any[] = [], { addition, deletion, growth }: { addition: number; deletion: number; growth: number }) {
+		const total = collection.reduce((pre, curr) => Number(pre) + Number(curr.value.addition - curr.value.deletion), 0);
 		const body = {
 			backgroundColor: 'white',
 			width: 500,
@@ -120,7 +128,7 @@ export default {
 					datasets: [
 						{
 							type: 'bar',
-							label: 'Addition',
+							label: `Addition`,
 							backgroundColor: '#36a2eb80',
 							borderColor: '#36a2eb',
 							data: [...collection.map(d => d.value.addition)]
@@ -156,7 +164,7 @@ export default {
 						display: true,
 						fontSize: 10,
 						padding: 2,
-						text: [`Per day Growth (Last ${collection.length} days)`]
+						text: [`Total ${total as number} | Server Growth (${collection.length}D) | Today ${addition}/${deletion}/${growth}`]
 					}
 				}
 			}

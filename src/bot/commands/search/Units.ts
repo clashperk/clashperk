@@ -10,7 +10,7 @@ export default class UnitsCommand extends Command {
 		super('units', {
 			aliases: ['units', 'troops', 'u'],
 			category: 'search',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: 'Levels of troops, spells and heroes.',
 				usage: '<playerTag>',
@@ -73,8 +73,8 @@ export default class UnitsCommand extends Command {
 				return Boolean(homeTroops || builderTroops);
 			})
 			.reduce((prev, curr) => {
-				if (!(curr.productionBuilding in prev)) prev[curr.productionBuilding] = [];
-				prev[curr.productionBuilding].push(curr);
+				if (!(curr.unlock.building in prev)) prev[curr.unlock.building] = [];
+				prev[curr.unlock.building].push(curr);
 				return prev;
 			}, {} as TroopJSON);
 
@@ -83,9 +83,10 @@ export default class UnitsCommand extends Command {
 			'Dark Barracks': 'Dark Troops',
 			'Spell Factory': 'Elixir Spells',
 			'Dark Spell Factory': 'Dark Spells',
+			'Town Hall': 'Heroes',
+			'Pet House': 'Pets',
 			'Workshop': 'Siege Machines',
 			'Builder Hall': 'Builder Base Hero',
-			'Town Hall': 'Heroes',
 			'Builder Barracks': 'Builder Troops'
 		};
 
@@ -157,9 +158,11 @@ export default class UnitsCommand extends Command {
 				}
 			);
 
-		if (superTrops.length) {
-			embed.addField('Super Troops', [
-				this.chunk(superTrops)
+		// @ts-expect-error
+		const activeSuperTroops = data.troops.filter(en => en.superTroopIsActive).map(en => en.name);
+		if (superTrops.length && data.townHallLevel >= 11) {
+			embed.addField(`Super Troops (${activeSuperTroops.length ? 'Active' : 'Usable'})`, [
+				this.chunk(superTrops.filter(en => activeSuperTroops.length ? activeSuperTroops.includes(en.name) : true))
 					.map(
 						chunks => chunks.map(unit => {
 							const unitIcon = SUPER_TROOPS[unit.name];
@@ -189,10 +192,6 @@ export default class UnitsCommand extends Command {
 
 	private padStart(num: number) {
 		return num.toString().padStart(2, ' ');
-	}
-
-	private async delay(ms: number) {
-		return new Promise(res => setTimeout(res, ms));
 	}
 
 	private apiTroops(data: Player) {

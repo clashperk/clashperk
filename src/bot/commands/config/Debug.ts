@@ -34,10 +34,10 @@ export default class DebugCommand extends Command {
 
 	public async exec(message: Message, { channel }: { channel: TextChannel }) {
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
-		const permissions = [
+		const permissions: PermissionString[] = [
 			'VIEW_CHANNEL', 'SEND_MESSAGES', 'EMBED_LINKS', 'ADD_REACTIONS',
 			'ATTACH_FILES', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY'
-		] as PermissionString[];
+		];
 
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const fetched: Clan[] = (await Promise.all(clans.map(en => this.client.http.clan(en.tag)))).filter(res => res.ok);
@@ -94,7 +94,7 @@ export default class DebugCommand extends Command {
 				const sign = (clan.active && !clan.paused && clan.flag > 0 && warLog) ? emojis.tick : emojis.cross;
 				return `${sign} \`\u200e ${clan.name.padEnd(15, ' ')} \u200f\` \`\u200e ${lastRan.padStart(3, ' ')} ago \u200f\` \`\u200e ${(warLog ? 'Public' : 'Private').padStart(7, ' ')} \u200f\``;
 			}).join('\n')
-		], { split: true, disableMentions: 'everyone' });
+		], { split: true, allowedMentions: { parse: ['users'] } });
 	}
 
 	private fixTime(num: number, total: string) {

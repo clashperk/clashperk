@@ -26,6 +26,13 @@ export const ELIXIR_TROOPS: Emojis = {
 	'Yeti': '<:yeti:696281814293282857>'
 };
 
+export const HERO_PETS: Emojis = {
+	'Electro Owl': '<:Owl:831123515939356703>',
+	'L.A.S.S.I': '<:LASSI:831123509827731527>',
+	'Mighty Yak': '<:Yak:831123515067334707>',
+	'Unicorn': '<:Unicorn:831123514613694564>'
+};
+
 export const DARK_ELIXIR_TROOPS: Emojis = {
 	'Minion': '<:minion:696281875794231326>',
 	'Hog Rider': '<:hogrider:696281961257238579>',
@@ -107,7 +114,8 @@ export const HOME_TROOPS: Emojis = {
 	...DARK_ELIXIR_TROOPS,
 	...SEIGE_MACHINES,
 	...ELIXIR_SPELLS,
-	...DARK_SPELLS
+	...DARK_SPELLS,
+	...HERO_PETS
 };
 
 export const BUILDER_TROOPS: Emojis = {
@@ -128,7 +136,8 @@ export const TOWN_HALLS: Emojis = {
 	10: '<:townhall10:696304773225250858>',
 	11: '<:townhall11:696304807723663400>',
 	12: '<:townhall12:766206520492818482>',
-	13: '<:townhall13:766207117103071242>'
+	13: '<:townhall13:766207117103071242>',
+	14: '<:townhall14:829392900110549038>'
 };
 
 export const BUILDER_HALLS: Emojis = {
@@ -270,6 +279,7 @@ export const EMOJIS = {
 	WRONG: '<:wrong:696314714535231538>',
 	EMPTY: '<:empty:699639532013748326>',
 
+	SUPER_TROOP: '<:super_troop:831563848174927883>',
 	TOWNHALL: '<:TownHall:825424125065166919>',
 	TROPHY: '<:trophy:696297701423448095>',
 	VERSUS_TROPHY: '<:versustrophies:696299029746679860>',
