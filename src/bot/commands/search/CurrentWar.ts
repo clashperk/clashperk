@@ -278,15 +278,15 @@ export default class WarCommand extends Command {
 	}
 
 	private flatHits(data: ClanWar) {
-		return data.clan.members.reduce((previous, member) => {
-			const atk: any = member.attacks?.map((attack, index) => ({
+		return data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).reduce((previous, member) => {
+			const atk = member.attacks?.map((attack, num) => ({
 				attack,
 				tag: member.tag,
 				name: member.name,
 				mapPosition: member.mapPosition,
 				townhallLevel: member.townhallLevel,
-				defender: data.opponent.members.find(m => m.tag === attack.defenderTag),
-				bestOpponentAttack: index === 0 ? member.bestOpponentAttack : {}
+				bestOpponentAttack: num === 0 ? member.bestOpponentAttack : {},
+				defender: data.opponent.members.find(m => m.tag === attack.defenderTag)
 			}));
 
 			if (atk) {
