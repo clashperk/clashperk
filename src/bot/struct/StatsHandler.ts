@@ -3,6 +3,7 @@ import Client from './Client';
 import qs from 'querystring';
 import https from 'https';
 import Interaction from './Interaction';
+import { User, Guild } from 'discord.js';
 
 export default class StatsHandler {
 	public messages = new Map<string, NodeJS.Timeout>();
@@ -141,19 +142,19 @@ export default class StatsHandler {
 			}, { upsert: true });
 	}
 
-	public users(user: string) {
+	public users(user: User) {
 		return this.client.db.collection(Collections.BOT_USERS)
-			.updateOne({ user }, {
-				$set: { user },
+			.updateOne({ user: user.id }, {
+				$set: { user: user.id, user_tag: user.tag },
 				$inc: { usage: 1 },
 				$min: { createdAt: new Date() }
 			}, { upsert: true });
 	}
 
-	public guilds(guild: string, count = 1) {
+	public guilds(guild: Guild, count = 1) {
 		return this.client.db.collection(Collections.BOT_GUILDS)
-			.updateOne({ guild }, {
-				$set: { guild },
+			.updateOne({ guild: guild.id }, {
+				$set: { guild: guild.id, guild_name: guild.name },
 				$inc: { usage: count },
 				$max: { updatedAt: new Date() },
 				$min: { createdAt: new Date() }

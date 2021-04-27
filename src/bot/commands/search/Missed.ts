@@ -32,7 +32,7 @@ export default class MissedAttacksCommand extends Command {
 				[
 					['last', 'prev']
 				],
-				Argument.range('integer', 1001, 1e5)
+				Argument.range('integer', 1001, 9e6)
 			),
 			unordered: msg.hasOwnProperty('token') ? false : true,
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'

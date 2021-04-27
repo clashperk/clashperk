@@ -36,7 +36,7 @@ export default class GuildCreateListener extends Listener {
 		await this.client.stats.post();
 		await this.changeNickname(guild);
 		await this.client.stats.addition(guild.id);
-		await this.client.stats.guilds(guild.id, 0);
+		await this.client.stats.guilds(guild, 0);
 
 		const values: number[] = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]);
 		const guilds = values.reduce((prev, curr) => curr + prev, 0);

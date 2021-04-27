@@ -22,8 +22,8 @@ export default class CommandCancelledListener extends Listener {
 		if ('token' in message) this.client.stats.interactions(message, command.id);
 		if (command.category.id === 'owner') return;
 		if (this.client.isOwner(message.author.id)) return;
-		this.client.stats.users(message.author.id);
+		this.client.stats.users(message.author);
 		this.client.stats.commands(command.id);
-		if (message.guild) this.client.stats.guilds(message.guild.id);
+		if (message.guild) this.client.stats.guilds(message.guild);
 	}
 }

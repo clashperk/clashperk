@@ -41,6 +41,10 @@ export default class ProfileCommand extends Command {
 		const player = await this.getProfile(member.id);
 		const clan = await this.getClan(member.id);
 
+		if (player && player.user_tag !== member.user.tag) {
+			this.client.resolver.updateUserTag(member.guild, member.id);
+		}
+
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())

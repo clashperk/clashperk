@@ -1,4 +1,4 @@
-import { Message, GuildMember } from 'discord.js';
+import { Message, GuildMember, Guild } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import { Collections } from '@clashperk/node';
 import { status } from '../util/Constants';
@@ -22,11 +22,13 @@ export default class Resolver {
 			return this.fail(message, `**${status(404)}**`);
 		}
 
+		const { user } = (parsed as GuildMember);
 		const otherTags: string[] = [];
-		const data = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: (parsed as GuildMember).id });
+		const data = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: user.id });
+		if (data && data.user_tag !== user.tag) this.updateUserTag(message.guild!, user.id);
 
 		if (!data?.entries?.length || num > data?.entries?.length) {
-			otherTags.push(...(await this.client.http.getPlayerTags((parsed as GuildMember).id)));
+			otherTags.push(...(await this.client.http.getPlayerTags(user.id)));
 		}
 
 		const tagSet = new Set([...data?.entries?.map((en: any) => en.tag) ?? [], ...otherTags]);
@@ -34,11 +36,11 @@ export default class Resolver {
 		tagSet.clear();
 
 		if (tags.length) return this.getPlayer(message, tags[Math.min(tags.length - 1, num - 1)]);
-		if (message.author.id === (parsed as GuildMember).id) {
+		if (message.author.id === user.id) {
 			return this.fail(message, '**You must provide a player tag to run this command!**');
 		}
 
-		return this.fail(message, `**No Player Linked to ${(parsed as GuildMember).user.tag}!**`);
+		return this.fail(message, `**No Player Linked to ${user.tag}!**`);
 	}
 
 	private async clanAlias(guild: string, alias: string) {
@@ -113,5 +115,14 @@ export default class Resolver {
 	private parseTag(tag: string) {
 		const matched = tag.match(/^#?[0289CGJLOPQRUVY]+$/gi)?.[0];
 		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0') as string}`;
+	}
+
+	public updateUserTag(guild: Guild, user_id: string) {
+		const member = guild.members.cache.get(user_id);
+		if (!member) return null;
+		return this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
+			{ user: member.user.id },
+			{ $set: { user_tag: member.user.tag } }
+		);
 	}
 }

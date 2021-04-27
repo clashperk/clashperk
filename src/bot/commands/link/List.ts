@@ -33,6 +33,8 @@ export default class LinkListCommand extends Command {
 			.find({ 'entries.tag': { $in: data.memberList.map(m => m.tag) } })
 			.toArray();
 
+		if (dbMembers.length) this.updateUsers(message, dbMembers);
+
 		for (const member of dbMembers) {
 			for (const m of member.entries) {
 				if (!data.memberList.find(mem => mem.tag === m.tag)) continue;
@@ -101,6 +103,16 @@ export default class LinkListCommand extends Command {
 	}
 
 	private parseName(name: string) {
-		return name.replace(/[^\x00-\xF7]+/g, ' ').trim().padEnd(15, ' ');
+		return name.padEnd(15, ' ');
+		// return name.replace(/[^\x00-\xF7]+/g, ' ').trim().padEnd(15, ' ');
+	}
+
+	private updateUsers(message: Message, members: any[]) {
+		for (const data of members) {
+			const member = message.guild!.members.cache.get(data.user);
+			if (member && data.user_tag !== member.user.tag) {
+				this.client.resolver.updateUserTag(message.guild!, data.user);
+			}
+		}
 	}
 }
