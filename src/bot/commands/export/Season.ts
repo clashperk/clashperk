@@ -73,76 +73,69 @@ export default class ExportSeason extends Command {
 			.sort({ createdAt: -1 })
 			.toArray();
 
-		let count = 0;
-		for (const clan of _clans) {
-			if (clan.members === 0) continue;
-			const lastseen = await this.aggregationQuery(clan);
-
-			count += members.length;
-			for (const mem of members) {
-				mem.activity_total = lastseen.find(m => m.tag === mem.tag)?.count ?? 0;
-				const user = memberTags.find(user => user.tag === mem.tag)?.user;
-				mem.user_tag = message.guild!.members.cache.get(user!)?.user.tag;
-			}
-
-			const columns = [
-				{ header: 'Name', width: 20 },
-				{ header: 'Tag', width: 16 },
-				{ header: 'Discord', width: 16 },
-				{ header: 'Clan', width: 20 },
-				{ header: 'Town Hall', width: 10 },
-				{ header: 'Total Donated', width: 10 },
-				{ header: 'Total Received', width: 10 },
-				{ header: 'Total Attacks', width: 10 },
-				{ header: 'Versus Attacks', width: 10 },
-				{ header: 'Trophies Gained', width: 10 },
-				{ header: 'Versus Trophies', width: 10 },
-				{ header: 'WarStars Gained', width: 10 },
-				{ header: 'CWL Stars Gained', width: 10 },
-				{ header: 'Gold Grab', width: 10 },
-				{ header: 'Elixir Escapade', width: 10 },
-				{ header: 'Heroic Heist', width: 10 },
-				{ header: 'Clan Games', width: 10 },
-				{ header: 'Total Activity', width: 10 }
-			];
-
-			if (!patron) columns.splice(2, 1);
-
-			sheet.columns = [...columns] as any[];
-			sheet.getRow(1).font = { bold: true, size: 10 };
-			sheet.getRow(1).height = 40;
-
-			for (let i = 1; i <= sheet.columns.length; i++) {
-				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
-			}
-
-			const achievements = ['War League Legend', 'Gold Grab', 'Elixir Escapade', 'Heroic Heist', 'Games Champion'];
-			sheet.addRows(
-				members.map(m => {
-					const rows = [
-						m.name,
-						m.tag,
-						m.user_tag,
-						clan.name,
-						m.townHallLevel,
-						m.donations.gained,
-						m.donationsReceived.gained,
-						m.attackWins,
-						m.versusBattleWins.gained,
-						m.trophies.gained,
-						m.versusTrophies.gained,
-						m.warStars.gained,
-						...achievements.map(ac => m.achievements.find((a: any) => a.name === ac).gained),
-						m.activity_total
-					];
-
-					if (!patron) rows.splice(2, 1);
-					return rows;
-				})
-			);
+		const lastseen = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan)))).flat();
+		for (const mem of members) {
+			mem.activity_total = lastseen.find(m => m.tag === mem.tag)?.count ?? 0;
+			const user = memberTags.find(user => user.tag === mem.tag)?.user;
+			mem.user_tag = message.guild!.members.cache.get(user!)?.user.tag;
 		}
 
-		if (!count) {
+		const columns = [
+			{ header: 'Name', width: 20 },
+			{ header: 'Tag', width: 16 },
+			{ header: 'Discord', width: 16 },
+			{ header: 'Clan', width: 20 },
+			{ header: 'Town Hall', width: 10 },
+			{ header: 'Total Donated', width: 10 },
+			{ header: 'Total Received', width: 10 },
+			{ header: 'Total Attacks', width: 10 },
+			{ header: 'Versus Attacks', width: 10 },
+			{ header: 'Trophies Gained', width: 10 },
+			{ header: 'Versus Trophies', width: 10 },
+			{ header: 'WarStars Gained', width: 10 },
+			{ header: 'CWL Stars Gained', width: 10 },
+			{ header: 'Gold Grab', width: 10 },
+			{ header: 'Elixir Escapade', width: 10 },
+			{ header: 'Heroic Heist', width: 10 },
+			{ header: 'Clan Games', width: 10 },
+			{ header: 'Total Activity', width: 10 }
+		];
+
+		if (!patron) columns.splice(2, 1);
+		sheet.columns = [...columns] as any[];
+		sheet.getRow(1).font = { bold: true, size: 10 };
+		sheet.getRow(1).height = 40;
+
+		for (let i = 1; i <= sheet.columns.length; i++) {
+			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+		}
+
+		const achievements = ['War League Legend', 'Gold Grab', 'Elixir Escapade', 'Heroic Heist', 'Games Champion'];
+		sheet.addRows(
+			members.map(m => {
+				const rows = [
+					m.name,
+					m.tag,
+					m.user_tag,
+					m.clanName,
+					m.townHallLevel,
+					m.donations.gained,
+					m.donationsReceived.gained,
+					m.attackWins,
+					m.versusBattleWins.gained,
+					m.trophies.gained,
+					m.versusTrophies.gained,
+					m.warStars.gained,
+					...achievements.map(ac => m.achievements.find((a: any) => a.name === ac).gained),
+					m.activity_total
+				];
+
+				if (!patron) rows.splice(2, 1);
+				return rows;
+			})
+		);
+
+		if (!members.length) {
 			return message.util!.send(`**No record found for the specified season ID \`${season}\`**`);
 		}
 
