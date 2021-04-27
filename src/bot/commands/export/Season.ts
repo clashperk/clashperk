@@ -48,39 +48,41 @@ export default class ExportSeason extends Command {
 		const sheet = workbook.addWorksheet(season);
 		const patron = this.client.patrons.get(message.guild!.id);
 
+		const _clans: Clan[] = (await Promise.all(clans.map(clan => this.client.http.clan(clan.tag)))).filter(res => res.ok);
+		const allMembers = _clans.map(clan => clan.memberList).flat();
+
+		const memberTags: { tag: string; user: string }[] = [];
+		if (patron) {
+			memberTags.push(...(await this.client.http.getDiscordLinks(allMembers)));
+			const dbMembers = await this.client.db.collection(Collections.LINKED_PLAYERS)
+				.find({ 'entries.tag': { $in: allMembers.map(m => m.tag) } })
+				.toArray();
+			if (dbMembers.length) this.updateUsers(message, dbMembers);
+			for (const member of dbMembers) {
+				for (const m of member.entries) {
+					if (!allMembers.find(mem => mem.tag === m.tag)) continue;
+					if (memberTags.find(mem => mem.tag === m.tag)) continue;
+					memberTags.push({ tag: m.tag, user: member.user });
+				}
+			}
+			await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
+		}
+
+		const members = await this.client.db.collection(Collections.CLAN_MEMBERS)
+			.find({ tag: { $in: allMembers.map(m => m.tag) }, clanTag: { $in: _clans.map(clan => clan.tag) }, season })
+			.sort({ createdAt: -1 })
+			.toArray();
+
 		let count = 0;
-		for (const { tag, name } of clans) {
-			const clan: Clan = await this.client.http.clan(tag);
-			if (!clan.ok) continue;
+		for (const clan of _clans) {
 			if (clan.members === 0) continue;
 			const lastseen = await this.aggregationQuery(clan);
-
-			const memberTags = [];
-			if (patron) {
-				memberTags.push(...(await this.client.http.getDiscordLinks(clan.memberList)));
-				const dbMembers = await this.client.db.collection(Collections.LINKED_PLAYERS)
-					.find({ 'entries.tag': { $in: clan.memberList.map(m => m.tag) } })
-					.toArray();
-				for (const member of dbMembers) {
-					for (const m of member.entries) {
-						if (!clan.memberList.find(mem => mem.tag === m.tag)) continue;
-						if (memberTags.find(mem => mem.tag === m.tag)) continue;
-						memberTags.push({ tag: m.tag, user: member.user });
-					}
-				}
-				await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
-			}
-
-			const members = await this.client.db.collection(Collections.CLAN_MEMBERS)
-				.find({ tag: { $in: clan.memberList.map(m => m.tag) }, clanTag: clan.tag, season })
-				.sort({ createdAt: -1 })
-				.toArray();
 
 			count += members.length;
 			for (const mem of members) {
 				mem.activity_total = lastseen.find(m => m.tag === mem.tag)?.count ?? 0;
 				const user = memberTags.find(user => user.tag === mem.tag)?.user;
-				mem.user_tag = message.guild!.members.cache.get(user)?.user.tag;
+				mem.user_tag = message.guild!.members.cache.get(user!)?.user.tag;
 			}
 
 			const columns = [
@@ -114,13 +116,14 @@ export default class ExportSeason extends Command {
 				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 			}
 
+			const achievements = ['War League Legend', 'Gold Grab', 'Elixir Escapade', 'Heroic Heist', 'Games Champion'];
 			sheet.addRows(
 				members.map(m => {
 					const rows = [
 						m.name,
 						m.tag,
 						m.user_tag,
-						name,
+						clan.name,
 						m.townHallLevel,
 						m.donations.gained,
 						m.donationsReceived.gained,
@@ -129,8 +132,7 @@ export default class ExportSeason extends Command {
 						m.trophies.gained,
 						m.versusTrophies.gained,
 						m.warStars.gained,
-						...['War League Legend', 'Gold Grab', 'Elixir Escapade', 'Heroic Heist', 'Games Champion']
-							.map(ac => m.achievements.find((a: any) => a.name === ac).gained),
+						...achievements.map(ac => m.achievements.find((a: any) => a.name === ac).gained),
 						m.activity_total
 					];
 
@@ -202,5 +204,14 @@ export default class ExportSeason extends Command {
 		]);
 
 		return (await cursor.next())?.members ?? [];
+	}
+
+	private updateUsers(message: Message, members: any[]) {
+		for (const data of members) {
+			const member = message.guild!.members.cache.get(data.user);
+			if (member && data.user_tag !== member.user.tag) {
+				this.client.resolver.updateUserTag(message.guild!, data.user);
+			}
+		}
 	}
 }
