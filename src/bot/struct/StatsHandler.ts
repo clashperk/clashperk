@@ -22,6 +22,10 @@ export default class StatsHandler {
 		const guilds = values.reduce((prev, curr) => prev + curr, 0);
 		if (!guilds) return;
 
+		const clans = await this.client.db.collection(Collections.CLAN_STORES).find().count();
+		const players = await this.client.db.collection(Collections.LAST_SEEN).find().count();
+		await this.client.db.collection(Collections.BOT_STATS).updateOne({ id: 'stats' }, { $set: { guilds, clans, players } });
+
 		// https://top.gg/
 		const form = qs.stringify({ server_count: guilds, shard_count: this.client.shard!.count });
 		https.request(`https://top.gg/api/bots/${this.client.user!.id}/stats`, {
