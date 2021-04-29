@@ -133,8 +133,10 @@ export default class Client extends AkairoClient {
 					}
 				});
 			}
+
+			const flags = ['help', 'invite', 'stats', 'guide'].includes(command.id) ? 64 : 0;
 			// @ts-expect-error
-			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5 } });
+			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5, data: { flags } } });
 			return this.handleInteraction(interaction, command, interaction.options);
 		});
 	}
