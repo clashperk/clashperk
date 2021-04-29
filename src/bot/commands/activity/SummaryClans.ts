@@ -10,11 +10,34 @@ export default class ClanSummaryCommand extends Command {
 			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
-			description: {}
+			description: {},
+			optionFlags: ['--season']
 		});
 	}
 
-	public async exec(message: Message) {
+	public *args(msg: Message): unknown {
+		const SEASON_IDS = Array(3).fill('').map((_, i) => {
+			const now = new Date(Season.ID);
+			now.setHours(0, 0, 0, 0);
+			now.setMonth(now.getMonth() - i, 0);
+			return Season.generateID(now);
+		});
+
+		const season = yield {
+			flag: '--season',
+			type: [
+				Season.ID,
+				...SEASON_IDS,
+				[SEASON_IDS[0], 'last']
+			],
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
+		return { season };
+	}
+
+	public async exec(message: Message, { season }: { season?: string }) {
+		if (!season) season = Season.ID;
 		const clans: { name: string; tag: string }[] = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
@@ -34,19 +57,19 @@ export default class ClanSummaryCommand extends Command {
 		};
 
 		for (const clan of clans) {
-			const wars = await this.getWars(clan.tag);
+			const wars = await this.getWars(clan.tag, season);
 			const action = await this.getActivity(clan.tag);
-			const season = await this.getSeason(clan.tag);
+			const season_stats = await this.getSeason(clan.tag, season);
 
-			if (!wars.length || !action || !season) continue;
+			if (!action || !season_stats) continue;
 
 			const won = wars.filter(war => war.result).length;
 			const lost = wars.filter(war => !war.result).length;
 
 			OBJ.WARS_WON.push({ name: clan.name, value: won, key: `${EMOJIS.CROSS_SWORD} Wars Won` });
 			OBJ.WARS_LOST.push({ name: clan.name, value: lost, key: `${EMOJIS.EMPTY_SWORD} Wars Lost` });
-			OBJ.DONATED.push({ name: clan.name, value: season.donations, key: `${EMOJIS.TROOPS_DONATE} Troops Donated` });
-			OBJ.ATTACKS.push({ name: clan.name, value: season.attackWins, key: `${EMOJIS.SWORD} Attacks Won` });
+			OBJ.DONATED.push({ name: clan.name, value: season_stats.donations, key: `${EMOJIS.TROOPS_DONATE} Troops Donated` });
+			OBJ.ATTACKS.push({ name: clan.name, value: season_stats.attackWins, key: `${EMOJIS.SWORD} Attacks Won` });
 			OBJ.AVG_ACTIVITY.push({ name: clan.name, value: action.avg_total, key: `${EMOJIS.ACTIVITY} Avg. Activity` });
 			OBJ.ACTIVE_MEMBERS.push({ name: clan.name, value: action.avg_online, key: `${EMOJIS.USER_BLUE} Active Members` });
 		}
@@ -76,18 +99,18 @@ export default class ClanSummaryCommand extends Command {
 			if (length > 6000) {
 				return embeds.map(
 					(embed, num) => message.channel.send(
-						num === 0 ? `**Clan Summary (Season ${Season.ID})**` : '', { embed }
+						num === 0 ? `**Clan Summary (Season ${season!})**` : '', { embed }
 					)
 				);
 			}
-			return message.util!.send(`**Clan Summary (Season ${Season.ID})**`, {
+			return message.util!.send(`**Clan Summary (Season ${season})**`, {
 				embed: { fields: embeds.map(embed => embed.fields).flat() }
 			});
 		}
-		return message.util!.send(`**Clan Summary (Season ${Season.ID})**`, embeds);
+		return message.util!.send(`**Clan Summary (Season ${season})**`, embeds);
 	}
 
-	private async getWars(tag: string): Promise<{ result: boolean; stars: number[] }[]> {
+	private async getWars(tag: string, season: string): Promise<{ result: boolean; stars: number[] }[]> {
 		return this.client.db.collection(Collections.CLAN_WARS).aggregate(
 			[
 				{
@@ -95,7 +118,7 @@ export default class ClanSummaryCommand extends Command {
 						'clan.tag': tag,
 						'groupWar': false,
 						'state': 'warEnded',
-						'season': Season.ID
+						'season': season
 					}
 				}, {
 					$project: {
@@ -176,12 +199,11 @@ export default class ClanSummaryCommand extends Command {
 		]).next();
 	}
 
-	private async getSeason(tag: string) {
+	private async getSeason(tag: string, season: string) {
 		return this.client.db.collection(Collections.CLAN_MEMBERS).aggregate([
 			{
 				$match: {
-					season: Season.ID,
-					clanTag: tag
+					season, clanTag: tag
 				}
 			}, {
 				$sort: {

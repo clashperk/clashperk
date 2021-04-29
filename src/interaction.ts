@@ -617,6 +617,12 @@ export const commands: { name: string; description: string; options?: APIApplica
 						value: 'donations'
 					}
 				]
+			},
+			{
+				name: 'season',
+				required: false,
+				type: ApplicationCommandOptionType.STRING,
+				description: 'Season ID for Clan Summary'
 			}
 		]
 	},
