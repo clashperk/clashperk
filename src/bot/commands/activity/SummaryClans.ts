@@ -76,15 +76,15 @@ export default class ClanSummaryCommand extends Command {
 			if (length > 6000) {
 				return embeds.map(
 					(embed, num) => message.channel.send(
-						num === 0 ? `**Clan Summary (Season ${Season.previousID})**` : '', { embed }
+						num === 0 ? `**Clan Summary (Season ${Season.ID})**` : '', { embed }
 					)
 				);
 			}
-			return message.util!.send(`**Clan Summary (Season ${Season.previousID})**`, {
+			return message.util!.send(`**Clan Summary (Season ${Season.ID})**`, {
 				embed: { fields: embeds.map(embed => embed.fields).flat() }
 			});
 		}
-		return message.util!.send(`**Clan Summary (Season ${Season.previousID})**`, embeds);
+		return message.util!.send(`**Clan Summary (Season ${Season.ID})**`, embeds);
 	}
 
 	private async getWars(tag: string): Promise<{ result: boolean; stars: number[] }[]> {
@@ -95,7 +95,7 @@ export default class ClanSummaryCommand extends Command {
 						'clan.tag': tag,
 						'groupWar': false,
 						'state': 'warEnded',
-						'season': Season.previousID
+						'season': Season.ID
 					}
 				}, {
 					$project: {
@@ -180,7 +180,7 @@ export default class ClanSummaryCommand extends Command {
 		return this.client.db.collection(Collections.CLAN_MEMBERS).aggregate([
 			{
 				$match: {
-					season: Season.previousID,
+					season: Season.ID,
 					clanTag: tag
 				}
 			}, {
