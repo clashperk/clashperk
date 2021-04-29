@@ -2,6 +2,7 @@ import { Collections, Season } from '@clashperk/node';
 import { Message, MessageEmbed } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
 
 export default class ClanSummaryCommand extends Command {
 	public constructor() {
@@ -22,51 +23,65 @@ export default class ClanSummaryCommand extends Command {
 			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
 		}
 
-		if (clans.length > 4) {
-			return this.handler.runCommand(message, this.handler.modules.get('export-clans')!, {});
-		}
-
+		console.log(clans);
 		const embeds = [];
+		const OBJ: { [key: string]: { name: string; value: number; key: string }[] } = {
+			DONATED: [],
+			ATTACKS: [],
+			WARS_WON: [],
+			WARS_LOST: [],
+			AVG_ACTIVITY: [],
+			ACTIVE_MEMBERS: []
+		};
+
 		for (const clan of clans) {
 			const wars = await this.getWars(clan.tag);
 			const action = await this.getActivity(clan.tag);
 			const season = await this.getSeason(clan.tag);
 
-			if (!wars.length || !action || !season) break;
+			if (!wars.length || !action || !season) continue;
 
 			const won = wars.filter(war => war.result).length;
 			const lost = wars.filter(war => !war.result).length;
 
-			const embed = new MessageEmbed()
-				.setAuthor(`${clan.name} (${clan.tag})`)
-				.setDescription([
-					'**Total Wars**',
-					`${EMOJIS.CROSS_SWORD} ${wars.length} Wars ${EMOJIS.OK} ${won} Won ${EMOJIS.WRONG} ${lost} Lost`,
-					'',
-					'**Total Donation**',
-					`${EMOJIS.TROOPS_DONATE} ${season.donations} ${EMOJIS.UP_KEY} ${season.donationsReceived} ${EMOJIS.DOWN_KEY}`,
-					'',
-					'**Total Attacks**',
-					`${EMOJIS.SWORD} ${season.attackWins} ${EMOJIS.SHIELD} ${season.defenseWins}`,
-					'',
-					'**Avg. Activity**',
-					`${EMOJIS.ACTIVITY} ${action.avg_total.toFixed()}`,
-					'',
-					'**Active Members**',
-					`${EMOJIS.USER_BLUE} ${action.avg_online.toFixed()}`
-				]);
+			OBJ.WARS_WON.push({ name: clan.name, value: won, key: `${EMOJIS.CROSS_SWORD} Wars Won` });
+			OBJ.WARS_LOST.push({ name: clan.name, value: lost, key: `${EMOJIS.EMPTY_SWORD} Wars Lost` });
+			OBJ.DONATED.push({ name: clan.name, value: season.donations, key: `${EMOJIS.TROOPS_DONATE} Troops Donated` });
+			OBJ.ATTACKS.push({ name: clan.name, value: season.attackWins, key: `${EMOJIS.SWORD} Attacks Won` });
+			OBJ.AVG_ACTIVITY.push({ name: clan.name, value: action.avg_total, key: `${EMOJIS.ACTIVITY} Avg. Activity` });
+			OBJ.ACTIVE_MEMBERS.push({ name: clan.name, value: action.avg_online, key: `${EMOJIS.USER_BLUE} Active Members` });
+		}
 
-			if (!message.hasOwnProperty('token')) {
-				embed.setFooter(`Season ${Season.previousID}`);
+		const fields = Object.values(OBJ);
+		for (const field of Array(3).fill(0).map(() => fields.splice(0, 2))) {
+			const embed = new MessageEmbed();
+			for (const data of field) {
+				const pad = data[0].value.toFixed().length + 1;
+
+				embed.addField(data[0].key, [
+					data.sort((a, b) => b.value - a.value).slice(0, 15)
+						.map(
+							(en, i) => `${BLUE_NUMBERS[++i]} \`\u200e${en.value.toFixed().padStart(pad, ' ')} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``
+						)
+						.join('\n')
+				], message.hasOwnProperty('token'));
 			}
 
 			embeds.push(embed);
 		}
-		if (!embeds.length) return message.util!.send('**No data available at this moment!**');
 
+		if (!embeds.length) return message.util!.send('**No data available at this moment!**');
+		const author = { name: `${message.guild!.name}\'s Clan Summary` };
 		if (!message.hasOwnProperty('token')) {
-			return embeds.map(embed => message.channel.send({ embed }));
+			const length = embeds.reduce((prev, curr) => curr.length + prev, 0);
+			if (length > 6000) {
+				return embeds.map(embed => message.channel.send({ embed }));
+			}
+			return message.util!.send({
+				embed: { author, fields: embeds.map(embed => embed.fields).flat() }
+			});
 		}
+		embeds[0].author = author;
 		return message.util!.send(`**Clan Summary (Season ${Season.previousID})**`, embeds);
 	}
 

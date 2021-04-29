@@ -22,8 +22,7 @@ export default class WarSummaryCommand extends Command {
 			.toArray();
 		if (!clans.length) return message.util!.send(`**${message.guild!.name} does not have any clans. Why not add some?**`);
 
-		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message));
+		const embed = new MessageEmbed();
 		for (const clan of clans) {
 			const data: ClanWar = await this.getWAR(clan.tag);
 			if (!data.ok) continue;
@@ -38,7 +37,22 @@ export default class WarSummaryCommand extends Command {
 		}
 
 		if (!embed.length) return message.util!.send('Clans are not in war!');
-		return message.util!.send({ embed });
+
+		return Array(Math.ceil(embed.fields.length / 15)).fill(0)
+			.map(
+				() => embed.fields.splice(0, 15)
+			)
+			.map(
+				fields => new MessageEmbed({ color: this.client.embed(message), fields })
+			)
+			.map(
+				(embed, index) => {
+					if (index === 0) {
+						return message.util!.send({ embed });
+					}
+					return message.channel.send({ embed });
+				}
+			);
 	}
 
 	private get onGoingCWL() {
