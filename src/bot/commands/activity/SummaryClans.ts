@@ -51,7 +51,7 @@ export default class ClanSummaryCommand extends Command {
 			OBJ.ACTIVE_MEMBERS.push({ name: clan.name, value: action.avg_online, key: `${EMOJIS.USER_BLUE} Active Members` });
 		}
 
-		if (!embeds.length) return message.util!.send('**No data available at this moment!**');
+		if (!OBJ.DONATED.length) return message.util!.send('**No data available at this moment!**');
 
 		const fields = Object.values(OBJ);
 		for (const field of Array(3).fill(0).map(() => fields.splice(0, 2))) {
