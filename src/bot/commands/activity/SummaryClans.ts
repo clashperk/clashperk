@@ -23,15 +23,14 @@ export default class ClanSummaryCommand extends Command {
 			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
 		}
 
-		console.log(clans);
 		const embeds = [];
 		const OBJ: { [key: string]: { name: string; value: number; key: string }[] } = {
 			DONATED: [],
 			ATTACKS: [],
-			WARS_WON: [],
-			WARS_LOST: [],
 			AVG_ACTIVITY: [],
-			ACTIVE_MEMBERS: []
+			ACTIVE_MEMBERS: [],
+			WARS_WON: [],
+			WARS_LOST: []
 		};
 
 		for (const clan of clans) {
@@ -52,6 +51,8 @@ export default class ClanSummaryCommand extends Command {
 			OBJ.ACTIVE_MEMBERS.push({ name: clan.name, value: action.avg_online, key: `${EMOJIS.USER_BLUE} Active Members` });
 		}
 
+		if (!embeds.length) return message.util!.send('**No data available at this moment!**');
+
 		const fields = Object.values(OBJ);
 		for (const field of Array(3).fill(0).map(() => fields.splice(0, 2))) {
 			const embed = new MessageEmbed();
@@ -70,18 +71,19 @@ export default class ClanSummaryCommand extends Command {
 			embeds.push(embed);
 		}
 
-		if (!embeds.length) return message.util!.send('**No data available at this moment!**');
-		const author = { name: `${message.guild!.name}\'s Clan Summary` };
 		if (!message.hasOwnProperty('token')) {
 			const length = embeds.reduce((prev, curr) => curr.length + prev, 0);
 			if (length > 6000) {
-				return embeds.map(embed => message.channel.send({ embed }));
+				return embeds.map(
+					(embed, num) => message.channel.send(
+						num === 0 ? `**Clan Summary (Season ${Season.previousID})**` : '', { embed }
+					)
+				);
 			}
-			return message.util!.send({
-				embed: { author, fields: embeds.map(embed => embed.fields).flat() }
+			return message.util!.send(`**Clan Summary (Season ${Season.previousID})**`, {
+				embed: { fields: embeds.map(embed => embed.fields).flat() }
 			});
 		}
-		embeds[0].author = author;
 		return message.util!.send(`**Clan Summary (Season ${Season.previousID})**`, embeds);
 	}
 
