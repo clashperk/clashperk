@@ -70,31 +70,33 @@ export default class ClanSummaryCommand extends Command {
 			OBJ.WARS_LOST.push({ name: clan.name, value: lost, key: `${EMOJIS.EMPTY_SWORD} Wars Lost` });
 			OBJ.DONATED.push({ name: clan.name, value: season_stats.donations, key: `${EMOJIS.TROOPS_DONATE} Troops Donated` });
 			OBJ.ATTACKS.push({ name: clan.name, value: season_stats.attackWins, key: `${EMOJIS.SWORD} Attacks Won` });
-			OBJ.AVG_ACTIVITY.push({ name: clan.name, value: action.avg_total, key: `${EMOJIS.ACTIVITY} Avg. Activity` });
-			OBJ.ACTIVE_MEMBERS.push({ name: clan.name, value: action.avg_online, key: `${EMOJIS.USER_BLUE} Active Members` });
+			OBJ.AVG_ACTIVITY.push({ name: clan.name, value: Math.floor(action.avg_total), key: `${EMOJIS.ACTIVITY} Avg. Activity` });
+			OBJ.ACTIVE_MEMBERS.push({ name: clan.name, value: Math.floor(action.avg_online), key: `${EMOJIS.USER_BLUE} Active Members` });
 		}
 
 		if (!OBJ.DONATED.length) return message.util!.send('**No data available at this moment!**');
 
+		const interaction = message.hasOwnProperty('token');
 		const fields = Object.values(OBJ);
 		for (const field of Array(3).fill(0).map(() => fields.splice(0, 2))) {
 			const embed = new MessageEmbed();
 			for (const data of field) {
-				const pad = data[0].value.toFixed().length + 1;
+				const pad = data[0].value.toLocaleString().length + 1;
 
 				embed.addField(data[0].key, [
 					data.sort((a, b) => b.value - a.value).slice(0, 15)
-						.map(
-							(en, i) => `${BLUE_NUMBERS[++i]} \`\u200e${en.value.toFixed().padStart(pad, ' ')} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``
-						)
+						.map((en, i) => {
+							const num = en.value.toLocaleString().padStart(pad, ' ');
+							return `${BLUE_NUMBERS[++i]} \`\u200e${num} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``;
+						})
 						.join('\n')
-				], message.hasOwnProperty('token'));
+				], interaction);
 			}
 
 			embeds.push(embed);
 		}
 
-		if (!message.hasOwnProperty('token')) {
+		if (!interaction) {
 			const length = embeds.reduce((prev, curr) => curr.length + prev, 0);
 			if (length > 6000) {
 				return embeds.map(
