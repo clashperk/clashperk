@@ -81,10 +81,11 @@ export default class ClanSummaryCommand extends Command {
 		for (const field of Array(3).fill(0).map(() => fields.splice(0, 2))) {
 			const embed = new MessageEmbed();
 			for (const data of field) {
+				data.sort((a, b) => b.value - a.value);
 				const pad = data[0].value.toLocaleString().length + 1;
 
 				embed.addField(data[0].key, [
-					data.sort((a, b) => b.value - a.value).slice(0, 15)
+					data.slice(0, 15)
 						.map((en, i) => {
 							const num = en.value.toLocaleString().padStart(pad, ' ');
 							return `${BLUE_NUMBERS[++i]} \`\u200e${num} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``;
