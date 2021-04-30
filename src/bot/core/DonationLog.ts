@@ -115,7 +115,7 @@ export default class DonationLog {
 		if (webhooks.size === 10) return this.stopWebhookCheck(id);
 		const webhook = await channel.createWebhook(
 			this.client.user!.username,
-			{ avatar: this.client.user!.displayAvatarURL({ size: 2048 }) }
+			{ avatar: this.client.user!.displayAvatarURL({ size: 2048, format: 'png' }) }
 		).catch(() => null);
 
 		if (webhook) {

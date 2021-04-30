@@ -10,8 +10,8 @@ export default class WebhookUpdateListener extends Listener {
 		});
 	}
 
-	public async exec(channel: TextChannel) {
-		await channel.guild.fetchWebhooks();
+	public exec(channel: TextChannel) {
+		// await channel.guild.fetchWebhooks();
 		console.log(channel.id);
 	}
 }
