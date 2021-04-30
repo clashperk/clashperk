@@ -104,6 +104,7 @@ export default class Client extends AkairoClient {
 			ws: {
 				intents: [
 					Intents.FLAGS.GUILDS,
+					Intents.FLAGS.GUILD_WEBHOOKS,
 					Intents.FLAGS.GUILD_MESSAGES,
 					Intents.FLAGS.GUILD_MESSAGE_REACTIONS
 				]

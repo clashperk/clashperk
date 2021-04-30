@@ -1,4 +1,4 @@
-import { MessageEmbed, PermissionString, TextChannel, Collection, Guild, GuildMember } from 'discord.js';
+import { MessageEmbed, PermissionString, TextChannel, Collection, Guild, GuildMember, WebhookClient } from 'discord.js';
 import { TOWN_HALLS, EMOJIS, PLAYER_LEAGUES, HEROES } from '../util/Emojis';
 import { COLLECTIONS } from '../util/Constants';
 import { Collections } from '@clashperk/node';
@@ -64,27 +64,114 @@ export default class ClanFeedLog {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
-				return this.handleMessage(channel, data, id);
+				if (this.hasWebhookPermission(channel)) {
+					const webhook = await this.webhook(id);
+					if (webhook) return this.handleMessage(id, webhook, data);
+				}
+				return this.handleMessage(id, channel, data);
 			}
 		}
 	}
 
-	private async handleMessage(channel: TextChannel, data: Feed, id: string) {
+	private async handleMessage(id: string, channel: TextChannel | WebhookClient, data: Feed) {
 		return Promise.allSettled([
 			this.clanUpdate(channel, data, id)
 			// this.clanMemberUpdate(channel, data)
 		]);
 	}
 
-	private async clanUpdate(channel: TextChannel, data: Feed, id: string) {
+	private hasWebhookPermission(channel: TextChannel) {
+		return channel.permissionsFor(channel.guild.me!)!.has(['MANAGE_WEBHOOKS']) && channel.permissionsFor(channel.guild.id)!.has(['USE_EXTERNAL_EMOJIS']);
+	}
+
+	private recreateWebhook(id: string) {
+		const cache = this.cached.get(id);
+		cache.webhook = null;
+		this.cached.set(id, cache);
+		return this.webhook(id);
+	}
+
+	private stopWebhookCheck(id: string) {
+		const cache = this.cached.get(id);
+		cache.webhook = null;
+		cache.no_webhook = true;
+		this.cached.set(id, cache);
+		return null;
+	}
+
+	private async webhook(id: string): Promise<WebhookClient | null> {
+		const cache = this.cached.get(id);
+		if (cache.no_webhook) return null;
+		if (cache.webhook) return cache.webhook;
+
+		const channel = this.client.channels.cache.get(cache.channel) as TextChannel;
+		const webhooks = await channel.fetchWebhooks();
+		if (webhooks.size) {
+			const webhook = webhooks.find(hook => (hook.owner as any)?.id === this.client.user?.id);
+
+			if (webhook) {
+				cache.webhook = new WebhookClient(webhook.id, webhook.token!);
+				this.cached.set(id, cache);
+
+				await this.client.db.collection(Collections.CLAN_FEED_LOGS)
+					.updateOne(
+						{ channel: channel.id, guild: channel.guild.id },
+						{ $set: { webhook_id: webhook.id, webhook_token: webhook.token } }
+					);
+
+				return cache.webhook;
+			}
+		}
+
+		if (webhooks.size === 10) return this.stopWebhookCheck(id);
+		const webhook = await channel.createWebhook(
+			this.client.user!.username,
+			{ avatar: this.client.user!.displayAvatarURL({ size: 2048 }) }
+		).catch(() => null);
+
+		if (webhook) {
+			cache.webhook = new WebhookClient(webhook.id, webhook.token!);
+			this.cached.set(id, cache);
+
+			await this.client.db.collection(Collections.CLAN_FEED_LOGS)
+				.updateOne(
+					{ channel: channel.id, guild: channel.guild.id },
+					{ $set: { webhook_id: webhook.id, webhook_token: webhook.token } }
+				);
+
+			return cache.webhook;
+		}
+
+		return this.stopWebhookCheck(id);
+	}
+
+
+	private async clanUpdate(channel: TextChannel | WebhookClient, data: Feed, id: string) {
 		const members = data.members.filter(mem => mem.op !== 'ROLE_UPADTE');
 		const delay = members.length >= 5 ? 2000 : 250;
+		const cache = this.cached.get(id);
 
-		for (const member of members.sort((a, b) => a.rand - b.rand)) {
-			const ctx = await this.embed(channel, member, data, id);
-			if (!ctx) continue;
+		members.sort((a, b) => a.rand - b.rand);
+		const messages = await Promise.all(members.map(m => this.embed(id, m, data)));
 
-			await channel.send(ctx).catch(() => null);
+		for (const message of messages) {
+			if (!message) continue;
+			if (channel instanceof TextChannel) {
+				await channel.send(message).catch(() => null);
+			} else {
+				try {
+					const msg = await channel.send(message.content, { embeds: [message.embed] });
+					if (msg.channel.id !== cache.channel) {
+						await msg.delete();
+						return this.recreateWebhook(id);
+					}
+				} catch (error) {
+					if (error.code === 10015) {
+						return this.recreateWebhook(id);
+					}
+				}
+			}
+
 			await this.delay(delay);
 		}
 
@@ -153,7 +240,7 @@ export default class ClanFeedLog {
 		return member.roles.highest.position > role.position;
 	}
 
-	private async embed(channel: TextChannel, member: Member, data: Feed, id: string) {
+	private async embed(id: string, member: Member, data: Feed) {
 		const cache = this.cached.get(id);
 		if (!cache) return null;
 		const player: Player = await this.client.http.player(member.tag);
@@ -184,9 +271,10 @@ export default class ClanFeedLog {
 			].join(' '));
 
 			if (flag) {
+				const guild = this.client.guilds.cache.get(cache.guild)!;
 				const user = await this.client.users.fetch(flag.user, false).catch(() => null);
-				if (channel.guild.roles.cache.has(cache.role)) {
-					const role = channel.guild.roles.cache.get(cache.role);
+				if (guild.roles.cache.has(cache.role)) {
+					const role = guild.roles.cache.get(cache.role);
 					content = `${role!.toString()}`;
 				}
 				embed.setDescription([
