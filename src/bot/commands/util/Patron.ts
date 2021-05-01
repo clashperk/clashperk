@@ -71,21 +71,30 @@ export default class PatronCommand extends Command {
 		}
 
 		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message))
+			.setColor(16345172)
 			.setAuthor(this.client.user!.username, this.client.user!.displayAvatarURL(), 'https://www.patreon.com/clashperk')
 			.setDescription([
 				'Help us with our hosting related expenses.',
-				'Any help is beyond appreciated.',
+				'Any help is beyond appreciated. Thanks!',
 				'',
 				'**Benefits**',
-				'• Faster updates & only 1 sec cooldown',
-				'• Claim unlimited number of clans',
-				'• Create live clan promotional embeds',
-				'• Customize embed color in your discord',
-				'• Export members, wars & season to excel',
-				'• Patron role on our support discord',
+				'🔸 Only one sec cooldown and faster updates.',
+				//
+				'🔸 Special commands, custom Embed colors.',
+				//
+				'🔸 Self updating Clan Promotional Embed.',
+				//
+				'🔸 Claim unlimited number of clans.',
 				'',
-				'[Become a Patron](https://www.patreon.com/clashperk)'
+				'🔸 Export to Excel File',
+				'\u200e \u2002 🔹 Current/historic war attacks.',
+				'\u200e \u2002 🔹 Clan Members with many stats.',
+				'\u200e \u2002 🔹 Current CWL attacks and summary.',
+				'\u200e \u2002 🔹 Season stats with Discord username.',
+				'',
+				'🔸 Patron Role on our Support Discord.',
+				'',
+				'**[Support us on Patreon](https://www.patreon.com/clashperk) | [Support Discord](https://discord.gg/ppuppun)**'
 			]);
 
 		if (!(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'READ_MESSAGE_HISTORY'], false)) {

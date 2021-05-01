@@ -1,7 +1,7 @@
 import { Season, Collections } from '@clashperk/node';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
-import { Clan } from 'clashofclans.js';
+import { Clan, ClanMember } from 'clashofclans.js';
 import { Message } from 'discord.js';
 
 // TODO: Fix TS
@@ -49,7 +49,10 @@ export default class ExportSeason extends Command {
 		const patron = this.client.patrons.get(message.guild!.id);
 
 		const _clans: Clan[] = (await Promise.all(clans.map(clan => this.client.http.clan(clan.tag)))).filter(res => res.ok);
-		const allMembers = _clans.map(clan => clan.memberList).flat();
+		const allMembers = _clans.reduce((previous, current) => {
+			previous.push(...current.memberList.map(mem => ({ ...mem, clanTag: current.tag })));
+			return previous;
+		}, [] as (ClanMember & { clanTag: string })[]);
 
 		const memberTags: { tag: string; user: string }[] = [];
 		if (patron) {
@@ -68,10 +71,15 @@ export default class ExportSeason extends Command {
 			await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
 		}
 
-		const members = await this.client.db.collection(Collections.CLAN_MEMBERS)
-			.find({ tag: { $in: allMembers.map(m => m.tag) }, clanTag: { $in: _clans.map(clan => clan.tag) }, season })
-			.sort({ createdAt: -1 })
-			.toArray();
+		const members = [];
+		for (const clan of clans) {
+			const data = await this.client.db.collection(Collections.CLAN_MEMBERS)
+				.find({ tag: { $in: allMembers.filter(m => m.clanTag === clan.tag).map(m => m.tag) }, clanTag: clan.tag, season })
+				.sort({ createdAt: -1 })
+				.toArray();
+			members.push(...data);
+		}
+
 
 		const lastseen = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan)))).flat();
 		for (const mem of members) {
