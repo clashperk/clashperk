@@ -1,7 +1,7 @@
 import { Collections, Season } from '@clashperk/node';
 import { Clan } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, Message, Util } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
 
@@ -116,7 +116,9 @@ export default class DonationSummaryCommand extends Command {
 		embed.setDescription([
 			'**Top Clans**',
 			`${EMOJIS.HASH} \`\u200e${'DON'.padStart(clan_dp, ' ')} ${'REC'.padStart(clan_rp, ' ')}  ${'CLAN'.padEnd(15, ' ')}\u200f\``,
-			aggregated.map((clan, n) => `${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(clan.donationsReceived, clan_rp)}  ${clan.name.padEnd(15, ' ')}\u200f\``).join('\n')
+			Util.splitMessage(
+				aggregated.map((clan, n) => `${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(clan.donationsReceived, clan_rp)}  ${clan.name.padEnd(15, ' ')}\u200f\``).join('\n')
+			)[0]
 		]);
 		embed.addField('\u200b', [
 			'**Top Players**',

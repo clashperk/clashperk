@@ -145,14 +145,13 @@ export default class ClanFeedLog {
 		return this.stopWebhookCheck(id);
 	}
 
-
 	private async clanUpdate(channel: TextChannel | WebhookClient, data: Feed, id: string) {
 		const members = data.members.filter(mem => mem.op !== 'ROLE_UPADTE');
 		const delay = members.length >= 5 ? 2000 : 250;
 		const cache = this.cached.get(id);
 
 		members.sort((a, b) => a.rand - b.rand);
-		const messages = await Promise.all(members.map(m => this.embed(id, m, data)));
+		const messages = await Promise.all(members.map(mem => this.embed(id, mem, data)));
 
 		for (const message of messages) {
 			if (!message) continue;
