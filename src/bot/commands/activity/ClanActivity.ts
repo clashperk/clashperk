@@ -37,7 +37,7 @@ export default class ClanActivityCommand extends Command {
 			match: msg.hasOwnProperty('token') ? 'option' : 'content',
 			type: async (msg: Message, args: string) => {
 				const tags = args ? args.split(/ +/g) : [];
-				if (args && tags.length > 1) return args.split(/ +/g);
+				if (tags.length > 1) return args.split(/ +/g);
 				return this.client.resolver.resolveClan(msg, args);
 			}
 		};
