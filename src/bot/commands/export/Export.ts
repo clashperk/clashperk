@@ -23,6 +23,9 @@ export default class Export extends Command {
 					'• **Export Clan Stats**',
 					'• `CLANS`',
 					'',
+					'• **Export Clan Members (Patron Only)**',
+					'• `MEMBERS`',
+					'',
 					'- Season ID must be under 3 months old and must follow `YYYY-MM` format.',
 					'',
 					'**[Support us on Patreon](https://patreon.com/clashperk)**'
@@ -41,7 +44,8 @@ export default class Export extends Command {
 				['export-missed', 'missed'],
 				['export-season', 'season'],
 				['export-wars', 'war', 'wars'],
-				['export-clans', 'clan', 'clans']
+				['export-clans', 'clan', 'clans'],
+				['export-members', 'member', 'members']
 			],
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})

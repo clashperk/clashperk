@@ -575,6 +575,10 @@ export const commands: { name: string; description: string; options?: APIApplica
 					{
 						name: 'Clan Stats',
 						value: 'clans'
+					},
+					{
+						name: 'Clan Members',
+						value: 'members'
 					}
 				]
 			},
