@@ -70,17 +70,13 @@ export default class CWLLineupComamnd extends Command {
 		const pages = Util.splitMessage([
 			`**Clan War League Round #${rounds.length}**`,
 			'',
-			interaction
-				? `**[${Util.escapeMarkdown(data.clan.name)} (${data.clan.tag})](<${this.clanURL(data.clan.tag)}>)**`
-				: `**${Util.escapeMarkdown(data.clan.name)} (${data.clan.tag})**`,
+			`\u200e**${Util.escapeMarkdown(data.clan.name)} (${data.clan.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
 			data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
 				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
 			).join('\n'),
 			'',
-			interaction
-				? `**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](<${this.clanURL(data.opponent.tag)}>)**`
-				: `**${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})**`,
+			`\u200e**${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
 			data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
 				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`

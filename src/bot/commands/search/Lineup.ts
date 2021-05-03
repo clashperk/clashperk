@@ -56,17 +56,13 @@ export default class LineupCommand extends Command {
 
 		const interaction = message.hasOwnProperty('token');
 		const chunks = Util.splitMessage([
-			interaction
-				? `**[${Util.escapeMarkdown(body.clan.name)} (${body.clan.tag})](<${this.clanURL(body.clan.tag)}>)**`
-				: `**${Util.escapeMarkdown(body.clan.name)} (${body.clan.tag})**`,
+			`\u200e**${Util.escapeMarkdown(body.clan.name)} (${body.clan.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
 			body.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
 				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
 			).join('\n'),
 			'',
-			interaction
-				? `**[${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})](<${this.clanURL(body.opponent.tag)}>)**`
-				: `**${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})**`,
+			`\u200e**${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
 			body.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
 				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
