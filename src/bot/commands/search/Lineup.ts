@@ -54,21 +54,25 @@ export default class LineupCommand extends Command {
 			return message.util!.send({ embed });
 		}
 
+		const interaction = message.hasOwnProperty('token');
 		const chunks = Util.splitMessage([
-			`**${body.clan.name} (${body.clan.tag})**`,
+			interaction
+				? `**[${Util.escapeMarkdown(body.clan.name)} (${body.clan.tag})](<${this.clanURL(body.clan.tag)}>)**`
+				: `**${Util.escapeMarkdown(body.clan.name)} (${body.clan.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
 			body.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
-				mem => `${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
+				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
 			).join('\n'),
 			'',
-			`**${body.opponent.name} (${body.opponent.tag})**`,
+			interaction
+				? `**[${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})](<${this.clanURL(body.opponent.tag)}>)**`
+				: `**${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
 			body.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
-				mem => `${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
+				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
 			).join('\n')
 		]);
 
-		const interaction = message.hasOwnProperty('token');
 		if (interaction) await message.util!.send(chunks[0]);
 		if (chunks.length === 1 && interaction) return;
 		return message.channel.send(chunks.slice(interaction ? 1 : 0), { split: true });
@@ -85,5 +89,9 @@ export default class LineupCommand extends Command {
 			count[townHall] = (count[townHall] as number || 0) + 1;
 			return count;
 		}, {} as { [key: string]: number });
+	}
+
+	private clanURL(tag: string) {
+		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 }

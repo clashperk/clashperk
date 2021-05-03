@@ -75,7 +75,7 @@ export default class CWLLineupComamnd extends Command {
 				: `**${Util.escapeMarkdown(data.clan.name)} (${data.clan.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
 			data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
-				mem => `${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
+				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
 			).join('\n'),
 			'',
 			interaction
@@ -83,7 +83,7 @@ export default class CWLLineupComamnd extends Command {
 				: `**${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
 			data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
-				mem => `${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
+				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
 			).join('\n')
 		]);
 
