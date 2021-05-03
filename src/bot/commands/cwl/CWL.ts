@@ -63,7 +63,7 @@ export default class CWLComamnd extends Command {
 				['cwl-legends', 'top', 'mvp', 'legends'],
 				['cwl-ranking', 'rank', 'ranks', 'ranking'],
 				['cwl-members', 'members', 'mem'],
-				['cwl-lineup-list', 'lineup'],
+				['cwl-lineup', 'lineup'],
 				['cwl-export', 'export'],
 				['cwl-stars', 'stars', 'star'],
 				['cwl-gained', 'gained', 'gain', 'lost']

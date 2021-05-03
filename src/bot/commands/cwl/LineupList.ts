@@ -69,7 +69,6 @@ export default class CWLLineupComamnd extends Command {
 		const interaction = message.hasOwnProperty('token');
 		const pages = Util.splitMessage([
 			`**Clan War League Round #${rounds.length}**`,
-			'',
 			`\u200e**${Util.escapeMarkdown(data.clan.name)} (${data.clan.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
 			data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
