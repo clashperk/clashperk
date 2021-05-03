@@ -71,7 +71,7 @@ export default class CWLLineupComamnd extends Command {
 			`**Clan War League Round #${rounds.length}**`,
 			'',
 			interaction
-				? `**[${Util.escapeMarkdown(data.clan.name)} (${data.clan.tag})](${this.clanURL(data.clan.tag)})**`
+				? `**[${Util.escapeMarkdown(data.clan.name)} (${data.clan.tag})](<${this.clanURL(data.clan.tag)}>)**`
 				: `**${Util.escapeMarkdown(data.clan.name)} (${data.clan.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
 			data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
@@ -79,7 +79,7 @@ export default class CWLLineupComamnd extends Command {
 			).join('\n'),
 			'',
 			interaction
-				? `**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
+				? `**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](<${this.clanURL(data.opponent.tag)}>)**`
 				: `**${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
 			data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
