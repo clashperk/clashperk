@@ -1,6 +1,5 @@
-import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { Clan, ClanWar, ClanWarLeague } from 'clashofclans.js';
-import { MessageEmbed, Message, Util } from 'discord.js';
+import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 
@@ -8,7 +7,7 @@ export default class CWLLineupComamnd extends Command {
 	public constructor() {
 		super('cwl-lineup-list', {
 			category: 'cwl_',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: [
 					'Shows lineup of the current round.'
@@ -26,6 +25,8 @@ export default class CWLLineupComamnd extends Command {
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
+		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
+
 		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
 			return message.util!.send('**504 Request Timeout!**');
@@ -47,8 +48,9 @@ export default class CWLLineupComamnd extends Command {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
 
+		let i = 0;
 		const chunks = [];
-		for (const { warTags } of rounds.slice(-1)) {
+		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
 				if (!data.ok) continue;
@@ -56,35 +58,51 @@ export default class CWLLineupComamnd extends Command {
 				if ((data.clan.tag === clanTag) || (data.opponent.tag === clanTag)) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
-					chunks.push({ state: data.state, clan, opponent });
+					chunks.push({ state: data.state, round: ++i, clan, opponent });
 				}
 			}
 		}
 
 		if (!chunks.length) return message.util!.send('**504 Request Timeout!**');
+
 		const data = chunks.length === 7
 			? chunks.find(c => c.state === 'preparation') ?? chunks.slice(-1)[0]
 			: chunks.slice(-2).reverse()[0];
 
-		const interaction = message.hasOwnProperty('token');
-		const pages = Util.splitMessage([
-			`**Clan War League Round #${rounds.length}**`,
-			`\u200e**${Util.escapeMarkdown(data.clan.name)} (${data.clan.tag})**`,
-			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
-			data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
-				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
-			).join('\n'),
-			'',
-			`\u200e**${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})**`,
-			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
-			data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
-				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
-			).join('\n')
-		]);
+		const embeds = [
+			new MessageEmbed()
+				.setColor(this.client.embed(message))
+				.setAuthor(
+					`${data.clan.name} (${data.clan.tag})`,
+					data.clan.badgeUrls.medium,
+					this.clanURL(data.clan.tag)
+				)
+				.setDescription(
+					data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition)
+						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')}) `)
+				)
+				.setFooter(`Round #${data.round}`),
 
-		if (interaction) await message.util!.send(pages[0]);
-		if (pages.length === 1 && interaction) return;
-		return message.channel.send(pages.slice(interaction ? 1 : 0), { split: true });
+			new MessageEmbed()
+				.setColor(this.client.embed(message))
+				.setAuthor(
+					`${data.opponent.name} (${data.opponent.tag})`,
+					data.opponent.badgeUrls.medium,
+					this.clanURL(data.opponent.tag)
+				)
+				.setDescription(
+					data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
+						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')}) `)
+				)
+				.setFooter(`Round #${data.round}`)
+		];
+
+		await message.util!.send(`**${data.clan.name}** vs **${data.opponent.name}**`, embeds);
+		if (!message.hasOwnProperty('token')) return message.channel.send({ embed: embeds[1] });
+	}
+
+	private pad(num: number) {
+		return num.toString().padStart(2, ' ');
 	}
 
 	private clanURL(tag: string) {
