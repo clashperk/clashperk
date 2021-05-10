@@ -63,9 +63,9 @@ export default class WarLogCommand extends Command {
 			const { clan, opponent } = item;
 			const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
 			embed.addField(
-				`\u200b\n\u200e${this.result(item.result)} ${opponent.name as string || 'Clan War League'} ${extra ? `\u200e(#${extra.id})` : ''}`,
+				`\u200b\n\u200e${this.result(item.result)} ${opponent.name || 'Clan War League'} ${extra ? `\u200e(#${extra.id})` : ''}`,
 				[
-					`${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${EMOJIS.FIRE} ${clan.destructionPercentage.toFixed(2)}% ${opponent.name ? `/ ${opponent.destructionPercentage.toFixed(2)}%` : ''}`,
+					`${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${EMOJIS.FIRE} ${(clan.destructionPercentage || 0).toFixed(2)}% ${opponent.name ? `/ ${(opponent.destructionPercentage || 0).toFixed(2)}%` : ''}`,
 					`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${EMOJIS.SWORD} ${clan.attacks}${extra ? ` / ${extra.attacks}` : ''} ${EMOJIS.CLOCK} ${time} ago`
 				]
 			);

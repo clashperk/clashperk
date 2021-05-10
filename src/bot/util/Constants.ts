@@ -3,7 +3,7 @@ import { Collections } from '@clashperk/node';
 import { Clan } from 'clashofclans.js';
 
 export const Util = {
-	escapeSheetName: (name: string) => name.replace(/[\*\?\:\[\]\\\/]/g, ''),
+	escapeSheetName: (name: string) => name.replace(/[\*\?\:\[\]\\\/\']/g, ''),
 	verifyClan: (code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) => {
 		// clan verification by unique code or verified co/leader
 		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
