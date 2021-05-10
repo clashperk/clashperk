@@ -1,4 +1,4 @@
-import { ClanWar, ClanWarClan, ClanWarLeague, ClanWarLeagueWar, ClanWarMember, ClanWarOpponent } from 'clashofclans.js';
+import { ClanWar, WarClan, ClanWarMember } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Message, MessageEmbed } from 'discord.js';
 import { COLLECTIONS } from '../../util/Constants';
@@ -24,7 +24,7 @@ export default class WarSummaryCommand extends Command {
 
 		const embed = new MessageEmbed();
 		for (const clan of clans) {
-			const data: ClanWar = await this.getWAR(clan.tag);
+			const data = await this.getWAR(clan.tag) as ClanWar;
 			if (!data.ok) continue;
 			if (data.state === 'notInWar') continue;
 
@@ -65,7 +65,7 @@ export default class WarSummaryCommand extends Command {
 	}
 
 	private async getCWL(clanTag: string) {
-		const res: ClanWarLeague = await this.client.http.clanWarLeague(clanTag);
+		const res = await this.client.http.clanWarLeague(clanTag);
 		if (res.statusCode === 504) return { statusCode: 504 };
 		if (!res.ok) return this.client.http.currentClanWar(clanTag);
 		const rounds = res.rounds.filter(d => !d.warTags.includes('#0'));
@@ -73,7 +73,7 @@ export default class WarSummaryCommand extends Command {
 		const chunks = [];
 		for (const { warTags } of rounds.slice(-2)) {
 			for (const warTag of warTags) {
-				const data: ClanWarLeagueWar = await this.client.http.clanWarLeagueWar(warTag);
+				const data = await this.client.http.clanWarLeagueWar(warTag);
 				if ((data.clan.tag === clanTag) || (data.opponent.tag === clanTag)) {
 					chunks.push({
 						...data,
@@ -104,7 +104,7 @@ export default class WarSummaryCommand extends Command {
 	}
 
 	// Calculates War Result
-	private result(clan: ClanWarClan, opponent: ClanWarOpponent) {
+	private result(clan: WarClan, opponent: WarClan) {
 		const tied = clan.stars === opponent.stars && clan.destructionPercentage === opponent.destructionPercentage;
 		if (tied) return 'tied';
 		const stars = clan.stars !== opponent.stars && clan.stars > opponent.stars;
@@ -113,7 +113,7 @@ export default class WarSummaryCommand extends Command {
 		return 'lost';
 	}
 
-	private getLeaderBoard(clan: ClanWarClan, opponent: ClanWarOpponent, teamSize: number) {
+	private getLeaderBoard(clan: WarClan, opponent: WarClan, teamSize: number) {
 		return [
 			`\`\u200e${this.value(clan.stars, teamSize * 3).padStart(13, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${this.value(opponent.stars, teamSize * 3).padEnd(13, ' ')}\u200f\``,
 			`\`\u200e${this.value(clan.attacks, teamSize * 2).padStart(13, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${this.value(opponent.attacks, teamSize * 2).padEnd(13, ' ')}\u200f\``,

@@ -41,7 +41,6 @@ export default class BoostsCommand extends Command {
 		const members = (await this.client.http.detailedClanMembers(data.memberList))
 			.filter(res => res.ok);
 
-		// @ts-expect-error
 		const boosting = members.filter(mem => mem.troops.filter(en => en.superTroopIsActive).length);
 		if (!boosting.length) return message.util!.send('No members found with active Super Troops!');
 
@@ -51,7 +50,6 @@ export default class BoostsCommand extends Command {
 
 		const memObj = boosting.reduce((pre, curr) => {
 			for (const troop of curr.troops) {
-				// @ts-expect-error
 				if (troop.name in SUPER_TROOPS && troop.superTroopIsActive) {
 					if (!(troop.name in pre)) pre[troop.name] = [];
 					const boosted = boostTimes.find(mem => mem.tag === curr.tag)?.superTroops?.find(en => en.name === troop.name);

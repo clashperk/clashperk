@@ -1,4 +1,4 @@
-import { Clan, ClanWarLeague, ClanWar } from 'clashofclans.js';
+import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { parseHits } from '../../core/WarHitarte';
 import { EMOJIS } from '../../util/Emojis';
 import { Command, Argument } from 'discord-akairo';
@@ -46,7 +46,7 @@ export default class CWLHitrateComamnd extends Command {
 		stars = typeof stars === 'number' ? stars : 3;
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
-		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
+		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
 			return message.util!.send([
 				'504 Request Timeout'
@@ -73,7 +73,7 @@ export default class CWLHitrateComamnd extends Command {
 		return this.rounds(message, body, data, round, stars);
 	}
 
-	private async rounds(message: Message, body: ClanWarLeague, clan: Clan, round: number, stars: number) {
+	private async rounds(message: Message, body: ClanWarLeagueGroup, clan: Clan, round: number, stars: number) {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		if (round && round > rounds.length) {

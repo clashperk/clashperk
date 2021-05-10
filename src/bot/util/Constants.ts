@@ -57,7 +57,8 @@ export const COLLECTIONS = {
 export const SETTINGS = {
 	PREFIX: 'prefix',
 	COLOR: 'color',
-	LIMIT: 'clanLimit'
+	LIMIT: 'clanLimit',
+	MOD_LOG: 'modLog'
 };
 
 export const Op = {

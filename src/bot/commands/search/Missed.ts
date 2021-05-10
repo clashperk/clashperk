@@ -1,7 +1,7 @@
 import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
-import { Clan, CurrentWar } from 'clashofclans.js';
+import { Clan, ClanWar } from 'clashofclans.js';
 import { Collections } from '@clashperk/node';
 import 'moment-duration-format';
 import moment from 'moment';
@@ -65,7 +65,7 @@ export default class MissedAttacksCommand extends Command {
 			return message.util!.send({ embed });
 		}
 
-		const body: CurrentWar = await this.client.http.currentClanWar(data.tag);
+		const body = await this.client.http.currentClanWar(data.tag);
 
 		if (body.state === 'notInWar') {
 			const isCWL = await this.client.http.clanWarLeague(data.tag).catch(() => null);
@@ -99,7 +99,7 @@ export default class MissedAttacksCommand extends Command {
 		return this.sendResult(message, data);
 	}
 
-	private sendResult(message: Message, body: CurrentWar) {
+	private sendResult(message: Message, body: ClanWar) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`\u200e${body.clan.name} (${body.clan.tag})`, body.clan.badgeUrls.medium);

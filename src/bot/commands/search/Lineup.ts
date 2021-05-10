@@ -1,7 +1,7 @@
 import { Command } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
-import { Clan, ClanWarClan, CurrentWar } from 'clashofclans.js';
+import { Clan, WarClan } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 
 export default class LineupCommand extends Command {
@@ -36,17 +36,17 @@ export default class LineupCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
 		if (!data.isWarLogPublic) {
-			const res = await this.client.http.clanWarLeague(data.tag).catch(() => null);
-			if (res?.ok) {
+			const res = await this.client.http.clanWarLeague(data.tag);
+			if (res.ok) {
 				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-lineup-list')!, false);
 			}
 			embed.setDescription('Private WarLog');
 			return message.util!.send({ embed });
 		}
 
-		const body: CurrentWar = await this.client.http.currentClanWar(data.tag);
+		const body = await this.client.http.currentClanWar(data.tag);
 		if (body.state === 'notInWar') {
-			const res = await this.client.http.clanWarLeague(data.tag).catch(() => null);
+			const res = await this.client.http.clanWarLeague(data.tag);
 			if (res.ok) {
 				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-lineup-list')!, false);
 			}
@@ -74,7 +74,7 @@ export default class LineupCommand extends Command {
 		return message.channel.send(chunks.slice(interaction ? 1 : 0), { split: true });
 	}
 
-	private flat(townHalls: number[], clan: ClanWarClan) {
+	private flat(townHalls: number[], clan: WarClan) {
 		const roster = this.roster(clan);
 		return townHalls.map(th => WHITE_NUMBERS[roster[th] || 0]).join('');
 	}
@@ -85,9 +85,5 @@ export default class LineupCommand extends Command {
 			count[townHall] = (count[townHall] as number || 0) + 1;
 			return count;
 		}, {} as { [key: string]: number });
-	}
-
-	private clanURL(tag: string) {
-		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 }

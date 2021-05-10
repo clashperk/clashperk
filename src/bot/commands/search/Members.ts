@@ -1,4 +1,4 @@
-import { Clan, Hero, Player } from 'clashofclans.js';
+import { Clan, PlayerItem, Player } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
@@ -103,7 +103,7 @@ export default class MembersCommand extends Command {
 		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 	}
 
-	private heroes(items: Hero[]) {
+	private heroes(items: PlayerItem[]) {
 		return Object.assign([
 			{ level: '  ' },
 			{ level: '  ' },

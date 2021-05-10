@@ -1,7 +1,7 @@
 import { Command } from 'discord-akairo';
 import { Util, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
-import { Clan, ClanWarLeague, Player } from 'clashofclans.js';
+import { Clan, Player } from 'clashofclans.js';
 
 export default class CWLMembersComamnd extends Command {
 	public constructor() {
@@ -31,7 +31,7 @@ export default class CWLMembersComamnd extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
-		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
+		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
 			return message.util!.send([
 				'504 Request Timeout'

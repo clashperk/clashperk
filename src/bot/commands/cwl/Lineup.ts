@@ -1,4 +1,4 @@
-import { Clan, ClanWar, ClanWarLeague, ClanWarMember, Player } from 'clashofclans.js';
+import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember, Player } from 'clashofclans.js';
 import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -40,7 +40,7 @@ export default class CWLLineupComamnd extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
-		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
+		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
 			return message.util!.send('**504 Request Timeout!**');
 		}
@@ -61,7 +61,7 @@ export default class CWLLineupComamnd extends Command {
 		return this.rounds(message, body, data);
 	}
 
-	private async rounds(message: Message, body: ClanWarLeague, clan: Clan) {
+	private async rounds(message: Message, body: ClanWarLeagueGroup, clan: Clan) {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
 

@@ -1,4 +1,4 @@
-import { Clan, ClanWar, ClanWarClan, ClanWarOpponent, ClanWarLeague } from 'clashofclans.js';
+import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message, Util } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
@@ -33,7 +33,7 @@ export default class CWLRosterComamnd extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
-		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
+		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
 			return message.util!.send('**504 Request Timeout!**');
 		}
@@ -59,7 +59,7 @@ export default class CWLRosterComamnd extends Command {
 		return { warTag, ...data };
 	}
 
-	private async rounds(message: Message, body: ClanWarLeague, clanTag: string) {
+	private async rounds(message: Message, body: ClanWarLeagueGroup, clanTag: string) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 
 		const clanRounds = [];
@@ -212,12 +212,12 @@ export default class CWLRosterComamnd extends Command {
 		return array;
 	}
 
-	private getNextRoster(clan: ClanWarClan, townHalls: number[]) {
+	private getNextRoster(clan: WarClan, townHalls: number[]) {
 		const roster = this.roster(clan);
 		return townHalls.map(th => WHITE_NUMBERS[roster[th] || 0]).join('');
 	}
 
-	private flat(tag: string, townHalls: number[], body: ClanWarLeague) {
+	private flat(tag: string, townHalls: number[], body: ClanWarLeagueGroup) {
 		const roster = this.roster(body.clans.find(clan => clan.tag === tag)!);
 		return townHalls.map(th => WHITE_NUMBERS[roster[th] || 0]).join('');
 	}
@@ -230,7 +230,7 @@ export default class CWLRosterComamnd extends Command {
 		}, {} as { [key: string]: number });
 	}
 
-	private winner(clan: ClanWarClan, opponent: ClanWarOpponent) {
+	private winner(clan: WarClan, opponent: WarClan) {
 		if (clan.stars > opponent.stars) {
 			return true;
 		} else if (clan.stars < opponent.stars) {

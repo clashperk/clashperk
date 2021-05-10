@@ -1,6 +1,5 @@
 import { MessageEmbed, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
-import { Clans } from 'clashofclans.js';
 
 export default class ClanSearchCommand extends Command {
 	public constructor() {
@@ -25,7 +24,7 @@ export default class ClanSearchCommand extends Command {
 	}
 
 	public async exec(message: Message, { name }: { name: string }) {
-		const data: Clans = await this.client.http.clans({ name, limit: 10 });
+		const data = await this.client.http.clans({ name, limit: 10 });
 		if (!data.ok) {
 			return message.channel.send('Something went wrong!');
 		}

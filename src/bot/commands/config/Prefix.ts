@@ -1,5 +1,6 @@
 import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 import { Message } from 'discord.js';
+import { SETTINGS } from '../../util/Constants';
 
 export default class PrefixCommand extends Command {
 	public constructor() {
@@ -47,7 +48,8 @@ export default class PrefixCommand extends Command {
 			]);
 		}
 
-		this.client.settings.set(message.guild!, 'prefix', prefix);
+		this.client.settings.set(message.guild!, SETTINGS.PREFIX, prefix);
+
 		if (message.guild!.me?.permissions.has('CHANGE_NICKNAME')) {
 			await message.guild!.me.setNickname(`${this.client.user!.username} [ ${prefix} ]`).catch(() => null);
 		}

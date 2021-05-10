@@ -1,6 +1,6 @@
 import { COLLECTIONS, Util } from '../../util/Constants';
 import { Command, Argument } from 'discord-akairo';
-import { ClanWarClan } from 'clashofclans.js';
+import { WarClan } from 'clashofclans.js';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
 
@@ -50,7 +50,7 @@ export default class WarExport extends Command {
 
 			const members: { [key: string]: any } = {};
 			for (const war of wars) {
-				const clan: ClanWarClan = war.clan.tag === tag ? war.clan : war.opponent;
+				const clan: WarClan = war.clan.tag === tag ? war.clan : war.opponent;
 				for (const m of clan.members) {
 					const member = members[m.tag]
 						? members[m.tag]

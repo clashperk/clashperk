@@ -5,7 +5,7 @@ interface Emojis {
 export const HOME_HEROES: Emojis = {
 	'Barbarian King': '<:Barbarian_King:696305370682884111>',
 	'Archer Queen': '<:Archer_Queen:696305403046133780>',
-	'Grand Warden': '<:Grand_Warden:696305417994764298>',
+	'Grand Warden': '<:Grand_Warden:841295204476780586>',
 	'Royal Champion': '<:Royal_Champion:813806447934308422>'
 };
 

@@ -1,4 +1,4 @@
-import { Player, ClanWarClan } from 'clashofclans.js';
+import { Player, WarClan } from 'clashofclans.js';
 import { COLLECTIONS } from '../../util/Constants';
 import { MessageEmbed, Message } from 'discord.js';
 import { Command } from 'discord-akairo';
@@ -38,7 +38,7 @@ export default class WarStatsExport extends Command {
 
 		const members: { [key: string]: any } = {};
 		for (const war of wars) {
-			const clan: ClanWarClan = war.clan.members.find((m: any) => m.tag === data.tag) ? war.clan : war.opponent;
+			const clan: WarClan = war.clan.members.find((m: any) => m.tag === data.tag) ? war.clan : war.opponent;
 
 			for (const m of clan.members) {
 				if (m.tag !== data.tag) continue;

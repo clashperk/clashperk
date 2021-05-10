@@ -1,4 +1,4 @@
-import { Clan, ClanWar, ClanWarClan, ClanWarOpponent, ClanWarLeague } from 'clashofclans.js';
+import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
@@ -32,7 +32,7 @@ export default class CWLRankingComamnd extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
-		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
+		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
 			return message.util!.send([
 				'504 Request Timeout'
@@ -55,7 +55,7 @@ export default class CWLRankingComamnd extends Command {
 		return this.rounds(message, body, data);
 	}
 
-	private async rounds(message: Message, body: ClanWarLeague, clan: Clan) {
+	private async rounds(message: Message, body: ClanWarLeagueGroup, clan: Clan) {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [stars, destruction, padding] = [0, 0, 5];
@@ -162,7 +162,7 @@ export default class CWLRankingComamnd extends Command {
 			.padEnd(padding, ' ');
 	}
 
-	private winner(clan: ClanWarClan, opponent: ClanWarOpponent) {
+	private winner(clan: WarClan, opponent: WarClan) {
 		if (clan.stars > opponent.stars) {
 			return true;
 		} else if (clan.stars < opponent.stars) {
