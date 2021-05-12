@@ -113,11 +113,9 @@ export default class CWLStarsComamnd extends Command {
 				).join('\n')
 		]);
 
-		if (message.hasOwnProperty('token')) {
-			await message.util!.send('\u200b');
-		} else {
-			await message.util!.lastResponse?.delete();
-		}
-		return chunks.map(part => message.channel.send(part));
+		return chunks.map((part, i) => {
+			if (i === 0) return message.util!.send(part);
+			return message.channel.send(part);
+		});
 	}
 }
