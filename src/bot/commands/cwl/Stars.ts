@@ -1,7 +1,8 @@
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Message, Util } from 'discord.js';
+import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
 
 export default class CWLStarsComamnd extends Command {
 	public constructor() {
@@ -77,7 +78,8 @@ export default class CWLStarsComamnd extends Command {
 									attacks: 0,
 									stars: 0,
 									dest: 0,
-									lost: 0
+									lost: 0,
+									townhallLevel: m.townhallLevel
 								};
 							member.of += 1;
 
@@ -103,21 +105,19 @@ export default class CWLStarsComamnd extends Command {
 
 		if (!leaderboard.length) return message.util!.send('Nobody attacked in your clan yet, try again after sometime.');
 
-		const embed = this.client.util.embed()
-			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
-			.setTitle('CWL Stars')
-			.setColor(this.client.embed(message))
-			.setDescription([
-				`**\`\u200e # STAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,
-				leaderboard.filter(m => m.of > 0)
-					.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ') as string}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.replace(/\`/g, '\\').padEnd(15, ' ') as string}\``)
-					.join('\n')
-			]);
+		const chunks = Util.splitMessage([
+			`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} ${EMOJIS.STAR} ${EMOJIS.SWORD}  **NAME**`,
+			leaderboard.filter(m => m.of > 0)
+				.map(
+					(m, i) => `\u200e${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.townhallLevel]} ${WHITE_NUMBERS[m.stars]} ${WHITE_NUMBERS[m.of]}  ${Util.escapeMarkdown(m.name)}`
+				).join('\n')
+		]);
 
-		return message.util!.send({ embed });
-	}
-
-	private attacks(num: number, team: number) {
-		return num.toString().concat(`/${team}`);
+		if (message.hasOwnProperty('token')) {
+			await message.util!.send('\u200b');
+		} else {
+			await message.util!.lastResponse?.delete();
+		}
+		return chunks.map(part => message.channel.send(part));
 	}
 }
