@@ -33,22 +33,13 @@ export default class CWLStatsComamnd extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const body = await this.client.http.clanWarLeague(data.tag);
-		if (body.statusCode === 504) {
-			return message.util!.send([
-				'504 Request Timeout'
-			]);
-		}
+		if (body.statusCode === 504) return message.util!.send('**504 Request Timeout!**');
 
 		if (!body.ok) {
 			const cw = await this.client.storage.getWarTags(data.tag);
 			if (cw) return this.rounds(message, cw, data);
 
-			const embed = this.client.util.embed()
-				.setColor(this.client.embed(message))
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
-				.setThumbnail(data.badgeUrls.medium)
-				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send(`**${data.name} is not in Clan War League!**`);
 		}
 
 		this.client.storage.pushWarTags(data.tag, body);

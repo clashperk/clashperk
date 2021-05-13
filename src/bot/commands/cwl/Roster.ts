@@ -34,20 +34,10 @@ export default class CWLRosterComamnd extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const body = await this.client.http.clanWarLeague(data.tag);
-		if (body.statusCode === 504) {
-			return message.util!.send('**504 Request Timeout!**');
-		}
+		if (body.statusCode === 504) return message.util!.send('**504 Request Timeout!**');
 
 		if (!body.ok) {
-			const embed = new MessageEmbed()
-				.setColor(this.client.embed(message))
-				.setAuthor(
-					`${data.name} (${data.tag})`, `${data.badgeUrls.medium}`,
-					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
-				)
-				.setThumbnail(data.badgeUrls.medium)
-				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send(`**${data.name} is not in Clan War League!**`);
 		}
 
 		this.client.storage.pushWarTags(data.tag, body);
@@ -154,13 +144,12 @@ export default class CWLRosterComamnd extends Command {
 				`**Next War (Round #${next.round + 1})**`,
 				`${EMOJIS.HASH} ${townHalls.map(th => ORANGE_NUMBERS[th]).join('')} **Clan**`,
 				`${BLUE_NUMBERS[rank + 1]} ${this.getNextRoster(next.clan, townHalls)} ${next.clan.name}`,
-				`${BLUE_NUMBERS[opprank + 1]} ${this.getNextRoster(next.opponent, townHalls)} ${next.opponent.name}`,
-				`${next.round ? '\u200e' : ''}`
+				`${BLUE_NUMBERS[opprank + 1]} ${this.getNextRoster(next.opponent, townHalls)} ${next.opponent.name}`
 			]);
 		}
 
 		if (next?.round || rounds.length === 7) {
-			embed.setFooter(`Rank #${rank + 1} ⭐ ${stars} 🔥 ${destruction.toFixed()}%`);
+			embed.addField('\u200b', `Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`);
 		}
 
 		const msg = await message.util!.send({ embed });

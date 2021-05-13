@@ -1,5 +1,5 @@
 import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
-import { Command, PrefixSupplier, Argument } from 'discord-akairo';
+import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { Collections } from '@clashperk/node';
@@ -58,24 +58,21 @@ export default class WarCommand extends Command {
 			.setAuthor(`\u200e${data.name} (${data.tag})`, data.badgeUrls.medium);
 
 		if (!data.isWarLogPublic) {
-			const res = await this.client.http.clanWarLeague(data.tag).catch(() => null);
-			if (res?.ok) {
-				embed.setDescription(`Clan is in CWL. Run \`${(this.handler.prefix as PrefixSupplier)(message) as string}cwl\` to get CWL commands.`);
-			} else {
-				embed.setDescription('Private War Log');
+			const res = await this.client.http.clanWarLeague(data.tag);
+			if (res.ok) {
+				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-round')!, false);
 			}
+			embed.setDescription('Private War Log');
 			return message.util!.send({ embed });
 		}
 
 		const body = await this.client.http.currentClanWar(data.tag);
-
 		if (body.state === 'notInWar') {
-			const res = await this.client.http.clanWarLeague(data.tag).catch(() => null);
-			if (res?.ok) {
-				embed.setDescription(`Clan is in CWL. Run \`${(this.handler.prefix as PrefixSupplier)(message) as string}cwl\` to get CWL commands.`);
-			} else {
-				embed.setDescription('Not in War');
+			const res = await this.client.http.clanWarLeague(data.tag);
+			if (res.ok) {
+				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-round')!, false);
 			}
+			embed.setDescription('Not in War');
 			return message.util!.send({ embed });
 		}
 

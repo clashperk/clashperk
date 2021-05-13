@@ -240,7 +240,7 @@ export default class CWLRoundComamnd extends Command {
 			.join('\n');
 	}
 
-	private chunk(items: { [kye: string]: number }[] = []) {
+	private chunk(items: { [key: string]: number }[] = []) {
 		const chunk = 5;
 		const array = [];
 		for (let i = 0; i < items.length; i += chunk) {
