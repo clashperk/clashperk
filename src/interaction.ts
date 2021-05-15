@@ -281,13 +281,13 @@ export const commands: { name: string; description: string; options?: APIApplica
 				description: 'Tag of the player or clan',
 				required: true,
 				type: ApplicationCommandOptionType.STRING
-			}
-			/* {
+			},
+			{
 				name: 'user',
-				description: 'Optional user (Only works if you\'re a verified Co/Leader of the clan)',
+				description: 'Optional user (Only valid for a player tag)',
 				required: false,
 				type: ApplicationCommandOptionType.USER
-			}*/
+			}
 		]
 	},
 	{
