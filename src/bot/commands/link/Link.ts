@@ -30,7 +30,7 @@ export default class LinkCommand extends Command {
 					'• **List all Members**',
 					'• `list #CLAN_TAG`'
 				],
-				usage: '<#tag|list> [@user] [--default]',
+				usage: '<#tag> [@user] [--default]',
 				examples: [
 					'list',
 					'#8QU8J9LP',
@@ -38,12 +38,14 @@ export default class LinkCommand extends Command {
 					'#9Q92C8R20 --default'
 				]
 			},
-			flags: ['--default']
+			flags: ['--default'],
+			optionFlags: ['--user', '--tag']
 		});
 	}
 
-	public *args(): unknown {
+	public *args(msg: Message): unknown {
 		const tag = yield {
+			flag: '--tag',
 			type: Argument.union(
 				[
 					['link-add', 'add'],
@@ -51,15 +53,17 @@ export default class LinkCommand extends Command {
 					['link-remove', 'remove']
 				],
 				(msg: Message, tag: string) => this.parseTag(tag)
-			)
+			),
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
 		};
 
 		if (['link-add', 'link-remove', 'link-list', 'link-alias'].includes(tag)) return Flag.continue(tag);
 
 		const member = yield {
-			'match': 'rest',
 			'type': 'member',
-			'default': (msg: Message) => msg.member
+			'flag': '--user',
+			'default': (msg: Message) => msg.member,
+			'match': msg.hasOwnProperty('token') ? 'option' : 'rest'
 		};
 
 		const def = yield {
@@ -92,7 +96,6 @@ export default class LinkCommand extends Command {
 
 		const clanCommand = this.handler.modules.get('link-clan')!;
 		const playerCommand = this.handler.modules.get('link-add')!;
-
 		const tags = await Promise.all([this.client.http.clan(tag), this.client.http.player(tag)]);
 
 		const num: { [key: string]: string } = {
@@ -111,7 +114,7 @@ export default class LinkCommand extends Command {
 				.setColor(this.client.embed(message))
 				.setAuthor('Select a Player or Clan')
 				.setDescription([
-					...tags.map((a, i) => `**${types[i + 1]}**\n${num[i + 1]} ${a.name as string} (${a.tag as string})\n`)
+					...tags.map((a, i) => `**${types[i + 1]}**\n${num[i + 1]} ${a.name} (${a.tag})\n`)
 				]);
 			const msg = await message.util!.send({ embed });
 
@@ -140,7 +143,7 @@ export default class LinkCommand extends Command {
 			});
 
 			collector.on('end', () => msg.reactions.removeAll().catch(() => null));
-		} else if (tags[0].ok) {
+		} else if (tags[0].ok) { // eslint-disable-line
 			return this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
 		} else if (tags[1].ok) {
 			return this.handler.runCommand(message, playerCommand, { data: tags[1], member: member, def });

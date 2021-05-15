@@ -252,49 +252,42 @@ export const commands: { name: string; description: string; options?: APIApplica
 	},
 	{
 		name: 'link',
-		description: 'Manage or view player accounts',
+		description: 'Links a clan or player account',
 		options: [
 			{
-				name: 'add',
-				description: 'Link a player account',
-				type: ApplicationCommandOptionType.SUB_COMMAND,
-				options: [
-					{
-						name: 'tag',
-						description: 'Tag of the player account',
-						required: true,
-						type: ApplicationCommandOptionType.STRING
-					},
-					{
-						name: 'user',
-						description: 'Optional user',
-						type: ApplicationCommandOptionType.USER
-					},
-					{
-						name: 'default',
-						description: 'Set this default account?',
-						type: ApplicationCommandOptionType.BOOLEAN
-					}
-				]
+				name: 'tag',
+				description: 'Tag of the clan or player account',
+				required: true,
+				type: ApplicationCommandOptionType.STRING
 			},
 			{
-				name: 'list',
-				description: 'Get all linked accounts for a clan',
-				type: ApplicationCommandOptionType.SUB_COMMAND
+				name: 'user',
+				description: 'Optional user',
+				type: ApplicationCommandOptionType.USER
 			},
 			{
-				name: 'remove',
-				description: 'Remove a player account',
-				type: ApplicationCommandOptionType.SUB_COMMAND,
-				options: [
-					{
-						name: 'tag',
-						description: 'Tag of the player account',
-						required: true,
-						type: ApplicationCommandOptionType.STRING
-					}
-				]
+				name: 'default',
+				description: 'Set this default account?',
+				type: ApplicationCommandOptionType.BOOLEAN
 			}
+		]
+	},
+	{
+		name: 'unlink',
+		description: 'Unlinks a clan or player account',
+		options: [
+			{
+				name: 'tag',
+				description: 'Tag of the player or clan',
+				required: true,
+				type: ApplicationCommandOptionType.STRING
+			}
+			/* {
+				name: 'user',
+				description: 'Optional user (Only works if you\'re a verified Co/Leader of the clan)',
+				required: false,
+				type: ApplicationCommandOptionType.USER
+			}*/
 		]
 	},
 	{
@@ -798,7 +791,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			'Authorization': `Bot ${process.env.TOKEN!}`,
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify([])
+		body: JSON.stringify(commands)
 	});
 	const body = await res.json();
 	console.log(res.status, JSON.stringify(body));
@@ -815,4 +808,4 @@ export const commands: { name: string; description: string; options?: APIApplica
 	});
 	const body = await res.json();
 	console.log(res.status, JSON.stringify(body));
-})();
+});
