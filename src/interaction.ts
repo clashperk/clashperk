@@ -823,7 +823,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			'Authorization': `Bot ${process.env.TOKEN!}`,
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify(commands)
+		body: JSON.stringify([])
 	});
 	const body = await res.json();
 	console.log(res.status, JSON.stringify(body));
@@ -840,4 +840,4 @@ export const commands: { name: string; description: string; options?: APIApplica
 	});
 	const body = await res.json();
 	console.log(res.status, JSON.stringify(body));
-});
+})();
