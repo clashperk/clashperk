@@ -80,11 +80,11 @@ export default class MembersCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				'```',
-				`TH BK AQ GW RC  ${'NAME'.padEnd(15, ' ')}`,
+				`TH BK AQ GW RC  ${'NAME'}`,
 				members.map(
 					mem => {
 						const heroes = this.heroes(mem.heroes).map(hero => this.padStart(hero.level)).join(' ');
-						return `${mem.townHallLevel.toString().padStart(2, ' ')} ${heroes}  \u200e${this.padEnd(mem.name)}`;
+						return `${mem.townHallLevel.toString().padStart(2, ' ')} ${heroes}  \u200e${mem.name}`;
 					}
 				).join('\n'),
 				'```'
@@ -147,10 +147,6 @@ export default class MembersCommand extends Command {
 
 	private padStart(num: number | string) {
 		return num.toString().padStart(2, ' ');
-	}
-
-	private padEnd(name: string) {
-		return name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, ' ');
 	}
 
 	private excel(members: any[]) {

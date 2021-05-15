@@ -76,7 +76,7 @@ export default class LinkListCommand extends Command {
 			onDiscord.map(
 				mem => {
 					const member = data.memberList.find(m => m.tag === mem.tag)!;
-					const user = showTag ? member.tag : message.guild!.members.cache.get(mem.user)!.displayName.substring(0, 10).padStart(10, ' ');
+					const user = showTag ? member.tag : message.guild!.members.cache.get(mem.user)!.displayName.substring(0, 15).padStart(15, ' ');
 					return `**✓** \`\u200e${this.parseName(member.name)}${data.members <= 45 ? `\u200f\` \u200e \`` : ' '} ${user} \u200f\``;
 				}
 			).join('\n'),

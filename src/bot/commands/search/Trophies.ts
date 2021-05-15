@@ -35,18 +35,14 @@ export default class TrophiesCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				'```',
-				`\u200e # TROPHY  ${'NAME'.padEnd(20, ' ')}`,
+				`\u200e # TROPHY  ${'NAME'}`,
 				data.memberList.map((member, index) => {
 					const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
-					return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${this.padEnd(member.name)}`;
+					return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
 				}).join('\n'),
 				'```'
 			]);
 
 		return message.util!.send({ embed });
-	}
-
-	private padEnd(name: string) {
-		return name.replace(/\`/g, '\\').padEnd(20, ' ');
 	}
 }
