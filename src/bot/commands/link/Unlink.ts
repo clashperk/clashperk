@@ -25,7 +25,7 @@ export default class UnlinkCommand extends Command {
 					'• You must be a __Verified__ Co/Leader of the clan to unlink players for someone.'
 				],
 				usage: '<#ClanTag|#PlayerTag>',
-				examples: ['#8QU8J9LP', '#9Q92C8R20']
+				examples: ['#8QU8J9LP', '#9Q92C8R20', '#9Q92C8R20 @user']
 			},
 			optionFlags: ['--tag', '--user']
 		});
