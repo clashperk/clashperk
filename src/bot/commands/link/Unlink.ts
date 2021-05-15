@@ -92,7 +92,7 @@ export default class UnlinkCommand extends Command {
 			}
 
 			const clan = await this.client.http.clan(data.clan.tag);
-			if (!clan.memberList.find(mem => accounts.includes(mem.tag))) {
+			if (!clan.memberList.find(mem => ['leader', 'coLeader'].includes(mem.role) && accounts.includes(mem.tag))) {
 				return message.util!.send('**You must be a __Verified__ Co/Leader of the clan to perform this action.**');
 			}
 		}
