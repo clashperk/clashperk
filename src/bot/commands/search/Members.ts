@@ -1,8 +1,8 @@
 import { Clan, PlayerItem, Player } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
-import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Command, Flag } from 'discord-akairo';
+import { Message, Util } from 'discord.js';
 
 const achievements = [
 	'Gold Grab',
@@ -25,7 +25,7 @@ export default class MembersCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: 'Clan members with Town Halls and Heroes.',
-				usage: '<clanTag>',
+				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
 			optionFlags: ['--tag']
@@ -39,10 +39,19 @@ export default class MembersCommand extends Command {
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
-		return { data };
+		const command = yield {
+			type: [
+				['link-list', 'links', 'discord'],
+				['trophies', 'trophy'],
+				['tags', 'tag']
+			]
+		};
+
+		if (['link-list', 'trophies'].includes(command)) return Flag.continue(command);
+		return { data, show: command };
 	}
 
-	public async exec(message: Message, { data }: { data: Clan }) {
+	public async exec(message: Message, { data, show }: { data: Clan; show: string }) {
 		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
 
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
@@ -74,11 +83,22 @@ export default class MembersCommand extends Command {
 				'```'
 			]);
 
+		if (show) {
+			embed.setDescription([
+				'```',
+				`\u200e${''.padStart(10, ' ')}  ${'NAME'}`,
+				members.map(mem => `\u200e${mem.tag.padStart(10, ' ')}  ${mem.name}`).join('\n'),
+				'```'
+			]);
+		}
+
 		const msg = await message.util!.send({ embed });
 		await msg.react('📥');
+		await msg.react(EMOJIS.DISCORD);
+		const { id } = Util.parseEmoji(EMOJIS.DISCORD)!;
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['📥'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => (reaction.emoji.name === '📥' || reaction.emoji.id === id) && user.id === message.author.id,
 			{ time: 60000, max: 1 }
 		);
 
@@ -97,6 +117,10 @@ export default class MembersCommand extends Command {
 						description: '[Become a Patron](https://www.patreon.com/clashperk) to export clan members to Excel.'
 					}
 				});
+			}
+
+			if (reaction.emoji.id === id) {
+				return this.handler.handleDirectCommand(message, message.content, this.handler.modules.get('link-list')!);
 			}
 		});
 

@@ -30,6 +30,18 @@ export const commands: { name: string; description: string; options?: APIApplica
 		]
 	},
 	{
+		name: 'points',
+		description: 'Clan Games points of all clan members',
+		options: [
+			{
+				name: 'tag',
+				description: 'Tag of the clan',
+				type: 3,
+				required: false
+			}
+		]
+	},
+	{
 		name: 'attacks',
 		description: 'Clan attacks and defenses for all members',
 		options: [
@@ -56,6 +68,26 @@ export const commands: { name: string; description: string; options?: APIApplica
 				description: 'Tag of the clan',
 				type: 3,
 				required: false
+			},
+			{
+				name: 'with',
+				description: 'Selecet an option',
+				type: 3,
+				required: false,
+				choices: [
+					{
+						name: 'Player Tags',
+						value: 'tags'
+					},
+					{
+						name: 'Trophies',
+						value: 'trophies'
+					},
+					{
+						name: 'Discord ID',
+						value: 'discord'
+					}
+				]
 			}
 		]
 	},
