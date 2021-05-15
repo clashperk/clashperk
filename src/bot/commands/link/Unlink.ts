@@ -1,4 +1,4 @@
-import { Command, PrefixSupplier } from 'discord-akairo';
+import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 import { Message, MessageEmbed, GuildMember } from 'discord.js';
 import { Collections } from '@clashperk/node';
 
@@ -39,10 +39,14 @@ export default class UnlinkCommand extends Command {
 		};
 
 		const member = yield {
-			'type': 'member',
 			'flag': '--user',
 			'default': (msg: Message) => msg.member,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'rest'
+			'match': msg.hasOwnProperty('token') ? 'option' : 'rest',
+			'type': Argument.union('member', (msg, id) => {
+				if (!id) return null;
+				if (!/^\d{17,19}/.test(id)) return null;
+				return msg.guild!.members.fetch(id).catch(() => null);
+			})
 		};
 
 		return { tag, member };
