@@ -96,12 +96,11 @@ export default class ClanActivityCommand extends Command {
 		const buffer = await Chart.clanActivity(datasets, [`Active Members Per Hour (${tz.name as string})`], days);
 		const diff = process.hrtime(hrStart);
 
+		this.client.logger.debug(`Rendered in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)}ms`, { label: 'CHART' });
 		return message.util!.send({
 			files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }],
 			content: [
-				timeZone
-					? `_Rendered in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)}ms_`
-					: `_Set your timezone using \`${(this.handler.prefix as PrefixSupplier)(message) as string}offset <location>\` for better experience._`
+				timeZone ? '' : `_Set your timezone using \`${(this.handler.prefix as PrefixSupplier)(message) as string}offset <location>\` for better experience._`
 			].join('\n')
 		});
 	}

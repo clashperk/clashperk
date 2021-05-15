@@ -178,6 +178,7 @@ export default class ClanFeedLog {
 	}
 
 	private async clanMemberUpdate(channel: TextChannel, data: Feed) {
+		if (!this.client.patrons.get(channel.guild.id)) return;
 		const clan = await this.client.db.collection(Collections.CLAN_STORES)
 			.findOne({ guild: channel.guild.id, tag: data.clan.tag });
 		if (!clan?.autoRole) return null;
