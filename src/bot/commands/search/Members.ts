@@ -1,7 +1,7 @@
 import { Clan, PlayerItem, Player } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
-import { Command, Flag } from 'discord-akairo';
+import { Command } from 'discord-akairo';
 import { Message, Util } from 'discord.js';
 
 const achievements = [
@@ -28,33 +28,40 @@ export default class MembersCommand extends Command {
 				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			optionFlags: ['--tag']
+			optionFlags: ['--tag', '--with']
 		});
 	}
 
 	public *args(msg: Message): unknown {
-		const data = yield {
-			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
-		};
-
-		const command = yield {
+		const sub = yield {
+			flag: '--with',
+			unordered: true,
 			type: [
 				['link-list', 'links', 'discord'],
 				['trophies', 'trophy'],
 				['tags', 'tag']
-			]
+			],
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
 		};
 
-		if (['link-list', 'trophies'].includes(command)) return Flag.continue(command);
-		return { data, show: command };
+		const data = yield {
+			flag: '--tag',
+			unordered: true,
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		return { data, sub };
 	}
 
-	public async exec(message: Message, { data, show }: { data: Clan; show: string }) {
-		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
+	public async exec(message: Message, { data, sub }: { data: Clan; sub: string }) {
+		if (['link-list', 'trophies'].includes(sub)) {
+			return this.handler.runCommand(message, this.handler.modules.get(sub)!, { data });
+		}
 
+		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
+
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
 		const members = fetched.filter(res => res.ok).map(m => ({
 			name: m.name,
@@ -83,20 +90,22 @@ export default class MembersCommand extends Command {
 				'```'
 			]);
 
-		if (show) {
+		if (sub) {
 			embed.setDescription([
 				'```',
-				`\u200e${''.padStart(10, ' ')}  ${'NAME'}`,
-				members.map(mem => `\u200e${mem.tag.padStart(10, ' ')}  ${mem.name}`).join('\n'),
+				`\u200e${'TAG'.padEnd(10, ' ')}  ${'NAME'}`,
+				members.map(mem => `\u200e${mem.tag.padEnd(10, ' ')}  ${mem.name}`).join('\n'),
 				'```'
 			]);
 		}
 
 		const msg = await message.util!.send({ embed });
-		await msg.react('📥');
-		await msg.react(EMOJIS.DISCORD);
-		const { id } = Util.parseEmoji(EMOJIS.DISCORD)!;
+		for (const emoji of ['📥', EMOJIS.DISCORD]) {
+			await msg.react(emoji);
+			await new Promise(res => setTimeout(res, 250));
+		}
 
+		const { id } = Util.parseEmoji(EMOJIS.DISCORD)!;
 		const collector = msg.createReactionCollector(
 			(reaction, user) => (reaction.emoji.name === '📥' || reaction.emoji.id === id) && user.id === message.author.id,
 			{ time: 60000, max: 1 }
@@ -120,7 +129,7 @@ export default class MembersCommand extends Command {
 			}
 
 			if (reaction.emoji.id === id) {
-				return this.handler.handleDirectCommand(message, message.content, this.handler.modules.get('link-list')!);
+				return this.handler.runCommand(message, this.handler.modules.get('link-list')!, { data });
 			}
 		});
 
