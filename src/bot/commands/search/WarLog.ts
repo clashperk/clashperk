@@ -56,6 +56,9 @@ export default class WarLogCommand extends Command {
 			.toArray();
 
 		const body = await this.client.http.clanWarLog(data.tag, { limit: 10 });
+		if (!body.ok) {
+			return message.util!.send('**504 Request Timeout!**');
+		}
 
 		for (const item of body.items) {
 			// console.log(item)

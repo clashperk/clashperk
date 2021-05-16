@@ -67,6 +67,9 @@ export default class WarCommand extends Command {
 		}
 
 		const body = await this.client.http.currentClanWar(data.tag);
+		if (!body.ok) {
+			return message.util!.send('**504 Request Timeout!**');
+		}
 		if (body.state === 'notInWar') {
 			const res = await this.client.http.clanWarLeague(data.tag);
 			if (res.ok) {
