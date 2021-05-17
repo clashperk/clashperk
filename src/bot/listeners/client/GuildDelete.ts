@@ -60,7 +60,7 @@ export default class GuildDeleteListener extends Listener {
 		const db = this.client.db.collection(COLLECTIONS.CLAN_STORES);
 
 		await db.find({ guild: guild.id })
-			.forEach(data => this.client.rpcHandler.delete(data._id?.toString(), { tag: data.tag, op: 0 }));
+			.forEach(data => this.client.rpcHandler.delete(data._id?.toString(), { tag: data.tag, op: 0, guild: guild.id }));
 
 		await db.updateMany({ guild: guild.id }, { $set: { paused: true } });
 	}

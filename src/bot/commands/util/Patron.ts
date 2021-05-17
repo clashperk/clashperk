@@ -153,7 +153,7 @@ export default class PatronCommand extends Command {
 			.skip(2)
 			.forEach(async data => {
 				await this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: data._id }, { $set: { active: false } });
-				await this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0 });
+				await this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild });
 			});
 	}
 }

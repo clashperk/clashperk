@@ -128,11 +128,11 @@ export default class RPCHandler {
 			Object.values(OP).map(Op => Op.add(id));
 		}
 
-		const patron = this.client.patrons.get(data.guild);
-		return this.client.rpc.add({ data: JSON.stringify({ tag: data.tag, patron: Boolean(patron), op: data.op }) }, () => null);
+		const patron = Boolean(this.client.patrons.get(data.guild));
+		return this.client.rpc.add({ data: JSON.stringify({ tag: data.tag, patron, op: data.op, guild: data.guild }) }, () => null);
 	}
 
-	public delete(id: string, data: { tag: string; op: number }) {
+	public delete(id: string, data: { tag: string; op: number; guild: string }) {
 		const OP = {
 			[BitField.DONATION_LOG]: this.donationLog,
 			[BitField.CLAN_FEED_LOG]: this.clanFeedLog,
@@ -148,7 +148,7 @@ export default class RPCHandler {
 			Object.values(OP).map(Op => Op.delete(id));
 		}
 
-		return this.client.rpc.remove({ data: JSON.stringify({ tag: data.tag, op: data.op }) }, () => null);
+		return this.client.rpc.remove({ data: JSON.stringify(data) }, () => null);
 	}
 
 	public flush() {
