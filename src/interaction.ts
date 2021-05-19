@@ -169,9 +169,19 @@ export const commands: { name: string; description: string; options?: APIApplica
 			},
 			{
 				name: 'sort',
-				description: 'Sort by donations received?',
-				type: 5,
-				required: false
+				description: 'Sorting order',
+				type: ApplicationCommandOptionType.STRING,
+				required: false,
+				choices: [
+					{
+						name: 'Received',
+						value: 'true'
+					},
+					{
+						name: 'Donated',
+						value: 'false'
+					}
+				]
 			},
 			{
 				name: 'season',
@@ -229,8 +239,19 @@ export const commands: { name: string; description: string; options?: APIApplica
 			},
 			{
 				name: 'clan',
-				description: 'For all clan members?',
-				type: ApplicationCommandOptionType.BOOLEAN
+				description: 'Display all clan members',
+				type: ApplicationCommandOptionType.STRING,
+				choices: [
+					{
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
+					}
+				]
+
 			}
 		]
 	},
@@ -299,8 +320,18 @@ export const commands: { name: string; description: string; options?: APIApplica
 			},
 			{
 				name: 'default',
-				description: 'Set this default account?',
-				type: ApplicationCommandOptionType.BOOLEAN
+				description: 'Set it default account',
+				type: ApplicationCommandOptionType.STRING,
+				choices: [
+					{
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
+					}
+				]
 			}
 		]
 	},
@@ -379,7 +410,17 @@ export const commands: { name: string; description: string; options?: APIApplica
 					{
 						name: 'export',
 						description: 'Export to Excel file?',
-						type: ApplicationCommandOptionType.BOOLEAN
+						type: ApplicationCommandOptionType.STRING,
+						choices: [
+							{
+								name: 'Yes',
+								value: 'true'
+							},
+							{
+								name: 'No',
+								value: 'false'
+							}
+						]
 					}
 				]
 			}
