@@ -4,6 +4,20 @@ import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
 import { Message, Util } from 'discord.js';
 
+const roleIds: { [key: string]: number } = {
+	member: 1,
+	admin: 2,
+	coLeader: 3,
+	leader: 4
+};
+
+const roleNames: { [key: string]: string } = {
+	member: 'Mem',
+	admin: 'Eld',
+	coLeader: 'Co',
+	leader: 'Lead'
+};
+
 const achievements = [
 	'Gold Grab',
 	'Elixir Escapade',
@@ -39,6 +53,7 @@ export default class MembersCommand extends Command {
 			type: [
 				['link-list', 'links', 'discord'],
 				['trophies', 'trophy'],
+				['roles', 'role'],
 				['tags', 'tag']
 			],
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
@@ -64,8 +79,11 @@ export default class MembersCommand extends Command {
 
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
 		const members = fetched.filter(res => res.ok).map(m => ({
-			name: m.name,
-			tag: m.tag,
+			name: m.name, tag: m.tag,
+			role: {
+				id: roleIds[m.role!],
+				name: roleNames[m.role!]
+			},
 			townHallLevel: m.townHallLevel,
 			heroes: m.heroes.length ? m.heroes.filter(a => a.village === 'home') : [],
 			achievements: this.getAchievements(m)
@@ -90,11 +108,21 @@ export default class MembersCommand extends Command {
 				'```'
 			]);
 
-		if (sub) {
+		if (sub === 'tags') {
 			embed.setDescription([
 				'```',
-				`\u200e${'TAG'.padEnd(10, ' ')}  ${'NAME'}`,
-				members.map(mem => `\u200e${mem.tag.padEnd(10, ' ')}  ${mem.name}`).join('\n'),
+				`\u200e${'TAG'.padStart(10, ' ')}  ${'NAME'}`,
+				members.map(mem => `\u200e${mem.tag.padStart(10, ' ')}  ${mem.name}`).join('\n'),
+				'```'
+			]);
+		}
+
+		if (sub === 'roles') {
+			const _members = [...members].sort((a, b) => b.role.id - a.role.id);
+			embed.setDescription([
+				'```',
+				`\u200e ${'ROLE'.padEnd(4, ' ')}  ${'NAME'}`,
+				_members.map(mem => `\u200e ${mem.role.name.padEnd(4, ' ')}  ${mem.name}`).join('\n'),
 				'```'
 			]);
 		}

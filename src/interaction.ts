@@ -84,6 +84,10 @@ export const commands: { name: string; description: string; options?: APIApplica
 						value: 'trophies'
 					},
 					{
+						name: 'Clan Roles',
+						value: 'roles'
+					},
+					{
 						name: 'Discord ID',
 						value: 'discord'
 					}
@@ -169,7 +173,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			},
 			{
 				name: 'sort',
-				description: 'Sorting order',
+				description: 'Sort by receives or donations',
 				type: ApplicationCommandOptionType.STRING,
 				required: false,
 				choices: [
