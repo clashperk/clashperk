@@ -7,6 +7,7 @@ import RPCHandler from '../core/RPCHandler';
 import Settings from './SettingsProvider';
 import { Connection } from './Database';
 import Storage from './StorageHandler';
+import * as gRPC from '@grpc/grpc-js';
 import Logger from '../util/Logger';
 import Stats from './StatsHandler';
 import Resolver from './Resolver';
@@ -14,7 +15,6 @@ import Patrons from './Patrons';
 import { Db } from 'mongodb';
 import Http from './Http';
 import path from 'path';
-import grpc from 'grpc';
 
 declare module 'discord-akairo' {
 	interface AkairoClient {
@@ -43,7 +43,7 @@ const packageDefinition = loadSync(path.join('grpc.proto'), {
 	oneofs: true
 });
 
-const { routeguide } = grpc.loadPackageDefinition(packageDefinition);
+const { routeguide: Route } = gRPC.loadPackageDefinition(packageDefinition);
 
 export default class Client extends AkairoClient {
 	public db!: Db;
@@ -194,7 +194,8 @@ export default class Client extends AkairoClient {
 		this.http = new Http();
 		await this.http.init();
 
-		this.rpc = new (routeguide as any).RouteGuide(process.env.SERVER, grpc.credentials.createInsecure());
+		// @ts-expect-error
+		this.rpc = new Route.RouteGuide(process.env.SERVER, gRPC.credentials.createInsecure());
 
 		this.patrons = new Patrons(this);
 		await this.settings.init();
