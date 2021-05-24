@@ -45,7 +45,8 @@ export default class Export extends Command {
 				['export-season', 'season'],
 				['export-wars', 'war', 'wars'],
 				['export-clans', 'clan', 'clans'],
-				['export-members', 'member', 'members']
+				['export-members', 'member', 'members'],
+				['export-last-wars', 'lastwar', 'lastwars', 'lw']
 			],
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})
