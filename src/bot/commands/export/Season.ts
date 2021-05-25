@@ -71,19 +71,8 @@ export default class ExportSeason extends Command {
 			await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
 		}
 
-		const members = [];
-		for (const clan of clans) {
-			const data = await this.client.db.collection(Collections.CLAN_MEMBERS)
-				.find({ tag: { $in: allMembers.filter(m => m.clanTag === clan.tag).map(m => m.tag) }, clanTag: clan.tag, season })
-				.sort({ createdAt: -1 })
-				.toArray();
-			members.push(...data);
-		}
-
-
-		const lastseen = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan)))).flat();
+		const members = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan)))).flat();
 		for (const mem of members) {
-			mem.activity_total = lastseen.find(m => m.tag === mem.tag)?.count ?? 0;
 			const user = memberTags.find(user => user.tag === mem.tag)?.user;
 			mem.user_tag = message.guild!.members.cache.get(user!)?.user.tag;
 		}
@@ -134,8 +123,8 @@ export default class ExportSeason extends Command {
 					m.trophies.gained,
 					m.versusTrophies.gained,
 					m.warStars.gained,
-					...achievements.map(ac => m.achievements.find((a: any) => a.name === ac).gained),
-					m.activity_total
+					...achievements.map(ac => m.achievements.find((a: { name: string }) => a.name === ac).gained),
+					m.score
 				];
 
 				if (!patron) rows.splice(2, 1);
@@ -156,55 +145,56 @@ export default class ExportSeason extends Command {
 		});
 	}
 
-	private async aggregationQuery(clan: Clan): Promise<{ tag: string; count: number }[]> {
-		const db = this.client.db.collection(Collections.LAST_SEEN);
-		const cursor = db.aggregate([
-			{
-				$match: {
-					'clan.tag': clan.tag,
-					'tag': { $in: [...clan.memberList.map(m => m.tag)] }
-				}
-			},
-			{
-				$project: {
-					tag: '$tag',
-					clan: '$clan',
-					entries: {
-						$filter: {
-							input: '$entries',
-							as: 'en',
-							cond: {
-								$gte: [
-									'$$en.entry', new Date(new Date().getTime() - (30 * 24 * 60 * 60 * 1000))
-								]
+	private async aggregationQuery(clan: Clan) {
+		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS)
+			.aggregate([
+				{
+					$match: {
+						clanTag: clan.tag,
+						season: Season.ID,
+						tag: { $in: clan.memberList.map(m => m.tag) }
+					}
+				}, {
+					$lookup: {
+						from: Collections.LAST_SEEN,
+						localField: 'tag', foreignField: 'tag', as: 'last_seen'
+					}
+				}, {
+					$unwind: {
+						path: '$last_seen'
+					}
+				}, {
+					$set: {
+						entries: {
+							$filter: {
+								input: '$last_seen.entries', as: 'en',
+								cond: {
+									$gte: [
+										'$$en.entry',
+										new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
+									]
+								}
 							}
 						}
 					}
-				}
-			},
-			{
-				$project: {
-					tag: '$tag',
-					clan: '$clan',
-					count: {
-						$sum: '$entries.count'
-					}
-				}
-			},
-			{
-				$group: {
-					_id: null,
-					members: {
-						$addToSet: {
-							count: '$count',
-							tag: '$tag'
+				}, {
+					$unset: 'last_seen'
+				}, {
+					$set: {
+						score: {
+							$sum: '$entries.count'
 						}
 					}
+				}, {
+					$unset: 'entries'
+				}, {
+					$sort: {
+						createdAt: -1
+					}
 				}
-			}
-		]);
+			]);
 
-		return (await cursor.next())?.members ?? [];
+		return cursor.toArray();
 	}
 
 	private updateUsers(message: Message, members: any[]) {
