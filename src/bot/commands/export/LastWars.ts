@@ -38,8 +38,8 @@ export default class LastWarsExport extends Command {
 			.aggregate([
 				{
 					$match: {
-						'clan.tag': { $in: clanList.map(clan => clan.tag) },
-						'state': 'warEnded'
+						'state': 'warEnded', 'groupWar': false,
+						'clan.tag': { $in: clanList.map(clan => clan.tag) }
 					}
 				}, {
 					$project: {
@@ -57,15 +57,22 @@ export default class LastWarsExport extends Command {
 				}, {
 					$group: {
 						_id: '$member.tag',
-						date: {
-							$first: '$date'
-						},
 						name: {
 							$first: '$member.name'
+						},
+						tag: {
+							$first: '$member.tag'
+						},
+						date: {
+							$first: '$date'
 						},
 						total: {
 							$sum: 1
 						}
+					}
+				}, {
+					$sort: {
+						date: -1
 					}
 				}
 			]).toArray();
@@ -86,11 +93,11 @@ export default class LastWarsExport extends Command {
 
 		sheet.addRows(
 			members.filter(
-				mem => memberList.find(m => m.tag === mem._id)
+				mem => memberList.find(m => m.tag === mem.tag)
 			).map(
-				m => [m.name, m._id, m.total, m.date]
+				m => [m.name, m.tag, m.total, m.date]
 			).concat(
-				memberList.filter(mem => !members.find(m => m._id === mem.tag)).map(mem => [mem.name, mem.tag, 0])
+				memberList.filter(mem => !members.find(m => m.tag === mem.tag)).map(mem => [mem.name, mem.tag, 0])
 			)
 		);
 
