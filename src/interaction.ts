@@ -805,36 +805,52 @@ export const commands: { name: string; description: string; options?: APIApplica
 		name: 'debug',
 		description: 'Shows some basic debug informations.'
 	},
-	/* {
-		name: 'autorole',
-		description: 'Automatic Role management for clan members',
+	{
+		name: 'z_autorole',
+		description: '[WIP] Automatic Role management for Clan Members',
 		options: [
 			{
 				name: 'co-leads',
-				required: false,
+				required: true,
 				description: 'Co-Leader Role',
 				type: ApplicationCommandOptionType.ROLE
 			},
 			{
 				name: 'elders',
-				required: false,
+				required: true,
 				description: 'Elder Role',
 				type: ApplicationCommandOptionType.ROLE
 			},
 			{
 				name: 'members',
-				required: false,
+				required: true,
 				description: 'Member Role',
 				type: ApplicationCommandOptionType.ROLE
 			},
 			{
-				name: 'secure',
+				name: 'tag',
 				required: false,
-				description: 'Player API Token verification will be required. Roles will be given to verified players only.',
-				type: ApplicationCommandOptionType.BOOLEAN
+				description: 'Tag of the clan. Do not pass the tag if you want same type roles for all clans.',
+				type: ApplicationCommandOptionType.STRING
+			},
+			{
+				name: 'verify',
+				required: false,
+				description: 'Role will be given to verified players only',
+				type: ApplicationCommandOptionType.STRING,
+				choices: [
+					{
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
+					}
+				]
 			}
 		]
-	}*/
+	},
 	{
 		name: 'boosts',
 		description: 'Clan members with active Super Troops',
