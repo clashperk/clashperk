@@ -151,7 +151,7 @@ export default class Http extends Client {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
 			},
-			timeout: 3000,
+			timeout: 30000,
 			body: JSON.stringify(members.map(mem => mem.tag))
 		}).catch(() => null);
 
