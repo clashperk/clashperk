@@ -209,7 +209,7 @@ export default class ExportSeason extends Command {
 	}
 
 	private chunks<T>(items: T[] = []) {
-		const chunk = 999;
+		const chunk = 100;
 		const array = [];
 		for (let i = 0; i < items.length; i += chunk) {
 			array.push(items.slice(i, i + chunk));
