@@ -78,8 +78,7 @@ export default class FlagAddCommand extends Command {
 		}
 
 		return message.util!.send(
-			`Successfully flagged ${newFlags.length > 1 ? `${newFlags.length} players!\n\n` : ''}${newFlags.map(flag => `${flag.name} (${flag.tag})`).join('\n')}`,
-			{ split: true }
+			`Successfully flagged ${newFlags.length > 1 ? `${newFlags.length} players!\n\n` : ''}${newFlags.map(flag => `${flag.name} (${flag.tag})`).join('\n')}`
 		);
 	}
 
