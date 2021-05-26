@@ -68,7 +68,9 @@ export default class ExportSeason extends Command {
 					memberTags.push({ tag: m.tag, user: member.user });
 				}
 			}
-			await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
+			await Promise.all(
+				this.chunks(memberTags).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
+			);
 		}
 
 		const members = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan)))).flat();
@@ -204,5 +206,14 @@ export default class ExportSeason extends Command {
 				this.client.resolver.updateUserTag(message.guild!, data.user);
 			}
 		}
+	}
+
+	private chunks<T>(items: T[] = []) {
+		const chunk = 999;
+		const array = [];
+		for (let i = 0; i < items.length; i += chunk) {
+			array.push(items.slice(i, i + chunk));
+		}
+		return array;
 	}
 }
