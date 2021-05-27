@@ -31,6 +31,13 @@ const achievements = [
 	'Friend in Need'
 ];
 
+const PETS: { [key: string]: number } = {
+	'L.A.S.S.I': 1,
+	'Electro Owl': 2,
+	'Mighty Yak': 3,
+	'Unicorn': 4
+};
+
 export default class MembersCommand extends Command {
 	public constructor() {
 		super('members', {
@@ -86,7 +93,9 @@ export default class MembersCommand extends Command {
 			},
 			townHallLevel: m.townHallLevel,
 			heroes: m.heroes.length ? m.heroes.filter(a => a.village === 'home') : [],
-			achievements: this.getAchievements(m)
+			achievements: this.getAchievements(m),
+			pets: m.troops.filter(troop => troop.name in PETS)
+				.sort((a, b) => PETS[a.name] - PETS[b.name])
 		}));
 
 		members.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
@@ -189,6 +198,10 @@ export default class MembersCommand extends Command {
 			{ header: 'AQ', width: 10 },
 			{ header: 'GW', width: 10 },
 			{ header: 'RC', width: 10 },
+			{ header: 'L.A.S.S.I', width: 10 },
+			{ header: 'Electro Owl', width: 10 },
+			{ header: 'Mighty Yak', width: 10 },
+			{ header: 'Unicorn', width: 10 },
 			...achievements.map(header => ({ header, width: 16 }))
 		] as any[];
 
@@ -202,6 +215,7 @@ export default class MembersCommand extends Command {
 			...members.map(m => [
 				m.name, m.tag, m.townHallLevel,
 				...m.heroes.map((h: any) => h.level).concat(Array(4 - m.heroes.length).fill('')),
+				...m.pets.map((h: any) => h.level).concat(Array(4 - m.pets.length).fill('')),
 				...m.achievements.map((v: any) => v.value)
 			])
 		]);
