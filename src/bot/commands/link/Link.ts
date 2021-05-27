@@ -60,7 +60,11 @@ export default class LinkCommand extends Command {
 		if (['link-add', 'link-remove', 'link-list', 'link-alias'].includes(tag)) return Flag.continue(tag);
 
 		const member = yield {
-			'type': 'member',
+			'type': Argument.union('member', (msg, id) => {
+				if (!id) return null;
+				if (!/^\d{17,19}/.test(id)) return null;
+				return msg.guild!.members.fetch(id).catch(() => null);
+			}),
 			'flag': '--user',
 			'default': (msg: Message) => msg.member,
 			'match': msg.hasOwnProperty('token') ? 'option' : 'rest'
