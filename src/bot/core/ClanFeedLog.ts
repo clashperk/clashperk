@@ -28,6 +28,10 @@ interface Feed {
 		badge: string;
 	};
 	members: Member[];
+	memberList: {
+		tag: string; role: string;
+		clan: { tag: string };
+	}[];
 }
 
 export default class ClanFeedLog {
@@ -147,12 +151,18 @@ export default class ClanFeedLog {
 	}
 
 	private async clanUpdate(channel: TextChannel | WebhookClient, data: Feed, id: string) {
-		const members = data.members.filter(mem => mem.op !== 'ROLE_UPADTE');
+		const members = data.members.filter(mem => mem.op !== 'ROLE_UPDATE');
+		if (!members.length) return null;
 		const delay = members.length >= 5 ? 2000 : 250;
 		const cache = this.cached.get(id);
 
 		members.sort((a, b) => a.rand - b.rand);
-		const messages = await Promise.all(members.map(mem => this.embed(id, mem, data)));
+		const messages = await Promise.all(members.map(mem => this.embed(id, mem, data)))
+			.catch(err => {
+				console.log(err);
+				console.log(members);
+				return [];
+			});
 
 		for (const message of messages) {
 			if (!message) continue;
@@ -200,11 +210,14 @@ export default class ClanFeedLog {
 
 		console.log(`${players.length} PLAYERS_FOUND`);
 		for (const member of data.members) {
-			const link = players.find(en => en.tag === member.tag);
-			if (!link) continue;
+			const acc = players.find(a => a.tag === member.tag);
+			if (!acc) continue;
 
-			console.log(`MEMBER_FOUND ${member.role}`);
-			await this.manageRole(link.user, guild, member.role, clan.roles);
+			const tags = players.map(en => en.tag);
+			const multi = data.memberList.filter(mem => tags.includes(mem.tag));
+			const role = this.getHighestRole(multi, [clan.tag]);
+
+			await this.manageRole(acc.user, guild, role || member.role, clan.roles);
 			await this.delay(250);
 		}
 
@@ -237,15 +250,15 @@ export default class ClanFeedLog {
 
 		console.log(`${players.length}/${playerTags.length} PLAYERS_FOUND`);
 		for (const member of data.members) {
-			const link = collection.find(
+			const acc = collection.find(
 				col => col.entries.find(en => en.tag === member.tag && clans[0].secureRole ? en.verified : true)
 			);
-			if (!link) continue;
+			if (!acc) continue;
 
-			const links = link.entries.map(en => en.tag);
-			const role = this.getHighestRole(players.filter(en => links.includes(en.tag)), clans.map(clan => clan.tag));
+			const tags = acc.entries.map(en => en.tag);
+			const role = this.getHighestRole(players.filter(en => tags.includes(en.tag)), clans.map(clan => clan.tag));
 
-			await this.manageRole(link.user, guild, role, clans[0].roles);
+			await this.manageRole(acc.user, guild, role, clans[0].roles);
 			await this.delay(250);
 		}
 
@@ -262,18 +275,18 @@ export default class ClanFeedLog {
 		if (!role_id && !roles.length) return null;
 		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return null;
 
-		const member = await guild.members.fetch(user).catch(() => null);
+		const member = await guild.members.fetch({ user, force: true }).catch(() => null);
 		if (member?.user.bot) return null;
 
-		console.log(`Member Found: ${member?.user.tag ?? ''}`);
+		console.log(`MEMBER_FOUND: ${member?.user.tag ?? ''}`);
 		const excluded = roles.filter(id => id !== role_id && this.checkRole(guild, guild.me!, id))
 			.filter(id => member?.roles.cache.has(id));
 
 		if (excluded.length) {
-			await member?.roles.remove(excluded, 'AUTO_ROLE');
+			await member?.roles.remove(excluded, 'auto role');
 		}
 
-		console.log(`ROLE_TO_BE_ADDED: ${role_id!}`);
+		console.log(`ROLE_TO_BE_ADDED: ${role_id!} | EX: ${excluded.length}`);
 		if (!role_id) return null;
 		if (!guild.roles.cache.has(role_id)) return null;
 
@@ -282,16 +295,15 @@ export default class ClanFeedLog {
 
 		console.log('==========ADDED_ROLE==========');
 		if (member?.roles.cache.has(role_id)) return null;
-		return member?.roles.add(role, 'AUTO_ROLE').catch(() => null);
+		return member?.roles.add(role, 'auto role').catch(() => null);
 	}
 
 	private checkRole(guild: Guild, member: GuildMember, role_id: string) {
-		if (guild.roles.cache.has(role_id)) return false;
-		const role = guild.roles.cache.get(role_id)!;
-		return member.roles.highest.position > role.position;
+		const role = guild.roles.cache.get(role_id);
+		return role && member.roles.highest.position > role.position;
 	}
 
-	private getHighestRole(players: Player[], clans: string[]) {
+	private getHighestRole(players: { tag: string; role?: string; clan?: { tag: string } }[], clans: string[]) {
 		const roles: { [key: string]: number } = {
 			member: 1, admin: 2, coLeader: 3
 		};

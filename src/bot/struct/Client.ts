@@ -35,6 +35,12 @@ declare module 'discord-akairo' {
 	}
 }
 
+declare module 'discord.js' {
+	interface ClientEvents {
+		interaction: [Interaction];
+	}
+}
+
 const packageDefinition = loadSync(path.join('grpc.proto'), {
 	keepCase: true,
 	longs: String,
@@ -113,9 +119,12 @@ export default class Client extends AkairoClient {
 
 		// @ts-expect-error
 		this.ws.on('INTERACTION_CREATE', async (res: APIInteraction) => {
+			const interaction = await new Interaction(this, res).parse(res);
+			if (res.type === 3) return this.emit('interaction', interaction);
+
 			const command = this.commandHandler.findCommand(res.data!.name);
 			if (!command || !res.member) return; // eslint-disable-line
-			const interaction = await new Interaction(this, res).parse(res);
+
 			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) {
 				const perms = interaction.channel.permissionsFor(this.user!)!.missing(['SEND_MESSAGES', 'VIEW_CHANNEL'])
 					.map(perm => {
