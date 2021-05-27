@@ -119,10 +119,14 @@ export default class Client extends AkairoClient {
 
 		// @ts-expect-error
 		this.ws.on('INTERACTION_CREATE', async (res: APIInteraction) => {
+			if (res.type === 1) return;
+			// @ts-expect-error
+			if (res.type === 3) this.api.channels[res.message.channel_id].messages[res.message.id].delete();
 			const interaction = await new Interaction(this, res).parse(res);
-			if (res.type === 3) return this.emit('interaction', interaction);
 
-			const command = this.commandHandler.findCommand(res.data!.name);
+			// @ts-expect-error
+			const alias = res.type === 2 ? [res.data!.name] : res.data.custom_id.split(/ +/g);
+			const command = this.commandHandler.findCommand(alias[0]);
 			if (!command || !res.member) return; // eslint-disable-line
 
 			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) {
@@ -147,7 +151,7 @@ export default class Client extends AkairoClient {
 			const flags = ['help', 'invite', 'stats', 'guide'].includes(command.id) ? 64 : 0;
 			// @ts-expect-error
 			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5, data: { flags } } });
-			return this.handleInteraction(interaction, command, interaction.options);
+			return this.handleInteraction(interaction, command, res.type === 2 ? interaction.options : alias.slice(1).join(' '));
 		});
 	}
 

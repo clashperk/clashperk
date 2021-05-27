@@ -73,7 +73,43 @@ export default class BoostsCommand extends Command {
 			);
 		}
 
-		return message.util!.send({ embed });
+		const msg = await message.util!.send({ embed });
+
+		if (message.hasOwnProperty('token')) {
+			// @ts-expect-error
+			return this.client.api.webhooks(this.client.user!.id, message.token)
+				.messages[msg.id]
+				.patch(
+					{
+						data: {
+							components: [
+								{
+									type: 1,
+									components: [
+										{ type: 2, style: 2, label: 'Show me again?', custom_id: `boosts ${data.tag}` }
+									]
+								}
+							]
+						}
+					}
+				);
+		}
+
+		// @ts-expect-error
+		return this.client.api.channels[message.channel.id].messages[msg.id].patch(
+			{
+				data: {
+					components: [
+						{
+							type: 1,
+							components: [
+								{ type: 2, style: 2, label: 'Show me again?', custom_id: `boosts ${data.tag}` }
+							]
+						}
+					]
+				}
+			}
+		);
 	}
 
 	private boostable(players: Player[]) {
