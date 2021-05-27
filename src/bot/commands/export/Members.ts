@@ -62,6 +62,29 @@ export default class ExportClanMembersCommand extends Command {
 			members.push(...mems);
 		}
 
+		const memberTags = [];
+		memberTags.push(...(await this.client.http.getDiscordLinks(members)));
+		const dbMembers = await this.client.db.collection(Collections.LINKED_PLAYERS)
+			.find({ 'entries.tag': { $in: members.map(m => m.tag) } })
+			.toArray();
+		if (dbMembers.length) this.updateUsers(message, dbMembers);
+		for (const member of dbMembers) {
+			for (const m of member.entries) {
+				if (!members.find(mem => mem.tag === m.tag)) continue;
+				if (memberTags.find(mem => mem.tag === m.tag)) continue;
+				memberTags.push({ tag: m.tag, user: member.user });
+			}
+		}
+		await Promise.all(
+			this.chunks(memberTags).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
+		);
+
+		for (const mem of members) {
+			const user = memberTags.find(user => user.tag === mem.tag)?.user;
+			// @ts-expect-error
+			mem.user_tag = message.guild!.members.cache.get(user)?.user.tag;
+		}
+
 		members.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
 			.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
@@ -81,6 +104,7 @@ export default class ExportClanMembersCommand extends Command {
 		sheet.columns = [
 			{ header: 'NAME', width: 16 },
 			{ header: 'TAG', width: 16 },
+			{ header: 'Discord', width: 16 },
 			{ header: 'CLAN', width: 16 },
 			{ header: 'Town-Hall', width: 10 },
 			{ header: 'BK', width: 10 },
@@ -98,7 +122,7 @@ export default class ExportClanMembersCommand extends Command {
 
 		sheet.addRows(
 			members.map(m => [
-				m.name, m.tag, m.clan, m.townHallLevel,
+				m.name, m.tag, m.user_tag, m.clan, m.townHallLevel,
 				...m.heroes.map((h: any) => h.level).concat(Array(4 - m.heroes.length).fill('')),
 				...m.achievements.map((v: any) => v.value)
 			])
@@ -109,5 +133,23 @@ export default class ExportClanMembersCommand extends Command {
 
 	private getAchievements(data: Player) {
 		return achievements.map(name => ({ name, value: data.achievements.find(en => en.name === name)?.value ?? 0 }));
+	}
+
+	private updateUsers(message: Message, members: any[]) {
+		for (const data of members) {
+			const member = message.guild!.members.cache.get(data.user);
+			if (member && data.user_tag !== member.user.tag) {
+				this.client.resolver.updateUserTag(message.guild!, data.user);
+			}
+		}
+	}
+
+	private chunks<T>(items: T[] = []) {
+		const chunk = 100;
+		const array = [];
+		for (let i = 0; i < items.length; i += chunk) {
+			array.push(items.slice(i, i + chunk));
+		}
+		return array;
 	}
 }
