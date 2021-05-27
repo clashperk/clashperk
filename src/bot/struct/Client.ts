@@ -121,7 +121,7 @@ export default class Client extends AkairoClient {
 		this.ws.on('INTERACTION_CREATE', async (res: APIInteraction) => {
 			if (res.type === 1) return;
 			// @ts-expect-error
-			if (res.type === 3) this.api.channels[res.message.channel_id].messages[res.message.id].delete();
+			if (res.type === 3) await this.api.channels[res.channel_id].messages[res.message.id].delete();
 			const interaction = await new Interaction(this, res).parse(res);
 
 			// @ts-expect-error
