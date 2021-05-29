@@ -12,9 +12,17 @@ const OP: { [key: string]: number } = {
 	LEFT: 0xeb3508 // RED
 };
 
+const ActionType: { [key: string]: string } = {
+	LEFT: '%PLAYER% left.',
+	JOINED: '%PLAYER% joined.',
+	DEMOTED: '%PLAYER% has been demoted.',
+	PROMOTED: '%PLAYER% has been promoted.'
+};
+
 interface Member {
 	op: string;
 	tag: string;
+	name: string;
 	rand: number;
 	role: string;
 	donations: number;
@@ -33,6 +41,10 @@ interface Feed {
 		clan: { tag: string };
 	}[];
 }
+
+const roles: { [key: string]: number } = {
+	member: 1, admin: 2, coLeader: 3
+};
 
 export default class ClanFeedLog {
 	public cached: Collection<string, any>;
@@ -151,18 +163,13 @@ export default class ClanFeedLog {
 	}
 
 	private async clanUpdate(channel: TextChannel | WebhookClient, data: Feed, id: string) {
-		const members = data.members.filter(mem => mem.op !== 'ROLE_UPDATE');
+		const members = data.members.filter(mem => ['JOINED', 'LEFT'].includes(mem.op));
 		if (!members.length) return null;
 		const delay = members.length >= 5 ? 2000 : 250;
 		const cache = this.cached.get(id);
 
 		members.sort((a, b) => a.rand - b.rand);
-		const messages = await Promise.all(members.map(mem => this.embed(id, mem, data)))
-			.catch(err => {
-				console.log(err);
-				console.log(members);
-				return [];
-			});
+		const messages = await Promise.all(members.map(mem => this.embed(id, mem, data)));
 
 		for (const message of messages) {
 			if (!message) continue;
@@ -192,32 +199,24 @@ export default class ClanFeedLog {
 		const clan = await this.client.db.collection(Collections.CLAN_STORES)
 			.findOne({ guild, tag: data.clan.tag, autoRole: 1 });
 		if (!clan) return null;
+
 		console.log(`======================= UNIQUE_TYPE_AUTO_ROLE ${data.clan.tag} =======================`);
 
 		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: data.members.map(mem => mem.tag) } })
-			.toArray() as { user: string; entries: { tag: string; verified: boolean }[] }[];
-		const players = collection.reduce(
-			(prev, curr) => {
-				prev.push(
-					...curr.entries.map(
-						en => ({ user: curr.user, tag: en.tag, verified: en.verified })
-					)
-				);
-				return prev;
-			}, [] as { user: string; tag: string; verified: boolean }[]
-		).filter(en => clan.secureRole ? en.verified : true);
+			.toArray();
 
-		console.log(`${players.length} PLAYERS_FOUND`);
+		const flattened = this.flatPlayers(collection, clan.secureRole);
 		for (const member of data.members) {
-			const acc = players.find(a => a.tag === member.tag);
-			if (!acc) continue;
+			const mem = flattened.find(a => a.tag === member.tag);
+			if (!mem) continue;
+			const acc = flattened.filter(a => a.user === mem.user);
 
-			const tags = players.map(en => en.tag);
+			const tags = acc.map(en => en.tag);
 			const multi = data.memberList.filter(mem => tags.includes(mem.tag));
-			const role = this.getHighestRole(multi, [clan.tag]);
+			const role = this.getHighestRole(multi, [clan.tag]) || member.role;
 
-			await this.manageRole(acc.user, guild, role || member.role, clan.roles);
+			await this.manageRole(mem.user, guild, role, clan.roles, ActionType[member.op].replace(/%PLAYER%/, member.name));
 			await this.delay(250);
 		}
 
@@ -229,12 +228,69 @@ export default class ClanFeedLog {
 			.find({ guild, autoRole: 2 })
 			.toArray();
 		if (!clans.length) return null;
+		const clan = clans[0];
+
 		console.log(`======================= SAME_TYPE_AUTO_ROLE ${data.clan.tag} =======================`);
 
 		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: data.members.map(mem => mem.tag) } })
-			.toArray() as { user: string; entries: { tag: string; verified: boolean }[] }[];
-		const playerTags = collection.reduce(
+			.toArray();
+
+		const flattened = this.flatPlayers(collection, clan.secureRole);
+		const players = (await this.client.http.detailedClanMembers(flattened))
+			.filter(res => res.ok);
+
+		for (const member of data.members) {
+			const mem = flattened.find(a => a.tag === member.tag);
+			if (!mem) continue;
+			const acc = flattened.filter(a => a.user === mem.user);
+
+			const tags = acc.map(en => en.tag);
+			const role = this.getHighestRole(players.filter(en => tags.includes(en.tag)), clans.map(clan => clan.tag));
+
+			await this.manageRole(mem.user, guild, role, clan.roles, ActionType[member.op].replace(/%PLAYER%/, member.name));
+			await this.delay(250);
+		}
+
+		return data.members.length;
+	}
+
+	private async manageRole(user_id: string, guild_id: string, clanRole: string, roles: { [key: string]: string }, reason: string) {
+		return this.addRoles(guild_id, user_id, roles[clanRole], Object.values(roles), reason);
+	}
+
+	public async addRoles(guild_id: string, user_id: string, role_id: string, roles: string[], reason: string) {
+		const guild = this.client.guilds.cache.get(guild_id);
+
+		if (!role_id && !roles.length) return null;
+		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return null;
+
+		const member = await guild.members.fetch({ user: user_id, force: true }).catch(() => null);
+		if (!member) return null;
+		if (member.user.bot) return null;
+
+		console.log(`MEMBER_FOUND: ${member.user.tag}`);
+		const excluded = roles.filter(id => id !== role_id && this.checkRole(guild, guild.me!, id))
+			.filter(id => member.roles.cache.has(id));
+
+		if (excluded.length) {
+			await member.roles.remove(excluded, reason);
+		}
+
+		console.log(`ROLE_TO_BE_ADDED: ${role_id} | EX: ${excluded.length}`);
+		if (!role_id) return null;
+		if (!guild.roles.cache.has(role_id)) return null;
+
+		const role = guild.roles.cache.get(role_id)!;
+		if (role.position > guild.me.roles.highest.position) return null;
+
+		console.log('========== ADDED_ROLE ==========');
+		if (member.roles.cache.has(role_id)) return null;
+		return member.roles.add(role, reason).catch(() => null);
+	}
+
+	private flatPlayers(collection: { user: string; entries: { tag: string; verified: boolean }[] }[], secureRole: boolean) {
+		return collection.reduce(
 			(prev, curr) => {
 				prev.push(
 					...curr.entries.map(
@@ -243,59 +299,7 @@ export default class ClanFeedLog {
 				);
 				return prev;
 			}, [] as { user: string; tag: string; verified: boolean }[]
-		).filter(en => clans[0].secureRole ? en.verified : true);
-
-		const players = (await this.client.http.detailedClanMembers(playerTags))
-			.filter(res => res.ok);
-
-		console.log(`${players.length}/${playerTags.length} PLAYERS_FOUND`);
-		for (const member of data.members) {
-			const acc = collection.find(
-				col => col.entries.find(en => en.tag === member.tag && clans[0].secureRole ? en.verified : true)
-			);
-			if (!acc) continue;
-
-			const tags = acc.entries.map(en => en.tag);
-			const role = this.getHighestRole(players.filter(en => tags.includes(en.tag)), clans.map(clan => clan.tag));
-
-			await this.manageRole(acc.user, guild, role, clans[0].roles);
-			await this.delay(250);
-		}
-
-		return data.members.length;
-	}
-
-	private async manageRole(user: string, guild_id: string, clanRole: string, roles: { [key: string]: string }) {
-		return this.addRoles(guild_id, user, roles[clanRole], Object.values(roles));
-	}
-
-	public async addRoles(guild_id: string, user: string, role_id?: string, roles: string[] = []) {
-		const guild = this.client.guilds.cache.get(guild_id);
-
-		if (!role_id && !roles.length) return null;
-		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return null;
-
-		const member = await guild.members.fetch({ user, force: true }).catch(() => null);
-		if (member?.user.bot) return null;
-
-		console.log(`MEMBER_FOUND: ${member?.user.tag ?? ''}`);
-		const excluded = roles.filter(id => id !== role_id && this.checkRole(guild, guild.me!, id))
-			.filter(id => member?.roles.cache.has(id));
-
-		if (excluded.length) {
-			await member?.roles.remove(excluded, 'auto role');
-		}
-
-		console.log(`ROLE_TO_BE_ADDED: ${role_id!} | EX: ${excluded.length}`);
-		if (!role_id) return null;
-		if (!guild.roles.cache.has(role_id)) return null;
-
-		const role = guild.roles.cache.get(role_id)!;
-		if (role.position > guild.me.roles.highest.position) return null;
-
-		console.log('==========ADDED_ROLE==========');
-		if (member?.roles.cache.has(role_id)) return null;
-		return member?.roles.add(role, 'auto role').catch(() => null);
+		).filter(en => secureRole ? en.verified : true);
 	}
 
 	private checkRole(guild: Guild, member: GuildMember, role_id: string) {
@@ -304,10 +308,6 @@ export default class ClanFeedLog {
 	}
 
 	private getHighestRole(players: { tag: string; role?: string; clan?: { tag: string } }[], clans: string[]) {
-		const roles: { [key: string]: number } = {
-			member: 1, admin: 2, coLeader: 3
-		};
-
 		const unique = players.filter(a => a.clan && clans.includes(a.clan.tag) && a.role! in roles)
 			.map(a => a.role!);
 
