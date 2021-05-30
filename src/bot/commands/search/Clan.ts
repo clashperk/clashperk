@@ -39,7 +39,7 @@ export default class ClanCommand extends Command {
 		if (clanPoints >= 50000) {
 			const clanRank = await this.client.http.clanRanks('global').catch(() => null);
 			if (!clanRank?.ok) return null;
-			const clan = clanRank.items?.find((clan: any) => clan?.tag === tag);
+			const clan = clanRank.items.find((clan: any) => clan?.tag === tag);
 			if (!clan) return null;
 
 			return {

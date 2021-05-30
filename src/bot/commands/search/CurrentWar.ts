@@ -1,5 +1,5 @@
-import { Clan, CurrentWar, ClanWarMember, ClanWar, ClanWarClan, ClanWarOpponent } from 'clashofclans.js';
-import { Command, PrefixSupplier, Argument } from 'discord-akairo';
+import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
+import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { Collections } from '@clashperk/node';
@@ -58,24 +58,24 @@ export default class WarCommand extends Command {
 			.setAuthor(`\u200e${data.name} (${data.tag})`, data.badgeUrls.medium);
 
 		if (!data.isWarLogPublic) {
-			const res = await this.client.http.clanWarLeague(data.tag).catch(() => null);
-			if (res?.ok) {
-				embed.setDescription(`Clan is in CWL. Run \`${(this.handler.prefix as PrefixSupplier)(message) as string}cwl\` to get CWL commands.`);
-			} else {
-				embed.setDescription('Private War Log');
+			const res = await this.client.http.clanWarLeague(data.tag);
+			if (res.ok) {
+				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-round')!, false);
 			}
+			embed.setDescription('Private War Log');
 			return message.util!.send({ embed });
 		}
 
-		const body: CurrentWar = await this.client.http.currentClanWar(data.tag);
-
+		const body = await this.client.http.currentClanWar(data.tag);
+		if (!body.ok) {
+			return message.util!.send('**504 Request Timeout!**');
+		}
 		if (body.state === 'notInWar') {
-			const res = await this.client.http.clanWarLeague(data.tag).catch(() => null);
-			if (res?.ok) {
-				embed.setDescription(`Clan is in CWL. Run \`${(this.handler.prefix as PrefixSupplier)(message) as string}cwl\` to get CWL commands.`);
-			} else {
-				embed.setDescription('Not in War');
+			const res = await this.client.http.clanWarLeague(data.tag);
+			if (res.ok) {
+				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-round')!, false);
 			}
+			embed.setDescription('Not in War');
 			return message.util!.send({ embed });
 		}
 
@@ -101,7 +101,7 @@ export default class WarCommand extends Command {
 		return this.sendResult(message, data);
 	}
 
-	private async sendResult(message: Message, body: CurrentWar) {
+	private async sendResult(message: Message, body: ClanWar) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`\u200e${body.clan.name} (${body.clan.tag})`, body.clan.badgeUrls.medium);
@@ -269,7 +269,7 @@ export default class WarCommand extends Command {
 		return workbook.xlsx.writeBuffer();
 	}
 
-	private getLeaderBoard(clan: ClanWarClan, opponent: ClanWarOpponent) {
+	private getLeaderBoard(clan: WarClan, opponent: WarClan) {
 		return [
 			`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
 			`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,

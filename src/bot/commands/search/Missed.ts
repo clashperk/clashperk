@@ -1,7 +1,7 @@
-import { Command, PrefixSupplier, Argument } from 'discord-akairo';
+import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
-import { Clan, CurrentWar } from 'clashofclans.js';
+import { Clan, ClanWar } from 'clashofclans.js';
 import { Collections } from '@clashperk/node';
 import 'moment-duration-format';
 import moment from 'moment';
@@ -56,24 +56,24 @@ export default class MissedAttacksCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
 
 		if (!data.isWarLogPublic) {
-			const res = await this.client.http.clanWarLeague(data.tag).catch(() => null);
-			if (res?.ok) {
-				embed.setDescription(`Clan is in CWL. Run \`${(this.handler.prefix as PrefixSupplier)(message) as string}cwl\` to get CWL commands.`);
-			} else {
-				embed.setDescription('Private WarLog');
+			const res = await this.client.http.clanWarLeague(data.tag);
+			if (res.ok) {
+				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-remaining')!, false);
 			}
+			embed.setDescription('Private War Log');
 			return message.util!.send({ embed });
 		}
 
-		const body: CurrentWar = await this.client.http.currentClanWar(data.tag);
-
+		const body = await this.client.http.currentClanWar(data.tag);
+		if (!body.ok) {
+			return message.util!.send('**504 Request Timeout!**');
+		}
 		if (body.state === 'notInWar') {
-			const isCWL = await this.client.http.clanWarLeague(data.tag).catch(() => null);
-			if (isCWL) {
-				embed.setDescription(`Clan is in CWL. Run \`${(this.handler.prefix as PrefixSupplier)(message) as string}cwl\` to get CWL commands.`);
-			} else {
-				embed.setDescription('Not in War');
+			const res = await this.client.http.clanWarLeague(data.tag);
+			if (res.ok) {
+				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-remaining')!, false);
 			}
+			embed.setDescription('Not in War');
 			return message.util!.send({ embed });
 		}
 
@@ -99,7 +99,7 @@ export default class MissedAttacksCommand extends Command {
 		return this.sendResult(message, data);
 	}
 
-	private sendResult(message: Message, body: CurrentWar) {
+	private sendResult(message: Message, body: ClanWar) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`\u200e${body.clan.name} (${body.clan.tag})`, body.clan.badgeUrls.medium);

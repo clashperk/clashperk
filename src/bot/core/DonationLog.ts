@@ -1,9 +1,10 @@
-import { MessageEmbed, Collection, PermissionString, TextChannel } from 'discord.js';
+import { MessageEmbed, Collection, PermissionString, TextChannel, WebhookClient } from 'discord.js';
 import { BLUE_NUMBERS, RED_NUMBERS } from '../util/NumEmojis';
 import { PLAYER_LEAGUES, EMOJIS } from '../util/Emojis';
 import { COLLECTIONS } from '../util/Constants';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
+import { Collections } from '@clashperk/node';
 
 export interface Donation {
 	clan: {
@@ -59,12 +60,81 @@ export default class DonationLog {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions as PermissionString[], false)) {
+				if (this.hasWebhookPermission(channel)) {
+					const webhook = await this.webhook(id);
+					if (webhook) return this.handleMessage(id, webhook, data);
+				}
 				return this.handleMessage(id, channel, data);
 			}
 		}
 	}
 
-	private async handleMessage(id: string, channel: TextChannel, data: Donation) {
+	private hasWebhookPermission(channel: TextChannel) {
+		return channel.permissionsFor(channel.guild.me!)!.has(['MANAGE_WEBHOOKS']) && channel.permissionsFor(channel.guild.id)!.has(['USE_EXTERNAL_EMOJIS']);
+	}
+
+	private recreateWebhook(id: string) {
+		const cache = this.cached.get(id);
+		cache.webhook = null;
+		this.cached.set(id, cache);
+		return this.webhook(id);
+	}
+
+	private stopWebhookCheck(id: string) {
+		const cache = this.cached.get(id);
+		cache.webhook = null;
+		cache.no_webhook = true;
+		this.cached.set(id, cache);
+		return null;
+	}
+
+	private async webhook(id: string): Promise<WebhookClient | null> {
+		const cache = this.cached.get(id);
+		if (cache.no_webhook) return null;
+		if (cache.webhook) return cache.webhook;
+
+		const channel = this.client.channels.cache.get(cache.channel) as TextChannel;
+		const webhooks = await channel.fetchWebhooks();
+		if (webhooks.size) {
+			const webhook = webhooks.find(hook => (hook.owner as any)?.id === this.client.user?.id);
+
+			if (webhook) {
+				cache.webhook = new WebhookClient(webhook.id, webhook.token!);
+				this.cached.set(id, cache);
+
+				await this.client.db.collection(Collections.DONATION_LOGS)
+					.updateOne(
+						{ channel: channel.id, guild: channel.guild.id },
+						{ $set: { webhook_id: webhook.id, webhook_token: webhook.token } }
+					);
+
+				return cache.webhook;
+			}
+		}
+
+		if (webhooks.size === 10) return this.stopWebhookCheck(id);
+		const webhook = await channel.createWebhook(
+			this.client.user!.username,
+			{ avatar: this.client.user!.displayAvatarURL({ size: 2048, format: 'png' }) }
+		).catch(() => null);
+
+		if (webhook) {
+			cache.webhook = new WebhookClient(webhook.id, webhook.token!);
+			this.cached.set(id, cache);
+
+			await this.client.db.collection(Collections.DONATION_LOGS)
+				.updateOne(
+					{ channel: channel.id, guild: channel.guild.id },
+					{ $set: { webhook_id: webhook.id, webhook_token: webhook.token } }
+				);
+
+			return cache.webhook;
+		}
+
+		return this.stopWebhookCheck(id);
+	}
+
+	private async handleMessage(id: string, channel: TextChannel | WebhookClient, data: Donation) {
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
@@ -102,7 +172,19 @@ export default class DonationLog {
 			]);
 		}
 
-		return channel.send({ embed }).catch(() => null);
+		if (channel instanceof TextChannel) return channel.send({ embed }).catch(() => null);
+
+		try {
+			const message = await channel.send({ embeds: [embed] });
+			if (message.channel.id !== cache.channel) {
+				await message.delete();
+				return this.recreateWebhook(id);
+			}
+		} catch (error) {
+			if (error.code === 10015) {
+				return this.recreateWebhook(id);
+			}
+		}
 	}
 
 	private divmod(num: number) {
@@ -114,10 +196,10 @@ export default class DonationLog {
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
-					// guild: data.guild,
-					channel: data.channel,
+					tag: data.tag,
 					color: data.color,
-					tag: data.tag
+					channel: data.channel,
+					webhook: data.webhook_id ? new WebhookClient(data.webhook_id, data.webhook_token) : null
 				});
 			});
 	}
@@ -128,10 +210,10 @@ export default class DonationLog {
 
 		if (!data) return null;
 		return this.cached.set(id, {
-			// guild: data.guild,
-			channel: data.channel,
+			tag: data.tag,
 			color: data.color,
-			tag: data.tag
+			channel: data.channel,
+			webhook: data.webhook_id ? new WebhookClient(data.webhook_id, data.webhook_token) : null
 		});
 	}
 

@@ -1,4 +1,4 @@
-import { Clan, CurrentWar, ClanWarMember, ClanWarClan, ClanWarOpponent } from 'clashofclans.js';
+import { Clan, ClanWarMember, WarClan } from 'clashofclans.js';
 import { EMOJIS, TOWN_HALLS, WAR_STARS } from '../../util/Emojis';
 import { ORANGE_NUMBERS, BLUE_NUMBERS } from '../../util/NumEmojis';
 import { Command, PrefixSupplier } from 'discord-akairo';
@@ -41,7 +41,7 @@ export default class CurrentWarCommand extends Command {
 			return message.util!.send({ embed });
 		}
 
-		const body: CurrentWar = await this.client.http.currentClanWar(data.tag);
+		const body = await this.client.http.currentClanWar(data.tag);
 
 		if (body.state === 'notInWar') {
 			const res = await this.client.http.clanWarLeague(data.tag).catch(() => null);
@@ -126,7 +126,7 @@ export default class CurrentWarCommand extends Command {
 		].filter(stars => stars.length).join('');
 	}
 
-	private getPreviousBestAttack(clan: ClanWarClan, defenderTag: string, attackerTag: string) {
+	private getPreviousBestAttack(clan: WarClan, defenderTag: string, attackerTag: string) {
 		const attacks = clan.members.filter(mem => mem.attacks?.length)
 			.map(mem => mem.attacks)
 			.flat()
@@ -135,7 +135,7 @@ export default class CurrentWarCommand extends Command {
 		return attacks[0];
 	}
 
-	private freshAttack(clan: ClanWarClan, defenderTag: string, order: number) {
+	private freshAttack(clan: WarClan, defenderTag: string, order: number) {
 		const attacks = clan.members.filter(mem => mem.attacks?.length)
 			.map(mem => mem.attacks)
 			.flat()
@@ -144,7 +144,7 @@ export default class CurrentWarCommand extends Command {
 		return Boolean(attacks.length === 1 || attacks[0]!.order === order);
 	}
 
-	private getRecentAttacks(clan: ClanWarClan, opponent: ClanWarOpponent) {
+	private getRecentAttacks(clan: WarClan, opponent: WarClan) {
 		return clan.members.filter(mem => mem.attacks?.length)
 			.map(mem => mem.attacks)
 			.flat()

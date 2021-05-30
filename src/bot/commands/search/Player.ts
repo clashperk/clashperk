@@ -2,7 +2,7 @@ import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES, SEIGE_MACHINES } from '../.
 import { COLLECTIONS, leagueId } from '../../util/Constants';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
-import { ClanWarClan, Player } from 'clashofclans.js';
+import { Player, WarClan } from 'clashofclans.js';
 import { Collections, Season } from '@clashperk/node';
 import ms from 'ms';
 
@@ -173,7 +173,7 @@ export default class PlayerCommand extends Command {
 			.toArray();
 
 		for (const data of wars) {
-			const clan: ClanWarClan = data.clan.members.find((m: any) => m.tag === tag) ? data.clan : data.opponent;
+			const clan: WarClan = data.clan.members.find((m: any) => m.tag === tag) ? data.clan : data.opponent;
 			member.total += 1;
 			for (const m of clan.members) {
 				if (m.tag !== tag) continue;

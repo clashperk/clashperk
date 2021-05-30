@@ -39,23 +39,28 @@ export default class ClanGamesCommand extends Command {
 				examples: ['#8QU8J9LP']
 			},
 			flags: ['--max', '--filter'],
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				},
-				{
-					id: 'force',
-					match: 'flag',
-					flag: ['--max']
-				},
-				{
-					id: 'filter',
-					match: 'flag',
-					flag: ['--filter']
-				}
-			]
+			optionFlags: ['--tag']
 		});
+	}
+
+	public *args(msg: Message): unknown {
+		const data = yield {
+			flag: '--tag',
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
+		};
+
+		const force = yield {
+			match: 'flag',
+			flag: ['--max']
+		};
+
+		const filter = yield {
+			match: 'flag',
+			flag: ['--filter']
+		};
+
+		return { data, force, filter };
 	}
 
 	public async exec(message: Message, { data, force, filter }: { data: Clan; force: boolean; filter: boolean }) {

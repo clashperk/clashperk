@@ -1,4 +1,4 @@
-import { Clan, ClanWar, ClanWarLeague, ClanWarMember } from 'clashofclans.js';
+import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember } from 'clashofclans.js';
 import { MessageEmbed, Message, Util } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { EMOJIS } from '../../util/Emojis';
@@ -46,34 +46,21 @@ export default class CWLAttacksComamnd extends Command {
 	public async exec(message: Message, { data, round }: { data: Clan; round: number }) {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
-		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
-		if (body.statusCode === 504) {
-			return message.util!.send([
-				'504 Request Timeout'
-			]);
-		}
+		const body = await this.client.http.clanWarLeague(data.tag);
+		if (body.statusCode === 504) return message.util!.send('**504 Request Timeout!**');
 
 		if (!body.ok) {
 			const cw = await this.client.storage.getWarTags(data.tag);
 			if (cw) return this.rounds(message, cw, data, round);
 
-			const embed = this.client.util.embed()
-				.setColor(this.client.embed(message))
-				.setAuthor(
-					`${data.name} (${data.tag})`,
-					`${data.badgeUrls.medium}`,
-					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
-				)
-				.setThumbnail(data.badgeUrls.medium)
-				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send(`**${data.name} is not in Clan War League!**`);
 		}
 
 		this.client.storage.pushWarTags(data.tag, body);
 		return this.rounds(message, body, data, round);
 	}
 
-	private async rounds(message: Message, body: ClanWarLeague, clan: Clan, round: number) {
+	private async rounds(message: Message, body: ClanWarLeagueGroup, clan: Clan, round: number) {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		if (round && round > rounds.length) {

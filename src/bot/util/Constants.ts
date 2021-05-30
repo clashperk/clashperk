@@ -3,7 +3,7 @@ import { Collections } from '@clashperk/node';
 import { Clan } from 'clashofclans.js';
 
 export const Util = {
-	escapeSheetName: (name: string) => name.replace(/[\*\?\:\[\]\\\/]/g, ''),
+	escapeSheetName: (name: string) => name.replace(/[\*\?\:\[\]\\\/\']/g, ''),
 	verifyClan: (code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) => {
 		// clan verification by unique code or verified co/leader
 		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
@@ -57,7 +57,8 @@ export const COLLECTIONS = {
 export const SETTINGS = {
 	PREFIX: 'prefix',
 	COLOR: 'color',
-	LIMIT: 'clanLimit'
+	LIMIT: 'clanLimit',
+	MOD_LOG: 'modLog'
 };
 
 export const Op = {
@@ -80,30 +81,30 @@ export const EMBEDS = {
 			'',
 			'[Become a Patron](https://www.patreon.com/clashperk)',
 			'',
-			`Use \`${prefix}clans\` command to view all linked clans and \`${prefix}help remove\` to know about the process of removing any clan.`
+			`Use \`${prefix}setup\` command to view all linked clans and \`${prefix}help remove\` to know about the process of removing any clan.`
 		]),
 
 	VERIFY_CLAN: (clan: Clan, code: string, prefix: string) => new MessageEmbed()
 		.setTitle(`${clan.name} (${clan.tag})`)
 		.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
-		.setThumbnail(clan.badgeUrls.small)
 		.setDescription([
-			'**Clan Description**',
-			`${clan.description}`,
-			'',
-			'**Verify Your Clan**',
+			`${clan.description || 'No Description'}`,
+			'\u200b'
+		])
+		.addField('Verify Your Clan', [
 			'It\'s a security feature of the bot to ensure you are a **Leader** or **Co-Leader** in the clan.',
 			'',
-			'*You can use any of the following methods.*',
-			'',
-			'__**First Method (Recommended!)**__',
-			'Verify your Player account using Player API Token.',
-			`Type \`${prefix}help verify\` to know more about the Player API Token.`,
-			'',
-			'__**Second Method**__',
-			`Add the code \`${code}\` at the end of the clan description.`,
-			'If you\'ve already added the code please wait at least 2 minutes before you run the command again and remove the code after verification.'
+			'*You can use any of the following methods.*'
 		])
+		.addField('• Simplified', [
+			'Verify your Player account using Player [API Token](https://link.clashofclans.com/?action=OpenMoreSettings) and run this command again.',
+			`Type \`${prefix}verify\` to know more about the Player API Token. Run \`${prefix}verify #PLAYER_TAG TOKEN\` to quickly verify your player account.`,
+			'\u200b'
+		], true)
+		.addField('• Manual', [
+			`Add the code \`${code}\` at the end of the [Clan Description](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}) and run this command again.`,
+			'If you\'ve already added the code, wait at least 2 minutes before you run the command again and you can remove the code after verification.'
+		], true)
 };
 
 export function missingPermissions(channel: TextChannel, user: User, permissions: string[]) {

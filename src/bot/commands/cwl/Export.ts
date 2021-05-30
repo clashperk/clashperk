@@ -1,4 +1,4 @@
-import { Clan, ClanWarLeague, ClanWar, ClanWarClan } from 'clashofclans.js';
+import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { Collections } from '@clashperk/node';
 import { Util } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
@@ -164,7 +164,7 @@ export default class CWLExport extends Command {
 		});
 	}
 
-	private perRoundStats(clans: { perRound: { clan: ClanWarClan; opponent: ClanWarClan }[] }[]) {
+	private perRoundStats(clans: { perRound: { clan: WarClan; opponent: WarClan }[] }[]) {
 		const workbook = new Excel();
 		for (const { perRound } of clans) {
 			let i = 0;
@@ -232,7 +232,7 @@ export default class CWLExport extends Command {
 		return stars.filter(star => star === count).length;
 	}
 
-	private async rounds(body: ClanWarLeague, clan: Clan) {
+	private async rounds(body: ClanWarLeagueGroup, clan: Clan) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		const clanTag = clan.tag;
 		const members: { [key: string]: any } = {};

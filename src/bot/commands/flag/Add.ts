@@ -15,10 +15,14 @@ export default class FlagAddCommand extends Command {
 	}
 
 	public *args(msg: Message): unknown {
-		const data = yield {
+		const tags = yield {
 			flag: '--tag',
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.getPlayer(msg, tag)
+			type: async (msg: Message, args: string) => {
+				const tags = args ? args.split(/ +/g) : [];
+				if (tags.length > 1) return args.split(/ +/g);
+				return this.client.resolver.getPlayer(msg, args);
+			}
 		};
 
 		const reason = yield {
@@ -26,18 +30,21 @@ export default class FlagAddCommand extends Command {
 			match: msg.hasOwnProperty('token') ? 'option' : 'rest'
 		};
 
-		return { data, reason };
+		return { tags, reason };
 	}
 
-	public async exec(message: Message, { data, reason }: { data: Player; reason: string }) {
+	public async exec(message: Message, { reason, tags }: { reason: string; tags: string[] | string }) {
+		// @ts-expect-error
+		if (!Array.isArray(tags)) tags = [tags.tag];
+
 		if (!reason) return message.util!.send('You must provide a reason to flag.');
 		if (reason.length > 900) return message.util!.send('Reason must be 1024 or fewer in length.');
 
 		const flags = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
 			.find({ guild: message.guild!.id })
-			.toArray();
+			.count();
 
-		if (flags.length >= 200 && !this.client.patrons.get(message.guild!.id)) {
+		if (flags >= 200 && !this.client.patrons.get(message.guild!.id)) {
 			const embed = this.client.util.embed()
 				.setDescription([
 					'You can only flag 200 players per guild!',
@@ -51,19 +58,31 @@ export default class FlagAddCommand extends Command {
 			return message.util!.send({ embed });
 		}
 
-		await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
-			.findOneAndUpdate({ guild: message.guild!.id, tag: data.tag }, {
-				$set: {
-					guild: message.guild!.id,
-					user: message.author.id,
-					user_tag: message.author.tag,
-					tag: data.tag,
-					name: data.name,
-					reason: Util.cleanContent(reason, message),
-					createdAt: new Date()
-				}
-			}, { upsert: true });
+		const players: Player[] = await Promise.all(tags.map(en => this.client.http.player(this.fixTag(en))));
+		const newFlags = [] as { name: string; tag: string }[];
+		for (const data of players.filter(en => en.ok)) {
+			const { value } = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
+				.findOneAndUpdate({ guild: message.guild!.id, tag: data.tag }, {
+					$set: {
+						guild: message.guild!.id,
+						user: message.author.id,
+						user_tag: message.author.tag,
+						tag: data.tag,
+						name: data.name,
+						reason: Util.cleanContent(reason, message),
+						createdAt: new Date()
+					}
+				}, { upsert: true, returnOriginal: false });
 
-		return message.util!.send(`Successfully flagged **${data.name} (${data.tag})**`);
+			newFlags.push({ name: value.name, tag: value.tag });
+		}
+
+		return message.util!.send(
+			`Successfully flagged ${newFlags.length > 1 ? `${newFlags.length} players!\n\n` : ''}${newFlags.map(flag => `${flag.name} (${flag.tag})`).join('\n')}`
+		);
+	}
+
+	private fixTag(tag: string) {
+		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`;
 	}
 }

@@ -1,4 +1,4 @@
-import { Clan, ClanWar, ClanWarLeague } from 'clashofclans.js';
+import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
@@ -33,7 +33,7 @@ export default class CWLMissedComamnd extends Command {
 
 	public async exec(message: Message, { data }: { data: Clan }) {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
-		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
+		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
 			return message.util!.send([
 				'504 Request Timeout'
@@ -60,7 +60,7 @@ export default class CWLMissedComamnd extends Command {
 		return this.rounds(message, body, data);
 	}
 
-	private async rounds(message: Message, body: ClanWarLeague, clan: Clan) {
+	private async rounds(message: Message, body: ClanWarLeagueGroup, clan: Clan) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		const clanTag = clan.tag;
 		let round = 0;

@@ -1,8 +1,22 @@
-import { Clan, Hero, Player } from 'clashofclans.js';
+import { Clan, PlayerItem, Player } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Message, Util } from 'discord.js';
+
+const roleIds: { [key: string]: number } = {
+	member: 1,
+	admin: 2,
+	coLeader: 3,
+	leader: 4
+};
+
+const roleNames: { [key: string]: string } = {
+	member: 'Mem',
+	admin: 'Eld',
+	coLeader: 'Co',
+	leader: 'Lead'
+};
 
 const achievements = [
 	'Gold Grab',
@@ -17,6 +31,13 @@ const achievements = [
 	'Friend in Need'
 ];
 
+const PETS: { [key: string]: number } = {
+	'L.A.S.S.I': 1,
+	'Electro Owl': 2,
+	'Mighty Yak': 3,
+	'Unicorn': 4
+};
+
 export default class MembersCommand extends Command {
 	public constructor() {
 		super('members', {
@@ -25,34 +46,56 @@ export default class MembersCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY'],
 			description: {
 				content: 'Clan members with Town Halls and Heroes.',
-				usage: '<clanTag>',
+				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			optionFlags: ['--tag']
+			optionFlags: ['--tag', '--with']
 		});
 	}
 
 	public *args(msg: Message): unknown {
+		const sub = yield {
+			flag: '--with',
+			unordered: true,
+			type: [
+				['link-list', 'links', 'discord'],
+				['trophies', 'trophy'],
+				['roles', 'role'],
+				['tags', 'tag']
+			],
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+		};
+
 		const data = yield {
 			flag: '--tag',
+			unordered: true,
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
-		return { data };
+		return { data, sub };
 	}
 
-	public async exec(message: Message, { data }: { data: Clan }) {
-		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
+	public async exec(message: Message, { data, sub }: { data: Clan; sub: string }) {
+		if (['link-list', 'trophies'].includes(sub)) {
+			return this.handler.runCommand(message, this.handler.modules.get(sub)!, { data });
+		}
 
+		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
+
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
 		const members = fetched.filter(res => res.ok).map(m => ({
-			name: m.name,
-			tag: m.tag,
+			name: m.name, tag: m.tag,
+			role: {
+				id: roleIds[m.role!],
+				name: roleNames[m.role!]
+			},
 			townHallLevel: m.townHallLevel,
 			heroes: m.heroes.length ? m.heroes.filter(a => a.village === 'home') : [],
-			achievements: this.getAchievements(m)
+			achievements: this.getAchievements(m),
+			pets: m.troops.filter(troop => troop.name in PETS)
+				.sort((a, b) => PETS[a.name] - PETS[b.name])
 		}));
 
 		members.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
@@ -64,21 +107,44 @@ export default class MembersCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
 				'```',
-				`TH BK AQ GW RC  ${'NAME'.padEnd(15, ' ')}`,
+				`TH BK AQ GW RC  ${'NAME'}`,
 				members.map(
 					mem => {
 						const heroes = this.heroes(mem.heroes).map(hero => this.padStart(hero.level)).join(' ');
-						return `${mem.townHallLevel.toString().padStart(2, ' ')} ${heroes}  \u200e${this.padEnd(mem.name)}`;
+						return `${mem.townHallLevel.toString().padStart(2, ' ')} ${heroes}  \u200e${mem.name}`;
 					}
 				).join('\n'),
 				'```'
 			]);
 
-		const msg = await message.util!.send({ embed });
-		await msg.react('📥');
+		if (sub === 'tags') {
+			embed.setDescription([
+				'```',
+				`\u200e${'TAG'.padStart(10, ' ')}  ${'NAME'}`,
+				members.map(mem => `\u200e${mem.tag.padStart(10, ' ')}  ${mem.name}`).join('\n'),
+				'```'
+			]);
+		}
 
+		if (sub === 'roles') {
+			const _members = [...members].sort((a, b) => b.role.id - a.role.id);
+			embed.setDescription([
+				'```',
+				`\u200e ${'ROLE'.padEnd(4, ' ')}  ${'NAME'}`,
+				_members.map(mem => `\u200e ${mem.role.name.padEnd(4, ' ')}  ${mem.name}`).join('\n'),
+				'```'
+			]);
+		}
+
+		const msg = await message.util!.send({ embed });
+		for (const emoji of ['📥', EMOJIS.DISCORD]) {
+			await msg.react(emoji);
+			await new Promise(res => setTimeout(res, 250));
+		}
+
+		const { id } = Util.parseEmoji(EMOJIS.DISCORD)!;
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['📥'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => (reaction.emoji.name === '📥' || reaction.emoji.id === id) && user.id === message.author.id,
 			{ time: 60000, max: 1 }
 		);
 
@@ -98,12 +164,16 @@ export default class MembersCommand extends Command {
 					}
 				});
 			}
+
+			if (reaction.emoji.id === id) {
+				return this.handler.runCommand(message, this.handler.modules.get('link-list')!, { data });
+			}
 		});
 
 		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
 	}
 
-	private heroes(items: Hero[]) {
+	private heroes(items: PlayerItem[]) {
 		return Object.assign([
 			{ level: '  ' },
 			{ level: '  ' },
@@ -114,10 +184,6 @@ export default class MembersCommand extends Command {
 
 	private padStart(num: number | string) {
 		return num.toString().padStart(2, ' ');
-	}
-
-	private padEnd(name: string) {
-		return name.substring(0, 15).replace(/\`/g, '\\').padEnd(15, ' ');
 	}
 
 	private excel(members: any[]) {
@@ -132,6 +198,10 @@ export default class MembersCommand extends Command {
 			{ header: 'AQ', width: 10 },
 			{ header: 'GW', width: 10 },
 			{ header: 'RC', width: 10 },
+			{ header: 'L.A.S.S.I', width: 10 },
+			{ header: 'Electro Owl', width: 10 },
+			{ header: 'Mighty Yak', width: 10 },
+			{ header: 'Unicorn', width: 10 },
 			...achievements.map(header => ({ header, width: 16 }))
 		] as any[];
 
@@ -145,6 +215,7 @@ export default class MembersCommand extends Command {
 			...members.map(m => [
 				m.name, m.tag, m.townHallLevel,
 				...m.heroes.map((h: any) => h.level).concat(Array(4 - m.heroes.length).fill('')),
+				...m.pets.map((h: any) => h.level).concat(Array(4 - m.pets.length).fill('')),
 				...m.achievements.map((v: any) => v.value)
 			])
 		]);

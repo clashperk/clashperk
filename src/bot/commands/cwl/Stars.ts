@@ -1,7 +1,8 @@
-import { Clan, ClanWarLeague, ClanWar } from 'clashofclans.js';
+import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Message, Util } from 'discord.js';
+import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
 
 export default class CWLStarsComamnd extends Command {
 	public constructor() {
@@ -31,30 +32,21 @@ export default class CWLStarsComamnd extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
-		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
-		if (body.statusCode === 504) {
-			return message.util!.send([
-				'504 Request Timeout'
-			]);
-		}
+		const body = await this.client.http.clanWarLeague(data.tag);
+		if (body.statusCode === 504) return message.util!.send('**504 Request Timeout!**');
 
 		if (!body.ok) {
 			const cw = await this.client.storage.getWarTags(data.tag);
 			if (cw) return this.rounds(message, cw, data);
 
-			const embed = this.client.util.embed()
-				.setColor(this.client.embed(message))
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
-				.setThumbnail(data.badgeUrls.medium)
-				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send(`**${data.name} is not in Clan War League!**`);
 		}
 
 		this.client.storage.pushWarTags(data.tag, body);
 		return this.rounds(message, body, data);
 	}
 
-	private async rounds(message: Message, body: ClanWarLeague, clan: Clan) {
+	private async rounds(message: Message, body: ClanWarLeagueGroup, clan: Clan) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		const clanTag = clan.tag;
 		const members: { [key: string]: any } = {};
@@ -77,7 +69,8 @@ export default class CWLStarsComamnd extends Command {
 									attacks: 0,
 									stars: 0,
 									dest: 0,
-									lost: 0
+									lost: 0,
+									townhallLevel: m.townhallLevel
 								};
 							member.of += 1;
 
@@ -103,21 +96,18 @@ export default class CWLStarsComamnd extends Command {
 
 		if (!leaderboard.length) return message.util!.send('Nobody attacked in your clan yet, try again after sometime.');
 
-		const embed = this.client.util.embed()
-			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
-			.setTitle('CWL Stars')
-			.setColor(this.client.embed(message))
-			.setDescription([
-				`**\`\u200e # STAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,
-				leaderboard.filter(m => m.of > 0)
-					.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ') as string}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.replace(/\`/g, '\\').padEnd(15, ' ') as string}\``)
-					.join('\n')
-			]);
+		const chunks = Util.splitMessage([
+			`**${clan.name} Clan War League Stars**`,
+			`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} ${EMOJIS.STAR} ${EMOJIS.SWORD}  **NAME**`,
+			leaderboard.filter(m => m.of > 0)
+				.map(
+					(m, i) => `\u200e${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.townhallLevel]} ${WHITE_NUMBERS[m.stars]} ${WHITE_NUMBERS[m.of]}  ${Util.escapeMarkdown(m.name)}`
+				).join('\n')
+		]);
 
-		return message.util!.send({ embed });
-	}
-
-	private attacks(num: number, team: number) {
-		return num.toString().concat(`/${team}`);
+		return chunks.map((part, i) => {
+			if (i === 0) return message.util!.send(part);
+			return message.channel.send(part);
+		});
 	}
 }

@@ -1,4 +1,4 @@
-import { Clan, ClanWarLeague, ClanWarLeagueWar, ClanWarClan, ClanWarOpponent } from 'clashofclans.js';
+import { Clan, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -32,30 +32,21 @@ export default class CWLStatsComamnd extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
-		const body: ClanWarLeague = await this.client.http.clanWarLeague(data.tag);
-		if (body.statusCode === 504) {
-			return message.util!.send([
-				'504 Request Timeout'
-			]);
-		}
+		const body = await this.client.http.clanWarLeague(data.tag);
+		if (body.statusCode === 504) return message.util!.send('**504 Request Timeout!**');
 
 		if (!body.ok) {
 			const cw = await this.client.storage.getWarTags(data.tag);
 			if (cw) return this.rounds(message, cw, data);
 
-			const embed = this.client.util.embed()
-				.setColor(this.client.embed(message))
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
-				.setThumbnail(data.badgeUrls.medium)
-				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send(`**${data.name} is not in Clan War League!**`);
 		}
 
 		this.client.storage.pushWarTags(data.tag, body);
 		return this.rounds(message, body, data);
 	}
 
-	private async rounds(message: Message, body: ClanWarLeague, clan: Clan) {
+	private async rounds(message: Message, body: ClanWarLeagueGroup, clan: Clan) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [index, stars, destruction] = [0, 0, 0];
 		const clanTag = clan.tag;
@@ -65,7 +56,7 @@ export default class CWLStatsComamnd extends Command {
 
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
-				const data: ClanWarLeagueWar = await this.client.http.clanWarLeagueWar(warTag);
+				const data = await this.client.http.clanWarLeagueWar(warTag);
 				if (!data.ok) continue;
 
 				if (data.state === 'inWar') {
@@ -253,7 +244,7 @@ export default class CWLStatsComamnd extends Command {
 		return num.toString().concat(`/${team}`);
 	}
 
-	private winner(clan: ClanWarClan, opponent: ClanWarOpponent) {
+	private winner(clan: WarClan, opponent: WarClan) {
 		if (clan.stars > opponent.stars) {
 			return true;
 		} else if (clan.stars < opponent.stars) {

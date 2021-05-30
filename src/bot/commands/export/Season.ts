@@ -1,7 +1,7 @@
 import { Season, Collections } from '@clashperk/node';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
-import { Clan } from 'clashofclans.js';
+import { Clan, ClanMember } from 'clashofclans.js';
 import { Message } from 'discord.js';
 
 // TODO: Fix TS
@@ -49,7 +49,10 @@ export default class ExportSeason extends Command {
 		const patron = this.client.patrons.get(message.guild!.id);
 
 		const _clans: Clan[] = (await Promise.all(clans.map(clan => this.client.http.clan(clan.tag)))).filter(res => res.ok);
-		const allMembers = _clans.map(clan => clan.memberList).flat();
+		const allMembers = _clans.reduce((previous, current) => {
+			previous.push(...current.memberList.map(mem => ({ ...mem, clanTag: current.tag })));
+			return previous;
+		}, [] as (ClanMember & { clanTag: string })[]);
 
 		const memberTags: { tag: string; user: string }[] = [];
 		if (patron) {
@@ -65,17 +68,13 @@ export default class ExportSeason extends Command {
 					memberTags.push({ tag: m.tag, user: member.user });
 				}
 			}
-			await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
+			await Promise.all(
+				this.chunks(memberTags).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
+			);
 		}
 
-		const members = await this.client.db.collection(Collections.CLAN_MEMBERS)
-			.find({ tag: { $in: allMembers.map(m => m.tag) }, clanTag: { $in: _clans.map(clan => clan.tag) }, season })
-			.sort({ createdAt: -1 })
-			.toArray();
-
-		const lastseen = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan)))).flat();
+		const members = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan)))).flat();
 		for (const mem of members) {
-			mem.activity_total = lastseen.find(m => m.tag === mem.tag)?.count ?? 0;
 			const user = memberTags.find(user => user.tag === mem.tag)?.user;
 			mem.user_tag = message.guild!.members.cache.get(user!)?.user.tag;
 		}
@@ -126,8 +125,8 @@ export default class ExportSeason extends Command {
 					m.trophies.gained,
 					m.versusTrophies.gained,
 					m.warStars.gained,
-					...achievements.map(ac => m.achievements.find((a: any) => a.name === ac).gained),
-					m.activity_total
+					...achievements.map(ac => m.achievements.find((a: { name: string }) => a.name === ac).gained),
+					m.score
 				];
 
 				if (!patron) rows.splice(2, 1);
@@ -148,55 +147,56 @@ export default class ExportSeason extends Command {
 		});
 	}
 
-	private async aggregationQuery(clan: Clan): Promise<{ tag: string; count: number }[]> {
-		const db = this.client.db.collection(Collections.LAST_SEEN);
-		const cursor = db.aggregate([
-			{
-				$match: {
-					'clan.tag': clan.tag,
-					'tag': { $in: [...clan.memberList.map(m => m.tag)] }
-				}
-			},
-			{
-				$project: {
-					tag: '$tag',
-					clan: '$clan',
-					entries: {
-						$filter: {
-							input: '$entries',
-							as: 'en',
-							cond: {
-								$gte: [
-									'$$en.entry', new Date(new Date().getTime() - (30 * 24 * 60 * 60 * 1000))
-								]
+	private async aggregationQuery(clan: Clan) {
+		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS)
+			.aggregate([
+				{
+					$match: {
+						clanTag: clan.tag,
+						season: Season.ID,
+						tag: { $in: clan.memberList.map(m => m.tag) }
+					}
+				}, {
+					$lookup: {
+						from: Collections.LAST_SEEN,
+						localField: 'tag', foreignField: 'tag', as: 'last_seen'
+					}
+				}, {
+					$unwind: {
+						path: '$last_seen'
+					}
+				}, {
+					$set: {
+						entries: {
+							$filter: {
+								input: '$last_seen.entries', as: 'en',
+								cond: {
+									$gte: [
+										'$$en.entry',
+										new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
+									]
+								}
 							}
 						}
 					}
-				}
-			},
-			{
-				$project: {
-					tag: '$tag',
-					clan: '$clan',
-					count: {
-						$sum: '$entries.count'
-					}
-				}
-			},
-			{
-				$group: {
-					_id: null,
-					members: {
-						$addToSet: {
-							count: '$count',
-							tag: '$tag'
+				}, {
+					$unset: 'last_seen'
+				}, {
+					$set: {
+						score: {
+							$sum: '$entries.count'
 						}
 					}
+				}, {
+					$unset: 'entries'
+				}, {
+					$sort: {
+						createdAt: -1
+					}
 				}
-			}
-		]);
+			]);
 
-		return (await cursor.next())?.members ?? [];
+		return cursor.toArray();
 	}
 
 	private updateUsers(message: Message, members: any[]) {
@@ -206,5 +206,14 @@ export default class ExportSeason extends Command {
 				this.client.resolver.updateUserTag(message.guild!, data.user);
 			}
 		}
+	}
+
+	private chunks<T>(items: T[] = []) {
+		const chunk = 100;
+		const array = [];
+		for (let i = 0; i < items.length; i += chunk) {
+			array.push(items.slice(i, i + chunk));
+		}
+		return array;
 	}
 }

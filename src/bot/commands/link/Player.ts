@@ -43,9 +43,9 @@ export default class LinkPlayerCommand extends Command {
 		const doc = await this.getPlayer(data.tag);
 		// only owner can set default account
 		if (doc && doc.user === member.id && ((def && member.id !== message.author.id) || !def)) {
-			return message.util!.send([
+			return message.util!.send(
 				`**${member.user.tag}** is already linked to **${data.name} (${data.tag})**`
-			]);
+			);
 		}
 
 		if (doc && doc.user !== member.id) {
@@ -55,7 +55,7 @@ export default class LinkPlayerCommand extends Command {
 				'',
 				'If you own this player account, you can Force-Link using Player API Token.',
 				`Type \`${prefix}help verify\` to know more about the Player API Token.`
-			]);
+			].join('\n'));
 		}
 
 		if (doc && doc.entries.length >= 25) {

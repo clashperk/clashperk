@@ -1,5 +1,5 @@
 import { MessageEmbed, Util, Collection, TextChannel, PermissionString, Message } from 'discord.js';
-import { CurrentWar, ClanWarClan, ClanWarOpponent, ClanWarMember } from 'clashofclans.js';
+import { ClanWar, ClanWarMember, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/NumEmojis';
 import { TOWN_HALLS, EMOJIS, WAR_STARS } from '../util/Emojis';
 import { COLLECTIONS } from '../util/Constants';
@@ -23,7 +23,7 @@ interface Roster {
 	level: number;
 }
 
-interface WarRes extends CurrentWar {
+interface WarRes extends ClanWar {
 	recent?: {
 		attacker: {
 			name: string;
@@ -39,8 +39,8 @@ interface WarRes extends CurrentWar {
 		};
 	}[];
 	result: string;
-	clan: ClanWarClan & { rosters: Roster[] };
-	opponent: ClanWarOpponent & { rosters: Roster[] };
+	clan: WarClan & { rosters: Roster[] };
+	opponent: WarClan & { rosters: Roster[] };
 	remaining: ClanWarMember[];
 	round: number;
 	groupWar: boolean;
@@ -359,7 +359,7 @@ export default class ClanWarLog {
 		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 
-	private getLeaderBoard(clan: ClanWarClan, opponent: ClanWarOpponent) {
+	private getLeaderBoard(clan: WarClan, opponent: WarClan) {
 		return [
 			`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
 			`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,

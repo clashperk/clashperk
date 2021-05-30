@@ -1,8 +1,7 @@
-import { ClanWar, ClanWarLeague, Client, Player } from 'clashofclans.js';
+import { ClanWar, ClanWarLeagueGroup, Client, Player } from 'clashofclans.js';
 import fetch from 'node-fetch';
 
 export default class Http extends Client {
-	private tokenIndex: number;
 	private bearerToken!: string;
 
 	public constructor() {
@@ -10,13 +9,12 @@ export default class Http extends Client {
 
 		this.timeout = 5000;
 		this.token = [...process.env.CLASH_TOKENS!.split(',')];
-		this.tokenIndex = 0;
 	}
 
 	public async fetch(path: string) {
 		const res = await fetch(`${this.baseURL!}${path}`, {
 			headers: {
-				Authorization: `Bearer ${this.randomToken}`,
+				Authorization: `Bearer ${this._token}`,
 				Accept: 'application/json'
 			},
 			timeout: Number(this.timeout)
@@ -33,7 +31,7 @@ export default class Http extends Client {
 		return Promise.all(members.map(mem => this.fetch(`/players/${encodeURIComponent(mem.tag)}`)));
 	}
 
-	public async clanWarLeagueRounds(clanTag: string, body: ClanWarLeague, fetchAllRounds = false, start?: number, end?: number) {
+	public async clanWarLeagueRounds(clanTag: string, body: ClanWarLeagueGroup, fetchAllRounds = false, start?: number, end?: number) {
 		const chunks = [];
 		for (const { warTags } of body.rounds.filter(en => !en.warTags.includes('#0')).slice(start, end)) {
 			for (const warTag of warTags) {
@@ -59,7 +57,7 @@ export default class Http extends Client {
 	}
 
 	public async getClanWarLeague(clanTag: string, round?: number) {
-		const res: ClanWarLeague = await this.clanWarLeague(clanTag);
+		const res = await this.clanWarLeague(clanTag);
 		if (res.statusCode === 504) null;
 		if (!res.ok) return null; // this.currentClanWar(clanTag);
 
@@ -69,7 +67,7 @@ export default class Http extends Client {
 		return wars.find(en => en.state === 'preparation') ?? wars.pop()!;
 	}
 
-	public getRoundIndex(res: ClanWarLeague, round?: number) {
+	public getRoundIndex(res: ClanWarLeagueGroup, round?: number) {
 		const rounds = res.rounds.filter(en => !en.warTags.includes('#0'));
 		return round && round <= rounds.length
 			? [round - 1, round]
@@ -78,12 +76,6 @@ export default class Http extends Client {
 
 	private get leagueGroup() {
 		return new Date().getDate() >= 1 && new Date().getDate() <= 10;
-	}
-
-	private get randomToken() {
-		const token = this.tokens[this.tokenIndex];
-		this.tokenIndex = (this.tokenIndex + 1) >= this.tokens.length ? 0 : (this.tokenIndex + 1);
-		return token;
 	}
 
 	public async init() {
@@ -159,7 +151,7 @@ export default class Http extends Client {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
 			},
-			timeout: 3000,
+			timeout: 30000,
 			body: JSON.stringify(members.map(mem => mem.tag))
 		}).catch(() => null);
 

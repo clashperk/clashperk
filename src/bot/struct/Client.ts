@@ -7,6 +7,7 @@ import RPCHandler from '../core/RPCHandler';
 import Settings from './SettingsProvider';
 import { Connection } from './Database';
 import Storage from './StorageHandler';
+import * as gRPC from '@grpc/grpc-js';
 import Logger from '../util/Logger';
 import Stats from './StatsHandler';
 import Resolver from './Resolver';
@@ -14,7 +15,6 @@ import Patrons from './Patrons';
 import { Db } from 'mongodb';
 import Http from './Http';
 import path from 'path';
-import grpc from 'grpc';
 
 declare module 'discord-akairo' {
 	interface AkairoClient {
@@ -35,6 +35,12 @@ declare module 'discord-akairo' {
 	}
 }
 
+declare module 'discord.js' {
+	interface ClientEvents {
+		interaction: [Interaction];
+	}
+}
+
 const packageDefinition = loadSync(path.join('grpc.proto'), {
 	keepCase: true,
 	longs: String,
@@ -43,7 +49,7 @@ const packageDefinition = loadSync(path.join('grpc.proto'), {
 	oneofs: true
 });
 
-const { routeguide } = grpc.loadPackageDefinition(packageDefinition);
+const { routeguide: Route } = gRPC.loadPackageDefinition(packageDefinition);
 
 export default class Client extends AkairoClient {
 	public db!: Db;
@@ -104,6 +110,7 @@ export default class Client extends AkairoClient {
 			ws: {
 				intents: [
 					Intents.FLAGS.GUILDS,
+					Intents.FLAGS.GUILD_WEBHOOKS,
 					Intents.FLAGS.GUILD_MESSAGES,
 					Intents.FLAGS.GUILD_MESSAGE_REACTIONS
 				]
@@ -112,9 +119,16 @@ export default class Client extends AkairoClient {
 
 		// @ts-expect-error
 		this.ws.on('INTERACTION_CREATE', async (res: APIInteraction) => {
-			const command = this.commandHandler.findCommand(res.data!.name);
-			if (!command || !res.member) return; // eslint-disable-line
+			if (res.type === 1) return;
+			// @ts-expect-error
+			if (res.type === 3) await this.api.channels[res.channel_id].messages[res.message.id].delete();
 			const interaction = await new Interaction(this, res).parse(res);
+
+			// @ts-expect-error
+			const alias = res.type === 2 ? [res.data!.name] : res.data.custom_id.split(/ +/g);
+			const command = this.commandHandler.findCommand(alias[0]);
+			if (!command || !res.member) return; // eslint-disable-line
+
 			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) {
 				const perms = interaction.channel.permissionsFor(this.user!)!.missing(['SEND_MESSAGES', 'VIEW_CHANNEL'])
 					.map(perm => {
@@ -137,7 +151,7 @@ export default class Client extends AkairoClient {
 			const flags = ['help', 'invite', 'stats', 'guide'].includes(command.id) ? 64 : 0;
 			// @ts-expect-error
 			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5, data: { flags } } });
-			return this.handleInteraction(interaction, command, interaction.options);
+			return this.handleInteraction(interaction, command, res.type === 2 ? interaction.options : alias.slice(1).join(' '));
 		});
 	}
 
@@ -193,7 +207,8 @@ export default class Client extends AkairoClient {
 		this.http = new Http();
 		await this.http.init();
 
-		this.rpc = new (routeguide as any).RouteGuide(process.env.SERVER, grpc.credentials.createInsecure());
+		// @ts-expect-error
+		this.rpc = new Route.RouteGuide(process.env.SERVER, gRPC.credentials.createInsecure());
 
 		this.patrons = new Patrons(this);
 		await this.settings.init();

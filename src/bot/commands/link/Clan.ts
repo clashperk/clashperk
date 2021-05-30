@@ -36,10 +36,10 @@ export default class LinkClanCommand extends Command {
 			const store = await this.client.storage.collection.findOne({ channels: parsed.id });
 
 			if (store) {
-				return message.util!.send([
+				return message.util!.send(
 					// eslint-disable-next-line @typescript-eslint/no-base-to-string
 					`**${store.name} (${store.tag})** is already linked to ${parsed.toString()}`
-				]);
+				);
 			}
 
 			const { upsertedCount, upsertedId } = await this.client.storage.collection.updateOne(

@@ -184,6 +184,16 @@ export class InteractionParser {
 					all.push({ type: 'Phrase', value: `${top.name}`, raw: `--${top.name} ` });
 				}
 			}
+		} else if (['true', 'false'].includes(top.value as string)) {
+			if (top.value === 'true') {
+				if (this.flagWords.includes(`--${top.name}`)) {
+					all.push({ type: 'Flag', key: `--${top.name}`, raw: `--${top.name} ` });
+					flags.push({ type: 'Flag', key: `--${top.name}`, raw: `--${top.name} ` });
+				} else {
+					phrases.push({ type: 'Phrase', value: `${top.name}`, raw: `--${top.name} ` });
+					all.push({ type: 'Phrase', value: `${top.name}`, raw: `--${top.name} ` });
+				}
+			}
 		} else if (top.value) {
 			if (this.optionFlagWords.includes(`--${top.name}`)) {
 				optionFlags.push({ type: 'OptionFlag', value: `${top.value}`, key: `--${top.name}`, raw: `--${top.name} "${top.value}" ` });

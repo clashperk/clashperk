@@ -1,8 +1,8 @@
 import { BitField, Collections, Season } from '@clashperk/node';
-import { ClanWarLeague } from 'clashofclans.js';
 import { ObjectId, Collection } from 'mongodb';
 import { Message } from 'discord.js';
 import Client from './Client';
+import { ClanWarLeagueGroup } from 'clashofclans.js';
 
 export interface ClanStore {
 	_id: ObjectId;
@@ -229,7 +229,7 @@ export default class StorageHandler {
 		return Promise.resolve(null);
 	}
 
-	public async pushWarTags(tag: string, body: ClanWarLeague) {
+	public async pushWarTags(tag: string, body: ClanWarLeagueGroup) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		if (rounds.length !== 7) return null;
 
@@ -249,7 +249,7 @@ export default class StorageHandler {
 		for (const round of rounds) {
 			for (const warTag of round.warTags) {
 				const data = await this.client.http.clanWarLeagueWar(warTag);
-				if (!data?.ok) continue;
+				if (!data.ok) continue;
 				if (!warTags[data.clan.tag].includes(warTag)) warTags[data.clan.tag].push(warTag);
 				if (!warTags[data.opponent.tag].includes(warTag)) warTags[data.opponent.tag].push(warTag);
 			}

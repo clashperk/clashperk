@@ -132,19 +132,19 @@ export default class RemoveCommand extends Command {
 		const id = data._id.toHexString();
 		if (bit === 'all') {
 			await this.client.storage.delete(id);
-			await this.client.rpcHandler.delete(id, { tag: data.tag, op: 0 });
+			await this.client.rpcHandler.delete(id, { tag: data.tag, op: 0, guild: message.guild!.id });
 			return message.util!.send(`**Successfully Deleted ${data.name as string} (${data.tag as string})**`);
 		}
 
 		const deleted = await this.client.storage.remove(data._id, { op: Number(bit) });
 		if (deleted?.deletedCount) await this.updateFlag(id, Number(bit));
-		await this.client.rpcHandler.delete(id, { op: Number(bit), tag: data.tag });
+		await this.client.rpcHandler.delete(id, { op: Number(bit), tag: data.tag, guild: message.guild!.id });
 
-		await this.delete(id, data.tag, data.flag);
+		await this.delete(id, data.tag, data.flag, message.guild!.id);
 		return message.util!.send(`**Successfully Removed ${names[bit]} for ${data.name as string} (${data.tag as string})**`);
 	}
 
-	private async delete(id: string, tag: string, flag: number) {
+	private async delete(id: string, tag: string, flag: number, guild: string) {
 		const data = await Promise.all([
 			this.client.db.collection(Collections.DONATION_LOGS)
 				.countDocuments({ clan_id: new ObjectId(id) }),
@@ -162,7 +162,7 @@ export default class RemoveCommand extends Command {
 
 		const bit = BitField.CHANNEL_LINKED;
 		if (data && (flag & bit) !== bit) {
-			this.client.rpcHandler.delete(id, { tag, op: 0 });
+			this.client.rpcHandler.delete(id, { tag, op: 0, guild });
 			return this.client.db.collection(Collections.CLAN_STORES)
 				.updateOne({ _id: new ObjectId(id) }, { $set: { flag: 0 } });
 		}

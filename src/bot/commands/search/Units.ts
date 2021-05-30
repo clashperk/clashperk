@@ -158,7 +158,6 @@ export default class UnitsCommand extends Command {
 				}
 			);
 
-		// @ts-expect-error
 		const activeSuperTroops = data.troops.filter(en => en.superTroopIsActive).map(en => en.name);
 		if (superTrops.length && data.townHallLevel >= 11) {
 			embed.addField(`Super Troops (${activeSuperTroops.length ? 'Active' : 'Usable'})`, [

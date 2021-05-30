@@ -30,6 +30,18 @@ export const commands: { name: string; description: string; options?: APIApplica
 		]
 	},
 	{
+		name: 'points',
+		description: 'Clan Games points of all clan members',
+		options: [
+			{
+				name: 'tag',
+				description: 'Tag of the clan',
+				type: 3,
+				required: false
+			}
+		]
+	},
+	{
 		name: 'attacks',
 		description: 'Clan attacks and defenses for all members',
 		options: [
@@ -56,6 +68,30 @@ export const commands: { name: string; description: string; options?: APIApplica
 				description: 'Tag of the clan',
 				type: 3,
 				required: false
+			},
+			{
+				name: 'with',
+				description: 'Selecet an option',
+				type: 3,
+				required: false,
+				choices: [
+					{
+						name: 'Player Tags',
+						value: 'tags'
+					},
+					{
+						name: 'Trophies',
+						value: 'trophies'
+					},
+					{
+						name: 'Clan Roles',
+						value: 'roles'
+					},
+					{
+						name: 'Discord ID',
+						value: 'discord'
+					}
+				]
 			}
 		]
 	},
@@ -137,9 +173,19 @@ export const commands: { name: string; description: string; options?: APIApplica
 			},
 			{
 				name: 'sort',
-				description: 'Sort by donations received?',
-				type: 5,
-				required: false
+				description: 'Sort by receives or donations',
+				type: ApplicationCommandOptionType.STRING,
+				required: false,
+				choices: [
+					{
+						name: 'Received',
+						value: 'true'
+					},
+					{
+						name: 'Donated',
+						value: 'false'
+					}
+				]
 			},
 			{
 				name: 'season',
@@ -197,8 +243,19 @@ export const commands: { name: string; description: string; options?: APIApplica
 			},
 			{
 				name: 'clan',
-				description: 'For all clan members?',
-				type: ApplicationCommandOptionType.BOOLEAN
+				description: 'Display all clan members',
+				type: ApplicationCommandOptionType.STRING,
+				choices: [
+					{
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
+					}
+				]
+
 			}
 		]
 	},
@@ -252,48 +309,51 @@ export const commands: { name: string; description: string; options?: APIApplica
 	},
 	{
 		name: 'link',
-		description: 'Manage or view player accounts',
+		description: 'Links a clan or player account',
 		options: [
 			{
-				name: 'add',
-				description: 'Link a player account',
-				type: ApplicationCommandOptionType.SUB_COMMAND,
-				options: [
-					{
-						name: 'tag',
-						description: 'Tag of the player account',
-						required: true,
-						type: ApplicationCommandOptionType.STRING
-					},
-					{
-						name: 'user',
-						description: 'Optional user',
-						type: ApplicationCommandOptionType.USER
-					},
-					{
-						name: 'default',
-						description: 'Set this default account?',
-						type: ApplicationCommandOptionType.BOOLEAN
-					}
-				]
+				name: 'tag',
+				description: 'Tag of the clan or player account',
+				required: true,
+				type: ApplicationCommandOptionType.STRING
 			},
 			{
-				name: 'list',
-				description: 'Get all linked accounts for a clan',
-				type: ApplicationCommandOptionType.SUB_COMMAND
+				name: 'user',
+				description: 'Optional user',
+				type: ApplicationCommandOptionType.USER
 			},
 			{
-				name: 'remove',
-				description: 'Remove a player account',
-				type: ApplicationCommandOptionType.SUB_COMMAND,
-				options: [
+				name: 'default',
+				description: 'Set it default account',
+				type: ApplicationCommandOptionType.STRING,
+				choices: [
 					{
-						name: 'tag',
-						description: 'Tag of the player account',
-						required: true,
-						type: ApplicationCommandOptionType.STRING
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
 					}
 				]
+			}
+		]
+	},
+	{
+		name: 'unlink',
+		description: 'Unlinks a clan or player account',
+		options: [
+			{
+				name: 'tag',
+				description: 'Tag of the player or clan',
+				required: true,
+				type: ApplicationCommandOptionType.STRING
+			},
+			{
+				name: 'user',
+				description: 'Optional user (Only valid for a player tag)',
+				required: false,
+				type: ApplicationCommandOptionType.USER
 			}
 		]
 	},
@@ -354,7 +414,17 @@ export const commands: { name: string; description: string; options?: APIApplica
 					{
 						name: 'export',
 						description: 'Export to Excel file?',
-						type: ApplicationCommandOptionType.BOOLEAN
+						type: ApplicationCommandOptionType.STRING,
+						choices: [
+							{
+								name: 'Yes',
+								value: 'true'
+							},
+							{
+								name: 'No',
+								value: 'false'
+							}
+						]
 					}
 				]
 			}
@@ -575,6 +645,10 @@ export const commands: { name: string; description: string; options?: APIApplica
 					{
 						name: 'Clan Stats',
 						value: 'clans'
+					},
+					{
+						name: 'Clan Members',
+						value: 'members'
 					}
 				]
 			},
@@ -731,36 +805,52 @@ export const commands: { name: string; description: string; options?: APIApplica
 		name: 'debug',
 		description: 'Shows some basic debug informations.'
 	},
-	/* {
-		name: 'autorole',
-		description: 'Automatic Role management for clan members',
+	{
+		name: 'z_autorole',
+		description: '[WIP] Automatic Role management for Clan Members',
 		options: [
 			{
 				name: 'co-leads',
-				required: false,
+				required: true,
 				description: 'Co-Leader Role',
 				type: ApplicationCommandOptionType.ROLE
 			},
 			{
 				name: 'elders',
-				required: false,
+				required: true,
 				description: 'Elder Role',
 				type: ApplicationCommandOptionType.ROLE
 			},
 			{
 				name: 'members',
-				required: false,
+				required: true,
 				description: 'Member Role',
 				type: ApplicationCommandOptionType.ROLE
 			},
 			{
-				name: 'secure',
+				name: 'tag',
 				required: false,
-				description: 'Player API Token verification will be required. Roles will be given to verified players only.',
-				type: ApplicationCommandOptionType.BOOLEAN
+				description: 'Tag of the clan. Do not pass the tag if you want same type roles for all clans.',
+				type: ApplicationCommandOptionType.STRING
+			},
+			{
+				name: 'verify',
+				required: false,
+				description: 'Role will be given to verified players only',
+				type: ApplicationCommandOptionType.STRING,
+				choices: [
+					{
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
+					}
+				]
 			}
 		]
-	}*/
+	},
 	{
 		name: 'boosts',
 		description: 'Clan members with active Super Troops',

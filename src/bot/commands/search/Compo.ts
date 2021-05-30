@@ -56,6 +56,7 @@ export default class ThCompoCommand extends Command {
 			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, `https://cdn.discordapp.com/emojis/${id!}.png?v=1`);
 
 		const diff = process.hrtime(hrStart);
-		return message.util!.send(`*Executed in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)}ms*`, { embed });
+		this.client.logger.debug(`Executed in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)}ms`, { label: 'COMPO' });
+		return message.util!.send({ embed });
 	}
 }

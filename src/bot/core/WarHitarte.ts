@@ -1,4 +1,4 @@
-import { ClanWarClan, ClanWarOpponent } from 'clashofclans.js';
+import { WarClan } from 'clashofclans.js';
 
 export interface Hit {
 	townHall: number;
@@ -13,7 +13,7 @@ export interface HitRate {
 	opponent: { hitRates: Hit[] };
 }
 
-export function getHitRate(clan: ClanWarClan, opponent: ClanWarOpponent, stars = 3) {
+export function getHitRate(clan: WarClan, opponent: WarClan, stars = 3) {
 	const data: HitRate = {
 		clan: { hitRates: [] },
 		opponent: { hitRates: [] }
@@ -121,7 +121,7 @@ export function getHitRate(clan: ClanWarClan, opponent: ClanWarOpponent, stars =
 	return data;
 }
 
-export function parseHits(clan: ClanWarClan, opponent: ClanWarOpponent, stars: number) {
+export function parseHits(clan: WarClan, opponent: WarClan, stars: number) {
 	const hit = getHitRate(clan, opponent, stars);
 	const combinations = [...hit.clan.hitRates, ...hit.opponent.hitRates]
 		.map(({ townHall, defTownHall }) => ({ townHall, defTownHall }))
