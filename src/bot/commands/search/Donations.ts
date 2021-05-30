@@ -74,7 +74,7 @@ export default class DonationsCommand extends Command {
 			.toArray();
 
 		if (!dbMembers.length && !sameSeason) {
-			return message.util!.send(`**No record found for the specified Season ID \`${season}\`**`);
+			return message.util!.send(`**No data found for the season \`${season}\`**`);
 		}
 
 		const members: Member[] = [];
@@ -133,7 +133,29 @@ export default class DonationsCommand extends Command {
 		]);
 		embed.setFooter(`[DON ${donated} | REC ${received}] (Season ${season})`);
 
-		return message.util!.send({ embed });
+		const msg = await message.util!.send({ embed });
+		const components = [
+			{
+				type: 2, style: 2,
+				label: sameSeason ? 'Previous Season' : 'Current Season',
+				custom_id: `don --tag ${data.tag} ${sameSeason ? '--season last' : ''}`
+			},
+			{ type: 2, style: 2, label: 'Refresh', custom_id: `don --tag ${data.tag}` }
+		];
+
+		if (message.hasOwnProperty('token')) {
+			// @ts-expect-error
+			return this.client.api.webhooks(this.client.user!.id, message.token)
+				.messages[msg.id]
+				.patch(
+					{ data: { components: [{ type: 1, components }] } }
+				);
+		}
+
+		// @ts-expect-error
+		return this.client.api.channels[message.channel.id].messages[msg.id].patch(
+			{ data: { components: [{ type: 1, components }] } }
+		);
 	}
 
 	private padEnd(name: string) {

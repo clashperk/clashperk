@@ -86,7 +86,7 @@ export default class BoostsCommand extends Command {
 								{
 									type: 1,
 									components: [
-										{ type: 2, style: 2, label: 'Show me again?', custom_id: `boosts --tag ${data.tag}` }
+										{ type: 2, style: 2, label: 'Refresh', custom_id: `boosts --tag ${data.tag}` }
 									]
 								}
 							]
@@ -103,7 +103,7 @@ export default class BoostsCommand extends Command {
 						{
 							type: 1,
 							components: [
-								{ type: 2, style: 2, label: 'Show me again?', custom_id: `boosts --tag ${data.tag}` }
+								{ type: 2, style: 2, label: 'Refresh', custom_id: `boosts --tag ${data.tag}` }
 							]
 						}
 					]
