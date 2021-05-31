@@ -119,6 +119,7 @@ export default class Client extends AkairoClient {
 
 		// @ts-expect-error
 		this.ws.on('INTERACTION_CREATE', async (res: APIInteraction) => {
+			if (!res.member) return; // eslint-disable-line
 			if (res.type === 1) return;
 			// @ts-expect-error
 			if (res.type === 3) await this.api.channels[res.channel_id].messages[res.message.id].delete();
@@ -127,7 +128,7 @@ export default class Client extends AkairoClient {
 			// @ts-expect-error
 			const alias = res.type === 2 ? [res.data!.name] : res.data.custom_id.split(/ +/g);
 			const command = this.commandHandler.findCommand(alias[0]);
-			if (!command || !res.member) return; // eslint-disable-line
+			if (!command) return; // eslint-disable-line
 
 			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) {
 				const perms = interaction.channel.permissionsFor(this.user!)!.missing(['SEND_MESSAGES', 'VIEW_CHANNEL'])
@@ -221,8 +222,6 @@ export default class Client extends AkairoClient {
 		this.once('ready', () => {
 			if (process.env.NODE_ENV === 'production') return this.run();
 		});
-
-		this.on('userUpdate', () => console.log('guildMemberAdd'));
 	}
 
 	public embed(message: Message) {
