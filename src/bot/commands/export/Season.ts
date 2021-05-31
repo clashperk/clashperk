@@ -73,7 +73,7 @@ export default class ExportSeason extends Command {
 			);
 		}
 
-		const members = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan)))).flat();
+		const members = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan, season!)))).flat();
 		for (const mem of members) {
 			const user = memberTags.find(user => user.tag === mem.tag)?.user;
 			mem.user_tag = message.guild!.members.cache.get(user!)?.user.tag;
@@ -147,13 +147,13 @@ export default class ExportSeason extends Command {
 		});
 	}
 
-	private async aggregationQuery(clan: Clan) {
+	private async aggregationQuery(clan: Clan, season_id: string) {
 		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS)
 			.aggregate([
 				{
 					$match: {
 						clanTag: clan.tag,
-						season: Season.ID,
+						season: season_id,
 						tag: { $in: clan.memberList.map(m => m.tag) }
 					}
 				}, {
