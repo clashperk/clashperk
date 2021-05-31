@@ -64,7 +64,7 @@ export default class BoostsCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setDescription('**Members with Active Super Troops**\n\u200b')
-			.setFooter(`Total ${boosting.length}/${this.boostable(members)}`);
+			.setFooter(`Total ${boosting.length}/${this.boostable(members)}/${data.members}`, message.author.displayAvatarURL());
 
 		for (const [key, val] of Object.entries(memObj)) {
 			embed.addField(

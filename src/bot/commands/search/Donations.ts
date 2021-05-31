@@ -131,7 +131,7 @@ export default class DonationsCommand extends Command {
 			}).join('\n'),
 			'```'
 		]);
-		embed.setFooter(`[DON ${donated} | REC ${received}] (Season ${season})`);
+		embed.setFooter(`[DON ${donated} | REC ${received}] (Season ${season})`, message.author.displayAvatarURL());
 
 		const msg = await message.util!.send({ embed });
 		const components = [
