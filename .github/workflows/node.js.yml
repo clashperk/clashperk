@@ -6,9 +6,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js 14
@@ -20,5 +18,4 @@ jobs:
     - run: npm run build
     - run: npm run build:commands
       env:
-        TOKEN: ${{ secrets.TOKEN }}
-      
+        TOKEN: ${{ secrets.BOT_TOKEN }}

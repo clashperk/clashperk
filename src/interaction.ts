@@ -894,7 +894,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 	const res = await fetch('https://discord.com/api/v8/applications/526971716711350273/commands', {
 		method: 'PUT',
 		headers: {
-			'Authorization': `Bot ${process.env.TOKEN_MAIN!}`,
+			'Authorization': `Bot ${process.env.BOT_TOKEN!}`,
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify(commands)
