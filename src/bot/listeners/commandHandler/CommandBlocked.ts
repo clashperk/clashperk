@@ -6,6 +6,7 @@ interface Text {
 }
 
 const texts: Text = {
+	beta: 'This command is still in beta, contact support for early access.',
 	guild: 'You must be in a guild to use this command.',
 	restrict: 'You can\'t use this command because you have been restricted.'
 };
@@ -21,6 +22,10 @@ export default class CommandBlockedListener extends Listener {
 
 	public exec(message: Message, command: Command, reason: string) {
 		const msg = texts[reason];
+
+		if (reason === 'beta' && message.hasOwnProperty('token')) {
+			return message.util!.send(msg);
+		}
 
 		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
 		this.client.logger.debug(`${command.id} ~ ${reason}`, { label });
