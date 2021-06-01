@@ -1,6 +1,7 @@
 import Env from 'dotenv';
 Env.config();
 
+// @ts-ignore
 import Auth from '../auth';
 Auth.config();
 
