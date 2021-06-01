@@ -7,7 +7,7 @@
 	"main": "dist/src/index.js",
 	"private": true,
 	"scripts": {
-		"build": "tsc",
+		"build": "rimraf dist && tsc",
 		"start": "pm2 start dist/src/index.js --name bot",
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
@@ -33,6 +33,7 @@
 		"mongodb": "^3.6.5",
 		"ms": "^2.1.2",
 		"node-fetch": "^2.6.1",
+		"rimraf": "^2.7.1",
 		"shelljs": "^0.8.4"
 	},
 	"devDependencies": {

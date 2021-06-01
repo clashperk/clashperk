@@ -806,8 +806,8 @@ export const commands: { name: string; description: string; options?: APIApplica
 		description: 'Shows some basic debug informations.'
 	},
 	{
-		name: 'z_autorole',
-		description: '[WIP] Automatic Role management for Clan Members',
+		name: 'autorole',
+		description: '[WIP] Auto assign roles to members based upon their role in the clan.',
 		options: [
 			{
 				name: 'co-leads',

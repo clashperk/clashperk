@@ -6,7 +6,7 @@ export default class AutoRoleCommand extends Command {
 	public constructor() {
 		super('setup-auto-role', {
 			category: 'beta',
-			aliases: ['z_autorole'],
+			aliases: ['autorole'],
 			channel: 'guild',
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],
