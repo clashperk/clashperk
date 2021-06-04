@@ -384,7 +384,7 @@ export default class ClanFeedLog {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
 					guild: data.guild,
 					channel: data.channel,
-					tag: data.tag
+					tag: data.tag, role: data.role
 				});
 			});
 	}
@@ -397,7 +397,7 @@ export default class ClanFeedLog {
 		return this.cached.set(id, {
 			guild: data.guild,
 			channel: data.channel,
-			tag: data.tag
+			tag: data.tag, role: data.role
 		});
 	}
 
