@@ -98,10 +98,10 @@ export default class CWLStarsComamnd extends Command {
 
 		const chunks = Util.splitMessage([
 			`**${clan.name} Clan War League Stars**`,
-			`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} ${EMOJIS.STAR} ${EMOJIS.SWORD}  **NAME**`,
+			`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} ${EMOJIS.STAR} **HIT  NAME**`,
 			leaderboard.filter(m => m.of > 0)
 				.map(
-					(m, i) => `\u200e${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.townhallLevel]} ${WHITE_NUMBERS[m.stars]} ${WHITE_NUMBERS[m.of]}  ${Util.escapeMarkdown(m.name)}`
+					(m, i) => `\u200e${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.townhallLevel]} ${WHITE_NUMBERS[m.stars]} \`${[m.attacks, m.of].join('/')}\`  ${Util.escapeMarkdown(m.name)}`
 				).join('\n')
 		]);
 
