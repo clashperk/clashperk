@@ -28,27 +28,32 @@ export default class LinkListCommand extends Command {
 
 	public async exec(message: Message, { data }: { data: Clan }) {
 		if (!data.members) return;
-		const memberTags = await this.client.http.getDiscordLinks(data.memberList);
+		const memberTags: { tag: string; user: string; user_tag?: string }[] = await this.client.http.getDiscordLinks(data.memberList);
 		const dbMembers = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
 			.find({ 'entries.tag': { $in: data.memberList.map(m => m.tag) } })
 			.toArray();
 
 		if (dbMembers.length) this.updateUsers(message, dbMembers);
-
 		for (const member of dbMembers) {
 			for (const m of member.entries) {
 				if (!data.memberList.find(mem => mem.tag === m.tag)) continue;
-				if (memberTags.find(mem => mem.tag === m.tag)) continue;
-				memberTags.push({ tag: m.tag, user: member.user });
+				const ex = memberTags.find(mem => mem.tag === m.tag);
+				if (ex) ex.user_tag = member.user_tag;
+				if (ex) continue;
+				memberTags.push({ tag: m.tag, user: member.user, user_tag: member.user_tag });
 			}
 		}
 
 		await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
 
+		// Players linked and on the guild.
 		const onDiscord = memberTags.filter(mem => message.guild!.members.cache.has(mem.user));
-		const offDiscord = data.memberList.filter(m => !memberTags.some(en => en.tag === m.tag));
+		// Linked to discord but not on the guild.
+		const notInDiscord = memberTags.filter(mem => mem.user_tag && !message.guild!.members.cache.has(mem.user));
+		// Not linked to discord.
+		const offDiscord = data.memberList.filter(m => !notInDiscord.some(en => en.tag === m.tag) && !memberTags.some(en => en.tag === m.tag && message.guild!.members.cache.has(en.user)));
 
-		const embed = this.buildEmbed(message, data, false, onDiscord, offDiscord);
+		const embed = this.buildEmbed(message, data, false, onDiscord, offDiscord, notInDiscord);
 		const msg = await message.util!.send({ embed });
 
 		if (!onDiscord.length) return; // Let's stop right here!
@@ -62,7 +67,7 @@ export default class LinkListCommand extends Command {
 
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.id === id) {
-				const embed = this.buildEmbed(message, data, true, onDiscord, offDiscord);
+				const embed = this.buildEmbed(message, data, true, onDiscord, offDiscord, notInDiscord);
 				return message.util!.send({ embed });
 			}
 		});
@@ -70,7 +75,7 @@ export default class LinkListCommand extends Command {
 		collector.on('end', () => msg.reactions.removeAll());
 	}
 
-	private buildEmbed(message: Message, data: Clan, showTag: boolean, onDiscord: { tag: string; user: string }[], offDiscord: ClanMember[]) {
+	private buildEmbed(message: Message, data: Clan, showTag: boolean, onDiscord: { tag: string; user: string }[], offDiscord: ClanMember[], notInDiscord: any[]) {
 		const chunks = Util.splitMessage([
 			`${EMOJIS.DISCORD} **Players on Discord: ${onDiscord.length}**`,
 			onDiscord.map(
@@ -82,6 +87,13 @@ export default class LinkListCommand extends Command {
 			).join('\n'),
 			'',
 			`${EMOJIS.WRONG} **Players not on Discord: ${offDiscord.length}**`,
+			notInDiscord.map(
+				mem => {
+					const member = data.memberList.find(m => m.tag === mem.tag)!;
+					const user: string = showTag ? member.tag : mem.user_tag.substring(0, 12).padStart(12, ' ');
+					return `✘ \`\u200e${this.parseName(member.name)}${data.members <= 45 ? `\u200f\` \u200e \`` : ' '} ${user} \u200f\``;
+				}
+			).join('\n'),
 			offDiscord.sort((a, b) => {
 				const aName = a.name.toLowerCase();
 				const bName = b.name.toUpperCase();

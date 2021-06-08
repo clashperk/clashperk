@@ -7,7 +7,7 @@ export default class Http extends Client {
 	public constructor() {
 		super({ baseURL: process.env.BASE_URL });
 
-		this.timeout = 5000;
+		this.timeout = 10000;
 		this.token = [...process.env.CLASH_TOKENS!.split(',')];
 	}
 
@@ -93,7 +93,7 @@ export default class Http extends Client {
 				username: process.env.DISCORD_LINK_USERNAME,
 				password: process.env.DISCORD_LINK_PASSWORD
 			}),
-			timeout: 8000
+			timeout: 10000
 		}).catch(() => null);
 		const data = await res?.json().catch(() => null);
 
@@ -109,7 +109,7 @@ export default class Http extends Client {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({ playerTag, discordId }),
-			timeout: 5000
+			timeout: 10000
 		}).catch(() => null);
 
 		return Promise.resolve(res?.status === 200);
@@ -122,7 +122,7 @@ export default class Http extends Client {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
 			},
-			timeout: 5000
+			timeout: 10000
 		}).catch(() => null);
 
 		return Promise.resolve(res?.status === 200);
@@ -135,7 +135,7 @@ export default class Http extends Client {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
 			},
-			timeout: 3000
+			timeout: 10000
 		}).catch(() => null);
 
 		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);

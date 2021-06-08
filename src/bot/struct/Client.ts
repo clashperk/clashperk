@@ -41,13 +41,16 @@ declare module 'discord.js' {
 	}
 }
 
-const packageDefinition = loadSync(path.join('grpc.proto'), {
-	keepCase: true,
-	longs: String,
-	enums: String,
-	defaults: true,
-	oneofs: true
-});
+const packageDefinition = loadSync(
+	path.join('scripts', 'routes.proto'),
+	{
+		keepCase: true,
+		longs: String,
+		enums: String,
+		defaults: true,
+		oneofs: true
+	}
+);
 
 const { routeguide: Route } = gRPC.loadPackageDefinition(packageDefinition);
 
