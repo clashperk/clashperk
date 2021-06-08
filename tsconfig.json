@@ -26,5 +26,9 @@
 		"experimentalDecorators": true,
 		"allowSyntheticDefaultImports": true,
 		"forceConsistentCasingInFileNames": true
-	}
+	},
+	"include": [
+		"scripts",
+		"src"
+	]
 }
