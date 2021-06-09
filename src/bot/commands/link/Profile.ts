@@ -38,10 +38,9 @@ export default class ProfileCommand extends Command {
 
 	public async exec(message: Message, { member }: { member: GuildMember }) {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
-		const player = await this.getProfile(member.id);
-		const clan = await this.getClan(member.id);
+		const data = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: member.id });
 
-		if (player && player.user_tag !== member.user.tag) {
+		if (data && data.user_tag !== member.user.tag) {
 			this.client.resolver.updateUserTag(member.guild, member.id);
 		}
 
@@ -57,21 +56,21 @@ export default class ProfileCommand extends Command {
 		let index = 0;
 		const collection = [];
 
-		const data: Clan = await this.client.http.clan(clan?.tag ?? '💩');
-		if (data.statusCode === 503) {
+		const clan: Clan = await this.client.http.clan(data?.clan.tag ?? '💩');
+		if (clan.statusCode === 503) {
 			return message.util!.send('**Service is temporarily unavailable because of maintenance.**');
 		}
 
-		if (data.ok) {
+		if (clan.ok) {
 			embed.setDescription([
 				embed.description,
-				`${EMOJIS.CLAN} [${data.name} (${data.tag})](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
-				...[`${EMOJIS.EMPTY} Level ${data.clanLevel} ${EMOJIS.USERS} ${data.members} Member${data.members === 1 ? '' : 's'}`]
+				`${EMOJIS.CLAN} [${clan.name} (${clan.tag})](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
+				...[`${EMOJIS.EMPTY} Level ${clan.clanLevel} ${EMOJIS.USERS} ${clan.members} Member${clan.members === 1 ? '' : 's'}`]
 			]);
 		}
 
 		const otherTags = await this.client.http.getPlayerTags(member.id);
-		if (!player?.entries?.length && !otherTags.length) {
+		if (!data?.entries?.length && !otherTags.length) {
 			embed.setDescription([
 				embed.description,
 				'No accounts are linked. Why not add some?'
@@ -79,19 +78,19 @@ export default class ProfileCommand extends Command {
 			return message.util!.send({ embed });
 		}
 
-		const tags = new Set([...player?.entries.map((en: any) => en.tag) ?? [], ...otherTags]);
+		const tags = new Set([...data?.entries.map((en: any) => en.tag) ?? [], ...otherTags]);
 		const hideLink = Boolean(tags.size >= 12);
 		for (const tag of tags.values()) {
-			const data: Player = await this.client.http.player(tag);
-			if (data.statusCode === 404) this.deleteBanned(member.id, tag);
-			if (!data.ok) continue;
+			const player: Player = await this.client.http.player(tag);
+			if (player.statusCode === 404) this.deleteBanned(member.id, tag);
+			if (!player.ok) continue;
 
 			index += 1; // Increment
 
-			const signature = this.isVerified(player, tag) ? EMOJIS.VERIFIED : this.isLinked(player, tag) ? EMOJIS.AUTHORIZE : '';
+			const signature = this.isVerified(data, tag) ? EMOJIS.VERIFIED : this.isLinked(data, tag) ? EMOJIS.AUTHORIZE : '';
 			collection.push({
-				field: `${TOWN_HALLS[data.townHallLevel]} ${hideLink ? '' : '['}${data.name} (${data.tag})${hideLink ? '' : `](${this.profileURL(data.tag)})`} ${signature}`,
-				values: [this.heroes(data), this.clanName(data)].filter(a => a.length)
+				field: `${TOWN_HALLS[player.townHallLevel]} ${hideLink ? '' : '['}${player.name} (${player.tag})${hideLink ? '' : `](${this.profileURL(data.tag)})`} ${signature}`,
+				values: [this.heroes(player), this.clanName(player)].filter(a => a.length)
 			});
 
 			if (index === 25) break;
@@ -142,14 +141,6 @@ export default class ProfileCommand extends Command {
 		this.client.http.unlinkPlayerTag(tag);
 		return this.client.db.collection(Collections.LINKED_PLAYERS)
 			.updateOne({ user }, { $pull: { entries: { tag } } });
-	}
-
-	private getProfile(id: string) {
-		return this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: id });
-	}
-
-	private getClan(id: string) {
-		return this.client.db.collection(Collections.LINKED_CLANS).findOne({ user: id });
 	}
 
 	private profileURL(tag: string) {

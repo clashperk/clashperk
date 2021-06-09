@@ -114,13 +114,12 @@ export default class UnlinkCommand extends Command {
 	}
 
 	private async unlinkClan(user: string, tag: string): Promise<string | null> {
-		const clan = await this.client.db.collection(Collections.LINKED_CLANS).findOneAndDelete({ user, tag });
-		await this.client.db.collection(Collections.LINKED_PLAYERS)
-			.updateOne({ user, 'clan.tag': tag }, { $unset: { clan: '' } });
-		return clan.value?.tag;
+		const { value } = await this.client.db.collection(Collections.LINKED_PLAYERS)
+			.findOneAndUpdate({ user, 'clan.tag': tag }, { $unset: { clan: '' } });
+		return value?.clan.tag;
 	}
 
 	private parseTag(tag?: string) {
-		return tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null;
+		return tag ? this.client.http.parseTag(tag) : null;
 	}
 }

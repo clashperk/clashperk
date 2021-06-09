@@ -88,19 +88,19 @@ export default class ClanActivityCommand extends Command {
 		const clans = await this.aggregationQuery(clanTags, days);
 		if (!clans.length) return message.util!.send('*Not enough data available a this moment!*');
 
-		const timeZone = await this.client.db.collection(Collections.TIME_ZONES).findOne({ user: message.author.id });
-		const tz = timeZone?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
-		const datasets = clans.map(clan => ({ name: clan.name, data: this.datasets(clan, tz.offset, days) }));
+		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: message.author.id });
+		const timezone = user?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
+		const datasets = clans.map(clan => ({ name: clan.name, data: this.datasets(clan, timezone.offset, days) }));
 
 		const hrStart = process.hrtime();
-		const buffer = await Chart.clanActivity(datasets, [`Active Members Per Hour (${tz.name as string})`], days);
+		const buffer = await Chart.clanActivity(datasets, [`Active Members Per Hour (${timezone.name as string})`], days);
 		const diff = process.hrtime(hrStart);
 
 		this.client.logger.debug(`Rendered in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)}ms`, { label: 'CHART' });
 		return message.util!.send({
 			files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }],
 			content: [
-				timeZone ? '' : `_Set your timezone using \`${(this.handler.prefix as PrefixSupplier)(message) as string}offset <location>\` for better experience._`
+				user ? '' : `_Set your timezone using \`${(this.handler.prefix as PrefixSupplier)(message) as string}offset <location>\` for better experience._`
 			].join('\n')
 		});
 	}

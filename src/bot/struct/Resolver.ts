@@ -63,11 +63,7 @@ export default class Resolver {
 			return this.fail(message, `**${status(404)}**`);
 		}
 
-		const data = await this.client.db.collection(Collections.CLAN_STORES)
-			.findOne({ channels: message.channel.id }) ||
-			await this.client.db.collection(Collections.LINKED_CLANS)
-				.findOne({ user: (parsed as GuildMember).id });
-
+		const data = await this.getLinkedClan(message.channel.id, (parsed as GuildMember).id);
 		if (data) return this.getClan(message, data.tag);
 
 		if (message.author.id === (parsed as GuildMember).id) {
@@ -115,6 +111,14 @@ export default class Resolver {
 	private parseTag(tag: string) {
 		const matched = tag.match(/^#?[0289CGJLOPQRUVY]+$/gi)?.[0];
 		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O|o/g, '0') as string}`;
+	}
+
+	private async getLinkedClan(channel_id: string, user_id: string) {
+		const clan = await this.client.db.collection(Collections.CLAN_STORES).findOne({ channels: channel_id });
+		if (clan) return clan;
+		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: user_id });
+		if (user?.clan) return user.clan;
+		return null;
 	}
 
 	public updateUserTag(guild: Guild, user_id: string) {
