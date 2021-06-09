@@ -26,13 +26,13 @@ export default class StatsHandler {
 		const players = await this.client.db.collection(Collections.LAST_SEEN).find().count();
 		await this.client.db.collection(Collections.BOT_STATS).updateOne({ id: 'stats' }, { $set: { guilds, clans, players } });
 
-		// https://top.gg/
 		const form = qs.stringify({ server_count: guilds, shard_count: this.client.shard!.count });
 		https.request(`https://top.gg/api/bots/${this.client.user!.id}/stats`, {
-			method: 'POST', headers: {
+			method: 'POST',
+			headers: {
 				'Authorization': process.env.DBL!,
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'Content-Length': form.length
+				'Content-Length': form.length,
+				'Content-Type': 'application/x-www-form-urlencoded'
 			}
 		}, res => {
 			res.on('data', d => {

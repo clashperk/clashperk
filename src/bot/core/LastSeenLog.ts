@@ -30,17 +30,16 @@ export default class LastSeenLog {
 	private async throttle(id: string) {
 		if (this.lastReq.has(id)) await this.delay(1000);
 
-		const timeoutID = this.lastReq.get(id);
-		if (timeoutID) {
-			clearTimeout(timeoutID);
+		if (this.lastReq.has(id)) {
+			clearTimeout(this.lastReq.get(id)!);
 			this.lastReq.delete(id);
 		}
 
-		const Timeout = setTimeout(() => {
+		const timeoutId = setTimeout(() => {
 			this.lastReq.delete(id);
-			clearTimeout(Timeout);
+			clearTimeout(timeoutId);
 		}, 1000);
-		this.lastReq.set(id, Timeout);
+		this.lastReq.set(id, timeoutId);
 
 		return Promise.resolve(0);
 	}
@@ -142,7 +141,7 @@ export default class LastSeenLog {
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`**[Last Seen and Last 24h Activity Score](https://clashperk.com/faq)**`,
-				`\`\`\`\n\u200e'LAST-ON 24H  NAME`,
+				`\`\`\`\n\u200eLAST-ON 24H  NAME`,
 				members.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padEnd(7, ' ') : ''.padEnd(7, ' ')}  ${Math.min(99, m.count).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
