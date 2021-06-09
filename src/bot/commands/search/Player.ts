@@ -71,7 +71,7 @@ export default class PlayerCommand extends Command {
 			])
 			.next();
 
-		const lastSeen = aggregated.lastSeen ? this.getLastSeen(aggregated.lastSeen) : 'Unknown';
+		const lastSeen = aggregated?.lastSeen ? this.getLastSeen(aggregated.lastSeen) : 'Unknown';
 		const clan = data.clan
 			? `**Clan Info**\n${EMOJIS.CLAN} [${data.clan.name}](${this.clanURL(data.clan.tag)}) (${roles[data.role!]})\n`
 			: '';
