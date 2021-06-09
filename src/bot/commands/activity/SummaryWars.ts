@@ -74,6 +74,7 @@ export default class WarSummaryCommand extends Command {
 		for (const { warTags } of rounds.slice(-2)) {
 			for (const warTag of warTags) {
 				const data = await this.client.http.clanWarLeagueWar(warTag);
+				if (!data.ok) continue;
 				if ((data.clan.tag === clanTag) || (data.opponent.tag === clanTag)) {
 					chunks.push({
 						...data,
