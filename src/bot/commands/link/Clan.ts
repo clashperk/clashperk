@@ -84,6 +84,21 @@ export default class LinkClanCommand extends Command {
 				}
 			}, { upsert: true });
 
+		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+			.updateOne({ user: parsed.id }, {
+				$set: {
+					clan: {
+						tag: data.tag,
+						name: data.name
+					},
+					user_tag: parsed.user.tag
+				},
+				$setOnInsert: {
+					entries: [],
+					createdAt: new Date()
+				}
+			}, { upsert: true });
+
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setDescription([

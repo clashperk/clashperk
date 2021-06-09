@@ -115,6 +115,8 @@ export default class UnlinkCommand extends Command {
 
 	private async unlinkClan(user: string, tag: string): Promise<string | null> {
 		const clan = await this.client.db.collection(Collections.LINKED_CLANS).findOneAndDelete({ user, tag });
+		await this.client.db.collection(Collections.LINKED_PLAYERS)
+			.updateOne({ user, 'clan.tag': tag }, { $unset: { clan: '' } });
 		return clan.value?.tag;
 	}
 
