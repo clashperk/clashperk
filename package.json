@@ -12,7 +12,7 @@
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
 		"dev": "node --enable-source-maps dist/src/index.js",
-		"build:commands": "node dist/scripts/index.js"
+		"build:commands": "node dist/scripts/commands.js"
 	},
 	"dependencies": {
 		"@clashperk/node": "github:clashperk/node",
@@ -63,5 +63,8 @@
 			"@typescript-eslint/no-floating-promises": 0,
 			"@typescript-eslint/no-misused-promises": 0
 		}
+	},
+	"imports": {
+		"#scripts/*": "./scripts/*.js"
 	}
 }

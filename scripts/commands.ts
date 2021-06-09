@@ -836,7 +836,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'verify',
 				required: false,
-				description: 'Role will be given to verified players only',
+				description: 'Roles will be given to verified players only.',
 				type: ApplicationCommandOptionType.STRING,
 				choices: [
 					{

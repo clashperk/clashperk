@@ -1,5 +1,5 @@
-import { Message, Role } from 'discord.js';
 import { COLLECTIONS } from '../../util/Constants';
+import { Message, Role } from 'discord.js';
 import { Command } from 'discord-akairo';
 
 export default class AutoRoleCommand extends Command {
@@ -8,7 +8,15 @@ export default class AutoRoleCommand extends Command {
 			category: 'beta',
 			aliases: ['autorole'],
 			channel: 'guild',
-			description: {},
+			description: {
+				content: [
+					'Auto assign roles to members based upon their role in the clan.',
+					'',
+					'- This command works with slash command only.',
+					'- Players must be linked to our system to receive roles.',
+					'- You can either use same roles for all clans or individual roles for each clan, but not both.'
+				]
+			},
 			userPermissions: ['MANAGE_GUILD'],
 			flags: ['--verify'],
 			optionFlags: ['--tag', '--members', '--elders', '--co-leads'],
@@ -50,7 +58,7 @@ export default class AutoRoleCommand extends Command {
 
 	public async exec(message: Message, { tag, member, admin, coLeader, secureRole }: { tag?: string; member?: Role; admin?: Role; coLeader?: Role; secureRole: boolean }) {
 		if (!(member && admin && coLeader)) {
-			return message.util!.send('You must provide 3 roles!');
+			return message.util!.send('You must provide 3 valid roles!');
 		}
 
 		if ([member, admin, coLeader].filter(role => role.managed).length) {
@@ -87,7 +95,7 @@ export default class AutoRoleCommand extends Command {
 
 			if (!up.matchedCount) return message.util!.send('Clan not found in the server!');
 
-			return message.util!.send('Success!~');
+			return message.util!.send('**Successfully enabled automatic role management!**');
 		}
 
 		const clans = await this.client.storage.findAll(message.guild!.id);
@@ -111,6 +119,6 @@ export default class AutoRoleCommand extends Command {
 				}
 			);
 
-		return message.util!.send('Success!~');
+		return message.util!.send('**Successfully enabled automatic role management!**');
 	}
 }
