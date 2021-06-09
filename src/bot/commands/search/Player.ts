@@ -55,7 +55,7 @@ export default class PlayerCommand extends Command {
 	}
 
 	public async exec(message: Message, { data }: { data: Player }) {
-		const collection = await this.client.db.collection(COLLECTIONS.LAST_ONLINES)
+		const aggregated = await this.client.db.collection(COLLECTIONS.LAST_ONLINES)
 			.aggregate([
 				{
 					$match: {
@@ -69,11 +69,9 @@ export default class PlayerCommand extends Command {
 					}
 				}
 			])
-			.toArray();
+			.next();
 
-		const lastSeen = collection[0]?.lastSeen
-			? `${ms(new Date().getTime() - new Date(collection[0]?.lastSeen).getTime(), { 'long': true })} ago`
-			: 'Unknown';
+		const lastSeen = aggregated.lastSeen ? this.getLastSeen(aggregated.lastSeen) : 'Unknown';
 		const clan = data.clan
 			? `**Clan Info**\n${EMOJIS.CLAN} [${data.clan.name}](${this.clanURL(data.clan.tag)}) (${roles[data.role!]})\n`
 			: '';
@@ -203,6 +201,15 @@ export default class PlayerCommand extends Command {
 		if (!data) return null;
 
 		return {}; // TODO: Finish it
+	}
+
+	private getLastSeen(lastSeen: Date) {
+		const timestamp = Date.now() - lastSeen.getTime();
+		return timestamp <= (1 * 24 * 60 * 60 * 1000)
+			? 'Today'
+			: timestamp <= (2 * 24 * 60 * 60 * 1000)
+				? 'Yesterday'
+				: `${ms(timestamp, { 'long': true })} ago`;
 	}
 }
 

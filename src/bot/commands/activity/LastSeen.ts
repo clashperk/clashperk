@@ -1,10 +1,10 @@
-import { COLLECTIONS } from '../../util/Constants';
 import { Message, Util } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import 'moment-duration-format';
 import moment from 'moment';
 import { EMOJIS } from '../../util/Emojis';
+import { Collections } from '@clashperk/node';
 
 // TODO: Fix TS
 export default class LastOnlineCommand extends Command {
@@ -38,25 +38,41 @@ export default class LastOnlineCommand extends Command {
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
-		const db = await this.client.db.collection(COLLECTIONS.LAST_ONLINES)
-			.countDocuments({ 'clan.tag': data.tag });
-		if (!db) return message.util!.send(`Not enough data available for **${data.name} (${data.tag})**`);
+		const allowed = await this.client.db.collection(Collections.CLAN_STORES)
+			.find({ guild: message.guild!.id, tag: data.tag })
+			.count();
+		if (!allowed && message.guild!.id !== '509784317598105619') {
+			return message.util!.send(
+				[
+					'**You must link this clan to a channel to use this command!**'
+				].join('\n'),
+				{ files: ['https://cdn.discordapp.com/attachments/752914644779139242/852062721280311327/unknown.png'] }
+			);
+		}
+
+		const db = await this.client.db.collection(Collections.LAST_SEEN)
+			.find({ 'clan.tag': data.tag })
+			.count();
+		if (!db) {
+			return message.util!.send([
+				`Not enough data available for **${data.name} (${data.tag})**`
+			].join('\n'));
+		}
 
 		const members = await this.aggregationQuery(data);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				'Last Seen and Last 24h Activities',
-				`\`\`\`\n\u200e${'LAST-ON'.padStart(7, ' ')}  📊  ${'NAME'}\n${members
-					.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padStart(7, ' ') : ''.padStart(7, ' ')}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
+				'**[Last Seen and Last 24h Activity Score](https://clashperk.com/faq)**',
+				`\`\`\`\n\u200eLAST-ON 24H  NAME\n${members
+					.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padEnd(7, ' ') : ''.padEnd(7, ' ')}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n')}`,
 				'```'
 			])
-			.setFooter(`Members [${data.members}/50]`, this.client.user!.displayAvatarURL());
+			.setFooter(`Members [${data.members}/50]`, message.author.displayAvatarURL());
 
 		const msg = await message.util!.send({ embed });
-
 		await msg.react(EMOJIS.ACTIVITY);
 		const { id } = Util.parseEmoji(EMOJIS.ACTIVITY)!;
 		const collector = msg.createReactionCollector(
@@ -113,7 +129,7 @@ export default class LastOnlineCommand extends Command {
 	}
 
 	private async aggregationQuery(clan: Clan, days = 1) {
-		const db = this.client.db.collection(COLLECTIONS.LAST_ONLINES);
+		const db = this.client.db.collection(Collections.LAST_SEEN);
 		const collection = await db.aggregate([
 			{
 				$match: {

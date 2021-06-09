@@ -141,9 +141,9 @@ export default class LastSeenLog {
 			.setColor(cache.color)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
-				`Last Seen and 24h Activity [${clan.members}/50]`,
-				`\`\`\`\n\u200e${'LAST-ON'.padStart(7, ' ')}  📊  ${'NAME'.padEnd(15, ' ')}`,
-				members.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3) : ''.padStart(7, ' ')}  ${Math.min(99, m.count).toString().padStart(2, ' ')}  ${m.name}`)
+				`**[Last Seen and Last 24h Activity Score](https://clashperk.com/faq)**`,
+				`\`\`\`\n\u200e'LAST-ON 24H  NAME`,
+				members.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padEnd(7, ' ') : ''.padEnd(7, ' ')}  ${Math.min(99, m.count).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
 			])
@@ -155,11 +155,11 @@ export default class LastSeenLog {
 
 	private format(ms: number) {
 		if (ms > 864e5) {
-			return moment.duration(ms).format('d[d] H[h]', { trim: 'both mid' }).padStart(7, ' ');
+			return moment.duration(ms).format('d[d] H[h]', { trim: 'both mid' });
 		} else if (ms > 36e5) {
-			return moment.duration(ms).format('H[h] m[m]', { trim: 'both mid' }).padStart(7, ' ');
+			return moment.duration(ms).format('H[h] m[m]', { trim: 'both mid' });
 		}
-		return moment.duration(ms).format('m[m] s[s]', { trim: 'both mid' }).padStart(7, ' ');
+		return moment.duration(ms).format('m[m] s[s]', { trim: 'both mid' });
 	}
 
 	public async init() {
