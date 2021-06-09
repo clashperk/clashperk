@@ -120,6 +120,6 @@ export default class UnlinkCommand extends Command {
 	}
 
 	private parseTag(tag?: string) {
-		return tag ? this.client.http.parseTag(tag) : null;
+		return tag ? this.client.http.fixTag(tag) : null;
 	}
 }

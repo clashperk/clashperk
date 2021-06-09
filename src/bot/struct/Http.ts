@@ -27,7 +27,7 @@ export default class Http extends Client {
 		return Object.assign(parsed, { statusCode: res?.status ?? 504, ok: res?.status === 200, maxAge: Number(maxAge) * 1000 });
 	}
 
-	public parseTag(tag: string) {
+	public fixTag(tag: string) {
 		return super.parseTag(tag, false);
 	}
 
