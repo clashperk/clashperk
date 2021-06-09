@@ -89,7 +89,7 @@ export default class ProfileCommand extends Command {
 
 			const signature = this.isVerified(data, tag) ? EMOJIS.VERIFIED : this.isLinked(data, tag) ? EMOJIS.AUTHORIZE : '';
 			collection.push({
-				field: `${TOWN_HALLS[player.townHallLevel]} ${hideLink ? '' : '['}${player.name} (${player.tag})${hideLink ? '' : `](${this.profileURL(data.tag)})`} ${signature}`,
+				field: `${TOWN_HALLS[player.townHallLevel]} ${hideLink ? '' : '['}${player.name} (${player.tag})${hideLink ? '' : `](${this.profileURL(player.tag)})`} ${signature}`,
 				values: [this.heroes(player), this.clanName(player)].filter(a => a.length)
 			});
 
