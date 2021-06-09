@@ -56,7 +56,7 @@ export default class ProfileCommand extends Command {
 		let index = 0;
 		const collection = [];
 
-		const clan: Clan = await this.client.http.clan(data?.clan.tag ?? '💩');
+		const clan: Clan = await this.client.http.clan(data?.clan?.tag ?? '💩');
 		if (clan.statusCode === 503) {
 			return message.util!.send('**Service is temporarily unavailable because of maintenance.**');
 		}
