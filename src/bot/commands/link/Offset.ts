@@ -29,7 +29,7 @@ export default class OffsetCommand extends Command {
 		});
 	}
 
-	public async exec(message: Message, { query }: { query: string}) {
+	public async exec(message: Message, { query }: { query: string }) {
 		const raw = await Google.timezone(query);
 		if (!raw) return message.util!.send('Location not found, make your search more specific and try again.');
 
@@ -44,6 +44,23 @@ export default class OffsetCommand extends Command {
 						name: raw.timezone.timeZoneName,
 						location: raw.location.formatted_address
 					}
+				}
+			}, { upsert: true });
+
+		await this.client.db.collection(Collections.LINKED_PLAYERS)
+			.updateOne({ user: message.author.id }, {
+				$set: {
+					user_tag: message.author.tag,
+					timezone: {
+						id: raw.timezone.timeZoneId,
+						offset: Number(offset),
+						name: raw.timezone.timeZoneName,
+						location: raw.location.formatted_address
+					}
+				},
+				$setOnInsert: {
+					entries: [],
+					createdAt: new Date()
 				}
 			}, { upsert: true });
 
