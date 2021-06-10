@@ -61,12 +61,15 @@ export class RoleManager {
 			]).next();
 		if (!queried?.guilds.length) return null;
 
+		const guild_ids = queried.guilds.filter((id: string) => this.client.guilds.cache.has(id));
+		if (!guild_ids.length) return null;
+
 		const cursor = this.client.db.collection(Collections.CLAN_STORES)
 			.aggregate([
 				{
 					$match: {
 						autoRole: { $gt: 0 },
-						guild: { $in: queried.guilds }
+						guild: { $in: guild_ids }
 					}
 				}, {
 					$group: {
