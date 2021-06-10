@@ -4,7 +4,7 @@ import { Util } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
-import { Message } from 'discord.js';
+import { Message, MessageEmbed } from 'discord.js';
 
 const months = [
 	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -55,15 +55,23 @@ export default class CWLExport extends Command {
 	}
 
 	private fixTag(tag: string) {
-		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`;
+		return this.client.http.fixTag(tag);
 	}
 
 	public async exec(message: Message, { tags }: { tags?: string[] }) {
 		if (!this.client.patrons.get(message)) {
-			return message.channel.send({ embed: { description: '[Become a Patron](https://www.patreon.com/clashperk) to export CWL data to Excel.' } });
+			const embed = new MessageEmbed()
+				.setDescription([
+					'**Patron Only Command**',
+					'This command is only available on Patron servers.',
+					'Visit https://patreon.com/clashperk for more details.',
+					'',
+					'**Demo CWL Export**'
+				])
+				.setImage('https://cdn.discordapp.com/attachments/806179502508998657/846700124134178826/unknown.png');
+			return message.channel.send({ embed });
 		}
 
-		console.log(tags);
 		let clans = [];
 		if (tags?.length) {
 			clans = await this.getClans(message, tags);

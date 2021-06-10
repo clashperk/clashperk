@@ -2,7 +2,7 @@ import { Clan, PlayerItem, Player } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
-import { Message, Util } from 'discord.js';
+import { Message, Util, MessageEmbed } from 'discord.js';
 
 const roleIds: { [key: string]: number } = {
 	member: 1,
@@ -158,11 +158,16 @@ export default class MembersCommand extends Command {
 						}]
 					});
 				}
-				return message.channel.send({
-					embed: {
-						description: '[Become a Patron](https://www.patreon.com/clashperk) to export clan members to Excel.'
-					}
-				});
+				const embed = new MessageEmbed()
+					.setDescription([
+						'**Patron Only Command**',
+						'This command is only available on Patron servers.',
+						'Visit https://patreon.com/clashperk for more details.',
+						'',
+						'**Demo Clan Member Export**'
+					])
+					.setImage('https://i.imgur.com/Uc5G2oS.png');
+				return message.channel.send({ embed });
 			}
 
 			if (reaction.emoji.id === id) {

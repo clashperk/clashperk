@@ -199,7 +199,7 @@ export default class ClanEmbedCommand extends Command {
 				'This feature is only available on Patron servers.',
 				'Visit https://patreon.com/clashperk for more details.',
 				'',
-				'**Sample Clan Embed**'
+				'**Demo Clan Embed**'
 			].join('\n'))
 			.setImage('https://i.imgur.com/txkD6q7.png');
 		return message.util!.send({ embed }).then(() => Flag.cancel()).catch(() => Flag.cancel());
