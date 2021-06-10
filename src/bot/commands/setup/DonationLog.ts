@@ -69,7 +69,7 @@ export default class DonationLogCommand extends Command {
 			channel: channel.id,
 			tag: data.tag,
 			name: data.name,
-			color: hexColor
+			color: this.client.patrons.get(message) ? hexColor : null
 		});
 
 		await this.client.rpcHandler.add(id, {

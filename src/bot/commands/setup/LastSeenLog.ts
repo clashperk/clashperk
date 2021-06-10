@@ -70,7 +70,7 @@ export default class LastSeenBoardCommand extends Command {
 			tag: data.tag,
 			name: data.name,
 			message: null,
-			color: hexColor
+			color: this.client.patrons.get(message) ? hexColor : null
 		});
 
 		await this.client.rpcHandler.add(id, {

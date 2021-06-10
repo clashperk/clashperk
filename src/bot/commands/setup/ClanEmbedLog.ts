@@ -194,10 +194,14 @@ export default class ClanEmbedCommand extends Command {
 
 	private async bePatron(message: Message) {
 		const embed = this.client.util.embed()
-			.setImage('https://i.imgur.com/txkD6q7.png')
 			.setDescription([
-				'[Become a Patron](https://www.patreon.com/clashperk) to create Live auto updating Promotional Embed.'
-			]);
+				'**Patron Only Feature**',
+				'This feature is only available on Patron servers.',
+				'Visit https://patreon.com/clashperk for more details.',
+				'',
+				'**Sample Clan Embed**'
+			].join('\n'))
+			.setImage('https://i.imgur.com/txkD6q7.png');
 		return message.util!.send({ embed }).then(() => Flag.cancel()).catch(() => Flag.cancel());
 	}
 

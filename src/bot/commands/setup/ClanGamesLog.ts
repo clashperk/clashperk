@@ -71,7 +71,7 @@ export default class ClanGamesBoardCommand extends Command {
 			message: null,
 			name: data.name,
 			tag: data.tag,
-			color: hexColor
+			color: this.client.patrons.get(message) ? hexColor : null
 		});
 
 		await this.client.rpcHandler.add(id, {
