@@ -89,7 +89,7 @@ export class RoleManager {
 				}, {
 					$unset: '_id'
 				}, {
-					$match: { 'guilds.tag': tag }
+					$match: { 'clans.tag': tag }
 				}
 			]);
 
