@@ -42,11 +42,31 @@ export class RoleManager {
 	}
 
 	public async exec(tag: string, data: RPCFeed) {
+		const queried = await this.client.db.collection(Collections.CLAN_STORES)
+			.aggregate([
+				{
+					$match: {
+						tag, active: true, paused: false
+					}
+				}, {
+					$group: {
+						_id: null,
+						guilds: {
+							$addToSet: '$guild'
+						}
+					}
+				}, {
+					$unset: '_id'
+				}
+			]).next();
+		if (!queried?.guilds.length) return null;
+
 		const cursor = this.client.db.collection(Collections.CLAN_STORES)
 			.aggregate([
 				{
 					$match: {
-						autoRole: { $gte: 1 }
+						autoRole: { $gt: 0 },
+						guild: { $in: queried.guilds }
 					}
 				}, {
 					$group: {
@@ -54,7 +74,7 @@ export class RoleManager {
 							guild: '$guild',
 							autoRole: '$autoRole'
 						},
-						guilds: {
+						clans: {
 							$addToSet: '$$ROOT'
 						}
 					}
@@ -70,13 +90,14 @@ export class RoleManager {
 				}
 			]);
 
-		const clans: { clans: any[]; guild_id: string; type: 1 | 2 }[] = await cursor.toArray();
+		const groups: { clans: any[]; guild_id: string; type: 1 | 2 }[] = await cursor.toArray();
+		if (!groups.length) return cursor.close();
 
-		for (const group of clans.filter(ex => ex.type === 2 && ex.clans.length)) {
+		for (const group of groups.filter(ex => ex.type === 2 && ex.clans.length)) {
 			await this.addSameTypeRole(group.guild_id, group.clans, data);
 		}
 
-		for (const group of clans.filter(ex => ex.type === 1 && ex.clans.length)) {
+		for (const group of groups.filter(ex => ex.type === 1 && ex.clans.length)) {
 			const clan = group.clans.find(clan => clan.tag === data.clan.tag);
 			if (clan) await this.addUniqueTypeRole(group.guild_id, clan, data);
 		}

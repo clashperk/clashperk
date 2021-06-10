@@ -8,6 +8,7 @@ import DonationLog from './DonationLog';
 import ClanWarLog from './ClanWarLog';
 import Client from '../struct/Client';
 import Queue from '../struct/Queue';
+import { RoleManager } from './RoleManager';
 
 export default class RPCHandler {
 	private paused = Boolean(false);
@@ -19,6 +20,7 @@ export default class RPCHandler {
 	private readonly clanGamesLog = new ClanGamesLog(this.client);
 	private readonly lastSeenLog = new LastSeenLog(this.client);
 	private readonly clanFeedLog = new ClanFeedLog(this.client);
+	private readonly roleManager = new RoleManager(this.client);
 
 	public constructor(private readonly client: Client) {
 		this.maintenance = new MaintenanceHandler(this.client);
@@ -52,6 +54,7 @@ export default class RPCHandler {
 						break;
 					case BitField.CLAN_FEED_LOG:
 						await this.clanFeedLog.exec(data.tag, data);
+						await this.roleManager.exec(data.tag, data);
 						break;
 					case BitField.CLAN_EMBED_LOG:
 						await this.clanEmbedLog.exec(data.tag, data.clan);

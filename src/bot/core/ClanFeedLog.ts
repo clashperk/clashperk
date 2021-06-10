@@ -77,10 +77,10 @@ export default class ClanFeedLog {
 			'VIEW_CHANNEL'
 		];
 
-		await Promise.all([
+		/* await Promise.all([
 			this.addSameTypeRole(cache.guild, data),
 			this.addUniqueTypeRole(cache.guild, data)
-		]);
+		]);*/
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {

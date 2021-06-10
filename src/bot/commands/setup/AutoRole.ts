@@ -5,7 +5,7 @@ import { Command } from 'discord-akairo';
 export default class AutoRoleCommand extends Command {
 	public constructor() {
 		super('setup-auto-role', {
-			category: 'beta',
+			category: '_setup',
 			aliases: ['autorole'],
 			channel: 'guild',
 			description: {
@@ -57,6 +57,13 @@ export default class AutoRoleCommand extends Command {
 	}
 
 	public async exec(message: Message, { tag, member, admin, coLeader, secureRole }: { tag?: string; member?: Role; admin?: Role; coLeader?: Role; secureRole: boolean }) {
+		const users = this.client.settings.get<string[]>('global', 'betaUsers', []);
+		const guilds = this.client.settings.get<string[]>('global', 'betaGuilds', []);
+
+		if (!guilds.includes(message.guild!.id) && !users.includes(message.author.id) && !this.client.patrons.get(message.guild!.id)) {
+			return message.util!.send('**This feature is still in beta, contact support for early access.**');
+		}
+
 		if (!(member && admin && coLeader)) {
 			return message.util!.send('You must provide 3 valid roles!');
 		}
