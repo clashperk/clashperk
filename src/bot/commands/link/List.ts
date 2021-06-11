@@ -44,7 +44,11 @@ export default class LinkListCommand extends Command {
 			}
 		}
 
-		await message.guild!.members.fetch({ user: memberTags.map(m => m.user) });
+		const user_ids = memberTags.reduce((prev, curr) => {
+			if (!prev.includes(curr.user)) prev.push(curr.user);
+			return prev;
+		}, [] as string[]);
+		await message.guild!.members.fetch({ user: user_ids });
 
 		// Players linked and on the guild.
 		const onDiscord = memberTags.filter(mem => message.guild!.members.cache.has(mem.user));
@@ -86,7 +90,7 @@ export default class LinkListCommand extends Command {
 				}
 			).join('\n'),
 			'',
-			`${EMOJIS.WRONG} **Players not on Discord: ${offDiscord.length}**`,
+			`${EMOJIS.WRONG} **Players not on Discord: ${offDiscord.length + notInDiscord.length}**`,
 			notInDiscord.map(
 				mem => {
 					const member = data.memberList.find(m => m.tag === mem.tag)!;

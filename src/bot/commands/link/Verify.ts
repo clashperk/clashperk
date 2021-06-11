@@ -114,13 +114,13 @@ export default class VerifyPlayerCommand extends Command {
 				}, { upsert: true });
 		}
 
-		this.resetLinkAPIData(message.author.id, data.tag);
+		this.resetLinkAPI(message.author.id, data.tag);
 		return message.util!.send(
 			`**Verification successful! ${data.name} (${data.tag})** ${EMOJIS.VERIFIED}`
 		);
 	}
 
-	private async resetLinkAPIData(user: string, tag: string) {
+	private async resetLinkAPI(user: string, tag: string) {
 		await this.client.http.unlinkPlayerTag(tag);
 		await this.client.http.linkPlayerTag(user, tag);
 	}

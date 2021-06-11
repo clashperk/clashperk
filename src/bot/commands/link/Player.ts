@@ -91,7 +91,9 @@ export default class LinkPlayerCommand extends Command {
 					}
 			}, { upsert: true });
 
-		this.client.http.linkPlayerTag(member.id, data.tag);
+		// Fix Conflicts
+		this.resetLinkAPI(member.id, data.tag);
+
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setDescription([
@@ -108,5 +110,10 @@ export default class LinkPlayerCommand extends Command {
 
 	private async getPlayer(tag: string) {
 		return this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ 'entries.tag': tag });
+	}
+
+	private async resetLinkAPI(user: string, tag: string) {
+		await this.client.http.unlinkPlayerTag(tag);
+		await this.client.http.linkPlayerTag(user, tag);
 	}
 }
