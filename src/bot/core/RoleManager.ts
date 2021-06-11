@@ -1,28 +1,27 @@
 import { Collections } from '@clashperk/node';
+import { Clan, Player } from 'clashofclans.js';
 import { Guild, GuildMember } from 'discord.js';
 import Client from '../struct/Client';
+import Queue from '../struct/Queue';
 
 const ActionType: { [key: string]: string } = {
-	LEFT: '%PLAYER% left.',
-	JOINED: '%PLAYER% joined.',
-	DEMOTED: '%PLAYER% has been demoted.',
-	PROMOTED: '%PLAYER% has been promoted.'
+	LEFT: '"%PLAYER% left"',
+	JOINED: '"%PLAYER% joined"',
+	DEMOTED: '"%PLAYER% has been demoted"',
+	PROMOTED: '"%PLAYER% has been promoted"',
+	SYNCED: '"%PLAYER% [Auto Role Initiated]"'
 };
 
 export interface RPCFeed {
 	clan: {
 		tag: string;
 		name: string;
-		badge: string;
 	};
 	members: {
 		op: string;
 		tag: string;
 		name: string;
-		rand: number;
 		role: string;
-		donations: number;
-		donationsReceived: number;
 	}[];
 	memberList: {
 		tag: string; role: string;
@@ -35,10 +34,43 @@ const roles: { [key: string]: number } = {
 };
 
 export class RoleManager {
-	private readonly queues: string[];
+	private readonly _queue: Queue;
+	private readonly queues = new Set<string>();
 
 	public constructor(private readonly client: Client) {
-		this.queues = [];
+		this._queue = new Queue();
+	}
+
+	public async queue(clan: Clan) {
+		if (this.queues.has(clan.tag)) return null;
+
+		const data = {
+			clan: { name: clan.name, tag: clan.tag },
+			memberList: clan.memberList.map(mem => ({ tag: mem.tag, role: mem.role, clan: { tag: clan.tag } })),
+			members: clan.memberList.map(mem => ({ op: 'SYNCED', name: mem.name, tag: mem.tag, role: mem.role }))
+		};
+
+		this.queues.add(clan.tag);
+		await this._queue.wait();
+
+		try {
+			return await this.exec(clan.tag, data);
+		} finally {
+			this._queue.shift();
+			this.queues.delete(clan.tag);
+		}
+	}
+
+	public async newLink(player: Player) {
+		const clan = await this.client.http.clan(player.clan!.tag);
+		if (!clan.ok) return null;
+
+		const mem = clan.memberList.find(mem => mem.tag === player.tag);
+		return this.exec(clan.tag, {
+			clan: { name: player.clan!.name, tag: player.clan!.tag },
+			memberList: mem ? [{ tag: player.tag, role: mem.role, clan: { tag: clan.tag } }] : [],
+			members: [{ op: 'SYNCED', name: player.name, tag: player.tag, role: player.role ?? 'none' }]
+		});
 	}
 
 	public async exec(tag: string, data: RPCFeed) {
@@ -116,6 +148,14 @@ export class RoleManager {
 			.toArray();
 
 		const flattened = this.flatPlayers(collection, clan.secureRole);
+		const user_ids = flattened.reduce((prev, curr) => {
+			if (!prev.includes(curr.user)) prev.push(curr.user);
+			return prev;
+		}, [] as string[]);
+
+		// fetch guild members at once
+		await this.client.guilds.cache.get(guild)?.members.fetch({ user: user_ids, force: true });
+
 		for (const member of data.members) {
 			const mem = flattened.find(a => a.tag === member.tag);
 			if (!mem) continue;
@@ -142,6 +182,14 @@ export class RoleManager {
 			.toArray();
 
 		const flattened = this.flatPlayers(collection, clan.secureRole);
+		const user_ids = flattened.reduce((prev, curr) => {
+			if (!prev.includes(curr.user)) prev.push(curr.user);
+			return prev;
+		}, [] as string[]);
+
+		// fetch guild members at once
+		await this.client.guilds.cache.get(guild)?.members.fetch({ user: user_ids, force: true });
+
 		const players = (await this.client.http.detailedClanMembers(flattened))
 			.filter(res => res.ok);
 
@@ -171,7 +219,7 @@ export class RoleManager {
 		if (!role_id && !roles.length) return null;
 		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return null;
 
-		const member = await guild.members.fetch({ user: user_id, force: true }).catch(() => null);
+		const member = guild.members.cache.get(user_id);
 		if (!member) return null;
 		if (member.user.bot) return null;
 

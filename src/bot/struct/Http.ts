@@ -141,11 +141,10 @@ export default class Http extends Client {
 			},
 			timeout: 10000
 		}).catch(() => null);
-
 		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);
+
 		if (!Array.isArray(data)) return [];
-		return data.filter(d => /^#?[0289CGJLOPQRUVY]+$/i.test(d.playerTag))
-			.map(d => `#${d.playerTag.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0')}`);
+		return data.filter(en => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag)).map(en => this.fixTag(en.playerTag));
 	}
 
 	public async getDiscordLinks(members: { tag: string }[]) {
@@ -158,10 +157,13 @@ export default class Http extends Client {
 			timeout: 30000,
 			body: JSON.stringify(members.map(mem => mem.tag))
 		}).catch(() => null);
-
 		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);
+
 		if (!Array.isArray(data)) return [];
-		return data.filter(d => /^#?[0289CGJLOPQRUVY]+$/i.test(d.playerTag) && /^\d{17,19}/.test(d.discordId))
-			.map(d => ({ tag: `#${d.playerTag.toUpperCase().replace(/^#/g, '').replace(/o|O/g, '0')}`, user: d.discordId }));
+		return data.filter(
+			en => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag) && /^\d{17,19}/.test(en.discordId)
+		).map(
+			en => ({ tag: this.fixTag(en.playerTag), user: en.discordId })
+		);
 	}
 }

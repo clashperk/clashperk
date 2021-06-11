@@ -20,7 +20,7 @@ export default class RPCHandler {
 	private readonly clanGamesLog = new ClanGamesLog(this.client);
 	private readonly lastSeenLog = new LastSeenLog(this.client);
 	private readonly clanFeedLog = new ClanFeedLog(this.client);
-	private readonly roleManager = new RoleManager(this.client);
+	public roleManager = new RoleManager(this.client);
 
 	public constructor(private readonly client: Client) {
 		this.maintenance = new MaintenanceHandler(this.client);

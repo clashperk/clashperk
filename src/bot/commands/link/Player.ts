@@ -93,6 +93,8 @@ export default class LinkPlayerCommand extends Command {
 
 		// Fix Conflicts
 		this.resetLinkAPI(member.id, data.tag);
+		// Update Role
+		if (data.clan) this.client.rpcHandler.roleManager.newLink(data);
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))

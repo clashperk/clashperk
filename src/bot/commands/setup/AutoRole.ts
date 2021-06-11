@@ -1,6 +1,7 @@
 import { COLLECTIONS } from '../../util/Constants';
 import { Message, Role } from 'discord.js';
 import { Command } from 'discord-akairo';
+import { Collections } from '@clashperk/node';
 
 export default class AutoRoleCommand extends Command {
 	public constructor() {
@@ -100,8 +101,9 @@ export default class AutoRoleCommand extends Command {
 					$addToSet: { role_ids: { $each: [member.id, admin.id, coLeader.id] } }
 				});
 
-			if (!up.matchedCount) return message.util!.send('Clan not found in the server!');
+			if (!up.matchedCount) return message.util!.send('Clan not found in this server!');
 
+			this.updateLinksAndRoles([clan]);
 			return message.util!.send('**Successfully enabled automatic role management!**');
 		}
 
@@ -126,6 +128,62 @@ export default class AutoRoleCommand extends Command {
 				}
 			);
 
+
+		this.updateLinksAndRoles(clans);
 		return message.util!.send('**Successfully enabled automatic role management!**');
+	}
+
+	private async updateLinksAndRoles(clans: { tag: string }[]) {
+		for (const clan of clans) {
+			const data = await this.client.http.clan(clan.tag);
+			if (!data.ok) continue;
+
+			const members = await this.client.db.collection(Collections.LINKED_PLAYERS)
+				.aggregate<{ user: string; tag: string }>([
+				{
+					$match: {
+						'entries.tag': data.memberList.map(mem => mem.tag)
+					}
+				}, {
+					$unwind: {
+						path: '$entries'
+					}
+				}, {
+					$project: {
+						tag: '$entries.tag', user: '$user'
+					}
+				}
+			]).toArray();
+
+			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
+			for (const { user, tag } of unknowns) {
+				if (members.find(mem => mem.tag === tag && mem.user === user)) continue;
+
+				const member = data.memberList.find(mem => mem.tag === tag);
+				try {
+					await this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
+						{ user, 'entries.tag': { $ne: tag } },
+						{
+							$push: {
+								entries: { tag, name: member?.name, verified: false, unknown: true }
+							},
+							$setOnInsert: {
+								clan: {
+									tag: data.tag,
+									name: data.name
+								},
+								createdAt: new Date()
+							},
+							$set: {
+								user_tag: this.client.users.cache.get(user)?.tag
+							}
+						},
+						{ upsert: true }
+					);
+				} catch {}
+			}
+
+			await this.client.rpcHandler.roleManager.queue(data);
+		}
 	}
 }

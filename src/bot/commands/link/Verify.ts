@@ -114,7 +114,11 @@ export default class VerifyPlayerCommand extends Command {
 				}, { upsert: true });
 		}
 
+		// Rest Link API
 		this.resetLinkAPI(message.author.id, data.tag);
+		// Update Roles
+		if (data.clan) this.client.rpcHandler.roleManager.newLink(data);
+
 		return message.util!.send(
 			`**Verification successful! ${data.name} (${data.tag})** ${EMOJIS.VERIFIED}`
 		);
