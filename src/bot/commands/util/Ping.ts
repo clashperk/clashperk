@@ -17,7 +17,6 @@ export default class PingCommand extends Command {
 
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 		const ping = (msg.editedTimestamp || msg.createdTimestamp) - (message.editedTimestamp || message.createdTimestamp);
-		// @ts-ignore
 		return message.util!.send([
 			`**Gateway Ping~ ${Math.round(this.client.ws.ping).toString()}ms**`,
 			`**API Ping~ ${ping.toString()}ms**`
