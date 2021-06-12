@@ -20,7 +20,7 @@ export interface ClanStore {
 	channels?: string[];
 	autoRole: 1 | 2;
 	secureRole: boolean;
-	role_ids: string[];
+	role_ids?: string[];
 	roles?: { coLeader?: string; admin?: string; member?: string }[];
 }
 

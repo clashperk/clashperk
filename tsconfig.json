@@ -9,13 +9,12 @@
 			"esnext.symbol"
 		],
 		"paths": {
-			"#scripts/*": ["scripts/*"]
+			"#scripts/*": ["./scripts/*"]
 		},
 		"pretty": true,
 		"strict": true,
 		"outDir": "dist",
 		"rootDir": "./",
-		"baseUrl": "./",
 		"sourceRoot": "/",
 		"sourceMap": true,
 		"target": "ES2020",

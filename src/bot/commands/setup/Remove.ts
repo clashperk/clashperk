@@ -66,13 +66,13 @@ export default class RemoveCommand extends Command {
 			type: Argument.union(
 				[
 					['all'],
+					['autorole', 'role', 'roles'],
 					[BitField.CLAN_EMBED_LOG.toString(), 'embed', 'clanembed'],
 					[BitField.LAST_SEEN_LOG.toString(), 'lastseen', 'lastonline'],
 					[BitField.CLAN_WAR_LOG.toString(), 'war', 'wars', 'clan-wars'],
 					[BitField.CLAN_GAMES_LOG.toString(), 'game', 'games', 'clangames'],
 					[BitField.CLAN_FEED_LOG.toString(), 'feed', 'memberlog', 'clan-feed'],
 					[BitField.DONATION_LOG.toString(), 'donation', 'donations', 'donationlog']
-
 				],
 				'textChannel'
 			)
@@ -120,10 +120,28 @@ export default class RemoveCommand extends Command {
 			return message.util!.send(`Couldn\'t find any clan linked to ${bit.toString()}`);
 		}
 
+		if (bit === 'autorole') {
+			await this.client.db.collection(Collections.CLAN_STORES)
+				.updateMany(
+					{ guild: message.guild!.id, autoRole: 2 },
+					{ $unset: { autoRole: '', roles: '', role_ids: '', secureRole: '' } }
+				);
+			return message.util!.send(`**Autorole disabled for all clans.**`);
+		}
+
 		if (!tag) return message.util!.send('**You must specify a clan tag to run this command.**');
 
 		const data = await this.client.db.collection(Collections.CLAN_STORES)
 			.findOne({ tag, guild: message.guild!.id });
+
+		if (bit === 'autorole' && data) {
+			await this.client.db.collection(Collections.CLAN_STORES)
+				.updateMany(
+					{ guild: message.guild!.id, tag: data.tag, autoRole: 1 },
+					{ $unset: { autoRole: '', roles: '', role_ids: '', secureRole: '' } }
+				);
+			return message.util!.send(`Autorole disabled for **${data.name as string} (${data.tag as string})**`);
+		}
 
 		if (!data) {
 			return message.util!.send('**I couldn\'t find this clan tag in this server!**');

@@ -1,5 +1,5 @@
-import { Message, TextChannel, MessageEmbed } from 'discord.js';
 import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
+import { Message, TextChannel, MessageEmbed } from 'discord.js';
 import { BitField, Collections } from '@clashperk/node';
 
 const names: { [key: string]: string } = {
@@ -130,6 +130,7 @@ export default class SetupCommand extends Command {
 
 					return {
 						name: clan.name, tag: clan.tag, alias: clan.alias ? `(${clan.alias}) ` : '',
+						roles: clan.role_ids?.map(id => message.guild!.roles.cache.get(id)?.toString()) ?? [],
 						channels: clan.channels?.map(id => this.client.channels.cache.get(id)?.toString()) ?? [],
 						entries: [
 							{
@@ -140,6 +141,7 @@ export default class SetupCommand extends Command {
 							{
 								flag: BitField.CLAN_FEED_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
+								role: message.guild!.roles.cache.get(bit2?.role)?.toString(),
 								channel: this.client.channels.cache.get(bit2?.channel)?.toString()
 							},
 							{
@@ -169,25 +171,45 @@ export default class SetupCommand extends Command {
 		);
 
 		if (fetched.length) {
-			const embed = new MessageEmbed()
-				.setAuthor(`${message.guild!.name} (${message.guild!.id})`)
-				.setDescription(`Enabled features and linked clans (${fetched.length})`);
-
-			fetched.map(
-				(clan, num) => {
+			const embeds = fetched.map(
+				clan => {
 					const heads = clan.channels.filter(en => en).join(', ');
-					const rest = num === (fetched.length - 1) ? '' : '\n\u200b';
-					const features = clan.entries.filter(en => en.ok && en.channel);
-					return embed.addField(
-						`\u200e${clan.name} (${clan.tag})`,
-						`${heads ? `**Channels**\n${heads}\n` : ''}${features.map(en => `**${names[en.flag]}**\n${en.channel!}`).join('\n')}${rest}\u200b`
-					);
+					const features = clan.entries; // .filter(en => en.ok && en.channel);
+					const embed = new MessageEmbed();
+					embed.setAuthor(`\u200e${clan.name} (${clan.tag})`);
+					if (heads) embed.setDescription(heads);
+					if (clan.roles.length) {
+						embed.addField('Roles', clan.roles.join(' '), true);
+					}
+					if (features.length) {
+						features.map(
+							en => embed.addField(
+								names[en.flag],
+								en.channel ? `${en.channel} ${en.role ?? ''}` : `-`, true
+							)
+						);
+					}
+
+					return embed;
 				}
 			);
 
-			return message.util!.send({ embed });
+			for (const chunks of this.chunk(embeds)) {
+				if (message.hasOwnProperty('token')) return message.util!.send(chunks);
+				// @ts-expect-error
+				return this.client.api.channels[message.channel.id].messages.post({ data: { embeds: chunks } });
+			}
 		}
 
 		return message.util!.send(`${message.guild!.name} doesn't have any clans. Why not add some?`);
+	}
+
+	private chunk<T>(items: T[]) {
+		const chunk = 2;
+		const array = [];
+		for (let i = 0; i < items.length; i += chunk) {
+			array.push(items.slice(i, i + chunk));
+		}
+		return array;
 	}
 }

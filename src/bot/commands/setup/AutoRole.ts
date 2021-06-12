@@ -6,7 +6,7 @@ import { Collections } from '@clashperk/node';
 export default class AutoRoleCommand extends Command {
 	public constructor() {
 		super('setup-auto-role', {
-			category: '_setup',
+			category: 'setup',
 			aliases: ['autorole'],
 			channel: 'guild',
 			description: {
@@ -57,19 +57,24 @@ export default class AutoRoleCommand extends Command {
 		return { tag, member, admin, coLeader, secureRole };
 	}
 
-	public async exec(message: Message, { tag, member, admin, coLeader, secureRole }: { tag?: string; member?: Role; admin?: Role; coLeader?: Role; secureRole: boolean }) {
-		const users = this.client.settings.get<string[]>('global', 'betaUsers', []);
-		const guilds = this.client.settings.get<string[]>('global', 'betaGuilds', []);
-
-		if (!guilds.includes(message.guild!.id) && !users.includes(message.author.id) && !this.client.patrons.get(message.guild!.id)) {
-			return message.util!.send('**This feature is still in beta, contact support for early access.**');
+	public async exec(
+		message: Message,
+		{ tag, member, admin, coLeader, secureRole }: { tag?: string; member?: Role; admin?: Role; coLeader?: Role; secureRole: boolean }
+	) {
+		if (!message.hasOwnProperty('token')) {
+			return message.util!.send(
+				'This command only works with slash command.',
+				{
+					files: ['https://cdn.discordapp.com/attachments/583980382089773069/853316608307232787/unknown.png']
+				}
+			);
 		}
 
 		if (!(member && admin && coLeader)) {
 			return message.util!.send('You must provide 3 valid roles!');
 		}
 
-		if ([member, admin, coLeader].filter(role => role.managed).length) {
+		if ([member, admin, coLeader].filter(role => role.managed || role.id === message.guild!.id).length) {
 			return message.util!.send('Bot roles can\'t be used.');
 		}
 

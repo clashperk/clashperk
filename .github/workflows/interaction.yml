@@ -1,0 +1,29 @@
+name: Interaction
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Command
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkouk Reposotory
+        uses: actions/checkout@v2
+        
+      - name: Use Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: NPM Install
+        run: npm i
+
+      - name: Build
+        run: npm run build
+        
+      - name: Deploy
+        run: npm run build:commands
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}

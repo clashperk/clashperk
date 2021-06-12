@@ -1,6 +1,6 @@
 import { Collections } from '@clashperk/node';
 import { Clan, Player } from 'clashofclans.js';
-import { Guild, GuildMember } from 'discord.js';
+import { Collection, Guild, GuildMember } from 'discord.js';
 import Client from '../struct/Client';
 import Queue from '../struct/Queue';
 
@@ -154,7 +154,8 @@ export class RoleManager {
 		}, [] as string[]);
 
 		// fetch guild members at once
-		await this.client.guilds.cache.get(guild)?.members.fetch({ user: user_ids, force: true });
+		const members = await this.client.guilds.cache.get(guild)?.members.fetch({ user: user_ids, force: true });
+		if (!members?.size) return null;
 
 		for (const member of data.members) {
 			const mem = flattened.find(a => a.tag === member.tag);
@@ -166,7 +167,7 @@ export class RoleManager {
 			const role = this.getHighestRole(multi, [clan.tag]) || member.role;
 
 			const reason = ActionType[member.op].replace(/%PLAYER%/, member.name);
-			await this.manageRole(mem.user, guild, role, clan.roles, reason);
+			await this.manageRole(members, mem.user, guild, role, clan.roles, reason);
 			await this.delay(250);
 		}
 
@@ -188,7 +189,8 @@ export class RoleManager {
 		}, [] as string[]);
 
 		// fetch guild members at once
-		await this.client.guilds.cache.get(guild)?.members.fetch({ user: user_ids, force: true });
+		const members = await this.client.guilds.cache.get(guild)?.members.fetch({ user: user_ids, force: true });
+		if (!members?.size) return null;
 
 		const players = (await this.client.http.detailedClanMembers(flattened))
 			.filter(res => res.ok);
@@ -202,25 +204,39 @@ export class RoleManager {
 			const role = this.getHighestRole(players.filter(en => tags.includes(en.tag)), clans.map(clan => clan.tag));
 
 			const reason = ActionType[member.op].replace(/%PLAYER%/, member.name);
-			await this.manageRole(mem.user, guild, role, clan.roles, reason);
+			await this.manageRole(members, mem.user, guild, role, clan.roles, reason);
 			await this.delay(250);
 		}
 
 		return data.members.length;
 	}
 
-	private async manageRole(user_id: string, guild_id: string, clanRole: string, roles: { [key: string]: string }, reason: string) {
-		return this.addRoles(guild_id, user_id, roles[clanRole], Object.values(roles), reason);
+	private async manageRole(
+		members: Collection<string, GuildMember>,
+		user_id: string,
+		guild_id: string,
+		clanRole: string,
+		roles: { [key: string]: string },
+		reason: string
+	) {
+		return this.addRoles(members, guild_id, user_id, roles[clanRole], Object.values(roles), reason);
 	}
 
-	public async addRoles(guild_id: string, user_id: string, role_id: string, roles: string[], reason: string) {
+	public async addRoles(
+		members: Collection<string, GuildMember>,
+		guild_id: string,
+		user_id: string,
+		role_id: string,
+		roles: string[],
+		reason: string
+	) {
 		const guild = this.client.guilds.cache.get(guild_id);
 
 		if (!role_id && !roles.length) return null;
 		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return null;
 
-		const member = guild.members.cache.get(user_id);
-		if (!member) return null;
+		if (!members.has(user_id)) return null;
+		const member = members.get(user_id)!;
 		if (member.user.bot) return null;
 
 		console.log(`MEMBER_FOUND: ${member.user.tag}`);
