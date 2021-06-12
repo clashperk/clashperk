@@ -8,13 +8,19 @@
 			"esnext.intl",
 			"esnext.symbol"
 		],
+		"paths": {
+			"#scripts/*": ["scripts/*"]
+		},
 		"pretty": true,
 		"strict": true,
 		"outDir": "dist",
 		"rootDir": "./",
+		"baseUrl": "./",
+		"sourceRoot": "/",
 		"sourceMap": true,
 		"target": "ES2020",
 		"module": "CommonJS",
+		"inlineSources": true,
 		"declaration": false,
 		"alwaysStrict": true,
 		"skipLibCheck": true,
@@ -25,11 +31,7 @@
 		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"allowSyntheticDefaultImports": true,
-		"forceConsistentCasingInFileNames": true,
-		"baseUrl": "./",
-		"paths": {
-			"#scripts/*": ["scripts/*"]
-		}
+		"forceConsistentCasingInFileNames": true
 	},
 	"include": [
 		"scripts",

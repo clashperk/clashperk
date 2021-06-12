@@ -1,3 +1,4 @@
+import { __rootdir__ } from '../root';
 import Env from 'dotenv';
 Env.config();
 
@@ -5,8 +6,9 @@ Env.config();
 import Auth from '../auth';
 Auth.config();
 
-import Client from './bot/struct/Client';
+import { RewriteFrames } from '@sentry/integrations';
 import { version } from '../package.json';
+import Client from './bot/struct/Client';
 import * as Sentry from '@sentry/node';
 
 const client = new Client({ owner: process.env.OWNER });
@@ -15,8 +17,12 @@ if (process.env.SENTRY) {
 	Sentry.init({
 		release: version,
 		dsn: process.env.SENTRY,
+		serverName: 'clashperk_bot',
 		environment: process.env.NODE_ENV ?? 'development',
-		integrations: [new Sentry.Integrations.Http({ tracing: true, breadcrumbs: true })]
+		integrations: [
+			new Sentry.Integrations.Http({ tracing: true, breadcrumbs: false }),
+			new RewriteFrames({ root: __rootdir__, prefix: '/' })
+		]
 	});
 }
 
