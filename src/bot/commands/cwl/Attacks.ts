@@ -11,7 +11,7 @@ const stars: { [key: string]: string } = {
 	3: '★★★'
 };
 
-export default class CWLAttacksComamnd extends Command {
+export default class CWLAttacksCommand extends Command {
 	public constructor() {
 		super('cwl-attacks', {
 			aliases: ['cwl-attacks'],

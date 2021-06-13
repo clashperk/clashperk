@@ -5,7 +5,7 @@ import { MessageEmbed, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import moment from 'moment';
 
-export default class CWLRoundComamnd extends Command {
+export default class CWLRoundCommand extends Command {
 	public constructor() {
 		super('cwl-round', {
 			aliases: ['round', 'cwl-round'],

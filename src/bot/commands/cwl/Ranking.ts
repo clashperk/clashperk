@@ -4,7 +4,7 @@ import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 
-export default class CWLRankingComamnd extends Command {
+export default class CWLRankingCommand extends Command {
 	public constructor() {
 		super('cwl-ranking', {
 			aliases: ['cwl-ranking', 'cwl-rank'],

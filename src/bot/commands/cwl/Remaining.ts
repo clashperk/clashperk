@@ -4,7 +4,7 @@ import { Command, Argument } from 'discord-akairo';
 import { EMOJIS } from '../../util/Emojis';
 import moment from 'moment';
 
-export default class CWLRemainingComamnd extends Command {
+export default class CWLRemainingCommand extends Command {
 	public constructor() {
 		super('cwl-remaining', {
 			aliases: ['cwl-remaining', 'cwl-missing'],

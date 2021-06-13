@@ -4,7 +4,7 @@ import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
 
-export default class CWLStatsComamnd extends Command {
+export default class CWLStatsCommand extends Command {
 	public constructor() {
 		super('cwl-stats', {
 			aliases: ['cwl-stats'],

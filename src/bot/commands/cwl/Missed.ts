@@ -4,7 +4,7 @@ import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 
-export default class CWLMissedComamnd extends Command {
+export default class CWLMissedCommand extends Command {
 	public constructor() {
 		super('cwl-missed', {
 			aliases: ['cwl-missed'],

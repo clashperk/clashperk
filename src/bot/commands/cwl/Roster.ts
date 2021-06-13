@@ -5,7 +5,7 @@ import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
 
-export default class CWLRosterComamnd extends Command {
+export default class CWLRosterCommand extends Command {
 	public constructor() {
 		super('cwl-roster', {
 			aliases: ['roster', 'cwl-roster'],

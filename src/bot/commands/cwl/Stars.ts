@@ -4,7 +4,7 @@ import { Command } from 'discord-akairo';
 import { Message, Util } from 'discord.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
 
-export default class CWLStarsComamnd extends Command {
+export default class CWLStarsCommand extends Command {
 	public constructor() {
 		super('cwl-stars', {
 			aliases: ['cwl-stars'],

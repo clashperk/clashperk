@@ -3,7 +3,7 @@ import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 
-export default class CWLGainedComamnd extends Command {
+export default class CWLGainedCommand extends Command {
 	public constructor() {
 		super('cwl-gained', {
 			aliases: ['cwl-gained'],

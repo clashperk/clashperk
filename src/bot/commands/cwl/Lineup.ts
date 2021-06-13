@@ -10,7 +10,7 @@ const states: { [key: string]: string } = {
 	warEnded: 'War Ended'
 };
 
-export default class CWLLineupComamnd extends Command {
+export default class CWLLineupCommand extends Command {
 	public constructor() {
 		super('cwl-lineup', {
 			aliases: ['cwl-lineup'],

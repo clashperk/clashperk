@@ -3,7 +3,7 @@ import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 
-export default class CWLLineupComamnd extends Command {
+export default class CWLLineupCommand extends Command {
 	public constructor() {
 		super('cwl-lineup-list', {
 			category: 'cwl_',

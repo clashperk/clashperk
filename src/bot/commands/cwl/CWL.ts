@@ -1,7 +1,7 @@
 import { Command, Flag, PrefixSupplier } from 'discord-akairo';
 import { MessageEmbed, Message } from 'discord.js';
 
-export default class CWLComamnd extends Command {
+export default class CWLCommand extends Command {
 	public constructor() {
 		super('cwl', {
 			aliases: ['cwl'],

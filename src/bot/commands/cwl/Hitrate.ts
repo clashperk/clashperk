@@ -5,7 +5,7 @@ import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Message } from 'discord.js';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 
-export default class CWLHitrateComamnd extends Command {
+export default class CWLHitrateCommand extends Command {
 	public constructor() {
 		super('cwl-hitrate', {
 			aliases: ['cwl-hitrate'],

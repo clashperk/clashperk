@@ -3,7 +3,7 @@ import { Util, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Clan, Player } from 'clashofclans.js';
 
-export default class CWLMembersComamnd extends Command {
+export default class CWLMembersCommand extends Command {
 	public constructor() {
 		super('cwl-members', {
 			aliases: ['cwl-members', 'cwl-mem'],

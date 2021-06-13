@@ -29,7 +29,7 @@ export default class LinkClanCommand extends Command {
 	public async exec(message: Message, { data, parsed }: { data: Clan; parsed: GuildMember | TextChannel }) {
 		if (parsed instanceof TextChannel) {
 			if (!message.member!.permissions.has('MANAGE_GUILD')) {
-				return message.util!.send('You are missing `Manage Server` permission to use this comamnd.');
+				return message.util!.send('You are missing `Manage Server` permission to use this command.');
 			}
 			if (!await this.enforceSecurity(message, data)) return;
 
