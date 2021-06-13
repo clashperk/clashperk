@@ -140,13 +140,13 @@ export default class LastSeenLog {
 			.setColor(cache.color)
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
-				`**[Last Seen and Last 24h Activity Score](https://clashperk.com/faq)**`,
+				`**[Last seen and last 24h activity scores](https://clashperk.com/faq)**`,
 				`\`\`\`\n\u200eLAST-ON 24H  NAME`,
 				members.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padEnd(7, ' ') : ''.padEnd(7, ' ')}  ${Math.min(99, m.count).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
 			])
-			.setFooter('Synced')
+			.setFooter(`Synced [${members.length}/${clan.members}]`)
 			.setTimestamp();
 
 		return embed;

@@ -64,7 +64,7 @@ export default class LastOnlineCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				'**[Last Seen and Last 24h Activity Score](https://clashperk.com/faq)**',
+				'**[Last seen and last 24h activity scores](https://clashperk.com/faq)**',
 				`\`\`\`\n\u200eLAST-ON 24H  NAME\n${members
 					.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padEnd(7, ' ') : ''.padEnd(7, ' ')}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n')}`,

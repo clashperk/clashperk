@@ -170,42 +170,48 @@ export default class SetupCommand extends Command {
 			)
 		);
 
-		if (fetched.length) {
-			const embeds = fetched.map(
-				clan => {
-					const heads = clan.channels.filter(en => en).join(', ');
-					const features = clan.entries; // .filter(en => en.ok && en.channel);
-					const embed = new MessageEmbed();
-					embed.setAuthor(`\u200e${clan.name} (${clan.tag})`);
-					if (heads) embed.setDescription(heads);
-					if (clan.roles.length) {
-						embed.addField('Roles', clan.roles.join(' '), true);
-					}
-					if (features.length) {
-						features.map(
-							en => embed.addField(
-								names[en.flag],
-								en.channel ? `${en.channel} ${en.role ?? ''}` : `-`, true
-							)
-						);
-					}
-
-					return embed;
-				}
-			);
-
-			for (const chunks of this.chunk(embeds)) {
-				if (message.hasOwnProperty('token')) return message.util!.send(chunks);
-				// @ts-expect-error
-				return this.client.api.channels[message.channel.id].messages.post({ data: { embeds: chunks } });
-			}
+		if (!fetched.length) {
+			return message.util!.send(`${message.guild!.name} doesn't have any clans. Why not add some?`);
 		}
 
-		return message.util!.send(`${message.guild!.name} doesn't have any clans. Why not add some?`);
+		const embeds = fetched.map(
+			clan => {
+				const channels = clan.channels.filter(en => en);
+				const roles = clan.roles.filter(en => en);
+				const features = clan.entries; // .filter(en => en.ok && en.channel);
+
+				const embed = new MessageEmbed();
+				embed.setAuthor(`\u200e${clan.name} (${clan.tag})`);
+				if (channels.length) embed.setDescription(channels.join(', '));
+				if (roles.length) {
+					embed.addField('Roles', roles.join(' '), true);
+				}
+				if (features.length) {
+					features.map(
+						en => embed.addField(
+							names[en.flag],
+							en.channel ? `${en.channel} ${en.role ?? ''}` : `-`,
+							true
+						)
+					);
+				}
+
+				return embed;
+			}
+		);
+
+		for (const chunks of this.chunk(embeds)) {
+			if (message.hasOwnProperty('token')) {
+				await message.util!.send(chunks);
+			} else {
+				// @ts-expect-error
+				await this.client.api.channels[message.channel.id].messages.post({ data: { embeds: chunks } });
+			}
+		}
 	}
 
 	private chunk<T>(items: T[]) {
-		const chunk = 2;
+		const chunk = 10;
 		const array = [];
 		for (let i = 0; i < items.length; i += chunk) {
 			array.push(items.slice(i, i + chunk));
