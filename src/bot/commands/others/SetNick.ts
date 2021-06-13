@@ -37,7 +37,7 @@ export default class SetNickNameCommand extends Command {
 		};
 
 		const player = yield {
-			type: (msg: Message, args: string) => this.client.resolver.resolvePlayer(msg, args)
+			type: (msg: Message, args: string) => this.client.resolver.resolvePlayer(msg, args || member?.id)
 		};
 
 		const txt = yield {
