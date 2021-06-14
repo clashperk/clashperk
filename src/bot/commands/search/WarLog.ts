@@ -61,7 +61,6 @@ export default class WarLogCommand extends Command {
 		}
 
 		for (const item of body.items) {
-			// console.log(item)
 			const extra = this.getWarInfo(wars, item);
 			const { clan, opponent } = item;
 			const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());

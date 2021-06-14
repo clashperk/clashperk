@@ -141,8 +141,6 @@ export class RoleManager {
 	}
 
 	private async addUniqueTypeRole(guild: string, clan: any, data: RPCFeed) {
-		console.log(`======================= UNIQUE_TYPE_AUTO_ROLE  ${data.clan.name} (${data.clan.tag}) =======================`);
-
 		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: data.members.map(mem => mem.tag) } })
 			.toArray();
@@ -176,7 +174,6 @@ export class RoleManager {
 
 	private async addSameTypeRole(guild: string, clans: any[], data: RPCFeed) {
 		const clan = clans[0];
-		console.log(`======================= SAME_TYPE_AUTO_ROLE ${data.clan.name} (${data.clan.tag}) =======================`);
 
 		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: data.members.map(mem => mem.tag) } })
@@ -239,7 +236,6 @@ export class RoleManager {
 		const member = members.get(user_id)!;
 		if (member.user.bot) return null;
 
-		console.log(`MEMBER_FOUND: ${member.user.tag}`);
 		const excluded = roles.filter(id => id !== role_id && this.checkRole(guild, guild.me!, id))
 			.filter(id => member.roles.cache.has(id));
 
@@ -247,14 +243,12 @@ export class RoleManager {
 			await member.roles.remove(excluded, reason);
 		}
 
-		console.log(`ROLE_TO_BE_ADDED: ${role_id} | EX: ${excluded.length}`);
 		if (!role_id) return null;
 		if (!guild.roles.cache.has(role_id)) return null;
 
 		const role = guild.roles.cache.get(role_id)!;
 		if (role.position > guild.me.roles.highest.position) return null;
 
-		console.log('========== ADDED_ROLE ==========');
 		if (member.roles.cache.has(role_id)) return null;
 		return member.roles.add(role, reason).catch(() => null);
 	}
