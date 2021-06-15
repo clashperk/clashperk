@@ -72,7 +72,7 @@ export default class CommandStartedListener extends Listener {
 	}
 
 	private counter(message: Message, command: Command) {
-		if ('token' in message) this.client.stats.interactions(message, command.id);
+		if ('token' in message) this.client.stats.interactions(message as any, command.id);
 		if (command.category.id === 'owner') return;
 		if (this.client.isOwner(message.author.id)) return;
 		this.client.stats.users(message.author);

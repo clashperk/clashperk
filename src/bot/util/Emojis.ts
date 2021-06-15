@@ -23,7 +23,8 @@ export const ELIXIR_TROOPS: Emojis = {
 	'Baby Dragon': '<:babydragon:696281500018278400>',
 	'Miner': '<:miner:696281535111757895>',
 	'Electro Dragon': '<:electrodragon:696281556930527352>',
-	'Yeti': '<:yeti:696281814293282857>'
+	'Yeti': '<:yeti:696281814293282857>',
+	'Dragon Rider': '<:DragonRider:854290952888909834>'
 };
 
 export const HERO_PETS: Emojis = {
@@ -82,7 +83,8 @@ export const SUPER_TROOPS: Emojis = {
 	'Super Valkyrie': '<:supervalk:789730405967462440>',
 	'Super Minion': '<:supminion:789730407930920990>',
 	'Super Wizard': '<:superwiz:789730402189049876>',
-	'Ice Hound': '<:IceHound:789730401816018945>'
+	'Ice Hound': '<:IceHound:789730401816018945>',
+	'Rocket Balloon': '<:RocketBalloon:854290612081655838>'
 };
 
 export const BUILDER_ELIXIR_TROOPS: Emojis = {

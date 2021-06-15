@@ -29,7 +29,7 @@ export default class StatsCommand extends Command {
 		let [guilds, memory] = [0, 0];
 		const values = await this.client.shard?.broadcastEval(
 			`[this.guilds.cache.size, (process.memoryUsage().heapUsed / 1024 / 1024)]`
-		);
+		).catch(() => [0, 0]);
 
 		for (const value of values ?? [this.client.guilds.cache.size, process.memoryUsage().heapUsed / 1024 / 1024]) {
 			guilds += value[0];

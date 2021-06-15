@@ -5,8 +5,8 @@ export default {
 			original: 'Barbarian',
 			minOriginalLevel: 8,
 			village: 'home',
-			duration: 72,
-			cooldown: 72,
+			duration: 259200,
+			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000
 		},
@@ -15,8 +15,8 @@ export default {
 			original: 'Goblin',
 			minOriginalLevel: 7,
 			village: 'home',
-			duration: 72,
-			cooldown: 72,
+			duration: 259200,
+			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000
 		},
@@ -25,8 +25,8 @@ export default {
 			original: 'Giant',
 			minOriginalLevel: 9,
 			village: 'home',
-			duration: 72,
-			cooldown: 72,
+			duration: 259200,
+			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000
 		},
@@ -35,8 +35,8 @@ export default {
 			original: 'Wall Breaker',
 			minOriginalLevel: 7,
 			village: 'home',
-			duration: 72,
-			cooldown: 72,
+			duration: 259200,
+			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000
 		},
@@ -45,8 +45,8 @@ export default {
 			original: 'Archer',
 			minOriginalLevel: 8,
 			village: 'home',
-			duration: 72,
-			cooldown: 72,
+			duration: 259200,
+			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000
 		},
@@ -55,8 +55,8 @@ export default {
 			original: 'Witch',
 			minOriginalLevel: 5,
 			village: 'home',
-			duration: 72,
-			cooldown: 72,
+			duration: 259200,
+			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000
 		},
@@ -65,8 +65,8 @@ export default {
 			original: 'Baby Dragon',
 			minOriginalLevel: 6,
 			village: 'home',
-			duration: 72,
-			cooldown: 72,
+			duration: 259200,
+			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000
 		},
@@ -75,8 +75,8 @@ export default {
 			original: 'Valkyrie',
 			minOriginalLevel: 7,
 			village: 'home',
-			duration: 72,
-			cooldown: 72,
+			duration: 259200,
+			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000
 		},
@@ -85,8 +85,8 @@ export default {
 			original: 'Minion',
 			minOriginalLevel: 8,
 			village: 'home',
-			duration: 72,
-			cooldown: 72,
+			duration: 259200,
+			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000
 		},
@@ -95,8 +95,8 @@ export default {
 			original: 'Wizard',
 			minOriginalLevel: 9,
 			village: 'home',
-			duration: 72,
-			cooldown: 72,
+			duration: 259200,
+			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000
 		},
@@ -105,8 +105,18 @@ export default {
 			original: 'Lava Hound',
 			minOriginalLevel: 5,
 			village: 'home',
-			duration: 72,
-			cooldown: 72,
+			duration: 259200,
+			cooldown: 259200,
+			resource: 'Dark Elixir',
+			resourceCost: 25000
+		},
+		{
+			name: 'Rocket Balloon',
+			original: 'Balloon',
+			minOriginalLevel: 8,
+			village: 'home',
+			duration: 259200,
+			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000
 		}
@@ -214,11 +224,11 @@ export default {
 				building: 'Barracks'
 			},
 			upgrade: {
-				cost: [150000, 450000, 900000, 1800000, 3500000, 7500000, 12000000, 14000000],
-				time: [43200, 86400, 172800, 259200, 345600, 691200, 1209600, 1382400],
+				cost: [150000, 450000, 900000, 1800000, 3500000, 7500000, 12000000, 14000000, 18000000],
+				time: [43200, 86400, 172800, 259200, 345600, 691200, 1209600, 1382400, 1555200],
 				resource: 'Elixir'
 			},
-			levels: [0, 0, 0, 2, 2, 3, 4, 5, 6, 6, 7, 8, 9, 9]
+			levels: [0, 0, 0, 2, 2, 3, 4, 5, 6, 6, 7, 8, 9, 10]
 		},
 		{
 			name: 'Wizard',
@@ -268,11 +278,11 @@ export default {
 				building: 'Barracks'
 			},
 			upgrade: {
-				cost: [1750000, 2500000, 4000000, 6000000, 8000000, 10000000, 15000000],
-				time: [129600, 259200, 432000, 604800, 777600, 1209600, 1382400],
+				cost: [1750000, 2500000, 4000000, 6000000, 8000000, 10000000, 15000000, 18500000],
+				time: [129600, 259200, 432000, 604800, 777600, 1209600, 1382400, 1555200],
 				resource: 'Elixir'
 			},
-			levels: [0, 0, 0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 8, 8]
+			levels: [0, 0, 0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 8, 9]
 		},
 		{
 			name: 'P.E.K.K.A',
@@ -718,11 +728,11 @@ export default {
 				building: 'Barracks'
 			},
 			upgrade: {
-				cost: [9000000, 11000000, 16000000],
-				time: [864000, 1209600, 1382400],
+				cost: [9000000, 11000000, 16000000, 19000000],
+				time: [864000, 1209600, 1382400, 1555200],
 				resource: 'Elixir'
 			},
-			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 4]
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 4, 5]
 		},
 		{
 			name: 'Stone Slammer',
@@ -741,6 +751,24 @@ export default {
 				resource: 'Elixir'
 			},
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 4, 4]
+		},
+		{
+			name: 'Dragon Rider',
+			village: 'home',
+			type: 'troop',
+			unlock: {
+				hall: 13,
+				cost: 6000000,
+				time: 950400,
+				resource: 'Elixir',
+				building: 'Barracks'
+			},
+			upgrade: {
+				cost: [16000000, 17500000],
+				time: [1296000, 1468800],
+				resource: 'Elixir'
+			},
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3]
 		},
 		{
 			name: 'Hog Glider',
