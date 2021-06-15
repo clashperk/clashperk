@@ -106,11 +106,11 @@ export default class UnitsCommand extends Command {
 			const unitsArray = category.units.map(
 				unit => {
 					const { maxLevel, level } = apiTroops
-						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
+						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
 					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
 
 					return {
-						type: unit.type,
+						type: unit.category,
 						village: unit.village,
 						name: unit.name,
 						level,
@@ -146,7 +146,7 @@ export default class UnitsCommand extends Command {
 					const hallLevel = data.townHallLevel;
 
 					const originalTroop = RAW_TROOPS_DATA.TROOPS
-						.find(un => un.name === name && un.type === 'troop' && un.village === 'home');
+						.find(un => un.name === name && un.category === 'troop' && un.village === 'home');
 
 					return {
 						village: unit.village,

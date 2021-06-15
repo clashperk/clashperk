@@ -179,15 +179,18 @@ export const leagueId = (trophies: number) => {
 
 export interface TroopJSON {
 	[key: string]: {
+		id: number;
 		name: string;
 		village: string;
-		type: string;
+		category: string;
+		subCategory: string;
 		unlock: {
 			hall: number;
 			cost: number;
 			time: number;
 			resource: string;
 			building: string;
+			buildingLevel: number;
 		};
 		upgrade: {
 			cost: number[];

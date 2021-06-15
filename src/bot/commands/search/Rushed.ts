@@ -72,7 +72,7 @@ export default class RushedCommand extends Command {
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS
 			.filter(unit => {
-				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type);
+				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
 				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
 				return Boolean(homeTroops || builderTroops);
@@ -112,10 +112,10 @@ export default class RushedCommand extends Command {
 				unit => {
 					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
 					const { maxLevel, level } = apiTroops
-						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
+						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
 
 					return {
-						type: unit.type,
+						type: unit.category,
 						village: unit.village,
 						name: unit.name,
 						level,
@@ -193,7 +193,7 @@ export default class RushedCommand extends Command {
 		const apiTroops = this.apiTroops(data);
 		const Troop = RAW_TROOPS_DATA.TROOPS
 			.filter(unit => {
-				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.type);
+				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
 				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
 				return Boolean(homeTroops || builderTroops);
@@ -203,7 +203,7 @@ export default class RushedCommand extends Command {
 		const { heroes, homeBase } = Troop.reduce((pre, unit) => {
 			if (unit.village === 'home') pre.homeBase += 1;
 			if (unit.village === 'builderBase') pre.builderBase += 1;
-			if (unit.village === 'home' && unit.type === 'hero') {
+			if (unit.village === 'home' && unit.category === 'hero') {
 				const requiredLevel = unit.levels[data.townHallLevel - 2] - (apiTroops.find(en => en.name === unit.name)?.level ?? 0);
 				pre.heroes[HEROES[unit.name]] += requiredLevel;
 			}
