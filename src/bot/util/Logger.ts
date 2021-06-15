@@ -1,20 +1,16 @@
-import chalk from 'chalk';
-import moment from 'moment';
-import util from 'util';
 import Client from '../struct/Client';
+import moment from 'moment';
+import chalk from 'chalk';
+import util from 'util';
 
-interface T {
-	[key: string]: string;
-}
-
-const COLORS: T = {
+const COLORS: { [key: string]: string } = {
 	debug: 'yellow',
 	info: 'cyan',
 	warn: 'magenta',
 	error: 'red'
 };
 
-const TAGS: T = {
+const TAGS: { [key: string]: string } = {
 	debug: '[DEBUG]',
 	info: '[INFO ]',
 	warn: '[WARN ]',

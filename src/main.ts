@@ -20,15 +20,25 @@ if (process.env.SENTRY) {
 		serverName: 'clashperk_bot',
 		environment: process.env.NODE_ENV ?? 'development',
 		integrations: [
-			new Sentry.Integrations.Http({ tracing: true, breadcrumbs: false }),
-			new RewriteFrames({ root: __rootdir__, prefix: '/' })
+			new RewriteFrames({ root: __rootdir__, prefix: '/' }),
+			new Sentry.Integrations.Http({ tracing: true, breadcrumbs: false })
 		]
 	});
 }
 
-client.on('error', (error: any) => client.logger.error(error, { label: 'CLIENT ERROR' }));
-client.on('warn', (warn: any) => client.logger.warn(warn, { label: 'CLIENT WARN' }));
+client.on('error', error => {
+	Sentry.captureException(error);
+	client.logger.error(error, { label: 'CLIENT_ERROR' });
+});
+
+client.on('warn', warn => {
+	Sentry.captureMessage(warn);
+	client.logger.warn(warn, { label: 'CLIENT_WARN' });
+});
+
+process.on('unhandledRejection', error => {
+	Sentry.captureException(error);
+	client.logger.error(error?.toString(), { label: 'UNHANDLED_REJECTION' });
+});
 
 client.start(process.env.TOKEN!);
-
-process.on('unhandledRejection', error => client.logger.error(error, { label: 'UNHANDLED REJECTION' }));
