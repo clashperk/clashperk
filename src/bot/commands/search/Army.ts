@@ -15,7 +15,7 @@ export default class ArmyCommand extends Command {
 				usage: '<url>'
 			},
 			optionFlags: ['--url'],
-			regex: /^https?:\/\/link.clashofclans.com\/en\?action=CopyArmy&army=([u|s]([0-9]{1,2}x[0-9]{1,2}-?)+)+/gi
+			regex: /^https?:\/\/link.clashofclans.com\/en\?action=CopyArmy&army=([u|s]([0-9]{1,3}x[0-9]{1,3}-?)+)+$/gi
 		});
 	}
 
@@ -37,8 +37,8 @@ export default class ArmyCommand extends Command {
 		const combination = url.searchParams.get('army');
 		if (!combination) return;
 
-		const TROOP_COMPOS = combination.match(/u([0-9]{1,2}x[0-9]{1,2}-?)*/gi)?.[0]?.substr(1)?.split(/-/) ?? [];
-		const SPELL_COMPOS = combination.match(/s([0-9]{1,2}x[0-9]{1,2}-?)*/gi)?.[0]?.substr(1)?.split(/-/) ?? [];
+		const TROOP_COMPOS = combination.match(/u([0-9]{1,3}x[0-9]{1,2}-?)*/gi)?.[0]?.substr(1)?.split(/-/) ?? [];
+		const SPELL_COMPOS = combination.match(/s([0-9]{1,3}x[0-9]{1,2}-?)*/gi)?.[0]?.substr(1)?.split(/-/) ?? [];
 
 		const TROOP_IDS = TROOP_COMPOS.map(parts => parts.split(/x/))
 			.map(parts => ({ id: Number(parts[1]), total: Number(parts[0]) }));
@@ -167,7 +167,7 @@ export default class ArmyCommand extends Command {
 			embed.addField(
 				'Troops',
 				troops.map(
-					en => `\`\u200e${en.total.toString().padStart(3, ' ')}x\u200f\` ${TROOPS[en.name]}  ${en.name.padEnd(15, ' ')}`
+					en => `\u200e\`${en.total.toString().padStart(2, ' ')}${en.total > 99 ? '' : 'x'}\` ${TROOPS[en.name]}  ${en.name}`
 				).join('\n')
 			);
 		}
@@ -176,7 +176,7 @@ export default class ArmyCommand extends Command {
 			embed.addField(
 				'Spells',
 				spells.map(
-					en => `\`\u200e${en.total.toString().padStart(3, ' ')}x\u200f\` ${SPELLS[en.name]}  ${en.name.padEnd(15, ' ')}`
+					en => `\u200e\`${en.total.toString().padStart(2, ' ')}${en.total > 99 ? '' : 'x'}\` ${SPELLS[en.name]} ${en.name}`
 				).join('\n')
 			);
 		}
@@ -185,7 +185,7 @@ export default class ArmyCommand extends Command {
 			embed.addField(
 				'Super Troops',
 				superTroops.map(
-					en => `\`\u200e${en.total.toString().padStart(3, ' ')}x\u200f\` ${SUPER_TROOPS[en.name]}  ${en.name.padEnd(15, ' ')}`
+					en => `\u200e\`${en.total.toString().padStart(2, ' ')}${en.total > 99 ? '' : 'x'}\` ${SUPER_TROOPS[en.name]}  ${en.name}`
 				).join('\n')
 			);
 		}
@@ -194,7 +194,7 @@ export default class ArmyCommand extends Command {
 			embed.addField(
 				'Seige Machines',
 				seigeMachines.map(
-					en => `\`\u200e${en.total.toString().padStart(3, ' ')}x\u200f\` ${SEIGE_MACHINES[en.name]}  ${en.name.padEnd(15, ' ')}\u200f`
+					en => `\u200e\`${en.total.toString().padStart(2, ' ')}${en.total > 99 ? '' : 'x'}\` ${SEIGE_MACHINES[en.name]}  ${en.name}`
 				).join('\n')
 			);
 		}
