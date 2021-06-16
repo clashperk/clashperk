@@ -2,7 +2,8 @@ import RAW_TROOPS from '../../util/TroopsInfo';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 import { URL } from 'url';
-import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, SEIGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis';
+import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SEIGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis';
+import { TROOPS_HOUSING } from '../../util/Constants';
 
 export default class ArmyCommand extends Command {
 	public constructor() {
@@ -153,7 +154,7 @@ export default class ArmyCommand extends Command {
 			return message.util!.send('**This army composition URL is invalid!**');
 		}
 
-		const townHallLevel = Math.max(
+		const hallByUnlockTH = Math.max(
 			...troops.map(en => en.hallLevel),
 			...spells.map(en => en.hallLevel),
 			...seigeMachines.map(en => en.hallLevel),
@@ -164,13 +165,19 @@ export default class ArmyCommand extends Command {
 			troops.reduce((pre, cur) => pre + (cur.housing * cur.total), 0),
 			spells.reduce((pre, cur) => pre + (cur.housing * cur.total), 0)
 		];
+
+		const hallByTroops = TROOPS_HOUSING.find(en => en.troops >= Math.min(totalTroop, 300))?.hall ?? 0;
+		const hallBySpells = TROOPS_HOUSING.find(en => en.spells >= Math.min(totalSpell, 11))?.hall ?? 0;
+
+		const townHallLevel = Math.max(hallByUnlockTH, hallByTroops, hallBySpells);
+
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setDescription([
 				`**TH ${townHallLevel}${townHallLevel === 14 ? '' : '+'} Army Composition**`,
 				`[Click to Copy](${url.href})`,
 				'',
-				`<:2037_3:854686652474458122> **${totalTroop}** <:2108_0:854686656762609674> **${totalSpell}**`
+				`${EMOJIS.TROOPS} **${totalTroop}** ${EMOJIS.SEPLLS} **${totalSpell}**`
 			].join('\n'));
 
 		if (troops.length) {
@@ -212,7 +219,8 @@ export default class ArmyCommand extends Command {
 		embed.setFooter(message.author.tag, message.author.displayAvatarURL({ dynamic: true }));
 		const mismatch = (troops.length + spells.length + superTroops.length + seigeMachines.length) !== (TROOP_IDS.length + SPELL_IDS.length);
 
+		const invalid = mismatch || duplicate || totalTroop > 300 || totalSpell > 11;
 		if (message.deletable && match?.length) await message.delete().catch(() => null);
-		return message.util!.send(`${(mismatch || duplicate) ? 'This URL is invalid and may not work!' : ''}`, { embed });
+		return message.util!.send((invalid) ? 'This URL is invalid and may not work!' : '', { embed });
 	}
 }
