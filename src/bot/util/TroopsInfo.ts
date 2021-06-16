@@ -1237,7 +1237,7 @@ export default {
 				cost: 5000,
 				time: 0,
 				resource: 'Dark Elixir',
-				building: 'Barbarian King',
+				building: 'Town Hall',
 				buildingLevel: 1
 			},
 			upgrade: {
@@ -1258,7 +1258,7 @@ export default {
 				cost: 10000,
 				time: 0,
 				resource: 'Dark Elixir',
-				building: 'Archer Queen',
+				building: 'Town Hall',
 				buildingLevel: 1
 			},
 			upgrade: {
@@ -1279,7 +1279,7 @@ export default {
 				cost: 2000000,
 				time: 0,
 				resource: 'Elixir',
-				building: 'Grand Warden',
+				building: 'Town Hall',
 				buildingLevel: 1
 			},
 			upgrade: {
@@ -1300,7 +1300,7 @@ export default {
 				cost: 900000,
 				time: 43200,
 				resource: 'Builder Elixir',
-				building: 'Battle Machine',
+				building: 'Builder Hall',
 				buildingLevel: 1
 			},
 			upgrade: {

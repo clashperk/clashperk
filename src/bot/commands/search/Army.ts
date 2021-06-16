@@ -15,7 +15,7 @@ export default class ArmyCommand extends Command {
 				usage: '<url>'
 			},
 			optionFlags: ['--url'],
-			regex: /https?:\/\/link.clashofclans.com\/en\?action=CopyArmy&army=([u|s]([0-9]{1,2}x[0-9]{1,2}-?)+)+/gi
+			regex: /^https?:\/\/link.clashofclans.com\/en\?action=CopyArmy&army=([u|s]([0-9]{1,2}x[0-9]{1,2}-?)+)+/gi
 		});
 	}
 
@@ -37,8 +37,27 @@ export default class ArmyCommand extends Command {
 		const combination = url.searchParams.get('army');
 		if (!combination) return;
 
-		const troopCombs = combination.match(/u([0-9]{1,2}x[0-9]{1,2}-?)*/gi)?.[0]?.substr(1)?.split(/-/) ?? [];
-		const spellCombs = combination.match(/s([0-9]{1,2}x[0-9]{1,2}-?)*/gi)?.[0]?.substr(1)?.split(/-/) ?? [];
+		const TROOP_COMPOS = combination.match(/u([0-9]{1,2}x[0-9]{1,2}-?)*/gi)?.[0]?.substr(1)?.split(/-/) ?? [];
+		const SPELL_COMPOS = combination.match(/s([0-9]{1,2}x[0-9]{1,2}-?)*/gi)?.[0]?.substr(1)?.split(/-/) ?? [];
+
+		const TROOP_IDS = TROOP_COMPOS.map(parts => parts.split(/x/))
+			.map(parts => ({ id: Number(parts[1]), total: Number(parts[0]) }));
+
+		const SPELL_IDS = SPELL_COMPOS.map(parts => parts.split(/x/))
+			.map(parts => ({ id: Number(parts[1]), total: Number(parts[0]) }));
+
+		const malformed = ![...TROOP_IDS, ...SPELL_IDS].every(en => typeof en.id === 'number' && typeof en.total === 'number');
+		if (malformed) return message.util!.send(`'**This army composition URL is invalid!**'`);
+
+		const uniqueSpells = SPELL_IDS.reduce((prev, curr) => {
+			if (!prev.includes(curr.id)) prev.push(curr.id);
+			return prev;
+		}, [] as number[]);
+		const uniqueTroops = TROOP_IDS.reduce((prev, curr) => {
+			if (!prev.includes(curr.id)) prev.push(curr.id);
+			return prev;
+		}, [] as number[]);
+		const duplicate = uniqueSpells.length !== SPELL_IDS.length || uniqueTroops.length !== TROOP_IDS.length;
 
 		const SPELLS: { [key: string]: string } = {
 			...DARK_SPELLS,
@@ -46,61 +65,144 @@ export default class ArmyCommand extends Command {
 		};
 		const TROOPS: { [key: string]: string } = {
 			...ELIXIR_TROOPS,
-			...SUPER_TROOPS,
-			...DARK_ELIXIR_TROOPS,
-			...SUPER_TROOPS,
-			...SEIGE_MACHINES
+			...DARK_ELIXIR_TROOPS
 		};
 
-		const troops = troopCombs.map(comb => comb.split(/x/))
-			.map(parts => ({
-				id: Number(parts[1]),
-				total: Number(parts[0]),
-				name: RAW_TROOPS.TROOPS.find(
-					en => en.category === 'troop' && en.id === Number(parts[1])
-				)?.name ?? RAW_TROOPS.SUPER_TROOPS.find(en => en.id === Number(parts[1]))?.name
-			}))
-			.filter(en => en.name)
-			.map(en => `${TROOPS[en.name!]} \`x${en.total}\``);
+		const troops = TROOP_IDS.filter(
+			parts => RAW_TROOPS.TROOPS.find(
+				en => en.id === parts.id && en.category === 'troop' && en.name in TROOPS
+			)
+		).map(parts => {
+			const unit = RAW_TROOPS.TROOPS.find(
+				en => en.id === parts.id && en.category === 'troop' && en.name in TROOPS
+			)!;
+			return {
+				id: parts.id,
+				total: parts.total,
+				name: unit.name,
+				category: unit.category,
+				subCategory: unit.subCategory,
+				hallLevel: unit.unlock.hall
+			};
+		});
 
-		const spells = spellCombs.map(comb => comb.split(/x/))
-			.map(parts => ({
-				id: Number(parts[1]),
-				total: Number(parts[0]),
-				name: RAW_TROOPS.TROOPS.find(
-					en => en.category === 'spell' && en.id === Number(parts[1])
-				)?.name
-			}))
-			.filter(en => en.name)
-			.map(en => `${SPELLS[en.name!]} \`x${en.total}\``);
+		const spells = SPELL_IDS.filter(
+			parts => RAW_TROOPS.TROOPS.find(
+				en => en.id === parts.id && en.category === 'spell' && en.name in SPELLS
+			)
+		).map(parts => {
+			const unit = RAW_TROOPS.TROOPS.find(
+				en => en.id === parts.id && en.category === 'spell' && en.name in SPELLS
+			)!;
+			return {
+				id: parts.id,
+				total: parts.total,
+				name: unit.name,
+				category: unit.category,
+				subCategory: unit.subCategory,
+				hallLevel: unit.unlock.hall
+			};
+		});
 
-		if (!spells.length && !troops.length) {
+		const superTroops = TROOP_IDS.filter(
+			parts => RAW_TROOPS.SUPER_TROOPS.find(
+				en => en.id === parts.id && en.name in SUPER_TROOPS
+			)
+		).map(parts => {
+			const unit = RAW_TROOPS.SUPER_TROOPS.find(
+				en => en.id === parts.id && en.name in SUPER_TROOPS
+			)!;
+			return {
+				id: parts.id,
+				total: parts.total,
+				name: unit.name,
+				category: 'troop',
+				subCategory: 'super',
+				hallLevel: RAW_TROOPS.TROOPS.find(
+					en => en.name === unit.original
+				)!.levels.findIndex(
+					en => en >= unit.minOriginalLevel
+				) + 1
+			};
+		});
+
+		const seigeMachines = TROOP_IDS.filter(
+			parts => RAW_TROOPS.TROOPS.find(
+				en => en.id === parts.id && en.category === 'troop' && en.name in SEIGE_MACHINES
+			)
+		).map(parts => {
+			const unit = RAW_TROOPS.TROOPS.find(
+				en => en.id === parts.id && en.category === 'troop' && en.name in SEIGE_MACHINES
+			)!;
+			return {
+				id: parts.id,
+				total: parts.total,
+				name: unit.name,
+				category: unit.category,
+				subCategory: unit.subCategory,
+				hallLevel: unit.unlock.hall
+			};
+		});
+
+		if (!spells.length && !troops.length && !superTroops.length && !seigeMachines.length) {
 			if (match?.length) return;
-			return message.util!.send('**Invalid Army Composition Link!**');
+			return message.util!.send('**This army composition URL is invalid!**');
 		}
 
+		const townHallLevel = Math.max(
+			...troops.map(en => en.hallLevel),
+			...spells.map(en => en.hallLevel),
+			...seigeMachines.map(en => en.hallLevel),
+			...superTroops.map(en => en.hallLevel)
+		);
+
 		const embed = this.client.util.embed()
-			.setFooter(message.author.tag, message.author.displayAvatarURL({ dynamic: true }))
 			.setColor(this.client.embed(message))
-			.setTitle('Army Composition')
-			.setURL(url.href);
+			.setDescription([
+				`**TH ${townHallLevel}${townHallLevel === 14 ? '' : '+'} Army Composition**`,
+				`[Click to Copy](${url.href})`
+			].join('\n'));
+
 		if (troops.length) {
-			embed.addField('Troops', this.chunk(troops).map(chunk => chunk.join(' ')).join('\n'));
+			embed.addField(
+				'Troops',
+				troops.map(
+					en => `\`\u200e${en.total.toString().padStart(3, ' ')}x\u200f\` ${TROOPS[en.name]}  ${en.name.padEnd(15, ' ')}`
+				).join('\n')
+			);
 		}
 
 		if (spells.length) {
-			embed.addField('Spells', this.chunk(spells).map(chunk => chunk.join(' ')).join('\n'));
+			embed.addField(
+				'Spells',
+				spells.map(
+					en => `\`\u200e${en.total.toString().padStart(3, ' ')}x\u200f\` ${SPELLS[en.name]}  ${en.name.padEnd(15, ' ')}`
+				).join('\n')
+			);
 		}
 
-		if (message.deletable && match?.length) await message.delete();
-		return message.util!.send({ embed });
-	}
-
-	private chunk<T>(items: T[], chunk = 4) {
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
+		if (superTroops.length) {
+			embed.addField(
+				'Super Troops',
+				superTroops.map(
+					en => `\`\u200e${en.total.toString().padStart(3, ' ')}x\u200f\` ${SUPER_TROOPS[en.name]}  ${en.name.padEnd(15, ' ')}`
+				).join('\n')
+			);
 		}
-		return array;
+
+		if (seigeMachines.length) {
+			embed.addField(
+				'Seige Machines',
+				seigeMachines.map(
+					en => `\`\u200e${en.total.toString().padStart(3, ' ')}x\u200f\` ${SEIGE_MACHINES[en.name]}  ${en.name.padEnd(15, ' ')}\u200f`
+				).join('\n')
+			);
+		}
+
+		embed.setFooter(message.author.tag, message.author.displayAvatarURL({ dynamic: true }));
+		const mismatch = (troops.length + spells.length + superTroops.length + seigeMachines.length) !== (TROOP_IDS.length + SPELL_IDS.length);
+
+		if (message.deletable && match?.length) await message.delete().catch(() => null);
+		return message.util!.send(`${(mismatch || duplicate) ? 'This URL is invalid and may not work!' : ''}`, { embed });
 	}
 }
