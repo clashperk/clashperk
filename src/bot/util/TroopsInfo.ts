@@ -1321,7 +1321,7 @@ export default {
 				cost: 120000,
 				time: 0,
 				resource: 'Dark Elixir',
-				building: 'Royal Champion',
+				building: 'Town Hall',
 				buildingLevel: 1
 			},
 			upgrade: {
