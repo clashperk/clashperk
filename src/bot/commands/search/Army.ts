@@ -82,7 +82,8 @@ export default class ArmyCommand extends Command {
 				name: unit.name,
 				category: unit.category,
 				subCategory: unit.subCategory,
-				hallLevel: unit.unlock.hall
+				hallLevel: unit.unlock.hall,
+				housing: unit.HousingSpace
 			};
 		});
 
@@ -100,7 +101,8 @@ export default class ArmyCommand extends Command {
 				name: unit.name,
 				category: unit.category,
 				subCategory: unit.subCategory,
-				hallLevel: unit.unlock.hall
+				hallLevel: unit.unlock.hall,
+				housing: unit.HousingSpace
 			};
 		});
 
@@ -122,7 +124,8 @@ export default class ArmyCommand extends Command {
 					en => en.name === unit.original
 				)!.levels.findIndex(
 					en => en >= unit.minOriginalLevel
-				) + 1
+				) + 1,
+				housing: unit.HousingSpace
 			};
 		});
 
@@ -140,7 +143,8 @@ export default class ArmyCommand extends Command {
 				name: unit.name,
 				category: unit.category,
 				subCategory: unit.subCategory,
-				hallLevel: unit.unlock.hall
+				hallLevel: unit.unlock.hall,
+				housing: unit.HousingSpace
 			};
 		});
 
@@ -156,11 +160,17 @@ export default class ArmyCommand extends Command {
 			...superTroops.map(en => en.hallLevel)
 		);
 
+		const [totalTroop, totalSpell] = [
+			troops.reduce((pre, cur) => pre + (cur.housing * cur.total), 0),
+			spells.reduce((pre, cur) => pre + (cur.housing * cur.total), 0)
+		];
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setDescription([
 				`**TH ${townHallLevel}${townHallLevel === 14 ? '' : '+'} Army Composition**`,
-				`[Click to Copy](${url.href})`
+				`[Click to Copy](${url.href})`,
+				'',
+				`<:2037_3:854686652474458122> **${totalTroop}** <:2108_0:854686656762609674> **${totalSpell}**`
 			].join('\n'));
 
 		if (troops.length) {
