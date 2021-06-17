@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-regexp-exec */
 import RAW_TROOPS from '../../util/TroopsInfo';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
@@ -16,7 +17,7 @@ export default class ArmyCommand extends Command {
 				usage: '<url>'
 			},
 			optionFlags: ['--url'],
-			regex: /^https?:\/\/link.clashofclans.com\/en\?action=CopyArmy&army=([u|s]([0-9]{1,3}x[0-9]{1,2}-?)+)+$/gi
+			regex: /^https?:\/\/link.clashofclans.com\/en\?action=CopyArmy&army=u(?<units>(?:[\d+x-]+))(?:s(?<spells>(?:[\d+x-]+)))*$/i
 		});
 	}
 
@@ -35,17 +36,18 @@ export default class ArmyCommand extends Command {
 		if (match?.length && !['524672414261444623', '509784317598105619'].includes(message.guild!.id)) return;
 
 		if (!url) return;
-		const combination = url.searchParams.get('army');
-		if (!combination) return;
+		const army = url.searchParams.get('army');
+		if (!army) return;
 
-		const TROOP_COMPOS = combination.match(/u([0-9]{1,3}x[0-9]{1,2}-?)*/gi)?.[0]?.substr(1)?.split(/-/) ?? [];
-		const SPELL_COMPOS = combination.match(/s([0-9]{1,3}x[0-9]{1,2}-?)*/gi)?.[0]?.substr(1)?.split(/-/) ?? [];
+		const matches = /u(?<units>(?:(?:[\d+x-])+))(?:s(?<spells>(?:[\d+x-]+)))*/i.exec(army);
+		const TROOP_COMPOS = (matches?.groups?.units as string | null)?.split('-') ?? [];
+		const SPELL_COMPOS = (matches?.groups?.spells as string | null)?.split('-') ?? [];
 
 		const TROOP_IDS = TROOP_COMPOS.map(parts => parts.split(/x/))
-			.map(parts => ({ id: Number(parts[1]), total: Number(parts[0]) }));
+			.map(parts => ({ id: parts.length > 2 ? 0 : Number(parts[1]), total: Number(parts[0]) }));
 
 		const SPELL_IDS = SPELL_COMPOS.map(parts => parts.split(/x/))
-			.map(parts => ({ id: Number(parts[1]), total: Number(parts[0]) }));
+			.map(parts => ({ id: parts.length > 2 ? 0 : Number(parts[1]), total: Number(parts[0]) }));
 
 		const malformed = ![...TROOP_IDS, ...SPELL_IDS].every(en => typeof en.id === 'number' && typeof en.total === 'number');
 		if (malformed) return message.util!.send(`'**This army composition URL is invalid!**'`);
@@ -84,7 +86,7 @@ export default class ArmyCommand extends Command {
 				category: unit.category,
 				subCategory: unit.subCategory,
 				hallLevel: unit.unlock.hall,
-				housing: unit.HousingSpace
+				housing: unit.housingSpace
 			};
 		});
 
@@ -103,7 +105,7 @@ export default class ArmyCommand extends Command {
 				category: unit.category,
 				subCategory: unit.subCategory,
 				hallLevel: unit.unlock.hall,
-				housing: unit.HousingSpace
+				housing: unit.housingSpace
 			};
 		});
 
@@ -126,7 +128,7 @@ export default class ArmyCommand extends Command {
 				)!.levels.findIndex(
 					en => en >= unit.minOriginalLevel
 				) + 1,
-				housing: unit.HousingSpace
+				housing: unit.housingSpace
 			};
 		});
 
@@ -145,7 +147,7 @@ export default class ArmyCommand extends Command {
 				category: unit.category,
 				subCategory: unit.subCategory,
 				hallLevel: unit.unlock.hall,
-				housing: unit.HousingSpace
+				housing: unit.housingSpace
 			};
 		});
 
@@ -161,13 +163,16 @@ export default class ArmyCommand extends Command {
 			...superTroops.map(en => en.hallLevel)
 		);
 
-		const [totalTroop, totalSpell] = [
+		const [totalTroop, totalSpell, totalSeige] = [
 			troops.reduce(
 				(pre, cur) => pre + (cur.housing * cur.total), 0
 			) + superTroops.reduce(
 				(pre, curr) => pre + (curr.housing * curr.total), 0
 			),
 			spells.reduce(
+				(pre, cur) => pre + (cur.housing * cur.total), 0
+			),
+			seigeMachines.reduce(
 				(pre, cur) => pre + (cur.housing * cur.total), 0
 			)
 		];
@@ -225,7 +230,7 @@ export default class ArmyCommand extends Command {
 		embed.setFooter(message.author.tag, message.author.displayAvatarURL({ dynamic: true }));
 		const mismatch = (troops.length + spells.length + superTroops.length + seigeMachines.length) !== (TROOP_IDS.length + SPELL_IDS.length);
 
-		const invalid = mismatch || duplicate || totalTroop > 300 || totalSpell > 11;
+		const invalid = mismatch || duplicate || totalTroop > 300 || totalSpell > 11 || totalSeige > 1 || superTroops.length > 2;
 		if (message.deletable && match?.length) await message.delete().catch(() => null);
 		return message.util!.send((invalid) ? 'This URL is invalid and may not work!' : '', { embed });
 	}

@@ -10,7 +10,7 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 5
+			housingSpace: 5
 		},
 		{
 			name: 'Sneaky Goblin',
@@ -22,7 +22,7 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 3
+			housingSpace: 3
 		},
 		{
 			name: 'Super Giant',
@@ -34,7 +34,7 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 10
+			housingSpace: 10
 		},
 		{
 			name: 'Super Wall Breaker',
@@ -46,7 +46,7 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 8
+			housingSpace: 8
 		},
 		{
 			name: 'Super Archer',
@@ -58,7 +58,7 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 12
+			housingSpace: 12
 		},
 		{
 			name: 'Super Witch',
@@ -70,7 +70,7 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 40
+			housingSpace: 40
 		},
 		{
 			name: 'Inferno Dragon',
@@ -82,7 +82,7 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 15
+			housingSpace: 15
 		},
 		{
 			name: 'Super Valkyrie',
@@ -94,7 +94,7 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 20
+			housingSpace: 20
 		},
 		{
 			name: 'Super Minion',
@@ -106,7 +106,7 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 12
+			housingSpace: 12
 		},
 		{
 			name: 'Super Wizard',
@@ -118,7 +118,7 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 10
+			housingSpace: 10
 		},
 		{
 			name: 'Ice Hound',
@@ -130,7 +130,7 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 40
+			housingSpace: 40
 		},
 		{
 			name: 'Rocket Balloon',
@@ -142,14 +142,14 @@ export default {
 			cooldown: 259200,
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
-			HousingSpace: 8
+			housingSpace: 8
 		}
 	],
 	TROOPS: [
 		{
 			id: 0,
 			name: 'Barbarian',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -171,7 +171,7 @@ export default {
 		{
 			id: 1,
 			name: 'Archer',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -193,7 +193,7 @@ export default {
 		{
 			id: 2,
 			name: 'Goblin',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -215,7 +215,7 @@ export default {
 		{
 			id: 3,
 			name: 'Giant',
-			HousingSpace: 5,
+			housingSpace: 5,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -237,7 +237,7 @@ export default {
 		{
 			id: 4,
 			name: 'Wall Breaker',
-			HousingSpace: 2,
+			housingSpace: 2,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -259,7 +259,7 @@ export default {
 		{
 			id: 5,
 			name: 'Balloon',
-			HousingSpace: 5,
+			housingSpace: 5,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -281,7 +281,7 @@ export default {
 		{
 			id: 6,
 			name: 'Wizard',
-			HousingSpace: 4,
+			housingSpace: 4,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -303,7 +303,7 @@ export default {
 		{
 			id: 7,
 			name: 'Healer',
-			HousingSpace: 14,
+			housingSpace: 14,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -325,7 +325,7 @@ export default {
 		{
 			id: 8,
 			name: 'Dragon',
-			HousingSpace: 20,
+			housingSpace: 20,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -347,7 +347,7 @@ export default {
 		{
 			id: 9,
 			name: 'P.E.K.K.A',
-			HousingSpace: 25,
+			housingSpace: 25,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -369,7 +369,7 @@ export default {
 		{
 			id: 10,
 			name: 'Minion',
-			HousingSpace: 2,
+			housingSpace: 2,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -391,7 +391,7 @@ export default {
 		{
 			id: 11,
 			name: 'Hog Rider',
-			HousingSpace: 5,
+			housingSpace: 5,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -413,7 +413,7 @@ export default {
 		{
 			id: 12,
 			name: 'Valkyrie',
-			HousingSpace: 8,
+			housingSpace: 8,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -435,7 +435,7 @@ export default {
 		{
 			id: 13,
 			name: 'Golem',
-			HousingSpace: 30,
+			housingSpace: 30,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -457,7 +457,7 @@ export default {
 		{
 			id: 15,
 			name: 'Witch',
-			HousingSpace: 12,
+			housingSpace: 12,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -479,7 +479,7 @@ export default {
 		{
 			id: 17,
 			name: 'Lava Hound',
-			HousingSpace: 30,
+			housingSpace: 30,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -501,7 +501,7 @@ export default {
 		{
 			id: 22,
 			name: 'Bowler',
-			HousingSpace: 6,
+			housingSpace: 6,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -523,7 +523,7 @@ export default {
 		{
 			id: 23,
 			name: 'Baby Dragon',
-			HousingSpace: 10,
+			housingSpace: 10,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -545,7 +545,7 @@ export default {
 		{
 			id: 24,
 			name: 'Miner',
-			HousingSpace: 6,
+			housingSpace: 6,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -567,7 +567,7 @@ export default {
 		{
 			id: 31,
 			name: 'Raged Barbarian',
-			HousingSpace: 2,
+			housingSpace: 2,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -589,7 +589,7 @@ export default {
 		{
 			id: 32,
 			name: 'Sneaky Archer',
-			HousingSpace: 2,
+			housingSpace: 2,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -611,7 +611,7 @@ export default {
 		{
 			id: 33,
 			name: 'Beta Minion',
-			HousingSpace: 2,
+			housingSpace: 2,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -633,7 +633,7 @@ export default {
 		{
 			id: 34,
 			name: 'Boxer Giant',
-			HousingSpace: 8,
+			housingSpace: 8,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -655,7 +655,7 @@ export default {
 		{
 			id: 35,
 			name: 'Bomber',
-			HousingSpace: 4,
+			housingSpace: 4,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -677,7 +677,7 @@ export default {
 		{
 			id: 36,
 			name: 'Super P.E.K.K.A',
-			HousingSpace: 25,
+			housingSpace: 25,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -699,7 +699,7 @@ export default {
 		{
 			id: 37,
 			name: 'Cannon Cart',
-			HousingSpace: 8,
+			housingSpace: 8,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -721,7 +721,7 @@ export default {
 		{
 			id: 38,
 			name: 'Drop Ship',
-			HousingSpace: 5,
+			housingSpace: 5,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -743,7 +743,7 @@ export default {
 		{
 			id: 41,
 			name: 'Baby Dragon',
-			HousingSpace: 10,
+			housingSpace: 10,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -765,7 +765,7 @@ export default {
 		{
 			id: 42,
 			name: 'Night Witch',
-			HousingSpace: 12,
+			housingSpace: 12,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -787,7 +787,7 @@ export default {
 		{
 			id: 51,
 			name: 'Wall Wrecker',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'siege',
@@ -809,7 +809,7 @@ export default {
 		{
 			id: 52,
 			name: 'Battle Blimp',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'siege',
@@ -831,7 +831,7 @@ export default {
 		{
 			id: 53,
 			name: 'Yeti',
-			HousingSpace: 18,
+			housingSpace: 18,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -853,7 +853,7 @@ export default {
 		{
 			id: 58,
 			name: 'Ice Golem',
-			HousingSpace: 15,
+			housingSpace: 15,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -875,7 +875,7 @@ export default {
 		{
 			id: 59,
 			name: 'Electro Dragon',
-			HousingSpace: 30,
+			housingSpace: 30,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -897,7 +897,7 @@ export default {
 		{
 			id: 62,
 			name: 'Stone Slammer',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'siege',
@@ -919,7 +919,7 @@ export default {
 		{
 			id: 65,
 			name: 'Dragon Rider',
-			HousingSpace: 25,
+			housingSpace: 25,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -941,7 +941,7 @@ export default {
 		{
 			id: 70,
 			name: 'Hog Glider',
-			HousingSpace: 5,
+			housingSpace: 5,
 			village: 'builderBase',
 			category: 'troop',
 			subCategory: 'troop',
@@ -963,7 +963,7 @@ export default {
 		{
 			id: 75,
 			name: 'Siege Barracks',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'siege',
@@ -985,7 +985,7 @@ export default {
 		{
 			id: 82,
 			name: 'Headhunter',
-			HousingSpace: 6,
+			housingSpace: 6,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'troop',
@@ -1007,7 +1007,7 @@ export default {
 		{
 			id: 87,
 			name: 'Log Launcher',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'siege',
@@ -1029,7 +1029,7 @@ export default {
 		{
 			id: 0,
 			name: 'Lightning Spell',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1051,7 +1051,7 @@ export default {
 		{
 			id: 1,
 			name: 'Healing Spell',
-			HousingSpace: 2,
+			housingSpace: 2,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1073,7 +1073,7 @@ export default {
 		{
 			id: 2,
 			name: 'Rage Spell',
-			HousingSpace: 2,
+			housingSpace: 2,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1095,7 +1095,7 @@ export default {
 		{
 			id: 3,
 			name: 'Jump Spell',
-			HousingSpace: 2,
+			housingSpace: 2,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1117,7 +1117,7 @@ export default {
 		{
 			id: 5,
 			name: 'Freeze Spell',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1139,7 +1139,7 @@ export default {
 		{
 			id: 9,
 			name: 'Poison Spell',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1161,7 +1161,7 @@ export default {
 		{
 			id: 10,
 			name: 'Earthquake Spell',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1183,7 +1183,7 @@ export default {
 		{
 			id: 11,
 			name: 'Haste Spell',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1205,7 +1205,7 @@ export default {
 		{
 			id: 16,
 			name: 'Clone Spell',
-			HousingSpace: 3,
+			housingSpace: 3,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1227,7 +1227,7 @@ export default {
 		{
 			id: 17,
 			name: 'Skeleton Spell',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1249,7 +1249,7 @@ export default {
 		{
 			id: 28,
 			name: 'Bat Spell',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1271,7 +1271,7 @@ export default {
 		{
 			id: 35,
 			name: 'Invisibility Spell',
-			HousingSpace: 1,
+			housingSpace: 1,
 			village: 'home',
 			category: 'spell',
 			subCategory: 'spell',
@@ -1293,7 +1293,7 @@ export default {
 		{
 			id: 0,
 			name: 'Barbarian King',
-			HousingSpace: 25,
+			housingSpace: 25,
 			village: 'home',
 			category: 'hero',
 			subCategory: 'hero',
@@ -1315,7 +1315,7 @@ export default {
 		{
 			id: 1,
 			name: 'Archer Queen',
-			HousingSpace: 25,
+			housingSpace: 25,
 			village: 'home',
 			category: 'hero',
 			subCategory: 'hero',
@@ -1337,7 +1337,7 @@ export default {
 		{
 			id: 2,
 			name: 'Grand Warden',
-			HousingSpace: 25,
+			housingSpace: 25,
 			village: 'home',
 			category: 'hero',
 			subCategory: 'hero',
@@ -1359,7 +1359,7 @@ export default {
 		{
 			id: 3,
 			name: 'Battle Machine',
-			HousingSpace: 25,
+			housingSpace: 25,
 			village: 'builderBase',
 			category: 'hero',
 			subCategory: 'hero',
@@ -1381,7 +1381,7 @@ export default {
 		{
 			id: 4,
 			name: 'Royal Champion',
-			HousingSpace: 25,
+			housingSpace: 25,
 			village: 'home',
 			category: 'hero',
 			subCategory: 'hero',
@@ -1403,7 +1403,7 @@ export default {
 		{
 			id: 0,
 			name: 'L.A.S.S.I',
-			HousingSpace: 20,
+			housingSpace: 20,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'pet',
@@ -1425,7 +1425,7 @@ export default {
 		{
 			id: 1,
 			name: 'Mighty Yak',
-			HousingSpace: 20,
+			housingSpace: 20,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'pet',
@@ -1447,7 +1447,7 @@ export default {
 		{
 			id: 2,
 			name: 'Electro Owl',
-			HousingSpace: 20,
+			housingSpace: 20,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'pet',
@@ -1469,7 +1469,7 @@ export default {
 		{
 			id: 3,
 			name: 'Unicorn',
-			HousingSpace: 20,
+			housingSpace: 20,
 			village: 'home',
 			category: 'troop',
 			subCategory: 'pet',
