@@ -16,7 +16,7 @@ export default class ArmyCommand extends Command {
 				usage: '<url>'
 			},
 			optionFlags: ['--url'],
-			regex: /^https?:\/\/link.clashofclans.com\/en\?action=CopyArmy&army=([u|s]([0-9]{1,3}x[0-9]{1,3}-?)+)+$/gi
+			regex: /^https?:\/\/link.clashofclans.com\/en\?action=CopyArmy&army=([u|s]([0-9]{1,3}x[0-9]{1,2}-?)+)+$/gi
 		});
 	}
 
@@ -162,8 +162,14 @@ export default class ArmyCommand extends Command {
 		);
 
 		const [totalTroop, totalSpell] = [
-			troops.reduce((pre, cur) => pre + (cur.housing * cur.total), 0),
-			spells.reduce((pre, cur) => pre + (cur.housing * cur.total), 0)
+			troops.reduce(
+				(pre, cur) => pre + (cur.housing * cur.total), 0
+			) + superTroops.reduce(
+				(pre, curr) => pre + (curr.housing * curr.total), 0
+			),
+			spells.reduce(
+				(pre, cur) => pre + (cur.housing * cur.total), 0
+			)
 		];
 
 		const hallByTroops = TROOPS_HOUSING.find(en => en.troops >= Math.min(totalTroop, 300))?.hall ?? 0;
