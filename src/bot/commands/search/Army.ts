@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/prefer-regexp-exec */
 import RAW_TROOPS from '../../util/TroopsInfo';
-import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Argument, Command } from 'discord-akairo';
+import { Message, MessageEmbed } from 'discord.js';
 import { URL } from 'url';
 import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SEIGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis';
 import { TROOPS_HOUSING } from '../../util/Constants';
@@ -24,8 +23,8 @@ export default class ArmyCommand extends Command {
 	public *args(msg: Message): unknown {
 		const url = yield {
 			flag: '--url',
-			type: 'url',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			type: Argument.validate('url', (msg, url) => (this.regex as RegExp).test(url))
 		};
 
 		return { url };
@@ -35,9 +34,8 @@ export default class ArmyCommand extends Command {
 		if (match?.length) url = new URL(match[0]);
 		if (match?.length && !['524672414261444623', '509784317598105619'].includes(message.guild!.id)) return;
 
-		if (!url) return;
-		const army = url.searchParams.get('army');
-		if (!army) return;
+		const army = url?.searchParams.get('army');
+		if (!army) return message.util!.send(`'**You must provide a valid army composition URL!**'`);
 
 		const matches = /u(?<units>(?:(?:[\d+x-])+))(?:s(?<spells>(?:[\d+x-]+)))*/i.exec(army);
 		const TROOP_COMPOS = (matches?.groups?.units as string | null)?.split('-') ?? [];
@@ -84,9 +82,9 @@ export default class ArmyCommand extends Command {
 				total: parts.total,
 				name: unit.name,
 				category: unit.category,
-				subCategory: unit.subCategory,
+				housing: unit.housingSpace,
 				hallLevel: unit.unlock.hall,
-				housing: unit.housingSpace
+				subCategory: unit.subCategory
 			};
 		});
 
@@ -179,14 +177,13 @@ export default class ArmyCommand extends Command {
 
 		const hallByTroops = TROOPS_HOUSING.find(en => en.troops >= Math.min(totalTroop, 300))?.hall ?? 0;
 		const hallBySpells = TROOPS_HOUSING.find(en => en.spells >= Math.min(totalSpell, 11))?.hall ?? 0;
-
 		const townHallLevel = Math.max(hallByUnlockTH, hallByTroops, hallBySpells);
 
-		const embed = this.client.util.embed()
+		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setDescription([
 				`**TH ${townHallLevel}${townHallLevel === 14 ? '' : '+'} Army Composition**`,
-				`[Click to Copy](${url.href})`,
+				`[Click to Copy](${url!.href})`,
 				'',
 				`${EMOJIS.TROOPS} **${totalTroop}** ${EMOJIS.SEPLLS} **${totalSpell}**`
 			].join('\n'));
