@@ -18,6 +18,6 @@ export default class FactsCommand extends Command {
 		const embed = this.client.util.embed(FACTS[Math.floor(Math.random() * FACTS.length)])
 			.setColor(this.client.embed(message))
 			.setTimestamp();
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

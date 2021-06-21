@@ -45,7 +45,7 @@ export default class EvalCommand extends Command {
 		let evaled;
 		try {
 			const hrStart = process.hrtime();
-			evaled = await (shard ? this.client.shard!.broadcastEval(code) : eval(code)); // eslint-disable-line
+			evaled = await (shard ? this.client.shard!.broadcastEval(client => code) : eval(code)); // eslint-disable-line
 			hrDiff = process.hrtime(hrStart);
 		} catch (error) {
 			return message.util!.send(`*Error while evaluating!*\`\`\`js\n${error as string}\`\`\``);

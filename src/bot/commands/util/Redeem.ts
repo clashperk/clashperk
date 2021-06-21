@@ -43,13 +43,11 @@ export default class RedeemCommand extends Command {
 					'',
 					'Make sure that you are connected and subscribed to ClashPerk.',
 					'Not subscribed yet? [Become a Patron](https://www.patreon.com/clashperk)'
-				])
-				.addField('How to connect?', [
-					'https://www.patreon.com/settings/apps'
-				])
+				].join('\n'))
+				.addField('How to connect?', 'https://www.patreon.com/settings/apps')
 				.setImage('https://i.imgur.com/APME0CX.png');
 
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		if (this.client.patrons.get(message.guild!.id)) {
@@ -90,8 +88,8 @@ export default class RedeemCommand extends Command {
 				.setDescription([
 					`Patron benefits applied to **${message.guild!.name}**`,
 					`Thank you so much for the support ${message.author.toString()}`
-				]);
-			return message.util!.send({ embed });
+				].join('\n'));
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const redeemed = this.redeemed(Object.assign(user, { entitled_amount: pledge.attributes.amount_cents / 100 }));
@@ -102,8 +100,8 @@ export default class RedeemCommand extends Command {
 				.setDescription([
 					'You\'ve already claimed your patron benefits!',
 					'If you think it\'s wrong, please [contact us](https://discord.gg/ppuppun)'
-				]);
-			return message.util!.send({ embed });
+				].join('\n'));
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		if (user && !redeemed) {
@@ -132,8 +130,8 @@ export default class RedeemCommand extends Command {
 				.setDescription([
 					`Patron benefits applied to **${message.guild!.name}**`,
 					`Thank you so much for the support ${message.author.toString()}`
-				]);
-			return message.channel.send({ embed });
+				].join('\n'));
+			return message.channel.send({ embeds: [embed] });
 		}
 	}
 

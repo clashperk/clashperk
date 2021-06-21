@@ -200,7 +200,7 @@ export default class CWLStatsCommand extends Command {
 			.setDescription(description)
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
 
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 		await msg.react('➕');
 
 		const collector = await msg.awaitReactions(
@@ -212,7 +212,7 @@ export default class CWLStatsCommand extends Command {
 		if (!collector || !collector.size) return;
 
 		return message.channel.send({
-			embed: {
+			embeds: [{
 				color: this.client.embed(message),
 				title: 'CWL Stars',
 				author: {
@@ -225,7 +225,7 @@ export default class CWLStatsCommand extends Command {
 						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ') as string}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.replace(/\`/g, '\\').padEnd(15, ' ') as string}\``)
 						.join('\n')
 				].join('\n')
-			}
+			}]
 		});
 	}
 

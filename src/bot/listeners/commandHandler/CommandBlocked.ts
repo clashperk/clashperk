@@ -2,7 +2,7 @@ import { Listener, Command } from 'discord-akairo';
 import { TextChannel, Message } from 'discord.js';
 
 interface Text {
-	[key: string]: string | null;
+	[key: string]: string | undefined;
 }
 
 const texts: Text = {
@@ -23,7 +23,7 @@ export default class CommandBlockedListener extends Listener {
 	public exec(message: Message, command: Command, reason: string) {
 		const msg = texts[reason];
 
-		if (reason === 'beta' && message.hasOwnProperty('token')) {
+		if (reason === 'beta' && message.hasOwnProperty('token') && msg) {
 			return message.util!.send(msg);
 		}
 

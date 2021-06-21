@@ -32,7 +32,7 @@ export default class FlagShowCommand extends Command {
 			return message.util!.send(`**${data.name}** is not flagged!`);
 		}
 
-		const user = await this.client.users.fetch(flag.user, false).catch(() => null);
+		const user = await this.client.users.fetch(flag.user).catch(() => null);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`)
@@ -42,10 +42,10 @@ export default class FlagShowCommand extends Command {
 				'',
 				'**Reason**',
 				`${flag.reason as string}`
-			])
+			].join('\n'))
 			.setFooter('Date')
 			.setTimestamp(flag.createdAt);
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

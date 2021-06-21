@@ -28,6 +28,6 @@ export default class ClanBadgeCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setImage(data.badgeUrls.large);
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

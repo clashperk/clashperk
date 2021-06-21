@@ -41,8 +41,8 @@ export default class TrophiesCommand extends Command {
 					return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
 				}).join('\n'),
 				'```'
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

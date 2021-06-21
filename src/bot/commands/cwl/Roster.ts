@@ -132,7 +132,7 @@ export default class CWLRosterCommand extends Command {
 						(clan, i) => `${BLUE_NUMBERS[++i]} ${this.flat(clan.tag, townHalls, body)} \u200e${clan.name as string}`
 					)
 					.join('\n')
-			]);
+			].join('\n'));
 
 		if (next) {
 			const opprank = ranks.findIndex(clan => clan.tag === next.opponent.tag);
@@ -145,14 +145,14 @@ export default class CWLRosterCommand extends Command {
 				`${EMOJIS.HASH} ${townHalls.map(th => ORANGE_NUMBERS[th]).join('')} **Clan**`,
 				`${BLUE_NUMBERS[rank + 1]} ${this.getNextRoster(next.clan, townHalls)} ${next.clan.name}`,
 				`${BLUE_NUMBERS[opprank + 1]} ${this.getNextRoster(next.opponent, townHalls)} ${next.opponent.name}`
-			]);
+			].join('\n'));
 		}
 
 		if (next?.round || rounds.length === 7) {
 			embed.addField('\u200b', `Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`);
 		}
 
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 		await msg.react(EMOJIS.HASH);
 
 		const { id } = Util.parseEmoji(EMOJIS.HASH)!;
@@ -186,10 +186,10 @@ export default class CWLRosterCommand extends Command {
 						th => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`
 					).join(' ')
 				).join('\n')
-			]);
+			].join('\n'));
 		}
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private chunk(items: { [key: string]: number }[]) {

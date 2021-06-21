@@ -50,10 +50,11 @@ export default class GuildCreateListener extends Listener {
 				.setTitle(`${EMOJIS.OWNER} ${user.tag} (${user.id})`)
 				.setFooter(`${guild.memberCount} members (Shard ${guild.shard.id})`, user.displayAvatarURL())
 				.setTimestamp();
-			return webhook.send(`**Total ${guilds} | Growth ${await this.growth()}**`, {
+			return webhook.send({
 				embeds: [embed],
 				username: this.client.user!.username,
-				avatarURL: this.client.user!.displayAvatarURL()
+				avatarURL: this.client.user!.displayAvatarURL(),
+				content: `**Total ${guilds} | Growth ${await this.growth()}**`
 			});
 		}
 	}
@@ -73,20 +74,20 @@ export default class GuildCreateListener extends Listener {
 				`To change my prefix, just type \`${prefix}prefix ?\``,
 				'',
 				`To get the full list of commands type \`${prefix}help\``
-			])
+			].join('\n'))
 			.addField('Add to Discord', [
 				'ClashPerk can be added to as many servers as you want! Please share the bot with your friends. [Invite Link](https://clashperk.com/invite)'
-			])
+			].join('\n'))
 			.addField('Support', [
 				'Join [Support Server](https://discord.gg/ppuppun) if you need any help or visit our [Website](https://clashperk.com) for a guide.',
 				'',
 				'If you like the bot, please support us on [Patreon](https://www.patreon.com/clashperk)'
-			]);
+			].join('\n'));
 
 		if (guild.systemChannelID) {
 			const channel = guild.channels.cache.get(guild.systemChannelID) as TextChannel;
 			if (channel.permissionsFor(guild.me!)!.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false)) {
-				return channel.send({ embed });
+				return channel.send({ embeds: [embed] });
 			}
 		}
 
@@ -94,7 +95,7 @@ export default class GuildCreateListener extends Listener {
 			.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
 			.filter(channel => channel.permissionsFor(channel.guild.me!)!.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false))
 			.first();
-		if (channel) return (channel as TextChannel).send({ embed });
+		if (channel) return (channel as TextChannel).send({ embeds: [embed] });
 		return this.client.logger.info(`Failed on ${guild.name} (${guild.id})`, { label: 'INTRO_MESSAGE' });
 	}
 

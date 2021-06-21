@@ -74,7 +74,7 @@ export default class LastSeenLog {
 			return this.edit(id, cache.msg, clan, members);
 		}
 
-		const message = await channel.messages.fetch(cache.message, false)
+		const message = await channel.messages.fetch(cache.message, { cache: false })
 			.catch(error => {
 				this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
 				if (error.code === 10008) {
@@ -97,7 +97,7 @@ export default class LastSeenLog {
 
 	private async sendNew(id: string, channel: TextChannel, clan: Clan, members: any[]) {
 		const embed = this.embed(clan, id, members);
-		const message = await channel.send({ embed })
+		const message = await channel.send({ embeds: [embed] })
 			.catch(() => null);
 
 		if (message) {
@@ -122,7 +122,7 @@ export default class LastSeenLog {
 	private async edit(id: string, message: Message, clan: Clan, members: any[]) {
 		const embed = this.embed(clan, id, members);
 
-		return message.edit({ embed })
+		return message.edit({ embeds: [embed] })
 			.catch(error => {
 				if (error.code === 10008) {
 					const cache = this.cached.get(id);
@@ -145,7 +145,7 @@ export default class LastSeenLog {
 				members.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padEnd(7, ' ') : ''.padEnd(7, ' ')}  ${Math.min(99, m.count).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n'),
 				'\`\`\`'
-			])
+			].join('\n'))
 			.setFooter(`Synced [${members.length}/${clan.members}]`)
 			.setTimestamp();
 

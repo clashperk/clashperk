@@ -17,10 +17,13 @@ export default class AliasListCommand extends Command {
 			.find({ guild: message.guild!.id, alias: { $exists: true } })
 			.toArray();
 
-		return message.util!.send([
-			`**${message.guild!.name} Clan Aliases**`,
-			'',
-			clans.map(clan => `• **${clan.name as string} (${clan.tag as string})**\n\u2002 **Alias:** ${clan.alias as string}`).join('\n\n')
-		], { split: true });
+		return message.util!.send({
+			split: true,
+			content: [
+				`**${message.guild!.name} Clan Aliases**`,
+				'',
+				clans.map(clan => `• **${clan.name as string} (${clan.tag as string})**\n\u2002 **Alias:** ${clan.alias as string}`).join('\n\n')
+			].join('\n')
+		});
 	}
 }

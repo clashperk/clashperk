@@ -155,7 +155,7 @@ export default class DonationLog {
 					}
 					return `\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[m.donated]} ${m.name}`;
 				}).join('\n').substring(0, 1024)
-			]);
+			].join('\n'));
 		}
 
 		if (data.received.length) {
@@ -169,15 +169,15 @@ export default class DonationLog {
 					}
 					return `\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[m.received]} ${m.name}`;
 				}).join('\n').substring(0, 1024)
-			]);
+			].join('\n'));
 		}
 
-		if (channel instanceof TextChannel) return channel.send({ embed }).catch(() => null);
+		if (channel instanceof TextChannel) return channel.send({ embeds: [embed] }).catch(() => null);
 
 		try {
 			const message = await channel.send({ embeds: [embed] });
-			if (message.channel.id !== cache.channel) {
-				await message.delete();
+			if (message.channel_id !== cache.channel) {
+				await channel.deleteMessage(message.id);
 				return this.recreateWebhook(id);
 			}
 		} catch (error) {

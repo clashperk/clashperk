@@ -1,4 +1,4 @@
-import { Message, Guild } from 'discord.js';
+import { Message, Guild, Snowflake } from 'discord.js';
 import { Command } from 'discord-akairo';
 
 export default class GuildBanCommand extends Command {
@@ -18,7 +18,7 @@ export default class GuildBanCommand extends Command {
 					match: 'content',
 					type: (msg, id) => {
 						if (!id) return null;
-						if (this.client.guilds.cache.has(id)) return this.client.guilds.cache.get(id);
+						if (this.client.guilds.cache.has(id as Snowflake)) return this.client.guilds.cache.get(id as Snowflake);
 						return { id, name: id };
 					},
 					prompt: {

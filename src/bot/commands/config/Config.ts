@@ -49,9 +49,9 @@ export default class ConfigCommand extends Command {
 					'',
 					'**Examples**',
 					this.description.examples.map((en: string) => `\`${prefix}config ${en}\``).join('\n')
-				])
+				].join('\n'))
 		];
 
-		return embeds.map(async embed => message.util!.send({ embed }));
+		return embeds.map(async embed => message.util!.send({ embeds: [embed] }));
 	}
 }

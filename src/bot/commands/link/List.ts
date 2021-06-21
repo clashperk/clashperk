@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, Util } from 'discord.js';
+import { Message, MessageEmbed, Snowflake, Util } from 'discord.js';
 import { COLLECTIONS } from '../../util/Constants';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
@@ -48,17 +48,17 @@ export default class LinkListCommand extends Command {
 			if (!prev.includes(curr.user)) prev.push(curr.user);
 			return prev;
 		}, [] as string[]);
-		await message.guild!.members.fetch({ user: user_ids });
+		await message.guild!.members.fetch({ user: user_ids as Snowflake[] });
 
 		// Players linked and on the guild.
-		const onDiscord = memberTags.filter(mem => message.guild!.members.cache.has(mem.user));
+		const onDiscord = memberTags.filter(mem => message.guild!.members.cache.has(mem.user as Snowflake));
 		// Linked to discord but not on the guild.
-		const notInDiscord = memberTags.filter(mem => mem.user_tag && !message.guild!.members.cache.has(mem.user));
+		const notInDiscord = memberTags.filter(mem => mem.user_tag && !message.guild!.members.cache.has(mem.user as Snowflake));
 		// Not linked to discord.
-		const offDiscord = data.memberList.filter(m => !notInDiscord.some(en => en.tag === m.tag) && !memberTags.some(en => en.tag === m.tag && message.guild!.members.cache.has(en.user)));
+		const offDiscord = data.memberList.filter(m => !notInDiscord.some(en => en.tag === m.tag) && !memberTags.some(en => en.tag === m.tag && message.guild!.members.cache.has(en.user as Snowflake)));
 
 		const embed = this.buildEmbed(message, data, false, onDiscord, offDiscord, notInDiscord);
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 
 		if (!onDiscord.length) return; // Let's stop right here!
 
@@ -72,7 +72,7 @@ export default class LinkListCommand extends Command {
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.id === id) {
 				const embed = this.buildEmbed(message, data, true, onDiscord, offDiscord, notInDiscord);
-				return message.util!.send({ embed });
+				return message.util!.send({ embeds: [embed] });
 			}
 		});
 
@@ -85,7 +85,7 @@ export default class LinkListCommand extends Command {
 			onDiscord.map(
 				mem => {
 					const member = data.memberList.find(m => m.tag === mem.tag)!;
-					const user = showTag ? member.tag : message.guild!.members.cache.get(mem.user)!.displayName.substring(0, 12).padStart(12, ' ');
+					const user = showTag ? member.tag : message.guild!.members.cache.get(mem.user as Snowflake)!.displayName.substring(0, 12).padStart(12, ' ');
 					return `**✓** \`\u200e${this.parseName(member.name)}${data.members <= 45 ? `\u200f\` \u200e \`` : ' '} ${user} \u200f\``;
 				}
 			).join('\n'),
@@ -105,7 +105,7 @@ export default class LinkListCommand extends Command {
 			}).map(
 				mem => `✘ \`\u200e${this.parseName(mem.name)}${data.members <= 45 ? `\u200f\` \u200e \`` : ' '} ${mem.tag.padStart(12, ' ')} \u200f\``
 			).join('\n')
-		]);
+		].join('\n'));
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))

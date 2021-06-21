@@ -1,5 +1,5 @@
 import { Command, PrefixSupplier, Argument, Flag } from 'discord-akairo';
-import { Message, MessageEmbed, GuildMember } from 'discord.js';
+import { Message, MessageEmbed, GuildMember, Snowflake } from 'discord.js';
 
 export default class LinkCommand extends Command {
 	public constructor() {
@@ -63,7 +63,7 @@ export default class LinkCommand extends Command {
 			'type': Argument.union('member', (msg, id) => {
 				if (!id) return null;
 				if (!/^\d{17,19}/.test(id)) return null;
-				return msg.guild!.members.fetch(id).catch(() => null);
+				return msg.guild!.members.fetch(id as Snowflake).catch(() => null);
 			}),
 			'flag': '--user',
 			'default': (msg: Message) => msg.member,
@@ -90,11 +90,10 @@ export default class LinkCommand extends Command {
 					'',
 					'**Examples**',
 					this.description.examples.map((en: string) => `\`${prefix}link ${en}\``).join('\n')
-				]);
+				].join('\n'));
 
 			return message.util!.send(
-				'**You must provide a valid argument to run this command, check examples and usage below.**',
-				{ embed }
+				{ embeds: [embed], content: '**You must provide a valid argument to run this command, check examples and usage below.**' }
 			);
 		}
 
@@ -117,10 +116,8 @@ export default class LinkCommand extends Command {
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
 				.setAuthor('Select a Player or Clan')
-				.setDescription([
-					...tags.map((a, i) => `**${types[i + 1]}**\n${num[i + 1]} ${a.name} (${a.tag})\n`)
-				]);
-			const msg = await message.util!.send({ embed });
+				.setDescription(tags.map((a, i) => `**${types[i + 1]}**\n${num[i + 1]} ${a.name} (${a.tag})\n`).join('\n'));
+			const msg = await message.util!.send({ embeds: [embed] });
 
 			for (const emoji of [...Object.values(num)]) {
 				await msg.react(emoji);
@@ -128,7 +125,7 @@ export default class LinkCommand extends Command {
 			}
 
 			const collector = msg.createReactionCollector(
-				(reaction, user) => [...Object.values(num)].includes(reaction.emoji.name) && user.id === message.author.id,
+				(reaction, user) => [...Object.values(num)].includes(reaction.emoji.name!) && user.id === message.author.id,
 				{ time: 45000, max: 1 }
 			);
 
@@ -142,7 +139,7 @@ export default class LinkCommand extends Command {
 				}
 
 				if (reaction.emoji.name === num[3]) {
-					return message.util!.send({ embed: { author: { name: 'Command has been cancelled.' } } });
+					return message.util!.send({ embeds: [{ author: { name: 'Command has been cancelled.' } }] });
 				}
 			});
 

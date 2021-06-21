@@ -99,8 +99,8 @@ export default class RemoveCommand extends Command {
 					'',
 					'**Examples**',
 					this.description.examples.map((en: string) => `\`${prefix}remove ${en}\``).join('\n')
-				]);
-			return message.util!.send({ embed });
+				].join('\n'));
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		if (bit instanceof TextChannel) {

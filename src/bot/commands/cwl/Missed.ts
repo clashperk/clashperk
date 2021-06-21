@@ -35,9 +35,7 @@ export default class CWLMissedCommand extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
-			return message.util!.send([
-				'504 Request Timeout'
-			]);
+			return message.util!.send('**504 Request Timeout!**');
 		}
 
 		if (!body.ok) {
@@ -53,7 +51,7 @@ export default class CWLMissedCommand extends Command {
 				)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		this.client.storage.pushWarTags(data.tag, body);
@@ -103,9 +101,10 @@ export default class CWLMissedCommand extends Command {
 			.setDescription(
 				collection.sort((a, b) => b.count - a.count)
 					.map(m => `\u200e${BLUE_NUMBERS[m.count]} ${m.name as string}`)
+					.join('\n')
 			)
 			.setFooter(`Upto Round #${round}`);
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

@@ -73,7 +73,7 @@ export default class BoostsCommand extends Command {
 			);
 		}
 
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 
 		if (message.hasOwnProperty('token')) {
 			// @ts-expect-error

@@ -46,7 +46,7 @@ export default class CWLRankingCommand extends Command {
 				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		this.client.storage.pushWarTags(data.tag, body);
@@ -148,9 +148,9 @@ export default class CWLRankingCommand extends Command {
 				ranks.sort((a, b) => b.stars - a.stars)
 					.map((clan, i) => `${BLUE_NUMBERS[++i]} \`\u200e${clan.stars.toString().padEnd(3, ' ') as string}  ${this.destruction(clan.destruction, padding)}  ${clan.name.padEnd(15, ' ') as string}\``)
 					.join('\n')
-			])
+			].join('\n'))
 			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private destruction(dest: number, padding: number) {

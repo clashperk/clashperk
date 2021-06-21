@@ -73,9 +73,9 @@ export default class OffsetCommand extends Command {
 				'',
 				'**Offset**',
 				`${offset < 0 ? '-' : '+'}${this.offset(offset * 1000)}`
-			])
+			].join('\n'))
 			.setFooter(`${message.author.tag}`, message.author.displayAvatarURL());
-		return message.util!.send(`Time zone set to **${raw.timezone.timeZoneName as string}**`, { embed });
+		return message.util!.send({ embeds: [embed], content: `Time zone set to **${raw.timezone.timeZoneName as string}**` });
 	}
 
 	private offset(seconds: number, ms = true) {

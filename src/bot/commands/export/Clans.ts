@@ -69,11 +69,12 @@ export default class ExportClansCommand extends Command {
 		);
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send(`**Clan Stats (Season ${Season.previousID})**`, {
+		return message.util!.send({
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_stats.xlsx'
-			}]
+			}],
+			content: `**Clan Stats (Season ${Season.previousID})**`
 		});
 	}
 

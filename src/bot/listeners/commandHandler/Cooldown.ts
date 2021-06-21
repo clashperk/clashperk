@@ -30,20 +30,20 @@ export default class CooldownListener extends Listener {
 			if (this.client.patrons.get(message)) {
 				embed.setDescription([
 					'The default cooldown is **3 seconds**, but as a donator you only need to wait **1 second**.'
-				]);
+				].join('\n'));
 			} else {
 				embed.setDescription([
 					`You'll be able to use this command again in **${ms(remaining, { 'long': true })}**`,
 					`The default cooldown is **${ms(cooldown, { 'long': true })}** but donators only need to wait **1 second**.`,
 					'<https://www.patreon.com/clashperk>'
-				]);
+				].join('\n'));
 			}
 
 			if ((message.channel as TextChannel).permissionsFor(this.client.user!)?.has('EMBED_LINKS')) {
-				return message.channel.send({ embed });
+				return message.channel.send({ embeds: [embed] });
 			}
 
-			return message.channel.send([`**${embed.author!.name!}**`, `${embed.description!}`]);
+			return message.channel.send(`**${embed.author!.name!}**\n${embed.description!}`);
 		}
 	}
 }

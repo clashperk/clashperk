@@ -1,4 +1,4 @@
-import { MessageEmbed, TextChannel, Message } from 'discord.js';
+import { MessageEmbed, TextChannel, Message, Snowflake } from 'discord.js';
 import { version } from '../../../../package.json';
 import { Collections } from '@clashperk/node';
 import { Command } from 'discord-akairo';
@@ -28,15 +28,15 @@ export default class StatsCommand extends Command {
 	public async exec(message: Message, { more }: { more: boolean }) {
 		let [guilds, memory] = [0, 0];
 		const values = await this.client.shard?.broadcastEval(
-			`[this.guilds.cache.size, (process.memoryUsage().heapUsed / 1024 / 1024)]`
-		).catch(() => [0, 0]);
+			client => [client.guilds.cache.size, (process.memoryUsage().heapUsed / 1024 / 1024)]
+		);
 
-		for (const value of values ?? [this.client.guilds.cache.size, process.memoryUsage().heapUsed / 1024 / 1024]) {
+		for (const value of values ?? [[this.client.guilds.cache.size, process.memoryUsage().heapUsed / 1024 / 1024]]) {
 			guilds += value[0];
 			memory += value[1];
 		}
 
-		const owner = await this.client.users.fetch(this.client.ownerID as string);
+		const owner = await this.client.users.fetch(this.client.ownerID as Snowflake);
 		const grpc: any = await new Promise(resolve => this.client.rpc.stats({}, (err: any, res: any) => {
 			if (res) resolve(JSON.parse(res?.data));
 			else resolve({ heapUsed: 0 });
@@ -60,9 +60,9 @@ export default class StatsCommand extends Command {
 			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL({ dynamic: true }));
 
 		if (message.channel.type === 'dm' || !(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'])) {
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 		await msg.react('🗑');
 		let react;
 		try {

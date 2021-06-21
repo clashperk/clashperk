@@ -55,7 +55,7 @@ export default class CWLLineupCommand extends Command {
 				)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		return this.rounds(message, body, data);
@@ -90,7 +90,7 @@ export default class CWLLineupCommand extends Command {
 						linups.map(
 							(lineup, i) => `\u200e${BLUE_NUMBERS[i + 1]} \u200b\u2002${lineup.map(en => `\`${en.t.toString().padStart(2, ' ')} ${(en.h).toString().padStart(4, ' ')}\u200f\``).join(' \u2002vs\u2002 ')}`
 						).join('\n')
-					]);
+					].join('\n'));
 
 					embed.setFooter(`Round #${rounds.findIndex(en => en.warTags.includes(warTag)) + 1} (${states[data.state]})`);
 					chunks.push({ state: data.state, embed });
@@ -103,11 +103,11 @@ export default class CWLLineupCommand extends Command {
 			? chunks.find(c => c.state === 'preparation') || chunks.slice(-1)[0]
 			: chunks.slice(-2).reverse()[0];
 
-		const msg = await message.util!.send({ embed: data.embed });
+		const msg = await message.util!.send({ embeds: [data.embed] });
 		await msg.react('➕');
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['➕'].includes(reaction.emoji.name!) && user.id === message.author.id,
 			{ time: 60000, max: 1 }
 		);
 

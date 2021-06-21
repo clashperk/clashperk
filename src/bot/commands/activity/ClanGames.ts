@@ -89,10 +89,10 @@ export default class ClanGamesCommand extends Command {
 					})
 					.join('\n'),
 				'```'
-			])
+			].join('\n'))
 			.setFooter(`Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`, this.client.user!.displayAvatarURL());
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private padStart(num: number) {

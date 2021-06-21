@@ -37,7 +37,7 @@ export default class WarLogCommand extends Command {
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
-			return message.util!.send({ embed: EMBEDS.CLAN_LIMIT(prefix) });
+			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
 		}
 
 		const dbUser = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
@@ -46,7 +46,7 @@ export default class WarLogCommand extends Command {
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
 		if (!clan.verified && !Util.verifyClan(code, data, dbUser?.entries ?? [])) {
 			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const permission = missingPermissions(channel, this.client.user as User, this.clientPermissions as PermissionString[]);
@@ -81,8 +81,8 @@ export default class WarLogCommand extends Command {
 				'',
 				'**Live Clan War Log**',
 				'Enabled'
-			])
+			].join('\n'))
 			.setColor(this.client.embed(message));
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

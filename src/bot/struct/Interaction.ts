@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { APIInteraction, InteractionType, APIApplicationCommandInteractionData, APIApplicationCommandInteractionDataOption } from 'discord-api-types/v8';
-import { TextChannel, User, Guild, GuildMember, APIMessage, Collection, MessageOptions, MessageAdditions, StringResolvable, Message, WebhookClient, SnowflakeUtil } from 'discord.js';
+import { TextChannel, User, Guild, GuildMember, APIMessage, Collection, MessageOptions, Message, WebhookClient, SnowflakeUtil, Snowflake } from 'discord.js';
 import Client from './Client';
 
 export class CommandUtil {
@@ -34,8 +34,8 @@ export class CommandUtil {
 		// TODO
 	}
 
-	public async send(content: StringResolvable, options?: MessageOptions | MessageAdditions): Promise<Message | Message[]> {
-		const transformedOptions = (this.constructor as typeof CommandUtil).transformOptions(content, options);
+	public async send(options: string | MessageOptions): Promise<Message | Message[]> {
+		const transformedOptions = (this.constructor as typeof CommandUtil).transformOptions(options);
 		if (!this.lastResponse?.deleted && this.shouldEdit) {
 			return this.message.edit(this.lastResponse!.id, transformedOptions);
 		}
@@ -45,22 +45,17 @@ export class CommandUtil {
 		return sent;
 	}
 
-	public static transformOptions(content: any, options?: any) {
-		if (content?.hasOwnProperty('embed')) {
-			content.embeds = [content.embed];
-		} else if (options?.hasOwnProperty('embed')) {
-			options.embeds = [options.embed];
-		}
-
-		const transformedOptions: any = APIMessage.transformOptions(content, options, {}, true);
-		if (!transformedOptions.content) transformedOptions.content = '\u200b';
-		if (!transformedOptions.embeds?.length) transformedOptions.embeds = [];
+	public static transformOptions(options: string | MessageOptions) {
+		const transformedOptions = typeof options === 'string' ? { content: options } : { ...options };
+		// @ts-expect-error
+		if (!transformedOptions.content) transformedOptions.content = null;
+		if (!transformedOptions.embeds) transformedOptions.embeds = [];
 		return transformedOptions;
 	}
 }
 
 export default class Interaction {
-	public id: string;
+	public id: Snowflake;
 	public guild: Guild;
 	public author!: User;
 	public token: string;

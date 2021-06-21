@@ -33,7 +33,7 @@ export default class WarSummaryCommand extends Command {
 			embed.addField(header, [
 				`${this.getLeaderBoard(data.clan, data.opponent, data.teamSize)}`,
 				'\u200b'
-			]);
+			].join('\n'));
 		}
 
 		if (!embed.length) return message.util!.send('Clans are not in war!');
@@ -48,9 +48,9 @@ export default class WarSummaryCommand extends Command {
 			.map(
 				(embed, index) => {
 					if (index === 0) {
-						return message.util!.send({ embed });
+						return message.util!.send({ embeds: [embed] });
 					}
-					return message.channel.send({ embed });
+					return message.channel.send({ embeds: [embed] });
 				}
 			);
 	}

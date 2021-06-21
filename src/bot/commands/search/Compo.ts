@@ -52,11 +52,11 @@ export default class ThCompoCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setColor(this.client.embed(message))
 			.setThumbnail(data.badgeUrls.small)
-			.setDescription(townHalls.map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`))
+			.setDescription(townHalls.map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`).join('\n'))
 			.setFooter(`Avg: ${avg.toFixed(2)} [${data.members}/50]`, `https://cdn.discordapp.com/emojis/${id!}.png?v=1`);
 
 		const diff = process.hrtime(hrStart);
 		this.client.logger.debug(`Executed in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)}ms`, { label: 'COMPO' });
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

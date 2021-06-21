@@ -58,43 +58,47 @@ export default class DebugCommand extends Command {
 			? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
 			: { cross: '❌', tick: '☑️', none: '⬛' };
 
-		return message.util!.send([
-			`**${this.client.user!.username} Debug Menu**`,
-			'',
-			'**Command Prefix',
-			`**${prefix}`,
-			'**Slash Command**',
-			`${interaction ? 'Enabled' : 'Disabled'}`,
-			'',
-			'**Server ID**',
-			`${message.guild!.id}`,
-			'**Shard ID**',
-			`[${message.guild!.shard.id} / ${this.client.shard!.count}]`,
-			'**Channel ID**',
-			`${message.channel.id}`,
-			'',
-			'**Channel Permissions**',
-			permissions.map(perm => {
-				const hasPerm = channel.permissionsFor(message.guild!.me!)!.has(perm);
-				return `${hasPerm ? emojis.tick : emojis.cross} ${this.fixName(perm)}`;
-			}).join('\n'),
-			'',
-			'**Slash Command Permission**',
-			`${UEE_FOR_SLASH ? emojis.tick : emojis.cross} Use External Emojis ${UEE_FOR_SLASH ? '' : '(for @everyone)'}`,
-			'',
-			`**Loop Time ${(rpc.clans && rpc.players && rpc.wars) ? '' : '(Processing...)'}**`,
-			`${emojis.none} \` ${'CLANS'.padStart(7, ' ')} \` \` ${'WARS'.padStart(7, ' ')} \` \` ${'PLAYERS'} \``,
-			`${emojis.tick} \` ${this.fixTime(rpc.clans, '2m').padStart(7, ' ')} \` \` ${this.fixTime(rpc.wars, '10m').padStart(7, ' ')} \` \` ${this.fixTime(rpc.players, '1h').padStart(7, ' ')} \``,
-			'',
-			'**Clan Status and Player Loop Info**',
-			`${emojis.none} \`\u200e ${'CLAN NAME'.padEnd(15, ' ')} \u200f\` \`\u200e ${'UPDATED'} \u200f\` \`\u200e ${'WAR LOG'} \u200f\``,
-			clans.map(clan => {
-				const lastRan = clan.lastRan ? ms(Date.now() - clan.lastRan.getTime()) : 'Unknown';
-				const warLog = fetched.find(res => res.tag === clan.tag)?.isWarLogPublic;
-				const sign = (clan.active && !clan.paused && clan.flag > 0 && warLog) ? emojis.tick : emojis.cross;
-				return `${sign} \`\u200e ${clan.name.padEnd(15, ' ')} \u200f\` \`\u200e ${lastRan.padStart(3, ' ')} ago \u200f\` \`\u200e ${(warLog ? 'Public' : 'Private').padStart(7, ' ')} \u200f\``;
-			}).join('\n')
-		], { split: true, allowedMentions: { parse: ['users'] } });
+		return message.util!.send({
+			split: true,
+			allowedMentions: { parse: ['users'] },
+			content: [
+				`**${this.client.user!.username} Debug Menu**`,
+				'',
+				'**Command Prefix',
+				`**${prefix}`,
+				'**Slash Command**',
+				`${interaction ? 'Enabled' : 'Disabled'}`,
+				'',
+				'**Server ID**',
+				`${message.guild!.id}`,
+				'**Shard ID**',
+				`[${message.guild!.shard.id} / ${this.client.shard!.count}]`,
+				'**Channel ID**',
+				`${message.channel.id}`,
+				'',
+				'**Channel Permissions**',
+				permissions.map(perm => {
+					const hasPerm = channel.permissionsFor(message.guild!.me!)!.has(perm);
+					return `${hasPerm ? emojis.tick : emojis.cross} ${this.fixName(perm)}`;
+				}).join('\n'),
+				'',
+				'**Slash Command Permission**',
+				`${UEE_FOR_SLASH ? emojis.tick : emojis.cross} Use External Emojis ${UEE_FOR_SLASH ? '' : '(for @everyone)'}`,
+				'',
+				`**Loop Time ${(rpc.clans && rpc.players && rpc.wars) ? '' : '(Processing...)'}**`,
+				`${emojis.none} \` ${'CLANS'.padStart(7, ' ')} \` \` ${'WARS'.padStart(7, ' ')} \` \` ${'PLAYERS'} \``,
+				`${emojis.tick} \` ${this.fixTime(rpc.clans, '2m').padStart(7, ' ')} \` \` ${this.fixTime(rpc.wars, '10m').padStart(7, ' ')} \` \` ${this.fixTime(rpc.players, '1h').padStart(7, ' ')} \``,
+				'',
+				'**Clan Status and Player Loop Info**',
+				`${emojis.none} \`\u200e ${'CLAN NAME'.padEnd(15, ' ')} \u200f\` \`\u200e ${'UPDATED'} \u200f\` \`\u200e ${'WAR LOG'} \u200f\``,
+				clans.map(clan => {
+					const lastRan = clan.lastRan ? ms(Date.now() - clan.lastRan.getTime()) : 'Unknown';
+					const warLog = fetched.find(res => res.tag === clan.tag)?.isWarLogPublic;
+					const sign = (clan.active && !clan.paused && clan.flag > 0 && warLog) ? emojis.tick : emojis.cross;
+					return `${sign} \`\u200e ${clan.name.padEnd(15, ' ')} \u200f\` \`\u200e ${lastRan.padStart(3, ' ')} ago \u200f\` \`\u200e ${(warLog ? 'Public' : 'Private').padStart(7, ' ')} \u200f\``;
+				}).join('\n')
+			].join('\n')
+		});
 	}
 
 	private fixTime(num: number, total: string) {

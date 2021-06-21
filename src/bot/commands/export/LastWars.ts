@@ -17,7 +17,7 @@ export default class LastWarsExport extends Command {
 	public async exec(message: Message) {
 		if (!this.client.patrons.get(message)) {
 			return message.channel.send(
-				{ embed: { description: '[Become a Patron](https://www.patreon.com/clashperk) to use this command.' } }
+				{ embeds: [{ description: '[Become a Patron](https://www.patreon.com/clashperk) to use this command.' }] }
 			);
 		}
 
@@ -102,7 +102,8 @@ export default class LastWarsExport extends Command {
 		);
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send(`**Last Played Wars**`, {
+		return message.util!.send({
+			content: `**Last Played Wars**`,
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'last_played_wars.xlsx'

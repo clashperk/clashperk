@@ -73,7 +73,7 @@ export default class CWLCommand extends Command {
 				const embed = new MessageEmbed()
 					.setColor(this.client.embed(message))
 					.setAuthor('Command List', this.client.user!.displayAvatarURL())
-					.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
+					.setDescription(`To view more details for a command, do \`${prefix}help <command>\``);
 				const commands = this.handler.categories.get('cwl')!
 					.values();
 				embed.addField('__**CWL**__', [
@@ -85,7 +85,7 @@ export default class CWLCommand extends Command {
 							return `**\`${prefix}${command.id.replace(/-/g, '\u2002')}\`**\n${description}`;
 						})
 						.join('\n')
-				]);
+				].join('\n'));
 
 				return embed;
 			}

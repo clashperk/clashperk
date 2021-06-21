@@ -38,7 +38,7 @@ export default class CurrentWarCommand extends Command {
 			} else {
 				embed.setDescription('Private WarLog');
 			}
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const body = await this.client.http.currentClanWar(data.tag);
@@ -50,7 +50,7 @@ export default class CurrentWarCommand extends Command {
 			} else {
 				embed.setDescription('Not in War');
 			}
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		if (body.state === 'preparation') {
@@ -64,7 +64,7 @@ export default class CurrentWarCommand extends Command {
 				'',
 				'**War Size**',
 				`${body.teamSize} vs ${body.teamSize}`
-			]);
+			].join('\n'));
 		}
 
 		if (['warEnded', 'inWar'].includes(body.state)) {
@@ -83,7 +83,7 @@ export default class CurrentWarCommand extends Command {
 			return chunks.map(async chunk => message.util!.send(chunk));
 		}
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private count(members: ClanWarMember[] = []) {

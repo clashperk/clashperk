@@ -42,7 +42,7 @@ export default class ColorCommand extends Command {
 
 		this.client.settings.set(message.guild!, 'color', color);
 		return message.util!.send({
-			embed: { description: 'Display color updated.', color }
+			embeds: [{ description: 'Display color updated.', color }]
 		});
 	}
 }

@@ -1,4 +1,4 @@
-import { Message, GuildMember, Guild } from 'discord.js';
+import { Message, GuildMember, Guild, Snowflake } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import { Collections } from '@clashperk/node';
 import { status } from '../util/Constants';
@@ -102,8 +102,8 @@ export default class Resolver {
 		if (!args) return message.member;
 		const id = /<@!?(\d{17,19})>/.exec(args)?.[1] ?? /^\d{17,19}/.exec(args)?.[0];
 		if (id) {
-			if (message.guild!.members.cache.has(id)) return message.guild!.members.cache.get(id);
-			return message.guild!.members.fetch(id).catch(() => null);
+			if (message.guild!.members.cache.has(id as Snowflake)) return message.guild!.members.cache.get(id as Snowflake);
+			return message.guild!.members.fetch(id as Snowflake).catch(() => null);
 		}
 		return /^#?[0289CGJLOPQRUVY]+$/gi.test(args);
 	}
@@ -122,7 +122,7 @@ export default class Resolver {
 	}
 
 	public updateUserTag(guild: Guild, user_id: string) {
-		const member = guild.members.cache.get(user_id);
+		const member = guild.members.cache.get(user_id as Snowflake);
 		if (!member) return null;
 		return this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
 			{ user: member.user.id },

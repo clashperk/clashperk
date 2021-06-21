@@ -1,5 +1,6 @@
 import { TextChannel, Message } from 'discord.js';
 import { Command } from 'discord-akairo';
+import Client from '../../struct/Client';
 
 export default class ReloadCommand extends Command {
 	public constructor() {
@@ -15,11 +16,16 @@ export default class ReloadCommand extends Command {
 
 	public async exec(message: Message) {
 		const reloaded = await this.client.shard!.broadcastEval(
-			`
-			this.commandHandler.removeAll() && this.commandHandler.loadAll();
-			this.listenerHandler.removeAll() && this.listenerHandler.loadAll();
-			this.inhibitorHandler.removeAll() && this.inhibitorHandler.loadAll();
-			`
+			// @ts-expect-error
+			(client: Client) => {
+				client.commandHandler.removeAll();
+				client.commandHandler.loadAll();
+				client.listenerHandler.removeAll();
+				client.listenerHandler.loadAll();
+				client.inhibitorHandler.removeAll();
+				client.inhibitorHandler.loadAll();
+				return 0;
+			}
 		).catch(() => null);
 
 		if (reloaded) {
@@ -31,9 +37,9 @@ export default class ReloadCommand extends Command {
 				description: `${commands} commands, ${listeners} listeners and ${inhibitors} inhibitors`
 			};
 			if ((message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has('EMBED_LINKS')) {
-				return message.util!.send({ embed });
+				return message.util!.send({ embeds: [embed] });
 			}
-			return message.util!.send([`**${embed.title}**`, `${embed.description}`]);
+			return message.util!.send(`**${embed.title}**\n${embed.description}`);
 		}
 	}
 }

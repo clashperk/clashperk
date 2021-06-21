@@ -82,7 +82,7 @@ export const EMBEDS = {
 			'[Become a Patron](https://www.patreon.com/clashperk)',
 			'',
 			`Use \`${prefix}setup\` command to view all linked clans and \`${prefix}help remove\` to know about the process of removing any clan.`
-		]),
+		].join('\n')),
 
 	VERIFY_CLAN: (clan: Clan, code: string, prefix: string) => new MessageEmbed()
 		.setTitle(`${clan.name} (${clan.tag})`)
@@ -90,21 +90,21 @@ export const EMBEDS = {
 		.setDescription([
 			`${clan.description || 'No Description'}`,
 			'\u200b'
-		])
+		].join('\n'))
 		.addField('Verify Your Clan', [
 			'It\'s a security feature of the bot to ensure you are a **Leader** or **Co-Leader** in the clan.',
 			'',
 			'*You can use any of the following methods.*'
-		])
+		].join('\n'))
 		.addField('• Simplified', [
 			'Verify your Player account using Player [API Token](https://link.clashofclans.com/?action=OpenMoreSettings) and run this command again.',
 			`Type \`${prefix}verify\` to know more about the Player API Token. Run \`${prefix}verify #PLAYER_TAG TOKEN\` to quickly verify your player account.`,
 			'\u200b'
-		], true)
+		].join('\n'), true)
 		.addField('• Manual', [
 			`Add the code \`${code}\` at the end of the [Clan Description](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}) and run this command again.`,
 			'If you\'ve already added the code, wait at least 2 minutes before you run the command again and you can remove the code after verification.'
-		], true)
+		].join('\n'), true)
 };
 
 export function missingPermissions(channel: TextChannel, user: User, permissions: string[]) {

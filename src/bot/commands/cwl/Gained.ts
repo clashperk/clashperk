@@ -33,9 +33,7 @@ export default class CWLGainedCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
-			return message.util!.send([
-				'504 Request Timeout'
-			]);
+			return message.util!.send('**504 Request Timeout!**');
 		}
 
 		if (!body.ok) {
@@ -47,7 +45,7 @@ export default class CWLGainedCommand extends Command {
 				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		this.client.storage.pushWarTags(data.tag, body);
@@ -113,9 +111,9 @@ export default class CWLGainedCommand extends Command {
 						return `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ') as string}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ') as string}\``;
 					})
 					.join('\n')
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }
 

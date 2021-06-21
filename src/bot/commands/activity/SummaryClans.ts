@@ -76,7 +76,6 @@ export default class ClanSummaryCommand extends Command {
 
 		if (!OBJ.DONATED.length) return message.util!.send('**No data available at this moment!**');
 
-		const interaction = message.hasOwnProperty('token');
 		const fields = Object.values(OBJ);
 		for (const field of Array(3).fill(0).map(() => fields.splice(0, 2))) {
 			const embed = new MessageEmbed();
@@ -84,33 +83,23 @@ export default class ClanSummaryCommand extends Command {
 				data.sort((a, b) => b.value - a.value);
 				const pad = data[0].value.toLocaleString().length + 1;
 
-				embed.addField(data[0].key, [
-					data.slice(0, 15)
-						.map((en, i) => {
-							const num = en.value.toLocaleString().padStart(pad, ' ');
-							return `${BLUE_NUMBERS[++i]} \`\u200e${num} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``;
-						})
-						.join('\n')
-				], interaction);
+				embed.addField(
+					data[0].key, [
+						data.slice(0, 15)
+							.map((en, i) => {
+								const num = en.value.toLocaleString().padStart(pad, ' ');
+								return `${BLUE_NUMBERS[++i]} \`\u200e${num} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``;
+							})
+							.join('\n')
+					].join('\n'),
+					true
+				);
 			}
 
 			embeds.push(embed);
 		}
 
-		if (!interaction) {
-			const length = embeds.reduce((prev, curr) => curr.length + prev, 0);
-			if (length > 6000) {
-				return embeds.map(
-					(embed, num) => message.channel.send(
-						num === 0 ? `**Clan Summary (Season ${season!})**` : '', { embed }
-					)
-				);
-			}
-			return message.util!.send(`**Clan Summary (Season ${season})**`, {
-				embed: { fields: embeds.map(embed => embed.fields).flat() }
-			});
-		}
-		return message.util!.send(`**Clan Summary (Season ${season})**`, embeds);
+		return message.util!.send({ embeds });
 	}
 
 	private async getWars(tag: string, season: string): Promise<{ result: boolean; stars: number[] }[]> {

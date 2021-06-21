@@ -31,14 +31,16 @@ export default class HitrateCommand extends Command {
 		const body: ClanWar = await this.client.http.currentClanWar(data.tag);
 		if (!body.ok) return;
 		if (['inWar', 'warEnded'].includes(body.state)) {
-			return message.util!.send([
-				`**${body.clan.name} vs ${body.opponent.name}**`,
-				'',
-				parseHits(body.clan, body.opponent, stars).map(d => {
-					const vs = `${ORANGE_NUMBERS[d.clan.townHall]}${EMOJIS.VS}${ORANGE_NUMBERS[d.clan.defTownHall]}`;
-					return `\`\u200e ${d.clan.rate.toFixed().padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${vs} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.rate.toFixed().padStart(3, ' ')}% \u200f\``;
-				}).join('\n')
-			], { split: true });
+			return message.util!.send({
+				split: true, content: [
+					`**${body.clan.name} vs ${body.opponent.name}**`,
+					'',
+					parseHits(body.clan, body.opponent, stars).map(d => {
+						const vs = `${ORANGE_NUMBERS[d.clan.townHall]}${EMOJIS.VS}${ORANGE_NUMBERS[d.clan.defTownHall]}`;
+						return `\`\u200e ${d.clan.rate.toFixed().padStart(3, ' ')}% ${`${d.clan.stars}/${d.clan.attacks}`.padStart(5, ' ')} \u200f\`\u200e ${vs} \`\u200e ${`${d.opponent.stars}/${d.opponent.attacks}`.padStart(5, ' ')} ${d.opponent.rate.toFixed().padStart(3, ' ')}% \u200f\``;
+					}).join('\n')
+				].join('\n')
+			});
 		}
 	}
 }

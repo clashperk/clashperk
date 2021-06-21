@@ -66,8 +66,8 @@ export default class Export extends Command {
 				'',
 				'**Examples**',
 				this.description.examples.map((en: string) => `\`${prefix}export ${en}\``).join('\n')
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

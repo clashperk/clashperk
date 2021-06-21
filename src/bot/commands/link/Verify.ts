@@ -68,7 +68,7 @@ export default class VerifyPlayerCommand extends Command {
 			'- Scroll down and find **API Token**',
 			'- Tap **Show** and then **Copy**',
 			'https://i.imgur.com/8dsoUB8.jpg'
-		]);
+		].join('\n'));
 	}
 
 	public async exec(message: Message, { tag, token }: { tag?: string; token: string }) {

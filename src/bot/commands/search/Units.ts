@@ -42,11 +42,11 @@ export default class UnitsCommand extends Command {
 		const embed = this.embed(data, true);
 		embed.setColor(this.client.embed(message))
 			.setDescription(`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`);
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 
 		await msg.react('🔥');
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['🔥'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['🔥'].includes(reaction.emoji.name!) && user.id === message.author.id,
 			{ time: 60000, max: 1 }
 		);
 
@@ -55,7 +55,7 @@ export default class UnitsCommand extends Command {
 				const embed = this.embed(data, false);
 				embed.setColor(this.client.embed(message));
 				embed.setDescription(`Units for TH${data.townHallLevel} ${data.builderHallLevel ? `and BH${data.builderHallLevel}` : ''}`);
-				return msg.edit({ embed });
+				return msg.edit({ embeds: [embed] });
 			}
 		});
 
@@ -171,7 +171,7 @@ export default class UnitsCommand extends Command {
 						}).join(' ')
 					)
 					.join('\n')
-			]);
+			].join('\n'));
 		}
 
 		return embed;

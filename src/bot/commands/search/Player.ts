@@ -88,19 +88,19 @@ export default class PlayerCommand extends Command {
 			)
 			.setDescription([
 				`${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${EMOJIS.EXP} **${data.expLevel}** ${EMOJIS.TROPHY} **${data.trophies}** ${EMOJIS.WAR_STAR} **${data.warStars}**`
-			]);
+			].join('\n'));
 		embed.addField('**Season Stats**', [
 			`**Donated**\n${EMOJIS.TROOPS_DONATE} ${data.donations} ${EMOJIS.UP_KEY}`,
 			`**Received**\n${EMOJIS.TROOPS_DONATE} ${data.donationsReceived} ${EMOJIS.DOWN_KEY}`,
 			`**Attacks Won**\n${EMOJIS.SWORD} ${data.attackWins}`,
 			`**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}${war.total > 0 ? `\n**War Stats**\n${warStats}` : ''}`,
 			'\u200b\u2002'
-		]);
+		].join('\n'));
 		embed.addField('**Other Stats**', [
 			`**Best Trophies**\n${PLAYER_LEAGUES[leagueId(data.bestTrophies)]} ${data.bestTrophies}`,
 			`${clan}**Last Seen**\n${EMOJIS.CLOCK} ${lastSeen}`,
 			'\u200b\u2002'
-		]);
+		].join('\n'));
 		embed.addField('**Achievement Stats**', [
 			'**Total Loots**',
 			[
@@ -116,14 +116,14 @@ export default class PlayerCommand extends Command {
 			`**CWL War Stars**\n${EMOJIS.STAR} ${data.achievements.find(d => d.name === 'War League Legend')!.value}`,
 			`**Clan Games Points**\n${EMOJIS.CLAN_GAMES} ${data.achievements.find(d => d.name === 'Games Champion')!.value}`,
 			'\u200b\u2002'
-		]);
+		].join('\n'));
 		embed.addField('**Heroes**', [
 			data.heroes.filter(hero => hero.village === 'home')
 				.map(hero => `${HEROES[hero.name]} ${hero.level}`)
 				.join(' ') || `${EMOJIS.WRONG} None`
-		]);
+		].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private clanURL(tag: string) {

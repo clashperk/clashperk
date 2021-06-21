@@ -249,6 +249,6 @@ export default class ArmyCommand extends Command {
 		const mismatch = (troops.length + spells.length + superTroops.length + seigeMachines.length) !== (TROOP_IDS.length + SPELL_IDS.length);
 
 		const invalid = mismatch || duplicate || totalTroop > 300 || totalSpell > 11 || totalSeige > 1 || superTroops.length > 2;
-		return message.util!.send((invalid) ? '**This URL is invalid and may not work!**' : '', { embed });
+		return message.util!.send({ embeds: [embed], content: (invalid) ? '**This URL is invalid and may not work!**' : undefined });
 	}
 }

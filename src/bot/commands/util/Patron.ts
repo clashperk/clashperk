@@ -95,16 +95,16 @@ export default class PatronCommand extends Command {
 				'🔸 Patron Role on our Support Discord.',
 				'',
 				'**[Support us on Patreon](https://www.patreon.com/clashperk) | [Support Discord](https://discord.gg/ppuppun)**'
-			]);
+			].join('\n'));
 
 		if (!(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'READ_MESSAGE_HISTORY'], false)) {
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 		await msg.react('➕');
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['➕'].includes(reaction.emoji.name!) && user.id === message.author.id,
 			{ time: 60000, max: 1 }
 		);
 
@@ -119,8 +119,8 @@ export default class PatronCommand extends Command {
 					`**Our Current Patrons (${patrons.length})**`,
 					patrons.map(patron => `• ${patron.discord_username ?? patron.name}`)
 						.join('\n')
-				]);
-				return msg.edit({ embed });
+				].join('\n'));
+				return msg.edit({ embeds: [embed] });
 			}
 		});
 

@@ -1,5 +1,5 @@
 import { COLLECTIONS } from '../../util/Constants';
-import { Message, Role } from 'discord.js';
+import { Message, Role, Snowflake } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Collections } from '@clashperk/node';
 
@@ -63,8 +63,8 @@ export default class AutoRoleCommand extends Command {
 	) {
 		if (!message.hasOwnProperty('token')) {
 			return message.util!.send(
-				'This command only works with slash command.',
 				{
+					content: 'This command only works with slash command.',
 					files: ['https://cdn.discordapp.com/attachments/583980382089773069/853316608307232787/unknown.png']
 				}
 			);
@@ -180,7 +180,7 @@ export default class AutoRoleCommand extends Command {
 								createdAt: new Date()
 							},
 							$set: {
-								user_tag: this.client.users.cache.get(user)?.tag
+								user_tag: this.client.users.cache.get(user as Snowflake)?.tag
 							}
 						},
 						{ upsert: true }

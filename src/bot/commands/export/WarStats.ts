@@ -134,13 +134,13 @@ export default class WarStatsExport extends Command {
 				'',
 				'**Avg Def Destruction**',
 				`${(mem.defDestruction / mem.defCount || 0).toFixed(2)} %`
-			]);
+			].join('\n'));
 
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 		await msg.react('📥');
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['📥'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['📥'].includes(reaction.emoji.name!) && user.id === message.author.id,
 			{ time: 90000, max: 1 }
 		);
 
@@ -148,16 +148,17 @@ export default class WarStatsExport extends Command {
 			if (reaction.emoji.name === '📥') {
 				if (patron) {
 					const buffer = await this.excel(data, chunks);
-					await message.util!.send(`**${data.name} (${data.tag}) War Attack History**`, {
+					await message.util!.send({
+						content: `**${data.name} (${data.tag}) War Attack History**`,
 						files: [{
 							attachment: Buffer.from(buffer), name: 'war_attack_history.xlsx'
 						}]
 					});
 				} else {
 					await message.channel.send({
-						embed: {
+						embeds: [{
 							description: '[Become a Patron](https://www.patreon.com/clashperk) to export attack stats to Excel.'
-						}
+						}]
 					});
 				}
 

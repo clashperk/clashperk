@@ -51,9 +51,9 @@ export default class UsageCommand extends Command {
 					const command = this.client.commandHandler.modules.get(id)!.aliases[0].replace(/-/g, '');
 					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${uses.toString().padStart(5, ' ')}x  ${command.padEnd(15, ' ')}\u200f\``;
 				})
-		]);
+		].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private async commands() {

@@ -61,7 +61,7 @@ export default class ClanCommand extends Command {
 			`${EMOJIS.CLAN} **${data.clanLevel}** ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
 			'',
 			`${data.description}\n\n${data.labels.map(d => `${CLAN_LABELS[d.name]} ${d.name}`).join('\n')}`
-		]);
+		].join('\n'));
 
 		const location = data.location
 			? data.location.isCountry
@@ -85,7 +85,7 @@ export default class ClanCommand extends Command {
 			'**Requirements**',
 			`⚙️ ${clanTypes[data.type]} ${EMOJIS.TROPHY} ${data.requiredTrophies} Required`,
 			'\u200b\u2002'
-		]);
+		].join('\n'));
 
 		const [action, season, wars] = await Promise.all([this.getActivity(data), this.getSeason(data), this.getWars(data.tag)]);
 		const fields = [];
@@ -112,7 +112,7 @@ export default class ClanCommand extends Command {
 				`${EMOJIS.CROSS_SWORD} ${wars.length} Wars ${EMOJIS.OK} ${won} Won ${EMOJIS.WRONG} ${lost} Lost`
 			]);
 		}
-		if (fields.length) embed.addField(`**Season Stats (${Season.previousID})**`, [...fields, '\u200e']);
+		if (fields.length) embed.addField(`**Season Stats (${Season.previousID})**`, [...fields, '\u200e'].join('\n'));
 
 		embed.addField('**War and League**', [
 			'**War Log**',
@@ -127,9 +127,9 @@ export default class ClanCommand extends Command {
 				: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`,
 			'**War League**',
 			`${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
-		]);
+		].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private async getActivity(clan: Clan): Promise<{ avg_total: number; avg_online: number } | null> {

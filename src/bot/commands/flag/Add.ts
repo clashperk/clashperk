@@ -53,9 +53,9 @@ export default class FlagAddCommand extends Command {
 					'Please consider supporting us on patreon!',
 					'',
 					'[Become a Patron](https://www.patreon.com/clashperk)'
-				]);
+				].join('\n'));
 
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const players: Player[] = await Promise.all(tags.map(en => this.client.http.player(this.fixTag(en))));
@@ -69,7 +69,7 @@ export default class FlagAddCommand extends Command {
 						user_tag: message.author.tag,
 						tag: data.tag,
 						name: data.name,
-						reason: Util.cleanContent(reason, message),
+						reason: Util.cleanContent(reason, message.channel),
 						createdAt: new Date()
 					}
 				}, { upsert: true, returnOriginal: false });

@@ -2,7 +2,7 @@ import { Season, Collections } from '@clashperk/node';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
 import { Clan, ClanMember } from 'clashofclans.js';
-import { Message } from 'discord.js';
+import { Message, Snowflake } from 'discord.js';
 
 // TODO: Fix TS
 export default class ExportSeason extends Command {
@@ -69,14 +69,14 @@ export default class ExportSeason extends Command {
 				}
 			}
 			await Promise.all(
-				this.chunks(memberTags).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
+				this.chunks(memberTags).map(members => message.guild!.members.fetch({ user: members.map(m => m.user as Snowflake) }))
 			);
 		}
 
 		const members = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan, season!)))).flat();
 		for (const mem of members) {
 			const user = memberTags.find(user => user.tag === mem.tag)?.user;
-			mem.user_tag = message.guild!.members.cache.get(user!)?.user.tag;
+			mem.user_tag = message.guild!.members.cache.get((user as Snowflake)!)?.user.tag;
 		}
 
 		const columns = [
@@ -139,7 +139,8 @@ export default class ExportSeason extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send(`**Season Export (${season})**`, {
+		return message.util!.send({
+			content: `**Season Export (${season})**`,
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'season_export.xlsx'

@@ -1,6 +1,6 @@
 import { Collections } from '@clashperk/node';
 import { Clan, Player } from 'clashofclans.js';
-import { Collection, Guild, GuildMember } from 'discord.js';
+import { Collection, Guild, GuildMember, Snowflake } from 'discord.js';
 import Client from '../struct/Client';
 import Queue from '../struct/Queue';
 
@@ -93,7 +93,7 @@ export class RoleManager {
 			]).next();
 		if (!queried?.guilds.length) return null;
 
-		const guild_ids = queried.guilds.filter((id: string) => this.client.guilds.cache.has(id));
+		const guild_ids = queried.guilds.filter((id: Snowflake) => this.client.guilds.cache.has(id));
 		if (!guild_ids.length) return null;
 
 		const cursor = this.client.db.collection(Collections.CLAN_STORES)
@@ -125,7 +125,7 @@ export class RoleManager {
 				}
 			]);
 
-		const groups: { clans: any[]; guild_id: string; type: 1 | 2 }[] = await cursor.toArray();
+		const groups: { clans: any[]; guild_id: Snowflake; type: 1 | 2 }[] = await cursor.toArray();
 		if (!groups.length) return cursor.close();
 
 		for (const group of groups.filter(ex => ex.type === 2 && ex.clans.length)) {
@@ -140,7 +140,7 @@ export class RoleManager {
 		return cursor.close();
 	}
 
-	private async addUniqueTypeRole(guild: string, clan: any, data: RPCFeed) {
+	private async addUniqueTypeRole(guild: Snowflake, clan: any, data: RPCFeed) {
 		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: data.members.map(mem => mem.tag) } })
 			.toArray();
@@ -149,7 +149,7 @@ export class RoleManager {
 		const user_ids = flattened.reduce((prev, curr) => {
 			if (!prev.includes(curr.user)) prev.push(curr.user);
 			return prev;
-		}, [] as string[]);
+		}, [] as Snowflake[]);
 
 		// fetch guild members at once
 		const members = await this.client.guilds.cache.get(guild)?.members.fetch({ user: user_ids, force: true });
@@ -172,7 +172,7 @@ export class RoleManager {
 		return data.members.length;
 	}
 
-	private async addSameTypeRole(guild: string, clans: any[], data: RPCFeed) {
+	private async addSameTypeRole(guild: Snowflake, clans: any[], data: RPCFeed) {
 		const clan = clans[0];
 
 		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
@@ -183,7 +183,7 @@ export class RoleManager {
 		const user_ids = flattened.reduce((prev, curr) => {
 			if (!prev.includes(curr.user)) prev.push(curr.user);
 			return prev;
-		}, [] as string[]);
+		}, [] as Snowflake[]);
 
 		// fetch guild members at once
 		const members = await this.client.guilds.cache.get(guild)?.members.fetch({ user: user_ids, force: true });
@@ -210,10 +210,10 @@ export class RoleManager {
 
 	private async manageRole(
 		members: Collection<string, GuildMember>,
-		user_id: string,
-		guild_id: string,
+		user_id: Snowflake,
+		guild_id: Snowflake,
 		clanRole: string,
-		roles: { [key: string]: string },
+		roles: { [key: string]: Snowflake },
 		reason: string
 	) {
 		return this.addRoles(members, guild_id, user_id, roles[clanRole], Object.values(roles), reason);
@@ -221,15 +221,15 @@ export class RoleManager {
 
 	public async addRoles(
 		members: Collection<string, GuildMember>,
-		guild_id: string,
-		user_id: string,
-		role_id: string,
-		roles: string[],
+		guild_id: Snowflake,
+		user_id: Snowflake,
+		role_id: Snowflake,
+		roles: Snowflake[],
 		reason: string
 	) {
 		const guild = this.client.guilds.cache.get(guild_id);
 
-		if (!role_id && !roles.length) return null;
+		if (!role_id && !roles.length) return null; // eslint-disable-line
 		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return null;
 
 		if (!members.has(user_id)) return null;
@@ -243,7 +243,7 @@ export class RoleManager {
 			await member.roles.remove(excluded, reason);
 		}
 
-		if (!role_id) return null;
+		if (!role_id) return null; // eslint-disable-line
 		if (!guild.roles.cache.has(role_id)) return null;
 
 		const role = guild.roles.cache.get(role_id)!;
@@ -253,7 +253,7 @@ export class RoleManager {
 		return member.roles.add(role, reason).catch(() => null);
 	}
 
-	private flatPlayers(collection: { user: string; entries: { tag: string; verified: boolean }[] }[], secureRole: boolean) {
+	private flatPlayers(collection: { user: Snowflake; entries: { tag: string; verified: boolean }[] }[], secureRole: boolean) {
 		return collection.reduce(
 			(prev, curr) => {
 				prev.push(
@@ -262,11 +262,11 @@ export class RoleManager {
 					)
 				);
 				return prev;
-			}, [] as { user: string; tag: string; verified: boolean }[]
+			}, [] as { user: Snowflake; tag: string; verified: boolean }[]
 		).filter(en => secureRole ? en.verified : true);
 	}
 
-	private checkRole(guild: Guild, member: GuildMember, role_id: string) {
+	private checkRole(guild: Guild, member: GuildMember, role_id: Snowflake) {
 		const role = guild.roles.cache.get(role_id);
 		return role && member.roles.highest.position > role.position;
 	}

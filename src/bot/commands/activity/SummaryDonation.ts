@@ -119,15 +119,15 @@ export default class DonationSummaryCommand extends Command {
 			Util.splitMessage(
 				aggregated.map((clan, n) => `${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(clan.donationsReceived, clan_rp)}  ${clan.name.padEnd(15, ' ')}\u200f\``).join('\n')
 			)[0]
-		]);
+		].join('\n'));
 		embed.addField('\u200b', [
 			'**Top Players**',
 			`${EMOJIS.CLAN} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(15, ' ')}\u200f\``,
 			members.map(mem => `${BLUE_NUMBERS[mem.clanIndex]} \`\u200e${this.donation(mem.donated, mem_dp)} ${this.donation(mem.received, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``).join('\n')
-		]);
+		].join('\n'));
 		embed.setFooter(`Season ${Season.ID}`);
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private donation(num: number, space: number) {

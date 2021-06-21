@@ -16,10 +16,9 @@ export default class GitPullCommand extends Command {
 
 	public exec(message: Message) {
 		const { stderr, stdout, code }: { stderr: string; stdout: string; code: number } = shell.exec('git pull');
-		return message.channel.send([
-			`${stderr}`,
-			`${stdout}`,
-			`Code ${code}`
-		], { code: true, split: true });
+		return message.channel.send({
+			code: true, split: true,
+			content: [`${stderr}`, `${stdout}`, `Code ${code}`].join('\n')
+		});
 	}
 }

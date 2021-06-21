@@ -41,7 +41,7 @@ export default class LineupCommand extends Command {
 				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-lineup-list')!, false);
 			}
 			embed.setDescription('Private WarLog');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const body = await this.client.http.currentClanWar(data.tag);
@@ -52,7 +52,7 @@ export default class LineupCommand extends Command {
 				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-lineup-list')!, false);
 			}
 			embed.setDescription('Not in War');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const interaction = message.hasOwnProperty('token');
@@ -68,11 +68,11 @@ export default class LineupCommand extends Command {
 			body.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
 				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
 			).join('\n')
-		]);
+		].join('\n'));
 
 		if (interaction) await message.util!.send(chunks[0]);
 		if (chunks.length === 1 && interaction) return;
-		return message.channel.send(chunks.slice(interaction ? 1 : 0), { split: true });
+		return message.channel.send({ content: chunks.slice(interaction ? 1 : 0).join('\n'), split: true });
 	}
 
 	private flat(townHalls: number[], clan: WarClan) {

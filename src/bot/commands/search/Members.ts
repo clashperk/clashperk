@@ -115,7 +115,7 @@ export default class MembersCommand extends Command {
 					}
 				).join('\n'),
 				'```'
-			]);
+			].join('\n'));
 
 		if (sub === 'tags') {
 			embed.setDescription([
@@ -123,7 +123,7 @@ export default class MembersCommand extends Command {
 				`\u200e${'TAG'.padStart(10, ' ')}  ${'NAME'}`,
 				members.map(mem => `\u200e${mem.tag.padStart(10, ' ')}  ${mem.name}`).join('\n'),
 				'```'
-			]);
+			].join('\n'));
 		}
 
 		if (sub === 'roles') {
@@ -133,10 +133,10 @@ export default class MembersCommand extends Command {
 				`\u200e ${'ROLE'.padEnd(4, ' ')}  ${'NAME'}`,
 				_members.map(mem => `\u200e ${mem.role.name.padEnd(4, ' ')}  ${mem.name}`).join('\n'),
 				'```'
-			]);
+			].join('\n'));
 		}
 
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 		for (const emoji of ['📥', EMOJIS.DISCORD]) {
 			await msg.react(emoji);
 			await new Promise(res => setTimeout(res, 250));
@@ -152,7 +152,8 @@ export default class MembersCommand extends Command {
 			if (reaction.emoji.name === '📥') {
 				if (this.client.patrons.get(message)) {
 					const buffer = await this.excel(members);
-					return message.util!.send(`**${data.name} (${data.tag})**`, {
+					return message.util!.send({
+						content: `**${data.name} (${data.tag})**`,
 						files: [{
 							attachment: Buffer.from(buffer), name: 'clan_members.xlsx'
 						}]
@@ -165,9 +166,9 @@ export default class MembersCommand extends Command {
 						'Visit https://patreon.com/clashperk for more details.',
 						'',
 						'**Demo Clan Member Export**'
-					])
+					].join('\n'))
 					.setImage('https://i.imgur.com/Uc5G2oS.png');
-				return message.channel.send({ embed });
+				return message.channel.send({ embeds: [embed] });
 			}
 
 			if (reaction.emoji.id === id) {

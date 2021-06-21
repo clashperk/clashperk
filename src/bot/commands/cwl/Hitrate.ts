@@ -48,9 +48,7 @@ export default class CWLHitrateCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
-			return message.util!.send([
-				'504 Request Timeout'
-			]);
+			return message.util!.send('**504 Request Timeout!**');
 		}
 
 		if (!body.ok) {
@@ -66,7 +64,7 @@ export default class CWLHitrateCommand extends Command {
 				)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		this.client.storage.pushWarTags(data.tag, body);
@@ -92,8 +90,8 @@ export default class CWLHitrateCommand extends Command {
 						.fill(0)
 						.map((x, i) => `**\`${i + rounds.length + 1}\`** ${EMOJIS.WRONG}`)
 						.join('\n')
-				]);
-			return message.util!.send({ embed });
+				].join('\n'));
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const chunks: any[] = [];
@@ -137,7 +135,7 @@ export default class CWLHitrateCommand extends Command {
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
 			{ time: 60000, max: 10 }
 		);
 

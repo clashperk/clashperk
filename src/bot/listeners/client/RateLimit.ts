@@ -62,7 +62,7 @@ export default class RateLimitListener extends Listener {
 				'',
 				'**Path**',
 				decodeURIComponent(path)
-			])
+			].join('\n'))
 			.setFooter(`Shard ${this.client.shard!.ids[0]}`)
 			.setTimestamp();
 

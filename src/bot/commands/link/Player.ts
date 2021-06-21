@@ -60,9 +60,9 @@ export default class LinkPlayerCommand extends Command {
 
 		if (doc && doc.entries.length >= 25) {
 			return message.util!.send({
-				embed: {
+				embeds: [{
 					description: 'You can only link 25 player accounts.'
-				}
+				}]
 			});
 		}
 
@@ -102,8 +102,8 @@ export default class LinkPlayerCommand extends Command {
 				`Linked **${member.user.tag}** to **${data.name}** (${data.tag})`,
 				'',
 				'If you don\'t provide the tag for other lookup commands, the bot will use the first one you linked.'
-			]);
-		return message.util!.send({ embed });
+			].join('\n'));
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private isVerified(data: any, tag: string) {

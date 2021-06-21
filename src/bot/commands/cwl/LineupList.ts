@@ -38,7 +38,7 @@ export default class CWLLineupCommand extends Command {
 				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, this.clanURL(data.tag))
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		return this.rounds(message, body, data);
@@ -80,6 +80,7 @@ export default class CWLLineupCommand extends Command {
 				.setDescription(
 					data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition)
 						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')}) `)
+						.join('\n')
 				)
 				.setFooter(`Round #${data.round}`),
 
@@ -93,12 +94,12 @@ export default class CWLLineupCommand extends Command {
 				.setDescription(
 					data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
 						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')}) `)
+						.join('\n')
 				)
 				.setFooter(`Round #${data.round}`)
 		];
 
-		await message.util!.send(`**${data.clan.name}** vs **${data.opponent.name}**`, embeds);
-		if (!message.hasOwnProperty('token')) return message.channel.send({ embed: embeds[1] });
+		return message.util!.send({ embeds, content: `**${data.clan.name}** vs **${data.opponent.name}**` });
 	}
 
 	private pad(num: number) {

@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, Guild, TextChannel } from 'discord.js';
+import { MessageEmbed, Message, Guild, TextChannel, Snowflake } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { COLLECTIONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
@@ -29,10 +29,18 @@ export default class ClansCommand extends Command {
 							return this.handler.handleDirectCommand(msg, '-', this.handler.modules.get('setup')!);
 						}
 						const guilds = await this.client.shard!.broadcastEval(
-							`
-							const guild = this.guilds.cache.get(\`${id}\`);
-							if (guild) ({ id: guild.id, name: guild.name, iconURL: guild.iconURL(), memberCount: guild.memberCount });
-							`
+							client => {
+								const guild = client.guilds.cache.get(id as Snowflake);
+								if (guild) {
+									return {
+										id: guild.id,
+										name: guild.name,
+										iconURL: guild.iconURL(),
+										memberCount: guild.memberCount
+									};
+								}
+								return null;
+							}
 						);
 						const guild = guilds.find(guild => guild !== null);
 						if (!guild) return null;
@@ -81,7 +89,7 @@ export default class ClansCommand extends Command {
 			.setTitle(`Members: ${guild.memberCount}`);
 		if (!data.length) {
 			embed.setDescription(`${message.guild!.name} doesn't have any clans. Why not add some?`);
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const paginated = this.paginate(data, page);
@@ -90,15 +98,14 @@ export default class ClansCommand extends Command {
 			`${premium ? '**Patron** \nYes' : ''}`,
 			'',
 			this.desc(paginated)
-		]).setFooter([
-			`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
-		]);
+		].join('\n'));
+		embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`);
 
 		if (clans.length <= 2) {
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 
 		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
@@ -106,7 +113,7 @@ export default class ClansCommand extends Command {
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
 			{ time: 60000, max: 10 }
 		);
 
@@ -116,12 +123,15 @@ export default class ClansCommand extends Command {
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
 				await msg.edit({
-					embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
-						.setDescription([
+					embeds: [
+						embed.setFooter(
+							`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
+						).setDescription([
 							`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`,
 							'',
 							this.desc(this.paginate(data, page))
-						])
+						].join('\n'))
+					]
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -133,12 +143,15 @@ export default class ClansCommand extends Command {
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
 				await msg.edit({
-					embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
-						.setDescription([
+					embeds: [
+						embed.setFooter(
+							`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
+						).setDescription([
 							`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`,
 							'',
 							this.desc(this.paginate(data, page))
-						])
+						].join('\n'))
+					]
 				});
 				await this.delay(250);
 				return reaction.users.remove(message.author.id);

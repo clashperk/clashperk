@@ -67,9 +67,9 @@ export default class CWLExport extends Command {
 					'Visit https://patreon.com/clashperk for more details.',
 					'',
 					'**Demo CWL Export**'
-				])
+				].join('\n'))
 				.setImage('https://cdn.discordapp.com/attachments/806179502508998657/846700124134178826/unknown.png');
-			return message.channel.send({ embed });
+			return message.channel.send({ embeds: [embed] });
 		}
 
 		let clans = [];

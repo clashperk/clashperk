@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, Collection, TextChannel, PermissionString } from 'discord.js';
+import { MessageEmbed, Message, Collection, TextChannel, PermissionString, Snowflake } from 'discord.js';
 import { EMOJIS, TOWN_HALLS, CWL_LEAGUES } from '../util/Emojis';
 import { ORANGE_NUMBERS } from '../util/NumEmojis';
 import { COLLECTIONS } from '../util/Constants';
@@ -7,8 +7,8 @@ import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
 
 interface Cache {
-	channel: string;
-	message: string;
+	channel: Snowflake;
+	message?: Snowflake;
 	color: number;
 	embed: any;
 	tag: string;
@@ -72,7 +72,7 @@ export default class ClanEmbedLog {
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel) as TextChannel;
-			if (channel.permissionsFor(channel.guild.me!)?.has(permissions, false)) {
+			if (channel.permissionsFor(channel.guild.me!).has(permissions, false)) {
 				await this.throttle(channel.id);
 				return this.handleMessage(id, channel, clan);
 			}
@@ -90,7 +90,7 @@ export default class ClanEmbedLog {
 			return this.edit(id, cache!.msg, clan);
 		}
 
-		const message = await channel.messages.fetch(cache!.message, false)
+		const message = await channel.messages.fetch(cache!.message!, { cache: false })
 			.catch(error => {
 				this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
 				if (error.code === 10008) {
@@ -113,7 +113,7 @@ export default class ClanEmbedLog {
 
 	private async sendNew(id: string, channel: TextChannel, clan: any) {
 		const embed = await this.embed(id, clan);
-		const message = await channel.send({ embed })
+		const message = await channel.send({ embeds: [embed] })
 			.catch(() => null);
 
 		if (message) {
@@ -135,7 +135,7 @@ export default class ClanEmbedLog {
 	private async edit(id: string, message: Message, clan: any) {
 		const embed = await this.embed(id, clan);
 
-		return message.edit({ embed })
+		return message.edit({ embeds: [embed] })
 			.catch(error => {
 				if (error.code === 10008) {
 					const cache = this.cached.get(id)!;
@@ -176,16 +176,16 @@ export default class ClanEmbedLog {
 				`${EMOJIS.CLAN} **${data.clanLevel}** ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
 				'',
 				clanDescription || ''
-			])
+			].join('\n'))
 			.addField('Clan Leader', [
 				`${EMOJIS.OWNER} <@!${cache.embed.userId as string}> (${data.memberList.find(m => m.role === 'leader')?.name ?? 'None'})`
-			])
+			].join('\n'))
 			.addField('Requirements', [
 				`${EMOJIS.TOWNHALL} ${cache.embed.accepts as string}`,
 				'**Trophies Required**',
 				`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
 				`**Location** \n${location}`
-			])
+			].join('\n'))
 			.addField('War Performance', [
 				`${EMOJIS.OK} ${data.warWins} Won ${data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''}`,
 				'**War Frequency & Streak**',
@@ -193,10 +193,10 @@ export default class ClanEmbedLog {
 					? '🎟️ More Than Once Per Week'
 					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`} ${'🏅'} ${data.warWinStreak}`,
 				'**War League**', `${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
-			])
+			].join('\n'))
 			.addField('Town Halls', [
 				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`).join(' ') || `${EMOJIS.WRONG} None`
-			])
+			].join('\n'))
 			.setTimestamp()
 			.setFooter('Synced', this.client.user!.displayAvatarURL());
 

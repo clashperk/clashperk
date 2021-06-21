@@ -42,11 +42,11 @@ export default class WarLogCommand extends Command {
 			)
 			.setDescription([
 				`${data.warWins} Wins, ${data.isWarLogPublic ? `${data.warLosses!} Losses,` : ''} ${data.warWinStreak} Win Streak`
-			]);
+			].join('\n'));
 
 		if (!data.isWarLogPublic) {
 			embed.setDescription('War Log is Private');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const wars = await this.client.db.collection(Collections.CLAN_WARS)
@@ -69,11 +69,11 @@ export default class WarLogCommand extends Command {
 				[
 					`${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${EMOJIS.FIRE} ${(clan.destructionPercentage || 0).toFixed(2)}% ${opponent.name ? `/ ${(opponent.destructionPercentage || 0).toFixed(2)}%` : ''}`,
 					`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${EMOJIS.SWORD} ${clan.attacks}${extra ? ` / ${extra.attacks}` : ''} ${EMOJIS.CLOCK} ${time} ago`
-				]
+				].join('\n')
 			);
 		}
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private getWarInfo(wars: any[], war: any) {

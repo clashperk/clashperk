@@ -61,7 +61,7 @@ export default class MissedAttacksCommand extends Command {
 				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-remaining')!, false);
 			}
 			embed.setDescription('Private War Log');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const body = await this.client.http.currentClanWar(data.tag);
@@ -74,7 +74,7 @@ export default class MissedAttacksCommand extends Command {
 				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-remaining')!, false);
 			}
 			embed.setDescription('Not in War');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		return this.sendResult(message, body);
@@ -111,8 +111,8 @@ export default class MissedAttacksCommand extends Command {
 				'',
 				'**War State**',
 				'Preparation'
-			]);
-			return message.util!.send({ embed });
+			].join('\n'));
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const [OneRem, TwoRem] = [
@@ -125,14 +125,14 @@ export default class MissedAttacksCommand extends Command {
 			'',
 			'**War State**',
 			`${body.state.replace(/warEnded/g, 'War Ended').replace(/inWar/g, 'Battle Day')}`
-		]);
+		].join('\n'));
 		if (TwoRem.length) {
 			embed.setDescription([
 				embed.description,
 				'',
 				`**2 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
 				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)
-			]);
+			].join('\n'));
 		}
 		if (OneRem.length) {
 			embed.setDescription([
@@ -140,7 +140,7 @@ export default class MissedAttacksCommand extends Command {
 				'',
 				`**1 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
 				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)
-			]);
+			].join('\n'));
 		}
 
 		const endTime = new Date(moment(body.endTime).toDate()).getTime();
@@ -152,7 +152,7 @@ export default class MissedAttacksCommand extends Command {
 			embed.setFooter(`Ended ${this.toDate(Date.now() - endTime)} ago ${body.id ? `(War ID #${body.id as number})` : ''}`);
 		}
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private toDate(ms: number) {

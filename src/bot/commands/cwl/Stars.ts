@@ -103,7 +103,7 @@ export default class CWLStarsCommand extends Command {
 				.map(
 					(m, i) => `\u200e${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.townhallLevel]} ${WHITE_NUMBERS[m.stars]} \`${[m.attacks, m.of].join('/')}\`  ${Util.escapeMarkdown(m.name)}`
 				).join('\n')
-		]);
+		].join('\n'));
 
 		return chunks.map((part, i) => {
 			if (i === 0) return message.util!.send(part);

@@ -42,10 +42,11 @@ export default class GuildDeleteListener extends Listener {
 				.setTitle(`${EMOJIS.OWNER} ${user.tag} (${user.id})`)
 				.setFooter(`${guild.memberCount} members (Shard ${guild.shard.id})`, user.displayAvatarURL())
 				.setTimestamp();
-			return webhook.send(`**Total ${guilds} | Growth ${await this.growth()}**`, {
+			return webhook.send({
 				embeds: [embed],
 				username: this.client.user!.username,
-				avatarURL: this.client.user!.displayAvatarURL()
+				avatarURL: this.client.user!.displayAvatarURL(),
+				content: `**Total ${guilds} | Growth ${await this.growth()}**`
 			});
 		}
 	}

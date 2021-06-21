@@ -1,6 +1,6 @@
 import { ClanGames, Collections } from '@clashperk/node';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
-import { Message, Guild } from 'discord.js';
+import { Message, Guild, Snowflake } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
@@ -23,7 +23,7 @@ export default class ClanGamesSummaryCommand extends Command {
 			args: [
 				{
 					'id': 'guild',
-					'type': (msg, id) => this.client.guilds.cache.get(id) ?? null,
+					'type': (msg, id) => this.client.guilds.cache.get(id as Snowflake) ?? null,
 					'default': (message: Message) => message.guild
 				}
 			]
@@ -76,8 +76,8 @@ export default class ClanGamesSummaryCommand extends Command {
 				`${EMOJIS.HASH} **\`\u200e ${Math.floor(ClanGames.MAX_POINT / 1000)}K  ${'CLAN'.padEnd(20, ' ')}\u200f\`**`,
 				...performances.sort((a, b) => b.count - a.count)
 					.map((clan, i) => `${BLUE_NUMBERS[++i]} \`\u200e ${clan.count.toString().padStart(2, ' ')}  ${clan.name.padEnd(20, ' ')}\u200f\``)
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

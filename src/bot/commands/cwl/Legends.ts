@@ -48,9 +48,9 @@ export default class CWLTopCommand extends Command {
 						return `${TOWN_HALLS[member.townHallLevel]}\`\u200e ${stars}  ${name.replace(/\`/g, '\\')}\``;
 					})
 					.join('\n')
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private padStart(msg: string) {

@@ -43,10 +43,10 @@ export default class LastOnlineCommand extends Command {
 			.count();
 		if (!allowed && message.guild!.id !== '509784317598105619') {
 			return message.util!.send(
-				[
-					'**You must link this clan to a channel to use this command!**'
-				].join('\n'),
-				{ files: ['https://cdn.discordapp.com/attachments/752914644779139242/852062721280311327/unknown.png'] }
+				{
+					content: '**You must link this clan to a channel to use this command!**',
+					files: ['https://cdn.discordapp.com/attachments/752914644779139242/852062721280311327/unknown.png']
+				}
 			);
 		}
 
@@ -69,10 +69,10 @@ export default class LastOnlineCommand extends Command {
 					.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padEnd(7, ' ') : ''.padEnd(7, ' ')}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n')}`,
 				'```'
-			])
+			].join('\n'))
 			.setFooter(`Members [${data.members}/50]`, message.author.displayAvatarURL());
 
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 		await msg.react(EMOJIS.ACTIVITY);
 		const { id } = Util.parseEmoji(EMOJIS.ACTIVITY)!;
 		const collector = msg.createReactionCollector(
@@ -92,8 +92,8 @@ export default class LastOnlineCommand extends Command {
 						.map(m => `${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / 30).toString().padStart(3, ' ')}  ${m.name}`)
 						.join('\n')}`,
 					'```'
-				]);
-				return msg.edit({ embed });
+				].join('\n'));
+				return msg.edit({ embeds: [embed] });
 			}
 		});
 

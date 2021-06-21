@@ -45,9 +45,7 @@ export default class CWLRemainingCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
-			return message.util!.send([
-				'504 Request Timeout'
-			]);
+			return message.util!.send('**504 Request Timeout!**');
 		}
 
 		if (!body.ok) {
@@ -59,7 +57,7 @@ export default class CWLRemainingCommand extends Command {
 				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		this.client.storage.pushWarTags(data.tag, body);
@@ -86,8 +84,8 @@ export default class CWLRemainingCommand extends Command {
 						.fill(0)
 						.map((x, i) => `**\`${i + rounds.length + 1}\`** ${EMOJIS.WRONG}`)
 						.join('\n')
-				]);
-			return message.util!.send({ embed });
+				].join('\n'));
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const chunks: any[] = [];
@@ -126,7 +124,7 @@ export default class CWLRemainingCommand extends Command {
 							'',
 							`**Missed Attacks** - ${clan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
 							missing || 'All Players Attacked'
-						]);
+						].join('\n'));
 					}
 
 					if (data.state === 'inWar') {
@@ -150,7 +148,7 @@ export default class CWLRemainingCommand extends Command {
 							'',
 							`**Missing Attacks** - ${clan.members.filter(m => !m.attacks).length}/${data.teamSize}`,
 							missing || 'All Players Attacked'
-						]);
+						].join('\n'));
 					}
 
 					if (data.state === 'preparation') {
@@ -161,7 +159,7 @@ export default class CWLRemainingCommand extends Command {
 							'',
 							'**State**',
 							`Preparation day ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
-						]);
+						].join('\n'));
 					}
 
 					embed.setFooter(`Round #${++i}`);
@@ -183,16 +181,16 @@ export default class CWLRemainingCommand extends Command {
 		const paginated = this.paginate(chunks, page);
 
 		if (chunks.length === 1) {
-			return message.util!.send({ embed: paginated.items[0].embed });
+			return message.util!.send({ embeds: [paginated.items[0].embed] });
 		}
-		const msg = await message.util!.send({ embed: paginated.items[0].embed });
+		const msg = await message.util!.send({ embeds: [paginated.items[0].embed] });
 		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
 			{ time: 60000, max: 10 }
 		);
 
@@ -201,8 +199,8 @@ export default class CWLRemainingCommand extends Command {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { embed } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embed });
+				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embeds: [embed] });
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
 				return message;
@@ -212,8 +210,8 @@ export default class CWLRemainingCommand extends Command {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { embed } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embed });
+				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embeds: [embed] });
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
 				return message;

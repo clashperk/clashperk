@@ -33,9 +33,7 @@ export default class CWLMembersCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
-			return message.util!.send([
-				'504 Request Timeout'
-			]);
+			return message.util!.send('**504 Request Timeout!**');
 		}
 
 		if (!body.ok) {
@@ -44,7 +42,7 @@ export default class CWLMembersCommand extends Command {
 				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const clanMembers = body.clans.find(clan => clan.tag === data.tag)!.members;
@@ -78,12 +76,10 @@ export default class CWLMembersCommand extends Command {
 		const header = `TH BK AQ GW RC  ${'PLAYER'}`;
 		const result = this.split(members);
 		if (Array.isArray(result)) {
-			embed.setDescription([
-				`\`\`\`\u200e${header}\n${result[0]}\`\`\``
-			]);
+			embed.setDescription(`\`\`\`\u200e${header}\n${result[0]}\`\`\``);
 		}
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private heroes(items: Player['heroes']) {

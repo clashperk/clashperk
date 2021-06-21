@@ -59,8 +59,8 @@ export default class SummaryCommand extends Command {
 				'',
 				'**Examples**',
 				this.description.examples.map((en: string) => `\`${prefix}summary ${en}\``).join('\n')
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

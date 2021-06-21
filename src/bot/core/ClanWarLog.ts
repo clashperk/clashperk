@@ -1,4 +1,4 @@
-import { MessageEmbed, Util, Collection, TextChannel, PermissionString, Message } from 'discord.js';
+import { MessageEmbed, Util, Collection, TextChannel, PermissionString, Message, Snowflake } from 'discord.js';
 import { ClanWar, ClanWarMember, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/NumEmojis';
 import { TOWN_HALLS, EMOJIS, WAR_STARS } from '../util/Emojis';
@@ -100,11 +100,11 @@ export default class ClanWarLog {
 		return this.handleMessage(id, channel, null, data);
 	}
 
-	private async handleMessage(id: string, channel: TextChannel, messageID: string | null, data: any) {
+	private async handleMessage(id: string, channel: TextChannel, messageID: Snowflake | null, data: any) {
 		if (!data.groupWar && data.remaining.length && data.state === 'warEnded') {
 			const embed = this.getRemaining(data);
 			try {
-				if (embed) await channel.send({ embed });
+				if (embed) await channel.send({ embeds: [embed] });
 			} catch (error) {
 				this.client.logger.warn(error, { label: 'WAR_REMAINING_MESSAGE' });
 			}
@@ -114,7 +114,7 @@ export default class ClanWarLog {
 			return this.sendNew(id, channel, data);
 		}
 
-		const message = await channel.messages.fetch(messageID, false)
+		const message = await channel.messages.fetch(messageID, { cache: false })
 			.catch(error => {
 				this.client.logger.warn(error, { label: 'WAR_FETCH_MESSAGE' });
 				if (error.code === 10008) {
@@ -137,7 +137,7 @@ export default class ClanWarLog {
 
 	private async sendNew(id: string, channel: TextChannel, data: any) {
 		const embed = this.embed(data);
-		const message = await channel.send({ embed }).catch(() => null);
+		const message = await channel.send({ embeds: [embed] }).catch(() => null);
 		if (message) await this.updateMessageID(id, data, message.id);
 		return message;
 	}
@@ -145,7 +145,7 @@ export default class ClanWarLog {
 	private async edit(id: string, message: Message, data: any) {
 		const embed = this.embed(data);
 
-		const updated = await message.edit({ embed })
+		const updated = await message.edit({ embeds: [embed] })
 			.catch(error => {
 				if (error.code === 10008) {
 					return this.sendNew(id, message.channel as TextChannel, data);
@@ -184,7 +184,7 @@ export default class ClanWarLog {
 					'',
 					'**War Size**',
 					`${data.teamSize} vs ${data.teamSize}`
-				]);
+				].join('\n'));
 			embed.setTimestamp(new Date(moment(data.startTime).toDate()))
 				.setFooter('Starting');
 		}
@@ -204,7 +204,7 @@ export default class ClanWarLog {
 					'',
 					'**War Stats**',
 					`${this.getLeaderBoard(data.clan, data.opponent)}`
-				]);
+				].join('\n'));
 
 			if (data.recent?.length) {
 				const max = Math.max(...data.recent.map(atk => atk.attacker.destructionPercentage));
@@ -216,7 +216,7 @@ export default class ClanWarLog {
 						const destruction = Math.floor(attacker.destructionPercentage).toString().concat('%');
 						return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${BLUE_NUMBERS[attacker.mapPosition]}${ORANGE_NUMBERS[attacker.townHallLevel]}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]}${ORANGE_NUMBERS[defender.townHallLevel]} ${name}`;
 					})
-				]);
+				].join('\n'));
 			}
 			embed.setFooter('Synced').setTimestamp();
 		}
@@ -235,7 +235,7 @@ export default class ClanWarLog {
 					'',
 					'**War Stats**',
 					`${this.getLeaderBoard(data.clan, data.opponent)}`
-				]);
+				].join('\n'));
 			embed.setFooter('Ended').setTimestamp(new Date(moment(data.endTime).toDate()));
 		}
 
@@ -248,7 +248,7 @@ export default class ClanWarLog {
 			'',
 			`${Util.escapeMarkdown(data.opponent.name)}`,
 			`${this.getRoster(data.opponent.rosters)}`
-		]);
+		].join('\n'));
 
 		return embed;
 	}
@@ -261,7 +261,7 @@ export default class ClanWarLog {
 			.setDescription([
 				'**War Against**',
 				`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
-			]);
+			].join('\n'));
 		const twoRem = data.remaining.filter(m => !m.attacks)
 			.sort((a, b) => a.mapPosition - b.mapPosition)
 			.map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`);
@@ -296,14 +296,25 @@ export default class ClanWarLog {
 		if (data.state === 'inWar') {
 			const ends = new Date(moment(data.endTime).toDate()).getTime();
 			embed.setColor(states[data.state]);
-			embed.addField('State', ['Battle Day', `Ends in ${moment.duration(ends - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`])
-				.addField('War Stats', this.getLeaderBoard(clan, opponent));
+			embed.addField(
+				'State',
+				[
+					'Battle Day',
+					`Ends in ${moment.duration(ends - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+				].join('\n')
+			).addField('War Stats', this.getLeaderBoard(clan, opponent));
 		}
 
 		if (data.state === 'preparation') {
 			const start = new Date(moment(data.startTime).toDate()).getTime();
 			embed.setColor(states[data.state]);
-			embed.addField('State', ['Preparation', `Ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`]);
+			embed.addField(
+				'State',
+				[
+					'Preparation',
+					`Ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+				].join('\n')
+			);
 		}
 
 		if (data.state === 'warEnded') {
@@ -321,10 +332,10 @@ export default class ClanWarLog {
 		];
 
 		if (rosters.join('\n').length > 1024) {
-			embed.addField('Rosters', rosters.slice(0, 2));
-			embed.addField('\u200e', rosters.slice(-2));
+			embed.addField('Rosters', rosters.slice(0, 2).join('\n'));
+			embed.addField('\u200e', rosters.slice(-2).join('\n'));
 		} else {
-			embed.addField('Rosters', rosters);
+			embed.addField('Rosters', rosters.join('\n'));
 		}
 
 		if (data.recent?.length) {
@@ -337,7 +348,7 @@ export default class ClanWarLog {
 					const destruction = Math.floor(attacker.destructionPercentage).toString().concat('%');
 					return `${stars} \`\u200e${destruction.padStart(pad, ' ')}\` ${BLUE_NUMBERS[attacker.mapPosition]}${ORANGE_NUMBERS[attacker.townHallLevel]}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]}${ORANGE_NUMBERS[defender.townHallLevel]} ${name}`;
 				})
-			]);
+			].join('\n'));
 		}
 
 		if (data.remaining.length) {

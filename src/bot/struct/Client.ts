@@ -110,26 +110,23 @@ export default class Client extends AkairoClient {
 			messageCacheMaxSize: 10,
 			messageCacheLifetime: 150,
 			messageSweepInterval: 150,
-			ws: {
-				intents: [
-					Intents.FLAGS.GUILDS,
-					Intents.FLAGS.GUILD_WEBHOOKS,
-					Intents.FLAGS.GUILD_MESSAGES,
-					Intents.FLAGS.GUILD_MESSAGE_REACTIONS
-				]
-			}
+			intents: [
+				Intents.FLAGS.GUILDS,
+				Intents.FLAGS.GUILD_WEBHOOKS,
+				Intents.FLAGS.GUILD_MESSAGES,
+				Intents.FLAGS.GUILD_MESSAGE_REACTIONS
+			]
 		});
 
-		// @ts-expect-error
 		this.ws.on('INTERACTION_CREATE', async (res: APIInteraction) => {
 			if (!res.member) return; // eslint-disable-line
 			if (res.type === 1) return;
 			// @ts-expect-error
-			if (res.type === 3) await this.api.channels[res.channel_id].messages[res.message.id].delete();
+			if (res.type === 3) await this.api.channels[res.channel_id].messages[res.message.id].delete(); // eslint-disable-line
 			const interaction = await new Interaction(this, res).parse(res);
 
 			// @ts-expect-error
-			const alias = res.type === 2 ? [res.data!.name] : res.data.custom_id.split(/ +/g);
+			const alias = res.type === 2 ? [res.data!.name] : res.data.custom_id.split(/ +/g); // eslint-disable-line
 			const command = this.commandHandler.findCommand(alias[0]);
 			if (!command) return; // eslint-disable-line
 
@@ -155,6 +152,7 @@ export default class Client extends AkairoClient {
 			const flags = ['help', 'invite', 'stats', 'guide'].includes(command.id) ? 64 : 0;
 			// @ts-expect-error
 			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5, data: { flags } } });
+			// eslint-disable-next-line
 			return this.handleInteraction(interaction, command, res.type === 2 ? interaction.options : alias.slice(1).join(' '));
 		});
 	}

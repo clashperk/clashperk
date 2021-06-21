@@ -45,7 +45,7 @@ export default class PrefixCommand extends Command {
 				`Use the prefix \`${oldPrefix}\` to run my commands.`,
 				'',
 				'You are missing `Manage Server` permission to change the prefix.'
-			]);
+			].join('\n'));
 		}
 
 		this.client.settings.set(message.guild!, SETTINGS.PREFIX, prefix);
@@ -57,6 +57,6 @@ export default class PrefixCommand extends Command {
 		return message.util!.send([
 			`Prefix has been reset to \`${prefix}\``,
 			`${prefix === '/' ? `\n**Tip:** The prefix \`${prefix}\` might conflict with slash commands, try to avoid it!` : ''}`
-		]);
+		].join('\n'));
 	}
 }

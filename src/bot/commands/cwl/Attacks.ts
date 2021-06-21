@@ -79,8 +79,8 @@ export default class CWLAttacksCommand extends Command {
 						.fill(0)
 						.map((x, i) => `**\`${i + rounds.length + 1}\`** ${EMOJIS.WRONG}`)
 						.join('\n')
-				]);
-			return message.util!.send({ embed });
+				].join('\n'));
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const chunks: any[] = [];
@@ -119,7 +119,7 @@ export default class CWLAttacksCommand extends Command {
 							'',
 							`**Attacks** - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}`,
 							`${attacks || 'Nobody Attacked'}`
-						]);
+						].join('\n'));
 					}
 
 					if (data.state === 'inWar') {
@@ -144,7 +144,7 @@ export default class CWLAttacksCommand extends Command {
 							'',
 							`**Attacks - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}**`,
 							`${attacks || 'Nobody Attacked Yet'}`
-						]);
+						].join('\n'));
 					}
 
 					if (data.state === 'preparation') {
@@ -155,7 +155,7 @@ export default class CWLAttacksCommand extends Command {
 							'',
 							'**State**',
 							`Preparation day ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
-						]);
+						].join('\n'));
 					}
 
 					embed.setFooter(`Round #${++i}`);
@@ -177,16 +177,16 @@ export default class CWLAttacksCommand extends Command {
 		const paginated = this.paginate(chunks, page);
 
 		if (chunks.length === 1) {
-			return message.util!.send({ embed: paginated.items[0].embed });
+			return message.util!.send({ embeds: [paginated.items[0].embed] });
 		}
-		const msg = await message.util!.send({ embed: paginated.items[0].embed });
+		const msg = await message.util!.send({ embeds: [paginated.items[0].embed] });
 		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
 			{ time: 60000, max: 10 }
 		);
 
@@ -195,8 +195,8 @@ export default class CWLAttacksCommand extends Command {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { embed } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embed });
+				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embeds: [embed] });
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
 				return message;
@@ -206,8 +206,8 @@ export default class CWLAttacksCommand extends Command {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { embed } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embed });
+				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embeds: [embed] });
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
 				return message;

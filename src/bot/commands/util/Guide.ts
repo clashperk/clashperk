@@ -15,6 +15,6 @@ export default class GuideCommand extends Command {
 		return message.util!.send([
 			'**Join Support Server for Help and Guide**',
 			'https://discord.gg/ppuppun'
-		]);
+		].join('\n'));
 	}
 }

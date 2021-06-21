@@ -75,7 +75,7 @@ export default class ErrorListener extends Listener {
 				'\\❌ Something went wrong, report us!',
 				`\`\`\`${error.toString() as string}\`\`\``,
 				'https://discord.gg/ppuppun'
-			]);
+			].join('\n'));
 		}
 	}
 }

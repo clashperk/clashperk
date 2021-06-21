@@ -115,7 +115,8 @@ export default class ExportMissed extends Command {
 		);
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send(`**Missed Attacks (Last ${num})**`, {
+		return message.util!.send({
+			content: `**Missed Attacks (Last ${num})**`,
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_war_missed.xlsx'

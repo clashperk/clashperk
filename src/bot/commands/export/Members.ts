@@ -31,9 +31,11 @@ export default class ExportClanMembersCommand extends Command {
 	public async exec(message: Message) {
 		if (!this.client.patrons.get(message)) {
 			return message.util!.send({
-				embed: {
-					description: '[Become a Patron](https://www.patreon.com/clashperk) to export clan members to Excel.'
-				}
+				embeds: [
+					{
+						description: '[Become a Patron](https://www.patreon.com/clashperk) to export clan members to Excel.'
+					}
+				]
 			});
 		}
 
@@ -90,7 +92,8 @@ export default class ExportClanMembersCommand extends Command {
 
 		const buffer = await this.excel(members);
 		if (msg.deletable && !message.hasOwnProperty('token')) await msg.delete();
-		return message.util!.send(`**${message.guild!.name} Members**`, {
+		return message.util!.send({
+			content: `**${message.guild!.name} Members**`,
 			files: [{
 				attachment: Buffer.from(buffer), name: 'clan_members.xlsx'
 			}]

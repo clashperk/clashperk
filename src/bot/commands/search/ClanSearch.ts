@@ -48,8 +48,8 @@ export default class ClanSearchCommand extends Command {
 						`${clanType}, ${clan.requiredTrophies} required${clan.location ? `, ${clan.location.name}` : ''}`
 					].join('\n');
 				}).join('\n\n')
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

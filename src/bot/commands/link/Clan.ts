@@ -105,8 +105,8 @@ export default class LinkClanCommand extends Command {
 				`Linked **${parsed.user.tag}** to **${data.name}** (${data.tag})`,
 				'',
 				'If you don\'t provide the tag for other lookup commands, the bot will use the last one you linked.'
-			]);
-		return message.util!.send({ embed });
+			].join('\n'));
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private async enforceSecurity(message: Message, data: Clan) {
@@ -114,7 +114,7 @@ export default class LinkClanCommand extends Command {
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
-			await message.util!.send({ embed: EMBEDS.CLAN_LIMIT(prefix) });
+			await message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
 			return Promise.resolve(false);
 		}
 
@@ -124,7 +124,7 @@ export default class LinkClanCommand extends Command {
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
 		if (!clan.verified && !Util.verifyClan(code, data, dbUser?.entries ?? [])) {
 			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
-			await message.util!.send({ embed });
+			await message.util!.send({ embeds: [embed] });
 			return Promise.resolve(false);
 		}
 

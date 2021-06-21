@@ -1,5 +1,5 @@
 import { Command } from 'discord-akairo';
-import { Message, User } from 'discord.js';
+import { Message, Snowflake, User } from 'discord.js';
 
 export default class SetCommand extends Command {
 	public constructor() {
@@ -26,7 +26,7 @@ export default class SetCommand extends Command {
 		const user = yield {
 			type: async (msg: Message, id: string) => {
 				if (!id) return null;
-				return this.client.users.fetch(id, false).catch(() => null);
+				return this.client.users.fetch(id as Snowflake).catch(() => null);
 			},
 			prompt: {
 				start: 'What is the userId?',

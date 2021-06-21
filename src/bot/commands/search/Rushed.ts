@@ -62,7 +62,7 @@ export default class RushedCommand extends Command {
 		if (flag) return this.clan(message, data as Clan);
 		const embed = this.embed(data as Player);
 		embed.setColor(this.client.embed(message));
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private embed(data: Player) {
@@ -150,7 +150,7 @@ export default class RushedCommand extends Command {
 			data.builderHallLevel
 				? `${this.troopsCount('builderBase', data.builderHallLevel, Troops.filter(u => u.village === 'builderBase').length).padStart(5, '0')}% (Builder Base)\n\u200b`
 				: '\u200b'
-		]);
+		].join('\n'));
 
 		if (!embed.fields.length) {
 			embed.setDescription(
@@ -180,9 +180,9 @@ export default class RushedCommand extends Command {
 					.map(({ name, rushed, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding(rushed.homeBase)}  ${rushed.heroes.toString().padStart(3, ' ')}  ${name}`)
 					.join('\n'),
 				'```'
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private padding(num: number) {

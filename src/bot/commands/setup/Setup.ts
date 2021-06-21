@@ -1,5 +1,5 @@
 import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
-import { Message, TextChannel, MessageEmbed } from 'discord.js';
+import { Message, TextChannel, MessageEmbed, Snowflake } from 'discord.js';
 import { BitField, Collections } from '@clashperk/node';
 
 const names: { [key: string]: string } = {
@@ -108,9 +108,9 @@ export default class SetupCommand extends Command {
 				'',
 				'**Examples**',
 				this.description.examples.map((en: string) => `\`${prefix}setup ${en}\``).join('\n')
-			]);
+			].join('\n'));
 
-		await message.channel.send({ embed });
+		await message.channel.send({ embeds: [embed] });
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const fetched = await Promise.all(
 			clans.map(
@@ -130,8 +130,8 @@ export default class SetupCommand extends Command {
 
 					return {
 						name: clan.name, tag: clan.tag, alias: clan.alias ? `(${clan.alias}) ` : '',
-						roles: clan.role_ids?.map(id => message.guild!.roles.cache.get(id)?.toString()) ?? [],
-						channels: clan.channels?.map(id => this.client.channels.cache.get(id)?.toString()) ?? [],
+						roles: clan.role_ids?.map(id => message.guild!.roles.cache.get(id as Snowflake)?.toString()) ?? [],
+						channels: clan.channels?.map(id => this.client.channels.cache.get(id as Snowflake)?.toString()) ?? [],
 						entries: [
 							{
 								flag: BitField.DONATION_LOG,
@@ -202,7 +202,7 @@ export default class SetupCommand extends Command {
 
 		for (const chunks of this.chunk(embeds)) {
 			if (message.hasOwnProperty('token')) {
-				await message.util!.send(chunks);
+				await message.util!.send({ embeds: chunks });
 			} else {
 				// @ts-expect-error
 				await this.client.api.channels[message.channel.id].messages.post({ data: { embeds: chunks } });

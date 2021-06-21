@@ -130,10 +130,10 @@ export default class DonationsCommand extends Command {
 				return `${(index + 1).toString().padStart(2, ' ')} ${donation}  \u200e${this.padEnd(mem.name.substring(0, 15))}`;
 			}).join('\n'),
 			'```'
-		]);
+		].join('\n'));
 		embed.setFooter(`[DON ${donated} | REC ${received}] (Season ${season})`, message.author.displayAvatarURL());
 
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 		const components = [
 			{
 				type: 2, style: 2,

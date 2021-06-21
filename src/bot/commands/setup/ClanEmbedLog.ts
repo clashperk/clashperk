@@ -97,7 +97,7 @@ export default class ClanEmbedCommand extends Command {
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
-			return message.util!.send({ embed: EMBEDS.CLAN_LIMIT(prefix) });
+			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
 		}
 
 		const dbUser = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
@@ -106,7 +106,7 @@ export default class ClanEmbedCommand extends Command {
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
 		if (!clan.verified && !Utility.verifyClan(code, data, dbUser?.entries ?? [])) {
 			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
@@ -137,17 +137,17 @@ export default class ClanEmbedCommand extends Command {
 					? data.description
 					: description.toLowerCase() === 'none'
 						? ''
-						: Util.cleanContent(description, message) || ''
-			])
+						: Util.cleanContent(description, message.channel) || ''
+			].join('\n'))
 			.addField('Clan Leader', [
 				`${EMOJIS.OWNER} ${user.toString()} (${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'})`
-			])
+			].join('\n'))
 			.addField('Requirements', [
 				`${EMOJIS.TOWNHALL} ${accepts}`,
 				'**Trophies Required**',
 				`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
 				`**Location** \n${location}`
-			])
+			].join('\n'))
 			.addField('War Performance', [
 				`${EMOJIS.OK} ${data.warWins} Won ${data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''}`,
 				'**War Frequency & Streak**',
@@ -155,10 +155,10 @@ export default class ClanEmbedCommand extends Command {
 					? '🎟️ More Than Once Per Week'
 					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`} ${'🏅'} ${data.warWinStreak}`,
 				'**War League**', `${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
-			])
+			].join('\n'))
 			.addField('Town Halls', [
 				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`).join(' ')
-			])
+			].join('\n'))
 			.setFooter('Synced', this.client.user!.displayAvatarURL())
 			.setTimestamp();
 		if (color) embed.setColor(color);
@@ -169,7 +169,7 @@ export default class ClanEmbedCommand extends Command {
 				? ''
 				: description;
 
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 		const id = await this.client.storage.register(message, {
 			op: Op.CLAN_EMBED_LOG,
 			guild: message.guild!.id,
@@ -181,7 +181,7 @@ export default class ClanEmbedCommand extends Command {
 			embed: {
 				accepts,
 				userId: user.id,
-				description: Util.cleanContent(description, message)
+				description: Util.cleanContent(description, message.channel)
 			}
 		});
 
@@ -202,7 +202,7 @@ export default class ClanEmbedCommand extends Command {
 				'**Demo Clan Embed**'
 			].join('\n'))
 			.setImage('https://i.imgur.com/txkD6q7.png');
-		return message.util!.send({ embed }).then(() => Flag.cancel()).catch(() => Flag.cancel());
+		return message.util!.send({ embeds: [embed] }).then(() => Flag.cancel()).catch(() => Flag.cancel());
 	}
 
 	private async clans(message: Message) {

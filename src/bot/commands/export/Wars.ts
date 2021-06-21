@@ -144,7 +144,8 @@ export default class WarExport extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send(`**War Export (Last ${num})**`, {
+		return message.util!.send({
+			content: `**War Export (Last ${num})**`,
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_war_stats.xlsx'

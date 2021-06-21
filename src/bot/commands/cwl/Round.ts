@@ -58,7 +58,7 @@ export default class CWLRoundCommand extends Command {
 				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		this.client.storage.pushWarTags(data.tag, body);
@@ -84,8 +84,8 @@ export default class CWLRoundCommand extends Command {
 						.fill(0)
 						.map((x, i) => `**\`${i + rounds.length + 1}\`** ${EMOJIS.WRONG}`)
 						.join('\n')
-				]);
-			return message.util!.send({ embed });
+				].join('\n'));
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const chunks: any[] = [];
@@ -108,40 +108,40 @@ export default class CWLRoundCommand extends Command {
 						embed.addField('State', [
 							'War Ended',
 							`Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
-						])
-							.addField('Stats', [
-								`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.FIRE} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
-							]);
+						].join('\n'));
+						embed.addField('Stats', [
+							`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
+							`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+							`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.FIRE} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
+						].join('\n'));
 					}
 					if (data.state === 'inWar') {
 						const end = new Date(moment(data.endTime).toDate()).getTime();
 						embed.addField('State', [
 							'Battle Day',
 							`Ends in ${moment.duration(end - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
-						])
-							.addField('Stats', [
-								`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
-								`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.FIRE} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
-							]);
+						].join('\n'));
+						embed.addField('Stats', [
+							`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
+							`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+							`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.FIRE} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
+						].join('\n'));
 					}
 					if (data.state === 'preparation') {
 						const start = new Date(moment(data.startTime).toDate()).getTime();
 						embed.addField('State', [
 							'Preparation',
 							`Ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
-						]);
+						].join('\n'));
 					}
 					embed.addField('Rosters', [
 						`\u200e**${clan.name}**`,
 						`${this.count(clan.members)}`
-					]);
+					].join('\n'));
 					embed.addField('\u200e', [
 						`\u200e**${opponent.name}**`,
 						`${this.count(opponent.members)}`
-					]);
+					].join('\n'));
 					embed.setFooter(`Round #${++index}`);
 
 					chunks.push({ state: data.state, embed });
@@ -163,16 +163,16 @@ export default class CWLRoundCommand extends Command {
 		const paginated = this.paginate(chunks, page);
 
 		if (chunks.length === 1) {
-			return message.util!.send({ embed: paginated.items[0].embed });
+			return message.util!.send({ embeds: [paginated.items[0].embed] });
 		}
-		const msg = await message.util!.send({ embed: paginated.items[0].embed });
+		const msg = await message.util!.send({ embeds: [paginated.items[0].embed] });
 		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
 		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
+			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
 			{ time: 60000, max: 10 }
 		);
 
@@ -181,8 +181,8 @@ export default class CWLRoundCommand extends Command {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { embed } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embed });
+				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embeds: [embed] });
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
 				return message;
@@ -192,8 +192,8 @@ export default class CWLRoundCommand extends Command {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { embed } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embed });
+				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
+				await msg.edit({ embeds: [embed] });
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
 				return message;
