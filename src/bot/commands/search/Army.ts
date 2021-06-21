@@ -1,22 +1,26 @@
-import RAW_TROOPS from '../../util/TroopsInfo';
-import { Argument, Command } from 'discord-akairo';
-import { Message, MessageEmbed } from 'discord.js';
-import { URL } from 'url';
 import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SEIGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis';
 import { TROOPS_HOUSING } from '../../util/Constants';
+import { Argument, Command } from 'discord-akairo';
+import { Message, MessageEmbed } from 'discord.js';
+import RAW_TROOPS from '../../util/TroopsInfo';
+import { URL } from 'url';
 
 export default class ArmyCommand extends Command {
 	public constructor() {
 		super('army', {
 			aliases: ['army'],
-			category: 'test',
+			category: 'search',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Parse army composition from a shared link.',
-				usage: '<url>'
+				usage: '<url>',
+				image: {
+					text: 'How to get this link?',
+					url: 'https://i.imgur.com/uqDnt5s.png'
+				}
 			},
-			optionFlags: ['--url'],
-			regex: /^https?:\/\/link.clashofclans.com\/en\?action=CopyArmy&army=u(?<units>(?:[\d+x-]+))(?:s(?<spells>(?:[\d+x-]+)))*$/i
+			optionFlags: ['--url']
+			// regex: /^https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=u(?<units>(?:[\d+x-]+))(?:s(?<spells>(?:[\d+x-]+)))*$/i
 		});
 	}
 
@@ -24,22 +28,40 @@ export default class ArmyCommand extends Command {
 		const url = yield {
 			flag: '--url',
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
-			type: Argument.validate('url', (msg, url) => (this.regex as RegExp).test(url))
+			type: Argument.validate('url', (msg, url) => /^https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=(.*)/.test(url))
 		};
 
 		return { url };
 	}
 
-	public async exec(message: Message, { url, match }: { url?: URL; match?: string[] }) {
-		if (match?.length) url = new URL(match[0]);
-		if (match?.length && !['524672414261444623', '509784317598105619'].includes(message.guild!.id)) return;
-
+	public async exec(message: Message, { url }: { url?: URL }) {
 		const army = url?.searchParams.get('army');
-		if (!army) return message.util!.send(`'**You must provide a valid army composition URL!**'`);
+		if (!army) return message.util!.send(`**You must provide a valid army composition URL!**\nhttps://i.imgur.com/uqDnt5s.png`);
 
-		const matches = /u(?<units>(?:(?:[\d+x-])+))(?:s(?<spells>(?:[\d+x-]+)))*/i.exec(army);
+		const { prefix, suffix } = army.startsWith('s')
+			// eslint-disable-next-line multiline-ternary
+			? {
+				prefix: {
+					id: 's', name: 'spells'
+				},
+				suffix: {
+					id: 'u', name: 'units'
+				}
+			} : {
+				prefix: {
+					id: 'u', name: 'units'
+				},
+				suffix: {
+					id: 's', name: 'spells'
+				}
+			};
+		const matches = new RegExp(`^${prefix.id}(?<${prefix.name}>(?:(?:[\\d+x-])+))(?:${suffix.id}(?<${suffix.name}>(?:[\\d+x-]+)))*$`).exec(army);
 		const TROOP_COMPOS = (matches?.groups?.units as string | null)?.split('-') ?? [];
 		const SPELL_COMPOS = (matches?.groups?.spells as string | null)?.split('-') ?? [];
+
+		if (!TROOP_COMPOS.length && !SPELL_COMPOS.length) {
+			return message.util!.send(`**This army composition URL is invalid!**\nhttps://i.imgur.com/uqDnt5s.png`);
+		}
 
 		const TROOP_IDS = TROOP_COMPOS.map(parts => parts.split(/x/))
 			.map(parts => ({ id: parts.length > 2 ? 0 : Number(parts[1]), total: Number(parts[0]) }));
@@ -48,7 +70,7 @@ export default class ArmyCommand extends Command {
 			.map(parts => ({ id: parts.length > 2 ? 0 : Number(parts[1]), total: Number(parts[0]) }));
 
 		const malformed = ![...TROOP_IDS, ...SPELL_IDS].every(en => typeof en.id === 'number' && typeof en.total === 'number');
-		if (malformed) return message.util!.send(`'**This army composition URL is invalid!**'`);
+		if (malformed) return message.util!.send(`**This army composition URL is invalid!**\nhttps://i.imgur.com/uqDnt5s.png`);
 
 		const uniqueSpells = SPELL_IDS.reduce((prev, curr) => {
 			if (!prev.includes(curr.id)) prev.push(curr.id);
@@ -150,7 +172,6 @@ export default class ArmyCommand extends Command {
 		});
 
 		if (!spells.length && !troops.length && !superTroops.length && !seigeMachines.length) {
-			if (match?.length) return;
 			return message.util!.send('**This army composition URL is invalid!**');
 		}
 
@@ -228,7 +249,6 @@ export default class ArmyCommand extends Command {
 		const mismatch = (troops.length + spells.length + superTroops.length + seigeMachines.length) !== (TROOP_IDS.length + SPELL_IDS.length);
 
 		const invalid = mismatch || duplicate || totalTroop > 300 || totalSpell > 11 || totalSeige > 1 || superTroops.length > 2;
-		if (message.deletable && match?.length) await message.delete().catch(() => null);
-		return message.util!.send((invalid) ? 'This URL is invalid and may not work!' : '', { embed });
+		return message.util!.send((invalid) ? '**This URL is invalid and may not work!**' : '', { embed });
 	}
 }
