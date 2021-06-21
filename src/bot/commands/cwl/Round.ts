@@ -170,14 +170,14 @@ export default class CWLRoundCommand extends Command {
 		const row = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
-					.setCustomID('round<')
+					.setCustomID('round_previous')
 					.setLabel('Previous')
 					.setEmoji('⬅️')
 					.setStyle('SECONDARY')
 			)
 			.addComponents(
 				new MessageButton()
-					.setCustomID('round>')
+					.setCustomID('round_next')
 					.setLabel('Next')
 					.setEmoji('➡️')
 					.setStyle('SECONDARY')
@@ -190,19 +190,19 @@ export default class CWLRoundCommand extends Command {
 		);
 
 		const collector = msg.createMessageComponentInteractionCollector(
-			action => ['round>', 'round<'].includes(action.customID) && action.user.id === message.author.id,
-			{ time: 10000 }
+			action => ['round_next', 'round_previous'].includes(action.customID) && action.user.id === message.author.id,
+			{ time: 15 * 60 * 1000 }
 		);
 
 		collector.on('collect', async action => {
-			if (action.customID === 'round>') {
+			if (action.customID === 'round_next') {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
 				await action.update({ embeds: [this.paginate(chunks, page).items[0].embed] });
 			}
 
-			if (action.customID === 'round<') {
+			if (action.customID === 'round_previous') {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;

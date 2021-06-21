@@ -2,8 +2,7 @@ import { Collections } from '@clashperk/node';
 import Client from './Client';
 import qs from 'querystring';
 import https from 'https';
-import Interaction from './Interaction';
-import { User, Guild } from 'discord.js';
+import { User, Guild, CommandInteraction, ButtonInteraction } from 'discord.js';
 
 export default class StatsHandler {
 	public messages = new Map<string, NodeJS.Timeout>();
@@ -59,14 +58,14 @@ export default class StatsHandler {
 			);
 	}
 
-	public async interactions(interaction: Interaction, command: string) {
+	public async interactions(interaction: CommandInteraction | ButtonInteraction, command: string) {
 		await this.client.db.collection(Collections.BOT_INTERACTIONS)
 			.updateOne({ user: interaction.author.id }, {
 				$inc: {
 					usage: 1
 				},
 				$set: {
-					guild: interaction.guild.id
+					guild: interaction.guild!.id
 				}
 			}, { upsert: true });
 

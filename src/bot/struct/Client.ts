@@ -1,6 +1,4 @@
-import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag, Command } from 'discord-akairo';
-import { APIApplicationCommandInteractionDataOption, APIInteraction } from 'discord-api-types/v8';
-import Interaction, { InteractionParser } from './Interaction';
+import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } from 'discord-akairo';
 import { MessageEmbed, Message, Intents } from 'discord.js';
 import { loadSync } from '@grpc/proto-loader';
 import RPCHandler from '../core/RPCHandler';
@@ -32,6 +30,22 @@ declare module 'discord-akairo' {
 		commandHandler: CommandHandler;
 		listenerHandler: ListenerHandler;
 		inhibitorHandler: InhibitorHandler;
+	}
+}
+
+declare module 'discord.js' {
+	interface CommandInteraction {
+		author: {
+			id: Snowflake;
+			tag: string;
+		};
+	}
+
+	interface ButtonInteraction {
+		author: {
+			id: Snowflake;
+			tag: string;
+		};
 	}
 }
 
@@ -111,72 +125,6 @@ export default class Client extends AkairoClient {
 				Intents.FLAGS.GUILD_MESSAGE_REACTIONS
 			]
 		});
-
-		this.ws.on('INTERACTION_CREATE', async (res: APIInteraction) => {
-			if (!res.member) return; // eslint-disable-line
-			if (res.type === 1) return;
-			// if (res.type === 3) await this.api.channels[res.channel_id].messages[res.message.id].delete(); // eslint-disable-line
-			const interaction = await new Interaction(this, res).parse(res);
-
-			// @ts-expect-error
-			const alias = res.type === 2 ? [res.data!.name] : res.data.custom_id.split(/ +/g); // eslint-disable-line
-			const command = this.commandHandler.findCommand(alias[0]);
-			if (!command) return; // eslint-disable-line
-
-			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) {
-				const perms = interaction.channel.permissionsFor(this.user!)!.missing(['SEND_MESSAGES', 'VIEW_CHANNEL'])
-					.map(perm => {
-						if (perm === 'VIEW_CHANNEL') return 'Read Messages';
-						return perm.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase());
-					});
-
-				// @ts-expect-error
-				return this.api.interactions(res.id, res.token).callback.post({
-					data: {
-						type: 4,
-						data: {
-							content: `Missing **${perms.join('** and **')}** permission${perms.length > 1 ? 's' : ''}.`,
-							flags: 64
-						}
-					}
-				});
-			}
-
-			const flags = ['help', 'invite', 'stats', 'guide'].includes(command.id) ? 64 : 0;
-			// @ts-expect-error
-			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5, data: { flags } } });
-			// eslint-disable-next-line
-			return this.handleInteraction(interaction, command, res.type === 2 ? interaction.options : alias.slice(1).join(' '));
-		});
-	}
-
-	private contentParser(command: Command, content: string | APIApplicationCommandInteractionDataOption[]) {
-		if (Array.isArray(content)) {
-			// @ts-expect-error
-			const contentParser = new InteractionParser({ flagWords: command.contentParser.flagWords, optionFlagWords: command.contentParser.optionFlagWords });
-			return contentParser.parse(content);
-		}
-		// @ts-expect-error
-		return command.contentParser.parse(content);
-	}
-
-	private async handleInteraction(interaction: Interaction, command: Command, content: string | APIApplicationCommandInteractionDataOption[], ignore = false): Promise<any> {
-		if (!ignore) {
-			// @ts-expect-error
-			if (await this.commandHandler.runPostTypeInhibitors(interaction, command)) return;
-		}
-		const parsed = this.contentParser(command, content);
-		// @ts-expect-error
-		const args = await command.argumentRunner.run(interaction, parsed, command.argumentGenerator);
-		if (Flag.is(args, 'cancel')) {
-			return this.commandHandler.emit('commandCancelled', interaction, command);
-		} else if (Flag.is(args, 'continue')) {
-			const continueCommand = this.commandHandler.modules.get(args.command)!;
-			return this.handleInteraction(interaction, continueCommand, args.rest, args.ignore);
-		}
-
-		// @ts-expect-error
-		return this.commandHandler.runCommand(interaction, command, args);
 	}
 
 	private async init() {

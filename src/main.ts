@@ -1,4 +1,5 @@
 import { __rootdir__ } from '../root';
+import '../src/bot/util/Extension';
 import Env from 'dotenv';
 Env.config();
 

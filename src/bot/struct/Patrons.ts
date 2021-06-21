@@ -1,6 +1,5 @@
 import { Settings, Collections } from '@clashperk/node';
-import Interaction from './Interaction';
-import { Message } from 'discord.js';
+import { CommandInteraction, Message } from 'discord.js';
 import Client from './Client';
 
 export interface Patron {
@@ -36,8 +35,8 @@ export default class Patrons {
 		return this.refresh();
 	}
 
-	public get(message: string | Message | Interaction): boolean {
-		if (message instanceof Message || message instanceof Interaction) {
+	public get(message: string | Message | CommandInteraction): boolean {
+		if (message instanceof Message || message instanceof CommandInteraction) {
 			return this.patrons.has(message.author.id) || this.patrons.has(message.guild!.id);
 		}
 		return this.patrons.has(message);
