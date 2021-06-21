@@ -1,5 +1,5 @@
 import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis';
-import { MessageEmbed, Util, Message } from 'discord.js';
+import { MessageEmbed, Util, Message, MessageButton } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { Collections, Season } from '@clashperk/node';
@@ -129,7 +129,11 @@ export default class ClanCommand extends Command {
 			`${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
 		].join('\n'));
 
-		return message.util!.send({ embeds: [embed] });
+		const component = new MessageButton()
+			.setLabel('Clan Badge')
+			.setStyle('LINK')
+			.setURL(data.badgeUrls.large);
+		return message.util!.send({ embeds: [embed], components: [[component]] });
 	}
 
 	private async getActivity(clan: Clan): Promise<{ avg_total: number; avg_online: number } | null> {

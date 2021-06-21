@@ -35,12 +35,6 @@ declare module 'discord-akairo' {
 	}
 }
 
-declare module 'discord.js' {
-	interface ClientEvents {
-		interaction: [Interaction];
-	}
-}
-
 const packageDefinition = loadSync(
 	path.join('scripts', 'routes.proto'),
 	{
@@ -121,8 +115,7 @@ export default class Client extends AkairoClient {
 		this.ws.on('INTERACTION_CREATE', async (res: APIInteraction) => {
 			if (!res.member) return; // eslint-disable-line
 			if (res.type === 1) return;
-			// @ts-expect-error
-			if (res.type === 3) await this.api.channels[res.channel_id].messages[res.message.id].delete(); // eslint-disable-line
+			// if (res.type === 3) await this.api.channels[res.channel_id].messages[res.message.id].delete(); // eslint-disable-line
 			const interaction = await new Interaction(this, res).parse(res);
 
 			// @ts-expect-error

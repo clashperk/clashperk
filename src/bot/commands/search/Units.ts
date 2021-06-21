@@ -1,7 +1,7 @@
-import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS } from '../../util/Emojis';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS } from '../../util/Emojis';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, Message, MessageButton } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { Player } from 'clashofclans.js';
 
@@ -42,24 +42,60 @@ export default class UnitsCommand extends Command {
 		const embed = this.embed(data, true);
 		embed.setColor(this.client.embed(message))
 			.setDescription(`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`);
-		const msg = await message.util!.send({ embeds: [embed] });
 
-		await msg.react('🔥');
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['🔥'].includes(reaction.emoji.name!) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
+		const component = new MessageButton()
+			.setCustomID('units_full_max')
+			.setLabel('Full Max')
+			.setEmoji(EMOJIS.FIRE)
+			.setStyle('SECONDARY');
+		const msg = await message.util!.send({ embeds: [embed], components: [[component]] });
+
+		const collector = msg.createMessageComponentInteractionCollector(
+			action => ['units_th_max', 'units_full_max'].includes(action.customID) && action.user.id === message.author.id,
+			{ time: 5 * 60 * 1000 }
 		);
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '🔥') {
+		collector.on('collect', async action => {
+			if (action.customID === 'units_full_max') {
 				const embed = this.embed(data, false);
 				embed.setColor(this.client.embed(message));
-				embed.setDescription(`Units for TH${data.townHallLevel} ${data.builderHallLevel ? `and BH${data.builderHallLevel}` : ''}`);
-				return msg.edit({ embeds: [embed] });
+				embed.setDescription(
+					`Units for TH${data.townHallLevel} ${data.builderHallLevel ? `and BH${data.builderHallLevel}` : ''}`
+				);
+				await action.update({
+					embeds: [embed],
+					components: [[
+						new MessageButton()
+							.setCustomID('units_th_max')
+							.setLabel('Town Hall Max')
+							.setEmoji(EMOJIS.TOWNHALL)
+							.setStyle('SECONDARY')
+					]]
+				});
+			}
+
+			if (action.customID === 'units_th_max') {
+				const embed = this.embed(data, true);
+				embed.setColor(this.client.embed(message));
+				embed.setDescription(
+					`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`
+				);
+				await action.update({
+					embeds: [embed],
+					components: [[
+						new MessageButton()
+							.setCustomID('units_full_max')
+							.setLabel('Full Max')
+							.setEmoji(EMOJIS.FIRE)
+							.setStyle('SECONDARY')
+					]]
+				});
 			}
 		});
 
-		collector.on('end', () => msg.reactions.removeAll());
+		collector.on('end', async () => {
+			await msg.edit({ components: [] });
+		});
 	}
 
 	private embed(data: Player, option = true) {

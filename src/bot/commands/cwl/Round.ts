@@ -1,7 +1,7 @@
 import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember } from 'clashofclans.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, Message, MessageActionRow, MessageButton } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import moment from 'moment';
 
@@ -165,50 +165,54 @@ export default class CWLRoundCommand extends Command {
 		if (chunks.length === 1) {
 			return message.util!.send({ embeds: [paginated.items[0].embed] });
 		}
-		const msg = await message.util!.send({ embeds: [paginated.items[0].embed] });
-		for (const emoji of ['⬅️', '➡️']) {
-			await msg.react(emoji);
-			await this.delay(250);
-		}
 
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
-			{ time: 60000, max: 10 }
+
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setCustomID('round<')
+					.setLabel('Previous')
+					.setEmoji('⬅️')
+					.setStyle('SECONDARY')
+			)
+			.addComponents(
+				new MessageButton()
+					.setCustomID('round>')
+					.setLabel('Next')
+					.setEmoji('➡️')
+					.setStyle('SECONDARY')
+			);
+		const msg = await message.util!.send(
+			{
+				embeds: [paginated.items[0].embed],
+				components: [row]
+			}
 		);
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
+		const collector = msg.createMessageComponentInteractionCollector(
+			action => ['round>', 'round<'].includes(action.customID) && action.user.id === message.author.id,
+			{ time: 10000 }
+		);
+
+		collector.on('collect', async action => {
+			if (action.customID === 'round>') {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embeds: [embed] });
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+				await action.update({ embeds: [this.paginate(chunks, page).items[0].embed] });
 			}
 
-			if (reaction.emoji.name === '⬅️') {
+			if (action.customID === 'round<') {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embeds: [embed] });
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+				await action.update({ embeds: [this.paginate(chunks, page).items[0].embed] });
 			}
 		});
 
 		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
+			await msg.edit({ components: [] });
 		});
-		return message;
-	}
-
-	private async delay(ms: number) {
-		return new Promise(res => setTimeout(res, ms));
 	}
 
 	private paginate(items: any[], page = 1, pageLength = 1) {
