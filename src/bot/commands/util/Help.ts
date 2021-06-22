@@ -31,7 +31,7 @@ export default class HelpCommand extends Command {
 		const command = yield {
 			flag: '--command',
 			type: 'commandAlias',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { command };

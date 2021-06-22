@@ -36,14 +36,14 @@ export default class WarCommand extends Command {
 				],
 				Argument.range('integer', 1001, 9e6)
 			),
-			unordered: msg.hasOwnProperty('token') ? false : true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			unordered: msg.interaction ? false : true,
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const data = yield {
 			flag: '--tag',
-			unordered: msg.hasOwnProperty('token') ? false : true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			unordered: msg.interaction ? false : true,
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 

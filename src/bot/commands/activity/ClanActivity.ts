@@ -34,7 +34,7 @@ export default class ClanActivityCommand extends Command {
 		const tags = yield {
 			flag: '--clans',
 			unordered: true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'content',
+			match: msg.interaction ? 'option' : 'content',
 			type: async (msg: Message, args: string) => {
 				const tags = args ? args.split(/ +/g) : [];
 				if (tags.length > 1) return args.split(/ +/g);

@@ -34,14 +34,14 @@ export default class UnlinkCommand extends Command {
 	public *args(msg: Message): unknown {
 		const tag = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.parseTag(tag)
 		};
 
 		const member = yield {
 			'flag': '--user',
 			'default': (msg: Message) => msg.member,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'rest',
+			'match': msg.interaction ? 'option' : 'rest',
 			'type': Argument.union('member', (msg, id) => {
 				if (!id) return null;
 				if (!/^\d{17,19}/.test(id)) return null;

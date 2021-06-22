@@ -24,7 +24,7 @@ export default class ProfileCommand extends Command {
 	public *args(msg: Message): unknown {
 		const member = yield {
 			'flag': '--user',
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			'match': msg.interaction ? 'option' : 'phrase',
 			'type': Argument.union('member', (msg, id) => {
 				if (!id) return null;
 				if (!/^\d{17,19}/.test(id)) return null;

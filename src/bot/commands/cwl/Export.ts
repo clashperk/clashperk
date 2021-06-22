@@ -30,7 +30,7 @@ export default class CWLExport extends Command {
 		const tags = yield {
 			'flag': '--tag',
 			'default': [],
-			'match': msg.hasOwnProperty('token') ? 'option' : 'content',
+			'match': msg.interaction ? 'option' : 'content',
 			'type': (msg: Message, args?: string) => args ? args.split(/ +/g) : null
 		};
 

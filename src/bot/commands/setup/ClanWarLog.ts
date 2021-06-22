@@ -18,7 +18,7 @@ export default class WarLogCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.getClan(msg, tag)
 		};
 
@@ -26,7 +26,7 @@ export default class WarLogCommand extends Command {
 			'flag': '--channel',
 			'type': 'textChannel',
 			'default': (msg: Message) => msg.channel,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'match': msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { data, channel };

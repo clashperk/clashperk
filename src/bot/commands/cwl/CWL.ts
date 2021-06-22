@@ -52,7 +52,7 @@ export default class CWLCommand extends Command {
 	public *args(msg: Message): unknown {
 		const command = yield {
 			flag: '--option',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: [
 				['cwl-attacks', 'attacks'],
 				['cwl-remaining', 'remaining', 'missing', 'rem'],

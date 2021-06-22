@@ -54,7 +54,7 @@ export default class LinkCommand extends Command {
 				],
 				(msg: Message, tag: string) => this.parseTag(tag)
 			),
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		if (['link-add', 'link-remove', 'link-list', 'link-alias'].includes(tag)) return Flag.continue(tag);
@@ -67,7 +67,7 @@ export default class LinkCommand extends Command {
 			}),
 			'flag': '--user',
 			'default': (msg: Message) => msg.member,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'rest'
+			'match': msg.interaction ? 'option' : 'rest'
 		};
 
 		const def = yield {

@@ -18,7 +18,7 @@ export default class AliasRemoveCommand extends Command {
 			id: 'name',
 			type: 'lowercase',
 			flag: '--name',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { name };

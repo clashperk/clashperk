@@ -21,7 +21,7 @@ export default class WarExport extends Command {
 			'flag': '--number',
 			'default': 25,
 			'type': Argument.range('integer', 1, Infinity, true),
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'match': msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { num };

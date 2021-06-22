@@ -39,13 +39,13 @@ export default class VerifyPlayerCommand extends Command {
 		const tag = yield {
 			flag: '--tag',
 			type: 'string',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const token = yield {
 			flag: '--token',
 			type: 'string',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { tag, token };

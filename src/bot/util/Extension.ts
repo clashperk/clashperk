@@ -9,6 +9,15 @@ class ButtonInteraction extends Structures.get('ButtonInteraction') {
 		return this.user;
 	}
 
+	public get interaction() {
+		return {
+			id: this.id,
+			type: this.type,
+			user: this.user,
+			commandName: this.customID
+		};
+	}
+
 	public get util() {
 		if (this.commandUtils.has(this.id)) return this.commandUtils.get(this.id);
 		const util = new CommandUtil(this);
@@ -33,6 +42,15 @@ class CommandInteraction extends Structures.get('CommandInteraction') {
 
 	public get author() {
 		return this.user;
+	}
+
+	public get interaction() {
+		return {
+			id: this.id,
+			type: this.type,
+			user: this.user,
+			commandName: this.commandName
+		};
 	}
 
 	public get util() {

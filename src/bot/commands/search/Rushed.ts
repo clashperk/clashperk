@@ -42,13 +42,13 @@ export default class RushedCommand extends Command {
 			flag: '--base',
 			unordered: true,
 			type: Argument.range('integer', 1, 25),
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const data = yield {
 			flag: '--tag',
 			unordered: true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: async (message: Message, args: string) => {
 				if (flag) return this.client.resolver.resolveClan(message, args);
 				return this.client.resolver.resolvePlayer(message, args, base ?? 1);

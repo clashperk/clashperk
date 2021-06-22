@@ -18,7 +18,7 @@ export default class DonationLogCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.getClan(msg, tag)
 		};
 
@@ -27,7 +27,7 @@ export default class DonationLogCommand extends Command {
 			'unordered': [1, 2],
 			'type': 'textChannel',
 			'default': (msg: Message) => msg.channel,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'match': msg.interaction ? 'option' : 'phrase'
 		};
 
 		const hexColor = yield {
@@ -35,7 +35,7 @@ export default class DonationLogCommand extends Command {
 			'flag': '--color',
 			'unordered': [1, 2],
 			'default': (msg: Message) => this.client.embed(msg),
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'match': msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { data, channel, hexColor };

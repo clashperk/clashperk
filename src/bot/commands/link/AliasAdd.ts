@@ -17,12 +17,12 @@ export default class AliasAddCommand extends Command {
 		const name = yield {
 			type: 'lowercase',
 			flag: '--name',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const tag = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => tag ? this.parseTag(tag) : null
 		};
 

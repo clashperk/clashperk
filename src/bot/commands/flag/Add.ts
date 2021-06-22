@@ -17,7 +17,7 @@ export default class FlagAddCommand extends Command {
 	public *args(msg: Message): unknown {
 		const tags = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: async (msg: Message, args: string) => {
 				const tags = args ? args.split(/ +/g) : [];
 				if (tags.length > 1) return args.split(/ +/g);
@@ -27,7 +27,7 @@ export default class FlagAddCommand extends Command {
 
 		const reason = yield {
 			flag: '--reason',
-			match: msg.hasOwnProperty('token') ? 'option' : 'rest'
+			match: msg.interaction ? 'option' : 'rest'
 		};
 
 		return { tags, reason };

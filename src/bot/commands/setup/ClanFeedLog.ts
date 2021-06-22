@@ -18,7 +18,7 @@ export default class MemberLogCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.getClan(msg, tag)
 		};
 
@@ -27,14 +27,14 @@ export default class MemberLogCommand extends Command {
 			'unordered': [1, 2],
 			'type': 'textChannel',
 			'default': (msg: Message) => msg.channel,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'match': msg.interaction ? 'option' : 'phrase'
 		};
 
 		const role = yield {
 			type: 'role',
 			flag: '--role',
 			unordered: [1, 2],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { data, channel, role };

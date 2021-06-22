@@ -27,7 +27,7 @@ export default class ArmyCommand extends Command {
 	public *args(msg: Message): unknown {
 		const url = yield {
 			flag: '--url',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: Argument.validate('url', (msg, url) => /^https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=(.*)/.test(url))
 		};
 

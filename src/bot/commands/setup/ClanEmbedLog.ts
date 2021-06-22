@@ -20,7 +20,7 @@ export default class ClanEmbedCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: async (msg: Message, args: string) => {
 				if (!this.client.patrons.get(msg.guild!.id)) return this.bePatron(msg);
 				return this.client.resolver.resolveClan(msg, args);

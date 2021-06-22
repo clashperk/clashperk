@@ -18,7 +18,7 @@ export default class LinkPlayerCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.getPlayer(msg, tag)
 		};
 
@@ -26,7 +26,7 @@ export default class LinkPlayerCommand extends Command {
 			'flag': '--user',
 			'type': 'member',
 			'default': (m: Message) => m.member,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'match': msg.interaction ? 'option' : 'phrase'
 		};
 
 		const def = yield {

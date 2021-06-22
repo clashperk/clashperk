@@ -62,7 +62,7 @@ export default class RemoveCommand extends Command {
 	public *args(msg: Message): unknown {
 		const bit = yield {
 			flag: ['--option', '--channel'],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: Argument.union(
 				[
 					['all'],
@@ -80,7 +80,7 @@ export default class RemoveCommand extends Command {
 
 		const tag = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
 		};
 

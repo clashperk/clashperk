@@ -11,7 +11,7 @@ export default class CommandCancelledListener extends Listener {
 	}
 
 	public exec(message: Message, command: Command) {
-		const label = message.guild ? `${message.guild.name}/${message.author.tag} ${message.hasOwnProperty('token') ? '/' : ''}` : `${message.author.tag}`;
+		const label = message.guild ? `${message.guild.name}/${message.author.tag} ${message.interaction ? '/' : ''}` : `${message.author.tag}`;
 		this.client.logger.debug(`${command.id} ~ commandCancelled`, { label });
 
 		// Counters

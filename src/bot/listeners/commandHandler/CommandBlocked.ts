@@ -23,7 +23,7 @@ export default class CommandBlockedListener extends Listener {
 	public exec(message: Message, command: Command, reason: string) {
 		const msg = texts[reason];
 
-		if (reason === 'beta' && message.hasOwnProperty('token') && msg) {
+		if (reason === 'beta' && message.interaction && msg) {
 			return message.util!.send(msg);
 		}
 

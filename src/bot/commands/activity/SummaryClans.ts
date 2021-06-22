@@ -30,7 +30,7 @@ export default class ClanSummaryCommand extends Command {
 				...SEASON_IDS,
 				[SEASON_IDS[0], 'last']
 			],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { season };

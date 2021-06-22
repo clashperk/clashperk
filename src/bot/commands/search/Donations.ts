@@ -43,14 +43,14 @@ export default class DonationsCommand extends Command {
 				}),
 				['last', 'prev']
 			],
-			unordered: msg.hasOwnProperty('token') ? false : [0, 1],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			unordered: msg.interaction ? false : [0, 1],
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const data = yield {
 			flag: '--tag',
-			unordered: msg.hasOwnProperty('token') ? false : [0, 1],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			unordered: msg.interaction ? false : [0, 1],
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
@@ -143,7 +143,7 @@ export default class DonationsCommand extends Command {
 			{ type: 2, style: 2, label: 'Refresh', custom_id: `don --tag ${data.tag}` }
 		];
 
-		if (message.hasOwnProperty('token')) {
+		if (message.interaction) {
 			// @ts-expect-error
 			return this.client.api.webhooks(this.client.user!.id, message.token)
 				.messages[msg.id]

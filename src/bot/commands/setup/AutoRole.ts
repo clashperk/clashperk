@@ -61,7 +61,7 @@ export default class AutoRoleCommand extends Command {
 		message: Message,
 		{ tag, member, admin, coLeader, secureRole }: { tag?: string; member?: Role; admin?: Role; coLeader?: Role; secureRole: boolean }
 	) {
-		if (!message.hasOwnProperty('token')) {
+		if (!message.interaction) {
 			return message.util!.send(
 				{
 					content: 'This command only works with slash command.',

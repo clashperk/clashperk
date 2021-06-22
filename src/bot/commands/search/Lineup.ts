@@ -22,8 +22,8 @@ export default class LineupCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			unordered: msg.hasOwnProperty('token') ? false : true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			unordered: msg.interaction ? false : true,
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
@@ -55,7 +55,7 @@ export default class LineupCommand extends Command {
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		const interaction = message.hasOwnProperty('token');
+		const interaction = message.interaction;
 		const chunks = Util.splitMessage([
 			`\u200e**${Util.escapeMarkdown(body.clan.name)} (${body.clan.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,

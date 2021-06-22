@@ -73,21 +73,21 @@ export default class SetupCommand extends Command {
 				(msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
 			),
 			flag: ['--option'],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		if (method && (method as string).includes('setup')) return Flag.continue(method);
 
 		const tag = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'none',
+			match: msg.interaction ? 'option' : 'none',
 			type: (msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
 		};
 
 		const channel = yield {
 			flag: '--channel',
 			type: 'textChannel',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { channel, tag: tag ? tag : method };
@@ -201,7 +201,7 @@ export default class SetupCommand extends Command {
 		);
 
 		for (const chunks of this.chunk(embeds)) {
-			if (message.hasOwnProperty('token')) {
+			if (message.interaction) {
 				await message.util!.send({ embeds: chunks });
 			} else {
 				// @ts-expect-error

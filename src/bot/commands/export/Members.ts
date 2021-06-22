@@ -91,7 +91,7 @@ export default class ExportClanMembersCommand extends Command {
 			.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
 		const buffer = await this.excel(members);
-		if (msg.deletable && !message.hasOwnProperty('token')) await msg.delete();
+		if (msg.deletable && !message.interaction) await msg.delete();
 		return message.util!.send({
 			content: `**${message.guild!.name} Members**`,
 			files: [{

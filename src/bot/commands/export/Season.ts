@@ -28,7 +28,7 @@ export default class ExportSeason extends Command {
 					return Season.generateID(now);
 				})
 			],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { season };

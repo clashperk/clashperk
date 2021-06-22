@@ -26,7 +26,7 @@ export default class DebugCommand extends Command {
 		const channel = yield {
 			'type': 'textChannel',
 			'default': (message: Message) => message.channel,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'match': msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { channel };
@@ -54,7 +54,7 @@ export default class DebugCommand extends Command {
 
 		const UEE_FOR_SLASH = channel.permissionsFor(message.guild!.id)!.has('USE_EXTERNAL_EMOJIS');
 		const UEE_FOR_TEXT = channel.permissionsFor(this.client.user!)!.has('USE_EXTERNAL_EMOJIS');
-		const emojis = (message.hasOwnProperty('token') && UEE_FOR_SLASH) || (!message.hasOwnProperty('token') && UEE_FOR_TEXT)
+		const emojis = (message.interaction && UEE_FOR_SLASH) || (!message.interaction && UEE_FOR_TEXT)
 			? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
 			: { cross: '❌', tick: '☑️', none: '⬛' };
 
