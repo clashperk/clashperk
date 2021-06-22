@@ -2,7 +2,7 @@ import { Clan, PlayerItem, Player } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
-import { Message, Util, MessageEmbed } from 'discord.js';
+import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 
 const roleIds: { [key: string]: number } = {
 	member: 1,
@@ -136,47 +136,70 @@ export default class MembersCommand extends Command {
 			].join('\n'));
 		}
 
-		const msg = await message.util!.send({ embeds: [embed] });
-		for (const emoji of ['📥', EMOJIS.DISCORD]) {
-			await msg.react(emoji);
-			await new Promise(res => setTimeout(res, 250));
-		}
+		const [discord, download] = [this.client.uuid(), this.client.uuid()];
 
-		const { id } = Util.parseEmoji(EMOJIS.DISCORD)!;
-		const collector = msg.createReactionCollector(
-			(reaction, user) => (reaction.emoji.name === '📥' || reaction.emoji.id === id) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setCustomID(discord)
+					.setLabel('Discord')
+					.setEmoji(EMOJIS.DISCORD)
+					.setStyle('SECONDARY')
+			)
+			.addComponents(
+				new MessageButton()
+					.setCustomID(download)
+					.setLabel('Download')
+					.setEmoji('📥')
+					.setStyle('SECONDARY')
+			);
+
+		const msg = await message.util!.send({ embeds: [embed], components: [row] });
+
+		const collector = msg.createMessageComponentInteractionCollector(
+			action => [discord, download].includes(action.customID) && action.user.id === message.author.id,
+			{ time: 15 * 60 * 1000 }
 		);
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '📥') {
+		collector.on('collect', async action => {
+			if (action.customID === discord) {
+				await action.update({ components: [] });
+				await this.handler.runCommand(message, this.handler.modules.get('link-list')!, { data });
+			}
+
+			if (action.customID === download) {
 				if (this.client.patrons.get(message)) {
+					row.components[1].setDisabled(true);
+					await action.update({ components: [row] });
+
 					const buffer = await this.excel(members);
-					return message.util!.send({
+					await action.followUp({
 						content: `**${data.name} (${data.tag})**`,
 						files: [{
 							attachment: Buffer.from(buffer), name: 'clan_members.xlsx'
 						}]
 					});
-				}
-				const embed = new MessageEmbed()
-					.setDescription([
-						'**Patron Only Command**',
-						'This command is only available on Patron servers.',
-						'Visit https://patreon.com/clashperk for more details.',
-						'',
-						'**Demo Clan Member Export**'
-					].join('\n'))
-					.setImage('https://i.imgur.com/Uc5G2oS.png');
-				return message.channel.send({ embeds: [embed] });
-			}
+				} else {
+					const embed = new MessageEmbed()
+						.setDescription([
+							'**Patron Only Command**',
+							'This command is only available on Patron servers.',
+							'Visit https://patreon.com/clashperk for more details.',
+							'',
+							'**Demo Clan Member Export**'
+						].join('\n'))
+						.setImage('https://i.imgur.com/Uc5G2oS.png');
 
-			if (reaction.emoji.id === id) {
-				return this.handler.runCommand(message, this.handler.modules.get('link-list')!, { data });
+					await action.reply({ embeds: [embed], ephemeral: true });
+				}
 			}
 		});
 
-		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+		collector.on('end', async () => {
+			this.client.components.delete(discord);
+			this.client.components.delete(download);
+			if (msg.editable) await msg.edit({ components: [] });
+		});
 	}
 
 	private heroes(items: PlayerItem[]) {

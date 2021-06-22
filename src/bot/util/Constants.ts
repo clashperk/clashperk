@@ -58,7 +58,9 @@ export const SETTINGS = {
 	PREFIX: 'prefix',
 	COLOR: 'color',
 	LIMIT: 'clanLimit',
-	MOD_LOG: 'modLog'
+	MOD_LOG: 'modLog',
+	USER_BLACKLIST: 'blacklist',
+	GUILD_BLACKLIST: 'guildBans'
 };
 
 export const Op = {

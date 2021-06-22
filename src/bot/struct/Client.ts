@@ -10,6 +10,7 @@ import Logger from '../util/Logger';
 import Stats from './StatsHandler';
 import Resolver from './Resolver';
 import Patrons from './Patrons';
+import * as uuid from 'uuid';
 import { Db } from 'mongodb';
 import Http from './Http';
 import path from 'path';
@@ -21,11 +22,13 @@ declare module 'discord-akairo' {
 		http: Http;
 		stats: Stats;
 		logger: Logger;
+		uuid(): string;
 		patrons: Patrons;
 		storage: Storage;
 		resolver: Resolver;
 		settings: Settings;
 		rpcHandler: RPCHandler;
+		components: Set<string>;
 		embed(msg: Message): number;
 		commandHandler: CommandHandler;
 		listenerHandler: ListenerHandler;
@@ -72,6 +75,7 @@ export default class Client extends AkairoClient {
 	public resolver!: Resolver;
 	public settings!: Settings;
 	public rpcHandler!: RPCHandler;
+	public components = new Set<string>();
 	public logger: Logger = new Logger(this);
 
 	public commandHandler: CommandHandler = new CommandHandler(this, {
@@ -168,6 +172,12 @@ export default class Client extends AkairoClient {
 
 	public embed(message: Message) {
 		return this.settings.get<number>(message.guild!, 'color', undefined);
+	}
+
+	public uuid() {
+		const uniqueId = uuid.v4();
+		this.components.add(uniqueId);
+		return uniqueId;
 	}
 
 	private run() {

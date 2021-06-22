@@ -2,9 +2,12 @@ import { Collection, Snowflake, Structures } from 'discord.js';
 import { CommandUtil } from './CommandUtil';
 
 class ButtonInteraction extends Structures.get('ButtonInteraction') {
-	public author = { id: this.user.id, tag: this.user.tag };
 	public commandUtils = new Collection<Snowflake, CommandUtil>();
 	public sweep = setInterval(this.sweepCommandUtil.bind(this), 5 * 60 * 1000);
+
+	public get author() {
+		return this.user;
+	}
 
 	public get util() {
 		if (this.commandUtils.has(this.id)) return this.commandUtils.get(this.id);
@@ -25,9 +28,12 @@ class ButtonInteraction extends Structures.get('ButtonInteraction') {
 }
 
 class CommandInteraction extends Structures.get('CommandInteraction') {
-	public author = { id: this.user.id, tag: this.user.tag };
 	public commandUtils = new Collection<Snowflake, CommandUtil>();
 	public sweep = setInterval(this.sweepCommandUtil.bind(this), 5 * 60 * 1000);
+
+	public get author() {
+		return this.user;
+	}
 
 	public get util() {
 		if (this.commandUtils.has(this.id)) return this.commandUtils.get(this.id);

@@ -1,5 +1,6 @@
-import { Collection, CommandInteractionOption, Interaction, TextChannel } from 'discord.js';
+import { CommandInteractionOption, Interaction, TextChannel } from 'discord.js';
 import { Listener, Command, Flag } from 'discord-akairo';
+import { SETTINGS } from '../../util/Constants';
 
 interface Parsed {
 	type: string;
@@ -73,8 +74,8 @@ export class InteractionOptionParser {
 		return this.parseOptions(options, all, phrases, flags, optionFlags);
 	}
 
-	public parse(args: Collection<string, CommandInteractionOption>) {
-		const [all, phrases, flags, optionFlags] = this.parseOptions(Array.from(args.values()));
+	public parse(args: CommandInteractionOption[]) {
+		const [all, phrases, flags, optionFlags] = this.parseOptions(args);
 		return { all, phrases, flags, optionFlags };
 	}
 }
@@ -88,7 +89,21 @@ export default class InteractionListener extends Listener {
 		});
 	}
 
+	private inhibitor(interaction: Interaction) {
+		if (!interaction.guildID) return true;
+
+		const guilds = this.client.settings.get<string[]>('global', SETTINGS.GUILD_BLACKLIST, []);
+		if (guilds.includes(interaction.guildID)) true;
+
+		const users = this.client.settings.get<string[]>('global', SETTINGS.USER_BLACKLIST, []);
+		if (users.includes(interaction.user.id)) return true;
+		return false;
+	}
+
 	public async exec(interaction: Interaction) {
+		if (this.inhibitor(interaction)) return;
+
+		this.buttonInteraction(interaction);
 		if (!interaction.isCommand()) return;
 
 		const command = this.client.commandHandler.findCommand(interaction.commandName);
@@ -109,11 +124,19 @@ export default class InteractionListener extends Listener {
 		}
 
 		await interaction.defer({ ephemeral: ['help', 'invite'].includes(command.id) });
-		return this.handleInteraction(interaction, command, interaction.options, false);
+		return this.handleInteraction(interaction, command, Array.from(interaction.options.values()), false);
 	}
 
-	private contentParser(command: Command, content: Collection<string, CommandInteractionOption> | string) {
-		if (content instanceof Collection) {
+	private async buttonInteraction(interaction: Interaction) {
+		if (!interaction.isButton()) return;
+		if (this.client.components.has(interaction.customID)) return;
+
+		await interaction.update({ components: [] });
+		return interaction.followUp({ content: 'This button has expired, use the command again.', ephemeral: true });
+	}
+
+	private contentParser(command: Command, content: string | CommandInteractionOption[]) {
+		if (Array.isArray(content)) {
 			const contentParser = new InteractionOptionParser({
 				// @ts-expect-error
 				flagWords: command.contentParser.flagWords,
@@ -126,7 +149,7 @@ export default class InteractionListener extends Listener {
 		return command.contentParser.parse(content);
 	}
 
-	private async handleInteraction(interaction: Interaction, command: Command, content: string | Collection<string, CommandInteractionOption>, ignore = false): Promise<unknown> {
+	private async handleInteraction(interaction: Interaction, command: Command, content: string | CommandInteractionOption[], ignore = false): Promise<unknown> {
 		if (!ignore) {
 			// @ts-expect-error
 			if (await this.client.commandHandler.runPostTypeInhibitors(interaction, command)) return;
