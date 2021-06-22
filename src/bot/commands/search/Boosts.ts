@@ -65,7 +65,7 @@ export default class BoostsCommand extends Command {
 		});
 	}
 
-	private async getEmbed(message: Message, tag: string, data?: Clan) {
+	private async getEmbed(message: Message, tag: string, data?: Clan): Promise<{ embeds: MessageEmbed[]; content?: string }> {
 		if (!data) data = await this.client.http.clan(tag);
 		if (!data.ok) return { embeds: [], content: `**${status(data.statusCode)}**` };
 		const members = (await this.client.http.detailedClanMembers(data.memberList))
@@ -103,7 +103,8 @@ export default class BoostsCommand extends Command {
 			);
 		}
 
-		return { embeds: [embed], content: undefined };
+		// @ts-expect-error
+		return { embeds: [embed], content: null };
 	}
 
 	private boostable(players: Player[]) {
