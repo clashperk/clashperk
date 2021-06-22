@@ -166,18 +166,18 @@ export default class CWLRoundCommand extends Command {
 			return message.util!.send({ embeds: [paginated.items[0].embed] });
 		}
 
-
+		const [nextID, prevID] = [this.client.uuid(), this.client.uuid()];
 		const row = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
-					.setCustomID('round_previous')
+					.setCustomID(prevID)
 					.setLabel('Previous')
 					.setEmoji('⬅️')
 					.setStyle('SECONDARY')
 			)
 			.addComponents(
 				new MessageButton()
-					.setCustomID('round_next')
+					.setCustomID(nextID)
 					.setLabel('Next')
 					.setEmoji('➡️')
 					.setStyle('SECONDARY')
@@ -190,19 +190,19 @@ export default class CWLRoundCommand extends Command {
 		);
 
 		const collector = msg.createMessageComponentInteractionCollector(
-			action => ['round_next', 'round_previous'].includes(action.customID) && action.user.id === message.author.id,
+			action => [nextID, prevID].includes(action.customID) && action.user.id === message.author.id,
 			{ time: 15 * 60 * 1000 }
 		);
 
 		collector.on('collect', async action => {
-			if (action.customID === 'round_next') {
+			if (action.customID === nextID) {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
 				await action.update({ embeds: [this.paginate(chunks, page).items[0].embed] });
 			}
 
-			if (action.customID === 'round_previous') {
+			if (action.customID === prevID) {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
@@ -211,7 +211,9 @@ export default class CWLRoundCommand extends Command {
 		});
 
 		collector.on('end', async () => {
-			await msg.edit({ components: [] });
+			this.client.components.delete(nextID);
+			this.client.components.delete(prevID);
+			if (msg.editable) await msg.edit({ components: [] });
 		});
 	}
 

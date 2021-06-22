@@ -43,20 +43,21 @@ export default class UnitsCommand extends Command {
 		embed.setColor(this.client.embed(message))
 			.setDescription(`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`);
 
+		const [fullMaxID, hallMaxID] = [this.client.uuid(), this.client.uuid()];
 		const component = new MessageButton()
-			.setCustomID('units_full_max')
+			.setCustomID(fullMaxID)
 			.setLabel('Full Max')
 			.setEmoji(EMOJIS.FIRE)
 			.setStyle('SECONDARY');
 		const msg = await message.util!.send({ embeds: [embed], components: [[component]] });
 
 		const collector = msg.createMessageComponentInteractionCollector(
-			action => ['units_th_max', 'units_full_max'].includes(action.customID) && action.user.id === message.author.id,
+			action => [hallMaxID, fullMaxID].includes(action.customID) && action.user.id === message.author.id,
 			{ time: 5 * 60 * 1000 }
 		);
 
 		collector.on('collect', async action => {
-			if (action.customID === 'units_full_max') {
+			if (action.customID === fullMaxID) {
 				const embed = this.embed(data, false);
 				embed.setColor(this.client.embed(message));
 				embed.setDescription(
@@ -66,7 +67,7 @@ export default class UnitsCommand extends Command {
 					embeds: [embed],
 					components: [[
 						new MessageButton()
-							.setCustomID('units_th_max')
+							.setCustomID(hallMaxID)
 							.setLabel('Town Hall Max')
 							.setEmoji(EMOJIS.TOWNHALL)
 							.setStyle('SECONDARY')
@@ -74,7 +75,7 @@ export default class UnitsCommand extends Command {
 				});
 			}
 
-			if (action.customID === 'units_th_max') {
+			if (action.customID === hallMaxID) {
 				const embed = this.embed(data, true);
 				embed.setColor(this.client.embed(message));
 				embed.setDescription(
@@ -84,7 +85,7 @@ export default class UnitsCommand extends Command {
 					embeds: [embed],
 					components: [[
 						new MessageButton()
-							.setCustomID('units_full_max')
+							.setCustomID(fullMaxID)
 							.setLabel('Full Max')
 							.setEmoji(EMOJIS.FIRE)
 							.setStyle('SECONDARY')
@@ -94,7 +95,9 @@ export default class UnitsCommand extends Command {
 		});
 
 		collector.on('end', async () => {
-			await msg.edit({ components: [] });
+			this.client.components.delete(fullMaxID);
+			this.client.components.delete(hallMaxID);
+			if (msg.deletable) await msg.edit({ components: [] });
 		});
 	}
 

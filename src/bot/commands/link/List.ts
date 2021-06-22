@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, Snowflake, Util } from 'discord.js';
+import { Message, MessageButton, MessageEmbed, Snowflake, Util } from 'discord.js';
 import { COLLECTIONS } from '../../util/Constants';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
@@ -57,29 +57,38 @@ export default class LinkListCommand extends Command {
 		// Not linked to discord.
 		const offDiscord = data.memberList.filter(m => !notInDiscord.some(en => en.tag === m.tag) && !memberTags.some(en => en.tag === m.tag && message.guild!.members.cache.has(en.user as Snowflake)));
 
-		const embed = this.buildEmbed(message, data, false, onDiscord, offDiscord, notInDiscord);
-		const msg = await message.util!.send({ embeds: [embed] });
+		const embed = this.getEmbed(message, data, false, onDiscord, offDiscord, notInDiscord);
 
-		if (!onDiscord.length) return; // Let's stop right here!
+		if (!onDiscord.length) return message.util!.send({ embeds: [embed] });
 
-		await msg.react(EMOJIS.HASH);
-		const { id } = Util.parseEmoji(EMOJIS.HASH)!;
-		const collector = msg.createReactionCollector(
-			(reaction, user) => [id].includes(reaction.emoji.id) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
+		const customID = this.client.uuid();
+		const button = new MessageButton()
+			.setStyle('SECONDARY')
+			.setLabel('Show Tags')
+			.setEmoji(EMOJIS.HASH)
+			.setCustomID(customID);
+
+		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const collector = msg.createMessageComponentInteractionCollector(
+			action => action.customID === customID && action.user.id === message.author.id,
+			{ time: 15 * 60 * 1000 }
 		);
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.id === id) {
-				const embed = this.buildEmbed(message, data, true, onDiscord, offDiscord, notInDiscord);
-				return message.util!.send({ embeds: [embed] });
+		collector.on('collect', async action => {
+			if (action.customID === customID) {
+				const embed = this.getEmbed(message, data, true, onDiscord, offDiscord, notInDiscord);
+				await action.update({ embeds: [embed] });
+				return collector.stop();
 			}
 		});
 
-		collector.on('end', () => msg.reactions.removeAll());
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (msg.editable) await msg.edit({ components: [] });
+		});
 	}
 
-	private buildEmbed(message: Message, data: Clan, showTag: boolean, onDiscord: { tag: string; user: string }[], offDiscord: ClanMember[], notInDiscord: any[]) {
+	private getEmbed(message: Message, data: Clan, showTag: boolean, onDiscord: { tag: string; user: string }[], offDiscord: ClanMember[], notInDiscord: any[]) {
 		const chunks = Util.splitMessage([
 			`${EMOJIS.DISCORD} **Players on Discord: ${onDiscord.length}**`,
 			onDiscord.map(
