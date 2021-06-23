@@ -1,7 +1,7 @@
 import { MessageEmbed, Message, Collection, TextChannel, PermissionString, Snowflake } from 'discord.js';
 import { EMOJIS, TOWN_HALLS, CWL_LEAGUES } from '../util/Emojis';
 import { ORANGE_NUMBERS } from '../util/NumEmojis';
-import { COLLECTIONS } from '../util/Constants';
+import { Collections } from '../util/Constants';
 import { Clan } from 'clashofclans.js';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
@@ -122,7 +122,7 @@ export default class ClanEmbedLog {
 				cache.message = message.id;
 				cache.msg = message;
 				this.cached.set(id, cache);
-				await this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS)
+				await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
 					.updateOne({ clan_id: new ObjectId(id) }, { $set: { message: message.id } });
 			} catch (error) {
 				this.client.logger.warn(error, { label: 'MONGODB_ERROR' });
@@ -204,7 +204,7 @@ export default class ClanEmbedLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS)
+		await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
@@ -218,7 +218,7 @@ export default class ClanEmbedLog {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS)
+		const data = await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

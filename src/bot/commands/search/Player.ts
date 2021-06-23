@@ -1,9 +1,9 @@
 import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES, SEIGE_MACHINES } from '../../util/Emojis';
-import { COLLECTIONS, leagueId } from '../../util/Constants';
+import { Collections, leagueId } from '../../util/Constants';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { Player, WarClan } from 'clashofclans.js';
-import { Collections, Season } from '@clashperk/node';
+import { Season } from '../../packages';
 import ms from 'ms';
 
 const roles: { [key: string]: string } = {
@@ -55,7 +55,7 @@ export default class PlayerCommand extends Command {
 	}
 
 	public async exec(message: Message, { data }: { data: Player }) {
-		const aggregated = await this.client.db.collection(COLLECTIONS.LAST_ONLINES)
+		const aggregated = await this.client.db.collection(Collections.LAST_SEEN)
 			.aggregate([
 				{
 					$match: {

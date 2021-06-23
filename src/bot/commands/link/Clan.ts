@@ -1,7 +1,6 @@
-import { COLLECTIONS, EMBEDS, Op, SETTINGS, Util } from '../../util/Constants';
+import { Collections, EMBEDS, Flags, Settings } from '../../util/Constants';
 import { Command, Argument, PrefixSupplier } from 'discord-akairo';
 import { Message, GuildMember, TextChannel } from 'discord.js';
-import { BitField } from '@clashperk/node';
 import { Clan } from 'clashofclans.js';
 
 export default class LinkClanCommand extends Command {
@@ -54,7 +53,7 @@ export default class LinkClanCommand extends Command {
 						channels: parsed.id
 					},
 					$bit: {
-						flag: { or: BitField.CHANNEL_LINKED }
+						flag: { or: Flags.CHANNEL_LINKED }
 					},
 					$min: {
 						createdAt: new Date()
@@ -64,7 +63,7 @@ export default class LinkClanCommand extends Command {
 
 			if (upsertedCount) {
 				await this.client.rpcHandler.add(upsertedId._id.toHexString(), {
-					op: Op.CHANNEL_LINKED,
+					op: Flags.CHANNEL_LINKED,
 					guild: message.guild!.id,
 					tag: data.tag
 				});
@@ -75,7 +74,7 @@ export default class LinkClanCommand extends Command {
 		}
 
 		if (parsed.user.bot) return message.util!.send('Bots can\'t link accounts.');
-		await this.client.db.collection(COLLECTIONS.LINKED_CLANS)
+		await this.client.db.collection(Collections.LINKED_CLANS)
 			.updateOne({ user: parsed.id }, {
 				$set: {
 					tag: data.tag,
@@ -84,7 +83,7 @@ export default class LinkClanCommand extends Command {
 				}
 			}, { upsert: true });
 
-		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+		await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.updateOne({ user: parsed.id }, {
 				$set: {
 					clan: {
@@ -112,35 +111,42 @@ export default class LinkClanCommand extends Command {
 	private async enforceSecurity(message: Message, data: Clan) {
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const clans = await this.client.storage.findAll(message.guild!.id);
-		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
+		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
 			await message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
 			return Promise.resolve(false);
 		}
 
-		const dbUser = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+		const dbUser = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.findOne({ user: message.author.id });
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
-		if (!clan.verified && !Util.verifyClan(code, data, dbUser?.entries ?? [])) {
+		if (!clan.verified && !this.verifyClan(code, data, dbUser?.entries ?? [])) {
 			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
 			await message.util!.send({ embeds: [embed] });
 			return Promise.resolve(false);
 		}
 
 		const id = await this.client.storage.register(message, {
-			op: Op.CHANNEL_LINKED,
+			op: Flags.CHANNEL_LINKED,
 			guild: message.guild!.id,
 			name: data.name,
 			tag: data.tag
 		});
 
 		await this.client.rpcHandler.add(id, {
-			op: Op.CHANNEL_LINKED,
+			op: Flags.CHANNEL_LINKED,
 			tag: data.tag,
 			guild: message.guild!.id
 		});
 
 		return Promise.resolve(true);
+	}
+
+	private verifyClan(code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) {
+		// clan verification by unique code or verified co/leader
+		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
+		return clan.memberList.filter(m => ['coLeader', 'leader'].includes(m.role))
+			.some(m => verifiedTags.includes(m.tag)) || clan.description.toUpperCase().includes(code);
 	}
 }

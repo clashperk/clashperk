@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Message, MessageEmbed } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
@@ -25,7 +25,7 @@ export default class FlagShowCommand extends Command {
 	}
 
 	public async exec(message: Message, { data }: { data: Player }) {
-		const flag = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
+		const flag = await this.client.db.collection(Collections.FLAGS)
 			.findOne({ guild: message.guild!.id, tag: data.tag });
 
 		if (!flag) {

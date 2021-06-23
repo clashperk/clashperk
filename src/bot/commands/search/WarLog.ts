@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { MessageEmbed, Message } from 'discord.js';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -65,10 +64,10 @@ export default class WarLogCommand extends Command {
 			const { clan, opponent } = item;
 			const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
 			embed.addField(
-				`\u200b\n\u200e${this.result(item.result)} ${opponent.name || 'Clan War League'} ${extra ? `\u200e(#${extra.id})` : ''}`,
+				`\u200b\n\u200e${this.result(item.result)} ${opponent.name || 'Clan War League'} ${extra ? `\u200e(#${extra.id as string})` : ''}`,
 				[
 					`${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${EMOJIS.FIRE} ${(clan.destructionPercentage || 0).toFixed(2)}% ${opponent.name ? `/ ${(opponent.destructionPercentage || 0).toFixed(2)}%` : ''}`,
-					`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${EMOJIS.SWORD} ${clan.attacks}${extra ? ` / ${extra.attacks}` : ''} ${EMOJIS.CLOCK} ${time} ago`
+					`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${EMOJIS.SWORD} ${clan.attacks}${extra ? ` / ${extra.attacks as string}` : ''} ${EMOJIS.CLOCK} ${time} ago`
 				].join('\n')
 			);
 		}

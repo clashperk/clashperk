@@ -1,5 +1,5 @@
 import { Command, Argument } from 'discord-akairo';
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
 
@@ -27,7 +27,7 @@ export default class ExportMissed extends Command {
 	}
 
 	public async exec(message: Message, { num }: { num: number }) {
-		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		const clans = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 
@@ -38,7 +38,7 @@ export default class ExportMissed extends Command {
 		num = this.client.patrons.get(message.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
 		const chunks = [];
 		for (const { tag } of clans) {
-			const wars = await this.client.db.collection(COLLECTIONS.CLAN_WAR_STORES)
+			const wars = await this.client.db.collection(Collections.CLAN_WARS)
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag, 'groupWar': true }],
 					state: 'warEnded'

@@ -10,8 +10,7 @@ export default class ErrorCommand extends Command {
 		});
 	}
 
-	public async exec(message: Message) {
-		await message.util!.send('~uwu~');
+	public exec(message: Message) {
 		// @ts-ignore
 		return message.util!.sen_d('~uwu~');
 	}

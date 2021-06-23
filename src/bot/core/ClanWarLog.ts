@@ -2,7 +2,7 @@ import { MessageEmbed, Util, Collection, TextChannel, PermissionString, Message,
 import { ClanWar, ClanWarMember, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/NumEmojis';
 import { TOWN_HALLS, EMOJIS, WAR_STARS } from '../util/Emojis';
-import { COLLECTIONS } from '../util/Constants';
+import { Collections } from '../util/Constants';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
@@ -154,7 +154,7 @@ export default class ClanWarLog {
 			});
 
 		if (updated) {
-			await this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS).updateOne(
+			await this.client.db.collection(Collections.CLAN_WAR_LOGS).updateOne(
 				{ clan_id: new ObjectId(id) },
 				{ $set: { updatedAt: new Date() } }
 			);
@@ -415,7 +415,7 @@ export default class ClanWarLog {
 			cache.rounds[data.round] = { warTag: data.warTag, messageID, round: data.round };
 			this.cached.set(id, cache);
 
-			return this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS)
+			return this.client.db.collection(Collections.CLAN_WAR_LOGS)
 				.updateOne(
 					{ clan_id: new ObjectId(id) },
 					{
@@ -432,7 +432,7 @@ export default class ClanWarLog {
 		cache.messageID = messageID;
 		this.cached.set(id, cache);
 
-		return this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS)
+		return this.client.db.collection(Collections.CLAN_WAR_LOGS)
 			.updateOne(
 				{ clan_id: new ObjectId(id) },
 				{
@@ -442,7 +442,7 @@ export default class ClanWarLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS)
+		await this.client.db.collection(Collections.CLAN_WAR_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
@@ -457,7 +457,7 @@ export default class ClanWarLog {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS)
+		const data = await this.client.db.collection(Collections.CLAN_WAR_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

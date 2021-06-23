@@ -1,10 +1,10 @@
 import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { Collections } from '@clashperk/node';
-import { Util } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
 import { Message, MessageEmbed } from 'discord.js';
+import { Util } from '../../util/Util';
 
 const months = [
 	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

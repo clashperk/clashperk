@@ -1,4 +1,4 @@
-import { Settings, Collections } from '@clashperk/node';
+import { Collections, Settings } from '../util/Constants';
 import { CommandInteraction, Message } from 'discord.js';
 import Client from './Client';
 

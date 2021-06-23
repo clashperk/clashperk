@@ -1,5 +1,5 @@
 import { Command, PrefixSupplier } from 'discord-akairo';
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Message, GuildMember } from 'discord.js';
 import { Player } from 'clashofclans.js';
 
@@ -68,11 +68,11 @@ export default class LinkPlayerCommand extends Command {
 
 		// only owner can set default account
 		if (def && member.id === message.author.id) {
-			await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+			await this.client.db.collection(Collections.LINKED_PLAYERS)
 				.updateOne({ user: member.id }, { $set: { user_tag: member.user.tag }, $pull: { entries: { tag: data.tag } } });
 		}
 
-		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+		await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.updateOne({ user: member.id }, {
 				$set: {
 					user_tag: member.user.tag,
@@ -111,7 +111,7 @@ export default class LinkPlayerCommand extends Command {
 	}
 
 	private async getPlayer(tag: string) {
-		return this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ 'entries.tag': tag });
+		return this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': tag });
 	}
 
 	private async resetLinkAPI(user: string, tag: string) {

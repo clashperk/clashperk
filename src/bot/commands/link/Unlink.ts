@@ -1,6 +1,6 @@
 import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 import { Message, MessageEmbed, GuildMember, Snowflake } from 'discord.js';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 
 export default class UnlinkCommand extends Command {
 	public constructor() {

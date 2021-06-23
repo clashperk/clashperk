@@ -1,8 +1,9 @@
-import { ClanGames, Collections } from '@clashperk/node';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { Message } from 'discord.js';
+import { Collections } from '../../util/Constants';
+import { ClanGames } from '../../packages';
 
 interface DBMember {
 	tag: string;

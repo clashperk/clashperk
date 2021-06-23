@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { RED_NUMBERS } from '../../util/NumEmojis';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
@@ -41,7 +41,7 @@ export default class FlagListCommand extends Command {
 	public async exec(message: Message, { page, download }: { page: number; download: boolean }) {
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message));
-		const data = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
+		const data = await this.client.db.collection(Collections.FLAGS)
 			.find({ guild: message.guild!.id })
 			.toArray();
 

@@ -1,18 +1,7 @@
 import { TextChannel, User, PermissionString, MessageEmbed } from 'discord.js';
-import { Collections } from '@clashperk/node';
 import { Clan } from 'clashofclans.js';
 
-export const Util = {
-	escapeSheetName: (name: string) => name.replace(/[\*\?\:\[\]\\\/\']/g, ''),
-	verifyClan: (code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) => {
-		// clan verification by unique code or verified co/leader
-		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
-		return clan.memberList.filter(m => ['coLeader', 'leader'].includes(m.role))
-			.some(m => verifiedTags.includes(m.tag)) || clan.description.toUpperCase().includes(code);
-	}
-};
-
-export const codes = {
+export const codes: { [key: string]: string } = {
 	504: '504 Request Timeout',
 	400: 'Client provided incorrect parameters for the request.',
 	403: 'Access denied, either because of missing/incorrect credentials or used API token does not grant access to the requested resource.',
@@ -22,56 +11,63 @@ export const codes = {
 	503: 'Service is temporarily unavailable because of maintenance.'
 };
 
-export interface KeyValue {
-	[key: string]: string;
+export const status = (code: number) => codes[code];
+
+export enum Collections {
+	// LOG_CHANNELS
+	CLAN_STORES = 'ClanStores',
+	DONATION_LOGS = 'DonationLogs',
+	LAST_SEEN_LOGS = 'LastSeenLogs',
+	CLAN_GAMES_LOGS = 'ClanGamesLogs',
+	CLAN_EMBED_LOGS = 'ClanEmbedLogs',
+	CLAN_FEED_LOGS = 'ClanFeedLogs',
+	CLAN_WAR_LOGS = 'ClanWarLogs',
+
+	// FLAGS
+	FLAGS = 'Flags',
+
+	// LINNKED_DATA
+	LINKED_CLANS = 'LinkedClans',
+	LINKED_PLAYERS = 'LinkedPlayers',
+	LINKED_CHANNELS = 'LinkedChannels',
+	TIME_ZONES = 'TimeZones',
+
+	// LARGE_DATA
+	PATRONS = 'Patrons',
+	SETTINGS = 'Settings',
+	LAST_SEEN = 'LastSeen',
+	CLAN_WARS = 'ClanWars',
+	CLAN_GAMES = 'ClanGames',
+	CWL_WAR_TAGS = 'CWLWarTags',
+	CWL_GROUPS = 'CWLGroups',
+	CLAN_MEMBERS = 'ClanMembers',
+
+	// BOT_STATS
+	BOT_GROWTH = 'BotGrowth',
+	BOT_USAGE = 'BotUsage',
+	BOT_GUILDS = 'BotGuilds',
+	BOT_USERS = 'BotUsers',
+	BOT_STATS = 'BotStats',
+	BOT_INTERACTIONS = 'BotInteractions'
 }
 
-export const COLLECTIONS = {
-	CLAN_STORES: Collections.CLAN_STORES,
-	DONATION_LOGS: Collections.DONATION_LOGS,
-	LAST_ONLINE_LOGS: Collections.LAST_SEEN_LOGS,
-	CLAN_GAMES_LOGS: Collections.CLAN_GAMES_LOGS,
-	CLAN_EMBED_LOGS: Collections.CLAN_EMBED_LOGS,
-	PLAYER_LOGS: Collections.CLAN_FEED_LOGS,
-	FLAGGED_USERS: Collections.FLAGS,
-	LINKED_CLANS: Collections.LINKED_CLANS,
-	LINKED_USERS: Collections.LINKED_PLAYERS,
-	LINKED_CHANNELS: Collections.LINKED_CHANNELS,
-	SETTINGS: Collections.SETTINGS,
-	LAST_ONLINES: Collections.LAST_SEEN,
-	CLAN_WAR_STORES: Collections.CLAN_WARS,
-	CLAN_GAMES: Collections.CLAN_GAMES,
-	CWL_WAR_TAGS: Collections.CWL_GROUPS,
-	CLAN_MEMBERS: Collections.CLAN_MEMBERS,
-	BOT_GROWTH: Collections.BOT_GROWTH,
-	BOT_USAGE: Collections.BOT_USAGE,
-	BOT_GUILDS: Collections.BOT_GUILDS,
-	BOT_USERS: Collections.BOT_USERS,
-	BOT_STATS: Collections.BOT_STATS,
-	BOT_INTERACTIONS: Collections.BOT_INTERACTIONS,
-	PATRONS: Collections.PATRONS,
-	CLAN_WAR_LOGS: Collections.CLAN_WAR_LOGS,
-	TIME_ZONES: Collections.TIME_ZONES
-};
+export enum Flags {
+	DONATION_LOG = 1 << 0,
+	CLAN_FEED_LOG = 1 << 1,
+	LAST_SEEN_LOG = 1 << 2,
+	CLAN_EMBED_LOG = 1 << 3,
+	CLAN_GAMES_LOG = 1 << 4,
+	CLAN_WAR_LOG = 1 << 5,
+	CHANNEL_LINKED = 1 << 6
+}
 
-export const SETTINGS = {
-	PREFIX: 'prefix',
-	COLOR: 'color',
-	LIMIT: 'clanLimit',
-	MOD_LOG: 'modLog',
-	USER_BLACKLIST: 'blacklist',
-	GUILD_BLACKLIST: 'guildBans'
-};
-
-export const Op = {
-	DONATION_LOG: 1 << 0,
-	CLAN_MEMBER_LOG: 1 << 1,
-	LAST_ONLINE_LOG: 1 << 2,
-	CLAN_EMBED_LOG: 1 << 3,
-	CLAN_GAMES_LOG: 1 << 4,
-	CLAN_WAR_LOG: 1 << 5,
-	CHANNEL_LINKED: 1 << 6
-};
+export enum Settings {
+	PREFIX = 'prefix',
+	COLOR = 'color',
+	CLAN_LIMIT = 'clanLimit',
+	USER_BLACKLIST = 'blacklist',
+	GUILD_BLACKLIST = 'guildBans'
+}
 
 export const EMBEDS = {
 	CLAN_LIMIT: (prefix: string) => new MessageEmbed()
@@ -123,8 +119,6 @@ export function missingPermissions(channel: TextChannel, user: User, permissions
 			: `${missingPerms[0]} permission`
 	};
 }
-
-export const status = (code: number) => (codes as KeyValue)[code];
 
 export const leagueId = (trophies: number) => {
 	let leagueId = 29000000;

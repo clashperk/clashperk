@@ -1,5 +1,5 @@
 import { MessageEmbed, Message, Collection, TextChannel, PermissionString } from 'discord.js';
-import { COLLECTIONS } from '../util/Constants';
+import { Collections } from '../util/Constants';
 import { Clan } from 'clashofclans.js';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
@@ -106,7 +106,7 @@ export default class LastSeenLog {
 				cache.message = message.id;
 				cache.msg = message;
 				this.cached.set(id, cache);
-				await this.client.db.collection(COLLECTIONS.LAST_ONLINE_LOGS)
+				await this.client.db.collection(Collections.LAST_SEEN)
 					.updateOne(
 						{ clan_id: new ObjectId(id) },
 						{ $set: { message: message.id } }
@@ -162,7 +162,7 @@ export default class LastSeenLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(COLLECTIONS.LAST_ONLINE_LOGS)
+		await this.client.db.collection(Collections.LAST_SEEN)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
@@ -176,7 +176,7 @@ export default class LastSeenLog {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(COLLECTIONS.LAST_ONLINE_LOGS)
+		const data = await this.client.db.collection(Collections.LAST_SEEN)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

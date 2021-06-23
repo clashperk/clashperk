@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 
@@ -27,7 +27,7 @@ export default class FlagRemoveCommand extends Command {
 
 	public async exec(message: Message, { tag }: { tag?: string }) {
 		if (!tag) return message.util!.send('**You must provide a player tag to run this command.**');
-		const data = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
+		const data = await this.client.db.collection(Collections.FLAGS)
 			.deleteOne({ guild: message.guild!.id, tag });
 		if (!data.deletedCount) {
 			return message.util!.send('Tag not found!');

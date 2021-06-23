@@ -2,7 +2,8 @@ import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis';
 import { MessageEmbed, Util, Message, MessageButton } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
-import { Collections, Season } from '@clashperk/node';
+import { Season } from '../../packages';
+import { Collections } from '../../util/Constants';
 
 const clanTypes: { [key: string]: string } = {
 	inviteOnly: 'Invite Only',

@@ -12,7 +12,7 @@ export default class InviteCommand extends Command {
 		});
 	}
 
-	private get bitfield() {
+	private get Flags() {
 		const permissions = new Permissions([
 			'CREATE_INSTANT_INVITE',
 			'ADD_REACTIONS',
@@ -34,7 +34,7 @@ export default class InviteCommand extends Command {
 	public exec(message: Message) {
 		const query = stringify({
 			client_id: this.client.user!.id,
-			permissions: this.bitfield.toString(),
+			permissions: this.Flags.toString(),
 			scope: 'bot'
 		});
 		const embed = this.client.util.embed()

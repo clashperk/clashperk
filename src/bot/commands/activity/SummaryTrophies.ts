@@ -1,4 +1,4 @@
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import { Message, MessageEmbed } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';

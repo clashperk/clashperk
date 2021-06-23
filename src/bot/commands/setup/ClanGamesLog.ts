@@ -1,5 +1,5 @@
 import { MessageEmbed, Message, TextChannel, User, PermissionString, Channel } from 'discord.js';
-import { Op, missingPermissions, SETTINGS, COLLECTIONS, Util, EMBEDS } from '../../util/Constants';
+import { Flags, missingPermissions, Settings, Collections, EMBEDS } from '../../util/Constants';
 import { Command, PrefixSupplier } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 
@@ -44,16 +44,16 @@ export default class ClanGamesBoardCommand extends Command {
 	public async exec(message: Message, { data, channel, hexColor }: { data: Clan; channel: TextChannel; hexColor?: number }) {
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const clans = await this.client.storage.findAll(message.guild!.id);
-		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
+		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
 			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
 		}
 
-		const dbUser = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+		const dbUser = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.findOne({ user: message.author.id });
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
-		if (!clan.verified && !Util.verifyClan(code, data, dbUser?.entries ?? [])) {
+		if (!clan.verified && !this.verifyClan(code, data, dbUser?.entries ?? [])) {
 			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
 			return message.util!.send({ embeds: [embed] });
 		}
@@ -65,7 +65,7 @@ export default class ClanGamesBoardCommand extends Command {
 
 		const patron = this.client.patrons.get(message.guild!.id);
 		const id = await this.client.storage.register(message, {
-			op: Op.CLAN_GAMES_LOG,
+			op: Flags.CLAN_GAMES_LOG,
 			guild: message.guild!.id,
 			channel: channel.id,
 			message: null,
@@ -75,7 +75,7 @@ export default class ClanGamesBoardCommand extends Command {
 		});
 
 		await this.client.rpcHandler.add(id, {
-			op: Op.CLAN_GAMES_LOG,
+			op: Flags.CLAN_GAMES_LOG,
 			tag: data.tag,
 			guild: message.guild!.id
 		});
@@ -99,5 +99,12 @@ export default class ClanGamesBoardCommand extends Command {
 			].join('\n'));
 		if (hexColor) embed.setColor(hexColor);
 		return message.util!.send({ embeds: [embed] });
+	}
+
+	private verifyClan(code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) {
+		// clan verification by unique code or verified co/leader
+		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
+		return clan.memberList.filter(m => ['coLeader', 'leader'].includes(m.role))
+			.some(m => verifiedTags.includes(m.tag)) || clan.description.toUpperCase().includes(code);
 	}
 }

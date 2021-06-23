@@ -1,6 +1,6 @@
 import { Command } from 'discord-akairo';
 import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
-import { paginate } from '../../util/Pagination';
+import { Util } from '../../util/Util';
 
 export default class PingCommand extends Command {
 	public constructor() {
@@ -15,7 +15,7 @@ export default class PingCommand extends Command {
 
 	public async exec(message: Message) {
 		const chunks = Array(7).fill(0).map((_, i) => new MessageEmbed().setDescription(`${++i}/7`));
-		const paginated = paginate(chunks);
+		const paginated = Util.paginate(chunks);
 
 		const [nextID, prevID] = [this.client.uuid(), this.client.uuid()];
 		const row = new MessageActionRow()
@@ -48,12 +48,12 @@ export default class PingCommand extends Command {
 		collector.on('collect', async action => {
 			if (action.customID === nextID) {
 				const next = paginated.next();
-				await action.update({ embeds: [paginate(chunks, next.page).first()] });
+				await action.update({ embeds: [Util.paginate(chunks, next.page).first()] });
 			}
 
 			if (action.customID === prevID) {
 				const next = paginated.previous();
-				await action.update({ embeds: [paginate(chunks, next.page).first()], components: [row] });
+				await action.update({ embeds: [Util.paginate(chunks, next.page).first()], components: [row] });
 			}
 		});
 

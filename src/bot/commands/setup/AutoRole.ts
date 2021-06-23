@@ -1,7 +1,6 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Message, Role, Snowflake } from 'discord.js';
 import { Command } from 'discord-akairo';
-import { Collections } from '@clashperk/node';
 
 export default class AutoRoleCommand extends Command {
 	public constructor() {
@@ -86,18 +85,18 @@ export default class AutoRoleCommand extends Command {
 			const clan = await this.client.http.clan(tag);
 			if (!clan.ok) return message.util!.send('Invalid clan tag!');
 
-			await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+			await this.client.db.collection(Collections.CLAN_STORES)
 				.updateMany(
 					{ guild: message.guild!.id, autoRole: 2 },
 					{ $unset: { role_ids: '', roles: '', autoRole: '' } }
 				);
 
-			const ex = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+			const ex = await this.client.db.collection(Collections.CLAN_STORES)
 				.findOne({ tag: { $ne: clan.tag }, role_ids: { $in: [member.id, admin.id, coLeader.id] } });
 
 			if (ex) return message.util!.send('This roles have already been used for another clan.');
 
-			const up = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+			const up = await this.client.db.collection(Collections.CLAN_STORES)
 				.updateOne({ tag: clan.tag, guild: message.guild!.id }, {
 					$set: {
 						roles: { member: member.id, admin: admin.id, coLeader: coLeader.id },
@@ -115,13 +114,13 @@ export default class AutoRoleCommand extends Command {
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		if (!clans.length) return message.util!.send('No clans in this server');
 
-		await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		await this.client.db.collection(Collections.CLAN_STORES)
 			.updateMany(
 				{ guild: message.guild!.id, autoRole: 1 },
 				{ $unset: { role_ids: '', roles: '', autoRole: '' } }
 			);
 
-		await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		await this.client.db.collection(Collections.CLAN_STORES)
 			.updateMany(
 				{ guild: message.guild!.id },
 				{

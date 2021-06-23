@@ -1,5 +1,5 @@
 import { Message, MessageButton, MessageEmbed, Snowflake, Util } from 'discord.js';
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -29,7 +29,7 @@ export default class LinkListCommand extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		if (!data.members) return;
 		const memberTags: { tag: string; user: string; user_tag?: string }[] = await this.client.http.getDiscordLinks(data.memberList);
-		const dbMembers = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+		const dbMembers = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: data.memberList.map(m => m.tag) } })
 			.toArray();
 

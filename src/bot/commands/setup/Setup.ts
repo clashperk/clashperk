@@ -1,15 +1,15 @@
 import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
 import { Message, TextChannel, MessageEmbed, Snowflake, MessageButton } from 'discord.js';
-import { BitField, Collections } from '@clashperk/node';
+import { Flags, Collections } from '../../util/Constants';
 
 const names: { [key: string]: string } = {
-	[BitField.DONATION_LOG]: 'Donation Log',
-	[BitField.CLAN_FEED_LOG]: 'Clan Feed',
-	[BitField.LAST_SEEN_LOG]: 'Last Seen',
-	[BitField.CLAN_EMBED_LOG]: 'Clan Embed',
-	[BitField.CLAN_GAMES_LOG]: 'Clan Games',
-	[BitField.CLAN_WAR_LOG]: 'War Feed',
-	[BitField.CHANNEL_LINKED]: 'Linked Channel'
+	[Flags.DONATION_LOG]: 'Donation Log',
+	[Flags.CLAN_FEED_LOG]: 'Clan Feed',
+	[Flags.LAST_SEEN_LOG]: 'Last Seen',
+	[Flags.CLAN_EMBED_LOG]: 'Clan Embed',
+	[Flags.CLAN_GAMES_LOG]: 'Clan Games',
+	[Flags.CLAN_WAR_LOG]: 'War Feed',
+	[Flags.CHANNEL_LINKED]: 'Linked Channel'
 };
 
 export default class SetupCommand extends Command {
@@ -150,33 +150,33 @@ export default class SetupCommand extends Command {
 						channels: clan.channels?.map(id => this.client.channels.cache.get(id as Snowflake)?.toString()) ?? [],
 						entries: [
 							{
-								flag: BitField.DONATION_LOG,
+								flag: Flags.DONATION_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								channel: this.client.channels.cache.get(bit1?.channel)?.toString()
 							},
 							{
-								flag: BitField.CLAN_FEED_LOG,
+								flag: Flags.CLAN_FEED_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								role: message.guild!.roles.cache.get(bit2?.role)?.toString(),
 								channel: this.client.channels.cache.get(bit2?.channel)?.toString()
 							},
 							{
-								flag: BitField.LAST_SEEN_LOG,
+								flag: Flags.LAST_SEEN_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								channel: this.client.channels.cache.get(bit3?.channel)?.toString()
 							},
 							{
-								flag: BitField.CLAN_EMBED_LOG,
+								flag: Flags.CLAN_EMBED_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								channel: this.client.channels.cache.get(bit4?.channel)?.toString()
 							},
 							{
-								flag: BitField.CLAN_GAMES_LOG,
+								flag: Flags.CLAN_GAMES_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								channel: this.client.channels.cache.get(bit5?.channel)?.toString()
 							},
 							{
-								flag: BitField.CLAN_WAR_LOG,
+								flag: Flags.CLAN_WAR_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								channel: this.client.channels.cache.get(bit6?.channel)?.toString()
 							}

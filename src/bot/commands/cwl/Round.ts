@@ -2,8 +2,9 @@ import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember } from 'clashofclans.j
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message, MessageActionRow, MessageButton } from 'discord.js';
-import { Command, Argument } from 'discord-akairo';
+import { Command } from 'discord-akairo';
 import moment from 'moment';
+import { Util } from '../../util/Util';
 
 export default class CWLRoundCommand extends Command {
 	public constructor() {
@@ -12,14 +13,9 @@ export default class CWLRoundCommand extends Command {
 			category: 'war',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
 			description: {
-				content: [
-					'Info about the current CWL rounds.',
-					'',
-					'**Flags**',
-					'`--round <num>` to see specific round.'
-				],
-				usage: '<clanTag> [--round/-r] [round]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP -r 5', '#8QU8J9LP --round 4']
+				content: 'Info about the current CWL rounds.',
+				usage: '<#clanTag>',
+				examples: ['#8QU8J9LP']
 			},
 			optionFlags: ['--round', '--tag']
 		});
@@ -32,13 +28,7 @@ export default class CWLRoundCommand extends Command {
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
-		const round = yield {
-			match: 'option',
-			flag: ['--round'],
-			type: Argument.range('integer', 1, 7, true)
-		};
-
-		return { data, round };
+		return { data };
 	}
 
 	public async exec(message: Message, { data, round }: { data: Clan; round: number }) {
@@ -55,7 +45,11 @@ export default class CWLRoundCommand extends Command {
 
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
+				.setAuthor(
+					`${data.name} (${data.tag})`,
+					`${data.badgeUrls.medium}`,
+					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
+				)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embeds: [embed] });
@@ -68,25 +62,7 @@ export default class CWLRoundCommand extends Command {
 	private async rounds(message: Message, body: ClanWarLeagueGroup, clan: Clan, round: number) {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
-		if (round && round > rounds.length) {
-			const embed = new MessageEmbed()
-				.setColor(this.client.embed(message))
-				.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
-				.setDescription([
-					'This round is not available yet!',
-					'',
-					'**Available Rounds**',
-					new Array(rounds.length)
-						.fill(0)
-						.map((x, i) => `**\`${i + 1}\`** ${EMOJIS.OK}`)
-						.join('\n'),
-					new Array(body.rounds.length - rounds.length)
-						.fill(0)
-						.map((x, i) => `**\`${i + rounds.length + 1}\`** ${EMOJIS.WRONG}`)
-						.join('\n')
-				].join('\n'));
-			return message.util!.send({ embeds: [embed] });
-		}
+		if (round && round > rounds.length) return;
 
 		const chunks: { state: string; embed: MessageEmbed }[] = [];
 		let index = 0;
@@ -159,74 +135,54 @@ export default class CWLRoundCommand extends Command {
 				: chunks.slice(-2)[0];
 		const pageIndex = chunks.indexOf(item);
 
-		let page = pageIndex + 1;
-		const paginated = this.paginate(chunks, page);
+		const page = pageIndex + 1;
+		const pages = chunks.map(chunk => chunk.embed);
+		const paginated = Util.paginate(pages, page);
 
 		if (chunks.length === 1) {
-			return message.util!.send({ embeds: [paginated.items[0].embed] });
+			return message.util!.send({ embeds: [paginated.first()] });
 		}
 
-		const [nextID, prevID] = [this.client.uuid(), this.client.uuid()];
+		const [NextID, PrevID] = [this.client.uuid(), this.client.uuid()];
 		const row = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
-					.setCustomID(prevID)
+					.setCustomID(PrevID)
 					.setLabel('Previous')
 					.setEmoji('⬅️')
 					.setStyle('SECONDARY')
 			)
 			.addComponents(
 				new MessageButton()
-					.setCustomID(nextID)
+					.setCustomID(NextID)
 					.setLabel('Next')
 					.setEmoji('➡️')
 					.setStyle('SECONDARY')
 			);
-		const msg = await message.util!.send(
-			{
-				embeds: [paginated.items[0].embed],
-				components: [row]
-			}
-		);
 
+		const msg = await message.util!.send({ embeds: [paginated.first()], components: [row] });
 		const collector = msg.createMessageComponentInteractionCollector(
-			action => [nextID, prevID].includes(action.customID) && action.user.id === message.author.id,
+			action => [PrevID, NextID].includes(action.customID) && action.user.id === message.author.id,
 			{ time: 15 * 60 * 1000 }
 		);
 
 		collector.on('collect', async action => {
-			if (action.customID === nextID) {
-				page += 1;
-				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = 1;
-				await action.update({ embeds: [this.paginate(chunks, page).items[0].embed] });
+			if (action.customID === NextID) {
+				const next = paginated.next();
+				await action.update({ embeds: [Util.paginate(pages, next.page).first()] });
 			}
 
-			if (action.customID === prevID) {
-				page -= 1;
-				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = 1;
-				await action.update({ embeds: [this.paginate(chunks, page).items[0].embed] });
+			if (action.customID === PrevID) {
+				const next = paginated.previous();
+				await action.update({ embeds: [Util.paginate(pages, next.page).first()] });
 			}
 		});
 
 		collector.on('end', async () => {
-			this.client.components.delete(nextID);
-			this.client.components.delete(prevID);
+			this.client.components.delete(NextID);
+			this.client.components.delete(PrevID);
 			if (msg.editable) await msg.edit({ components: [] });
 		});
-	}
-
-	private paginate(items: any[], page = 1, pageLength = 1) {
-		const maxPage = Math.ceil(items.length / pageLength);
-		if (page < 1) page = 1;
-		if (page > maxPage) page = maxPage;
-		const startIndex = (page - 1) * pageLength;
-
-		return {
-			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
-			page, maxPage, pageLength
-		};
 	}
 
 	private count(members: ClanWarMember[]) {
@@ -240,18 +196,9 @@ export default class CWLRoundCommand extends Command {
 			.map(entry => ({ level: Number(entry[0]), total: entry[1] }))
 			.sort((a, b) => b.level - a.level);
 
-		return this.chunk(townHalls)
+		return Util.chunk(townHalls)
 			.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}`)
 				.join(' '))
 			.join('\n');
-	}
-
-	private chunk(items: { [key: string]: number }[] = []) {
-		const chunk = 5;
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
-		}
-		return array;
 	}
 }

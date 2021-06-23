@@ -1,5 +1,5 @@
 import { Guild, TextChannel, Webhook } from 'discord.js';
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Listener } from 'discord-akairo';
 
@@ -60,7 +60,7 @@ export default class GuildCreateListener extends Listener {
 	}
 
 	private async growth() {
-		const cursor = this.client.db.collection(COLLECTIONS.BOT_GROWTH).find();
+		const cursor = this.client.db.collection(Collections.BOT_GROWTH).find();
 		const data = await cursor.sort({ createdAt: -1 }).limit(1).next();
 		return [data.addition, data.deletion, data.addition - data.deletion].join('/');
 	}
@@ -100,7 +100,7 @@ export default class GuildCreateListener extends Listener {
 	}
 
 	private async restore(guild: Guild) {
-		const db = this.client.db.collection(COLLECTIONS.CLAN_STORES);
+		const db = this.client.db.collection(Collections.CLAN_STORES);
 
 		await db.find({ guild: guild.id, active: true })
 			.forEach(data => this.client.rpcHandler.add(data._id?.toString(), { tag: data.tag, guild: guild.id, op: 0 }));

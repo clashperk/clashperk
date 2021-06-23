@@ -2,7 +2,7 @@ import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { Clan, ClanWar } from 'clashofclans.js';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import 'moment-duration-format';
 import moment from 'moment';
 

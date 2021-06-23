@@ -1,6 +1,6 @@
 import { CommandInteractionOption, Interaction, TextChannel } from 'discord.js';
 import { Listener, Command, Flag } from 'discord-akairo';
-import { SETTINGS } from '../../util/Constants';
+import { Settings } from '../../util/Constants';
 
 interface Parsed {
 	type: string;
@@ -92,10 +92,10 @@ export default class InteractionListener extends Listener {
 	private inhibitor(interaction: Interaction) {
 		if (!interaction.guildID) return true;
 
-		const guilds = this.client.settings.get<string[]>('global', SETTINGS.GUILD_BLACKLIST, []);
+		const guilds = this.client.settings.get<string[]>('global', Settings.GUILD_BLACKLIST, []);
 		if (guilds.includes(interaction.guildID)) true;
 
-		const users = this.client.settings.get<string[]>('global', SETTINGS.USER_BLACKLIST, []);
+		const users = this.client.settings.get<string[]>('global', Settings.USER_BLACKLIST, []);
 		if (users.includes(interaction.user.id)) return true;
 		return false;
 	}

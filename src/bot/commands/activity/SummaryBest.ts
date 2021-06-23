@@ -1,8 +1,9 @@
-import { Collections, Season } from '@clashperk/node';
+import { Season } from '../../packages';
 import { Clan } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
+import { Collections } from '../../util/Constants';
 
 export interface Aggregated {
 	members: {

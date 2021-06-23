@@ -1,4 +1,5 @@
-import { Collections, Season } from '@clashperk/node';
+import { Season } from '../../packages';
+import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import Workbook from '../../struct/Excel';
 import { Message } from 'discord.js';

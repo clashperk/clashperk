@@ -1,7 +1,7 @@
 import { Command, PrefixSupplier } from 'discord-akairo';
-import { Collections } from '@clashperk/node';
 import Chart from '../../core/ChartHandler';
 import { Message } from 'discord.js';
+import { Collections } from '../../util/Constants';
 
 const months = [
 	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',

@@ -1,10 +1,9 @@
 import { MessageEmbed, Collection, PermissionString, TextChannel, WebhookClient } from 'discord.js';
 import { BLUE_NUMBERS, RED_NUMBERS } from '../util/NumEmojis';
 import { PLAYER_LEAGUES, EMOJIS } from '../util/Emojis';
-import { COLLECTIONS } from '../util/Constants';
+import { Collections } from '../util/Constants';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
-import { Collections } from '@clashperk/node';
 
 export interface Donation {
 	clan: {
@@ -192,7 +191,7 @@ export default class DonationLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(COLLECTIONS.DONATION_LOGS)
+		await this.client.db.collection(Collections.DONATION_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
@@ -205,7 +204,7 @@ export default class DonationLog {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(COLLECTIONS.DONATION_LOGS)
+		const data = await this.client.db.collection(Collections.DONATION_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

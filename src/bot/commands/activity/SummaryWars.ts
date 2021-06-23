@@ -1,7 +1,7 @@
 import { ClanWar, WarClan, ClanWarMember } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Message, MessageEmbed } from 'discord.js';
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 
 export default class WarSummaryCommand extends Command {
@@ -17,7 +17,7 @@ export default class WarSummaryCommand extends Command {
 
 	public async exec(message: Message) {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
-		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		const clans = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 		if (!clans.length) return message.util!.send(`**${message.guild!.name} does not have any clans. Why not add some?**`);

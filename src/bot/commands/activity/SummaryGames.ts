@@ -1,4 +1,5 @@
-import { ClanGames, Collections } from '@clashperk/node';
+import { ClanGames } from '../../packages';
+import { Collections } from '../../util/Constants';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { Message, Guild, Snowflake } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';

@@ -1,6 +1,6 @@
 import { MessageEmbed, TextChannel, Message, Snowflake } from 'discord.js';
 import { version } from '../../../../package.json';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import 'moment-duration-format';
 import moment from 'moment';

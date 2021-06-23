@@ -1,4 +1,4 @@
-import { COLLECTIONS, Op, SETTINGS, Util as Utility, EMBEDS } from '../../util/Constants';
+import { Collections, Flags, Settings, EMBEDS } from '../../util/Constants';
 import { Command, Argument, Flag, PrefixSupplier } from 'discord-akairo';
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS } from '../../util/Emojis';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
@@ -95,16 +95,16 @@ export default class ClanEmbedCommand extends Command {
 		const clans = await this.clans(message);
 
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
-		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
+		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
 			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
 		}
 
-		const dbUser = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+		const dbUser = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.findOne({ user: message.author.id });
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
-		if (!clan.verified && !Utility.verifyClan(code, data, dbUser?.entries ?? [])) {
+		if (!clan.verified && !this.verifyClan(code, data, dbUser?.entries ?? [])) {
 			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
 			return message.util!.send({ embeds: [embed] });
 		}
@@ -171,7 +171,7 @@ export default class ClanEmbedCommand extends Command {
 
 		const msg = await message.util!.send({ embeds: [embed] });
 		const id = await this.client.storage.register(message, {
-			op: Op.CLAN_EMBED_LOG,
+			op: Flags.CLAN_EMBED_LOG,
 			guild: message.guild!.id,
 			channel: message.channel.id,
 			tag: data.tag,
@@ -186,7 +186,7 @@ export default class ClanEmbedCommand extends Command {
 		});
 
 		this.client.rpcHandler.add(id, {
-			op: Op.CLAN_EMBED_LOG,
+			op: Flags.CLAN_EMBED_LOG,
 			guild: message.guild!.id,
 			tag: data.tag
 		});
@@ -206,9 +206,16 @@ export default class ClanEmbedCommand extends Command {
 	}
 
 	private async clans(message: Message) {
-		const collection = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		const collection = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 		return collection;
+	}
+
+	private verifyClan(code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) {
+		// clan verification by unique code or verified co/leader
+		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
+		return clan.memberList.filter(m => ['coLeader', 'leader'].includes(m.role))
+			.some(m => verifiedTags.includes(m.tag)) || clan.description.toUpperCase().includes(code);
 	}
 }

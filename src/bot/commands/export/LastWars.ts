@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
@@ -21,7 +21,7 @@ export default class LastWarsExport extends Command {
 			);
 		}
 
-		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		const clans = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 
@@ -34,7 +34,7 @@ export default class LastWarsExport extends Command {
 
 		const workbook = new Excel();
 		const sheet = workbook.addWorksheet('Last War Dates');
-		const members = await this.client.db.collection(COLLECTIONS.CLAN_WAR_STORES)
+		const members = await this.client.db.collection(Collections.CLAN_WARS)
 			.aggregate([
 				{
 					$match: {

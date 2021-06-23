@@ -2,7 +2,7 @@ import { MessageEmbed, GuildMember, Message, Snowflake } from 'discord.js';
 import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis';
 import { Command, Argument } from 'discord-akairo';
 import { Clan, Player } from 'clashofclans.js';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import moment from 'moment';
 
 export default class ProfileCommand extends Command {

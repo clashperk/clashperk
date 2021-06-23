@@ -1,4 +1,4 @@
-import { Collections } from '@clashperk/node';
+import { Collections } from '../util/Constants';
 import { MongoClient, Db } from 'mongodb';
 
 class MongoDB extends MongoClient {

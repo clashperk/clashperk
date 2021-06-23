@@ -1,5 +1,6 @@
 import { MessageEmbed, Message, Collection, TextChannel, PermissionString, Snowflake } from 'discord.js';
-import { ClanGames, Collections } from '@clashperk/node';
+import { ClanGames } from '../packages';
+import { Collections } from '../util/Constants';
 import { Clan } from 'clashofclans.js';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';

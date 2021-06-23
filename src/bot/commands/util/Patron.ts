@@ -1,4 +1,4 @@
-import { Collections, Settings } from '@clashperk/node';
+import { Collections, Settings } from '../../util/Constants';
 import { Message, TextChannel } from 'discord.js';
 import { Command } from 'discord-akairo';
 

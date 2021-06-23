@@ -1,4 +1,4 @@
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import Google from '../../struct/Google';
 import { Message } from 'discord.js';

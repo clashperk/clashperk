@@ -3,10 +3,10 @@ import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { MessageEmbed, Message, MessageButton } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan, Player } from 'clashofclans.js';
-import { Collections, Season } from '@clashperk/node';
+import { Season } from '../../packages';
+import { Collections, status } from '../../util/Constants';
 import moment from 'moment';
 import 'moment-duration-format';
-import { status } from '../../util/Constants';
 
 const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
 

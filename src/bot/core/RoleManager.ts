@@ -1,4 +1,4 @@
-import { Collections } from '@clashperk/node';
+import { Collections } from '../util/Constants';
 import { Clan, Player } from 'clashofclans.js';
 import { Collection, Guild, GuildMember, Snowflake } from 'discord.js';
 import Client from '../struct/Client';

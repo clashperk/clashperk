@@ -1,7 +1,8 @@
 import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember } from 'clashofclans.js';
-import { MessageEmbed, Message, Util } from 'discord.js';
-import { Command, Argument } from 'discord-akairo';
+import { MessageEmbed, Message, MessageActionRow, MessageButton } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
+import { Command } from 'discord-akairo';
+import { Util } from '../../util/Util';
 import moment from 'moment';
 
 const stars: { [key: string]: string } = {
@@ -18,26 +19,14 @@ export default class CWLAttacksCommand extends Command {
 			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
 			description: {
-				content: [
-					'Shows attacks of the current round.',
-					'',
-					'**Flags**',
-					'`--round <num>` or `-r <num>` to see specific round.'
-				],
-				usage: '<clanTag>',
+				content: 'Shows attacks of the current round.',
+				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			optionFlags: ['--round', '-r'],
 			args: [
 				{
 					id: 'data',
 					type: (msg, tag) => this.client.resolver.resolveClan(msg, tag)
-				},
-				{
-					id: 'round',
-					match: 'option',
-					flag: ['--round', '-r'],
-					type: Argument.range('integer', 1, 7, true)
 				}
 			]
 		});
@@ -62,28 +51,10 @@ export default class CWLAttacksCommand extends Command {
 
 	private async rounds(message: Message, body: ClanWarLeagueGroup, clan: Clan, round: number) {
 		const clanTag = clan.tag;
-		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		if (round && round > rounds.length) {
-			const embed = new MessageEmbed()
-				.setColor(this.client.embed(message))
-				.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
-				.setDescription([
-					'This round is not available yet!',
-					'',
-					'**Available Rounds**',
-					Array(rounds.length)
-						.fill(0)
-						.map((x, i) => `**\`${i + 1}\`** ${EMOJIS.OK}`)
-						.join('\n'),
-					Array(body.rounds.length - rounds.length)
-						.fill(0)
-						.map((x, i) => `**\`${i + rounds.length + 1}\`** ${EMOJIS.WRONG}`)
-						.join('\n')
-				].join('\n'));
-			return message.util!.send({ embeds: [embed] });
-		}
+		const rounds = body.rounds.filter(round => !round.warTags.includes('#0'));
+		if (round && round > rounds.length) return;
 
-		const chunks: any[] = [];
+		const chunks: { embed: MessageEmbed; state: string }[] = [];
 		let i = 0;
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -169,56 +140,60 @@ export default class CWLAttacksCommand extends Command {
 		const item = round
 			? chunks[round - 1]
 			: chunks.length === 7
-				? chunks.find(c => c.state === 'inWar') || chunks.slice(-1)[0]
+				? chunks.find(c => c.state === 'inWar') ?? chunks.slice(-1)[0]
 				: chunks.slice(-2)[0];
 		const pageIndex = chunks.indexOf(item);
 
-		let page = pageIndex + 1;
-		const paginated = this.paginate(chunks, page);
+		const page = pageIndex + 1;
+		const pages = chunks.map(chunk => chunk.embed);
 
+		const paginated = Util.paginate(pages, page);
 		if (chunks.length === 1) {
-			return message.util!.send({ embeds: [paginated.items[0].embed] });
-		}
-		const msg = await message.util!.send({ embeds: [paginated.items[0].embed] });
-		for (const emoji of ['⬅️', '➡️']) {
-			await msg.react(emoji);
-			await this.delay(250);
+			return message.util!.send({ embeds: [paginated.first()] });
 		}
 
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
-			{ time: 60000, max: 10 }
+		const [PrevID, NextID] = [this.client.uuid(), this.client.uuid()];
+
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setCustomID(PrevID)
+					.setLabel('Previous')
+					.setEmoji('⬅️')
+					.setStyle('SECONDARY')
+			)
+			.addComponents(
+				new MessageButton()
+					.setCustomID(NextID)
+					.setLabel('Next')
+					.setEmoji('➡️')
+					.setStyle('SECONDARY')
+			);
+
+		const msg = await message.util!.send({ embeds: [paginated.first()], components: [row] });
+
+		const collector = msg.createMessageComponentInteractionCollector(
+			action => [PrevID, NextID].includes(action.customID) && action.user.id === message.author.id,
+			{ time: 60000 }
 		);
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
-				page += 1;
-				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = 1;
-				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embeds: [embed] });
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+		collector.on('collect', async action => {
+			if (action.customID === NextID) {
+				const next = paginated.next();
+				await action.update({ embeds: [Util.paginate(pages, next.page).first()] });
 			}
 
-			if (reaction.emoji.name === '⬅️') {
-				page -= 1;
-				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = 1;
-				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embeds: [embed] });
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+			if (action.customID === PrevID) {
+				const next = paginated.previous();
+				await action.update({ embeds: [Util.paginate(pages, next.page).first()] });
 			}
 		});
 
 		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
+			this.client.components.delete(NextID);
+			this.client.components.delete(PrevID);
+			if (msg.editable) await msg.edit({ components: [] });
 		});
-		return message;
 	}
 
 	private sort(items: ClanWarMember[]) {
@@ -235,21 +210,5 @@ export default class CWLAttacksCommand extends Command {
 
 	private percentage(num: number) {
 		return num.toString().padStart(3, ' ');
-	}
-
-	private async delay(ms: number) {
-		return new Promise(res => setTimeout(res, ms));
-	}
-
-	private paginate(items: any[], page = 1, pageLength = 1) {
-		const maxPage = Math.ceil(items.length / pageLength);
-		if (page < 1) page = 1;
-		if (page > maxPage) page = maxPage;
-		const startIndex = (page - 1) * pageLength;
-
-		return {
-			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
-			page, maxPage, pageLength
-		};
 	}
 }

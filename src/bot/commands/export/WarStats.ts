@@ -1,5 +1,5 @@
 import { Player, WarClan } from 'clashofclans.js';
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { MessageEmbed, Message } from 'discord.js';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
@@ -27,7 +27,7 @@ export default class WarStatsExport extends Command {
 		const patron = this.client.patrons.get(message);
 
 		const chunks: any[] = [];
-		const wars = await this.client.db.collection(COLLECTIONS.CLAN_WAR_STORES)
+		const wars = await this.client.db.collection(Collections.CLAN_WARS)
 			.find({
 				// $not: { isFreindly: true },
 				$or: [{ 'clan.members.tag': data.tag }, { 'opponent.members.tag': data.tag, 'groupWar': true }],

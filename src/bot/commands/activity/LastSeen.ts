@@ -4,7 +4,7 @@ import { Clan } from 'clashofclans.js';
 import 'moment-duration-format';
 import moment from 'moment';
 import { EMOJIS } from '../../util/Emojis';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 
 // TODO: Fix TS
 export default class LastOnlineCommand extends Command {

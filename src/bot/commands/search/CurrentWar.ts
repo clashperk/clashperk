@@ -2,7 +2,7 @@ import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import 'moment-duration-format';
 import moment from 'moment';
 import Workbook from '../../struct/Excel';

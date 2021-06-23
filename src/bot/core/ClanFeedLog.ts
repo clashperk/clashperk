@@ -1,7 +1,6 @@
 import { MessageEmbed, PermissionString, TextChannel, Collection, WebhookClient } from 'discord.js';
 import { TOWN_HALLS, EMOJIS, PLAYER_LEAGUES, HEROES } from '../util/Emojis';
-import { COLLECTIONS } from '../util/Constants';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../util/Constants';
 import { Player } from 'clashofclans.js';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
@@ -203,7 +202,7 @@ export default class ClanFeedLog {
 				`${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
 			].join(' '));
 		} else {
-			const flag = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
+			const flag = await this.client.db.collection(Collections.FLAGS)
 				.findOne({ guild: cache.guild, tag: member.tag });
 
 			embed.setFooter(`Joined ${data.clan.name}`, data.clan.badge);
@@ -248,7 +247,7 @@ export default class ClanFeedLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(COLLECTIONS.PLAYER_LOGS)
+		await this.client.db.collection(Collections.FLAGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
@@ -260,7 +259,7 @@ export default class ClanFeedLog {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(COLLECTIONS.PLAYER_LOGS)
+		const data = await this.client.db.collection(Collections.CLAN_FEED_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

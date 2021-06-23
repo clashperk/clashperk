@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Util, Message } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
@@ -40,7 +40,7 @@ export default class FlagAddCommand extends Command {
 		if (!reason) return message.util!.send('You must provide a reason to flag.');
 		if (reason.length > 900) return message.util!.send('Reason must be 1024 or fewer in length.');
 
-		const flags = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
+		const flags = await this.client.db.collection(Collections.FLAGS)
 			.find({ guild: message.guild!.id })
 			.count();
 
@@ -61,7 +61,7 @@ export default class FlagAddCommand extends Command {
 		const players: Player[] = await Promise.all(tags.map(en => this.client.http.player(this.fixTag(en))));
 		const newFlags = [] as { name: string; tag: string }[];
 		for (const data of players.filter(en => en.ok)) {
-			const { value } = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
+			const { value } = await this.client.db.collection(Collections.FLAGS)
 				.findOneAndUpdate({ guild: message.guild!.id, tag: data.tag }, {
 					$set: {
 						guild: message.guild!.id,

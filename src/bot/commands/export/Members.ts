@@ -3,7 +3,7 @@ import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 
 const achievements = [
 	'Gold Grab',

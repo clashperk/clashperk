@@ -1,8 +1,9 @@
-import { Collections, Season } from '@clashperk/node';
 import { Message, MessageEmbed } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
+import { Season } from '../../packages';
+import { Collections } from '../../util/Constants';
 
 export default class ClanSummaryCommand extends Command {
 	public constructor() {

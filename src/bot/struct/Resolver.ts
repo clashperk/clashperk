@@ -1,7 +1,6 @@
 import { Message, GuildMember, Guild, Snowflake } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
-import { Collections } from '@clashperk/node';
-import { status } from '../util/Constants';
+import { Collections, status } from '../util/Constants';
 import { Flag } from 'discord-akairo';
 import Client from './Client';
 

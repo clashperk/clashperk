@@ -1,4 +1,4 @@
-import { Collections } from '@clashperk/node';
+import { Collections } from '../util/Constants';
 import Client from './Client';
 import qs from 'querystring';
 import https from 'https';
