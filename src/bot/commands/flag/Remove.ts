@@ -7,7 +7,7 @@ export default class FlagRemoveCommand extends Command {
 	public constructor() {
 		super('flag-remove', {
 			aliases: ['unflag'],
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],

@@ -6,7 +6,7 @@ export default class TrophiesCommand extends Command {
 	public constructor() {
 		super('trophies', {
 			aliases: ['trophies', 'trophy'],
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'List of clan members with trophies.',

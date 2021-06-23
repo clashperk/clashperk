@@ -5,7 +5,7 @@ export default class ColorCommand extends Command {
 	public constructor() {
 		super('config-color', {
 			aliases: ['color', 'colour'],
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			quoted: false,

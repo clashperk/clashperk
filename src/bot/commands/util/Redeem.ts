@@ -8,7 +8,7 @@ export default class RedeemCommand extends Command {
 	public constructor() {
 		super('redeem', {
 			aliases: ['redeem'],
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {

@@ -5,7 +5,7 @@ import { Message } from 'discord.js';
 export default class AliasRemoveCommand extends Command {
 	public constructor() {
 		super('alias-remove', {
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			optionFlags: ['--name'],

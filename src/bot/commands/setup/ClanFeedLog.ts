@@ -10,7 +10,7 @@ export default class MemberLogCommand extends Command {
 			channel: 'guild',
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],
-			optionFlags: ['--tag', '--channel', '--role'],
+			optionFlags: ['--tag', '--channel', '--extra'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY']
 		});
 	}
@@ -32,7 +32,7 @@ export default class MemberLogCommand extends Command {
 
 		const role = yield {
 			type: 'role',
-			flag: '--role',
+			flag: '--extra',
 			unordered: [1, 2],
 			match: msg.interaction ? 'option' : 'phrase'
 		};

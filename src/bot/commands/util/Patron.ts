@@ -18,7 +18,7 @@ export default class PatronCommand extends Command {
 	public constructor() {
 		super('patron', {
 			aliases: ['patron', 'donate', 'patreon'],
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Get information about the bot\'s patreon.'

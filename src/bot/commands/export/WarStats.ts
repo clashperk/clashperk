@@ -8,7 +8,7 @@ import Excel from '../../struct/Excel';
 export default class WarStatsExport extends Command {
 	public constructor() {
 		super('war-stats', {
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
 				content: 'Export war attacks of clan members.',

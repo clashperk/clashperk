@@ -88,7 +88,7 @@ export default class CWLRoundCommand extends Command {
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		const chunks: any[] = [];
+		const chunks: { state: string; embed: MessageEmbed }[] = [];
 		let index = 0;
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -155,7 +155,7 @@ export default class CWLRoundCommand extends Command {
 		const item = round
 			? chunks[round - 1]
 			: chunks.length === 7
-				? chunks.find(c => c.state === 'inWar') || chunks.slice(-1)[0]
+				? chunks.find(c => c.state === 'inWar') ?? chunks.slice(-1)[0]
 				: chunks.slice(-2)[0];
 		const pageIndex = chunks.indexOf(item);
 

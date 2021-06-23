@@ -9,7 +9,7 @@ export default class LinkListCommand extends Command {
 	public constructor() {
 		super('link-list', {
 			aliases: ['links'],
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			channel: 'guild',
 			description: {}

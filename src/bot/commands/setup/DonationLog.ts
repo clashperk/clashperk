@@ -10,7 +10,7 @@ export default class DonationLogCommand extends Command {
 			channel: 'guild',
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],
-			optionFlags: ['--tag', '--channel', '--color'],
+			optionFlags: ['--tag', '--channel', '--extra'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY']
 		});
 	}
@@ -32,7 +32,7 @@ export default class DonationLogCommand extends Command {
 
 		const hexColor = yield {
 			'type': 'color',
-			'flag': '--color',
+			'flag': '--extra',
 			'unordered': [1, 2],
 			'default': (msg: Message) => this.client.embed(msg),
 			'match': msg.interaction ? 'option' : 'phrase'

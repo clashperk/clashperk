@@ -16,7 +16,7 @@ export default class HelpCommand extends Command {
 	public constructor() {
 		super('help', {
 			aliases: ['help', 'commands'],
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Get all commands or info about a command',

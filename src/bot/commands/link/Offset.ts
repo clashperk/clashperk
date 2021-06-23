@@ -8,7 +8,7 @@ export default class OffsetCommand extends Command {
 	public constructor() {
 		super('offset', {
 			aliases: ['offset', 't'],
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
 			description: {

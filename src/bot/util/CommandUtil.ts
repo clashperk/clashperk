@@ -41,6 +41,10 @@ export class CommandUtil {
 		return sent as Message;
 	}
 
+	public async sendNew(options: string | InteractionReplyOptions & { split: false }) {
+		return this.message.webhook.send(options);
+	}
+
 	public static transformOptions(options: string | InteractionReplyOptions & { split: false }) {
 		const transformedOptions = typeof options === 'string' ? { content: options } : { ...options };
 		// @ts-expect-error

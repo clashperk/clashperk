@@ -8,7 +8,7 @@ export default class WarSummaryCommand extends Command {
 	public constructor() {
 		super('war-summary', {
 			aliases: ['matches', 'wars'],
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
 			description: {}

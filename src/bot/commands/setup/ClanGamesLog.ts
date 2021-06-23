@@ -9,7 +9,7 @@ export default class ClanGamesBoardCommand extends Command {
 			category: 'setup',
 			channel: 'guild',
 			description: {},
-			optionFlags: ['--tag', '--channel', '--color'],
+			optionFlags: ['--tag', '--channel', '--extra'],
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
 		});
@@ -32,7 +32,7 @@ export default class ClanGamesBoardCommand extends Command {
 
 		const hexColor = yield {
 			'type': 'color',
-			'flag': '--color',
+			'flag': '--extra',
 			'unordered': [1, 2],
 			'default': (msg: Message) => this.client.embed(msg),
 			'match': msg.interaction ? 'option' : 'phrase'

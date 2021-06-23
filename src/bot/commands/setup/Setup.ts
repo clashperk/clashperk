@@ -1,5 +1,5 @@
 import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
-import { Message, TextChannel, MessageEmbed, Snowflake } from 'discord.js';
+import { Message, TextChannel, MessageEmbed, Snowflake, MessageButton } from 'discord.js';
 import { BitField, Collections } from '@clashperk/node';
 
 const names: { [key: string]: string } = {
@@ -23,7 +23,7 @@ export default class SetupCommand extends Command {
 				content: [
 					'Enable features or assign clans to channels.',
 					'',
-					'• **[Commands Only](https://clashperk.com/guide/)**',
+					'• **[Channel Link](https://clashperk.com/guide/)**',
 					'• `#CLAN_TAG #CHANNEL`',
 					'',
 					'• **[Clan Feed](https://clashperk.com/guide/)**',
@@ -110,7 +110,23 @@ export default class SetupCommand extends Command {
 				this.description.examples.map((en: string) => `\`${prefix}setup ${en}\``).join('\n')
 			].join('\n'));
 
-		await message.channel.send({ embeds: [embed] });
+		const customID = this.client.uuid();
+		const button = new MessageButton()
+			.setCustomID(customID)
+			.setStyle('SECONDARY')
+			.setLabel('Show all Linked Clans');
+		const msg = await message.channel.send({ embeds: [embed], components: [[button]] });
+
+		const interaction = await msg.awaitMessageComponentInteraction(
+			action => action.customID === customID && action.user.id === message.author.id,
+			{ time: 5 * 60 * 1000 }
+		).catch(() => null);
+
+		if (msg.editable) await msg.edit({ components: [] });
+		if (!interaction) return;
+
+		await interaction.defer();
+
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const fetched = await Promise.all(
 			clans.map(
@@ -171,7 +187,9 @@ export default class SetupCommand extends Command {
 		);
 
 		if (!fetched.length) {
-			return message.util!.send(`${message.guild!.name} doesn't have any clans. Why not add some?`);
+			return interaction.followUp({
+				content: `${message.guild!.name} doesn't have any clans. Why not add some?`
+			});
 		}
 
 		const embeds = fetched.map(
@@ -201,12 +219,7 @@ export default class SetupCommand extends Command {
 		);
 
 		for (const chunks of this.chunk(embeds)) {
-			if (message.interaction) {
-				await message.util!.send({ embeds: chunks });
-			} else {
-				// @ts-expect-error
-				await this.client.api.channels[message.channel.id].messages.post({ data: { embeds: chunks } });
-			}
+			await interaction.followUp({ embeds: chunks });
 		}
 	}
 

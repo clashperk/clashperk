@@ -5,7 +5,7 @@ import { Message } from 'discord.js';
 export default class AliasAddCommand extends Command {
 	public constructor() {
 		super('alias-add', {
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			optionFlags: ['--tag', '--name'],

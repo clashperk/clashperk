@@ -6,7 +6,7 @@ import { Clan } from 'clashofclans.js';
 export default class WarLogCommand extends Command {
 	public constructor() {
 		super('setup-clan-wars', {
-			category: '_hidden',
+			category: 'none',
 			description: {},
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],

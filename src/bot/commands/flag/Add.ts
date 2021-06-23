@@ -6,7 +6,7 @@ import { Command } from 'discord-akairo';
 export default class FlagAddCommand extends Command {
 	public constructor() {
 		super('flag-add', {
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],

@@ -480,13 +480,8 @@ export const commands: { name: string; description: string; options?: APIApplica
 				type: ApplicationCommandOptionType.CHANNEL
 			},
 			{
-				name: 'role',
-				description: 'Role for Clan Feed',
-				type: ApplicationCommandOptionType.ROLE
-			},
-			{
-				name: 'color',
-				description: 'Hex color (Patron Only)',
+				name: 'extra',
+				description: 'Role for clan feed or Hex color code.',
 				type: ApplicationCommandOptionType.STRING
 			}
 		]
@@ -884,7 +879,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			'Authorization': `Bot ${process.env.TOKEN!}`,
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify([])
+		body: JSON.stringify(commands)
 	});
 	const body = await res.json();
 	console.log(res.status, JSON.stringify(body));
@@ -901,4 +896,4 @@ export const commands: { name: string; description: string; options?: APIApplica
 	});
 	const body = await res.json();
 	console.log(res.status, JSON.stringify(body));
-})();
+});

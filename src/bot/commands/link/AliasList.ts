@@ -6,7 +6,7 @@ export default class AliasListCommand extends Command {
 	public constructor() {
 		super('alias-list', {
 			aliases: ['aliases'],
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			description: {}
 		});

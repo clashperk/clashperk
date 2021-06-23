@@ -10,7 +10,7 @@ export default class FlagListCommand extends Command {
 	public constructor() {
 		super('flag-list', {
 			aliases: ['flags'],
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
