@@ -5,6 +5,8 @@ import { Message, MessageEmbed } from 'discord.js';
 import RAW_TROOPS from '../../util/TroopsInfo';
 import { URL } from 'url';
 
+const [TOTAL_UNITS, TOTAL_SPELLS, TOTAL_SUPER_TROOPS, TOTAL_SEIGE] = [300, 11, 2, 1];
+
 export default class ArmyCommand extends Command {
 	public constructor() {
 		super('army', {
@@ -69,7 +71,9 @@ export default class ArmyCommand extends Command {
 		const SPELL_IDS = SPELL_COMPOS.map(parts => parts.split(/x/))
 			.map(parts => ({ id: parts.length > 2 ? 0 : Number(parts[1]), total: Number(parts[0]) }));
 
-		const malformed = ![...TROOP_IDS, ...SPELL_IDS].every(en => typeof en.id === 'number' && typeof en.total === 'number');
+		const malformed = ![...TROOP_IDS, ...SPELL_IDS].every(
+			en => typeof en.id === 'number' && typeof en.total === 'number' && en.total <= TOTAL_UNITS
+		);
 		if (malformed) return message.util!.send(`**This army composition URL is invalid!**\nhttps://i.imgur.com/uqDnt5s.png`);
 
 		const uniqueSpells = SPELL_IDS.reduce((prev, curr) => {
@@ -196,8 +200,8 @@ export default class ArmyCommand extends Command {
 			)
 		];
 
-		const hallByTroops = TROOPS_HOUSING.find(en => en.troops >= Math.min(totalTroop, 300))?.hall ?? 0;
-		const hallBySpells = TROOPS_HOUSING.find(en => en.spells >= Math.min(totalSpell, 11))?.hall ?? 0;
+		const hallByTroops = TROOPS_HOUSING.find(en => en.troops >= Math.min(totalTroop, TOTAL_UNITS))?.hall ?? 0;
+		const hallBySpells = TROOPS_HOUSING.find(en => en.spells >= Math.min(totalSpell, TOTAL_SPELLS))?.hall ?? 0;
 		const townHallLevel = Math.max(hallByUnlockTH, hallByTroops, hallBySpells);
 
 		const embed = new MessageEmbed()
@@ -210,45 +214,60 @@ export default class ArmyCommand extends Command {
 			].join('\n'));
 
 		if (troops.length) {
-			embed.addField(
-				'Troops',
+			embed.setDescription([
+				embed.description,
+				'',
+				'**Troops**',
 				troops.map(
-					en => `\u200e\`${en.total.toString().padStart(2, ' ')}${en.total > 99 ? '' : 'x'}\` ${TROOPS[en.name]}  ${en.name}`
+					en => `\u200e\`${this.padding(en.total)}\` ${TROOPS[en.name]}  ${en.name}`
 				).join('\n')
-			);
+			].join('\n'));
 		}
 
 		if (spells.length) {
 			embed.addField(
-				'Spells',
-				spells.map(
-					en => `\u200e\`${en.total.toString().padStart(2, ' ')}${en.total > 99 ? '' : 'x'}\` ${SPELLS[en.name]} ${en.name}`
-				).join('\n')
+				'\u200b',
+				[
+					'**Spells**',
+					spells.map(
+						en => `\u200e\`${this.padding(en.total)}\` ${SPELLS[en.name]} ${en.name}`
+					).join('\n')
+				].join('\n')
 			);
 		}
 
 		if (superTroops.length) {
 			embed.addField(
-				'Super Troops',
-				superTroops.map(
-					en => `\u200e\`${en.total.toString().padStart(2, ' ')}${en.total > 99 ? '' : 'x'}\` ${SUPER_TROOPS[en.name]}  ${en.name}`
-				).join('\n')
+				'\u200b',
+				[
+					'**Super Troops**',
+					superTroops.map(
+						en => `\u200e\`${this.padding(en.total)}\` ${SUPER_TROOPS[en.name]}  ${en.name}`
+					).join('\n')
+				].join('\n')
 			);
 		}
 
 		if (seigeMachines.length) {
 			embed.addField(
-				'Seige Machines',
-				seigeMachines.map(
-					en => `\u200e\`${en.total.toString().padStart(2, ' ')}${en.total > 99 ? '' : 'x'}\` ${SEIGE_MACHINES[en.name]}  ${en.name}`
-				).join('\n')
+				'\u200b',
+				[
+					'**Seige Machines**',
+					seigeMachines.map(
+						en => `\u200e\`${this.padding(en.total)}\` ${SEIGE_MACHINES[en.name]}  ${en.name}`
+					).join('\n')
+				].join('\n')
 			);
 		}
 
 		embed.setFooter(message.author.tag, message.author.displayAvatarURL({ dynamic: true }));
 		const mismatch = (troops.length + spells.length + superTroops.length + seigeMachines.length) !== (TROOP_IDS.length + SPELL_IDS.length);
 
-		const invalid = mismatch || duplicate || totalTroop > 300 || totalSpell > 11 || totalSeige > 1 || superTroops.length > 2;
+		const invalid = mismatch || duplicate || totalTroop > TOTAL_UNITS || totalSpell > TOTAL_SPELLS || totalSeige > TOTAL_SEIGE || superTroops.length > TOTAL_SUPER_TROOPS;
 		return message.util!.send((invalid) ? '**This URL is invalid and may not work!**' : '', { embed });
+	}
+
+	private padding(num: number) {
+		return `${num.toString().padStart(2, ' ')}${num > 99 ? '' : 'x'}`;
 	}
 }
