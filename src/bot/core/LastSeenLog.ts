@@ -106,7 +106,7 @@ export default class LastSeenLog {
 				cache.message = message.id;
 				cache.msg = message;
 				this.cached.set(id, cache);
-				await this.client.db.collection(Collections.LAST_SEEN)
+				await this.client.db.collection(Collections.LAST_SEEN_LOGS)
 					.updateOne(
 						{ clan_id: new ObjectId(id) },
 						{ $set: { message: message.id } }
@@ -162,7 +162,7 @@ export default class LastSeenLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(Collections.LAST_SEEN)
+		await this.client.db.collection(Collections.LAST_SEEN_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
@@ -176,7 +176,7 @@ export default class LastSeenLog {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(Collections.LAST_SEEN)
+		const data = await this.client.db.collection(Collections.LAST_SEEN_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

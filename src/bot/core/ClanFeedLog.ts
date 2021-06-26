@@ -247,7 +247,7 @@ export default class ClanFeedLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(Collections.FLAGS)
+		await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
