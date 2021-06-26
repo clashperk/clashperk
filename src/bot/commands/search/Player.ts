@@ -3,7 +3,7 @@ import { Collections, leagueId } from '../../util/Constants';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { Player, WarClan } from 'clashofclans.js';
-import { Season } from '../../packages';
+import { Season } from '../../util/Util';
 import ms from 'ms';
 
 const roles: { [key: string]: string } = {

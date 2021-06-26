@@ -1,4 +1,4 @@
-import { Season } from '../../packages';
+import { Season } from '../../util/Util';
 import { Clan } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';

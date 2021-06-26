@@ -1,8 +1,8 @@
-import { Season } from '../../packages';
 import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { Message } from 'discord.js';
+import { Season } from '../../util/Util';
 
 interface Member {
 	tag: string;

@@ -1,4 +1,4 @@
-import { Season } from '../../packages';
+import { Season } from '../../util/Util';
 import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import Workbook from '../../struct/Excel';

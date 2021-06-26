@@ -29,7 +29,7 @@ export default class PingCommand extends Command {
 			.addComponents(
 				new MessageButton()
 					.setCustomID(nextID)
-					.setLabel('Next')
+					.setLabel('Next ➡️')
 					.setEmoji('➡️')
 					.setStyle('SECONDARY')
 			);

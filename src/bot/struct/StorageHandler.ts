@@ -3,7 +3,7 @@ import { ObjectId, Collection } from 'mongodb';
 import { Message } from 'discord.js';
 import Client from './Client';
 import { ClanWarLeagueGroup } from 'clashofclans.js';
-import { Season } from '../packages';
+import { Season } from '../util/Util';
 
 export interface ClanStore {
 	_id: ObjectId;

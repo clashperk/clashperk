@@ -3,7 +3,7 @@ import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { MessageEmbed, Message, MessageButton } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan, Player } from 'clashofclans.js';
-import { Season } from '../../packages';
+import { Season } from '../../util/Util';
 import { Collections, status } from '../../util/Constants';
 import moment from 'moment';
 import 'moment-duration-format';

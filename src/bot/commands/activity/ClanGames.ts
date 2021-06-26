@@ -3,7 +3,7 @@ import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { Message } from 'discord.js';
 import { Collections } from '../../util/Constants';
-import { ClanGames } from '../../packages';
+import { ClanGames } from '../../util/Util';
 
 interface DBMember {
 	tag: string;

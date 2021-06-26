@@ -2,7 +2,7 @@ import { Message, MessageEmbed } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
-import { Season } from '../../packages';
+import { Season } from '../../util/Util';
 import { Collections } from '../../util/Constants';
 
 export default class ClanSummaryCommand extends Command {

@@ -2,7 +2,7 @@ import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis';
 import { MessageEmbed, Util, Message, MessageButton } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
-import { Season } from '../../packages';
+import { Season } from '../../util/Util';
 import { Collections } from '../../util/Constants';
 
 const clanTypes: { [key: string]: string } = {

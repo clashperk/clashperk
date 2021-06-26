@@ -1,4 +1,4 @@
-import { ClanGames } from '../../packages';
+import { ClanGames } from '../../util/Util';
 import { Collections } from '../../util/Constants';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { Message, Guild, Snowflake } from 'discord.js';

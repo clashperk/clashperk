@@ -1,7 +1,7 @@
 import { Clan } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
 import { MessageEmbed, Message, Util } from 'discord.js';
-import { Season } from '../../packages';
+import { Season } from '../../util/Util';
 import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
