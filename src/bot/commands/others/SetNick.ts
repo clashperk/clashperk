@@ -1,6 +1,7 @@
-import { Message, GuildMember } from 'discord.js';
-import { Command } from 'discord-akairo';
-import { Player } from 'clashofclans.js';
+import { Message, GuildMember, MessageActionRow, MessageSelectMenu, Snowflake } from 'discord.js';
+import { Argument, Command } from 'discord-akairo';
+import { Collections } from '../../util/Constants';
+import { TOWN_HALLS } from '../../util/Emojis';
 
 export default class SetNickNameCommand extends Command {
 	public constructor() {
@@ -12,14 +13,11 @@ export default class SetNickNameCommand extends Command {
 				content: [
 					'Sets nickname of a member in discord.',
 					'',
-					'**Extra**',
 					'Must include "|" to add a prefix or suffix of the nickname.',
-					'Prefix ends with "|" and Suffix starts with "|"',
-					'',
-					'For additional `[...extra]` usage refer to the examples below.'
+					'Prefix ends with "|" and Suffix starts with "|"'
 				],
-				usage: '<@user> <#PlayerTag> [...extra]',
-				examples: ['@Suvajit #9Q92C8R20', '@Suvajit #9Q92C8R20 AH |', '@Suvajit #9Q92C8R20 | AH'],
+				usage: '<@user> [...extra]',
+				examples: ['@Suvajit', '@Suvajit AH |', '@Suvajit | AH'],
 				image: {
 					text: [
 						'**More Examples**'
@@ -32,12 +30,11 @@ export default class SetNickNameCommand extends Command {
 
 	public *args(): unknown {
 		const member = yield {
-			'type': 'member',
-			'default': (msg: Message) => msg.member
-		};
-
-		const player = yield {
-			type: (msg: Message, args: string) => this.client.resolver.resolvePlayer(msg, args || member?.id)
+			type: Argument.union('member', (msg, id) => {
+				if (!id) return null;
+				if (!/^\d{17,19}/.test(id)) return null;
+				return msg.guild!.members.fetch(id as Snowflake).catch(() => null);
+			})
 		};
 
 		const txt = yield {
@@ -45,31 +42,89 @@ export default class SetNickNameCommand extends Command {
 			match: 'rest'
 		};
 
-		return { txt, member, player };
+		return { txt, member };
 	}
 
-	public async exec(message: Message, { txt, member, player }: { txt?: string; member: GuildMember; player: Player }) {
+	public async exec(message: Message, { txt, member }: { txt?: string; member?: GuildMember }) {
+		if (!member) {
+			return message.util!.send('**You must mention a valid member to use this command.**');
+		}
+
 		if (member.id !== message.author.id && !message.member!.permissions.has('MANAGE_NICKNAMES')) {
-			return message.util!.send('You are missing `Manage Nicknames` permission to use this command.');
+			return message.util!.send('**You are missing `Manage Nicknames` permission to use this command.**');
 		}
 
 		if (message.guild!.me!.roles.highest.position <= member.roles.highest.position || member.id === message.guild!.ownerID) {
 			const own = member.id === message.author.id;
-			return message.util!.send(`I do not have permission to change ${own ? 'your ' : ''}nickname${own ? '.' : ' of this member!'}`);
+			return message.util!.send(`**I do not have permission to change ${own ? 'your ' : ''}nickname${own ? '.' : ' of this member!**'}`);
 		}
 
-		let name = player.name;
+		const data = await this.client.db.collection<{ entries?: { name?: string; tag: string }[] }>(Collections.LINKED_PLAYERS)
+			.findOne({ user: member.id });
+
+		if (!data?.entries?.length) {
+			return message.util!.send(`**No player accounts are linked to ${member.user.tag}**`);
+		}
+
+		const players = (await this.client.http.detailedClanMembers(data.entries.slice(0, 25)))
+			.filter(res => res.ok);
+
+		if (!players.length) return;
+		/* if (players.length === 1) {
+			const name = this.getName(players[0].name, txt);
+			await member.setNickname(name, `Nickname set by ${message.author.tag}`).catch(() => null);
+			return message.util!.send(`**${member.user.tag}\'s** nickname set to **${name}**`);
+		}*/
+
+		const options = players.map(op => ({ label: op.name, value: op.name, emoji: TOWN_HALLS[op.townHallLevel], description: `${op.tag} TH${op.townHallLevel}` }));
+		const customID = this.client.uuid();
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageSelectMenu()
+					.setCustomID(customID)
+					.setPlaceholder('Select an account!')
+					.addOptions(options)
+			);
+
+		const msg = await message.util!.send({ content: `**Setting up ${member.user.tag}\'s nickname...**`, components: [row] });
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => action.customID === customID && [member.id, message.author.id].includes(action.user.id),
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.isSelectMenu() && action.customID === customID) {
+				const name = this.getName(action.values![0], txt);
+				if (name.length > 31) {
+					await action.reply({
+						ephemeral: true,
+						content: '**Nickname must be 31 or fewer in length.**'
+					});
+				} else {
+					await member.setNickname(name, `Nickname set by ${message.author.tag}`).catch(() => null);
+
+					row.components[0].setDisabled(true);
+					return action.update({
+						components: [row],
+						content: `**${member.user.tag}\'s** nickname set to **${name}**`
+					});
+				}
+			}
+		});
+
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (msg.editable) await msg.edit({ components: [] });
+		});
+	}
+
+	private getName(name: string, txt?: string) {
 		if (txt?.length && txt.trim().startsWith('|')) {
-			name = `${player.name} ${txt}`;
+			name = `${name} ${txt}`;
 		} else if (txt?.length && txt.trim().endsWith('|')) {
-			name = `${txt} ${player.name}`;
+			name = `${txt} ${name}`;
 		}
 
-		if (name.length > 31) {
-			return message.util!.send('Nickname must be 31 or fewer in length.');
-		}
-
-		await member.setNickname(name, `Nickname set by ${message.author.tag}`);
-		return message.util!.send(`Nickname set to **${name}**`);
+		return name;
 	}
 }
