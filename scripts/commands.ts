@@ -2,7 +2,18 @@ import Env from 'dotenv';
 Env.config();
 
 import fetch from 'node-fetch';
+import moment from 'moment';
 import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'discord-api-types/v8';
+
+export function getSeasonIds() {
+	return Array(12).fill(0).map((_, month) => {
+		const now = new Date();
+		now.setHours(0, 0, 0, 0);
+		now.setFullYear(now.getFullYear(), 1);
+		now.setMonth(now.getMonth() + month, 0);
+		return { name: moment(now).format('MMM YYYY'), value: moment(now).format('YYYY-MM') };
+	});
+}
 
 export const commands: { name: string; description: string; options?: APIApplicationCommandOption[] }[] = [
 	{
@@ -191,7 +202,8 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'season',
 				description: 'Season ID (Format: YYYY-MM)',
 				type: 3,
-				required: false
+				required: false,
+				choices: getSeasonIds()
 			}
 		]
 	},
@@ -655,7 +667,8 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'season',
 				description: 'Season ID (Format: YYYY-MM)',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.STRING,
+				choices: getSeasonIds()
 			}
 		]
 	},
@@ -691,7 +704,8 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'season',
 				required: false,
 				type: ApplicationCommandOptionType.STRING,
-				description: 'Season ID for Clan Summary'
+				description: 'Season ID for Clan Summary',
+				choices: getSeasonIds()
 			}
 		]
 	},

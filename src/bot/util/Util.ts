@@ -7,6 +7,18 @@ export class Util extends Discord.Util {
 		super();
 	}
 
+	public static getSeasonIds() {
+		return Array(6)
+			.fill(0)
+			.map((_, month) => {
+				const now = new Date(Season.ID);
+				now.setHours(0, 0, 0, 0);
+				now.setMonth(now.getMonth() - month, 0);
+				return Season.generateID(now);
+			})
+			.concat(Season.ID);
+	}
+
 	public static chunk<T>(items: T[], chunk: number) {
 		const array = [];
 		for (let i = 0; i < items.length; i += chunk) {

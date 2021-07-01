@@ -1,7 +1,7 @@
-import { ClanGames } from '../../util/Util';
+import { ClanGames, Util } from '../../util/Util';
 import { Collections } from '../../util/Constants';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
-import { Message, Guild, Snowflake } from 'discord.js';
+import { Message, MessageEmbed } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
@@ -21,30 +21,40 @@ export default class ClanGamesSummaryCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {},
-			args: [
-				{
-					'id': 'guild',
-					'type': (msg, id) => this.client.guilds.cache.get(id as Snowflake) ?? null,
-					'default': (message: Message) => message.guild
-				}
-			]
+			optionFlags: ['--season']
 		});
 	}
 
-	private get seasonID() {
-		const now = new Date();
-		if (now.getDate() < 20) now.setMonth(now.getMonth() - 1);
+	public *args(msg: Message): unknown {
+		const season = yield {
+			flag: '--season',
+			type: [...Util.getSeasonIds(), ['last']],
+			match: msg.interaction ? 'option' : 'phrase'
+		};
+
+		return { season };
+	}
+
+	private seasonID(season?: string) {
+		if (!season) {
+			const now = new Date();
+			if (now.getDate() < 20) now.setMonth(now.getMonth() - 1);
+			return now.toISOString().substring(0, 7);
+		}
+		const now = (season === 'last') ? new Date() : new Date(season);
+		if (season === 'last') now.setMonth(now.getMonth() - 1);
 		return now.toISOString().substring(0, 7);
 	}
 
-	public async exec(message: Message, { guild }: { guild: Guild }) {
+	public async exec(message: Message, { season }: { season: string }) {
 		const tags = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild: guild.id })
+			.find({ guild: message.guild!.id })
 			.toArray();
 		if (!tags.length) return message.util!.send(`**${message.guild!.name} does not have any clans. Why not add some?**`);
 
+		console.log(this.seasonID(season), season);
 		const clans = await this.client.db.collection(Collections.CLAN_GAMES)
-			.find({ season: this.seasonID, tag: { $in: [...tags.map(d => d.tag)] } })
+			.find({ season: this.seasonID(season), tag: { $in: [...tags.map(d => d.tag)] } })
 			.toArray();
 
 		const patron = this.client.patrons.get(message.guild!.id);
@@ -60,10 +70,10 @@ export default class ClanGamesSummaryCommand extends Command {
 			endedAt: clan.endedAt
 		}));
 
-		const embed = this.client.util.embed()
+		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor('Clan Games Stats', message.guild!.iconURL()!)
-			.setFooter(`${moment(clans[0].updatedAt).format('MMMM YYYY')}`, this.client.user!.displayAvatarURL())
+			.setFooter(`${moment(clans[0].createdAt).format('MMMM YYYY')}`, this.client.user!.displayAvatarURL())
 			.setDescription([
 				'**Scoreboard**',
 				'Based on highest scores and completion times.',

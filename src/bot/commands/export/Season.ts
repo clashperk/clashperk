@@ -22,7 +22,7 @@ export default class ExportSeason extends Command {
 			flag: '--season',
 			type: [
 				Season.ID,
-				...Array(3).fill('').map((_, i) => {
+				...Array(6).fill('').map((_, i) => {
 					const now = new Date(Season.ID);
 					now.setHours(0, 0, 0, 0);
 					now.setMonth(now.getMonth() - i, 0);

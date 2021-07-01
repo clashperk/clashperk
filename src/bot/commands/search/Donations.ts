@@ -2,7 +2,7 @@ import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { Message } from 'discord.js';
-import { Season } from '../../util/Util';
+import { Season, Util } from '../../util/Util';
 
 interface Member {
 	tag: string;
@@ -34,16 +34,7 @@ export default class DonationsCommand extends Command {
 	public *args(msg: Message): unknown {
 		const season = yield {
 			flag: '--season',
-			type: [
-				Season.ID,
-				...Array(3).fill('').map((_, i) => {
-					const now = new Date(Season.ID);
-					now.setHours(0, 0, 0, 0);
-					now.setMonth(now.getMonth() - i, 0);
-					return Season.generateID(now);
-				}),
-				['last', 'prev']
-			],
+			type: [...Util.getSeasonIds(), ['last']],
 			unordered: msg.interaction ? false : [0, 1],
 			match: msg.interaction ? 'option' : 'phrase'
 		};

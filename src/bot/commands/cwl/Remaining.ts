@@ -1,7 +1,8 @@
+import { MessageEmbed, Message, MessageActionRow, MessageButton } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
-import { MessageEmbed, Message, Util } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { EMOJIS } from '../../util/Emojis';
+import { Util } from '../../util/Util';
 import moment from 'moment';
 
 export default class CWLRemainingCommand extends Command {
@@ -88,7 +89,7 @@ export default class CWLRemainingCommand extends Command {
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		const chunks: any[] = [];
+		const chunks: { embed: MessageEmbed; state: string }[] = [];
 		let i = 0;
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -173,56 +174,58 @@ export default class CWLRemainingCommand extends Command {
 		const item = round
 			? chunks[round - 1]
 			: chunks.length === 7
-				? chunks.find(c => c.state === 'inWar') || chunks.slice(-1)[0]
+				? chunks.find(c => c.state === 'inWar') ?? chunks.slice(-1)[0]
 				: chunks.slice(-2)[0];
 		const pageIndex = chunks.indexOf(item);
 
-		let page = pageIndex + 1;
-		const paginated = this.paginate(chunks, page);
+		const page = pageIndex + 1;
+		const pages = chunks.map(chunk => chunk.embed);
+		const paginated = Util.paginate(pages, page);
 
 		if (chunks.length === 1) {
-			return message.util!.send({ embeds: [paginated.items[0].embed] });
-		}
-		const msg = await message.util!.send({ embeds: [paginated.items[0].embed] });
-		for (const emoji of ['⬅️', '➡️']) {
-			await msg.react(emoji);
-			await this.delay(250);
+			return message.util!.send({ embeds: [paginated.first()] });
 		}
 
-		const collector = msg.createReactionCollector({
-			filter: (reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
-			time: 60000, max: 10
+		const [NextID, PrevID] = [this.client.uuid(), this.client.uuid()];
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setCustomID(PrevID)
+					.setLabel('Previous')
+					.setEmoji('⬅️')
+					.setStyle('SECONDARY')
+			)
+			.addComponents(
+				new MessageButton()
+					.setCustomID(NextID)
+					.setLabel('Next')
+					.setEmoji('➡️')
+					.setStyle('SECONDARY')
+			);
+
+		const msg = await message.util!.send({ embeds: [paginated.first()], components: [row] });
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => [PrevID, NextID].includes(action.customID) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
 		});
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
-				page += 1;
-				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = 1;
-				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embeds: [embed] });
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+		collector.on('collect', async action => {
+			if (action.customID === NextID) {
+				const next = paginated.next();
+				await action.update({ embeds: [Util.paginate(pages, next.page).first()] });
 			}
 
-			if (reaction.emoji.name === '⬅️') {
-				page -= 1;
-				if (page < 1) page = paginated.maxPage;
-				if (page > paginated.maxPage) page = 1;
-				const { embeds: [embed] } = this.paginate(chunks, page).items[0];
-				await msg.edit({ embeds: [embed] });
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
+			if (action.customID === PrevID) {
+				const next = paginated.previous();
+				await action.update({ embeds: [Util.paginate(pages, next.page).first()] });
 			}
 		});
 
 		collector.on('end', async () => {
-			await msg.reactions.removeAll().catch(() => null);
-			return message;
+			this.client.components.delete(NextID);
+			this.client.components.delete(PrevID);
+			if (msg.editable) await msg.edit({ components: [] });
 		});
-		return message;
 	}
 
 	private sort(items: any[]) {

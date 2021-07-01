@@ -1,10 +1,10 @@
-import { Clan } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
-import { MessageEmbed, Message, Util } from 'discord.js';
-import { Season } from '../../util/Util';
+import { MessageEmbed, Message } from 'discord.js';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
-import { BLUE_NUMBERS } from '../../util/NumEmojis';
+import { Command } from 'discord-akairo';
+import { Season, Util } from '../../util/Util';
+import { Clan } from 'clashofclans.js';
 
 export interface Aggregated {
 	tag: string;
@@ -34,7 +34,7 @@ export default class DonationSummaryCommand extends Command {
 	public *args(msg: Message): unknown {
 		const season = yield {
 			flag: '--season',
-			type: ['last', 'previous'],
+			type: [...Util.getSeasonIds(), ['last']],
 			match: msg.interaction ? 'option' : 'phrase'
 		};
 
