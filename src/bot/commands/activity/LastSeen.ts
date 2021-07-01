@@ -1,4 +1,4 @@
-import { Message, Util } from 'discord.js';
+import { Message, MessageButton } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import 'moment-duration-format';
@@ -6,11 +6,10 @@ import moment from 'moment';
 import { EMOJIS } from '../../util/Emojis';
 import { Collections } from '../../util/Constants';
 
-// TODO: Fix TS
-export default class LastOnlineCommand extends Command {
+export default class LastSeenCommand extends Command {
 	public constructor() {
-		super('lastonline', {
-			aliases: ['lastseen', 'lastonline', 'lo'],
+		super('lastseen', {
+			aliases: ['lastseen', 'lastonline', 'lo', 'ls'],
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
@@ -72,16 +71,22 @@ export default class LastOnlineCommand extends Command {
 			].join('\n'))
 			.setFooter(`Members [${data.members}/50]`, message.author.displayAvatarURL());
 
-		const msg = await message.util!.send({ embeds: [embed] });
-		await msg.react(EMOJIS.ACTIVITY);
-		const { id } = Util.parseEmoji(EMOJIS.ACTIVITY)!;
-		const collector = msg.createReactionCollector(
-			(reaction, user) => [id].includes(reaction.emoji.id) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
-		);
+		const customID = this.client.uuid();
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.id === id) {
+		const button = new MessageButton()
+			.setStyle('SECONDARY')
+			.setCustomID(customID)
+			.setEmoji(EMOJIS.ACTIVITY)
+			.setLabel('Show Activity Scores');
+
+		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => action.customID === customID && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customID === customID) {
 				collector.stop();
 				const members = await this.aggregationQuery(data, 30);
 
@@ -89,15 +94,20 @@ export default class LastOnlineCommand extends Command {
 				embed.setDescription([
 					`Clan Member Activities (Last ${30} Days)`,
 					`\`\`\`\n\u200e${'TOTAL'.padStart(4, ' ')} AVG  ${'NAME'}\n${members
-						.map(m => `${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / 30).toString().padStart(3, ' ')}  ${m.name}`)
+						.map(
+							m => `${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / 30).toString().padStart(3, ' ')}  ${m.name}`
+						)
 						.join('\n')}`,
 					'```'
 				].join('\n'));
-				return msg.edit({ embeds: [embed] });
+				return action.update({ embeds: [embed], components: [] });
 			}
 		});
 
-		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (msg.editable) await msg.edit({ components: [] });
+		});
 	}
 
 	private filter(clan: Clan, db: any) {

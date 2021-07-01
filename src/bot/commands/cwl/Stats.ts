@@ -203,10 +203,10 @@ export default class CWLStatsCommand extends Command {
 		const msg = await message.util!.send({ embeds: [embed] });
 		await msg.react('➕');
 
-		const collector = await msg.awaitReactions(
-			(reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
-			{ max: 1, time: 30000, errors: ['time'] }
-		).catch(() => null);
+		const collector = await msg.awaitReactions({
+			filter: (reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
+			max: 1, time: 30000, errors: ['time']
+		}).catch(() => null);
 
 		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
 		if (!collector || !collector.size) return;

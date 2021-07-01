@@ -1,6 +1,6 @@
 import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import { Command, Argument } from 'discord-akairo';
-import { MessageEmbed, Util, Message } from 'discord.js';
+import { MessageEmbed, Util, Message, MessageButton } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { Collections } from '../../util/Constants';
 import 'moment-duration-format';
@@ -168,34 +168,51 @@ export default class WarCommand extends Command {
 		if (body.state === 'preparation') {
 			return message.util!.send({ embeds: [embed] });
 		}
-		const msg = await message.util!.send({ embeds: [embed] });
-		await msg.react('📥');
 
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['📥'].includes(reaction.emoji.name!) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
-		);
+		const customID = this.client.uuid();
+		const button = new MessageButton()
+			.setLabel('Download')
+			.setEmoji('📥')
+			.setStyle('SECONDARY')
+			.setCustomID(customID);
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '📥') {
+		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => action.customID === customID && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customID === customID) {
 				if (this.client.patrons.get(message)) {
+					await action.update({ components: [] });
 					const buffer = await this.warStats(body);
-					return message.util!.send(
+					await action.followUp(
 						{
 							content: `**${body.clan.name} vs ${body.opponent.name}**`,
 							files: [{ attachment: Buffer.from(buffer), name: 'war_stats.xlsx' }]
 						}
 					);
+				} else {
+					const embed = new MessageEmbed()
+						.setDescription([
+							'**Patron Only Command**',
+							'This command is only available on Patron servers.',
+							'Visit https://patreon.com/clashperk for more details.',
+							'',
+							'**Demo War Attacks Export**'
+						].join('\n'))
+						.setImage('https://i.imgur.com/Uc5G2oS.png'); // TODO: Update Image
+
+					await action.reply({ embeds: [embed], ephemeral: true });
 				}
-				return message.channel.send({
-					embeds: [{
-						description: '[Become a Patron](https://www.patreon.com/clashperk) to export clan members to Excel.'
-					}]
-				});
 			}
 		});
 
-		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (msg.editable) await msg.edit({ components: [] });
+		});
 	}
 
 	private count(members: ClanWarMember[] = []) {

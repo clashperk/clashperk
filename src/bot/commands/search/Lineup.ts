@@ -38,7 +38,7 @@ export default class LineupCommand extends Command {
 		if (!data.isWarLogPublic) {
 			const res = await this.client.http.clanWarLeague(data.tag);
 			if (res.ok) {
-				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-lineup-list')!, false);
+				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-lineup')!, false);
 			}
 			embed.setDescription('Private WarLog');
 			return message.util!.send({ embeds: [embed] });
@@ -49,13 +49,12 @@ export default class LineupCommand extends Command {
 		if (body.state === 'notInWar') {
 			const res = await this.client.http.clanWarLeague(data.tag);
 			if (res.ok) {
-				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-lineup-list')!, false);
+				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-lineup')!, false);
 			}
 			embed.setDescription('Not in War');
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		const interaction = message.interaction;
 		const chunks = Util.splitMessage([
 			`\u200e**${Util.escapeMarkdown(body.clan.name)} (${body.clan.tag})**`,
 			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
@@ -70,9 +69,8 @@ export default class LineupCommand extends Command {
 			).join('\n')
 		].join('\n'));
 
-		if (interaction) await message.util!.send(chunks[0]);
-		if (chunks.length === 1 && interaction) return;
-		return message.channel.send({ content: chunks.slice(interaction ? 1 : 0).join('\n'), split: true });
+		if (chunks.length === 1) return message.util!.send(chunks[0]);
+		return chunks.slice(1).map(text => message.channel.send(text));
 	}
 
 	private flat(townHalls: number[], clan: WarClan) {

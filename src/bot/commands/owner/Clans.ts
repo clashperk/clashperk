@@ -112,10 +112,10 @@ export default class ClansCommand extends Command {
 			await this.delay(250);
 		}
 
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
-			{ time: 60000, max: 10 }
-		);
+		const collector = msg.createReactionCollector({
+			filter: (reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
+			time: 60000, max: 10
+		});
 
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡️') {

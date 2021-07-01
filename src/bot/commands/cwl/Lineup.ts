@@ -1,8 +1,9 @@
-import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember, Player } from 'clashofclans.js';
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, Message, MessageButton, MessageActionRow, MessageSelectMenu } from 'discord.js';
+import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember, Player, WarClan } from 'clashofclans.js';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
-import { BLUE_NUMBERS } from '../../util/NumEmojis';
+import { Util } from '../../util/Util';
 
 const states: { [key: string]: string } = {
 	inWar: 'Battle Day',
@@ -20,7 +21,7 @@ export default class CWLLineupCommand extends Command {
 				content: [
 					'Shows lineup of the current round.'
 				],
-				usage: '<clanTag>',
+				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
 			optionFlags: ['--tag']
@@ -65,63 +66,91 @@ export default class CWLLineupCommand extends Command {
 		const clanTag = clan.tag;
 		const rounds = body.rounds.filter(d => !d.warTags.includes('#0'));
 
-		const chunks: any[] = [];
+		const chunks: { state: string; clan: WarClan; opponent: WarClan; round: number }[] = [];
 		for (const { warTags } of rounds.slice(-2)) {
 			for (const warTag of warTags) {
 				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
 				if (!data.ok) continue;
 
 				if ((data.clan.tag === clanTag) || (data.opponent.tag === clanTag)) {
-					const embed = new MessageEmbed()
-						.setColor(this.client.embed(message));
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
-					const linups = await this.rosters(
-						clan.members.sort((a, b) => a.mapPosition - b.mapPosition),
-						opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
-					);
-					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
-
-					embed.setDescription([
-						'**War Against**',
-						`**[${opponent.name}](${this.clanURL(opponent.tag)})**`,
-						'',
-						`\u200e${EMOJIS.HASH} \u200b\u2002\`TH HERO\` \u2002 \u2002 \u2002 \`TH HERO\``,
-						linups.map(
-							(lineup, i) => `\u200e${BLUE_NUMBERS[i + 1]} \u200b\u2002${lineup.map(en => `\`${en.t.toString().padStart(2, ' ')} ${(en.h).toString().padStart(4, ' ')}\u200f\``).join(' \u2002vs\u2002 ')}`
-						).join('\n')
-					].join('\n'));
-
-					embed.setFooter(`Round #${rounds.findIndex(en => en.warTags.includes(warTag)) + 1} (${states[data.state]})`);
-					chunks.push({ state: data.state, embed });
+					const round = rounds.findIndex(en => en.warTags.includes(warTag)) + 1;
+					chunks.push({ state: data.state, clan, opponent, round });
 				}
 			}
 		}
 
 		if (!chunks.length) return message.util!.send('**504 Request Timeout!**');
 		const data = rounds.length === 7
-			? chunks.find(c => c.state === 'preparation') || chunks.slice(-1)[0]
+			? chunks.find(ch => ch.state === 'preparation') ?? chunks.slice(-1)[0]
 			: chunks.slice(-2).reverse()[0];
 
-		const msg = await message.util!.send({ embeds: [data.embed] });
-		await msg.react('➕');
+		const embeds = await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
+		for (const embed of embeds) embed.setColor(this.client.embed(message));
 
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕'].includes(reaction.emoji.name!) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
-		);
+		const [PlayerCustomID, ComapreCustomID, MenuID] = [this.client.uuid(), this.client.uuid(), this.client.uuid()];
+		const buttons = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setCustomID(PlayerCustomID)
+					.setLabel('Show Player Names and Links')
+					.setStyle('SECONDARY')
+			);
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➕') {
-				return this.handler.handleDirectCommand(message, clan.tag, this.handler.modules.get('cwl-lineup-list')!, false);
+		const menus = new MessageActionRow()
+			.addComponents(
+				new MessageSelectMenu()
+					.setCustomID(MenuID)
+					.setPlaceholder('Select War')
+					.addOptions([
+						{
+							label: 'Preparation',
+							value: 'preparation',
+							description: 'Lineup for the preparation day.'
+						},
+						{
+							label: 'Battle Day', value: 'inWar',
+							description: 'Lineup for the battle day.'
+						}
+					])
+					.setDisabled(chunks.length === 1)
+			);
+
+		const msg = await message.util!.send({ embeds, components: [buttons, menus] });
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => [ComapreCustomID, PlayerCustomID, MenuID].includes(action.customID) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		let clicked = Boolean(false);
+		collector.on('collect', async action => {
+			if (action.customID === PlayerCustomID) {
+				const embeds = this.getLineupList(data.state, data.round, { clan: data.clan, opponent: data.opponent });
+				clicked = Boolean(true);
+				return action.update({ embeds, components: [menus] });
+			}
+
+			if (action.customID === MenuID && action.isSelectMenu()) {
+				const data = rounds.length === 7
+					? chunks.find(ch => ch.state === action.values![0]) ?? chunks.slice(-1)[0]
+					: chunks.slice(-2).reverse()[0];
+
+				await action.deferUpdate();
+				const embeds = clicked
+					? this.getLineupList(data.state, data.round, { clan: data.clan, opponent: data.opponent })
+					: await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
+
+				await action.editReply({ embeds });
 			}
 		});
 
-		collector.on('end', async () => msg.reactions.removeAll().catch(() => null));
-	}
-
-	private clanURL(tag: string) {
-		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
+		collector.on('end', async () => {
+			this.client.components.delete(MenuID);
+			this.client.components.delete(PlayerCustomID);
+			this.client.components.delete(ComapreCustomID);
+			if (msg.editable) await msg.edit({ components: [] });
+		});
 	}
 
 	private async rosters(clanMembers: ClanWarMember[], opponentMembers: ClanWarMember[]) {
@@ -138,7 +167,6 @@ export default class CWLLineupCommand extends Command {
 		});
 
 		const opponentPlayers: Player[] = await this.client.http.detailedClanMembers(opponentMembers as any);
-
 		const b = opponentPlayers.filter(res => res.ok).map((m, i) => {
 			const heroes = m.heroes.filter(en => en.village === 'home');
 			return {
@@ -150,15 +178,70 @@ export default class CWLLineupCommand extends Command {
 			};
 		});
 
-		return this.chunk([...a, ...b].sort((a, b) => a.e - b.e).sort((a, b) => a.m - b.m));
+		return Util.chunk([...a, ...b].sort((a, b) => a.e - b.e).sort((a, b) => a.m - b.m), 2);
 	}
 
-	private chunk<T>(items: T[] = []) {
-		const chunk = 2;
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
-		}
-		return array;
+	private async getComparisonLineup(state: string, round: number, clan: WarClan, opponent: WarClan) {
+		const linups = await this.rosters(
+			clan.members.sort((a, b) => a.mapPosition - b.mapPosition),
+			opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
+		);
+		const embed = new MessageEmbed();
+		embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
+
+		embed.setDescription(
+			[
+				'**War Against**',
+				`**${opponent.name} (${opponent.tag})**`,
+				'',
+				`\u200e${EMOJIS.HASH} \u200b\u2002\`TH HERO\` \u2002 \u2002 \u2002 \`TH HERO\``,
+				linups.map(
+					(lineup, i) => `\u200e${BLUE_NUMBERS[i + 1]} \u200b\u2002${lineup.map(en => `\`${en.t.toString().padStart(2, ' ')} ${(en.h).toString().padStart(4, ' ')}\u200f\``).join(' \u2002vs\u2002 ')}`
+				).join('\n')
+			].join('\n')
+		);
+		embed.setFooter(`Round #${round} [${states[state]}]`);
+
+		return [embed];
+	}
+
+	private getLineupList(state: string, round: number, data: { clan: WarClan; opponent: WarClan }) {
+		const embeds = [
+			new MessageEmbed()
+				.setAuthor(
+					`${data.clan.name} (${data.clan.tag})`,
+					data.clan.badgeUrls.medium,
+					this.clanURL(data.clan.tag)
+				)
+				.setDescription(
+					data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition)
+						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')}) `)
+						.join('\n')
+				)
+				.setFooter(`Round #${round} [${states[state]}]`),
+
+			new MessageEmbed()
+				.setAuthor(
+					`${data.opponent.name} (${data.opponent.tag})`,
+					data.opponent.badgeUrls.medium,
+					this.clanURL(data.opponent.tag)
+				)
+				.setDescription(
+					data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
+						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')}) `)
+						.join('\n')
+				)
+				.setFooter(`Round #${round} [${states[state]}]`)
+		];
+
+		return embeds;
+	}
+
+	private pad(num: number) {
+		return num.toString().padStart(2, ' ');
+	}
+
+	private clanURL(tag: string) {
+		return `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(tag)}`;
 	}
 }

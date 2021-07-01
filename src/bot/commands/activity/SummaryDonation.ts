@@ -26,11 +26,24 @@ export default class DonationSummaryCommand extends Command {
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
-			description: {}
+			description: {},
+			optionFlags: ['--season']
 		});
 	}
 
-	public async exec(message: Message) {
+	public *args(msg: Message): unknown {
+		const season = yield {
+			flag: '--season',
+			type: ['last', 'previous'],
+			match: msg.interaction ? 'option' : 'phrase'
+		};
+
+		return { season };
+	}
+
+	public async exec(message: Message, { season }: { season?: string }) {
+		if (season === 'last') season = Season.generateID(Season.startTimestamp);
+		if (!season) season = Season.ID;
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const embed = new MessageEmbed()
@@ -53,7 +66,7 @@ export default class DonationSummaryCommand extends Command {
 			.aggregate([
 				{
 					$match: {
-						season: Season.ID,
+						season,
 						clanTag: {
 							$in: fetched.map(clan => clan.tag)
 						},
@@ -121,14 +134,22 @@ export default class DonationSummaryCommand extends Command {
 				aggregated.map((clan, n) => `${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(clan.donationsReceived, clan_rp)}  ${clan.name.padEnd(15, ' ')}\u200f\``).join('\n')
 			)[0]
 		].join('\n'));
-		embed.addField('\u200b', [
-			'**Top Players**',
-			`${EMOJIS.CLAN} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(15, ' ')}\u200f\``,
-			members.map(mem => `${BLUE_NUMBERS[mem.clanIndex]} \`\u200e${this.donation(mem.donated, mem_dp)} ${this.donation(mem.received, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``).join('\n')
-		].join('\n'));
-		embed.setFooter(`Season ${Season.ID}`);
 
-		return message.util!.send({ embeds: [embed] });
+		const embeds = [
+			embed,
+			new MessageEmbed()
+				.setColor(embed.color!)
+				.setDescription([
+					'**Top Players**',
+					`${EMOJIS.CLAN} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(15, ' ')}\u200f\``,
+					Util.splitMessage(
+						members.map(mem => `${BLUE_NUMBERS[mem.clanIndex]} \`\u200e${this.donation(mem.donated, mem_dp)} ${this.donation(mem.received, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``).join('\n')
+					)[0]
+				].join('\n'))
+				.setFooter(`Season ${season}`)
+		];
+
+		return message.util!.send({ embeds });
 	}
 
 	private donation(num: number, space: number) {

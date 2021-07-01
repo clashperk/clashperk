@@ -47,7 +47,6 @@ export class CommandUtil {
 
 	public static transformOptions(options: string | InteractionReplyOptions & { split: false }) {
 		const transformedOptions = typeof options === 'string' ? { content: options } : { ...options };
-		// @ts-expect-error
 		if (!transformedOptions.content) transformedOptions.content = null;
 		// @ts-expect-error
 		if (!transformedOptions.embeds) transformedOptions.embeds = [];

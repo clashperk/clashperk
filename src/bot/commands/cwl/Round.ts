@@ -161,10 +161,10 @@ export default class CWLRoundCommand extends Command {
 			);
 
 		const msg = await message.util!.send({ embeds: [paginated.first()], components: [row] });
-		const collector = msg.createMessageComponentInteractionCollector(
-			action => [PrevID, NextID].includes(action.customID) && action.user.id === message.author.id,
-			{ time: 15 * 60 * 1000 }
-		);
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => [PrevID, NextID].includes(action.customID) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
 
 		collector.on('collect', async action => {
 			if (action.customID === NextID) {
@@ -196,7 +196,7 @@ export default class CWLRoundCommand extends Command {
 			.map(entry => ({ level: Number(entry[0]), total: entry[1] }))
 			.sort((a, b) => b.level - a.level);
 
-		return Util.chunk(townHalls)
+		return Util.chunk(townHalls, 5)
 			.map(chunks => chunks.map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}`)
 				.join(' '))
 			.join('\n');

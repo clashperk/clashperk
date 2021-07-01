@@ -1,5 +1,5 @@
 import { Command, PrefixSupplier, Argument, Flag } from 'discord-akairo';
-import { Message, MessageEmbed, GuildMember, Snowflake } from 'discord.js';
+import { Message, MessageEmbed, GuildMember, Snowflake, MessageActionRow, MessageButton } from 'discord.js';
 
 export default class LinkCommand extends Command {
 	public constructor() {
@@ -101,49 +101,72 @@ export default class LinkCommand extends Command {
 		const playerCommand = this.handler.modules.get('link-add')!;
 		const tags = await Promise.all([this.client.http.clan(tag), this.client.http.player(tag)]);
 
-		const num: { [key: string]: string } = {
-			1: '1️⃣',
-			2: '2️⃣',
-			3: '❌'
-		};
-
 		const types: { [key: string]: string } = {
-			1: 'Clan',
-			2: 'Player'
+			1: 'CLAN',
+			2: 'PLAYER'
 		};
 
 		if (tags.every(a => a.ok)) {
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
-				.setAuthor('Select a Player or Clan')
-				.setDescription(tags.map((a, i) => `**${types[i + 1]}**\n${num[i + 1]} ${a.name} (${a.tag})\n`).join('\n'));
-			const msg = await message.util!.send({ embeds: [embed] });
+				.setDescription([
+					'**What would you like to link? A player or a clan?**',
+					'',
+					tags.map((a, i) => `**${types[i + 1]}**\n${a.name} (${a.tag})\n`).join('\n')
+				].join('\n'));
 
-			for (const emoji of [...Object.values(num)]) {
-				await msg.react(emoji);
-				await this.delay(250);
-			}
+			const [ClanCustomID, PlayerCustomID, CancelID] = [this.client.uuid(), this.client.uuid(), this.client.uuid()];
+			const row = new MessageActionRow()
+				.addComponents(
+					new MessageButton()
+						.setStyle('SECONDARY')
+						.setLabel('LINK PLAYER')
+						.setCustomID(PlayerCustomID)
+				)
+				.addComponents(
+					new MessageButton()
+						.setStyle('SECONDARY')
+						.setLabel('LINK CLAN')
+						.setCustomID(ClanCustomID)
+				)
+				.addComponents(
+					new MessageButton()
+						.setStyle('DANGER')
+						.setLabel('CANCEL')
+						.setCustomID(CancelID)
+				);
+			const msg = await message.util!.send({ embeds: [embed], components: [row] });
 
-			const collector = msg.createReactionCollector(
-				(reaction, user) => [...Object.values(num)].includes(reaction.emoji.name!) && user.id === message.author.id,
-				{ time: 45000, max: 1 }
-			);
+			const collector = msg.createMessageComponentInteractionCollector({
+				filter: action => [ClanCustomID, PlayerCustomID, CancelID].includes(action.customID) && action.user.id === message.author.id,
+				time: 15 * 60 * 1000
+			});
 
-			collector.on('collect', async reaction => {
-				if (reaction.emoji.name === num[1]) {
-					return this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
+			collector.on('collect', async action => {
+				if (action.customID === ClanCustomID) {
+					await action.update({ components: [] });
+					await this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
 				}
 
-				if (reaction.emoji.name === num[2]) {
-					return this.handler.runCommand(message, playerCommand, { data: tags[1], member: member, def });
+				if (action.customID === PlayerCustomID) {
+					await action.update({ components: [] });
+					await this.handler.runCommand(message, playerCommand, { data: tags[1], member: member, def });
 				}
 
-				if (reaction.emoji.name === num[3]) {
-					return message.util!.send({ embeds: [{ author: { name: 'Command has been cancelled.' } }] });
+				if (action.customID === CancelID) {
+					await action.update({
+						components: [],
+						content: '**This command has been cancelled.**'
+					});
 				}
 			});
 
-			collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+			collector.on('end', async () => {
+				this.client.components.delete(CancelID);
+				this.client.components.delete(ClanCustomID);
+				this.client.components.delete(PlayerCustomID);
+				if (msg.editable) await msg.edit({ components: [] });
+			});
 		} else if (tags[0].ok) { // eslint-disable-line
 			return this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
 		} else if (tags[1].ok) {

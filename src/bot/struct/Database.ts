@@ -139,6 +139,4 @@ class MongoDB extends MongoClient {
 	}
 }
 
-const Connection = new MongoDB();
-
-export { Connection };
+export const Connection = new MongoDB();

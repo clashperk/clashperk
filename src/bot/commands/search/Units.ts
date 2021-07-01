@@ -51,10 +51,10 @@ export default class UnitsCommand extends Command {
 			.setStyle('SECONDARY');
 		const msg = await message.util!.send({ embeds: [embed], components: [[component]] });
 
-		const collector = msg.createMessageComponentInteractionCollector(
-			action => [hallMaxID, fullMaxID].includes(action.customID) && action.user.id === message.author.id,
-			{ time: 5 * 60 * 1000 }
-		);
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => [hallMaxID, fullMaxID].includes(action.customID) && action.user.id === message.author.id,
+			time: 5 * 60 * 1000
+		});
 
 		collector.on('collect', async action => {
 			if (action.customID === fullMaxID) {

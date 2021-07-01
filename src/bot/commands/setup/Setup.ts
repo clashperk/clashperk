@@ -117,10 +117,10 @@ export default class SetupCommand extends Command {
 			.setLabel('Show all Linked Clans');
 		const msg = await message.channel.send({ embeds: [embed], components: [[button]] });
 
-		const interaction = await msg.awaitMessageComponentInteraction(
-			action => action.customID === customID && action.user.id === message.author.id,
-			{ time: 5 * 60 * 1000 }
-		).catch(() => null);
+		const interaction = await msg.awaitMessageComponentInteraction({
+			filter: action => action.customID === customID && action.user.id === message.author.id,
+			time: 5 * 60 * 1000
+		}).catch(() => null);
 
 		if (msg.editable) await msg.edit({ components: [] });
 		if (!interaction) return;

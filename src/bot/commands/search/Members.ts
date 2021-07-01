@@ -156,10 +156,10 @@ export default class MembersCommand extends Command {
 
 		const msg = await message.util!.send({ embeds: [embed], components: [row] });
 
-		const collector = msg.createMessageComponentInteractionCollector(
-			action => [discord, download].includes(action.customID) && action.user.id === message.author.id,
-			{ time: 15 * 60 * 1000 }
-		);
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => [discord, download].includes(action.customID) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
 
 		collector.on('collect', async action => {
 			if (action.customID === discord) {

@@ -1,12 +1,13 @@
 import * as Discord from 'discord.js';
+import 'moment-duration-format';
+import moment from 'moment';
 
 export class Util extends Discord.Util {
 	public constructor() {
 		super();
 	}
 
-	public static chunk<T>(items: T[] = []) {
-		const chunk = 5;
+	public static chunk<T>(items: T[], chunk: number) {
 		const array = [];
 		for (let i = 0; i < items.length; i += chunk) {
 			array.push(items.slice(i, i + chunk));
@@ -49,6 +50,15 @@ export class Util extends Discord.Util {
 				return this.pages[0];
 			}
 		};
+	}
+
+	public static duration(ms: number) {
+		if (ms > 864e5) {
+			return moment.duration(ms).format('d[d] H[h]', { trim: 'both mid' });
+		} else if (ms > 36e5) {
+			return moment.duration(ms).format('H[h] m[m]', { trim: 'both mid' });
+		}
+		return moment.duration(ms).format('m[m] s[s]', { trim: 'both mid' });
 	}
 }
 

@@ -66,10 +66,10 @@ export default class StatsCommand extends Command {
 		await msg.react('🗑');
 		let react;
 		try {
-			react = await msg.awaitReactions(
-				(reaction, user) => reaction.emoji.name === '🗑' && user.id === message.author.id,
-				{ max: 1, time: 30000, errors: ['time'] }
-			);
+			react = await msg.awaitReactions({
+				filter: (reaction, user) => reaction.emoji.name === '🗑' && user.id === message.author.id,
+				max: 1, time: 30000, errors: ['time']
+			});
 		} catch (error) {
 			return msg.reactions.removeAll().catch(() => 0);
 		}

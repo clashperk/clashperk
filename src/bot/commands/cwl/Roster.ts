@@ -1,6 +1,6 @@
 import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
-import { MessageEmbed, Message, Util } from 'discord.js';
+import { MessageEmbed, Message, MessageButton } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
@@ -152,17 +152,20 @@ export default class CWLRosterCommand extends Command {
 			embed.addField('\u200b', `Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`);
 		}
 
-		const msg = await message.util!.send({ embeds: [embed] });
-		await msg.react(EMOJIS.HASH);
+		const customID = this.client.uuid();
+		const button = new MessageButton()
+			.setCustomID(customID)
+			.setStyle('SECONDARY')
+			.setLabel('Detailed Roster');
+		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const collector = await msg.awaitMessageComponentInteraction({
+			filter: action => action.customID === customID && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		}).catch(() => null);
 
-		const { id } = Util.parseEmoji(EMOJIS.HASH)!;
-		const collector = await msg.awaitReactions(
-			(reaction, user) => reaction.emoji.id === id && user.id === message.author.id,
-			{ max: 1, time: 60000, errors: ['time'] }
-		).catch(() => null);
-
-		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
-		if (!collector || !collector.size) return;
+		if (msg.editable) await msg.edit({ components: [] });
+		this.client.components.delete(customID);
+		if (!collector) return;
 
 		embed.fields = [];
 		embed.setFooter(`Clan War League ${moment(body.season).format('MMMM YYYY')}`)

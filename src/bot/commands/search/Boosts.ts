@@ -49,7 +49,9 @@ export default class BoostsCommand extends Command {
 			.setCustomID(refreshID);
 
 		const msg = await message.util!.send({ embeds: res.embeds, components: [[button]] });
-		const collector = msg.createMessageComponentInteractionCollector(action => action.customID === refreshID);
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => action.customID === refreshID
+		});
 
 		collector.on('collect', async action => {
 			if (action.customID === refreshID) {

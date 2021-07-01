@@ -78,21 +78,18 @@ export default class PatronCommand extends Command {
 				'Any help is beyond appreciated. Thanks!',
 				'',
 				'**Benefits**',
-				'🔸 Only one sec cooldown and faster updates.',
-				//
-				'🔸 Special commands, custom Embed colors.',
-				//
-				'🔸 Self updating Clan Promotional Embed.',
-				//
-				'🔸 Claim unlimited number of clans.',
+				'• Only one sec cooldown and faster updates.',
+				'• Special commands, custom Embed colors.',
+				'• Self updating Clan Promotional Embed.',
+				'• Claim unlimited number of clans.',
 				'',
-				'🔸 Export to Excel File',
-				'\u200e \u2002 🔹 Current/historic war attacks.',
-				'\u200e \u2002 🔹 Clan Members with many stats.',
-				'\u200e \u2002 🔹 Current CWL attacks and summary.',
-				'\u200e \u2002 🔹 Season stats with Discord username.',
+				'• Export to Excel File',
+				'\u200e \u2002 - Current/historic war attacks.',
+				'\u200e \u2002 - Clan Members with many stats.',
+				'\u200e \u2002 - Current CWL attacks and summary.',
+				'\u200e \u2002 - Season stats with Discord username.',
 				'',
-				'🔸 Patron Role on our Support Discord.',
+				'• Patron Role on our Support Discord.',
 				'',
 				'**[Support us on Patreon](https://www.patreon.com/clashperk) | [Support Discord](https://discord.gg/ppuppun)**'
 			].join('\n'));
@@ -103,10 +100,10 @@ export default class PatronCommand extends Command {
 
 		const msg = await message.util!.send({ embeds: [embed] });
 		await msg.react('➕');
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕'].includes(reaction.emoji.name!) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
-		);
+		const collector = msg.createReactionCollector({
+			filter: (reaction, user) => ['➕'].includes(reaction.emoji.name!) && user.id === message.author.id,
+			time: 60000, max: 1
+		});
 
 		const patrons = (await this.patrons()).filter(patron => patron.active && patron.discord_id !== this.client.ownerID);
 		collector.on('collect', async reaction => {

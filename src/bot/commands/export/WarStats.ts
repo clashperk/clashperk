@@ -139,10 +139,10 @@ export default class WarStatsExport extends Command {
 		const msg = await message.util!.send({ embeds: [embed] });
 		await msg.react('📥');
 
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['📥'].includes(reaction.emoji.name!) && user.id === message.author.id,
-			{ time: 90000, max: 1 }
-		);
+		const collector = msg.createReactionCollector({
+			filter: (reaction, user) => ['📥'].includes(reaction.emoji.name!) && user.id === message.author.id,
+			time: 90000, max: 1
+		});
 
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '📥') {
