@@ -77,7 +77,7 @@ export default class UpgradesCommand extends Command {
 			const title = titles[key];
 			units.push({
 				index: indexes.indexOf(title),
-				title,
+				title, key,
 				units: value
 			});
 		}
@@ -103,22 +103,43 @@ export default class UpgradesCommand extends Command {
 				}
 			);
 
-			if (unitsArray.length) {
+			if (category.key === 'Barracks' && unitsArray.length) {
+				embed.setDescription(
+					[
+						embed.description,
+						'',
+						`**${category.title}**`,
+						unitsArray.map(unit => {
+							const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+							const level = this.padStart(unit.level);
+							const maxLevel = this.padEnd(unit.hallMaxLevel);
+							const upgradeTime = ms(unit.upgradeTime * 1000).padStart(5, ' ');
+							const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
+							return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
+						}).join('\n')
+					].join('\n')
+				);
+			}
+
+			if (unitsArray.length && category.key !== 'Barracks') {
 				embed.addField(
-					`\u200b\n${category.title}`,
-					unitsArray.map(unit => {
-						const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-						const level = this.padStart(unit.level);
-						const maxLevel = this.padEnd(unit.hallMaxLevel);
-						const upgradeTime = ms(unit.upgradeTime * 1000).padStart(5, ' ');
-						const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
-						return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
-					}).join('\n')
+					'\u200b',
+					[
+						`**${category.title}**`,
+						unitsArray.map(unit => {
+							const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+							const level = this.padStart(unit.level);
+							const maxLevel = this.padEnd(unit.hallMaxLevel);
+							const upgradeTime = ms(unit.upgradeTime * 1000).padStart(5, ' ');
+							const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
+							return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
+						}).join('\n')
+					].join('\n')
 				);
 			}
 		}
 
-		if (!embed.fields.length) {
+		if (!embed.fields.length && embed.description?.length) {
 			embed.setDescription(
 				`No remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? ` and BH${data.builderHallLevel}` : ''}`
 			);
