@@ -82,7 +82,7 @@ export default class CWLLineupCommand extends Command {
 		}
 
 		if (!chunks.length) return message.util!.send('**504 Request Timeout!**');
-		const data = rounds.length === 7
+		let data = rounds.length === 7
 			? chunks.find(ch => ch.state === 'preparation') ?? chunks.slice(-1)[0]
 			: chunks.slice(-2).reverse()[0];
 
@@ -94,8 +94,15 @@ export default class CWLLineupCommand extends Command {
 			.addComponents(
 				new MessageButton()
 					.setCustomID(PlayerCustomID)
-					.setLabel('Show Player Names and Links')
+					.setLabel('Show Player List')
 					.setStyle('SECONDARY')
+			)
+			.addComponents(
+				new MessageButton()
+					.setCustomID(ComapreCustomID)
+					.setLabel('Compare')
+					.setStyle('SECONDARY')
+					.setDisabled(true)
 			);
 
 		const menus = new MessageActionRow()
@@ -127,12 +134,15 @@ export default class CWLLineupCommand extends Command {
 		collector.on('collect', async action => {
 			if (action.customID === PlayerCustomID) {
 				const embeds = this.getLineupList(data.state, data.round, { clan: data.clan, opponent: data.opponent });
+				for (const embed of embeds) embed.setColor(this.client.embed(message));
 				clicked = Boolean(true);
-				return action.update({ embeds, components: [menus] });
+				buttons.components[0].setDisabled(true);
+				buttons.components[1].setDisabled(false);
+				return action.update({ embeds, components: [buttons, menus] });
 			}
 
 			if (action.customID === MenuID && action.isSelectMenu()) {
-				const data = chunks.find(ch => ch.state === action.values![0]) ?? chunks.slice(-1)[0];
+				data = chunks.find(ch => ch.state === action.values![0]) ?? chunks.slice(-1)[0];
 
 				await action.deferUpdate();
 				const embeds = clicked
@@ -141,6 +151,16 @@ export default class CWLLineupCommand extends Command {
 				for (const embed of embeds) embed.setColor(this.client.embed(message));
 
 				await action.editReply({ embeds });
+			}
+
+			if (action.customID === ComapreCustomID) {
+				await action.deferUpdate();
+				const embeds = await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
+				for (const embed of embeds) embed.setColor(this.client.embed(message));
+				clicked = Boolean(false);
+				buttons.components[0].setDisabled(false);
+				buttons.components[1].setDisabled(true);
+				await action.editReply({ embeds, components: [buttons, menus] });
 			}
 		});
 
