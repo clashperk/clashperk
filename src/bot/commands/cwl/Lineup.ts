@@ -243,7 +243,7 @@ export default class CWLLineupCommand extends Command {
 					data.clan.members.sort(
 						(a, b) => a.mapPosition - b.mapPosition
 					).map(
-						(m, i) => `${WHITE_NUMBERS[i + 1]} [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')})`
+						(m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')})`
 					).join('\n')
 				)
 				.setFooter(`Round #${round} (${states[state]})`),
@@ -258,7 +258,7 @@ export default class CWLLineupCommand extends Command {
 					data.opponent.members.sort(
 						(a, b) => a.mapPosition - b.mapPosition
 					).map(
-						(m, i) => `${WHITE_NUMBERS[i + 1]} [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')})`
+						(m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')})`
 					).join('\n')
 				)
 				.setFooter(`Round #${round} (${states[state]})`)
