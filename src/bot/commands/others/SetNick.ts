@@ -59,10 +59,10 @@ export default class SetNickNameCommand extends Command {
 			return message.util!.send(`**I do not have permission to change ${own ? 'your ' : ''}nickname${own ? '.' : ' of this member!**'}`);
 		}
 
-		const data = await this.client.db.collection<{ entries?: { name?: string; tag: string }[] }>(Collections.LINKED_PLAYERS)
+		const data = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS)
 			.findOne({ user: member.id });
 
-		if (!data?.entries?.length) {
+		if (!data?.entries.length) {
 			return message.util!.send(`**No player accounts are linked to ${member.user.tag}**`);
 		}
 

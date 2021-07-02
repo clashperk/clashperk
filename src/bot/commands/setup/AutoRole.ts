@@ -163,13 +163,14 @@ export default class AutoRoleCommand extends Command {
 			for (const { user, tag } of unknowns) {
 				if (members.find(mem => mem.tag === tag && mem.user === user)) continue;
 
-				const member = data.memberList.find(mem => mem.tag === tag);
+				const member = data.memberList.find(mem => mem.tag === tag) ?? await this.client.http.player(tag);
+				if (!member.name) continue;
 				try {
 					await this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
 						{ user, 'entries.tag': { $ne: tag } },
 						{
 							$push: {
-								entries: { tag, name: member?.name, verified: false, unknown: true }
+								entries: { tag, name: member.name, verified: false, unknown: true }
 							},
 							$setOnInsert: {
 								clan: {
