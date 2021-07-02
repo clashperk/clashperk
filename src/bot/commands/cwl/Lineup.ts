@@ -1,7 +1,7 @@
 import { MessageEmbed, Message, MessageButton, MessageActionRow, MessageSelectMenu } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember, Player, WarClan } from 'clashofclans.js';
-import { BLUE_NUMBERS } from '../../util/NumEmojis';
-import { EMOJIS } from '../../util/Emojis';
+import { BLUE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
+import { EMOJIS, HERO_PETS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Util } from '../../util/Util';
 
@@ -176,10 +176,12 @@ export default class CWLLineupCommand extends Command {
 		const clanPlayers: Player[] = await this.client.http.detailedClanMembers(clanMembers);
 		const a = clanPlayers.filter(res => res.ok).map((m, i) => {
 			const heroes = m.heroes.filter(en => en.village === 'home');
+			const pets = m.troops.filter(en => en.village === 'home' && en.name in HERO_PETS);
 			return {
 				e: 0,
 				m: i + 1,
 				t: m.townHallLevel,
+				p: pets.map(en => en.level).reduce((prev, en) => en + prev, 0),
 				h: heroes.map(en => en.level).reduce((prev, en) => en + prev, 0)
 				// .concat(...Array(4 - heroes.length).fill(' '))
 			};
@@ -188,10 +190,12 @@ export default class CWLLineupCommand extends Command {
 		const opponentPlayers: Player[] = await this.client.http.detailedClanMembers(opponentMembers as any);
 		const b = opponentPlayers.filter(res => res.ok).map((m, i) => {
 			const heroes = m.heroes.filter(en => en.village === 'home');
+			const pets = m.troops.filter(en => en.village === 'home' && en.name in HERO_PETS);
 			return {
 				e: 1,
 				m: i + 1,
 				t: m.townHallLevel,
+				p: pets.map(en => en.level).reduce((prev, en) => en + prev, 0),
 				h: heroes.map(en => en.level).reduce((prev, en) => en + prev, 0)
 				// .concat(...Array(4 - heroes.length).fill(' '))
 			};
@@ -206,20 +210,23 @@ export default class CWLLineupCommand extends Command {
 			opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
 		);
 		const embed = new MessageEmbed();
-		embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
+		embed.setAuthor(`\u200e${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
 
 		embed.setDescription(
 			[
 				'**War Against**',
-				`**${opponent.name} (${opponent.tag})**`,
+				`**\u200e${opponent.name} (${opponent.tag})**`,
 				'',
-				`\u200e${EMOJIS.HASH} \u200b\u2002\`TH HERO\` \u2002 \u2002 \u2002 \`TH HERO\``,
+				`\u200e${EMOJIS.HASH} \`TH HERO \u2002  \u2002 TH HERO \``,
 				linups.map(
-					(lineup, i) => `\u200e${BLUE_NUMBERS[i + 1]} \u200b\u2002${lineup.map(en => `\`${en.t.toString().padStart(2, ' ')} ${(en.h).toString().padStart(4, ' ')}\u200f\``).join(' \u2002vs\u2002 ')}`
+					(lineup, i) => {
+						const desc = lineup.map(en => `${this.pad(en.t, 2)} ${this.pad(en.h, 4)}`).join(' \u2002vs\u2002 ');
+						return `${BLUE_NUMBERS[i + 1]} \`${desc} \``;
+					}
 				).join('\n')
 			].join('\n')
 		);
-		embed.setFooter(`Round #${round} [${states[state]}]`);
+		embed.setFooter(`Round #${round} (${states[state]})`);
 
 		return [embed];
 	}
@@ -228,36 +235,40 @@ export default class CWLLineupCommand extends Command {
 		const embeds = [
 			new MessageEmbed()
 				.setAuthor(
-					`${data.clan.name} (${data.clan.tag})`,
+					`\u200e${data.clan.name} (${data.clan.tag})`,
 					data.clan.badgeUrls.medium,
 					this.clanURL(data.clan.tag)
 				)
 				.setDescription(
-					data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition)
-						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')}) `)
-						.join('\n')
+					data.clan.members.sort(
+						(a, b) => a.mapPosition - b.mapPosition
+					).map(
+						(m, i) => `${WHITE_NUMBERS[i + 1]} [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')})`
+					).join('\n')
 				)
-				.setFooter(`Round #${round} [${states[state]}]`),
+				.setFooter(`Round #${round} (${states[state]})`),
 
 			new MessageEmbed()
 				.setAuthor(
-					`${data.opponent.name} (${data.opponent.tag})`,
+					`\u200e${data.opponent.name} (${data.opponent.tag})`,
 					data.opponent.badgeUrls.medium,
 					this.clanURL(data.opponent.tag)
 				)
 				.setDescription(
-					data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
-						.map((m, i) => `\`\u200e${this.pad(i + 1)}\`  [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')}) `)
-						.join('\n')
+					data.opponent.members.sort(
+						(a, b) => a.mapPosition - b.mapPosition
+					).map(
+						(m, i) => `${WHITE_NUMBERS[i + 1]} [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')})`
+					).join('\n')
 				)
-				.setFooter(`Round #${round} [${states[state]}]`)
+				.setFooter(`Round #${round} (${states[state]})`)
 		];
 
 		return embeds;
 	}
 
-	private pad(num: number) {
-		return num.toString().padStart(2, ' ');
+	private pad(num: number, depth: number) {
+		return num.toString().padStart(depth, ' ');
 	}
 
 	private clanURL(tag: string) {
