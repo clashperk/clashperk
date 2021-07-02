@@ -68,15 +68,13 @@ export default class SetNickNameCommand extends Command {
 
 		const players = (await this.client.http.detailedClanMembers(data.entries.slice(0, 25)))
 			.filter(res => res.ok);
-
 		if (!players.length) return;
-		/* if (players.length === 1) {
-			const name = this.getName(players[0].name, txt);
-			await member.setNickname(name, `Nickname set by ${message.author.tag}`).catch(() => null);
-			return message.util!.send(`**${member.user.tag}\'s** nickname set to **${name}**`);
-		}*/
 
-		const options = players.map(op => ({ label: op.name, value: op.name, emoji: TOWN_HALLS[op.townHallLevel], description: `${op.tag} TH${op.townHallLevel}` }));
+		const options = players.map(op => ({
+			label: op.name, value: op.tag,
+			emoji: TOWN_HALLS[op.townHallLevel],
+			description: `${op.tag} TH${op.townHallLevel}`
+		}));
 		const customID = this.client.uuid();
 		const row = new MessageActionRow()
 			.addComponents(
@@ -94,7 +92,7 @@ export default class SetNickNameCommand extends Command {
 
 		collector.on('collect', async action => {
 			if (action.isSelectMenu() && action.customID === customID) {
-				const name = this.getName(action.values![0], txt);
+				const name = this.getName(options.find(opt => opt.value === action.values![0])!.label, txt);
 				if (name.length > 31) {
 					await action.reply({
 						ephemeral: true,
