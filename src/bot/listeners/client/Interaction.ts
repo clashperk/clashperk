@@ -128,11 +128,11 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async buttonInteraction(interaction: Interaction) {
-		if (!interaction.isButton()) return;
+		if (!interaction.isButton() && !interaction.isSelectMenu()) return;
 		if (this.client.components.has(interaction.customID)) return;
 
 		await interaction.update({ components: [] });
-		return interaction.followUp({ content: 'This button has expired, run the command again.', ephemeral: true });
+		return interaction.followUp({ content: 'This component has expired, run the command again.', ephemeral: true });
 	}
 
 	private contentParser(command: Command, content: string | CommandInteractionOption[]) {

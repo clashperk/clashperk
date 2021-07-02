@@ -30,7 +30,7 @@ export class CommandUtil {
 		// TODO: NEVER DO
 	}
 
-	public async send(options: string | InteractionReplyOptions & { split: false }): Promise<Message | Message[]> {
+	public async send(options: string | InteractionReplyOptions): Promise<Message | Message[]> {
 		const transformedOptions = (this.constructor as typeof CommandUtil).transformOptions(options);
 		if (!this.lastResponse?.deleted && this.shouldEdit) {
 			return this.message.webhook.editMessage(this.lastResponse!.id, transformedOptions) as Promise<Message>;
@@ -41,14 +41,13 @@ export class CommandUtil {
 		return sent as Message;
 	}
 
-	public async sendNew(options: string | InteractionReplyOptions & { split: false }) {
+	public async sendNew(options: string | InteractionReplyOptions) {
 		return this.message.webhook.send(options);
 	}
 
-	public static transformOptions(options: string | InteractionReplyOptions & { split: false }) {
+	public static transformOptions(options: string | InteractionReplyOptions) {
 		const transformedOptions = typeof options === 'string' ? { content: options } : { ...options };
 		if (!transformedOptions.content) transformedOptions.content = null;
-		// @ts-expect-error
 		if (!transformedOptions.embeds) transformedOptions.embeds = [];
 		return transformedOptions;
 	}
