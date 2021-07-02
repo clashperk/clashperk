@@ -1,4 +1,4 @@
-import { Message, GuildMember, Guild, Snowflake } from 'discord.js';
+import { Message, GuildMember, Guild, Snowflake, User } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import { Collections, status } from '../util/Constants';
 import { Flag } from 'discord-akairo';
@@ -11,7 +11,7 @@ export default class Resolver {
 		this.client = client;
 	}
 
-	public async resolvePlayer(message: Message, args: string, num = 1): Promise<Player | Flag> {
+	public async resolvePlayer(message: Message, args: string, num = 1): Promise<Player & { user?: User } | Flag> {
 		const parsed = await this.argumentParser(message, args);
 		const tag = parsed && typeof parsed === 'boolean';
 
@@ -34,7 +34,7 @@ export default class Resolver {
 		const tags = Array.from(tagSet);
 		tagSet.clear();
 
-		if (tags.length) return this.getPlayer(message, tags[Math.min(tags.length - 1, num - 1)]);
+		if (tags.length) return this.getPlayer(message, tags[Math.min(tags.length - 1, num - 1)], user);
 		if (message.author.id === user.id) {
 			return this.fail(message, '**You must provide a player tag to run this command!**');
 		}
@@ -72,9 +72,9 @@ export default class Resolver {
 		return this.fail(message, `**No Clan Linked to ${(parsed as GuildMember).user.tag}!**`);
 	}
 
-	public async getPlayer(message: Message, tag: string): Promise<Player | Flag> {
+	public async getPlayer(message: Message, tag: string, user?: User): Promise<Player & { user?: User } | Flag> {
 		const data: Player = await this.client.http.fetch(`/players/${encodeURIComponent(this.parseTag(tag))}`);
-		if (data.ok) return data;
+		if (data.ok) return { ...data, user };
 
 		return this.fail(message, `**${status(data.statusCode)}**`);
 	}

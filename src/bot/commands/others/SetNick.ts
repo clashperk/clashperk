@@ -1,6 +1,5 @@
 import { Message, GuildMember, MessageActionRow, MessageSelectMenu, Snowflake } from 'discord.js';
 import { Argument, Command } from 'discord-akairo';
-import { Collections } from '../../util/Constants';
 import { TOWN_HALLS } from '../../util/Emojis';
 
 export default class SetNickNameCommand extends Command {
@@ -59,16 +58,10 @@ export default class SetNickNameCommand extends Command {
 			return message.util!.send(`**I do not have permission to change ${own ? 'your ' : ''}nickname${own ? '.' : ' of this member!**'}`);
 		}
 
-		const data = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS)
-			.findOne({ user: member.id });
-
-		if (!data?.entries.length) {
+		const players = await this.client.links.getPlayers(member.user);
+		if (!players.length) {
 			return message.util!.send(`**No player accounts are linked to ${member.user.tag}**`);
 		}
-
-		const players = (await this.client.http.detailedClanMembers(data.entries.slice(0, 25)))
-			.filter(res => res.ok);
-		if (!players.length) return;
 
 		const options = players.map(op => ({
 			label: op.name, value: op.tag,
@@ -110,9 +103,9 @@ export default class SetNickNameCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', () => {
 			this.client.components.delete(customID);
-			if (msg.editable) await msg.edit({ components: [] });
+			// if (msg.editable) await msg.edit({ components: [] });
 		});
 	}
 

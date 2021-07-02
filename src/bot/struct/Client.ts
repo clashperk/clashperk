@@ -4,6 +4,7 @@ import { loadSync } from '@grpc/proto-loader';
 import RPCHandler from '../core/RPCHandler';
 import Settings from './SettingsProvider';
 import { Connection } from './Database';
+import LinkHandler from './LinkHandler';
 import Storage from './StorageHandler';
 import * as gRPC from '@grpc/grpc-js';
 import Logger from '../util/Logger';
@@ -27,6 +28,7 @@ declare module 'discord-akairo' {
 		storage: Storage;
 		resolver: Resolver;
 		settings: Settings;
+		links: LinkHandler;
 		rpcHandler: RPCHandler;
 		components: Set<string>;
 		embed(msg: Message): number;
@@ -74,6 +76,7 @@ export default class Client extends AkairoClient {
 	public storage!: Storage;
 	public resolver!: Resolver;
 	public settings!: Settings;
+	public links!: LinkHandler;
 	public rpcHandler!: RPCHandler;
 	public components = new Set<string>();
 	public logger: Logger = new Logger(this);
@@ -164,6 +167,7 @@ export default class Client extends AkairoClient {
 		this.rpcHandler = new RPCHandler(this);
 		this.storage = new Storage(this);
 		this.resolver = new Resolver(this);
+		this.links = new LinkHandler(this);
 
 		this.once('ready', () => {
 			if (process.env.NODE_ENV === 'production') return this.run();

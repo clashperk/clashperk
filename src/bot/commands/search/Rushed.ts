@@ -1,8 +1,8 @@
-import { BUILDER_TROOPS, HOME_TROOPS } from '../../util/Emojis';
+import { BUILDER_TROOPS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { Command, Argument } from 'discord-akairo';
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, Message, MessageSelectMenu, User } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 
 const HEROES: { [key: string]: 'bk' | 'aq' | 'gw' | 'rc' } = {
@@ -58,11 +58,48 @@ export default class RushedCommand extends Command {
 		return { data, flag };
 	}
 
-	public async exec(message: Message, { data, flag }: { data: Clan | Player; flag: boolean }) {
+	public async exec(message: Message, { data, flag }: { data: (Clan | Player) & { user?: User }; flag: boolean }) {
 		if (flag) return this.clan(message, data as Clan);
-		const embed = this.embed(data as Player);
-		embed.setColor(this.client.embed(message));
-		return message.util!.send({ embeds: [embed] });
+		const embed = this.embed(data as Player).setColor(this.client.embed(message));
+		const msg = await message.util!.send({ embeds: [embed] });
+
+		if (!data.user) return;
+		const players = await this.client.links.getPlayers(data.user);
+		if (!players.length) return;
+
+		const options = players.map(op => ({
+			label: op.name, value: op.tag,
+			emoji: TOWN_HALLS[op.townHallLevel],
+			description: `${op.tag} TH${op.townHallLevel}`
+		}));
+
+		const customID = this.client.uuid();
+		const menu = new MessageSelectMenu()
+			.setCustomID(customID)
+			.setPlaceholder('Select an account!')
+			.addOptions(options);
+
+		await msg.edit({ components: [[menu]] });
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => action.customID === customID && action.user.id === message.author.id
+		});
+
+		collector.on('collect', async action => {
+			if (action.customID === customID && action.isSelectMenu()) {
+				const tag = action.values![0];
+
+				await action.deferUpdate();
+				const data = await this.client.http.player(tag);
+				const embed = this.embed(data).setColor(this.client.embed(message));
+
+				await action.editReply({ embeds: [embed] });
+			}
+		});
+
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (msg.editable) await msg.edit({ components: [] });
+		});
 	}
 
 	private embed(data: Player) {
