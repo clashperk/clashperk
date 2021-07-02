@@ -132,14 +132,13 @@ export default class CWLLineupCommand extends Command {
 			}
 
 			if (action.customID === MenuID && action.isSelectMenu()) {
-				const data = rounds.length === 7
-					? chunks.find(ch => ch.state === action.values![0]) ?? chunks.slice(-1)[0]
-					: chunks.slice(-2).reverse()[0];
+				const data = chunks.find(ch => ch.state === action.values![0]) ?? chunks.slice(-1)[0];
 
 				await action.deferUpdate();
 				const embeds = clicked
 					? this.getLineupList(data.state, data.round, { clan: data.clan, opponent: data.opponent })
 					: await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
+				for (const embed of embeds) embed.setColor(this.client.embed(message));
 
 				await action.editReply({ embeds });
 			}
