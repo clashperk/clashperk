@@ -1,6 +1,6 @@
-import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS } from '../../util/Emojis';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, Message, MessageSelectMenu, User } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { TroopJSON } from '../../util/Constants';
 import { Player } from 'clashofclans.js';
@@ -39,9 +39,49 @@ export default class UpgradesCommand extends Command {
 		return { data };
 	}
 
-	public exec(message: Message, { data }: { data: Player }) {
+	public async exec(message: Message, { data }: { data: Player & { user?: User } }) {
+		const embed = this.embed(data).setColor(this.client.embed(message));
+		const msg = await message.util!.send({ embeds: [embed] });
+
+		if (!data.user) return;
+		const players = await this.client.links.getPlayers(data.user);
+		if (!players.length) return;
+
+		const options = players.map(op => ({
+			description: op.tag,
+			label: op.name, value: op.tag,
+			emoji: TOWN_HALLS[op.townHallLevel]
+		}));
+
+		const customID = this.client.uuid();
+		const menu = new MessageSelectMenu()
+			.setCustomID(customID)
+			.setPlaceholder('Select an account!')
+			.addOptions(options);
+
+		await msg.edit({ components: [[menu]] });
+
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => [customID].includes(action.customID) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customID === customID && action.isSelectMenu()) {
+				const data = players.find(en => en.tag === action.values![0])!;
+				const embed = this.embed(data).setColor(this.client.embed(message));
+				await action.update({ embeds: [embed] });
+			}
+		});
+
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (msg.editable) await msg.edit({ components: [] });
+		});
+	}
+
+	public embed(data: Player) {
 		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`)
 			.setDescription(`Remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? `& BH${data.builderHallLevel}` : ''}`);
 
@@ -144,7 +184,7 @@ export default class UpgradesCommand extends Command {
 				`No remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? ` and BH${data.builderHallLevel}` : ''}`
 			);
 		}
-		return message.util!.send({ embeds: [embed] });
+		return embed;
 	}
 
 	private padEnd(num: number) {

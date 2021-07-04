@@ -1,5 +1,5 @@
 import { Collections, Settings } from '../../util/Constants';
-import { Message, TextChannel } from 'discord.js';
+import { Message, MessageButton, TextChannel } from 'discord.js';
 import { Command } from 'discord-akairo';
 
 interface Patron {
@@ -71,7 +71,7 @@ export default class PatronCommand extends Command {
 		}
 
 		const embed = this.client.util.embed()
-			.setColor(16345172)
+			// .setColor(16345172)
 			.setAuthor(this.client.user!.username, this.client.user!.displayAvatarURL(), 'https://www.patreon.com/clashperk')
 			.setDescription([
 				'Help us with our hosting related expenses.',
@@ -84,10 +84,10 @@ export default class PatronCommand extends Command {
 				'• Claim unlimited number of clans.',
 				'',
 				'• Export to Excel File',
-				'\u200e \u2002 - Current/historic war attacks.',
-				'\u200e \u2002 - Clan Members with many stats.',
-				'\u200e \u2002 - Current CWL attacks and summary.',
-				'\u200e \u2002 - Season stats with Discord username.',
+				'\u200e \u2002• Current/historic war attacks.',
+				'\u200e \u2002• Clan Members with many stats.',
+				'\u200e \u2002• Current CWL attacks and summary.',
+				'\u200e \u2002• Season stats with Discord username.',
 				'',
 				'• Patron Role on our Support Discord.',
 				'',
@@ -98,18 +98,21 @@ export default class PatronCommand extends Command {
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		const msg = await message.util!.send({ embeds: [embed] });
-		await msg.react('➕');
-		const collector = msg.createReactionCollector({
-			filter: (reaction, user) => ['➕'].includes(reaction.emoji.name!) && user.id === message.author.id,
-			time: 60000, max: 1
+		const customID = this.client.uuid();
+		const button = new MessageButton()
+			.setCustomID(customID)
+			.setStyle('SECONDARY')
+			.setLabel('Our Current Patrons');
+
+		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => action.customID === customID && action.user.id === message.author.id,
+			time: 15 * 60 * 1000, max: 1
 		});
 
 		const patrons = (await this.patrons()).filter(patron => patron.active && patron.discord_id !== this.client.ownerID);
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➕') {
-				collector.stop();
-
+		collector.on('collect', async action => {
+			if (action.customID === customID) {
 				embed.setDescription([
 					embed.description,
 					'',
@@ -117,16 +120,19 @@ export default class PatronCommand extends Command {
 					patrons.map(patron => `• ${patron.discord_username ?? patron.name}`)
 						.join('\n')
 				].join('\n'));
-				return msg.edit({ embeds: [embed] });
+
+				await action.update({ embeds: [embed] });
 			}
 		});
 
-		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (msg.editable) await msg.edit({ components: [] });
+		});
 	}
 
 	private patrons() {
-		return this.client.db
-			.collection<Patron>(Collections.PATRONS)
+		return this.client.db.collection<Patron>(Collections.PATRONS)
 			.find()
 			.sort({ createdAt: 1 })
 			.toArray();

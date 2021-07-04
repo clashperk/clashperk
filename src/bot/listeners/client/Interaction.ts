@@ -1,4 +1,4 @@
-import { CommandInteractionOption, Interaction, TextChannel } from 'discord.js';
+import { CommandInteractionOption, Interaction, PermissionResolvable, TextChannel } from 'discord.js';
 import { Listener, Command, Flag } from 'discord-akairo';
 import { Settings } from '../../util/Constants';
 
@@ -124,6 +124,15 @@ export default class InteractionListener extends Listener {
 		}
 
 		await interaction.defer({ ephemeral: ['help', 'invite'].includes(command.id) });
+		if (
+			(command.clientPermissions as PermissionResolvable[]).includes('USE_EXTERNAL_EMOJIS') &&
+			!(interaction.channel as TextChannel).permissionsFor(interaction.guild!.roles.everyone).has('USE_EXTERNAL_EMOJIS')
+		) {
+			await interaction.followUp({
+				content: 'You must enable `Use External Emojis` permission for @everyone role to use slash commands.',
+				allowedMentions: { parse: ['users'] }
+			});
+		}
 		return this.handleInteraction(interaction, command, Array.from(interaction.options.values()), false);
 	}
 

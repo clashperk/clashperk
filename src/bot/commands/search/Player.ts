@@ -1,6 +1,6 @@
 import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES, SEIGE_MACHINES } from '../../util/Emojis';
+import { MessageEmbed, Util, Message, User, MessageSelectMenu } from 'discord.js';
 import { Collections, leagueId } from '../../util/Constants';
-import { MessageEmbed, Util, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { Player, WarClan } from 'clashofclans.js';
 import { Season } from '../../util/Util';
@@ -54,7 +54,49 @@ export default class PlayerCommand extends Command {
 		return { data };
 	}
 
-	public async exec(message: Message, { data }: { data: Player }) {
+	public async exec(message: Message, { data }: { data: Player & { user?: User } }) {
+		const embed = (await this.embed(data)).setColor(this.client.embed(message));
+		const msg = await message.util!.send({ embeds: [embed] });
+
+		if (!data.user) return;
+		const players = await this.client.links.getPlayers(data.user);
+		if (!players.length) return;
+
+		const options = players.map(op => ({
+			description: op.tag,
+			label: op.name, value: op.tag,
+			emoji: TOWN_HALLS[op.townHallLevel]
+		}));
+
+		const customID = this.client.uuid();
+		const menu = new MessageSelectMenu()
+			.setCustomID(customID)
+			.setPlaceholder('Select an account!')
+			.addOptions(options);
+
+		await msg.edit({ components: [[menu]] });
+
+		const collector = msg.createMessageComponentInteractionCollector({
+			filter: action => [customID].includes(action.customID) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customID === customID && action.isSelectMenu()) {
+				await action.deferUpdate();
+				const data = players.find(en => en.tag === action.values![0])!;
+				const embed = (await this.embed(data)).setColor(this.client.embed(message));
+				await action.editReply({ embeds: [embed] });
+			}
+		});
+
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (msg.editable) await msg.edit({ components: [] });
+		});
+	}
+
+	private async embed(data: Player) {
 		const aggregated = await this.client.db.collection(Collections.LAST_SEEN)
 			.aggregate([
 				{
@@ -80,7 +122,6 @@ export default class PlayerCommand extends Command {
 		const warStats = `${EMOJIS.CROSS_SWORD} ${war.total} ${EMOJIS.SWORD} ${war.attacks} ${EMOJIS.STAR} ${war.stars} ${EMOJIS.THREE_STARS} ${war.starTypes.filter(num => num === 3).length} ${EMOJIS.EMPTY_SWORD} ${war.of - war.attacks}`;
 		const weaponLevel = data.townHallWeaponLevel ? weaponLevels[data.townHallWeaponLevel] : '';
 		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(
@@ -123,7 +164,7 @@ export default class PlayerCommand extends Command {
 				.join(' ') || `${EMOJIS.WRONG} None`
 		].join('\n'));
 
-		return message.util!.send({ embeds: [embed] });
+		return embed;
 	}
 
 	private clanURL(tag: string) {

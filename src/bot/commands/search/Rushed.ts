@@ -68,9 +68,9 @@ export default class RushedCommand extends Command {
 		if (!players.length) return;
 
 		const options = players.map(op => ({
+			description: op.tag,
 			label: op.name, value: op.tag,
-			emoji: TOWN_HALLS[op.townHallLevel],
-			description: `${op.tag} TH${op.townHallLevel}`
+			emoji: TOWN_HALLS[op.townHallLevel]
 		}));
 
 		const customID = this.client.uuid();
@@ -81,18 +81,15 @@ export default class RushedCommand extends Command {
 
 		await msg.edit({ components: [[menu]] });
 		const collector = msg.createMessageComponentInteractionCollector({
-			filter: action => action.customID === customID && action.user.id === message.author.id
+			filter: action => action.customID === customID && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
 			if (action.customID === customID && action.isSelectMenu()) {
-				const tag = action.values![0];
-
-				await action.deferUpdate();
-				const data = await this.client.http.player(tag);
+				const data = players.find(en => en.tag === action.values![0])!;
 				const embed = this.embed(data).setColor(this.client.embed(message));
-
-				await action.editReply({ embeds: [embed] });
+				await action.update({ embeds: [embed] });
 			}
 		});
 
