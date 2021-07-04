@@ -2,6 +2,7 @@ import * as Discord from 'discord.js';
 import 'moment-duration-format';
 import moment from 'moment';
 
+// @ts-expect-error
 export class Util extends Discord.Util {
 	public constructor() {
 		super();

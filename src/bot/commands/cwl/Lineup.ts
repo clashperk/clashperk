@@ -125,7 +125,7 @@ export default class CWLLineupCommand extends Command {
 			);
 
 		const msg = await message.util!.send({ embeds, components: [buttons, menus] });
-		const collector = msg.createMessageComponentInteractionCollector({
+		const collector = msg.createMessageComponentCollector({
 			filter: action => [ComapreCustomID, PlayerCustomID, MenuID].includes(action.customID) && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});

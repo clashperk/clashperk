@@ -72,7 +72,7 @@ export default class UnitsCommand extends Command {
 			await msg.edit({ components: [[component], [menu]] });
 		}
 
-		const collector = msg.createMessageComponentInteractionCollector({
+		const collector = msg.createMessageComponentCollector({
 			filter: action => Object.values(CUSTOM_ID).includes(action.customID) && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});

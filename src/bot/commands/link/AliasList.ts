@@ -1,6 +1,7 @@
 import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
+import { Util } from '../../util/Util';
 
 export default class AliasListCommand extends Command {
 	public constructor() {
@@ -17,13 +18,12 @@ export default class AliasListCommand extends Command {
 			.find({ guild: message.guild!.id, alias: { $exists: true } })
 			.toArray();
 
-		return message.util!.send({
-			split: true,
-			content: [
-				`**${message.guild!.name} Clan Aliases**`,
-				'',
-				clans.map(clan => `• **${clan.name as string} (${clan.tag as string})**\n\u2002 **Alias:** ${clan.alias as string}`).join('\n\n')
-			].join('\n')
-		});
+		const chunks = Util.splitMessage([
+			`**${message.guild!.name} Clan Aliases**`,
+			'',
+			clans.map(clan => `• **${clan.name as string} (${clan.tag as string})**\n\u2002 **Alias:** ${clan.alias as string}`).join('\n\n')
+		].join('\n'));
+
+		for (const chunk of chunks) await message.util!.send(chunk);
 	}
 }

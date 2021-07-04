@@ -177,7 +177,7 @@ export default class WarCommand extends Command {
 			.setCustomID(customID);
 
 		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
-		const collector = msg.createMessageComponentInteractionCollector({
+		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customID === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});

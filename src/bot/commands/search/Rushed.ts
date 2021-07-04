@@ -80,7 +80,7 @@ export default class RushedCommand extends Command {
 			.addOptions(options);
 
 		await msg.edit({ components: [[menu]] });
-		const collector = msg.createMessageComponentInteractionCollector({
+		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customID === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});

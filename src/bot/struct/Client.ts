@@ -122,7 +122,6 @@ export default class Client extends AkairoClient {
 	public constructor(config: any) {
 		super({
 			ownerID: config.owner,
-			messageCacheMaxSize: 10,
 			messageCacheLifetime: 150,
 			messageSweepInterval: 150,
 			intents: [

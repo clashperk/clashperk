@@ -158,7 +158,7 @@ export default class CWLRosterCommand extends Command {
 			.setStyle('SECONDARY')
 			.setLabel('Detailed Roster');
 		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
-		const collector = await msg.awaitMessageComponentInteraction({
+		const collector = await msg.awaitMessageComponent({
 			filter: action => action.customID === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		}).catch(() => null);

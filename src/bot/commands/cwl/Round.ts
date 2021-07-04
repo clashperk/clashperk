@@ -161,7 +161,7 @@ export default class CWLRoundCommand extends Command {
 			);
 
 		const msg = await message.util!.send({ embeds: [paginated.first()], components: [row] });
-		const collector = msg.createMessageComponentInteractionCollector({
+		const collector = msg.createMessageComponentCollector({
 			filter: action => [PrevID, NextID].includes(action.customID) && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});

@@ -82,9 +82,9 @@ export class InteractionOptionParser {
 
 export default class InteractionListener extends Listener {
 	public constructor() {
-		super('interaction', {
+		super('interactionCreate', {
 			emitter: 'client',
-			event: 'interaction',
+			event: 'interactionCreate',
 			category: 'client'
 		});
 	}

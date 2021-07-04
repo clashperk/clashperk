@@ -67,7 +67,7 @@ export default class ComponentCommand extends Command {
 			}
 		);
 
-		const collector = msg.createMessageComponentInteractionCollector({
+		const collector = msg.createMessageComponentCollector({
 			filter: action => [nextID, prevID].includes(action.customID) && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});

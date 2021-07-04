@@ -61,7 +61,7 @@ export default class UpgradesCommand extends Command {
 
 		await msg.edit({ components: [[menu]] });
 
-		const collector = msg.createMessageComponentInteractionCollector({
+		const collector = msg.createMessageComponentCollector({
 			filter: action => [customID].includes(action.customID) && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});
