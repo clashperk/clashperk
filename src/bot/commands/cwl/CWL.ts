@@ -13,16 +13,11 @@ export default class CWLCommand extends Command {
 					'**Available Methods**',
 					'• roster `<clanTag>`',
 					'• round `<clanTag>`',
+					'• stars `<clanTag>`',
 					'• attacks `<clanTag>`',
-					'• remaining `<clanTag>`',
-					'• missed `<clanTag>`',
 					'• stats `<clanTag>`',
 					'• members `<clanTag>`',
 					'• lineup `<clanTag>`',
-					'• stars `<clanTag>`',
-					'• gained `<clanTag>`',
-					'• ranks `<clanTag>`',
-					'• legends `<clanTag>`',
 					'• export `<method>`',
 					'',
 					'For additional `<...args>` usage refer to the examples below.'
@@ -55,7 +50,6 @@ export default class CWLCommand extends Command {
 			match: msg.interaction ? 'option' : 'phrase',
 			type: [
 				['cwl-attacks', 'attacks'],
-				['cwl-remaining', 'remaining', 'missing', 'rem'],
 				['cwl-missed', 'missed'],
 				['cwl-round', 'round'],
 				['cwl-roster', 'roster'],
@@ -65,8 +59,7 @@ export default class CWLCommand extends Command {
 				['cwl-members', 'members', 'mem'],
 				['cwl-lineup', 'lineup'],
 				['cwl-export', 'export'],
-				['cwl-stars', 'stars', 'star'],
-				['cwl-gained', 'gained', 'gain', 'lost']
+				['cwl-stars', 'stars', 'star']
 			],
 			otherwise: (message: Message) => {
 				const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
@@ -87,7 +80,7 @@ export default class CWLCommand extends Command {
 						.join('\n')
 				].join('\n'));
 
-				return embed;
+				return { embeds: [embed] };
 			}
 		};
 

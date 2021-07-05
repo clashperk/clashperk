@@ -15,7 +15,7 @@ const stars: { [key: string]: string } = {
 export default class CWLAttacksCommand extends Command {
 	public constructor() {
 		super('cwl-attacks', {
-			aliases: ['cwl-attacks', 'cwl-remaining', 'cwl-missing'],
+			aliases: ['cwl-attacks'],
 			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
 			description: {
