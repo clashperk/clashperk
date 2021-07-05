@@ -10,7 +10,7 @@ export default class CWLMembersCommand extends Command {
 			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows the full list of participants.',
+				content: 'Shows the full list of CWL participants.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
@@ -39,7 +39,11 @@ export default class CWLMembersCommand extends Command {
 		if (!body.ok) {
 			const embed = this.client.util.embed()
 				.setColor(3093046)
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
+				.setAuthor(
+					`${data.name} (${data.tag})`,
+					`${data.badgeUrls.medium}`,
+					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
+				)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embeds: [embed] });

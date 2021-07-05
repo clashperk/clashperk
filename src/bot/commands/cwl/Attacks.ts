@@ -17,7 +17,7 @@ export default class CWLAttacksCommand extends Command {
 		super('cwl-attacks', {
 			aliases: ['cwl-attacks'],
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows attacks of the current round.',
 				usage: '<#clanTag>',
@@ -44,8 +44,8 @@ export default class CWLAttacksCommand extends Command {
 		if (body.statusCode === 504) return message.util!.send('**504 Request Timeout!**');
 
 		if (!body.ok) {
-			const cw = await this.client.storage.getWarTags(data.tag);
-			if (cw) return this.rounds(message, cw, data.tag);
+			const group = await this.client.storage.getWarTags(data.tag);
+			if (group) return this.rounds(message, group, data.tag);
 
 			return message.util!.send(`**${data.name} is not in Clan War League!**`);
 		}

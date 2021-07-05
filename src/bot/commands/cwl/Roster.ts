@@ -1,8 +1,9 @@
-import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
+import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { MessageEmbed, Message, MessageButton } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
+import { Util } from '../../util/Util';
 import moment from 'moment';
 
 export default class CWLRosterCommand extends Command {
@@ -10,9 +11,9 @@ export default class CWLRosterCommand extends Command {
 		super('cwl-roster', {
 			aliases: ['roster', 'cwl-roster'],
 			category: 'war',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY', 'MANAGE_MESSAGES'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'CWL Roster and Town-Hall distribution.',
+				content: 'CWL Roster and Town Hall distribution.',
 				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
@@ -54,11 +55,17 @@ export default class CWLRosterCommand extends Command {
 
 		const clanRounds = [];
 		let [stars, destruction] = [0, 0];
-		const ranking: { [key: string]: any } = {};
+		const ranking: {
+			[key: string]: {
+				name: string;
+				tag: string;
+				stars: number;
+				destruction: number;
+			};
+		} = {};
 
 		const warTags = rounds.map(round => round.warTags).flat();
 		const wars: (ClanWar & { warTag: string })[] = await Promise.all(warTags.map(warTag => this.fetch(warTag)));
-
 		for (const data of body.clans) {
 			ranking[data.tag] = {
 				name: data.name,
@@ -129,7 +136,7 @@ export default class CWLRosterCommand extends Command {
 				`${EMOJIS.HASH} ${townHalls.map(th => ORANGE_NUMBERS[th]).join('')} **Clan**`,
 				ranks.sort((a, b) => b.stars - a.stars)
 					.map(
-						(clan, i) => `${BLUE_NUMBERS[++i]} ${this.flat(clan.tag, townHalls, body)} \u200e${clan.name as string}`
+						(clan, i) => `${BLUE_NUMBERS[++i]} ${this.flat(clan.tag, townHalls, body)} \u200e${clan.name}`
 					)
 					.join('\n')
 			].join('\n'));
@@ -184,7 +191,7 @@ export default class CWLRosterCommand extends Command {
 				.sort((a, b) => b.level - a.level);
 
 			embed.addField(`\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`, [
-				this.chunk(townHalls).map(
+				Util.chunk(townHalls, 5).map(
 					chunks => chunks.map(
 						th => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`
 					).join(' ')
@@ -193,15 +200,6 @@ export default class CWLRosterCommand extends Command {
 		}
 
 		return message.util!.send({ embeds: [embed] });
-	}
-
-	private chunk(items: { [key: string]: number }[]) {
-		const chunk = 5;
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
-		}
-		return array;
 	}
 
 	private getNextRoster(clan: WarClan, townHalls: number[]) {

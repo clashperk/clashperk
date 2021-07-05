@@ -28,7 +28,6 @@ export default class CWLTopCommand extends Command {
 
 	public async exec(message: Message, { data }: { data: Clan }) {
 		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
-
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);

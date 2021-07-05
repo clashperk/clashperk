@@ -125,6 +125,7 @@ export default class InteractionListener extends Listener {
 
 		await interaction.defer({ ephemeral: ['help', 'invite'].includes(command.id) });
 		if (
+			(command.clientPermissions) &&
 			(command.clientPermissions as PermissionResolvable[]).includes('USE_EXTERNAL_EMOJIS') &&
 			!(interaction.channel as TextChannel).permissionsFor(interaction.guild!.roles.everyone).has('USE_EXTERNAL_EMOJIS')
 		) {

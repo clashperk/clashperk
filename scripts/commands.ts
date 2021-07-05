@@ -595,24 +595,8 @@ export const commands: { name: string; description: string; options?: APIApplica
 						value: 'stars'
 					},
 					{
-						name: 'CWL Gained',
-						value: 'gained'
-					},
-					{
 						name: 'CWL Stats',
 						value: 'stats'
-					},
-					{
-						name: 'CWL Missed',
-						value: 'missed'
-					},
-					{
-						name: 'CWL Missing',
-						value: 'remaining'
-					},
-					{
-						name: 'CWL Ranks',
-						value: 'ranks'
 					},
 					{
 						name: 'CWL Export',

@@ -1,4 +1,5 @@
-import { Clan, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
+import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -9,7 +10,7 @@ export default class CWLStatsCommand extends Command {
 		super('cwl-stats', {
 			aliases: ['cwl-stats'],
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows some statistics for each round.',
 				usage: '<clanTag>',
@@ -50,190 +51,209 @@ export default class CWLStatsCommand extends Command {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		let [index, stars, destruction] = [0, 0, 0];
 		const clanTag = clan.tag;
-		const collection: any[] = [];
-		const members: { [key: string]: any } = {};
-		const ranking: { [key: string]: any } = {};
 
-		for (const { warTags } of rounds) {
-			for (const warTag of warTags) {
-				const data = await this.client.http.clanWarLeagueWar(warTag);
-				if (!data.ok) continue;
+		const collection: string[][][] = [];
+		const members: {
+			[key: string]: {
+				name: string;
+				of: number;
+				attacks: number;
+				stars: number;
+				dest: number;
+				lost: number;
+			};
+		} = {};
+		const ranking: {
+			[key: string]: {
+				name: string;
+				tag: string;
+				stars: number;
+				destruction: number;
+			};
+		} = {};
 
-				if (data.state === 'inWar') {
-					const clan = ranking[data.clan.tag]
-						? ranking[data.clan.tag]
-						: ranking[data.clan.tag] = {
-							tag: data.clan.tag,
-							stars: 0
-						};
-					clan.stars += data.clan.stars;
+		const warTags = rounds.map(round => round.warTags).flat();
+		const wars: (ClanWar & { warTag: string })[] = await Promise.all(warTags.map(warTag => this.fetch(warTag)));
 
-					const opponent = ranking[data.opponent.tag]
-						? ranking[data.opponent.tag]
-						: ranking[data.opponent.tag] = {
-							tag: data.opponent.tag,
-							stars: 0
-						};
-					opponent.stars += data.opponent.stars;
-				}
+		for (const data of wars) {
+			if (!data.ok) continue;
 
+			if (data.state === 'inWar') {
+				const clan = ranking[data.clan.tag] // eslint-disable-line
+					? ranking[data.clan.tag]
+					: ranking[data.clan.tag] = {
+						name: data.clan.name,
+						tag: data.clan.tag,
+						stars: 0,
+						destruction: 0
+					};
+				clan.stars += data.clan.stars;
+				clan.destruction += data.clan.destructionPercentage * data.teamSize;
+
+				const opponent = ranking[data.opponent.tag] // eslint-disable-line
+					? ranking[data.opponent.tag]
+					: ranking[data.opponent.tag] = {
+						name: data.opponent.name,
+						tag: data.opponent.tag,
+						stars: 0,
+						destruction: 0
+					};
+				opponent.stars += data.opponent.stars;
+				opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
+			}
+
+			if (data.state === 'warEnded') {
+				const clan = ranking[data.clan.tag] //eslint-disable-line
+					? ranking[data.clan.tag]
+					: ranking[data.clan.tag] = {
+						name: data.clan.name,
+						tag: data.clan.tag,
+						stars: 0,
+						destruction: 0
+					};
+				clan.stars += this.winner(data.clan, data.opponent)
+					? data.clan.stars + 10
+					: data.clan.stars;
+				clan.destruction += data.clan.destructionPercentage * data.teamSize;
+
+				const opponent = ranking[data.opponent.tag] // eslint-disable-line
+					? ranking[data.opponent.tag]
+					: ranking[data.opponent.tag] = {
+						name: data.opponent.name,
+						tag: data.opponent.tag,
+						stars: 0,
+						destruction: 0
+					};
+				opponent.stars += this.winner(data.opponent, data.clan)
+					? data.opponent.stars + 10
+					: data.opponent.stars;
+				opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
+			}
+
+			if ((data.clan.tag === clanTag) || (data.opponent.tag === clanTag)) {
+				const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
+				const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 				if (data.state === 'warEnded') {
-					const clan = ranking[data.clan.tag]
-						? ranking[data.clan.tag]
-						: ranking[data.clan.tag] = {
-							tag: data.clan.tag,
-							stars: 0
-						};
-					clan.stars += this.winner(data.clan, data.opponent)
-						? data.clan.stars + 10
-						: data.clan.stars;
+					stars += this.winner(clan, opponent) ? clan.stars + 10 : clan.stars;
+					destruction += clan.destructionPercentage * data.teamSize;
+					const end = new Date(moment(data.endTime).toDate()).getTime();
+					for (const m of clan.members) {
+						const member = members[m.tag] // eslint-disable-line
+							? members[m.tag]
+							: members[m.tag] = {
+								name: m.name,
+								of: 0,
+								attacks: 0,
+								stars: 0,
+								dest: 0,
+								lost: 0
+							};
+						member.of += 1;
 
-					const opponent = ranking[data.opponent.tag]
-						? ranking[data.opponent.tag]
-						: ranking[data.opponent.tag] = {
-							tag: data.opponent.tag,
-							stars: 0
-						};
-					opponent.stars += this.winner(data.opponent, data.clan)
-						? data.opponent.stars + 10
-						: data.opponent.stars;
+						if (m.attacks) {
+							member.attacks += 1;
+							member.stars += m.attacks[0].stars;
+							member.dest += m.attacks[0].destructionPercentage;
+						}
+
+						if (m.bestOpponentAttack) {
+							member.lost += m.bestOpponentAttack.stars;
+						}
+					}
+
+					collection.push([[
+						`${this.winner(clan, opponent) ? EMOJIS.OK : EMOJIS.WRONG} **${clan.name}** vs **${opponent.name}**`,
+						`${EMOJIS.CLOCK} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
+					], [
+						`\`${clan.stars.toString().padEnd(10, ' ')} Stars ${opponent.stars.toString().padStart(10, ' ')}\``,
+						`\`${this.attacks(clan.attacks, data.teamSize).padEnd(9, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(9, ' ')}\``,
+						`\`${this.destruction(clan.destructionPercentage).padEnd(7, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(7, ' ')}\``
+					]]);
 				}
+				if (data.state === 'inWar') {
+					stars += clan.stars;
+					destruction += clan.destructionPercentage * data.teamSize;
+					const started = new Date(moment(data.startTime).toDate()).getTime();
+					for (const m of clan.members) {
+						const member = members[m.tag] // eslint-disable-line
+							? members[m.tag]
+							: members[m.tag] = {
+								name: m.name,
+								of: 0,
+								attacks: 0,
+								stars: 0,
+								dest: 0,
+								lost: 0
+							};
+						member.of += 1;
 
-				if ((data.clan.tag === clanTag) || (data.opponent.tag === clanTag)) {
-					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
-					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
-					if (data.state === 'warEnded') {
-						stars += this.winner(clan, opponent) ? clan.stars + 10 : clan.stars;
-						destruction += clan.destructionPercentage * data.teamSize;
-						const end = new Date(moment(data.endTime).toDate()).getTime();
-						for (const m of clan.members) {
-							const member = members[m.tag]
-								? members[m.tag]
-								: members[m.tag] = {
-									name: m.name,
-									of: 0,
-									attacks: 0,
-									stars: 0,
-									dest: 0,
-									lost: 0
-								};
-							member.of += 1;
-
-							if (m.attacks) {
-								member.attacks += 1;
-								member.stars += m.attacks[0].stars;
-								member.dest += m.attacks[0].destructionPercentage;
-							}
-
-							if (m.bestOpponentAttack) {
-								member.lost += m.bestOpponentAttack.stars;
-							}
+						if (m.attacks) {
+							member.attacks += 1;
+							member.stars += m.attacks[0].stars;
+							member.dest += m.attacks[0].destructionPercentage;
 						}
 
-						collection.push([[
-							`${this.winner(clan, opponent) ? EMOJIS.OK : EMOJIS.WRONG} **${clan.name}** vs **${opponent.name}**`,
-							`${EMOJIS.CLOCK} [Round ${++index}] Ended ${moment.duration(Date.now() - end).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
-						], [
-							`\`${clan.stars.toString().padEnd(10, ' ')} Stars ${opponent.stars.toString().padStart(10, ' ')}\``,
-							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(9, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(9, ' ')}\``,
-							`\`${this.destruction(clan.destructionPercentage).padEnd(7, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(7, ' ')}\``
-						]]);
-					}
-					if (data.state === 'inWar') {
-						stars += clan.stars;
-						destruction += clan.destructionPercentage * data.teamSize;
-						const started = new Date(moment(data.startTime).toDate()).getTime();
-						for (const m of clan.members) {
-							const member = members[m.tag]
-								? members[m.tag]
-								: members[m.tag] = {
-									name: m.name,
-									of: 0,
-									attacks: 0,
-									stars: 0,
-									dest: 0,
-									lost: 0
-								};
-							member.of += 1;
-
-							if (m.attacks) {
-								member.attacks += 1;
-								member.stars += m.attacks[0].stars;
-								member.dest += m.attacks[0].destructionPercentage;
-							}
-
-							if (m.bestOpponentAttack) {
-								member.lost += m.bestOpponentAttack.stars;
-							}
+						if (m.bestOpponentAttack) {
+							member.lost += m.bestOpponentAttack.stars;
 						}
-
-						collection.push([[
-							`${EMOJIS.LOADING} **${clan.name}** vs **${opponent.name}**`,
-							`${EMOJIS.CLOCK} [Round ${++index}] Started ${moment.duration(Date.now() - started).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
-						], [
-							`\`${clan.stars.toString().padEnd(10, ' ')} Stars ${opponent.stars.toString().padStart(10, ' ')}\``,
-							`\`${this.attacks(clan.attacks, data.teamSize).padEnd(9, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(9, ' ')}\``,
-							`\`${this.destruction(clan.destructionPercentage).padEnd(7, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(7, ' ')}\``
-						]]);
 					}
+
+					collection.push([[
+						`${EMOJIS.LOADING} **${clan.name}** vs **${opponent.name}**`,
+						`${EMOJIS.CLOCK} [Round ${++index}] Started ${moment.duration(Date.now() - started).format('D[d], H[h] m[m]', { trim: 'both mid' })} ago`
+					], [
+						`\`${clan.stars.toString().padEnd(10, ' ')} Stars ${opponent.stars.toString().padStart(10, ' ')}\``,
+						`\`${this.attacks(clan.attacks, data.teamSize).padEnd(9, ' ')} Attacks ${this.attacks(opponent.attacks, data.teamSize).padStart(9, ' ')}\``,
+						`\`${this.destruction(clan.destructionPercentage).padEnd(7, ' ')} Destruction ${this.destruction(opponent.destructionPercentage).padStart(7, ' ')}\``
+					]]);
 				}
 			}
 		}
 
-		if (!collection.length) return message.util!.send('Nobody attacked in your clan yet, try again after sometime.');
-
+		if (!collection.length) return message.util!.send('**No stats are available yet, try again later!**');
 		const description = collection.map(arr => {
 			const header = arr[0].join('\n');
 			const description = arr[1].join('\n');
 			return [header, description].join('\n');
 		}).join('\n\n');
 
-		const rank = Object.values(ranking).sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
-		const leaderboard = Object.values(members)
-			.sort((a, b) => b.dest - a.dest)
-			.sort((a, b) => b.stars - a.stars);
+		const ranks = Object.values(ranking);
+		const rank = ranks.sort((a, b) => b.stars - a.stars).findIndex(a => a.tag === clanTag);
 
-		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
-			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
-			.setTitle('CWL Stats')
-			.setDescription(description)
-			.setFooter(`Rank ${rank + 1}, ${stars} Stars, ${destruction.toFixed()}% Destruction`);
+		const padding = Math.max(...ranks.map(r => r.destruction)) > 9999 ? 6 : 5;
+		const embeds = [
+			new MessageEmbed()
+				.setColor(this.client.embed(message))
+				.setTitle(`Clan War League Stats (${body.season})`)
+				.setDescription(description),
 
-		const msg = await message.util!.send({ embeds: [embed] });
-		await msg.react('➕');
-
-		const collector = await msg.awaitReactions({
-			filter: (reaction, user) => reaction.emoji.name === '➕' && user.id === message.author.id,
-			max: 1, time: 30000, errors: ['time']
-		}).catch(() => null);
-
-		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
-		if (!collector || !collector.size) return;
-
-		return message.channel.send({
-			embeds: [{
-				color: this.client.embed(message),
-				title: 'CWL Stars',
-				author: {
-					name: `${clan.name} (${clan.tag})`,
-					icon_url: clan.badgeUrls.small
-				},
-				description: [
-					`**\`\u200e # STAR HIT  ${'NAME'.padEnd(15, ' ')}\`**`,
-					leaderboard.filter(m => m.of > 0)
-						.map((m, i) => `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ') as string}  ${this.attacks(m.attacks, m.of).padEnd(3, ' ')}  ${m.name.replace(/\`/g, '\\').padEnd(15, ' ') as string}\``)
-						.join('\n')
-				].join('\n')
-			}]
-		});
+			new MessageEmbed()
+				.setColor(this.client.embed(message))
+				.setTitle('Clan War League Ranking')
+				.setDescription([
+					`${EMOJIS.HASH} **\`\u200eSTAR DEST%${''.padEnd(padding - 3, ' ')}${'NAME'.padEnd(15, ' ')}\`**`,
+					ranks.sort(
+						(a, b) => b.stars - a.stars
+					).map(
+						(clan, i) => `${BLUE_NUMBERS[++i]} \`\u200e ${clan.stars.toString().padEnd(3, ' ')} ${this.dest(clan.destruction, padding)}  ${clan.name.padEnd(15, ' ')}\``
+					).join('\n'),
+					'',
+					`Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`
+				].join('\n'))
+		];
+		return message.util!.send({ embeds });
 	}
 
-	private dest(dest: number) {
+	private async fetch(warTag: string) {
+		const data = await this.client.http.clanWarLeagueWar(warTag);
+		return { warTag, ...data };
+	}
+
+	private dest(dest: number, padding: number) {
 		return dest.toFixed()
 			.toString()
 			.concat('%')
-			.padEnd(4, ' ');
+			.padEnd(padding, ' ');
 	}
 
 	private destruction(dest: number) {

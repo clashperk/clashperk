@@ -8,9 +8,9 @@ export default class CWLStarsCommand extends Command {
 		super('cwl-stars', {
 			aliases: ['cwl-stars'],
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows total stars and attacks of clan members.',
+				content: 'Shows total CWL stars and attacks.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
@@ -35,8 +35,8 @@ export default class CWLStarsCommand extends Command {
 		if (body.statusCode === 504) return message.util!.send('**504 Request Timeout!**');
 
 		if (!body.ok) {
-			const cw = await this.client.storage.getWarTags(data.tag);
-			if (cw) return this.rounds(message, cw, data);
+			const group = await this.client.storage.getWarTags(data.tag);
+			if (group) return this.rounds(message, group, data);
 
 			return message.util!.send(`**${data.name} is not in Clan War League!**`);
 		}
@@ -102,7 +102,7 @@ export default class CWLStarsCommand extends Command {
 		}
 
 		const leaderboard = Object.values(members);
-		if (!leaderboard.length) return message.util!.send('**No attacks are available yet!**');
+		if (!leaderboard.length) return message.util!.send('**No attacks are available yet, try again later!**');
 		leaderboard.sort((a, b) => b.dest - a.dest).sort((a, b) => b.stars - a.stars);
 
 		const embed = new MessageEmbed()
@@ -153,11 +153,11 @@ export default class CWLStarsCommand extends Command {
 						.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
 						.setColor(this.client.embed(message))
 						.setDescription([
-							`**\`\u200e # STAR GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
+							`**\`\u200e # STR GAIN ${'NAME'.padEnd(15, ' ')}\`**`,
 							leaderboard.filter(m => m.of > 0)
 								.map((m, i) => {
 									const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
-									return `\`\u200e${(++i).toString().padStart(2, ' ')}  ${m.stars.toString().padEnd(2, ' ')}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
+									return `\`\u200e${this.pad(++i)} ${this.pad(m.stars)}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
 								})
 								.join('\n')
 						].join('\n'));

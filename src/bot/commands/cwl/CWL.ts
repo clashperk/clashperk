@@ -18,24 +18,20 @@ export default class CWLCommand extends Command {
 					'• stats `<clanTag>`',
 					'• members `<clanTag>`',
 					'• lineup `<clanTag>`',
+					'• ranks `<clanTag>`',
 					'• export `<method>`',
 					'',
 					'For additional `<...args>` usage refer to the examples below.'
 				],
 				examples: [
-					'',
 					'roster #8QU8J9LP',
 					'round #8QU8J9LP',
 					'attacks #8QU8J9LP',
-					'remaining #8QU8J9LP',
-					'missed #8QU8J9LP',
 					'stats #8QU8J9LP',
 					'members #8QU8J9LP',
 					'lineup #8QU8J9LP',
 					'stars #8QU8J9LP',
-					'gained #8QU8J9LP',
 					'ranks #8QU8J9LP',
-					'legends #8QU8J9LP',
 					'export clans/all'
 				],
 				usage: '<method> <...args>'
@@ -49,17 +45,15 @@ export default class CWLCommand extends Command {
 			flag: '--option',
 			match: msg.interaction ? 'option' : 'phrase',
 			type: [
-				['cwl-attacks', 'attacks'],
-				['cwl-missed', 'missed'],
 				['cwl-round', 'round'],
-				['cwl-roster', 'roster'],
 				['cwl-stats', 'stats'],
-				['cwl-legends', 'top', 'mvp', 'legends'],
-				['cwl-ranking', 'rank', 'ranks', 'ranking'],
-				['cwl-members', 'members', 'mem'],
 				['cwl-lineup', 'lineup'],
 				['cwl-export', 'export'],
-				['cwl-stars', 'stars', 'star']
+				['cwl-roster', 'roster'],
+				['cwl-attacks', 'attacks'],
+				['cwl-stars', 'stars', 'star'],
+				['cwl-members', 'members', 'mem'],
+				['cwl-legends', 'top', 'mvp', 'legends']
 			],
 			otherwise: (message: Message) => {
 				const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
@@ -67,10 +61,11 @@ export default class CWLCommand extends Command {
 					.setColor(this.client.embed(message))
 					.setAuthor('Command List', this.client.user!.displayAvatarURL())
 					.setDescription(`To view more details for a command, do \`${prefix}help <command>\``);
-				const commands = this.handler.categories.get('cwl')!
-					.values();
+				const commands = this.handler.categories.get('cwl')!.values();
 				embed.addField('__**CWL**__', [
 					Array.from(commands)
+						.concat(this.getCommand('cwl-round'))
+						.concat(this.getCommand('cwl-roster'))
 						.map(command => {
 							const description: string = Array.isArray(command.description.content)
 								? command.description.content[0]
@@ -85,5 +80,9 @@ export default class CWLCommand extends Command {
 		};
 
 		return Flag.continue(command);
+	}
+
+	private getCommand(id: string) {
+		return this.handler.modules.get(id)!;
 	}
 }

@@ -11,9 +11,9 @@ export default class CWLRoundCommand extends Command {
 		super('cwl-round', {
 			aliases: ['round', 'cwl-round'],
 			category: 'war',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Info about the current CWL rounds.',
+				content: 'Shows info about the current round.',
 				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
