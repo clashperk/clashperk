@@ -1,10 +1,9 @@
 import { Message, MessageButton } from 'discord.js';
+import { Collections } from '../../util/Constants';
+import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
-import 'moment-duration-format';
-import moment from 'moment';
-import { EMOJIS } from '../../util/Emojis';
-import { Collections } from '../../util/Constants';
+import { Util } from '../../util/Util';
 
 export default class LastSeenCommand extends Command {
 	public constructor() {
@@ -17,7 +16,7 @@ export default class LastSeenCommand extends Command {
 				content: [
 					'Approximate last seen of all clan members.',
 					'',
-					'**[How does it work?](https://clashperk.com/faq#how-does-last-seen-work)**'
+					'**[How does it work?](https://clashperk.com/faq)**'
 				],
 				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
@@ -58,6 +57,11 @@ export default class LastSeenCommand extends Command {
 			].join('\n'));
 		}
 
+		const getTime = (ms?: number) => {
+			if (!ms) return ''.padEnd(7, ' ');
+			return Util.duration(ms + 1e3).padEnd(7, ' ');
+		};
+
 		const members = await this.aggregationQuery(data);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
@@ -65,14 +69,13 @@ export default class LastSeenCommand extends Command {
 			.setDescription([
 				'**[Last seen and last 24h activity scores](https://clashperk.com/faq)**',
 				`\`\`\`\n\u200eLAST-ON 24H  NAME\n${members
-					.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padEnd(7, ' ') : ''.padEnd(7, ' ')}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
+					.map(m => `${getTime(m.lastSeen)}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n')}`,
 				'```'
 			].join('\n'))
 			.setFooter(`Members [${data.members}/50]`, message.author.displayAvatarURL());
 
 		const customID = this.client.uuid();
-
 		const button = new MessageButton()
 			.setStyle('SECONDARY')
 			.setCustomID(customID)
@@ -127,15 +130,6 @@ export default class LastSeenCommand extends Command {
 
 		members.sort((a, b) => a.lastSeen - b.lastSeen);
 		return members.filter(m => m.lastSeen > 0).concat(members.filter(m => m.lastSeen === 0));
-	}
-
-	private format(time: number) {
-		if (time > 864e5) {
-			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' });
-		} else if (time > 36e5) {
-			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
-		}
-		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
 	}
 
 	private async aggregationQuery(clan: Clan, days = 1) {

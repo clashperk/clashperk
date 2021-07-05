@@ -2,8 +2,8 @@ import { Message, TextChannel, PermissionString, User } from 'discord.js';
 import { Command, PrefixSupplier } from 'discord-akairo';
 import { EMOJIS } from '../../util/Emojis';
 import { Clan } from 'clashofclans.js';
-import ms from 'ms';
 import { Util } from '../../util/Util';
+import ms from 'ms';
 
 interface RPC {
 	wars: number;

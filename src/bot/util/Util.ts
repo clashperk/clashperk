@@ -20,6 +20,10 @@ export class Util extends Discord.Util {
 			.concat(Season.ID);
 	}
 
+	public static getRelativeTime(ms: number) {
+		return `<t:${Math.floor(ms / 1000)}:R>`;
+	}
+
 	public static chunk<T>(items: T[], chunk: number) {
 		const array = [];
 		for (let i = 0; i < items.length; i += chunk) {

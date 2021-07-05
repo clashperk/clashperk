@@ -3,11 +3,14 @@ import { Util, Message } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 
+/**
+ * @deprecated
+ */
 export default class CWLTopCommand extends Command {
 	public constructor() {
 		super('cwl-legends', {
 			aliases: ['cwl-legends', 'cwl-top', 'cwl-mvp'],
-			category: 'cwl',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'War League Legend scoreboard of the clan.',
