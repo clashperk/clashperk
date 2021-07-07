@@ -109,8 +109,10 @@ export default class UnitsCommand extends Command {
 			}
 
 			if (action.customId === CUSTOM_ID.SELECT_ACCOUNT && action.isSelectMenu()) {
-				data = players.find(en => en.tag === action.values![0])!;
-				const embed = this.embed(data).setColor(this.client.embed(message));
+				data = players.find(en => en.tag === action.values[0])!;
+				const option = (action.message as Message)
+					.components[0].components[0].customId === CUSTOM_ID.MAX_LEVEL;
+				const embed = this.embed(data, option).setColor(this.client.embed(message));
 				await action.update({ embeds: [embed] });
 			}
 		});

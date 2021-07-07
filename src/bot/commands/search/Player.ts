@@ -84,7 +84,7 @@ export default class PlayerCommand extends Command {
 		collector.on('collect', async action => {
 			if (action.customId === customID && action.isSelectMenu()) {
 				await action.deferUpdate();
-				const data = players.find(en => en.tag === action.values![0])!;
+				const data = players.find(en => en.tag === action.values[0])!;
 				const embed = (await this.embed(data)).setColor(this.client.embed(message));
 				await action.editReply({ embeds: [embed] });
 			}

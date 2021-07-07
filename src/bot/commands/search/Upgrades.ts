@@ -68,7 +68,7 @@ export default class UpgradesCommand extends Command {
 
 		collector.on('collect', async action => {
 			if (action.customId === customID && action.isSelectMenu()) {
-				const data = players.find(en => en.tag === action.values![0])!;
+				const data = players.find(en => en.tag === action.values[0])!;
 				const embed = this.embed(data).setColor(this.client.embed(message));
 				await action.update({ embeds: [embed] });
 			}

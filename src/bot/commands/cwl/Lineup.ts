@@ -140,7 +140,7 @@ export default class CWLLineupCommand extends Command {
 			}
 
 			if (action.customId === MenuID && action.isSelectMenu()) {
-				data = chunks.find(ch => ch.state === action.values![0]) ?? chunks.slice(-1)[0];
+				data = chunks.find(ch => ch.state === action.values[0]) ?? chunks.slice(-1)[0];
 
 				await action.deferUpdate();
 				const embeds = clicked

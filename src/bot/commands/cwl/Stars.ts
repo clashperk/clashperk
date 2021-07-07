@@ -141,11 +141,11 @@ export default class CWLStarsCommand extends Command {
 
 		collector.on('collect', async action => {
 			if (action.customId === customID && action.isSelectMenu()) {
-				if (action.values![0] === 'TOTAL') {
+				if (action.values[0] === 'TOTAL') {
 					return action.update({ embeds: [embed] });
 				}
 
-				if (action.values![0] === 'GAINED') {
+				if (action.values[0] === 'GAINED') {
 					leaderboard.sort((a, b) => b.stars - a.stars)
 						.sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
 

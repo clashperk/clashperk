@@ -73,12 +73,12 @@ export default class LastSeenLog {
 	private async handleMessage(cache: Cache, channel: TextChannel, clan: Clan, members = []) {
 		if (!cache.message) {
 			const msg = await this.send(cache, channel, clan, members);
-			channel.messages.cache.delete(msg!.id);
+			if (msg) channel.messages.cache.delete(msg.id);
 			return this.mutate(cache, msg);
 		}
 
 		const msg = await this.edit(cache, channel, clan, members);
-		channel.messages.cache.delete(msg!.id);
+		if (msg) channel.messages.cache.delete(msg.id);
 		return this.mutate(cache, msg);
 	}
 

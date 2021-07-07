@@ -166,7 +166,7 @@ export default class CWLAttacksCommand extends Command {
 
 		collector.on('collect', async action => {
 			if (action.customId === customID && action.isSelectMenu()) {
-				const round = chunks.find(ch => ch.round === Number(action.values![0]!));
+				const round = chunks.find(ch => ch.round === Number(action.values[0]!));
 				return action.update({ embeds: [round!.embed] });
 			}
 		});

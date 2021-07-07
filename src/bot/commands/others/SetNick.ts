@@ -85,7 +85,7 @@ export default class SetNickNameCommand extends Command {
 
 		collector.on('collect', async action => {
 			if (action.isSelectMenu() && action.customId === customID) {
-				const name = this.getName(options.find(opt => opt.value === action.values![0])!.label, txt);
+				const name = this.getName(options.find(opt => opt.value === action.values[0])!.label, txt);
 				if (name.length > 31) {
 					await action.reply({
 						ephemeral: true,

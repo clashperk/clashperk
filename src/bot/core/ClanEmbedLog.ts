@@ -77,12 +77,12 @@ export default class ClanEmbedLog {
 	private async handleMessage(cache: Cache, channel: TextChannel, clan: Clan) {
 		if (!cache.message) {
 			const msg = await this.send(cache, channel, clan);
-			channel.messages.cache.delete(msg!.id);
+			if (msg) channel.messages.cache.delete(msg.id);
 			return this.mutate(cache, msg);
 		}
 
 		const msg = await this.edit(cache, channel, clan);
-		channel.messages.cache.delete(msg!.id);
+		if (msg) channel.messages.cache.delete(msg.id);
 		return this.mutate(cache, msg);
 	}
 
