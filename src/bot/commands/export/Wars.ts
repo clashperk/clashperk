@@ -9,11 +9,11 @@ import { Util } from '../../util/Util';
 export default class WarExport extends Command {
 	public constructor() {
 		super('export-wars', {
-			category: 'activity',
+			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {},
-			optionFlags: ['--number']
+			optionFlags: ['--number'],
+			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
 		});
 	}
 

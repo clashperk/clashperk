@@ -1,5 +1,5 @@
 import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } from 'discord-akairo';
-import { MessageEmbed, Message, Intents } from 'discord.js';
+import { MessageEmbed, Message, Intents, Snowflake } from 'discord.js';
 import { loadSync } from '@grpc/proto-loader';
 import RPCHandler from '../core/RPCHandler';
 import Settings from './SettingsProvider';

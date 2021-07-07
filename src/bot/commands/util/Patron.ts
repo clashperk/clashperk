@@ -100,19 +100,19 @@ export default class PatronCommand extends Command {
 
 		const customID = this.client.uuid();
 		const button = new MessageButton()
-			.setCustomID(customID)
+			.setCustomId(customID)
 			.setStyle('SECONDARY')
 			.setLabel('Our Current Patrons');
 
 		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customID === customID && action.user.id === message.author.id,
+			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000, max: 1
 		});
 
 		const patrons = (await this.patrons()).filter(patron => patron.active && patron.discord_id !== this.client.ownerID);
 		collector.on('collect', async action => {
-			if (action.customID === customID) {
+			if (action.customId === customID) {
 				embed.setDescription([
 					embed.description,
 					'',

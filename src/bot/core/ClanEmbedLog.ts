@@ -5,8 +5,10 @@ import { Collections } from '../util/Constants';
 import { Clan } from 'clashofclans.js';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
+import { Util } from '../util/Util';
 
-interface Cache {
+export interface Cache {
+	_id: ObjectId;
 	channel: Snowflake;
 	message?: Snowflake;
 	color: number;
@@ -15,35 +17,28 @@ interface Cache {
 	msg?: Message;
 }
 
-interface Compo {
-	[key: string]: number;
-}
-
 export default class ClanEmbedLog {
 	public cached: Collection<string, Cache>;
 	public lastReq: Map<string, NodeJS.Timeout>;
+	protected collection = this.client.db.collection(Collections.CLAN_EMBED_LOGS);
 
 	public constructor(private readonly client: Client) {
 		this.cached = new Collection();
 		this.lastReq = new Map();
 	}
 
-	public async exec(tag: string, clan: any) {
+	public async exec(tag: string, clan: Clan) {
 		const clans = this.cached.filter(d => d.tag === tag);
 		for (const id of clans.keys()) {
-			const cache: Cache = this.cached.get(id)!;
-			await this.permissionsFor(id, cache, clan);
+			const cache = this.cached.get(id)!;
+			await this.permissionsFor(cache, clan);
 		}
 
 		return clans.clear();
 	}
 
-	private async delay(ms: number) {
-		return new Promise(res => setTimeout(res, ms));
-	}
-
 	private async throttle(id: string) {
-		if (this.lastReq.has(id)) await this.delay(1000);
+		if (this.lastReq.has(id)) await Util.delay(1000);
 
 		const timeoutID = this.lastReq.get(id);
 		if (timeoutID) {
@@ -60,7 +55,7 @@ export default class ClanEmbedLog {
 		return Promise.resolve(0);
 	}
 
-	private async permissionsFor(id: string, cache: Cache, clan: any) {
+	private async permissionsFor(cache: Cache, clan: Clan) {
 		const permissions: PermissionString[] = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -74,87 +69,69 @@ export default class ClanEmbedLog {
 			const channel = this.client.channels.cache.get(cache.channel) as TextChannel;
 			if (channel.permissionsFor(channel.guild.me!).has(permissions, false)) {
 				await this.throttle(channel.id);
-				return this.handleMessage(id, channel, clan);
+				return this.handleMessage(cache, channel, clan);
 			}
 		}
 	}
 
-	private async handleMessage(id: string, channel: TextChannel, clan: any) {
-		const cache = this.cached.get(id);
-
-		if (cache && !cache.message) {
-			return this.sendNew(id, channel, clan);
+	private async handleMessage(cache: Cache, channel: TextChannel, clan: Clan) {
+		if (!cache.message) {
+			const msg = await this.send(cache, channel, clan);
+			channel.messages.cache.delete(msg!.id);
+			return this.mutate(cache, msg);
 		}
 
-		if (cache!.msg) {
-			return this.edit(id, cache!.msg, clan);
-		}
-
-		const message = await channel.messages.fetch(cache!.message!, { cache: false })
-			.catch(error => {
-				this.client.logger.warn(error, { label: 'LAST_ONLINE_FETCH_MESSAGE' });
-				if (error.code === 10008) {
-					return { deleted: true };
-				}
-
-				return null;
-			});
-
-		if (!message) return;
-
-		if (message.deleted) {
-			return this.sendNew(id, channel, clan);
-		}
-
-		if (message instanceof Message) {
-			return this.edit(id, message, clan);
-		}
+		const msg = await this.edit(cache, channel, clan);
+		channel.messages.cache.delete(msg!.id);
+		return this.mutate(cache, msg);
 	}
 
-	private async sendNew(id: string, channel: TextChannel, clan: any) {
-		const embed = await this.embed(id, clan);
-		const message = await channel.send({ embeds: [embed] })
-			.catch(() => null);
-
-		if (message) {
-			try {
-				const cache = this.cached.get(id)!;
-				cache.message = message.id;
-				cache.msg = message;
-				this.cached.set(id, cache);
-				await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
-					.updateOne({ clan_id: new ObjectId(id) }, { $set: { message: message.id } });
-			} catch (error) {
-				this.client.logger.warn(error, { label: 'MONGODB_ERROR' });
-			}
-		}
-
-		return message;
+	private async send(cache: Cache, channel: TextChannel, clan: Clan) {
+		const embed = await this.embed(cache, clan);
+		return channel.send({ embeds: [embed] }).catch(() => null);
 	}
 
-	private async edit(id: string, message: Message, clan: any) {
-		const embed = await this.embed(id, clan);
+	private async edit(cache: Cache, channel: TextChannel, clan: Clan) {
+		const embed = await this.embed(cache, clan);
 
-		return message.edit({ embeds: [embed] })
+		return channel.messages.edit(cache.message!, { embeds: [embed] })
 			.catch(error => {
 				if (error.code === 10008) {
-					const cache = this.cached.get(id)!;
-					cache.msg = undefined;
-					this.cached.set(id, cache);
-					return this.sendNew(id, message.channel as TextChannel, clan);
+					delete cache.message;
+					return this.send(cache, channel, clan);
 				}
 				return null;
 			});
 	}
 
-	private async embed(id: string, data: Clan) {
-		const cache = this.cached.get(id)!;
+	private async mutate(cache: Cache, msg: Message | null) {
+		if (msg) {
+			await this.collection.updateOne(
+				{ clan_id: new ObjectId(cache._id) },
+				{
+					$set: {
+						failed: 0,
+						message: msg.id,
+						updatedAt: new Date()
+					}
+				}
+			);
+			cache.message = msg.id;
+		} else {
+			await this.collection.updateOne(
+				{ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } }
+			);
+		}
+		return msg;
+	}
+
+	private async embed(cache: Cache, data: Clan) {
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
 		const reduced = fetched.reduce((count, member) => {
 			const townHall = member.townHallLevel;
 			count[townHall] = (count[townHall] || 0) + 1;
 			return count;
-		}, {} as Compo);
+		}, {} as { [key: string]: number });
 
 		const townHalls = Object.entries(reduced)
 			.map(arr => ({ level: Number(arr[0]), total: arr[1] }))
@@ -208,6 +185,7 @@ export default class ClanEmbedLog {
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
+					_id: data.clan_id,
 					message: data.message,
 					color: data.color,
 					embed: data.embed,
@@ -217,12 +195,13 @@ export default class ClanEmbedLog {
 			});
 	}
 
-	public async add(id: string) {
+	public async add(_id: string) {
 		const data = await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
-			.findOne({ clan_id: new ObjectId(id) });
+			.findOne({ clan_id: new ObjectId(_id) });
 
 		if (!data) return null;
-		return this.cached.set(id, {
+		return this.cached.set(_id, {
+			_id: data.clan_id,
 			channel: data.channel,
 			message: data.message,
 			color: data.color,
@@ -231,7 +210,7 @@ export default class ClanEmbedLog {
 		});
 	}
 
-	public delete(id: string) {
-		return this.cached.delete(id);
+	public delete(_id: string) {
+		return this.cached.delete(_id);
 	}
 }

@@ -66,16 +66,16 @@ export default class LinkListCommand extends Command {
 			.setStyle('SECONDARY')
 			.setLabel('Show Tags')
 			.setEmoji(EMOJIS.HASH)
-			.setCustomID(customID);
+			.setCustomId(customID);
 
 		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customID === customID && action.user.id === message.author.id,
+			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customID === customID) {
+			if (action.customId === customID) {
 				const embed = this.getEmbed(message, data, true, onDiscord, offDiscord, notInDiscord);
 				await action.update({ embeds: [embed] });
 				return collector.stop();

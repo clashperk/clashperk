@@ -85,25 +85,25 @@ export default class ClanGamesCommand extends Command {
 		const row = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
-					.setCustomID(CUSTOM_ID.MAX_POINTS)
+					.setCustomId(CUSTOM_ID.MAX_POINTS)
 					.setLabel('Maximum Points')
 					.setStyle('SECONDARY')
 			)
 			.addComponents(
 				new MessageButton()
-					.setCustomID(CUSTOM_ID.PERMISSIBLE_POINTS)
+					.setCustomId(CUSTOM_ID.PERMISSIBLE_POINTS)
 					.setStyle('SECONDARY')
 					.setLabel('Permissible Points')
 					.setDisabled(true)
 			);
 		const msg = await message.util!.send({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => Object.values(CUSTOM_ID).includes(action.customID) && action.user.id === message.author.id,
+			filter: action => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customID === CUSTOM_ID.MAX_POINTS) {
+			if (action.customId === CUSTOM_ID.MAX_POINTS) {
 				const embed = this.embed(data, members, true)
 					.setColor(this.client.embed(message));
 
@@ -112,7 +112,7 @@ export default class ClanGamesCommand extends Command {
 				return action.update({ embeds: [embed], components: [row] });
 			}
 
-			if (action.customID === CUSTOM_ID.PERMISSIBLE_POINTS) {
+			if (action.customId === CUSTOM_ID.PERMISSIBLE_POINTS) {
 				const embed = this.embed(data, members, false)
 					.setColor(this.client.embed(message));
 

@@ -119,7 +119,7 @@ export default class CWLStarsCommand extends Command {
 
 		const customID = this.client.uuid();
 		const menu = new MessageSelectMenu()
-			.setCustomID(customID)
+			.setCustomId(customID)
 			.setPlaceholder('Select a filter!')
 			.addOptions([
 				{
@@ -135,12 +135,12 @@ export default class CWLStarsCommand extends Command {
 			]);
 		const msg = await message.util!.send({ embeds: [embed], components: [[menu]] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customID === customID && action.user.id === message.author.id,
+			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customID === customID && action.isSelectMenu()) {
+			if (action.customId === customID && action.isSelectMenu()) {
 				if (action.values![0] === 'TOTAL') {
 					return action.update({ embeds: [embed] });
 				}

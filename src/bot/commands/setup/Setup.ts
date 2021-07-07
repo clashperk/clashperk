@@ -1,6 +1,7 @@
 import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
 import { Message, TextChannel, MessageEmbed, Snowflake, MessageButton } from 'discord.js';
 import { Flags, Collections } from '../../util/Constants';
+import { Util } from '../../util/Util';
 
 const names: { [key: string]: string } = {
 	[Flags.DONATION_LOG]: 'Donation Log',
@@ -112,13 +113,13 @@ export default class SetupCommand extends Command {
 
 		const customID = this.client.uuid();
 		const button = new MessageButton()
-			.setCustomID(customID)
+			.setCustomId(customID)
 			.setStyle('SECONDARY')
 			.setLabel('Show all Linked Clans');
 		const msg = await message.channel.send({ embeds: [embed], components: [[button]] });
 
 		const interaction = await msg.awaitMessageComponent({
-			filter: action => action.customID === customID && action.user.id === message.author.id,
+			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
 		}).catch(() => null);
 
@@ -126,7 +127,6 @@ export default class SetupCommand extends Command {
 		if (!interaction) return;
 
 		await interaction.defer();
-
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const fetched = await Promise.all(
 			clans.map(
@@ -218,17 +218,8 @@ export default class SetupCommand extends Command {
 			}
 		);
 
-		for (const chunks of this.chunk(embeds)) {
+		for (const chunks of Util.chunk(embeds, 10)) {
 			await interaction.followUp({ embeds: chunks });
 		}
-	}
-
-	private chunk<T>(items: T[]) {
-		const chunk = 10;
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
-		}
-		return array;
 	}
 }

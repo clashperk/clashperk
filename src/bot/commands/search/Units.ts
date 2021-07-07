@@ -50,7 +50,7 @@ export default class UnitsCommand extends Command {
 		};
 
 		const component = new MessageButton()
-			.setCustomID(CUSTOM_ID.MAX_LEVEL)
+			.setCustomId(CUSTOM_ID.MAX_LEVEL)
 			.setLabel('Max Level')
 			.setStyle('SECONDARY');
 
@@ -65,7 +65,7 @@ export default class UnitsCommand extends Command {
 			}));
 
 			const menu = new MessageSelectMenu()
-				.setCustomID(CUSTOM_ID.SELECT_ACCOUNT)
+				.setCustomId(CUSTOM_ID.SELECT_ACCOUNT)
 				.setPlaceholder('Select an account!')
 				.addOptions(options);
 
@@ -73,12 +73,12 @@ export default class UnitsCommand extends Command {
 		}
 
 		const collector = msg.createMessageComponentCollector({
-			filter: action => Object.values(CUSTOM_ID).includes(action.customID) && action.user.id === message.author.id,
+			filter: action => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customID === CUSTOM_ID.MAX_LEVEL) {
+			if (action.customId === CUSTOM_ID.MAX_LEVEL) {
 				const embed = this.embed(data, false);
 				embed.setColor(this.client.embed(message));
 				embed.setDescription(
@@ -88,12 +88,12 @@ export default class UnitsCommand extends Command {
 				const msg = action.message as Message;
 				(msg.components[0].components[0] as MessageButton)
 					.setLabel('Town Hall Max Level')
-					.setCustomID(CUSTOM_ID.TOWN_HALL_MAX);
+					.setCustomId(CUSTOM_ID.TOWN_HALL_MAX);
 
 				await action.update({ embeds: [embed], components: msg.components });
 			}
 
-			if (action.customID === CUSTOM_ID.TOWN_HALL_MAX) {
+			if (action.customId === CUSTOM_ID.TOWN_HALL_MAX) {
 				const embed = this.embed(data, true);
 				embed.setColor(this.client.embed(message));
 				embed.setDescription(
@@ -103,12 +103,12 @@ export default class UnitsCommand extends Command {
 				const msg = action.message as Message;
 				(msg.components[0].components[0] as MessageButton)
 					.setLabel('Max Level')
-					.setCustomID(CUSTOM_ID.MAX_LEVEL);
+					.setCustomId(CUSTOM_ID.MAX_LEVEL);
 
 				await action.update({ embeds: [embed], components: msg.components });
 			}
 
-			if (action.customID === CUSTOM_ID.SELECT_ACCOUNT && action.isSelectMenu()) {
+			if (action.customId === CUSTOM_ID.SELECT_ACCOUNT && action.isSelectMenu()) {
 				data = players.find(en => en.tag === action.values![0])!;
 				const embed = this.embed(data).setColor(this.client.embed(message));
 				await action.update({ embeds: [embed] });

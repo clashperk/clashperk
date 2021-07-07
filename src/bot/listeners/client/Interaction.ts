@@ -90,10 +90,10 @@ export default class InteractionListener extends Listener {
 	}
 
 	private inhibitor(interaction: Interaction) {
-		if (!interaction.guildID) return true;
+		if (!interaction.guildId) return true;
 
 		const guilds = this.client.settings.get<string[]>('global', Settings.GUILD_BLACKLIST, []);
-		if (guilds.includes(interaction.guildID)) true;
+		if (guilds.includes(interaction.guildId)) true;
 
 		const users = this.client.settings.get<string[]>('global', Settings.USER_BLACKLIST, []);
 		if (users.includes(interaction.user.id)) return true;
@@ -139,7 +139,7 @@ export default class InteractionListener extends Listener {
 
 	private async buttonInteraction(interaction: Interaction) {
 		if (!interaction.isButton() && !interaction.isSelectMenu()) return;
-		if (this.client.components.has(interaction.customID)) return;
+		if (this.client.components.has(interaction.customId)) return;
 
 		await interaction.update({ components: [] });
 		return interaction.followUp({ content: 'This component has expired, run the command again.', ephemeral: true });

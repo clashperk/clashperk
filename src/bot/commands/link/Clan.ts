@@ -74,15 +74,6 @@ export default class LinkClanCommand extends Command {
 		}
 
 		if (parsed.user.bot) return message.util!.send('Bots can\'t link accounts.');
-		await this.client.db.collection(Collections.LINKED_CLANS)
-			.updateOne({ user: parsed.id }, {
-				$set: {
-					tag: data.tag,
-					user: parsed.id,
-					createdAt: new Date()
-				}
-			}, { upsert: true });
-
 		await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.updateOne({ user: parsed.id }, {
 				$set: {

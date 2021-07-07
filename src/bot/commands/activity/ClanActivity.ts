@@ -1,5 +1,5 @@
 import { Command, PrefixSupplier } from 'discord-akairo';
-import Chart from '../../core/ChartHandler';
+import Chart from '../../struct/ChartHandler';
 import { Message } from 'discord.js';
 import { Collections } from '../../util/Constants';
 

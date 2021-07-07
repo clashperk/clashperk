@@ -174,16 +174,16 @@ export default class WarCommand extends Command {
 			.setLabel('Download')
 			.setEmoji('📥')
 			.setStyle('SECONDARY')
-			.setCustomID(customID);
+			.setCustomId(customID);
 
 		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customID === customID && action.user.id === message.author.id,
+			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customID === customID) {
+			if (action.customId === customID) {
 				if (this.client.patrons.get(message)) {
 					await action.update({ components: [] });
 					const buffer = await this.warStats(body);

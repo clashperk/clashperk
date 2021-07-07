@@ -47,9 +47,6 @@ class MongoDB extends MongoClient {
 			db.collection(Collections.FLAGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
-			db.collection(Collections.LINKED_CLANS)
-				.createIndex({ user: 1, tag: 1 }, { unique: true }),
-
 			db.collection(Collections.LINKED_PLAYERS)
 				.createIndex({ user: 1 }, { unique: true }),
 
@@ -109,9 +106,6 @@ class MongoDB extends MongoClient {
 			db.collection(Collections.CLAN_MEMBERS).createIndex({ clanTag: 1 }),
 
 			db.collection(Collections.CLAN_MEMBERS).createIndex({ season: -1 }),
-
-			db.collection(Collections.TIME_ZONES)
-				.createIndex({ user: 1 }, { unique: true }),
 
 			db.collection(Collections.BOT_GROWTH)
 				.createIndex({ ISTDate: 1 }, { unique: true }),

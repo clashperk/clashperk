@@ -7,20 +7,14 @@ import { Message } from 'discord.js';
 export default class LastWarsExport extends Command {
 	public constructor() {
 		super('export-last-wars', {
-			category: 'activity',
+			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
-			description: {}
+			description: {},
+			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
 		});
 	}
 
 	public async exec(message: Message) {
-		if (!this.client.patrons.get(message)) {
-			return message.channel.send(
-				{ embeds: [{ description: '[Become a Patron](https://www.patreon.com/clashperk) to use this command.' }] }
-			);
-		}
-
 		const clans = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();

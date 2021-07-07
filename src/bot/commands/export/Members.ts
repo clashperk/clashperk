@@ -1,9 +1,10 @@
-import { Player } from 'clashofclans.js';
+import { Message, MessageEmbed } from 'discord.js';
+import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
-import { Collections } from '../../util/Constants';
+import { Player } from 'clashofclans.js';
+import { Util } from '../../util/Util';
 
 const achievements = [
 	'Gold Grab',
@@ -21,22 +22,23 @@ const achievements = [
 export default class ExportClanMembersCommand extends Command {
 	public constructor() {
 		super('export-members', {
-			category: 'search',
+			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
-			description: {}
+			description: {},
+			clientPermissions: ['EMBED_LINKS']
 		});
 	}
 
 	public async exec(message: Message) {
 		if (!this.client.patrons.get(message)) {
-			return message.util!.send({
-				embeds: [
-					{
-						description: '[Become a Patron](https://www.patreon.com/clashperk) to export clan members to Excel.'
-					}
-				]
-			});
+			const embed = new MessageEmbed()
+				.setDescription([
+					'**Patron only Command**',
+					'This command is only available on Patron servers.',
+					'Visit https://patreon.com/clashperk for more details.'
+				].join('\n'))
+				.setImage('https://i.imgur.com/Uc5G2oS.png');
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const msg = await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
@@ -78,7 +80,7 @@ export default class ExportClanMembersCommand extends Command {
 			}
 		}
 		await Promise.all(
-			this.chunks(memberTags).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
+			Util.chunk(memberTags, 100).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
 		);
 
 		for (const mem of members) {
@@ -145,14 +147,5 @@ export default class ExportClanMembersCommand extends Command {
 				this.client.resolver.updateUserTag(message.guild!, data.user);
 			}
 		}
-	}
-
-	private chunks<T>(items: T[] = []) {
-		const chunk = 100;
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
-		}
-		return array;
 	}
 }

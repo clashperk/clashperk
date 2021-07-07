@@ -17,7 +17,7 @@ export default class StatsHandler {
 	}
 
 	public async post() {
-		const values: number[] = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]);
+		const values = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]) as number[];
 		const guilds = values.reduce((prev, curr) => prev + curr, 0);
 		if (!guilds) return;
 

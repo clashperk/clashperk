@@ -53,7 +53,7 @@ export default class SetNickNameCommand extends Command {
 			return message.util!.send('**You are missing `Manage Nicknames` permission to use this command.**');
 		}
 
-		if (message.guild!.me!.roles.highest.position <= member.roles.highest.position || member.id === message.guild!.ownerID) {
+		if (message.guild!.me!.roles.highest.position <= member.roles.highest.position || member.id === message.guild!.ownerId) {
 			const own = member.id === message.author.id;
 			return message.util!.send(`**I do not have permission to change ${own ? 'your ' : ''}nickname${own ? '.' : ' of this member!**'}`);
 		}
@@ -66,25 +66,25 @@ export default class SetNickNameCommand extends Command {
 		const options = players.map(op => ({
 			label: op.name, value: op.tag,
 			emoji: TOWN_HALLS[op.townHallLevel],
-			description: `${op.tag} TH${op.townHallLevel}`
+			description: `${op.tag}`
 		}));
 		const customID = this.client.uuid();
 		const row = new MessageActionRow()
 			.addComponents(
 				new MessageSelectMenu()
-					.setCustomID(customID)
+					.setCustomId(customID)
 					.setPlaceholder('Select an account!')
 					.addOptions(options)
 			);
 
 		const msg = await message.util!.send({ content: `**Setting up ${member.user.tag}\'s nickname...**`, components: [row] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customID === customID && [member.id, message.author.id].includes(action.user.id),
+			filter: action => action.customId === customID && [member.id, message.author.id].includes(action.user.id),
 			time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.isSelectMenu() && action.customID === customID) {
+			if (action.isSelectMenu() && action.customId === customID) {
 				const name = this.getName(options.find(opt => opt.value === action.values![0])!.label, txt);
 				if (name.length > 31) {
 					await action.reply({

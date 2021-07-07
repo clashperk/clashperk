@@ -38,10 +38,10 @@ export default class GuildCreateListener extends Listener {
 		await this.client.stats.addition(guild.id);
 		await this.client.stats.guilds(guild, 0);
 
-		const values: number[] = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]);
+		const values = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]) as number[];
 		const guilds = values.reduce((prev, curr) => curr + prev, 0);
 
-		const user = await this.client.users.fetch(guild.ownerID);
+		const user = await this.client.users.fetch(guild.ownerId);
 		const webhook = await this.fetchWebhook().catch(() => null);
 		if (webhook) {
 			const embed = this.client.util.embed()
@@ -84,8 +84,8 @@ export default class GuildCreateListener extends Listener {
 				'If you like the bot, please support us on [Patreon](https://www.patreon.com/clashperk)'
 			].join('\n'));
 
-		if (guild.systemChannelID) {
-			const channel = guild.channels.cache.get(guild.systemChannelID) as TextChannel;
+		if (guild.systemChannelId) {
+			const channel = guild.channels.cache.get(guild.systemChannelId) as TextChannel;
 			if (channel.permissionsFor(guild.me!)!.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false)) {
 				return channel.send({ embeds: [embed] });
 			}

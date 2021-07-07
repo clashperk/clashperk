@@ -23,14 +23,14 @@ export default class ComponentCommand extends Command {
 		const row = new MessageActionRow()
 			/* .addComponents(
 				new MessageButton()
-					.setCustomID(prevID)
+					.setCustomId(prevID)
 					// .setLabel('Previous')
 					.setEmoji('⬅️')
 					.setStyle('SECONDARY')
 			)*/
 			.addComponents(
 				new MessageSelectMenu()
-					.setCustomID(nextID)
+					.setCustomId(nextID)
 					.setPlaceholder('Nothing selected')
 					.setMinValues(2)
 					.addOptions([
@@ -60,7 +60,7 @@ export default class ComponentCommand extends Command {
 			{
 				embeds: [paginated.first()],
 				components: [row, new MessageActionRow().addComponents(new MessageButton()
-					.setCustomID(prevID)
+					.setCustomId(prevID)
 					// .setLabel('Previous')
 					.setEmoji('⬅️')
 					.setStyle('SECONDARY'))]
@@ -68,17 +68,17 @@ export default class ComponentCommand extends Command {
 		);
 
 		const collector = msg.createMessageComponentCollector({
-			filter: action => [nextID, prevID].includes(action.customID) && action.user.id === message.author.id,
+			filter: action => [nextID, prevID].includes(action.customId) && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customID === nextID) {
+			if (action.customId === nextID) {
 				const next = paginated.next();
 				await action.update({ embeds: [Util.paginate(chunks, next.page).first()] });
 			}
 
-			if (action.customID === prevID) {
+			if (action.customId === prevID) {
 				const next = paginated.previous();
 				await action.update({ embeds: [Util.paginate(chunks, next.page).first()], components: [row] });
 			}

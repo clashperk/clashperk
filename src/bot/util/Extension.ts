@@ -105,7 +105,7 @@ Object.defineProperties(ButtonInteraction.prototype, {
 		get: function() {
 			return {
 				id: this.id, type: this.type,
-				user: this.user, commandName: this.customID
+				user: this.user, commandName: this.customId
 			};
 		}
 	}

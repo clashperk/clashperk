@@ -34,19 +34,6 @@ export default class OffsetCommand extends Command {
 		if (!raw) return message.util!.send('Location not found, make your search more specific and try again.');
 
 		const offset = (Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset));
-		await this.client.db.collection(Collections.TIME_ZONES)
-			.updateOne({ user: message.author.id }, {
-				$set: {
-					user: message.author.id,
-					timezone: {
-						id: raw.timezone.timeZoneId,
-						offset: Number(offset),
-						name: raw.timezone.timeZoneName,
-						location: raw.location.formatted_address
-					}
-				}
-			}, { upsert: true });
-
 		await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.updateOne({ user: message.author.id }, {
 				$set: {

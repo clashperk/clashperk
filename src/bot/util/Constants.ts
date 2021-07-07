@@ -27,10 +27,8 @@ export enum Collections {
 	FLAGS = 'Flags',
 
 	// LINNKED_DATA
-	LINKED_CLANS = 'LinkedClans',
 	LINKED_PLAYERS = 'LinkedPlayers',
 	LINKED_CHANNELS = 'LinkedChannels',
-	TIME_ZONES = 'TimeZones',
 
 	// LARGE_DATA
 	PATRONS = 'Patrons',
@@ -38,9 +36,11 @@ export enum Collections {
 	LAST_SEEN = 'LastSeen',
 	CLAN_WARS = 'ClanWars',
 	CLAN_GAMES = 'ClanGames',
-	CWL_WAR_TAGS = 'CWLWarTags',
 	CWL_GROUPS = 'CWLGroups',
 	CLAN_MEMBERS = 'ClanMembers',
+
+	PLAYERS = 'Players',
+	CLANS = 'Clans',
 
 	// BOT_STATS
 	BOT_GROWTH = 'BotGrowth',

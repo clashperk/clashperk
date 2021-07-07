@@ -91,13 +91,13 @@ export default class CWLLineupCommand extends Command {
 		const buttons = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
-					.setCustomID(PlayerCustomID)
+					.setCustomId(PlayerCustomID)
 					.setLabel('Show Player List')
 					.setStyle('SECONDARY')
 			)
 			.addComponents(
 				new MessageButton()
-					.setCustomID(ComapreCustomID)
+					.setCustomId(ComapreCustomID)
 					.setLabel('Compare')
 					.setStyle('SECONDARY')
 					.setDisabled(true)
@@ -106,7 +106,7 @@ export default class CWLLineupCommand extends Command {
 		const menus = new MessageActionRow()
 			.addComponents(
 				new MessageSelectMenu()
-					.setCustomID(MenuID)
+					.setCustomId(MenuID)
 					.setPlaceholder('Select War')
 					.addOptions([
 						{
@@ -124,13 +124,13 @@ export default class CWLLineupCommand extends Command {
 
 		const msg = await message.util!.send({ embeds, components: [buttons, menus] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => [ComapreCustomID, PlayerCustomID, MenuID].includes(action.customID) && action.user.id === message.author.id,
+			filter: action => [ComapreCustomID, PlayerCustomID, MenuID].includes(action.customId) && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});
 
 		let clicked = Boolean(false);
 		collector.on('collect', async action => {
-			if (action.customID === PlayerCustomID) {
+			if (action.customId === PlayerCustomID) {
 				const embeds = this.getLineupList(data.state, data.round, { clan: data.clan, opponent: data.opponent });
 				for (const embed of embeds) embed.setColor(this.client.embed(message));
 				clicked = Boolean(true);
@@ -139,7 +139,7 @@ export default class CWLLineupCommand extends Command {
 				return action.update({ embeds, components: [buttons, menus] });
 			}
 
-			if (action.customID === MenuID && action.isSelectMenu()) {
+			if (action.customId === MenuID && action.isSelectMenu()) {
 				data = chunks.find(ch => ch.state === action.values![0]) ?? chunks.slice(-1)[0];
 
 				await action.deferUpdate();
@@ -151,7 +151,7 @@ export default class CWLLineupCommand extends Command {
 				await action.editReply({ embeds });
 			}
 
-			if (action.customID === ComapreCustomID) {
+			if (action.customId === ComapreCustomID) {
 				await action.deferUpdate();
 				const embeds = await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
 				for (const embed of embeds) embed.setColor(this.client.embed(message));

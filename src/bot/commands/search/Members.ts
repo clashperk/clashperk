@@ -141,33 +141,32 @@ export default class MembersCommand extends Command {
 		const row = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
-					.setCustomID(discord)
 					.setLabel('Discord')
-					.setEmoji(EMOJIS.DISCORD)
+					.setCustomId(discord)
 					.setStyle('SECONDARY')
+					.setEmoji(EMOJIS.DISCORD)
 			)
 			.addComponents(
 				new MessageButton()
-					.setCustomID(download)
-					.setLabel('Download')
 					.setEmoji('📥')
+					.setLabel('Download')
+					.setCustomId(download)
 					.setStyle('SECONDARY')
 			);
 
 		const msg = await message.util!.send({ embeds: [embed], components: [row] });
-
 		const collector = msg.createMessageComponentCollector({
-			filter: action => [discord, download].includes(action.customID) && action.user.id === message.author.id,
+			filter: action => [discord, download].includes(action.customId) && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customID === discord) {
+			if (action.customId === discord) {
 				await action.update({ components: [] });
 				await this.handler.runCommand(message, this.handler.modules.get('link-list')!, { data });
 			}
 
-			if (action.customID === download) {
+			if (action.customId === download) {
 				if (this.client.patrons.get(message)) {
 					row.components[1].setDisabled(true);
 					await action.update({ components: [row] });
@@ -182,11 +181,9 @@ export default class MembersCommand extends Command {
 				} else {
 					const embed = new MessageEmbed()
 						.setDescription([
-							'**Patron Only Command**',
+							'**Patron only Command**',
 							'This command is only available on Patron servers.',
-							'Visit https://patreon.com/clashperk for more details.',
-							'',
-							'**Demo Clan Member Export**'
+							'Visit https://patreon.com/clashperk for more details.'
 						].join('\n'))
 						.setImage('https://i.imgur.com/Uc5G2oS.png');
 

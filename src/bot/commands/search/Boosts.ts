@@ -46,15 +46,15 @@ export default class BoostsCommand extends Command {
 		const button = new MessageButton()
 			.setLabel('Refresh')
 			.setStyle('SECONDARY')
-			.setCustomID(refreshID);
+			.setCustomId(refreshID);
 
 		const msg = await message.util!.send({ embeds: res.embeds, components: [[button]] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customID === refreshID
+			filter: action => action.customId === refreshID
 		});
 
 		collector.on('collect', async action => {
-			if (action.customID === refreshID) {
+			if (action.customId === refreshID) {
 				await action.update({ content: `**Fetching data... ${EMOJIS.LOADING}**`, embeds: [], components: [] });
 				const raw = await this.getEmbed(message, data.tag);
 				await action.editReply({ ...raw, components: raw.embeds.length ? [[button]] : [] });

@@ -70,19 +70,19 @@ export default class PlayerCommand extends Command {
 
 		const customID = this.client.uuid();
 		const menu = new MessageSelectMenu()
-			.setCustomID(customID)
+			.setCustomId(customID)
 			.setPlaceholder('Select an account!')
 			.addOptions(options);
 
 		await msg.edit({ components: [[menu]] });
 
 		const collector = msg.createMessageComponentCollector({
-			filter: action => [customID].includes(action.customID) && action.user.id === message.author.id,
+			filter: action => [customID].includes(action.customId) && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customID === customID && action.isSelectMenu()) {
+			if (action.customId === customID && action.isSelectMenu()) {
 				await action.deferUpdate();
 				const data = players.find(en => en.tag === action.values![0])!;
 				const embed = (await this.embed(data)).setColor(this.client.embed(message));

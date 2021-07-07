@@ -136,17 +136,17 @@ export default class CWLRoundCommand extends Command {
 		const customID = this.client.uuid();
 		const menu = new MessageSelectMenu()
 			.addOptions(options)
-			.setCustomID(customID)
+			.setCustomId(customID)
 			.setPlaceholder('Select a round!');
 
 		const msg = await message.util!.send({ embeds: [round.embed], components: [[menu]] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customID === customID && action.user.id === message.author.id,
+			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customID === customID && action.isSelectMenu()) {
+			if (action.customId === customID && action.isSelectMenu()) {
 				const round = chunks.find(ch => ch.round === Number(action.values![0]));
 				return action.update({ embeds: [round!.embed] });
 			}

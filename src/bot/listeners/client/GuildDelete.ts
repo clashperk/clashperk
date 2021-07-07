@@ -30,10 +30,10 @@ export default class GuildDeleteListener extends Listener {
 		await this.client.stats.deletion();
 		await this.client.stats.guilds(guild, 0);
 
-		const values: number[] = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]);
+		const values = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]) as number[];
 		const guilds = values.reduce((prev, curr) => curr + prev, 0);
 
-		const user = await this.client.users.fetch(guild.ownerID);
+		const user = await this.client.users.fetch(guild.ownerId);
 		const webhook = await this.fetchWebhook().catch(() => null);
 		if (webhook) {
 			const embed = this.client.util.embed()

@@ -9,11 +9,11 @@ import { Message, Snowflake } from 'discord.js';
 export default class ExportSeason extends Command {
 	public constructor() {
 		super('export-season', {
-			category: 'activity',
+			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {},
-			optionFlags: ['--season']
+			optionFlags: ['--season'],
+			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
 		});
 	}
 

@@ -12,7 +12,7 @@ export default class CWLStatsCommand extends Command {
 			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows some statistics for each round.',
+				content: 'Ranking and statistics for each round.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},

@@ -1,7 +1,7 @@
 import { MessageAttachment, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { Collections } from '../../util/Constants';
-import Chart from '../../core/ChartHandler';
+import Chart from '../../struct/ChartHandler';
 import moment from 'moment';
 
 export default class UsageCommand extends Command {

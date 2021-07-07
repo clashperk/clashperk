@@ -7,11 +7,11 @@ import { Message } from 'discord.js';
 export default class ExportMissed extends Command {
 	public constructor() {
 		super('export-missed', {
-			category: 'activity',
+			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {},
-			optionFlags: ['--number']
+			optionFlags: ['--number'],
+			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
 		});
 	}
 

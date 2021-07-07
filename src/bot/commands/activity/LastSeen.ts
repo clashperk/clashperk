@@ -78,18 +78,18 @@ export default class LastSeenCommand extends Command {
 		const customID = this.client.uuid();
 		const button = new MessageButton()
 			.setStyle('SECONDARY')
-			.setCustomID(customID)
+			.setCustomId(customID)
 			.setEmoji(EMOJIS.ACTIVITY)
 			.setLabel('Show Activity Scores');
 
 		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customID === customID && action.user.id === message.author.id,
+			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customID === customID) {
+			if (action.customId === customID) {
 				collector.stop();
 				const members = await this.aggregationQuery(data, 30);
 

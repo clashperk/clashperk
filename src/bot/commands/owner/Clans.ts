@@ -29,7 +29,7 @@ export default class ClansCommand extends Command {
 							return this.handler.handleDirectCommand(msg, '-', this.handler.modules.get('setup')!);
 						}
 						const guilds = await this.client.shard!.broadcastEval(
-							client => {
+							(client, id) => {
 								const guild = client.guilds.cache.get(id as Snowflake);
 								if (guild) {
 									return {
@@ -40,7 +40,7 @@ export default class ClansCommand extends Command {
 									};
 								}
 								return null;
-							}
+							}, { context: id }
 						);
 						const guild = guilds.find(guild => guild !== null);
 						if (!guild) return null;

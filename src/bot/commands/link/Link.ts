@@ -121,39 +121,39 @@ export default class LinkCommand extends Command {
 					new MessageButton()
 						.setStyle('SECONDARY')
 						.setLabel('LINK PLAYER')
-						.setCustomID(PlayerCustomID)
+						.setCustomId(PlayerCustomID)
 				)
 				.addComponents(
 					new MessageButton()
 						.setStyle('SECONDARY')
 						.setLabel('LINK CLAN')
-						.setCustomID(ClanCustomID)
+						.setCustomId(ClanCustomID)
 				)
 				.addComponents(
 					new MessageButton()
 						.setStyle('DANGER')
 						.setLabel('CANCEL')
-						.setCustomID(CancelID)
+						.setCustomId(CancelID)
 				);
 			const msg = await message.util!.send({ embeds: [embed], components: [row] });
 
 			const collector = msg.createMessageComponentCollector({
-				filter: action => [ClanCustomID, PlayerCustomID, CancelID].includes(action.customID) && action.user.id === message.author.id,
+				filter: action => [ClanCustomID, PlayerCustomID, CancelID].includes(action.customId) && action.user.id === message.author.id,
 				time: 15 * 60 * 1000
 			});
 
 			collector.on('collect', async action => {
-				if (action.customID === ClanCustomID) {
+				if (action.customId === ClanCustomID) {
 					await action.update({ components: [] });
 					await this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
 				}
 
-				if (action.customID === PlayerCustomID) {
+				if (action.customId === PlayerCustomID) {
 					await action.update({ components: [] });
 					await this.handler.runCommand(message, playerCommand, { data: tags[1], member: member, def });
 				}
 
-				if (action.customID === CancelID) {
+				if (action.customId === CancelID) {
 					await action.update({
 						components: [],
 						content: '**This command has been cancelled.**'
