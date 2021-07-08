@@ -12,6 +12,6 @@ export default class ErrorCommand extends Command {
 
 	public exec(message: Message) {
 		// @ts-ignore
-		return message.util!.sen_d('~uwu~');
+		return message.util!.s_e_n_d('~uwu~');
 	}
 }
