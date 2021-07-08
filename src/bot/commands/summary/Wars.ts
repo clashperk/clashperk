@@ -1,8 +1,15 @@
-import { ClanWar, WarClan, ClanWarMember } from 'clashofclans.js';
-import { EMOJIS } from '../../util/Emojis';
+import { ClanWar, WarClan } from 'clashofclans.js';
 import { Message, MessageEmbed } from 'discord.js';
 import { Collections } from '../../util/Constants';
+import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
+import moment from 'moment';
+
+const states: { [key: string]: string } = {
+	inWar: 'Ends',
+	preparation: 'Starts',
+	warEnded: 'Ended'
+};
 
 export default class WarSummaryCommand extends Command {
 	public constructor() {
@@ -10,7 +17,7 @@ export default class WarSummaryCommand extends Command {
 			aliases: ['matches', 'wars'],
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {}
 		});
 	}
@@ -24,20 +31,18 @@ export default class WarSummaryCommand extends Command {
 
 		const embed = new MessageEmbed();
 		for (const clan of clans) {
-			const data = await this.getWAR(clan.tag) as ClanWar;
+			const data = await this.getWAR(clan.tag) as ClanWar & { round?: number };
 			if (!data.ok) continue;
 			if (data.state === 'notInWar') continue;
 
-			// @ts-expect-error
-			const header = data.round ? `\u200e${data.clan.name} (${data.clan.tag})` : `\u200e${data.clan.name} vs ${data.opponent.name}`;
-			embed.addField(header, [
-				`${this.getLeaderBoard(data.clan, data.opponent, data.teamSize)}`,
+			embed.addField(`${data.clan.name} ${data.round ? `(CWL Round #${data.round})` : ''}`, [
+				`${this.getLeaderBoard(data.clan, data.opponent)}`,
+				`${states[data.state]} on ${this.getRelativeTime(moment(data.preparationStartTime).toDate().getTime())}`,
 				'\u200b'
 			].join('\n'));
 		}
 
-		if (!embed.length) return message.util!.send('Clans are not in war!');
-
+		if (!embed.length) return message.util!.send('**No clans are in war at this moment!**');
 		return Array(Math.ceil(embed.fields.length / 15)).fill(0)
 			.map(
 				() => embed.fields.splice(0, 15)
@@ -53,6 +58,10 @@ export default class WarSummaryCommand extends Command {
 					return message.channel.send({ embeds: [embed] });
 				}
 			);
+	}
+
+	public getRelativeTime(ms: number) {
+		return `<t:${Math.floor(ms / 1000)}:f>`;
 	}
 
 	private get onGoingCWL() {
@@ -91,39 +100,11 @@ export default class WarSummaryCommand extends Command {
 		return chunks.find(en => en.state === 'inWar') ?? chunks.find(en => en.state === 'preparation') ?? chunks.find(en => en.state === 'warEnded');
 	}
 
-	private roster(members: ClanWarMember[]) {
-		const roster = members.reduce((count, member) => {
-			const townHall = member.townhallLevel;
-			count[townHall] = (count[townHall] || 0) + 1;
-			return count;
-		}, {} as { [key: string]: number });
-
-		const flatTownHalls = members.map(mem => mem.townhallLevel);
-		const [max, min] = [Math.max(...flatTownHalls), Math.min(...flatTownHalls)];
-		const townHalls = Array(Math.min(4, (max - min) + 1)).fill(0).map((_, i) => max - i);
-		return townHalls.map(num => (roster[num] || 0).toString().padStart(2, ' ')).join('|');
-	}
-
-	// Calculates War Result
-	private result(clan: WarClan, opponent: WarClan) {
-		const tied = clan.stars === opponent.stars && clan.destructionPercentage === opponent.destructionPercentage;
-		if (tied) return 'tied';
-		const stars = clan.stars !== opponent.stars && clan.stars > opponent.stars;
-		const destr = clan.stars === opponent.stars && clan.destructionPercentage > opponent.destructionPercentage;
-		if (stars || destr) return 'won';
-		return 'lost';
-	}
-
-	private getLeaderBoard(clan: WarClan, opponent: WarClan, teamSize: number) {
+	private getLeaderBoard(clan: WarClan, opponent: WarClan) {
 		return [
-			`\`\u200e${this.value(clan.stars, teamSize * 3).padStart(13, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${this.value(opponent.stars, teamSize * 3).padEnd(13, ' ')}\u200f\``,
-			`\`\u200e${this.value(clan.attacks, teamSize * 2).padStart(13, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${this.value(opponent.attacks, teamSize * 2).padEnd(13, ' ')}\u200f\``,
-			`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(13, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.FIRE} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(13, ' ')}\u200f\``,
-			`\`\u200e${this.roster(clan.members).padStart(13, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.TOWNHALL} \u2002 \`\u200e ${this.roster(opponent.members).padEnd(13, ' ')}\u200f\``
-		].join('\n');
-	}
-
-	private value(a: number, b: number) {
-		return [a.toString(), b.toString()].join('/');
+			`${EMOJIS.STAR} ${clan.stars}/${opponent.stars}`,
+			`${EMOJIS.SWORD} ${clan.attacks}/${opponent.attacks}`,
+			`${EMOJIS.FIRE} ${clan.destructionPercentage.toFixed(2)}%/${opponent.destructionPercentage.toFixed(2)}%`
+		].join(' ');
 	}
 }
