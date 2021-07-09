@@ -23,7 +23,7 @@ export default class WarSummaryCommand extends Command {
 	}
 
 	public async exec(message: Message) {
-		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
+		if (!message.interaction) await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 		const clans = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
@@ -43,21 +43,17 @@ export default class WarSummaryCommand extends Command {
 		}
 
 		if (!embed.length) return message.util!.send('**No clans are in war at this moment!**');
-		return Array(Math.ceil(embed.fields.length / 15)).fill(0)
+		const embeds = Array(Math.ceil(embed.fields.length / 15)).fill(0)
 			.map(
 				() => embed.fields.splice(0, 15)
 			)
 			.map(
 				fields => new MessageEmbed({ color: this.client.embed(message), fields })
-			)
-			.map(
-				(embed, index) => {
-					if (index === 0) {
-						return message.util!.send({ embeds: [embed] });
-					}
-					return message.channel.send({ embeds: [embed] });
-				}
 			);
+		if (embeds.length === 1) return message.util!.send({ embeds: [embeds.shift()!] });
+		for (const embed of embeds) {
+			await message.util!.sendNew({ embeds: [embed] });
+		}
 	}
 
 	public getRelativeTime(ms: number) {

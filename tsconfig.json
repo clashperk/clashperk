@@ -16,7 +16,6 @@
 		"outDir": "dist",
 		"rootDir": "./",
 		"sourceRoot": "/",
-		"baseUrl": "./",
 		"sourceMap": true,
 		"target": "ES2020",
 		"module": "CommonJS",
