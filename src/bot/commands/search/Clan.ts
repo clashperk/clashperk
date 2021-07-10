@@ -143,7 +143,7 @@ export default class ClanCommand extends Command {
 		}).catch(() => null);
 
 		if (!msg.deleted) await msg.edit({ components: [] });
-		return interaction?.followUp({
+		return interaction?.reply({
 			embeds: [{
 				color: this.client.embed(message),
 				image: { url: data.badgeUrls.large },
