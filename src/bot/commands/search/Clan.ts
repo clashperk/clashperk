@@ -130,11 +130,26 @@ export default class ClanCommand extends Command {
 			`${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
 		].join('\n'));
 
+		const customId = this.client.uuid(message.author.id);
 		const component = new MessageButton()
 			.setLabel('Clan Badge')
-			.setStyle('LINK')
-			.setURL(data.badgeUrls.large);
-		return message.util!.send({ embeds: [embed], components: [[component]] });
+			.setStyle('SECONDARY')
+			.setCustomId(customId);
+		const msg = await message.util!.send({ embeds: [embed], components: [[component]] });
+
+		const interaction = await msg.awaitMessageComponent({
+			filter: action => action.customId === customId,
+			time: 15 * 60 * 1000
+		}).catch(() => null);
+
+		if (!msg.deleted) await msg.edit({ components: [] });
+		return interaction?.followUp({
+			embeds: [{
+				color: this.client.embed(message),
+				image: { url: data.badgeUrls.large },
+				author: { name: `${data.name} (${data.tag})` }
+			}]
+		});
 	}
 
 	private async getActivity(clan: Clan): Promise<{ avg_total: number; avg_online: number } | null> {

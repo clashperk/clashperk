@@ -7,7 +7,7 @@ export default class LinkCommand extends Command {
 			aliases: ['link'],
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
 					'Links a Player or Clan to a Discord account.',
@@ -108,9 +108,8 @@ export default class LinkCommand extends Command {
 
 		if (tags.every(a => a.ok)) {
 			const embed = this.client.util.embed()
-				.setColor(this.client.embed(message))
 				.setDescription([
-					'**What would you like to link? A player or a clan?**',
+					'**What would you like to link? A Player or a Clan?**',
 					'',
 					tags.map((a, i) => `**${types[i + 1]}**\n${a.name} (${a.tag})\n`).join('\n')
 				].join('\n'));
@@ -155,6 +154,7 @@ export default class LinkCommand extends Command {
 
 				if (action.customId === CancelID) {
 					await action.update({
+						embeds: [],
 						components: [],
 						content: '**This command has been cancelled.**'
 					});

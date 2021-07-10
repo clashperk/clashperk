@@ -29,7 +29,7 @@ export default class ClanGamesCommand extends Command {
 			aliases: ['points', 'clangames', 'cg'],
 			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: [
 					'Clan Games points of all clan members.',

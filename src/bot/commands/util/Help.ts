@@ -1,5 +1,6 @@
 import { Command, PrefixSupplier } from 'discord-akairo';
 import { Message, PermissionString } from 'discord.js';
+import { URLS } from '../../util/Constants';
 
 interface Description {
 	content: string;
@@ -37,7 +38,7 @@ export default class HelpCommand extends Command {
 		return { command };
 	}
 
-	public exec(message: Message, { command }: { command: Command | null }) {
+	public exec(message: Message, { command }: { command?: Command }) {
 		if (!command) return this.execCommandList(message);
 
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
@@ -45,8 +46,8 @@ export default class HelpCommand extends Command {
 			content: 'No description available.',
 			usage: '',
 			image: '',
-			examples: [],
-			fields: []
+			fields: [],
+			examples: []
 		}, command.description);
 
 		const embed = this.client.util.embed()
@@ -56,8 +57,7 @@ export default class HelpCommand extends Command {
 				'',
 				Array.isArray(description.content)
 					? description.content.join('\n')
-						.replace(/{prefix}/g, `\\${prefix}`)
-					: description.content.replace(/{prefix}/g, `\\${prefix}`)
+					: description.content
 			].join('\n'));
 
 		if (command.aliases.length > 1) {
@@ -144,13 +144,16 @@ export default class HelpCommand extends Command {
 						const description = Array.isArray(cmd.description.content)
 							? cmd.description.content[0]
 							: cmd.description.content;
-						return `**\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\`**\n${description.replace(/{prefix}/g, `\\${prefix}`) as string}`;
+						return `**\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\`**\n${description as string}`;
 					})
 					.join('\n')
 			].join('\n'));
 		}
 
-		embed.addField('\u200b', '**[Join Support Discord](https://discord.gg/ppuppun)** | **[Support us on Patreon](https://www.patreon.com/clashperk)**');
+		embed.addField(
+			'\u200b',
+			`**[Join Support Discord](${URLS.SUPPORT_SERVER})** | **[Support us on Patreon](${URLS.PATREON})**`
+		);
 		return embed;
 	}
 }

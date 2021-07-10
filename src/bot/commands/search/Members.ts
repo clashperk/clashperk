@@ -43,7 +43,7 @@ export default class MembersCommand extends Command {
 		super('members', {
 			aliases: ['members', 'member', 'mem', 'warweight', 'ww'],
 			category: 'search',
-			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
 			description: {
 				content: 'Clan members with Town Halls and Heroes.',
 				usage: '<#clanTag>',

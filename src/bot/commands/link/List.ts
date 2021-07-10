@@ -10,7 +10,7 @@ export default class LinkListCommand extends Command {
 		super('link-list', {
 			aliases: ['links'],
 			category: 'none',
-			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
 			description: {}
 		});

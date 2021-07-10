@@ -76,6 +76,11 @@ export const Messages = {
 	}
 };
 
+export const URLS = {
+	PATREON: 'https://www.patreon.com/clashperk',
+	SUPPORT_SERVER: 'https://discord.gg/ppuppun'
+};
+
 export const EMBEDS = {
 	CLAN_LIMIT: (prefix: string) => new MessageEmbed()
 		.setDescription([

@@ -11,7 +11,7 @@ export default class DonationLogCommand extends Command {
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],
 			optionFlags: ['--tag', '--channel', '--extra'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY']
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS']
 		});
 	}
 
