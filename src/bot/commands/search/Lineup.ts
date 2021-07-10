@@ -1,8 +1,15 @@
-import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../../util/NumEmojis';
-import { MessageEmbed, Util, Message } from 'discord.js';
-import { EMOJIS } from '../../util/Emojis';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
+import { MessageEmbed, Message } from 'discord.js';
+import { EMOJIS, HERO_PETS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
-import { Clan } from 'clashofclans.js';
+import { Clan, ClanWarMember, Player, WarClan } from 'clashofclans.js';
+import { Util } from '../../util/Util';
+
+const states: { [key: string]: string } = {
+	inWar: 'Battle Day',
+	preparation: 'Preparation',
+	warEnded: 'War Ended'
+};
 
 export default class LineupCommand extends Command {
 	public constructor() {
@@ -50,25 +57,76 @@ export default class LineupCommand extends Command {
 			if (res.ok) {
 				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-lineup')!, false);
 			}
-			embed.setDescription('Not in War');
+			embed.setDescription('Clan is not in war!');
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		const chunks = Util.splitMessage([
-			`\u200e**${Util.escapeMarkdown(body.clan.name)} (${body.clan.tag})**`,
-			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
-			body.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
-				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
-			).join('\n'),
-			'',
-			`\u200e**${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})**`,
-			`${EMOJIS.HASH}${EMOJIS.TOWNHALL} **NAME**`,
-			body.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition).map(
-				mem => `\u200e${BLUE_NUMBERS[mem.mapPosition]}${ORANGE_NUMBERS[mem.townhallLevel]} ${Util.escapeMarkdown(mem.name)}`
-			).join('\n')
-		].join('\n'));
+		const embeds = await this.getComparisonLineup(body.state, body.clan, body.opponent);
+		for (const embed of embeds) embed.setColor(this.client.embed(message));
 
-		if (chunks.length === 1) return message.util!.send(chunks[0]);
-		return chunks.slice(1).map(text => message.channel.send(text));
+		return message.util!.send({ embeds });
+	}
+
+	private async getComparisonLineup(state: string, clan: WarClan, opponent: WarClan) {
+		const linups = await this.rosters(
+			clan.members.sort((a, b) => a.mapPosition - b.mapPosition),
+			opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
+		);
+		const embed = new MessageEmbed();
+		embed.setAuthor(`\u200e${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
+
+		embed.setDescription(
+			[
+				'**War Against**',
+				`**\u200e${opponent.name} (${opponent.tag})**`,
+				'',
+				`\u200e${EMOJIS.HASH} \`TH HERO \u2002  \u2002 TH HERO \``,
+				linups.map(
+					(lineup, i) => {
+						const desc = lineup.map(en => `${this.pad(en.t, 2)} ${this.pad(en.h, 4)}`).join(' \u2002vs\u2002 ');
+						return `${BLUE_NUMBERS[i + 1]} \`${desc} \``;
+					}
+				).join('\n')
+			].join('\n')
+		);
+		embed.setFooter(`${states[state]}`);
+
+		return [embed];
+	}
+
+	private async rosters(clanMembers: ClanWarMember[], opponentMembers: ClanWarMember[]) {
+		const clanPlayers: Player[] = await this.client.http.detailedClanMembers(clanMembers);
+		const a = clanPlayers.filter(res => res.ok).map((m, i) => {
+			const heroes = m.heroes.filter(en => en.village === 'home');
+			const pets = m.troops.filter(en => en.village === 'home' && en.name in HERO_PETS);
+			return {
+				e: 0,
+				m: i + 1,
+				t: m.townHallLevel,
+				p: pets.map(en => en.level).reduce((prev, en) => en + prev, 0),
+				h: heroes.map(en => en.level).reduce((prev, en) => en + prev, 0)
+				// .concat(...Array(4 - heroes.length).fill(' '))
+			};
+		});
+
+		const opponentPlayers: Player[] = await this.client.http.detailedClanMembers(opponentMembers as any);
+		const b = opponentPlayers.filter(res => res.ok).map((m, i) => {
+			const heroes = m.heroes.filter(en => en.village === 'home');
+			const pets = m.troops.filter(en => en.village === 'home' && en.name in HERO_PETS);
+			return {
+				e: 1,
+				m: i + 1,
+				t: m.townHallLevel,
+				p: pets.map(en => en.level).reduce((prev, en) => en + prev, 0),
+				h: heroes.map(en => en.level).reduce((prev, en) => en + prev, 0)
+				// .concat(...Array(4 - heroes.length).fill(' '))
+			};
+		});
+
+		return Util.chunk([...a, ...b].sort((a, b) => a.e - b.e).sort((a, b) => a.m - b.m), 2);
+	}
+
+	private pad(num: number, depth: number) {
+		return num.toString().padStart(depth, ' ');
 	}
 }

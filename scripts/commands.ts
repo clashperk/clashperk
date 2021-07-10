@@ -622,30 +622,30 @@ export const commands: { name: string; description: string; options?: APIApplica
 				type: ApplicationCommandOptionType.STRING,
 				choices: [
 					{
-						name: 'Season Stats',
-						value: 'season'
+						name: 'Clan War Stats',
+						value: 'wars'
 					},
 					{
-						name: 'War Stats',
-						value: 'wars'
+						name: 'Season Stats',
+						value: 'season'
 					},
 					{
 						name: 'Last War Dates',
 						value: 'lastwars'
 					},
 					{
-						name: 'Clan Members',
-						value: 'members'
-					},
-					{
 						name: 'Missed Wars',
 						value: 'missed'
+					},
+					{
+						name: 'Clan Members',
+						value: 'members'
 					}
 				]
 			},
 			{
 				name: 'season',
-				description: 'Season ID for ',
+				description: 'Season ID for season stats',
 				type: ApplicationCommandOptionType.STRING,
 				choices: getSeasonIds()
 			},
