@@ -53,7 +53,7 @@ export default class UpgradesCommand extends Command {
 			emoji: TOWN_HALLS[op.townHallLevel]
 		}));
 
-		const customID = this.client.uuid();
+		const customID = this.client.uuid(message.author.id);
 		const menu = new MessageSelectMenu()
 			.setCustomId(customID)
 			.setPlaceholder('Select an account!')

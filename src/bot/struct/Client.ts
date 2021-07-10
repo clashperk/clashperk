@@ -23,18 +23,18 @@ declare module 'discord-akairo' {
 		http: Http;
 		stats: Stats;
 		logger: Logger;
-		uuid(): string;
 		patrons: Patrons;
 		storage: Storage;
 		resolver: Resolver;
 		settings: Settings;
 		links: LinkHandler;
 		rpcHandler: RPCHandler;
-		components: Set<string>;
 		embed(msg: Message): number;
 		commandHandler: CommandHandler;
 		listenerHandler: ListenerHandler;
 		inhibitorHandler: InhibitorHandler;
+		components: Map<string, Snowflake[]>;
+		uuid(...userIds: Snowflake[]): string;
 	}
 }
 
@@ -78,8 +78,8 @@ export default class Client extends AkairoClient {
 	public settings!: Settings;
 	public links!: LinkHandler;
 	public rpcHandler!: RPCHandler;
-	public components = new Set<string>();
 	public logger: Logger = new Logger(this);
+	public components = new Map<string, Snowflake[]>();
 
 	public commandHandler: CommandHandler = new CommandHandler(this, {
 		directory: path.join(__dirname, '..', 'commands'),
@@ -195,9 +195,9 @@ export default class Client extends AkairoClient {
 		return this.settings.get<number>(message.guild!, 'color', undefined);
 	}
 
-	public uuid() {
+	public uuid(...userIds: Snowflake[]) {
 		const uniqueId = uuid.v4();
-		this.components.add(uniqueId);
+		this.components.set(uniqueId, userIds);
 		return uniqueId;
 	}
 

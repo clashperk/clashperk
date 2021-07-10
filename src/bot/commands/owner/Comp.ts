@@ -19,7 +19,7 @@ export default class ComponentCommand extends Command {
 		const chunks = Array(7).fill(0).map((_, i) => new MessageEmbed().setDescription(`${++i}/7`));
 		const paginated = Util.paginate(chunks);
 
-		const [nextID, prevID] = [this.client.uuid(), this.client.uuid()];
+		const [nextID, prevID] = [this.client.uuid(message.author.id), this.client.uuid(message.author.id)];
 		const row = new MessageActionRow()
 			/* .addComponents(
 				new MessageButton()

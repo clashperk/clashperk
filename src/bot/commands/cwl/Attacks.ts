@@ -152,7 +152,7 @@ export default class CWLAttacksCommand extends Command {
 		}
 
 		const options = chunks.map(ch => ({ label: `Round #${ch.round}`, value: ch.round.toString() }));
-		const customID = this.client.uuid();
+		const customID = this.client.uuid(message.author.id);
 		const menu = new MessageSelectMenu()
 			.addOptions(options)
 			.setCustomId(customID)

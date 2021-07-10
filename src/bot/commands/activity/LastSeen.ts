@@ -75,7 +75,7 @@ export default class LastSeenCommand extends Command {
 			].join('\n'))
 			.setFooter(`Members [${data.members}/50]`, message.author.displayAvatarURL());
 
-		const customID = this.client.uuid();
+		const customID = this.client.uuid(message.author.id);
 		const button = new MessageButton()
 			.setStyle('SECONDARY')
 			.setCustomId(customID)

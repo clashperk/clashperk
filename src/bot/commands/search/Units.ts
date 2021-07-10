@@ -44,9 +44,9 @@ export default class UnitsCommand extends Command {
 			.setDescription(`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`);
 
 		const CUSTOM_ID = {
-			MAX_LEVEL: this.client.uuid(),
-			TOWN_HALL_MAX: this.client.uuid(),
-			SELECT_ACCOUNT: this.client.uuid()
+			MAX_LEVEL: this.client.uuid(message.author.id),
+			TOWN_HALL_MAX: this.client.uuid(message.author.id),
+			SELECT_ACCOUNT: this.client.uuid(message.author.id)
 		};
 
 		const component = new MessageButton()

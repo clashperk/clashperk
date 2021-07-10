@@ -79,8 +79,8 @@ export default class ClanGamesCommand extends Command {
 			.setColor(this.client.embed(message));
 
 		const CUSTOM_ID = {
-			MAX_POINTS: this.client.uuid(),
-			PERMISSIBLE_POINTS: this.client.uuid()
+			MAX_POINTS: this.client.uuid(message.author.id),
+			PERMISSIBLE_POINTS: this.client.uuid(message.author.id)
 		};
 		const row = new MessageActionRow()
 			.addComponents(

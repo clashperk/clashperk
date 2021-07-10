@@ -117,7 +117,7 @@ export default class CWLStarsCommand extends Command {
 				).join('\n')
 			].join('\n'));
 
-		const customID = this.client.uuid();
+		const customID = this.client.uuid(message.author.id);
 		const menu = new MessageSelectMenu()
 			.setCustomId(customID)
 			.setPlaceholder('Select a filter!')

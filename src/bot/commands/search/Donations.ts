@@ -108,7 +108,7 @@ export default class DonationsCommand extends Command {
 		};
 
 		const embed = getEmbed();
-		const customId = this.client.uuid();
+		const customId = this.client.uuid(message.author.id);
 		const button = new MessageButton()
 			.setStyle('SECONDARY')
 			.setCustomId(customId)

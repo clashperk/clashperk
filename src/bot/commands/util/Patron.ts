@@ -98,7 +98,7 @@ export default class PatronCommand extends Command {
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		const customID = this.client.uuid();
+		const customID = this.client.uuid(message.author.id);
 		const button = new MessageButton()
 			.setCustomId(customID)
 			.setStyle('SECONDARY')

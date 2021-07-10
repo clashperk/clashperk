@@ -68,7 +68,7 @@ export default class SetNickNameCommand extends Command {
 			emoji: TOWN_HALLS[op.townHallLevel],
 			description: `${op.tag}`
 		}));
-		const customID = this.client.uuid();
+		const customID = this.client.uuid(message.author.id, member.id);
 		const row = new MessageActionRow()
 			.addComponents(
 				new MessageSelectMenu()

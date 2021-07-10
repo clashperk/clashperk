@@ -159,7 +159,7 @@ export default class CWLRosterCommand extends Command {
 			embed.addField('\u200b', `Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`);
 		}
 
-		const customID = this.client.uuid();
+		const customID = this.client.uuid(message.author.id);
 		const button = new MessageButton()
 			.setCustomId(customID)
 			.setStyle('SECONDARY')

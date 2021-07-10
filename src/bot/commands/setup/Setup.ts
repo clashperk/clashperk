@@ -111,7 +111,7 @@ export default class SetupCommand extends Command {
 				this.description.examples.map((en: string) => `\`${prefix}setup ${en}\``).join('\n')
 			].join('\n'));
 
-		const customID = this.client.uuid();
+		const customID = this.client.uuid(message.author.id);
 		const button = new MessageButton()
 			.setCustomId(customID)
 			.setStyle('SECONDARY')

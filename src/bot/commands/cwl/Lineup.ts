@@ -87,7 +87,7 @@ export default class CWLLineupCommand extends Command {
 		const embeds = await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
 		for (const embed of embeds) embed.setColor(this.client.embed(message));
 
-		const [PlayerCustomID, ComapreCustomID, MenuID] = [this.client.uuid(), this.client.uuid(), this.client.uuid()];
+		const [PlayerCustomID, ComapreCustomID, MenuID] = [this.client.uuid(message.author.id), this.client.uuid(message.author.id), this.client.uuid(message.author.id)];
 		const buttons = new MessageActionRow()
 			.addComponents(
 				new MessageButton()

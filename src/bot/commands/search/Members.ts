@@ -136,7 +136,7 @@ export default class MembersCommand extends Command {
 			].join('\n'));
 		}
 
-		const [discord, download] = [this.client.uuid(), this.client.uuid()];
+		const [discord, download] = [this.client.uuid(message.author.id), this.client.uuid(message.author.id)];
 
 		const row = new MessageActionRow()
 			.addComponents(

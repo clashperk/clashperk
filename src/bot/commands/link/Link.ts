@@ -115,7 +115,7 @@ export default class LinkCommand extends Command {
 					tags.map((a, i) => `**${types[i + 1]}**\n${a.name} (${a.tag})\n`).join('\n')
 				].join('\n'));
 
-			const [ClanCustomID, PlayerCustomID, CancelID] = [this.client.uuid(), this.client.uuid(), this.client.uuid()];
+			const [ClanCustomID, PlayerCustomID, CancelID] = [this.client.uuid(message.author.id), this.client.uuid(message.author.id), this.client.uuid(message.author.id)];
 			const row = new MessageActionRow()
 				.addComponents(
 					new MessageButton()

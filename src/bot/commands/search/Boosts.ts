@@ -42,19 +42,19 @@ export default class BoostsCommand extends Command {
 		const res = await this.getEmbed(message, data.tag, data);
 		if (!res.embeds.length) return message.util!.send('**No members found with active super troops!');
 
-		const refreshID = this.client.uuid();
+		const customId = this.client.uuid();
 		const button = new MessageButton()
 			.setLabel('Refresh')
 			.setStyle('SECONDARY')
-			.setCustomId(refreshID);
+			.setCustomId(customId);
 
 		const msg = await message.util!.send({ embeds: res.embeds, components: [[button]] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === refreshID
+			filter: action => action.customId === customId
 		});
 
 		collector.on('collect', async action => {
-			if (action.customId === refreshID) {
+			if (action.customId === customId) {
 				await action.update({ content: `**Fetching data... ${EMOJIS.LOADING}**`, embeds: [], components: [] });
 				const raw = await this.getEmbed(message, data.tag);
 				await action.editReply({ ...raw, components: raw.embeds.length ? [[button]] : [] });
@@ -63,7 +63,7 @@ export default class BoostsCommand extends Command {
 		});
 
 		collector.on('end', () => {
-			this.client.components.delete(refreshID);
+			this.client.components.delete(customId);
 		});
 	}
 

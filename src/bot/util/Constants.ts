@@ -69,6 +69,13 @@ export enum Settings {
 	GUILD_BLACKLIST = 'guildBans'
 }
 
+export const Messages = {
+	COMPONENT: {
+		EXPIRED: 'This component has expired, run the command again.',
+		UNAUTHORIZED: 'You must run the command to interact with components.'
+	}
+};
+
 export const EMBEDS = {
 	CLAN_LIMIT: (prefix: string) => new MessageEmbed()
 		.setDescription([

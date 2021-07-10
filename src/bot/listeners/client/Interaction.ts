@@ -1,6 +1,6 @@
 import { CommandInteractionOption, Interaction, PermissionResolvable, TextChannel } from 'discord.js';
 import { Listener, Command, Flag } from 'discord-akairo';
-import { Settings } from '../../util/Constants';
+import { Messages, Settings } from '../../util/Constants';
 
 interface Parsed {
 	type: string;
@@ -82,29 +82,37 @@ export class InteractionOptionParser {
 
 export default class InteractionListener extends Listener {
 	public constructor() {
-		super('interactionCreate', {
+		super('interaction', {
 			emitter: 'client',
-			event: 'interactionCreate',
-			category: 'client'
+			category: 'client',
+			event: 'interactionCreate'
 		});
 	}
 
-	private inhibitor(interaction: Interaction) {
-		if (!interaction.guildId) return true;
-
-		const guilds = this.client.settings.get<string[]>('global', Settings.GUILD_BLACKLIST, []);
-		if (guilds.includes(interaction.guildId)) true;
-
-		const users = this.client.settings.get<string[]>('global', Settings.USER_BLACKLIST, []);
-		if (users.includes(interaction.user.id)) return true;
-		return false;
+	public exec(interaction: Interaction) {
+		this.commandInteraction(interaction);
+		this.componentInteraction(interaction);
 	}
 
-	public async exec(interaction: Interaction) {
+	private async componentInteraction(interaction: Interaction) {
+		if (!interaction.isButton() && !interaction.isSelectMenu()) return;
 		if (this.inhibitor(interaction)) return;
 
-		this.buttonInteraction(interaction);
+		const userIds = this.client.components.get(interaction.customId);
+		if (userIds?.length && userIds.includes(interaction.user.id)) return;
+		if (userIds?.length && !userIds.includes(interaction.user.id)) {
+			return interaction.reply({ content: Messages.COMPONENT.UNAUTHORIZED, ephemeral: true });
+		}
+
+		if (this.client.components.has(interaction.customId)) return;
+
+		await interaction.update({ components: [] });
+		return interaction.followUp({ content: Messages.COMPONENT.EXPIRED, ephemeral: true });
+	}
+
+	private async commandInteraction(interaction: Interaction) {
 		if (!interaction.isCommand()) return;
+		if (this.inhibitor(interaction)) return;
 
 		const command = this.client.commandHandler.findCommand(interaction.commandName);
 		if (!command) return; // eslint-disable-line
@@ -137,12 +145,15 @@ export default class InteractionListener extends Listener {
 		return this.handleInteraction(interaction, command, Array.from(interaction.options.values()), false);
 	}
 
-	private async buttonInteraction(interaction: Interaction) {
-		if (!interaction.isButton() && !interaction.isSelectMenu()) return;
-		if (this.client.components.has(interaction.customId)) return;
+	private inhibitor(interaction: Interaction) {
+		if (!interaction.guildId) return true;
 
-		await interaction.update({ components: [] });
-		return interaction.followUp({ content: 'This component has expired, run the command again.', ephemeral: true });
+		const guilds = this.client.settings.get<string[]>('global', Settings.GUILD_BLACKLIST, []);
+		if (guilds.includes(interaction.guildId)) return true;
+
+		const users = this.client.settings.get<string[]>('global', Settings.USER_BLACKLIST, []);
+		if (users.includes(interaction.user.id)) return true;
+		return false;
 	}
 
 	private contentParser(command: Command, content: string | CommandInteractionOption[]) {

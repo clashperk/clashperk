@@ -61,7 +61,7 @@ export default class LinkListCommand extends Command {
 
 		if (!onDiscord.length) return message.util!.send({ embeds: [embed] });
 
-		const customID = this.client.uuid();
+		const customID = this.client.uuid(message.author.id);
 		const button = new MessageButton()
 			.setStyle('SECONDARY')
 			.setLabel('Show Tags')
