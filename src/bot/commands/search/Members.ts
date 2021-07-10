@@ -195,7 +195,7 @@ export default class MembersCommand extends Command {
 		collector.on('end', async () => {
 			this.client.components.delete(discord);
 			this.client.components.delete(download);
-			if (msg.editable) await msg.edit({ components: [] });
+			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}
 

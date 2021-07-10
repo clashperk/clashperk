@@ -165,7 +165,7 @@ export default class LinkCommand extends Command {
 				this.client.components.delete(CancelID);
 				this.client.components.delete(ClanCustomID);
 				this.client.components.delete(PlayerCustomID);
-				if (msg.editable) await msg.edit({ components: [] });
+				if (!msg.deleted) await msg.edit({ components: [] });
 			});
 		} else if (tags[0].ok) { // eslint-disable-line
 			return this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });

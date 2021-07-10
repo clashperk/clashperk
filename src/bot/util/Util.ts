@@ -20,6 +20,10 @@ export class Util extends Discord.Util {
 			.concat(Season.ID);
 	}
 
+	public static getLastSeasonId() {
+		return Season.generateID(Season.startTimestamp);
+	}
+
 	public static getRelativeTime(ms: number) {
 		return `<t:${Math.floor(ms / 1000)}:R>`;
 	}

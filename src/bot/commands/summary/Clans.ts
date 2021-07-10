@@ -116,7 +116,8 @@ export default class ClanSummaryCommand extends Command {
 		const msg = await message.util!.send({ embeds, components: [[button]] });
 
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customId, max: 1
+			filter: action => action.customId === customId,
+			max: 1, time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
@@ -135,7 +136,7 @@ export default class ClanSummaryCommand extends Command {
 
 		collector.on('end', async () => {
 			this.client.components.delete(customId);
-			if (msg.editable) await msg.edit({ components: [] });
+			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}
 

@@ -1,11 +1,10 @@
-import { Season } from '../../util/Util';
+import { Clan, ClanMember } from 'clashofclans.js';
 import { Collections } from '../../util/Constants';
+import { Message, Snowflake } from 'discord.js';
+import { Season, Util } from '../../util/Util';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
-import { Clan, ClanMember } from 'clashofclans.js';
-import { Message, Snowflake } from 'discord.js';
 
-// TODO: Fix TS
 export default class ExportSeason extends Command {
 	public constructor() {
 		super('export-season', {
@@ -20,26 +19,52 @@ export default class ExportSeason extends Command {
 	public *args(msg: Message): unknown {
 		const season = yield {
 			flag: '--season',
-			type: [
-				Season.ID,
-				...Array(6).fill('').map((_, i) => {
-					const now = new Date(Season.ID);
-					now.setHours(0, 0, 0, 0);
-					now.setMonth(now.getMonth() - i, 0);
-					return Season.generateID(now);
-				})
-			],
+			unordered: true,
+			type: [...Util.getSeasonIds(), [Util.getLastSeasonId(), 'last']],
 			match: msg.interaction ? 'option' : 'phrase'
 		};
 
-		return { season };
+		const tags = yield {
+			flag: '--tag',
+			unordered: true,
+			match: msg.interaction ? 'option' : 'content',
+			type: (msg: Message, args?: string) => args ? args.split(/ +/g) : null
+		};
+
+		return { season, tags };
 	}
 
-	public async exec(message: Message, { season }: { season?: string }) {
+	private async getClans(message: Message, aliases: string[]) {
+		const cursor = this.client.db.collection(Collections.CLAN_STORES)
+			.find({
+				guild: message.guild!.id,
+				$or: [
+					{
+						tag: { $in: aliases.map(tag => this.fixTag(tag)) }
+					},
+					{
+						alias: { $in: aliases.map(alias => alias.toLowerCase()) }
+					}
+				]
+			});
+
+		return cursor.toArray();
+	}
+
+	private fixTag(tag: string) {
+		return this.client.http.fixTag(tag);
+	}
+
+	public async exec(message: Message, { season, tags }: { season?: string; tags?: string[] }) {
 		if (!season) season = Season.ID;
-		const clans = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild: message.guild!.id })
-			.toArray();
+
+		let clans = [];
+		if (tags?.length) {
+			clans = await this.getClans(message, tags);
+			if (!clans.length) return message.util!.send(`*No clans found in my database for the specified argument.*`);
+		} else {
+			clans = await this.client.storage.findAll(message.guild!.id);
+		}
 
 		if (!clans.length) {
 			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);

@@ -622,37 +622,42 @@ export const commands: { name: string; description: string; options?: APIApplica
 				type: ApplicationCommandOptionType.STRING,
 				choices: [
 					{
-						name: 'Missed Wars',
-						value: 'missed'
+						name: 'Season Stats',
+						value: 'season'
 					},
 					{
 						name: 'War Stats',
 						value: 'wars'
 					},
 					{
-						name: 'Season Stats',
-						value: 'season'
-					},
-					{
-						name: 'Clan Stats',
-						value: 'clans'
+						name: 'Last War Dates',
+						value: 'lastwars'
 					},
 					{
 						name: 'Clan Members',
 						value: 'members'
+					},
+					{
+						name: 'Missed Wars',
+						value: 'missed'
 					}
 				]
 			},
 			{
-				name: 'number',
-				description: 'Number of wars',
-				type: ApplicationCommandOptionType.INTEGER
-			},
-			{
 				name: 'season',
-				description: 'Season ID (Format: YYYY-MM)',
+				description: 'Season ID for ',
 				type: ApplicationCommandOptionType.STRING,
 				choices: getSeasonIds()
+			},
+			{
+				name: 'tag',
+				description: 'Clan tags or aliases to filter clans',
+				type: ApplicationCommandOptionType.STRING
+			},
+			{
+				name: 'wars',
+				description: 'Number of wars (Default: 25)',
+				type: ApplicationCommandOptionType.INTEGER
 			}
 		]
 	},

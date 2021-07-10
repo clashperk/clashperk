@@ -126,7 +126,7 @@ export default class ClanGamesCommand extends Command {
 			for (const customID of Object.values(CUSTOM_ID)) {
 				this.client.components.delete(customID);
 			}
-			if (msg.editable) await msg.edit({ components: [] });
+			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}
 

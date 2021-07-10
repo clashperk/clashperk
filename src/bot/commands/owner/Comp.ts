@@ -87,7 +87,7 @@ export default class ComponentCommand extends Command {
 		collector.on('end', async () => {
 			this.client.components.delete(nextID);
 			this.client.components.delete(prevID);
-			if (msg.editable) await msg.edit({ components: [] });
+			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}
 }

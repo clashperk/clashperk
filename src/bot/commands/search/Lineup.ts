@@ -1,8 +1,8 @@
-import { Command } from 'discord-akairo';
+import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Util, Message } from 'discord.js';
-import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
-import { Clan, WarClan } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
+import { Command } from 'discord-akairo';
+import { Clan } from 'clashofclans.js';
 
 export default class LineupCommand extends Command {
 	public constructor() {
@@ -22,7 +22,6 @@ export default class LineupCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			unordered: msg.interaction ? false : true,
 			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
@@ -71,18 +70,5 @@ export default class LineupCommand extends Command {
 
 		if (chunks.length === 1) return message.util!.send(chunks[0]);
 		return chunks.slice(1).map(text => message.channel.send(text));
-	}
-
-	private flat(townHalls: number[], clan: WarClan) {
-		const roster = this.roster(clan);
-		return townHalls.map(th => WHITE_NUMBERS[roster[th] || 0]).join('');
-	}
-
-	private roster(clan: any) {
-		return clan.members.reduce((count: any, member: any) => {
-			const townHall = (member.townHallLevel || member.townhallLevel);
-			count[townHall] = (count[townHall] as number || 0) + 1;
-			return count;
-		}, {} as { [key: string]: number });
 	}
 }

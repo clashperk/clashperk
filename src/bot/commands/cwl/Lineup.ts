@@ -166,7 +166,7 @@ export default class CWLLineupCommand extends Command {
 			this.client.components.delete(MenuID);
 			this.client.components.delete(PlayerCustomID);
 			this.client.components.delete(ComapreCustomID);
-			if (msg.editable) await msg.edit({ components: [] });
+			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}
 

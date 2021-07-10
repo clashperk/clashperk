@@ -95,7 +95,7 @@ export default class RushedCommand extends Command {
 
 		collector.on('end', async () => {
 			this.client.components.delete(customID);
-			if (msg.editable) await msg.edit({ components: [] });
+			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}
 

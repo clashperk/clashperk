@@ -123,7 +123,7 @@ export default class SetupCommand extends Command {
 			time: 5 * 60 * 1000
 		}).catch(() => null);
 
-		if (msg.editable) await msg.edit({ components: [] });
+		if (!msg.deleted) await msg.edit({ components: [] });
 		if (!interaction) return;
 
 		await interaction.defer();
