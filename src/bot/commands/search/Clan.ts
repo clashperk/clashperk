@@ -138,7 +138,7 @@ export default class ClanCommand extends Command {
 		const msg = await message.util!.send({ embeds: [embed], components: [[component]] });
 
 		const interaction = await msg.awaitMessageComponent({
-			filter: action => action.customId === customId,
+			filter: action => action.customId === customId && action.user.id === message.author.id,
 			time: 15 * 60 * 1000
 		}).catch(() => null);
 
