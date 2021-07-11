@@ -62,11 +62,10 @@ export default class StorageHandler {
 					flag: { or: Number(data.op) }
 				}
 			},
-			{ upsert: true, returnOriginal: false }
+			{ upsert: true, returnDocument: 'after' }
 		);
 
 		const id = collection.value!._id.toHexString();
-
 		switch (data.op) {
 			case Flags.DONATION_LOG:
 				await this.client.db.collection(Collections.DONATION_LOGS)

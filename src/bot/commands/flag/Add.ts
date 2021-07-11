@@ -72,7 +72,7 @@ export default class FlagAddCommand extends Command {
 						reason: Util.cleanContent(reason, message.channel),
 						createdAt: new Date()
 					}
-				}, { upsert: true, returnOriginal: false });
+				}, { upsert: true, returnDocument: 'after' });
 
 			newFlags.push({ name: value.name, tag: value.tag });
 		}

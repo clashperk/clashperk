@@ -105,7 +105,7 @@ export default class RemoveCommand extends Command {
 
 		if (bit instanceof TextChannel) {
 			const { value } = await this.client.storage.collection.findOneAndUpdate(
-				{ channels: bit.id }, { $pull: { channels: bit.id } }, { returnOriginal: false }
+				{ channels: bit.id }, { $pull: { channels: bit.id } }, { returnDocument: 'after' }
 			);
 
 			if (value) {

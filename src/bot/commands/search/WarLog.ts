@@ -5,6 +5,7 @@ import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import 'moment-duration-format';
 import moment from 'moment';
+import { Util } from '../../util/Util';
 
 export default class WarLogCommand extends Command {
 	public constructor() {
@@ -36,7 +37,7 @@ export default class WarLogCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor(
 				`${data.name} (${data.tag})`,
-				data.badgeUrls.medium,
+				`${data.badgeUrls.medium}`,
 				`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`
 			)
 			.setDescription([
@@ -62,7 +63,7 @@ export default class WarLogCommand extends Command {
 		for (const item of body.items) {
 			const extra = this.getWarInfo(wars, item);
 			const { clan, opponent } = item;
-			const time = this.format(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
+			const time = Util.duration(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
 			embed.addField(
 				`\u200b\n\u200e${this.result(item.result)} ${opponent.name || 'Clan War League'} ${extra ? `\u200e(#${extra.id as string})` : ''}`,
 				[
@@ -101,14 +102,5 @@ export default class WarLogCommand extends Command {
 
 	private compareDate(apiDate: string, dbDate: Date) {
 		return (new Date(moment(apiDate).toDate()) >= dbDate);
-	}
-
-	private format(time: number) {
-		if (time > 864e5) {
-			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' });
-		} else if (time > 36e5) {
-			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
-		}
-		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
 	}
 }
