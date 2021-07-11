@@ -114,13 +114,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'tag',
 				description: 'Tag of the player account',
 				required: false,
-				type: 3
-			},
-			{
-				name: 'base',
-				description: 'Index of the player account (e.g. 2, 3)',
-				required: false,
-				type: ApplicationCommandOptionType.INTEGER
+				type: ApplicationCommandOptionType.STRING
 			}
 		]
 	},
@@ -132,13 +126,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'tag',
 				description: 'Tag of the player account',
 				required: false,
-				type: 3
-			},
-			{
-				name: 'base',
-				description: 'Index of the player account (e.g. 2, 3)',
-				required: false,
-				type: ApplicationCommandOptionType.INTEGER
+				type: ApplicationCommandOptionType.STRING
 			}
 		]
 	},
@@ -228,12 +216,6 @@ export const commands: { name: string; description: string; options?: APIApplica
 				description: 'Tag of the player account',
 				type: ApplicationCommandOptionType.STRING,
 				required: false
-			},
-			{
-				name: 'base',
-				description: 'Index of the player account (e.g. 2, 3)',
-				required: false,
-				type: ApplicationCommandOptionType.INTEGER
 			}
 		]
 	},
@@ -246,12 +228,6 @@ export const commands: { name: string; description: string; options?: APIApplica
 				description: 'Tag of the player account',
 				type: ApplicationCommandOptionType.STRING,
 				required: false
-			},
-			{
-				name: 'base',
-				description: 'Index of the player account (e.g. 2, 3)',
-				required: false,
-				type: ApplicationCommandOptionType.INTEGER
 			},
 			{
 				name: 'clan',
