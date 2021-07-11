@@ -107,7 +107,7 @@ export default class CWLAttacksCommand extends Command {
 							embed.setDescription([
 								embed.description,
 								'',
-								`**Attacks** - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}`,
+								`**Total Attacks - ${clanMembers.filter(m => m.attacks).length}/${data.teamSize}**`,
 								attackers.map(
 									mem => `\`\u200e${this.index(mem.mapPosition)} ${stars[mem.stars]} ${this.percentage(mem.destruction)}% ${this.padEnd(mem.name)}\``
 								).join('\n')
@@ -120,6 +120,12 @@ export default class CWLAttacksCommand extends Command {
 								'',
 								`**${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
 								slackers.map(mem => `\`\u200e${this.index(mem.mapPosition)} ${this.padEnd(mem.name)}\``).join('\n')
+							].join('\n'));
+						} else {
+							embed.setDescription([
+								embed.description,
+								'',
+								`**No ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`
 							].join('\n'));
 						}
 					}
