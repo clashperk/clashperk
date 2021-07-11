@@ -28,7 +28,7 @@ export default class Http extends Client {
 	}
 
 	public fixTag(tag: string) {
-		return super.parseTag(tag, false);
+		return super.parseTag(tag);
 	}
 
 	public detailedClanMembers(members: { tag: string }[] = []): Promise<Player[]> {
@@ -85,6 +85,7 @@ export default class Http extends Client {
 	public async init() {
 		await this.login();
 		setInterval(this.login.bind(this), 1 * 60 * 60 * 1000);
+		return [];
 	}
 
 	private async login() {
