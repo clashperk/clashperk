@@ -101,11 +101,13 @@ export default class InteractionListener extends Listener {
 		const userIds = this.client.components.get(interaction.customId);
 		if (userIds?.length && userIds.includes(interaction.user.id)) return;
 		if (userIds?.length && !userIds.includes(interaction.user.id)) {
+			this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.tag}]`, { label: 'COMPONENT_BLOCKED' });
 			return interaction.reply({ content: Messages.COMPONENT.UNAUTHORIZED, ephemeral: true });
 		}
 
 		if (this.client.components.has(interaction.customId)) return;
 
+		this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.tag}]`, { label: 'COMPONENT_EXPIRED' });
 		await interaction.update({ components: [] });
 		return interaction.followUp({ content: Messages.COMPONENT.EXPIRED, ephemeral: true });
 	}
