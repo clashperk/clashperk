@@ -172,7 +172,7 @@ export default class Client extends AkairoClient {
 		this.stats = new Stats(this);
 
 		this.http = new Http();
-		await this.http.init();
+		await this.http.login();
 
 		// @ts-expect-error
 		this.rpc = new Route.RouteGuide(process.env.SERVER, gRPC.credentials.createInsecure());
