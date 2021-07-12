@@ -11,29 +11,25 @@ export class InteractionUtil {
 		this.lastResponse = null;
 	}
 
-	public addMessage() {
-		// TODO: NEVER DO
+	public setLastResponse(message: Message) {
+		this.shouldEdit = Boolean(true);
+		this.lastResponse = message;
+		return this.lastResponse;
 	}
 
-	public setLastResponse(message: Message | Message[]) {
-		this.shouldEdit = true;
-		if (Array.isArray(message)) {
-			this.lastResponse = message.slice(-1)[0];
-		} else {
-			this.lastResponse = message;
-		}
-
-		return this.lastResponse;
+	public addMessage() {
+		// TODO: NEVER DO
 	}
 
 	public setEditable() {
 		// TODO: NEVER DO
 	}
 
-	public async send(options: string | InteractionReplyOptions): Promise<Message | Message[]> {
+	public async send(options: string | InteractionReplyOptions): Promise<Message> {
 		const transformedOptions = (this.constructor as typeof InteractionUtil).transformOptions(options);
 		if (!this.lastResponse?.deleted && this.shouldEdit) {
-			return this.message.webhook.editMessage(this.lastResponse!.id, transformedOptions) as Promise<Message>;
+			return this.message.webhook.editMessage(this.lastResponse!.id, transformedOptions)
+				.then(() => this.lastResponse!);
 		}
 
 		const sent = await this.message.webhook.send(transformedOptions);
