@@ -56,6 +56,7 @@ export default class CWLCommand extends Command {
 				/**
 				 * @deprecated
 				 */
+				['cwl-gained', 'gain', 'gained'],
 				['cwl-legends', 'top', 'mvp', 'legends'],
 				['cwl-ranking', 'ranking', 'ranks', 'rank'],
 				['cwl-missed', 'missing', 'rem', 'remaining', 'missed']

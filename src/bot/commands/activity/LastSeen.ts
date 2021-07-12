@@ -152,7 +152,7 @@ export default class LastSeenCommand extends Command {
 							as: 'en',
 							cond: {
 								$gte: [
-									'$$en.entry', new Date(new Date().getTime() - (days * 24 * 60 * 60 * 1000))
+									'$$en.entry', new Date(Date.now() - (days * 24 * 60 * 60 * 1000))
 								]
 							}
 						}
