@@ -121,7 +121,7 @@ export default class UnitsCommand extends Command {
 			for (const customID of Object.values(CUSTOM_ID)) {
 				this.client.components.delete(customID);
 			}
-			if (msg.deletable) await msg.edit({ components: [] });
+			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}
 

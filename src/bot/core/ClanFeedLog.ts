@@ -158,7 +158,7 @@ export default class ClanFeedLog {
 		for (const message of messages) {
 			if (!message) continue;
 			if (channel instanceof TextChannel) {
-				await channel.send(message).catch(() => null);
+				await channel.send({ embeds: [message.embed], content: message.content }).catch(() => null);
 			} else {
 				try {
 					const msg = await channel.send({ embeds: [message.embed], content: message.content });
@@ -185,7 +185,7 @@ export default class ClanFeedLog {
 		const player: Player = await this.client.http.player(member.tag);
 		if (!player.ok) return null;
 
-		let content = '';
+		let content = null;
 		const embed = new MessageEmbed()
 			.setColor(OP[member.op])
 			.setTitle(`\u200e${player.name} (${player.tag})`)
@@ -243,13 +243,14 @@ export default class ClanFeedLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
+		await this.client.db.collection(Collections.CLAN_FEED_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
 					guild: data.guild,
 					channel: data.channel,
-					tag: data.tag, role: data.role
+					tag: data.tag, role: data.role,
+					webhook: data.webhook_id ? new WebhookClient(data.webhook_id, data.webhook_token) : null
 				});
 			});
 	}
