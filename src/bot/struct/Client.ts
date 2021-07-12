@@ -84,13 +84,13 @@ export default class Client extends AkairoClient {
 	public commandHandler: CommandHandler = new CommandHandler(this, {
 		directory: path.join(__dirname, '..', 'commands'),
 		aliasReplacement: /-/g,
-		prefix: message => process.env.NODE_ENV === 'production' ? this.settings.get(message.guild!, 'prefix', '!') : '+',
 		allowMention: true,
 		commandUtil: true,
-		commandUtilLifetime: 15e4,
-		commandUtilSweepInterval: 15e4,
 		handleEdits: true,
+		commandUtilLifetime: 5 * 60 * 1000,
+		commandUtilSweepInterval: 5 * 60 * 1000,
 		defaultCooldown: (message: Message) => this.patrons.get(message) ? 1000 : 3000,
+		prefix: message => process.env.NODE_ENV === 'production' ? this.settings.get(message.guild!, 'prefix', '!') : '+',
 		argumentDefaults: {
 			prompt: {
 				modifyStart: (msg, txt) => ({
@@ -140,8 +140,8 @@ export default class Client extends AkairoClient {
 	public constructor(config: any) {
 		super({
 			ownerID: config.owner,
-			messageCacheLifetime: 150,
-			messageSweepInterval: 150,
+			messageCacheLifetime: 15 * 60,
+			messageSweepInterval: 15 * 60,
 			intents: [
 				Intents.FLAGS.GUILDS,
 				Intents.FLAGS.GUILD_WEBHOOKS,

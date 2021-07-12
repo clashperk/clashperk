@@ -126,6 +126,7 @@ export default class ExportSeason extends Command {
 			{ header: 'Total Activity', width: 10 }
 		];
 
+		if (season !== Season.ID) columns.splice(17, 1);
 		if (!patron) columns.splice(2, 1);
 		sheet.columns = [...columns] as any[];
 		sheet.getRow(1).font = { bold: true, size: 10 };

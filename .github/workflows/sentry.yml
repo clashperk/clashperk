@@ -2,7 +2,7 @@ name: Sentry
 
 on:
   push:
-    branches: [ master ]
+    branches: [ next ]
 
 jobs:
   sentry_bot:
