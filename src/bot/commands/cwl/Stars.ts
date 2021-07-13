@@ -1,4 +1,4 @@
-import { Message, MessageEmbed, MessageSelectMenu, Util } from 'discord.js';
+import { Message, MessageActionRow, MessageEmbed, MessageSelectMenu, Util } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -133,7 +133,7 @@ export default class CWLStarsCommand extends Command {
 					description: '[Offense - Defense] stars comparison.'
 				}
 			]);
-		const msg = await message.util!.send({ embeds: [embed], components: [[menu]] });
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [menu] })] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000

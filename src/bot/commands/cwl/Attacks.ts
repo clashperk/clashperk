@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, MessageSelectMenu } from 'discord.js';
+import { MessageEmbed, Message, MessageSelectMenu, MessageActionRow } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -164,7 +164,7 @@ export default class CWLAttacksCommand extends Command {
 			.setCustomId(customID)
 			.setPlaceholder('Select a round!');
 
-		const msg = await message.util!.send({ embeds: [round.embed], components: [[menu]] });
+		const msg = await message.util!.send({ embeds: [round.embed], components: [new MessageActionRow({ components: [menu] })] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000

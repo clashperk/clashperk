@@ -1,5 +1,5 @@
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis';
-import { MessageEmbed, Message, MessageButton, User, MessageSelectMenu } from 'discord.js';
+import { MessageEmbed, Message, MessageButton, User, MessageSelectMenu, MessageActionRow } from 'discord.js';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { Command, Argument } from 'discord-akairo';
@@ -49,12 +49,12 @@ export default class UnitsCommand extends Command {
 			SELECT_ACCOUNT: this.client.uuid(message.author.id)
 		};
 
-		const component = new MessageButton()
+		const button = new MessageButton()
 			.setCustomId(CUSTOM_ID.MAX_LEVEL)
 			.setLabel('Max Level')
 			.setStyle('SECONDARY');
 
-		const msg = await message.util!.send({ embeds: [embed], components: [[component]] });
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
 
 		const players = data.user ? await this.client.links.getPlayers(data.user) : [];
 		if (players.length) {
@@ -69,7 +69,12 @@ export default class UnitsCommand extends Command {
 				.setPlaceholder('Select an account!')
 				.addOptions(options);
 
-			await msg.edit({ components: [[component], [menu]] });
+			await msg.edit({
+				components: [
+					new MessageActionRow({ components: [button] }),
+					new MessageActionRow({ components: [menu] })
+				]
+			});
 		}
 
 		const collector = msg.createMessageComponentCollector({

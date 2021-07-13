@@ -1,4 +1,4 @@
-import { Message, MessageButton, MessageEmbed, Snowflake, Util } from 'discord.js';
+import { Message, MessageActionRow, MessageButton, MessageEmbed, Snowflake, Util } from 'discord.js';
 import { Collections } from '../../util/Constants';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
@@ -68,7 +68,7 @@ export default class LinkListCommand extends Command {
 			.setEmoji(EMOJIS.HASH)
 			.setCustomId(customID);
 
-		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000

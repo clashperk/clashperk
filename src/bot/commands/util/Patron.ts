@@ -1,5 +1,5 @@
 import { Collections, Settings } from '../../util/Constants';
-import { Message, MessageButton, TextChannel } from 'discord.js';
+import { Message, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
 import { Command } from 'discord-akairo';
 
 interface Patron {
@@ -104,7 +104,7 @@ export default class PatronCommand extends Command {
 			.setStyle('SECONDARY')
 			.setLabel('Our Current Patrons');
 
-		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow().addComponents(button)] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000, max: 1

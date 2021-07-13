@@ -1,6 +1,6 @@
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
-import { MessageEmbed, Message, MessageSelectMenu, User } from 'discord.js';
+import { MessageEmbed, Message, MessageSelectMenu, User, MessageActionRow } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { TroopJSON } from '../../util/Constants';
 import { Player } from 'clashofclans.js';
@@ -59,7 +59,7 @@ export default class UpgradesCommand extends Command {
 			.setPlaceholder('Select an account!')
 			.addOptions(options);
 
-		await msg.edit({ components: [[menu]] });
+		await msg.edit({ components: [new MessageActionRow().addComponents(menu)] });
 
 		const collector = msg.createMessageComponentCollector({
 			filter: action => [customID].includes(action.customId) && action.user.id === message.author.id,

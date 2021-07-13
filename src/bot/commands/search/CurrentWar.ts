@@ -1,6 +1,6 @@
 import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import { Command, Argument } from 'discord-akairo';
-import { MessageEmbed, Util, Message, MessageButton } from 'discord.js';
+import { MessageEmbed, Util, Message, MessageButton, MessageActionRow } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { Collections } from '../../util/Constants';
 import 'moment-duration-format';
@@ -176,7 +176,7 @@ export default class WarCommand extends Command {
 			.setStyle('SECONDARY')
 			.setCustomId(customID);
 
-		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000

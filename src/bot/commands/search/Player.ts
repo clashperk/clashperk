@@ -1,5 +1,5 @@
 import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES, SEIGE_MACHINES } from '../../util/Emojis';
-import { MessageEmbed, Util, Message, User, MessageSelectMenu } from 'discord.js';
+import { MessageEmbed, Util, Message, User, MessageSelectMenu, MessageActionRow } from 'discord.js';
 import { Collections, leagueId } from '../../util/Constants';
 import { Command, Argument } from 'discord-akairo';
 import { Player, WarClan } from 'clashofclans.js';
@@ -74,7 +74,7 @@ export default class PlayerCommand extends Command {
 			.setPlaceholder('Select an account!')
 			.addOptions(options);
 
-		await msg.edit({ components: [[menu]] });
+		await msg.edit({ components: [new MessageActionRow({ components: [menu] })] });
 
 		const collector = msg.createMessageComponentCollector({
 			filter: action => [customID].includes(action.customId) && action.user.id === message.author.id,

@@ -1,5 +1,5 @@
 import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
-import { Message, TextChannel, MessageEmbed, Snowflake, MessageButton } from 'discord.js';
+import { Message, TextChannel, MessageEmbed, Snowflake, MessageButton, MessageActionRow } from 'discord.js';
 import { Flags, Collections } from '../../util/Constants';
 import { Util } from '../../util/Util';
 
@@ -116,7 +116,7 @@ export default class SetupCommand extends Command {
 			.setCustomId(customID)
 			.setStyle('SECONDARY')
 			.setLabel('Show all Linked Clans');
-		const msg = await message.channel.send({ embeds: [embed], components: [[button]] });
+		const msg = await message.channel.send({ embeds: [embed], components: [new MessageActionRow().addComponents(button)] });
 
 		const interaction = await msg.awaitMessageComponent({
 			filter: action => action.customId === customID && action.user.id === message.author.id,

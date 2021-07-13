@@ -23,7 +23,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the clan',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: false
 			}
 		]
@@ -114,7 +114,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'tag',
 				description: 'Tag of the player account',
 				required: false,
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			}
 		]
 	},
@@ -126,7 +126,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'tag',
 				description: 'Tag of the player account',
 				required: false,
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			}
 		]
 	},
@@ -173,7 +173,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'sort',
 				description: 'Sort by receives or donations',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: false,
 				choices: [
 					{
@@ -214,7 +214,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the player account',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: false
 			}
 		]
@@ -226,13 +226,13 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the player account',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: false
 			},
 			{
 				name: 'clan',
 				description: 'Display all clan members',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				choices: [
 					{
 						name: 'Yes',
@@ -254,7 +254,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'user',
 				description: 'The user',
-				type: ApplicationCommandOptionType.USER,
+				type: ApplicationCommandOptionType.User,
 				required: false
 			}
 		]
@@ -272,7 +272,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'war-id',
 				description: 'Search by War ID',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: false
 			}
 		]
@@ -290,7 +290,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'war-id',
 				description: 'Search by War ID',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: false
 			}
 		]
@@ -303,17 +303,17 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'tag',
 				description: 'Tag of the clan or player account',
 				required: true,
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'user',
 				description: 'Optional user',
-				type: ApplicationCommandOptionType.USER
+				type: ApplicationCommandOptionType.User
 			},
 			{
 				name: 'default',
 				description: 'Set it default account',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				choices: [
 					{
 						name: 'Yes',
@@ -335,13 +335,13 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'tag',
 				description: 'Tag of the player or clan',
 				required: true,
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'user',
 				description: 'Optional user (Only valid for a player tag)',
 				required: false,
-				type: ApplicationCommandOptionType.USER
+				type: ApplicationCommandOptionType.User
 			}
 		]
 	},
@@ -352,31 +352,31 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'add',
 				description: 'Flag a player account',
-				type: ApplicationCommandOptionType.SUB_COMMAND,
+				type: ApplicationCommandOptionType.SubCommand,
 				options: [
 					{
 						name: 'tag',
 						description: 'Tag of the player account',
 						required: true,
-						type: ApplicationCommandOptionType.STRING
+						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'reason',
 						description: 'Reason of this flag',
 						required: true,
-						type: ApplicationCommandOptionType.STRING
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			},
 			{
 				name: 'remove',
 				description: 'Remove a flag from exisiting player account',
-				type: ApplicationCommandOptionType.SUB_COMMAND,
+				type: ApplicationCommandOptionType.SubCommand,
 				options: [
 					{
 						name: 'tag',
 						description: 'Tag of the player account',
-						type: ApplicationCommandOptionType.STRING,
+						type: ApplicationCommandOptionType.String,
 						required: true
 					}
 				]
@@ -384,25 +384,25 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'show',
 				description: 'Show the flag for a player account',
-				type: ApplicationCommandOptionType.SUB_COMMAND,
+				type: ApplicationCommandOptionType.SubCommand,
 				options: [
 					{
 						name: 'tag',
 						description: 'Tag of the player account',
 						required: true,
-						type: ApplicationCommandOptionType.STRING
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			},
 			{
 				name: 'list',
 				description: 'Get all alags for the server or clan',
-				type: ApplicationCommandOptionType.SUB_COMMAND,
+				type: ApplicationCommandOptionType.SubCommand,
 				options: [
 					{
 						name: 'export',
 						description: 'Export to Excel file?',
-						type: ApplicationCommandOptionType.STRING,
+						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
 								name: 'Yes',
@@ -425,7 +425,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'option',
 				description: 'Select an option',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				choices: [
 					{
 						name: 'Channel Link',
@@ -460,17 +460,17 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the clan',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'channel',
 				description: 'Channel for the specified feature',
-				type: ApplicationCommandOptionType.CHANNEL
+				type: ApplicationCommandOptionType.Channel
 			},
 			{
 				name: 'extra',
 				description: 'Role for clan feed or Hex color code.',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			}
 		]
 	},
@@ -481,7 +481,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'option',
 				description: 'Select an option',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				choices: [
 					{
 						name: 'Channel Link',
@@ -520,12 +520,12 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the clan',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'channel',
 				description: 'Channel to be removed',
-				type: ApplicationCommandOptionType.CHANNEL
+				type: ApplicationCommandOptionType.Channel
 			}
 		]
 	},
@@ -540,7 +540,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'command',
 				description: 'Name of the command',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			}
 		]
 	},
@@ -551,7 +551,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'option',
 				description: 'Select an option',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: true,
 				choices: [
 					{
@@ -583,7 +583,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the clan',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			}
 		]
 	},
@@ -595,7 +595,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'option',
 				required: true,
 				description: 'Select an option',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				choices: [
 					{
 						name: 'Clan War Stats',
@@ -622,18 +622,18 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'season',
 				description: 'Season ID for season stats',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				choices: getSeasonIds()
 			},
 			{
 				name: 'tag',
 				description: 'Clan tags or aliases to filter clans',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'wars',
 				description: 'Number of wars (Default: 25)',
-				type: ApplicationCommandOptionType.INTEGER
+				type: ApplicationCommandOptionType.Integer
 			}
 		]
 	},
@@ -644,7 +644,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'option',
 				required: true,
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				description: 'Select an option',
 				choices: [
 					{
@@ -668,7 +668,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'season',
 				required: false,
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				description: 'Season ID for Clan Summary',
 				choices: getSeasonIds()
 			}
@@ -681,7 +681,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the clan',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			}
 		]
 	},
@@ -693,13 +693,13 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'tag',
 				required: true,
 				description: 'Tag of the player account',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'token',
 				required: true,
 				description: 'API token for the player account',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			}
 		]
 	},
@@ -711,13 +711,13 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'clans',
 				required: false,
 				description: 'Clan Tags or Aliases (Maximum 3)',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'days',
 				required: false,
 				description: 'Expand',
-				type: ApplicationCommandOptionType.INTEGER,
+				type: ApplicationCommandOptionType.Integer,
 				choices: [
 					{
 						name: '1', value: 1
@@ -739,37 +739,37 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'add',
 				description: 'Create an alias for a clan',
-				type: ApplicationCommandOptionType.SUB_COMMAND,
+				type: ApplicationCommandOptionType.SubCommand,
 				options: [
 					{
 						name: 'name',
 						required: true,
 						description: 'Name of the alias',
-						type: ApplicationCommandOptionType.STRING
+						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'tag',
 						description: 'Tag of the clan',
 						required: true,
-						type: ApplicationCommandOptionType.STRING
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			},
 			{
 				name: 'list',
 				description: 'Get aliases for all clans',
-				type: ApplicationCommandOptionType.SUB_COMMAND
+				type: ApplicationCommandOptionType.SubCommand
 			},
 			{
 				name: 'remove',
 				description: 'Remove an alias for a clan',
-				type: ApplicationCommandOptionType.SUB_COMMAND,
+				type: ApplicationCommandOptionType.SubCommand,
 				options: [
 					{
 						name: 'name',
 						description: 'Tag of the clan or name of the alias',
 						required: true,
-						type: ApplicationCommandOptionType.STRING
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			}
@@ -787,31 +787,31 @@ export const commands: { name: string; description: string; options?: APIApplica
 				name: 'co-leads',
 				required: true,
 				description: 'Co-Leader Role',
-				type: ApplicationCommandOptionType.ROLE
+				type: ApplicationCommandOptionType.Role
 			},
 			{
 				name: 'elders',
 				required: true,
 				description: 'Elder Role',
-				type: ApplicationCommandOptionType.ROLE
+				type: ApplicationCommandOptionType.Role
 			},
 			{
 				name: 'members',
 				required: true,
 				description: 'Member Role',
-				type: ApplicationCommandOptionType.ROLE
+				type: ApplicationCommandOptionType.Role
 			},
 			{
 				name: 'tag',
 				required: false,
 				description: 'Tag of the clan. Do not pass the tag if you want same type roles for all clans.',
-				type: ApplicationCommandOptionType.STRING
+				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'verify',
 				required: false,
 				description: 'Roles will be given to verified players only.',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				choices: [
 					{
 						name: 'Yes',
@@ -832,7 +832,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the clan',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: false
 			}
 		]
@@ -844,7 +844,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the clan',
-				type: ApplicationCommandOptionType.STRING,
+				type: ApplicationCommandOptionType.String,
 				required: false
 			}
 		]

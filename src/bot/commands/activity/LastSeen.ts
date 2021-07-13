@@ -1,4 +1,4 @@
-import { Message, MessageButton } from 'discord.js';
+import { Message, MessageActionRow, MessageButton } from 'discord.js';
 import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -82,7 +82,7 @@ export default class LastSeenCommand extends Command {
 			.setEmoji(EMOJIS.ACTIVITY)
 			.setLabel('Show Activity Scores');
 
-		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000

@@ -1,4 +1,4 @@
-import { Message, MessageButton } from 'discord.js';
+import { Message, MessageActionRow, MessageButton } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -68,7 +68,7 @@ export default class ClanAttacksCommand extends Command {
 			.setCustomId(customId)
 			.setStyle('SECONDARY')
 			.setLabel('Sort by Defense');
-		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
 
 		const interaction = await msg.awaitMessageComponent({
 			filter: action => action.customId === customId && action.user.id === message.author.id

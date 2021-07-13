@@ -1,4 +1,4 @@
-import { Message, MessageButton, MessageEmbed } from 'discord.js';
+import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { Collections } from '../../util/Constants';
 import { Season, Util } from '../../util/Util';
 import { Command } from 'discord-akairo';
@@ -113,7 +113,7 @@ export default class DonationsCommand extends Command {
 			.setStyle('SECONDARY')
 			.setCustomId(customId)
 			.setLabel('Sort by Received');
-		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
 
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customId && action.user.id === message.author.id,

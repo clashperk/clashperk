@@ -1,6 +1,6 @@
 import { EMOJIS, SUPER_TROOPS } from '../../util/Emojis';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
-import { MessageEmbed, Message, MessageButton } from 'discord.js';
+import { MessageEmbed, Message, MessageButton, MessageActionRow } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan, Player } from 'clashofclans.js';
 import { Season } from '../../util/Util';
@@ -48,7 +48,7 @@ export default class BoostsCommand extends Command {
 			.setStyle('SECONDARY')
 			.setCustomId(customId);
 
-		const msg = await message.util!.send({ embeds: res.embeds, components: [[button]] });
+		const msg = await message.util!.send({ embeds: res.embeds, components: [new MessageActionRow({ components: [button] })] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customId
 		});
@@ -57,7 +57,10 @@ export default class BoostsCommand extends Command {
 			if (action.customId === customId) {
 				await action.update({ content: `**Fetching data... ${EMOJIS.LOADING}**`, embeds: [], components: [] });
 				const raw = await this.getEmbed(message, data.tag);
-				await action.editReply({ ...raw, components: raw.embeds.length ? [[button]] : [] });
+				await action.editReply({
+					...raw,
+					components: raw.embeds.length ? [new MessageActionRow({ components: [button] })] : []
+				});
 				if (!raw.embeds.length) collector.stop();
 			}
 		});

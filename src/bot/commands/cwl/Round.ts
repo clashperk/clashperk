@@ -1,5 +1,5 @@
 import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember } from 'clashofclans.js';
-import { MessageEmbed, Message, MessageSelectMenu } from 'discord.js';
+import { MessageEmbed, Message, MessageSelectMenu, MessageActionRow } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { Command } from 'discord-akairo';
@@ -139,7 +139,7 @@ export default class CWLRoundCommand extends Command {
 			.setCustomId(customID)
 			.setPlaceholder('Select a round!');
 
-		const msg = await message.util!.send({ embeds: [round.embed], components: [[menu]] });
+		const msg = await message.util!.send({ embeds: [round.embed], components: [new MessageActionRow({ components: [menu] })] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000

@@ -1,6 +1,6 @@
 import { addBreadcrumb, Severity, captureException, setContext } from '@sentry/node';
 import { Listener, Command } from 'discord-akairo';
-import { Message, MessageButton, TextChannel } from 'discord.js';
+import { Message, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
 
 export default class ErrorListener extends Listener {
 	public constructor() {
@@ -76,12 +76,15 @@ export default class ErrorListener extends Listener {
 					'\\❌ Something went wrong, report us!',
 					`\`\`\`\n${error.toString() as string}\`\`\``
 				].join('\n'),
-				components: [[
-					new MessageButton()
-						.setStyle('LINK')
-						.setLabel('Contact Support')
-						.setURL('https://discord.gg//ppuppun')
-				]]
+				components: [
+					new MessageActionRow()
+						.addComponents(
+							new MessageButton()
+								.setStyle('LINK')
+								.setLabel('Contact Support')
+								.setURL('https://discord.gg//ppuppun')
+						)
+				]
 			});
 		}
 	}

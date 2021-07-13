@@ -2,7 +2,7 @@ import { BUILDER_TROOPS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { Command, Argument } from 'discord-akairo';
-import { MessageEmbed, Message, MessageSelectMenu, User } from 'discord.js';
+import { MessageEmbed, Message, MessageSelectMenu, User, MessageActionRow } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 
 const HEROES: { [key: string]: 'bk' | 'aq' | 'gw' | 'rc' } = {
@@ -79,7 +79,7 @@ export default class RushedCommand extends Command {
 			.setPlaceholder('Select an account!')
 			.addOptions(options);
 
-		await msg.edit({ components: [[menu]] });
+		await msg.edit({ components: [new MessageActionRow({ components: [menu] })] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000

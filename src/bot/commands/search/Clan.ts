@@ -1,5 +1,5 @@
 import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis';
-import { MessageEmbed, Util, Message, MessageButton } from 'discord.js';
+import { MessageEmbed, Util, Message, MessageButton, MessageActionRow } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { Season } from '../../util/Util';
@@ -131,11 +131,11 @@ export default class ClanCommand extends Command {
 		].join('\n'));
 
 		const customId = this.client.uuid(message.author.id);
-		const component = new MessageButton()
+		const button = new MessageButton()
 			.setLabel('Clan Badge')
 			.setStyle('SECONDARY')
 			.setCustomId(customId);
-		const msg = await message.util!.send({ embeds: [embed], components: [[component]] });
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
 
 		const interaction = await msg.awaitMessageComponent({
 			filter: action => action.customId === customId && action.user.id === message.author.id,

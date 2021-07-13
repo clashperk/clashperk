@@ -1,6 +1,6 @@
 import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
 import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { MessageEmbed, Message, MessageButton } from 'discord.js';
+import { MessageEmbed, Message, MessageButton, MessageActionRow } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Util } from '../../util/Util';
@@ -164,7 +164,7 @@ export default class CWLRosterCommand extends Command {
 			.setCustomId(customID)
 			.setStyle('SECONDARY')
 			.setLabel('Detailed Roster');
-		const msg = await message.util!.send({ embeds: [embed], components: [[button]] });
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
 		const collector = await msg.awaitMessageComponent({
 			filter: action => action.customId === customID && action.user.id === message.author.id,
 			time: 15 * 60 * 1000

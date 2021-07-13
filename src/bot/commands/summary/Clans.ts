@@ -1,4 +1,4 @@
-import { Message, MessageButton, MessageEmbed } from 'discord.js';
+import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { WHITE_NUMBERS } from '../../util/NumEmojis';
 import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
@@ -113,7 +113,7 @@ export default class ClanSummaryCommand extends Command {
 			.setCustomId(customId)
 			.setStyle('SECONDARY')
 			.setLabel('Download');
-		const msg = await message.util!.send({ embeds, components: [[button]] });
+		const msg = await message.util!.send({ embeds, components: [new MessageActionRow().addComponents(button)] });
 
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customId,
