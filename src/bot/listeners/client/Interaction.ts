@@ -106,6 +106,7 @@ export default class InteractionListener extends Listener {
 		}
 
 		if (this.client.components.has(interaction.customId)) return;
+		if (interaction.isButton() && (await this.client.automaton.exec(interaction))) return;
 
 		this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.tag}]`, { label: 'COMPONENT_EXPIRED' });
 		await interaction.update({ components: [] });

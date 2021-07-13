@@ -108,20 +108,36 @@ export default class DonationsCommand extends Command {
 		};
 
 		const embed = getEmbed();
-		const customId = this.client.uuid(message.author.id);
-		const button = new MessageButton()
-			.setStyle('SECONDARY')
-			.setCustomId(customId)
-			.setLabel('Sort by Received');
-		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const customId = {
+			sort: sameSeason ? `DONATION${data.tag}_DESC` : this.client.uuid(message.author.id),
+			refresh: `DONATION${data.tag}_ASC`
+		};
+
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setStyle('SECONDARY')
+					.setCustomId(customId.sort)
+					.setLabel('Sort by Received')
+			)
+			.addComponents(
+				new MessageButton()
+					.setStyle('SECONDARY')
+					.setCustomId(customId.refresh)
+					.setLabel('Refresh')
+					.setDisabled(!sameSeason)
+			);
+
+		const msg = await message.util!.send({ embeds: [embed], components: [row] });
+		if (sameSeason) return;
 
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customId && action.user.id === message.author.id,
+			filter: action => action.customId === customId.sort && action.user.id === message.author.id,
 			max: 1, time: 15 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customId === customId) {
+			if (action.customId === customId.sort) {
 				members.sort((a, b) => b.received - a.received);
 				const embed = getEmbed();
 				return action.update({ embeds: [embed] });
@@ -129,7 +145,7 @@ export default class DonationsCommand extends Command {
 		});
 
 		collector.on('end', async () => {
-			this.client.components.delete(customId);
+			this.client.components.delete(customId.sort);
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}

@@ -15,6 +15,7 @@ import * as uuid from 'uuid';
 import { Db } from 'mongodb';
 import Http from './Http';
 import path from 'path';
+import { Automaton } from './Automaton';
 
 declare module 'discord-akairo' {
 	interface AkairoClient {
@@ -28,6 +29,7 @@ declare module 'discord-akairo' {
 		resolver: Resolver;
 		settings: Settings;
 		links: LinkHandler;
+		automaton: Automaton;
 		rpcHandler: RPCHandler;
 		embed(msg: Message): number;
 		commandHandler: CommandHandler;
@@ -40,17 +42,11 @@ declare module 'discord-akairo' {
 
 declare module 'discord.js' {
 	interface CommandInteraction {
-		author: {
-			id: Snowflake;
-			tag: string;
-		};
+		author: User;
 	}
 
 	interface ButtonInteraction {
-		author: {
-			id: Snowflake;
-			tag: string;
-		};
+		author: User;
 	}
 }
 
@@ -77,6 +73,7 @@ export default class Client extends AkairoClient {
 	public resolver!: Resolver;
 	public settings!: Settings;
 	public links!: LinkHandler;
+	public automaton!: Automaton;
 	public rpcHandler!: RPCHandler;
 	public logger: Logger = new Logger(this);
 	public components = new Map<string, Snowflake[]>();
@@ -181,18 +178,19 @@ export default class Client extends AkairoClient {
 		await this.settings.init();
 		await this.patrons.refresh();
 
-		this.rpcHandler = new RPCHandler(this);
 		this.storage = new Storage(this);
 		this.resolver = new Resolver(this);
 		this.links = new LinkHandler(this);
+		this.automaton = new Automaton(this);
+		this.rpcHandler = new RPCHandler(this);
 
 		this.once('ready', () => {
 			if (process.env.NODE_ENV === 'production') return this.run();
 		});
 	}
 
-	public embed(message: Message) {
-		return this.settings.get<number>(message.guild!, 'color', undefined);
+	public embed(message: Message | Snowflake) {
+		return this.settings.get<number>(typeof message === 'string' ? message : message.guild!, 'color', undefined);
 	}
 
 	public uuid(...userIds: Snowflake[]) {

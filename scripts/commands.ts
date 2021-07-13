@@ -167,29 +167,13 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the clan',
-				type: 3,
-				required: false
-			},
-			{
-				name: 'sort',
-				description: 'Sort by receives or donations',
 				type: ApplicationCommandOptionType.String,
-				required: false,
-				choices: [
-					{
-						name: 'Received',
-						value: 'true'
-					},
-					{
-						name: 'Donated',
-						value: 'false'
-					}
-				]
+				required: false
 			},
 			{
 				name: 'season',
 				description: 'Season ID (Format: YYYY-MM)',
-				type: 3,
+				type: ApplicationCommandOptionType.String,
 				required: false,
 				choices: getSeasonIds()
 			}
