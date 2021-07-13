@@ -27,7 +27,7 @@ export default class ExportSeason extends Command {
 		const tags = yield {
 			flag: '--tag',
 			unordered: true,
-			match: msg.interaction ? 'option' : 'content',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, args?: string) => args ? args.split(/ +/g) : null
 		};
 

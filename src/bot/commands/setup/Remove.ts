@@ -19,6 +19,7 @@ export default class RemoveCommand extends Command {
 			aliases: ['remove', 'stop', 'toggle', 'delete', 'disable'],
 			category: 'setup',
 			channel: 'guild',
+			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: [
