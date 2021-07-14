@@ -1,4 +1,4 @@
-import { MessageEmbed, TextChannel, Message, Snowflake } from 'discord.js';
+import { MessageEmbed, TextChannel, Message, Snowflake, MessageButton, MessageActionRow } from 'discord.js';
 import { version } from '../../../../package.json';
 import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
@@ -62,20 +62,23 @@ export default class StatsCommand extends Command {
 		if (message.channel.type === 'DM' || !(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'])) {
 			return message.util!.send({ embeds: [embed] });
 		}
-		const msg = await message.util!.send({ embeds: [embed] });
-		await msg.react('🗑');
-		let react;
-		try {
-			react = await msg.awaitReactions({
-				filter: (reaction, user) => reaction.emoji.name === '🗑' && user.id === message.author.id,
-				max: 1, time: 30000, errors: ['time']
-			});
-		} catch (error) {
-			return msg.reactions.removeAll().catch(() => 0);
-		}
 
-		if (message.deletable) await message.delete();
-		return react.first()?.message.delete();
+		const customId = this.client.uuid();
+		const button = new MessageButton()
+			.setEmoji('🗑️')
+			.setCustomId(customId)
+			.setStyle('SECONDARY');
+
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const interaction = await msg.awaitMessageComponent({
+			filter: action => action.customId === customId && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		}).catch(() => null);
+
+		await interaction?.deferUpdate();
+		await interaction?.deleteReply();
+		this.client.components.delete(customId);
+		if (message.deletable && interaction) await message.delete();
 	}
 
 	private get freemem() {

@@ -2,6 +2,14 @@ import { Collections } from '../../util/Constants';
 import { Message, Role, Snowflake } from 'discord.js';
 import { Command } from 'discord-akairo';
 
+export interface Args {
+	tag?: string;
+	member?: Role;
+	admin?: Role;
+	coLeader?: Role;
+	secureRole: boolean;
+}
+
 export default class AutoRoleCommand extends Command {
 	public constructor() {
 		super('setup-auto-role', {
@@ -20,7 +28,7 @@ export default class AutoRoleCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			flags: ['--verify'],
 			optionFlags: ['--tag', '--members', '--elders', '--co-leads'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY', 'MANAGE_ROLES']
+			clientPermissions: ['EMBED_LINKS', 'MANAGE_ROLES']
 		});
 	}
 
@@ -56,10 +64,7 @@ export default class AutoRoleCommand extends Command {
 		return { tag, member, admin, coLeader, secureRole };
 	}
 
-	public async exec(
-		message: Message,
-		{ tag, member, admin, coLeader, secureRole }: { tag?: string; member?: Role; admin?: Role; coLeader?: Role; secureRole: boolean }
-	) {
+	public async exec(message: Message, { tag, member, admin, coLeader, secureRole }: Args) {
 		if (!message.interaction) {
 			return message.util!.send(
 				{

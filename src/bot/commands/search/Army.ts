@@ -15,7 +15,7 @@ export default class ArmyCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Parse army composition from a shared link.',
-				usage: '<url>',
+				usage: '<url> [name]',
 				image: {
 					text: 'How to get this link?',
 					url: 'https://i.imgur.com/uqDnt5s.png'
@@ -34,8 +34,8 @@ export default class ArmyCommand extends Command {
 
 		const name = yield {
 			flag: '--name',
-			match: msg.interaction ? 'option' : 'rest',
-			type: 'string'
+			type: 'string',
+			match: msg.interaction ? 'option' : 'rest'
 		};
 
 		return { url, name };
