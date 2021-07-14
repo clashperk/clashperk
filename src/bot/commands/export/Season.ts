@@ -116,9 +116,10 @@ export default class ExportSeason extends Command {
 			{ header: 'Total Attacks', width: 10 },
 			{ header: 'Versus Attacks', width: 10 },
 			{ header: 'Trophies Gained', width: 10 },
-			{ header: 'Versus Trophies', width: 10 },
-			{ header: 'WarStars Gained', width: 10 },
-			{ header: 'CWL Stars Gained', width: 10 },
+			{ header: 'Season-End Trophies', width: 12 },
+			{ header: 'Versus-Trophies Gained', width: 12 },
+			{ header: 'War-Stars Gained', width: 10 },
+			{ header: 'CWL-Stars Gained', width: 10 },
 			{ header: 'Gold Grab', width: 10 },
 			{ header: 'Elixir Escapade', width: 10 },
 			{ header: 'Heroic Heist', width: 10 },
@@ -126,8 +127,8 @@ export default class ExportSeason extends Command {
 			{ header: 'Total Activity', width: 10 }
 		];
 
-		if (season !== Season.ID) columns.splice(17, 1);
 		if (!patron) columns.splice(2, 1);
+		if (season !== Season.ID) columns.splice(-1);
 		sheet.columns = [...columns] as any[];
 		sheet.getRow(1).font = { bold: true, size: 10 };
 		sheet.getRow(1).height = 40;
@@ -150,6 +151,7 @@ export default class ExportSeason extends Command {
 					m.attackWins,
 					m.versusBattleWins.gained,
 					m.trophies.gained,
+					m.trophies.value,
 					m.versusTrophies.gained,
 					m.warStars.gained,
 					...achievements.map(ac => m.achievements.find((a: { name: string }) => a.name === ac).gained),
@@ -157,6 +159,7 @@ export default class ExportSeason extends Command {
 				];
 
 				if (!patron) rows.splice(2, 1);
+				if (season !== Season.ID) rows.splice(-1);
 				return rows;
 			})
 		);
