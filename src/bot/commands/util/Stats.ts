@@ -1,4 +1,4 @@
-import { MessageEmbed, TextChannel, Message, Snowflake, MessageButton, MessageActionRow } from 'discord.js';
+import { MessageEmbed, Message, Snowflake, MessageButton, MessageActionRow } from 'discord.js';
 import { version } from '../../../../package.json';
 import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
@@ -58,10 +58,6 @@ export default class StatsCommand extends Command {
 		embed.addField('Shard', `${message.guild!.shard.id}/${this.client.shard!.count}`, true)
 			.addField('Version', `v${version}`, true)
 			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL({ dynamic: true }));
-
-		if (message.channel.type === 'DM' || !(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'])) {
-			return message.util!.send({ embeds: [embed] });
-		}
 
 		const customId = this.client.uuid();
 		const button = new MessageButton()

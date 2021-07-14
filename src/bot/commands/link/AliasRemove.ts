@@ -35,7 +35,7 @@ export default class AliasRemoveCommand extends Command {
 			.findOneAndUpdate({
 				guild: message.guild!.id,
 				alias: { $exists: true },
-				$or: [{ tag: this.parseTag(alias) }, { alias }]
+				$or: [{ tag: this.parseTag(alias) }, { alias: alias.trim() }]
 			}, { $unset: { alias: '' } });
 
 		if (!deleted.value) {

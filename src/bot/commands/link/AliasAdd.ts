@@ -41,7 +41,7 @@ export default class AliasAddCommand extends Command {
 		}
 
 		const updated = await this.client.db.collection(Collections.CLAN_STORES)
-			.updateOne({ guild: message.guild!.id, tag }, { $set: { alias } });
+			.updateOne({ guild: message.guild!.id, tag }, { $set: { alias: alias.trim() } });
 		if (!updated.matchedCount) {
 			return message.util!.send('*The clan must be linked to the server to create an alias.*');
 		}
