@@ -1,10 +1,11 @@
 import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } from 'discord-akairo';
-import { MessageEmbed, Message, Intents, Snowflake } from 'discord.js';
+import { MessageEmbed, Message, Intents, Snowflake, Options } from 'discord.js';
 import { loadSync } from '@grpc/proto-loader';
 import RPCHandler from '../core/RPCHandler';
 import Settings from './SettingsProvider';
 import { Connection } from './Database';
 import LinkHandler from './LinkHandler';
+import { Automaton } from './Automaton';
 import Storage from './StorageHandler';
 import * as gRPC from '@grpc/grpc-js';
 import Logger from '../util/Logger';
@@ -15,7 +16,6 @@ import * as uuid from 'uuid';
 import { Db } from 'mongodb';
 import Http from './Http';
 import path from 'path';
-import { Automaton } from './Automaton';
 
 declare module 'discord-akairo' {
 	interface AkairoClient {
@@ -144,7 +144,11 @@ export default class Client extends AkairoClient {
 				Intents.FLAGS.GUILD_WEBHOOKS,
 				Intents.FLAGS.GUILD_MESSAGES,
 				Intents.FLAGS.GUILD_MESSAGE_REACTIONS
-			]
+			],
+			makeCache: Options.cacheWithLimits({
+				MessageManager: 15,
+				PresenceManager: 0
+			})
 		});
 	}
 
