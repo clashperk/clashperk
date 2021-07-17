@@ -10,17 +10,17 @@ export default class ExportMissed extends Command {
 			category: 'export',
 			channel: 'guild',
 			description: {},
-			optionFlags: ['--number'],
+			optionFlags: ['--wars'],
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
 		});
 	}
 
 	public *args(msg: Message): unknown {
 		const num = yield {
-			'flag': '--number',
 			'default': 25,
-			'type': Argument.range('integer', 1, Infinity, true),
-			'match': msg.interaction ? 'option' : 'phrase'
+			'flag': '--wars',
+			'match': msg.interaction ? 'option' : 'phrase',
+			'type': Argument.range('integer', 1, Infinity, true)
 		};
 
 		return { num };

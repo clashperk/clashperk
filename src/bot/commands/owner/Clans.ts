@@ -25,9 +25,6 @@ export default class ClansCommand extends Command {
 				{
 					'id': 'guild',
 					'type': async (msg, id) => {
-						if (!this.client.isOwner(msg.author.id)) {
-							return this.handler.handleDirectCommand(msg, '-', this.handler.modules.get('setup')!);
-						}
 						const guilds = await this.client.shard!.broadcastEval(
 							(client, id) => {
 								const guild = client.guilds.cache.get(id as Snowflake);
@@ -54,6 +51,10 @@ export default class ClansCommand extends Command {
 	}
 
 	public async exec(message: Message, { guild, page }: { guild: Guild; page: number }) {
+		const mods = message.guild!.id === '509784317598105619' && message.member!.permissions.has('MANAGE_GUILD') ? [message.author.id] : [];
+		if (!(this.client.isOwner(message.author.id) || mods.includes(message.author.id))) {
+			return this.handler.handleDirectCommand(message, '-', this.handler.modules.get('setup')!);
+		}
 		await message.util!.send(`**Feching data... ${EMOJIS.LOADING}**`);
 
 		const premium = this.client.patrons.get(guild.id);
