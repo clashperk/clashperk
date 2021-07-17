@@ -37,7 +37,7 @@ export default class LastWarsExport extends Command {
 
 		num = this.client.patrons.get(message.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
 		const clanList = (await Promise.all(clans.map(clan => this.client.http.clan(clan.tag)))).filter(res => res.ok);
-		const memberList = clanList.map(clan => clan.memberList).flat();
+		const memberList = clanList.map(clan => clan.memberList.map(m => ({ ...m, clan: clan.name }))).flat();
 
 		const workbook = new Excel();
 		const sheet = workbook.addWorksheet('Details');
@@ -59,6 +59,7 @@ export default class LastWarsExport extends Command {
 					}, {
 						$project: {
 							member: '$clan.members',
+							clan: '$clan.name',
 							date: '$endTime'
 						}
 					}, {
@@ -83,6 +84,9 @@ export default class LastWarsExport extends Command {
 							},
 							total: {
 								$sum: 1
+							},
+							clan: {
+								$first: '$clan'
 							}
 						}
 					}, {
@@ -98,6 +102,7 @@ export default class LastWarsExport extends Command {
 		sheet.columns = [
 			{ header: 'Name', width: 20 },
 			{ header: 'Tag', width: 16 },
+			{ header: 'Clan', width: 16 },
 			{ header: 'Total Wars', width: 10 },
 			{ header: 'Last War Date', width: 16 }
 		] as any;
@@ -113,9 +118,9 @@ export default class LastWarsExport extends Command {
 			members.filter(
 				mem => memberList.find(m => m.tag === mem.tag)
 			).map(
-				m => [m.name, m.tag, m.total, m.date]
+				m => [m.name, m.tag, m.clan, m.total, m.date]
 			).concat(
-				memberList.filter(mem => !members.find(m => m.tag === mem.tag)).map(mem => [mem.name, mem.tag, 0])
+				memberList.filter(mem => !members.find(m => m.tag === mem.tag)).map(mem => [mem.name, mem.tag, mem.clan, 0])
 			)
 		);
 
