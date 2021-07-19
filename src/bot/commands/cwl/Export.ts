@@ -1,4 +1,4 @@
-import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
+import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -51,7 +51,7 @@ export default class CWLExport extends Command {
 				]
 			});
 
-		return cursor.toArray();
+		return cursor.toArray<{ tag: string; name: string }>();
 	}
 
 	private fixTag(tag: string) {
@@ -240,7 +240,7 @@ export default class CWLExport extends Command {
 		return stars.filter(star => star === count).length;
 	}
 
-	private async rounds(body: ClanWarLeagueGroup, clan: Clan) {
+	private async rounds(body: ClanWarLeagueGroup, clan: { tag: string }) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		const clanTag = clan.tag;
 		const members: { [key: string]: any } = {};

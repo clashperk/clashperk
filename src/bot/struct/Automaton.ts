@@ -68,7 +68,7 @@ export class Automaton {
 
 		const boostTimes = await this.client.db.collection(Collections.CLAN_MEMBERS)
 			.find({ season: Season.ID, clanTag: data.tag, tag: { $in: data.memberList.map(mem => mem.tag) } })
-			.toArray() as { tag: string; superTroops?: { name: string; timestamp: number }[] }[];
+			.toArray<{ tag: string; superTroops?: { name: string; timestamp: number }[] }>();
 
 		const memObj = boosting.reduce((pre, curr) => {
 			for (const troop of curr.troops) {
@@ -125,8 +125,8 @@ export class Automaton {
 				members.push({ name: mem.name, tag: mem.tag, donated: mem.donations, received: mem.donationsReceived });
 			}
 
-			if (dbMembers.find(m => m.tag === mem.tag)) {
-				const m = dbMembers.find(m => m.tag === mem.tag);
+			const m = dbMembers.find(m => m.tag === mem.tag);
+			if (m) {
 				members.push({
 					name: mem.name,
 					tag: mem.tag,

@@ -71,7 +71,7 @@ export default class UsageCommand extends Command {
 	private async growth() {
 		const cursor = this.client.db.collection(Collections.BOT_GROWTH).find();
 		const data = await cursor.sort({ createdAt: -1 }).limit(1).next();
-		return { addition: data.addition, deletion: data.deletion, growth: data.addition - data.deletion };
+		return { addition: data!.addition, deletion: data!.deletion, growth: data!.addition - data!.deletion };
 	}
 
 	private async buffer(limit: number) {

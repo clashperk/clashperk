@@ -125,7 +125,7 @@ export default class AutoRoleCommand extends Command {
 				{ $unset: { role_ids: '', roles: '', autoRole: '' } }
 			);
 
-		await this.client.db.collection(Collections.CLAN_STORES)
+		await this.client.db.collection<{ role_ids: Snowflake[] }>(Collections.CLAN_STORES)
 			.updateMany(
 				{ guild: message.guild!.id },
 				{

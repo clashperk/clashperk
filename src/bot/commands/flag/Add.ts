@@ -74,7 +74,7 @@ export default class FlagAddCommand extends Command {
 					}
 				}, { upsert: true, returnDocument: 'after' });
 
-			newFlags.push({ name: value.name, tag: value.tag });
+			newFlags.push({ name: value!.name, tag: value!.tag });
 		}
 
 		return message.util!.send(

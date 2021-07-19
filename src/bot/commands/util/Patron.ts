@@ -143,7 +143,9 @@ export default class PatronCommand extends Command {
 
 		await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild })
-			.forEach(data => this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 }));
+			.forEach(data => {
+				this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 });
+			});
 	}
 
 	private async del(guild: string) {
@@ -154,6 +156,7 @@ export default class PatronCommand extends Command {
 		await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild })
 			.skip(2)
+			// @ts-expect-error
 			.forEach(async data => {
 				await this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: data._id }, { $set: { active: false } });
 				await this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild });

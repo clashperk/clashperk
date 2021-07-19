@@ -105,7 +105,7 @@ export default class UnlinkCommand extends Command {
 
 	private async unlinkPlayer(user: string, tag: string) {
 		const link = await this.client.http.unlinkPlayerTag(tag);
-		const { value } = await this.client.db.collection(Collections.LINKED_PLAYERS)
+		const { value } = await this.client.db.collection<{ entries?: { tag: string }[] }>(Collections.LINKED_PLAYERS)
 			.findOneAndUpdate({ user }, { $pull: { entries: { tag } } });
 		return value?.entries?.find((en: any) => en.tag === tag) ? tag : link ? tag : null;
 	}

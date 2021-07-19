@@ -194,7 +194,7 @@ export default class ClanGamesCommand extends Command {
 				}
 			]);
 
-		return cursor.toArray();
+		return cursor.toArray<DBMember>();
 	}
 
 	private filter(dbMembers: DBMember[] = [], clanMembers: Member[] = []) {

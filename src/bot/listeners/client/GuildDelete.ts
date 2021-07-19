@@ -54,7 +54,7 @@ export default class GuildDeleteListener extends Listener {
 	private async growth() {
 		const cursor = this.client.db.collection(Collections.BOT_GROWTH).find();
 		const data = await cursor.sort({ createdAt: -1 }).limit(1).next();
-		return [data.addition, data.deletion, data.addition - data.deletion].join('/');
+		return [data!.addition, data!.deletion, data!.addition - data!.deletion].join('/');
 	}
 
 	private async delete(guild: Guild) {

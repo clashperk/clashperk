@@ -3,10 +3,7 @@ import { MongoClient, Db } from 'mongodb';
 
 class MongoDB extends MongoClient {
 	public constructor() {
-		super(process.env.MONGODB_URL!, {
-			useNewUrlParser: true,
-			useUnifiedTopology: true
-		});
+		super(process.env.MONGODB_URL!);
 	}
 
 	public async connect() {

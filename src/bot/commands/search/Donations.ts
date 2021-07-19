@@ -61,8 +61,8 @@ export default class DonationsCommand extends Command {
 				members.push({ name: mem.name, tag: mem.tag, donated: mem.donations, received: mem.donationsReceived });
 			}
 
-			if (dbMembers.find(m => m.tag === mem.tag)) {
-				const m = dbMembers.find(m => m.tag === mem.tag);
+			const m = dbMembers.find(m => m.tag === mem.tag);
+			if (m) {
 				members.push({
 					name: mem.name,
 					tag: mem.tag,

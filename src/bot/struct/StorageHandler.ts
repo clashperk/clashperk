@@ -228,7 +228,7 @@ export default class StorageHandler {
 		}
 	}
 
-	public async getWarTags(tag: string) {
+	public async getWarTags(tag: string): Promise<ClanWarLeagueGroup | null> {
 		const data = await this.client.db.collection(Collections.CWL_GROUPS)
 			.find({ 'clans.tag': tag })
 			.sort({ createdAt: -1 })
@@ -237,9 +237,9 @@ export default class StorageHandler {
 		if (data?.warTags?.[tag]?.length !== 7) return null;
 
 		if (
-			(new Date().getMonth() === new Date(data?.season).getMonth()) ||
-			(new Date(data?.season).getMonth() === (new Date().getMonth() - 1) && new Date().getDate() <= 8)
-		) return data;
+			(new Date().getMonth() === new Date(data.season).getMonth()) ||
+			(new Date(data.season).getMonth() === (new Date().getMonth() - 1) && new Date().getDate() <= 8)
+		) return data as ClanWarLeagueGroup;
 
 		return Promise.resolve(null);
 	}
@@ -293,8 +293,9 @@ export default class StorageHandler {
 			.sort({ id: -1 })
 			.limit(1);
 
-		const uuid: number = await cursor.hasNext() ? (await cursor.next()).id : 0;
-		return cursor.close().then(() => uuid + 1);
+		const uuid: number = (await cursor.next<{ id: number }>())?.id ?? 0;
+		cursor.close();
+		return uuid + 1;
 	}
 
 	private get seasonID() {

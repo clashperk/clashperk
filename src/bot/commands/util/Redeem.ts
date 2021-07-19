@@ -93,7 +93,7 @@ export default class RedeemCommand extends Command {
 		}
 
 		const redeemed = this.redeemed(Object.assign(user, { entitled_amount: pledge.attributes.amount_cents / 100 }));
-		if (user && redeemed) {
+		if (redeemed) {
 			if (!this.isNew(user, message, patron)) await this.client.patrons.refresh();
 			const embed = this.client.util.embed()
 				.setColor(16345172)
@@ -104,35 +104,34 @@ export default class RedeemCommand extends Command {
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		if (user && !redeemed) {
-			await db.updateOne(
-				{ id: patron.id },
-				{
-					$set: {
-						entitled_amount: pledge.attributes.amount_cents / 100,
-						discord_id: message.author.id,
-						discord_username: message.author.username,
-						redeemed: true
-					},
-					$push: {
-						guilds: {
-							id: message.guild!.id,
-							limit: pledge.attributes.amount_cents >= 300 ? 50 : 3
-						}
+		// NOT Redeemed
+		await db.updateOne(
+			{ id: patron.id },
+			{
+				$set: {
+					entitled_amount: pledge.attributes.amount_cents / 100,
+					discord_id: message.author.id,
+					discord_username: message.author.username,
+					redeemed: true
+				},
+				$push: {
+					guilds: {
+						id: message.guild!.id,
+						limit: pledge.attributes.amount_cents >= 300 ? 50 : 3
 					}
 				}
-			);
+			}
+		);
 
-			await this.client.patrons.refresh();
-			await this.sync(message.guild!.id);
-			const embed = this.client.util.embed()
-				.setColor(16345172)
-				.setDescription([
-					`Patron benefits applied to **${message.guild!.name}**`,
-					`Thank you so much for the support ${message.author.toString()}`
-				].join('\n'));
-			return message.channel.send({ embeds: [embed] });
-		}
+		await this.client.patrons.refresh();
+		await this.sync(message.guild!.id);
+		const embed = this.client.util.embed()
+			.setColor(16345172)
+			.setDescription([
+				`Patron benefits applied to **${message.guild!.name}**`,
+				`Thank you so much for the support ${message.author.toString()}`
+			].join('\n'));
+		return message.channel.send({ embeds: [embed] });
 	}
 
 	private isNew(user: any, message: Message, patron: any) {
@@ -158,7 +157,9 @@ export default class RedeemCommand extends Command {
 
 		await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild })
-			.forEach(data => this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 }));
+			.forEach(data => {
+				this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 });
+			});
 	}
 
 	private redeemed(user: any) {

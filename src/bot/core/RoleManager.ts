@@ -143,7 +143,7 @@ export class RoleManager {
 	private async addUniqueTypeRole(guild: Snowflake, clan: any, data: RPCFeed) {
 		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: data.members.map(mem => mem.tag) } })
-			.toArray();
+			.toArray<{ user: Snowflake; entries: { tag: string; verified: boolean }[] }>();
 
 		const flattened = this.flatPlayers(collection, clan.secureRole);
 		const user_ids = flattened.reduce((prev, curr) => {
@@ -177,7 +177,7 @@ export class RoleManager {
 
 		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: data.members.map(mem => mem.tag) } })
-			.toArray();
+			.toArray<{ user: Snowflake; entries: { tag: string; verified: boolean }[] }>();
 
 		const flattened = this.flatPlayers(collection, clan.secureRole);
 		const user_ids = flattened.reduce((prev, curr) => {

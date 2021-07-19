@@ -62,7 +62,7 @@ export default class GuildCreateListener extends Listener {
 	private async growth() {
 		const cursor = this.client.db.collection(Collections.BOT_GROWTH).find();
 		const data = await cursor.sort({ createdAt: -1 }).limit(1).next();
-		return [data.addition, data.deletion, data.addition - data.deletion].join('/');
+		return [data!.addition, data!.deletion, data!.addition - data!.deletion].join('/');
 	}
 
 	private intro(guild: Guild) {
@@ -103,7 +103,9 @@ export default class GuildCreateListener extends Listener {
 		const db = this.client.db.collection(Collections.CLAN_STORES);
 
 		await db.find({ guild: guild.id, active: true })
-			.forEach(data => this.client.rpcHandler.add(data._id?.toString(), { tag: data.tag, guild: guild.id, op: 0 }));
+			.forEach(data => {
+				this.client.rpcHandler.add(data._id?.toString(), { tag: data.tag, guild: guild.id, op: 0 });
+			});
 
 		await db.updateMany({ guild: guild.id }, { $set: { paused: false } });
 	}
