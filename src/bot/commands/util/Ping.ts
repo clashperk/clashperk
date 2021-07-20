@@ -5,7 +5,7 @@ export default class PingCommand extends Command {
 	public constructor() {
 		super('ping', {
 			aliases: ['ping', 'pong'],
-			category: '_hidden',
+			category: 'none',
 			description: {
 				content: 'Pings me!'
 			}
@@ -20,6 +20,6 @@ export default class PingCommand extends Command {
 		return message.util!.send([
 			`**Gateway Ping~ ${Math.round(this.client.ws.ping).toString()}ms**`,
 			`**API Ping~ ${ping.toString()}ms**`
-		]);
+		].join('\n'));
 	}
 }

@@ -1,7 +1,7 @@
 import { Command, Flag, PrefixSupplier } from 'discord-akairo';
 import { Message, MessageEmbed } from 'discord.js';
 
-export default class Export extends Command {
+export default class ExportCommand extends Command {
 	public constructor() {
 		super('export', {
 			aliases: ['export'],
@@ -20,18 +20,18 @@ export default class Export extends Command {
 					'• **Export War Stats**',
 					'• `WARS [NUMBER]`',
 					'',
-					'• **Export Clan Stats**',
-					'• `CLANS`',
-					'',
 					'• **Export Clan Members (Patron Only)**',
 					'• `MEMBERS`',
 					'',
-					'- Season ID must be under 3 months old and must follow `YYYY-MM` format.',
+					'• **Last Played War Dates**',
+					'• `LASTWAR`',
+					'',
+					'- Season ID must be under 6 months old and must follow `YYYY-MM` format.',
 					'',
 					'**[Support us on Patreon](https://patreon.com/clashperk)**'
 				],
 				usage: '<wars|missed|season|clans> [number|season]',
-				examples: ['wars', 'clans', 'missed', 'season', 'wars 10', 'missed 10', 'season 2021-01']
+				examples: ['wars', 'missed', 'season', 'wars 10', 'missed 10', 'season 2021-01']
 			},
 			optionFlags: ['--option']
 		});
@@ -44,11 +44,10 @@ export default class Export extends Command {
 				['export-missed', 'missed'],
 				['export-season', 'season'],
 				['export-wars', 'war', 'wars'],
-				['export-clans', 'clan', 'clans'],
 				['export-members', 'member', 'members'],
 				['export-last-wars', 'lastwar', 'lastwars', 'lw']
 			],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})
 		};
 
@@ -66,8 +65,8 @@ export default class Export extends Command {
 				'',
 				'**Examples**',
 				this.description.examples.map((en: string) => `\`${prefix}export ${en}\``).join('\n')
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

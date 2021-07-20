@@ -1,8 +1,9 @@
-import { ClanGames, Collections } from '@clashperk/node';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
-import { Message } from 'discord.js';
+import { Message, MessageActionRow, MessageButton } from 'discord.js';
+import { Collections } from '../../util/Constants';
+import { ClanGames } from '../../util/Util';
 
 interface DBMember {
 	tag: string;
@@ -28,12 +29,12 @@ export default class ClanGamesCommand extends Command {
 			aliases: ['points', 'clangames', 'cg'],
 			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: [
 					'Clan Games points of all clan members.',
 					'',
-					'**[How does it work?](https://clashperk.com/faq#how-does-clan-games-scoreboard-work)**'
+					'**[How does it work?](https://clashperk.com/faq)**'
 				],
 				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
@@ -46,7 +47,7 @@ export default class ClanGamesCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
@@ -73,13 +74,68 @@ export default class ClanGamesCommand extends Command {
 		});
 
 		const queried = await this.query(data.tag, data);
-		const { members, total } = this.filter(queried, memberList);
+		const members = this.filter(queried, memberList);
+		const embed = this.embed(data, members, force, filter)
+			.setColor(this.client.embed(message));
 
+		const CUSTOM_ID = {
+			MAX_POINTS: this.client.uuid(message.author.id),
+			PERMISSIBLE_POINTS: this.client.uuid(message.author.id)
+		};
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setCustomId(CUSTOM_ID.MAX_POINTS)
+					.setLabel('Maximum Points')
+					.setStyle('SECONDARY')
+			)
+			.addComponents(
+				new MessageButton()
+					.setCustomId(CUSTOM_ID.PERMISSIBLE_POINTS)
+					.setStyle('SECONDARY')
+					.setLabel('Permissible Points')
+					.setDisabled(true)
+			);
+		const msg = await message.util!.send({ embeds: [embed], components: [row] });
+		const collector = msg.createMessageComponentCollector({
+			filter: action => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === message.author.id,
+			time: 5 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customId === CUSTOM_ID.MAX_POINTS) {
+				const embed = this.embed(data, members, true)
+					.setColor(this.client.embed(message));
+
+				row.components[0].setDisabled(true);
+				row.components[1].setDisabled(false);
+				return action.update({ embeds: [embed], components: [row] });
+			}
+
+			if (action.customId === CUSTOM_ID.PERMISSIBLE_POINTS) {
+				const embed = this.embed(data, members, false)
+					.setColor(this.client.embed(message));
+
+				row.components[0].setDisabled(false);
+				row.components[1].setDisabled(true);
+				return action.update({ embeds: [embed], components: [row] });
+			}
+		});
+
+		collector.on('end', async () => {
+			for (const customID of Object.values(CUSTOM_ID)) {
+				this.client.components.delete(customID);
+			}
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
+	}
+
+	private embed(data: Clan, members: Member[], force = false, filter = false) {
+		const total = members.reduce((prev, mem) => prev + (force ? mem.points : Math.min(mem.points, ClanGames.MAX_POINT)), 0);
 		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				`Clan Games Scoreboard [${data.members}/50]`,
+				`**[Clan Games Scoreboard (${this.seasonID})](https://clashperk.com/faq)**`,
 				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
 				members.slice(0, 55)
 					.filter(d => filter ? d.points > 0 : d.points >= 0)
@@ -89,10 +145,11 @@ export default class ClanGamesCommand extends Command {
 					})
 					.join('\n'),
 				'```'
-			])
-			.setFooter(`Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`, this.client.user!.displayAvatarURL());
-
-		return message.util!.send({ embed });
+			].join('\n'))
+			.setFooter(
+				`Total Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`
+			);
+		return embed;
 	}
 
 	private padStart(num: number) {
@@ -137,7 +194,7 @@ export default class ClanGamesCommand extends Command {
 				}
 			]);
 
-		return cursor.toArray();
+		return cursor.toArray<DBMember>();
 	}
 
 	private filter(dbMembers: DBMember[] = [], clanMembers: Member[] = []) {
@@ -160,18 +217,12 @@ export default class ClanGamesCommand extends Command {
 				endedAt: mem.clanGamesEndTime
 			}));
 
-		const allMembers = [...members, ...missingMembers];
-		const total = allMembers.reduce((prev, mem) => prev + Math.min(mem.points, ClanGames.MAX_POINT), 0);
-
-		return {
-			total,
-			members: allMembers.sort((a, b) => b.points - a.points)
-				.sort((a, b) => {
-					if (a.endedAt && b.endedAt) {
-						return a.endedAt.getTime() - b.endedAt.getTime();
-					}
-					return 0;
-				})
-		};
+		return [...members, ...missingMembers].sort((a, b) => b.points - a.points)
+			.sort((a, b) => {
+				if (a.endedAt && b.endedAt) {
+					return a.endedAt.getTime() - b.endedAt.getTime();
+				}
+				return 0;
+			});
 	}
 }

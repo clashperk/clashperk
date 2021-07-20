@@ -1,12 +1,9 @@
-import { Collections } from '@clashperk/node';
+import { Collections } from '../util/Constants';
 import { MongoClient, Db } from 'mongodb';
 
 class MongoDB extends MongoClient {
 	public constructor() {
-		super(process.env.MONGODB_URL!, {
-			useNewUrlParser: true,
-			useUnifiedTopology: true
-		});
+		super(process.env.MONGODB_URL!);
 	}
 
 	public async connect() {
@@ -46,9 +43,6 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.FLAGS)
 				.createIndex({ guild: 1, tag: 1 }, { unique: true }),
-
-			db.collection(Collections.LINKED_CLANS)
-				.createIndex({ user: 1, tag: 1 }, { unique: true }),
 
 			db.collection(Collections.LINKED_PLAYERS)
 				.createIndex({ user: 1 }, { unique: true }),
@@ -110,9 +104,6 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.CLAN_MEMBERS).createIndex({ season: -1 }),
 
-			db.collection(Collections.TIME_ZONES)
-				.createIndex({ user: 1 }, { unique: true }),
-
 			db.collection(Collections.BOT_GROWTH)
 				.createIndex({ ISTDate: 1 }, { unique: true }),
 
@@ -139,6 +130,4 @@ class MongoDB extends MongoClient {
 	}
 }
 
-const Connection = new MongoDB();
-
-export { Connection };
+export const Connection = new MongoDB();

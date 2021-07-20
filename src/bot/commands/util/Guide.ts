@@ -5,7 +5,7 @@ export default class GuideCommand extends Command {
 	public constructor() {
 		super('guide', {
 			aliases: ['guide'],
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: { content: 'Shows info about how to use the bot.' }
 		});
@@ -15,6 +15,6 @@ export default class GuideCommand extends Command {
 		return message.util!.send([
 			'**Join Support Server for Help and Guide**',
 			'https://discord.gg/ppuppun'
-		]);
+		].join('\n'));
 	}
 }

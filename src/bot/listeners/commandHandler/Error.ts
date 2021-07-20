@@ -1,6 +1,6 @@
 import { addBreadcrumb, Severity, captureException, setContext } from '@sentry/node';
 import { Listener, Command } from 'discord-akairo';
-import { Message, TextChannel } from 'discord.js';
+import { Message, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
 
 export default class ErrorListener extends Listener {
 	public constructor() {
@@ -71,11 +71,21 @@ export default class ErrorListener extends Listener {
 		this.client.logger.error(error, { label });
 
 		if (message.guild ? (message.channel as TextChannel).permissionsFor(this.client.user!)?.has('SEND_MESSAGES') : true) {
-			return message.channel.send([
-				'\\❌ Something went wrong, report us!',
-				`\`\`\`${error.toString() as string}\`\`\``,
-				'https://discord.gg/ppuppun'
-			]);
+			return message.channel.send({
+				content: [
+					'\\❌ Something went wrong, report us!',
+					`\`\`\`\n${error.toString() as string}\`\`\``
+				].join('\n'),
+				components: [
+					new MessageActionRow()
+						.addComponents(
+							new MessageButton()
+								.setStyle('LINK')
+								.setLabel('Contact Support')
+								.setURL('https://discord.gg//ppuppun')
+						)
+				]
+			});
 		}
 	}
 }

@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { RED_NUMBERS } from '../../util/NumEmojis';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
@@ -10,7 +10,7 @@ export default class FlagListCommand extends Command {
 	public constructor() {
 		super('flag-list', {
 			aliases: ['flags'],
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
@@ -41,7 +41,7 @@ export default class FlagListCommand extends Command {
 	public async exec(message: Message, { page, download }: { page: number; download: boolean }) {
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message));
-		const data = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
+		const data = await this.client.db.collection(Collections.FLAGS)
 			.find({ guild: message.guild!.id })
 			.toArray();
 
@@ -52,19 +52,17 @@ export default class FlagListCommand extends Command {
 			let index = (paginated.page - 1) * 25;
 			embed.setAuthor(message.guild!.name, message.guild!.iconURL()!)
 				.setTitle('Flags')
-				.setDescription([
-					paginated.items.map(x => `${RED_NUMBERS[++index]} ${x.name as string} ${x.tag as string}`).join('\n')
-				])
+				.setDescription(paginated.items.map(x => `${RED_NUMBERS[++index]} ${x.name as string} ${x.tag as string}`).join('\n'))
 				.setFooter(`Page ${paginated.page}/${paginated.maxPage}`);
 		} else {
 			embed.setDescription(`${message.guild!.name} does not have any flagged players. Why not add some?`);
 		}
 
 		return message.util!.send({
-			embed,
+			embeds: [embed],
 			files: buffer && download
 				? [{ attachment: Buffer.from(buffer), name: `${message.guild!.name.toLowerCase()}_flag_list.xlsx` }]
-				: null
+				: undefined
 		});
 	}
 

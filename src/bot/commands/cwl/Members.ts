@@ -10,7 +10,7 @@ export default class CWLMembersCommand extends Command {
 			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows the full list of participants.',
+				content: 'Shows the full list of CWL participants.',
 				usage: '<clanTag>',
 				examples: ['#8QU8J9LP']
 			},
@@ -21,7 +21,7 @@ export default class CWLMembersCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
@@ -33,18 +33,20 @@ export default class CWLMembersCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
-			return message.util!.send([
-				'504 Request Timeout'
-			]);
+			return message.util!.send('**504 Request Timeout!**');
 		}
 
 		if (!body.ok) {
 			const embed = this.client.util.embed()
 				.setColor(3093046)
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium, `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`)
+				.setAuthor(
+					`${data.name} (${data.tag})`,
+					`${data.badgeUrls.medium}`,
+					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
+				)
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const clanMembers = body.clans.find(clan => clan.tag === data.tag)!.members;
@@ -78,12 +80,10 @@ export default class CWLMembersCommand extends Command {
 		const header = `TH BK AQ GW RC  ${'PLAYER'}`;
 		const result = this.split(members);
 		if (Array.isArray(result)) {
-			embed.setDescription([
-				`\`\`\`\u200e${header}\n${result[0]}\`\`\``
-			]);
+			embed.setDescription(`\`\`\`\u200e${header}\n${result[0]}\`\`\``);
 		}
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private heroes(items: Player['heroes']) {

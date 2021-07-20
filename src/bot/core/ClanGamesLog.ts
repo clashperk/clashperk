@@ -1,5 +1,6 @@
-import { MessageEmbed, Message, Collection, TextChannel, PermissionString } from 'discord.js';
-import { ClanGames, Collections } from '@clashperk/node';
+import { MessageEmbed, Message, Collection, TextChannel, PermissionString, Snowflake } from 'discord.js';
+import { ClanGames } from '../util/Util';
+import { Collections } from '../util/Constants';
 import { Clan } from 'clashofclans.js';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
@@ -9,7 +10,7 @@ interface Cache {
 	guild: string;
 	color?: number;
 	channel: string;
-	message: string;
+	message: Snowflake;
 	msg?: Message | null;
 }
 
@@ -61,7 +62,7 @@ export default class ClanGamesLog {
 			return this.edit(id, cache.msg, clan, updated);
 		}
 
-		const message = await channel.messages.fetch(cache.message, false)
+		const message = await channel.messages.fetch(cache.message, { cache: false })
 			.catch(error => {
 				this.client.logger.warn(error, { label: 'CLAN_GAMES_FETCH_MESSAGE' });
 				if (error.code === 10008) {
@@ -84,7 +85,7 @@ export default class ClanGamesLog {
 
 	private async sendNew(id: string, channel: TextChannel, clan: Clan, updated: any) {
 		const embed = this.embed(clan, id, updated);
-		const message = await channel.send({ embed }).catch(() => null);
+		const message = await channel.send({ embeds: [embed] }).catch(() => null);
 
 		if (message) {
 			try {
@@ -108,7 +109,7 @@ export default class ClanGamesLog {
 	private async edit(id: string, message: Message, clan: Clan, updated: any) {
 		const embed = this.embed(clan, id, updated);
 
-		return message.edit({ embed })
+		return message.edit({ embeds: [embed] })
 			.catch(error => {
 				if (error.code === 10008) {
 					const cache = this.cached.get(id)!;
@@ -133,7 +134,7 @@ export default class ClanGamesLog {
 						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name as string}`;
 					}).join('\n'),
 				'```'
-			])
+			].join('\n'))
 			.setFooter(`Points: ${updated.total as number} [Avg: ${(updated.total / clan.members).toFixed(2)}]`)
 			.setTimestamp();
 		if (cache?.color) embed.setColor(cache.color);

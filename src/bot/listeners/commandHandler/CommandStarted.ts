@@ -64,7 +64,7 @@ export default class CommandStartedListener extends Listener {
 			args
 		});
 
-		const label = message.guild ? `${message.guild.name}/${message.author.tag} ${message.hasOwnProperty('token') ? '/' : ''}` : `${message.author.tag}`;
+		const label = message.guild ? `${message.guild.name}/${message.author.tag} ${message.interaction ? '/' : ''}` : `${message.author.tag}`;
 		this.client.logger.debug(`${command.id}`, { label });
 
 		// Counters

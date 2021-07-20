@@ -1,8 +1,8 @@
-import { BUILDER_TROOPS, HOME_TROOPS } from '../../util/Emojis';
+import { BUILDER_TROOPS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { Command, Argument } from 'discord-akairo';
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, Message, MessageSelectMenu, User, MessageActionRow } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 
 const HEROES: { [key: string]: 'bk' | 'aq' | 'gw' | 'rc' } = {
@@ -42,13 +42,13 @@ export default class RushedCommand extends Command {
 			flag: '--base',
 			unordered: true,
 			type: Argument.range('integer', 1, 25),
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const data = yield {
 			flag: '--tag',
 			unordered: true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: async (message: Message, args: string) => {
 				if (flag) return this.client.resolver.resolveClan(message, args);
 				return this.client.resolver.resolvePlayer(message, args, base ?? 1);
@@ -58,11 +58,45 @@ export default class RushedCommand extends Command {
 		return { data, flag };
 	}
 
-	public async exec(message: Message, { data, flag }: { data: Clan | Player; flag: boolean }) {
+	public async exec(message: Message, { data, flag }: { data: (Clan | Player) & { user?: User }; flag: boolean }) {
 		if (flag) return this.clan(message, data as Clan);
-		const embed = this.embed(data as Player);
-		embed.setColor(this.client.embed(message));
-		return message.util!.send({ embed });
+		const embed = this.embed(data as Player).setColor(this.client.embed(message));
+		const msg = await message.util!.send({ embeds: [embed] });
+
+		if (!data.user) return;
+		const players = await this.client.links.getPlayers(data.user);
+		if (!players.length) return;
+
+		const options = players.map(op => ({
+			description: op.tag,
+			label: op.name, value: op.tag,
+			emoji: TOWN_HALLS[op.townHallLevel]
+		}));
+
+		const customID = this.client.uuid(message.author.id);
+		const menu = new MessageSelectMenu()
+			.setCustomId(customID)
+			.setPlaceholder('Select an account!')
+			.addOptions(options);
+
+		await msg.edit({ components: [new MessageActionRow({ components: [menu] })] });
+		const collector = msg.createMessageComponentCollector({
+			filter: action => action.customId === customID && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customId === customID && action.isSelectMenu()) {
+				const data = players.find(en => en.tag === action.values[0])!;
+				const embed = this.embed(data).setColor(this.client.embed(message));
+				await action.update({ embeds: [embed] });
+			}
+		});
+
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
 	}
 
 	private embed(data: Player) {
@@ -150,7 +184,7 @@ export default class RushedCommand extends Command {
 			data.builderHallLevel
 				? `${this.troopsCount('builderBase', data.builderHallLevel, Troops.filter(u => u.village === 'builderBase').length).padStart(5, '0')}% (Builder Base)\n\u200b`
 				: '\u200b'
-		]);
+		].join('\n'));
 
 		if (!embed.fields.length) {
 			embed.setDescription(
@@ -180,9 +214,9 @@ export default class RushedCommand extends Command {
 					.map(({ name, rushed, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding(rushed.homeBase)}  ${rushed.heroes.toString().padStart(3, ' ')}  ${name}`)
 					.join('\n'),
 				'```'
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private padding(num: number) {

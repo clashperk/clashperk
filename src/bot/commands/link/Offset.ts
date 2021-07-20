@@ -1,4 +1,4 @@
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import Google from '../../struct/Google';
 import { Message } from 'discord.js';
@@ -8,7 +8,7 @@ export default class OffsetCommand extends Command {
 	public constructor() {
 		super('offset', {
 			aliases: ['offset', 't'],
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
 			description: {
@@ -34,19 +34,6 @@ export default class OffsetCommand extends Command {
 		if (!raw) return message.util!.send('Location not found, make your search more specific and try again.');
 
 		const offset = (Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset));
-		await this.client.db.collection(Collections.TIME_ZONES)
-			.updateOne({ user: message.author.id }, {
-				$set: {
-					user: message.author.id,
-					timezone: {
-						id: raw.timezone.timeZoneId,
-						offset: Number(offset),
-						name: raw.timezone.timeZoneName,
-						location: raw.location.formatted_address
-					}
-				}
-			}, { upsert: true });
-
 		await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.updateOne({ user: message.author.id }, {
 				$set: {
@@ -73,9 +60,9 @@ export default class OffsetCommand extends Command {
 				'',
 				'**Offset**',
 				`${offset < 0 ? '-' : '+'}${this.offset(offset * 1000)}`
-			])
+			].join('\n'))
 			.setFooter(`${message.author.tag}`, message.author.displayAvatarURL());
-		return message.util!.send(`Time zone set to **${raw.timezone.timeZoneName as string}**`, { embed });
+		return message.util!.send({ embeds: [embed], content: `Time zone set to **${raw.timezone.timeZoneName as string}**` });
 	}
 
 	private offset(seconds: number, ms = true) {

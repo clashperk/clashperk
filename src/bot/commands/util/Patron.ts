@@ -1,5 +1,5 @@
-import { Collections, Settings } from '@clashperk/node';
-import { Message, TextChannel } from 'discord.js';
+import { Collections, Settings } from '../../util/Constants';
+import { Message, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
 import { Command } from 'discord-akairo';
 
 interface Patron {
@@ -18,7 +18,7 @@ export default class PatronCommand extends Command {
 	public constructor() {
 		super('patron', {
 			aliases: ['patron', 'donate', 'patreon'],
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Get information about the bot\'s patreon.'
@@ -71,65 +71,68 @@ export default class PatronCommand extends Command {
 		}
 
 		const embed = this.client.util.embed()
-			.setColor(16345172)
+			// .setColor(16345172)
 			.setAuthor(this.client.user!.username, this.client.user!.displayAvatarURL(), 'https://www.patreon.com/clashperk')
 			.setDescription([
 				'Help us with our hosting related expenses.',
 				'Any help is beyond appreciated. Thanks!',
 				'',
 				'**Benefits**',
-				'🔸 Only one sec cooldown and faster updates.',
-				//
-				'🔸 Special commands, custom Embed colors.',
-				//
-				'🔸 Self updating Clan Promotional Embed.',
-				//
-				'🔸 Claim unlimited number of clans.',
+				'• Only one sec cooldown and faster updates.',
+				'• Special commands, custom Embed colors.',
+				'• Self updating Clan Promotional Embed.',
+				'• Claim unlimited number of clans.',
 				'',
-				'🔸 Export to Excel File',
-				'\u200e \u2002 🔹 Current/historic war attacks.',
-				'\u200e \u2002 🔹 Clan Members with many stats.',
-				'\u200e \u2002 🔹 Current CWL attacks and summary.',
-				'\u200e \u2002 🔹 Season stats with Discord username.',
+				'• Export to Excel File',
+				'\u200e \u2002• Current/historic war attacks.',
+				'\u200e \u2002• Clan Members with many stats.',
+				'\u200e \u2002• Current CWL attacks and summary.',
+				'\u200e \u2002• Season stats with Discord username.',
 				'',
-				'🔸 Patron Role on our Support Discord.',
+				'• Patron Role on our Support Discord.',
 				'',
 				'**[Support us on Patreon](https://www.patreon.com/clashperk) | [Support Discord](https://discord.gg/ppuppun)**'
-			]);
+			].join('\n'));
 
 		if (!(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'READ_MESSAGE_HISTORY'], false)) {
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
-		const msg = await message.util!.send({ embed });
-		await msg.react('➕');
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['➕'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
-		);
+		const customID = this.client.uuid(message.author.id);
+		const button = new MessageButton()
+			.setCustomId(customID)
+			.setStyle('SECONDARY')
+			.setLabel('Our Current Patrons');
+
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow().addComponents(button)] });
+		const collector = msg.createMessageComponentCollector({
+			filter: action => action.customId === customID && action.user.id === message.author.id,
+			time: 15 * 60 * 1000, max: 1
+		});
 
 		const patrons = (await this.patrons()).filter(patron => patron.active && patron.discord_id !== this.client.ownerID);
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➕') {
-				collector.stop();
-
+		collector.on('collect', async action => {
+			if (action.customId === customID) {
 				embed.setDescription([
 					embed.description,
 					'',
 					`**Our Current Patrons (${patrons.length})**`,
 					patrons.map(patron => `• ${patron.discord_username ?? patron.name}`)
 						.join('\n')
-				]);
-				return msg.edit({ embed });
+				].join('\n'));
+
+				await action.update({ embeds: [embed] });
 			}
 		});
 
-		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
 	}
 
 	private patrons() {
-		return this.client.db
-			.collection<Patron>(Collections.PATRONS)
+		return this.client.db.collection<Patron>(Collections.PATRONS)
 			.find()
 			.sort({ createdAt: 1 })
 			.toArray();
@@ -140,7 +143,9 @@ export default class PatronCommand extends Command {
 
 		await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild })
-			.forEach(data => this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 }));
+			.forEach(data => {
+				this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 });
+			});
 	}
 
 	private async del(guild: string) {
@@ -151,6 +156,7 @@ export default class PatronCommand extends Command {
 		await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild })
 			.skip(2)
+			// @ts-expect-error
 			.forEach(async data => {
 				await this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: data._id }, { $set: { active: false } });
 				await this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild });

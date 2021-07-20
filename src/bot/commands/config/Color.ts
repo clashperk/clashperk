@@ -5,7 +5,7 @@ export default class ColorCommand extends Command {
 	public constructor() {
 		super('config-color', {
 			aliases: ['color', 'colour'],
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			quoted: false,
@@ -42,7 +42,7 @@ export default class ColorCommand extends Command {
 
 		this.client.settings.set(message.guild!, 'color', color);
 		return message.util!.send({
-			embed: { description: 'Display color updated.', color }
+			embeds: [{ description: 'Display color updated.', color: color as number }]
 		});
 	}
 }

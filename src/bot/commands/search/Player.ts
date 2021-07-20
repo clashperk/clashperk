@@ -1,9 +1,9 @@
 import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES, SEIGE_MACHINES } from '../../util/Emojis';
-import { COLLECTIONS, leagueId } from '../../util/Constants';
-import { MessageEmbed, Util, Message } from 'discord.js';
+import { MessageEmbed, Util, Message, User, MessageSelectMenu, MessageActionRow } from 'discord.js';
+import { Collections, leagueId } from '../../util/Constants';
 import { Command, Argument } from 'discord-akairo';
 import { Player, WarClan } from 'clashofclans.js';
-import { Collections, Season } from '@clashperk/node';
+import { Season } from '../../util/Util';
 import ms from 'ms';
 
 const roles: { [key: string]: string } = {
@@ -41,21 +41,63 @@ export default class PlayerCommand extends Command {
 			flag: '--base',
 			unordered: true,
 			type: Argument.range('integer', 1, 25),
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const data = yield {
 			flag: '--tag',
 			unordered: true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolvePlayer(msg, tag, base ?? 1)
 		};
 
 		return { data };
 	}
 
-	public async exec(message: Message, { data }: { data: Player }) {
-		const aggregated = await this.client.db.collection(COLLECTIONS.LAST_ONLINES)
+	public async exec(message: Message, { data }: { data: Player & { user?: User } }) {
+		const embed = (await this.embed(data)).setColor(this.client.embed(message));
+		const msg = await message.util!.send({ embeds: [embed] });
+
+		if (!data.user) return;
+		const players = await this.client.links.getPlayers(data.user);
+		if (!players.length) return;
+
+		const options = players.map(op => ({
+			description: op.tag,
+			label: op.name, value: op.tag,
+			emoji: TOWN_HALLS[op.townHallLevel]
+		}));
+
+		const customID = this.client.uuid(message.author.id);
+		const menu = new MessageSelectMenu()
+			.setCustomId(customID)
+			.setPlaceholder('Select an account!')
+			.addOptions(options);
+
+		await msg.edit({ components: [new MessageActionRow({ components: [menu] })] });
+
+		const collector = msg.createMessageComponentCollector({
+			filter: action => [customID].includes(action.customId) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customId === customID && action.isSelectMenu()) {
+				await action.deferUpdate();
+				const data = players.find(en => en.tag === action.values[0])!;
+				const embed = (await this.embed(data)).setColor(this.client.embed(message));
+				await action.editReply({ embeds: [embed] });
+			}
+		});
+
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
+	}
+
+	private async embed(data: Player) {
+		const aggregated = await this.client.db.collection(Collections.LAST_SEEN)
 			.aggregate([
 				{
 					$match: {
@@ -80,7 +122,6 @@ export default class PlayerCommand extends Command {
 		const warStats = `${EMOJIS.CROSS_SWORD} ${war.total} ${EMOJIS.SWORD} ${war.attacks} ${EMOJIS.STAR} ${war.stars} ${EMOJIS.THREE_STARS} ${war.starTypes.filter(num => num === 3).length} ${EMOJIS.EMPTY_SWORD} ${war.of - war.attacks}`;
 		const weaponLevel = data.townHallWeaponLevel ? weaponLevels[data.townHallWeaponLevel] : '';
 		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
 			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(
@@ -88,19 +129,19 @@ export default class PlayerCommand extends Command {
 			)
 			.setDescription([
 				`${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${EMOJIS.EXP} **${data.expLevel}** ${EMOJIS.TROPHY} **${data.trophies}** ${EMOJIS.WAR_STAR} **${data.warStars}**`
-			]);
+			].join('\n'));
 		embed.addField('**Season Stats**', [
 			`**Donated**\n${EMOJIS.TROOPS_DONATE} ${data.donations} ${EMOJIS.UP_KEY}`,
 			`**Received**\n${EMOJIS.TROOPS_DONATE} ${data.donationsReceived} ${EMOJIS.DOWN_KEY}`,
 			`**Attacks Won**\n${EMOJIS.SWORD} ${data.attackWins}`,
 			`**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}${war.total > 0 ? `\n**War Stats**\n${warStats}` : ''}`,
 			'\u200b\u2002'
-		]);
+		].join('\n'));
 		embed.addField('**Other Stats**', [
 			`**Best Trophies**\n${PLAYER_LEAGUES[leagueId(data.bestTrophies)]} ${data.bestTrophies}`,
 			`${clan}**Last Seen**\n${EMOJIS.CLOCK} ${lastSeen}`,
 			'\u200b\u2002'
-		]);
+		].join('\n'));
 		embed.addField('**Achievement Stats**', [
 			'**Total Loots**',
 			[
@@ -116,14 +157,14 @@ export default class PlayerCommand extends Command {
 			`**CWL War Stars**\n${EMOJIS.STAR} ${data.achievements.find(d => d.name === 'War League Legend')!.value}`,
 			`**Clan Games Points**\n${EMOJIS.CLAN_GAMES} ${data.achievements.find(d => d.name === 'Games Champion')!.value}`,
 			'\u200b\u2002'
-		]);
+		].join('\n'));
 		embed.addField('**Heroes**', [
 			data.heroes.filter(hero => hero.village === 'home')
 				.map(hero => `${HEROES[hero.name]} ${hero.level}`)
 				.join(' ') || `${EMOJIS.WRONG} None`
-		]);
+		].join('\n'));
 
-		return message.util!.send({ embed });
+		return embed;
 	}
 
 	private clanURL(tag: string) {

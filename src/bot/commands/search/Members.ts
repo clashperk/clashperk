@@ -2,7 +2,7 @@ import { Clan, PlayerItem, Player } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
-import { Message, Util, MessageEmbed } from 'discord.js';
+import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 
 const roleIds: { [key: string]: number } = {
 	member: 1,
@@ -43,7 +43,7 @@ export default class MembersCommand extends Command {
 		super('members', {
 			aliases: ['members', 'member', 'mem', 'warweight', 'ww'],
 			category: 'search',
-			clientPermissions: ['EMBED_LINKS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
 			description: {
 				content: 'Clan members with Town Halls and Heroes.',
 				usage: '<#clanTag>',
@@ -63,13 +63,13 @@ export default class MembersCommand extends Command {
 				['roles', 'role'],
 				['tags', 'tag']
 			],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const data = yield {
 			flag: '--tag',
 			unordered: true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
@@ -115,7 +115,7 @@ export default class MembersCommand extends Command {
 					}
 				).join('\n'),
 				'```'
-			]);
+			].join('\n'));
 
 		if (sub === 'tags') {
 			embed.setDescription([
@@ -123,7 +123,7 @@ export default class MembersCommand extends Command {
 				`\u200e${'TAG'.padStart(10, ' ')}  ${'NAME'}`,
 				members.map(mem => `\u200e${mem.tag.padStart(10, ' ')}  ${mem.name}`).join('\n'),
 				'```'
-			]);
+			].join('\n'));
 		}
 
 		if (sub === 'roles') {
@@ -133,49 +133,70 @@ export default class MembersCommand extends Command {
 				`\u200e ${'ROLE'.padEnd(4, ' ')}  ${'NAME'}`,
 				_members.map(mem => `\u200e ${mem.role.name.padEnd(4, ' ')}  ${mem.name}`).join('\n'),
 				'```'
-			]);
+			].join('\n'));
 		}
 
-		const msg = await message.util!.send({ embed });
-		for (const emoji of ['📥', EMOJIS.DISCORD]) {
-			await msg.react(emoji);
-			await new Promise(res => setTimeout(res, 250));
-		}
+		const [discord, download] = [this.client.uuid(message.author.id), this.client.uuid(message.author.id)];
 
-		const { id } = Util.parseEmoji(EMOJIS.DISCORD)!;
-		const collector = msg.createReactionCollector(
-			(reaction, user) => (reaction.emoji.name === '📥' || reaction.emoji.id === id) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
-		);
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setLabel('Discord')
+					.setCustomId(discord)
+					.setStyle('SECONDARY')
+					.setEmoji(EMOJIS.DISCORD)
+			)
+			.addComponents(
+				new MessageButton()
+					.setEmoji('📥')
+					.setLabel('Download')
+					.setCustomId(download)
+					.setStyle('SECONDARY')
+			);
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '📥') {
+		const msg = await message.util!.send({ embeds: [embed], components: [row] });
+		const collector = msg.createMessageComponentCollector({
+			filter: action => [discord, download].includes(action.customId) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customId === discord) {
+				await action.update({ components: [] });
+				await this.handler.runCommand(message, this.handler.modules.get('link-list')!, { data });
+			}
+
+			if (action.customId === download) {
 				if (this.client.patrons.get(message)) {
+					row.components[1].setDisabled(true);
+					await action.update({ components: [row] });
+
 					const buffer = await this.excel(members);
-					return message.util!.send(`**${data.name} (${data.tag})**`, {
+					await action.followUp({
+						content: `**${data.name} (${data.tag})**`,
 						files: [{
 							attachment: Buffer.from(buffer), name: 'clan_members.xlsx'
 						}]
 					});
-				}
-				const embed = new MessageEmbed()
-					.setDescription([
-						'**Patron Only Command**',
-						'This command is only available on Patron servers.',
-						'Visit https://patreon.com/clashperk for more details.',
-						'',
-						'**Demo Clan Member Export**'
-					])
-					.setImage('https://i.imgur.com/Uc5G2oS.png');
-				return message.channel.send({ embed });
-			}
+				} else {
+					const embed = new MessageEmbed()
+						.setDescription([
+							'**Patron only Command**',
+							'This command is only available on Patron servers.',
+							'Visit https://patreon.com/clashperk for more details.'
+						].join('\n'))
+						.setImage('https://i.imgur.com/Uc5G2oS.png');
 
-			if (reaction.emoji.id === id) {
-				return this.handler.runCommand(message, this.handler.modules.get('link-list')!, { data });
+					await action.reply({ embeds: [embed], ephemeral: true });
+				}
 			}
 		});
 
-		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+		collector.on('end', async () => {
+			this.client.components.delete(discord);
+			this.client.components.delete(download);
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
 	}
 
 	private heroes(items: PlayerItem[]) {

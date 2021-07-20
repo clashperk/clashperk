@@ -1,11 +1,11 @@
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 
 export default class AliasRemoveCommand extends Command {
 	public constructor() {
 		super('alias-remove', {
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			optionFlags: ['--name'],
@@ -18,7 +18,7 @@ export default class AliasRemoveCommand extends Command {
 			id: 'name',
 			type: 'lowercase',
 			flag: '--name',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { name };
@@ -35,7 +35,7 @@ export default class AliasRemoveCommand extends Command {
 			.findOneAndUpdate({
 				guild: message.guild!.id,
 				alias: { $exists: true },
-				$or: [{ tag: this.parseTag(alias) }, { alias }]
+				$or: [{ tag: this.parseTag(alias) }, { alias: alias.trim() }]
 			}, { $unset: { alias: '' } });
 
 		if (!deleted.value) {

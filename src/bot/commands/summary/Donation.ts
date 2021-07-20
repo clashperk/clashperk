@@ -1,9 +1,10 @@
-import { Collections, Season } from '@clashperk/node';
-import { Clan } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
-import { MessageEmbed, Message, Util } from 'discord.js';
+import { WHITE_NUMBERS } from '../../util/NumEmojis';
+import { MessageEmbed, Message } from 'discord.js';
+import { Collections } from '../../util/Constants';
+import { Season, Util } from '../../util/Util';
 import { EMOJIS } from '../../util/Emojis';
-import { BLUE_NUMBERS } from '../../util/NumEmojis';
+import { Command } from 'discord-akairo';
+import { Clan } from 'clashofclans.js';
 
 export interface Aggregated {
 	tag: string;
@@ -33,8 +34,13 @@ export default class DonationSummaryCommand extends Command {
 	public *args(msg: Message): unknown {
 		const season = yield {
 			flag: '--season',
+<<<<<<< HEAD:src/bot/commands/activity/SummaryDonation.ts
 			type: ['last', 'previous'],
 			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+=======
+			type: [...Util.getSeasonIds(), ['last']],
+			match: msg.interaction ? 'option' : 'phrase'
+>>>>>>> next:src/bot/commands/summary/Donation.ts
 		};
 
 		return { season };
@@ -130,8 +136,12 @@ export default class DonationSummaryCommand extends Command {
 			'**Top Clans**',
 			`${EMOJIS.HASH} \`\u200e${'DON'.padStart(clan_dp, ' ')} ${'REC'.padStart(clan_rp, ' ')}  ${'CLAN'.padEnd(15, ' ')}\u200f\``,
 			Util.splitMessage(
-				aggregated.map((clan, n) => `${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(clan.donationsReceived, clan_rp)}  ${clan.name.padEnd(15, ' ')}\u200f\``).join('\n')
+				aggregated.map(
+					(clan, n) => `${WHITE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(clan.donationsReceived, clan_rp)}  ${clan.name.padEnd(15, ' ')}\u200f\``
+				).join('\n'),
+				{ maxLength: 4000 }
 			)[0]
+<<<<<<< HEAD:src/bot/commands/activity/SummaryDonation.ts
 		]);
 		embed.addField('\u200b', [
 			'**Top Players**',
@@ -141,6 +151,28 @@ export default class DonationSummaryCommand extends Command {
 		embed.setFooter(`Season ${season}`);
 
 		return message.util!.send({ embed });
+=======
+		].join('\n'));
+
+		const embeds = [
+			embed,
+			new MessageEmbed()
+				.setColor(embed.color!)
+				.setDescription([
+					'**Top Players**',
+					`${EMOJIS.CLAN} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(15, ' ')}\u200f\``,
+					Util.splitMessage(
+						members.map(
+							mem => `${WHITE_NUMBERS[mem.clanIndex]} \`\u200e${this.donation(mem.donated, mem_dp)} ${this.donation(mem.received, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``
+						).join('\n'),
+						{ maxLength: 2000 }
+					)[0]
+				].join('\n'))
+				.setFooter(`Season ${season}`)
+		];
+
+		return message.util!.send({ embeds });
+>>>>>>> next:src/bot/commands/summary/Donation.ts
 	}
 
 	private donation(num: number, space: number) {

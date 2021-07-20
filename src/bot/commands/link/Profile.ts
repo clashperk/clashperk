@@ -1,8 +1,8 @@
-import { MessageEmbed, GuildMember, Message } from 'discord.js';
+import { MessageEmbed, GuildMember, Message, Snowflake } from 'discord.js';
 import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis';
 import { Command, Argument } from 'discord-akairo';
 import { Clan, Player } from 'clashofclans.js';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import moment from 'moment';
 
 export default class ProfileCommand extends Command {
@@ -24,11 +24,11 @@ export default class ProfileCommand extends Command {
 	public *args(msg: Message): unknown {
 		const member = yield {
 			'flag': '--user',
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			'match': msg.interaction ? 'option' : 'phrase',
 			'type': Argument.union('member', (msg, id) => {
 				if (!id) return null;
 				if (!/^\d{17,19}/.test(id)) return null;
-				return msg.guild!.members.fetch(id).catch(() => null);
+				return msg.guild!.members.fetch(id as Snowflake).catch(() => null);
 			}),
 			'default': (message: Message) => message.member
 		};
@@ -51,7 +51,7 @@ export default class ProfileCommand extends Command {
 				'**Created**',
 				`${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`,
 				'\u200b'
-			]);
+			].join('\n'));
 
 		let index = 0;
 		const collection = [];
@@ -66,7 +66,7 @@ export default class ProfileCommand extends Command {
 				embed.description,
 				`${EMOJIS.CLAN} [${clan.name} (${clan.tag})](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
 				...[`${EMOJIS.EMPTY} Level ${clan.clanLevel} ${EMOJIS.USERS} ${clan.members} Member${clan.members === 1 ? '' : 's'}`]
-			]);
+			].join('\n'));
 		}
 
 		const otherTags = await this.client.http.getPlayerTags(member.id);
@@ -74,8 +74,8 @@ export default class ProfileCommand extends Command {
 			embed.setDescription([
 				embed.description,
 				'No accounts are linked. Why not add some?'
-			]);
-			return message.util!.send({ embed });
+			].join('\n'));
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const tags = new Set([...data?.entries.map((en: any) => en.tag) ?? [], ...otherTags]);
@@ -101,8 +101,8 @@ export default class ProfileCommand extends Command {
 			`${collection.length} Player${collection.length === 1 ? '' : 's'} Linked`,
 			'https://cdn.discordapp.com/emojis/658538492409806849.png'
 		);
-		if (hideLink) collection.map(a => embed.addField(a.field, [...a.values, '\u200b']));
-		else collection.map(a => embed.addField('\u200b', [a.field, ...a.values]));
+		if (hideLink) collection.map(a => embed.addField(a.field, [...a.values, '\u200b'].join('\n')));
+		else collection.map(a => embed.addField('\u200b', [a.field, ...a.values].join('\n')));
 
 		const popEmbed = () => {
 			embed.fields.pop();
@@ -110,7 +110,7 @@ export default class ProfileCommand extends Command {
 		};
 		if (embed.length > 6000) popEmbed();
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private isLinked(data: any, tag: string) {

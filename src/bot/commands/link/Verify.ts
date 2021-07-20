@@ -1,5 +1,5 @@
 import { Command, PrefixSupplier } from 'discord-akairo';
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Player } from 'clashofclans.js';
 import { Message } from 'discord.js';
@@ -39,13 +39,13 @@ export default class VerifyPlayerCommand extends Command {
 		const tag = yield {
 			flag: '--tag',
 			type: 'string',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const token = yield {
 			flag: '--token',
 			type: 'string',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { tag, token };
@@ -68,7 +68,7 @@ export default class VerifyPlayerCommand extends Command {
 			'- Scroll down and find **API Token**',
 			'- Tap **Show** and then **Copy**',
 			'https://i.imgur.com/8dsoUB8.jpg'
-		]);
+		].join('\n'));
 	}
 
 	public async exec(message: Message, { tag, token }: { tag?: string; token: string }) {
@@ -86,12 +86,12 @@ export default class VerifyPlayerCommand extends Command {
 			return this.retry(message, `You must provide a valid API Token!`);
 		}
 
-		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+		await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.updateOne(
 				{ 'user': { $ne: message.author.id }, 'entries.tag': data.tag },
 				{ $pull: { entries: { tag: data.tag } }, $set: { user_tag: message.author.tag } }
 			);
-		const up = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+		const up = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.updateOne({ 'user': message.author.id, 'entries.tag': data.tag }, {
 				$set: {
 					'user': message.author.id, 'user_tag': message.author.tag,
@@ -101,7 +101,7 @@ export default class VerifyPlayerCommand extends Command {
 			});
 
 		if (!up.modifiedCount) {
-			await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+			await this.client.db.collection(Collections.LINKED_PLAYERS)
 				.updateOne({ user: message.author.id }, {
 					$set: {
 						user_tag: message.author.tag,

@@ -1,4 +1,4 @@
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import { Message, MessageEmbed } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -37,8 +37,8 @@ export default class ClanSummaryCommand extends Command {
 					return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
 				}).join('\n'),
 				'```'
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

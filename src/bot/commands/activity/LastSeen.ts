@@ -1,24 +1,22 @@
-import { Message, Util } from 'discord.js';
+import { Message, MessageActionRow, MessageButton } from 'discord.js';
+import { Collections } from '../../util/Constants';
+import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
-import 'moment-duration-format';
-import moment from 'moment';
-import { EMOJIS } from '../../util/Emojis';
-import { Collections } from '@clashperk/node';
+import { Util } from '../../util/Util';
 
-// TODO: Fix TS
-export default class LastOnlineCommand extends Command {
+export default class LastSeenCommand extends Command {
 	public constructor() {
-		super('lastonline', {
-			aliases: ['lastseen', 'lastonline', 'lo'],
+		super('lastseen', {
+			aliases: ['lastseen', 'lastonline', 'lo', 'ls'],
 			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: [
 					'Approximate last seen of all clan members.',
 					'',
-					'**[How does it work?](https://clashperk.com/faq#how-does-last-seen-work)**'
+					'**[How does it work?](https://clashperk.com/faq)**'
 				],
 				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
@@ -30,7 +28,7 @@ export default class LastOnlineCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
@@ -43,10 +41,10 @@ export default class LastOnlineCommand extends Command {
 			.count();
 		if (!allowed && message.guild!.id !== '509784317598105619') {
 			return message.util!.send(
-				[
-					'**You must link this clan to a channel to use this command!**'
-				].join('\n'),
-				{ files: ['https://cdn.discordapp.com/attachments/752914644779139242/852062721280311327/unknown.png'] }
+				{
+					content: '**You must link this clan to a channel to use this command!**',
+					files: ['https://cdn.discordapp.com/attachments/752914644779139242/852062721280311327/unknown.png']
+				}
 			);
 		}
 
@@ -59,6 +57,11 @@ export default class LastOnlineCommand extends Command {
 			].join('\n'));
 		}
 
+		const getTime = (ms?: number) => {
+			if (!ms) return ''.padEnd(7, ' ');
+			return Util.duration(ms + 1e3).padEnd(7, ' ');
+		};
+
 		const members = await this.aggregationQuery(data);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
@@ -66,22 +69,27 @@ export default class LastOnlineCommand extends Command {
 			.setDescription([
 				'**[Last seen and last 24h activity scores](https://clashperk.com/faq)**',
 				`\`\`\`\n\u200eLAST-ON 24H  NAME\n${members
-					.map(m => `${m.lastSeen ? this.format(m.lastSeen + 1e3).padEnd(7, ' ') : ''.padEnd(7, ' ')}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
+					.map(m => `${getTime(m.lastSeen)}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
 					.join('\n')}`,
 				'```'
-			])
+			].join('\n'))
 			.setFooter(`Members [${data.members}/50]`, message.author.displayAvatarURL());
 
-		const msg = await message.util!.send({ embed });
-		await msg.react(EMOJIS.ACTIVITY);
-		const { id } = Util.parseEmoji(EMOJIS.ACTIVITY)!;
-		const collector = msg.createReactionCollector(
-			(reaction, user) => [id].includes(reaction.emoji.id) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
-		);
+		const customID = this.client.uuid(message.author.id);
+		const button = new MessageButton()
+			.setStyle('SECONDARY')
+			.setCustomId(customID)
+			.setEmoji(EMOJIS.ACTIVITY)
+			.setLabel('Show Activity Scores');
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.id === id) {
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const collector = msg.createMessageComponentCollector({
+			filter: action => action.customId === customID && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customId === customID) {
 				collector.stop();
 				const members = await this.aggregationQuery(data, 30);
 
@@ -89,15 +97,20 @@ export default class LastOnlineCommand extends Command {
 				embed.setDescription([
 					`Clan Member Activities (Last ${30} Days)`,
 					`\`\`\`\n\u200e${'TOTAL'.padStart(4, ' ')} AVG  ${'NAME'}\n${members
-						.map(m => `${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / 30).toString().padStart(3, ' ')}  ${m.name}`)
+						.map(
+							m => `${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / 30).toString().padStart(3, ' ')}  ${m.name}`
+						)
 						.join('\n')}`,
 					'```'
-				]);
-				return msg.edit({ embed });
+				].join('\n'));
+				return action.update({ embeds: [embed], components: [] });
 			}
 		});
 
-		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
 	}
 
 	private filter(clan: Clan, db: any) {
@@ -117,15 +130,6 @@ export default class LastOnlineCommand extends Command {
 
 		members.sort((a, b) => a.lastSeen - b.lastSeen);
 		return members.filter(m => m.lastSeen > 0).concat(members.filter(m => m.lastSeen === 0));
-	}
-
-	private format(time: number) {
-		if (time > 864e5) {
-			return moment.duration(time).format('d[d] H[h]', { trim: 'both mid' });
-		} else if (time > 36e5) {
-			return moment.duration(time).format('H[h] m[m]', { trim: 'both mid' });
-		}
-		return moment.duration(time).format('m[m] s[s]', { trim: 'both mid' });
 	}
 
 	private async aggregationQuery(clan: Clan, days = 1) {
@@ -148,7 +152,7 @@ export default class LastOnlineCommand extends Command {
 							as: 'en',
 							cond: {
 								$gte: [
-									'$$en.entry', new Date(new Date().getTime() - (days * 24 * 60 * 60 * 1000))
+									'$$en.entry', new Date(Date.now() - (days * 24 * 60 * 60 * 1000))
 								]
 							}
 						}

@@ -1,7 +1,14 @@
-import { COLLECTIONS } from '../../util/Constants';
-import { Message, Role } from 'discord.js';
+import { Collections } from '../../util/Constants';
+import { Message, Role, Snowflake } from 'discord.js';
 import { Command } from 'discord-akairo';
-import { Collections } from '@clashperk/node';
+
+export interface Args {
+	tag?: string;
+	member?: Role;
+	admin?: Role;
+	coLeader?: Role;
+	secureRole: boolean;
+}
 
 export default class AutoRoleCommand extends Command {
 	public constructor() {
@@ -21,7 +28,7 @@ export default class AutoRoleCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			flags: ['--verify'],
 			optionFlags: ['--tag', '--members', '--elders', '--co-leads'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY', 'MANAGE_ROLES']
+			clientPermissions: ['EMBED_LINKS', 'MANAGE_ROLES']
 		});
 	}
 
@@ -57,14 +64,11 @@ export default class AutoRoleCommand extends Command {
 		return { tag, member, admin, coLeader, secureRole };
 	}
 
-	public async exec(
-		message: Message,
-		{ tag, member, admin, coLeader, secureRole }: { tag?: string; member?: Role; admin?: Role; coLeader?: Role; secureRole: boolean }
-	) {
-		if (!message.hasOwnProperty('token')) {
+	public async exec(message: Message, { tag, member, admin, coLeader, secureRole }: Args) {
+		if (!message.interaction) {
 			return message.util!.send(
-				'This command only works with slash command.',
 				{
+					content: 'This command only works with slash command.',
 					files: ['https://cdn.discordapp.com/attachments/583980382089773069/853316608307232787/unknown.png']
 				}
 			);
@@ -86,18 +90,18 @@ export default class AutoRoleCommand extends Command {
 			const clan = await this.client.http.clan(tag);
 			if (!clan.ok) return message.util!.send('Invalid clan tag!');
 
-			await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+			await this.client.db.collection(Collections.CLAN_STORES)
 				.updateMany(
 					{ guild: message.guild!.id, autoRole: 2 },
 					{ $unset: { role_ids: '', roles: '', autoRole: '' } }
 				);
 
-			const ex = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+			const ex = await this.client.db.collection(Collections.CLAN_STORES)
 				.findOne({ tag: { $ne: clan.tag }, role_ids: { $in: [member.id, admin.id, coLeader.id] } });
 
 			if (ex) return message.util!.send('This roles have already been used for another clan.');
 
-			const up = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+			const up = await this.client.db.collection(Collections.CLAN_STORES)
 				.updateOne({ tag: clan.tag, guild: message.guild!.id }, {
 					$set: {
 						roles: { member: member.id, admin: admin.id, coLeader: coLeader.id },
@@ -115,13 +119,13 @@ export default class AutoRoleCommand extends Command {
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		if (!clans.length) return message.util!.send('No clans in this server');
 
-		await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		await this.client.db.collection(Collections.CLAN_STORES)
 			.updateMany(
 				{ guild: message.guild!.id, autoRole: 1 },
 				{ $unset: { role_ids: '', roles: '', autoRole: '' } }
 			);
 
-		await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		await this.client.db.collection<{ role_ids: Snowflake[] }>(Collections.CLAN_STORES)
 			.updateMany(
 				{ guild: message.guild!.id },
 				{
@@ -164,13 +168,14 @@ export default class AutoRoleCommand extends Command {
 			for (const { user, tag } of unknowns) {
 				if (members.find(mem => mem.tag === tag && mem.user === user)) continue;
 
-				const member = data.memberList.find(mem => mem.tag === tag);
+				const member = data.memberList.find(mem => mem.tag === tag) ?? await this.client.http.player(tag);
+				if (!member.name) continue;
 				try {
 					await this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
 						{ user, 'entries.tag': { $ne: tag } },
 						{
 							$push: {
-								entries: { tag, name: member?.name, verified: false, unknown: true }
+								entries: { tag, name: member.name, verified: false, unknown: true }
 							},
 							$setOnInsert: {
 								clan: {
@@ -180,7 +185,7 @@ export default class AutoRoleCommand extends Command {
 								createdAt: new Date()
 							},
 							$set: {
-								user_tag: this.client.users.cache.get(user)?.tag
+								user_tag: this.client.users.cache.get(user as Snowflake)?.tag
 							}
 						},
 						{ upsert: true }

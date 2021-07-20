@@ -2,6 +2,7 @@ import { Message, TextChannel, PermissionString, User } from 'discord.js';
 import { Command, PrefixSupplier } from 'discord-akairo';
 import { EMOJIS } from '../../util/Emojis';
 import { Clan } from 'clashofclans.js';
+import { Util } from '../../util/Util';
 import ms from 'ms';
 
 interface RPC {
@@ -26,7 +27,7 @@ export default class DebugCommand extends Command {
 		const channel = yield {
 			'type': 'textChannel',
 			'default': (message: Message) => message.channel,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'match': msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { channel };
@@ -54,11 +55,11 @@ export default class DebugCommand extends Command {
 
 		const UEE_FOR_SLASH = channel.permissionsFor(message.guild!.id)!.has('USE_EXTERNAL_EMOJIS');
 		const UEE_FOR_TEXT = channel.permissionsFor(this.client.user!)!.has('USE_EXTERNAL_EMOJIS');
-		const emojis = (message.hasOwnProperty('token') && UEE_FOR_SLASH) || (!message.hasOwnProperty('token') && UEE_FOR_TEXT)
+		const emojis = (message.interaction && UEE_FOR_SLASH) || (!message.interaction && UEE_FOR_TEXT)
 			? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
 			: { cross: '❌', tick: '☑️', none: '⬛' };
 
-		return message.util!.send([
+		const chunks = Util.splitMessage([
 			`**${this.client.user!.username} Debug Menu**`,
 			'',
 			'**Command Prefix',
@@ -94,7 +95,9 @@ export default class DebugCommand extends Command {
 				const sign = (clan.active && !clan.paused && clan.flag > 0 && warLog) ? emojis.tick : emojis.cross;
 				return `${sign} \`\u200e ${clan.name.padEnd(15, ' ')} \u200f\` \`\u200e ${lastRan.padStart(3, ' ')} ago \u200f\` \`\u200e ${(warLog ? 'Public' : 'Private').padStart(7, ' ')} \u200f\``;
 			}).join('\n')
-		], { split: true, allowedMentions: { parse: ['users'] } });
+		].join('\n'));
+
+		for (const chunk of chunks) await message.util!.sendNew(chunk);
 	}
 
 	private fixTime(num: number, total: string) {

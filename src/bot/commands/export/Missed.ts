@@ -1,5 +1,5 @@
 import { Command, Argument } from 'discord-akairo';
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
 
@@ -7,27 +7,27 @@ import { Message } from 'discord.js';
 export default class ExportMissed extends Command {
 	public constructor() {
 		super('export-missed', {
-			category: 'activity',
+			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {},
-			optionFlags: ['--number']
+			optionFlags: ['--wars'],
+			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
 		});
 	}
 
 	public *args(msg: Message): unknown {
 		const num = yield {
-			'flag': '--number',
 			'default': 25,
-			'type': Argument.range('integer', 1, Infinity, true),
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'flag': '--wars',
+			'match': msg.interaction ? 'option' : 'phrase',
+			'type': Argument.range('integer', 1, Infinity, true)
 		};
 
 		return { num };
 	}
 
 	public async exec(message: Message, { num }: { num: number }) {
-		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		const clans = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 
@@ -38,7 +38,7 @@ export default class ExportMissed extends Command {
 		num = this.client.patrons.get(message.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
 		const chunks = [];
 		for (const { tag } of clans) {
-			const wars = await this.client.db.collection(COLLECTIONS.CLAN_WAR_STORES)
+			const wars = await this.client.db.collection(Collections.CLAN_WARS)
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag, 'groupWar': true }],
 					state: 'warEnded'
@@ -115,7 +115,8 @@ export default class ExportMissed extends Command {
 		);
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send(`**Missed Attacks (Last ${num})**`, {
+		return message.util!.send({
+			content: `**Missed Attacks (Last ${num})**`,
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_war_missed.xlsx'

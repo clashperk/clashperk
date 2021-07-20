@@ -1,7 +1,6 @@
-import { Message, GuildMember, Guild } from 'discord.js';
+import { Message, GuildMember, Guild, Snowflake, User } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
-import { Collections } from '@clashperk/node';
-import { status } from '../util/Constants';
+import { Collections, status } from '../util/Constants';
 import { Flag } from 'discord-akairo';
 import Client from './Client';
 
@@ -12,7 +11,7 @@ export default class Resolver {
 		this.client = client;
 	}
 
-	public async resolvePlayer(message: Message, args: string, num = 1): Promise<Player | Flag> {
+	public async resolvePlayer(message: Message, args: string, num = 1): Promise<Player & { user?: User } | Flag> {
 		const parsed = await this.argumentParser(message, args);
 		const tag = parsed && typeof parsed === 'boolean';
 
@@ -35,7 +34,7 @@ export default class Resolver {
 		const tags = Array.from(tagSet);
 		tagSet.clear();
 
-		if (tags.length) return this.getPlayer(message, tags[Math.min(tags.length - 1, num - 1)]);
+		if (tags.length) return this.getPlayer(message, tags[Math.min(tags.length - 1, num - 1)], user);
 		if (message.author.id === user.id) {
 			return this.fail(message, '**You must provide a player tag to run this command!**');
 		}
@@ -73,9 +72,9 @@ export default class Resolver {
 		return this.fail(message, `**No Clan Linked to ${(parsed as GuildMember).user.tag}!**`);
 	}
 
-	public async getPlayer(message: Message, tag: string): Promise<Player | Flag> {
+	public async getPlayer(message: Message, tag: string, user?: User): Promise<Player & { user?: User } | Flag> {
 		const data: Player = await this.client.http.fetch(`/players/${encodeURIComponent(this.parseTag(tag))}`);
-		if (data.ok) return data;
+		if (data.ok) return { ...data, user };
 
 		return this.fail(message, `**${status(data.statusCode)}**`);
 	}
@@ -102,8 +101,8 @@ export default class Resolver {
 		if (!args) return message.member;
 		const id = /<@!?(\d{17,19})>/.exec(args)?.[1] ?? /^\d{17,19}/.exec(args)?.[0];
 		if (id) {
-			if (message.guild!.members.cache.has(id)) return message.guild!.members.cache.get(id);
-			return message.guild!.members.fetch(id).catch(() => null);
+			if (message.guild!.members.cache.has(id as Snowflake)) return message.guild!.members.cache.get(id as Snowflake);
+			return message.guild!.members.fetch(id as Snowflake).catch(() => null);
 		}
 		return /^#?[0289CGJLOPQRUVY]+$/gi.test(args);
 	}
@@ -122,7 +121,7 @@ export default class Resolver {
 	}
 
 	public updateUserTag(guild: Guild, user_id: string) {
-		const member = guild.members.cache.get(user_id);
+		const member = guild.members.cache.get(user_id as Snowflake);
 		if (!member) return null;
 		return this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
 			{ user: member.user.id },

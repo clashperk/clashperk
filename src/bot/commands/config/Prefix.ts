@@ -1,6 +1,6 @@
 import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 import { Message } from 'discord.js';
-import { SETTINGS } from '../../util/Constants';
+import { Settings } from '../../util/Constants';
 
 export default class PrefixCommand extends Command {
 	public constructor() {
@@ -45,10 +45,10 @@ export default class PrefixCommand extends Command {
 				`Use the prefix \`${oldPrefix}\` to run my commands.`,
 				'',
 				'You are missing `Manage Server` permission to change the prefix.'
-			]);
+			].join('\n'));
 		}
 
-		this.client.settings.set(message.guild!, SETTINGS.PREFIX, prefix);
+		this.client.settings.set(message.guild!, Settings.PREFIX, prefix);
 
 		if (message.guild!.me?.permissions.has('CHANGE_NICKNAME')) {
 			await message.guild!.me.setNickname(`${this.client.user!.username} [ ${prefix} ]`).catch(() => null);
@@ -57,6 +57,6 @@ export default class PrefixCommand extends Command {
 		return message.util!.send([
 			`Prefix has been reset to \`${prefix}\``,
 			`${prefix === '/' ? `\n**Tip:** The prefix \`${prefix}\` might conflict with slash commands, try to avoid it!` : ''}`
-		]);
+		].join('\n'));
 	}
 }

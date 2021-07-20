@@ -53,7 +53,7 @@ export default class FlagCommand extends Command {
 						'',
 						'**Examples**',
 						this.description.examples.map((en: string) => `\`${prefix}flag ${en}\``).join('\n')
-					]);
+					].join('\n'));
 
 				return { embed, content: '**You must provide a valid argument to run this command, check examples and usage below.**' };
 			}

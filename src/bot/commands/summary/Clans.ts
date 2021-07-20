@@ -1,8 +1,10 @@
-import { Collections, Season } from '@clashperk/node';
-import { Message, MessageEmbed } from 'discord.js';
+import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { WHITE_NUMBERS } from '../../util/NumEmojis';
+import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
-import { BLUE_NUMBERS } from '../../util/NumEmojis';
+import { Season } from '../../util/Util';
+import Workbook from '../../struct/Excel';
 
 export default class ClanSummaryCommand extends Command {
 	public constructor() {
@@ -30,7 +32,7 @@ export default class ClanSummaryCommand extends Command {
 				...SEASON_IDS,
 				[SEASON_IDS[0], 'last']
 			],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { season };
@@ -50,21 +52,28 @@ export default class ClanSummaryCommand extends Command {
 		const OBJ: { [key: string]: { name: string; value: number; key: string }[] } = {
 			DONATED: [],
 			ATTACKS: [],
-			AVG_ACTIVITY: [],
-			ACTIVE_MEMBERS: [],
 			WARS_WON: [],
-			WARS_LOST: []
+			WARS_LOST: [],
+			AVG_ACTIVITY: [],
+			ACTIVE_MEMBERS: []
 		};
 
+		const collection: any[] = [];
 		for (const clan of clans) {
 			const wars = await this.getWars(clan.tag, season);
 			const action = await this.getActivity(clan.tag);
 			const season_stats = await this.getSeason(clan.tag, season);
 
-			if (!action || !season_stats) continue;
-
 			const won = wars.filter(war => war.result).length;
 			const lost = wars.filter(war => !war.result).length;
+
+			collection.push({
+				won, lost, avg_online: action?.avg_online, avg_total: action?.avg_total,
+				name: clan.name, attackWins: season_stats?.attackWins, tag: clan.tag, wars: wars.length,
+				donations: season_stats?.donations, donationsReceived: season_stats?.donationsReceived, defenseWins: season_stats?.defenseWins
+			});
+
+			if (!action || !season_stats) continue;
 
 			OBJ.WARS_WON.push({ name: clan.name, value: won, key: `${EMOJIS.CROSS_SWORD} Wars Won` });
 			OBJ.WARS_LOST.push({ name: clan.name, value: lost, key: `${EMOJIS.EMPTY_SWORD} Wars Lost` });
@@ -76,7 +85,6 @@ export default class ClanSummaryCommand extends Command {
 
 		if (!OBJ.DONATED.length) return message.util!.send('**No data available at this moment!**');
 
-		const interaction = message.hasOwnProperty('token');
 		const fields = Object.values(OBJ);
 		for (const field of Array(3).fill(0).map(() => fields.splice(0, 2))) {
 			const embed = new MessageEmbed();
@@ -84,33 +92,52 @@ export default class ClanSummaryCommand extends Command {
 				data.sort((a, b) => b.value - a.value);
 				const pad = data[0].value.toLocaleString().length + 1;
 
-				embed.addField(data[0].key, [
-					data.slice(0, 15)
-						.map((en, i) => {
-							const num = en.value.toLocaleString().padStart(pad, ' ');
-							return `${BLUE_NUMBERS[++i]} \`\u200e${num} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``;
-						})
-						.join('\n')
-				], interaction);
+				embed.addField(
+					data[0].key, [
+						data.slice(0, 15)
+							.map((en, i) => {
+								const num = en.value.toLocaleString().padStart(pad, ' ');
+								return `${WHITE_NUMBERS[++i]} \`\u200e${num} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``;
+							})
+							.join('\n')
+					].join('\n'),
+					true
+				);
 			}
 
 			embeds.push(embed);
 		}
 
-		if (!interaction) {
-			const length = embeds.reduce((prev, curr) => curr.length + prev, 0);
-			if (length > 6000) {
-				return embeds.map(
-					(embed, num) => message.channel.send(
-						num === 0 ? `**Clan Summary (Season ${season!})**` : '', { embed }
-					)
-				);
+		const customId = this.client.uuid();
+		const button = new MessageButton()
+			.setCustomId(customId)
+			.setStyle('SECONDARY')
+			.setLabel('Download');
+		const msg = await message.util!.send({ embeds, components: [new MessageActionRow().addComponents(button)] });
+
+		const collector = msg.createMessageComponentCollector({
+			filter: action => action.customId === customId,
+			max: 1, time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customId === customId) {
+				await action.defer();
+				const buffer = await this.getBuffer(collection);
+
+				await action.followUp({
+					files: [{
+						attachment: Buffer.from(buffer),
+						name: 'clan_stats.xlsx'
+					}]
+				});
 			}
-			return message.util!.send(`**Clan Summary (Season ${season})**`, {
-				embed: { fields: embeds.map(embed => embed.fields).flat() }
-			});
-		}
-		return message.util!.send(`**Clan Summary (Season ${season})**`, embeds);
+		});
+
+		collector.on('end', async () => {
+			this.client.components.delete(customId);
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
 	}
 
 	private async getWars(tag: string, season: string): Promise<{ result: boolean; stars: number[] }[]> {
@@ -232,5 +259,39 @@ export default class ClanSummaryCommand extends Command {
 				}
 			}
 		]).next() as Promise<{ donations: number; donationsReceived: number; attackWins: number; defenseWins: number } | null>;
+	}
+
+	private async getBuffer(collection: any[] = []) {
+		const workbook = new Workbook();
+		const sheet = workbook.addWorksheet('Clan Stats');
+		sheet.columns = [
+			{ header: 'Name', width: 16 },
+			{ header: 'Tag', width: 16 },
+			{ header: 'Wars', width: 10 },
+			{ header: 'Won', width: 10 },
+			{ header: 'Lost', width: 10 },
+			{ header: 'Donations', width: 10 },
+			{ header: 'Receives', width: 10 },
+			{ header: 'Attacks', width: 10 },
+			{ header: 'Defenses', width: 10 },
+			{ header: 'Avg. Activity', width: 10 },
+			{ header: 'Avg. Active Members', width: 16 }
+		] as any; // TODO: Fix Later
+
+		sheet.getRow(1).font = { bold: true, size: 10 };
+		sheet.getRow(1).height = 40;
+
+		for (let i = 1; i <= sheet.columns.length; i++) {
+			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+		}
+
+		sheet.addRows(
+			collection.map(m => [
+				m.name, m.tag, m.wars, m.won, m.lost, m.donations, m.donationsReceived,
+				m.attackWins, m.defenseWins, Math.floor(m.avg_total ?? 0), Math.floor(m.avg_online ?? 0)
+			])
+		);
+
+		return workbook.xlsx.writeBuffer();
 	}
 }

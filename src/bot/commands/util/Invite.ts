@@ -46,7 +46,7 @@ export default class InviteCommand extends Command {
 				`**[Add to Discord](https://discord.com/api/oauth2/authorize?${query}+applications.commands)**`,
 				'',
 				'**[Support Discord](https://discord.gg/ppuppun)** | **[Become a Patron](https://www.patreon.com/clashperk)**'
-			]);
-		return message.util!.send({ embed });
+			].join('\n'));
+		return message.util!.send({ embeds: [embed] });
 	}
 }

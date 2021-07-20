@@ -1,5 +1,5 @@
 import { Command, PrefixSupplier } from 'discord-akairo';
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Message, GuildMember } from 'discord.js';
 import { Player } from 'clashofclans.js';
 
@@ -8,7 +8,7 @@ export default class LinkPlayerCommand extends Command {
 		super('link-add', {
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {},
 			flags: ['--default'],
 			optionFlags: ['--tag', '--user']
@@ -18,7 +18,7 @@ export default class LinkPlayerCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.getPlayer(msg, tag)
 		};
 
@@ -26,7 +26,7 @@ export default class LinkPlayerCommand extends Command {
 			'flag': '--user',
 			'type': 'member',
 			'default': (m: Message) => m.member,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'match': msg.interaction ? 'option' : 'phrase'
 		};
 
 		const def = yield {
@@ -60,19 +60,19 @@ export default class LinkPlayerCommand extends Command {
 
 		if (doc && doc.entries.length >= 25) {
 			return message.util!.send({
-				embed: {
+				embeds: [{
 					description: 'You can only link 25 player accounts.'
-				}
+				}]
 			});
 		}
 
 		// only owner can set default account
 		if (def && member.id === message.author.id) {
-			await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+			await this.client.db.collection(Collections.LINKED_PLAYERS)
 				.updateOne({ user: member.id }, { $set: { user_tag: member.user.tag }, $pull: { entries: { tag: data.tag } } });
 		}
 
-		await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+		await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.updateOne({ user: member.id }, {
 				$set: {
 					user_tag: member.user.tag,
@@ -102,8 +102,8 @@ export default class LinkPlayerCommand extends Command {
 				`Linked **${member.user.tag}** to **${data.name}** (${data.tag})`,
 				'',
 				'If you don\'t provide the tag for other lookup commands, the bot will use the first one you linked.'
-			]);
-		return message.util!.send({ embed });
+			].join('\n'));
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private isVerified(data: any, tag: string) {
@@ -111,7 +111,7 @@ export default class LinkPlayerCommand extends Command {
 	}
 
 	private async getPlayer(tag: string) {
-		return this.client.db.collection(COLLECTIONS.LINKED_USERS).findOne({ 'entries.tag': tag });
+		return this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': tag });
 	}
 
 	private async resetLinkAPI(user: string, tag: string) {

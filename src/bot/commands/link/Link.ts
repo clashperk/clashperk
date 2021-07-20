@@ -1,5 +1,5 @@
 import { Command, PrefixSupplier, Argument, Flag } from 'discord-akairo';
-import { Message, MessageEmbed, GuildMember } from 'discord.js';
+import { Message, MessageEmbed, GuildMember, Snowflake, MessageActionRow, MessageButton } from 'discord.js';
 
 export default class LinkCommand extends Command {
 	public constructor() {
@@ -7,7 +7,7 @@ export default class LinkCommand extends Command {
 			aliases: ['link'],
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
 					'Links a Player or Clan to a Discord account.',
@@ -54,7 +54,7 @@ export default class LinkCommand extends Command {
 				],
 				(msg: Message, tag: string) => this.parseTag(tag)
 			),
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		if (['link-add', 'link-remove', 'link-list', 'link-alias'].includes(tag)) return Flag.continue(tag);
@@ -63,11 +63,11 @@ export default class LinkCommand extends Command {
 			'type': Argument.union('member', (msg, id) => {
 				if (!id) return null;
 				if (!/^\d{17,19}/.test(id)) return null;
-				return msg.guild!.members.fetch(id).catch(() => null);
+				return msg.guild!.members.fetch(id as Snowflake).catch(() => null);
 			}),
 			'flag': '--user',
 			'default': (msg: Message) => msg.member,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'rest'
+			'match': msg.interaction ? 'option' : 'rest'
 		};
 
 		const def = yield {
@@ -90,11 +90,10 @@ export default class LinkCommand extends Command {
 					'',
 					'**Examples**',
 					this.description.examples.map((en: string) => `\`${prefix}link ${en}\``).join('\n')
-				]);
+				].join('\n'));
 
 			return message.util!.send(
-				'**You must provide a valid argument to run this command, check examples and usage below.**',
-				{ embed }
+				{ embeds: [embed], content: '**You must provide a valid argument to run this command, check examples and usage below.**' }
 			);
 		}
 
@@ -102,51 +101,72 @@ export default class LinkCommand extends Command {
 		const playerCommand = this.handler.modules.get('link-add')!;
 		const tags = await Promise.all([this.client.http.clan(tag), this.client.http.player(tag)]);
 
-		const num: { [key: string]: string } = {
-			1: '1️⃣',
-			2: '2️⃣',
-			3: '❌'
-		};
-
 		const types: { [key: string]: string } = {
-			1: 'Clan',
-			2: 'Player'
+			1: 'CLAN',
+			2: 'PLAYER'
 		};
 
 		if (tags.every(a => a.ok)) {
 			const embed = this.client.util.embed()
-				.setColor(this.client.embed(message))
-				.setAuthor('Select a Player or Clan')
 				.setDescription([
-					...tags.map((a, i) => `**${types[i + 1]}**\n${num[i + 1]} ${a.name} (${a.tag})\n`)
-				]);
-			const msg = await message.util!.send({ embed });
+					'**What would you like to link? A Player or a Clan?**',
+					'',
+					tags.map((a, i) => `**${types[i + 1]}**\n${a.name} (${a.tag})\n`).join('\n')
+				].join('\n'));
 
-			for (const emoji of [...Object.values(num)]) {
-				await msg.react(emoji);
-				await this.delay(250);
-			}
+			const [ClanCustomID, PlayerCustomID, CancelID] = [this.client.uuid(message.author.id), this.client.uuid(message.author.id), this.client.uuid(message.author.id)];
+			const row = new MessageActionRow()
+				.addComponents(
+					new MessageButton()
+						.setStyle('SECONDARY')
+						.setLabel('LINK PLAYER')
+						.setCustomId(PlayerCustomID)
+				)
+				.addComponents(
+					new MessageButton()
+						.setStyle('SECONDARY')
+						.setLabel('LINK CLAN')
+						.setCustomId(ClanCustomID)
+				)
+				.addComponents(
+					new MessageButton()
+						.setStyle('DANGER')
+						.setLabel('CANCEL')
+						.setCustomId(CancelID)
+				);
+			const msg = await message.util!.send({ embeds: [embed], components: [row] });
 
-			const collector = msg.createReactionCollector(
-				(reaction, user) => [...Object.values(num)].includes(reaction.emoji.name) && user.id === message.author.id,
-				{ time: 45000, max: 1 }
-			);
+			const collector = msg.createMessageComponentCollector({
+				filter: action => [ClanCustomID, PlayerCustomID, CancelID].includes(action.customId) && action.user.id === message.author.id,
+				time: 15 * 60 * 1000
+			});
 
-			collector.on('collect', async reaction => {
-				if (reaction.emoji.name === num[1]) {
-					return this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
+			collector.on('collect', async action => {
+				if (action.customId === ClanCustomID) {
+					await action.update({ components: [] });
+					await this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
 				}
 
-				if (reaction.emoji.name === num[2]) {
-					return this.handler.runCommand(message, playerCommand, { data: tags[1], member: member, def });
+				if (action.customId === PlayerCustomID) {
+					await action.update({ components: [] });
+					await this.handler.runCommand(message, playerCommand, { data: tags[1], member: member, def });
 				}
 
-				if (reaction.emoji.name === num[3]) {
-					return message.util!.send({ embed: { author: { name: 'Command has been cancelled.' } } });
+				if (action.customId === CancelID) {
+					await action.update({
+						embeds: [],
+						components: [],
+						content: '**This command has been cancelled.**'
+					});
 				}
 			});
 
-			collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+			collector.on('end', async () => {
+				this.client.components.delete(CancelID);
+				this.client.components.delete(ClanCustomID);
+				this.client.components.delete(PlayerCustomID);
+				if (!msg.deleted) await msg.edit({ components: [] });
+			});
 		} else if (tags[0].ok) { // eslint-disable-line
 			return this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
 		} else if (tags[1].ok) {

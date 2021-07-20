@@ -1,6 +1,6 @@
 import { Command, PrefixSupplier, Argument } from 'discord-akairo';
-import { Message, MessageEmbed, GuildMember } from 'discord.js';
-import { Collections } from '@clashperk/node';
+import { Message, MessageEmbed, GuildMember, Snowflake } from 'discord.js';
+import { Collections } from '../../util/Constants';
 
 export default class UnlinkCommand extends Command {
 	public constructor() {
@@ -34,18 +34,18 @@ export default class UnlinkCommand extends Command {
 	public *args(msg: Message): unknown {
 		const tag = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.parseTag(tag)
 		};
 
 		const member = yield {
 			'flag': '--user',
 			'default': (msg: Message) => msg.member,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'rest',
+			'match': msg.interaction ? 'option' : 'rest',
 			'type': Argument.union('member', (msg, id) => {
 				if (!id) return null;
 				if (!/^\d{17,19}/.test(id)) return null;
-				return msg.guild!.members.fetch(id).catch(() => null);
+				return msg.guild!.members.fetch(id as Snowflake).catch(() => null);
 			})
 		};
 
@@ -64,11 +64,10 @@ export default class UnlinkCommand extends Command {
 					'',
 					'**Examples**',
 					this.description.examples.map((en: string) => `\`${prefix}unlink ${en}\``).join('\n')
-				]);
+				].join('\n'));
 
 			return message.util!.send(
-				'**You must provide a valid argument to run this command, check the examples and usage below.**',
-				{ embed }
+				{ embeds: [embed], content: '**You must provide a valid argument to run this command, check the examples and usage below.**' }
 			);
 		}
 
@@ -106,7 +105,7 @@ export default class UnlinkCommand extends Command {
 
 	private async unlinkPlayer(user: string, tag: string) {
 		const link = await this.client.http.unlinkPlayerTag(tag);
-		const { value } = await this.client.db.collection(Collections.LINKED_PLAYERS)
+		const { value } = await this.client.db.collection<{ entries?: { tag: string }[] }>(Collections.LINKED_PLAYERS)
 			.findOneAndUpdate({ user }, { $pull: { entries: { tag } } });
 		return value?.entries?.find((en: any) => en.tag === tag) ? tag : link ? tag : null;
 	}

@@ -1,13 +1,13 @@
-import { MessageEmbed, Message, Guild, TextChannel } from 'discord.js';
+import { MessageEmbed, Message, Guild, TextChannel, Snowflake } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 
 export default class ClansCommand extends Command {
 	public constructor() {
 		super('clans', {
 			aliases: ['clans'],
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
@@ -25,14 +25,19 @@ export default class ClansCommand extends Command {
 				{
 					'id': 'guild',
 					'type': async (msg, id) => {
-						if (!this.client.isOwner(msg.author.id)) {
-							return this.handler.handleDirectCommand(msg, '-', this.handler.modules.get('setup')!);
-						}
 						const guilds = await this.client.shard!.broadcastEval(
-							`
-							const guild = this.guilds.cache.get(\`${id}\`);
-							if (guild) ({ id: guild.id, name: guild.name, iconURL: guild.iconURL(), memberCount: guild.memberCount });
-							`
+							(client, id) => {
+								const guild = client.guilds.cache.get(id as Snowflake);
+								if (guild) {
+									return {
+										id: guild.id,
+										name: guild.name,
+										iconURL: guild.iconURL(),
+										memberCount: guild.memberCount
+									};
+								}
+								return null;
+							}, { context: id }
 						);
 						const guild = guilds.find(guild => guild !== null);
 						if (!guild) return null;
@@ -46,18 +51,22 @@ export default class ClansCommand extends Command {
 	}
 
 	public async exec(message: Message, { guild, page }: { guild: Guild; page: number }) {
+		const mods = message.guild!.id === '509784317598105619' && message.member!.permissions.has('MANAGE_GUILD') ? [message.author.id] : [];
+		if (!(this.client.isOwner(message.author.id) || mods.includes(message.author.id))) {
+			return this.handler.handleDirectCommand(message, '-', this.handler.modules.get('setup')!);
+		}
 		await message.util!.send(`**Feching data... ${EMOJIS.LOADING}**`);
 
 		const premium = this.client.patrons.get(guild.id);
 		const clans = await this.client.storage.findAll(guild.id);
 		const data = await Promise.all(clans.map(async doc => {
-			const donationlog = await this.client.db.collection(COLLECTIONS.DONATION_LOGS).findOne({ clan_id: doc._id });
-			const playerlog = await this.client.db.collection(COLLECTIONS.PLAYER_LOGS).findOne({ clan_id: doc._id });
-			const onlinelog = await this.client.db.collection(COLLECTIONS.LAST_ONLINE_LOGS).findOne({ clan_id: doc._id });
-			const clanembed = await this.client.db.collection(COLLECTIONS.CLAN_EMBED_LOGS).findOne({ clan_id: doc._id });
-			const clangames = await this.client.db.collection(COLLECTIONS.CLAN_GAMES_LOGS).findOne({ clan_id: doc._id });
-			const clanwar = await this.client.db.collection(COLLECTIONS.CLAN_WAR_LOGS).findOne({ clan_id: doc._id });
-			const channels = await this.client.db.collection(COLLECTIONS.LINKED_CHANNELS)
+			const donationlog = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clan_id: doc._id });
+			const playerlog = await this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clan_id: doc._id });
+			const onlinelog = await this.client.db.collection(Collections.LAST_SEEN_LOGS).findOne({ clan_id: doc._id });
+			const clanembed = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clan_id: doc._id });
+			const clangames = await this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clan_id: doc._id });
+			const clanwar = await this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clan_id: doc._id });
+			const channels = await this.client.db.collection(Collections.LINKED_CHANNELS)
 				.find({ guild: guild.id, tag: doc.tag })
 				.toArray();
 
@@ -81,7 +90,7 @@ export default class ClansCommand extends Command {
 			.setTitle(`Members: ${guild.memberCount}`);
 		if (!data.length) {
 			embed.setDescription(`${message.guild!.name} doesn't have any clans. Why not add some?`);
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const paginated = this.paginate(data, page);
@@ -90,25 +99,24 @@ export default class ClansCommand extends Command {
 			`${premium ? '**Patron** \nYes' : ''}`,
 			'',
 			this.desc(paginated)
-		]).setFooter([
-			`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
-		]);
+		].join('\n'));
+		embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`);
 
 		if (clans.length <= 2) {
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
-		const msg = await message.util!.send({ embed });
+		const msg = await message.util!.send({ embeds: [embed] });
 
 		for (const emoji of ['⬅️', '➡️']) {
 			await msg.react(emoji);
 			await this.delay(250);
 		}
 
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 60000, max: 10 }
-		);
+		const collector = msg.createReactionCollector({
+			filter: (reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
+			time: 60000, max: 10
+		});
 
 		collector.on('collect', async reaction => {
 			if (reaction.emoji.name === '➡️') {
@@ -116,12 +124,15 @@ export default class ClansCommand extends Command {
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
 				await msg.edit({
-					embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
-						.setDescription([
+					embeds: [
+						embed.setFooter(
+							`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
+						).setDescription([
 							`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`,
 							'',
 							this.desc(this.paginate(data, page))
-						])
+						].join('\n'))
+					]
 				});
 				await this.delay(250);
 				await reaction.users.remove(message.author.id);
@@ -133,12 +144,15 @@ export default class ClansCommand extends Command {
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
 				await msg.edit({
-					embed: embed.setFooter(`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`)
-						.setDescription([
+					embeds: [
+						embed.setFooter(
+							`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
+						).setDescription([
 							`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`,
 							'',
 							this.desc(this.paginate(data, page))
-						])
+						].join('\n'))
+					]
 				});
 				await this.delay(250);
 				return reaction.users.remove(message.author.id);

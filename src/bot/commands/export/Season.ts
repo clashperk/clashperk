@@ -1,44 +1,70 @@
-import { Season, Collections } from '@clashperk/node';
+import { Clan, ClanMember } from 'clashofclans.js';
+import { Collections } from '../../util/Constants';
+import { Message, Snowflake } from 'discord.js';
+import { Season, Util } from '../../util/Util';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
-import { Clan, ClanMember } from 'clashofclans.js';
-import { Message } from 'discord.js';
 
-// TODO: Fix TS
 export default class ExportSeason extends Command {
 	public constructor() {
 		super('export-season', {
-			category: 'activity',
+			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {},
-			optionFlags: ['--season']
+			optionFlags: ['--season'],
+			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
 		});
 	}
 
 	public *args(msg: Message): unknown {
 		const season = yield {
 			flag: '--season',
-			type: [
-				Season.ID,
-				...Array(3).fill('').map((_, i) => {
-					const now = new Date(Season.ID);
-					now.setHours(0, 0, 0, 0);
-					now.setMonth(now.getMonth() - i, 0);
-					return Season.generateID(now);
-				})
-			],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			unordered: true,
+			type: [...Util.getSeasonIds(), [Util.getLastSeasonId(), 'last']],
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
-		return { season };
+		const tags = yield {
+			flag: '--tag',
+			unordered: true,
+			match: msg.interaction ? 'option' : 'phrase',
+			type: (msg: Message, args?: string) => args ? args.split(/ +/g) : null
+		};
+
+		return { season, tags };
 	}
 
-	public async exec(message: Message, { season }: { season?: string }) {
+	private async getClans(message: Message, aliases: string[]) {
+		const cursor = this.client.db.collection(Collections.CLAN_STORES)
+			.find({
+				guild: message.guild!.id,
+				$or: [
+					{
+						tag: { $in: aliases.map(tag => this.fixTag(tag)) }
+					},
+					{
+						alias: { $in: aliases.map(alias => alias.toLowerCase()) }
+					}
+				]
+			});
+
+		return cursor.toArray();
+	}
+
+	private fixTag(tag: string) {
+		return this.client.http.fixTag(tag);
+	}
+
+	public async exec(message: Message, { season, tags }: { season?: string; tags?: string[] }) {
 		if (!season) season = Season.ID;
-		const clans = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild: message.guild!.id })
-			.toArray();
+
+		let clans = [];
+		if (tags?.length) {
+			clans = await this.getClans(message, tags);
+			if (!clans.length) return message.util!.send(`*No clans found in my database for the specified argument.*`);
+		} else {
+			clans = await this.client.storage.findAll(message.guild!.id);
+		}
 
 		if (!clans.length) {
 			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
@@ -69,14 +95,14 @@ export default class ExportSeason extends Command {
 				}
 			}
 			await Promise.all(
-				this.chunks(memberTags).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
+				this.chunks(memberTags).map(members => message.guild!.members.fetch({ user: members.map(m => m.user as Snowflake) }))
 			);
 		}
 
 		const members = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan, season!)))).flat();
 		for (const mem of members) {
 			const user = memberTags.find(user => user.tag === mem.tag)?.user;
-			mem.user_tag = message.guild!.members.cache.get(user!)?.user.tag;
+			mem.user_tag = message.guild!.members.cache.get((user as Snowflake)!)?.user.tag;
 		}
 
 		const columns = [
@@ -90,9 +116,10 @@ export default class ExportSeason extends Command {
 			{ header: 'Total Attacks', width: 10 },
 			{ header: 'Versus Attacks', width: 10 },
 			{ header: 'Trophies Gained', width: 10 },
-			{ header: 'Versus Trophies', width: 10 },
-			{ header: 'WarStars Gained', width: 10 },
-			{ header: 'CWL Stars Gained', width: 10 },
+			{ header: 'Season-End Trophies', width: 12 },
+			{ header: 'Versus-Trophies Gained', width: 12 },
+			{ header: 'War-Stars Gained', width: 10 },
+			{ header: 'CWL-Stars Gained', width: 10 },
 			{ header: 'Gold Grab', width: 10 },
 			{ header: 'Elixir Escapade', width: 10 },
 			{ header: 'Heroic Heist', width: 10 },
@@ -101,6 +128,7 @@ export default class ExportSeason extends Command {
 		];
 
 		if (!patron) columns.splice(2, 1);
+		if (season !== Season.ID) columns.splice(-1);
 		sheet.columns = [...columns] as any[];
 		sheet.getRow(1).font = { bold: true, size: 10 };
 		sheet.getRow(1).height = 40;
@@ -123,6 +151,7 @@ export default class ExportSeason extends Command {
 					m.attackWins,
 					m.versusBattleWins.gained,
 					m.trophies.gained,
+					m.trophies.value,
 					m.versusTrophies.gained,
 					m.warStars.gained,
 					...achievements.map(ac => m.achievements.find((a: { name: string }) => a.name === ac).gained),
@@ -130,6 +159,7 @@ export default class ExportSeason extends Command {
 				];
 
 				if (!patron) rows.splice(2, 1);
+				if (season !== Season.ID) rows.splice(-1);
 				return rows;
 			})
 		);
@@ -139,7 +169,8 @@ export default class ExportSeason extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send(`**Season Export (${season})**`, {
+		return message.util!.send({
+			content: `**Season Export (${season})**`,
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'season_export.xlsx'

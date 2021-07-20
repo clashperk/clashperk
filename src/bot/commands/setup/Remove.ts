@@ -1,16 +1,16 @@
 import { Command, Argument, PrefixSupplier } from 'discord-akairo';
 import { Message, TextChannel, MessageEmbed } from 'discord.js';
-import { BitField, Collections } from '@clashperk/node';
+import { Flags, Collections } from '../../util/Constants';
 import { ObjectId } from 'mongodb';
 
 const names: { [key: string]: string } = {
-	[BitField.DONATION_LOG]: 'Donation Log',
-	[BitField.CLAN_FEED_LOG]: 'Clan Feed',
-	[BitField.LAST_SEEN_LOG]: 'Last Seen',
-	[BitField.CLAN_EMBED_LOG]: 'Clan Embed',
-	[BitField.CLAN_GAMES_LOG]: 'Clan Games',
-	[BitField.CLAN_WAR_LOG]: 'War Feed',
-	[BitField.CHANNEL_LINKED]: 'Linked Channel'
+	[Flags.DONATION_LOG]: 'Donation Log',
+	[Flags.CLAN_FEED_LOG]: 'Clan Feed',
+	[Flags.LAST_SEEN_LOG]: 'Last Seen',
+	[Flags.CLAN_EMBED_LOG]: 'Clan Embed',
+	[Flags.CLAN_GAMES_LOG]: 'Clan Games',
+	[Flags.CLAN_WAR_LOG]: 'War Feed',
+	[Flags.CHANNEL_LINKED]: 'Linked Channel'
 };
 
 export default class RemoveCommand extends Command {
@@ -19,6 +19,7 @@ export default class RemoveCommand extends Command {
 			aliases: ['remove', 'stop', 'toggle', 'delete', 'disable'],
 			category: 'setup',
 			channel: 'guild',
+			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: [
@@ -62,17 +63,17 @@ export default class RemoveCommand extends Command {
 	public *args(msg: Message): unknown {
 		const bit = yield {
 			flag: ['--option', '--channel'],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: Argument.union(
 				[
 					['all'],
 					['autorole', 'role', 'roles'],
-					[BitField.CLAN_EMBED_LOG.toString(), 'embed', 'clanembed'],
-					[BitField.LAST_SEEN_LOG.toString(), 'lastseen', 'lastonline'],
-					[BitField.CLAN_WAR_LOG.toString(), 'war', 'wars', 'clan-wars'],
-					[BitField.CLAN_GAMES_LOG.toString(), 'game', 'games', 'clangames'],
-					[BitField.CLAN_FEED_LOG.toString(), 'feed', 'memberlog', 'clan-feed'],
-					[BitField.DONATION_LOG.toString(), 'donation', 'donations', 'donationlog']
+					[Flags.CLAN_EMBED_LOG.toString(), 'embed', 'clanembed'],
+					[Flags.LAST_SEEN_LOG.toString(), 'lastseen', 'lastonline'],
+					[Flags.CLAN_WAR_LOG.toString(), 'war', 'wars', 'clan-wars'],
+					[Flags.CLAN_GAMES_LOG.toString(), 'game', 'games', 'clangames'],
+					[Flags.CLAN_FEED_LOG.toString(), 'feed', 'memberlog', 'clan-feed'],
+					[Flags.DONATION_LOG.toString(), 'donation', 'donations', 'donationlog']
 				],
 				'textChannel'
 			)
@@ -80,7 +81,7 @@ export default class RemoveCommand extends Command {
 
 		const tag = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
 		};
 
@@ -99,18 +100,18 @@ export default class RemoveCommand extends Command {
 					'',
 					'**Examples**',
 					this.description.examples.map((en: string) => `\`${prefix}remove ${en}\``).join('\n')
-				]);
-			return message.util!.send({ embed });
+				].join('\n'));
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		if (bit instanceof TextChannel) {
 			const { value } = await this.client.storage.collection.findOneAndUpdate(
-				{ channels: bit.id }, { $pull: { channels: bit.id } }, { returnOriginal: false }
+				{ channels: bit.id }, { $pull: { channels: bit.id } }, { returnDocument: 'after' }
 			);
 
 			if (value) {
 				const id = value._id.toHexString();
-				if (!value.channels?.length) await this.updateFlag(id, BitField.CHANNEL_LINKED);
+				if (!value.channels?.length) await this.updateFlag(id, Flags.CHANNEL_LINKED);
 				return message.util!.send(
 					`Successfully deleted **${value.name} (${value.tag})** from <#${bit.id}>`
 				);
@@ -178,7 +179,7 @@ export default class RemoveCommand extends Command {
 				.countDocuments({ clan_id: new ObjectId(id) })
 		]).then(collection => collection.every(num => num === 0));
 
-		const bit = BitField.CHANNEL_LINKED;
+		const bit = Flags.CHANNEL_LINKED;
 		if (data && (flag & bit) !== bit) {
 			this.client.rpcHandler.delete(id, { tag, op: 0, guild });
 			return this.client.db.collection(Collections.CLAN_STORES)

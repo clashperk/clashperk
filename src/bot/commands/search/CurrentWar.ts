@@ -1,8 +1,8 @@
 import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import { Command, Argument } from 'discord-akairo';
-import { MessageEmbed, Util, Message } from 'discord.js';
+import { MessageEmbed, Util, Message, MessageButton, MessageActionRow } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import 'moment-duration-format';
 import moment from 'moment';
 import Workbook from '../../struct/Excel';
@@ -36,14 +36,14 @@ export default class WarCommand extends Command {
 				],
 				Argument.range('integer', 1001, 9e6)
 			),
-			unordered: msg.hasOwnProperty('token') ? false : true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			unordered: msg.interaction ? false : true,
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const data = yield {
 			flag: '--tag',
-			unordered: msg.hasOwnProperty('token') ? false : true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			unordered: msg.interaction ? false : true,
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
@@ -63,7 +63,7 @@ export default class WarCommand extends Command {
 				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-round')!, false);
 			}
 			embed.setDescription('Private War Log');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const body = await this.client.http.currentClanWar(data.tag);
@@ -76,7 +76,7 @@ export default class WarCommand extends Command {
 				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-round')!, false);
 			}
 			embed.setDescription('Not in War');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		return this.sendResult(message, body);
@@ -117,7 +117,7 @@ export default class WarCommand extends Command {
 				'',
 				'**War Size**',
 				`${body.teamSize} vs ${body.teamSize}`
-			]);
+			].join('\n'));
 		}
 
 		if (body.state === 'inWar') {
@@ -134,7 +134,7 @@ export default class WarCommand extends Command {
 				'',
 				'**War Stats**',
 				`${this.getLeaderBoard(body.clan, body.opponent)}`
-			]);
+			].join('\n'));
 		}
 
 		if (body.state === 'warEnded') {
@@ -148,17 +148,17 @@ export default class WarCommand extends Command {
 				'',
 				'**War Stats**',
 				`${this.getLeaderBoard(body.clan, body.opponent)}`
-			]);
+			].join('\n'));
 		}
 
 		embed.addField('Rosters', [
 			`\u200e${Util.escapeMarkdown(body.clan.name)}`,
 			`${this.count(body.clan.members)}`
-		]);
+		].join('\n'));
 		embed.addField('\u200b', [
 			`\u200e${Util.escapeMarkdown(body.opponent.name)}`,
 			`${this.count(body.opponent.members)}`
-		]);
+		].join('\n'));
 
 		if (body.hasOwnProperty('id')) {
 			// @ts-expect-error
@@ -166,34 +166,53 @@ export default class WarCommand extends Command {
 		}
 
 		if (body.state === 'preparation') {
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
-		const msg = await message.util!.send({ embed });
-		await msg.react('📥');
 
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['📥'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
-		);
+		const customID = this.client.uuid(message.author.id);
+		const button = new MessageButton()
+			.setLabel('Download')
+			.setEmoji('📥')
+			.setStyle('SECONDARY')
+			.setCustomId(customID);
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '📥') {
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const collector = msg.createMessageComponentCollector({
+			filter: action => action.customId === customID && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customId === customID) {
 				if (this.client.patrons.get(message)) {
+					await action.update({ components: [] });
 					const buffer = await this.warStats(body);
-					return message.util!.send(
-						`**${body.clan.name} vs ${body.opponent.name}**`,
-						{ files: [{ attachment: Buffer.from(buffer), name: 'war_stats.xlsx' }] }
+					await action.followUp(
+						{
+							content: `**${body.clan.name} vs ${body.opponent.name}**`,
+							files: [{ attachment: Buffer.from(buffer), name: 'war_stats.xlsx' }]
+						}
 					);
+				} else {
+					const embed = new MessageEmbed()
+						.setDescription([
+							'**Patron Only Command**',
+							'This command is only available on Patron servers.',
+							'Visit https://patreon.com/clashperk for more details.',
+							'',
+							'**Demo War Attacks Export**'
+						].join('\n'))
+						.setImage('https://i.imgur.com/Uc5G2oS.png'); // TODO: Update Image
+
+					await action.reply({ embeds: [embed], ephemeral: true });
 				}
-				return message.channel.send({
-					embed: {
-						description: '[Become a Patron](https://www.patreon.com/clashperk) to export clan members to Excel.'
-					}
-				});
 			}
 		});
 
-		collector.on('end', () => msg.reactions.removeAll().catch(() => null));
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
 	}
 
 	private count(members: ClanWarMember[] = []) {

@@ -2,7 +2,7 @@ import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message } from 'discord.js';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { Clan, ClanWar } from 'clashofclans.js';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import 'moment-duration-format';
 import moment from 'moment';
 
@@ -29,19 +29,17 @@ export default class MissedAttacksCommand extends Command {
 		const warID = yield {
 			flag: '--war-id',
 			type: Argument.union(
-				[
-					['last', 'prev']
-				],
+				[['last']],
 				Argument.range('integer', 1001, 9e6)
 			),
-			unordered: msg.hasOwnProperty('token') ? false : true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			unordered: msg.interaction ? false : true,
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const data = yield {
 			flag: '--tag',
-			unordered: msg.hasOwnProperty('token') ? false : true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			unordered: msg.interaction ? false : true,
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
@@ -58,10 +56,10 @@ export default class MissedAttacksCommand extends Command {
 		if (!data.isWarLogPublic) {
 			const res = await this.client.http.clanWarLeague(data.tag);
 			if (res.ok) {
-				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-remaining')!, false);
+				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-attacks')!, false);
 			}
 			embed.setDescription('Private War Log');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const body = await this.client.http.currentClanWar(data.tag);
@@ -71,10 +69,10 @@ export default class MissedAttacksCommand extends Command {
 		if (body.state === 'notInWar') {
 			const res = await this.client.http.clanWarLeague(data.tag);
 			if (res.ok) {
-				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-remaining')!, false);
+				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-attacks')!, false);
 			}
 			embed.setDescription('Not in War');
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		return this.sendResult(message, body);
@@ -111,8 +109,8 @@ export default class MissedAttacksCommand extends Command {
 				'',
 				'**War State**',
 				'Preparation'
-			]);
-			return message.util!.send({ embed });
+			].join('\n'));
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const [OneRem, TwoRem] = [
@@ -125,14 +123,14 @@ export default class MissedAttacksCommand extends Command {
 			'',
 			'**War State**',
 			`${body.state.replace(/warEnded/g, 'War Ended').replace(/inWar/g, 'Battle Day')}`
-		]);
+		].join('\n'));
 		if (TwoRem.length) {
 			embed.setDescription([
 				embed.description,
 				'',
 				`**2 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
 				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)
-			]);
+			].join('\n'));
 		}
 		if (OneRem.length) {
 			embed.setDescription([
@@ -140,7 +138,7 @@ export default class MissedAttacksCommand extends Command {
 				'',
 				`**1 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
 				...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)
-			]);
+			].join('\n'));
 		}
 
 		const endTime = new Date(moment(body.endTime).toDate()).getTime();
@@ -152,7 +150,7 @@ export default class MissedAttacksCommand extends Command {
 			embed.setFooter(`Ended ${this.toDate(Date.now() - endTime)} ago ${body.id ? `(War ID #${body.id as number})` : ''}`);
 		}
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private toDate(ms: number) {

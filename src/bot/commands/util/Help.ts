@@ -1,5 +1,6 @@
 import { Command, PrefixSupplier } from 'discord-akairo';
 import { Message, PermissionString } from 'discord.js';
+import { URLS } from '../../util/Constants';
 
 interface Description {
 	content: string;
@@ -16,7 +17,7 @@ export default class HelpCommand extends Command {
 	public constructor() {
 		super('help', {
 			aliases: ['help', 'commands'],
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Get all commands or info about a command',
@@ -31,13 +32,13 @@ export default class HelpCommand extends Command {
 		const command = yield {
 			flag: '--command',
 			type: 'commandAlias',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { command };
 	}
 
-	public exec(message: Message, { command }: { command: Command | null }) {
+	public exec(message: Message, { command }: { command?: Command }) {
 		if (!command) return this.execCommandList(message);
 
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
@@ -45,8 +46,8 @@ export default class HelpCommand extends Command {
 			content: 'No description available.',
 			usage: '',
 			image: '',
-			examples: [],
-			fields: []
+			fields: [],
+			examples: []
 		}, command.description);
 
 		const embed = this.client.util.embed()
@@ -56,9 +57,8 @@ export default class HelpCommand extends Command {
 				'',
 				Array.isArray(description.content)
 					? description.content.join('\n')
-						.replace(/{prefix}/g, `\\${prefix}`)
-					: description.content.replace(/{prefix}/g, `\\${prefix}`)
-			]);
+					: description.content
+			].join('\n'));
 
 		if (command.aliases.length > 1) {
 			embed.setDescription([
@@ -66,7 +66,7 @@ export default class HelpCommand extends Command {
 				'',
 				'**Aliases**',
 				`\`${command.aliases.join('`, `')}\``
-			]);
+			].join('\n'));
 		}
 
 		if (description.examples.length) {
@@ -76,7 +76,7 @@ export default class HelpCommand extends Command {
 				'',
 				'**Examples**',
 				`\`${cmd} ${description.examples.join(`\`\n\`${cmd} `)}\``
-			]);
+			].join('\n'));
 		}
 
 		if (command.userPermissions) {
@@ -88,7 +88,7 @@ export default class HelpCommand extends Command {
 					.replace(/_/g, ' ')
 					.toLowerCase()
 					.replace(/\b(\w)/g, char => char.toUpperCase())
-			]);
+			].join('\n'));
 		}
 
 		if (description.image) {
@@ -98,11 +98,11 @@ export default class HelpCommand extends Command {
 				Array.isArray(description.image.text)
 					? description.image.text.join('\n')
 					: description.image.text
-			]);
+			].join('\n'));
 			embed.setImage(description.image.url);
 		}
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private async execCommandList(message: Message) {
@@ -117,7 +117,7 @@ export default class HelpCommand extends Command {
 			}
 		];
 
-		return message.util!.send({ embed: this.execHelpList(message, pages[0]) });
+		return message.util!.send({ embeds: [this.execHelpList(message, pages[0])] });
 	}
 
 	private execHelpList(message: Message, option: any) {
@@ -125,7 +125,7 @@ export default class HelpCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor('Command List', this.client.user!.displayAvatarURL())
-			.setDescription([`To view more details for a command, do \`${prefix}help <command>\``]);
+			.setDescription(`To view more details for a command, do \`${prefix}help <command>\``);
 
 		const categories = [];
 		for (const category of this.handler.categories.values()) {
@@ -144,15 +144,16 @@ export default class HelpCommand extends Command {
 						const description = Array.isArray(cmd.description.content)
 							? cmd.description.content[0]
 							: cmd.description.content;
-						return `**\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\`**\n${description.replace(/{prefix}/g, `\\${prefix}`) as string}`;
+						return `**\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\`**\n${description as string}`;
 					})
 					.join('\n')
-			]);
+			].join('\n'));
 		}
 
-		embed.addField('\u200b', [
-			'**[Join Support Discord](https://discord.gg/ppuppun)** | **[Support us on Patreon](https://www.patreon.com/clashperk)**'
-		]);
+		embed.addField(
+			'\u200b',
+			`**[Join Support Discord](${URLS.SUPPORT_SERVER})** | **[Support us on Patreon](${URLS.PATREON})**`
+		);
 		return embed;
 	}
 }

@@ -1,11 +1,11 @@
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import { Message } from 'discord.js';
 
 export default class AliasAddCommand extends Command {
 	public constructor() {
 		super('alias-add', {
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			optionFlags: ['--tag', '--name'],
@@ -17,12 +17,12 @@ export default class AliasAddCommand extends Command {
 		const name = yield {
 			type: 'lowercase',
 			flag: '--name',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const tag = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => tag ? this.parseTag(tag) : null
 		};
 
@@ -41,7 +41,7 @@ export default class AliasAddCommand extends Command {
 		}
 
 		const updated = await this.client.db.collection(Collections.CLAN_STORES)
-			.updateOne({ guild: message.guild!.id, tag }, { $set: { alias } });
+			.updateOne({ guild: message.guild!.id, tag }, { $set: { alias: alias.trim() } });
 		if (!updated.matchedCount) {
 			return message.util!.send('*The clan must be linked to the server to create an alias.*');
 		}

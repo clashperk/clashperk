@@ -1,6 +1,6 @@
-import { MessageEmbed, TextChannel, Message } from 'discord.js';
+import { MessageEmbed, Message, Snowflake, MessageButton, MessageActionRow } from 'discord.js';
 import { version } from '../../../../package.json';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
 import 'moment-duration-format';
 import moment from 'moment';
@@ -10,7 +10,7 @@ export default class StatsCommand extends Command {
 	public constructor() {
 		super('stats', {
 			aliases: ['stats', 'about'],
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Shows some statistics of the bot.'
@@ -28,15 +28,15 @@ export default class StatsCommand extends Command {
 	public async exec(message: Message, { more }: { more: boolean }) {
 		let [guilds, memory] = [0, 0];
 		const values = await this.client.shard?.broadcastEval(
-			`[this.guilds.cache.size, (process.memoryUsage().heapUsed / 1024 / 1024)]`
-		).catch(() => [0, 0]);
+			client => [client.guilds.cache.size, (process.memoryUsage().heapUsed / 1024 / 1024)]
+		);
 
-		for (const value of values ?? [this.client.guilds.cache.size, process.memoryUsage().heapUsed / 1024 / 1024]) {
+		for (const value of values ?? [[this.client.guilds.cache.size, process.memoryUsage().heapUsed / 1024 / 1024]]) {
 			guilds += value[0];
 			memory += value[1];
 		}
 
-		const owner = await this.client.users.fetch(this.client.ownerID as string);
+		const owner = await this.client.users.fetch(this.client.ownerID as Snowflake);
 		const grpc: any = await new Promise(resolve => this.client.rpc.stats({}, (err: any, res: any) => {
 			if (res) resolve(JSON.parse(res?.data));
 			else resolve({ heapUsed: 0 });
@@ -59,23 +59,22 @@ export default class StatsCommand extends Command {
 			.addField('Version', `v${version}`, true)
 			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL({ dynamic: true }));
 
-		if (message.channel.type === 'dm' || !(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'MANAGE_MESSAGES', 'READ_MESSAGE_HISTORY'])) {
-			return message.util!.send({ embed });
-		}
-		const msg = await message.util!.send({ embed });
-		await msg.react('🗑');
-		let react;
-		try {
-			react = await msg.awaitReactions(
-				(reaction, user) => reaction.emoji.name === '🗑' && user.id === message.author.id,
-				{ max: 1, time: 30000, errors: ['time'] }
-			);
-		} catch (error) {
-			return msg.reactions.removeAll().catch(() => 0);
-		}
+		const customId = this.client.uuid();
+		const button = new MessageButton()
+			.setEmoji('🗑️')
+			.setCustomId(customId)
+			.setStyle('SECONDARY');
 
-		if (message.deletable) await message.delete();
-		return react.first()?.message.delete();
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const interaction = await msg.awaitMessageComponent({
+			filter: action => action.customId === customId && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		}).catch(() => null);
+
+		await interaction?.deferUpdate();
+		await interaction?.deleteReply();
+		this.client.components.delete(customId);
+		if (message.deletable && interaction) await message.delete();
 	}
 
 	private get freemem() {

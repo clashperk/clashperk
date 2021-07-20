@@ -1,10 +1,10 @@
-import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { Collections } from '@clashperk/node';
-import { Util } from '../../util/Constants';
+import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
+import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
 import { Message, MessageEmbed } from 'discord.js';
+import { Util } from '../../util/Util';
 
 const months = [
 	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -30,7 +30,7 @@ export default class CWLExport extends Command {
 		const tags = yield {
 			'flag': '--tag',
 			'default': [],
-			'match': msg.hasOwnProperty('token') ? 'option' : 'content',
+			'match': msg.interaction ? 'option' : 'content',
 			'type': (msg: Message, args?: string) => args ? args.split(/ +/g) : null
 		};
 
@@ -51,7 +51,7 @@ export default class CWLExport extends Command {
 				]
 			});
 
-		return cursor.toArray();
+		return cursor.toArray<{ tag: string; name: string }>();
 	}
 
 	private fixTag(tag: string) {
@@ -67,9 +67,9 @@ export default class CWLExport extends Command {
 					'Visit https://patreon.com/clashperk for more details.',
 					'',
 					'**Demo CWL Export**'
-				])
+				].join('\n'))
 				.setImage('https://cdn.discordapp.com/attachments/806179502508998657/846700124134178826/unknown.png');
-			return message.channel.send({ embed });
+			return message.channel.send({ embeds: [embed] });
 		}
 
 		let clans = [];
@@ -240,7 +240,7 @@ export default class CWLExport extends Command {
 		return stars.filter(star => star === count).length;
 	}
 
-	private async rounds(body: ClanWarLeagueGroup, clan: Clan) {
+	private async rounds(body: ClanWarLeagueGroup, clan: { tag: string }) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
 		const clanTag = clan.tag;
 		const members: { [key: string]: any } = {};

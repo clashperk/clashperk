@@ -1,4 +1,4 @@
-import { Collections } from '@clashperk/node';
+import { Collections } from '../util/Constants';
 import { Collection, Db } from 'mongodb';
 import { Guild } from 'discord.js';
 

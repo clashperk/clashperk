@@ -6,7 +6,7 @@ export default class TrophiesCommand extends Command {
 	public constructor() {
 		super('trophies', {
 			aliases: ['trophies', 'trophy'],
-			category: '_hidden',
+			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'List of clan members with trophies.',
@@ -20,7 +20,7 @@ export default class TrophiesCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
@@ -41,8 +41,8 @@ export default class TrophiesCommand extends Command {
 					return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
 				}).join('\n'),
 				'```'
-			]);
+			].join('\n'));
 
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
 	}
 }

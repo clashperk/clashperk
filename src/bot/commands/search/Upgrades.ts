@@ -1,6 +1,6 @@
-import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS } from '../../util/Emojis';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, Message, MessageSelectMenu, User, MessageActionRow } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { TroopJSON } from '../../util/Constants';
 import { Player } from 'clashofclans.js';
@@ -26,22 +26,62 @@ export default class UpgradesCommand extends Command {
 			flag: '--base',
 			unordered: true,
 			type: Argument.range('integer', 1, 25),
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const data = yield {
 			flag: '--tag',
 			unordered: true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: async (msg: Message, args: string) => this.client.resolver.resolvePlayer(msg, args, base ?? 1)
 		};
 
 		return { data };
 	}
 
-	public exec(message: Message, { data }: { data: Player }) {
+	public async exec(message: Message, { data }: { data: Player & { user?: User } }) {
+		const embed = this.embed(data).setColor(this.client.embed(message));
+		const msg = await message.util!.send({ embeds: [embed] });
+
+		if (!data.user) return;
+		const players = await this.client.links.getPlayers(data.user);
+		if (!players.length) return;
+
+		const options = players.map(op => ({
+			description: op.tag,
+			label: op.name, value: op.tag,
+			emoji: TOWN_HALLS[op.townHallLevel]
+		}));
+
+		const customID = this.client.uuid(message.author.id);
+		const menu = new MessageSelectMenu()
+			.setCustomId(customID)
+			.setPlaceholder('Select an account!')
+			.addOptions(options);
+
+		await msg.edit({ components: [new MessageActionRow().addComponents(menu)] });
+
+		const collector = msg.createMessageComponentCollector({
+			filter: action => [customID].includes(action.customId) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customId === customID && action.isSelectMenu()) {
+				const data = players.find(en => en.tag === action.values[0])!;
+				const embed = this.embed(data).setColor(this.client.embed(message));
+				await action.update({ embeds: [embed] });
+			}
+		});
+
+		collector.on('end', async () => {
+			this.client.components.delete(customID);
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
+	}
+
+	public embed(data: Player) {
 		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`)
 			.setDescription(`Remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? `& BH${data.builderHallLevel}` : ''}`);
 
@@ -77,7 +117,7 @@ export default class UpgradesCommand extends Command {
 			const title = titles[key];
 			units.push({
 				index: indexes.indexOf(title),
-				title,
+				title, key,
 				units: value
 			});
 		}
@@ -103,27 +143,48 @@ export default class UpgradesCommand extends Command {
 				}
 			);
 
-			if (unitsArray.length) {
+			if (category.key === 'Barracks' && unitsArray.length) {
+				embed.setDescription(
+					[
+						embed.description,
+						'',
+						`**${category.title}**`,
+						unitsArray.map(unit => {
+							const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+							const level = this.padStart(unit.level);
+							const maxLevel = this.padEnd(unit.hallMaxLevel);
+							const upgradeTime = ms(unit.upgradeTime * 1000).padStart(5, ' ');
+							const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
+							return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
+						}).join('\n')
+					].join('\n')
+				);
+			}
+
+			if (unitsArray.length && category.key !== 'Barracks') {
 				embed.addField(
-					`\u200b\n${category.title}`,
-					unitsArray.map(unit => {
-						const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-						const level = this.padStart(unit.level);
-						const maxLevel = this.padEnd(unit.hallMaxLevel);
-						const upgradeTime = ms(unit.upgradeTime * 1000).padStart(5, ' ');
-						const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
-						return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
-					}).join('\n')
+					'\u200b',
+					[
+						`**${category.title}**`,
+						unitsArray.map(unit => {
+							const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+							const level = this.padStart(unit.level);
+							const maxLevel = this.padEnd(unit.hallMaxLevel);
+							const upgradeTime = ms(unit.upgradeTime * 1000).padStart(5, ' ');
+							const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
+							return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
+						}).join('\n')
+					].join('\n')
 				);
 			}
 		}
 
-		if (!embed.fields.length) {
+		if (!embed.fields.length && embed.description?.length) {
 			embed.setDescription(
 				`No remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? ` and BH${data.builderHallLevel}` : ''}`
 			);
 		}
-		return message.util!.send({ embed });
+		return embed;
 	}
 
 	private padEnd(num: number) {

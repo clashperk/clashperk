@@ -28,7 +28,7 @@ export default class MemeCommand extends Command {
 				.setTitle(data.data[image].title.toLowerCase().replace(/\b(\w)/g, (char: string) => char.toUpperCase()))
 				.setURL(data.data[image].link)
 				.setImage(data.data[image].link);
-			return message.channel.send({ embed });
+			return message.channel.send({ embeds: [embed] });
 		} catch { }
 	}
 }

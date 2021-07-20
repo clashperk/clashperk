@@ -1,4 +1,5 @@
 import { __rootdir__ } from '../root';
+import '../src/bot/util/Extension';
 import Env from 'dotenv';
 Env.config();
 
@@ -38,7 +39,7 @@ client.on('warn', warn => {
 
 process.on('unhandledRejection', error => {
 	Sentry.captureException(error);
-	client.logger.error(error?.toString(), { label: 'UNHANDLED_REJECTION' });
+	client.logger.error(error, { label: 'UNHANDLED_REJECTION' });
 });
 
 client.start(process.env.TOKEN!);

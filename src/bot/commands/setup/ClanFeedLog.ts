@@ -1,5 +1,5 @@
 import { MessageEmbed, Message, TextChannel, User, PermissionString, Channel, Role } from 'discord.js';
-import { Op, missingPermissions, SETTINGS, Util, COLLECTIONS, EMBEDS } from '../../util/Constants';
+import { Flags, missingPermissions, Settings, Collections, EMBEDS } from '../../util/Constants';
 import { Command, PrefixSupplier } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 
@@ -10,7 +10,7 @@ export default class MemberLogCommand extends Command {
 			channel: 'guild',
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],
-			optionFlags: ['--tag', '--channel', '--role'],
+			optionFlags: ['--tag', '--channel', '--extra'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'READ_MESSAGE_HISTORY']
 		});
 	}
@@ -18,7 +18,7 @@ export default class MemberLogCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.getClan(msg, tag)
 		};
 
@@ -27,14 +27,14 @@ export default class MemberLogCommand extends Command {
 			'unordered': [1, 2],
 			'type': 'textChannel',
 			'default': (msg: Message) => msg.channel,
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'match': msg.interaction ? 'option' : 'phrase'
 		};
 
 		const role = yield {
 			type: 'role',
-			flag: '--role',
+			flag: '--extra',
 			unordered: [1, 2],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { data, channel, role };
@@ -43,18 +43,18 @@ export default class MemberLogCommand extends Command {
 	public async exec(message: Message, { data, channel, role }: { data: Clan; channel: TextChannel; role?: Role }) {
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const clans = await this.client.storage.findAll(message.guild!.id);
-		const max = this.client.settings.get<number>(message.guild!.id, SETTINGS.LIMIT, 2);
+		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
-			return message.util!.send({ embed: EMBEDS.CLAN_LIMIT(prefix) });
+			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
 		}
 
-		const dbUser = await this.client.db.collection(COLLECTIONS.LINKED_USERS)
+		const dbUser = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.findOne({ user: message.author.id });
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
-		if (!clan.verified && !Util.verifyClan(code, data, dbUser?.entries ?? [])) {
+		if (!clan.verified && !this.verifyClan(code, data, dbUser?.entries ?? [])) {
 			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const permission = missingPermissions(channel, this.client.user as User, this.clientPermissions as PermissionString[]);
@@ -63,7 +63,7 @@ export default class MemberLogCommand extends Command {
 		}
 
 		const id = await this.client.storage.register(message, {
-			op: Op.CLAN_MEMBER_LOG,
+			op: Flags.CLAN_FEED_LOG,
 			guild: message.guild!.id,
 			channel: channel.id,
 			tag: data.tag,
@@ -72,7 +72,7 @@ export default class MemberLogCommand extends Command {
 		});
 
 		await this.client.rpcHandler.add(id, {
-			op: Op.CLAN_MEMBER_LOG,
+			op: Flags.CLAN_FEED_LOG,
 			guild: message.guild!.id,
 			tag: data.tag
 		});
@@ -93,8 +93,15 @@ export default class MemberLogCommand extends Command {
 				'',
 				'**Clan Feed**',
 				'Enabled'
-			])
+			].join('\n'))
 			.setColor(this.client.embed(message));
-		return message.util!.send({ embed });
+		return message.util!.send({ embeds: [embed] });
+	}
+
+	private verifyClan(code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) {
+		// clan verification by unique code or verified co/leader
+		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
+		return clan.memberList.filter(m => ['coLeader', 'leader'].includes(m.role))
+			.some(m => verifiedTags.includes(m.tag)) || clan.description.toUpperCase().includes(code);
 	}
 }

@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Util, Message } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
@@ -6,7 +6,7 @@ import { Command } from 'discord-akairo';
 export default class FlagAddCommand extends Command {
 	public constructor() {
 		super('flag-add', {
-			category: '_hidden',
+			category: 'none',
 			channel: 'guild',
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],
@@ -17,7 +17,7 @@ export default class FlagAddCommand extends Command {
 	public *args(msg: Message): unknown {
 		const tags = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: async (msg: Message, args: string) => {
 				const tags = args ? args.split(/ +/g) : [];
 				if (tags.length > 1) return args.split(/ +/g);
@@ -27,7 +27,7 @@ export default class FlagAddCommand extends Command {
 
 		const reason = yield {
 			flag: '--reason',
-			match: msg.hasOwnProperty('token') ? 'option' : 'rest'
+			match: msg.interaction ? 'option' : 'rest'
 		};
 
 		return { tags, reason };
@@ -40,7 +40,7 @@ export default class FlagAddCommand extends Command {
 		if (!reason) return message.util!.send('You must provide a reason to flag.');
 		if (reason.length > 900) return message.util!.send('Reason must be 1024 or fewer in length.');
 
-		const flags = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
+		const flags = await this.client.db.collection(Collections.FLAGS)
 			.find({ guild: message.guild!.id })
 			.count();
 
@@ -53,15 +53,15 @@ export default class FlagAddCommand extends Command {
 					'Please consider supporting us on patreon!',
 					'',
 					'[Become a Patron](https://www.patreon.com/clashperk)'
-				]);
+				].join('\n'));
 
-			return message.util!.send({ embed });
+			return message.util!.send({ embeds: [embed] });
 		}
 
 		const players: Player[] = await Promise.all(tags.map(en => this.client.http.player(this.fixTag(en))));
 		const newFlags = [] as { name: string; tag: string }[];
 		for (const data of players.filter(en => en.ok)) {
-			const { value } = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
+			const { value } = await this.client.db.collection(Collections.FLAGS)
 				.findOneAndUpdate({ guild: message.guild!.id, tag: data.tag }, {
 					$set: {
 						guild: message.guild!.id,
@@ -69,12 +69,12 @@ export default class FlagAddCommand extends Command {
 						user_tag: message.author.tag,
 						tag: data.tag,
 						name: data.name,
-						reason: Util.cleanContent(reason, message),
+						reason: Util.cleanContent(reason, message.channel),
 						createdAt: new Date()
 					}
-				}, { upsert: true, returnOriginal: false });
+				}, { upsert: true, returnDocument: 'after' });
 
-			newFlags.push({ name: value.name, tag: value.tag });
+			newFlags.push({ name: value!.name, tag: value!.tag });
 		}
 
 		return message.util!.send(

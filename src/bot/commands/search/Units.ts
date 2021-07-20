@@ -1,7 +1,7 @@
-import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS } from '../../util/Emojis';
+import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis';
+import { MessageEmbed, Message, MessageButton, User, MessageSelectMenu, MessageActionRow } from 'discord.js';
 import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
-import { MessageEmbed, Message } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { Player } from 'clashofclans.js';
 
@@ -10,7 +10,7 @@ export default class UnitsCommand extends Command {
 		super('units', {
 			aliases: ['units', 'troops', 'u'],
 			category: 'search',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_MESSAGES', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Levels of troops, spells and heroes.',
 				usage: '<playerTag>',
@@ -25,41 +25,109 @@ export default class UnitsCommand extends Command {
 			flag: '--base',
 			unordered: true,
 			type: Argument.range('integer', 1, 25),
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const data = yield {
 			flag: '--tag',
 			unordered: true,
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolvePlayer(msg, tag, base ?? 1)
 		};
 
 		return { data };
 	}
 
-	public async exec(message: Message, { data }: { data: Player }) {
+	public async exec(message: Message, { data }: { data: Player & { user?: User } }) {
 		const embed = this.embed(data, true);
 		embed.setColor(this.client.embed(message))
 			.setDescription(`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`);
-		const msg = await message.util!.send({ embed });
 
-		await msg.react('🔥');
-		const collector = msg.createReactionCollector(
-			(reaction, user) => ['🔥'].includes(reaction.emoji.name) && user.id === message.author.id,
-			{ time: 60000, max: 1 }
-		);
+		const CUSTOM_ID = {
+			MAX_LEVEL: this.client.uuid(message.author.id),
+			TOWN_HALL_MAX: this.client.uuid(message.author.id),
+			SELECT_ACCOUNT: this.client.uuid(message.author.id)
+		};
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '🔥') {
+		const button = new MessageButton()
+			.setCustomId(CUSTOM_ID.MAX_LEVEL)
+			.setLabel('Max Level')
+			.setStyle('SECONDARY');
+
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+
+		const players = data.user ? await this.client.links.getPlayers(data.user) : [];
+		if (players.length) {
+			const options = players.map(op => ({
+				description: op.tag,
+				label: op.name, value: op.tag,
+				emoji: TOWN_HALLS[op.townHallLevel]
+			}));
+
+			const menu = new MessageSelectMenu()
+				.setCustomId(CUSTOM_ID.SELECT_ACCOUNT)
+				.setPlaceholder('Select an account!')
+				.addOptions(options);
+
+			await msg.edit({
+				components: [
+					new MessageActionRow({ components: [button] }),
+					new MessageActionRow({ components: [menu] })
+				]
+			});
+		}
+
+		const collector = msg.createMessageComponentCollector({
+			filter: action => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customId === CUSTOM_ID.MAX_LEVEL) {
 				const embed = this.embed(data, false);
 				embed.setColor(this.client.embed(message));
-				embed.setDescription(`Units for TH${data.townHallLevel} ${data.builderHallLevel ? `and BH${data.builderHallLevel}` : ''}`);
-				return msg.edit({ embed });
+				embed.setDescription(
+					`Units for TH${data.townHallLevel} ${data.builderHallLevel ? `and BH${data.builderHallLevel}` : ''}`
+				);
+
+				const msg = action.message as Message;
+				(msg.components[0].components[0] as MessageButton)
+					.setLabel('Town Hall Max Level')
+					.setCustomId(CUSTOM_ID.TOWN_HALL_MAX);
+
+				await action.update({ embeds: [embed], components: msg.components });
+			}
+
+			if (action.customId === CUSTOM_ID.TOWN_HALL_MAX) {
+				const embed = this.embed(data, true);
+				embed.setColor(this.client.embed(message));
+				embed.setDescription(
+					`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`
+				);
+
+				const msg = action.message as Message;
+				(msg.components[0].components[0] as MessageButton)
+					.setLabel('Max Level')
+					.setCustomId(CUSTOM_ID.MAX_LEVEL);
+
+				await action.update({ embeds: [embed], components: msg.components });
+			}
+
+			if (action.customId === CUSTOM_ID.SELECT_ACCOUNT && action.isSelectMenu()) {
+				data = players.find(en => en.tag === action.values[0])!;
+				const option = (action.message as Message)
+					.components[0].components[0].customId === CUSTOM_ID.MAX_LEVEL;
+				const embed = this.embed(data, option).setColor(this.client.embed(message));
+				await action.update({ embeds: [embed] });
 			}
 		});
 
-		collector.on('end', () => msg.reactions.removeAll());
+		collector.on('end', async () => {
+			for (const customID of Object.values(CUSTOM_ID)) {
+				this.client.components.delete(customID);
+			}
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
 	}
 
 	private embed(data: Player, option = true) {
@@ -171,7 +239,7 @@ export default class UnitsCommand extends Command {
 						}).join(' ')
 					)
 					.join('\n')
-			]);
+			].join('\n'));
 		}
 
 		return embed;

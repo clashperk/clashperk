@@ -1,34 +1,35 @@
-import { COLLECTIONS, Util } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Command, Argument } from 'discord-akairo';
 import { WarClan } from 'clashofclans.js';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
+import { Util } from '../../util/Util';
 
 // TODO: Fix TS
 export default class WarExport extends Command {
 	public constructor() {
 		super('export-wars', {
-			category: 'activity',
+			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {},
-			optionFlags: ['--number']
+			optionFlags: ['--wars'],
+			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
 		});
 	}
 
 	public *args(msg: Message): unknown {
 		const num = yield {
-			'flag': '--number',
 			'default': 25,
-			'type': Argument.range('integer', 1, Infinity, true),
-			'match': msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			'flag': '--wars',
+			'match': msg.interaction ? 'option' : 'phrase',
+			'type': Argument.range('integer', 1, Infinity, true)
 		};
 
 		return { num };
 	}
 
 	public async exec(message: Message, { num }: { num: number }) {
-		const clans = await this.client.db.collection(COLLECTIONS.CLAN_STORES)
+		const clans = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 
@@ -39,7 +40,7 @@ export default class WarExport extends Command {
 		num = this.client.patrons.get(message.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
 		const chunks = [];
 		for (const { tag, name } of clans) {
-			const wars = await this.client.db.collection(COLLECTIONS.CLAN_WAR_STORES)
+			const wars = await this.client.db.collection(Collections.CLAN_WARS)
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag, 'groupWar': true }],
 					state: { $in: ['inWar', 'warEnded'] }
@@ -144,7 +145,8 @@ export default class WarExport extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send(`**War Export (Last ${num})**`, {
+		return message.util!.send({
+			content: `**War Export (Last ${num})**`,
 			files: [{
 				attachment: Buffer.from(buffer),
 				name: 'clan_war_stats.xlsx'

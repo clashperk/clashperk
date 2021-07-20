@@ -15,30 +15,35 @@ export default class ArmyCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Parse army composition from a shared link.',
-				usage: '<url>',
+				usage: '<url> [name]',
 				image: {
 					text: 'How to get this link?',
 					url: 'https://i.imgur.com/uqDnt5s.png'
 				}
 			},
-			optionFlags: ['--url']
-			// regex: /^https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=u(?<units>(?:[\d+x-]+))(?:s(?<spells>(?:[\d+x-]+)))*$/i
+			optionFlags: ['--url', '--name']
 		});
 	}
 
 	public *args(msg: Message): unknown {
 		const url = yield {
 			flag: '--url',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: Argument.validate('url', (msg, url) => /^https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=(.*)/.test(url))
 		};
 
-		return { url };
+		const name = yield {
+			flag: '--name',
+			type: 'string',
+			match: msg.interaction ? 'option' : 'rest'
+		};
+
+		return { url, name };
 	}
 
-	public async exec(message: Message, { url }: { url?: URL }) {
+	public async exec(message: Message, { url, name }: { url?: URL; name?: string }) {
 		const army = url?.searchParams.get('army');
-		if (!army) return message.util!.send(`**You must provide a valid army composition URL!**\nhttps://i.imgur.com/uqDnt5s.png`);
+		if (!army) return message.util!.send(`**You must provide a valid army composition link.**\nhttps://i.imgur.com/uqDnt5s.png`);
 
 		const { prefix, suffix } = army.startsWith('s')
 			// eslint-disable-next-line multiline-ternary
@@ -62,7 +67,7 @@ export default class ArmyCommand extends Command {
 		const SPELL_COMPOS = (matches?.groups?.spells as string | null)?.split('-') ?? [];
 
 		if (!TROOP_COMPOS.length && !SPELL_COMPOS.length) {
-			return message.util!.send(`**This army composition URL is invalid!**\nhttps://i.imgur.com/uqDnt5s.png`);
+			return message.util!.send(`**This army composition link is invalid.**\nhttps://i.imgur.com/uqDnt5s.png`);
 		}
 
 		const TROOP_IDS = TROOP_COMPOS.map(parts => parts.split(/x/))
@@ -74,7 +79,11 @@ export default class ArmyCommand extends Command {
 		const malformed = ![...TROOP_IDS, ...SPELL_IDS].every(
 			en => typeof en.id === 'number' && typeof en.total === 'number' && en.total <= TOTAL_UNITS
 		);
+<<<<<<< HEAD
 		if (malformed) return message.util!.send(`**This army composition URL is invalid!**\nhttps://i.imgur.com/uqDnt5s.png`);
+=======
+		if (malformed) return message.util!.send(`**This army composition link is invalid.**\nhttps://i.imgur.com/uqDnt5s.png`);
+>>>>>>> next
 
 		const uniqueSpells = SPELL_IDS.reduce((prev, curr) => {
 			if (!prev.includes(curr.id)) prev.push(curr.id);
@@ -176,7 +185,7 @@ export default class ArmyCommand extends Command {
 		});
 
 		if (!spells.length && !troops.length && !superTroops.length && !seigeMachines.length) {
-			return message.util!.send('**This army composition URL is invalid!**');
+			return message.util!.send('**This army composition link is invalid.**');
 		}
 
 		const hallByUnlockTH = Math.max(
@@ -207,7 +216,7 @@ export default class ArmyCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setDescription([
-				`**TH ${townHallLevel}${townHallLevel === 14 ? '' : '+'} Army Composition**`,
+				`**${name ?? 'Shared Army Composition'} [TH ${townHallLevel}${townHallLevel === 14 ? '' : '+'}]**`,
 				`[Click to Copy](${url!.href})`,
 				'',
 				`${EMOJIS.TROOPS} **${totalTroop}** ${EMOJIS.SEPLLS} **${totalSpell}**`
@@ -264,7 +273,15 @@ export default class ArmyCommand extends Command {
 		const mismatch = (troops.length + spells.length + superTroops.length + seigeMachines.length) !== (TROOP_IDS.length + SPELL_IDS.length);
 
 		const invalid = mismatch || duplicate || totalTroop > TOTAL_UNITS || totalSpell > TOTAL_SPELLS || totalSeige > TOTAL_SEIGE || superTroops.length > TOTAL_SUPER_TROOPS;
+<<<<<<< HEAD
 		return message.util!.send((invalid) ? '**This URL is invalid and may not work!**' : '', { embed });
+=======
+		return message.util!.send({ embeds: [embed], content: (invalid) ? '**This link is invalid and may not work.**' : undefined });
+	}
+
+	private padding(num: number) {
+		return `${num.toString().padStart(2, ' ')}${num > 99 ? '' : 'x'}`;
+>>>>>>> next
 	}
 
 	private padding(num: number) {

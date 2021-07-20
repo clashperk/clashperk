@@ -1,8 +1,9 @@
-import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
-import { MessageEmbed, Message, Util } from 'discord.js';
+import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
+import { MessageEmbed, Message, MessageButton, MessageActionRow } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
+import { Util } from '../../util/Util';
 import moment from 'moment';
 
 export default class CWLRosterCommand extends Command {
@@ -10,9 +11,9 @@ export default class CWLRosterCommand extends Command {
 		super('cwl-roster', {
 			aliases: ['roster', 'cwl-roster'],
 			category: 'war',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY', 'MANAGE_MESSAGES'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'CWL Roster and Town-Hall distribution.',
+				content: 'CWL Roster and Town Hall distribution.',
 				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
@@ -23,7 +24,7 @@ export default class CWLRosterCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
@@ -54,11 +55,17 @@ export default class CWLRosterCommand extends Command {
 
 		const clanRounds = [];
 		let [stars, destruction] = [0, 0];
-		const ranking: { [key: string]: any } = {};
+		const ranking: {
+			[key: string]: {
+				name: string;
+				tag: string;
+				stars: number;
+				destruction: number;
+			};
+		} = {};
 
 		const warTags = rounds.map(round => round.warTags).flat();
 		const wars: (ClanWar & { warTag: string })[] = await Promise.all(warTags.map(warTag => this.fetch(warTag)));
-
 		for (const data of body.clans) {
 			ranking[data.tag] = {
 				name: data.name,
@@ -129,10 +136,10 @@ export default class CWLRosterCommand extends Command {
 				`${EMOJIS.HASH} ${townHalls.map(th => ORANGE_NUMBERS[th]).join('')} **Clan**`,
 				ranks.sort((a, b) => b.stars - a.stars)
 					.map(
-						(clan, i) => `${BLUE_NUMBERS[++i]} ${this.flat(clan.tag, townHalls, body)} \u200e${clan.name as string}`
+						(clan, i) => `${BLUE_NUMBERS[++i]} ${this.flat(clan.tag, townHalls, body)} \u200e${clan.name}`
 					)
 					.join('\n')
-			]);
+			].join('\n'));
 
 		if (next) {
 			const opprank = ranks.findIndex(clan => clan.tag === next.opponent.tag);
@@ -145,24 +152,27 @@ export default class CWLRosterCommand extends Command {
 				`${EMOJIS.HASH} ${townHalls.map(th => ORANGE_NUMBERS[th]).join('')} **Clan**`,
 				`${BLUE_NUMBERS[rank + 1]} ${this.getNextRoster(next.clan, townHalls)} ${next.clan.name}`,
 				`${BLUE_NUMBERS[opprank + 1]} ${this.getNextRoster(next.opponent, townHalls)} ${next.opponent.name}`
-			]);
+			].join('\n'));
 		}
 
 		if (next?.round || rounds.length === 7) {
 			embed.addField('\u200b', `Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`);
 		}
 
-		const msg = await message.util!.send({ embed });
-		await msg.react(EMOJIS.HASH);
+		const customID = this.client.uuid(message.author.id);
+		const button = new MessageButton()
+			.setCustomId(customID)
+			.setStyle('SECONDARY')
+			.setLabel('Detailed Roster');
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const collector = await msg.awaitMessageComponent({
+			filter: action => action.customId === customID && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		}).catch(() => null);
 
-		const { id } = Util.parseEmoji(EMOJIS.HASH)!;
-		const collector = await msg.awaitReactions(
-			(reaction, user) => reaction.emoji.id === id && user.id === message.author.id,
-			{ max: 1, time: 60000, errors: ['time'] }
-		).catch(() => null);
-
-		if (!msg.deleted) await msg.reactions.removeAll().catch(() => null);
-		if (!collector || !collector.size) return;
+		if (!msg.deleted) await msg.edit({ components: [] });
+		this.client.components.delete(customID);
+		if (!collector) return;
 
 		embed.fields = [];
 		embed.setFooter(`Clan War League ${moment(body.season).format('MMMM YYYY')}`)
@@ -181,24 +191,15 @@ export default class CWLRosterCommand extends Command {
 				.sort((a, b) => b.level - a.level);
 
 			embed.addField(`\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`, [
-				this.chunk(townHalls).map(
+				Util.chunk(townHalls, 5).map(
 					chunks => chunks.map(
 						th => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`
 					).join(' ')
 				).join('\n')
-			]);
+			].join('\n'));
 		}
 
-		return message.util!.send({ embed });
-	}
-
-	private chunk(items: { [key: string]: number }[]) {
-		const chunk = 5;
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
-		}
-		return array;
+		return message.util!.send({ embeds: [embed] });
 	}
 
 	private getNextRoster(clan: WarClan, townHalls: number[]) {

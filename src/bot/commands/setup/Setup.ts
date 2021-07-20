@@ -1,15 +1,16 @@
 import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
-import { Message, TextChannel, MessageEmbed } from 'discord.js';
-import { BitField, Collections } from '@clashperk/node';
+import { Message, TextChannel, MessageEmbed, Snowflake, MessageButton, MessageActionRow } from 'discord.js';
+import { Flags, Collections } from '../../util/Constants';
+import { Util } from '../../util/Util';
 
 const names: { [key: string]: string } = {
-	[BitField.DONATION_LOG]: 'Donation Log',
-	[BitField.CLAN_FEED_LOG]: 'Clan Feed',
-	[BitField.LAST_SEEN_LOG]: 'Last Seen',
-	[BitField.CLAN_EMBED_LOG]: 'Clan Embed',
-	[BitField.CLAN_GAMES_LOG]: 'Clan Games',
-	[BitField.CLAN_WAR_LOG]: 'War Feed',
-	[BitField.CHANNEL_LINKED]: 'Linked Channel'
+	[Flags.DONATION_LOG]: 'Donation Log',
+	[Flags.CLAN_FEED_LOG]: 'Clan Feed',
+	[Flags.LAST_SEEN_LOG]: 'Last Seen',
+	[Flags.CLAN_EMBED_LOG]: 'Clan Embed',
+	[Flags.CLAN_GAMES_LOG]: 'Clan Games',
+	[Flags.CLAN_WAR_LOG]: 'War Feed',
+	[Flags.CHANNEL_LINKED]: 'Linked Channel'
 };
 
 export default class SetupCommand extends Command {
@@ -23,7 +24,7 @@ export default class SetupCommand extends Command {
 				content: [
 					'Enable features or assign clans to channels.',
 					'',
-					'• **[Commands Only](https://clashperk.com/guide/)**',
+					'• **[Channel Link](https://clashperk.com/guide/)**',
 					'• `#CLAN_TAG #CHANNEL`',
 					'',
 					'• **[Clan Feed](https://clashperk.com/guide/)**',
@@ -73,21 +74,21 @@ export default class SetupCommand extends Command {
 				(msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
 			),
 			flag: ['--option'],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		if (method && (method as string).includes('setup')) return Flag.continue(method);
 
 		const tag = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'none',
+			match: msg.interaction ? 'option' : 'none',
 			type: (msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
 		};
 
 		const channel = yield {
 			flag: '--channel',
 			type: 'textChannel',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		return { channel, tag: tag ? tag : method };
@@ -108,9 +109,24 @@ export default class SetupCommand extends Command {
 				'',
 				'**Examples**',
 				this.description.examples.map((en: string) => `\`${prefix}setup ${en}\``).join('\n')
-			]);
+			].join('\n'));
 
-		await message.channel.send({ embed });
+		const customID = this.client.uuid(message.author.id);
+		const button = new MessageButton()
+			.setCustomId(customID)
+			.setStyle('SECONDARY')
+			.setLabel('Show all Linked Clans');
+		const msg = await message.channel.send({ embeds: [embed], components: [new MessageActionRow().addComponents(button)] });
+
+		const interaction = await msg.awaitMessageComponent({
+			filter: action => action.customId === customID && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		}).catch(() => null);
+
+		if (!msg.deleted) await msg.edit({ components: [] });
+		if (!interaction) return;
+
+		await interaction.defer();
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const fetched = await Promise.all(
 			clans.map(
@@ -130,37 +146,37 @@ export default class SetupCommand extends Command {
 
 					return {
 						name: clan.name, tag: clan.tag, alias: clan.alias ? `(${clan.alias}) ` : '',
-						roles: clan.role_ids?.map(id => message.guild!.roles.cache.get(id)?.toString()) ?? [],
-						channels: clan.channels?.map(id => this.client.channels.cache.get(id)?.toString()) ?? [],
+						roles: clan.role_ids?.map(id => message.guild!.roles.cache.get(id as Snowflake)?.toString()) ?? [],
+						channels: clan.channels?.map(id => this.client.channels.cache.get(id as Snowflake)?.toString()) ?? [],
 						entries: [
 							{
-								flag: BitField.DONATION_LOG,
+								flag: Flags.DONATION_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								channel: this.client.channels.cache.get(bit1?.channel)?.toString()
 							},
 							{
-								flag: BitField.CLAN_FEED_LOG,
+								flag: Flags.CLAN_FEED_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								role: message.guild!.roles.cache.get(bit2?.role)?.toString(),
 								channel: this.client.channels.cache.get(bit2?.channel)?.toString()
 							},
 							{
-								flag: BitField.LAST_SEEN_LOG,
+								flag: Flags.LAST_SEEN_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								channel: this.client.channels.cache.get(bit3?.channel)?.toString()
 							},
 							{
-								flag: BitField.CLAN_EMBED_LOG,
+								flag: Flags.CLAN_EMBED_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								channel: this.client.channels.cache.get(bit4?.channel)?.toString()
 							},
 							{
-								flag: BitField.CLAN_GAMES_LOG,
+								flag: Flags.CLAN_GAMES_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								channel: this.client.channels.cache.get(bit5?.channel)?.toString()
 							},
 							{
-								flag: BitField.CLAN_WAR_LOG,
+								flag: Flags.CLAN_WAR_LOG,
 								ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 								channel: this.client.channels.cache.get(bit6?.channel)?.toString()
 							}
@@ -171,7 +187,9 @@ export default class SetupCommand extends Command {
 		);
 
 		if (!fetched.length) {
-			return message.util!.send(`${message.guild!.name} doesn't have any clans. Why not add some?`);
+			return interaction.followUp({
+				content: `${message.guild!.name} doesn't have any clans. Why not add some?`
+			});
 		}
 
 		const embeds = fetched.map(
@@ -200,22 +218,8 @@ export default class SetupCommand extends Command {
 			}
 		);
 
-		for (const chunks of this.chunk(embeds)) {
-			if (message.hasOwnProperty('token')) {
-				await message.util!.send(chunks);
-			} else {
-				// @ts-expect-error
-				await this.client.api.channels[message.channel.id].messages.post({ data: { embeds: chunks } });
-			}
+		for (const chunks of Util.chunk(embeds, 10)) {
+			await interaction.followUp({ embeds: chunks });
 		}
-	}
-
-	private chunk<T>(items: T[]) {
-		const chunk = 10;
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
-		}
-		return array;
 	}
 }

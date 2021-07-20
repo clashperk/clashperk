@@ -1,8 +1,9 @@
 import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis';
-import { MessageEmbed, Util, Message } from 'discord.js';
+import { MessageEmbed, Util, Message, MessageButton, MessageActionRow } from 'discord.js';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
-import { Collections, Season } from '@clashperk/node';
+import { Season } from '../../util/Util';
+import { Collections } from '../../util/Constants';
 
 const clanTypes: { [key: string]: string } = {
 	inviteOnly: 'Invite Only',
@@ -28,7 +29,7 @@ export default class ClanCommand extends Command {
 	public *args(msg: Message): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase',
+			match: msg.interaction ? 'option' : 'phrase',
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
@@ -61,7 +62,7 @@ export default class ClanCommand extends Command {
 			`${EMOJIS.CLAN} **${data.clanLevel}** ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
 			'',
 			`${data.description}\n\n${data.labels.map(d => `${CLAN_LABELS[d.name]} ${d.name}`).join('\n')}`
-		]);
+		].join('\n'));
 
 		const location = data.location
 			? data.location.isCountry
@@ -85,7 +86,7 @@ export default class ClanCommand extends Command {
 			'**Requirements**',
 			`⚙️ ${clanTypes[data.type]} ${EMOJIS.TROPHY} ${data.requiredTrophies} Required`,
 			'\u200b\u2002'
-		]);
+		].join('\n'));
 
 		const [action, season, wars] = await Promise.all([this.getActivity(data), this.getSeason(data), this.getWars(data.tag)]);
 		const fields = [];
@@ -112,7 +113,7 @@ export default class ClanCommand extends Command {
 				`${EMOJIS.CROSS_SWORD} ${wars.length} Wars ${EMOJIS.OK} ${won} Won ${EMOJIS.WRONG} ${lost} Lost`
 			]);
 		}
-		if (fields.length) embed.addField(`**Season Stats (${Season.previousID})**`, [...fields, '\u200e']);
+		if (fields.length) embed.addField(`**Season Stats (${Season.previousID})**`, [...fields, '\u200e'].join('\n'));
 
 		embed.addField('**War and League**', [
 			'**War Log**',
@@ -127,9 +128,28 @@ export default class ClanCommand extends Command {
 				: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`,
 			'**War League**',
 			`${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
-		]);
+		].join('\n'));
 
-		return message.util!.send({ embed });
+		const customId = this.client.uuid(message.author.id);
+		const button = new MessageButton()
+			.setLabel('Clan Badge')
+			.setStyle('SECONDARY')
+			.setCustomId(customId);
+		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+
+		const interaction = await msg.awaitMessageComponent({
+			filter: action => action.customId === customId && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		}).catch(() => null);
+
+		if (!msg.deleted) await msg.edit({ components: [] });
+		return interaction?.reply({
+			embeds: [{
+				color: this.client.embed(message),
+				image: { url: data.badgeUrls.large },
+				author: { name: `${data.name} (${data.tag})` }
+			}]
+		});
 	}
 
 	private async getActivity(clan: Clan): Promise<{ avg_total: number; avg_online: number } | null> {

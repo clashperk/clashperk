@@ -1,10 +1,9 @@
 import { MessageEmbed, Collection, PermissionString, TextChannel, WebhookClient } from 'discord.js';
 import { BLUE_NUMBERS, RED_NUMBERS } from '../util/NumEmojis';
 import { PLAYER_LEAGUES, EMOJIS } from '../util/Emojis';
-import { COLLECTIONS } from '../util/Constants';
+import { Collections } from '../util/Constants';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
-import { Collections } from '@clashperk/node';
 
 export interface Donation {
 	clan: {
@@ -155,7 +154,7 @@ export default class DonationLog {
 					}
 					return `\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[m.donated]} ${m.name}`;
 				}).join('\n').substring(0, 1024)
-			]);
+			].join('\n'));
 		}
 
 		if (data.received.length) {
@@ -169,15 +168,15 @@ export default class DonationLog {
 					}
 					return `\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[m.received]} ${m.name}`;
 				}).join('\n').substring(0, 1024)
-			]);
+			].join('\n'));
 		}
 
-		if (channel instanceof TextChannel) return channel.send({ embed }).catch(() => null);
+		if (channel instanceof TextChannel) return channel.send({ embeds: [embed] }).catch(() => null);
 
 		try {
 			const message = await channel.send({ embeds: [embed] });
-			if (message.channel.id !== cache.channel) {
-				await message.delete();
+			if (message.channel_id !== cache.channel) {
+				await channel.deleteMessage(message.id);
 				return this.recreateWebhook(id);
 			}
 		} catch (error) {
@@ -192,7 +191,7 @@ export default class DonationLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(COLLECTIONS.DONATION_LOGS)
+		await this.client.db.collection(Collections.DONATION_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
@@ -205,7 +204,7 @@ export default class DonationLog {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(COLLECTIONS.DONATION_LOGS)
+		const data = await this.client.db.collection(Collections.DONATION_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;

@@ -8,7 +8,7 @@ export default class Http extends Client {
 		super({ baseURL: process.env.BASE_URL });
 
 		this.timeout = 10000;
-		this.token = [...process.env.CLASH_TOKENS!.split(',')];
+		this.keys = [...process.env.CLASH_TOKENS!.split(',')];
 	}
 
 	public async fetch(path: string) {
@@ -28,7 +28,7 @@ export default class Http extends Client {
 	}
 
 	public fixTag(tag: string) {
-		return super.parseTag(tag, false);
+		return super.parseTag(tag);
 	}
 
 	public detailedClanMembers(members: { tag: string }[] = []): Promise<Player[]> {
@@ -82,12 +82,7 @@ export default class Http extends Client {
 		return new Date().getDate() >= 1 && new Date().getDate() <= 10;
 	}
 
-	public async init() {
-		await this.login();
-		setInterval(this.login.bind(this), 1 * 60 * 60 * 1000);
-	}
-
-	private async login() {
+	public async login() {
 		const res = await fetch('https://cocdiscordlink.azurewebsites.net/api/login', {
 			method: 'POST',
 			headers: {
@@ -101,7 +96,8 @@ export default class Http extends Client {
 		}).catch(() => null);
 		const data = await res?.json().catch(() => null);
 
-		if (data?.token) this.bearerToken = data.token as string;
+		if (data?.token) this.bearerToken = data.token;
+		setInterval(this.login.bind(this), 1 * 60 * 60 * 1000);
 		return Promise.resolve(res?.status === 200 && this.bearerToken);
 	}
 

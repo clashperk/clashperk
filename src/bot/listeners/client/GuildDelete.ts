@@ -1,4 +1,4 @@
-import { COLLECTIONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Guild, Webhook } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Listener } from 'discord-akairo';
@@ -30,10 +30,10 @@ export default class GuildDeleteListener extends Listener {
 		await this.client.stats.deletion();
 		await this.client.stats.guilds(guild, 0);
 
-		const values: number[] = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]);
+		const values = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]) as number[];
 		const guilds = values.reduce((prev, curr) => curr + prev, 0);
 
-		const user = await this.client.users.fetch(guild.ownerID);
+		const user = await this.client.users.fetch(guild.ownerId);
 		const webhook = await this.fetchWebhook().catch(() => null);
 		if (webhook) {
 			const embed = this.client.util.embed()
@@ -42,22 +42,23 @@ export default class GuildDeleteListener extends Listener {
 				.setTitle(`${EMOJIS.OWNER} ${user.tag} (${user.id})`)
 				.setFooter(`${guild.memberCount} members (Shard ${guild.shard.id})`, user.displayAvatarURL())
 				.setTimestamp();
-			return webhook.send(`**Total ${guilds} | Growth ${await this.growth()}**`, {
+			return webhook.send({
 				embeds: [embed],
 				username: this.client.user!.username,
-				avatarURL: this.client.user!.displayAvatarURL()
+				avatarURL: this.client.user!.displayAvatarURL(),
+				content: `**Total ${guilds} | Growth ${await this.growth()}**`
 			});
 		}
 	}
 
 	private async growth() {
-		const cursor = this.client.db.collection(COLLECTIONS.BOT_GROWTH).find();
+		const cursor = this.client.db.collection(Collections.BOT_GROWTH).find();
 		const data = await cursor.sort({ createdAt: -1 }).limit(1).next();
-		return [data.addition, data.deletion, data.addition - data.deletion].join('/');
+		return [data!.addition, data!.deletion, data!.addition - data!.deletion].join('/');
 	}
 
 	private async delete(guild: Guild) {
-		const db = this.client.db.collection(COLLECTIONS.CLAN_STORES);
+		const db = this.client.db.collection(Collections.CLAN_STORES);
 
 		await db.find({ guild: guild.id })
 			.forEach(data => this.client.rpcHandler.delete(data._id?.toString(), { tag: data.tag, op: 0, guild: guild.id }));

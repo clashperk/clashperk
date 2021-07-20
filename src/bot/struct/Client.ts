@@ -1,17 +1,18 @@
-import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler, Flag, Command } from 'discord-akairo';
-import { APIApplicationCommandInteractionDataOption, APIInteraction } from 'discord-api-types/v8';
-import Interaction, { InteractionParser } from './Interaction';
-import { MessageEmbed, Message, Intents } from 'discord.js';
+import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } from 'discord-akairo';
+import { MessageEmbed, Message, Intents, Snowflake, Options } from 'discord.js';
 import { loadSync } from '@grpc/proto-loader';
 import RPCHandler from '../core/RPCHandler';
 import Settings from './SettingsProvider';
 import { Connection } from './Database';
+import LinkHandler from './LinkHandler';
+import { Automaton } from './Automaton';
 import Storage from './StorageHandler';
 import * as gRPC from '@grpc/grpc-js';
 import Logger from '../util/Logger';
 import Stats from './StatsHandler';
 import Resolver from './Resolver';
 import Patrons from './Patrons';
+import * as uuid from 'uuid';
 import { Db } from 'mongodb';
 import Http from './Http';
 import path from 'path';
@@ -27,17 +28,25 @@ declare module 'discord-akairo' {
 		storage: Storage;
 		resolver: Resolver;
 		settings: Settings;
+		links: LinkHandler;
+		automaton: Automaton;
 		rpcHandler: RPCHandler;
 		embed(msg: Message): number;
 		commandHandler: CommandHandler;
 		listenerHandler: ListenerHandler;
 		inhibitorHandler: InhibitorHandler;
+		components: Map<string, Snowflake[]>;
+		uuid(...userIds: Snowflake[]): string;
 	}
 }
 
 declare module 'discord.js' {
-	interface ClientEvents {
-		interaction: [Interaction];
+	interface CommandInteraction {
+		author: User;
+	}
+
+	interface ButtonInteraction {
+		author: User;
 	}
 }
 
@@ -63,33 +72,54 @@ export default class Client extends AkairoClient {
 	public storage!: Storage;
 	public resolver!: Resolver;
 	public settings!: Settings;
+	public links!: LinkHandler;
+	public automaton!: Automaton;
 	public rpcHandler!: RPCHandler;
 	public logger: Logger = new Logger(this);
+	public components = new Map<string, Snowflake[]>();
 
 	public commandHandler: CommandHandler = new CommandHandler(this, {
 		directory: path.join(__dirname, '..', 'commands'),
 		aliasReplacement: /-/g,
-		prefix: message => process.env.NODE_ENV === 'production' ? this.settings.get(message.guild!, 'prefix', '!') : '+',
 		allowMention: true,
 		commandUtil: true,
-		commandUtilLifetime: 15e4,
-		commandUtilSweepInterval: 15e4,
 		handleEdits: true,
+		commandUtilLifetime: 5 * 60 * 1000,
+		commandUtilSweepInterval: 5 * 60 * 1000,
 		defaultCooldown: (message: Message) => this.patrons.get(message) ? 1000 : 3000,
+		prefix: message => process.env.NODE_ENV === 'production' ? this.settings.get(message.guild!, 'prefix', '!') : '+',
 		argumentDefaults: {
 			prompt: {
-				modifyStart: (msg, txt) => new MessageEmbed()
-					.setAuthor(txt)
-					.setFooter('Type `cancel` to cancel the command.'),
-				modifyRetry: (msg, txt) => new MessageEmbed()
-					.setAuthor(txt)
-					.setFooter('Type `cancel` to cancel the command.'),
-				timeout: new MessageEmbed()
-					.setAuthor('Time ran out, command has been cancelled!'),
-				ended: new MessageEmbed()
-					.setAuthor('Too many retries, command has been cancelled!'),
-				cancel: new MessageEmbed()
-					.setAuthor('Command has been cancelled!'),
+				modifyStart: (msg, txt) => ({
+					embeds: [
+						new MessageEmbed()
+							.setAuthor(txt)
+							.setFooter('Type `cancel` to cancel the command.')
+					]
+				}),
+				modifyRetry: (msg, txt) => ({
+					embeds: [
+						new MessageEmbed()
+							.setAuthor(txt)
+							.setFooter('Type `cancel` to cancel the command.')
+					]
+				}),
+				timeout: {
+					embeds: [
+						new MessageEmbed()
+							.setAuthor('Time ran out, command has been cancelled!')
+					]
+				},
+				ended: {
+					embeds: [
+						new MessageEmbed()
+							.setAuthor('Too many retries, command has been cancelled!')
+					]
+				},
+				cancel: {
+					embeds: [new MessageEmbed()
+						.setAuthor('Command has been cancelled!')]
+				},
 				retries: 1,
 				time: 30000
 			}
@@ -107,85 +137,19 @@ export default class Client extends AkairoClient {
 	public constructor(config: any) {
 		super({
 			ownerID: config.owner,
-			messageCacheMaxSize: 10,
-			messageCacheLifetime: 150,
-			messageSweepInterval: 150,
-			ws: {
-				intents: [
-					Intents.FLAGS.GUILDS,
-					Intents.FLAGS.GUILD_WEBHOOKS,
-					Intents.FLAGS.GUILD_MESSAGES,
-					Intents.FLAGS.GUILD_MESSAGE_REACTIONS
-				]
-			}
+			messageCacheLifetime: 15 * 60,
+			messageSweepInterval: 15 * 60,
+			intents: [
+				Intents.FLAGS.GUILDS,
+				Intents.FLAGS.GUILD_WEBHOOKS,
+				Intents.FLAGS.GUILD_MESSAGES,
+				Intents.FLAGS.GUILD_MESSAGE_REACTIONS
+			],
+			makeCache: Options.cacheWithLimits({
+				MessageManager: 15,
+				PresenceManager: 0
+			})
 		});
-
-		// @ts-expect-error
-		this.ws.on('INTERACTION_CREATE', async (res: APIInteraction) => {
-			if (!res.member) return; // eslint-disable-line
-			if (res.type === 1) return;
-			// @ts-expect-error
-			if (res.type === 3) await this.api.channels[res.channel_id].messages[res.message.id].delete();
-			const interaction = await new Interaction(this, res).parse(res);
-
-			// @ts-expect-error
-			const alias = res.type === 2 ? [res.data!.name] : res.data.custom_id.split(/ +/g);
-			const command = this.commandHandler.findCommand(alias[0]);
-			if (!command) return; // eslint-disable-line
-
-			if (!interaction.channel.permissionsFor(this.user!)!.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) {
-				const perms = interaction.channel.permissionsFor(this.user!)!.missing(['SEND_MESSAGES', 'VIEW_CHANNEL'])
-					.map(perm => {
-						if (perm === 'VIEW_CHANNEL') return 'Read Messages';
-						return perm.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase());
-					});
-
-				// @ts-expect-error
-				return this.api.interactions(res.id, res.token).callback.post({
-					data: {
-						type: 4,
-						data: {
-							content: `Missing **${perms.join('** and **')}** permission${perms.length > 1 ? 's' : ''}.`,
-							flags: 64
-						}
-					}
-				});
-			}
-
-			const flags = ['help', 'invite', 'stats', 'guide'].includes(command.id) ? 64 : 0;
-			// @ts-expect-error
-			await this.api.interactions(res.id, res.token).callback.post({ data: { type: 5, data: { flags } } });
-			return this.handleInteraction(interaction, command, res.type === 2 ? interaction.options : alias.slice(1).join(' '));
-		});
-	}
-
-	private contentParser(command: Command, content: string | APIApplicationCommandInteractionDataOption[]) {
-		if (Array.isArray(content)) {
-			// @ts-expect-error
-			const contentParser = new InteractionParser({ flagWords: command.contentParser.flagWords, optionFlagWords: command.contentParser.optionFlagWords });
-			return contentParser.parse(content);
-		}
-		// @ts-expect-error
-		return command.contentParser.parse(content);
-	}
-
-	private async handleInteraction(interaction: Interaction, command: Command, content: string | APIApplicationCommandInteractionDataOption[], ignore = false): Promise<any> {
-		if (!ignore) {
-			// @ts-expect-error
-			if (await this.commandHandler.runPostTypeInhibitors(interaction, command)) return;
-		}
-		const parsed = this.contentParser(command, content);
-		// @ts-expect-error
-		const args = await command.argumentRunner.run(interaction, parsed, command.argumentGenerator);
-		if (Flag.is(args, 'cancel')) {
-			return this.commandHandler.emit('commandCancelled', interaction, command);
-		} else if (Flag.is(args, 'continue')) {
-			const continueCommand = this.commandHandler.modules.get(args.command)!;
-			return this.handleInteraction(interaction, continueCommand, args.rest, args.ignore);
-		}
-
-		// @ts-expect-error
-		return this.commandHandler.runCommand(interaction, command, args);
 	}
 
 	private async init() {
@@ -209,7 +173,7 @@ export default class Client extends AkairoClient {
 		this.stats = new Stats(this);
 
 		this.http = new Http();
-		await this.http.init();
+		await this.http.login();
 
 		// @ts-expect-error
 		this.rpc = new Route.RouteGuide(process.env.SERVER, gRPC.credentials.createInsecure());
@@ -218,17 +182,25 @@ export default class Client extends AkairoClient {
 		await this.settings.init();
 		await this.patrons.refresh();
 
-		this.rpcHandler = new RPCHandler(this);
 		this.storage = new Storage(this);
 		this.resolver = new Resolver(this);
+		this.links = new LinkHandler(this);
+		this.automaton = new Automaton(this);
+		this.rpcHandler = new RPCHandler(this);
 
 		this.once('ready', () => {
 			if (process.env.NODE_ENV === 'production') return this.run();
 		});
 	}
 
-	public embed(message: Message) {
-		return this.settings.get<number>(message.guild!, 'color', undefined);
+	public embed(message: Message | Snowflake) {
+		return this.settings.get<number>(typeof message === 'string' ? message : message.guild!, 'color', undefined);
+	}
+
+	public uuid(...userIds: Snowflake[]) {
+		const uniqueId = uuid.v4();
+		this.components.set(uniqueId, userIds);
+		return uniqueId;
 	}
 
 	private run() {

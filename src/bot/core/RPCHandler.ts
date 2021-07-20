@@ -1,5 +1,6 @@
-import { Collections, BitField } from '@clashperk/node';
+import { Collections, Flags } from '../util/Constants';
 import MaintenanceHandler from './Maintenance';
+import { RoleManager } from './RoleManager';
 import ClanEmbedLog from './ClanEmbedLog';
 import ClanGamesLog from './ClanGamesLog';
 import LastSeenLog from './LastSeenLog';
@@ -8,7 +9,6 @@ import DonationLog from './DonationLog';
 import ClanWarLog from './ClanWarLog';
 import Client from '../struct/Client';
 import Queue from '../struct/Queue';
-import { RoleManager } from './RoleManager';
 
 export default class RPCHandler {
 	private paused = Boolean(false);
@@ -46,23 +46,23 @@ export default class RPCHandler {
 			await this.queue.wait();
 			try {
 				switch (data.op) {
-					case BitField.DONATION_LOG:
+					case Flags.DONATION_LOG:
 						await this.donationLog.exec(data.tag, data);
 						break;
-					case BitField.LAST_SEEN_LOG:
+					case Flags.LAST_SEEN_LOG:
 						await this.lastSeenLog.exec(data.tag, data.clan, data.members);
 						break;
-					case BitField.CLAN_FEED_LOG:
+					case Flags.CLAN_FEED_LOG:
 						await this.clanFeedLog.exec(data.tag, data);
 						await this.roleManager.exec(data.tag, data);
 						break;
-					case BitField.CLAN_EMBED_LOG:
+					case Flags.CLAN_EMBED_LOG:
 						await this.clanEmbedLog.exec(data.tag, data.clan);
 						break;
-					case BitField.CLAN_GAMES_LOG:
+					case Flags.CLAN_GAMES_LOG:
 						await this.clanGamesLog.exec(data.tag, data.clan, data.updated);
 						break;
-					case BitField.CLAN_WAR_LOG:
+					case Flags.CLAN_WAR_LOG:
 						await this.clanWarLog.exec(data.clan.tag, data);
 						break;
 					default:
@@ -117,16 +117,16 @@ export default class RPCHandler {
 
 	public async add(id: string, data: { tag: string; guild: string; op: number }) {
 		const OP = {
-			[BitField.DONATION_LOG]: this.donationLog,
-			[BitField.CLAN_FEED_LOG]: this.clanFeedLog,
-			[BitField.LAST_SEEN_LOG]: this.lastSeenLog,
-			[BitField.CLAN_EMBED_LOG]: this.clanEmbedLog,
-			[BitField.CLAN_GAMES_LOG]: this.clanGamesLog,
-			[BitField.CLAN_WAR_LOG]: this.clanWarLog
+			[Flags.DONATION_LOG]: this.donationLog,
+			[Flags.CLAN_FEED_LOG]: this.clanFeedLog,
+			[Flags.LAST_SEEN_LOG]: this.lastSeenLog,
+			[Flags.CLAN_EMBED_LOG]: this.clanEmbedLog,
+			[Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
+			[Flags.CLAN_WAR_LOG]: this.clanWarLog
 		};
 
 		if (data.op.toString() in OP) {
-			await OP[data.op as keyof typeof OP].add(id);
+			await OP[data.op].add(id);
 		} else {
 			Object.values(OP).map(Op => Op.add(id));
 		}
@@ -137,16 +137,16 @@ export default class RPCHandler {
 
 	public delete(id: string, data: { tag: string; op: number; guild: string }) {
 		const OP = {
-			[BitField.DONATION_LOG]: this.donationLog,
-			[BitField.CLAN_FEED_LOG]: this.clanFeedLog,
-			[BitField.LAST_SEEN_LOG]: this.lastSeenLog,
-			[BitField.CLAN_EMBED_LOG]: this.clanEmbedLog,
-			[BitField.CLAN_GAMES_LOG]: this.clanGamesLog,
-			[BitField.CLAN_WAR_LOG]: this.clanWarLog
+			[Flags.DONATION_LOG]: this.donationLog,
+			[Flags.CLAN_FEED_LOG]: this.clanFeedLog,
+			[Flags.LAST_SEEN_LOG]: this.lastSeenLog,
+			[Flags.CLAN_EMBED_LOG]: this.clanEmbedLog,
+			[Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
+			[Flags.CLAN_WAR_LOG]: this.clanWarLog
 		};
 
 		if (data.op.toString() in OP) {
-			OP[data.op as keyof typeof OP].delete(id);
+			OP[data.op].delete(id);
 		} else {
 			Object.values(OP).map(Op => Op.delete(id));
 		}

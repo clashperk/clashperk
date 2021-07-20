@@ -1,7 +1,6 @@
-import { MessageEmbed, PermissionString, TextChannel, Collection, Guild, GuildMember, WebhookClient } from 'discord.js';
+import { MessageEmbed, PermissionString, TextChannel, Collection, WebhookClient } from 'discord.js';
 import { TOWN_HALLS, EMOJIS, PLAYER_LEAGUES, HEROES } from '../util/Emojis';
-import { COLLECTIONS } from '../util/Constants';
-import { Collections } from '@clashperk/node';
+import { Collections } from '../util/Constants';
 import { Player } from 'clashofclans.js';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
@@ -10,13 +9,6 @@ import moment from 'moment';
 const OP: { [key: string]: number } = {
 	JOINED: 0x38d863, // GREEN
 	LEFT: 0xeb3508 // RED
-};
-
-const ActionType: { [key: string]: string } = {
-	LEFT: '%PLAYER% left.',
-	JOINED: '%PLAYER% joined.',
-	DEMOTED: '%PLAYER% has been demoted.',
-	PROMOTED: '%PLAYER% has been promoted.'
 };
 
 interface Member {
@@ -41,10 +33,6 @@ interface Feed {
 		clan: { tag: string };
 	}[];
 }
-
-const roles: { [key: string]: number } = {
-	member: 1, admin: 2, coLeader: 3
-};
 
 export default class ClanFeedLog {
 	public cached: Collection<string, any>;
@@ -77,10 +65,6 @@ export default class ClanFeedLog {
 			'VIEW_CHANNEL'
 		];
 
-		/* await Promise.all([
-			this.addSameTypeRole(cache.guild, data),
-			this.addUniqueTypeRole(cache.guild, data)
-		]);*/
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
@@ -174,12 +158,12 @@ export default class ClanFeedLog {
 		for (const message of messages) {
 			if (!message) continue;
 			if (channel instanceof TextChannel) {
-				await channel.send(message).catch(() => null);
+				await channel.send({ embeds: [message.embed], content: message.content }).catch(() => null);
 			} else {
 				try {
-					const msg = await channel.send(message.content, { embeds: [message.embed] });
-					if (msg.channel.id !== cache.channel) {
-						await msg.delete();
+					const msg = await channel.send({ embeds: [message.embed], content: message.content });
+					if (msg.channel_id !== cache.channel) {
+						await channel.deleteMessage(msg.id);
 						return this.recreateWebhook(id);
 					}
 				} catch (error) {
@@ -195,125 +179,13 @@ export default class ClanFeedLog {
 		return members.length;
 	}
 
-	private async addUniqueTypeRole(guild: string, data: Feed) {
-		const clan = await this.client.db.collection(Collections.CLAN_STORES)
-			.findOne({ guild, tag: data.clan.tag, autoRole: 1 });
-		if (!clan) return null;
-
-		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
-			.find({ 'entries.tag': { $in: data.members.map(mem => mem.tag) } })
-			.toArray();
-
-		const flattened = this.flatPlayers(collection, clan.secureRole);
-		for (const member of data.members) {
-			const mem = flattened.find(a => a.tag === member.tag);
-			if (!mem) continue;
-			const acc = flattened.filter(a => a.user === mem.user);
-
-			const tags = acc.map(en => en.tag);
-			const multi = data.memberList.filter(mem => tags.includes(mem.tag));
-			const role = this.getHighestRole(multi, [clan.tag]) || member.role;
-
-			await this.manageRole(mem.user, guild, role, clan.roles, ActionType[member.op].replace(/%PLAYER%/, member.name));
-			await this.delay(250);
-		}
-
-		return data.members.length;
-	}
-
-	private async addSameTypeRole(guild: string, data: Feed) {
-		const clans = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild, autoRole: 2 })
-			.toArray();
-		if (!clans.length) return null;
-		const clan = clans[0];
-
-		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
-			.find({ 'entries.tag': { $in: data.members.map(mem => mem.tag) } })
-			.toArray();
-
-		const flattened = this.flatPlayers(collection, clan.secureRole);
-		const players = (await this.client.http.detailedClanMembers(flattened))
-			.filter(res => res.ok);
-
-		for (const member of data.members) {
-			const mem = flattened.find(a => a.tag === member.tag);
-			if (!mem) continue;
-			const acc = flattened.filter(a => a.user === mem.user);
-
-			const tags = acc.map(en => en.tag);
-			const role = this.getHighestRole(players.filter(en => tags.includes(en.tag)), clans.map(clan => clan.tag));
-
-			await this.manageRole(mem.user, guild, role, clan.roles, ActionType[member.op].replace(/%PLAYER%/, member.name));
-			await this.delay(250);
-		}
-
-		return data.members.length;
-	}
-
-	private async manageRole(user_id: string, guild_id: string, clanRole: string, roles: { [key: string]: string }, reason: string) {
-		return this.addRoles(guild_id, user_id, roles[clanRole], Object.values(roles), reason);
-	}
-
-	public async addRoles(guild_id: string, user_id: string, role_id: string, roles: string[], reason: string) {
-		const guild = this.client.guilds.cache.get(guild_id);
-
-		if (!role_id && !roles.length) return null;
-		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return null;
-
-		const member = await guild.members.fetch({ user: user_id, force: true }).catch(() => null);
-		if (!member) return null;
-		if (member.user.bot) return null;
-
-		const excluded = roles.filter(id => id !== role_id && this.checkRole(guild, guild.me!, id))
-			.filter(id => member.roles.cache.has(id));
-
-		if (excluded.length) {
-			await member.roles.remove(excluded, reason);
-		}
-
-		if (!role_id) return null;
-		if (!guild.roles.cache.has(role_id)) return null;
-
-		const role = guild.roles.cache.get(role_id)!;
-		if (role.position > guild.me.roles.highest.position) return null;
-
-		if (member.roles.cache.has(role_id)) return null;
-		return member.roles.add(role, reason).catch(() => null);
-	}
-
-	private flatPlayers(collection: { user: string; entries: { tag: string; verified: boolean }[] }[], secureRole: boolean) {
-		return collection.reduce(
-			(prev, curr) => {
-				prev.push(
-					...curr.entries.map(
-						en => ({ user: curr.user, tag: en.tag, verified: en.verified })
-					)
-				);
-				return prev;
-			}, [] as { user: string; tag: string; verified: boolean }[]
-		).filter(en => secureRole ? en.verified : true);
-	}
-
-	private checkRole(guild: Guild, member: GuildMember, role_id: string) {
-		const role = guild.roles.cache.get(role_id);
-		return role && member.roles.highest.position > role.position;
-	}
-
-	private getHighestRole(players: { tag: string; role?: string; clan?: { tag: string } }[], clans: string[]) {
-		const unique = players.filter(a => a.clan && clans.includes(a.clan.tag) && a.role! in roles)
-			.map(a => a.role!);
-
-		return unique.sort((a, b) => roles[b] - roles[a])[0];
-	}
-
 	private async embed(id: string, member: Member, data: Feed) {
 		const cache = this.cached.get(id);
 		if (!cache) return null;
 		const player: Player = await this.client.http.player(member.tag);
 		if (!player.ok) return null;
 
-		let content = '';
+		let content = null;
 		const embed = new MessageEmbed()
 			.setColor(OP[member.op])
 			.setTitle(`\u200e${player.name} (${player.tag})`)
@@ -326,7 +198,7 @@ export default class ClanFeedLog {
 				`${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
 			].join(' '));
 		} else {
-			const flag = await this.client.db.collection(COLLECTIONS.FLAGGED_USERS)
+			const flag = await this.client.db.collection(Collections.FLAGS)
 				.findOne({ guild: cache.guild, tag: member.tag });
 
 			embed.setFooter(`Joined ${data.clan.name}`, data.clan.badge);
@@ -339,7 +211,7 @@ export default class ClanFeedLog {
 
 			if (flag) {
 				const guild = this.client.guilds.cache.get(cache.guild)!;
-				const user = await this.client.users.fetch(flag.user, false).catch(() => null);
+				const user = await this.client.users.fetch(flag.user, { cache: false }).catch(() => null);
 				if (guild.roles.cache.has(cache.role)) {
 					const role = guild.roles.cache.get(cache.role);
 					content = `${role!.toString()}`;
@@ -350,7 +222,7 @@ export default class ClanFeedLog {
 					'**Flag**',
 					`${flag.reason as string}`,
 					`\`${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('DD-MM-YYYY kk:mm')})\``
-				]);
+				].join('\n'));
 			}
 		}
 		embed.setTimestamp();
@@ -371,19 +243,20 @@ export default class ClanFeedLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(COLLECTIONS.PLAYER_LOGS)
+		await this.client.db.collection(Collections.CLAN_FEED_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
 					guild: data.guild,
 					channel: data.channel,
-					tag: data.tag, role: data.role
+					tag: data.tag, role: data.role,
+					webhook: data.webhook_id ? new WebhookClient(data.webhook_id, data.webhook_token) : null
 				});
 			});
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(COLLECTIONS.PLAYER_LOGS)
+		const data = await this.client.db.collection(Collections.CLAN_FEED_LOGS)
 			.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;
