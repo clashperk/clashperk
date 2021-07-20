@@ -79,11 +79,7 @@ export default class ArmyCommand extends Command {
 		const malformed = ![...TROOP_IDS, ...SPELL_IDS].every(
 			en => typeof en.id === 'number' && typeof en.total === 'number' && en.total <= TOTAL_UNITS
 		);
-<<<<<<< HEAD
-		if (malformed) return message.util!.send(`**This army composition URL is invalid!**\nhttps://i.imgur.com/uqDnt5s.png`);
-=======
 		if (malformed) return message.util!.send(`**This army composition link is invalid.**\nhttps://i.imgur.com/uqDnt5s.png`);
->>>>>>> next
 
 		const uniqueSpells = SPELL_IDS.reduce((prev, curr) => {
 			if (!prev.includes(curr.id)) prev.push(curr.id);
@@ -273,15 +269,7 @@ export default class ArmyCommand extends Command {
 		const mismatch = (troops.length + spells.length + superTroops.length + seigeMachines.length) !== (TROOP_IDS.length + SPELL_IDS.length);
 
 		const invalid = mismatch || duplicate || totalTroop > TOTAL_UNITS || totalSpell > TOTAL_SPELLS || totalSeige > TOTAL_SEIGE || superTroops.length > TOTAL_SUPER_TROOPS;
-<<<<<<< HEAD
-		return message.util!.send((invalid) ? '**This URL is invalid and may not work!**' : '', { embed });
-=======
 		return message.util!.send({ embeds: [embed], content: (invalid) ? '**This link is invalid and may not work.**' : undefined });
-	}
-
-	private padding(num: number) {
-		return `${num.toString().padStart(2, ' ')}${num > 99 ? '' : 'x'}`;
->>>>>>> next
 	}
 
 	private padding(num: number) {

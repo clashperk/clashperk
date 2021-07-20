@@ -34,13 +34,8 @@ export default class DonationSummaryCommand extends Command {
 	public *args(msg: Message): unknown {
 		const season = yield {
 			flag: '--season',
-<<<<<<< HEAD:src/bot/commands/activity/SummaryDonation.ts
-			type: ['last', 'previous'],
-			match: msg.hasOwnProperty('token') ? 'option' : 'phrase'
-=======
 			type: [...Util.getSeasonIds(), ['last']],
 			match: msg.interaction ? 'option' : 'phrase'
->>>>>>> next:src/bot/commands/summary/Donation.ts
 		};
 
 		return { season };
@@ -141,17 +136,6 @@ export default class DonationSummaryCommand extends Command {
 				).join('\n'),
 				{ maxLength: 4000 }
 			)[0]
-<<<<<<< HEAD:src/bot/commands/activity/SummaryDonation.ts
-		]);
-		embed.addField('\u200b', [
-			'**Top Players**',
-			`${EMOJIS.CLAN} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(15, ' ')}\u200f\``,
-			members.map(mem => `${BLUE_NUMBERS[mem.clanIndex]} \`\u200e${this.donation(mem.donated, mem_dp)} ${this.donation(mem.received, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``).join('\n')
-		]);
-		embed.setFooter(`Season ${season}`);
-
-		return message.util!.send({ embed });
-=======
 		].join('\n'));
 
 		const embeds = [
@@ -172,7 +156,6 @@ export default class DonationSummaryCommand extends Command {
 		];
 
 		return message.util!.send({ embeds });
->>>>>>> next:src/bot/commands/summary/Donation.ts
 	}
 
 	private donation(num: number, space: number) {
