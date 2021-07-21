@@ -123,7 +123,7 @@ export default class SetupCommand extends Command {
 			time: 15 * 60 * 1000
 		}).catch(() => null);
 
-		if (!msg.deleted) await msg.edit({ components: [] });
+		this.client.components.delete(customID);
 		if (!interaction) return;
 
 		await interaction.defer();

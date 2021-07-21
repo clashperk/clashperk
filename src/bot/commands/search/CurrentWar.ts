@@ -2,7 +2,7 @@ import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Util, Message, MessageButton, MessageActionRow } from 'discord.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
-import { Collections } from '../../util/Constants';
+import { Collections, STOP_REASONS } from '../../util/Constants';
 import 'moment-duration-format';
 import moment from 'moment';
 import Workbook from '../../struct/Excel';
@@ -209,8 +209,9 @@ export default class WarCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
+			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}

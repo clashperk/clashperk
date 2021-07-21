@@ -2,7 +2,7 @@ import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 import { Message, MessageActionRow, MessageButton } from 'discord.js';
-import { Collections } from '../../util/Constants';
+import { Collections, STOP_REASONS } from '../../util/Constants';
 import { ClanGames } from '../../util/Util';
 
 interface DBMember {
@@ -122,10 +122,11 @@ export default class ClanGamesCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', async (_, reason) => {
 			for (const customID of Object.values(CUSTOM_ID)) {
 				this.client.components.delete(customID);
 			}
+			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}

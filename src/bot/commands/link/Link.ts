@@ -1,5 +1,6 @@
 import { Command, PrefixSupplier, Argument, Flag } from 'discord-akairo';
 import { Message, MessageEmbed, GuildMember, Snowflake, MessageActionRow, MessageButton } from 'discord.js';
+import { STOP_REASONS } from '../../util/Constants';
 
 export default class LinkCommand extends Command {
 	public constructor() {
@@ -161,10 +162,11 @@ export default class LinkCommand extends Command {
 				}
 			});
 
-			collector.on('end', async () => {
+			collector.on('end', async (_, reason) => {
 				this.client.components.delete(CancelID);
 				this.client.components.delete(ClanCustomID);
 				this.client.components.delete(PlayerCustomID);
+				if (STOP_REASONS.includes(reason)) return;
 				if (!msg.deleted) await msg.edit({ components: [] });
 			});
 		} else if (tags[0].ok) { // eslint-disable-line

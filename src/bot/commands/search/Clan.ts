@@ -142,7 +142,7 @@ export default class ClanCommand extends Command {
 			time: 15 * 60 * 1000
 		}).catch(() => null);
 
-		if (!msg.deleted) await msg.edit({ components: [] });
+		this.client.components.delete(customId);
 		return interaction?.reply({
 			embeds: [{
 				color: this.client.embed(message),

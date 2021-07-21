@@ -1,6 +1,6 @@
 import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { WHITE_NUMBERS } from '../../util/NumEmojis';
-import { Collections } from '../../util/Constants';
+import { Collections, STOP_REASONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Season } from '../../util/Util';
@@ -134,8 +134,9 @@ export default class ClanSummaryCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customId);
+			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}

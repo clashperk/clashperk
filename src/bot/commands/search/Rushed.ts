@@ -1,5 +1,5 @@
 import { BUILDER_TROOPS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
-import { TroopInfo, TroopJSON } from '../../util/Constants';
+import { STOP_REASONS, TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Message, MessageSelectMenu, User, MessageActionRow } from 'discord.js';
@@ -93,8 +93,9 @@ export default class RushedCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
+			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}

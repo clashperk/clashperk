@@ -71,9 +71,11 @@ export default class ClanAttacksCommand extends Command {
 		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
 
 		const interaction = await msg.awaitMessageComponent({
-			filter: action => action.customId === customId && action.user.id === message.author.id
+			filter: action => action.customId === customId && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
 		}).catch(() => null);
 
+		this.client.components.delete(customId);
 		members.sort((a, b) => b.defenseWins - a.defenseWins);
 		return interaction?.update({ embeds: [getEmbed()], components: [] });
 	}

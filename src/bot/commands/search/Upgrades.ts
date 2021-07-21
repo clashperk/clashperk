@@ -2,7 +2,7 @@ import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emoj
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { MessageEmbed, Message, MessageSelectMenu, User, MessageActionRow } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
-import { TroopJSON } from '../../util/Constants';
+import { STOP_REASONS, TroopJSON } from '../../util/Constants';
 import { Player } from 'clashofclans.js';
 import ms from 'ms';
 
@@ -74,8 +74,9 @@ export default class UpgradesCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
+			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}

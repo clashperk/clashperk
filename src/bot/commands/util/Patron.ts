@@ -1,4 +1,4 @@
-import { Collections, Settings } from '../../util/Constants';
+import { Collections, Settings, STOP_REASONS } from '../../util/Constants';
 import { Message, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
 import { Command } from 'discord-akairo';
 
@@ -125,8 +125,9 @@ export default class PatronCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
+			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}

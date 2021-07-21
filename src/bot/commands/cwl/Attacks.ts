@@ -4,6 +4,7 @@ import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Util } from '../../util/Util';
 import moment from 'moment';
+import { STOP_REASONS } from '../../util/Constants';
 
 const stars: { [key: string]: string } = {
 	0: '☆☆☆',
@@ -177,8 +178,9 @@ export default class CWLAttacksCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
+			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}

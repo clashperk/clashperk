@@ -1,5 +1,5 @@
 import { Message, MessageActionRow, MessageButton } from 'discord.js';
-import { Collections } from '../../util/Constants';
+import { Collections, STOP_REASONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -107,8 +107,9 @@ export default class LastSeenCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
+			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}

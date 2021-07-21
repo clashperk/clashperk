@@ -71,9 +71,9 @@ export default class StatsCommand extends Command {
 			time: 15 * 60 * 1000
 		}).catch(() => null);
 
+		this.client.components.delete(customId);
 		await interaction?.deferUpdate();
 		await interaction?.deleteReply();
-		this.client.components.delete(customId);
 		if (message.deletable && interaction) await message.delete();
 	}
 

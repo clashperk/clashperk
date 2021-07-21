@@ -3,6 +3,7 @@ import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
 import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { STOP_REASONS } from '../../util/Constants';
 
 const roleIds: { [key: string]: number } = {
 	member: 1,
@@ -192,9 +193,10 @@ export default class MembersCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', async (_, reason) => {
 			this.client.components.delete(discord);
 			this.client.components.delete(download);
+			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}

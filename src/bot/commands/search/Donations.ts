@@ -1,5 +1,5 @@
 import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
-import { Collections } from '../../util/Constants';
+import { Collections, STOP_REASONS } from '../../util/Constants';
 import { Season, Util } from '../../util/Util';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -144,8 +144,9 @@ export default class DonationsCommand extends Command {
 			}
 		});
 
-		collector.on('end', async () => {
+		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customId.sort);
+			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}
