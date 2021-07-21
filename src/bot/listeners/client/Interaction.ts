@@ -54,13 +54,13 @@ export class InteractionOptionParser {
 			}
 		} else if (top.value) {
 			if (this.optionFlagWords.includes(`--${top.name}`)) {
-				optionFlags.push({ type: 'OptionFlag', value: `${top.value}`, key: `--${top.name}`, raw: `--${top.name} "${top.value}" ` });
-				all.push({ type: 'OptionFlag', value: `${top.value}`, key: `--${top.name}`, raw: `--${top.name} "${top.value}" ` });
+				optionFlags.push({ type: 'OptionFlag', value: `${this.trim(top.value)}`, key: `--${top.name}`, raw: `--${top.name} "${this.trim(top.value)}" ` });
+				all.push({ type: 'OptionFlag', value: `${this.trim(top.value)}`, key: `--${top.name}`, raw: `--${top.name} "${this.trim(top.value)}" ` });
 			} else {
 				// name
 				const phraseName = { type: 'Phrase', value: `${top.name}`, raw: `--${top.name} ` };
 				// value
-				const phraseValue = { type: 'Phrase', value: `${top.value}`, raw: `"${top.value}" ` };
+				const phraseValue = { type: 'Phrase', value: `${this.trim(top.value)}`, raw: `"${this.trim(top.value)}" ` };
 
 				phrases.push(...[phraseName, phraseValue]);
 				all.push(...[phraseName, phraseValue]);
@@ -77,6 +77,10 @@ export class InteractionOptionParser {
 	public parse(args: CommandInteractionOption[]) {
 		const [all, phrases, flags, optionFlags] = this.parseOptions(args);
 		return { all, phrases, flags, optionFlags };
+	}
+
+	private trim(value: string | number) {
+		return value.toString().trim();
 	}
 }
 
