@@ -258,7 +258,7 @@ export default class ClanSummaryCommand extends Command {
 					}
 				}
 			}
-		]).next() as Promise<{ donations: number; donationsReceived: number; attackWins: number; defenseWins: number } | null>;
+		]).next();
 	}
 
 	private async getBuffer(collection: any[] = []) {

@@ -26,7 +26,7 @@ export default class Resolver {
 		const data = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: user.id });
 		if (data && data.user_tag !== user.tag) this.updateUserTag(message.guild!, user.id);
 
-		if (!data?.entries?.length || num > data?.entries?.length) {
+		if (!data?.entries?.length || num > data.entries?.length) {
 			otherTags.push(...(await this.client.http.getPlayerTags(user.id)));
 		}
 

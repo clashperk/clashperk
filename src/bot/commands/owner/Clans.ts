@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, Guild, TextChannel, Snowflake } from 'discord.js';
+import { MessageEmbed, Message, Guild, TextChannel, Snowflake, MessageActionRow, MessageButton } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
@@ -106,24 +106,36 @@ export default class ClansCommand extends Command {
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		const msg = await message.util!.send({ embeds: [embed] });
+		const customIds = {
+			next: this.client.uuid(message.author.id),
+			prev: this.client.uuid(message.author.id)
+		};
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setEmoji('⬅️')
+					.setStyle('SECONDARY')
+					.setCustomId(customIds.prev)
+			)
+			.addComponents(
+				new MessageButton()
+					.setEmoji('➡️')
+					.setStyle('SECONDARY')
+					.setCustomId(customIds.next)
+			);
 
-		for (const emoji of ['⬅️', '➡️']) {
-			await msg.react(emoji);
-			await this.delay(250);
-		}
-
-		const collector = msg.createReactionCollector({
-			filter: (reaction, user) => ['⬅️', '➡️'].includes(reaction.emoji.name!) && user.id === message.author.id,
-			time: 60000, max: 10
+		const msg = await message.util!.send({ embeds: [embed], components: [row] });
+		const collector = msg.createMessageComponentCollector({
+			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
 		});
 
-		collector.on('collect', async reaction => {
-			if (reaction.emoji.name === '➡️') {
+		collector.on('collect', async action => {
+			if (action.customId === customIds.next) {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				await msg.edit({
+				await action.update({
 					embeds: [
 						embed.setFooter(
 							`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
@@ -134,16 +146,13 @@ export default class ClansCommand extends Command {
 						].join('\n'))
 					]
 				});
-				await this.delay(250);
-				await reaction.users.remove(message.author.id);
-				return message;
 			}
 
-			if (reaction.emoji.name === '⬅️') {
+			if (action.customId === customIds.prev) {
 				page -= 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
-				await msg.edit({
+				await action.update({
 					embeds: [
 						embed.setFooter(
 							`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
@@ -154,12 +163,13 @@ export default class ClansCommand extends Command {
 						].join('\n'))
 					]
 				});
-				await this.delay(250);
-				return reaction.users.remove(message.author.id);
 			}
 		});
 
-		collector.on('end', async () => msg.reactions.removeAll().catch(() => null));
+		collector.on('end', () => {
+			this.client.components.delete(customIds.prev);
+			this.client.components.delete(customIds.next);
+		});
 	}
 
 	private desc(paginated: any) {

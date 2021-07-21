@@ -142,6 +142,11 @@ export default class LastSeenCommand extends Command {
 				}
 			},
 			{
+				$match: {
+					'clan.tag': clan.tag
+				}
+			},
+			{
 				$project: {
 					tag: '$tag',
 					clan: '$clan',

@@ -2,7 +2,7 @@ import { Collections, Flags, Settings, EMBEDS } from '../../util/Constants';
 import { Command, Argument, Flag, PrefixSupplier } from 'discord-akairo';
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS } from '../../util/Emojis';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
-import { Util, Message, User } from 'discord.js';
+import { Util, Message, User, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 
 export default class ClanEmbedCommand extends Command {
@@ -92,11 +92,11 @@ export default class ClanEmbedCommand extends Command {
 	}
 
 	public async exec(message: Message, { data, accepts, user, description, color }: { data: Clan; accepts: string; user: User; description: string; color?: number }) {
-		const clans = await this.clans(message);
+		const clans = await this.client.storage.findAll(message.guild!.id);
 
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
-		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
+		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag) && !this.client.isOwner(message.author.id)) {
 			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
 		}
 
@@ -169,26 +169,87 @@ export default class ClanEmbedCommand extends Command {
 				? ''
 				: description;
 
-		const msg = await message.util!.send({ embeds: [embed] });
-		const id = await this.client.storage.register(message, {
-			op: Flags.CLAN_EMBED_LOG,
-			guild: message.guild!.id,
-			channel: message.channel.id,
-			tag: data.tag,
-			color,
-			name: data.name,
-			message: msg.id,
-			embed: {
-				accepts,
-				userId: user.id,
-				description: Util.cleanContent(description, message.channel)
+		const mutate = async (messageId: string, channelId: string) => {
+			const id = await this.client.storage.register(message, {
+				op: Flags.CLAN_EMBED_LOG,
+				guild: message.guild!.id,
+				channel: channelId,
+				tag: data.tag, color,
+				name: data.name,
+				message: messageId,
+				embed: {
+					accepts,
+					userId: user.id,
+					description: Util.cleanContent(description, message.channel)
+				}
+			});
+
+			this.client.rpcHandler.add(id, {
+				op: Flags.CLAN_EMBED_LOG,
+				guild: message.guild!.id,
+				tag: data.tag
+			});
+		};
+
+		const existing = await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
+			.findOne({ tag: data.tag });
+
+		if (!existing) {
+			const msg = await message.channel.send({ embeds: [embed] });
+			return mutate(msg.id, message.channel.id);
+		}
+
+		const customIds = {
+			edit: this.client.uuid(message.author.id),
+			create: this.client.uuid(message.author.id)
+		};
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setCustomId(customIds.edit)
+					.setStyle('SECONDARY')
+					.setLabel('Edit Existing Embed')
+			)
+			.addComponents(
+				new MessageButton()
+					.setCustomId(customIds.create)
+					.setStyle('SECONDARY')
+					.setLabel('Create New Embed')
+			);
+
+		const msg = await message.channel.send({ content: '**Select an option for this action.**', components: [row] });
+		const collector = msg.createMessageComponentCollector({
+			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
+			time: 15 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customId === customIds.edit) {
+				try {
+					const channel = message.guild!.channels.cache.get(existing.channel);
+					await (channel as TextChannel)!.messages.edit(existing.messagej, { embeds: [embed] });
+				} catch {
+					row.components[0].setDisabled(true);
+					return action.update({
+						content: '**Failed to update the existing embed!**',
+						components: [row]
+					});
+				}
+
+				await action.update({ content: '**Successfully updated the existing embed.**', components: [] });
+				return mutate(existing.message, existing.channel);
+			}
+
+			if (action.customId === customIds.create) {
+				await action.update({ content: '**Successfully created a new embed.**', components: [] });
+				const msg = await message.channel.send({ embeds: [embed] });
+				return mutate(msg.id, message.channel.id);
 			}
 		});
 
-		this.client.rpcHandler.add(id, {
-			op: Flags.CLAN_EMBED_LOG,
-			guild: message.guild!.id,
-			tag: data.tag
+		collector.on('end', () => {
+			this.client.components.delete(customIds.edit);
+			this.client.components.delete(customIds.create);
 		});
 	}
 
@@ -205,15 +266,7 @@ export default class ClanEmbedCommand extends Command {
 		return message.util!.send({ embeds: [embed] }).then(() => Flag.cancel()).catch(() => Flag.cancel());
 	}
 
-	private async clans(message: Message) {
-		const collection = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild: message.guild!.id })
-			.toArray();
-		return collection;
-	}
-
 	private verifyClan(code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) {
-		// clan verification by unique code or verified co/leader
 		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
 		return clan.memberList.filter(m => ['coLeader', 'leader'].includes(m.role))
 			.some(m => verifiedTags.includes(m.tag)) || clan.description.toUpperCase().includes(code);

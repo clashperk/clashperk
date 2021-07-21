@@ -239,7 +239,7 @@ export default class ClanCommand extends Command {
 					}
 				}
 			}
-		]).next() as Promise<{ donations: number; donationsReceived: number; attackWins: number; defenseWins: number } | null>;
+		]).next<{ donations: number; donationsReceived: number; attackWins: number; defenseWins: number }>();
 	}
 
 	private async getWars(tag: string): Promise<{ result: boolean; stars: number[] }[]> {

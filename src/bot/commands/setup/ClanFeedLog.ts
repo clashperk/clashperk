@@ -99,7 +99,6 @@ export default class MemberLogCommand extends Command {
 	}
 
 	private verifyClan(code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) {
-		// clan verification by unique code or verified co/leader
 		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
 		return clan.memberList.filter(m => ['coLeader', 'leader'].includes(m.role))
 			.some(m => verifiedTags.includes(m.tag)) || clan.description.toUpperCase().includes(code);
