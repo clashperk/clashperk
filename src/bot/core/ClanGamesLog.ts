@@ -7,33 +7,39 @@ import { ObjectId } from 'mongodb';
 
 interface Cache {
 	tag: string;
-	guild: string;
+	_id: ObjectId;
+	guild: Snowflake;
 	color?: number;
-	channel: string;
-	message: Snowflake;
-	msg?: Message | null;
+	channel: Snowflake;
+	message?: Snowflake;
+}
+
+interface Payload {
+	total: number;
+	members: { name: string; points: number }[];
 }
 
 export default class ClanGamesLog {
 	public cached: Collection<string, Cache>;
 	public intervalId!: NodeJS.Timeout;
+	protected collection = this.client.db.collection(Collections.CLAN_GAMES_LOGS);
 
 	public constructor(private readonly client: Client) {
 		this.client = client;
 		this.cached = new Collection();
 	}
 
-	public async exec(tag: string, clan: Clan, updated: any) {
+	public async exec(tag: string, clan: Clan, data: Payload) {
 		const clans = this.cached.filter(d => d.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
-			if (cache) await this.permissionsFor(id, cache, clan, updated);
+			if (cache) await this.permissionsFor(cache, clan, data);
 		}
 
 		return clans.clear();
 	}
 
-	private async permissionsFor(id: string, cache: any, clan: Clan, updated: any) {
+	private async permissionsFor(cache: Cache, clan: Clan, data: Payload) {
 		const permissions: PermissionString[] = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -46,103 +52,83 @@ export default class ClanGamesLog {
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
-				return this.handleMessage(id, channel, clan, updated);
+				return this.handleMessage(cache, channel, clan, data);
 			}
 		}
 	}
 
-	private async handleMessage(id: string, channel: TextChannel, clan: Clan, updated: any) {
-		const cache = this.cached.get(id);
-
-		if (!cache?.message) {
-			return this.sendNew(id, channel, clan, updated);
+	private async handleMessage(cache: Cache, channel: TextChannel, clan: Clan, data: Payload) {
+		if (!cache.message) {
+			const msg = await this.send(cache, channel, clan, data);
+			if (msg) channel.messages.cache.delete(msg.id);
+			return this.mutate(cache, msg);
 		}
 
-		if (cache.msg) {
-			return this.edit(id, cache.msg, clan, updated);
-		}
+		const msg = await this.edit(cache, channel, clan, data);
+		if (msg) channel.messages.cache.delete(msg.id);
+		return this.mutate(cache, msg);
+	}
 
-		const message = await channel.messages.fetch(cache.message, { cache: false })
-			.catch(error => {
-				this.client.logger.warn(error, { label: 'CLAN_GAMES_FETCH_MESSAGE' });
-				if (error.code === 10008) {
-					return { deleted: true };
+	private async mutate(cache: Cache, msg: Message | null) {
+		if (msg) {
+			await this.collection.updateOne(
+				{ clan_id: new ObjectId(cache._id) },
+				{
+					$set: {
+						failed: 0,
+						message: msg.id,
+						updatedAt: new Date()
+					}
 				}
-
-				return null;
-			});
-
-		if (!message) return;
-
-		if (message.deleted) {
-			return this.sendNew(id, channel, clan, updated);
+			);
+			cache.message = msg.id;
+		} else {
+			await this.collection.updateOne(
+				{ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } }
+			);
 		}
-
-		if (message instanceof Message) {
-			return this.edit(id, message, clan, updated);
-		}
+		return msg;
 	}
 
-	private async sendNew(id: string, channel: TextChannel, clan: Clan, updated: any) {
-		const embed = this.embed(clan, id, updated);
-		const message = await channel.send({ embeds: [embed] }).catch(() => null);
-
-		if (message) {
-			try {
-				const cache = this.cached.get(id)!; // TODO: Fix
-				cache.message = message.id;
-				cache.msg = message;
-				this.cached.set(id, cache);
-				await this.client.db.collection(Collections.CLAN_GAMES_LOGS)
-					.updateOne(
-						{ clan_id: new ObjectId(id) },
-						{ $set: { message: message.id } }
-					);
-			} catch (error) {
-				this.client.logger.warn(error, { label: 'MONGODB_ERROR' });
-			}
-		}
-
-		return message;
+	private async send(cache: Cache, channel: TextChannel, clan: Clan, data: Payload) {
+		const embed = this.embed(cache, clan, data);
+		return channel.send({ embeds: [embed] }).catch(() => null);
 	}
 
-	private async edit(id: string, message: Message, clan: Clan, updated: any) {
-		const embed = this.embed(clan, id, updated);
+	private async edit(cache: Cache, channel: TextChannel, clan: Clan, data: Payload) {
+		const embed = this.embed(cache, clan, data);
 
-		return message.edit({ embeds: [embed] })
+		return channel.messages.edit(cache.message!, { embeds: [embed] })
 			.catch(error => {
 				if (error.code === 10008) {
-					const cache = this.cached.get(id)!;
-					cache.msg = null;
-					this.cached.set(id, cache);
-					return this.sendNew(id, message.channel as TextChannel, clan, updated);
+					delete cache.message;
+					return this.send(cache, channel, clan, data);
 				}
 				return null;
 			});
 	}
 
-	private embed(clan: Clan, id: string, updated: any) {
-		const cache = this.cached.get(id);
+	private embed(cache: Cache, clan: Clan, data: Payload) {
 		const embed = new MessageEmbed()
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
 				`Clan Games Scoreboard [${clan.members}/50]`,
 				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-				(updated.members as any[]).slice(0, 55)
+				data.members.slice(0, 55)
 					.map((m, i) => {
 						const points = this.padStart(m.points || '0');
-						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name as string}`;
+						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
 					}).join('\n'),
 				'```'
 			].join('\n'))
-			.setFooter(`Points: ${updated.total as number} [Avg: ${(updated.total / clan.members).toFixed(2)}]`)
+			.setFooter(`Points: ${data.total} [Avg: ${(data.total / clan.members).toFixed(2)}]`)
 			.setTimestamp();
-		if (cache?.color) embed.setColor(cache.color);
+		if (cache.color) embed.setColor(cache.color);
 
 		return embed;
 	}
 
-	private padStart(num: number) {
+	private padStart(num: number | string) {
 		return num.toString().padStart(6, ' ');
 	}
 
@@ -165,10 +151,10 @@ export default class ClanGamesLog {
 	}
 
 	private async _init() {
-		await this.client.db.collection(Collections.CLAN_GAMES_LOGS)
-			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
+		await this.collection.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
+					_id: data.clan_id,
 					tag: data.tag,
 					color: data.color,
 					guild: data.guild,
@@ -192,11 +178,11 @@ export default class ClanGamesLog {
 
 	public async add(id: string) {
 		if (!ClanGames.Started) return null;
-		const data = await this.client.db.collection(Collections.CLAN_GAMES_LOGS)
-			.findOne({ clan_id: new ObjectId(id) });
+		const data = await this.collection.findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;
 		return this.cached.set(id, {
+			_id: data.clan_id,
 			tag: data.tag,
 			color: data.color,
 			guild: data.guild,
