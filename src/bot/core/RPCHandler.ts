@@ -41,7 +41,7 @@ export default class RPCHandler {
 			const data = JSON.parse(chunk.data);
 
 			if (this.paused) return;
-			if (this.queue.remaining >= 5000 && data.op === 4) return;
+			if (this.queue.remaining >= 2000) return;
 
 			await this.queue.wait();
 			try {

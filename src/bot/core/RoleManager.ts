@@ -65,11 +65,12 @@ export class RoleManager {
 		const clan = await this.client.http.clan(player.clan!.tag);
 		if (!clan.ok) return null;
 
-		const mem = clan.memberList.find(mem => mem.tag === player.tag);
 		return this.exec(clan.tag, {
 			clan: { name: player.clan!.name, tag: player.clan!.tag },
-			memberList: mem ? [{ tag: player.tag, role: mem.role, clan: { tag: clan.tag } }] : [],
-			members: [{ op: 'SYNCED', name: player.name, tag: player.tag, role: player.role ?? 'none' }]
+			memberList: clan.memberList.map(
+				mem => ({ tag: mem.tag, role: mem.role, clan: { tag: clan.tag } })
+			).filter(mem => mem.tag !== player.tag),
+			members: [{ op: 'SYNCED', name: player.name, tag: player.tag, role: player.role! }]
 		});
 	}
 

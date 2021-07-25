@@ -18,4 +18,3 @@ interface UserInfo {
 		offset: number;
 	};
 }
-
