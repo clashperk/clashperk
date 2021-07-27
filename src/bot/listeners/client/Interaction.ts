@@ -149,7 +149,7 @@ export default class InteractionListener extends Listener {
 				allowedMentions: { parse: ['users'] }
 			});
 		}
-		return this.handleInteraction(interaction, command, interaction.options.data, false);
+		return this.handleInteraction(interaction, command, [...interaction.options.data], false);
 	}
 
 	private inhibitor(interaction: Interaction) {
@@ -163,7 +163,7 @@ export default class InteractionListener extends Listener {
 		return false;
 	}
 
-	private contentParser(command: Command, content: string | readonly CommandInteractionOption[]) {
+	private contentParser(command: Command, content: string | CommandInteractionOption[]) {
 		if (Array.isArray(content)) {
 			const contentParser = new InteractionOptionParser({
 				// @ts-expect-error
@@ -177,7 +177,7 @@ export default class InteractionListener extends Listener {
 		return command.contentParser.parse(content);
 	}
 
-	private async handleInteraction(interaction: Interaction, command: Command, content: string | readonly CommandInteractionOption[], ignore = false): Promise<unknown> {
+	private async handleInteraction(interaction: Interaction, command: Command, content: string | CommandInteractionOption[], ignore = false): Promise<unknown> {
 		if (!ignore) {
 			// @ts-expect-error
 			if (await this.client.commandHandler.runPostTypeInhibitors(interaction, command)) return;
