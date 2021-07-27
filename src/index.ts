@@ -4,6 +4,7 @@ Env.config();
 import Discord from 'discord.js';
 import shell from 'shelljs';
 import path from 'path';
+import os from 'os';
 
 class Manager extends Discord.ShardingManager {
 	public constructor() {
@@ -21,7 +22,7 @@ class Manager extends Discord.ShardingManager {
 const ShardingManager = new Manager();
 
 setInterval(() => {
-	if ((process.memoryUsage().heapUsed / 1024 / 1024) < 250) {
+	if ((os.freemem() / (1024 * 1024)) < 250) {
 		shell.exec('pm2 restart rpc bot');
 	}
 }, 60 * 1000);
