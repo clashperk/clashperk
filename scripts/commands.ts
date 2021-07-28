@@ -6,10 +6,10 @@ import moment from 'moment';
 import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'discord-api-types/v8';
 
 export function getSeasonIds() {
-	return Array(12).fill(0).map((_, month) => {
+	return Array(6).fill(0).map((_, month) => {
 		const now = new Date();
 		now.setHours(0, 0, 0, 0);
-		now.setFullYear(now.getFullYear(), 1);
+		now.setFullYear(now.getFullYear(), 1 + 2);
 		now.setMonth(now.getMonth() + month, 0);
 		return { name: moment(now).format('MMM YYYY'), value: moment(now).format('YYYY-MM') };
 	});
@@ -380,7 +380,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			},
 			{
 				name: 'list',
-				description: 'Get all alags for the server or clan',
+				description: 'Get all flags for the server or clan',
 				type: ApplicationCommandOptionType.SubCommand,
 				options: [
 					{
@@ -846,7 +846,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 	});
 	const body = await res.json();
 	console.log(res.status, JSON.stringify(body));
-})();
+});
 
 (async () => {
 	const res = await fetch('https://discord.com/api/v8/applications/526971716711350273/commands', {
@@ -859,4 +859,4 @@ export const commands: { name: string; description: string; options?: APIApplica
 	});
 	const body = await res.json();
 	console.log(res.status, JSON.stringify(body));
-});
+})();

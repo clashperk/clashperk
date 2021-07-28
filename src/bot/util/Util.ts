@@ -14,7 +14,7 @@ export class Util extends Discord.Util {
 			.map((_, month) => {
 				const now = new Date(Season.ID);
 				now.setHours(0, 0, 0, 0);
-				now.setMonth(now.getMonth() - month, 0);
+				now.setMonth(now.getMonth() - month + 1, 0);
 				return Season.generateID(now);
 			})
 			.concat(Season.ID);
