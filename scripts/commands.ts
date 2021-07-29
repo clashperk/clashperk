@@ -9,7 +9,7 @@ export function getSeasonIds() {
 	return Array(6).fill(0).map((_, month) => {
 		const now = new Date();
 		now.setHours(0, 0, 0, 0);
-		now.setFullYear(now.getFullYear(), 1 + 2);
+		now.setFullYear(now.getFullYear(), 1 + 3);
 		now.setMonth(now.getMonth() + month, 0);
 		return { name: moment(now).format('MMM YYYY'), value: moment(now).format('YYYY-MM') };
 	});

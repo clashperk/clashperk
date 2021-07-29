@@ -24,6 +24,6 @@ export default class AliasListCommand extends Command {
 			clans.map(clan => `• **${clan.name as string} (${clan.tag as string})**\n\u2002 **Alias:** ${clan.alias as string}`).join('\n\n')
 		].join('\n'));
 
-		for (const chunk of chunks) await message.util!.send(chunk);
+		for (const chunk of chunks) await message.channel.send(chunk);
 	}
 }

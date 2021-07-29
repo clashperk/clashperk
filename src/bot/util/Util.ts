@@ -9,12 +9,12 @@ export class Util extends Discord.Util {
 	}
 
 	public static getSeasonIds() {
-		return Array(6)
+		return Array(4)
 			.fill(0)
 			.map((_, month) => {
 				const now = new Date(Season.ID);
 				now.setHours(0, 0, 0, 0);
-				now.setMonth(now.getMonth() - month + 1, 0);
+				now.setMonth(now.getMonth() - month, 0);
 				return Season.generateID(now);
 			})
 			.concat(Season.ID);
