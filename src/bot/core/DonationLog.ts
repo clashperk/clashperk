@@ -98,7 +98,7 @@ export default class DonationLog {
 			const webhook = webhooks.find(hook => (hook.owner as any)?.id === this.client.user?.id);
 
 			if (webhook) {
-				cache.webhook = new WebhookClient(webhook.id, webhook.token!);
+				cache.webhook = new WebhookClient({ id: webhook.id, token: webhook.token! });
 				this.cached.set(id, cache);
 
 				await this.client.db.collection(Collections.DONATION_LOGS)
@@ -118,7 +118,7 @@ export default class DonationLog {
 		).catch(() => null);
 
 		if (webhook) {
-			cache.webhook = new WebhookClient(webhook.id, webhook.token!);
+			cache.webhook = new WebhookClient({ id: webhook.id, token: webhook.token! });
 			this.cached.set(id, cache);
 
 			await this.client.db.collection(Collections.DONATION_LOGS)
@@ -198,7 +198,7 @@ export default class DonationLog {
 					tag: data.tag,
 					color: data.color,
 					channel: data.channel,
-					webhook: data.webhook_id ? new WebhookClient(data.webhook_id, data.webhook_token) : null
+					webhook: data.webhook_id ? new WebhookClient({ id: data.webhook_id, token: data.webhook_token }) : null
 				});
 			});
 	}
@@ -212,7 +212,7 @@ export default class DonationLog {
 			tag: data.tag,
 			color: data.color,
 			channel: data.channel,
-			webhook: data.webhook_id ? new WebhookClient(data.webhook_id, data.webhook_token) : null
+			webhook: data.webhook_id ? new WebhookClient({ id: data.webhook_id, token: data.webhook_token }) : null
 		});
 	}
 

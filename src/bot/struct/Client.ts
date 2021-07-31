@@ -1,5 +1,5 @@
+import { MessageEmbed, Message, Intents, Snowflake, Options, LimitedCollection } from 'discord.js';
 import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } from 'discord-akairo';
-import { MessageEmbed, Message, Intents, Snowflake, Options } from 'discord.js';
 import { loadSync } from '@grpc/proto-loader';
 import RPCHandler from '../core/RPCHandler';
 import Settings from './SettingsProvider';
@@ -16,39 +16,6 @@ import * as uuid from 'uuid';
 import { Db } from 'mongodb';
 import Http from './Http';
 import path from 'path';
-
-declare module 'discord-akairo' {
-	interface AkairoClient {
-		db: Db;
-		rpc: any;
-		http: Http;
-		stats: Stats;
-		logger: Logger;
-		patrons: Patrons;
-		storage: Storage;
-		resolver: Resolver;
-		settings: Settings;
-		links: LinkHandler;
-		automaton: Automaton;
-		rpcHandler: RPCHandler;
-		embed(msg: Message): number;
-		commandHandler: CommandHandler;
-		listenerHandler: ListenerHandler;
-		inhibitorHandler: InhibitorHandler;
-		components: Map<string, Snowflake[]>;
-		uuid(...userIds: Snowflake[]): string;
-	}
-}
-
-declare module 'discord.js' {
-	interface CommandInteraction {
-		author: User;
-	}
-
-	interface ButtonInteraction {
-		author: User;
-	}
-}
 
 const packageDefinition = loadSync(
 	path.join('scripts', 'routes.proto'),
@@ -137,8 +104,6 @@ export default class Client extends AkairoClient {
 	public constructor(config: any) {
 		super({
 			ownerID: config.owner,
-			messageCacheLifetime: 15 * 60,
-			messageSweepInterval: 15 * 60,
 			intents: [
 				Intents.FLAGS.GUILDS,
 				Intents.FLAGS.GUILD_WEBHOOKS,
@@ -146,8 +111,23 @@ export default class Client extends AkairoClient {
 				Intents.FLAGS.GUILD_MESSAGE_REACTIONS
 			],
 			makeCache: Options.cacheWithLimits({
-				MessageManager: 15,
-				PresenceManager: 0
+				MessageManager: {
+					maxSize: 15,
+					sweepInterval: 5 * 60,
+					sweepFilter: LimitedCollection.filterByLifetime({
+						lifetime: 15 * 60,
+						getComparisonTimestamp: msg => msg.createdTimestamp
+					})
+				},
+				PresenceManager: 0,
+				UserManager: {
+					maxSize: 3,
+					keepOverLimit: user => user.id === this.user!.id
+				},
+				GuildMemberManager: {
+					maxSize: 3,
+					keepOverLimit: member => member.id === this.user!.id
+				}
 			})
 		});
 	}
@@ -212,5 +192,38 @@ export default class Client extends AkairoClient {
 	public async start(token: string) {
 		await this.init();
 		return this.login(token);
+	}
+}
+
+declare module 'discord-akairo' {
+	interface AkairoClient {
+		db: Db;
+		rpc: any;
+		http: Http;
+		stats: Stats;
+		logger: Logger;
+		patrons: Patrons;
+		storage: Storage;
+		resolver: Resolver;
+		settings: Settings;
+		links: LinkHandler;
+		automaton: Automaton;
+		rpcHandler: RPCHandler;
+		embed(msg: Message): number;
+		commandHandler: CommandHandler;
+		listenerHandler: ListenerHandler;
+		inhibitorHandler: InhibitorHandler;
+		components: Map<string, Snowflake[]>;
+		uuid(...userIds: Snowflake[]): string;
+	}
+}
+
+declare module 'discord.js' {
+	interface CommandInteraction {
+		author: User;
+	}
+
+	interface ButtonInteraction {
+		author: User;
 	}
 }
