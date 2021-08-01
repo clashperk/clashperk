@@ -79,14 +79,14 @@ export default class ExportClanMembersCommand extends Command {
 				memberTags.push({ tag: m.tag, user: member.user });
 			}
 		}
-		await Promise.all(
+		const guildMembers = await Promise.all(
 			Util.chunk(memberTags, 100).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
 		);
 
 		for (const mem of members) {
 			const user = memberTags.find(user => user.tag === mem.tag)?.user;
 			// @ts-expect-error
-			mem.user_tag = message.guild!.members.cache.get(user)?.user.tag;
+			mem.user_tag = guildMembers.get(user)?.user.tag;
 		}
 
 		members.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))

@@ -1,4 +1,4 @@
-import { Message, GuildMember, MessageActionRow, MessageSelectMenu, Snowflake } from 'discord.js';
+import { Message, GuildMember, MessageActionRow, MessageSelectMenu } from 'discord.js';
 import { Argument, Command } from 'discord-akairo';
 import { TOWN_HALLS } from '../../util/Emojis';
 
@@ -32,7 +32,7 @@ export default class SetNickNameCommand extends Command {
 			type: Argument.union('member', (msg, id) => {
 				if (!id) return null;
 				if (!/^\d{17,19}/.test(id)) return null;
-				return msg.guild!.members.fetch(id as Snowflake).catch(() => null);
+				return msg.guild!.members.fetch(id).catch(() => null);
 			})
 		};
 

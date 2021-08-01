@@ -1,5 +1,5 @@
 import { Command, PrefixSupplier, Argument, Flag } from 'discord-akairo';
-import { Message, MessageEmbed, GuildMember, Snowflake, MessageActionRow, MessageButton } from 'discord.js';
+import { Message, MessageEmbed, GuildMember, MessageActionRow, MessageButton } from 'discord.js';
 import { STOP_REASONS } from '../../util/Constants';
 
 export default class LinkCommand extends Command {
@@ -64,7 +64,7 @@ export default class LinkCommand extends Command {
 			'type': Argument.union('member', (msg, id) => {
 				if (!id) return null;
 				if (!/^\d{17,19}/.test(id)) return null;
-				return msg.guild!.members.fetch(id as Snowflake).catch(() => null);
+				return msg.guild!.members.fetch(id).catch(() => null);
 			}),
 			'flag': '--user',
 			'default': (msg: Message) => msg.member,

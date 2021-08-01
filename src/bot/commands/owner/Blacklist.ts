@@ -1,4 +1,4 @@
-import { Message, Snowflake, User } from 'discord.js';
+import { Message, User } from 'discord.js';
 import { Command } from 'discord-akairo';
 
 export default class BlacklistCommand extends Command {
@@ -18,7 +18,7 @@ export default class BlacklistCommand extends Command {
 					match: 'content',
 					type: async (msg, id) => {
 						if (!id) return null;
-						return this.client.users.fetch(id as Snowflake).catch(() => null);
+						return this.client.users.fetch(id).catch(() => null);
 					},
 					prompt: {
 						start: 'Who would you like to blacklist/unblacklist?',

@@ -121,11 +121,11 @@ export default class Client extends AkairoClient {
 				},
 				PresenceManager: 0,
 				UserManager: {
-					maxSize: 51,
+					maxSize: 3,
 					keepOverLimit: user => user.id === this.user!.id
 				},
 				GuildMemberManager: {
-					maxSize: 51,
+					maxSize: 3,
 					keepOverLimit: member => member.id === this.user!.id
 				}
 			})

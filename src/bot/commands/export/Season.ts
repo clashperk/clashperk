@@ -1,6 +1,6 @@
 import { Clan, ClanMember } from 'clashofclans.js';
 import { Collections } from '../../util/Constants';
-import { Message, Snowflake } from 'discord.js';
+import { Collection, GuildMember, Message, Snowflake } from 'discord.js';
 import { Season, Util } from '../../util/Util';
 import { Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
@@ -81,6 +81,7 @@ export default class ExportSeason extends Command {
 		}, [] as (ClanMember & { clanTag: string })[]);
 
 		const memberTags: { tag: string; user: string }[] = [];
+		const guildMembers = new Collection<string, GuildMember>();
 		if (patron) {
 			memberTags.push(...(await this.client.http.getDiscordLinks(allMembers)));
 			const dbMembers = await this.client.db.collection(Collections.LINKED_PLAYERS)
@@ -94,16 +95,18 @@ export default class ExportSeason extends Command {
 					memberTags.push({ tag: m.tag, user: member.user });
 				}
 			}
-			await Promise.all(
-				this.chunks(memberTags).map(members => message.guild!.members.fetch({ user: members.map(m => m.user as Snowflake) }))
+			const fetchedMembers = await Promise.all(
+				this.chunks(memberTags).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
 			);
+			guildMembers.concat(...fetchedMembers);
 		}
 
 		const members = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan, season!)))).flat();
 		for (const mem of members) {
 			const user = memberTags.find(user => user.tag === mem.tag)?.user;
-			mem.user_tag = message.guild!.members.cache.get((user as Snowflake)!)?.user.tag;
+			mem.user_tag = guildMembers.get((user as Snowflake)!)?.user.tag;
 		}
+		guildMembers.clear();
 
 		const columns = [
 			{ header: 'Name', width: 20 },

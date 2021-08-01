@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, Guild, TextChannel, Snowflake, MessageActionRow, MessageButton } from 'discord.js';
+import { MessageEmbed, Message, Guild, TextChannel, MessageActionRow, MessageButton } from 'discord.js';
 import { Command, Argument } from 'discord-akairo';
 import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
@@ -27,7 +27,7 @@ export default class ClansCommand extends Command {
 					'type': async (msg, id) => {
 						const guilds = await this.client.shard!.broadcastEval(
 							(client, id) => {
-								const guild = client.guilds.cache.get(id as Snowflake);
+								const guild = client.guilds.cache.get(id);
 								if (guild) {
 									return {
 										id: guild.id,

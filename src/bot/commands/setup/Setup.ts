@@ -1,5 +1,5 @@
 import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
-import { Message, TextChannel, MessageEmbed, Snowflake, MessageButton, MessageActionRow } from 'discord.js';
+import { Message, TextChannel, MessageEmbed, MessageButton, MessageActionRow } from 'discord.js';
 import { Flags, Collections } from '../../util/Constants';
 import { Util } from '../../util/Util';
 
@@ -146,8 +146,8 @@ export default class SetupCommand extends Command {
 
 					return {
 						name: clan.name, tag: clan.tag, alias: clan.alias ? `(${clan.alias}) ` : '',
-						roles: clan.role_ids?.map(id => message.guild!.roles.cache.get(id as Snowflake)?.toString()) ?? [],
-						channels: clan.channels?.map(id => this.client.channels.cache.get(id as Snowflake)?.toString()) ?? [],
+						roles: clan.role_ids?.map(id => message.guild!.roles.cache.get(id)?.toString()) ?? [],
+						channels: clan.channels?.map(id => this.client.channels.cache.get(id)?.toString()) ?? [],
 						entries: [
 							{
 								flag: Flags.DONATION_LOG,

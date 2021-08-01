@@ -25,7 +25,7 @@
 		"clashofclans.js": "^1.5.1",
 		"common-tags": "^1.8.0",
 		"discord-akairo": "github:csuvajit/discord-akairo#main",
-		"discord.js": "^13.0.0-dev.t1627778678.74fc23b",
+		"discord.js": "^13.0.0-dev.t1627819382.bb56f17",
 		"dotenv": "^8.6.0",
 		"exceljs": "^4.2.1",
 		"moment": "^2.29.1",

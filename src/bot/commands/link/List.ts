@@ -1,4 +1,4 @@
-import { Message, MessageActionRow, MessageButton, MessageEmbed, Snowflake, Util } from 'discord.js';
+import { Collection, GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed, Util } from 'discord.js';
 import { Collections, STOP_REASONS } from '../../util/Constants';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
@@ -48,18 +48,19 @@ export default class LinkListCommand extends Command {
 			if (!prev.includes(curr.user)) prev.push(curr.user);
 			return prev;
 		}, [] as string[]);
-		await message.guild!.members.fetch({ user: user_ids as Snowflake[] });
+		const guildMembers = await message.guild!.members.fetch({ user: user_ids });
 
 		// Players linked and on the guild.
-		const onDiscord = memberTags.filter(mem => message.guild!.members.cache.has(mem.user as Snowflake));
+		const onDiscord = memberTags.filter(mem => guildMembers.has(mem.user));
 		// Linked to discord but not on the guild.
-		const notInDiscord = memberTags.filter(mem => mem.user_tag && !message.guild!.members.cache.has(mem.user as Snowflake));
+		const notInDiscord = memberTags.filter(mem => mem.user_tag && !guildMembers.has(mem.user));
 		// Not linked to discord.
-		const offDiscord = data.memberList.filter(m => !notInDiscord.some(en => en.tag === m.tag) && !memberTags.some(en => en.tag === m.tag && message.guild!.members.cache.has(en.user as Snowflake)));
+		const offDiscord = data.memberList.filter(
+			m => !notInDiscord.some(en => en.tag === m.tag) && !memberTags.some(en => en.tag === m.tag && guildMembers.has(en.user))
+		);
 
-		const embed = this.getEmbed(message, data, false, onDiscord, offDiscord, notInDiscord);
-
-		if (!onDiscord.length) return message.util!.send({ embeds: [embed] });
+		const embed = this.getEmbed(guildMembers, data, false, onDiscord, offDiscord, notInDiscord);
+		if (!onDiscord.length) return message.util!.send({ embeds: [embed.setColor(this.client.embed(message))] });
 
 		const customID = this.client.uuid(message.author.id);
 		const button = new MessageButton()
@@ -76,8 +77,8 @@ export default class LinkListCommand extends Command {
 
 		collector.on('collect', async action => {
 			if (action.customId === customID) {
-				const embed = this.getEmbed(message, data, true, onDiscord, offDiscord, notInDiscord);
-				await action.update({ embeds: [embed] });
+				const embed = this.getEmbed(guildMembers, data, true, onDiscord, offDiscord, notInDiscord);
+				await action.update({ embeds: [embed.setColor(this.client.embed(message))] });
 				return collector.stop();
 			}
 		});
@@ -89,13 +90,13 @@ export default class LinkListCommand extends Command {
 		});
 	}
 
-	private getEmbed(message: Message, data: Clan, showTag: boolean, onDiscord: { tag: string; user: string }[], offDiscord: ClanMember[], notInDiscord: any[]) {
+	private getEmbed(guildMembers: Collection<string, GuildMember>, data: Clan, showTag: boolean, onDiscord: { tag: string; user: string }[], offDiscord: ClanMember[], notInDiscord: any[]) {
 		const chunks = Util.splitMessage([
 			`${EMOJIS.DISCORD} **Players on Discord: ${onDiscord.length}**`,
 			onDiscord.map(
 				mem => {
 					const member = data.memberList.find(m => m.tag === mem.tag)!;
-					const user = showTag ? member.tag : message.guild!.members.cache.get(mem.user as Snowflake)!.displayName.substring(0, 12).padStart(12, ' ');
+					const user = showTag ? member.tag : guildMembers.get(mem.user)!.displayName.substring(0, 12).padStart(12, ' ');
 					return `**✓** \`\u200e${this.parseName(member.name)}${data.members <= 45 ? `\u200f\` \u200e \`` : ' '} ${user} \u200f\``;
 				}
 			).join('\n'),
@@ -118,7 +119,6 @@ export default class LinkListCommand extends Command {
 		].join('\n'));
 
 		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setDescription(chunks[0]);
 		if (chunks.length > 1) {

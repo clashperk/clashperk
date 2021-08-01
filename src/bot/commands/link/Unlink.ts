@@ -1,5 +1,5 @@
 import { Command, PrefixSupplier, Argument } from 'discord-akairo';
-import { Message, MessageEmbed, GuildMember, Snowflake } from 'discord.js';
+import { Message, MessageEmbed, GuildMember } from 'discord.js';
 import { Collections } from '../../util/Constants';
 
 export default class UnlinkCommand extends Command {
@@ -45,7 +45,7 @@ export default class UnlinkCommand extends Command {
 			'type': Argument.union('member', (msg, id) => {
 				if (!id) return null;
 				if (!/^\d{17,19}/.test(id)) return null;
-				return msg.guild!.members.fetch(id as Snowflake).catch(() => null);
+				return msg.guild!.members.fetch(id).catch(() => null);
 			})
 		};
 

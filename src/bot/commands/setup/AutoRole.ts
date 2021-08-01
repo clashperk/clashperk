@@ -185,7 +185,7 @@ export default class AutoRoleCommand extends Command {
 								createdAt: new Date()
 							},
 							$set: {
-								user_tag: this.client.users.cache.get(user as Snowflake)?.tag
+								user_tag: this.client.users.cache.get(user)?.tag
 							}
 						},
 						{ upsert: true }
