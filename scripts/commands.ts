@@ -336,7 +336,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'add',
 				description: 'Flag a player account',
-				type: ApplicationCommandOptionType.SubCommand,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'tag',
@@ -355,7 +355,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'remove',
 				description: 'Remove a flag from exisiting player account',
-				type: ApplicationCommandOptionType.SubCommand,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'tag',
@@ -368,7 +368,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'show',
 				description: 'Show the flag for a player account',
-				type: ApplicationCommandOptionType.SubCommand,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'tag',
@@ -381,7 +381,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'list',
 				description: 'Get all flags for the server or clan',
-				type: ApplicationCommandOptionType.SubCommand,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'export',
@@ -723,7 +723,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'add',
 				description: 'Create an alias for a clan',
-				type: ApplicationCommandOptionType.SubCommand,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'name',
@@ -742,12 +742,12 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'list',
 				description: 'Get aliases for all clans',
-				type: ApplicationCommandOptionType.SubCommand
+				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'remove',
 				description: 'Remove an alias for a clan',
-				type: ApplicationCommandOptionType.SubCommand,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'name',
