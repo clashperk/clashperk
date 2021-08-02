@@ -1,9 +1,5 @@
-import Env from 'dotenv';
-Env.config();
-
-import fetch from 'node-fetch';
+import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'discord-api-types/v9';
 import moment from 'moment';
-import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'discord-api-types/v8';
 
 export function getSeasonIds() {
 	return Array(6).fill(0).map((_, month) => {
@@ -15,7 +11,13 @@ export function getSeasonIds() {
 	});
 }
 
-export const commands: { name: string; description: string; options?: APIApplicationCommandOption[] }[] = [
+export interface Command {
+	name: string;
+	description: string;
+	options?: APIApplicationCommandOption[];
+}
+
+export const commands: Command[] = [
 	{
 		name: 'clan',
 		description: 'Clan summary and basic details',
@@ -834,29 +836,3 @@ export const commands: { name: string; description: string; options?: APIApplica
 		]
 	}
 ];
-
-(async () => {
-	const res = await fetch('https://discord.com/api/v8/applications/635462521729581058/guilds/509784317598105619/commands', {
-		method: 'PUT',
-		headers: {
-			'Authorization': `Bot ${process.env.TOKEN!}`,
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify(commands)
-	});
-	const body = await res.json();
-	console.log(res.status, JSON.stringify(body));
-})();
-
-(async () => {
-	const res = await fetch('https://discord.com/api/v8/applications/526971716711350273/commands', {
-		method: 'PUT',
-		headers: {
-			'Authorization': `Bot ${process.env.BOT_TOKEN!}`,
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify(commands)
-	});
-	const body = await res.json();
-	console.log(res.status, JSON.stringify(body));
-});
