@@ -12,7 +12,7 @@ export default class Resolver {
 	}
 
 	public async resolvePlayer(message: Message, args: string, num = 1): Promise<Player & { user?: User } | Flag> {
-		args = args.replace(/[\u200e-\u200f]+/g, '');
+		args = args.replace(/[\u200e|\u200f]+/g, '');
 		const parsed = await this.argumentParser(message, args);
 		const tag = parsed && typeof parsed === 'boolean';
 
@@ -51,7 +51,7 @@ export default class Resolver {
 	}
 
 	public async resolveClan(message: Message, args: string): Promise<Clan | Flag> {
-		args = args.replace(/[\u200e-\u200f]+/g, '');
+		args = args.replace(/[\u200e|\u200f]+/g, '');
 		const parsed = await this.argumentParser(message, args);
 
 		const tag = parsed && typeof parsed === 'boolean';

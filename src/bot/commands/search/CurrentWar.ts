@@ -31,12 +31,7 @@ export default class WarCommand extends Command {
 	public *args(msg: Message): unknown {
 		const warID = yield {
 			flag: '--war-id',
-			type: Argument.union(
-				[
-					['last', 'prev']
-				],
-				Argument.range('integer', 1001, 9e6)
-			),
+			type: Argument.union([['last']], Argument.range('integer', 1001, 9e6)),
 			unordered: msg.interaction ? false : true,
 			match: msg.interaction ? 'option' : 'phrase'
 		};
@@ -61,7 +56,7 @@ export default class WarCommand extends Command {
 		if (!data.isWarLogPublic) {
 			const res = await this.client.http.clanWarLeague(data.tag);
 			if (res.ok) {
-				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-round')!, false);
+				return this.handler.runCommand(message, this.handler.modules.get('cwl-round')!, { data });
 			}
 			embed.setDescription('Private War Log');
 			return message.util!.send({ embeds: [embed] });
@@ -74,7 +69,7 @@ export default class WarCommand extends Command {
 		if (body.state === 'notInWar') {
 			const res = await this.client.http.clanWarLeague(data.tag);
 			if (res.ok) {
-				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-round')!, false);
+				return this.handler.runCommand(message, this.handler.modules.get('cwl-round')!, { data });
 			}
 			embed.setDescription('Not in War');
 			return message.util!.send({ embeds: [embed] });

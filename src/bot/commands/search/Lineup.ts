@@ -44,7 +44,7 @@ export default class LineupCommand extends Command {
 		if (!data.isWarLogPublic) {
 			const res = await this.client.http.clanWarLeague(data.tag);
 			if (res.ok) {
-				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-lineup')!, false);
+				return this.handler.runCommand(message, this.handler.modules.get('cwl-lineup')!, { data });
 			}
 			embed.setDescription('Private WarLog');
 			return message.util!.send({ embeds: [embed] });
@@ -55,7 +55,7 @@ export default class LineupCommand extends Command {
 		if (body.state === 'notInWar') {
 			const res = await this.client.http.clanWarLeague(data.tag);
 			if (res.ok) {
-				return this.handler.handleDirectCommand(message, data.tag, this.handler.modules.get('cwl-lineup')!, false);
+				return this.handler.runCommand(message, this.handler.modules.get('cwl-lineup')!, { data });
 			}
 			embed.setDescription('Clan is not in war!');
 			return message.util!.send({ embeds: [embed] });

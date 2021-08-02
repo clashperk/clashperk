@@ -250,7 +250,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the clan',
-				type: 3,
+				type: ApplicationCommandOptionType.String,
 				required: false
 			},
 			{
@@ -268,7 +268,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 			{
 				name: 'tag',
 				description: 'Tag of the clan',
-				type: 3,
+				type: ApplicationCommandOptionType.String,
 				required: false
 			},
 			{
@@ -846,7 +846,7 @@ export const commands: { name: string; description: string; options?: APIApplica
 	});
 	const body = await res.json();
 	console.log(res.status, JSON.stringify(body));
-});
+})();
 
 (async () => {
 	const res = await fetch('https://discord.com/api/v8/applications/526971716711350273/commands', {
@@ -859,4 +859,4 @@ export const commands: { name: string; description: string; options?: APIApplica
 	});
 	const body = await res.json();
 	console.log(res.status, JSON.stringify(body));
-})();
+});

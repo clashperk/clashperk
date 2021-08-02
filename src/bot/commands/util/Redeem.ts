@@ -62,6 +62,7 @@ export default class RedeemCommand extends Command {
 			return message.util!.send('**Something went wrong, please contact us!**');
 		}
 
+		// const predgeId = pledge.relationships.reward.id;
 		if (!user) {
 			await db.updateOne(
 				{ id: patron.id },
