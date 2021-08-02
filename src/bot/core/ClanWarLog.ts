@@ -1,4 +1,4 @@
-import { MessageEmbed, Util, Collection, TextChannel, PermissionString, Message, Snowflake } from 'discord.js';
+import { MessageEmbed, Collection, TextChannel, PermissionString, Message, Snowflake } from 'discord.js';
 import { ClanWar, ClanWarMember, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/NumEmojis';
 import { TOWN_HALLS, EMOJIS, WAR_STARS } from '../util/Emojis';
@@ -6,6 +6,7 @@ import { Collections } from '../util/Constants';
 import Client from '../struct/Client';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
+import { Util } from '../util/Util';
 
 const states: { [key: string]: number } = {
 	preparation: 16745216,
@@ -174,6 +175,7 @@ export default class ClanWarLog {
 			.setURL(this.clanURL(data.clan.tag))
 			.setThumbnail(data.clan.badgeUrls.small);
 		if (data.state === 'preparation') {
+			const startTimestamp = new Date(moment(data.startTime).toDate()).getTime();
 			embed.setColor(states[data.state])
 				.setDescription([
 					'**War Against**',
@@ -181,15 +183,16 @@ export default class ClanWarLog {
 					'',
 					'**War State**',
 					'Preparation Day',
+					`War Start Time: ${Util.getRelativeTime(startTimestamp)}`,
 					'',
 					'**War Size**',
 					`${data.teamSize} vs ${data.teamSize}`
 				].join('\n'));
-			embed.setTimestamp(new Date(moment(data.startTime).toDate()))
-				.setFooter('Starting');
+			embed.setTimestamp();
 		}
 
 		if (data.state === 'inWar') {
+			const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
 			embed.setColor(states[data.state])
 				.setDescription([
 					'**War Against**',
@@ -197,7 +200,7 @@ export default class ClanWarLog {
 					'',
 					'**War State**',
 					'Battle Day',
-					`Ends in ${moment.duration(new Date(moment(data.endTime).toDate()).getTime() - Date.now()).format('D[d], H[h] m[m]', { trim: 'both mid' })}`,
+					`End Time: ${Util.getRelativeTime(endTimestamp)}`,
 					'',
 					'**War Size**',
 					`${data.teamSize} vs ${data.teamSize}`,
@@ -218,7 +221,7 @@ export default class ClanWarLog {
 					})
 				].join('\n'));
 			}
-			embed.setFooter('Synced').setTimestamp();
+			embed.setTimestamp();
 		}
 
 		if (data.state === 'warEnded') {
@@ -236,7 +239,7 @@ export default class ClanWarLog {
 					'**War Stats**',
 					`${this.getLeaderBoard(data.clan, data.opponent)}`
 				].join('\n'));
-			embed.setFooter('Ended').setTimestamp(new Date(moment(data.endTime).toDate()));
+			embed.setFooter('Ended').setTimestamp();
 		}
 
 		embed.setDescription([
@@ -294,32 +297,27 @@ export default class ClanWarLog {
 			.addField('Team Size', `${data.teamSize}`);
 
 		if (data.state === 'inWar') {
-			const ends = new Date(moment(data.endTime).toDate()).getTime();
+			const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
 			embed.setColor(states[data.state]);
-			embed.addField(
-				'State',
-				[
-					'Battle Day',
-					`Ends in ${moment.duration(ends - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
-				].join('\n')
-			).addField('War Stats', this.getLeaderBoard(clan, opponent));
+			embed.addField('War State', [
+				'Battle Day',
+				`End Time: ${Util.getRelativeTime(endTimestamp)}`
+			].join('\n'));
+			embed.addField('War Stats', this.getLeaderBoard(clan, opponent));
 		}
 
 		if (data.state === 'preparation') {
-			const start = new Date(moment(data.startTime).toDate()).getTime();
+			const startTimestamp = new Date(moment(data.startTime).toDate()).getTime();
 			embed.setColor(states[data.state]);
-			embed.addField(
-				'State',
-				[
-					'Preparation',
-					`Ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
-				].join('\n')
-			);
+			embed.addField('War State', [
+				'Preparation Day',
+				`War Start Time: ${Util.getRelativeTime(startTimestamp)}`
+			].join('\n'));
 		}
 
 		if (data.state === 'warEnded') {
 			embed.setColor(results[data.result]);
-			embed.addField('State', 'War Ended')
+			embed.addField('War State', 'War Ended')
 				.addField('War Stats', this.getLeaderBoard(clan, opponent));
 		}
 

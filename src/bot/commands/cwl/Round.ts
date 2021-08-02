@@ -79,10 +79,10 @@ export default class CWLRoundCommand extends Command {
 						.addField('War Against', `\u200e${opponent.name} (${opponent.tag})`)
 						.addField('Team Size', `${data.teamSize}`);
 					if (data.state === 'warEnded') {
-						const end = new Date(moment(data.endTime).toDate()).getTime();
-						embed.addField('State', [
+						const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
+						embed.addField('War State', [
 							'War Ended',
-							`Ended ${moment.duration(Date.now() - end).format('D [days], H [hours] m [mins]', { trim: 'both mid' })} ago`
+							`Ended: ${Util.getRelativeTime(endTimestamp)}`
 						].join('\n'));
 						embed.addField('Stats', [
 							`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
@@ -91,10 +91,10 @@ export default class CWLRoundCommand extends Command {
 						].join('\n'));
 					}
 					if (data.state === 'inWar') {
-						const end = new Date(moment(data.endTime).toDate()).getTime();
-						embed.addField('State', [
+						const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
+						embed.addField('War State', [
 							'Battle Day',
-							`Ends in ${moment.duration(end - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+							`End Time: ${Util.getRelativeTime(endTimestamp)}`
 						].join('\n'));
 						embed.addField('Stats', [
 							`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
@@ -103,10 +103,10 @@ export default class CWLRoundCommand extends Command {
 						].join('\n'));
 					}
 					if (data.state === 'preparation') {
-						const start = new Date(moment(data.startTime).toDate()).getTime();
-						embed.addField('State', [
-							'Preparation',
-							`Ends in ${moment.duration(start - Date.now()).format('D [days], H [hours] m [mins]', { trim: 'both mid' })}`
+						const startTimestamp = new Date(moment(data.startTime).toDate()).getTime();
+						embed.addField('War State', [
+							'Preparation Day',
+							`War Start Time: ${Util.getRelativeTime(startTimestamp)}`
 						].join('\n'));
 					}
 					embed.addField('Rosters', [

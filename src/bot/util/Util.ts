@@ -28,6 +28,10 @@ export class Util extends Discord.Util {
 		return `<t:${Math.floor(ms / 1000)}:R>`;
 	}
 
+	public static getShortDate(ms: number) {
+		return `<t:${Math.floor(ms / 1000)}:f>`;
+	}
+
 	public static chunk<T>(items: T[], chunk: number) {
 		const array = [];
 		for (let i = 0; i < items.length; i += chunk) {
