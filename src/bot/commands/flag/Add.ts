@@ -1,5 +1,5 @@
 import { Collections } from '../../util/Constants';
-import { Util, Message } from 'discord.js';
+import { Util, Message, Channel } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from 'discord-akairo';
 
@@ -69,7 +69,7 @@ export default class FlagAddCommand extends Command {
 						user_tag: message.author.tag,
 						tag: data.tag,
 						name: data.name,
-						reason: Util.cleanContent(reason, message.channel),
+						reason: Util.cleanContent(reason, message.channel as Channel),
 						createdAt: new Date()
 					}
 				}, { upsert: true, returnDocument: 'after' });

@@ -80,7 +80,7 @@ export default class SetNickNameCommand extends Command {
 		const msg = await message.util!.send({ content: `**Setting up ${member.user.tag}\'s nickname...**`, components: [row] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customID && [member.id, message.author.id].includes(action.user.id),
-			time: 15 * 60 * 1000
+			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {

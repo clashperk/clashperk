@@ -98,21 +98,21 @@ export default class PatronCommand extends Command {
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		const customID = this.client.uuid(message.author.id);
+		const customId = this.client.uuid(message.author.id);
 		const button = new MessageButton()
-			.setCustomId(customID)
+			.setCustomId(customId)
 			.setStyle('SECONDARY')
 			.setLabel('Our Current Patrons');
 
 		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow().addComponents(button)] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customID && action.user.id === message.author.id,
-			time: 15 * 60 * 1000, max: 1
+			filter: action => action.customId === customId && action.user.id === message.author.id,
+			time: 5 * 60 * 1000, max: 1
 		});
 
 		const patrons = (await this.patrons()).filter(patron => patron.active && patron.discord_id !== this.client.ownerID);
 		collector.on('collect', async action => {
-			if (action.customId === customID) {
+			if (action.customId === customId) {
 				embed.setDescription([
 					embed.description,
 					'',
@@ -126,7 +126,7 @@ export default class PatronCommand extends Command {
 		});
 
 		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customID);
+			this.client.components.delete(customId);
 			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});

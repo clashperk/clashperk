@@ -79,7 +79,7 @@ export default class UnitsCommand extends Command {
 
 		const collector = msg.createMessageComponentCollector({
 			filter: action => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === message.author.id,
-			time: 15 * 60 * 1000
+			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {

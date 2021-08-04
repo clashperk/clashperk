@@ -115,7 +115,7 @@ export default class Client extends AkairoClient {
 					maxSize: 15,
 					sweepInterval: 5 * 60,
 					sweepFilter: LimitedCollection.filterByLifetime({
-						lifetime: 15 * 60,
+						lifetime: 10 * 60,
 						getComparisonTimestamp: msg => msg.createdTimestamp
 					})
 				},

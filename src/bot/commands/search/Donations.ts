@@ -133,7 +133,7 @@ export default class DonationsCommand extends Command {
 
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customId.sort && action.user.id === message.author.id,
-			max: 1, time: 15 * 60 * 1000
+			max: 1, time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {

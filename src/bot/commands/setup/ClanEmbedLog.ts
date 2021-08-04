@@ -2,7 +2,7 @@ import { Collections, Flags, Settings, EMBEDS } from '../../util/Constants';
 import { Command, Argument, Flag, PrefixSupplier } from 'discord-akairo';
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS } from '../../util/Emojis';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
-import { Util, Message, User, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
+import { Util, Message, Channel, User, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 
 export default class ClanEmbedCommand extends Command {
@@ -137,7 +137,7 @@ export default class ClanEmbedCommand extends Command {
 					? data.description
 					: description.toLowerCase() === 'none'
 						? ''
-						: Util.cleanContent(description, message.channel) || ''
+						: Util.cleanContent(description, message.channel as Channel) || ''
 			].join('\n'))
 			.addField('Clan Leader', [
 				`${EMOJIS.OWNER} ${user.toString()} (${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'})`
@@ -180,7 +180,7 @@ export default class ClanEmbedCommand extends Command {
 				embed: {
 					accepts,
 					userId: user.id,
-					description: Util.cleanContent(description, message.channel)
+					description: Util.cleanContent(description, message.channel as Channel)
 				}
 			});
 
@@ -220,7 +220,7 @@ export default class ClanEmbedCommand extends Command {
 		const msg = await message.channel.send({ content: '**Select an option for this action.**', components: [row] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
-			time: 15 * 60 * 1000
+			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {

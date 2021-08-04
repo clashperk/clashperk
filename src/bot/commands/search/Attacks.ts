@@ -72,7 +72,7 @@ export default class ClanAttacksCommand extends Command {
 
 		const interaction = await msg.awaitMessageComponent({
 			filter: action => action.customId === customId && action.user.id === message.author.id,
-			time: 15 * 60 * 1000
+			time: 5 * 60 * 1000
 		}).catch(() => null);
 
 		this.client.components.delete(customId);

@@ -54,12 +54,12 @@ const sweepInteractions = () => {
 	for (const interaction of interactions.values()) {
 		const now = Date.now();
 		const message = interaction.message;
-		if ((now - message.createdTimestamp) > 15 * 60 * 1000) {
+		if ((now - message.createdTimestamp) > 10 * 60 * 1000) {
 			interactions.delete(message.id);
 		}
 	}
 };
-setInterval(sweepInteractions.bind(null), 15 * 60 * 1000);
+setInterval(sweepInteractions.bind(null), 5 * 60 * 1000);
 
 Object.defineProperties(CommandInteraction.prototype, {
 	author: {
