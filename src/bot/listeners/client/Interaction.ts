@@ -124,6 +124,13 @@ export default class InteractionListener extends Listener {
 		const command = this.client.commandHandler.findCommand(interaction.commandName);
 		if (!command) return; // eslint-disable-line
 
+		if (!interaction.channel) {
+			return interaction.reply({
+				content: `I\'m missing **Send Messages** permission in this channel.`,
+				ephemeral: true
+			});
+		}
+
 		const permissions = (interaction.channel as TextChannel).permissionsFor(this.client.user!)!
 			.missing(['SEND_MESSAGES', 'VIEW_CHANNEL'])
 			.map(perm => {
@@ -133,7 +140,7 @@ export default class InteractionListener extends Listener {
 
 		if (permissions.length) {
 			return interaction.reply({
-				content: `Missing **${permissions.join('** and **')}** permission${permissions.length > 1 ? 's' : ''}.`,
+				content: `I\'m missing **${permissions.join('** and **')}** permission${permissions.length > 1 ? 's' : ''} in this channel.`,
 				ephemeral: true
 			});
 		}
