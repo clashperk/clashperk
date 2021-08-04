@@ -67,6 +67,7 @@ export default class ClanFeedLog {
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
+			if (channel.type !== 'GUILD_TEXT') return; // eslint-disable-line
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
 				if (this.hasWebhookPermission(channel)) {
 					const webhook = await this.webhook(id);

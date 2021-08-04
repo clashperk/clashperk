@@ -8,6 +8,10 @@ export class Util extends Discord.Util {
 		super();
 	}
 
+	public static escapeBackTick(name: string) {
+		return name.replace('\`', '');
+	}
+
 	public static getSeasonIds() {
 		return Array(4)
 			.fill(0)

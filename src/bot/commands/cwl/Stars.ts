@@ -1,8 +1,9 @@
-import { Message, MessageActionRow, MessageEmbed, MessageSelectMenu, Util } from 'discord.js';
+import { Message, MessageActionRow, MessageEmbed, MessageSelectMenu } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { STOP_REASONS } from '../../util/Constants';
+import { Util } from '../../util/Util';
 
 export default class CWLStarsCommand extends Command {
 	public constructor() {
@@ -114,7 +115,7 @@ export default class CWLStarsCommand extends Command {
 				leaderboard.filter(
 					m => m.of > 0
 				).map(
-					(m, i) => `\u200e\`${this.pad(++i)} ${this.pad(m.stars)}  ${[m.attacks, m.of].join('/')}  ${Util.escapeMarkdown(m.name).padEnd(15, ' ')}\u200f\``
+					(m, i) => `\u200e\`${this.pad(++i)} ${this.pad(m.stars)}  ${[m.attacks, m.of].join('/')}  ${Util.escapeBackTick(m.name).padEnd(15, ' ')}\u200f\``
 				).join('\n')
 			].join('\n'));
 
@@ -158,7 +159,7 @@ export default class CWLStarsCommand extends Command {
 							leaderboard.filter(m => m.of > 0)
 								.map((m, i) => {
 									const gained = m.stars - m.lost >= 0 ? `+${m.stars - m.lost}` : `${m.stars - m.lost}`;
-									return `\`\u200e${this.pad(++i)} ${this.pad(m.stars)}  ${gained.padStart(3, ' ')}  ${m.name.padEnd(15, ' ')}\``;
+									return `\`\u200e${this.pad(++i)} ${this.pad(m.stars)}  ${gained.padStart(3, ' ')}  ${Util.escapeBackTick(m.name).padEnd(15, ' ')}\``;
 								})
 								.join('\n')
 						].join('\n'));
