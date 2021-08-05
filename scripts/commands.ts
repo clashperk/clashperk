@@ -61,24 +61,8 @@ export const commands: Command[] = [
 			{
 				name: 'tag',
 				description: 'Clan tag / alias or @user mention',
-				type: 3,
-				required: false
-			},
-			{
-				name: 'sort',
-				description: 'Sorting option',
 				type: ApplicationCommandOptionType.String,
-				required: false,
-				choices: [
-					{
-						name: 'By Attacks',
-						value: 'false'
-					},
-					{
-						name: 'By Defense',
-						value: 'true'
-					}
-				]
+				required: false
 			}
 		]
 	},
