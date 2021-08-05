@@ -5,7 +5,7 @@ import { TOWN_HALLS } from '../../util/Emojis';
 export default class SetNickNameCommand extends Command {
 	public constructor() {
 		super('setnick', {
-			aliases: ['nick', 'setnick'],
+			aliases: ['nick', 'setnick', 'nickname'],
 			category: 'setup',
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			description: {
@@ -23,17 +23,20 @@ export default class SetNickNameCommand extends Command {
 					],
 					url: 'https://i.imgur.com/rrAK4uj.png'
 				}
-			}
+			},
+			optionFlags: ['--user']
 		});
 	}
 
-	public *args(): unknown {
+	public *args(msg: Message): unknown {
 		const member = yield {
 			type: Argument.union('member', (msg, id) => {
 				if (!id) return null;
 				if (!/^\d{17,19}/.test(id)) return null;
 				return msg.guild!.members.fetch(id).catch(() => null);
-			})
+			}),
+			flag: '--user',
+			match: msg.interaction ? 'option' : 'phrase'
 		};
 
 		const txt = yield {

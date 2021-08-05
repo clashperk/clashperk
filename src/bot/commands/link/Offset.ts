@@ -7,7 +7,7 @@ import moment from 'moment';
 export default class OffsetCommand extends Command {
 	public constructor() {
 		super('offset', {
-			aliases: ['offset', 't'],
+			aliases: ['offset', 'timezone', 't'],
 			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
@@ -16,17 +16,18 @@ export default class OffsetCommand extends Command {
 				usage: '<location>',
 				examples: ['Kolkata', 'New York']
 			},
-			args: [
-				{
-					id: 'query',
-					type: 'string',
-					match: 'content',
-					prompt: {
-						start: 'What would you like to search for?'
-					}
-				}
-			]
+			optionFlags: ['--location']
 		});
+	}
+
+	public *args(msg: Message): unknown {
+		const query = yield {
+			type: 'string',
+			flag: '--location',
+			match: msg.interaction ? 'option' : 'content'
+		};
+
+		return { query };
 	}
 
 	public async exec(message: Message, { query }: { query: string }) {

@@ -52,6 +52,6 @@ export default class ConfigCommand extends Command {
 				].join('\n'))
 		];
 
-		return embeds.map(async embed => message.util!.send({ embeds: [embed] }));
+		return message.util!.send({ embeds });
 	}
 }

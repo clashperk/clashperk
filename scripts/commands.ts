@@ -24,7 +24,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -36,7 +36,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: 3,
 				required: false
 			}
@@ -48,8 +48,8 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
-				type: 3,
+				description: 'Clan tag / alias or @user mention',
+				type: ApplicationCommandOptionType.String,
 				required: false
 			}
 		]
@@ -60,15 +60,25 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: 3,
 				required: false
 			},
 			{
 				name: 'sort',
-				description: 'Sort by defenses?',
-				type: 5,
-				required: false
+				description: 'Sorting option',
+				type: ApplicationCommandOptionType.String,
+				required: false,
+				choices: [
+					{
+						name: 'By Attacks',
+						value: 'false'
+					},
+					{
+						name: 'By Defense',
+						value: 'true'
+					}
+				]
 			}
 		]
 	},
@@ -78,14 +88,14 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
-				type: 3,
+				description: 'Clan tag / alias or @user mention',
+				type: ApplicationCommandOptionType.String,
 				required: false
 			},
 			{
 				name: 'with',
-				description: 'Selecet an option',
-				type: 3,
+				description: 'Select an option',
+				type: ApplicationCommandOptionType.String,
 				required: false,
 				choices: [
 					{
@@ -114,7 +124,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the player account',
+				description: 'Player tag or @user mention',
 				required: false,
 				type: ApplicationCommandOptionType.String
 			}
@@ -126,7 +136,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the player account',
+				description: 'Player tag or @user mention',
 				required: false,
 				type: ApplicationCommandOptionType.String
 			}
@@ -138,7 +148,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: 3,
 				required: false
 			}
@@ -150,7 +160,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: 3,
 				required: false
 			},
@@ -168,13 +178,13 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: ApplicationCommandOptionType.String,
 				required: false
 			},
 			{
 				name: 'season',
-				description: 'Season ID (Format: YYYY-MM)',
+				description: 'Season ID',
 				type: ApplicationCommandOptionType.String,
 				required: false,
 				choices: getSeasonIds()
@@ -187,7 +197,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: 3,
 				required: false
 			}
@@ -199,7 +209,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the player account',
+				description: 'Player tag or @user mention',
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -211,7 +221,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the player account',
+				description: 'Player tag or @user mention',
 				type: ApplicationCommandOptionType.String,
 				required: false
 			},
@@ -251,7 +261,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: ApplicationCommandOptionType.String,
 				required: false
 			},
@@ -269,7 +279,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: ApplicationCommandOptionType.String,
 				required: false
 			},
@@ -342,7 +352,7 @@ export const commands: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Tag of the player account',
+						description: 'Player Tag',
 						required: true,
 						type: ApplicationCommandOptionType.String
 					},
@@ -361,7 +371,7 @@ export const commands: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Tag of the player account',
+						description: 'Player Tag',
 						type: ApplicationCommandOptionType.String,
 						required: true
 					}
@@ -374,7 +384,7 @@ export const commands: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Tag of the player account',
+						description: 'Player Tag',
 						required: true,
 						type: ApplicationCommandOptionType.String
 					}
@@ -387,7 +397,7 @@ export const commands: Command[] = [
 				options: [
 					{
 						name: 'export',
-						description: 'Export to Excel file?',
+						description: 'Export to excel file?',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -568,7 +578,7 @@ export const commands: Command[] = [
 			},
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -666,7 +676,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -817,7 +827,7 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -829,9 +839,92 @@ export const commands: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Clan tag / alias or @user mention',
 				type: ApplicationCommandOptionType.String,
 				required: false
+			}
+		]
+	},
+	{
+		name: 'army',
+		description: 'Render an army composition link',
+		options: [
+			{
+				name: 'link',
+				description: 'Army composition link',
+				type: ApplicationCommandOptionType.String,
+				required: true
+			},
+			{
+				name: 'name',
+				description: 'Optional name for this army',
+				type: ApplicationCommandOptionType.String,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'nickname',
+		description: 'Set nickname from linked players',
+		options: [
+			{
+				name: 'user',
+				description: 'The user',
+				type: ApplicationCommandOptionType.User,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'config',
+		description: 'Change embed color or server prefix',
+		options: [
+			{
+				name: 'prefix',
+				description: 'Change server prefix',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'prefix',
+						description: 'The new prefix',
+						type: ApplicationCommandOptionType.String
+					}
+				]
+			},
+			{
+				name: 'color',
+				description: 'Change embed color (Patron Only)',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'hex_code',
+						description: 'Hex color code (e.g #ed4245)',
+						type: ApplicationCommandOptionType.String,
+						required: true
+					}
+				]
+			}
+		]
+	},
+	{
+		name: 'timezone',
+		description: 'Set your time zone offset',
+		options: [
+			{
+				name: 'location',
+				description: 'Search by country or city name (we don\'t store your location, only offset. e.g GMT+5:00)',
+				type: ApplicationCommandOptionType.String
+			}
+		]
+	},
+	{
+		name: 'search',
+		description: 'Search any clans by name',
+		options: [
+			{
+				name: 'name',
+				description: 'Clan name (must be 3 characters long)',
+				type: ApplicationCommandOptionType.String
 			}
 		]
 	}

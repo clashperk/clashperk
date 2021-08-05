@@ -14,17 +14,22 @@ export default class PrefixCommand extends Command {
 				usage: '<prefix>',
 				examples: ['!', '?']
 			},
-			args: [
-				{
-					id: 'prefix',
-					type: Argument.validate('string', (msg, p) => !/\s/.test(p) && p.length <= 3),
-					prompt: {
-						retry: 'Please provide a prefix without spaces and less than 3 characters.',
-						optional: true
-					}
-				}
-			]
+			optionFlags: ['--prefix']
 		});
+	}
+
+	public *args(msg: Message): unknown {
+		const prefix = yield {
+			type: Argument.validate('string', (msg, p) => !/\s/.test(p.replace(/"(.+)"/, '$1')) && p.length <= 3),
+			prompt: {
+				retry: 'Please provide a prefix without spaces and less than 3 characters.',
+				optional: true
+			},
+			flag: '--prefix',
+			match: msg.interaction ? 'option' : 'phrase'
+		};
+
+		return { prefix };
 	}
 
 	// @ts-expect-error
@@ -40,6 +45,7 @@ export default class PrefixCommand extends Command {
 			return message.util!.send(`Use the prefix \`${oldPrefix}\` to run my commands`);
 		}
 
+		prefix = prefix.replace(/"(.+)"/, '$1');
 		if (prefix && !message.member!.permissions.has('MANAGE_GUILD')) {
 			return message.util!.send([
 				`Use the prefix \`${oldPrefix}\` to run my commands.`,

@@ -8,7 +8,6 @@ export default class ColorCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
-			quoted: false,
 			description: {
 				content: [
 					'Sets display color of the server.',
@@ -20,14 +19,19 @@ export default class ColorCommand extends Command {
 				usage: '<color>',
 				examples: ['#0080ff', 'none', 'reset']
 			},
-			args: [
-				{
-					'id': 'color',
-					'type': Argument.union(['none', 'reset'], 'color'),
-					'default': (message: Message) => this.client.embed(message)
-				}
-			]
+			optionFlags: ['--hex_code']
 		});
+	}
+
+	public *args(msg: Message): unknown {
+		const color = yield {
+			'flag': '--hex_code',
+			'match': msg.interaction ? 'option' : 'phrase',
+			'type': Argument.union(['none', 'reset'], 'color'),
+			'default': (message: Message) => this.client.embed(message)
+		};
+
+		return { color };
 	}
 
 	public async exec(message: Message, { color }: { color: number | string }) {

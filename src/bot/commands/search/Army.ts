@@ -21,13 +21,13 @@ export default class ArmyCommand extends Command {
 					url: 'https://i.imgur.com/uqDnt5s.png'
 				}
 			},
-			optionFlags: ['--url', '--name']
+			optionFlags: ['--link', '--name']
 		});
 	}
 
 	public *args(msg: Message): unknown {
 		const url = yield {
-			flag: '--url',
+			flag: '--link',
 			match: msg.interaction ? 'option' : 'phrase',
 			type: Argument.validate('url', (msg, url) => /^https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=(.*)/.test(url))
 		};

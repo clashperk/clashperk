@@ -1,5 +1,5 @@
 import { MessageEmbed, Message } from 'discord.js';
-import { Command, Argument } from 'discord-akairo';
+import { Command } from 'discord-akairo';
 
 export default class ClanSearchCommand extends Command {
 	public constructor() {
@@ -12,15 +12,18 @@ export default class ClanSearchCommand extends Command {
 				examples: ['air hounds']
 			},
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
-			args: [
-				{
-					'id': 'name',
-					'match': 'content',
-					'type': Argument.validate('string', (msg, name) => name.length >= 3),
-					'default': ''
-				}
-			]
+			optionFlags: ['--name']
 		});
+	}
+
+	public *args(msg: Message): unknown {
+		const name = yield {
+			type: 'string',
+			flag: '--name',
+			match: msg.interaction ? 'option' : 'content'
+		};
+
+		return { name };
 	}
 
 	public async exec(message: Message, { name }: { name: string }) {

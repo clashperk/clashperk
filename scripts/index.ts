@@ -18,6 +18,7 @@ const applicationGuildCommands = async () => {
 			body: JSON.stringify(commands)
 		}
 	).then(res => res.json()).then(console.log);
+	console.log(`Updated ${commands.length} Guild Application Commands`);
 };
 
 const applicationCommands = async () => {
@@ -33,6 +34,7 @@ const applicationCommands = async () => {
 			body: JSON.stringify(commands)
 		}
 	).then(res => res.json()).then(console.log);
+	console.log(`Updated ${commands.length} Application Commands`);
 };
 
 async function init() {
