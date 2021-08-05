@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Intercation Command
+    name: Interaction Command
     runs-on: ubuntu-latest
 
     steps:
