@@ -116,6 +116,7 @@ export default class RPCHandler {
 	}
 
 	public async add(id: string, data: { tag: string; guild: string; op: number }) {
+		if (!this.client.guilds.cache.has(data.guild)) return;
 		const OP = {
 			[Flags.DONATION_LOG]: this.donationLog,
 			[Flags.CLAN_FEED_LOG]: this.clanFeedLog,

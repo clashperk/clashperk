@@ -1,5 +1,5 @@
 import { Collections, Settings, STOP_REASONS } from '../../util/Constants';
-import { Message, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
+import { Message, MessageActionRow, MessageButton } from 'discord.js';
 import { Command } from 'discord-akairo';
 
 interface Patron {
@@ -26,7 +26,7 @@ export default class PatronCommand extends Command {
 			args: [
 				{
 					id: 'action',
-					type: ['add', 'del']
+					type: ['add', 'del', 'dec']
 				},
 				{
 					id: 'id',
@@ -39,30 +39,31 @@ export default class PatronCommand extends Command {
 	public async exec(message: Message, { action, id }: { action: string; id: string }) {
 		if (action && id && this.client.isOwner(message.author.id)) {
 			const patrons = await this.patrons();
-			const patron = patrons.find((d: any) => d?.discord_id === id);
+			const patron = patrons.find(d => d.discord_id === id || d.id === id);
 			for (const guild of patron?.guilds ?? []) {
 				if (action === 'add') await this.add(guild.id);
-				if (action === 'del') await this.del(guild.id);
+				if (['del', 'dec'].includes(action)) await this.del(guild.id);
 			}
 
 			if (action === 'add' && patron) {
 				await this.client.db.collection(Collections.PATRONS)
 					.updateOne(
 						{ id: patron.id },
-						{ $set: { active: true } }
+						{ $set: { active: true, declined: false, cancelled: false } }
 					);
 
 				await this.client.patrons.refresh();
 				return message.util!.send('Success!');
 			}
 
-			if (action === 'del' && patron) {
+			if (['del', 'dec'].includes(action) && patron) {
 				await this.client.db.collection(Collections.PATRONS)
 					.updateOne(
 						{ id: patron.id },
-						{ $set: { active: false } }
+						{ $set: { active: false, declined: action === 'dec', cancelled: action === 'del' } }
 					);
 
+				await this.client.patrons._fetch();
 				await this.client.patrons.refresh();
 				return message.util!.send('Success!');
 			}
@@ -72,7 +73,11 @@ export default class PatronCommand extends Command {
 
 		const embed = this.client.util.embed()
 			// .setColor(16345172)
-			.setAuthor(this.client.user!.username, this.client.user!.displayAvatarURL(), 'https://www.patreon.com/clashperk')
+			.setAuthor(
+				this.client.user!.username,
+				this.client.user!.displayAvatarURL(),
+				'https://www.patreon.com/clashperk'
+			)
 			.setDescription([
 				'Help us with our hosting related expenses.',
 				'Any help is beyond appreciated. Thanks!',
@@ -93,10 +98,6 @@ export default class PatronCommand extends Command {
 				'',
 				'**[Support us on Patreon](https://www.patreon.com/clashperk) | [Support Discord](https://discord.gg/ppuppun)**'
 			].join('\n'));
-
-		if (!(message.channel as TextChannel).permissionsFor(message.guild!.me!)!.has(['ADD_REACTIONS', 'READ_MESSAGE_HISTORY'], false)) {
-			return message.util!.send({ embeds: [embed] });
-		}
 
 		const customId = this.client.uuid(message.author.id);
 		const button = new MessageButton()

@@ -186,7 +186,6 @@ export default class Client extends AkairoClient {
 	private run() {
 		this.patrons.init();
 		this.rpcHandler.init();
-		return Promise.resolve();
 	}
 
 	public async start(token: string) {

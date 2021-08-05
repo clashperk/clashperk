@@ -4,6 +4,12 @@ import { Message } from 'discord.js';
 import fetch from 'node-fetch';
 import qs from 'querystring';
 
+const rewards: { [key: string]: number } = { // eslint-disable-line
+	3705318: 3 * 100,
+	4742718: 5 * 100,
+	5352215: 10 * 100
+};
+
 export default class RedeemCommand extends Command {
 	public constructor() {
 		super('redeem', {
@@ -19,7 +25,7 @@ export default class RedeemCommand extends Command {
 
 	public async exec(message: Message) {
 		const query = qs.stringify({
-			'include': 'patron.null',
+			'include': 'patron.null,reward.null',
 			'page[count]': 100,
 			'sort': 'created'
 		});
@@ -62,20 +68,23 @@ export default class RedeemCommand extends Command {
 			return message.util!.send('**Something went wrong, please contact us!**');
 		}
 
-		// const predgeId = pledge.relationships.reward.id;
+		const rewardId = pledge.relationships.reward?.data?.id;
 		if (!user) {
 			await db.updateOne(
 				{ id: patron.id },
 				{
 					$set: {
 						name: patron.attributes.full_name,
-						id: patron.id,
+						id: patron.id, redeemed: true,
+						rewardId: rewards[rewardId] ? rewardId : '000000',
 						discord_id: message.author.id,
 						discord_username: message.author.username,
-						active: true,
-						guilds: [{ id: message.guild!.id, limit: pledge.attributes.amount_cents >= 300 ? 50 : 3 }],
-						entitled_amount: pledge.attributes.amount_cents / 100,
-						redeemed: true,
+						active: true, declined: false, cancelled: false,
+						guilds: [{
+							id: message.guild!.id,
+							limit: (rewards[rewardId] || Math.ceil(pledge.attributes.amount_cents)) >= 300 ? 50 : 5
+						}],
+						entitled_amount: Math.ceil(pledge.attributes.amount_cents) / 100,
 						createdAt: new Date(pledge.attributes.created_at)
 					}
 				},
@@ -93,7 +102,7 @@ export default class RedeemCommand extends Command {
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		const redeemed = this.redeemed(Object.assign(user, { entitled_amount: pledge.attributes.amount_cents / 100 }));
+		const redeemed = this.redeemed(Object.assign(user, { entitled_amount: Math.ceil(pledge.attributes.amount_cents) / 100 }));
 		if (redeemed) {
 			if (!this.isNew(user, message, patron)) await this.client.patrons.refresh();
 			const embed = this.client.util.embed()
@@ -110,7 +119,7 @@ export default class RedeemCommand extends Command {
 			{ id: patron.id },
 			{
 				$set: {
-					entitled_amount: pledge.attributes.amount_cents / 100,
+					entitled_amount: Math.ceil(pledge.attributes.amount_cents) / 100,
 					discord_id: message.author.id,
 					discord_username: message.author.username,
 					redeemed: true
@@ -118,7 +127,7 @@ export default class RedeemCommand extends Command {
 				$push: {
 					guilds: {
 						id: message.guild!.id,
-						limit: pledge.attributes.amount_cents >= 300 ? 50 : 3
+						limit: (rewards[rewardId] || Math.ceil(pledge.attributes.amount_cents)) >= 300 ? 50 : 5
 					}
 				}
 			}
@@ -147,15 +156,14 @@ export default class RedeemCommand extends Command {
 						}
 					}
 				);
-
 			return true;
 		}
 		return false;
 	}
 
 	private async sync(guild: string) {
-		await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild }, { $set: { active: true, patron: true } });
-
+		await this.client.db.collection(Collections.CLAN_STORES)
+			.updateMany({ guild }, { $set: { active: true, patron: true } });
 		await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild })
 			.forEach(data => {
