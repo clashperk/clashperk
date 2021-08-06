@@ -1,7 +1,7 @@
 import { Command, PrefixSupplier } from 'discord-akairo';
+import { Collections } from '../../util/Constants';
 import Chart from '../../struct/ChartHandler';
 import { Message } from 'discord.js';
-import { Collections } from '../../util/Constants';
 
 const months = [
 	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -198,13 +198,14 @@ export default class ClanActivityCommand extends Command {
 				};
 			});
 
-		/* const avg = Array(24).fill(0).map(() => dataSets.splice(0, days))
+		/*
+		const avg = Array(24).fill(0).map(() => dataSets.splice(0, days))
 			.reduce((previous, current) => {
 				const count = current.reduce((prev, curr) => curr.count + prev, 0) / days;
 				previous.push({ count: Math.floor(count), time: current[0].time });
 				return previous;
-			}, []);*/
-
+			}, []);
+		*/
 		return dataSets.reverse().map((a, i) => {
 			const time = new Date(new Date(a.time).getTime() + (offset * 1000));
 			let hour = this.format(time, days > 7 ? time.getMonth() : null);
