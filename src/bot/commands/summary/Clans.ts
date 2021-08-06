@@ -122,7 +122,7 @@ export default class ClanSummaryCommand extends Command {
 
 		collector.on('collect', async action => {
 			if (action.customId === customId) {
-				await action.defer();
+				await action.deferReply();
 				const buffer = await this.getBuffer(collection);
 
 				await action.followUp({

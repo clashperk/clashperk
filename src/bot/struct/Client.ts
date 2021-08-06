@@ -101,14 +101,14 @@ export default class Client extends AkairoClient {
 		directory: path.join(__dirname, '..', 'listeners')
 	});
 
-	public constructor(config: any) {
+	public constructor(config: { owner: string }) {
 		super({
 			ownerID: config.owner,
 			intents: [
 				Intents.FLAGS.GUILDS,
+				Intents.FLAGS.GUILD_MEMBERS,
 				Intents.FLAGS.GUILD_WEBHOOKS,
-				Intents.FLAGS.GUILD_MESSAGES,
-				Intents.FLAGS.GUILD_MESSAGE_REACTIONS
+				Intents.FLAGS.GUILD_MESSAGES
 			],
 			makeCache: Options.cacheWithLimits({
 				MessageManager: {
@@ -121,11 +121,11 @@ export default class Client extends AkairoClient {
 				},
 				PresenceManager: 0,
 				UserManager: {
-					maxSize: 3,
+					maxSize: 100,
 					keepOverLimit: user => user.id === this.user!.id
 				},
 				GuildMemberManager: {
-					maxSize: 3,
+					maxSize: 100,
 					keepOverLimit: member => member.id === this.user!.id
 				}
 			})

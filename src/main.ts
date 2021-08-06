@@ -12,7 +12,7 @@ import { version } from '../package.json';
 import Client from './bot/struct/Client';
 import * as Sentry from '@sentry/node';
 
-const client = new Client({ owner: process.env.OWNER });
+const client = new Client({ owner: process.env.OWNER! });
 
 if (process.env.SENTRY) {
 	Sentry.init({

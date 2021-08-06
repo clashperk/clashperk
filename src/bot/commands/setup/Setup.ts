@@ -126,7 +126,7 @@ export default class SetupCommand extends Command {
 		this.client.components.delete(customID);
 		if (!interaction) return;
 
-		await interaction.defer();
+		await interaction.deferReply();
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const fetched = await Promise.all(
 			clans.map(

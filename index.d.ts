@@ -1,5 +1,5 @@
 interface UserInfo {
-	user_id: string; // unique: true
+	user: string; // unique: true
 	user_tag?: string;
 	clan?: {
 		tag: string; // indexed
