@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { GuildMember, Message, MessageEmbed, Collection } from 'discord.js';
 import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
@@ -79,15 +79,18 @@ export default class ExportClanMembersCommand extends Command {
 				memberTags.push({ tag: m.tag, user: member.user });
 			}
 		}
-		const guildMembers = await Promise.all(
+		let guildMembers = new Collection<string, GuildMember>();
+		const fetchedMembers = await Promise.all(
 			Util.chunk(memberTags, 100).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
 		);
+		guildMembers = guildMembers.concat(...fetchedMembers);
 
 		for (const mem of members) {
 			const user = memberTags.find(user => user.tag === mem.tag)?.user;
 			// @ts-expect-error
 			mem.user_tag = guildMembers.get(user)?.user.tag;
 		}
+		guildMembers.clear();
 
 		members.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
 			.sort((a, b) => b.townHallLevel - a.townHallLevel);
