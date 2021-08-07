@@ -2,7 +2,7 @@ import { Collections, Flags, Settings, EMBEDS } from '../../util/Constants';
 import { Command, Argument, Flag, PrefixSupplier } from 'discord-akairo';
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS } from '../../util/Emojis';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
-import { Util, Message, Channel, User, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
+import { Util, Message, User, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 
 export default class ClanEmbedCommand extends Command {
@@ -137,7 +137,7 @@ export default class ClanEmbedCommand extends Command {
 					? data.description
 					: description.toLowerCase() === 'none'
 						? ''
-						: Util.cleanContent(description, message.channel as Channel) || ''
+						: Util.cleanContent(description, message.channel) || ''
 			].join('\n'))
 			.addField('Clan Leader', [
 				`${EMOJIS.OWNER} ${user.toString()} (${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'})`
@@ -180,7 +180,7 @@ export default class ClanEmbedCommand extends Command {
 				embed: {
 					accepts,
 					userId: user.id,
-					description: Util.cleanContent(description, message.channel as Channel)
+					description: Util.cleanContent(description, message.channel)
 				}
 			});
 

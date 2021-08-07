@@ -136,7 +136,7 @@ export default class ClanGamesCommand extends Command {
 		const embed = this.client.util.embed()
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
-				`**[Clan Games Scoreboard (${this.seasonID})](https://clashperk.com/faq)**`,
+				`**[Clan Games Scoreboard (${this.seasonId})](https://clashperk.com/faq)**`,
 				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
 				members.slice(0, 55)
 					.filter(d => filter ? d.points > 0 : d.points >= 0)
@@ -157,7 +157,7 @@ export default class ClanGamesCommand extends Command {
 		return num.toString().padStart(6, ' ');
 	}
 
-	private get seasonID() {
+	private get seasonId() {
 		const now = new Date();
 		if (now.getDate() < 20) now.setMonth(now.getMonth() - 1);
 		return now.toISOString().substring(0, 7);
@@ -167,13 +167,11 @@ export default class ClanGamesCommand extends Command {
 		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS)
 			.aggregate([
 				{
-					$match: {
-						clanTag
-					}
+					$match: { clanTag }
 				},
 				{
 					$match: {
-						season: this.seasonID
+						season: this.seasonId
 					}
 				},
 				{

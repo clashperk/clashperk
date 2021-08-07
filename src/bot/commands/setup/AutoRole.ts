@@ -148,21 +148,21 @@ export default class AutoRoleCommand extends Command {
 			if (!data.ok) continue;
 
 			const members = await this.client.db.collection(Collections.LINKED_PLAYERS)
-				.aggregate<{ user: string; tag: string }>([
-				{
-					$match: {
-						'entries.tag': data.memberList.map(mem => mem.tag)
+				.aggregate([
+					{
+						$match: {
+							'entries.tag': data.memberList.map(mem => mem.tag)
+						}
+					}, {
+						$unwind: {
+							path: '$entries'
+						}
+					}, {
+						$project: {
+							tag: '$entries.tag', user: '$user'
+						}
 					}
-				}, {
-					$unwind: {
-						path: '$entries'
-					}
-				}, {
-					$project: {
-						tag: '$entries.tag', user: '$user'
-					}
-				}
-			]).toArray();
+				]).toArray<{ user: string; tag: string }>();
 
 			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
 			for (const { user, tag } of unknowns) {
@@ -171,26 +171,27 @@ export default class AutoRoleCommand extends Command {
 				const member = data.memberList.find(mem => mem.tag === tag) ?? await this.client.http.player(tag);
 				if (!member.name) continue;
 				try {
-					await this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
-						{ user, 'entries.tag': { $ne: tag } },
-						{
-							$push: {
-								entries: { tag, name: member.name, verified: false, unknown: true }
-							},
-							$setOnInsert: {
-								clan: {
-									tag: data.tag,
-									name: data.name
+					await this.client.db.collection(Collections.LINKED_PLAYERS)
+						.updateOne(
+							{ user, 'entries.tag': { $ne: tag } },
+							{
+								$push: {
+									entries: { tag, name: member.name, verified: false, unknown: true }
 								},
-								createdAt: new Date()
+								$setOnInsert: {
+									clan: {
+										tag: data.tag,
+										name: data.name
+									},
+									createdAt: new Date()
+								},
+								$set: {
+									user_tag: this.client.users.cache.get(user)?.tag
+								}
 							},
-							$set: {
-								user_tag: this.client.users.cache.get(user)?.tag
-							}
-						},
-						{ upsert: true }
-					);
-				} catch {}
+							{ upsert: true }
+						);
+				} catch { }
 			}
 
 			await this.client.rpcHandler.roleManager.queue(data);

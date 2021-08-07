@@ -1,4 +1,4 @@
-import { Command, PrefixSupplier } from 'discord-akairo';
+import { Command } from 'discord-akairo';
 import { Collections } from '../../util/Constants';
 import Chart from '../../struct/ChartHandler';
 import { Message } from 'discord.js';
@@ -21,7 +21,7 @@ export default class ClanActivityCommand extends Command {
 					'',
 					'Maximum 3 clans are accepted.',
 					'',
-					'Set your timezone using **offset** command for better experience.'
+					'Set your time zone using **/timezone** command for better experience.'
 				],
 				usage: '[#clanTags]',
 				examples: ['#8QU8J9LP', '#8QU8J9LP #8UUYQ92L']
@@ -100,7 +100,7 @@ export default class ClanActivityCommand extends Command {
 		return message.util!.send({
 			files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }],
 			content: [
-				user ? '' : `_Set your timezone using \`${(this.handler.prefix as PrefixSupplier)(message) as string}offset <location>\` for better experience._`
+				user ? '' : `_Set your time zone using \`/timezone\` command for better experience._`
 			].join('\n')
 		});
 	}

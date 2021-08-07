@@ -48,10 +48,10 @@ export default class LastSeenCommand extends Command {
 			);
 		}
 
-		const db = await this.client.db.collection(Collections.LAST_SEEN)
+		const enough = await this.client.db.collection(Collections.LAST_SEEN)
 			.find({ 'clan.tag': data.tag })
 			.count();
-		if (!db) {
+		if (!enough) {
 			return message.util!.send([
 				`Not enough data available for **${data.name} (${data.tag})**`
 			].join('\n'));
