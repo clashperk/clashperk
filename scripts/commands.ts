@@ -547,6 +547,10 @@ export const commands: Command[] = [
 						value: 'lineup'
 					},
 					{
+						name: 'CWL Attacks',
+						value: 'attacks'
+					},
+					{
 						name: 'CWL Stars',
 						value: 'stars'
 					},
