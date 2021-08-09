@@ -1,10 +1,11 @@
-import { MessageEmbed, Message, MessageSelectMenu, MessageActionRow } from 'discord.js';
+import { MessageEmbed, Message, MessageSelectMenu, MessageActionRow, MessageButton } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Util } from '../../util/Util';
 import moment from 'moment';
 import { STOP_REASONS } from '../../util/Constants';
+import { RED_NUMBERS } from '../../util/NumEmojis';
 
 const stars: { [key: string]: string } = {
 	0: '☆☆☆',
@@ -58,8 +59,9 @@ export default class CWLAttacksCommand extends Command {
 	private async rounds(message: Message, body: ClanWarLeagueGroup, clanTag: string) {
 		const rounds = body.rounds.filter(round => !round.warTags.includes('#0'));
 
-		const chunks: { embed: MessageEmbed; state: string; round: number }[] = [];
 		let i = 0;
+		const missed: { [key: string]: { name: string; count: number } } = {};
+		const chunks: { embed: MessageEmbed; state: string; round: number }[] = [];
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
@@ -143,6 +145,16 @@ export default class CWLAttacksCommand extends Command {
 						].join('\n'));
 					}
 
+					if (data.state === 'warEnded') {
+						for (const mem of clan.members) {
+							if (mem.attacks?.length) continue;
+							missed[mem.tag] = {
+								name: mem.name, // eslint-disable-next-line
+								count: Number((missed[mem.tag] || { count: 0 }).count) + 1
+							};
+						}
+					}
+
 					embed.setFooter(`Round #${++i}`);
 					chunks.push({ state: data.state, round: i, embed });
 					break;
@@ -159,27 +171,64 @@ export default class CWLAttacksCommand extends Command {
 		}
 
 		const options = chunks.map(ch => ({ label: `Round #${ch.round}`, value: ch.round.toString() }));
-		const customID = this.client.uuid(message.author.id);
+		const ids = {
+			menu: this.client.uuid(message.author.id),
+			button: this.client.uuid(message.author.id)
+		};
+
 		const menu = new MessageSelectMenu()
 			.addOptions(options)
-			.setCustomId(customID)
+			.setCustomId(ids.menu)
 			.setPlaceholder('Select a round!');
 
-		const msg = await message.util!.send({ embeds: [round.embed], components: [new MessageActionRow({ components: [menu] })] });
+		const button = new MessageButton()
+			.setStyle('SECONDARY')
+			.setCustomId(ids.button)
+			.setLabel('Show Overall Missed Attacks')
+			.setDisabled(!Object.keys(missed).length);
+
+		const rows = [
+			new MessageActionRow()
+				.addComponents(menu),
+			new MessageActionRow()
+				.addComponents(button)
+		];
+
+		const msg = await message.util!.send({
+			embeds: [round.embed],
+			components: [...rows]
+		});
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customID && action.user.id === message.author.id,
+			filter: action => Object.values(ids).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customId === customID && action.isSelectMenu()) {
-				const round = chunks.find(ch => ch.round === Number(action.values[0]!));
+			if (action.customId === ids.menu && action.isSelectMenu()) {
+				const round = chunks.find(ch => ch.round === Number(action.values[0]));
 				return action.update({ embeds: [round!.embed] });
+			}
+
+			if (action.customId === ids.button) {
+				const members = Object.values(missed);
+				const embed = new MessageEmbed()
+					.setColor(this.client.embed(message))
+					.setDescription([
+						'**All Missed Attacks**',
+						'',
+						members.map(mem => `${RED_NUMBERS[mem.count]} ${Util.escapeMarkdown(mem.name)}`).join('\n')
+					].join('\n'));
+				embed.author = round.embed.author!;
+				rows[1].components[0].setDisabled(true);
+
+				await action.update({ components: [...rows] });
+				await action.followUp({ embeds: [embed] });
 			}
 		});
 
 		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customID);
+			this.client.components.delete(ids.menu);
+			this.client.components.delete(ids.button);
 			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
