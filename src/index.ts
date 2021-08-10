@@ -23,7 +23,7 @@ const ShardingManager = new Manager();
 
 setInterval(() => {
 	if ((os.freemem() / (1024 * 1024)) < 250) {
-		shell.exec('pm2 restart rpc bot');
+		shell.exec('pm2 restart bot');
 	}
 }, 60 * 1000);
 
