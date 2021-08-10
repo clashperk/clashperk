@@ -1,5 +1,6 @@
-import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake, Message } from 'discord.js';
+import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake } from 'discord.js';
 import { Collections } from '../util/Constants';
+import { APIMessage } from 'discord-api-types';
 import { Clan } from 'clashofclans.js';
 import Client from '../struct/Client';
 import { Util } from '../util/Util';
@@ -74,24 +75,22 @@ export default class LastSeenLog {
 	private async handleMessage(cache: Cache, channel: TextChannel, clan: Clan, members = []) {
 		if (!cache.message) {
 			const msg = await this.send(cache, channel, clan, members);
-			if (msg) channel.messages.cache.delete(msg.id);
 			return this.mutate(cache, msg);
 		}
 
 		const msg = await this.edit(cache, channel, clan, members);
-		if (msg) channel.messages.cache.delete(msg.id);
 		return this.mutate(cache, msg);
 	}
 
 	private async send(cache: Cache, channel: TextChannel, clan: Clan, members = []) {
 		const embed = this.embed(clan, cache, members);
-		return channel.send({ embeds: [embed] }).catch(() => null);
+		return Util.sendMessage(this.client, channel.id, { embeds: [embed.toJSON()] }).catch(() => null);
 	}
 
 	private async edit(cache: Cache, channel: TextChannel, clan: Clan, members = []) {
 		const embed = this.embed(clan, cache, members);
 
-		return channel.messages.edit(cache.message!, { embeds: [embed] })
+		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] })
 			.catch(error => {
 				if (error.code === 10008) {
 					delete cache.message;
@@ -101,7 +100,7 @@ export default class LastSeenLog {
 			});
 	}
 
-	private async mutate(cache: Cache, msg: Message | null) {
+	private async mutate(cache: Cache, msg: APIMessage | null) {
 		if (msg) {
 			await this.collection.updateOne(
 				{ clan_id: new ObjectId(cache._id) },

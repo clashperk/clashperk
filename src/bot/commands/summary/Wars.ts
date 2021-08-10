@@ -4,11 +4,12 @@ import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
+import { Util } from '../../util/Util';
 
 const states: { [key: string]: string } = {
-	inWar: 'Ends',
-	preparation: 'Starts',
-	warEnded: 'Ended'
+	inWar: '**End Time~**',
+	preparation: '**Start Time~**',
+	warEnded: '**End Time~**'
 };
 
 export default class WarSummaryCommand extends Command {
@@ -37,7 +38,7 @@ export default class WarSummaryCommand extends Command {
 
 			embed.addField(`${data.clan.name} ${data.round ? `(CWL Round #${data.round})` : ''}`, [
 				`${this.getLeaderBoard(data.clan, data.opponent)}`,
-				`${states[data.state]} on ${this.getRelativeTime(moment(data.preparationStartTime).toDate().getTime())}`,
+				`${states[data.state]} ${Util.getRelativeTime(moment(this._getTime(data)).toDate().getTime())}`,
 				'\u200b'
 			].join('\n'));
 		}
@@ -54,10 +55,6 @@ export default class WarSummaryCommand extends Command {
 		for (const embed of embeds) {
 			await message.util!.sendNew({ embeds: [embed] });
 		}
-	}
-
-	public getRelativeTime(ms: number) {
-		return `<t:${Math.floor(ms / 1000)}:f>`;
 	}
 
 	private get onGoingCWL() {
@@ -102,5 +99,9 @@ export default class WarSummaryCommand extends Command {
 			`${EMOJIS.SWORD} ${clan.attacks}/${opponent.attacks}`,
 			`${EMOJIS.FIRE} ${clan.destructionPercentage.toFixed(2)}%/${opponent.destructionPercentage.toFixed(2)}%`
 		].join(' ');
+	}
+
+	private _getTime(data: ClanWar) {
+		return data.state === 'preparation' ? data.startTime : data.endTime;
 	}
 }

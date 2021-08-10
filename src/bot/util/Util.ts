@@ -1,3 +1,4 @@
+import { APIMessage } from 'discord-api-types';
 import * as Discord from 'discord.js';
 import 'moment-duration-format';
 import moment from 'moment';
@@ -6,6 +7,16 @@ import moment from 'moment';
 export class Util extends Discord.Util {
 	public constructor() {
 		super();
+	}
+
+	public static editMessage(client: Discord.Client, channelId: string, messageId: string, data: unknown): Promise<APIMessage> {
+		// @ts-expect-error
+		return client.api.channels[channelId].messages[messageId].patch({ data });
+	}
+
+	public static sendMessage(client: Discord.Client, channelId: string, data: unknown): Promise<APIMessage> {
+		// @ts-expect-error
+		return client.api.channels[channelId].messages.post({ data });
 	}
 
 	public static escapeBackTick(name: string) {
