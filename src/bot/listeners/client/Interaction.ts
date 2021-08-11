@@ -95,7 +95,55 @@ export default class InteractionListener extends Listener {
 
 	public exec(interaction: Interaction) {
 		this.commandInteraction(interaction);
+		this.contextInteraction(interaction);
 		this.componentInteraction(interaction);
+	}
+
+	private async contextInteraction(interaction: Interaction) {
+		if (!interaction.isContextMenu()) return;
+		if (this.inhibitor(interaction)) return;
+		if (!interaction.inGuild()) return;
+
+		const command = this.client.commandHandler.findCommand(interaction.commandName);
+		if (!command) return; // eslint-disable-line
+
+		if (!interaction.channel) {
+			return interaction.reply({
+				content: `I\'m missing **Send Messages** permission in this channel.`,
+				ephemeral: true
+			});
+		}
+
+		const permissions = (interaction.channel as TextChannel).permissionsFor(this.client.user!)!
+			.missing(['SEND_MESSAGES', 'VIEW_CHANNEL'])
+			.map(perm => {
+				if (perm === 'VIEW_CHANNEL') return 'Read Messages';
+				return perm.replace(/_/g, ' ').toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase());
+			});
+
+		if (permissions.length) {
+			return interaction.reply({
+				content: `I\'m missing **${permissions.join('** and **')}** permission${permissions.length > 1 ? 's' : ''} in this channel.`,
+				ephemeral: true
+			});
+		}
+
+		await interaction.deferReply({ ephemeral: false });
+		if (
+			(command.clientPermissions) &&
+			(command.clientPermissions as PermissionResolvable[]).includes('USE_EXTERNAL_EMOJIS') &&
+			!(interaction.channel as TextChannel).permissionsFor(interaction.guild!.roles.everyone).has('USE_EXTERNAL_EMOJIS')
+		) {
+			await interaction.followUp({
+				content: 'You must enable `Use External Emojis` permission for @everyone role to use slash commands.',
+				allowedMentions: { parse: ['users'] }
+			});
+		}
+
+		const options: CommandInteractionOption = interaction.targetType === 'MESSAGE'
+			? { name: 'message', value: interaction.options.getMessage('message')?.content ?? '', type: 'STRING' }
+			: { name: 'user', value: interaction.options.getUser('user')!.id, type: 'USER' };
+		return this.handleInteraction(interaction, command, [options], false);
 	}
 
 	private async componentInteraction(interaction: Interaction) {
@@ -160,7 +208,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private inhibitor(interaction: Interaction) {
-		if (!interaction.guildId) return true;
+		if (!interaction.inGuild()) return true;
 
 		const guilds = this.client.settings.get<string[]>('global', Settings.GUILD_BLACKLIST, []);
 		if (guilds.includes(interaction.guildId)) return true;

@@ -7,8 +7,8 @@ import fetch from 'node-fetch';
 
 const applicationGuildCommands = async () => {
 	console.log('Building Guild Application Commands');
-	await fetch(
-		`${RouteBases.api}${Routes.applicationGuildCommands('635462521729581058', '509784317598105619')}`,
+	const res = await fetch(
+		`${RouteBases.api}${Routes.applicationGuildCommands('635462521729581058', '609250675431309313')}`,
 		{
 			method: 'PUT',
 			headers: {
@@ -17,13 +17,14 @@ const applicationGuildCommands = async () => {
 			},
 			body: JSON.stringify(commands)
 		}
-	).then(res => res.json()).then(console.log);
+	);
+	await res.json().then(data => res.ok ? console.log(JSON.stringify(data)) : console.log(data));
 	console.log(`Updated ${commands.length} Guild Application Commands`);
 };
 
 const applicationCommands = async () => {
 	console.log('Building Application Commands');
-	await fetch(
+	const res = await fetch(
 		`${RouteBases.api}${Routes.applicationCommands('526971716711350273')}`,
 		{
 			method: 'PUT',
@@ -33,7 +34,8 @@ const applicationCommands = async () => {
 			},
 			body: JSON.stringify(commands)
 		}
-	).then(res => res.json()).then(console.log);
+	);
+	await res.json().then(data => res.ok ? console.log(JSON.stringify(data)) : console.log(data));
 	console.log(`Updated ${commands.length} Application Commands`);
 };
 

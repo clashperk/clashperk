@@ -11,8 +11,15 @@ export function getSeasonIds() {
 	});
 }
 
+export enum CommandType {
+	SLASH = 1,
+	USER = 2,
+	MESSAGE = 3
+}
+
 export interface Command {
 	name: string;
+	type?: number;
 	description: string;
 	options?: APIApplicationCommandOption[];
 }
@@ -915,5 +922,15 @@ export const commands: Command[] = [
 				type: ApplicationCommandOptionType.String
 			}
 		]
+	},
+	{
+		name: 'Profile',
+		type: CommandType.USER,
+		description: ''
+	},
+	{
+		name: 'Army',
+		type: CommandType.MESSAGE,
+		description: ''
 	}
 ];

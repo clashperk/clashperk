@@ -1,4 +1,4 @@
-import { Message, CommandInteraction, InteractionReplyOptions, ButtonInteraction, Collection, Snowflake } from 'discord.js';
+import { Message, CommandInteraction, Interaction, InteractionReplyOptions, ButtonInteraction, Collection, Snowflake } from 'discord.js';
 
 export class InteractionUtil {
 	public shouldEdit: boolean;
@@ -61,7 +61,7 @@ const sweepInteractions = () => {
 };
 setInterval(sweepInteractions.bind(null), 5 * 60 * 1000);
 
-Object.defineProperties(CommandInteraction.prototype, {
+Object.defineProperties(Interaction.prototype, {
 	author: {
 		get: function() {
 			return this.user;
@@ -76,33 +76,7 @@ Object.defineProperties(CommandInteraction.prototype, {
 	},
 	interaction: {
 		get: function() {
-			return {
-				id: this.id, type: this.type,
-				user: this.user, commandName: this.commandName
-			};
-		}
-	}
-});
-
-Object.defineProperties(ButtonInteraction.prototype, {
-	author: {
-		get: function() {
-			return this.user;
-		}
-	},
-	util: {
-		get: function() {
-			if (interactions.has(this.id)) return interactions.get(this.id);
-			interactions.set(this.id, new InteractionUtil(this));
-			return interactions.get(this.id);
-		}
-	},
-	interaction: {
-		get: function() {
-			return {
-				id: this.id, type: this.type,
-				user: this.user, commandName: this.customId
-			};
+			return { id: this.id, user: this.user, type: this.type };
 		}
 	}
 });

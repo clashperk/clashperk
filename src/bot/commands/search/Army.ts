@@ -1,11 +1,12 @@
 import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SEIGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis';
 import { TROOPS_HOUSING } from '../../util/Constants';
-import { Argument, Command } from 'discord-akairo';
 import { Message, MessageEmbed } from 'discord.js';
 import RAW_TROOPS from '../../util/TroopsInfo';
+import { Command } from 'discord-akairo';
 import { URL } from 'url';
 
 const [TOTAL_UNITS, TOTAL_SPELLS, TOTAL_SUPER_TROOPS, TOTAL_SEIGE] = [300, 11, 2, 1];
+const ARMY_URL_REGEX = /https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=[u|s]([\d+x-])+[s|u]([\d+x-])+/g;
 
 export default class ArmyCommand extends Command {
 	public constructor() {
@@ -21,15 +22,18 @@ export default class ArmyCommand extends Command {
 					url: 'https://i.imgur.com/uqDnt5s.png'
 				}
 			},
-			optionFlags: ['--link', '--name']
+			optionFlags: ['--link', '--name', '--message']
 		});
 	}
 
 	public *args(msg: Message): unknown {
 		const url = yield {
-			flag: '--link',
+			flag: ['--link', '--message'],
 			match: msg.interaction ? 'option' : 'phrase',
-			type: Argument.validate('url', (msg, url) => /^https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=(.*)/.test(url))
+			type: (msg: Message, url: string) => {
+				if (!ARMY_URL_REGEX.test(url)) return null;
+				return new URL(url.match(ARMY_URL_REGEX)![0]!);
+			}
 		};
 
 		const name = yield {
