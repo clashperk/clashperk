@@ -137,12 +137,12 @@ export default class DonationLog {
 	private async handleMessage(id: string, channel: TextChannel | WebhookClient, data: Donation) {
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
-			.setColor(cache.color)
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`)
 			.setThumbnail(data.clan.badge)
 			.setFooter(`${data.clan.members} Members`, this.client.user!.displayAvatarURL())
 			.setTimestamp();
+		if (cache.color) embed.setColor(cache.color);
 
 		if (data.donated.length) {
 			embed.addField(`${EMOJIS.USER_BLUE} Donated`, [
