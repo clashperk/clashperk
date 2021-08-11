@@ -59,6 +59,8 @@ export default class StatsCommand extends Command {
 			.addField('Version', `v${version}`, true)
 			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL({ dynamic: true }));
 
+		if (message.interaction) return message.util!.send({ embeds: [embed] });
+
 		const customId = this.client.uuid();
 		const button = new MessageButton()
 			.setEmoji('🗑️')
