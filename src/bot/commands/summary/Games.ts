@@ -1,4 +1,4 @@
-import { ClanGames, Util } from '../../util/Util';
+import { Util } from '../../util/Util';
 import { Collections } from '../../util/Constants';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { Message, MessageEmbed } from 'discord.js';
@@ -84,11 +84,16 @@ export default class ClanGamesSummaryCommand extends Command {
 				'',
 				'**Performance**',
 				'Based on completing maximum points.',
-				`${EMOJIS.HASH} **\`\u200e ${Math.floor(ClanGames.MAX_POINT / 1000)}K  ${'CLAN'.padEnd(20, ' ')}\u200f\`**`,
+				`${EMOJIS.HASH} **\`\u200e ${Math.floor(this.MAX / 1000)}K  ${'CLAN'.padEnd(20, ' ')}\u200f\`**`,
 				...performances.sort((a, b) => b.count - a.count)
 					.map((clan, i) => `${BLUE_NUMBERS[++i]} \`\u200e ${clan.count.toString().padStart(2, ' ')}  ${clan.name.padEnd(20, ' ')}\u200f\``)
 			].join('\n'));
 
 		return message.util!.send({ embeds: [embed] });
+	}
+
+	private get MAX() {
+		const now = new Date();
+		return now.getDate() >= 22 && now.getMonth() === 7 ? 5000 : 4000;
 	}
 }

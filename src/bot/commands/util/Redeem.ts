@@ -4,7 +4,7 @@ import { Message } from 'discord.js';
 import fetch from 'node-fetch';
 import qs from 'querystring';
 
-const rewards: { [key: string]: number } = { // eslint-disable-line
+const rewards: { [key: string]: number } = {
 	3705318: 3 * 100,
 	4742718: 5 * 100,
 	5352215: 10 * 100

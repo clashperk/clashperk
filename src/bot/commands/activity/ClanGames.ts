@@ -1,27 +1,8 @@
+import { Message, MessageActionRow, MessageButton } from 'discord.js';
+import { Collections, STOP_REASONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
-import { Message, MessageActionRow, MessageButton } from 'discord.js';
-import { Collections, STOP_REASONS } from '../../util/Constants';
-import { ClanGames } from '../../util/Util';
-
-interface DBMember {
-	tag: string;
-	name: string;
-	achievements: {
-		gained: number;
-		name: string;
-		value: number;
-	}[];
-	clanGamesEndTime?: Date;
-}
-
-interface Member {
-	tag: string;
-	name: string;
-	points: number;
-	endedAt?: Date;
-}
 
 export default class ClanGamesCommand extends Command {
 	public constructor() {
@@ -132,7 +113,7 @@ export default class ClanGamesCommand extends Command {
 	}
 
 	private embed(data: Clan, members: Member[], force = false, filter = false) {
-		const total = members.reduce((prev, mem) => prev + (force ? mem.points : Math.min(mem.points, ClanGames.MAX_POINT)), 0);
+		const total = members.reduce((prev, mem) => prev + (force ? mem.points : Math.min(mem.points, this.MAX)), 0);
 		const embed = this.client.util.embed()
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
 			.setDescription([
@@ -141,7 +122,7 @@ export default class ClanGamesCommand extends Command {
 				members.slice(0, 55)
 					.filter(d => filter ? d.points > 0 : d.points >= 0)
 					.map((m, i) => {
-						const points = this.padStart(force ? m.points : Math.min(ClanGames.MAX_POINT, m.points));
+						const points = this.padStart(force ? m.points : Math.min(this.MAX, m.points));
 						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
 					})
 					.join('\n'),
@@ -151,6 +132,11 @@ export default class ClanGamesCommand extends Command {
 				`Total Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`
 			);
 		return embed;
+	}
+
+	private get MAX() {
+		const now = new Date();
+		return now.getDate() >= 22 && now.getMonth() === 7 ? 5000 : 4000;
 	}
 
 	private padStart(num: number) {
@@ -224,4 +210,22 @@ export default class ClanGamesCommand extends Command {
 				return 0;
 			});
 	}
+}
+
+interface DBMember {
+	tag: string;
+	name: string;
+	achievements: {
+		gained: number;
+		name: string;
+		value: number;
+	}[];
+	clanGamesEndTime?: Date;
+}
+
+interface Member {
+	tag: string;
+	name: string;
+	points: number;
+	endedAt?: Date;
 }
