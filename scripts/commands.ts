@@ -21,10 +21,11 @@ export interface Command {
 	name: string;
 	type?: number;
 	description: string;
+	default_permission?: boolean;
 	options?: APIApplicationCommandOption[];
 }
 
-export const commands: Command[] = [
+export const COMMANDS: Command[] = [
 	{
 		name: 'clan',
 		description: 'Clan summary and basic details',
@@ -932,5 +933,19 @@ export const commands: Command[] = [
 		name: 'Army',
 		type: CommandType.MESSAGE,
 		description: ''
+	}
+];
+
+export const PRIVATE_COMMANDS: Command[] = [
+	{
+		name: 'stats',
+		description: 'Some basic information about the bot',
+		default_permission: false
+	},
+	{
+		name: 'Whois',
+		description: '',
+		type: CommandType.USER,
+		default_permission: false
 	}
 ];

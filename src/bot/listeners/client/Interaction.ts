@@ -2,6 +2,8 @@ import { CommandInteractionOption, Interaction, PermissionResolvable, TextChanne
 import { Listener, Command, Flag } from 'discord-akairo';
 import { Messages, Settings } from '../../util/Constants';
 
+const EPHEMERAL_COMMANDS = ['help', 'invite', 'stats', 'whois'];
+
 interface Parsed {
 	type: string;
 	value?: string;
@@ -128,7 +130,7 @@ export default class InteractionListener extends Listener {
 			});
 		}
 
-		await interaction.deferReply({ ephemeral: false });
+		await interaction.deferReply({ ephemeral: EPHEMERAL_COMMANDS.includes(interaction.commandName.toLowerCase()) });
 		if (
 			(command.clientPermissions) &&
 			(command.clientPermissions as PermissionResolvable[]).includes('USE_EXTERNAL_EMOJIS') &&
@@ -193,7 +195,7 @@ export default class InteractionListener extends Listener {
 			});
 		}
 
-		await interaction.deferReply({ ephemeral: ['help', 'invite'].includes(command.id) });
+		await interaction.deferReply({ ephemeral: EPHEMERAL_COMMANDS.includes(command.id) });
 		if (
 			(command.clientPermissions) &&
 			(command.clientPermissions as PermissionResolvable[]).includes('USE_EXTERNAL_EMOJIS') &&

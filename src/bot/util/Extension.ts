@@ -28,8 +28,8 @@ export class InteractionUtil {
 	public async send(options: string | InteractionReplyOptions): Promise<Message> {
 		const transformedOptions = (this.constructor as typeof InteractionUtil).transformOptions(options);
 		if (!this.lastResponse?.deleted && this.shouldEdit) {
-			return this.message.webhook.editMessage(this.lastResponse!.id, transformedOptions)
-				.then(() => this.lastResponse!);
+			const messageId = this.lastResponse!.flags.has('EPHEMERAL') ? '@original' : this.lastResponse!.id;
+			return this.message.webhook.editMessage(messageId, transformedOptions).then(() => this.lastResponse!);
 		}
 
 		const sent = await this.message.webhook.send(transformedOptions);
