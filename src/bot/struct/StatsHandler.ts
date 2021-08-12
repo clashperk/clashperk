@@ -44,7 +44,7 @@ export default class StatsHandler {
 
 	public async message(id: string) {
 		if (this.messages.has(id)) return null;
-		this.messages.set(id, setTimeout(() => this.messages.delete(id), 60 * 60 * 1000));
+		this.messages.set(id, setTimeout(() => this.messages.delete(id), 60 * 60 * 1000).unref());
 
 		return this.client.db.collection(Collections.BOT_GUILDS)
 			.updateOne(

@@ -11,7 +11,7 @@ export default class MaintenanceHandler {
 
 	public async init() {
 		const res = await this.client.http.clans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 }).catch(() => null);
-		setTimeout(this.init.bind(this), 30000);
+		setTimeout(this.init.bind(this), 30000).unref();
 		if (res?.statusCode === 503 && !this.isMaintenance) {
 			this.isMaintenance = Boolean(true);
 			this.client.rpcHandler.flush();

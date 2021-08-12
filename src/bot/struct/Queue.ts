@@ -1,10 +1,8 @@
 export default class Queue {
 	public promises: any[];
-	public totalReq: number;
 
 	public constructor() {
 		this.promises = [];
-		this.totalReq = 0;
 	}
 
 	public get remaining() {
@@ -23,7 +21,6 @@ export default class Queue {
 			promise
 		});
 
-		this.totalReq++;
 		return next;
 	}
 

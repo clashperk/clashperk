@@ -1,12 +1,13 @@
-import { MessageEmbed, Collection, TextChannel, PermissionString, Message, Snowflake } from 'discord.js';
+import { MessageEmbed, Collection, TextChannel, PermissionString } from 'discord.js';
 import { ClanWar, ClanWarMember, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/NumEmojis';
 import { TOWN_HALLS, EMOJIS, WAR_STARS } from '../util/Emojis';
 import { Collections } from '../util/Constants';
+import { APIMessage } from 'discord-api-types';
 import Client from '../struct/Client';
+import { Util } from '../util/Util';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { Util } from '../util/Util';
 
 const states: { [key: string]: number } = {
 	preparation: 16745216,
@@ -19,56 +20,24 @@ const results: { [key: string]: number } = {
 	tied: 5861569
 };
 
-interface Roster {
-	total: number;
-	level: number;
-}
-
-interface WarRes extends ClanWar {
-	recent?: {
-		attacker: {
-			name: string;
-			stars: number;
-			oldStars: number;
-			mapPosition: number;
-			townHallLevel: number;
-			destructionPercentage: number;
-		};
-		defender: {
-			mapPosition: number;
-			townHallLevel: number;
-		};
-	}[];
-	result: string;
-	clan: WarClan & { rosters: Roster[] };
-	opponent: WarClan & { rosters: Roster[] };
-	remaining: ClanWarMember[];
-	round: number;
-	groupWar: boolean;
-	warTag?: string;
-	warID: number;
-	isFriendly: boolean;
-}
-
 export default class ClanWarLog {
-	public cached: Collection<string, any>;
+	public cached: Collection<string, Cache>;
+	public collection = this.client.db.collection(Collections.CLAN_WAR_LOGS);
 
 	public constructor(private readonly client: Client) {
-		this.client = client;
 		this.cached = new Collection();
 	}
 
-	public async exec(tag: string, data: any) {
+	public async exec(tag: string, data: PayLoad) {
 		const clans = this.cached.filter(d => d.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
-			if (cache) await this.permissionsFor(id, cache, data);
+			if (cache) await this.permissionsFor(cache, data);
 		}
-
 		return clans.clear();
 	}
 
-	private permissionsFor(id: string, cache: any, data: any) {
+	private permissionsFor(cache: Cache, data: PayLoad) {
 		const permissions: PermissionString[] = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -82,27 +51,26 @@ export default class ClanWarLog {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
 			if (channel.type !== 'GUILD_TEXT') return; // eslint-disable-line
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
-				return this.getWarType(id, channel, data);
+				return this.getWarType(cache, channel, data);
 			}
 		}
 	}
 
-	private async getWarType(id: string, channel: TextChannel, data: any) {
-		const cache = this.cached.get(id);
-		if (data.groupWar && cache?.rounds[data.round]?.warTag === data.warTag) {
-			return this.handleMessage(id, channel, cache?.rounds[data.round]?.messageID, data);
+	private async getWarType(cache: Cache, channel: TextChannel, data: PayLoad) {
+		if (data.groupWar && cache.rounds[data.round]?.warTag === data.warTag) {
+			return this.handleMessage(cache, channel, cache.rounds[data.round]?.messageID ?? null, data);
 		} else if (data.groupWar) {
-			return this.handleMessage(id, channel, null, data);
+			return this.handleMessage(cache, channel, null, data);
 		}
 
 		if (data.warID === cache.warID) {
-			return this.handleMessage(id, channel, cache.messageID, data);
+			return this.handleMessage(cache, channel, cache.messageID ?? null, data);
 		}
 
-		return this.handleMessage(id, channel, null, data);
+		return this.handleMessage(cache, channel, null, data);
 	}
 
-	private async handleMessage(id: string, channel: TextChannel, messageID: Snowflake | null, data: any) {
+	private async handleMessage(cache: Cache, channel: TextChannel, messageID: string | null, data: any) {
 		if (!data.groupWar && data.remaining.length && data.state === 'warEnded') {
 			const embed = this.getRemaining(data);
 			try {
@@ -113,56 +81,57 @@ export default class ClanWarLog {
 		}
 
 		if (!messageID) {
-			return this.sendNew(id, channel, data);
+			const msg = await this.send(channel, data);
+			return this.mutate(cache, data, msg);
 		}
 
-		const message = await channel.messages.fetch(messageID, { cache: false })
-			.catch(error => {
-				this.client.logger.warn(error, { label: 'WAR_FETCH_MESSAGE' });
-				if (error.code === 10008) {
-					return { deleted: true };
-				}
-
-				return null;
-			});
-
-		if (!message) return;
-
-		if (message.deleted) {
-			return this.sendNew(id, channel, data);
-		}
-
-		if (message instanceof Message) {
-			return this.edit(id, message, data);
-		}
+		const msg = await this.edit(channel, messageID, data);
+		return this.mutate(cache, data, msg);
 	}
 
-	private async sendNew(id: string, channel: TextChannel, data: any) {
+	private async send(channel: TextChannel, data: PayLoad) {
 		const embed = this.embed(data);
-		const message = await channel.send({ embeds: [embed] }).catch(() => null);
-		if (message) await this.updateMessageID(id, data, message.id);
-		return message;
+		return Util.sendMessage(this.client, channel.id, { embeds: [embed.toJSON()] }).catch(() => null);
 	}
 
-	private async edit(id: string, message: Message, data: any) {
+	private async edit(channel: TextChannel, messageID: string, data: PayLoad) {
 		const embed = this.embed(data);
-
-		const updated = await message.edit({ embeds: [embed] })
+		return Util.editMessage(this.client, channel.id, messageID, { embeds: [embed.toJSON()] })
 			.catch(error => {
 				if (error.code === 10008) {
-					return this.sendNew(id, message.channel as TextChannel, data);
+					return this.send(channel, data);
 				}
 				return null;
 			});
+	}
 
-		if (updated) {
-			await this.client.db.collection(Collections.CLAN_WAR_LOGS).updateOne(
-				{ clan_id: new ObjectId(id) },
-				{ $set: { updatedAt: new Date() } }
+	private async mutate(cache: Cache, data: PayLoad, message: APIMessage | null) {
+		if (!message) {
+			if (cache.messageID) delete cache.messageID;
+			if (data.groupWar) cache.rounds[data.round] = { warTag: data.warTag, messageID: null, round: data.round };
+			return this.collection.updateOne({ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
+		}
+
+		if (data.groupWar) {
+			cache.rounds[data.round] = { warTag: data.warTag, messageID: message.id, round: data.round };
+
+			return this.collection.updateOne(
+				{ clan_id: new ObjectId(cache._id) },
+				{
+					$set: {
+						updatedAt: new Date(), failed: 0,
+						[`rounds.${data.round}`]: { warTag: data.warTag, messageID: message.id, round: data.round }
+					}
+				}
 			);
 		}
 
-		return updated;
+		cache.warID = data.warID;
+		cache.messageID = message.id;
+		return this.collection.updateOne(
+			{ clan_id: new ObjectId(cache._id) },
+			{ $set: { messageID: message.id, warID: data.warID, updatedAt: new Date(), failed: 0 } }
+		);
 	}
 
 	private embed(data: any) {
@@ -170,7 +139,7 @@ export default class ClanWarLog {
 		return this.getRegularWarEmbed(data);
 	}
 
-	private getRegularWarEmbed(data: WarRes) {
+	private getRegularWarEmbed(data: PayLoad) {
 		const embed = new MessageEmbed()
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setURL(this.clanURL(data.clan.tag))
@@ -257,7 +226,7 @@ export default class ClanWarLog {
 		return embed;
 	}
 
-	private getRemaining(data: WarRes) {
+	private getRemaining(data: PayLoad) {
 		const embed = new MessageEmbed()
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setThumbnail(data.clan.badgeUrls.small)
@@ -288,7 +257,7 @@ export default class ClanWarLog {
 		return null;
 	}
 
-	private getLeagueWarEmbed(data: WarRes) {
+	private getLeagueWarEmbed(data: PayLoad) {
 		const { clan, opponent } = data;
 		const embed = new MessageEmbed()
 			.setTitle(`\u200e${clan.name} (${clan.tag})`)
@@ -408,69 +377,84 @@ export default class ClanWarLog {
 		return array;
 	}
 
-	private async updateMessageID(id: string, data: WarRes, messageID: string) {
-		if (data.groupWar) {
-			const cache = this.cached.get(id);
-			cache.rounds[data.round] = { warTag: data.warTag, messageID, round: data.round };
-			this.cached.set(id, cache);
-
-			return this.client.db.collection(Collections.CLAN_WAR_LOGS)
-				.updateOne(
-					{ clan_id: new ObjectId(id) },
-					{
-						$set: {
-							updatedAt: new Date(),
-							[`rounds.${data.round}`]: { warTag: data.warTag, messageID, round: data.round }
-						}
-					}
-				);
-		}
-
-		const cache = this.cached.get(id);
-		cache.warID = data.warID;
-		cache.messageID = messageID;
-		this.cached.set(id, cache);
-
-		return this.client.db.collection(Collections.CLAN_WAR_LOGS)
-			.updateOne(
-				{ clan_id: new ObjectId(id) },
-				{
-					$set: { messageID, warID: data.warID, updatedAt: new Date() }
-				}
-			);
-	}
-
 	public async init() {
-		await this.client.db.collection(Collections.CLAN_WAR_LOGS)
-			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
+		await this.collection.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
-					guild: data.guild,
-					channel: data.channel,
 					tag: data.tag,
+					_id: data.clan_id,
+					guild: data.guild,
+					warID: data.warID,
+					channel: data.channel,
 					rounds: data.rounds || {},
-					messageID: data.messageID,
-					warID: data.warID
+					messageID: data.messageID
 				});
 			});
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(Collections.CLAN_WAR_LOGS)
-			.findOne({ clan_id: new ObjectId(id) });
-
+		const data = await this.collection.findOne({ clan_id: new ObjectId(id) });
 		if (!data) return null;
+
 		this.cached.set(id, {
-			guild: data.guild,
-			channel: data.channel,
 			tag: data.tag,
+			_id: data.clan_id,
+			guild: data.guild,
+			warID: data.warID,
+			channel: data.channel,
 			rounds: data.rounds || {},
-			messageID: data.messageID,
-			warID: data.warID
+			messageID: data.messageID
 		});
 	}
 
 	public delete(id: string) {
 		return this.cached.delete(id);
 	}
+}
+
+interface Roster {
+	total: number;
+	level: number;
+}
+
+interface Attacker {
+	name: string;
+	stars: number;
+	oldStars: number;
+	mapPosition: number;
+	townHallLevel: number;
+	destructionPercentage: number;
+}
+
+interface Defender {
+	mapPosition: number;
+	townHallLevel: number;
+}
+
+interface Recent {
+	attacker: Attacker;
+	defender: Defender;
+}
+
+interface PayLoad extends ClanWar {
+	recent?: Recent[];
+	result: string;
+	round: number;
+	warID: number;
+	warTag?: string;
+	groupWar: boolean;
+	isFriendly: boolean;
+	remaining: ClanWarMember[];
+	clan: WarClan & { rosters: Roster[] };
+	opponent: WarClan & { rosters: Roster[] };
+}
+
+interface Cache {
+	guild: string;
+	channel: string;
+	tag: string;
+	rounds: any;
+	warID: number;
+	_id: ObjectId;
+	messageID?: string;
 }

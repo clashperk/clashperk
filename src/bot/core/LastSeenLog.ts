@@ -89,7 +89,6 @@ export default class LastSeenLog {
 
 	private async edit(cache: Cache, channel: TextChannel, clan: Clan, members = []) {
 		const embed = this.embed(clan, cache, members);
-
 		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] })
 			.catch(error => {
 				if (error.code === 10008) {
@@ -157,10 +156,10 @@ export default class LastSeenLog {
 		await this.collection.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
+					tag: data.tag,
 					_id: data.clan_id,
 					guild: data.guild,
 					color: data.color,
-					tag: data.tag,
 					channel: data.channel,
 					message: data.message
 				});
@@ -172,10 +171,10 @@ export default class LastSeenLog {
 
 		if (!data) return null;
 		return this.cached.set(_id, {
+			tag: data.tag,
 			_id: data.clan_id,
 			guild: data.guild,
 			color: data.color,
-			tag: data.tag,
 			channel: data.channel,
 			message: data.message
 		});
