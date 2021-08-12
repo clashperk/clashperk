@@ -11,7 +11,7 @@ export default class DonationLogCommand extends Command {
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],
 			optionFlags: ['--tag', '--channel', '--extra'],
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS']
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'MANAGE_WEBHOOKS']
 		});
 	}
 
@@ -83,9 +83,6 @@ export default class DonationLogCommand extends Command {
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
-				'**Sync Rate**',
-				'2 min',
-				'',
 				'**Color**',
 				`\`${hexColor ? '#' : ''}${hexColor?.toString(16) ?? 'None'}\``,
 				'',

@@ -9,7 +9,7 @@ import { ApplicationCommand } from 'discord.js';
 const applicationGuildCommands = async () => {
 	console.log('Building Guild Application Commands');
 	const res = await fetch(
-		`${RouteBases.api}${Routes.applicationGuildCommands('635462521729581058', '609250675431309313')}`,
+		`${RouteBases.api}${Routes.applicationGuildCommands('635462521729581058', '509784317598105619')}`,
 		{
 			method: 'PUT',
 			headers: {

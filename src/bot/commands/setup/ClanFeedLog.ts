@@ -82,10 +82,7 @@ export default class MemberLogCommand extends Command {
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
-				'**Sync Rate**',
-				'120 sec',
-				'',
-				'**Role**',
+				'**Role** (will be mentioned for flag alerts)',
 				`${role?.toString() ?? 'None'}`,
 				'',
 				'**Channel**',

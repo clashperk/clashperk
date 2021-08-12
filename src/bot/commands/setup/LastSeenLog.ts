@@ -11,7 +11,13 @@ export default class LastSeenBoardCommand extends Command {
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],
 			optionFlags: ['--tag', '--channel', '--extra'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
+			clientPermissions: [
+				'ADD_REACTIONS',
+				'EMBED_LINKS',
+				'USE_EXTERNAL_EMOJIS',
+				'SEND_MESSAGES',
+				'READ_MESSAGE_HISTORY'
+			]
 		});
 	}
 
@@ -84,16 +90,13 @@ export default class LastSeenBoardCommand extends Command {
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
-				'**Sync Rate**',
-				`${this.client.patrons.get(message) ? 2 : 6} min`,
-				'',
 				'**Color**',
 				`\`${hexColor ? '#' : ''}${hexColor?.toString(16) ?? 'None'}\``,
 				'',
 				'**Channel**',
 				`${(channel as Channel).toString()}`,
 				'',
-				'**Last Seen Board**',
+				'**Last Seen Embed**',
 				'Enabled'
 			].join('\n'));
 		if (hexColor) embed.setColor(hexColor);

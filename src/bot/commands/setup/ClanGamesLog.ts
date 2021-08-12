@@ -63,7 +63,6 @@ export default class ClanGamesBoardCommand extends Command {
 			return message.util!.send(`I\'m missing ${permission.missingPerms} to run that command.`);
 		}
 
-		const patron = this.client.patrons.get(message.guild!.id);
 		const id = await this.client.storage.register(message, {
 			op: Flags.CLAN_GAMES_LOG,
 			guild: message.guild!.id,
@@ -85,16 +84,13 @@ export default class ClanGamesBoardCommand extends Command {
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
-				'**Sync Rate**',
-				`${patron ? 15 : 30} min`,
-				'',
 				'**Color**',
 				`\`${hexColor ? '#' : ''}${hexColor?.toString(16) ?? 'None'}\``,
 				'',
 				'**Channel**',
 				`${(channel as Channel).toString()}`,
 				'',
-				'**Clan Games Board**',
+				'**Clan Games Embed**',
 				'Enabled'
 			].join('\n'));
 		if (hexColor) embed.setColor(hexColor);

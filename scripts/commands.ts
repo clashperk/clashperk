@@ -420,20 +420,20 @@ export const COMMANDS: Command[] = [
 						value: 'link_channel'
 					},
 					{
+						name: 'War Embed',
+						value: 'war'
+					},
+					{
 						name: 'Last Seen',
 						value: 'lastseen'
 					},
 					{
-						name: 'Clan Feed',
-						value: 'feed'
-					},
-					{
-						name: 'War Feed',
-						value: 'war'
-					},
-					{
 						name: 'Clan Games',
 						value: 'games'
+					},
+					{
+						name: 'Clan Feed',
+						value: 'feed'
 					},
 					{
 						name: 'Clan Embed',
@@ -452,7 +452,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'channel',
-				description: 'Channel for the specified feature',
+				description: 'Channel for the specified feature (defaults to the current channel)',
 				type: ApplicationCommandOptionType.Channel
 			},
 			{
@@ -468,28 +468,29 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'option',
+				required: true,
 				description: 'Select an option',
 				type: ApplicationCommandOptionType.String,
 				choices: [
 					{
 						name: 'Channel Link',
-						value: 'remove_channel'
+						value: 'link_channel'
+					},
+					{
+						name: 'War Embed',
+						value: 'war'
 					},
 					{
 						name: 'Last Seen',
 						value: 'lastseen'
 					},
 					{
-						name: 'Clan Feed',
-						value: 'feed'
-					},
-					{
-						name: 'War Feed',
-						value: 'war'
-					},
-					{
 						name: 'Clan Games',
 						value: 'games'
+					},
+					{
+						name: 'Clan Feed',
+						value: 'feed'
 					},
 					{
 						name: 'Clan Embed',
@@ -555,12 +556,12 @@ export const COMMANDS: Command[] = [
 						value: 'lineup'
 					},
 					{
-						name: 'CWL Attacks',
-						value: 'attacks'
-					},
-					{
 						name: 'CWL Stars',
 						value: 'stars'
+					},
+					{
+						name: 'CWL Attacks',
+						value: 'attacks'
 					},
 					{
 						name: 'CWL Stats',
@@ -712,13 +713,16 @@ export const COMMANDS: Command[] = [
 				type: ApplicationCommandOptionType.Integer,
 				choices: [
 					{
-						name: '1', value: 1
+						name: '1',
+						value: 1
 					},
 					{
-						name: '3', value: 3
+						name: '3',
+						value: 3
 					},
 					{
-						name: '7', value: 7
+						name: '7',
+						value: 7
 					}
 				]
 			}
@@ -861,7 +865,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'nickname',
-		description: 'Set nickname from linked players',
+		description: 'Choose nickname from linked players',
 		options: [
 			{
 				name: 'user',
@@ -923,6 +927,10 @@ export const COMMANDS: Command[] = [
 				type: ApplicationCommandOptionType.String
 			}
 		]
+	},
+	{
+		name: 'redeem',
+		description: 'Redeem patreon subscription (if you wish to support us on patreon)'
 	},
 	{
 		name: 'Profile',

@@ -73,13 +73,13 @@ export default class WarLogCommand extends Command {
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setDescription([
-				'**Sync Rate**',
+				'**War Log**',
 				`${data.isWarLogPublic ? 'Public' : 'Private'}`,
 				'',
 				'**Channel**',
 				`${(channel as Channel).toString()}`,
 				'',
-				'**Live Clan War Log**',
+				'**Clan War Embed**',
 				'Enabled'
 			].join('\n'))
 			.setColor(this.client.embed(message));
