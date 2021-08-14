@@ -83,6 +83,11 @@ export default class Http extends Client {
 	}
 
 	public async login() {
+		await this._login();
+		setInterval(this._login.bind(this), 60 * 60 * 1000).unref();
+	}
+
+	private async _login() {
 		const res = await fetch('https://cocdiscordlink.azurewebsites.net/api/login', {
 			method: 'POST',
 			headers: {
@@ -97,8 +102,7 @@ export default class Http extends Client {
 		const data = await res?.json().catch(() => null);
 
 		if (data?.token) this.bearerToken = data.token;
-		setInterval(this.login.bind(this), 1 * 60 * 60 * 1000);
-		return Promise.resolve(res?.status === 200 && this.bearerToken);
+		return res?.status === 200 && this.bearerToken;
 	}
 
 	public async linkPlayerTag(discordId: string, playerTag: string) {

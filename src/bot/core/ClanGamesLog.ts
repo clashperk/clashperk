@@ -134,20 +134,18 @@ export default class ClanGamesLog {
 
 	public async init() {
 		if (ClanGames.Started) {
-			await this._flush();
+			this._flush();
 			return this._init();
 		}
 
 		clearInterval(this.intervalId);
 		this.intervalId = setInterval(async () => {
 			if (ClanGames.Started) {
+				this._flush();
 				await this._init();
-				await this._flush();
-				return clearInterval(this.intervalId);
+				clearInterval(this.intervalId);
 			}
-		}, 5 * 60 * 1000);
-
-		return Promise.resolve(0);
+		}, 5 * 60 * 1000).unref();
 	}
 
 	private async _init() {
@@ -171,9 +169,9 @@ export default class ClanGamesLog {
 		return this.cached.clear();
 	}
 
-	private async _flush() {
+	private _flush() {
 		const intervalId = setInterval(() => this.flush(intervalId), 5 * 60 * 1000);
-		return Promise.resolve(0);
+		return intervalId.unref();
 	}
 
 	public async add(id: string) {
