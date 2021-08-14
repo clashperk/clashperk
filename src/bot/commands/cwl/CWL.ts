@@ -6,6 +6,7 @@ export default class CWLCommand extends Command {
 		super('cwl', {
 			aliases: ['cwl'],
 			category: 'war',
+			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
 					'CWL season overview and summary.',
