@@ -22,17 +22,32 @@ export class Automaton {
 
 		switch (match.groups.command) {
 			case 'BOOSTER': {
-				const button = new MessageButton()
-					.setLabel('Refresh')
-					.setStyle('SECONDARY')
-					.setCustomId(`BOOSTER${match.groups.tag}_ASC`);
+				const row = new MessageActionRow()
+					.addComponents(
+						new MessageButton()
+							.setLabel('Refresh')
+							.setStyle('SECONDARY')
+							.setCustomId(`BOOSTER${match.groups.tag}_ASC`)
+					);
+				/*
+				.addComponents(
+					new MessageButton()
+						.setLabel('Recently Active')
+						.setStyle('SECONDARY')
+						.setCustomId(`BOOSTER${match.groups.tag}_DESC`)
+				);
+				*/
 
 				await interaction.update({ components: [], content: `**Fetching data... ${EMOJIS.LOADING}**`, embeds: [] });
-				const msg = await this.getBoosterEmbed(interaction, match.groups.tag);
+				const msg = await this.getBoosterEmbed(interaction, match.groups.tag, match.groups.order === 'DESC');
 				await interaction.editReply({
 					content: msg.content, embeds: msg.embeds,
-					components: msg.embeds.length ? [new MessageActionRow({ components: [button] })] : []
+					components: msg.embeds.length ? [row] : []
 				});
+
+				if (msg.ex) {
+					await interaction.followUp({ ephemeral: true, content: '**No recently active members are boosting in this clan.**' });
+				}
 
 				return true;
 			}
@@ -57,45 +72,60 @@ export class Automaton {
 		}
 	}
 
-	public async getBoosterEmbed(interaction: ButtonInteraction | Message, tag: string | Clan) {
+	public async getBoosterEmbed(interaction: ButtonInteraction | Message, tag: string | Clan, recent = false) {
 		const data = typeof tag === 'string' ? await this.client.http.clan(tag) : tag;
 		if (!data.ok) return { embeds: [], content: `**${status(data.statusCode)}**` };
 		const members = (await this.client.http.detailedClanMembers(data.memberList))
 			.filter(res => res.ok);
 
-		const boosting = members.filter(mem => mem.troops.filter(en => en.superTroopIsActive).length);
-		if (!boosting.length) return { content: '**No members are boosting in this clan!**', embeds: [] };
+		const players = members.filter(mem => mem.troops.filter(en => en.superTroopIsActive).length);
+		if (!players.length) return { content: '**No members are boosting in this clan!**', embeds: [] };
 
 		const boostTimes = await this.client.db.collection(Collections.CLAN_MEMBERS)
-			.find({ season: Season.ID, clanTag: data.tag, tag: { $in: data.memberList.map(mem => mem.tag) } })
+			.find(
+				{ season: Season.ID, clanTag: data.tag, tag: { $in: data.memberList.map(mem => mem.tag) } },
+				{ projection: { _id: 0, tag: 1, superTroops: 1 } }
+			)
 			.toArray<{ tag: string; superTroops?: { name: string; timestamp: number }[] }>();
 
-		const memObj = boosting.reduce((pre, curr) => {
+		const lastSeen = (await this.client.db.collection(Collections.LAST_SEEN)
+			.find(
+				{
+					tag: { $in: players.map(m => m.tag) },
+					lastSeen: { $gte: new Date(Date.now() - (10 * 60 * 1000)) }
+				},
+				{ projection: { _id: 0, tag: 1 } }
+			)
+			.toArray<{ tag: string }>()).map(m => m.tag);
+
+		const boosters = players.filter(m => lastSeen.length && recent ? lastSeen.includes(m.tag) : true);
+		const memObj = boosters.reduce((pre, curr) => {
 			for (const troop of curr.troops) {
 				if (troop.name in SUPER_TROOPS && troop.superTroopIsActive) {
 					if (!(troop.name in pre)) pre[troop.name] = [];
 					const boosted = boostTimes.find(mem => mem.tag === curr.tag)?.superTroops?.find(en => en.name === troop.name);
 					const duration = boosted?.timestamp ? (BOOST_DURATION - (Date.now() - boosted.timestamp)) : 0;
-					pre[troop.name].push({ name: curr.name, duration });
+					pre[troop.name].push({ name: curr.name, duration, online: lastSeen.includes(curr.tag) });
 				}
 			}
 			return pre;
-		}, {} as { [key: string]: { name: string; duration: number }[] });
+		}, {} as { [key: string]: { name: string; duration: number; online: boolean }[] });
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(interaction.guild!.id))
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
-			.setDescription('**Currently Boosted Super Troops**\n\u200b')
-			.setFooter(`Total ${boosting.length}/${this.boostable(members)}/${data.members}`, interaction.author.displayAvatarURL());
+			.setDescription(`**Currently Boosted Super Troops**${recent && lastSeen.length ? '\nRecently Active Members (~10m)' : ''}\n\u200b`);
+		if (recent && lastSeen.length) embed.setFooter(`Total ${boosters.length}/${data.members}`, interaction.author.displayAvatarURL());
+		else embed.setFooter(`Total ${players.length}/${this.boostable(members)}/${data.members}`, interaction.author.displayAvatarURL());
 
 		for (const [key, val] of Object.entries(memObj)) {
 			embed.addField(
 				`${SUPER_TROOPS[key]} ${key}`,
-				`${val.map(mem => `\u200e${mem.name}${mem.duration ? ` (${Util.duration(mem.duration)})` : ''}`).join('\n')}\n\u200b`
+				`${val.map(mem => `\u200e${mem.name}${mem.duration ? ` (${Util.duration(mem.duration)})` : ''} ${mem.online ? EMOJIS.ONLINE : ''}`).join('\n')}\n\u200b`
 			);
 		}
 
-		return { embeds: [embed], content: null };
+		return { embeds: [embed], content: null, ex: !lastSeen.length };
 	}
 
 	private boostable(players: Player[]) {

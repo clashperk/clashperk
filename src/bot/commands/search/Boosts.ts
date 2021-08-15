@@ -33,13 +33,24 @@ export default class BoostsCommand extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const res = await this.client.automaton.getBoosterEmbed(message, data);
-		if (!res.embeds.length) return message.util!.send('**No members found with active super troops!');
+		if (!res.embeds.length) return message.util!.send('**No members found with active super troops!**');
 
-		const button = new MessageButton()
-			.setLabel('Refresh')
-			.setStyle('SECONDARY')
-			.setCustomId(`BOOSTER${data.tag}_ASC`);
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setLabel('Refresh')
+					.setStyle('SECONDARY')
+					.setCustomId(`BOOSTER${data.tag}_ASC`)
+			);
+		/*
+		.addComponents(
+			new MessageButton()
+				.setLabel('Recently Active')
+				.setStyle('SECONDARY')
+				.setCustomId(`BOOSTER${data.tag}_DESC`)
+		);
+		*/
 
-		return message.util!.send({ embeds: res.embeds, components: [new MessageActionRow({ components: [button] })] });
+		return message.util!.send({ embeds: res.embeds, components: [row] });
 	}
 }
