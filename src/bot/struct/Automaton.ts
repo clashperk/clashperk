@@ -45,9 +45,11 @@ export class Automaton {
 					components: msg.embeds.length ? [row] : []
 				});
 
+				/*
 				if (msg.ex) {
 					await interaction.followUp({ ephemeral: true, content: '**No recently active members are boosting in this clan.**' });
 				}
+				*/
 
 				return true;
 			}
