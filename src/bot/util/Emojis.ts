@@ -74,17 +74,17 @@ export const DARK_SPELLS: Emojis = {
 
 export const SUPER_TROOPS: Emojis = {
 	'Super Barbarian': '<:subbarb:789730407360495646>',
-	'Sneaky Goblin': '<:supgoblin:789730408102232064>',
-	'Super Giant': '<:supgiant:789730409051193364>',
-	'Super Wall Breaker': '<:supwb:789730406206275595>',
 	'Super Archer': '<:suparch:789730408673181717>',
-	'Super Witch': '<:supwitch:789730409210576897>',
-	'Inferno Dragon': '<:supbaby:789730408878309376>',
-	'Super Valkyrie': '<:supervalk:789730405967462440>',
-	'Super Minion': '<:supminion:789730407930920990>',
+	'Super Giant': '<:supgiant:789730409051193364>',
+	'Sneaky Goblin': '<:supgoblin:789730408102232064>',
+	'Super Wall Breaker': '<:supwb:789730406206275595>',
+	'Rocket Balloon': '<:RocketBalloon:854290612081655838>',
 	'Super Wizard': '<:superwiz:789730402189049876>',
-	'Ice Hound': '<:IceHound:789730401816018945>',
-	'Rocket Balloon': '<:RocketBalloon:854290612081655838>'
+	'Inferno Dragon': '<:supbaby:789730408878309376>',
+	'Super Minion': '<:supminion:789730407930920990>',
+	'Super Valkyrie': '<:supervalk:789730405967462440>',
+	'Super Witch': '<:supwitch:789730409210576897>',
+	'Ice Hound': '<:IceHound:789730401816018945>'
 };
 
 export const BUILDER_ELIXIR_TROOPS: Emojis = {

@@ -1,5 +1,5 @@
-import { Message, MessageButton, MessageActionRow } from 'discord.js';
-import { EMOJIS } from '../../util/Emojis';
+import { Message, MessageButton, MessageActionRow, MessageSelectMenu } from 'discord.js';
+import { EMOJIS, SUPER_TROOPS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 
@@ -35,22 +35,28 @@ export default class BoostsCommand extends Command {
 		const res = await this.client.automaton.getBoosterEmbed(message, data);
 		if (!res.embeds.length) return message.util!.send('**No members found with active super troops!**');
 
-		const row = new MessageActionRow()
+		const buttons = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
 					.setLabel('Refresh')
 					.setStyle('SECONDARY')
 					.setCustomId(`BOOSTER${data.tag}_ASC`)
+			)
+			.addComponents(
+				new MessageButton()
+					.setLabel('Recently Active')
+					.setStyle('SECONDARY')
+					.setCustomId(`BOOSTER${data.tag}_DESC`)
 			);
-		/*
-		.addComponents(
-			new MessageButton()
-				.setLabel('Recently Active')
-				.setStyle('SECONDARY')
-				.setCustomId(`BOOSTER${data.tag}_DESC`)
-		);
-		*/
 
-		return message.util!.send({ embeds: res.embeds, components: [row] });
+		const menus = new MessageActionRow()
+			.addComponents(
+				new MessageSelectMenu()
+					.setPlaceholder('Select a super troop!')
+					.setCustomId(`BOOSTER${data.tag}_ASC_MENU`)
+					.addOptions(Object.entries(SUPER_TROOPS).map(([key, value]) => ({ label: key, value: key, emoji: value })))
+			);
+
+		return message.util!.send({ embeds: res.embeds, components: [buttons, menus] });
 	}
 }

@@ -225,4 +225,8 @@ declare module 'discord.js' {
 	interface ButtonInteraction {
 		author: User;
 	}
+
+	interface SelectMenuInteraction {
+		author: User;
+	}
 }
