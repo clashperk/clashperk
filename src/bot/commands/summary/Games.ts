@@ -52,7 +52,6 @@ export default class ClanGamesSummaryCommand extends Command {
 			.toArray();
 		if (!tags.length) return message.util!.send(`**${message.guild!.name} does not have any clans. Why not add some?**`);
 
-		console.log(this.seasonID(season), season);
 		const clans = await this.client.db.collection(Collections.CLAN_GAMES)
 			.find({ season: this.seasonID(season), tag: { $in: [...tags.map(d => d.tag)] } })
 			.toArray();
