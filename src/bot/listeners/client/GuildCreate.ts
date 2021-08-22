@@ -53,7 +53,7 @@ export default class GuildCreateListener extends Listener {
 			return webhook.send({
 				embeds: [embed],
 				username: this.client.user!.username,
-				avatarURL: this.client.user!.displayAvatarURL(),
+				avatarURL: this.client.user!.displayAvatarURL({ format: 'png' }),
 				content: `**Total ${guilds} | Growth ${await this.growth()}**`
 			});
 		}
@@ -68,7 +68,7 @@ export default class GuildCreateListener extends Listener {
 	private intro(guild: Guild) {
 		const prefix = this.client.settings.get<string>(guild, 'prefix', '!');
 		const embed = this.client.util.embed()
-			.setAuthor('Thanks for inviting me, have a nice day!', this.client.user!.displayAvatarURL())
+			.setAuthor('Thanks for inviting me, have a nice day!', this.client.user!.displayAvatarURL({ format: 'png' }))
 			.setDescription([
 				`Use the prefix \`${prefix}\` to run my commands.`,
 				`To change my prefix, just type \`${prefix}prefix ?\``,

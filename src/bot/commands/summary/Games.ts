@@ -72,7 +72,7 @@ export default class ClanGamesSummaryCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor('Clan Games Stats', message.guild!.iconURL()!)
-			.setFooter(`${moment(clans[0].createdAt).format('MMMM YYYY')}`, this.client.user!.displayAvatarURL())
+			.setFooter(`${moment(clans[0].createdAt).format('MMMM YYYY')}`, this.client.user!.displayAvatarURL({ format: 'png' }))
 			.setDescription([
 				'**Scoreboard**',
 				'Based on highest scores and completion times.',

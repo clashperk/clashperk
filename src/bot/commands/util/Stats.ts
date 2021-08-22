@@ -45,7 +45,7 @@ export default class StatsCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setTitle('Stats')
-			.setAuthor(`${this.client.user!.username}`, this.client.user!.displayAvatarURL())
+			.setAuthor(`${this.client.user!.username}`, this.client.user!.displayAvatarURL({ format: 'png' }))
 			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
 			.addField('RPC Usage', `${(grpc.heapUsed / 1024 / 1024).toFixed(2)} MB`, true);
 		if (more && this.client.isOwner(message.author)) embed.addField('Free Memory', `${this.freemem.toFixed(2)} MB`, true);

@@ -75,7 +75,7 @@ export default class PatronCommand extends Command {
 			// .setColor(16345172)
 			.setAuthor(
 				this.client.user!.username,
-				this.client.user!.displayAvatarURL(),
+				this.client.user!.displayAvatarURL({ format: 'png' }),
 				'https://www.patreon.com/clashperk'
 			)
 			.setDescription([

@@ -37,7 +37,7 @@ export default class UsageCommand extends Command {
 		const { commands } = await this.commands();
 		const usage = await this.usage();
 		const embed = this.client.util.embed()
-			.setAuthor(`${this.client.user!.username}`, this.client.user!.displayAvatarURL())
+			.setAuthor(`${this.client.user!.username}`, this.client.user!.displayAvatarURL({ format: 'png' }))
 			.setColor(this.client.embed(message))
 			.setTitle('Usage')
 			.setFooter(`${Number(await this.commandsTotal())}x Total • Since April 2019`);

@@ -53,17 +53,21 @@ export default class ArmyCommand extends Command {
 			// eslint-disable-next-line multiline-ternary
 			? {
 				prefix: {
-					id: 's', name: 'spells'
+					id: 's',
+					name: 'spells'
 				},
 				suffix: {
-					id: 'u', name: 'units'
+					id: 'u',
+					name: 'units'
 				}
 			} : {
 				prefix: {
-					id: 'u', name: 'units'
+					id: 'u',
+					name: 'units'
 				},
 				suffix: {
-					id: 's', name: 'spells'
+					id: 's',
+					name: 'spells'
 				}
 			};
 		const matches = new RegExp(`^${prefix.id}(?<${prefix.name}>(?:(?:[\\d+x-])+))(?:${suffix.id}(?<${suffix.name}>(?:[\\d+x-]+)))*$`).exec(army);

@@ -45,7 +45,7 @@ export default class GuildDeleteListener extends Listener {
 			return webhook.send({
 				embeds: [embed],
 				username: this.client.user!.username,
-				avatarURL: this.client.user!.displayAvatarURL(),
+				avatarURL: this.client.user!.displayAvatarURL({ format: 'png' }),
 				content: `**Total ${guilds} | Growth ${await this.growth()}**`
 			});
 		}

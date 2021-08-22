@@ -175,7 +175,7 @@ export default class ClanEmbedLog {
 				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`).join(' ') || `${EMOJIS.WRONG} None`
 			].join('\n'))
 			.setTimestamp()
-			.setFooter('Synced', this.client.user!.displayAvatarURL());
+			.setFooter('Synced', this.client.user!.displayAvatarURL({ format: 'png' }));
 
 		return embed;
 	}
