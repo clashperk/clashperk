@@ -89,8 +89,8 @@ export default class MembersCommand extends Command {
 		const members = fetched.filter(res => res.ok).map(m => ({
 			name: m.name, tag: m.tag,
 			role: {
-				id: roleIds[m.role!],
-				name: roleNames[m.role!]
+				id: roleIds[m.role ?? data.memberList.find(mem => mem.tag === m.tag)!.role],
+				name: roleNames[m.role ?? data.memberList.find(mem => mem.tag === m.tag)!.role]
 			},
 			townHallLevel: m.townHallLevel,
 			heroes: m.heroes.length ? m.heroes.filter(a => a.village === 'home') : [],

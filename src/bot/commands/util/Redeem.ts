@@ -36,7 +36,7 @@ export default class RedeemCommand extends Command {
 			timeout: 5000
 		}).catch(() => null);
 		const data = await res?.json().catch(() => null);
-		if (!data) {
+		if (!data?.data) {
 			return message.util!.send('**Something went wrong, please contact us!**');
 		}
 
