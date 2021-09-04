@@ -34,8 +34,8 @@ export default class InviteCommand extends Command {
 	public exec(message: Message) {
 		const query = stringify({
 			client_id: this.client.user!.id,
-			permissions: this.bitfield.toString(),
-			scope: 'bot'
+			scope: 'bot applications.commands',
+			permissions: this.bitfield.toString()
 		});
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
@@ -43,7 +43,7 @@ export default class InviteCommand extends Command {
 			.setDescription([
 				'ClashPerk can be added to as many servers as you want! Please share the bot with your friends. Thanks in advance!',
 				'',
-				`**[Add to Discord](https://discord.com/api/oauth2/authorize?${query}+applications.commands)**`,
+				`**[Add to Discord](https://discord.com/api/oauth2/authorize?${query})**`,
 				'',
 				'**[Support Discord](https://discord.gg/ppuppun)** | **[Become a Patron](https://www.patreon.com/clashperk)**'
 			].join('\n'));

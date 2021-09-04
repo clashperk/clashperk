@@ -1,6 +1,6 @@
-import { Message, GuildMember, Guild, User } from 'discord.js';
-import { Player, Clan } from 'clashofclans.js';
 import { Collections, status } from '../util/Constants';
+import { Message, Guild, User } from 'discord.js';
+import { Player, Clan } from 'clashofclans.js';
 import { Flag } from 'discord-akairo';
 import Client from './Client';
 
@@ -21,7 +21,7 @@ export default class Resolver {
 			return this.fail(message, `**${status(404)}**`);
 		}
 
-		const { user } = (parsed as GuildMember);
+		const { user } = parsed;
 		const otherTags: string[] = [];
 		const data = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: user.id });
 		if (data && data.user_tag !== user.tag) this.updateUserTag(message.guild!, user.id);
@@ -63,14 +63,14 @@ export default class Resolver {
 			return this.fail(message, `**${status(404)}**`);
 		}
 
-		const data = await this.getLinkedClan(message.channel.id, (parsed as GuildMember).id);
+		const data = await this.getLinkedClan(message.channel.id, parsed.id);
 		if (data) return this.getClan(message, data.tag);
 
-		if (message.author.id === (parsed as GuildMember).id) {
+		if (message.author.id === parsed.id) {
 			return this.fail(message, '**You must provide a clan tag to run this command!**');
 		}
 
-		return this.fail(message, `**No Clan Linked to ${(parsed as GuildMember).user.tag}!**`);
+		return this.fail(message, `**No Clan Linked to ${parsed.user.tag}!**`);
 	}
 
 	public async getPlayer(message: Message, tag: string, user?: User): Promise<Player & { user?: User } | Flag> {

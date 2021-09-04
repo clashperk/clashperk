@@ -1,4 +1,5 @@
 import { Message, CommandInteraction, Interaction, InteractionReplyOptions, ButtonInteraction, Collection, Snowflake } from 'discord.js';
+import 'moment-duration-format';
 
 export class InteractionUtil {
 	public shouldEdit: boolean;

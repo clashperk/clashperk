@@ -70,7 +70,7 @@ export default class ClanCommand extends Command {
 				: `🌐 ${data.location.name}`
 			: `${EMOJIS.WRONG} None`;
 
-		const leader = data.memberList.find(m => m.role === 'leader');
+		const leader = data.memberList.filter(m => m.role === 'leader').map(m => m.name);
 		const rankInfo = await this.clanRank(data.tag, data.clanPoints);
 		const rank = rankInfo
 			? rankInfo.gain > 0
@@ -80,7 +80,7 @@ export default class ClanCommand extends Command {
 
 		embed.addField('\u200e', [
 			'**Clan Leader**',
-			`${EMOJIS.OWNER} ${leader ? `${Util.escapeMarkdown(leader.name)}` : 'No Leader'}`,
+			`${EMOJIS.OWNER} ${leader.length ? `${Util.escapeMarkdown(leader.join(', '))}` : 'No Leader'}`,
 			'**Location**',
 			`${location}${rank}`,
 			'**Requirements**',

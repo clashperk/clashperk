@@ -167,7 +167,7 @@ export default class ClanFeedLog {
 						await channel.deleteMessage(msg.id);
 						return this.recreateWebhook(id);
 					}
-				} catch (error) {
+				} catch (error: any) {
 					if (error.code === 10015) {
 						return this.recreateWebhook(id);
 					}

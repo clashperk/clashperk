@@ -1,4 +1,4 @@
-import { WHITE_NUMBERS } from '../../util/NumEmojis';
+import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message } from 'discord.js';
 import { Collections } from '../../util/Constants';
 import { Season, Util } from '../../util/Util';
@@ -132,7 +132,7 @@ export default class DonationSummaryCommand extends Command {
 			`${EMOJIS.HASH} \`\u200e${'DON'.padStart(clan_dp, ' ')} ${'REC'.padStart(clan_rp, ' ')}  ${'CLAN'.padEnd(15, ' ')}\u200f\``,
 			Util.splitMessage(
 				aggregated.map(
-					(clan, n) => `${WHITE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(clan.donationsReceived, clan_rp)}  ${clan.name.padEnd(15, ' ')}\u200f\``
+					(clan, n) => `${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(clan.donationsReceived, clan_rp)}  ${clan.name.padEnd(15, ' ')}\u200f\``
 				).join('\n'),
 				{ maxLength: 4000 }
 			)[0]
@@ -147,7 +147,7 @@ export default class DonationSummaryCommand extends Command {
 					`${EMOJIS.CLAN} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(15, ' ')}\u200f\``,
 					Util.splitMessage(
 						members.map(
-							mem => `${WHITE_NUMBERS[mem.clanIndex]} \`\u200e${this.donation(mem.donated, mem_dp)} ${this.donation(mem.received, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``
+							mem => `${BLUE_NUMBERS[mem.clanIndex]} \`\u200e${this.donation(mem.donated, mem_dp)} ${this.donation(mem.received, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``
 						).join('\n'),
 						{ maxLength: 2000 }
 					)[0]

@@ -1,9 +1,9 @@
 import { Command, Argument } from 'discord-akairo';
-import { MessageEmbed, Util, Message } from 'discord.js';
+import { MessageEmbed, Message } from 'discord.js';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
-import { Clan, ClanWar } from 'clashofclans.js';
 import { Collections } from '../../util/Constants';
-import 'moment-duration-format';
+import { Clan, ClanWar } from 'clashofclans.js';
+import { Util } from '../../util/Util';
 import moment from 'moment';
 
 export default class MissedAttacksCommand extends Command {
@@ -97,7 +97,7 @@ export default class MissedAttacksCommand extends Command {
 		return this.sendResult(message, data);
 	}
 
-	private sendResult(message: Message, body: ClanWar) {
+	private sendResult(message: Message, body: ClanWar & { id?: number }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor(`\u200e${body.clan.name} (${body.clan.tag})`, body.clan.badgeUrls.medium);
@@ -117,12 +117,17 @@ export default class MissedAttacksCommand extends Command {
 			body.clan.members.filter(m => m.attacks && m.attacks.length === 1),
 			body.clan.members.filter(m => !m.attacks)
 		];
+		const endTime = new Date(moment(body.endTime).toDate()).getTime();
+
 		embed.setDescription([
 			'**War Against**',
 			`${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 			'',
 			'**War State**',
-			`${body.state.replace(/warEnded/g, 'War Ended').replace(/inWar/g, 'Battle Day')}`
+			`${body.state.replace(/warEnded/g, 'War Ended').replace(/inWar/g, 'Battle Day')}`,
+			'',
+			'**End Time**',
+			`${Util.getRelativeTime(endTime)}`
 		].join('\n'));
 		if (TwoRem.length) {
 			embed.setDescription([
@@ -141,19 +146,7 @@ export default class MissedAttacksCommand extends Command {
 			].join('\n'));
 		}
 
-		const endTime = new Date(moment(body.endTime).toDate()).getTime();
-		if (body.state === 'inWar') {
-			// @ts-expect-error
-			embed.setFooter(`Ends in ${this.toDate(endTime - Date.now())} ${body.id ? `(War ID #${body.id as number})` : ''}`);
-		} else {
-			// @ts-expect-error
-			embed.setFooter(`Ended ${this.toDate(Date.now() - endTime)} ago ${body.id ? `(War ID #${body.id as number})` : ''}`);
-		}
-
+		if (body.id) embed.setFooter(`War ID #${body.id}`);
 		return message.util!.send({ embeds: [embed] });
-	}
-
-	private toDate(ms: number) {
-		return moment.duration(ms).format('D[d] H[h] m[m]', { trim: 'both mid' });
 	}
 }

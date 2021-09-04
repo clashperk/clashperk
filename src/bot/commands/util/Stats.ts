@@ -14,18 +14,11 @@ export default class StatsCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Shows some statistics of the bot.'
-			},
-			args: [
-				{
-					id: 'more',
-					flag: 'max',
-					match: 'flag'
-				}
-			]
+			}
 		});
 	}
 
-	public async exec(message: Message, { more }: { more: boolean }) {
+	public async exec(message: Message) {
 		let [guilds, memory] = [0, 0];
 		const values = await this.client.shard?.broadcastEval(
 			client => [client.guilds.cache.size, (process.memoryUsage().heapUsed / 1024 / 1024)]
@@ -47,15 +40,13 @@ export default class StatsCommand extends Command {
 			.setTitle('Stats')
 			.setAuthor(`${this.client.user!.username}`, this.client.user!.displayAvatarURL({ format: 'png' }))
 			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
-			.addField('RPC Usage', `${(grpc.heapUsed / 1024 / 1024).toFixed(2)} MB`, true);
-		if (more && this.client.isOwner(message.author)) embed.addField('Free Memory', `${this.freemem.toFixed(2)} MB`, true);
-		embed.addField('Uptime', moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }), true)
-			.addField('Servers', guilds.toLocaleString(), true);
-		if (more && this.client.isOwner(message.author)) {
-			embed.addField('Clans Total', `${(await this.count(Collections.CLAN_STORES)).toLocaleString()}`, true)
-				.addField('Players Total', `${(await this.count(Collections.LAST_SEEN)).toLocaleString()}`, true);
-		}
-		embed.addField('Shard', `${message.guild!.shard.id}/${this.client.shard!.count}`, true)
+			.addField('RPC Usage', `${(grpc.heapUsed / 1024 / 1024).toFixed(2)} MB`, true)
+			.addField('Free Memory', `${this.freemem.toFixed(2)} MB`, true)
+			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }), true)
+			.addField('Servers', guilds.toLocaleString(), true)
+			.addField('Clans Total', `${(await this.count(Collections.CLAN_STORES)).toLocaleString()}`, true)
+			.addField('Players Total', `${(await this.count(Collections.LAST_SEEN)).toLocaleString()}`, true)
+			.addField('Shard', `${message.guild!.shard.id}/${this.client.shard!.count}`, true)
 			.addField('Version', `v${version}`, true)
 			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL({ dynamic: true }));
 
@@ -67,7 +58,12 @@ export default class StatsCommand extends Command {
 			.setCustomId(customId)
 			.setStyle('SECONDARY');
 
-		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const msg = await message.util!.send(
+			{
+				embeds: [embed],
+				components: [new MessageActionRow({ components: [button] })]
+			}
+		);
 		const interaction = await msg.awaitMessageComponent({
 			filter: action => action.customId === customId && action.user.id === message.author.id,
 			time: 5 * 60 * 1000

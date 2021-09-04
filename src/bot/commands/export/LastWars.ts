@@ -2,6 +2,7 @@ import { Collections } from '../../util/Constants';
 import { Argument, Command } from 'discord-akairo';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
+import ms from 'ms';
 
 // TODO: Fix TS
 export default class LastWarsExport extends Command {
@@ -41,7 +42,7 @@ export default class LastWarsExport extends Command {
 
 		const workbook = new Excel();
 		const sheet = workbook.addWorksheet('Details');
-		const members = [] as any[];
+		const members = [] as { name: string; tag: string; total: number; clan: string; date: Date }[];
 		for (const clan of clans) {
 			const data = await this.client.db.collection(Collections.CLAN_WARS)
 				.aggregate([
@@ -94,7 +95,7 @@ export default class LastWarsExport extends Command {
 							date: -1
 						}
 					}
-				]).toArray();
+				]).toArray<{ name: string; tag: string; total: number; clan: string; date: Date }>();
 
 			members.push(...data);
 		}
@@ -104,7 +105,8 @@ export default class LastWarsExport extends Command {
 			{ header: 'Tag', width: 16 },
 			{ header: 'Clan', width: 16 },
 			{ header: 'Total Wars', width: 10 },
-			{ header: 'Last War Date', width: 16 }
+			{ header: 'Last War Date', width: 16 },
+			{ header: 'Duration', width: 16 }
 		] as any;
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
@@ -118,9 +120,10 @@ export default class LastWarsExport extends Command {
 			members.filter(
 				mem => memberList.find(m => m.tag === mem.tag)
 			).map(
-				m => [m.name, m.tag, m.clan, m.total, m.date]
+				m => [m.name, m.tag, m.clan, m.total, m.date, ms(Date.now() - m.date.getTime())]
 			).concat(
-				memberList.filter(mem => !members.find(m => m.tag === mem.tag)).map(mem => [mem.name, mem.tag, mem.clan, 0])
+				memberList.filter(mem => !members.find(m => m.tag === mem.tag))
+					.map(mem => [mem.name, mem.tag, mem.clan, 0])
 			)
 		);
 
