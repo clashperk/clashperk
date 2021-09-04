@@ -1,4 +1,4 @@
-name: Interaction
+name: Deploy
 
 on:
   workflow_dispatch:
@@ -7,17 +7,17 @@ on:
 
 jobs:
   build:
-    name: Interaction Command
+    name: Command
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkouk Reposotory
         uses: actions/checkout@v2
 
-      - name: Use Node.js 14
+      - name: Use Node.js 16
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
 
       - name: NPM Install
         run: npm i

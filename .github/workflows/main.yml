@@ -2,28 +2,26 @@ name: CI/CD
 
 on:
   push:
-    branches: [master]
   pull_request:
-    branches: [master]
 
 jobs:
   lint:
-    name: Build
+    name: Lint
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Set up Node.js 14
+      - name: Use Node.js 16
         uses: actions/setup-node@v2
         with:
           node-version: 16
 
-      - name: Install Dependencies
+      - name: NPM Install
         run: npm i
 
-      - name: Run Linter
+      - name: Run ESLint
         run: npm run test
         
       - name: Build
