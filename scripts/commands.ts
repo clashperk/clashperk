@@ -442,10 +442,6 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'Donation Log',
 						value: 'donation'
-					},
-					{
-						name: 'Claim Clan',
-						value: 'claim'
 					}
 				]
 			},
