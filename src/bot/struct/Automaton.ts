@@ -94,22 +94,15 @@ export class Automaton {
 		const players = members.filter(mem => mem.troops.filter(en => en.superTroopIsActive).length);
 		if (!players.length) return { content: '**No members are boosting in this clan!**', embeds: [] };
 
-		const boostTimes = await this.client.db.collection(Collections.CLAN_MEMBERS)
+		const boostTimes = (await this.client.db.collection(Collections.LAST_SEEN)
 			.find(
-				{ season: Season.ID, clanTag: data.tag, tag: { $in: data.memberList.map(mem => mem.tag) } },
-				{ projection: { _id: 0, tag: 1, superTroops: 1 } }
+				{ tag: { $in: players.map(m => m.tag) } },
+				{ projection: { _id: 0, tag: 1, superTroops: 1, lastSeen: 1 } }
 			)
-			.toArray<{ tag: string; superTroops?: { name: string; timestamp: number }[] }>();
+			.toArray<{ tag: string; lastSeen: Date; superTroops?: { name: string; timestamp: number }[] }>());
 
-		const lastSeen = (await this.client.db.collection(Collections.LAST_SEEN)
-			.find(
-				{
-					tag: { $in: players.map(m => m.tag) },
-					lastSeen: { $gte: new Date(Date.now() - (10 * 60 * 1000)) }
-				},
-				{ projection: { _id: 0, tag: 1 } }
-			)
-			.toArray<{ tag: string }>()).map(m => m.tag);
+		const lastSeen = boostTimes.filter(m => m.lastSeen >= new Date(Date.now() - (10 * 60 * 1000)))
+			.map(m => m.tag);
 
 		const value = (interaction instanceof SelectMenuInteraction && interaction.isSelectMenu()) ? interaction.values[0] : null;
 		const thisTroop = players.filter(
