@@ -6,10 +6,10 @@ import 'moment-duration-format';
 import moment from 'moment';
 import os from 'os';
 
-export default class StatsCommand extends Command {
+export default class StatusCommand extends Command {
 	public constructor() {
-		super('stats', {
-			aliases: ['stats', 'about'],
+		super('status', {
+			aliases: ['status', 'about'],
 			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {

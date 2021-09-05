@@ -933,6 +933,134 @@ export const COMMANDS: Command[] = [
 		description: 'Redeem patreon subscription (if you wish to support us on patreon)'
 	},
 	{
+		name: 'stats',
+		description: 'Stats command group',
+		options: [
+			{
+				name: 'attacks',
+				description: 'Shows attack stats',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'tag',
+						description: 'Clan tag / alias or @user mention',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'compare',
+						description: 'Compare Town Halls (e.g 14vs13, 12 13, all, equal)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'min-stars',
+						description: 'Minimum war stars earned. (Default: 1)',
+						type: ApplicationCommandOptionType.Number,
+						choices: [
+							{
+								name: '1',
+								value: 1
+							},
+							{
+								name: '2',
+								value: 2
+							},
+							{
+								name: '3',
+								value: 3
+							}
+						]
+					},
+					{
+						name: 'type',
+						description: 'War Type [e.g Regular or CWL] (Default: Regular)',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Regular',
+								value: 'regular'
+							},
+							{
+								name: 'CWL',
+								value: 'cwl'
+							},
+							{
+								name: 'Both',
+								value: 'all'
+							}
+						]
+					},
+					{
+						name: 'season',
+						description: 'Limit the data to the last X months.',
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
+					}
+				]
+			},
+			{
+				name: 'defense',
+				description: 'Shows defense stats',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'tag',
+						description: 'Clan tag / alias or @user mention',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'compare',
+						description: 'Compare Town Halls (e.g 14vs13, 12 13, all, equal)',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'min-stars',
+						description: 'Minimum war stars earned. (Default: 1)',
+						type: ApplicationCommandOptionType.Number,
+						choices: [
+							{
+								name: '1',
+								value: 1
+							},
+							{
+								name: '2',
+								value: 2
+							},
+							{
+								name: '3',
+								value: 3
+							}
+						]
+					},
+					{
+						name: 'type',
+						description: 'War Type [e.g Regular or CWL] (Default: Regular)',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Regular',
+								value: 'regular'
+							},
+							{
+								name: 'CWL',
+								value: 'cwl'
+							},
+							{
+								name: 'Both',
+								value: 'all'
+							}
+						]
+					},
+					{
+						name: 'season',
+						description: 'Limit the data to the last X months.',
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
+					}
+				]
+			}
+		]
+	},
+	{
 		name: 'Profile',
 		type: CommandType.USER,
 		description: ''
@@ -946,7 +1074,7 @@ export const COMMANDS: Command[] = [
 
 export const PRIVATE_COMMANDS: Command[] = [
 	{
-		name: 'stats',
+		name: 'status',
 		description: 'Some basic information about the bot',
 		default_permission: false
 	},
