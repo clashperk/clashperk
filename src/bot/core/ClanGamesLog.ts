@@ -1,4 +1,4 @@
-import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake } from 'discord.js';
+import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake, ThreadChannel } from 'discord.js';
 import { Collections } from '../util/Constants';
 import { APIMessage } from 'discord-api-types';
 import { ClanGames, Util } from '../util/Util';
@@ -51,15 +51,15 @@ export default class ClanGamesLog {
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
-			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
-			if (channel.type !== 'GUILD_TEXT') return; // eslint-disable-line
+			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
+			if (channel.isThread() && (channel.locked || channel.archived || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
 				return this.handleMessage(cache, channel, clan, data);
 			}
 		}
 	}
 
-	private async handleMessage(cache: Cache, channel: TextChannel, clan: Clan, data: Payload) {
+	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, data: Payload) {
 		if (!cache.message) {
 			const msg = await this.send(cache, channel, clan, data);
 			return this.mutate(cache, msg);
@@ -90,12 +90,12 @@ export default class ClanGamesLog {
 		return msg;
 	}
 
-	private async send(cache: Cache, channel: TextChannel, clan: Clan, data: Payload) {
+	private async send(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, data: Payload) {
 		const embed = this.embed(cache, clan, data);
 		return Util.sendMessage(this.client, channel.id, { embeds: [embed.toJSON()] }).catch(() => null);
 	}
 
-	private async edit(cache: Cache, channel: TextChannel, clan: Clan, data: Payload) {
+	private async edit(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, data: Payload) {
 		const embed = this.embed(cache, clan, data);
 
 		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] })

@@ -1,4 +1,4 @@
-import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake } from 'discord.js';
+import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake, ThreadChannel } from 'discord.js';
 import { Collections } from '../util/Constants';
 import { APIMessage } from 'discord-api-types';
 import { Clan } from 'clashofclans.js';
@@ -63,8 +63,8 @@ export default class LastSeenLog {
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
-			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
-			if (channel.type !== 'GUILD_TEXT') return; // eslint-disable-line
+			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
+			if (channel.isThread() && (channel.locked || channel.archived || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
 				await this.throttle(channel.id);
 				return this.handleMessage(cache, channel, clan, members);
@@ -72,7 +72,7 @@ export default class LastSeenLog {
 		}
 	}
 
-	private async handleMessage(cache: Cache, channel: TextChannel, clan: Clan, members = []) {
+	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, members = []) {
 		if (!cache.message) {
 			const msg = await this.send(cache, channel, clan, members);
 			return this.mutate(cache, msg);
@@ -82,12 +82,12 @@ export default class LastSeenLog {
 		return this.mutate(cache, msg);
 	}
 
-	private async send(cache: Cache, channel: TextChannel, clan: Clan, members = []) {
+	private async send(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, members = []) {
 		const embed = this.embed(clan, cache, members);
 		return Util.sendMessage(this.client, channel.id, { embeds: [embed.toJSON()] }).catch(() => null);
 	}
 
-	private async edit(cache: Cache, channel: TextChannel, clan: Clan, members = []) {
+	private async edit(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, members = []) {
 		const embed = this.embed(clan, cache, members);
 		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] })
 			.catch(error => {

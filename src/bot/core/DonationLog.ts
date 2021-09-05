@@ -1,4 +1,4 @@
-import { MessageEmbed, Collection, PermissionString, TextChannel, WebhookClient } from 'discord.js';
+import { MessageEmbed, Collection, PermissionString, TextChannel, WebhookClient, ThreadChannel } from 'discord.js';
 import { BLUE_NUMBERS, RED_NUMBERS } from '../util/NumEmojis';
 import { PLAYER_LEAGUES, EMOJIS } from '../util/Emojis';
 import { Collections } from '../util/Constants';
@@ -57,10 +57,10 @@ export default class DonationLog {
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
-			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
-			if (channel.type !== 'GUILD_TEXT') return; // eslint-disable-line
+			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
+			if (channel.isThread() && (channel.locked || channel.archived || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions as PermissionString[], false)) {
-				if (this.hasWebhookPermission(channel)) {
+				if (!channel.isThread() && this.hasWebhookPermission(channel)) {
 					const webhook = await this.webhook(id);
 					if (webhook) return this.handleMessage(id, webhook, data);
 				}
@@ -134,7 +134,7 @@ export default class DonationLog {
 		return this.stopWebhookCheck(id);
 	}
 
-	private async handleMessage(id: string, channel: TextChannel | WebhookClient, data: Donation) {
+	private async handleMessage(id: string, channel: TextChannel | WebhookClient | ThreadChannel, data: Donation) {
 		const cache = this.cached.get(id);
 		const embed = new MessageEmbed()
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
@@ -172,7 +172,9 @@ export default class DonationLog {
 			].join('\n'));
 		}
 
-		if (channel instanceof TextChannel) return channel.send({ embeds: [embed] }).catch(() => null);
+		if (channel instanceof TextChannel || channel instanceof ThreadChannel) {
+			return channel.send({ embeds: [embed] }).catch(() => null);
+		}
 
 		try {
 			const message = await channel.send({ embeds: [embed] });

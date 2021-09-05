@@ -1,4 +1,4 @@
-import { MessageEmbed, PermissionString, TextChannel, Collection, WebhookClient } from 'discord.js';
+import { MessageEmbed, PermissionString, TextChannel, Collection, WebhookClient, ThreadChannel } from 'discord.js';
 import { TOWN_HALLS, EMOJIS, PLAYER_LEAGUES, HEROES } from '../util/Emojis';
 import { Collections } from '../util/Constants';
 import { Player } from 'clashofclans.js';
@@ -66,10 +66,10 @@ export default class ClanFeedLog {
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
-			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
-			if (channel.type !== 'GUILD_TEXT') return; // eslint-disable-line
+			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
+			if (channel.isThread() && (channel.locked || channel.archived || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
-				if (this.hasWebhookPermission(channel)) {
+				if (!channel.isThread() && this.hasWebhookPermission(channel)) {
 					const webhook = await this.webhook(id);
 					if (webhook) return this.handleMessage(id, webhook, data);
 				}
@@ -78,7 +78,7 @@ export default class ClanFeedLog {
 		}
 	}
 
-	private async handleMessage(id: string, channel: TextChannel | WebhookClient, data: Feed) {
+	private async handleMessage(id: string, channel: TextChannel | WebhookClient | ThreadChannel, data: Feed) {
 		return this.clanUpdate(channel, data, id);
 	}
 
@@ -147,7 +147,7 @@ export default class ClanFeedLog {
 		return this.stopWebhookCheck(id);
 	}
 
-	private async clanUpdate(channel: TextChannel | WebhookClient, data: Feed, id: string) {
+	private async clanUpdate(channel: TextChannel | WebhookClient | ThreadChannel, data: Feed, id: string) {
 		const members = data.members.filter(mem => ['JOINED', 'LEFT'].includes(mem.op));
 		if (!members.length) return null;
 		const delay = members.length >= 5 ? 2000 : 250;
@@ -158,7 +158,7 @@ export default class ClanFeedLog {
 
 		for (const message of messages) {
 			if (!message) continue;
-			if (channel instanceof TextChannel) {
+			if (channel instanceof TextChannel || channel instanceof ThreadChannel) {
 				await channel.send({ embeds: [message.embed], content: message.content }).catch(() => null);
 			} else {
 				try {

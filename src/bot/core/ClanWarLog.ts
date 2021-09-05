@@ -1,4 +1,4 @@
-import { MessageEmbed, Collection, TextChannel, PermissionString } from 'discord.js';
+import { MessageEmbed, Collection, TextChannel, PermissionString, ThreadChannel } from 'discord.js';
 import { ClanWar, ClanWarMember, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/NumEmojis';
 import { TOWN_HALLS, EMOJIS, WAR_STARS } from '../util/Emojis';
@@ -48,15 +48,15 @@ export default class ClanWarLog {
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
-			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel;
-			if (channel.type !== 'GUILD_TEXT') return; // eslint-disable-line
+			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
+			if (channel.isThread() && (channel.locked || channel.archived || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
 				return this.getWarType(cache, channel, data);
 			}
 		}
 	}
 
-	private async getWarType(cache: Cache, channel: TextChannel, data: PayLoad) {
+	private async getWarType(cache: Cache, channel: TextChannel | ThreadChannel, data: PayLoad) {
 		if (data.groupWar && cache.rounds[data.round]?.warTag === data.warTag) {
 			return this.handleMessage(cache, channel, cache.rounds[data.round]?.messageID ?? null, data);
 		} else if (data.groupWar) {
@@ -70,7 +70,7 @@ export default class ClanWarLog {
 		return this.handleMessage(cache, channel, null, data);
 	}
 
-	private async handleMessage(cache: Cache, channel: TextChannel, messageID: string | null, data: any) {
+	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, messageID: string | null, data: any) {
 		if (!data.groupWar && data.remaining.length && data.state === 'warEnded') {
 			const embed = this.getRemaining(data);
 			try {
@@ -89,12 +89,12 @@ export default class ClanWarLog {
 		return this.mutate(cache, data, msg);
 	}
 
-	private async send(channel: TextChannel, data: PayLoad) {
+	private async send(channel: TextChannel | ThreadChannel, data: PayLoad) {
 		const embed = this.embed(data);
 		return Util.sendMessage(this.client, channel.id, { embeds: [embed.toJSON()] }).catch(() => null);
 	}
 
-	private async edit(channel: TextChannel, messageID: string, data: PayLoad) {
+	private async edit(channel: TextChannel | ThreadChannel, messageID: string, data: PayLoad) {
 		const embed = this.embed(data);
 		return Util.editMessage(this.client, channel.id, messageID, { embeds: [embed.toJSON()] })
 			.catch(error => {

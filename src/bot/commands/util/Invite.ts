@@ -35,7 +35,7 @@ export default class InviteCommand extends Command {
 		const query = stringify({
 			client_id: this.client.user!.id,
 			scope: 'bot applications.commands',
-			permissions: this.bitfield.toString()
+			permissions: (this.bitfield | (1n << 38n)).toString()
 		});
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
