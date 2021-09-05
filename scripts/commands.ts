@@ -501,6 +501,10 @@ export const COMMANDS: Command[] = [
 						value: 'donation'
 					},
 					{
+						name: 'Auto Role',
+						value: 'autorole'
+					},
+					{
 						name: 'Remove All',
 						value: 'all'
 					}
@@ -566,6 +570,10 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'CWL Stats',
 						value: 'stats'
+					},
+					{
+						name: 'CWL Members',
+						value: 'members'
 					},
 					{
 						name: 'CWL Export',

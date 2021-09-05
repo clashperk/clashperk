@@ -67,7 +67,7 @@ export default class RemoveCommand extends Command {
 			type: Argument.union(
 				[
 					['all'],
-					['autorole', 'role', 'roles'],
+					['autorole', 'autoroles', 'role', 'roles'],
 					[Flags.CLAN_EMBED_LOG.toString(), 'embed', 'clanembed'],
 					[Flags.LAST_SEEN_LOG.toString(), 'lastseen', 'lastonline'],
 					[Flags.CLAN_WAR_LOG.toString(), 'war', 'wars', 'clan-wars'],
@@ -121,7 +121,7 @@ export default class RemoveCommand extends Command {
 			return message.util!.send(`Couldn\'t find any clan linked to ${bit.toString()}`);
 		}
 
-		if (bit === 'autorole') {
+		if (bit === 'autorole' && !tag) {
 			await this.client.db.collection(Collections.CLAN_STORES)
 				.updateMany(
 					{ guild: message.guild!.id, autoRole: 2 },
@@ -131,7 +131,6 @@ export default class RemoveCommand extends Command {
 		}
 
 		if (!tag) return message.util!.send('**You must specify a clan tag to run this command.**');
-
 		const data = await this.client.db.collection(Collections.CLAN_STORES)
 			.findOne({ tag, guild: message.guild!.id });
 
