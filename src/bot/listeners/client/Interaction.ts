@@ -2,7 +2,7 @@ import { CommandInteractionOption, Interaction, PermissionResolvable, TextChanne
 import { Listener, Command, Flag } from 'discord-akairo';
 import { Messages, Settings } from '../../util/Constants';
 
-const EPHEMERAL_COMMANDS = ['help', 'invite', 'stats', 'whois'];
+const EPHEMERAL_COMMANDS = ['help', 'invite', 'status', 'whois'];
 
 interface Parsed {
 	type: string;
