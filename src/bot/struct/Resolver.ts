@@ -43,10 +43,10 @@ export default class Resolver {
 	}
 
 	private async clanAlias(guild: string, alias: string) {
-		return this.client.db.collection(Collections.CLAN_STORES)
+		return this.client.db.collection<{ name: string; tag: string }>(Collections.CLAN_STORES)
 			.findOne(
 				{ guild, alias },
-				{ collation: { strength: 2, locale: 'en' } }
+				{ collation: { strength: 2, locale: 'en' }, projection: { tag: 1, name: 1 } }
 			);
 	}
 
@@ -54,11 +54,11 @@ export default class Resolver {
 		args = args.replace(/[\u200e|\u200f]+/g, '');
 		const parsed = await this.argumentParser(message, args);
 
+		const clan = await this.clanAlias(message.guild!.id, args.trim());
 		const tag = parsed && typeof parsed === 'boolean';
-		if (tag) return this.getClan(message, args, true);
+		if (tag) return this.getClan(message, (clan && !args.startsWith('#')) ? clan.tag : args, true);
 
 		if (!parsed) {
-			const clan = await this.clanAlias(message.guild!.id, args.trim());
 			if (clan) return this.getClan(message, clan.tag);
 			return this.fail(message, `**${status(404)}**`);
 		}
@@ -84,8 +84,8 @@ export default class Resolver {
 		const data: Clan = await this.client.http.fetch(`/clans/${encodeURIComponent(this.parseTag(tag))}`);
 		if (data.ok) return data;
 
-		if (checkAlias && data.statusCode === 404) {
-			const clan = await this.clanAlias(message.guild!.id, tag.replace('#', '').toLowerCase());
+		if (checkAlias && data.statusCode === 404 && !tag.startsWith('#')) {
+			const clan = await this.clanAlias(message.guild!.id, tag);
 			if (clan) return this.getClan(message, clan.tag);
 		}
 

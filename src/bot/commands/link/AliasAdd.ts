@@ -15,8 +15,8 @@ export default class AliasAddCommand extends Command {
 
 	public *args(msg: Message): unknown {
 		const name = yield {
-			type: 'lowercase',
 			flag: '--name',
+			type: 'lowercase',
 			match: msg.interaction ? 'option' : 'phrase'
 		};
 
@@ -34,9 +34,13 @@ export default class AliasAddCommand extends Command {
 	}
 
 	public async exec(message: Message, { tag, name: alias }: { tag: string; name: string }) {
-		if (alias) {
-			return message.util!.send('You must provide an alias to run this command.');
+		if (!alias) {
+			return message.util!.send('**You must provide an alias to run this command.**');
 		}
+		if (alias.startsWith('#')) {
+			return message.util!.send('**Clan alias must not start with a hash (#).**');
+		}
+
 		const clan = await this.client.db.collection(Collections.CLAN_STORES)
 			.findOne({ guild: message.guild!.id, alias });
 		if (clan) {
