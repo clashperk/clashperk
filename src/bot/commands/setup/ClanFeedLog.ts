@@ -52,7 +52,7 @@ export default class MemberLogCommand extends Command {
 			.findOne({ user: message.author.id });
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
-		if (!clan.verified && !this.verifyClan(code, data, dbUser?.entries ?? [])) {
+		if (!clan.verified && !this.verifyClan(code, data, dbUser?.entries ?? []) && !this.client.isOwner(message.author.id)) {
 			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
 			return message.util!.send({ embeds: [embed] });
 		}
