@@ -73,9 +73,15 @@ export default class ClanFeedLog {
 					const webhook = await this.webhook(id);
 					if (webhook) return this.handleMessage(id, webhook, data);
 				}
+				if (channel.isThread()) await this.unarchive(channel);
 				return this.handleMessage(id, channel, data);
 			}
 		}
+	}
+
+	private async unarchive(thread: ThreadChannel) {
+		if (!(thread.editable && thread.manageable && thread.autoArchiveDuration! < 60)) return;
+		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
 	}
 
 	private async handleMessage(id: string, channel: TextChannel | WebhookClient | ThreadChannel, data: Feed) {

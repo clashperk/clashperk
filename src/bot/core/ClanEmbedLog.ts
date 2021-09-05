@@ -71,9 +71,15 @@ export default class ClanEmbedLog {
 			if (channel.isThread() && (channel.locked || channel.archived || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
 			if (channel.permissionsFor(channel.guild.me!).has(permissions, false)) {
 				await this.throttle(channel.id);
+				if (channel.isThread()) await this.unarchive(channel);
 				return this.handleMessage(cache, channel, clan);
 			}
 		}
+	}
+
+	private async unarchive(thread: ThreadChannel) {
+		if (!(thread.editable && thread.manageable && thread.autoArchiveDuration! < 60)) return;
+		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
 	}
 
 	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan) {

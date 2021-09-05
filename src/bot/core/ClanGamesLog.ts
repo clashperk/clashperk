@@ -54,9 +54,15 @@ export default class ClanGamesLog {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
 			if (channel.isThread() && (channel.locked || channel.archived || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
+				if (channel.isThread()) await this.unarchive(channel);
 				return this.handleMessage(cache, channel, clan, data);
 			}
 		}
+	}
+
+	private async unarchive(thread: ThreadChannel) {
+		if (!(thread.editable && thread.manageable && thread.autoArchiveDuration! < 60)) return;
+		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
 	}
 
 	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, data: Payload) {

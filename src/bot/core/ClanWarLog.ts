@@ -37,7 +37,7 @@ export default class ClanWarLog {
 		return clans.clear();
 	}
 
-	private permissionsFor(cache: Cache, data: PayLoad) {
+	private async permissionsFor(cache: Cache, data: PayLoad) {
 		const permissions: PermissionString[] = [
 			'READ_MESSAGE_HISTORY',
 			'SEND_MESSAGES',
@@ -51,9 +51,15 @@ export default class ClanWarLog {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
 			if (channel.isThread() && (channel.locked || channel.archived || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
+				if (channel.isThread()) await this.unarchive(channel);
 				return this.getWarType(cache, channel, data);
 			}
 		}
+	}
+
+	private async unarchive(thread: ThreadChannel) {
+		if (!(thread.editable && thread.manageable && thread.autoArchiveDuration! < 60)) return;
+		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
 	}
 
 	private async getWarType(cache: Cache, channel: TextChannel | ThreadChannel, data: PayLoad) {
