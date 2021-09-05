@@ -34,6 +34,9 @@ export default class AliasAddCommand extends Command {
 	}
 
 	public async exec(message: Message, { tag, name: alias }: { tag: string; name: string }) {
+		if (alias) {
+			return message.util!.send('You must provide an alias to run this command.');
+		}
 		const clan = await this.client.db.collection(Collections.CLAN_STORES)
 			.findOne({ guild: message.guild!.id, alias });
 		if (clan) {
