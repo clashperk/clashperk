@@ -946,7 +946,7 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'attacks',
-				description: 'Shows attack stats',
+				description: 'Shows attack success rates',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -960,27 +960,27 @@ export const COMMANDS: Command[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'min-stars',
-						description: 'Minimum war stars earned. (Default: 1)',
+						name: 'stars',
+						description: 'War stars earned. (Default: 3)',
 						type: ApplicationCommandOptionType.Number,
 						choices: [
 							{
-								name: '1',
-								value: 1
+								name: '3',
+								value: 3
 							},
 							{
 								name: '2',
 								value: 2
 							},
 							{
-								name: '3',
-								value: 3
+								name: '1',
+								value: 1
 							}
 						]
 					},
 					{
 						name: 'type',
-						description: 'War Type [e.g Regular or CWL] (Default: Regular)',
+						description: 'War Type [e.g Regular or CWL] (Default: Regular + CWL)',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -992,7 +992,19 @@ export const COMMANDS: Command[] = [
 								value: 'cwl'
 							},
 							{
-								name: 'Both',
+								name: 'Friendly',
+								value: 'friendly'
+							},
+							{
+								name: 'Regular + CWL',
+								value: 'noFriendly'
+							},
+							{
+								name: 'Regular + Friendly',
+								value: 'noCWL'
+							},
+							{
+								name: 'All War Types',
 								value: 'all'
 							}
 						]
@@ -1001,13 +1013,13 @@ export const COMMANDS: Command[] = [
 						name: 'season',
 						description: 'Limit the data to the last X months.',
 						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds()
+						choices: getSeasonIds().map(season => ({ name: `Since ${season.name}`, value: season.value }))
 					}
 				]
 			},
 			{
 				name: 'defense',
-				description: 'Shows defense stats',
+				description: 'Shows defense success rates',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1021,27 +1033,27 @@ export const COMMANDS: Command[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'min-stars',
-						description: 'Minimum war stars earned. (Default: 1)',
+						name: 'stars',
+						description: 'War stars earned. (Default: 3)',
 						type: ApplicationCommandOptionType.Number,
 						choices: [
 							{
-								name: '1',
-								value: 1
+								name: '3',
+								value: 3
 							},
 							{
 								name: '2',
 								value: 2
 							},
 							{
-								name: '3',
-								value: 3
+								name: '1',
+								value: 1
 							}
 						]
 					},
 					{
 						name: 'type',
-						description: 'War Type [e.g Regular or CWL] (Default: Regular)',
+						description: 'War Type [e.g Regular, CWL, Friendly] (Default: Regular + CWL)',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1053,7 +1065,19 @@ export const COMMANDS: Command[] = [
 								value: 'cwl'
 							},
 							{
-								name: 'Both',
+								name: 'Friendly',
+								value: 'friendly'
+							},
+							{
+								name: 'Regular + CWL',
+								value: 'noFriendly'
+							},
+							{
+								name: 'Regular + Friendly',
+								value: 'noCWL'
+							},
+							{
+								name: 'All Wars Types',
 								value: 'all'
 							}
 						]
@@ -1062,7 +1086,7 @@ export const COMMANDS: Command[] = [
 						name: 'season',
 						description: 'Limit the data to the last X months.',
 						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds()
+						choices: getSeasonIds().map(season => ({ name: `Since ${season.name}`, value: season.value }))
 					}
 				]
 			}

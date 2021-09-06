@@ -3,12 +3,12 @@ import { Collections } from '../../util/Constants';
 import { Argument, Command } from 'discord-akairo';
 import { Message, MessageEmbed } from 'discord.js';
 import { Clan, WarClan } from 'clashofclans.js';
-import { Season, Util } from '../../util/Util';
 import { EMOJIS } from '../../util/Emojis';
+import { Util } from '../../util/Util';
 import moment from 'moment';
 
 export type Comapre = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };
-export type WarType = 'regular' | 'cwl' | 'all';
+export type WarType = 'regular' | 'cwl' | 'friendly' | 'noFriendly' | 'noCWL' | 'all';
 export type Mode = 'attacks' | 'defense';
 
 export default class StatsCommand extends Command {
@@ -20,7 +20,7 @@ export default class StatsCommand extends Command {
 			description: {
 				content: 'Shows war statistics with many filters.'
 			},
-			optionFlags: ['--tag', '--compare', '--type', '--min-stars', '--season'],
+			optionFlags: ['--tag', '--compare', '--type', '--stars', '--season'],
 			clientPermissions: ['EMBED_LINKS']
 		});
 	}
@@ -54,32 +54,43 @@ export default class StatsCommand extends Command {
 			)
 		};
 
-		const minStars = yield {
-			'default': 1,
+		const stars = yield {
+			'default': 3,
 			'type': 'number',
 			'match': 'option',
-			'flag': '--min-stars'
+			'flag': '--stars'
 		};
 
 		const type = yield {
 			'flag': '--type',
 			'type': 'string',
 			'match': 'option',
-			'default': 'all'
+			'default': 'noFriendly'
 		};
 
 		const season = yield {
 			'match': 'option',
 			'flag': '--season',
-			'default': Season.ID,
-			'type': [...Util.getSeasonIds(), [Util.getLastSeasonId(), 'last']]
+			'default': Util.getLastSeasonId(),
+			'type': [...Util.getSeasonIds()]
 		};
 
-		return { mode, data, compare, type, minStars, season };
+		return { mode, data, compare, type, stars, season };
 	}
 
-	public async exec(message: Message, { mode, data, compare, type, minStars, season }: { mode: Mode; data: Clan; compare: Comapre; type: WarType; minStars: number; season: string }) {
-		const extra = type === 'all' ? {} : { groupWar: type === 'cwl' };
+	public async exec(message: Message, { mode, data, compare, type, stars, season }: { mode: Mode; data: Clan; compare: Comapre; type: WarType; stars: number; season: string }) {
+		const extra = type === 'regular'
+			? { isFriendly: false, groupWar: false }
+			: type === 'cwl'
+				? { groupWar: true }
+				: type === 'friendly'
+					? { isFriendly: true }
+					: type === 'noFriendly'
+						? { isFriendly: false }
+						: type === 'noCWL'
+							? { groupWar: false }
+							: {};
+
 		const wars = await this.client.db.collection(Collections.CLAN_WARS)
 			.find({
 				$or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }],
@@ -88,8 +99,6 @@ export default class StatsCommand extends Command {
 			})
 			.toArray();
 
-		const days = moment.duration(Math.max(24 * 60 * 60 * 1000, Date.now() - new Date(season).getTime()))
-			.format('D[d]', { trim: 'both mid' });
 		const members: { [key: string]: { name: string; tag: string; total: number; success: number; hall: number } } = {};
 		for (const war of wars) {
 			const clan: WarClan = war.clan.tag === data.tag ? war.clan : war.opponent;
@@ -110,14 +119,14 @@ export default class StatsCommand extends Command {
 				for (const attack of (mode === 'attacks') ? (m.attacks ?? []) : []) {
 					if (typeof compare === 'string' && compare === 'equal') {
 						const defender = opponent.members.find(m => m.tag === attack.defenderTag)!;
-						if (attack.stars >= minStars && defender.townhallLevel === m.townhallLevel) member.success += 1;
+						if (attack.stars === stars && defender.townhallLevel === m.townhallLevel) member.success += 1;
 					} else if (typeof compare === 'object') {
 						const { attackerTownHall, defenderTownHall } = compare;
-						if (attack.stars >= minStars && m.townhallLevel === attackerTownHall) {
+						if (attack.stars === stars && m.townhallLevel === attackerTownHall) {
 							const defender = opponent.members.find(m => m.tag === attack.defenderTag)!;
 							if (defender.townhallLevel === defenderTownHall) member.success += 1;
 						}
-					} else if (attack.stars >= minStars) {
+					} else if (attack.stars === stars) {
 						member.success += 1;
 					}
 				}
@@ -126,14 +135,14 @@ export default class StatsCommand extends Command {
 					const attack = m.bestOpponentAttack;
 					if (typeof compare === 'string' && compare === 'equal') {
 						const attacker = opponent.members.find(m => m.tag === attack.attackerTag)!;
-						if (attack.stars >= minStars && attacker.townhallLevel === m.townhallLevel) member.success += 1;
+						if (attack.stars === stars && attacker.townhallLevel === m.townhallLevel) member.success += 1;
 					} else if (typeof compare === 'object') {
 						const { attackerTownHall, defenderTownHall } = compare;
-						if (attack.stars >= minStars && m.townhallLevel === defenderTownHall) {
+						if (attack.stars === stars && m.townhallLevel === defenderTownHall) {
 							const attacker = opponent.members.find(m => m.tag === attack.attackerTag)!;
 							if (attacker.townhallLevel === attackerTownHall) member.success += 1;
 						}
-					} else if (attack.stars >= minStars) {
+					} else if (attack.stars === stars) {
 						member.success += 1;
 					}
 				}
@@ -151,14 +160,14 @@ export default class StatsCommand extends Command {
 			: compare;
 
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} War Stats (Last ${days} Days)`)
+			.setAuthor(`${data.name} War Stats (Since ${moment(season).format('MMM YYYY')})`)
 			.setDescription([
 				`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} \`RATE%  HITS   ${'NAME'.padEnd(15, ' ')}\u200f\``,
 				stats.map(
 					(m, i) => `${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.hall]} \`${Math.floor((m.success * 100) / m.total).toFixed(1).padStart(5, ' ')} ${m.success.toString().padStart(3, ' ')}/${m.total.toString().padEnd(3, ' ')} ${m.name.padEnd(15, ' ')}\u200f\``
 				).join('\n')
 			].join('\n'))
-			.setFooter(`townhall: ${hall}, min-stars: ${minStars}, ${mode} stats, ${type} wars`);
+			.setFooter(`townhall: ${hall}, stars: ${stars}, ${mode} stats, ${type} wars`);
 
 		return message.util!.send({ embeds: [embed] });
 	}

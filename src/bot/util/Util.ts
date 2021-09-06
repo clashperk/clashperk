@@ -23,8 +23,27 @@ export class Util extends Discord.Util {
 		return name.replace('\`', '');
 	}
 
-	public static getSeasonIds() {
-		return Array(4)
+	/**
+	 * Season IDs of last 6 months.
+	 * @returns {string[]} SeasonIds
+	 */
+	public static getSeasonIds(): string[] {
+		return Array(6).fill(0).map((_, month) => {
+			const now = new Date();
+			now.setHours(0, 0, 0, 0);
+			now.setFullYear(now.getFullYear(), 1 + 3);
+			now.setMonth(now.getMonth() + month, 0);
+			return Season.generateID(now);
+		});
+	}
+
+	/**
+	 * Season IDs of last X months.
+	 * @param months Last X months.
+	 * @returns {string[]} SeasonIds
+	 */
+	public static getLastSeasonIds(months = 1): string[] {
+		return Array(months)
 			.fill(0)
 			.map((_, month) => {
 				const now = new Date(Season.ID);
@@ -35,7 +54,11 @@ export class Util extends Discord.Util {
 			.concat(Season.ID);
 	}
 
-	public static getLastSeasonId() {
+	/**
+	 * Season ID of the last month.
+	 * @returns {string} SeasonId
+	 */
+	public static getLastSeasonId(): string {
 		return Season.generateID(Season.startTimestamp);
 	}
 
