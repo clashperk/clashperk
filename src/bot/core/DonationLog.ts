@@ -58,20 +58,20 @@ export default class DonationLog {
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || channel.archived || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions as PermissionString[], false)) {
 				if (!channel.isThread() && this.hasWebhookPermission(channel)) {
 					const webhook = await this.webhook(id);
 					if (webhook) return this.handleMessage(id, webhook, data);
 				}
-				if (channel.isThread()) await this.unarchive(channel);
+				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
 				return this.handleMessage(id, channel, data);
 			}
 		}
 	}
 
 	private async unarchive(thread: ThreadChannel) {
-		if (!(thread.editable && thread.manageable && thread.autoArchiveDuration! < 60)) return;
+		if (!(thread.editable && thread.manageable)) return null;
 		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
 	}
 
