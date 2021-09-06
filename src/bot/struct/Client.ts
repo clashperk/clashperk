@@ -120,11 +120,11 @@ export default class Client extends AkairoClient {
 					})
 				},
 				ThreadManager: {
-					sweepInterval: 30 * 60,
+					sweepInterval: 24 * 60 * 60,
 					sweepFilter: LimitedCollection.filterByLifetime({
-						lifetime: 60 * 60,
-						excludeFromSweep: e => !e.archived,
-						getComparisonTimestamp: e => e.archiveTimestamp!
+						lifetime: 30 * 24 * 60 * 60,
+						excludeFromSweep: thread => !thread.archived,
+						getComparisonTimestamp: thread => thread.archiveTimestamp!
 					})
 				},
 				PresenceManager: 0,
