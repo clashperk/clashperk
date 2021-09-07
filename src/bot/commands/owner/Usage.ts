@@ -40,7 +40,7 @@ export default class UsageCommand extends Command {
 			.setAuthor(`${this.client.user!.username}`, this.client.user!.displayAvatarURL({ format: 'png' }))
 			.setColor(this.client.embed(message))
 			.setTitle('Usage')
-			.setFooter(`${Number(await this.commandsTotal())}x Total • Since April 2019`);
+			.setFooter(`${Number(await this.commandsTotal()).toLocaleString()}x Total • Since April 2019`);
 		embed.setDescription([
 			`__**\`\u200e${'Date'.padEnd(6, ' ')}  ${'Uses'.padEnd(18, ' ')}\u200f\`**__`,
 			...usage.map(en => `\`\u200e${moment(en.createdAt).format('DD MMM')}  ${en.usage.toString().padEnd(18, ' ')}\u200f\``),

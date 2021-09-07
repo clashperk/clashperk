@@ -980,7 +980,7 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'type',
-						description: 'War Type [e.g Regular or CWL] (Default: Regular + CWL)',
+						description: 'War Type [e.g Regular, CWL, Friendly] (Default: Regular and CWL)',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -996,15 +996,15 @@ export const COMMANDS: Command[] = [
 								value: 'friendly'
 							},
 							{
-								name: 'Regular + CWL',
+								name: 'Regular and CWL',
 								value: 'noFriendly'
 							},
 							{
-								name: 'Regular + Friendly',
+								name: 'Regular and Friendly',
 								value: 'noCWL'
 							},
 							{
-								name: 'All War Types',
+								name: 'Regular, CWL and  Friendly',
 								value: 'all'
 							}
 						]
@@ -1019,7 +1019,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'defense',
-				description: 'Shows defense success rates',
+				description: 'Shows defense failure rates',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1053,7 +1053,7 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'type',
-						description: 'War Type [e.g Regular, CWL, Friendly] (Default: Regular + CWL)',
+						description: 'War Type [e.g Regular, CWL, Friendly] (Default: Regular and CWL)',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1069,15 +1069,15 @@ export const COMMANDS: Command[] = [
 								value: 'friendly'
 							},
 							{
-								name: 'Regular + CWL',
+								name: 'Regular and CWL',
 								value: 'noFriendly'
 							},
 							{
-								name: 'Regular + Friendly',
+								name: 'Regular and Friendly',
 								value: 'noCWL'
 							},
 							{
-								name: 'All Wars Types',
+								name: 'Regular, CWL and Friendly',
 								value: 'all'
 							}
 						]

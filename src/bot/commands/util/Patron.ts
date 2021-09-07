@@ -108,7 +108,7 @@ export default class PatronCommand extends Command {
 		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow().addComponents(button)] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customId && action.user.id === message.author.id,
-			time: 5 * 60 * 1000, max: 1
+			time: 5 * 60 * 1000
 		});
 
 		const patrons = (await this.patrons()).filter(patron => patron.active && patron.discord_id !== this.client.ownerID);
@@ -123,6 +123,7 @@ export default class PatronCommand extends Command {
 				].join('\n'));
 
 				await action.update({ embeds: [embed] });
+				return collector.stop();
 			}
 		});
 

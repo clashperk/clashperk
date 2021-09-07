@@ -119,14 +119,6 @@ export default class Client extends AkairoClient {
 						getComparisonTimestamp: msg => msg.createdTimestamp
 					})
 				},
-				ThreadManager: {
-					sweepInterval: 24 * 60 * 60,
-					sweepFilter: LimitedCollection.filterByLifetime({
-						lifetime: 30 * 24 * 60 * 60,
-						excludeFromSweep: thread => !thread.archived,
-						getComparisonTimestamp: thread => thread.archiveTimestamp!
-					})
-				},
 				PresenceManager: 0,
 				UserManager: {
 					maxSize: 100,

@@ -11,6 +11,15 @@ export type Comapre = 'all' | 'equal' | { attackerTownHall: number; defenderTown
 export type WarType = 'regular' | 'cwl' | 'friendly' | 'noFriendly' | 'noCWL' | 'all';
 export type Mode = 'attacks' | 'defense';
 
+const WarTypes = {
+	regular: 'Regular',
+	cwl: 'CWL',
+	friendly: 'Friendly',
+	noFriendly: 'Regular and CWL',
+	noCWL: 'Regular and Friendly',
+	all: 'Regular, CWL and Friendly'
+};
+
 export default class StatsCommand extends Command {
 	public constructor() {
 		super('stats', {
@@ -18,7 +27,7 @@ export default class StatsCommand extends Command {
 			category: 'search',
 			channel: 'guild',
 			description: {
-				content: 'Shows war statistics with many filters.'
+				content: 'War attack success and defense failure rates.'
 			},
 			optionFlags: ['--tag', '--compare', '--type', '--stars', '--season'],
 			clientPermissions: ['EMBED_LINKS']
@@ -156,19 +165,37 @@ export default class StatsCommand extends Command {
 		}
 
 		const hall = typeof compare === 'object'
-			? Object.values(compare).join('vs')
-			: compare;
+			? `TH ${Object.values(compare).join('vs')}`
+			: `${compare.replace('all', 'All').replace('equal', 'Equal')} TH`;
 
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} War Stats (Since ${moment(season).format('MMM YYYY')})`)
-			.setDescription([
-				`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} \`RATE%  HITS   ${'NAME'.padEnd(15, ' ')}\u200f\``,
-				stats.map(
-					(m, i) => `${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.hall]} \`${Math.floor((m.success * 100) / m.total).toFixed(1).padStart(5, ' ')} ${m.success.toString().padStart(3, ' ')}/${m.total.toString().padEnd(3, ' ')} ${m.name.padEnd(15, ' ')}\u200f\``
-				).join('\n')
-			].join('\n'))
-			.setFooter(`townhall: ${hall}, stars: ${stars}, ${mode} stats, ${type} wars`);
+			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
+			.setDescription(
+				Util.splitMessage(
+					[
+						`**${hall}, ${stars} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} Rates**`,
+						'',
+						`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} \`RATE%  HITS   ${'NAME'.padEnd(15, ' ')}\u200f\``,
+						stats.map(
+							(m, i) => {
+								const percentage = this._padStart(Math.floor((m.success * 100) / m.total).toFixed(1), 5);
+								return `\u200e${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.hall]} \`${percentage} ${this._padStart(m.success, 3)}/${this._padEnd(m.total, 3)} ${this._padEnd(m.name, 14)} \u200f\``;
+							}
+						).join('\n')
+					].join('\n'),
+					{ maxLength: 4096 }
+				)[0]
+			)
+			.setFooter(`War Types: ${WarTypes[type]} (Since ${moment(season).format('MMM YYYY')})`);
 
 		return message.util!.send({ embeds: [embed] });
+	}
+
+	private _padEnd(num: number | string, maxLength: number) {
+		return num.toString().padEnd(maxLength, ' ');
+	}
+
+	private _padStart(num: number | string, maxLength: number) {
+		return num.toString().padStart(maxLength, ' ');
 	}
 }
