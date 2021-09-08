@@ -159,9 +159,12 @@ export default class StatsCommand extends Command {
 		}
 
 		const clanMemberTags = data.memberList.map(m => m.tag);
-		const stats = Object.values(members).filter(m => clanMemberTags.includes(m.tag));
+		const stats = Object.values(members)
+			.filter(m => clanMemberTags.includes(m.tag))
+			.map(mem => ({ ...mem, rate: (mem.success * 100) / mem.total }))
+			.sort((a, b) => b.rate - a.rate);
 		if (!stats.length) {
-			return message.util!.send('No stats are avaliable for this filter or clan.');
+			return message.util!.send('**No stats are avaliable for this filter or clan.**');
 		}
 
 		const hall = typeof compare === 'object'
@@ -178,7 +181,7 @@ export default class StatsCommand extends Command {
 						`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} \`RATE%  HITS   ${'NAME'.padEnd(15, ' ')}\u200f\``,
 						stats.map(
 							(m, i) => {
-								const percentage = this._padStart(Math.floor((m.success * 100) / m.total).toFixed(1), 5);
+								const percentage = this._padStart(m.rate.toFixed(1), 5);
 								return `\u200e${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.hall]} \`${percentage} ${this._padStart(m.success, 3)}/${this._padEnd(m.total, 3)} ${this._padEnd(m.name, 14)} \u200f\``;
 							}
 						).join('\n')
