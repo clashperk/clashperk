@@ -64,8 +64,8 @@ export default class StatsCommand extends Command {
 		};
 
 		const stars = yield {
-			'default': 3,
-			'type': 'number',
+			'default': '==3',
+			'type': 'string',
 			'match': 'option',
 			'flag': '--stars'
 		};
@@ -87,7 +87,7 @@ export default class StatsCommand extends Command {
 		return { mode, data, compare, type, stars, season };
 	}
 
-	public async exec(message: Message, { mode, data, compare, type, stars, season }: { mode: Mode; data: Clan; compare: Comapre; type: WarType; stars: number; season: string }) {
+	public async exec(message: Message, { mode, data, compare, type, stars, season }: { mode: Mode; data: Clan; compare: Comapre; type: WarType; stars: string; season: string }) {
 		const extra = type === 'regular'
 			? { isFriendly: false, groupWar: false }
 			: type === 'cwl'
@@ -123,20 +123,26 @@ export default class StatsCommand extends Command {
 						success: 0,
 						hall: m.townhallLevel
 					};
-				member.total += war.groupWar ? 1 : mode === 'defense' ? 1 : 2;
 
 				for (const attack of (mode === 'attacks') ? (m.attacks ?? []) : []) {
 					if (typeof compare === 'string' && compare === 'equal') {
 						const defender = opponent.members.find(m => m.tag === attack.defenderTag)!;
-						if (attack.stars === stars && defender.townhallLevel === m.townhallLevel) member.success += 1;
+						if (defender.townhallLevel === m.townhallLevel) {
+							member.total += 1;
+							if (this.getStars(attack.stars, stars)) member.success += 1;
+						}
 					} else if (typeof compare === 'object') {
 						const { attackerTownHall, defenderTownHall } = compare;
-						if (attack.stars === stars && m.townhallLevel === attackerTownHall) {
+						if (m.townhallLevel === attackerTownHall) {
 							const defender = opponent.members.find(m => m.tag === attack.defenderTag)!;
-							if (defender.townhallLevel === defenderTownHall) member.success += 1;
+							if (defender.townhallLevel === defenderTownHall) {
+								member.total += 1;
+								if (this.getStars(attack.stars, stars)) member.success += 1;
+							}
 						}
-					} else if (attack.stars === stars) {
-						member.success += 1;
+					} else {
+						member.total += 1;
+						if (this.getStars(attack.stars, stars)) member.success += 1;
 					}
 				}
 
@@ -144,15 +150,22 @@ export default class StatsCommand extends Command {
 					const attack = m.bestOpponentAttack;
 					if (typeof compare === 'string' && compare === 'equal') {
 						const attacker = opponent.members.find(m => m.tag === attack.attackerTag)!;
-						if (attack.stars === stars && attacker.townhallLevel === m.townhallLevel) member.success += 1;
+						if (attacker.townhallLevel === m.townhallLevel) {
+							member.total += 1;
+							if (this.getStars(attack.stars, stars)) member.success += 1;
+						}
 					} else if (typeof compare === 'object') {
 						const { attackerTownHall, defenderTownHall } = compare;
-						if (attack.stars === stars && m.townhallLevel === defenderTownHall) {
+						if (m.townhallLevel === defenderTownHall) {
 							const attacker = opponent.members.find(m => m.tag === attack.attackerTag)!;
-							if (attacker.townhallLevel === attackerTownHall) member.success += 1;
+							if (attacker.townhallLevel === attackerTownHall) {
+								member.total += 1;
+								if (this.getStars(attack.stars, stars)) member.success += 1;
+							}
 						}
-					} else if (attack.stars === stars) {
-						member.success += 1;
+					} else {
+						member.total += 1;
+						if (this.getStars(attack.stars, stars)) member.success += 1;
 					}
 				}
 			}
@@ -160,8 +173,9 @@ export default class StatsCommand extends Command {
 
 		const clanMemberTags = data.memberList.map(m => m.tag);
 		const stats = Object.values(members)
-			.filter(m => clanMemberTags.includes(m.tag))
+			.filter(m => m.total > 0 && clanMemberTags.includes(m.tag))
 			.map(mem => ({ ...mem, rate: (mem.success * 100) / mem.total }))
+			.sort((a, b) => b.success - a.success)
 			.sort((a, b) => b.rate - a.rate);
 		if (!stats.length) {
 			return message.util!.send('**No stats are avaliable for this filter or clan.**');
@@ -171,12 +185,13 @@ export default class StatsCommand extends Command {
 			? `TH ${Object.values(compare).join('vs')}`
 			: `${compare.replace('all', 'All').replace('equal', 'Equal')} TH`;
 
+		const starType = `${stars.startsWith('>') ? '>= ' : ''}${stars.replace(/[>=]+/, '')}`;
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
 			.setDescription(
 				Util.splitMessage(
 					[
-						`**${hall}, ${stars} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} Rates**`,
+						`**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} Rates**`,
 						'',
 						`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} \`RATE%  HITS   ${'NAME'.padEnd(15, ' ')}\u200f\``,
 						stats.map(
@@ -192,6 +207,23 @@ export default class StatsCommand extends Command {
 			.setFooter(`War Types: ${WarTypes[type]} (Since ${moment(season).format('MMM YYYY')})`);
 
 		return message.util!.send({ embeds: [embed] });
+	}
+
+	private getStars(earned: number, stars: string) {
+		switch (stars) {
+			case '==1':
+				return earned === 1;
+			case '==2':
+				return earned === 2;
+			case '==3':
+				return earned === 3;
+			case '>=2':
+				return earned >= 2;
+			case '>=1':
+				return earned >= 1;
+			default:
+				return earned === 3;
+		}
 	}
 
 	private _padEnd(num: number | string, maxLength: number) {

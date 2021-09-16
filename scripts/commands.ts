@@ -962,19 +962,27 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'stars',
 						description: 'War stars earned. (Default: 3)',
-						type: ApplicationCommandOptionType.Number,
+						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
 								name: '3',
-								value: 3
+								value: '==3'
 							},
 							{
 								name: '2',
-								value: 2
+								value: '==2'
+							},
+							{
+								name: '>= 2',
+								value: '>=2'
 							},
 							{
 								name: '1',
-								value: 1
+								value: '==1'
+							},
+							{
+								name: '>= 1',
+								value: '>=1'
 							}
 						]
 					},
@@ -1035,19 +1043,27 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'stars',
 						description: 'War stars earned. (Default: 3)',
-						type: ApplicationCommandOptionType.Number,
+						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
 								name: '3',
-								value: 3
+								value: '==3'
 							},
 							{
 								name: '2',
-								value: 2
+								value: '==2'
+							},
+							{
+								name: '>= 2',
+								value: '>=2'
 							},
 							{
 								name: '1',
-								value: 1
+								value: '==1'
+							},
+							{
+								name: '>= 1',
+								value: '>=1'
 							}
 						]
 					},
