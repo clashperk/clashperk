@@ -1,6 +1,6 @@
 import { Collections } from '../../util/Constants';
 import { Command, Argument } from 'discord-akairo';
-import { WarClan } from 'clashofclans.js';
+import { ClanWarAttack, WarClan } from 'clashofclans.js';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
 import { Util } from '../../util/Util';
@@ -52,6 +52,10 @@ export default class WarExport extends Command {
 			const members: { [key: string]: any } = {};
 			for (const war of wars) {
 				const clan: WarClan = war.clan.tag === tag ? war.clan : war.opponent;
+				const attacks = clan.members.filter(m => m.attacks?.length)
+					.map(m => m.attacks!)
+					.flat();
+
 				for (const m of clan.members) {
 					const member = members[m.tag]
 						? members[m.tag]
@@ -61,6 +65,7 @@ export default class WarExport extends Command {
 							of: 0,
 							attacks: 0,
 							stars: 0,
+							newStars: 0,
 							dest: 0,
 							defStars: 0,
 							defDestruction: 0,
@@ -68,6 +73,13 @@ export default class WarExport extends Command {
 							defCount: 0
 						};
 					member.of += war.groupWar ? 1 : 2;
+
+					for (const atk of m.attacks ?? []) {
+						const prev = this.freshAttack(attacks, atk.defenderTag, atk.order)
+							? { stars: 0 }
+							: this.getPreviousBestAttack(attacks, atk.defenderTag, atk.attackerTag);
+						member.newStars += Math.max(0, atk.stars - prev.stars);
+					}
 
 					if (m.attacks) {
 						member.attacks += m.attacks.length;
@@ -102,6 +114,7 @@ export default class WarExport extends Command {
 				{ header: 'Tag', width: 16 },
 				{ header: 'Total Attacks', width: 10 },
 				{ header: 'Total Stars', width: 10 },
+				{ header: 'True Stars', width: 10 },
 				{ header: 'Avg Stars', width: 10 },
 				{ header: 'Total Dest', width: 10 },
 				{ header: 'Avg Dest', width: 10 },
@@ -129,6 +142,7 @@ export default class WarExport extends Command {
 					m.tag,
 					m.of,
 					m.stars,
+					m.newStars,
 					(m.stars / m.of || 0).toFixed(2),
 					m.dest.toFixed(2),
 					(m.dest / m.of || 0).toFixed(2),
@@ -157,5 +171,15 @@ export default class WarExport extends Command {
 	private starCount(stars: number[] = [], count: number) {
 		return stars.filter(star => star === count).length;
 	}
-}
 
+	private getPreviousBestAttack(attacks: ClanWarAttack[], defenderTag: string, attackerTag: string) {
+		return attacks.filter(atk => atk.defenderTag === defenderTag && atk.attackerTag !== attackerTag)
+			.sort((a, b) => (b.destructionPercentage ** b.stars) - (a.destructionPercentage ** a.stars))[0]!;
+	}
+
+	private freshAttack(attacks: ClanWarAttack[], defenderTag: string, order: number) {
+		const hits = attacks.filter(atk => atk.defenderTag === defenderTag)
+			.sort((a, b) => a.order - b.order);
+		return (hits.length === 1 || hits[0]!.order === order);
+	}
+}
