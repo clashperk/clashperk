@@ -12,7 +12,7 @@ export default class ThCompoCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Calculates TH compositions of a clan.',
-				usage: '<clanTag>',
+				usage: '<#clanTag>',
 				examples: ['#2Q98URCGY', '2Q98URCGY']
 			},
 			optionFlags: ['--tag']

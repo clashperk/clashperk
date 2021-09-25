@@ -1,13 +1,12 @@
-import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
-import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Message, MessageButton, MessageActionRow } from 'discord.js';
-import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
+import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import { Collections, STOP_REASONS } from '../../util/Constants';
-import 'moment-duration-format';
-import moment from 'moment';
-import Workbook from '../../struct/Excel';
+import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { WHITE_NUMBERS } from '../../util/NumEmojis';
+import { Command, Argument } from 'discord-akairo';
+import Workbook from '../../struct/Excel';
 import { Util } from '../../util/Util';
+import moment from 'moment';
 
 export default class WarCommand extends Command {
 	public constructor() {
@@ -288,10 +287,11 @@ export default class WarCommand extends Command {
 		return workbook.xlsx.writeBuffer();
 	}
 
-	private getLeaderBoard(clan: WarClan, opponent: WarClan) {
+	private getLeaderBoard(clan: WarClan, opponent: WarClan, attacksPerMember = 2) {
+		const attacksTotal = Math.floor(clan.members.length * attacksPerMember);
 		return [
 			`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-			`\`\u200e${clan.attacks.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${opponent.attacks.toString().padEnd(8, ' ')}\u200f\``,
+			`\`\u200e${`${clan.attacks}/${attacksTotal}`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${`${opponent.attacks}/${attacksTotal}`.padEnd(8, ' ')}\u200f\``,
 			`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.FIRE} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
 		].join('\n');
 	}
