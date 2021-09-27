@@ -66,7 +66,8 @@ export enum Settings {
 	COLOR = 'color',
 	CLAN_LIMIT = 'clanLimit',
 	USER_BLACKLIST = 'blacklist',
-	GUILD_BLACKLIST = 'guildBans'
+	GUILD_BLACKLIST = 'guildBans',
+	EVENTS_CHANNEL = 'eventsChannel'
 }
 
 export const Messages = {

@@ -13,7 +13,7 @@ import Queue from '../struct/Queue';
 export default class RPCHandler {
 	private paused = Boolean(false);
 	private readonly queue = new Queue();
-	private readonly maintenance: MaintenanceHandler;
+	private readonly api: MaintenanceHandler;
 	private readonly clanWarLog = new ClanWarLog(this.client);
 	private readonly donationLog = new DonationLog(this.client);
 	private readonly clanEmbedLog = new ClanEmbedLog(this.client);
@@ -23,8 +23,8 @@ export default class RPCHandler {
 	public roleManager = new RoleManager(this.client);
 
 	public constructor(private readonly client: Client) {
-		this.maintenance = new MaintenanceHandler(this.client);
-		this.maintenance.init();
+		this.api = new MaintenanceHandler(this.client);
+		this.api.init();
 		this.paused = Boolean(false);
 	}
 
@@ -85,6 +85,8 @@ export default class RPCHandler {
 	}
 
 	public async init() {
+		if (this.api.isMaintenance) return;
+
 		await this.clanEmbedLog.init();
 		await this.donationLog.init();
 		await this.clanFeedLog.init();

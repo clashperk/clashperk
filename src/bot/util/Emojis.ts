@@ -84,7 +84,8 @@ export const SUPER_TROOPS: Emojis = {
 	'Super Minion': '<:supminion:789730407930920990>',
 	'Super Valkyrie': '<:supervalk:789730405967462440>',
 	'Super Witch': '<:supwitch:789730409210576897>',
-	'Ice Hound': '<:IceHound:789730401816018945>'
+	'Ice Hound': '<:IceHound:789730401816018945>',
+	'Super Bowler': '<:sbowler:892028277252825128>'
 };
 
 export const BUILDER_ELIXIR_TROOPS: Emojis = {

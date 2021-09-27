@@ -1,38 +1,59 @@
 import { TextChannel } from 'discord.js';
 import { EMOJIS } from '../util/Emojis';
 import Client from '../struct/Client';
+import moment from 'moment';
+
+const SUPPORT_SERVER_GENERAL_CHANNEL_ID = '609074828707758150';
 
 export default class MaintenanceHandler {
 	public isMaintenance: boolean;
+	public startTime: Date | null;
 
 	public constructor(private readonly client: Client) {
+		this.startTime = null;
 		this.isMaintenance = Boolean(false);
 	}
 
 	public async init() {
-		const res = await this.client.http.clans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 }).catch(() => null);
 		setTimeout(this.init.bind(this), 30000).unref();
-		if (res?.statusCode === 503 && !this.isMaintenance) {
+
+		const res = await this.client.http.clans({ minMembers: Math.floor(Math.random() * 40) + 10, limit: 1 });
+		if (res.statusCode === 503 && !this.isMaintenance) {
 			this.isMaintenance = Boolean(true);
 			this.client.rpcHandler.flush();
-			return this.send();
+			this.startTime = new Date();
+			this.sendMessages();
 		}
-		if (res?.statusCode === 200 && this.isMaintenance) {
+
+		if (res.statusCode === 200 && this.isMaintenance) {
 			this.isMaintenance = Boolean(false);
-			await this.client.rpcHandler.init();
-			return this.send();
+			const dur = Date.now() - this.startTime!.getTime();
+			this.startTime = null;
+			this.sendMessages(dur);
+			this.client.rpcHandler.init();
 		}
-		return Promise.resolve();
+
+		return this;
 	}
 
-	private send() {
-		const channel = this.client.channels.cache.get('609074828707758150');
-		if (this.isMaintenance && channel) {
-			return (channel as TextChannel).send(`**${EMOJIS.COC_LOGO} Maintenance Break has Started!**`);
-		}
+	private async sendMessages(dur = 0) {
+		this.client.logger.info(this.getMessage(), { label: 'API_STATUS' });
+		const channel = this.client.channels.cache.get(SUPPORT_SERVER_GENERAL_CHANNEL_ID);
+		if (channel) await (channel as TextChannel).send(`**${EMOJIS.COC_LOGO} ${this.getMessage(dur)}**`);
 
-		if (!this.isMaintenance && channel) {
-			return (channel as TextChannel).send(`**${EMOJIS.COC_LOGO} Maintenance Break has Finished!**`);
+		for (const setting of this.client.settings.flatten()) {
+			if (!setting.eventsChannel) continue;
+			const channel = this.client.channels.cache.get(setting.eventsChannel) as TextChannel | null;
+			if (!channel?.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES'])) continue;
+
+			await channel.send(`**${EMOJIS.COC_LOGO} ${this.getMessage(dur)}**`);
 		}
+	}
+
+	private getMessage(dur = 0) {
+		if (this.isMaintenance) {
+			return `Maintenance break has started!`;
+		}
+		return `Maintenance break has finished! (~ ${moment.duration(dur).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' })})`;
 	}
 }

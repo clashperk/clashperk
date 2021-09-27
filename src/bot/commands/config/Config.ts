@@ -20,7 +20,8 @@ export default class ConfigCommand extends Command {
 		const sub = yield {
 			type: [
 				['config-color', 'color'],
-				['config-prefix', 'prefix']
+				['config-prefix', 'prefix'],
+				['config-events', 'events']
 			],
 			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})
 		};

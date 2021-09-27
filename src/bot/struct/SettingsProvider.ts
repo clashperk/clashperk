@@ -4,8 +4,7 @@ import { Guild } from 'discord.js';
 
 export default class SettingsProvider {
 	protected db: Collection;
-
-	public settings = new Map();
+	private readonly settings = new Map();
 
 	public constructor(db: Db) {
 		this.db = db.collection(Collections.SETTINGS);
@@ -49,6 +48,10 @@ export default class SettingsProvider {
 		const id = (this.constructor as typeof SettingsProvider).guildID(guild);
 		this.settings.delete(id);
 		return this.db.deleteOne({ id });
+	}
+
+	public flatten() {
+		return this.settings.values();
 	}
 
 	private static guildID(guild: string | Guild) {
