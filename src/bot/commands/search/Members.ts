@@ -4,6 +4,7 @@ import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
 import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { STOP_REASONS } from '../../util/Constants';
+import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 
 const roleIds: { [key: string]: number } = {
 	member: 1,
@@ -88,6 +89,7 @@ export default class MembersCommand extends Command {
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
 		const members = fetched.filter(res => res.ok).map(m => ({
 			name: m.name, tag: m.tag,
+			warPreference: m.warPreference === 'in',
 			role: {
 				id: roleIds[m.role ?? data.memberList.find(mem => mem.tag === m.tag)!.role],
 				name: roleNames[m.role ?? data.memberList.find(mem => mem.tag === m.tag)!.role]
@@ -137,27 +139,41 @@ export default class MembersCommand extends Command {
 			].join('\n'));
 		}
 
-		const [discord, download] = [this.client.uuid(message.author.id), this.client.uuid(message.author.id)];
+		const [discord, download, warPref] = [
+			this.client.uuid(message.author.id),
+			this.client.uuid(message.author.id),
+			this.client.uuid(message.author.id)
+		];
 
-		const row = new MessageActionRow()
-			.addComponents(
-				new MessageButton()
-					.setLabel('Discord')
-					.setCustomId(discord)
-					.setStyle('SECONDARY')
-					.setEmoji(EMOJIS.DISCORD)
-			)
-			.addComponents(
-				new MessageButton()
-					.setEmoji('📥')
-					.setLabel('Download')
-					.setCustomId(download)
-					.setStyle('SECONDARY')
-			);
+		const components = [
+			new MessageActionRow()
+				.addComponents(
+					new MessageButton()
+						.setLabel('Discord Links')
+						.setCustomId(discord)
+						.setStyle('SECONDARY')
+						.setEmoji(EMOJIS.DISCORD)
+				)
+				.addComponents(
+					new MessageButton()
+						.setEmoji('📥')
+						.setLabel('Download')
+						.setCustomId(download)
+						.setStyle('SECONDARY')
+				),
+			new MessageActionRow()
+				.addComponents(
+					new MessageButton()
+						.setEmoji(EMOJIS.CROSS_SWORD)
+						.setLabel('War Preference')
+						.setCustomId(warPref)
+						.setStyle('SECONDARY')
+				)
+		];
 
-		const msg = await message.util!.send({ embeds: [embed], components: [row] });
+		const msg = await message.util!.send({ embeds: [embed], components });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => [discord, download].includes(action.customId) && action.user.id === message.author.id,
+			filter: action => [discord, download, warPref].includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
 		});
 
@@ -167,17 +183,33 @@ export default class MembersCommand extends Command {
 				await this.handler.runCommand(message, this.handler.modules.get('link-list')!, { data });
 			}
 
+			if (action.customId === warPref) {
+				const optedIn = members.filter(m => m.warPreference);
+				const optedOut = members.filter(m => !m.warPreference);
+				embed.setDescription([
+					`**OPTED-IN ~ ${optedIn.length}**`,
+					optedIn.map(
+						m => `\u200e**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \` ${m.name.padEnd(15, ' ')} \u200f\``
+					).join('\n'),
+					'',
+					`**OPTED-OUT ~ ${optedOut.length}**`,
+					optedOut.map(
+						m => `\u200e✘ ${ORANGE_NUMBERS[m.townHallLevel]} \` ${m.name.padEnd(15, ' ')} \u200f\``
+					).join('\n')
+				].join('\n'));
+				embed.setFooter(`War Preference (${optedIn.length}/${members.length})`);
+				await action.update({ embeds: [embed], components: [] });
+			}
+
 			if (action.customId === download) {
 				if (this.client.patrons.get(message)) {
-					row.components[1].setDisabled(true);
-					await action.update({ components: [row] });
+					components[0].components[1].setDisabled(true);
+					await action.update({ components });
 
 					const buffer = await this.excel(members);
 					await action.followUp({
 						content: `**${data.name} (${data.tag})**`,
-						files: [{
-							attachment: Buffer.from(buffer), name: 'clan_members.xlsx'
-						}]
+						files: [{ attachment: Buffer.from(buffer), name: 'clan_members.xlsx' }]
 					});
 				} else {
 					const embed = new MessageEmbed()
@@ -196,6 +228,7 @@ export default class MembersCommand extends Command {
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(discord);
 			this.client.components.delete(download);
+			this.client.components.delete(warPref);
 			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
