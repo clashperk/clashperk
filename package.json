@@ -22,7 +22,7 @@
 		"@sentry/integrations": "^6.11.0",
 		"@sentry/node": "^6.11.0",
 		"chalk": "^4.1.2",
-		"clashofclans.js": "^1.5.2",
+		"clashofclans.js": "^1.5.3",
 		"common-tags": "^1.8.0",
 		"discord-akairo": "github:csuvajit/discord-akairo#main",
 		"discord.js": "^13.1.0",

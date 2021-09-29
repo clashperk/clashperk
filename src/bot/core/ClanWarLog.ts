@@ -248,7 +248,7 @@ export default class ClanWarLog {
 			.sort((a, b) => a.mapPosition - b.mapPosition)
 			.map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`);
 
-		const friendly = Boolean(data.isFriendly && oneRem.length === data.teamSize && data.clan.destructionPercentage > 0);
+		const friendly = Boolean(data.isFriendly && data.attacksPerMember === 1);
 		if (twoRem.length) {
 			const chunks = Util.splitMessage(twoRem.join('\n'), { maxLength: 1000 });
 			chunks.map((chunk, i) => embed.addField(i === 0 ? `${friendly ? 1 : 2} Missed Attacks` : '\u200b', chunk));
@@ -450,6 +450,7 @@ interface PayLoad extends ClanWar {
 	warTag?: string;
 	groupWar: boolean;
 	isFriendly: boolean;
+	attacksPerMember: number;
 	remaining: ClanWarMember[];
 	clan: WarClan & { rosters: Roster[] };
 	opponent: WarClan & { rosters: Roster[] };

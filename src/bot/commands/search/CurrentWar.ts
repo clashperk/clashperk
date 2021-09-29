@@ -130,7 +130,7 @@ export default class WarCommand extends Command {
 				`${body.teamSize} vs ${body.teamSize}`,
 				'',
 				'**War Stats**',
-				`${this.getLeaderBoard(body.clan, body.opponent)}`
+				`${this.getLeaderBoard(body.clan, body.opponent, body.attacksPerMember)}`
 			].join('\n'));
 		}
 
@@ -145,7 +145,7 @@ export default class WarCommand extends Command {
 				`Ended: ${Util.getRelativeTime(endTimestamp)}`,
 				'',
 				'**War Stats**',
-				`${this.getLeaderBoard(body.clan, body.opponent)}`
+				`${this.getLeaderBoard(body.clan, body.opponent, body.attacksPerMember)}`
 			].join('\n'));
 		}
 
@@ -287,7 +287,7 @@ export default class WarCommand extends Command {
 		return workbook.xlsx.writeBuffer();
 	}
 
-	private getLeaderBoard(clan: WarClan, opponent: WarClan, attacksPerMember = 2) {
+	private getLeaderBoard(clan: WarClan, opponent: WarClan, attacksPerMember: number) {
 		const attacksTotal = Math.floor(clan.members.length * attacksPerMember);
 		return [
 			`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,

@@ -62,17 +62,17 @@ export default class WarExport extends Command {
 						: members[m.tag] = {
 							name: m.name,
 							tag: m.tag,
-							of: 0,
 							attacks: 0,
 							stars: 0,
 							newStars: 0,
 							dest: 0,
 							defStars: 0,
-							defDestruction: 0,
 							starTypes: [],
-							defCount: 0
+							defCount: 0,
+							of: 0,
+							defDestruction: 0
 						};
-					member.of += war.groupWar ? 1 : 2;
+					member.of += war.attacksPerMember;
 
 					for (const atk of m.attacks ?? []) {
 						const prev = this.freshAttack(attacks, atk.defenderTag, atk.order)

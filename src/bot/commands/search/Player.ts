@@ -217,7 +217,7 @@ export default class PlayerCommand extends Command {
 			member.total += 1;
 			for (const m of clan.members) {
 				if (m.tag !== tag) continue;
-				member.of += data.groupWar ? 1 : 2;
+				member.of += data.attacksPerMember;
 
 				if (m.attacks) {
 					member.attacks += m.attacks.length;

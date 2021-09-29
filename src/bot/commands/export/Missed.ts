@@ -56,25 +56,23 @@ export default class ExportMissed extends Command {
 
 					const mem = {
 						stars: [] as number[],
-						missed: 0,
 						name: m.name,
 						warID: war.id,
 						tag: m.tag,
 						clan: clan.name,
 						opponent: opponent.name,
 						teamSize: war.teamSize,
-						warType: war.groupWar ? 'CWL' : war.isFriendly ? 'Friendly' : 'Regular',
-						timestamp: new Date(war.endTime)
+						timestamp: new Date(war.endTime),
+						missed: (war.attacksPerMember - (m.attacks.length ?? 0)),
+						warType: war.groupWar ? 'CWL' : war.isFriendly ? 'Friendly' : 'Regular'
 					};
 
 					if (!m.attacks) {
 						mem.stars = [0, 0, 0, 0];
-						mem.missed = war.groupWar ? 1 : 2;
 					}
 
 					if (m.attacks?.length === 1) {
 						mem.stars = m.attacks.map((m: any) => [m.stars, m.destructionPercentage.toFixed(2)]).flat().concat(...[0, 0]);
-						mem.missed = war.groupWar ? 0 : 1;
 					}
 
 					if (m.attacks?.length === 2) {

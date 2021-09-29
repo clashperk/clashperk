@@ -133,11 +133,12 @@ export default class MissedAttacksCommand extends Command {
 			embed.setDescription([
 				embed.description,
 				'',
-				`**2 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
+				`**${body.attacksPerMember} ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
 				...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)
 			].join('\n'));
 		}
-		if (OneRem.length) {
+
+		if (OneRem.length && body.attacksPerMember !== 1) {
 			embed.setDescription([
 				embed.description,
 				'',
