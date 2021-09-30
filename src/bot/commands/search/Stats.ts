@@ -2,7 +2,7 @@ import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { Collections } from '../../util/Constants';
 import { Argument, Command } from 'discord-akairo';
 import { Message, MessageEmbed } from 'discord.js';
-import { Clan, WarClan } from 'clashofclans.js';
+import { Clan, ClanWarAttack, WarClan } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Util } from '../../util/Util';
 import moment from 'moment';
@@ -29,7 +29,7 @@ export default class StatsCommand extends Command {
 			description: {
 				content: 'War attack success and defense failure rates.'
 			},
-			optionFlags: ['--tag', '--compare', '--type', '--stars', '--season'],
+			optionFlags: ['--tag', '--compare', '--type', '--stars', '--season', '--attempt'],
 			clientPermissions: ['EMBED_LINKS']
 		});
 	}
@@ -84,10 +84,16 @@ export default class StatsCommand extends Command {
 			'type': [...Util.getSeasonIds()]
 		};
 
-		return { mode, data, compare, type, stars, season };
+		const attempt = yield {
+			match: 'option',
+			flag: '--attempt',
+			type: ['fresh', 'cleanup']
+		};
+
+		return { mode, data, compare, type, stars, season, attempt };
 	}
 
-	public async exec(message: Message, { mode, data, compare, type, stars, season }: { mode: Mode; data: Clan; compare: Comapre; type: WarType; stars: string; season: string }) {
+	public async exec(message: Message, { mode, data, compare, type, stars, season, attempt }: { mode: Mode; data: Clan; compare: Comapre; type: WarType; stars: string; season: string; attempt: string }) {
 		const extra = type === 'regular'
 			? { isFriendly: false, groupWar: false }
 			: type === 'cwl'
@@ -105,13 +111,13 @@ export default class StatsCommand extends Command {
 				$or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }],
 				preparationStartTime: { $gte: new Date(season) },
 				...extra
-			})
-			.toArray();
+			}).toArray();
 
 		const members: { [key: string]: { name: string; tag: string; total: number; success: number; hall: number } } = {};
 		for (const war of wars) {
 			const clan: WarClan = war.clan.tag === data.tag ? war.clan : war.opponent;
 			const opponent: WarClan = war.clan.tag === data.tag ? war.opponent : war.clan;
+			const attacks = clan.members.filter(m => m.attacks?.length).map(m => m.attacks!).flat();
 			for (const m of clan.members) {
 				if (typeof compare === 'object' && compare.attackerTownHall !== m.townhallLevel) continue;
 				const member = members[m.tag] // eslint-disable-line
@@ -125,6 +131,9 @@ export default class StatsCommand extends Command {
 					};
 
 				for (const attack of (mode === 'attacks') ? (m.attacks ?? []) : []) {
+					if (attempt === 'fresh' && !this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
+					if (attempt === 'cleanup' && this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
+
 					if (typeof compare === 'string' && compare === 'equal') {
 						const defender = opponent.members.find(m => m.tag === attack.defenderTag)!;
 						if (defender.townhallLevel === m.townhallLevel) {
@@ -232,5 +241,11 @@ export default class StatsCommand extends Command {
 
 	private _padStart(num: number | string, maxLength: number) {
 		return num.toString().padStart(maxLength, ' ');
+	}
+
+	private _isFreshAttack(attacks: ClanWarAttack[], defenderTag: string, order: number) {
+		const hits = attacks.filter(atk => atk.defenderTag === defenderTag)
+			.sort((a, b) => a.order - b.order);
+		return (hits.length === 1 || hits[0]!.order === order);
 	}
 }

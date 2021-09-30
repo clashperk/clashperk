@@ -1022,6 +1022,25 @@ export const COMMANDS: Command[] = [
 						description: 'Limit the data to the last X months.',
 						type: ApplicationCommandOptionType.String,
 						choices: getSeasonIds().map(season => ({ name: `Since ${season.name}`, value: season.value }))
+					},
+					{
+						name: 'attempt',
+						description: 'Fresh attacks or cleanup attacks. (Default: Both)',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Fresh',
+								value: 'fresh'
+							},
+							{
+								name: 'Cleanup',
+								value: 'cleanup'
+							},
+							{
+								name: 'Both',
+								value: 'both'
+							}
+						]
 					}
 				]
 			},

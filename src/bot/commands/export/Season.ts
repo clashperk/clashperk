@@ -11,7 +11,7 @@ export default class ExportSeason extends Command {
 			category: 'export',
 			channel: 'guild',
 			description: {},
-			optionFlags: ['--season'],
+			optionFlags: ['--season', '--tag'],
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
 		});
 	}
