@@ -3,19 +3,17 @@ import * as Discord from 'discord.js';
 import 'moment-duration-format';
 import moment from 'moment';
 
-const TAG_CHARS = ['0', '2', '8', '9', 'P', 'Y', 'L', 'Q', 'G', 'R', 'J', 'C', 'U', 'V'];
-
 // @ts-expect-error
 export class Util extends Discord.Util {
 	public constructor() {
 		super();
 	}
 
-	public static tagToBigInt(tag: string) {
+	public static tagToId(tag: string) {
 		const id = tag.substring(1)
 			.split('')
-			.reduce((sum, char) => (sum * 14n) + BigInt(TAG_CHARS.indexOf(char)), 0n);
-		return id.toString();
+			.reduce((sum, char) => (sum * 14n) + BigInt(('0289PYLQGRJCUV').indexOf(char)), 0n);
+		return id;
 	}
 
 	public static idToTag(id: string | bigint) {
@@ -23,7 +21,7 @@ export class Util extends Discord.Util {
 		let tag = '';
 		while (id !== 0n) {
 			const i = Number(id % 14n);
-			tag = `${TAG_CHARS[i]}${tag}`;
+			tag = `${('0289PYLQGRJCUV')[i]}${tag}`;
 			id /= 14n;
 		}
 
