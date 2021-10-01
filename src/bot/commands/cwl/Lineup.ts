@@ -42,7 +42,7 @@ export default class CWLLineupCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
-			return message.util!.send('**504 Request Timeout!**');
+			return message.util!.send('**[504 Request Timeout] Your clan is still searching for opponent!**');
 		}
 
 		if (!body.ok) {
@@ -80,7 +80,7 @@ export default class CWLLineupCommand extends Command {
 			}
 		}
 
-		if (!chunks.length) return message.util!.send('**504 Request Timeout!**');
+		if (!chunks.length) return message.util!.send('**[504 Request Timeout] Your clan is still searching for opponent!**');
 		let data = rounds.length === 7
 			? chunks.find(ch => ch.state === 'preparation') ?? chunks.slice(-1)[0]
 			: chunks.slice(-2).reverse()[0];

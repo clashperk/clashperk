@@ -34,7 +34,7 @@ export default class CWLStarsCommand extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const body = await this.client.http.clanWarLeague(data.tag);
-		if (body.statusCode === 504) return message.util!.send('**504 Request Timeout!**');
+		if (body.statusCode === 504) return message.util!.send('**[504 Request Timeout] Your clan is still searching for opponent!**');
 
 		if (!body.ok) {
 			const group = await this.client.storage.getWarTags(data.tag);

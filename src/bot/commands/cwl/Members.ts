@@ -33,7 +33,7 @@ export default class CWLMembersCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(data.tag);
 		if (body.statusCode === 504) {
-			return message.util!.send('**504 Request Timeout!**');
+			return message.util!.send('**[504 Request Timeout] Your clan is still searching for opponent!**');
 		}
 
 		if (!body.ok) {
