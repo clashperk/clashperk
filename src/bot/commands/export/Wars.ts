@@ -42,7 +42,7 @@ export default class WarExport extends Command {
 		for (const { tag, name } of clans) {
 			const wars = await this.client.db.collection(Collections.CLAN_WARS)
 				.find({
-					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag, 'groupWar': true }],
+					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 					state: { $in: ['inWar', 'warEnded'] }
 				})
 				.sort({ preparationStartTime: -1 })

@@ -206,7 +206,7 @@ export default class PlayerCommand extends Command {
 		const wars = await this.client.db.collection(Collections.CLAN_WARS)
 			.find({
 				preparationStartTime: { $gte: Season.startTimestamp },
-				$or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag, 'groupWar': true }],
+				$or: [{ 'clan.members.tag': tag }, { 'opponent.members.tag': tag }],
 				state: { $in: ['inWar', 'warEnded'] }
 			})
 			.sort({ preparationStartTime: -1 })

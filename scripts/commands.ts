@@ -1037,7 +1037,7 @@ export const COMMANDS: Command[] = [
 								value: 'cleanup'
 							},
 							{
-								name: 'Both',
+								name: 'Any/Both',
 								value: 'both'
 							}
 						]

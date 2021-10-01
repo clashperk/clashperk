@@ -51,6 +51,12 @@ export enum Collections {
 	BOT_INTERACTIONS = 'BotInteractions'
 }
 
+export enum WarType {
+	REGULAR = 1,
+	FRIENDLY,
+	CWL
+}
+
 export enum Flags {
 	DONATION_LOG = 1 << 0,
 	CLAN_FEED_LOG = 1 << 1,

@@ -63,9 +63,9 @@ export default class ClanWarLog {
 	}
 
 	private async getWarType(cache: Cache, channel: TextChannel | ThreadChannel, data: PayLoad) {
-		if (data.groupWar && cache.rounds[data.round]?.warTag === data.warTag) {
+		if (data.warTag && cache.rounds[data.round]?.warTag === data.warTag) {
 			return this.handleMessage(cache, channel, cache.rounds[data.round]?.messageID ?? null, data);
-		} else if (data.groupWar) {
+		} else if (data.warTag) {
 			return this.handleMessage(cache, channel, null, data);
 		}
 
@@ -76,8 +76,8 @@ export default class ClanWarLog {
 		return this.handleMessage(cache, channel, null, data);
 	}
 
-	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, messageID: string | null, data: any) {
-		if (!data.groupWar && data.remaining.length && data.state === 'warEnded') {
+	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, messageID: string | null, data: PayLoad) {
+		if (!data.warTag && data.remaining.length && data.state === 'warEnded') {
 			const embed = this.getRemaining(data);
 			try {
 				if (embed) await channel.send({ embeds: [embed] });
@@ -114,11 +114,11 @@ export default class ClanWarLog {
 	private async mutate(cache: Cache, data: PayLoad, message: APIMessage | null) {
 		if (!message) {
 			if (cache.messageID) delete cache.messageID;
-			if (data.groupWar) cache.rounds[data.round] = { warTag: data.warTag, messageID: null, round: data.round };
+			if (data.warTag) cache.rounds[data.round] = { warTag: data.warTag, messageID: null, round: data.round };
 			return this.collection.updateOne({ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
 		}
 
-		if (data.groupWar) {
+		if (data.warTag) {
 			cache.rounds[data.round] = { warTag: data.warTag, messageID: message.id, round: data.round };
 
 			return this.collection.updateOne(
@@ -140,8 +140,8 @@ export default class ClanWarLog {
 		);
 	}
 
-	private embed(data: any) {
-		if (data.groupWar) return this.getLeagueWarEmbed(data);
+	private embed(data: PayLoad) {
+		if (data.warTag) return this.getLeagueWarEmbed(data);
 		return this.getRegularWarEmbed(data);
 	}
 
@@ -248,7 +248,7 @@ export default class ClanWarLog {
 			.sort((a, b) => a.mapPosition - b.mapPosition)
 			.map(m => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`);
 
-		const friendly = Boolean(data.isFriendly && data.attacksPerMember === 1);
+		const friendly = (data.attacksPerMember === 1);
 		if (twoRem.length) {
 			const chunks = Util.splitMessage(twoRem.join('\n'), { maxLength: 1000 });
 			chunks.map((chunk, i) => embed.addField(i === 0 ? `${friendly ? 1 : 2} Missed Attacks` : '\u200b', chunk));
@@ -448,8 +448,6 @@ interface PayLoad extends ClanWar {
 	round: number;
 	warID: number;
 	warTag?: string;
-	groupWar: boolean;
-	isFriendly: boolean;
 	attacksPerMember: number;
 	remaining: ClanWarMember[];
 	clan: WarClan & { rosters: Roster[] };

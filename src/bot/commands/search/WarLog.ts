@@ -1,5 +1,5 @@
 import { MessageEmbed, Message } from 'discord.js';
-import { Collections } from '../../util/Constants';
+import { Collections, WarType } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -50,7 +50,10 @@ export default class WarLogCommand extends Command {
 		}
 
 		const wars = await this.client.db.collection(Collections.CLAN_WARS)
-			.find({ 'clan.tag': data.tag, 'groupWar': false, 'state': 'warEnded' })
+			.find({
+				$or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }],
+				warType: { $ne: WarType.CWL }, state: 'warEnded'
+			})
 			.sort({ preparationStartTime: -1 })
 			.limit(11)
 			.toArray();

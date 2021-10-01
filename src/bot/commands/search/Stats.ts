@@ -1,5 +1,5 @@
 import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../../util/NumEmojis';
-import { Collections } from '../../util/Constants';
+import { Collections, WarType } from '../../util/Constants';
 import { Argument, Command } from 'discord-akairo';
 import { Message, MessageEmbed } from 'discord.js';
 import { Clan, ClanWarAttack, WarClan } from 'clashofclans.js';
@@ -8,7 +8,7 @@ import { Util } from '../../util/Util';
 import moment from 'moment';
 
 export type Comapre = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };
-export type WarType = 'regular' | 'cwl' | 'friendly' | 'noFriendly' | 'noCWL' | 'all';
+export type WarTypeArg = 'regular' | 'cwl' | 'friendly' | 'noFriendly' | 'noCWL' | 'all';
 export type Mode = 'attacks' | 'defense';
 
 const WarTypes = {
@@ -93,17 +93,17 @@ export default class StatsCommand extends Command {
 		return { mode, data, compare, type, stars, season, attempt };
 	}
 
-	public async exec(message: Message, { mode, data, compare, type, stars, season, attempt }: { mode: Mode; data: Clan; compare: Comapre; type: WarType; stars: string; season: string; attempt: string }) {
+	public async exec(message: Message, { mode, data, compare, type, stars, season, attempt }: { mode: Mode; data: Clan; compare: Comapre; type: WarTypeArg; stars: string; season: string; attempt: string }) {
 		const extra = type === 'regular'
-			? { isFriendly: false, groupWar: false }
+			? { warType: WarType.REGULAR }
 			: type === 'cwl'
-				? { groupWar: true }
+				? { warType: WarType.CWL }
 				: type === 'friendly'
-					? { isFriendly: true }
+					? { warType: WarType.FRIENDLY }
 					: type === 'noFriendly'
-						? { isFriendly: false }
+						? { warType: { $ne: WarType.FRIENDLY } }
 						: type === 'noCWL'
-							? { groupWar: false }
+							? { warType: { $ne: WarType.CWL } }
 							: {};
 
 		const wars = await this.client.db.collection(Collections.CLAN_WARS)

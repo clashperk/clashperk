@@ -247,10 +247,12 @@ export default class ClanCommand extends Command {
 			[
 				{
 					$match: {
-						'clan.tag': tag,
-						'groupWar': false,
-						'state': 'warEnded',
-						'season': Season.previousID
+						$or: [
+							{ 'clan.tag': tag },
+							{ 'opponent.tag': tag }
+						],
+						state: 'warEnded',
+						season: Season.previousID
 					}
 				}, {
 					$project: {

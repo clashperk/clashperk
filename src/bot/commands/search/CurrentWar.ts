@@ -1,6 +1,6 @@
 import { MessageEmbed, Message, MessageButton, MessageActionRow } from 'discord.js';
 import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
-import { Collections, STOP_REASONS } from '../../util/Constants';
+import { Collections, STOP_REASONS, WarType } from '../../util/Constants';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { WHITE_NUMBERS } from '../../util/NumEmojis';
 import { Command, Argument } from 'discord-akairo';
@@ -81,7 +81,10 @@ export default class WarCommand extends Command {
 		let data: any = null;
 		if (typeof id === 'string' && tag) {
 			data = await this.client.db.collection(Collections.CLAN_WARS)
-				.find({ 'clan.tag': tag, 'groupWar': false, 'state': 'warEnded' })
+				.find({
+					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
+					warType: { $ne: WarType.CWL }, state: 'warEnded'
+				})
 				.sort({ preparationStartTime: -1 })
 				.limit(1)
 				.next();

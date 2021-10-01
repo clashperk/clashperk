@@ -146,10 +146,8 @@ export default class ClanSummaryCommand extends Command {
 			[
 				{
 					$match: {
-						'clan.tag': tag,
-						'groupWar': false,
-						'state': 'warEnded',
-						'season': season
+						$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
+						state: 'warEnded', season
 					}
 				}, {
 					$project: {

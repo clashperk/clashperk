@@ -3,6 +3,12 @@ import { Collections } from '../../util/Constants';
 import Excel from '../../struct/Excel';
 import { Message } from 'discord.js';
 
+const warTypes: { [key: string]: string } = {
+	1: 'Regular',
+	2: 'Friendly',
+	3: 'CWL'
+};
+
 // TODO: Fix TS
 export default class ExportMissed extends Command {
 	public constructor() {
@@ -40,7 +46,7 @@ export default class ExportMissed extends Command {
 		for (const { tag } of clans) {
 			const wars = await this.client.db.collection(Collections.CLAN_WARS)
 				.find({
-					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag, 'groupWar': true }],
+					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 					state: 'warEnded'
 				})
 				.sort({ preparationStartTime: -1 })
@@ -51,8 +57,7 @@ export default class ExportMissed extends Command {
 				const clan = war.clan.tag === tag ? war.clan : war.opponent;
 				const opponent = war.clan.tag === tag ? war.opponent : war.clan;
 				for (const m of clan.members) {
-					if (war.groupWar && m.attacks?.length) continue;
-					if (!war.groupWar && m.attacks?.length === 2) continue;
+					if (m.attacks?.length === war.attacksPerMember) continue;
 
 					const mem = {
 						stars: [] as number[],
@@ -64,7 +69,7 @@ export default class ExportMissed extends Command {
 						teamSize: war.teamSize,
 						timestamp: new Date(war.endTime),
 						missed: (war.attacksPerMember - (m.attacks.length ?? 0)),
-						warType: war.groupWar ? 'CWL' : war.isFriendly ? 'Friendly' : 'Regular'
+						warType: warTypes[war.warType]
 					};
 
 					if (!m.attacks) {

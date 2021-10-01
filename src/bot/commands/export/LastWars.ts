@@ -48,8 +48,11 @@ export default class LastWarsExport extends Command {
 				.aggregate([
 					{
 						$match: {
-							'state': 'warEnded',
-							'groupWar': false, 'clan.tag': clan.tag
+							$or: [
+								{ 'clan.tag': clan.tag },
+								{ 'opponent.tag': clan.tag }
+							],
+							state: 'warEnded'
 						}
 					}, {
 						$sort: {

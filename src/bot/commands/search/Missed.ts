@@ -1,7 +1,7 @@
 import { Command, Argument } from 'discord-akairo';
 import { MessageEmbed, Message } from 'discord.js';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
-import { Collections } from '../../util/Constants';
+import { Collections, WarType } from '../../util/Constants';
 import { Clan, ClanWar } from 'clashofclans.js';
 import { Util } from '../../util/Util';
 import moment from 'moment';
@@ -82,7 +82,11 @@ export default class MissedAttacksCommand extends Command {
 		let data: any = null;
 		if (typeof id === 'string' && tag) {
 			data = await this.client.db.collection(Collections.CLAN_WARS)
-				.find({ 'clan.tag': tag, 'groupWar': false, 'state': 'warEnded' })
+				.find({
+					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
+					warType: { $ne: WarType.CWL },
+					state: 'warEnded'
+				})
 				.sort({ preparationStartTime: -1 })
 				.limit(1)
 				.next();
