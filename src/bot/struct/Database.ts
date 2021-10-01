@@ -102,6 +102,8 @@ class MongoDB extends MongoClient {
 				.createIndex({ warTag: 1 }, { sparse: true }),
 			db.collection(Collections.CLAN_WARS)
 				.createIndex({ warType: 1 }),
+			db.collection(Collections.CLAN_WARS)
+				.createIndex({ nonce: 1 }),
 
 			db.collection(Collections.CLANS)
 				.createIndex({ tag: 1 }, { unique: true }),
