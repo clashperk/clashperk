@@ -1,6 +1,6 @@
 import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
 import { Message, TextChannel, MessageEmbed, MessageButton, MessageActionRow } from 'discord.js';
-import { Flags, Collections } from '../../util/Constants';
+import { Flags, Collections, STOP_REASONS } from '../../util/Constants';
 import { Util } from '../../util/Util';
 
 const names: { [key: string]: string } = {
@@ -111,22 +111,92 @@ export default class SetupCommand extends Command {
 				this.description.examples.map((en: string) => `\`${prefix}setup ${en}\``).join('\n')
 			].join('\n'));
 
-		const customID = this.client.uuid(message.author.id);
-		const button = new MessageButton()
-			.setCustomId(customID)
-			.setStyle('SECONDARY')
-			.setLabel('Show all Linked Clans');
-		const msg = await message.channel.send({ embeds: [embed], components: [new MessageActionRow().addComponents(button)] });
-
-		const interaction = await msg.awaitMessageComponent({
-			filter: action => action.customId === customID && action.user.id === message.author.id,
+		const customIds = {
+			feat: this.client.uuid(message.author.id),
+			list: this.client.uuid(message.author.id)
+		};
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setCustomId(customIds.feat)
+					.setStyle('SECONDARY')
+					.setLabel('Show Enabled Features')
+			)
+			.addComponents(
+				new MessageButton()
+					.setCustomId(customIds.list)
+					.setStyle('SECONDARY')
+					.setLabel('Show Clan List')
+			);
+		const msg = await message.channel.send({ embeds: [embed], components: [row] });
+		const collector = msg.createMessageComponentCollector({
+			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
-		}).catch(() => null);
+		});
 
-		this.client.components.delete(customID);
-		if (!interaction) return;
+		collector.on('collect', async action => {
+			if (action.customId === customIds.feat) {
+				row.components[0].setDisabled(true);
+				await action.update({ components: [row] });
+				const embeds = await this.getFeatures(message);
+				if (!embeds.length) {
+					await action.followUp({
+						content: `${message.guild!.name} doesn't have any clans. Why not add some?`,
+						components: []
+					});
+					return;
+				}
 
-		await interaction.deferReply();
+				for (const chunks of Util.chunk(embeds, 10)) {
+					await action.followUp({ embeds: chunks });
+				}
+			}
+
+			if (action.customId === customIds.list) {
+				row.components[1].setDisabled(true);
+				await action.update({ components: [row] });
+				const embeds = await this.getClanList(message);
+				if (!embeds.length) {
+					await action.followUp({
+						content: `${message.guild!.name} doesn't have any clans. Why not add some?`,
+						components: []
+					});
+					return;
+				}
+				await action.followUp({ embeds });
+			}
+		});
+
+		collector.on('end', async (_, reason) => {
+			Object.values(customIds).forEach(id => this.client.components.delete(id));
+			if (STOP_REASONS.includes(reason)) return;
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
+	}
+
+	private async getClanList(message: Message) {
+		const clans = await this.client.storage.findAll(message.guild!.id);
+		if (!clans.length) return [];
+		const clanList = await this.client.db.collection(Collections.CLANS)
+			.find({ tag: { $in: clans.map(clan => clan.tag) } }, { projection: { tag: 1, name: 1, members: 1 } })
+			.toArray<{ name: string; tag: string; members: number }>();
+
+		clanList.sort((a, b) => b.members - a.members);
+		const nameLen = Math.max(...clanList.map(clan => clan.name.length)) + 1;
+		const tagLen = Math.max(...clanList.map(clan => clan.tag.length)) + 1;
+		const embed = new MessageEmbed()
+			.setColor(this.client.embed(message))
+			.setAuthor(`${message.guild!.name} Clans`, message.guild!.iconURL()!)
+			.setDescription(
+				clanList.map(
+					clan => `\`\u200e${clan.name.padEnd(nameLen, ' ')} ${clan.tag.padStart(tagLen, ' ')}  ${clan.members.toString().padStart(2, ' ')}/50 \u200f\``
+				).join('\n')
+			);
+
+		return [embed];
+	}
+
+	private async getFeatures(message: Message) {
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const fetched = await Promise.all(
 			clans.map(
@@ -186,13 +256,7 @@ export default class SetupCommand extends Command {
 			)
 		);
 
-		if (!fetched.length) {
-			return interaction.followUp({
-				content: `${message.guild!.name} doesn't have any clans. Why not add some?`
-			});
-		}
-
-		const embeds = fetched.map(
+		return fetched.map(
 			clan => {
 				const channels = clan.channels.filter(en => en);
 				const roles = clan.roles.filter(en => en);
@@ -217,9 +281,5 @@ export default class SetupCommand extends Command {
 				return embed;
 			}
 		);
-
-		for (const chunks of Util.chunk(embeds, 10)) {
-			await interaction.followUp({ embeds: chunks });
-		}
 	}
 }
