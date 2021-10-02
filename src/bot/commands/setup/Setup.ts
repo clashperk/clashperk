@@ -163,6 +163,7 @@ export default class SetupCommand extends Command {
 					});
 					return;
 				}
+
 				await action.followUp({ embeds });
 			}
 		});
@@ -176,10 +177,9 @@ export default class SetupCommand extends Command {
 
 	private async getClanList(message: Message) {
 		const clans = await this.client.storage.findAll(message.guild!.id);
+		const clanList = (await Promise.all(clans.map(clan => this.client.http.clan(clan.tag))))
+			.filter(res => res.ok);
 		if (!clans.length) return [];
-		const clanList = await this.client.db.collection(Collections.CLANS)
-			.find({ tag: { $in: clans.map(clan => clan.tag) } }, { projection: { tag: 1, name: 1, members: 1 } })
-			.toArray<{ name: string; tag: string; members: number }>();
 
 		clanList.sort((a, b) => b.members - a.members);
 		const nameLen = Math.max(...clanList.map(clan => clan.name.length)) + 1;

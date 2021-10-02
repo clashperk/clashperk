@@ -27,7 +27,7 @@ export default class LinkListCommand extends Command {
 	}
 
 	public async exec(message: Message, { data }: { data: Clan }) {
-		if (!data.members) return;
+		if (!data.members) return message.util!.send(`${data.name} does not have any clan members...`);
 		const memberTags: { tag: string; user: string; user_tag?: string }[] = await this.client.http.getDiscordLinks(data.memberList);
 		const dbMembers = await this.client.db.collection(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: data.memberList.map(m => m.tag) } })
@@ -38,17 +38,17 @@ export default class LinkListCommand extends Command {
 			for (const m of member.entries) {
 				if (!data.memberList.find(mem => mem.tag === m.tag)) continue;
 				const ex = memberTags.find(mem => mem.tag === m.tag);
-				if (ex) ex.user_tag = member.user_tag;
+				if (ex) ex.user_tag = member.user_tag?.split('#')[0];
 				if (ex) continue;
-				memberTags.push({ tag: m.tag, user: member.user, user_tag: member.user_tag });
+				memberTags.push({ tag: m.tag, user: member.user, user_tag: member.user_tag?.split('#')[0] });
 			}
 		}
 
-		const user_ids = memberTags.reduce((prev, curr) => {
+		const userIds = memberTags.reduce((prev, curr) => {
 			if (!prev.includes(curr.user)) prev.push(curr.user);
 			return prev;
 		}, [] as string[]);
-		const guildMembers = await message.guild!.members.fetch({ user: user_ids });
+		const guildMembers = await message.guild!.members.fetch({ user: userIds });
 
 		// Players linked and on the guild.
 		const onDiscord = memberTags.filter(mem => guildMembers.has(mem.user));
@@ -62,21 +62,21 @@ export default class LinkListCommand extends Command {
 		const embed = this.getEmbed(guildMembers, data, false, onDiscord, offDiscord, notInDiscord);
 		if (!onDiscord.length) return message.util!.send({ embeds: [embed.setColor(this.client.embed(message))] });
 
-		const customID = this.client.uuid(message.author.id);
+		const customId = this.client.uuid(message.author.id);
 		const button = new MessageButton()
 			.setStyle('SECONDARY')
 			.setLabel('Show Tags')
 			.setEmoji(EMOJIS.HASH)
-			.setCustomId(customID);
+			.setCustomId(customId);
 
 		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customID && action.user.id === message.author.id,
+			filter: action => action.customId === customId && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customId === customID) {
+			if (action.customId === customId) {
 				const embed = this.getEmbed(guildMembers, data, true, onDiscord, offDiscord, notInDiscord);
 				await action.update({ embeds: [embed.setColor(this.client.embed(message))] });
 				return collector.stop();
@@ -84,7 +84,7 @@ export default class LinkListCommand extends Command {
 		});
 
 		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customID);
+			this.client.components.delete(customId);
 			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
@@ -96,8 +96,10 @@ export default class LinkListCommand extends Command {
 			onDiscord.map(
 				mem => {
 					const member = data.memberList.find(m => m.tag === mem.tag)!;
-					const user = showTag ? member.tag : guildMembers.get(mem.user)!.displayName.substring(0, 12).padStart(12, ' ');
-					return `**✓** \`\u200e${this.parseName(member.name)}${data.members <= 45 ? `\u200f\` \u200e \`` : ' '} ${user} \u200f\``;
+					const user = showTag
+						? member.tag.padStart(12, ' ')
+						: guildMembers.get(mem.user)!.displayName.substring(0, 12).padStart(12, ' ');
+					return `**✓** \`\u200e${this.parseName(member.name)}\u200f\` \u200e \` ${user} \u200f\``;
 				}
 			).join('\n'),
 			'',
@@ -105,8 +107,10 @@ export default class LinkListCommand extends Command {
 			notInDiscord.map(
 				mem => {
 					const member = data.memberList.find(m => m.tag === mem.tag)!;
-					const user: string = showTag ? member.tag : mem.user_tag.substring(0, 12).padStart(12, ' ');
-					return `✘ \`\u200e${this.parseName(member.name)}${data.members <= 45 ? `\u200f\` \u200e \`` : ' '} ${user} \u200f\``;
+					const user: string = showTag
+						? member.tag.padStart(12, ' ')
+						: mem.user_tag.substring(0, 12).padStart(12, ' ');
+					return `✘ \`\u200e${this.parseName(member.name)}\u200f\` \u200e \` ${user} \u200f\``;
 				}
 			).join('\n'),
 			offDiscord.sort((a, b) => {
@@ -114,9 +118,9 @@ export default class LinkListCommand extends Command {
 				const bName = b.name.toUpperCase();
 				return aName > bName ? 1 : aName < bName ? -1 : 0;
 			}).map(
-				mem => `✘ \`\u200e${this.parseName(mem.name)}${data.members <= 45 ? `\u200f\` \u200e \`` : ' '} ${mem.tag.padStart(12, ' ')} \u200f\``
+				mem => `✘ \`\u200e${this.parseName(mem.name)}\u200f\` \u200e \` ${mem.tag.padStart(12, ' ')} \u200f\``
 			).join('\n')
-		].join('\n'));
+		].join('\n'), { maxLength: 4096 });
 
 		const embed = new MessageEmbed()
 			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
