@@ -11,7 +11,8 @@ export interface Patron {
 	discord_id?: string;
 	discord_username?: string;
 	guilds: {
-		id: string; limit: string;
+		id: string;
+		limit: string;
 	}[];
 	comment?: string;
 	sponsored: boolean;
@@ -92,7 +93,7 @@ export default class Patrons {
 				continue;
 			}
 
-			// skip active patrons
+			// still declined, let's skip them
 			if (pledge.attributes.declined_since) continue;
 
 			await this.collection.updateOne({ id: patron.id }, { $set: { declined: false, active: true } });

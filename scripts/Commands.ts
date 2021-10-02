@@ -1035,10 +1035,6 @@ export const COMMANDS: Command[] = [
 							{
 								name: 'Cleanup',
 								value: 'cleanup'
-							},
-							{
-								name: 'Any/Both',
-								value: 'both'
 							}
 						]
 					}
@@ -1122,6 +1118,21 @@ export const COMMANDS: Command[] = [
 						description: 'Limit the data to the last X months.',
 						type: ApplicationCommandOptionType.String,
 						choices: getSeasonIds().map(season => ({ name: `Since ${season.name}`, value: season.value }))
+					},
+					{
+						name: 'attempt',
+						description: 'Fresh defenses or cleanup defenses. (Default: Both)',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Fresh',
+								value: 'fresh'
+							},
+							{
+								name: 'Cleanup',
+								value: 'cleanup'
+							}
+						]
 					}
 				]
 			}

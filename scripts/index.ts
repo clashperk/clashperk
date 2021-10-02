@@ -2,7 +2,7 @@ import env from 'dotenv';
 env.config();
 
 import { Routes, RouteBases } from 'discord-api-types/v9';
-import { COMMANDS, PRIVATE_COMMANDS } from './commands';
+import { COMMANDS, PRIVATE_COMMANDS } from './Commands';
 import fetch from 'node-fetch';
 import { ApplicationCommand } from 'discord.js';
 
