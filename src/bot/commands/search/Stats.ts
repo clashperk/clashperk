@@ -93,7 +93,7 @@ export default class StatsCommand extends Command {
 		return { mode, data, compare, type, stars, season, attempt };
 	}
 
-	public async exec(message: Message, { mode, data, compare, type, stars, season, attempt }: { mode: Mode; data: Clan; compare: Comapre; type: WarTypeArg; stars: string; season: string; attempt: string }) {
+	public async exec(message: Message, { mode, data, compare, type, stars, season, attempt }: { mode: Mode; data: Clan; compare: Comapre; type: WarTypeArg; stars: string; season: string; attempt?: string }) {
 		const extra = type === 'regular'
 			? { warType: WarType.REGULAR }
 			: type === 'cwl'
@@ -117,7 +117,7 @@ export default class StatsCommand extends Command {
 		for (const war of wars) {
 			const clan: WarClan = war.clan.tag === data.tag ? war.clan : war.opponent;
 			const opponent: WarClan = war.clan.tag === data.tag ? war.opponent : war.clan;
-			const attacks = clan.members.filter(m => m.attacks?.length).map(m => m.attacks!).flat();
+			const attacks = (mode === 'attacks' ? clan : opponent).members.filter(m => m.attacks?.length).map(m => m.attacks!).flat();
 			for (const m of clan.members) {
 				if (typeof compare === 'object' && compare.attackerTownHall !== m.townhallLevel) continue;
 				const member = members[m.tag] // eslint-disable-line
@@ -157,6 +157,9 @@ export default class StatsCommand extends Command {
 
 				if (m.bestOpponentAttack && mode === 'defense') {
 					const attack = m.bestOpponentAttack;
+					if (attempt === 'fresh' && !this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
+					if (attempt === 'cleanup' && this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
+
 					if (typeof compare === 'string' && compare === 'equal') {
 						const attacker = opponent.members.find(m => m.tag === attack.attackerTag)!;
 						if (attacker.townhallLevel === m.townhallLevel) {
@@ -182,7 +185,7 @@ export default class StatsCommand extends Command {
 
 		const clanMemberTags = data.memberList.map(m => m.tag);
 		const stats = Object.values(members)
-			.filter(m => m.total > 0 && clanMemberTags.includes(m.tag))
+			.filter(m => m.total > 0 && clanMemberTags.includes(m.tag) && (attempt ? m.success > 0 : true))
 			.map(mem => ({ ...mem, rate: (mem.success * 100) / mem.total }))
 			.sort((a, b) => b.success - a.success)
 			.sort((a, b) => b.rate - a.rate);
@@ -192,7 +195,8 @@ export default class StatsCommand extends Command {
 
 		const hall = typeof compare === 'object'
 			? `TH ${Object.values(compare).join('vs')}`
-			: `${compare.replace('all', 'All').replace('equal', 'Equal')} TH`;
+			: `${compare.replace(/\b(\w)/g, char => char.toUpperCase())} TH`;
+		const tail = attempt ? `% (${attempt.replace(/\b(\w)/g, char => char.toUpperCase())})` : 'Rates';
 
 		const starType = `${stars.startsWith('>') ? '>= ' : ''}${stars.replace(/[>=]+/, '')}`;
 		const embed = new MessageEmbed()
@@ -200,7 +204,7 @@ export default class StatsCommand extends Command {
 			.setDescription(
 				Util.splitMessage(
 					[
-						`**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} Rates**`,
+						`**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} ${tail}**`,
 						'',
 						`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} \`RATE%  HITS   ${'NAME'.padEnd(15, ' ')}\u200f\``,
 						stats.map(
