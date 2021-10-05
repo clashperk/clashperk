@@ -155,10 +155,16 @@ export default class StatsCommand extends Command {
 					}
 				}
 
-				if (m.bestOpponentAttack && mode === 'defense') {
-					const attack = m.bestOpponentAttack;
-					if (attempt === 'fresh' && !this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
-					if (attempt === 'cleanup' && this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
+				for (const _attack of (m.bestOpponentAttack && mode === 'defense') ? [m.bestOpponentAttack] : []) {
+					const attack = (m.opponentAttacks > 1 && attempt === 'fresh')
+						? attacks.filter(atk => atk.defenderTag === _attack.defenderTag)
+							.sort((a, b) => a.order - b.order)[0]!
+						: attacks.filter(atk => atk.defenderTag === _attack.defenderTag)
+							.sort((a, b) => (b.destructionPercentage ** b.stars) - (a.destructionPercentage ** a.stars))[0]!;
+
+					const isFresh = this._isFreshAttack(attacks, attack.defenderTag, attack.order);
+					if (attempt === 'cleanup' && isFresh) continue;
+					if (attempt === 'fresh' && !isFresh) continue;
 
 					if (typeof compare === 'string' && compare === 'equal') {
 						const attacker = opponent.members.find(m => m.tag === attack.attackerTag)!;

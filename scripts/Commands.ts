@@ -2,13 +2,14 @@ import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'disco
 import moment from 'moment';
 
 export function getSeasonIds() {
-	return Array(6).fill(0).map((_, month) => {
-		const now = new Date();
-		now.setHours(0, 0, 0, 0);
-		now.setFullYear(now.getFullYear(), 1 + 3);
-		now.setMonth(now.getMonth() + month, 0);
-		return { name: moment(now).format('MMM YYYY'), value: moment(now).format('YYYY-MM') };
-	});
+	return Array(new Date().getMonth() - 2)
+		.fill(0)
+		.map((_, m) => {
+			const now = new Date();
+			now.setHours(0, 0, 0, 0);
+			now.setMonth(now.getMonth() - (m - 1), 0);
+			return { name: moment(now).format('MMM YYYY'), value: moment(now).format('YYYY-MM') };
+		});
 }
 
 export enum CommandType {
