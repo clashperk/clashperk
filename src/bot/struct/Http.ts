@@ -1,5 +1,8 @@
 import { ClanWar, ClanWarLeagueGroup, Client, Player } from 'clashofclans.js';
 import fetch from 'node-fetch';
+import { Agent } from 'https';
+
+const agent = new Agent({ keepAlive: true });
 
 export default class Http extends Client {
 	private bearerToken!: string;
@@ -17,6 +20,7 @@ export default class Http extends Client {
 				Authorization: `Bearer ${this._token}`,
 				Accept: 'application/json'
 			},
+			agent,
 			timeout: Number(this.timeout)
 		}).catch(() => null);
 
@@ -97,6 +101,7 @@ export default class Http extends Client {
 				username: process.env.DISCORD_LINK_USERNAME,
 				password: process.env.DISCORD_LINK_PASSWORD
 			}),
+			agent,
 			timeout: 10000
 		}).catch(() => null);
 		const data = await res?.json().catch(() => null);
@@ -112,6 +117,7 @@ export default class Http extends Client {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
 			},
+			agent,
 			body: JSON.stringify({ playerTag, discordId }),
 			timeout: 10000
 		}).catch(() => null);
@@ -126,6 +132,7 @@ export default class Http extends Client {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
 			},
+			agent,
 			timeout: 10000
 		}).catch(() => null);
 
@@ -139,6 +146,7 @@ export default class Http extends Client {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
 			},
+			agent,
 			timeout: 10000
 		}).catch(() => null);
 		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);
@@ -155,6 +163,7 @@ export default class Http extends Client {
 				'Content-Type': 'application/json'
 			},
 			timeout: 30000,
+			agent,
 			body: JSON.stringify(members.map(mem => mem.tag))
 		}).catch(() => null);
 		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);
