@@ -68,7 +68,7 @@ export default class ExportMissed extends Command {
 						opponent: opponent.name,
 						teamSize: war.teamSize,
 						timestamp: new Date(war.endTime),
-						missed: (war.attacksPerMember - (m.attacks.length ?? 0)),
+						missed: (war.attacksPerMember - (m.attacks?.length ?? 0)),
 						warType: warTypes[war.warType]
 					};
 
