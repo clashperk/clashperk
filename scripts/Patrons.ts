@@ -30,5 +30,12 @@ import { Collections } from '../src/bot/util/Constants';
 		if (!d && !pledge.attributes.declined_since) console.log(entry?.attributes.full_name, entry?.attributes.email);
 	});
 
+	console.log('\n========= DECLINED PATRONS ========');
+	data.included.forEach((entry: any) => {
+		const d = patrons.find(p => p.id === entry?.id);
+		const pledge = data.data.find((en: any) => en?.relationships?.patron?.data?.id === entry.id);
+		if (d && pledge.attributes.declined_since) console.log(entry?.attributes.full_name, entry?.id);
+	});
+
 	return Connection.close();
 })();
