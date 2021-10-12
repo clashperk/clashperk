@@ -30,7 +30,7 @@ export default class StatsCommand extends Command {
 				content: 'War attack success and defense failure rates.'
 			},
 			optionFlags: ['--tag', '--compare', '--type', '--stars', '--season', '--attempt'],
-			clientPermissions: ['EMBED_LINKS']
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS']
 		});
 	}
 
@@ -120,10 +120,11 @@ export default class StatsCommand extends Command {
 			const attacks = (mode === 'attacks' ? clan : opponent).members.filter(m => m.attacks?.length).map(m => m.attacks!).flat();
 			for (const m of clan.members) {
 				if (typeof compare === 'object' && compare.attackerTownHall !== m.townhallLevel) continue;
+				const clanMember = data.memberList.find(mem => mem.tag === m.tag);
 				const member = members[m.tag] // eslint-disable-line
 					? members[m.tag]
 					: members[m.tag] = {
-						name: m.name,
+						name: clanMember?.name ?? m.name,
 						tag: m.tag,
 						total: 0,
 						success: 0,
