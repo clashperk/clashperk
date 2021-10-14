@@ -3,6 +3,13 @@ import * as Discord from 'discord.js';
 import 'moment-duration-format';
 import moment from 'moment';
 
+const DURATION = {
+	SECOND: 1000,
+	MINUTE: 1000 * 60,
+	HOUR: 1000 * 60 * 60,
+	DAY: 1000 * 60 * 60 * 24
+};
+
 // @ts-expect-error
 export class Util extends Discord.Util {
 	public constructor() {
@@ -142,6 +149,22 @@ export class Util extends Discord.Util {
 			return moment.duration(ms).format('H[h] m[m]', { trim: 'both mid' });
 		}
 		return moment.duration(ms).format('m[m] s[s]', { trim: 'both mid' });
+	}
+
+	private static _format(ms: number, msAbs: number, dur: number, long: string, short: string, l = false) {
+		const plural = msAbs >= dur * 1.5;
+		let num: number | string = ms / dur;
+		num = Number.isInteger(num) ? num : (num).toFixed(1);
+		return `${num}${l ? ` ${long}${plural ? 's' : ''}` : short}`;
+	}
+
+	public static ms(num: number, long = false) {
+		const abs = Math.abs(num);
+		if (abs >= DURATION.DAY) return this._format(num, abs, DURATION.DAY, 'day', 'd', long);
+		if (abs >= DURATION.HOUR) return this._format(num, abs, DURATION.HOUR, 'hour', 'h', long);
+		if (abs >= DURATION.MINUTE) return this._format(num, abs, DURATION.MINUTE, 'minute', 'm', long);
+		if (abs >= DURATION.SECOND) return this._format(num, abs, DURATION.SECOND, 'second', 's', long);
+		return `${num}${long ? ' ' : ''}ms`;
 	}
 }
 

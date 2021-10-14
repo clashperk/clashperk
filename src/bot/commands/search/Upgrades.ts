@@ -1,10 +1,10 @@
-import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
-import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { MessageEmbed, Message, MessageSelectMenu, User, MessageActionRow } from 'discord.js';
-import { Command, Argument } from 'discord-akairo';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import { STOP_REASONS, TroopJSON } from '../../util/Constants';
+import RAW_TROOPS_DATA from '../../util/TroopsInfo';
+import { Command, Argument } from 'discord-akairo';
 import { Player } from 'clashofclans.js';
-import ms from 'ms';
+import { Util } from '../../util/Util';
 
 export default class UpgradesCommand extends Command {
 	public constructor() {
@@ -154,7 +154,7 @@ export default class UpgradesCommand extends Command {
 							const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
 							const level = this.padStart(unit.level);
 							const maxLevel = this.padEnd(unit.hallMaxLevel);
-							const upgradeTime = ms(unit.upgradeTime * 1000).padStart(5, ' ');
+							const upgradeTime = Util.ms(unit.upgradeTime * 1000).padStart(5, ' ');
 							const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
 							return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
 						}).join('\n')
@@ -171,7 +171,7 @@ export default class UpgradesCommand extends Command {
 							const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
 							const level = this.padStart(unit.level);
 							const maxLevel = this.padEnd(unit.hallMaxLevel);
-							const upgradeTime = ms(unit.upgradeTime * 1000).padStart(5, ' ');
+							const upgradeTime = Util.ms(unit.upgradeTime * 1000).padStart(5, ' ');
 							const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
 							return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
 						}).join('\n')
