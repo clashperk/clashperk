@@ -67,12 +67,9 @@ export default class DonationSummaryCommand extends Command {
 				{
 					$match: {
 						season,
-						clanTag: {
-							$in: fetched.map(clan => clan.tag)
-						},
-						tag: {
-							$in: fetched.map(clan => clan.memberList).flat().map(mem => mem.tag)
-						}
+						$or: fetched.map(
+							clan => clan.memberList.map(mem => ({ clanTag: clan.tag, tag: mem.tag }))
+						).flat()
 					}
 				}, {
 					$group: {
