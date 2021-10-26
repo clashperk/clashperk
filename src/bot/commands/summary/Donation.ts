@@ -99,7 +99,7 @@ export default class DonationSummaryCommand extends Command {
 				}
 			]).toArray();
 		if (!aggregated.length) {
-			return message.util!.send('*Not enough data available a this moment!*');
+			return message.util!.send('*Not enough data available at this moment!*');
 		}
 
 		aggregated.sort((a, b) => b.donations - a.donations);
