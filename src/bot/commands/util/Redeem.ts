@@ -122,7 +122,7 @@ export default class RedeemCommand extends Command {
 					entitled_amount: Math.ceil(pledge.attributes.amount_cents) / 100,
 					discord_id: message.author.id,
 					discord_username: message.author.username,
-					redeemed: true
+					redeemed: true, active: true, declined: false, cancelled: false
 				},
 				$push: {
 					guilds: {
