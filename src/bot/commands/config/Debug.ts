@@ -18,7 +18,7 @@ export default class DebugCommand extends Command {
 			aliases: ['debug'],
 			category: 'config',
 			description: {
-				content: 'Shows some basic debug informations.'
+				content: 'Shows some basic debug information.'
 			}
 		});
 	}

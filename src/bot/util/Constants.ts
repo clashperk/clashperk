@@ -26,7 +26,7 @@ export enum Collections {
 	// FLAGS
 	FLAGS = 'Flags',
 
-	// LINNKED_DATA
+	// LINKED_DATA
 	LINKED_PLAYERS = 'LinkedPlayers',
 	LINKED_CHANNELS = 'LinkedChannels',
 

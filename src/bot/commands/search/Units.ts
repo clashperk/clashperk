@@ -206,7 +206,7 @@ export default class UnitsCommand extends Command {
 			}
 		}
 
-		const superTrops = RAW_TROOPS_DATA.SUPER_TROOPS
+		const superTroops = RAW_TROOPS_DATA.SUPER_TROOPS
 			.filter(unit => apiTroops.find(un => un.name === unit.original && un.village === unit.village && un.level >= unit.minOriginalLevel))
 			.map(
 				unit => {
@@ -228,9 +228,9 @@ export default class UnitsCommand extends Command {
 			);
 
 		const activeSuperTroops = data.troops.filter(en => en.superTroopIsActive).map(en => en.name);
-		if (superTrops.length && data.townHallLevel >= 11) {
+		if (superTroops.length && data.townHallLevel >= 11) {
 			embed.addField(`Super Troops (${activeSuperTroops.length ? 'Active' : 'Usable'})`, [
-				this.chunk(superTrops.filter(en => activeSuperTroops.length ? activeSuperTroops.includes(en.name) : true))
+				this.chunk(superTroops.filter(en => activeSuperTroops.length ? activeSuperTroops.includes(en.name) : true))
 					.map(
 						chunks => chunks.map(unit => {
 							const unitIcon = SUPER_TROOPS[unit.name];

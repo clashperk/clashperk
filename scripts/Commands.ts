@@ -359,7 +359,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'remove',
-				description: 'Remove a flag from exisiting player account',
+				description: 'Remove a flag from existing player account',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -782,7 +782,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'debug',
-		description: 'Shows some basic debug informations.'
+		description: 'Shows some basic debug information.'
 	},
 	{
 		name: 'autorole',

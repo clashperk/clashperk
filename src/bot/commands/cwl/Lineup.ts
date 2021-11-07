@@ -88,7 +88,7 @@ export default class CWLLineupCommand extends Command {
 		const embeds = await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
 		for (const embed of embeds) embed.setColor(this.client.embed(message));
 
-		const [PlayerCustomID, ComapreCustomID, MenuID] = [this.client.uuid(message.author.id), this.client.uuid(message.author.id), this.client.uuid(message.author.id)];
+		const [PlayerCustomID, CompareCustomID, MenuID] = [this.client.uuid(message.author.id), this.client.uuid(message.author.id), this.client.uuid(message.author.id)];
 		const buttons = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
@@ -98,7 +98,7 @@ export default class CWLLineupCommand extends Command {
 			)
 			.addComponents(
 				new MessageButton()
-					.setCustomId(ComapreCustomID)
+					.setCustomId(CompareCustomID)
 					.setLabel('Compare')
 					.setStyle('SECONDARY')
 					.setDisabled(true)
@@ -125,7 +125,7 @@ export default class CWLLineupCommand extends Command {
 
 		const msg = await message.util!.send({ embeds, components: [buttons, menus] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => [ComapreCustomID, PlayerCustomID, MenuID].includes(action.customId) && action.user.id === message.author.id,
+			filter: action => [CompareCustomID, PlayerCustomID, MenuID].includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
 		});
 
@@ -152,7 +152,7 @@ export default class CWLLineupCommand extends Command {
 				await action.editReply({ embeds });
 			}
 
-			if (action.customId === ComapreCustomID) {
+			if (action.customId === CompareCustomID) {
 				await action.deferUpdate();
 				const embeds = await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
 				for (const embed of embeds) embed.setColor(this.client.embed(message));
@@ -166,7 +166,7 @@ export default class CWLLineupCommand extends Command {
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(MenuID);
 			this.client.components.delete(PlayerCustomID);
-			this.client.components.delete(ComapreCustomID);
+			this.client.components.delete(CompareCustomID);
 			if (STOP_REASONS.includes(reason)) return;
 			if (!msg.deleted) await msg.edit({ components: [] });
 		});
@@ -205,7 +205,7 @@ export default class CWLLineupCommand extends Command {
 	}
 
 	private async getComparisonLineup(state: string, round: number, clan: WarClan, opponent: WarClan) {
-		const linups = await this.rosters(
+		const lineups = await this.rosters(
 			clan.members.sort((a, b) => a.mapPosition - b.mapPosition),
 			opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
 		);
@@ -218,7 +218,7 @@ export default class CWLLineupCommand extends Command {
 				`**\u200e${opponent.name} (${opponent.tag})**`,
 				'',
 				`\u200e${EMOJIS.HASH} \`TH HERO \u2002  \u2002 TH HERO \``,
-				linups.map(
+				lineups.map(
 					(lineup, i) => {
 						const desc = lineup.map(en => `${this.pad(en.t, 2)} ${this.pad(en.h, 4)}`).join(' \u2002vs\u2002 ');
 						return `${BLUE_NUMBERS[i + 1]} \`${desc} \``;

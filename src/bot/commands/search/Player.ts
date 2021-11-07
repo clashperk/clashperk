@@ -1,4 +1,4 @@
-import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES, SEIGE_MACHINES } from '../../util/Emojis';
+import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES, SIEGE_MACHINES } from '../../util/Emojis';
 import { MessageEmbed, Util, Message, User, MessageSelectMenu, MessageActionRow } from 'discord.js';
 import { Collections, leagueId, STOP_REASONS } from '../../util/Constants';
 import { Command, Argument } from 'discord-akairo';
@@ -147,12 +147,12 @@ export default class PlayerCommand extends Command {
 			'**Total Loots**',
 			[
 				`${EMOJIS.GOLD} ${this.format(data.achievements.find(d => d.name === 'Gold Grab')!.value)}`,
-				`${EMOJIS.ELIXIER} ${this.format(data.achievements.find(d => d.name === 'Elixir Escapade')!.value)}`,
+				`${EMOJIS.ELIXIR} ${this.format(data.achievements.find(d => d.name === 'Elixir Escapade')!.value)}`,
 				`${EMOJIS.DARK_ELIXIR} ${this.format(data.achievements.find(d => d.name === 'Heroic Heist')!.value)}`
 			].join(' '),
 			`**Troops Donated**\n${EMOJIS.TROOPS_DONATE} ${data.achievements.find(d => d.name === 'Friend in Need')!.value}`,
 			`**Spells Donated**\n${EMOJIS.SPELL_DONATE} ${data.achievements.find(d => d.name === 'Sharing is caring')!.value}`,
-			`**Siege Donated**\n${SEIGE_MACHINES['Wall Wrecker']} ${data.achievements.find(d => d.name === 'Siege Sharer')!.value}`,
+			`**Siege Donated**\n${SIEGE_MACHINES['Wall Wrecker']} ${data.achievements.find(d => d.name === 'Siege Sharer')!.value}`,
 			`**Attacks Won**\n${EMOJIS.SWORD} ${data.achievements.find(d => d.name === 'Conqueror')!.value}`,
 			`**Defense Won**\n${EMOJIS.SHIELD} ${data.achievements.find(d => d.name === 'Unbreakable')!.value}`,
 			`**CWL War Stars**\n${EMOJIS.STAR} ${data.achievements.find(d => d.name === 'War League Legend')!.value}`,

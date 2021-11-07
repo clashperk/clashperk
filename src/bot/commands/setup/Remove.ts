@@ -118,7 +118,7 @@ export default class RemoveCommand extends Command {
 			}
 
 			// eslint-disable-next-line
-			return message.util!.send(`Couldn\'t find any clan linked to ${bit.toString()}`);
+			return message.util!.send(`Couldn't find any clan linked to ${bit.toString()}`);
 		}
 
 		if (bit === 'autorole' && !tag) {

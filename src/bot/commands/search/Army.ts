@@ -1,11 +1,11 @@
-import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SEIGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis';
+import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SIEGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis';
 import { TROOPS_HOUSING } from '../../util/Constants';
 import { Message, MessageEmbed } from 'discord.js';
 import RAW_TROOPS from '../../util/TroopsInfo';
 import { Command } from 'discord-akairo';
 import { URL } from 'url';
 
-const [TOTAL_UNITS, TOTAL_SPELLS, TOTAL_SUPER_TROOPS, TOTAL_SEIGE] = [300, 11, 2, 1];
+const [TOTAL_UNITS, TOTAL_SPELLS, TOTAL_SUPER_TROOPS, TOTAL_SIEGE] = [300, 11, 2, 1];
 const ARMY_URL_REGEX = /https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=[u|s]([\d+x-])+[s|u]?([\d+x-])+/g;
 
 export default class ArmyCommand extends Command {
@@ -169,13 +169,13 @@ export default class ArmyCommand extends Command {
 			};
 		});
 
-		const seigeMachines = TROOP_IDS.filter(
+		const siegeMachines = TROOP_IDS.filter(
 			parts => RAW_TROOPS.TROOPS.find(
-				en => en.id === parts.id && en.category === 'troop' && en.name in SEIGE_MACHINES
+				en => en.id === parts.id && en.category === 'troop' && en.name in SIEGE_MACHINES
 			)
 		).map(parts => {
 			const unit = RAW_TROOPS.TROOPS.find(
-				en => en.id === parts.id && en.category === 'troop' && en.name in SEIGE_MACHINES
+				en => en.id === parts.id && en.category === 'troop' && en.name in SIEGE_MACHINES
 			)!;
 			return {
 				id: parts.id,
@@ -188,18 +188,18 @@ export default class ArmyCommand extends Command {
 			};
 		});
 
-		if (!spells.length && !troops.length && !superTroops.length && !seigeMachines.length) {
+		if (!spells.length && !troops.length && !superTroops.length && !siegeMachines.length) {
 			return message.util!.send('**This army composition link is invalid.**');
 		}
 
 		const hallByUnlockTH = Math.max(
 			...troops.map(en => en.hallLevel),
 			...spells.map(en => en.hallLevel),
-			...seigeMachines.map(en => en.hallLevel),
+			...siegeMachines.map(en => en.hallLevel),
 			...superTroops.map(en => en.hallLevel)
 		);
 
-		const [totalTroop, totalSpell, totalSeige] = [
+		const [totalTroop, totalSpell, totalSiege] = [
 			troops.reduce(
 				(pre, cur) => pre + (cur.housing * cur.total), 0
 			) + superTroops.reduce(
@@ -208,7 +208,7 @@ export default class ArmyCommand extends Command {
 			spells.reduce(
 				(pre, cur) => pre + (cur.housing * cur.total), 0
 			),
-			seigeMachines.reduce(
+			siegeMachines.reduce(
 				(pre, cur) => pre + (cur.housing * cur.total), 0
 			)
 		];
@@ -223,7 +223,7 @@ export default class ArmyCommand extends Command {
 				`**${name ?? 'Shared Army Composition'} [TH ${townHallLevel}${townHallLevel === 14 ? '' : '+'}]**`,
 				`[Click to Copy](${url!.href})`,
 				'',
-				`${EMOJIS.TROOPS} **${totalTroop}** ${EMOJIS.SEPLLS} **${totalSpell}**`
+				`${EMOJIS.TROOPS} **${totalTroop}** ${EMOJIS.SPELLS} **${totalSpell}**`
 			].join('\n'));
 
 		if (troops.length) {
@@ -261,22 +261,22 @@ export default class ArmyCommand extends Command {
 			);
 		}
 
-		if (seigeMachines.length) {
+		if (siegeMachines.length) {
 			embed.addField(
 				'\u200b',
 				[
-					'**Seige Machines**',
-					seigeMachines.map(
-						en => `\u200e\`${this.padding(en.total)}\` ${SEIGE_MACHINES[en.name]}  ${en.name}`
+					'**Siege Machines**',
+					siegeMachines.map(
+						en => `\u200e\`${this.padding(en.total)}\` ${SIEGE_MACHINES[en.name]}  ${en.name}`
 					).join('\n')
 				].join('\n')
 			);
 		}
 
 		embed.setFooter(message.author.tag, message.author.displayAvatarURL({ dynamic: true }));
-		const mismatch = (troops.length + spells.length + superTroops.length + seigeMachines.length) !== (TROOP_IDS.length + SPELL_IDS.length);
+		const mismatch = (troops.length + spells.length + superTroops.length + siegeMachines.length) !== (TROOP_IDS.length + SPELL_IDS.length);
 
-		const invalid = mismatch || duplicate || totalTroop > TOTAL_UNITS || totalSpell > TOTAL_SPELLS || totalSeige > TOTAL_SEIGE || superTroops.length > TOTAL_SUPER_TROOPS;
+		const invalid = mismatch || duplicate || totalTroop > TOTAL_UNITS || totalSpell > TOTAL_SPELLS || totalSiege > TOTAL_SIEGE || superTroops.length > TOTAL_SUPER_TROOPS;
 		return message.util!.send({ embeds: [embed], content: (invalid) ? '**This link is invalid and may not work.**' : undefined });
 	}
 

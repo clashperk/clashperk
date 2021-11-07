@@ -142,7 +142,7 @@ export default class CWLRosterCommand extends Command {
 			].join('\n'));
 
 		if (next) {
-			const opprank = ranks.findIndex(clan => clan.tag === next.opponent.tag);
+			const oppRank = ranks.findIndex(clan => clan.tag === next.opponent.tag);
 			const flatTownHalls = [...next.clan.members, ...next.opponent.members].map(mem => mem.townhallLevel);
 			const [max, min] = [Math.max(...flatTownHalls), Math.min(...flatTownHalls)];
 			const townHalls = Array(Math.max(Math.min(5, (max - min) + 1), 2)).fill(0).map((_, i) => max - i);
@@ -151,7 +151,7 @@ export default class CWLRosterCommand extends Command {
 				`**Next War (Round #${next.round + 1})**`,
 				`${EMOJIS.HASH} ${townHalls.map(th => ORANGE_NUMBERS[th]).join('')} **Clan**`,
 				`${BLUE_NUMBERS[rank + 1]} ${this.getNextRoster(next.clan, townHalls)} ${next.clan.name}`,
-				`${BLUE_NUMBERS[opprank + 1]} ${this.getNextRoster(next.opponent, townHalls)} ${next.opponent.name}`
+				`${BLUE_NUMBERS[oppRank + 1]} ${this.getNextRoster(next.opponent, townHalls)} ${next.opponent.name}`
 			].join('\n'));
 		}
 

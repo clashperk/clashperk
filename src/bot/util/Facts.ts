@@ -465,7 +465,7 @@ export default [
 			name: 'Clash of Clans',
 			icon_url: 'https://cdn.discordapp.com/emojis/512947779916529675.png'
 		},
-		description: 'A recent study done by CellcSuper Univertity revealed that 83.52% of all Clash of Clans players have at least a D+ in their Chemistry grade. This is because the Spell factory teaches children and adults about economics, and mathematics. ',
+		description: 'A recent study done by CellcSuper University revealed that 83.52% of all Clash of Clans players have at least a D+ in their Chemistry grade. This is because the Spell factory teaches children and adults about economics, and mathematics. ',
 		thumbnail: {
 			url: 'https://cdn.discordapp.com/emojis/512947779916529675.png'
 		}

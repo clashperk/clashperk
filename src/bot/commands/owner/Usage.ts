@@ -104,6 +104,6 @@ export default class UsageCommand extends Command {
 	}
 
 	private total(items: { uses: number }[]) {
-		return items.reduce((previous, currrent) => currrent.uses + previous, 0);
+		return items.reduce((previous, current) => current.uses + previous, 0);
 	}
 }

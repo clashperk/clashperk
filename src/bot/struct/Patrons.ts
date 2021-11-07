@@ -78,7 +78,7 @@ export default class Patrons {
 		const data = await fetch(`https://www.patreon.com/api/oauth2/api/campaigns/2589569/pledges?${query}`, {
 			headers: { authorization: `Bearer ${process.env.PATREON_API!}` }, timeout: 10000
 		}).then(res => res.json()).catch(() => null);
-		if (!data?.data) return; // awww shit no data? let's skip it
+		if (!data?.data) return; // aww shit no data? let's skip it
 
 		for (const patron of this._declines) {
 			const pledge = data.data.find((entry: any) => entry?.relationships?.patron?.data?.id === patron.id);

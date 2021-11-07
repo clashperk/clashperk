@@ -46,7 +46,7 @@ export const DARK_ELIXIR_TROOPS: Emojis = {
 	'Headhunter': '<:headhunter:724650414066106459>'
 };
 
-export const SEIGE_MACHINES: Emojis = {
+export const SIEGE_MACHINES: Emojis = {
 	'Wall Wrecker': '<:wallwrecker:696282434278522931>',
 	'Battle Blimp': '<:battleblimp:696282472480112731>',
 	'Stone Slammer': '<:stoneslammer:696282610472714271>',
@@ -115,7 +115,7 @@ export const HOME_TROOPS: Emojis = {
 	...HOME_HEROES,
 	...ELIXIR_TROOPS,
 	...DARK_ELIXIR_TROOPS,
-	...SEIGE_MACHINES,
+	...SIEGE_MACHINES,
 	...ELIXIR_SPELLS,
 	...DARK_SPELLS,
 	...HERO_PETS
@@ -274,7 +274,7 @@ export const EMOJIS = {
 	FIRE: '<:dest:806556874623025212>',
 	DESTRUCTION: '<:dest:806556874623025212>',
 
-	SEPLLS: '<:spells:854686656762609674>',
+	SPELLS: '<:spells:854686656762609674>',
 	TROOPS: '<:troops:854686652474458122>',
 
 	SWORD: '<:sword_solid:812547118995996701>',
@@ -313,7 +313,7 @@ export const EMOJIS = {
 	NODEJS: '<:nodejs:723162041095028797>',
 	CLAN_GAMES: '<:cg:765244426444079115>',
 	GOLD: '<:gold:766199291068416040>',
-	ELIXIER: '<:elixir:766199063145611301>',
+	ELIXIR: '<:elixir:766199063145611301>',
 	DARK_ELIXIR: '<:darkelixir:766199057718706216>',
 	BUILDER_GOLD: '<:bhgold:808989316222287932>',
 	BUILDER_ELIXIR: '<:bhelixir:808989315211984956>'

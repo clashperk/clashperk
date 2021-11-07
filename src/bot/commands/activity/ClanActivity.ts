@@ -86,7 +86,7 @@ export default class ClanActivityCommand extends Command {
 		}
 
 		const clans = await this.aggregationQuery(clanTags, days);
-		if (!clans.length) return message.util!.send('*Not enough data available a this moment!*');
+		if (!clans.length) return message.util!.send('*Not enough data available at this moment!*');
 
 		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: message.author.id });
 		const timezone = user?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };

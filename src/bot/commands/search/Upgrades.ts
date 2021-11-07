@@ -101,13 +101,13 @@ export default class UpgradesCommand extends Command {
 			}, {} as TroopJSON);
 
 		const titles: { [key: string]: string } = {
-			'Barracks': `${EMOJIS.ELIXIER} Elixir Troops`,
+			'Barracks': `${EMOJIS.ELIXIR} Elixir Troops`,
 			'Dark Barracks': `${EMOJIS.DARK_ELIXIR} Dark Troops`,
-			'Spell Factory': `${EMOJIS.ELIXIER} Elixir Spells`,
+			'Spell Factory': `${EMOJIS.ELIXIR} Elixir Spells`,
 			'Dark Spell Factory': `${EMOJIS.DARK_ELIXIR} Dark Spells`,
 			'Town Hall': `${EMOJIS.DARK_ELIXIR} Heroes`,
 			'Pet House': `${EMOJIS.DARK_ELIXIR} Pets`,
-			'Workshop': `${EMOJIS.ELIXIER} Siege Machines`,
+			'Workshop': `${EMOJIS.ELIXIR} Siege Machines`,
 			'Builder Hall': `${EMOJIS.BUILDER_ELIXIR} Builder Base Hero`,
 			'Builder Barracks': `${EMOJIS.BUILDER_ELIXIR} Builder Troops`
 		};

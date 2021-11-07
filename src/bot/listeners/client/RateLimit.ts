@@ -43,7 +43,7 @@ export default class RateLimitListener extends Listener {
 	public exec({ timeout, limit, method, path, route }: { timeout: number; limit: number; method: string; path: string; route: string }) {
 		this.count += 1;
 		if (this.count >= 5) return this.client.rpcHandler.pause(true);
-		this.client.logger.warn({ timeout, limit, method, path, route }, { label: 'RATELIMIT' });
+		this.client.logger.warn({ timeout, limit, method, path, route }, { label: 'RATE_LIMIT' });
 
 		const embed = new MessageEmbed()
 			.setAuthor('Rate Limit')

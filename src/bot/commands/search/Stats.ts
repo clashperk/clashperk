@@ -7,7 +7,7 @@ import { EMOJIS } from '../../util/Emojis';
 import { Util } from '../../util/Util';
 import moment from 'moment';
 
-export type Comapre = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };
+export type Compare = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };
 export type WarTypeArg = 'regular' | 'cwl' | 'friendly' | 'noFriendly' | 'noCWL' | 'all';
 export type Mode = 'attacks' | 'defense';
 
@@ -93,7 +93,7 @@ export default class StatsCommand extends Command {
 		return { mode, data, compare, type, stars, season, attempt };
 	}
 
-	public async exec(message: Message, { mode, data, compare, type, stars, season, attempt }: { mode: Mode; data: Clan; compare: Comapre; type: WarTypeArg; stars: string; season: string; attempt?: string }) {
+	public async exec(message: Message, { mode, data, compare, type, stars, season, attempt }: { mode: Mode; data: Clan; compare: Compare; type: WarTypeArg; stars: string; season: string; attempt?: string }) {
 		const extra = type === 'regular'
 			? { warType: WarType.REGULAR }
 			: type === 'cwl'
@@ -197,7 +197,7 @@ export default class StatsCommand extends Command {
 			.sort((a, b) => b.success - a.success)
 			.sort((a, b) => b.rate - a.rate);
 		if (!stats.length) {
-			return message.util!.send('**No stats are avaliable for this filter or clan.**');
+			return message.util!.send('**No stats are available for this filter or clan.**');
 		}
 
 		const hall = typeof compare === 'object'
