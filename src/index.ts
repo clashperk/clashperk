@@ -22,7 +22,7 @@ class Manager extends Discord.ShardingManager {
 const ShardingManager = new Manager();
 
 setInterval(() => {
-	if ((os.freemem() / (1024 * 1024)) < 1024) {
+	if (process.env.NODE_ENV === 'production' && (os.freemem() / (1024 * 1024)) < 1024) {
 		shell.exec('sync; echo 1 > /proc/sys/vm/drop_caches');
 	}
 }, 60 * 1000);

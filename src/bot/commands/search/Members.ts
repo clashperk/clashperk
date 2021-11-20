@@ -1,10 +1,11 @@
+import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { Clan, PlayerItem, Player } from 'clashofclans.js';
+import { ORANGE_NUMBERS } from '../../util/NumEmojis';
+import { STOP_REASONS } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
 import { Command } from 'discord-akairo';
-import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
-import { STOP_REASONS } from '../../util/Constants';
-import { ORANGE_NUMBERS } from '../../util/NumEmojis';
+import { Util } from '../../util/Util';
 
 const roleIds: { [key: string]: number } = {
 	member: 1,
@@ -189,12 +190,12 @@ export default class MembersCommand extends Command {
 				embed.setDescription([
 					`**OPTED-IN ~ ${optedIn.length}**`,
 					optedIn.map(
-						m => `\u200e**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \` ${m.name.padEnd(15, ' ')} \u200f\``
+						m => `\u200e**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(15, ' ')} \u200f\``
 					).join('\n'),
 					'',
 					`**OPTED-OUT ~ ${optedOut.length}**`,
 					optedOut.map(
-						m => `\u200e✘ ${ORANGE_NUMBERS[m.townHallLevel]} \` ${m.name.padEnd(15, ' ')} \u200f\``
+						m => `\u200e✘ ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(15, ' ')} \u200f\``
 					).join('\n')
 				].join('\n'));
 				embed.setFooter(`War Preference (${optedIn.length}/${members.length})`);

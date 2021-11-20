@@ -1,8 +1,9 @@
-import { Collection, GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed, Util } from 'discord.js';
+import { Collection, GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { Collections, STOP_REASONS } from '../../util/Constants';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
+import { Util } from '../../util/Util';
 
 // ASCII /[^\x00-\xF7]+/
 export default class LinkListCommand extends Command {
@@ -133,7 +134,7 @@ export default class LinkListCommand extends Command {
 	}
 
 	private parseName(name: string) {
-		return name.padEnd(15, ' ');
+		return Util.escapeBackTick(name).padEnd(15, ' ');
 		// return name.replace(/[^\x00-\xF7]+/g, ' ').trim().padEnd(15, ' ');
 	}
 

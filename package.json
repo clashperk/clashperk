@@ -13,7 +13,8 @@
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
 		"dev": "node --enable-source-maps dist/src/index.js",
-		"deploy": "node dist/scripts/index.js"
+		"deploy": "node dist/scripts/index.js",
+		"patrons": "node dist/scripts/Patrons.js"
 	},
 	"dependencies": {
 		"@clashperk/quickchart": "github:clashperk/quickchart",
