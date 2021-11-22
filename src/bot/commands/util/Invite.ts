@@ -25,7 +25,9 @@ export default class InviteCommand extends Command {
 			'MANAGE_MESSAGES',
 			'MANAGE_WEBHOOKS',
 			'MANAGE_NICKNAMES',
-			'MANAGE_ROLES'
+			'MANAGE_ROLES',
+			'MANAGE_THREADS',
+			'SEND_MESSAGES_IN_THREADS'
 		]);
 
 		return permissions.bitfield;
@@ -35,7 +37,7 @@ export default class InviteCommand extends Command {
 		const query = stringify({
 			client_id: this.client.user!.id,
 			scope: 'bot applications.commands',
-			permissions: (this.bitfield | (1n << 38n)).toString()
+			permissions: this.bitfield.toString()
 		});
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
