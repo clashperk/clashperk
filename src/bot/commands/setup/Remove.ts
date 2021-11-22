@@ -154,7 +154,7 @@ export default class RemoveCommand extends Command {
 			return message.util!.send(`**Successfully Deleted ${data.name as string} (${data.tag as string})**`);
 		}
 
-		const deleted = await this.client.storage.remove(data._id, { op: Number(bit) });
+		const deleted = await this.client.storage.remove(data._id.toHexString(), { op: Number(bit) });
 		if (deleted?.deletedCount) await this.updateFlag(id, Number(bit));
 		await this.client.rpcHandler.delete(id, { op: Number(bit), tag: data.tag, guild: message.guild!.id });
 

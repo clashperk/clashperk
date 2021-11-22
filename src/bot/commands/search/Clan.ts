@@ -153,7 +153,7 @@ export default class ClanCommand extends Command {
 	}
 
 	private async getActivity(clan: Clan): Promise<{ avg_total: number; avg_online: number } | null> {
-		return this.client.db.collection(Collections.LAST_SEEN).aggregate([
+		return this.client.db.collection(Collections.LAST_SEEN).aggregate<{ avg_total: number; avg_online: number }>([
 			{
 				$match: {
 					'clan.tag': clan.tag,
@@ -209,7 +209,7 @@ export default class ClanCommand extends Command {
 	}
 
 	private async getSeason(clan: Clan) {
-		return this.client.db.collection(Collections.CLAN_MEMBERS).aggregate([
+		return this.client.db.collection(Collections.CLAN_MEMBERS).aggregate<{ donations: number; donationsReceived: number; attackWins: number; defenseWins: number }>([
 			{
 				$match: {
 					clanTag: clan.tag,
@@ -239,11 +239,11 @@ export default class ClanCommand extends Command {
 					}
 				}
 			}
-		]).next<{ donations: number; donationsReceived: number; attackWins: number; defenseWins: number }>();
+		]).next();
 	}
 
 	private async getWars(tag: string): Promise<{ result: boolean; stars: number[] }[]> {
-		return this.client.db.collection(Collections.CLAN_WARS).aggregate(
+		return this.client.db.collection(Collections.CLAN_WARS).aggregate<{ result: boolean; stars: number[] }>(
 			[
 				{
 					$match: {

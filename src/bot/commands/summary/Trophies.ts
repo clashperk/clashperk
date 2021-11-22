@@ -14,7 +14,7 @@ export default class ClanSummaryCommand extends Command {
 	}
 
 	public async exec(message: Message) {
-		const clans: { name: string; tag: string }[] = await this.client.db.collection(Collections.CLAN_STORES)
+		const clans = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 

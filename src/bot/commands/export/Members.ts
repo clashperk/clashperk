@@ -49,7 +49,7 @@ export default class ExportClanMembersCommand extends Command {
 		}
 
 		const msg = await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
-		const clans: { name: string; tag: string }[] = await this.client.db.collection(Collections.CLAN_STORES)
+		const clans = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 

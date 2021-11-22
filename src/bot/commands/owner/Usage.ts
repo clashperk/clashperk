@@ -92,7 +92,7 @@ export default class UsageCommand extends Command {
 	}
 
 	private usage(): Promise<{ usage: number; createdAt: Date }[]> {
-		return this.client.db.collection(Collections.BOT_USAGE)
+		return this.client.db.collection<{ usage: number; createdAt: Date }>(Collections.BOT_USAGE)
 			.find()
 			.sort({ createdAt: -1 })
 			.limit(15)

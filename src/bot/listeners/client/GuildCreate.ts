@@ -104,7 +104,7 @@ export default class GuildCreateListener extends Listener {
 
 		await db.find({ guild: guild.id, active: true })
 			.forEach(data => {
-				this.client.rpcHandler.add(data._id?.toString(), { tag: data.tag, guild: guild.id, op: 0 });
+				this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: guild.id, op: 0 });
 			});
 
 		await db.updateMany({ guild: guild.id }, { $set: { paused: false } });

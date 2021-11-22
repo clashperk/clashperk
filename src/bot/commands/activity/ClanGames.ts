@@ -150,36 +150,35 @@ export default class ClanGamesCommand extends Command {
 	}
 
 	private query(clanTag: string, clan: Clan) {
-		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS)
-			.aggregate([
-				{
-					$match: { clanTag }
-				},
-				{
-					$match: {
-						season: this.seasonId
-					}
-				},
-				{
-					$match: {
-						$or: [
-							{
-								tag: {
-									$in: clan.memberList.map(m => m.tag)
-								}
-							},
-							{
-								clanGamesTotal: { $gt: 0 }
-							}
-						]
-					}
-				},
-				{
-					$limit: 60
+		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS).aggregate<DBMember>([
+			{
+				$match: { clanTag }
+			},
+			{
+				$match: {
+					season: this.seasonId
 				}
-			]);
+			},
+			{
+				$match: {
+					$or: [
+						{
+							tag: {
+								$in: clan.memberList.map(m => m.tag)
+							}
+						},
+						{
+							clanGamesTotal: { $gt: 0 }
+						}
+					]
+				}
+			},
+			{
+				$limit: 60
+			}
+		]);
 
-		return cursor.toArray<DBMember>();
+		return cursor.toArray();
 	}
 
 	private filter(dbMembers: DBMember[] = [], clanMembers: Member[] = []) {

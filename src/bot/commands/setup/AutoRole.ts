@@ -162,7 +162,7 @@ export default class AutoRoleCommand extends Command {
 							tag: '$entries.tag', user: '$user'
 						}
 					}
-				]).toArray<{ user: string; tag: string }>();
+				]).toArray();
 
 			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
 			for (const { user, tag } of unknowns) {

@@ -62,7 +62,7 @@ export default class DonationSummaryCommand extends Command {
 			return message.util!.send('**Something went wrong. I couldn\'t fetch all clans!**');
 		}
 
-		const aggregated: Aggregated[] = await this.client.db.collection(Collections.CLAN_MEMBERS)
+		const aggregated = await this.client.db.collection<Aggregated>(Collections.CLAN_MEMBERS)
 			.aggregate([
 				{
 					$match: {
@@ -129,7 +129,7 @@ export default class DonationSummaryCommand extends Command {
 			`${EMOJIS.HASH} \`\u200e${'DON'.padStart(clan_dp, ' ')} ${'REC'.padStart(clan_rp, ' ')}  ${'CLAN'.padEnd(15, ' ')}\u200f\``,
 			Util.splitMessage(
 				aggregated.map(
-					(clan, n) => `${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(clan.donationsReceived, clan_rp)}  ${clan.name.padEnd(15, ' ')}\u200f\``
+					(clan, n) => `${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(clan.donationsReceived, clan_rp)}  ${clan.name.padEnd(15, ' ') as string}\u200f\``
 				).join('\n'),
 				{ maxLength: 4000 }
 			)[0]
@@ -144,7 +144,7 @@ export default class DonationSummaryCommand extends Command {
 					`${EMOJIS.CLAN} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(15, ' ')}\u200f\``,
 					Util.splitMessage(
 						members.map(
-							mem => `${BLUE_NUMBERS[mem.clanIndex]} \`\u200e${this.donation(mem.donated, mem_dp)} ${this.donation(mem.received, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``
+							mem => `${BLUE_NUMBERS[mem.clanIndex]} \`\u200e${this.donation(mem.donated, mem_dp)} ${this.donation(mem.received, mem_rp)}  ${mem.name.padEnd(15, ' ') as string}\u200f\``
 						).join('\n'),
 						{ maxLength: 2000 }
 					)[0]

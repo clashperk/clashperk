@@ -62,7 +62,7 @@ export default class LinkClanCommand extends Command {
 			);
 
 			if (upsertedCount) {
-				await this.client.rpcHandler.add(upsertedId._id.toHexString(), {
+				await this.client.rpcHandler.add(upsertedId.toHexString(), {
 					op: Flags.CHANNEL_LINKED,
 					guild: message.guild!.id,
 					tag: data.tag

@@ -44,61 +44,60 @@ export default class LastWarsExport extends Command {
 		const sheet = workbook.addWorksheet('Details');
 		const members = [] as { name: string; tag: string; total: number; clan: string; date: Date }[];
 		for (const clan of clans) {
-			const data = await this.client.db.collection(Collections.CLAN_WARS)
-				.aggregate([
-					{
-						$match: {
-							$or: [
-								{ 'clan.tag': clan.tag },
-								{ 'opponent.tag': clan.tag }
-							],
-							state: 'warEnded'
-						}
-					}, {
-						$sort: {
-							_id: -1
-						}
-					}, {
-						$limit: num
-					}, {
-						$project: {
-							member: '$clan.members',
-							clan: '$clan.name',
-							date: '$endTime'
-						}
-					}, {
-						$unwind: {
-							path: '$member'
-						}
-					}, {
-						$sort: {
-							date: -1
-						}
-					}, {
-						$group: {
-							_id: '$member.tag',
-							name: {
-								$first: '$member.name'
-							},
-							tag: {
-								$first: '$member.tag'
-							},
-							date: {
-								$first: '$date'
-							},
-							total: {
-								$sum: 1
-							},
-							clan: {
-								$first: '$clan'
-							}
-						}
-					}, {
-						$sort: {
-							date: -1
+			const data = await this.client.db.collection(Collections.CLAN_WARS).aggregate<{ name: string; tag: string; total: number; clan: string; date: Date }>([
+				{
+					$match: {
+						$or: [
+							{ 'clan.tag': clan.tag },
+							{ 'opponent.tag': clan.tag }
+						],
+						state: 'warEnded'
+					}
+				}, {
+					$sort: {
+						_id: -1
+					}
+				}, {
+					$limit: num
+				}, {
+					$project: {
+						member: '$clan.members',
+						clan: '$clan.name',
+						date: '$endTime'
+					}
+				}, {
+					$unwind: {
+						path: '$member'
+					}
+				}, {
+					$sort: {
+						date: -1
+					}
+				}, {
+					$group: {
+						_id: '$member.tag',
+						name: {
+							$first: '$member.name'
+						},
+						tag: {
+							$first: '$member.tag'
+						},
+						date: {
+							$first: '$date'
+						},
+						total: {
+							$sum: 1
+						},
+						clan: {
+							$first: '$clan'
 						}
 					}
-				]).toArray<{ name: string; tag: string; total: number; clan: string; date: Date }>();
+				}, {
+					$sort: {
+						date: -1
+					}
+				}
+			]).toArray();
 
 			members.push(...data);
 		}

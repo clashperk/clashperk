@@ -43,7 +43,7 @@ export default class CooldownListener extends Listener {
 				return message.channel.send({ embeds: [embed] });
 			}
 
-			return message.channel.send(`**${embed.author!.name!}**\n${embed.description!}`);
+			return message.channel.send(`**${embed.author!.name}**\n${embed.description!}`);
 		}
 	}
 }

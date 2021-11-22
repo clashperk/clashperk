@@ -40,7 +40,7 @@ export default class ClanSummaryCommand extends Command {
 
 	public async exec(message: Message, { season }: { season?: string }) {
 		if (!season) season = Season.ID;
-		const clans: { name: string; tag: string }[] = await this.client.db.collection(Collections.CLAN_STORES)
+		const clans = await this.client.db.collection<{ name: string; tag: string }>(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
 			.toArray();
 
@@ -142,7 +142,7 @@ export default class ClanSummaryCommand extends Command {
 	}
 
 	private async getWars(tag: string, season: string): Promise<{ result: boolean; stars: number[] }[]> {
-		return this.client.db.collection(Collections.CLAN_WARS).aggregate(
+		return this.client.db.collection(Collections.CLAN_WARS).aggregate<{ result: boolean; stars: number[] }>(
 			[
 				{
 					$match: {
@@ -174,7 +174,7 @@ export default class ClanSummaryCommand extends Command {
 	}
 
 	private async getActivity(tag: string): Promise<{ avg_total: number; avg_online: number } | null> {
-		return this.client.db.collection(Collections.LAST_SEEN).aggregate([
+		return this.client.db.collection(Collections.LAST_SEEN).aggregate<{ avg_total: number; avg_online: number }>([
 			{
 				$match: {
 					'clan.tag': tag

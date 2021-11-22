@@ -94,12 +94,12 @@ export class Automaton {
 		const players = members.filter(mem => mem.troops.filter(en => en.superTroopIsActive).length);
 		if (!players.length) return { content: '**No members are boosting in this clan!**', embeds: [] };
 
-		const boostTimes = (await this.client.db.collection(Collections.LAST_SEEN)
+		const boostTimes = (await this.client.db.collection<{ tag: string; lastSeen: Date; superTroops?: { name: string; timestamp: number }[] }>(Collections.LAST_SEEN)
 			.find(
 				{ tag: { $in: players.map(m => m.tag) } },
 				{ projection: { _id: 0, tag: 1, superTroops: 1, lastSeen: 1 } }
 			)
-			.toArray<{ tag: string; lastSeen: Date; superTroops?: { name: string; timestamp: number }[] }>());
+			.toArray());
 
 		const lastSeen = boostTimes.filter(m => m.lastSeen >= new Date(Date.now() - (10 * 60 * 1000)))
 			.map(m => m.tag);

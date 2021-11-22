@@ -97,34 +97,33 @@ export class RoleManager {
 		const guild_ids = queried.guilds.filter((id: Snowflake) => this.client.guilds.cache.has(id));
 		if (!guild_ids.length) return null;
 
-		const cursor = this.client.db.collection(Collections.CLAN_STORES)
-			.aggregate([
-				{
-					$match: {
-						autoRole: { $gt: 0 },
-						guild: { $in: guild_ids }
-					}
-				}, {
-					$group: {
-						_id: {
-							guild: '$guild',
-							autoRole: '$autoRole'
-						},
-						clans: {
-							$addToSet: '$$ROOT'
-						}
-					}
-				}, {
-					$set: {
-						guild_id: '$_id.guild',
-						type: '$_id.autoRole'
-					}
-				}, {
-					$unset: '_id'
-				}, {
-					$match: { 'clans.tag': tag }
+		const cursor = this.client.db.collection(Collections.CLAN_STORES).aggregate<any>([
+			{
+				$match: {
+					autoRole: { $gt: 0 },
+					guild: { $in: guild_ids }
 				}
-			]);
+			}, {
+				$group: {
+					_id: {
+						guild: '$guild',
+						autoRole: '$autoRole'
+					},
+					clans: {
+						$addToSet: '$$ROOT'
+					}
+				}
+			}, {
+				$set: {
+					guild_id: '$_id.guild',
+					type: '$_id.autoRole'
+				}
+			}, {
+				$unset: '_id'
+			}, {
+				$match: { 'clans.tag': tag }
+			}
+		]);
 
 		const groups: { clans: any[]; guild_id: Snowflake; type: 1 | 2 }[] = await cursor.toArray();
 		if (!groups.length) return cursor.close();
@@ -142,9 +141,9 @@ export class RoleManager {
 	}
 
 	private async addUniqueTypeRole(guild: Snowflake, clan: any, data: RPCFeed) {
-		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
+		const collection = await this.client.db.collection<{ user: Snowflake; entries: { tag: string; verified: boolean }[] }>(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: data.members.map(mem => mem.tag) } })
-			.toArray<{ user: Snowflake; entries: { tag: string; verified: boolean }[] }>();
+			.toArray();
 
 		const flattened = this.flatPlayers(collection, clan.secureRole);
 		const user_ids = flattened.reduce((prev, curr) => {
@@ -176,9 +175,9 @@ export class RoleManager {
 	private async addSameTypeRole(guild: Snowflake, clans: any[], data: RPCFeed) {
 		const clan = clans[0];
 
-		const collection = await this.client.db.collection(Collections.LINKED_PLAYERS)
+		const collection = await this.client.db.collection<{ user: Snowflake; entries: { tag: string; verified: boolean }[] }>(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: data.members.map(mem => mem.tag) } })
-			.toArray<{ user: Snowflake; entries: { tag: string; verified: boolean }[] }>();
+			.toArray();
 
 		const flattened = this.flatPlayers(collection, clan.secureRole);
 		const user_ids = flattened.reduce((prev, curr) => {

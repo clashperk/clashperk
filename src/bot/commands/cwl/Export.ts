@@ -38,7 +38,7 @@ export default class CWLExport extends Command {
 	}
 
 	private async getClans(message: Message, aliases: string[]) {
-		const cursor = this.client.db.collection(Collections.CLAN_STORES)
+		const cursor = this.client.db.collection<{ tag: string; name: string }>(Collections.CLAN_STORES)
 			.find({
 				guild: message.guild!.id,
 				$or: [
@@ -51,7 +51,7 @@ export default class CWLExport extends Command {
 				]
 			});
 
-		return cursor.toArray<{ tag: string; name: string }>();
+		return cursor.toArray();
 	}
 
 	private fixTag(tag: string) {
