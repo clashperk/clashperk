@@ -55,7 +55,7 @@ export default class PlayerCommand extends Command {
 	}
 
 	public async exec(message: Message, { data }: { data: Player & { user?: User } }) {
-		const embed = (await this.embed(data)).setColor(this.client.embed(message));
+		const embed = (await this.embed(message, data)).setColor(this.client.embed(message));
 		const msg = await message.util!.send({ embeds: [embed] });
 
 		if (!data.user) return;
@@ -75,7 +75,6 @@ export default class PlayerCommand extends Command {
 			.addOptions(options);
 
 		await msg.edit({ components: [new MessageActionRow({ components: [menu] })] });
-
 		const collector = msg.createMessageComponentCollector({
 			filter: action => [customID].includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
@@ -85,7 +84,7 @@ export default class PlayerCommand extends Command {
 			if (action.customId === customID && action.isSelectMenu()) {
 				await action.deferUpdate();
 				const data = players.find(en => en.tag === action.values[0])!;
-				const embed = (await this.embed(data)).setColor(this.client.embed(message));
+				const embed = (await this.embed(message, data)).setColor(this.client.embed(message));
 				await action.editReply({ embeds: [embed] });
 			}
 		});
@@ -97,7 +96,7 @@ export default class PlayerCommand extends Command {
 		});
 	}
 
-	private async embed(data: Player) {
+	private async embed(message: Message, data: Player) {
 		const aggregated = await this.client.db.collection(Collections.LAST_SEEN)
 			.aggregate([
 				{
@@ -159,11 +158,20 @@ export default class PlayerCommand extends Command {
 			`**Clan Games Points**\n${EMOJIS.CLAN_GAMES} ${data.achievements.find(d => d.name === 'Games Champion')!.value}`,
 			'\u200b\u2002'
 		].join('\n'));
+
+		const heroes = data.heroes.filter(hero => hero.village === 'home')
+			.map(hero => `${HEROES[hero.name]} ${hero.level}`);
 		embed.addField('**Heroes**', [
-			data.heroes.filter(hero => hero.village === 'home')
-				.map(hero => `${HEROES[hero.name]} ${hero.level}`)
-				.join(' ') || `${EMOJIS.WRONG} None`
+			`${heroes.length ? heroes.join(' ') : `${EMOJIS.WRONG} None`}`,
+			'\u200b\u2002'
 		].join('\n'));
+
+		const user = await this.getLinkedUser(message, data.tag);
+		if (user) {
+			embed.addField('**Discord**', user.mention ?? `${EMOJIS.OK} Connected`);
+		} else {
+			embed.addField('**Discord**', `${EMOJIS.WRONG} Not Found`);
+		}
 
 		return embed;
 	}
@@ -253,5 +261,13 @@ export default class PlayerCommand extends Command {
 				? 'Yesterday'
 				: `${ms(timestamp, { 'long': true })} ago`;
 	}
-}
 
+	private async getLinkedUser(message: Message, tag: string) {
+		const data = await this.client.db.collection(Collections.LINKED_PLAYERS)
+			.findOne({ 'entries.tag': tag });
+
+		if (!data) return null;
+		const user = await message.guild!.members.fetch(data.user).catch(() => null);
+		return { mention: user?.toString() ?? null, userId: data.user };
+	}
+}
