@@ -1,4 +1,5 @@
 import { GuildMember, Message, MessageEmbed, Collection } from 'discord.js';
+import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import Workbook from '../../struct/Excel';
@@ -32,11 +33,44 @@ export default class ExportClanMembersCommand extends Command {
 			category: 'export',
 			channel: 'guild',
 			description: {},
-			clientPermissions: ['EMBED_LINKS']
+			clientPermissions: ['EMBED_LINKS'],
+			optionFlags: ['--tag']
 		});
 	}
 
-	public async exec(message: Message) {
+	public *args(msg: Message): unknown {
+		const tags = yield {
+			flag: '--tag',
+			unordered: true,
+			match: msg.interaction ? 'option' : 'phrase',
+			type: (msg: Message, args?: string) => args ? args.split(/ +/g) : null
+		};
+
+		return { tags };
+	}
+
+	private async getClans(message: Message, aliases: string[]) {
+		const cursor = this.client.db.collection(Collections.CLAN_STORES)
+			.find({
+				guild: message.guild!.id,
+				$or: [
+					{
+						tag: { $in: aliases.map(tag => this.fixTag(tag)) }
+					},
+					{
+						alias: { $in: aliases.map(alias => alias.toLowerCase()) }
+					}
+				]
+			});
+
+		return cursor.toArray();
+	}
+
+	private fixTag(tag: string) {
+		return this.client.http.fixTag(tag);
+	}
+
+	public async exec(message: Message, { tags }: { tags?: string[] }) {
 		if (!this.client.patrons.get(message)) {
 			const embed = new MessageEmbed()
 				.setDescription([
@@ -49,9 +83,13 @@ export default class ExportClanMembersCommand extends Command {
 		}
 
 		const msg = await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
-		const clans = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild: message.guild!.id })
-			.toArray();
+		let clans = [];
+		if (tags?.length) {
+			clans = await this.getClans(message, tags);
+			if (!clans.length) return message.util!.send(`*No clans found in my database for the specified argument.*`);
+		} else {
+			clans = await this.client.storage.findAll(message.guild!.id);
+		}
 
 		if (!clans.length) {
 			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
@@ -69,7 +107,8 @@ export default class ExportClanMembersCommand extends Command {
 				heroes: m.heroes.length ? m.heroes.filter(a => a.village === 'home') : [],
 				achievements: this.getAchievements(m),
 				pets: m.troops.filter(troop => troop.name in PETS)
-					.sort((a, b) => PETS[a.name] - PETS[b.name])
+					.sort((a, b) => PETS[a.name] - PETS[b.name]),
+				rushed: Number(this.rushedPercentage(m))
 			}));
 
 			members.push(...mems);
@@ -108,9 +147,7 @@ export default class ExportClanMembersCommand extends Command {
 		if (msg.deletable && !message.interaction) await msg.delete();
 		return message.util!.send({
 			content: `**${message.guild!.name} Members**`,
-			files: [{
-				attachment: Buffer.from(buffer), name: 'clan_members.xlsx'
-			}]
+			files: [{ attachment: Buffer.from(buffer), name: 'clan_members.xlsx' }]
 		});
 	}
 
@@ -124,6 +161,7 @@ export default class ExportClanMembersCommand extends Command {
 			{ header: 'Discord', width: 16 },
 			{ header: 'CLAN', width: 16 },
 			{ header: 'Town-Hall', width: 10 },
+			{ header: 'Rushed %', width: 10 },
 			{ header: 'BK', width: 10 },
 			{ header: 'AQ', width: 10 },
 			{ header: 'GW', width: 10 },
@@ -136,14 +174,13 @@ export default class ExportClanMembersCommand extends Command {
 		] as any[];
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
-
 		for (let i = 1; i <= sheet.columns.length; i++) {
 			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 		}
 
 		sheet.addRows(
 			members.map(m => [
-				m.name, m.tag, m.user_tag, m.clan, m.townHallLevel,
+				m.name, m.tag, m.user_tag, m.clan, m.townHallLevel, m.rushed,
 				...m.heroes.map((h: any) => h.level).concat(Array(4 - m.heroes.length).fill('')),
 				...m.pets.map((h: any) => h.level).concat(Array(4 - m.pets.length).fill('')),
 				...m.achievements.map((v: any) => v.value)
@@ -164,5 +201,43 @@ export default class ExportClanMembersCommand extends Command {
 				this.client.resolver.updateUserTag(message.guild!, data.user);
 			}
 		}
+	}
+
+	private rushedPercentage(data: Player) {
+		const apiTroops = this.apiTroops(data);
+		const Troops = RAW_TROOPS_DATA.TROOPS
+			.filter(unit => {
+				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+				return unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
+			});
+		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(unit => unit.village === 'home' && unit.levels[data.townHallLevel - 1]);
+		const rushed = Troops.filter(u => u.village === 'home').length;
+		return ((rushed * 100) / totalTroops.length).toFixed(2);
+	}
+
+	private apiTroops(data: Player) {
+		return [
+			...data.troops.map(u => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'troop',
+				village: u.village
+			})),
+			...data.heroes.map(u => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'hero',
+				village: u.village
+			})),
+			...data.spells.map(u => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'spell',
+				village: u.village
+			}))
+		];
 	}
 }
