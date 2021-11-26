@@ -36,11 +36,14 @@ export default class WarSummaryCommand extends Command {
 			if (!data.ok) continue;
 			if (data.state === 'notInWar') continue;
 
-			embed.addField(`${data.clan.name} ${data.round ? `(CWL Round #${data.round})` : ''}`, [
-				`${this.getLeaderBoard(data.clan, data.opponent)}`,
-				`${states[data.state]} ${Util.getRelativeTime(moment(this._getTime(data)).toDate().getTime())}`,
-				'\u200b'
-			].join('\n'));
+			embed.addField(
+				`${data.clan.name} ${EMOJIS.VS_BLUE} ${data.opponent.name} ${data.round ? `(CWL Round #${data.round})` : ''}`,
+				[
+					`${this.getLeaderBoard(data.clan, data.opponent)}`,
+					`${states[data.state]} ${Util.getRelativeTime(moment(this._getTime(data)).toDate().getTime())}`,
+					'\u200b'
+				].join('\n')
+			);
 		}
 
 		if (!embed.length) return message.util!.send('**No clans are in war at this moment!**');
