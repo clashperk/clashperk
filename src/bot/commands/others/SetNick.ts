@@ -58,7 +58,7 @@ export default class SetNickNameCommand extends Command {
 
 		if (message.guild!.me!.roles.highest.position <= member.roles.highest.position || member.id === message.guild!.ownerId) {
 			const own = member.id === message.author.id;
-			return message.util!.send(`**I do not have permission to change ${own ? 'your ' : ''}nickname${own ? '.' : ' of this member!**'}`);
+			return message.util!.send(`**I do not have permission to change ${own ? 'your ' : ''}nickname${own ? '.' : ' of this member!'}**`);
 		}
 
 		const players = await this.client.links.getPlayers(member.user);
