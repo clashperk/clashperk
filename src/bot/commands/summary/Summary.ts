@@ -40,7 +40,8 @@ export default class SummaryCommand extends Command {
 				['clan-summary', 'clan', 'clans'],
 				['trophy-summary', 'trophy', 'trophies'],
 				['donation-summary', 'don', 'donation', 'donations'],
-				['clan-games-summary', 'game', 'games', 'score', 'scores']
+				['clan-games-summary', 'game', 'games', 'score', 'scores'],
+				['player-donation-summary', 'player-donations', 'playerdon', 'pd']
 			],
 			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})
 		};

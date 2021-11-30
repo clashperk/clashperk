@@ -662,8 +662,12 @@ export const COMMANDS: Command[] = [
 						value: 'clans'
 					},
 					{
-						name: 'Top Donations',
+						name: 'Clan Donations',
 						value: 'donations'
+					},
+					{
+						name: 'Player Donations',
+						value: 'player-donations'
 					}
 				]
 			},
