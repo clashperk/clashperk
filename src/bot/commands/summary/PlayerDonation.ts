@@ -44,7 +44,7 @@ export default class PlayerDonationSummaryCommand extends Command {
 			return message.util!.send('**Something went wrong. I couldn\'t fetch all clans!**');
 		}
 
-		const players = await this.globalDonations(clans);
+		const players = await this.globalDonations(clans, season);
 		players.sort((a, b) => b.receives - a.receives).sort((a, b) => b.donations - a.donations);
 		const [mem_dp, mem_rp] = [
 			this.predict(Math.max(...players.map(m => m.donations))),
@@ -76,12 +76,12 @@ export default class PlayerDonationSummaryCommand extends Command {
 		return num > 999999 ? 7 : num > 99999 ? 6 : 5;
 	}
 
-	private async globalDonations(clans: any[]) {
+	private async globalDonations(clans: any[], seasonId: string) {
 		return this.client.db.collection(Collections.CLAN_MEMBERS).aggregate<{ name: string; tag: string; donations: number; receives: number }>([
 			{
 				$match: {
 					clanTag: { $in: clans.map(clan => clan.tag) },
-					season: Season.ID
+					season: seasonId
 				}
 			}, {
 				$sort: {
