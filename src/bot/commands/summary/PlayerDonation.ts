@@ -45,7 +45,7 @@ export default class PlayerDonationSummaryCommand extends Command {
 		}
 
 		const players = await this.globalDonations(clans, season);
-		players.sort((a, b) => b.receives - a.receives).sort((a, b) => b.donations - a.donations);
+		// players.sort((a, b) => b.receives - a.receives).sort((a, b) => b.donations - a.donations);
 		const [mem_dp, mem_rp] = [
 			this.predict(Math.max(...players.map(m => m.donations))),
 			this.predict(Math.max(...players.map(m => m.receives)))
@@ -55,11 +55,13 @@ export default class PlayerDonationSummaryCommand extends Command {
 			.setColor(this.client.embed(message))
 			.setAuthor('Top Players among Clan Family')
 			.setDescription([
-				`${EMOJIS.HASH} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(15, ' ')}\u200f\``,
 				Util.splitMessage(
-					players.map(
-						(mem, i) => `${BLUE_NUMBERS[++i]} \`\u200e${this.donation(mem.donations, mem_dp)} ${this.donation(mem.receives, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``
-					).join('\n'),
+					[
+						`${EMOJIS.HASH} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(15, ' ')}\u200f\``,
+						players.map(
+							(mem, i) => `${BLUE_NUMBERS[++i]} \`\u200e${this.donation(mem.donations, mem_dp)} ${this.donation(mem.receives, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``
+						).join('\n')
+					].join('\n'),
 					{ maxLength: 4000 }
 				)[0]
 			].join('\n'))
@@ -84,12 +86,6 @@ export default class PlayerDonationSummaryCommand extends Command {
 					season: seasonId
 				}
 			}, {
-				$sort: {
-					'donations.gained': -1
-				}
-			}, {
-				$limit: 50
-			}, {
 				$group: {
 					_id: '$tag',
 					name: {
@@ -105,6 +101,16 @@ export default class PlayerDonationSummaryCommand extends Command {
 						$sum: '$donationsReceived.gained'
 					}
 				}
+			}, {
+				$sort: {
+					receives: -1
+				}
+			}, {
+				$sort: {
+					donations: -1
+				}
+			}, {
+				$limit: 100
 			}
 		]).toArray();
 	}
