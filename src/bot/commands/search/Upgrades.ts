@@ -100,6 +100,16 @@ export default class UpgradesCommand extends Command {
 				return prev;
 			}, {} as TroopJSON);
 
+		const rem = RAW_TROOPS_DATA.TROOPS.reduce((prev, unit) => {
+			const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+			if (unit.village === 'home') {
+				prev.levels += apiTroop?.level ?? 0;
+				prev.total += unit.levels[data.townHallLevel - 1];
+			}
+			return prev;
+		}, { total: 0, levels: 0 });
+		const remaining = Number(((rem.levels * 100) / rem.total).toFixed(2));
+
 		const titles: { [key: string]: string } = {
 			'Barracks': `${EMOJIS.ELIXIR} Elixir Troops`,
 			'Dark Barracks': `${EMOJIS.DARK_ELIXIR} Dark Troops`,
@@ -185,6 +195,11 @@ export default class UpgradesCommand extends Command {
 				`No remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? ` and BH${data.builderHallLevel}` : ''}`
 			);
 		}
+
+		if (remaining > 0) {
+			embed.setFooter(`Remaining ~${remaining}% (Home)`);
+		}
+
 		return embed;
 	}
 
