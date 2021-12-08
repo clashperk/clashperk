@@ -13,7 +13,7 @@ export default class ArmyCommand extends Command {
 		super('army', {
 			aliases: ['army'],
 			category: 'search',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Parse army composition from a shared link.',
 				usage: '<url> [name]',
