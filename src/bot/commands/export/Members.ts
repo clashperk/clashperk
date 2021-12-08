@@ -108,7 +108,9 @@ export default class ExportClanMembersCommand extends Command {
 				achievements: this.getAchievements(m),
 				pets: m.troops.filter(troop => troop.name in PETS)
 					.sort((a, b) => PETS[a.name] - PETS[b.name]),
-				rushed: Number(this.rushedPercentage(m))
+				rushed: Number(this.rushedPercentage(m)),
+				heroRem: Number(this.heroUpgrades(m)),
+				labRem: Number(this.labUpgrades(m))
 			}));
 
 			members.push(...mems);
@@ -162,6 +164,8 @@ export default class ExportClanMembersCommand extends Command {
 			{ header: 'CLAN', width: 16 },
 			{ header: 'Town-Hall', width: 10 },
 			{ header: 'Rushed %', width: 10 },
+			{ header: 'Lab Upgrades %', width: 10 },
+			{ header: 'Hero Upgrades %', width: 10 },
 			{ header: 'BK', width: 10 },
 			{ header: 'AQ', width: 10 },
 			{ header: 'GW', width: 10 },
@@ -180,7 +184,7 @@ export default class ExportClanMembersCommand extends Command {
 
 		sheet.addRows(
 			members.map(m => [
-				m.name, m.tag, m.user_tag, m.clan, m.townHallLevel, m.rushed,
+				m.name, m.tag, m.user_tag, m.clan, m.townHallLevel, m.rushed, m.labRem, m.heroRem,
 				...m.heroes.map((h: any) => h.level).concat(Array(4 - m.heroes.length).fill('')),
 				...m.pets.map((h: any) => h.level).concat(Array(4 - m.pets.length).fill('')),
 				...m.achievements.map((v: any) => v.value)
@@ -213,6 +217,32 @@ export default class ExportClanMembersCommand extends Command {
 		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(unit => unit.village === 'home' && unit.levels[data.townHallLevel - 1]);
 		const rushed = Troops.filter(u => u.village === 'home').length;
 		return ((rushed * 100) / totalTroops.length).toFixed(2);
+	}
+
+	private labUpgrades(data: Player) {
+		const apiTroops = this.apiTroops(data);
+		const rem = RAW_TROOPS_DATA.TROOPS.reduce((prev, unit) => {
+			const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+			if (unit.category !== 'hero' && unit.village === 'home') {
+				prev.levels += apiTroop?.level ?? 0;
+				prev.total += unit.levels[data.townHallLevel - 1];
+			}
+			return prev;
+		}, { total: 0, levels: 0 });
+		return ((rem.levels * 100) / rem.total).toFixed(2);
+	}
+
+	private heroUpgrades(data: Player) {
+		const apiTroops = this.apiTroops(data);
+		const rem = RAW_TROOPS_DATA.TROOPS.reduce((prev, unit) => {
+			const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+			if (unit.category === 'hero' && unit.village === 'home') {
+				prev.levels += apiTroop?.level ?? 0;
+				prev.total += unit.levels[data.townHallLevel - 1];
+			}
+			return prev;
+		}, { total: 0, levels: 0 });
+		return ((rem.levels * 100) / rem.total).toFixed(2);
 	}
 
 	private apiTroops(data: Player) {
