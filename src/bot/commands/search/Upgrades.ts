@@ -108,7 +108,7 @@ export default class UpgradesCommand extends Command {
 			}
 			return prev;
 		}, { total: 0, levels: 0 });
-		const remaining = Number(((rem.levels * 100) / rem.total).toFixed(2));
+		const remaining = Number((100 - ((rem.levels * 100) / rem.total)).toFixed(2));
 
 		const titles: { [key: string]: string } = {
 			'Barracks': `${EMOJIS.ELIXIR} Elixir Troops`,

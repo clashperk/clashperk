@@ -51,7 +51,8 @@ export const SIEGE_MACHINES: Emojis = {
 	'Battle Blimp': '<:battleblimp:696282472480112731>',
 	'Stone Slammer': '<:stoneslammer:696282610472714271>',
 	'Siege Barracks': '<:siegebarracks:696282751988400199>',
-	'Log Launcher': '<:LogLauncher:785737986108162048>'
+	'Log Launcher': '<:LogLauncher:785737986108162048>',
+	'Flame Flinger': '<:flameflinger:918492095407358013>'
 };
 
 export const ELIXIR_SPELLS: Emojis = {
@@ -80,6 +81,7 @@ export const SUPER_TROOPS: Emojis = {
 	'Super Wall Breaker': '<:supwb:789730406206275595>',
 	'Rocket Balloon': '<:RocketBalloon:854290612081655838>',
 	'Super Wizard': '<:superwiz:789730402189049876>',
+	'Super Dragon': '<:superdragon:918492632152428564>',
 	'Inferno Dragon': '<:supbaby:789730408878309376>',
 	'Super Minion': '<:supminion:789730407930920990>',
 	'Super Valkyrie': '<:supervalk:789730405967462440>',

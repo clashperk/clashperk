@@ -121,6 +121,18 @@ export default {
 			housingSpace: 10
 		},
 		{
+			name: 'Super Dragon',
+			id: 81,
+			original: 'Dragon',
+			minOriginalLevel: 7,
+			village: 'home',
+			duration: 259200,
+			cooldown: 259200,
+			resource: 'Dark Elixir',
+			resourceCost: 25000,
+			housingSpace: 40
+		},
+		{
 			name: 'Ice Hound',
 			id: 76,
 			original: 'Lava Hound',
@@ -1037,6 +1049,28 @@ export default {
 				resource: 'Elixir'
 			},
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4]
+		},
+		{
+			id: 91,
+			name: 'Flame Flinger',
+			housingSpace: 1,
+			village: 'home',
+			category: 'troop',
+			subCategory: 'siege',
+			unlock: {
+				hall: 14,
+				cost: 1750000000,
+				time: 1555200,
+				resource: 'Elixir',
+				building: 'Workshop',
+				buildingLevel: 6
+			},
+			upgrade: {
+				cost: [8000000, 11000000, 14000000],
+				time: [864000, 1209600, 1382400],
+				resource: 'Elixir'
+			},
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4]
 		},
 		{
 			id: 0,
