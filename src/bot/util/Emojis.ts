@@ -47,7 +47,7 @@ export const SIEGE_MACHINES: { [key: string]: string } = {
 	'Battle Blimp': '<:BattleBlimp:696282472480112731>',
 	'Stone Slammer': '<:StoneSlammer:696282610472714271>',
 	'Siege Barracks': '<:SiegeBarracks:696282751988400199>',
-	'Log Launcher': '<:SuperDragon:918762776619536474>',
+	'Log Launcher': '<:LogLauncher:918762884257939478>',
 	'Flame Flinger': '<:FlameFlinger:918762753013981235>'
 };
 

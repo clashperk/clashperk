@@ -43,13 +43,15 @@ export default class ExportMissed extends Command {
 
 		num = this.client.patrons.get(message.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
 		const chunks = [];
+		const missed: { [key: string]: { name: string; tag: string; count: number; missed: Date[] } } = {};
+
 		for (const { tag } of clans) {
 			const wars = await this.client.db.collection(Collections.CLAN_WARS)
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 					state: 'warEnded'
 				})
-				.sort({ preparationStartTime: -1 })
+				.sort({ _id: -1 })
 				.limit(num)
 				.toArray();
 
@@ -58,6 +60,16 @@ export default class ExportMissed extends Command {
 				const opponent = war.clan.tag === tag ? war.opponent : war.clan;
 				for (const m of clan.members) {
 					if (m.attacks?.length === war.attacksPerMember) continue;
+
+					const _mem = missed[m.tag] // eslint-disable-line
+						? missed[m.tag]
+						: missed[m.tag] = {
+							name: m.name,
+							tag: m.tag,
+							missed: [] as Date[],
+							count: war.attacksPerMember
+						};
+					_mem.missed.push(war.endTime);
 
 					const mem = {
 						stars: [] as number[],
@@ -116,6 +128,53 @@ export default class ExportMissed extends Command {
 			chunks.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
 				.map(m => [m.name, m.tag, m.clan, m.opponent, m.warID, m.timestamp, m.warType, m.teamSize, m.missed])
 		);
+
+		// extra pages
+		const twoMissed = Object.values(missed).filter(m => m.count === 2);
+		if (twoMissed.length) {
+			const sheet = workbook.addWorksheet('2 Missed Attacks');
+			sheet.columns = [
+				{ header: 'Name', width: 16 },
+				{ header: 'Tag', width: 16 },
+				{ header: 'Miss #1', width: 16 },
+				{ header: 'Miss #2', width: 16 },
+				{ header: 'Miss #3', width: 16 },
+				{ header: 'Miss #4', width: 16 },
+				{ header: 'Miss #5', width: 16 }
+			] as any; // TODO: Fix Later
+
+			sheet.getRow(1).font = { bold: true, size: 10 };
+			sheet.getRow(1).height = 40;
+
+			for (let i = 1; i <= sheet.columns.length; i++) {
+				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+			}
+
+			sheet.addRows(twoMissed.map(m => [m.name, m.tag, ...m.missed.slice(0, 5)]));
+		}
+
+		const oneMissed = Object.values(missed).filter(m => m.count === 1);
+		if (oneMissed.length) {
+			const sheet = workbook.addWorksheet('1 Missed Attacks');
+			sheet.columns = [
+				{ header: 'Name', width: 16 },
+				{ header: 'Tag', width: 16 },
+				{ header: 'Miss #1', width: 16 },
+				{ header: 'Miss #2', width: 16 },
+				{ header: 'Miss #3', width: 16 },
+				{ header: 'Miss #4', width: 16 },
+				{ header: 'Miss #5', width: 16 }
+			] as any; // TODO: Fix Later
+
+			sheet.getRow(1).font = { bold: true, size: 10 };
+			sheet.getRow(1).height = 40;
+
+			for (let i = 1; i <= sheet.columns.length; i++) {
+				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+			}
+
+			sheet.addRows(oneMissed.map(m => [m.name, m.tag, ...m.missed.slice(0, 5)]));
+		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
 		return message.util!.send({
