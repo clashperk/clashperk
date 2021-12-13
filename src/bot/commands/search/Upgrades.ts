@@ -88,6 +88,7 @@ export default class UpgradesCommand extends Command {
 
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS
+			.filter(unit => !unit.seasonal)
 			.filter(unit => {
 				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > (apiTroop?.level ?? 0);

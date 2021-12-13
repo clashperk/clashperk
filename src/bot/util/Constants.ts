@@ -214,6 +214,7 @@ export interface TroopJSON {
 			time: number[];
 			resource: string;
 		};
+		seasonal: boolean;
 		levels: number[];
 	}[];
 }

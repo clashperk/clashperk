@@ -136,6 +136,7 @@ export default class UnitsCommand extends Command {
 			.setAuthor(`${data.name} (${data.tag})`);
 
 		const Troops = RAW_TROOPS_DATA.TROOPS
+			.filter(troop => !troop.seasonal)
 			.filter(unit => {
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > 0;
 				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 1] > 0;

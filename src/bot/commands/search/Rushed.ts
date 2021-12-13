@@ -106,6 +106,7 @@ export default class RushedCommand extends Command {
 
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS
+			.filter(troop => !troop.seasonal)
 			.filter(unit => {
 				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
