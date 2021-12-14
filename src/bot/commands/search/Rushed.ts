@@ -227,7 +227,7 @@ export default class RushedCommand extends Command {
 
 	private reduce(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const Troop = RAW_TROOPS_DATA.TROOPS
+		const Troop = RAW_TROOPS_DATA.TROOPS.filter(troop => !troop.seasonal)
 			.filter(unit => {
 				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
@@ -295,7 +295,7 @@ export default class RushedCommand extends Command {
 	}
 
 	private troopsCount(villageType: string, hallLevel: number, rushed: number) {
-		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(unit => unit.village === villageType && unit.levels[hallLevel - 1]);
+		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(troop => !troop.seasonal).filter(unit => unit.village === villageType && unit.levels[hallLevel - 1]);
 		return ((rushed * 100) / totalTroops.length).toFixed(2);
 	}
 }
