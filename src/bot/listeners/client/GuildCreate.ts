@@ -31,7 +31,7 @@ export default class GuildCreateListener extends Listener {
 		if (!guild.available) return;
 		this.client.logger.debug(`${guild.name} (${guild.id})`, { label: 'GUILD_CREATE' });
 
-		await this.intro(guild);
+		await this.intro(guild).catch(() => null);
 		await this.restore(guild);
 		await this.client.stats.post();
 		await this.changeNickname(guild);
@@ -65,7 +65,7 @@ export default class GuildCreateListener extends Listener {
 		return [data!.addition, data!.deletion, data!.addition - data!.deletion].join('/');
 	}
 
-	private intro(guild: Guild) {
+	private async intro(guild: Guild) {
 		const prefix = this.client.settings.get<string>(guild, 'prefix', '!');
 		const embed = this.client.util.embed()
 			.setAuthor('Thanks for inviting me, have a nice day!', this.client.user!.displayAvatarURL({ format: 'png' }))

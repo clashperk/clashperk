@@ -56,45 +56,9 @@ export default class ClanGamesLog {
 			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
 				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
 
-				if (cache.message && SnowflakeUtil.deconstruct(cache.message).date.getMonth() === 10) {
-					const cursor = this.client.db.collection(Collections.CLAN_MEMBERS)
-						.aggregate([
-							{
-								$match: {
-									clanTag: clan.tag, season: '2021-11'
-								}
-							},
-							{
-								$sort: {
-									clanGamesTotal: -1
-								}
-							},
-							{
-								$limit: 60
-							}
-						]);
-
-					const items = await cursor.toArray();
-
-					const members = items.map(mem => ({
-						name: mem.name,
-						tag: mem.tag,
-						points: Math.min(4000, mem.clanGamesTotal),
-						endedAt: mem.clanGamesEndTime
-					}));
-					members.sort((a, b) => b.points - a.points)
-						.sort((a, b) => {
-							if (a.endedAt && b.endedAt) {
-								return a.endedAt.getTime() - b.endedAt.getTime();
-							}
-							return 0;
-						});
-					const total = members.reduce((acc, cur) => acc + cur.points, 0);
-
-					try {
-						await this.edit(cache, channel, clan, { total, members }, true);
-						delete cache.message;
-					} catch {}
+				if (cache.message && new Date().getDate() === ClanGames.STARTING_DATE) {
+					const lastMonthIndex = SnowflakeUtil.deconstruct(cache.message).date.getMonth();
+					if (lastMonthIndex < new Date().getMonth()) delete cache.message;
 				}
 
 				return this.handleMessage(cache, channel, clan, data);
@@ -143,20 +107,20 @@ export default class ClanGamesLog {
 		return Util.sendMessage(this.client, channel.id, { embeds: [embed.toJSON()] }).catch(() => null);
 	}
 
-	private async edit(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, data: Payload, old = false) {
-		const embed = this.embed(cache, clan, data, old);
+	private async edit(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, data: Payload) {
+		const embed = this.embed(cache, clan, data);
 
 		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] })
 			.catch(error => {
 				if (error.code === 10008) {
 					delete cache.message;
-					if (!old) return this.send(cache, channel, clan, data);
+					return this.send(cache, channel, clan, data);
 				}
 				return null;
 			});
 	}
 
-	private embed(cache: Cache, clan: Clan, data: Payload, old = false) {
+	private embed(cache: Cache, clan: Clan, data: Payload) {
 		const embed = new MessageEmbed()
 			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
 			.setDescription([
@@ -170,7 +134,7 @@ export default class ClanGamesLog {
 				'```'
 			].join('\n'))
 			.setFooter(`Points: ${data.total} [Avg: ${(data.total / clan.members).toFixed(2)}]`)
-			.setTimestamp(old ? new Date('2021-11-28T16:11:30') : new Date());
+			.setTimestamp();
 		if (cache.color) embed.setColor(cache.color);
 
 		return embed;
