@@ -1,5 +1,6 @@
 import { Message, MessageActionRow, MessageButton } from 'discord.js';
 import { Collections, STOP_REASONS } from '../../util/Constants';
+import { ClanGames } from '../../util/Util';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
@@ -136,7 +137,7 @@ export default class ClanGamesCommand extends Command {
 
 	private get MAX() {
 		const now = new Date();
-		return now.getDate() >= 22 && now.getMonth() === 7 ? 5000 : 4000;
+		return now.getDate() >= 22 && ClanGames.isSpecial ? 5000 : 4000;
 	}
 
 	private padStart(num: number) {

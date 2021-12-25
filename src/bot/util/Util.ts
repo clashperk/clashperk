@@ -235,12 +235,16 @@ export class ClanGames {
 		return new Date() >= startTime && new Date() <= endTime;
 	}
 
+	public static get isSpecial() {
+		return [7, 11].includes(new Date().getMonth());
+	}
+
 	public static get MAX_TOTAL() {
-		return new Date().getMonth() === 7 ? 75_000 : 50_000;
+		return this.isSpecial ? 75_000 : 50_000;
 	}
 
 	public static get MAX_POINT() {
-		return new Date().getMonth() === 7 ? 5_000 : 4_000;
+		return this.isSpecial ? 5_000 : 4_000;
 	}
 
 	public static get STARTING_DATE() {

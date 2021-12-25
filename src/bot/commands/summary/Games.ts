@@ -1,4 +1,4 @@
-import { Util } from '../../util/Util';
+import { ClanGames, Util } from '../../util/Util';
 import { Collections } from '../../util/Constants';
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { Message, MessageEmbed } from 'discord.js';
@@ -93,6 +93,6 @@ export default class ClanGamesSummaryCommand extends Command {
 
 	private get MAX() {
 		const now = new Date();
-		return now.getDate() >= 22 && now.getMonth() === 7 ? 5000 : 4000;
+		return now.getDate() >= 22 && ClanGames.isSpecial ? 5000 : 4000;
 	}
 }
