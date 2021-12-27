@@ -149,15 +149,6 @@ export default class LastSeenLog {
 		return embed;
 	}
 
-	private start() {
-		this.cached.filter(
-			cache => {
-				if (!cache.updatedAt) return true;
-				return (Date.now() - (2 * 60 * 1000)) >= cache.updatedAt.getTime();
-			}
-		);
-	}
-
 	public async init() {
 		await this.collection.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
 			.forEach(data => {

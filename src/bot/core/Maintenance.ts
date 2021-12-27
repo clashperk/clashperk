@@ -26,11 +26,13 @@ export default class MaintenanceHandler {
 		}
 
 		if (res.statusCode === 200 && this.isMaintenance) {
-			this.isMaintenance = Boolean(false);
-			const dur = Date.now() - this.startTime!.getTime();
-			this.startTime = null;
-			this.sendMessages(dur);
-			this.client.rpcHandler.init();
+			const duration = Date.now() - this.startTime!.getTime();
+			if (duration > 60_000) {
+				this.isMaintenance = Boolean(false);
+				this.startTime = null;
+				this.sendMessages(duration);
+				this.client.rpcHandler.init();
+			}
 		}
 
 		return this;

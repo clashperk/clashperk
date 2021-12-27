@@ -179,11 +179,15 @@ export default class DonationLog {
 		}
 
 		if (channel instanceof TextChannel || channel instanceof ThreadChannel) {
-			return channel.send({ embeds: [embed] }).catch(() => null);
+			await channel.send({ embeds: [embed] }).catch(() => null);
+			return this.client.db.collection(Collections.DONATION_LOGS)
+				.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 		}
 
 		try {
 			const message = await channel.send({ embeds: [embed] });
+			await this.client.db.collection(Collections.DONATION_LOGS)
+				.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 			if (message.channel_id !== cache.channel) {
 				await channel.deleteMessage(message.id);
 				return this.recreateWebhook(id);

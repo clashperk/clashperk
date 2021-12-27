@@ -166,9 +166,13 @@ export default class ClanFeedLog {
 			if (!message) continue;
 			if (channel instanceof TextChannel || channel instanceof ThreadChannel) {
 				await channel.send({ embeds: [message.embed], content: message.content }).catch(() => null);
+				await this.client.db.collection(Collections.CLAN_FEED_LOGS)
+					.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 			} else {
 				try {
 					const msg = await channel.send({ embeds: [message.embed], content: message.content });
+					await this.client.db.collection(Collections.CLAN_FEED_LOGS)
+						.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 					if (msg.channel_id !== cache.channel) {
 						await channel.deleteMessage(msg.id);
 						return this.recreateWebhook(id);
@@ -190,7 +194,7 @@ export default class ClanFeedLog {
 		const cache = this.cached.get(id);
 		if (!cache) return null;
 		const player: Player = await this.client.http.player(member.tag);
-		if (!player.ok) return null;
+		if (!player.ok) return console.log(`PLAYER_LOG_FETCH_FAILED_${member.tag}`);
 
 		let content = null;
 		const embed = new MessageEmbed()
