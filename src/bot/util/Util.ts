@@ -170,21 +170,20 @@ export class Util extends Discord.Util {
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Season {
-	private static getSeasonEnd(month: number, autoFix = true): Date {
-		const seasonTime = new Date();
-		seasonTime.setMonth(month, 0);
-		seasonTime.setHours(5, 0, 0, 0);
+	private static getSeasonEnd(month: number, year: number, autoFix = true): Date {
+		const now = new Date();
+		now.setUTCFullYear(year);
+		now.setUTCMonth(month, 0);
+		now.setUTCHours(5, 0, 0, 0);
 
-		const newDate = seasonTime.getDay() === 0
-			? seasonTime.getDate() - 6
-			: seasonTime.getDate() - (seasonTime.getDay() - 1);
-		seasonTime.setDate(newDate);
+		const newDate = now.getUTCDay() === 0 ? now.getUTCDate() - 6 : now.getUTCDate() - (now.getUTCDay() - 1);
+		now.setUTCDate(newDate);
 
-		if (Date.now() >= seasonTime.getTime() && autoFix) {
-			return this.getSeasonEnd(month + 1);
+		if (Date.now() >= now.getTime() && autoFix) {
+			return this.getSeasonEnd(month + 1, year);
 		}
 
-		return seasonTime;
+		return now;
 	}
 
 	public static get ending() {
@@ -204,12 +203,12 @@ export class Season {
 	}
 
 	public static get getTimestamp() {
-		const month = new Date().getMonth() + 1;
-		return this.getSeasonEnd(month);
+		const now = new Date();
+		return this.getSeasonEnd(now.getMonth() + 1, now.getFullYear());
 	}
 
 	public static get startTimestamp() {
-		return this.getSeasonEnd(this.getTimestamp.getMonth(), false);
+		return this.getSeasonEnd(this.getTimestamp.getMonth(), this.getTimestamp.getFullYear(), false);
 	}
 
 	public static get endTimestamp() {
