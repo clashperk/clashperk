@@ -227,7 +227,7 @@ export default class ClanEmbedCommand extends Command {
 			if (action.customId === customIds.edit) {
 				try {
 					const channel = message.guild!.channels.cache.get(existing.channel);
-					await (channel as TextChannel)!.messages.edit(existing.messagej, { embeds: [embed] });
+					await (channel as TextChannel)!.messages.edit(existing.message, { embeds: [embed] });
 				} catch {
 					row.components[0].setDisabled(true);
 					return action.update({
