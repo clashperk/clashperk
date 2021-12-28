@@ -23,6 +23,8 @@ export enum Collections {
 	CLAN_FEED_LOGS = 'ClanFeedLogs',
 	CLAN_WAR_LOGS = 'ClanWarLogs',
 
+	EVENT_LOGS = 'EventLogs',
+
 	// FLAGS
 	FLAGS = 'Flags',
 

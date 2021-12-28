@@ -53,7 +53,7 @@ export default class RPCHandler {
 						await this.lastSeenLog.exec(data.tag, data.clan, data.members);
 						break;
 					case Flags.CLAN_FEED_LOG:
-						await this.clanFeedLog.exec(data.tag, data);
+						// await this.clanFeedLog.exec(data.tag, data);
 						await this.roleManager.exec(data.tag, data);
 						break;
 					case Flags.CLAN_EMBED_LOG:

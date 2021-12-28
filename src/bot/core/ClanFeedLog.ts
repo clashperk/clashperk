@@ -39,6 +39,12 @@ export default class ClanFeedLog {
 
 	public constructor(private readonly client: Client) {
 		this.cached = new Collection();
+
+		this.client.db.collection(Collections.EVENT_LOGS).watch().on('change', async change => {
+			if (change.operationType === 'insert') {
+				return this.exec(change.fullDocument!.tag, change.fullDocument);
+			}
+		});
 	}
 
 	public async exec(tag: string, data: any) {
@@ -165,7 +171,7 @@ export default class ClanFeedLog {
 		for (const message of messages) {
 			if (!message) continue;
 			if (channel instanceof TextChannel || channel instanceof ThreadChannel) {
-				await channel.send({ embeds: [message.embed], content: message.content }).catch(() => null);
+				await channel.send({ embeds: [message.embed], content: message.content });
 				await this.client.db.collection(Collections.CLAN_FEED_LOGS)
 					.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 			} else {
@@ -200,7 +206,7 @@ export default class ClanFeedLog {
 		const embed = new MessageEmbed()
 			.setColor(OP[member.op])
 			.setTitle(`\u200e${player.name} (${player.tag})`)
-			.setURL(`https://www.clashofstats.com/players/${player.tag.substr(1)}`);
+			.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
 		if (member.op === 'LEFT') {
 			embed.setFooter(`Left ${data.clan.name}`, data.clan.badge);
 			embed.setDescription([
