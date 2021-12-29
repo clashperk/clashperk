@@ -1,10 +1,11 @@
 import { Message, Guild } from 'discord.js';
 import { Command } from 'discord-akairo';
+import { Settings } from '../../util/Constants';
 
 export default class GuildBanCommand extends Command {
 	public constructor() {
-		super('guildban', {
-			aliases: ['guildban'],
+		super('guild-ban', {
+			aliases: ['guild-ban'],
 			description: {
 				content: 'You can\'t use this anyway, so why explain?',
 				usage: '<guildId>',
@@ -22,7 +23,7 @@ export default class GuildBanCommand extends Command {
 						return { id, name: id };
 					},
 					prompt: {
-						start: 'What is the guildId to be blacklisted/unblacklisted?'
+						start: 'What is the guildId to be blacklisted/un-blacklisted?'
 					}
 				}
 			]
@@ -30,18 +31,18 @@ export default class GuildBanCommand extends Command {
 	}
 
 	public exec(message: Message, { guild }: { guild: Guild }) {
-		const blacklist = this.client.settings.get<string[]>('global', 'guildban', []);
+		const blacklist = this.client.settings.get<string[]>('global', Settings.GUILD_BLACKLIST, []);
 		if (blacklist.includes(guild.id)) {
 			const index = blacklist.indexOf(guild.id);
 			blacklist.splice(index, 1);
-			if (blacklist.length === 0) this.client.settings.delete('global', 'guildban');
-			else this.client.settings.set('global', 'guildban', blacklist);
+			if (blacklist.length === 0) this.client.settings.delete('global', Settings.GUILD_BLACKLIST);
+			else this.client.settings.set('global', Settings.GUILD_BLACKLIST, blacklist);
 
 			return message.util!.send(`**${guild.name}** has been removed from the ${this.client.user!.username}'s blacklist.`);
 		}
 
 		blacklist.push(guild.id);
-		this.client.settings.set('global', 'guildban', blacklist);
+		this.client.settings.set('global', Settings.GUILD_BLACKLIST, blacklist);
 
 		return message.util!.send(`**${guild.name}** has been blacklisted from using ${this.client.user!.username}'s command.`);
 	}
