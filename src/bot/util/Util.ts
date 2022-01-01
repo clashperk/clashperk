@@ -54,7 +54,7 @@ export class Util extends Discord.Util {
 	 * @returns {string[]} SeasonIds
 	 */
 	public static getSeasonIds(): string[] {
-		return Array(new Date().getMonth() - 2)
+		return Array(Math.min(24, 10 + new Date().getMonth()))
 			.fill(0)
 			.map((_, m) => {
 				const now = new Date();
