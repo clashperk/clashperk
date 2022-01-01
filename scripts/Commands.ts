@@ -2,7 +2,7 @@ import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'disco
 import moment from 'moment';
 
 export function getSeasonIds() {
-	return Array(new Date().getMonth() - 2)
+	return Array(Math.min(24, 10 + new Date().getMonth()))
 		.fill(0)
 		.map((_, m) => {
 			const now = new Date();
