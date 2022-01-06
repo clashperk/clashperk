@@ -63,7 +63,6 @@ export default class PatronCommand extends Command {
 						{ $set: { active: false, declined: action === 'dec', cancelled: action === 'del' } }
 					);
 
-				await this.client.patrons._fetch();
 				await this.client.patrons.refresh();
 				return message.util!.send('Success!');
 			}

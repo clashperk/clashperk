@@ -29,20 +29,65 @@ export interface Patron {
 	cancelled?: boolean;
 }
 
+export interface Member {
+	attributes: {
+		email: string;
+		last_charge_date: string;
+		currently_entitled_amount_cents: number;
+		pledge_relationship_start: string;
+		patron_status: 'active_patron' | 'declined_patron' | 'former_patron' | null;
+		last_charge_status: 'Paid' | 'Declined' | 'Deleted' | 'Pending' | 'Refunded' | 'Fraud' | 'Other' | null;
+	};
+	id: string;
+	relationships: {
+		currently_entitled_tiers: {
+			data: {
+				id: string;
+				type: string;
+			}[];
+		};
+		user: {
+			data: {
+				id: string;
+				type: string;
+			};
+		};
+	};
+	type: string;
+}
+
+export interface Included {
+	attributes: {
+		full_name: string;
+		image_url: string;
+		social_connections?: {
+			discord?: {
+				user_id?: string;
+			};
+		};
+	};
+	id: string;
+	type: string;
+}
+
 export default class Patrons {
 	private readonly collection: Collection<Patron>;
 	private readonly patrons = new Set<string>();
-	private _declines: Patron[] = [];
 
 	public constructor(private readonly client: Client) {
 		this.collection = this.client.db.collection(Collections.PATRONS);
+
+		this.collection.watch().on('change', async change => {
+			if (['update', 'insert'].includes(change.operationType)) {
+				await this.refresh();
+			}
+		});
 	}
 
 	public async init() {
-		await this._fetch();
-		await this._check();
 		await this.refresh();
-		setInterval(this._check.bind(this), 5 * 60 * 1000).unref();
+		await this._autoDelete();
+		setInterval(this._autoDelete.bind(this), 5 * 60 * 1000).unref();
 	}
 
 	public get(message: any): boolean {
@@ -65,54 +110,40 @@ export default class Patrons {
 		}
 	}
 
-	public async _fetch() {
-		this._declines = await this.collection.find(
-			{ active: false, declined: true, cancelled: false }
-		).toArray();
-	}
+	private async _autoDelete() {
+		const res = await this._fetchAPI();
+		if (!res) return null;
 
-	private async _check() {
-		if (!this._declines.length) return; // no declined patrons 😎
+		const patrons = await this.collection.find().toArray();
+		for (const patron of patrons) {
+			const pledge = res.data.find(entry => entry.relationships.user.data.id === patron.id);
 
-		const query = qs.stringify({ 'include': 'patron.null', 'page[count]': 200, 'sort': 'created' });
-		const data = await fetch(`https://www.patreon.com/api/oauth2/api/campaigns/2589569/pledges?${query}`, {
-			headers: { authorization: `Bearer ${process.env.PATREON_API!}` }, timeout: 10000
-		}).then(res => res.json()).catch(() => null);
-		if (!data?.data) return; // aww shit no data? let's skip it
-
-		for (const patron of this._declines) {
-			const pledge = data.data.find((entry: any) => entry?.relationships?.patron?.data?.id === patron.id);
-			if (!pledge) {
-				const itemIndex = this._declines.findIndex(data => data.id === patron.id);
-				if (itemIndex >= 0) this._declines.splice(itemIndex, 1);
-				await this.collection.updateOne({ id: patron.id }, { $set: { cancelled: true } });
+			if (patron.active && pledge?.attributes.patron_status === 'former_patron') {
+				await this.collection.updateOne({ id: patron.id }, { $set: { cancelled: true, active: false } });
 				this.client.logger.info(
 					`Declined Patron Deleted ${patron.discord_username ?? patron.name} (${patron.discord_id ?? patron.id})`,
 					{ label: 'PATRON' }
 				);
-				continue;
+
+				// eslint-disable-next-line
+				for (const guild of patron.guilds ?? []) await this._delete(guild.id);
 			}
 
-			// still declined, let's skip them
-			if (pledge.attributes.declined_since) continue;
-
-			await this.collection.updateOne({ id: patron.id }, { $set: { declined: false, active: true } });
-			try {
-				await this.client.shard!.broadcastEval(client => {
-					// @ts-expect-error
-					client.patrons.refresh();
-				});
-			} catch {
-				await this.refresh();
+			if (!patron.active && (patron.declined || patron.cancelled) && pledge?.attributes.patron_status === 'active_patron') {
+				await this.collection.updateOne({ id: patron.id }, { $set: { declined: false, active: true, cancelled: false } });
+				// eslint-disable-next-line
+				for (const guild of patron.guilds ?? []) await this._restore(guild.id);
+				this.client.logger.info(
+					`Declined Patron Resumed ${patron.discord_username ?? patron.name} (${patron.discord_id ?? patron.id})`,
+					{ label: 'PATRON' }
+				);
 			}
-			// eslint-disable-next-line
-			for (const guild of patron.guilds ?? []) await this._restore(guild.id);
-			const itemIndex = this._declines.findIndex(data => data.id === patron.id);
-			if (itemIndex >= 0) this._declines.splice(itemIndex, 1);
-			this.client.logger.info(
-				`Declined Patron Resumed ${patron.discord_username ?? patron.name} (${patron.discord_id ?? patron.id})`,
-				{ label: 'PATRON' }
-			);
+
+			if (patron.active && pledge?.attributes.patron_status === 'declined_patron' && new Date().getUTCDay() >= 5) {
+				await this.collection.updateOne({ id: patron.id }, { $set: { declined: true, active: false } });
+				// eslint-disable-next-line
+				for (const guild of patron.guilds ?? []) await this._delete(guild.id);
+			}
 		}
 	}
 
@@ -121,7 +152,8 @@ export default class Patrons {
 			.updateMany({ guild: guildId }, { $set: { active: true, patron: true } });
 
 		const clans = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild: guildId }).toArray();
+			.find({ guild: guildId })
+			.toArray();
 		for (const data of clans) {
 			try {
 				await this.client.shard!.broadcastEval((client, data) => {
@@ -136,5 +168,35 @@ export default class Patrons {
 				}
 			}
 		}
+	}
+
+	private async _delete(guildId: string) {
+		await this.client.settings.delete(guildId, Settings.CLAN_LIMIT);
+		await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild: guildId }, { $set: { patron: false } });
+
+		const clans = await this.client.db.collection(Collections.CLAN_STORES)
+			.find({ guild: guildId })
+			.skip(2)
+			.toArray();
+		for (const data of clans) {
+			await this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: data._id }, { $set: { active: false } });
+			await this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild: guildId });
+		}
+	}
+
+	private async _fetchAPI() {
+		const query = qs.stringify({
+			'include': 'user,currently_entitled_tiers',
+			'page[size]': 500,
+			'fields[user]': 'social_connections,email,full_name,email,image_url',
+			'fields[tier]': 'amount_cents,created_at',
+			'fields[member]': 'last_charge_status,last_charge_date,patron_status,email,pledge_relationship_start,currently_entitled_amount_cents'
+		});
+
+		const data = await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
+			headers: { authorization: `Bearer ${process.env.PATREON_API_V2!}` }, timeout: 10000
+		}).then(res => res.json()).catch(() => null) as { data: Member[]; included: Included[] } | null;
+
+		return data?.data ? data : null;
 	}
 }

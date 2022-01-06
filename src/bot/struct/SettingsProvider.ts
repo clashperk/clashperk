@@ -8,12 +8,18 @@ export default class SettingsProvider {
 
 	public constructor(db: Db) {
 		this.db = db.collection(Collections.SETTINGS);
+
+		this.db.watch([], { fullDocument: 'updateLookup' }).on('change', change => {
+			if (['update', 'insert'].includes(change.operationType)) {
+				this.settings.set(change.fullDocument!.id, change.fullDocument);
+			}
+		});
 	}
 
 	public async init() {
 		const collection = await this.db.find().toArray();
 		for (const data of collection) {
-			this.settings.set(data.id, data); // TODO: Move everything to (data.settings)
+			this.settings.set(data.id, data);
 		}
 	}
 
