@@ -90,7 +90,7 @@ export default class CWLExport extends Command {
 				const { members, perRound } = await this.rounds(data, clan);
 				if (!members.length) continue;
 				chunks.push({
-					name: clan.name, members, perRound,
+					name: clan.name, tag: clan.tag, members, perRound,
 					id: `${months[new Date(data.season).getMonth()]} ${new Date(data.season).getFullYear()}`
 				});
 				continue;
@@ -99,7 +99,7 @@ export default class CWLExport extends Command {
 			const { members, perRound } = await this.rounds(res, clan);
 			if (!members.length) continue;
 			chunks.push({
-				name: clan.name, members, perRound,
+				name: clan.name, tag: clan.tag, members, perRound,
 				id: `${months[new Date().getMonth()]} ${new Date().getFullYear()}`
 			});
 		}
@@ -107,8 +107,8 @@ export default class CWLExport extends Command {
 		if (!chunks.length) return message.util!.send('Nobody attacked in your clan yet, try again after sometime.');
 
 		const workbook = new Excel();
-		for (const { members, name, id } of chunks) {
-			const sheet = workbook.addWorksheet(`${Util.escapeSheetName(name)} (${id})`);
+		for (const { members, name, tag, id } of chunks) {
+			const sheet = workbook.addWorksheet(`${Util.escapeSheetName(name)}_${tag}_${id}`.substring(0, 31));
 			sheet.columns = [
 				{ header: 'Name', width: 16 },
 				{ header: 'Tag', width: 16 },
@@ -179,7 +179,7 @@ export default class CWLExport extends Command {
 			for (const round of perRound) {
 				// eslint-disable-next-line
 				const sheet = workbook.addWorksheet(
-					`Round ${++i} (${Util.escapeSheetName(round.clan.name)})`
+					`Round ${++i} (${Util.escapeSheetName(round.clan.name).concat(round.clan.tag)})`.substring(0, 31)
 				);
 
 				sheet.columns = [
