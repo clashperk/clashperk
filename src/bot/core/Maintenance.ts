@@ -56,6 +56,6 @@ export default class MaintenanceHandler {
 		if (this.isMaintenance) {
 			return `Maintenance break has started!`;
 		}
-		return `Maintenance break has finished! (~ ${moment.duration(dur).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' })})`;
+		return `Maintenance break has finished! (~${moment.duration(dur).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' })})`;
 	}
 }

@@ -86,8 +86,8 @@ export default class Patrons {
 
 	public async init() {
 		await this.refresh();
-		await this._autoDelete();
-		setInterval(this._autoDelete.bind(this), 5 * 60 * 1000).unref();
+		await this._autoDelete(true);
+		setInterval(this._autoDelete.bind(this), 30 * 60 * 1000, false).unref();
 	}
 
 	public get(message: any): boolean {
@@ -104,15 +104,17 @@ export default class Patrons {
 
 			for (const guild of data.guilds) {
 				this.patrons.add(guild.id);
-				const limit = this.client.settings.get(guild.id, Settings.CLAN_LIMIT, 2);
-				if (limit !== guild.limit) this.client.settings.set(guild.id, Settings.CLAN_LIMIT, guild.limit);
+				if (this.client.settings.get(guild.id, Settings.CLAN_LIMIT, 2) !== guild.limit) {
+					await this.client.settings.set(guild.id, Settings.CLAN_LIMIT, guild.limit);
+				}
 			}
 		}
 	}
 
-	private async _autoDelete() {
+	private async _autoDelete(debug = false) {
 		const res = await this._fetchAPI();
 		if (!res) return null;
+		if (debug) this.client.logger.info(`Patron Handler Initialized.`, { label: 'PATREON' });
 
 		const patrons = await this.collection.find().toArray();
 		for (const patron of patrons) {
