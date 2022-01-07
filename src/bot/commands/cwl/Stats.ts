@@ -4,6 +4,7 @@ import { MessageEmbed, Message } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
+import { Util } from '../../util/Util';
 
 export default class CWLStatsCommand extends Command {
 	public constructor() {
@@ -235,7 +236,7 @@ export default class CWLStatsCommand extends Command {
 					ranks.sort(
 						(a, b) => b.stars - a.stars
 					).map(
-						(clan, i) => `${BLUE_NUMBERS[++i]} \`\u200e ${clan.stars.toString().padEnd(3, ' ')} ${this.dest(clan.destruction, padding)}  ${clan.name.padEnd(15, ' ')}\``
+						(clan, i) => `${BLUE_NUMBERS[++i]} \`\u200e ${clan.stars.toString().padEnd(3, ' ')} ${this.dest(clan.destruction, padding)}  ${Util.escapeBackTick(clan.name).padEnd(15, ' ')}\``
 					).join('\n'),
 					'',
 					`Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`
