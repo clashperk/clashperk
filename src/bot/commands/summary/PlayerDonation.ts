@@ -1,6 +1,6 @@
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
-import { MessageEmbed, Message } from 'discord.js';
-import { Collections } from '../../util/Constants';
+import { MessageEmbed, Message, MessageActionRow, MessageButton } from 'discord.js';
+import { Collections, STOP_REASONS } from '../../util/Constants';
 import { Season, Util } from '../../util/Util';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -51,23 +51,55 @@ export default class PlayerDonationSummaryCommand extends Command {
 			this.predict(Math.max(...players.map(m => m.receives)))
 		];
 
-		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
-			.setAuthor('Top Players among Clan Family')
-			.setDescription([
-				Util.splitMessage(
-					[
-						`${EMOJIS.HASH} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(15, ' ')}\u200f\``,
-						players.map(
-							(mem, i) => `${BLUE_NUMBERS[++i]} \`\u200e${this.donation(mem.donations, mem_dp)} ${this.donation(mem.receives, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``
-						).join('\n')
-					].join('\n'),
-					{ maxLength: 4000 }
-				)[0]
-			].join('\n'))
-			.setFooter(`Season ${season}`);
+		const getEmbed = () => {
+			const embed = new MessageEmbed()
+				.setColor(this.client.embed(message))
+				.setAuthor('Top Players among Clan Family')
+				.setDescription([
+					Util.splitMessage(
+						[
+							`${EMOJIS.HASH} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(15, ' ')}\u200f\``,
+							players.map(
+								(mem, i) => `${BLUE_NUMBERS[++i]} \`\u200e${this.donation(mem.donations, mem_dp)} ${this.donation(mem.receives, mem_rp)}  ${mem.name.padEnd(15, ' ')}\u200f\``
+							).join('\n')
+						].join('\n'),
+						{ maxLength: 4000 }
+					)[0]
+				].join('\n'))
+				.setFooter(`Season ${season!}`);
 
-		return message.util!.send({ embeds: [embed] });
+			return embed;
+		};
+
+		const embed = getEmbed();
+		const customId = this.client.uuid(message.author.id);
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setStyle('SECONDARY')
+					.setCustomId(customId)
+					.setLabel('Sort by Received')
+			);
+
+		const msg = await message.util!.send({ embeds: [embed], components: [row] });
+		const collector = msg.createMessageComponentCollector({
+			filter: action => action.customId === customId && action.user.id === message.author.id,
+			max: 1, time: 5 * 60 * 1000
+		});
+
+		collector.on('collect', async action => {
+			if (action.customId === customId) {
+				players.sort((a, b) => b.receives - a.receives);
+				const embed = getEmbed();
+				return action.update({ embeds: [embed], components: [] });
+			}
+		});
+
+		collector.on('end', async (_, reason) => {
+			this.client.components.delete(customId);
+			if (STOP_REASONS.includes(reason)) return;
+			if (!msg.deleted) await msg.edit({ components: [] });
+		});
 	}
 
 	private donation(num: number, space: number) {
