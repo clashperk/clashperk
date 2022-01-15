@@ -134,8 +134,9 @@ export class Automaton {
 		for (const [key, val] of Object.entries(memObj)) {
 			embed.addField(
 				`${SUPER_TROOPS[key]} ${key}`,
-				`${val.map(mem => `\u200e${mem.name}${mem.duration ? ` (${Util.duration(mem.duration)})` : ''} ${mem.online ? EMOJIS.ONLINE : ''}`).join('\n')}\n\u200b`
+				Util.splitMessage(`${val.map(mem => `\u200e${mem.name}${mem.duration ? ` (${Util.duration(mem.duration)})` : ''} ${mem.online ? EMOJIS.ONLINE : ''}`).join('\n')}\n\u200b`, { maxLength: 1024 })[0]
 			);
+			embed.setTimestamp();
 		}
 
 		return { embeds: [embed], content: null, noActive: !lastSeen.length, noValue: !thisTroop };
