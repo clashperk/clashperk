@@ -13,7 +13,7 @@ class MongoDB extends MongoClient {
 	public async createIndex(db: Db) {
 		return Promise.all([
 			db.collection(Collections.BOT_GROWTH)
-				.createIndex({ ISTDate: 1 }, { unique: true }),
+				.createIndex({ key: 1 }, { unique: true }),
 
 			db.collection(Collections.BOT_GUILDS)
 				.createIndex({ guild: 1 }, { unique: true }),
@@ -27,7 +27,7 @@ class MongoDB extends MongoClient {
 				.createIndex({ id: 1 }),
 
 			db.collection(Collections.BOT_USAGE)
-				.createIndex({ ISTDate: 1 }, { unique: true }),
+				.createIndex({ key: 1 }, { unique: true }),
 			db.collection(Collections.BOT_USAGE)
 				.createIndex({ createdAt: 1 }),
 

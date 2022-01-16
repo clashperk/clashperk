@@ -81,7 +81,7 @@ export default class UsageCommand extends Command {
 			.sort({ createdAt: -1 })
 			.limit(limit)
 			.toArray();
-		return Chart.growth(collection.reverse().map(growth => ({ date: new Date(growth.ISTDate), value: growth })), { ...growth });
+		return Chart.growth(collection.reverse().map(growth => ({ date: new Date(growth.key), value: growth })), { ...growth });
 	}
 
 	private async commandsTotal() {

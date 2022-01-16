@@ -12,7 +12,7 @@ export default class StatsHandler {
 		this.client = client;
 	}
 
-	private get ISTDate() {
+	private get key() {
 		return new Date(Date.now() + 198e5).toISOString().substring(0, 10);
 	}
 
@@ -79,13 +79,13 @@ export default class StatsHandler {
 
 	public historic(command: string) {
 		return this.client.db.collection(Collections.BOT_USAGE)
-			.updateOne({ ISTDate: this.ISTDate }, {
+			.updateOne({ key: this.key }, {
 				$inc: {
 					usage: 1,
 					[`commands.${command}`]: 1
 				},
 				$set: {
-					ISTDate: this.ISTDate
+					key: this.key
 				},
 				$min: {
 					createdAt: new Date()
@@ -107,14 +107,14 @@ export default class StatsHandler {
 
 	public deletion() {
 		return this.client.db.collection(Collections.BOT_GROWTH)
-			.updateOne({ ISTDate: this.ISTDate }, {
+			.updateOne({ key: this.key }, {
 				$inc: {
 					addition: 0,
 					deletion: 1,
 					retention: 0
 				},
 				$set: {
-					ISTDate: this.ISTDate
+					key: this.key
 				},
 				$min: {
 					createdAt: new Date()
@@ -127,14 +127,14 @@ export default class StatsHandler {
 			.countDocuments({ guild });
 
 		return this.client.db.collection(Collections.BOT_GROWTH)
-			.updateOne({ ISTDate: this.ISTDate }, {
+			.updateOne({ key: this.key }, {
 				$inc: {
 					addition: 1,
 					deletion: 0,
 					retention: old ? 1 : 0
 				},
 				$set: {
-					ISTDate: this.ISTDate
+					key: this.key
 				},
 				$min: {
 					createdAt: new Date()
@@ -157,7 +157,7 @@ export default class StatsHandler {
 	public guilds(guild: Guild, count = 1) {
 		return this.client.db.collection(Collections.BOT_GUILDS)
 			.updateOne({ guild: guild.id }, {
-				$set: { guild: guild.id, guild_name: guild.name },
+				$set: { guild: guild.id, name: guild.name },
 				$inc: { usage: count },
 				$max: { updatedAt: new Date() },
 				$min: { createdAt: new Date() }
