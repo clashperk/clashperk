@@ -943,7 +943,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'redeem',
-		description: 'Redeem patreon subscription (if you wish to support us on patreon)'
+		description: 'Redeem/Manage Patreon subscription (if you wish to support us)'
 	},
 	{
 		name: 'stats',

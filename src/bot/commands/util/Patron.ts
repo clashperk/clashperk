@@ -1,18 +1,7 @@
 import { Collections, Settings, STOP_REASONS } from '../../util/Constants';
 import { Message, MessageActionRow, MessageButton } from 'discord.js';
+import { Patron } from '../../struct/Patrons';
 import { Command } from 'discord-akairo';
-
-interface Patron {
-	id: string;
-	name: string;
-	guilds: {
-		id: string;
-		limit: number;
-	}[];
-	active: boolean;
-	discord_id?: string;
-	discord_username?: string;
-}
 
 export default class PatronCommand extends Command {
 	public constructor() {
@@ -21,7 +10,7 @@ export default class PatronCommand extends Command {
 			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Get information about the bot\'s patreon.'
+				content: 'Get info about the bot\'s patreon.'
 			},
 			args: [
 				{
@@ -39,7 +28,7 @@ export default class PatronCommand extends Command {
 	public async exec(message: Message, { action, id }: { action: string; id: string }) {
 		if (action && id && this.client.isOwner(message.author.id)) {
 			const patrons = await this.patrons();
-			const patron = patrons.find(d => d.discord_id === id || d.id === id);
+			const patron = patrons.find(d => d.userId === id || d.id === id);
 			for (const guild of patron?.guilds ?? []) {
 				if (action === 'add') await this.add(guild.id);
 				if (['del', 'dec'].includes(action)) await this.del(guild.id);
@@ -110,14 +99,14 @@ export default class PatronCommand extends Command {
 			time: 5 * 60 * 1000
 		});
 
-		const patrons = (await this.patrons()).filter(patron => patron.active && patron.discord_id !== this.client.ownerID);
+		const patrons = (await this.patrons()).filter(patron => patron.active && patron.userId !== this.client.ownerID);
 		collector.on('collect', async action => {
 			if (action.customId === customId) {
 				embed.setDescription([
 					embed.description,
 					'',
 					`**Our Current Patrons (${patrons.length})**`,
-					patrons.map(patron => `• ${patron.discord_username ?? patron.name}`)
+					patrons.map(patron => `• ${patron.username}`)
 						.join('\n')
 				].join('\n'));
 

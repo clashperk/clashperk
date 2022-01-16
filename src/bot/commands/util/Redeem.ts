@@ -26,7 +26,7 @@ export default class RedeemCommand extends Command {
 		const data = await this.client.patrons.fetchAPI();
 		if (!data) return message.util!.send('**Something went wrong (unresponsive api), please contact us!**');
 
-		const patron = data.included.find(entry => entry.attributes.social_connections?.discord?.user_id === '860039763196903484');
+		const patron = data.included.find(entry => entry.attributes.social_connections?.discord?.user_id === message.author.id);
 		if (!patron) {
 			const embed = this.client.util.embed()
 				.setColor(16345172)
