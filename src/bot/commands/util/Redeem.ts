@@ -1,13 +1,12 @@
+import { Message, MessageActionRow, MessageButton, MessageSelectMenu } from 'discord.js';
+import { Included, Patron } from '../../struct/Patrons';
 import { Collections } from '../../util/Constants';
 import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
-import fetch from 'node-fetch';
-import qs from 'querystring';
 
-const rewards: { [key: string]: number } = {
-	3705318: 3 * 100,
-	4742718: 5 * 100,
-	5352215: 10 * 100
+const rewards = {
+	bronze: '3705318',
+	silver: '4742718',
+	gold: '5352215'
 };
 
 export default class RedeemCommand extends Command {
@@ -18,29 +17,16 @@ export default class RedeemCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Redeems your patreon subscription.'
+				content: 'Redeem/Manage Patreon subscription.'
 			}
 		});
 	}
 
 	public async exec(message: Message) {
-		const query = qs.stringify({
-			'include': 'patron.null,reward.null',
-			'page[count]': 100,
-			'sort': 'created'
-		});
-		const res = await fetch(`https://www.patreon.com/api/oauth2/api/campaigns/2589569/pledges?${query}`, {
-			headers: {
-				authorization: `Bearer ${process.env.PATREON_API!}`
-			},
-			timeout: 5000
-		}).catch(() => null);
-		const data = await res?.json().catch(() => null);
-		if (!data?.data) {
-			return message.util!.send('**Something went wrong, please contact us!**');
-		}
+		const data = await this.client.patrons.fetchAPI();
+		if (!data) return message.util!.send('**Something went wrong (unresponsive api), please contact us!**');
 
-		const patron = data.included.find((entry: any) => entry?.attributes?.social_connections?.discord?.user_id === message.author.id);
+		const patron = data.included.find(entry => entry.attributes.social_connections?.discord?.user_id === '860039763196903484');
 		if (!patron) {
 			const embed = this.client.util.embed()
 				.setColor(16345172)
@@ -57,35 +43,54 @@ export default class RedeemCommand extends Command {
 		}
 
 		if (this.client.patrons.get(message.guild!.id)) {
-			return message.util!.send('This server already has an active subscription.');
+			return message.util!.send('**This server already has an active subscription.**');
 		}
 
-		const db = this.client.db.collection(Collections.PATRONS);
-		const user = await db.findOne({ id: patron.id });
+		const collection = this.client.db.collection<Patron>(Collections.PATRONS);
+		const user = await collection.findOne({ id: patron.id });
 
-		const pledge = data.data.find((entry: any) => entry?.relationships?.patron?.data?.id === patron.id);
-		if (pledge.attributes.declined_since) {
-			return message.util!.send('**Something went wrong, please contact us!**');
+		const pledge = data.data.find(entry => entry.relationships.user.data.id === patron.id);
+		if (!pledge) return message.util!.send('**Something went wrong (unknown pledge), please contact us!**');
+
+		if (pledge.attributes.patron_status !== 'active_patron') {
+			return message.util!.send('**Something went wrong (declined pledge), please contact us!**');
 		}
 
-		const rewardId = pledge.relationships.reward?.data?.id;
+		const rewardId = pledge.relationships.currently_entitled_tiers.data[0]?.id;
+		if (!rewardId) {
+			return message.util!.send('**Something went wrong (unknown tier), please contact us!**');
+		}
+
+		const embed = this.client.util.embed()
+			.setColor(16345172)
+			.setDescription([
+				`Subscription enabled for **${message.guild!.name}**`,
+				`Thank you so much for the support ${message.author.toString()}`
+			].join('\n'));
+
 		if (!user) {
-			await db.updateOne(
+			await collection.updateOne(
 				{ id: patron.id },
 				{
 					$set: {
+						id: patron.id,
 						name: patron.attributes.full_name,
-						id: patron.id, redeemed: true,
-						rewardId: rewards[rewardId] ? rewardId : '000000',
-						discord_id: message.author.id,
-						discord_username: message.author.username,
-						active: true, declined: false, cancelled: false,
+						rewardId,
+						userId: message.author.id,
+						username: message.author.username,
 						guilds: [{
 							id: message.guild!.id,
-							limit: (rewards[rewardId] || Math.ceil(pledge.attributes.amount_cents)) >= 300 ? 50 : 5
+							name: message.guild!.name,
+							limit: 50
 						}],
-						entitled_amount: Math.ceil(pledge.attributes.amount_cents) / 100,
-						createdAt: new Date(pledge.attributes.created_at)
+						redeemed: true,
+						active: true,
+						declined: false,
+						cancelled: false,
+						entitledAmount: pledge.attributes.currently_entitled_amount_cents,
+						lifetimeSupport: pledge.attributes.lifetime_support_cents,
+						createdAt: new Date(pledge.attributes.pledge_relationship_start),
+						lastChargeDate: new Date(pledge.attributes.last_charge_date)
 					}
 				},
 				{ upsert: true }
@@ -93,41 +98,85 @@ export default class RedeemCommand extends Command {
 
 			await this.client.patrons.refresh();
 			await this.sync(message.guild!.id);
-			const embed = this.client.util.embed()
-				.setColor(16345172)
-				.setDescription([
-					`Patron benefits applied to **${message.guild!.name}**`,
-					`Thank you so much for the support ${message.author.toString()}`
-				].join('\n'));
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		const redeemed = this.redeemed(Object.assign(user, { entitled_amount: Math.ceil(pledge.attributes.amount_cents) / 100 }));
+		const redeemed = this.redeemed({ ...user, rewardId });
 		if (redeemed) {
 			if (!this.isNew(user, message, patron)) await this.client.patrons.refresh();
 			const embed = this.client.util.embed()
 				.setColor(16345172)
 				.setDescription([
-					'You\'ve already claimed your patron benefits!',
-					'If you think it\'s wrong, please [contact us](https://discord.gg/ppuppun)'
+					'You\'ve already claimed your subscription!',
+					'If you think it\'s wrong, please [contact us.](https://discord.gg/ppuppun)'
 				].join('\n'));
-			return message.util!.send({ embeds: [embed] });
+
+			const customIds = {
+				button: this.client.uuid(message.author.id),
+				menu: this.client.uuid(message.author.id)
+			};
+			const row = new MessageActionRow()
+				.addComponents(
+					new MessageButton()
+						.setStyle('SECONDARY')
+						.setCustomId(customIds.button)
+						.setLabel('Manage Servers')
+				);
+			const msg = await message.util!.send({ embeds: [embed], components: [row] });
+			const collector = msg.createMessageComponentCollector({
+				filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
+				time: 5 * 60 * 1000
+			});
+
+			const menus = new MessageActionRow()
+				.addComponents(
+					new MessageSelectMenu()
+						.setPlaceholder('Select a server!')
+						.setCustomId(customIds.menu)
+						.addOptions(user.guilds.map(guild => ({ label: guild.name, value: guild.id })))
+				);
+
+			collector.on('collect', async action => {
+				if (action.customId === customIds.button) {
+					return action.update({
+						embeds: [], components: [menus],
+						content: '**Select a server to disable subscription.**'
+					});
+				}
+
+				if (action.customId === customIds.menu && action.isSelectMenu()) {
+					const id = action.values[0].trim();
+					const guild = user.guilds.find(guild => guild.id === id);
+					if (!guild) return action.update({ content: '**Something went wrong (unknown server), please contact us!**' });
+					await action.deferUpdate();
+					await collection.updateOne({ _id: user._id }, { $pull: { guilds: { id } } });
+					await action.editReply({ components: [], content: `Subscription disabled for **${guild.name} (${guild.id})**` });
+				}
+			});
+
+			return;
 		}
 
-		// NOT Redeemed
-		await db.updateOne(
+		// not redeemed
+		await collection.updateOne(
 			{ id: patron.id },
 			{
 				$set: {
-					entitled_amount: Math.ceil(pledge.attributes.amount_cents) / 100,
-					discord_id: message.author.id,
-					discord_username: message.author.username,
-					redeemed: true, active: true, declined: false, cancelled: false
+					userId: message.author.id,
+					username: message.author.username,
+					active: true,
+					declined: false,
+					cancelled: false,
+					redeemed: true,
+					entitledAmount: pledge.attributes.currently_entitled_amount_cents,
+					lifetimeSupport: pledge.attributes.lifetime_support_cents,
+					lastChargeDate: new Date(pledge.attributes.last_charge_date)
 				},
 				$push: {
 					guilds: {
 						id: message.guild!.id,
-						limit: (rewards[rewardId] || Math.ceil(pledge.attributes.amount_cents)) >= 300 ? 50 : 5
+						name: message.guild!.name,
+						limit: 50
 					}
 				}
 			}
@@ -135,24 +184,18 @@ export default class RedeemCommand extends Command {
 
 		await this.client.patrons.refresh();
 		await this.sync(message.guild!.id);
-		const embed = this.client.util.embed()
-			.setColor(16345172)
-			.setDescription([
-				`Patron benefits applied to **${message.guild!.name}**`,
-				`Thank you so much for the support ${message.author.toString()}`
-			].join('\n'));
 		return message.channel.send({ embeds: [embed] });
 	}
 
-	private isNew(user: any, message: Message, patron: any) {
-		if (user && user.discord_id !== message.author.id) {
+	private isNew(user: Patron, message: Message, patron: Included) {
+		if (user.userId !== message.author.id) {
 			this.client.db.collection(Collections.PATRONS)
 				.updateOne(
 					{ id: patron.id },
 					{
 						$set: {
-							discord_id: message.author.id,
-							discord_username: message.author.username
+							userId: message.author.id,
+							username: message.author.username
 						}
 					}
 				);
@@ -171,11 +214,10 @@ export default class RedeemCommand extends Command {
 			});
 	}
 
-	private redeemed(user: any) {
-		if (user.entitled_amount === 10 && user.guilds && user.guilds.length >= 5) return true;
-		else if (user.entitled_amount === 5 && user.guilds && user.guilds.length >= 3) return true;
-		else if (user.entitled_amount === 3 && user.guilds && user.guilds.length >= 1) return true;
-		else if (user.entitled_amount < 3 && user.redeemed) return true;
+	private redeemed(user: Patron) {
+		if (user.rewardId === rewards.gold && user.guilds.length >= 5) return true;
+		else if (user.rewardId === rewards.silver && user.guilds.length >= 3) return true;
+		else if (user.rewardId === rewards.bronze && user.guilds.length >= 1) return true;
 		return false;
 	}
 }
