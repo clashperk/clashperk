@@ -92,7 +92,7 @@ export default class Http extends Client {
 	}
 
 	private async _login() {
-		const res = await fetch('https://cocdiscordlink.azurewebsites.net/api/login', {
+		const res = await fetch('https://cocdiscord.link/login', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -111,7 +111,7 @@ export default class Http extends Client {
 	}
 
 	public async linkPlayerTag(discordId: string, playerTag: string) {
-		const res = await fetch('https://cocdiscordlink.azurewebsites.net/api/links', {
+		const res = await fetch('https://cocdiscord.link/links', {
 			method: 'POST',
 			headers: {
 				'Authorization': `Bearer ${this.bearerToken}`,
@@ -126,7 +126,7 @@ export default class Http extends Client {
 	}
 
 	public async unlinkPlayerTag(playerTag: string) {
-		const res = await fetch(`https://cocdiscordlink.azurewebsites.net/api/links/${encodeURIComponent(playerTag)}`, {
+		const res = await fetch(`https://cocdiscord.link/links/${encodeURIComponent(playerTag)}`, {
 			method: 'DELETE',
 			headers: {
 				'Authorization': `Bearer ${this.bearerToken}`,
@@ -140,7 +140,7 @@ export default class Http extends Client {
 	}
 
 	public async getPlayerTags(user: string) {
-		const res = await fetch(`https://cocdiscordlink.azurewebsites.net/api/links/${user}`, {
+		const res = await fetch(`https://cocdiscord.link/links/${user}`, {
 			method: 'GET',
 			headers: {
 				'Authorization': `Bearer ${this.bearerToken}`,
@@ -156,7 +156,7 @@ export default class Http extends Client {
 	}
 
 	public async getDiscordLinks(members: { tag: string }[]) {
-		const res = await fetch('https://cocdiscordlink.azurewebsites.net/api/links/batch', {
+		const res = await fetch('https://cocdiscord.link/batch', {
 			method: 'POST',
 			headers: {
 				'Authorization': `Bearer ${this.bearerToken}`,
