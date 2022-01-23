@@ -110,8 +110,9 @@ export default class RushedCommand extends Command {
 			.filter(unit => {
 				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
-				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
-				return Boolean(homeTroops || builderTroops);
+				// const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
+				// return Boolean(homeTroops || builderTroops);
+				return Boolean(homeTroops);
 			});
 
 		const TroopsObj = Troops.reduce((prev, curr) => {
@@ -127,9 +128,9 @@ export default class RushedCommand extends Command {
 			'Dark Spell Factory': 'Dark Spells',
 			'Town Hall': 'Heroes',
 			'Pet House': 'Pets',
-			'Workshop': 'Siege Machines',
-			'Builder Hall': 'Builder Base Hero',
-			'Builder Barracks': 'Builder Troops'
+			'Workshop': 'Siege Machines'
+			// 'Builder Hall': 'Builder Base Hero',
+			// 'Builder Barracks': 'Builder Troops'
 		};
 
 		const units = [];
@@ -182,10 +183,9 @@ export default class RushedCommand extends Command {
 			`Rushed units for TH${data.townHallLevel} ${data.builderHallLevel ? ` & BH${data.builderHallLevel}` : ''}`,
 			'',
 			'**Percentage**',
-			`${this.troopsCount('home', data.townHallLevel, Troops.filter(u => u.village === 'home').length).padStart(5, '0')}% (Home Base)`,
-			data.builderHallLevel
-				? `${this.troopsCount('builderBase', data.builderHallLevel, Troops.filter(u => u.village === 'builderBase').length).padStart(5, '0')}% (Builder Base)\n\u200b`
-				: '\u200b'
+			`${this.rushedPercentage(data)}% (Lab)`,
+			`${this.heroRushed(data)}% (Hero)`,
+			`${this.rushedOverall(data)}% (Overall)`
 		].join('\n'));
 
 		if (!embed.fields.length) {
@@ -294,8 +294,48 @@ export default class RushedCommand extends Command {
 		];
 	}
 
-	private troopsCount(villageType: string, hallLevel: number, rushed: number) {
-		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(troop => !troop.seasonal).filter(unit => unit.village === villageType && unit.levels[hallLevel - 1]);
-		return ((rushed * 100) / totalTroops.length).toFixed(2);
+	private rushedPercentage(data: Player) {
+		const apiTroops = this.apiTroops(data);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter(unit => !unit.seasonal)
+			.reduce((prev, unit) => {
+				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+				if (unit.village === 'home' && unit.category !== 'hero') {
+					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
+					prev.total += unit.levels[data.townHallLevel - 2];
+				}
+				return prev;
+			}, { total: 0, levels: 0 });
+		if (rem.total === 0) return 0;
+		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
+	}
+
+	private heroRushed(data: Player) {
+		const apiTroops = this.apiTroops(data);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter(unit => !unit.seasonal)
+			.reduce((prev, unit) => {
+				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+				if (unit.category === 'hero' && unit.village === 'home') {
+					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
+					prev.total += unit.levels[data.townHallLevel - 2];
+				}
+				return prev;
+			}, { total: 0, levels: 0 });
+		if (rem.total === 0) return 0;
+		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
+	}
+
+	private rushedOverall(data: Player) {
+		const apiTroops = this.apiTroops(data);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter(unit => !unit.seasonal)
+			.reduce((prev, unit) => {
+				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+				if (unit.village === 'home') {
+					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
+					prev.total += unit.levels[data.townHallLevel - 2];
+				}
+				return prev;
+			}, { total: 0, levels: 0 });
+		if (rem.total === 0) return 0;
+		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
 	}
 }

@@ -209,14 +209,17 @@ export default class ExportClanMembersCommand extends Command {
 
 	private rushedPercentage(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const Troops = RAW_TROOPS_DATA.TROOPS.filter(unit => !unit.seasonal)
-			.filter(unit => {
+		const rem = RAW_TROOPS_DATA.TROOPS.filter(unit => !unit.seasonal)
+			.reduce((prev, unit) => {
 				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
-				return unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
-			});
-		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(unit => unit.village === 'home' && unit.levels[data.townHallLevel - 1]);
-		const rushed = Troops.filter(u => u.village === 'home').length;
-		return ((rushed * 100) / totalTroops.length).toFixed(2);
+				if (unit.village === 'home') {
+					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
+					prev.total += unit.levels[data.townHallLevel - 2];
+				}
+				return prev;
+			}, { total: 0, levels: 0 });
+		if (rem.total === 0) return 0;
+		return ((rem.levels * 100) / rem.total).toFixed(2);
 	}
 
 	private labUpgrades(data: Player) {
