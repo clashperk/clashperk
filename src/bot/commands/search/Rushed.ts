@@ -180,17 +180,20 @@ export default class RushedCommand extends Command {
 		}
 
 		embed.setDescription([
-			`Rushed units for TH${data.townHallLevel} ${data.builderHallLevel ? ` & BH${data.builderHallLevel}` : ''}`,
+			`Rushed units for Town Hall ${data.townHallLevel}`,
 			'',
 			'**Percentage**',
 			`${this.rushedPercentage(data)}% (Lab)`,
 			`${this.heroRushed(data)}% (Hero)`,
-			`${this.rushedOverall(data)}% (Overall)`
+			`${this.rushedOverall(data)}% (Overall)`,
+			'\u200b'
 		].join('\n'));
 
-		if (!embed.fields.length) {
+		if (embed.fields.length) {
+			embed.setFooter(`Total ${this.totalPercentage(data.townHallLevel, Troops.length)}`);
+		} else {
 			embed.setDescription(
-				`No rushed units for TH${data.townHallLevel} ${data.builderHallLevel ? ` and BH${data.builderHallLevel}` : ''}`
+				`No rushed units for Town Hall ${data.townHallLevel}`
 			);
 		}
 		return embed;
@@ -337,5 +340,11 @@ export default class RushedCommand extends Command {
 			}, { total: 0, levels: 0 });
 		if (rem.total === 0) return 0;
 		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
+	}
+
+	private totalPercentage(hallLevel: number, rushed: number) {
+		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(troop => !troop.seasonal)
+			.filter(unit => unit.village === 'home' && unit.levels[hallLevel - 2] > 0);
+		return `${rushed}/${totalTroops.length} (${((rushed * 100) / totalTroops.length).toFixed(2)}%)`;
 	}
 }
