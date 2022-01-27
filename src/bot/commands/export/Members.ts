@@ -219,7 +219,7 @@ export default class ExportClanMembersCommand extends Command {
 				return prev;
 			}, { total: 0, levels: 0 });
 		if (rem.total === 0) return 0;
-		return ((rem.levels * 100) / rem.total).toFixed(2);
+		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
 	}
 
 	private labUpgrades(data: Player) {
