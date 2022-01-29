@@ -1,16 +1,10 @@
+import { MessageEmbed, Message, MessageSelectMenu, User, MessageActionRow } from 'discord.js';
 import { BUILDER_TROOPS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
-import { STOP_REASONS, TroopInfo, TroopJSON } from '../../util/Constants';
+import { STOP_REASONS, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { Command, Argument } from 'discord-akairo';
-import { MessageEmbed, Message, MessageSelectMenu, User, MessageActionRow } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
-
-const HEROES: { [key: string]: 'bk' | 'aq' | 'gw' | 'rc' } = {
-	'Barbarian King': 'bk',
-	'Archer Queen': 'aq',
-	'Grand Warden': 'gw',
-	'Royal Champion': 'rc'
-};
+import { Util } from '../../util/Util';
 
 export default class RushedCommand extends Command {
 	public constructor() {
@@ -165,7 +159,7 @@ export default class RushedCommand extends Command {
 			if (unitsArray.length) {
 				embed.addField(
 					`${category.title} (${unitsArray.length})`,
-					this.chunk(unitsArray)
+					Util.chunk(unitsArray, 4)
 						.map(
 							chunks => chunks.map(unit => {
 								const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
@@ -211,12 +205,13 @@ export default class RushedCommand extends Command {
 		const embed = this.client.util.embed()
 			.setAuthor(`${data.name} (${data.tag})`)
 			.setDescription([
-				'Total Home Base Rushed Units (\\👎)',
-				'and Total Hero Levels Rushed (\\👑)',
-				'```\u200eTH  👎 (👑)  NAME',
-				members // .filter(m => m.rushed.homeBase)
-					.sort((a, b) => b.rushed.homeBase - a.rushed.homeBase)
-					.map(({ name, rushed, townHallLevel }) => `${this.padding(townHallLevel)}  ${this.padding(rushed.homeBase)}  ${rushed.heroes.toString().padStart(3, ' ')}  ${name}`)
+				'Rushed Percentage',
+				'```\u200eTH   LAB  HERO  NAME',
+				members
+					.sort((a, b) => Number(b.rushed.overall) - Number(a.rushed.overall))
+					.map(
+						en => `${this.padding(en.townHallLevel)}  ${this.per(en.rushed.lab)}  ${this.per(en.rushed.hero)}  ${en.name}`
+					)
 					.join('\n'),
 				'```'
 			].join('\n'));
@@ -224,43 +219,21 @@ export default class RushedCommand extends Command {
 		return message.util!.send({ embeds: [embed] });
 	}
 
+	private per(num: string) {
+		if (Number(num) === 100) return '100';
+		return Number(num).toFixed(1).padStart(4, ' ');
+	}
+
 	private padding(num: number) {
 		return num.toFixed(0).padStart(2, ' ');
 	}
 
 	private reduce(data: Player) {
-		const apiTroops = this.apiTroops(data);
-		const Troop = RAW_TROOPS_DATA.TROOPS.filter(troop => !troop.seasonal)
-			.filter(unit => {
-				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
-				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
-				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
-				return Boolean(homeTroops || builderTroops);
-			});
-
-		// const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(unit => unit.village === 'home' && unit.levels[data.townHallLevel - 1]);
-		const { heroes, homeBase } = Troop.reduce((pre, unit) => {
-			if (unit.village === 'home') pre.homeBase += 1;
-			if (unit.village === 'builderBase') pre.builderBase += 1;
-			if (unit.village === 'home' && unit.category === 'hero') {
-				const requiredLevel = unit.levels[data.townHallLevel - 2] - (apiTroops.find(en => en.name === unit.name)?.level ?? 0);
-				pre.heroes[HEROES[unit.name]] += requiredLevel;
-			}
-			return pre;
-		}, { homeBase: 0, builderBase: 0, heroes: { bk: 0, aq: 0, gw: 0, rc: 0 } });
-
 		return {
-			homeBase: homeBase,
-			heroes: Object.values(heroes).reduce((pre, num) => pre + num, 0) // totalTroops.filter(en => en.type === 'hero').reduce((pre, unit) => pre + unit.levels[data.townHallLevel - 1], 0)
+			overall: this.rushedOverall(data),
+			lab: this.rushedPercentage(data),
+			hero: this.heroRushed(data)
 		};
-	}
-
-	private chunk(items: TroopInfo[] = [], chunk = 4) {
-		const array = [];
-		for (let i = 0; i < items.length; i += chunk) {
-			array.push(items.slice(i, i + chunk));
-		}
-		return array;
 	}
 
 	private padEnd(num: number) {
@@ -308,7 +281,7 @@ export default class RushedCommand extends Command {
 				}
 				return prev;
 			}, { total: 0, levels: 0 });
-		if (rem.total === 0) return 0;
+		if (rem.total === 0) return (0).toFixed(2);
 		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
 	}
 
@@ -323,7 +296,7 @@ export default class RushedCommand extends Command {
 				}
 				return prev;
 			}, { total: 0, levels: 0 });
-		if (rem.total === 0) return 0;
+		if (rem.total === 0) return (0).toFixed(2);
 		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
 	}
 
@@ -338,7 +311,7 @@ export default class RushedCommand extends Command {
 				}
 				return prev;
 			}, { total: 0, levels: 0 });
-		if (rem.total === 0) return 0;
+		if (rem.total === 0) return (0).toFixed(2);
 		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
 	}
 
