@@ -4,6 +4,7 @@ import { TextChannel } from 'discord.js';
 import Client from './Client';
 import ms from 'ms';
 import moment from 'moment';
+import { BLUE_NUMBERS } from '../util/NumEmojis';
 
 export interface ReminderTemp {
 	_id: ObjectId;
@@ -95,13 +96,19 @@ export default class RemindScheduler {
 			const mentions: string[] = [];
 			for (const user of users) {
 				const member = members.find(mem => mem.tag === user.tag)!;
-				const mention = guildMembers?.get(user.user)?.toString() ?? `<@${user.user}> (${member.name})`;
-				mentions.push(mention);
+				const mention = guildMembers?.get(user.user)?.toString() ?? `<@${user.user}>`;
+				mentions.push(`${BLUE_NUMBERS[member.mapPosition]} ${mention} (${member.name}) ${member.attacks?.length ?? 0}/${attacksPerMember}`);
 			}
 
 			const dur = moment(data.endTime).toDate().getTime() - Date.now();
 			if (!mentions.length) return null;
-			const content = [`**Only ${ms(dur, { 'long': true })} left!**`, `${rem.message}`, '', ...mentions].join('');
+			const content = [
+				`📨 ${rem.message}`,
+				'\u200b',
+				...mentions,
+				'\u200b',
+				`**${data.clan.name} (${ms(dur, { 'long': true })} left)**`
+			].join('\n');
 
 			const channel = this.client.channels.cache.get(rem.channel) as TextChannel | null;
 			if (channel?.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES'])) {
