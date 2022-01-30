@@ -2,7 +2,6 @@ import { Collections } from '../util/Constants';
 import { Collection, ObjectId } from 'mongodb';
 import { TextChannel } from 'discord.js';
 import Client from './Client';
-import ms from 'ms';
 import moment from 'moment';
 import { ORANGE_NUMBERS, BLUE_NUMBERS } from '../util/NumEmojis';
 
@@ -125,7 +124,7 @@ export default class RemindScheduler {
 				'\u200b',
 				...mentions.map(m => m.content),
 				'\u200b',
-				`**${data.clan.name} (${ms(dur, { 'long': true })} left)**`
+				`**${data.clan.name} (${moment.duration(dur).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' })} left)**`
 			].join('\n');
 
 			const channel = this.client.channels.cache.get(rem.channel) as TextChannel | null;
