@@ -60,20 +60,13 @@ export default class RemindScheduler {
 			if (['notInWar', 'warEnded'].includes(data.state)) continue;
 			const endTime = moment(data.endTime).toDate();
 
-			const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS)
-				.find({ clans: data.clan.tag })
-				.toArray();
-			if (!reminders.length) continue;
-
-			await this.collection.insertMany(
-				reminders.map(rem => ({
-					guild: rem.guild,
-					tag: data.clan.tag,
-					reminderId: rem._id,
-					timestamp: new Date(endTime.getTime() - rem.duration),
-					createdAt: new Date()
-				}))
-			);
+			await this.collection.insertOne({
+				guild: reminder.guild,
+				tag: data.clan.tag,
+				reminderId: reminder._id,
+				timestamp: new Date(endTime.getTime() - reminder.duration),
+				createdAt: new Date()
+			});
 		}
 	}
 
