@@ -4,7 +4,7 @@ import { TextChannel } from 'discord.js';
 import Client from './Client';
 import ms from 'ms';
 import moment from 'moment';
-import { ORANGE_NUMBERS, WHITE_NUMBERS } from '../util/NumEmojis';
+import { ORANGE_NUMBERS, BLUE_NUMBERS } from '../util/NumEmojis';
 
 export interface ReminderTemp {
 	_id: ObjectId;
@@ -113,7 +113,7 @@ export default class RemindScheduler {
 				const mention = guildMembers?.get(user.user)?.toString() ?? `<@${user.user}>`;
 				mentions.push({
 					position: member.mapPosition,
-					content: `${WHITE_NUMBERS[member.mapPosition]} ${ORANGE_NUMBERS[member.townhallLevel]} ${mention} (${member.name}) ${member.attacks?.length ?? 0}/${attacksPerMember}`
+					content: `${BLUE_NUMBERS[member.mapPosition]} ${ORANGE_NUMBERS[member.townhallLevel]} ${mention} (${member.name}) ${member.attacks?.length ?? 0}/${attacksPerMember}`
 				});
 			}
 			mentions.sort((a, b) => a.position - b.position);
