@@ -1,5 +1,6 @@
 import { MessageEmbed, Message, Intents, Snowflake, Options, LimitedCollection } from 'discord.js';
 import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } from 'discord-akairo';
+import RemindScheduler from './RemindScheduler';
 import { loadSync } from '@grpc/proto-loader';
 import RPCHandler from '../core/RPCHandler';
 import Settings from './SettingsProvider';
@@ -42,6 +43,7 @@ export default class Client extends AkairoClient {
 	public links!: LinkHandler;
 	public automaton!: Automaton;
 	public rpcHandler!: RPCHandler;
+	public remindScheduler!: RemindScheduler;
 	public logger: Logger = new Logger(this);
 	public components = new Map<string, Snowflake[]>();
 
@@ -152,6 +154,8 @@ export default class Client extends AkairoClient {
 		this.settings = new Settings(this.db);
 		this.stats = new Stats(this);
 
+		this.remindScheduler = new RemindScheduler(this);
+
 		this.http = new Http();
 		await this.http.login();
 
@@ -186,6 +190,7 @@ export default class Client extends AkairoClient {
 	private run() {
 		this.patrons.init();
 		this.rpcHandler.init();
+		this.remindScheduler.init();
 	}
 
 	public async start(token: string) {

@@ -31,6 +31,8 @@ export enum Collections {
 	// LINKED_DATA
 	LINKED_PLAYERS = 'LinkedPlayers',
 	LINKED_CHANNELS = 'LinkedChannels',
+	REMINDERS = 'Reminders',
+	REMINDERS_TEMP = 'RemindersTemp',
 
 	// LARGE_DATA
 	PATRONS = 'Patrons',
