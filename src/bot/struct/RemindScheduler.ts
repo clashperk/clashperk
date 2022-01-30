@@ -4,7 +4,7 @@ import { TextChannel } from 'discord.js';
 import Client from './Client';
 import ms from 'ms';
 import moment from 'moment';
-import { BLUE_NUMBERS } from '../util/NumEmojis';
+import { ORANGE_NUMBERS, WHITE_NUMBERS } from '../util/NumEmojis';
 
 export interface ReminderTemp {
 	_id: ObjectId;
@@ -42,7 +42,10 @@ export default class RemindScheduler {
 	public async init() {
 		this.collection.watch([], { fullDocument: 'updateLookup' }).on('change', change => {
 			if (['update', 'insert'].includes(change.operationType)) {
-				this.create(change.fullDocument!);
+				const reminder = change.fullDocument!;
+				if (reminder.timestamp.getTime() < (Date.now() + this.refreshRate)) {
+					this.queue(reminder);
+				}
 			}
 		});
 
@@ -50,9 +53,27 @@ export default class RemindScheduler {
 		setInterval(this._refresh.bind(this), this.refreshRate);
 	}
 
-	public create(reminder: ReminderTemp) {
-		if (reminder.timestamp.getTime() < (Date.now() + this.refreshRate)) {
-			this.queue(reminder);
+	public async create(reminder: Reminder) {
+		for (const tag of reminder.clans) {
+			const data = await this.client.http.currentClanWar(tag);
+			if (!data.ok) continue;
+			if (['notInWar', 'warEnded'].includes(data.state)) continue;
+			const endTime = moment(data.endTime).toDate();
+
+			const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS)
+				.find({ clans: data.clan.tag })
+				.toArray();
+			if (!reminders.length) continue;
+
+			await this.collection.insertMany(
+				reminders.map(rem => ({
+					guild: rem.guild,
+					tag: data.clan.tag,
+					reminderId: rem._id,
+					timestamp: new Date(endTime.getTime() - rem.duration),
+					createdAt: new Date()
+				}))
+			);
 		}
 	}
 
@@ -79,7 +100,7 @@ export default class RemindScheduler {
 			if (!this.client.channels.cache.has(rem.channel)) return null;
 
 			const data = await this.client.http.currentClanWar(reminder.tag);
-			if (data.state !== 'inWar') return null;
+			if (['notInWar', 'warEnded'].includes(data.state)) return null;
 
 			const attacksPerMember = data.attacksPerMember || 1;
 			const members = data.clan.members.filter(mem => rem.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0)));
@@ -93,19 +114,23 @@ export default class RemindScheduler {
 
 			const guildMembers = await guild.members.fetch({ user: users.map(({ user }) => user) }).catch(() => null);
 
-			const mentions: string[] = [];
+			const mentions: { position: number; content: string }[] = [];
 			for (const user of users) {
 				const member = members.find(mem => mem.tag === user.tag)!;
 				const mention = guildMembers?.get(user.user)?.toString() ?? `<@${user.user}>`;
-				mentions.push(`${BLUE_NUMBERS[member.mapPosition]} ${mention} (${member.name}) ${member.attacks?.length ?? 0}/${attacksPerMember}`);
+				mentions.push({
+					position: member.mapPosition,
+					content: `${WHITE_NUMBERS[member.mapPosition]} ${ORANGE_NUMBERS[member.townhallLevel]} ${mention} (${member.name}) ${member.attacks?.length ?? 0}/${attacksPerMember}`
+				});
 			}
+			mentions.sort((a, b) => a.position - b.position);
 
 			const dur = moment(data.endTime).toDate().getTime() - Date.now();
 			if (!mentions.length) return null;
 			const content = [
 				`📨 ${rem.message}`,
 				'\u200b',
-				...mentions,
+				...mentions.map(m => m.content),
 				'\u200b',
 				`**${data.clan.name} (${ms(dur, { 'long': true })} left)**`
 			].join('\n');

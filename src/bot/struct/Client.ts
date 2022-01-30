@@ -216,6 +216,7 @@ declare module 'discord-akairo' {
 		embed(msg: Message): number;
 		commandHandler: CommandHandler;
 		listenerHandler: ListenerHandler;
+		remindScheduler: RemindScheduler;
 		inhibitorHandler: InhibitorHandler;
 		components: Map<string, Snowflake[]>;
 		uuid(...userIds: Snowflake[]): string;

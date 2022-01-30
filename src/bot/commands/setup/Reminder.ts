@@ -44,7 +44,9 @@ export default class ReminderCommand extends Command {
 
 		if (!text) return message.util!.send('**You must provide a message for the reminder!**');
 		const dur = ms(duration);
-		if (!dur || dur < 15 * 60 * 1000) return message.util!.send('**Duration must be at least 15 minutes.**');
+		if (!dur) return message.util!.send('**You must provide a valid duration. e.g 2h, 2.5h, 30m**');
+		if (dur < 15 * 60 * 1000) return message.util!.send('**Duration must be at least 15 minutes.**');
+		if (dur > 45 * 60 * 60 * 1000) return message.util!.send('**Duration must be less than 45 hours.**');
 
 		const customIds = {
 			roles: this.client.uuid(message.author.id),
@@ -203,7 +205,9 @@ export default class ReminderCommand extends Command {
 					duration: dur,
 					createdAt: new Date()
 				};
-				await this.client.db.collection<Reminder>(Collections.REMINDERS).insertOne(reminder);
+
+				const { insertedId } = await this.client.db.collection<Reminder>(Collections.REMINDERS).insertOne(reminder);
+				await this.client.remindScheduler.create({ ...reminder, _id: insertedId });
 				return action.update({ components: mutate(true).slice(0, 4) });
 			}
 		});
