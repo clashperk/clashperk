@@ -35,7 +35,9 @@ export default class CWLRosterCommand extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const body = await this.client.http.clanWarLeague(data.tag);
-		if (body.statusCode === 504) return message.util!.send('**[504 Request Timeout] Your clan is still searching for opponent!**');
+		if (body.statusCode === 504 || body.state === 'notInWar') {
+			return message.util!.send('**[504 Request Timeout] Your clan is still searching for opponent!**');
+		}
 
 		if (!body.ok) {
 			return message.util!.send(`**${data.name} is not in Clan War League!**`);
@@ -155,7 +157,7 @@ export default class CWLRosterCommand extends Command {
 			].join('\n'));
 		}
 
-		if (next?.round || rounds.length === 7) {
+		if (next?.round || rounds.length >= 2) {
 			embed.addField('\u200b', `Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`);
 		}
 

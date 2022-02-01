@@ -3,12 +3,12 @@ import { Collection, ObjectId } from 'mongodb';
 import { TextChannel } from 'discord.js';
 import Client from './Client';
 import moment from 'moment';
-import { ORANGE_NUMBERS, BLUE_NUMBERS } from '../util/NumEmojis';
 
 export interface ReminderTemp {
 	_id: ObjectId;
 	guild: string;
 	tag: string;
+	warTag?: string;
 	reminderId: ObjectId;
 	timestamp: Date;
 	createdAt: Date;
@@ -85,17 +85,37 @@ export default class RemindScheduler {
 		return this.collection.deleteOne({ _id: reminder._id });
 	}
 
+	private async getClanMembers(tag: string) {
+		const data = await this.client.http.clan(tag);
+		return data.ok ? data.memberList : [];
+	}
+
 	private async trigger(reminder: ReminderTemp) {
 		try {
 			const rem = await this.client.db.collection<Reminder>(Collections.REMINDERS).findOne({ _id: reminder.reminderId });
 			if (!rem) return null;
 			if (!this.client.channels.cache.has(rem.channel)) return null;
 
-			const data = await this.client.http.currentClanWar(reminder.tag);
+			const data = reminder.warTag
+				? await this.client.http.clanWarLeagueWar(reminder.warTag)
+				: await this.client.http.currentClanWar(reminder.tag);
 			if (['notInWar', 'warEnded'].includes(data.state)) return null;
 
+			const clanMembers = rem.roles.length === 4 ? [] : await this.getClanMembers(reminder.tag);
+			const clan = data.clan.tag === reminder.tag ? data.clan : data.opponent;
 			const attacksPerMember = data.attacksPerMember || 1;
-			const members = data.clan.members.filter(mem => rem.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0)));
+
+			const members = clan.members.filter(
+				mem => rem.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0))
+			).filter(
+				mem => rem.townHalls.includes(mem.townhallLevel)
+			).filter(
+				mem => {
+					if (rem.roles.length === 4) return true;
+					const clanMember = clanMembers.find(m => m.tag === mem.tag);
+					return clanMember && rem.roles.includes(clanMember.role);
+				}
+			);
 			if (!members.length) return null;
 
 			const users = await this.client.http.getDiscordLinks(members);
@@ -105,26 +125,27 @@ export default class RemindScheduler {
 			if (!guild) return null;
 
 			const guildMembers = await guild.members.fetch({ user: users.map(({ user }) => user) }).catch(() => null);
-
 			const mentions: { position: number; content: string }[] = [];
+
 			for (const user of users) {
 				const member = members.find(mem => mem.tag === user.tag)!;
 				const mention = guildMembers?.get(user.user)?.toString() ?? `<@${user.user}>`;
 				mentions.push({
 					position: member.mapPosition,
-					content: `${BLUE_NUMBERS[member.mapPosition]} ${ORANGE_NUMBERS[member.townhallLevel]} ${mention} (${member.name}) ${member.attacks?.length ?? 0}/${attacksPerMember}`
+					content: `${mention} (${member.name}) ${member.attacks?.length ?? 0}/${attacksPerMember}`
 				});
 			}
 			mentions.sort((a, b) => a.position - b.position);
 
 			const dur = moment(data.endTime).toDate().getTime() - Date.now();
 			if (!mentions.length) return null;
+
 			const content = [
 				`📨 ${rem.message}`,
 				'\u200b',
 				...mentions.map(m => m.content),
 				'\u200b',
-				`**${data.clan.name} (${moment.duration(dur).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' })} left)**`
+				`**${clan.name} (${moment.duration(dur).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' })} left)**`
 			].join('\n');
 
 			const channel = this.client.channels.cache.get(rem.channel) as TextChannel | null;

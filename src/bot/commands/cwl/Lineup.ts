@@ -41,7 +41,7 @@ export default class CWLLineupCommand extends Command {
 		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const body = await this.client.http.clanWarLeague(data.tag);
-		if (body.statusCode === 504) {
+		if (body.statusCode === 504 || body.state === 'notInWar') {
 			return message.util!.send('**[504 Request Timeout] Your clan is still searching for opponent!**');
 		}
 
@@ -81,9 +81,7 @@ export default class CWLLineupCommand extends Command {
 		}
 
 		if (!chunks.length) return message.util!.send('**[504 Request Timeout] Your clan is still searching for opponent!**');
-		let data = rounds.length === 7
-			? chunks.find(ch => ch.state === 'preparation') ?? chunks.slice(-1)[0]
-			: chunks.slice(-2).reverse()[0];
+		let data = chunks.find(ch => ch.state === 'preparation') ?? chunks.slice(-1)[0];
 
 		const embeds = await this.getComparisonLineup(data.state, data.round, data.clan, data.opponent);
 		for (const embed of embeds) embed.setColor(this.client.embed(message));
