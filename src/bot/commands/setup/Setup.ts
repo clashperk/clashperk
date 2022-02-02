@@ -185,7 +185,7 @@ export default class SetupCommand extends Command {
 		const tagLen = Math.max(...clanList.map(clan => clan.tag.length)) + 1;
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${message.guild!.name} Clans`, message.guild!.iconURL()!)
+			.setAuthor({ name: `${message.guild!.name} Clans`, iconURL: message.guild!.iconURL()! })
 			.setDescription(
 				clanList.map(
 					clan => `\`\u200e${clan.name.padEnd(nameLen, ' ')} ${clan.tag.padStart(tagLen, ' ')}  ${clan.members.toString().padStart(2, ' ')}/50 \u200f\``
@@ -262,7 +262,7 @@ export default class SetupCommand extends Command {
 				const features = clan.entries; // .filter(en => en.ok && en.channel);
 
 				const embed = new MessageEmbed();
-				embed.setAuthor(`\u200e${clan.name} (${clan.tag})`);
+				embed.setAuthor({ name: `\u200e${clan.name} (${clan.tag})` });
 				if (channels.length) embed.setDescription(channels.join(', '));
 				if (roles.length) {
 					embed.addField('Roles', roles.join(' '), true);

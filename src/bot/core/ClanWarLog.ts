@@ -215,7 +215,7 @@ export default class ClanWarLog {
 					'**War Stats**',
 					`${this.getLeaderBoard(data.clan, data.opponent)}`
 				].join('\n'));
-			embed.setFooter('Ended').setTimestamp();
+			embed.setFooter({ text: 'Ended' }).setTimestamp();
 		}
 
 		embed.setDescription([
@@ -336,7 +336,7 @@ export default class ClanWarLog {
 			}
 		}
 
-		embed.setFooter(`Round #${data.round}`).setTimestamp();
+		embed.setFooter({ text: `Round #${data.round}` }).setTimestamp();
 		return embed;
 	}
 

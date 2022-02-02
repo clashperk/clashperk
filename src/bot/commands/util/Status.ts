@@ -38,7 +38,7 @@ export default class StatusCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setTitle('Stats')
-			.setAuthor(`${this.client.user!.username}`, this.client.user!.displayAvatarURL({ format: 'png' }))
+			.setAuthor({ name: `${this.client.user!.username}`, iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
 			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
 			.addField('RPC Usage', `${(grpc.heapUsed / 1024 / 1024).toFixed(2)} MB`, true)
 			.addField('Free Memory', `${this.freemem.toFixed(2)} MB`, true)
@@ -48,7 +48,7 @@ export default class StatusCommand extends Command {
 			.addField('Players Total', `${(await this.count(Collections.LAST_SEEN)).toLocaleString()}`, true)
 			.addField('Shard', `${message.guild!.shard.id}/${this.client.shard!.count}`, true)
 			.addField('Version', `v${version}`, true)
-			.setFooter(`© ${new Date().getFullYear()} ${owner.tag}`, owner.displayAvatarURL({ dynamic: true }));
+			.setFooter({ text: `© ${new Date().getFullYear()} ${owner.tag}`, iconURL: owner.displayAvatarURL({ dynamic: true }) });
 
 		if (message.interaction) return message.util!.send({ embeds: [embed] });
 

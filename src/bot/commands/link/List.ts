@@ -123,7 +123,7 @@ export default class LinkListCommand extends Command {
 		].join('\n'), { maxLength: 4096 });
 
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
+			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.small })
 			.setDescription(chunks[0]);
 		if (chunks.length > 1) {
 			chunks.slice(1).map(chunk => embed.addField('\u200b', chunk));

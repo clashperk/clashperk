@@ -62,32 +62,32 @@ export default class Client extends AkairoClient {
 				modifyStart: (msg, txt) => ({
 					embeds: [
 						new MessageEmbed()
-							.setAuthor(txt)
-							.setFooter('Type `cancel` to cancel the command.')
+							.setAuthor({ name: txt })
+							.setFooter({ text: 'Type `cancel` to cancel the command.' })
 					]
 				}),
 				modifyRetry: (msg, txt) => ({
 					embeds: [
 						new MessageEmbed()
-							.setAuthor(txt)
-							.setFooter('Type `cancel` to cancel the command.')
+							.setAuthor({ name: txt })
+							.setFooter({ text: 'Type `cancel` to cancel the command.' })
 					]
 				}),
 				timeout: {
 					embeds: [
 						new MessageEmbed()
-							.setAuthor('Time ran out, command has been cancelled!')
+							.setAuthor({ name: 'Time ran out, command has been cancelled!' })
 					]
 				},
 				ended: {
 					embeds: [
 						new MessageEmbed()
-							.setAuthor('Too many retries, command has been cancelled!')
+							.setAuthor({ name: 'Too many retries, command has been cancelled!' })
 					]
 				},
 				cancel: {
 					embeds: [new MessageEmbed()
-						.setAuthor('Command has been cancelled!')]
+						.setAuthor({ name: 'Command has been cancelled!' })]
 				},
 				retries: 1,
 				time: 30000

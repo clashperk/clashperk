@@ -93,7 +93,7 @@ export default class DonationsCommand extends Command {
 		const getEmbed = () => {
 			const embed = new MessageEmbed()
 				.setColor(this.client.embed(message))
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+				.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
 				.setDescription([
 					'```',
 					`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'}`,
@@ -104,7 +104,7 @@ export default class DonationsCommand extends Command {
 					'```'
 				].join('\n'));
 
-			return embed.setFooter(`[DON ${donated} | REC ${received}] (Season ${season})`);
+			return embed.setFooter({ text: `[DON ${donated} | REC ${received}] (Season ${season})` });
 		};
 
 		const embed = getEmbed();

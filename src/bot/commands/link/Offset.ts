@@ -62,7 +62,7 @@ export default class OffsetCommand extends Command {
 				'**Offset**',
 				`${offset < 0 ? '-' : '+'}${this.offset(offset * 1000)}`
 			].join('\n'))
-			.setFooter(`${message.author.tag}`, message.author.displayAvatarURL());
+			.setFooter({ text: `${message.author.tag}`, iconURL: message.author.displayAvatarURL() });
 		return message.util!.send({ embeds: [embed], content: `Time zone set to **${raw.timezone.timeZoneName as string}**` });
 	}
 

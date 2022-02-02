@@ -45,11 +45,11 @@ export default class CWLRoundCommand extends Command {
 
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
-				.setAuthor(
-					`${data.name} (${data.tag})`,
-					`${data.badgeUrls.medium}`,
-					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
-				)
+				.setAuthor({
+					name: `${data.name} (${data.tag})`,
+					iconURL: `${data.badgeUrls.medium}`,
+					url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
+				})
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embeds: [embed] });
@@ -74,7 +74,7 @@ export default class CWLRoundCommand extends Command {
 					const opponent = data.clan.tag === clan.tag ? data.opponent : data.clan;
 					const embed = new MessageEmbed()
 						.setColor(this.client.embed(message));
-					embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+					embed.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
 						.addField('War Against', `\u200e${opponent.name} (${opponent.tag})`)
 						.addField('Team Size', `${data.teamSize}`);
 					if (data.state === 'warEnded') {
@@ -116,7 +116,7 @@ export default class CWLRoundCommand extends Command {
 						`\u200e**${opponent.name}**`,
 						`${this.count(opponent.members)}`
 					].join('\n'));
-					embed.setFooter(`Round #${++index}`);
+					embed.setFooter({ text: `Round #${++index}` });
 
 					chunks.push({ state: data.state, embed, round: index });
 					break;

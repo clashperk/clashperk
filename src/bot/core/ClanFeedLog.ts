@@ -208,7 +208,7 @@ export default class ClanFeedLog {
 			.setTitle(`\u200e${player.name} (${player.tag})`)
 			.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
 		if (member.op === 'LEFT') {
-			embed.setFooter(`Left ${data.clan.name}`, data.clan.badge);
+			embed.setFooter({ text: `Left ${data.clan.name}`, iconURL: data.clan.badge });
 			embed.setDescription([
 				`${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}**`,
 				`${EMOJIS.EXP} **${player.expLevel}**`,
@@ -218,7 +218,7 @@ export default class ClanFeedLog {
 			const flag = await this.client.db.collection(Collections.FLAGS)
 				.findOne({ guild: cache.guild, tag: member.tag });
 
-			embed.setFooter(`Joined ${data.clan.name}`, data.clan.badge);
+			embed.setFooter({ text: `Joined ${data.clan.name}`, iconURL: data.clan.badge });
 			embed.setDescription([
 				`${TOWN_HALLS[player.townHallLevel]}**${player.townHallLevel}**`,
 				`${this.formatHeroes(player)}`,

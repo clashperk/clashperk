@@ -35,11 +35,11 @@ export default class WarLogCommand extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(
-				`${data.name} (${data.tag})`,
-				`${data.badgeUrls.medium}`,
-				`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`
-			)
+			.setAuthor({
+				name: `${data.name} (${data.tag})`,
+				iconURL: `${data.badgeUrls.medium}`,
+				url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`
+			})
 			.setDescription([
 				`${data.warWins} Wins, ${data.isWarLogPublic ? `${data.warLosses!} Losses,` : ''} ${data.warWinStreak} Win Streak`
 			].join('\n'));

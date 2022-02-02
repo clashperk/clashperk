@@ -146,7 +146,7 @@ export default class DonationLog {
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`)
 			.setThumbnail(data.clan.badge)
-			.setFooter(`${data.clan.members} Members`, this.client.user!.displayAvatarURL({ format: 'png' }))
+			.setFooter({ text: `${data.clan.members} Members`, iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
 			.setTimestamp();
 		if (cache.color) embed.setColor(cache.color);
 

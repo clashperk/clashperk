@@ -38,7 +38,7 @@ export default class ClanSearchCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`Showing Top ${data.items.length} Results`)
+			.setAuthor({ name: `Showing Top ${data.items.length} Results` })
 			.setTitle(`Searching clans with name ${name}`)
 			.setDescription([
 				data.items.map(clan => {

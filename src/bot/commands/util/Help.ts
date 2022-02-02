@@ -124,7 +124,7 @@ export default class HelpCommand extends Command {
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor('Command List', this.client.user!.displayAvatarURL({ format: 'png' }))
+			.setAuthor({ name: 'Command List', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
 			.setDescription(`To view more details for a command, do \`${prefix}help <command>\``);
 
 		const categories = [];

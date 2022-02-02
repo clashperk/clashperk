@@ -25,7 +25,7 @@ export default class CooldownListener extends Listener {
 
 		if (message.guild ? (message.channel as TextChannel).permissionsFor(this.client.user!)?.has('SEND_MESSAGES') : true) {
 			const embed = this.client.util.embed()
-				.setAuthor('Slow it down!')
+				.setAuthor({ name: 'Slow it down!' })
 				.setColor(this.client.embed(message));
 			if (this.client.patrons.get(message)) {
 				embed.setDescription([

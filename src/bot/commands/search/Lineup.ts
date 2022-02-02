@@ -39,7 +39,7 @@ export default class LineupCommand extends Command {
 	public async exec(message: Message, { data }: { data: Clan }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
+			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium });
 
 		if (!data.isWarLogPublic) {
 			const res = await this.client.http.clanWarLeague(data.tag);
@@ -73,7 +73,7 @@ export default class LineupCommand extends Command {
 			opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
 		);
 		const embed = new MessageEmbed();
-		embed.setAuthor(`\u200e${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
+		embed.setAuthor({ name: `\u200e${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
 		embed.setDescription(
 			[
@@ -89,7 +89,7 @@ export default class LineupCommand extends Command {
 				).join('\n')
 			].join('\n')
 		);
-		embed.setFooter(`${states[state]}`);
+		embed.setFooter({ text: `${states[state]}` });
 
 		return [embed];
 	}

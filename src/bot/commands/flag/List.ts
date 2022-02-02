@@ -50,10 +50,10 @@ export default class FlagListCommand extends Command {
 			if (download) buffer = await this.excel(data);
 			const paginated = this.paginate(data, page);
 			let index = (paginated.page - 1) * 25;
-			embed.setAuthor(message.guild!.name, message.guild!.iconURL()!)
+			embed.setAuthor({ name: message.guild!.name, iconURL: message.guild!.iconURL()! })
 				.setTitle('Flags')
 				.setDescription(paginated.items.map(x => `${RED_NUMBERS[++index]} ${x.name as string} ${x.tag as string}`).join('\n'))
-				.setFooter(`Page ${paginated.page}/${paginated.maxPage}`);
+				.setFooter({ text: `Page ${paginated.page}/${paginated.maxPage}` });
 		} else {
 			embed.setDescription(`${message.guild!.name} does not have any flagged players. Why not add some?`);
 		}

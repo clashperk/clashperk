@@ -132,7 +132,7 @@ export default class UnitsCommand extends Command {
 
 	private embed(data: Player, option = true) {
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`);
+			.setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const Troops = RAW_TROOPS_DATA.TROOPS
 			.filter(troop => !troop.seasonal)

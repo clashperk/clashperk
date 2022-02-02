@@ -207,7 +207,7 @@ export default class StatsCommand extends Command {
 
 		const starType = `${stars.startsWith('>') ? '>= ' : ''}${stars.replace(/[>=]+/, '')}`;
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
+			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.small })
 			.setDescription(
 				Util.splitMessage(
 					[
@@ -224,7 +224,7 @@ export default class StatsCommand extends Command {
 					{ maxLength: 4096 }
 				)[0]
 			)
-			.setFooter(`War Types: ${WarTypes[type]} (Since ${moment(season).format('MMM YYYY')})`);
+			.setFooter({ text: `War Types: ${WarTypes[type]} (Since ${moment(season).format('MMM YYYY')})` });
 
 		return message.util!.send({ embeds: [embed] });
 	}

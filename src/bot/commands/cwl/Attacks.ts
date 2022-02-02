@@ -74,7 +74,7 @@ export default class CWLAttacksCommand extends Command {
 
 					const embed = new MessageEmbed()
 						.setColor(this.client.embed(message))
-						.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
+						.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
 					if (['warEnded', 'inWar'].includes(data.state)) {
 						const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
@@ -156,7 +156,7 @@ export default class CWLAttacksCommand extends Command {
 						}
 					}
 
-					embed.setFooter(`Round #${++i}`);
+					embed.setFooter({ text: `Round #${++i}` });
 					chunks.push({ state: data.state, round: i, embed });
 					break;
 				}

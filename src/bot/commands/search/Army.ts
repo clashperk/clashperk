@@ -273,7 +273,7 @@ export default class ArmyCommand extends Command {
 			);
 		}
 
-		embed.setFooter(message.author.tag, message.author.displayAvatarURL({ dynamic: true }));
+		embed.setFooter({ text: message.author.tag, iconURL: message.author.displayAvatarURL({ dynamic: true }) });
 		const mismatch = (troops.length + spells.length + superTroops.length + siegeMachines.length) !== (TROOP_IDS.length + SPELL_IDS.length);
 
 		const invalid = mismatch || duplicate || totalTroop > TOTAL_UNITS || totalSpell > TOTAL_SPELLS || totalSiege > TOTAL_SIEGE || superTroops.length > TOTAL_SUPER_TROOPS;

@@ -159,7 +159,7 @@ export default class ClanEmbedCommand extends Command {
 			.addField('Town Halls', [
 				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`).join(' ')
 			].join('\n'))
-			.setFooter('Synced', this.client.user!.displayAvatarURL({ format: 'png' }))
+			.setFooter({ text: 'Synced', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
 			.setTimestamp();
 		if (color) embed.setColor(color);
 

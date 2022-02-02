@@ -48,7 +48,7 @@ export default class DonationSummaryCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${message.guild!.name} Top Donations`, message.guild!.iconURL({ dynamic: true })!);
+			.setAuthor({ name: `${message.guild!.name} Top Donations`, iconURL: message.guild!.iconURL({ dynamic: true })! });
 
 		const clans = await this.client.db.collection(Collections.CLAN_STORES)
 			.find({ guild: message.guild!.id })
@@ -149,7 +149,7 @@ export default class DonationSummaryCommand extends Command {
 						{ maxLength: 2000 }
 					)[0]
 				].join('\n'))
-				.setFooter(`Season ${season}`)
+				.setFooter({ text: `Season ${season}` })
 		];
 
 		return message.util!.send({ embeds });

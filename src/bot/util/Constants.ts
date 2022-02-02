@@ -87,8 +87,6 @@ export const Messages = {
 	}
 };
 
-export const STOP_REASONS = ['channelDelete', 'guildDelete', 'messageDelete'];
-
 export const URLS = {
 	PATREON: 'https://www.patreon.com/clashperk',
 	SUPPORT_SERVER: 'https://discord.gg/ppuppun'

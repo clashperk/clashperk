@@ -46,7 +46,7 @@ export default class RateLimitListener extends Listener {
 		this.client.logger.warn({ timeout, limit, method, path, route }, { label: 'RATE_LIMIT' });
 
 		const embed = new MessageEmbed()
-			.setAuthor('Rate Limit')
+			.setAuthor({ name: 'Rate Limit' })
 			.setDescription([
 				'**Time Out**',
 				timeout,
@@ -63,7 +63,7 @@ export default class RateLimitListener extends Listener {
 				'**Path**',
 				decodeURIComponent(path)
 			].join('\n'))
-			.setFooter(`Shard ${this.client.shard!.ids[0]}`)
+			.setFooter({ text: `Shard ${this.client.shard!.ids[0]}` })
 			.setTimestamp();
 
 		return this.embeds.push(embed);

@@ -51,7 +51,7 @@ export default class MissedAttacksCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium);
+			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium });
 
 		if (!data.isWarLogPublic) {
 			const res = await this.client.http.clanWarLeague(data.tag);
@@ -104,7 +104,7 @@ export default class MissedAttacksCommand extends Command {
 	private sendResult(message: Message, body: ClanWar & { id?: number }) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`\u200e${body.clan.name} (${body.clan.tag})`, body.clan.badgeUrls.medium);
+			.setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
 
 		if (body.state === 'preparation') {
 			embed.setDescription([
@@ -151,7 +151,7 @@ export default class MissedAttacksCommand extends Command {
 			].join('\n'));
 		}
 
-		if (body.id) embed.setFooter(`War ID #${body.id}`);
+		if (body.id) embed.setFooter({ text: `War ID #${body.id}` });
 		return message.util!.send({ embeds: [embed] });
 	}
 }

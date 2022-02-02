@@ -54,7 +54,7 @@ export default class PlayerDonationSummaryCommand extends Command {
 		const getEmbed = () => {
 			const embed = new MessageEmbed()
 				.setColor(this.client.embed(message))
-				.setAuthor('Top Players among Clan Family')
+				.setAuthor({ name: 'Top Players among Clan Family' })
 				.setDescription([
 					Util.splitMessage(
 						[
@@ -66,7 +66,7 @@ export default class PlayerDonationSummaryCommand extends Command {
 						{ maxLength: 4000 }
 					)[0]
 				].join('\n'))
-				.setFooter(`Season ${season!}`);
+				.setFooter({ text: `Season ${season!}` });
 
 			return embed;
 		};

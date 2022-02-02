@@ -176,8 +176,8 @@ export default class CWLRosterCommand extends Command {
 		if (!collector) return;
 
 		embed.fields = [];
-		embed.setFooter(`Clan War League ${moment(body.season).format('MMMM YYYY')}`)
-			.setAuthor('CWL Roster')
+		embed.setFooter({ text: `Clan War League ${moment(body.season).format('MMMM YYYY')}` })
+			.setAuthor({ name: 'CWL Roster' })
 			.setDescription('CWL Roster and Town-Hall Distribution');
 
 		for (const clan of body.clans) {

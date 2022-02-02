@@ -28,7 +28,7 @@ export default class ClanSummaryCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${message.guild!.name} Best Trophies`)
+			.setAuthor({ name: `${message.guild!.name} Best Trophies` })
 			.setDescription([
 				'```',
 				`\u200e # TROPHY  ${'NAME'}`,

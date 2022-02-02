@@ -122,7 +122,7 @@ export default class ClanGamesLog {
 
 	private embed(cache: Cache, clan: Clan, data: Payload) {
 		const embed = new MessageEmbed()
-			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium)
+			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
 			.setDescription([
 				`Clan Games Scoreboard [${clan.members}/50]`,
 				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
@@ -133,7 +133,7 @@ export default class ClanGamesLog {
 					}).join('\n'),
 				'```'
 			].join('\n'))
-			.setFooter(`Points: ${data.total} [Avg: ${(data.total / clan.members).toFixed(2)}]`)
+			.setFooter({ text: `Points: ${data.total} [Avg: ${(data.total / clan.members).toFixed(2)}]` })
 			.setTimestamp();
 		if (cache.color) embed.setColor(cache.color);
 

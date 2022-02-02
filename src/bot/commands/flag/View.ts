@@ -35,7 +35,7 @@ export default class FlagShowCommand extends Command {
 		const user = await this.client.users.fetch(flag.user).catch(() => null);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${data.name} (${data.tag})`)
+			.setAuthor({ name: `${data.name} (${data.tag})` })
 			.setDescription([
 				'**Executor**',
 				user ? user.tag : `Unknown#0000 (${flag.user as string})`,
@@ -43,7 +43,7 @@ export default class FlagShowCommand extends Command {
 				'**Reason**',
 				`${flag.reason as string}`
 			].join('\n'))
-			.setFooter('Date')
+			.setFooter({ text: 'Date' })
 			.setTimestamp(flag.createdAt);
 
 		return message.util!.send({ embeds: [embed] });

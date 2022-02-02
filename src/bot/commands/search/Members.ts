@@ -91,8 +91,8 @@ export default class MembersCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setFooter(`Total ${fetched.length === data.members ? data.members : `${fetched.length}/${data.members}`}/50`)
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+			.setFooter({ text: `Total ${fetched.length === data.members ? data.members : `${fetched.length}/${data.members}`}/50` })
+			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
 			.setDescription([
 				'```',
 				`TH BK AQ GW RC  ${'NAME'}`,
@@ -182,7 +182,7 @@ export default class MembersCommand extends Command {
 						m => `\u200e✘ ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(15, ' ')} \u200f\``
 					).join('\n')
 				].join('\n'));
-				embed.setFooter(`War Preference (${optedIn.length}/${members.length})`);
+				embed.setFooter({ text: `War Preference (${optedIn.length}/${members.length})` });
 				await action.update({ embeds: [embed], components: [] });
 			}
 

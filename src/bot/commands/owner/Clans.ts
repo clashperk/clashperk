@@ -86,7 +86,7 @@ export default class ClansCommand extends Command {
 		const icon = typeof guild.iconURL === 'function' ? guild.iconURL()! : guild.iconURL;
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${guild.name}`, icon as string)
+			.setAuthor({ name: `${guild.name}`, iconURL: icon as string })
 			.setTitle(`Members: ${guild.memberCount}`);
 		if (!data.length) {
 			embed.setDescription(`${message.guild!.name} doesn't have any clans. Why not add some?`);
@@ -100,7 +100,7 @@ export default class ClansCommand extends Command {
 			'',
 			this.desc(paginated)
 		].join('\n'));
-		embed.setFooter(`Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`);
+		embed.setFooter({ text: `Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})` });
 
 		if (clans.length <= 2) {
 			return message.util!.send({ embeds: [embed] });
@@ -137,9 +137,9 @@ export default class ClansCommand extends Command {
 				if (page > paginated.maxPage) page = 1;
 				await action.update({
 					embeds: [
-						embed.setFooter(
-							`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
-						).setDescription([
+						embed.setFooter({
+							text: `Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
+						}).setDescription([
 							`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`,
 							'',
 							this.desc(this.paginate(data, page))
@@ -154,9 +154,9 @@ export default class ClansCommand extends Command {
 				if (page > paginated.maxPage) page = 1;
 				await action.update({
 					embeds: [
-						embed.setFooter(
-							`Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
-						).setDescription([
+						embed.setFooter({
+							text: `Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
+						}).setDescription([
 							`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`,
 							'',
 							this.desc(this.paginate(data, page))

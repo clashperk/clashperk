@@ -110,7 +110,7 @@ export default class CWLStarsCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
+			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
 			.setDescription([
 				`\u200e\` # STR HIT  ${'NAME'.padEnd(15, ' ')}\u200f\``,
 				leaderboard.filter(
@@ -153,7 +153,7 @@ export default class CWLStarsCommand extends Command {
 						.sort((a, b) => (b.stars - b.lost) - (a.stars - a.lost));
 
 					const embed = new MessageEmbed()
-						.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.small)
+						.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
 						.setColor(this.client.embed(message))
 						.setDescription([
 							`**\`\u200e # STR GAIN ${'NAME'.padEnd(15, ' ')}\`**`,

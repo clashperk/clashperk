@@ -34,7 +34,7 @@ export default class ConfigCommand extends Command {
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`Settings of ${message.guild!.name}`)
+			.setAuthor({ name: `Settings of ${message.guild!.name}` })
 			.addField('Prefix', prefix)
 			.addField('Patron', this.client.patrons.get(message.guild!.id) ? 'Yes' : 'No')
 			.addField('Color', color ? `#${color.toString(16).toUpperCase()}` : 'None');

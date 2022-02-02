@@ -32,7 +32,7 @@ export default class TrophiesCommand extends Command {
 
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
 			.setDescription([
 				'```',
 				`\u200e # TROPHY  ${'NAME'}`,

@@ -46,9 +46,9 @@ export default class GuildCreateListener extends Listener {
 		if (webhook) {
 			const embed = this.client.util.embed()
 				.setColor(0x38d863)
-				.setAuthor(`${guild.name} (${guild.id})`, guild.iconURL({ dynamic: true })!)
+				.setAuthor({ name: `${guild.name} (${guild.id})`, iconURL: guild.iconURL({ dynamic: true })! })
 				.setTitle(`${EMOJIS.OWNER} ${user.tag} (${user.id})`)
-				.setFooter(`${guild.memberCount} members (Shard ${guild.shard.id})`, user.displayAvatarURL())
+				.setFooter({ text: `${guild.memberCount} members (Shard ${guild.shard.id})`, iconURL: user.displayAvatarURL() })
 				.setTimestamp();
 			return webhook.send({
 				embeds: [embed],
@@ -68,7 +68,10 @@ export default class GuildCreateListener extends Listener {
 	private async intro(guild: Guild) {
 		const prefix = this.client.settings.get<string>(guild, 'prefix', '!');
 		const embed = this.client.util.embed()
-			.setAuthor('Thanks for inviting me, have a nice day!', this.client.user!.displayAvatarURL({ format: 'png' }))
+			.setAuthor({
+				name: 'Thanks for inviting me, have a nice day!',
+				iconURL: this.client.user!.displayAvatarURL({ format: 'png' })
+			})
 			.setDescription([
 				`Use the prefix \`${prefix}\` to run my commands.`,
 				`To change my prefix, just type \`${prefix}prefix ?\``,

@@ -82,7 +82,7 @@ export default class UpgradesCommand extends Command {
 
 	public embed(data: Player) {
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`)
+			.setAuthor({ name: `${data.name} (${data.tag})` })
 			.setDescription(`Remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? `& BH${data.builderHallLevel}` : ''}`);
 
 		const apiTroops = this.apiTroops(data);
@@ -197,7 +197,7 @@ export default class UpgradesCommand extends Command {
 		}
 
 		if (remaining > 0) {
-			embed.setFooter(`Remaining ~${remaining}% (Home)`);
+			embed.setFooter({ text: `Remaining ~${remaining}% (Home)` });
 		}
 
 		return embed;

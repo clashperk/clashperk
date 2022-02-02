@@ -126,10 +126,19 @@ export class Automaton {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(interaction.guild!.id))
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.small)
+			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.small })
 			.setDescription(`**Currently Boosted Super Troops**${recent && lastSeen.length ? '\nRecently Active Members (~10m)' : ''}\n\u200b`);
-		if (recent && lastSeen.length) embed.setFooter(`Total ${boosters.length}/${data.members}`, interaction.author.displayAvatarURL());
-		else embed.setFooter(`Total ${players.length}/${this.boostable(members)}/${data.members}`, interaction.author.displayAvatarURL());
+		if (recent && lastSeen.length) {
+			embed.setFooter({
+				text: `Total ${boosters.length}/${data.members}`,
+				iconURL: interaction.author.displayAvatarURL()
+			});
+		} else {
+			embed.setFooter({
+				text: `Total ${players.length}/${this.boostable(members)}/${data.members}`,
+				iconURL: interaction.author.displayAvatarURL()
+			});
+		}
 
 		for (const [key, val] of Object.entries(memObj)) {
 			embed.addField(
@@ -200,7 +209,7 @@ export class Automaton {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(interaction.guild!.id))
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
 			.setDescription([
 				'```',
 				`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'}`,
@@ -211,7 +220,10 @@ export class Automaton {
 				'```'
 			].join('\n'));
 
-		embed.setFooter(`[DON ${donated} | REC ${received}] (Season ${Season.ID})`, interaction.author.displayAvatarURL());
+		embed.setFooter({
+			text: `[DON ${donated} | REC ${received}] (Season ${Season.ID})`,
+			iconURL: interaction.author.displayAvatarURL()
+		});
 
 		return { embeds: [embed], content: null };
 	}

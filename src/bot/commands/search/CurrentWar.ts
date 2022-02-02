@@ -50,7 +50,7 @@ export default class WarCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`\u200e${data.name} (${data.tag})`, data.badgeUrls.medium);
+			.setAuthor({ name: `\u200e${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium });
 
 		if (!data.isWarLogPublic) {
 			const res = await this.client.http.clanWarLeague(data.tag);
@@ -102,7 +102,7 @@ export default class WarCommand extends Command {
 	private async sendResult(message: Message, body: ClanWar) {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`\u200e${body.clan.name} (${body.clan.tag})`, body.clan.badgeUrls.medium);
+			.setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
 
 		if (body.state === 'preparation') {
 			const startTimestamp = new Date(moment(body.startTime).toDate()).getTime();
@@ -163,7 +163,7 @@ export default class WarCommand extends Command {
 
 		if (body.hasOwnProperty('id')) {
 			// @ts-expect-error
-			embed.setFooter(`War ID #${body.id as number}`);
+			embed.setFooter({ text: `War ID #${body.id as number}` });
 		}
 
 		if (body.state === 'preparation') {

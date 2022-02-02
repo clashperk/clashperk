@@ -115,7 +115,7 @@ export default class ClanGamesCommand extends Command {
 	private embed(data: Clan, members: Member[], force = false, filter = false) {
 		const total = members.reduce((prev, mem) => prev + (force ? mem.points : Math.min(mem.points, this.MAX)), 0);
 		const embed = this.client.util.embed()
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
 			.setDescription([
 				`**[Clan Games Scoreboard (${this.seasonId})](https://clashperk.com/faq)**`,
 				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
@@ -128,9 +128,9 @@ export default class ClanGamesCommand extends Command {
 					.join('\n'),
 				'```'
 			].join('\n'))
-			.setFooter(
-				`Total Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`
-			);
+			.setFooter({
+				text: `Total Points: ${total} [Avg: ${(total / data.members).toFixed(2)}]`
+			});
 		return embed;
 	}
 

@@ -47,11 +47,11 @@ export default class CWLLineupCommand extends Command {
 		if (!body.ok) {
 			const embed = new MessageEmbed()
 				.setColor(this.client.embed(message))
-				.setAuthor(
-					`${data.name} (${data.tag})`,
-					`${data.badgeUrls.medium}`,
-					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
-				)
+				.setAuthor({
+					name: `${data.name} (${data.tag})`,
+					iconURL: `${data.badgeUrls.medium}`,
+					url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
+				})
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embeds: [embed] });
@@ -206,7 +206,7 @@ export default class CWLLineupCommand extends Command {
 			opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
 		);
 		const embed = new MessageEmbed();
-		embed.setAuthor(`\u200e${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
+		embed.setAuthor({ name: `\u200e${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
 		embed.setDescription(
 			[
@@ -222,7 +222,7 @@ export default class CWLLineupCommand extends Command {
 				).join('\n')
 			].join('\n')
 		);
-		embed.setFooter(`Round #${round} (${states[state]})`);
+		embed.setFooter({ text: `Round #${round} (${states[state]})` });
 
 		return [embed];
 	}
@@ -230,11 +230,11 @@ export default class CWLLineupCommand extends Command {
 	private getLineupList(state: string, round: number, data: { clan: WarClan; opponent: WarClan }) {
 		const embeds = [
 			new MessageEmbed()
-				.setAuthor(
-					`\u200e${data.clan.name} (${data.clan.tag})`,
-					data.clan.badgeUrls.medium,
-					this.clanURL(data.clan.tag)
-				)
+				.setAuthor({
+					name: `\u200e${data.clan.name} (${data.clan.tag})`,
+					iconURL: data.clan.badgeUrls.medium,
+					url: this.clanURL(data.clan.tag)
+				})
 				.setDescription(
 					data.clan.members.sort(
 						(a, b) => a.mapPosition - b.mapPosition
@@ -242,14 +242,14 @@ export default class CWLLineupCommand extends Command {
 						(m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')})`
 					).join('\n')
 				)
-				.setFooter(`Round #${round} (${states[state]})`),
+				.setFooter({ text: `Round #${round} (${states[state]})` }),
 
 			new MessageEmbed()
-				.setAuthor(
-					`\u200e${data.opponent.name} (${data.opponent.tag})`,
-					data.opponent.badgeUrls.medium,
-					this.clanURL(data.opponent.tag)
-				)
+				.setAuthor({
+					name: `\u200e${data.opponent.name} (${data.opponent.tag})`,
+					iconURL: data.opponent.badgeUrls.medium,
+					url: this.clanURL(data.opponent.tag)
+				})
 				.setDescription(
 					data.opponent.members.sort(
 						(a, b) => a.mapPosition - b.mapPosition
@@ -257,7 +257,7 @@ export default class CWLLineupCommand extends Command {
 						(m, i) => `\u200e${WHITE_NUMBERS[i + 1]} [${m.name}](https://open.clashperk.com/${m.tag.replace('#', '')})`
 					).join('\n')
 				)
-				.setFooter(`Round #${round} (${states[state]})`)
+				.setFooter({ text: `Round #${round} (${states[state]})` })
 		];
 
 		return embeds;

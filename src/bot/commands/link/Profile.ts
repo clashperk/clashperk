@@ -46,7 +46,7 @@ export default class ProfileCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${member.user.tag}`, member.user.displayAvatarURL())
+			.setAuthor({ name: `${member.user.tag}`, iconURL: member.user.displayAvatarURL() })
 			.setDescription([
 				'**Created**',
 				`${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`,
@@ -97,10 +97,10 @@ export default class ProfileCommand extends Command {
 		}
 		tags.clear();
 
-		embed.setFooter(
-			`${collection.length} Player${collection.length === 1 ? '' : 's'} Linked`,
-			'https://cdn.discordapp.com/emojis/658538492409806849.png'
-		);
+		embed.setFooter({
+			text: `${collection.length} Player${collection.length === 1 ? '' : 's'} Linked`,
+			iconURL: 'https://cdn.discordapp.com/emojis/658538492409806849.png'
+		});
 		if (hideLink) collection.map(a => embed.addField(a.field, [...a.values, '\u200b'].join('\n')));
 		else collection.map(a => embed.addField('\u200b', [a.field, ...a.values].join('\n')));
 

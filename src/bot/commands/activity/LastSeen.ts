@@ -65,7 +65,7 @@ export default class LastSeenCommand extends Command {
 		const members = await this.aggregationQuery(data);
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
 			.setDescription([
 				'**[Last seen and last 24h activity scores](https://clashperk.com/faq)**',
 				`\`\`\`\n\u200eLAST-ON 24H  NAME\n${members
@@ -73,7 +73,7 @@ export default class LastSeenCommand extends Command {
 					.join('\n')}`,
 				'```'
 			].join('\n'))
-			.setFooter(`Members [${data.members}/50]`, message.author.displayAvatarURL());
+			.setFooter({ text: `Members [${data.members}/50]`, iconURL: message.author.displayAvatarURL() });
 
 		const customID = this.client.uuid(message.author.id);
 		const button = new MessageButton()

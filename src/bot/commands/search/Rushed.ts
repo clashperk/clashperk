@@ -95,7 +95,7 @@ export default class RushedCommand extends Command {
 
 	private embed(data: Player) {
 		const embed = new MessageEmbed()
-			.setAuthor(`${data.name} (${data.tag})`);
+			.setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS
@@ -183,7 +183,7 @@ export default class RushedCommand extends Command {
 		].join('\n'));
 
 		if (embed.fields.length) {
-			embed.setFooter(`Total ${this.totalPercentage(data.townHallLevel, Troops.length)}`);
+			embed.setFooter({ text: `Total ${this.totalPercentage(data.townHallLevel, Troops.length)}` });
 		} else {
 			embed.setDescription(
 				`No rushed units for Town Hall ${data.townHallLevel}`
@@ -202,7 +202,7 @@ export default class RushedCommand extends Command {
 		}
 
 		const embed = this.client.util.embed()
-			.setAuthor(`${data.name} (${data.tag})`)
+			.setAuthor({ name: `${data.name} (${data.tag})` })
 			.setDescription([
 				'Rushed Percentage',
 				'```\u200eTH   LAB  HERO  NAME',

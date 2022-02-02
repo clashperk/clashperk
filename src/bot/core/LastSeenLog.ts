@@ -134,7 +134,7 @@ export default class LastSeenLog {
 
 		const embed = new MessageEmbed();
 		if (cache.color) embed.setColor(cache.color);
-		embed.setAuthor(`${clan.name} (${clan.tag})`, clan.badgeUrls.medium);
+		embed.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 		embed.setDescription([
 			`**[Last seen and last 24h activity scores](https://clashperk.com/faq)**`,
 			`\`\`\`\n\u200eLAST-ON 24H  NAME`,
@@ -143,7 +143,7 @@ export default class LastSeenLog {
 			).join('\n'),
 			'\`\`\`'
 		].join('\n'));
-		embed.setFooter(`Synced [${members.length}/${clan.members}]`);
+		embed.setFooter({ text: `Synced [${members.length}/${clan.members}]` });
 		embed.setTimestamp();
 
 		return embed;

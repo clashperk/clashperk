@@ -66,7 +66,7 @@ export default class CWLCommand extends Command {
 				const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 				const embed = new MessageEmbed()
 					.setColor(this.client.embed(message))
-					.setAuthor('Command List', this.client.user!.displayAvatarURL({ format: 'png' }))
+					.setAuthor({ name: 'Command List', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
 					.setDescription(`To view more details for a command, do \`${prefix}help <command>\``);
 				const commands = this.handler.categories.get('cwl')!.values();
 				embed.addField('__**CWL**__', [

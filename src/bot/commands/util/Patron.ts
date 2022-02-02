@@ -61,11 +61,11 @@ export default class PatronCommand extends Command {
 
 		const embed = this.client.util.embed()
 			// .setColor(16345172)
-			.setAuthor(
-				this.client.user!.username,
-				this.client.user!.displayAvatarURL({ format: 'png' }),
-				'https://www.patreon.com/clashperk'
-			)
+			.setAuthor({
+				name: this.client.user!.username,
+				iconURL: this.client.user!.displayAvatarURL({ format: 'png' }),
+				url: 'https://www.patreon.com/clashperk'
+			})
 			.setDescription([
 				'Help us with our hosting related expenses.',
 				'Any help is beyond appreciated. Thanks!',

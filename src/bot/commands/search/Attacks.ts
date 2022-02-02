@@ -45,7 +45,7 @@ export default class ClanAttacksCommand extends Command {
 		const getEmbed = () => {
 			const embed = this.client.util.embed()
 				.setColor(this.client.embed(message))
-				.setAuthor(`${data.name} (${data.tag})`, data.badgeUrls.medium)
+				.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
 				.setDescription([
 					'```',
 					`\u200e ${'#'}  ${'ATK'}  ${'DEF'}  ${'NAME'.padEnd(15, ' ')}`,

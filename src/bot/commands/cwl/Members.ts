@@ -39,11 +39,11 @@ export default class CWLMembersCommand extends Command {
 		if (!body.ok) {
 			const embed = this.client.util.embed()
 				.setColor(3093046)
-				.setAuthor(
-					`${data.name} (${data.tag})`,
-					`${data.badgeUrls.medium}`,
-					`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
-				)
+				.setAuthor({
+					name: `${data.name} (${data.tag})`,
+					iconURL: `${data.badgeUrls.medium}`,
+					url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
+				})
 				.setThumbnail(data.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
 			return message.util!.send({ embeds: [embed] });
@@ -70,7 +70,7 @@ export default class CWLMembersCommand extends Command {
 		let members = '';
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
-			.setAuthor(`${data.name} (${data.tag}) ~ ${memberList.length}`, data.badgeUrls.medium);
+			.setAuthor({ name: `${data.name} (${data.tag}) ~ ${memberList.length}`, iconURL: data.badgeUrls.medium });
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
 			members += `\u200e${this.padStart(member.townHallLevel)} ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join(' ')}  ${Util.escapeInlineCode(member.name)}`;

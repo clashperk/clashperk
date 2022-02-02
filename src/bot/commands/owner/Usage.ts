@@ -37,10 +37,10 @@ export default class UsageCommand extends Command {
 		const { commands } = await this.commands();
 		const usage = await this.usage();
 		const embed = this.client.util.embed()
-			.setAuthor(`${this.client.user!.username}`, this.client.user!.displayAvatarURL({ format: 'png' }))
+			.setAuthor({ name: `${this.client.user!.username}`, iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
 			.setColor(this.client.embed(message))
 			.setTitle('Usage')
-			.setFooter(`${Number(await this.commandsTotal()).toLocaleString()}x Total • Since April 2019`);
+			.setFooter({ text: `${Number(await this.commandsTotal()).toLocaleString()}x Total • Since April 2019` });
 		embed.setDescription([
 			`__**\`\u200e${'Date'.padEnd(6, ' ')}  ${'Uses'.padEnd(18, ' ')}\u200f\`**__`,
 			...usage.map(en => `\`\u200e${moment(en.createdAt).format('DD MMM')}  ${en.usage.toString().padEnd(18, ' ')}\u200f\``),
