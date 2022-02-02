@@ -5,7 +5,6 @@ import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { Command } from 'discord-akairo';
 import { Util } from '../../util/Util';
 import moment from 'moment';
-import { STOP_REASONS } from '../../util/Constants';
 
 export default class CWLRoundCommand extends Command {
 	public constructor() {
@@ -153,8 +152,7 @@ export default class CWLRoundCommand extends Command {
 
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 		});
 	}
 

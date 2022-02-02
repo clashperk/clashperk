@@ -1,5 +1,5 @@
 import { Collection, GuildMember, Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
-import { Collections, STOP_REASONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -86,8 +86,7 @@ export default class LinkListCommand extends Command {
 
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customId);
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 		});
 	}
 

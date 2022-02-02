@@ -157,7 +157,7 @@ export default class CWLExport extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		if (!msg.deleted && !msg.interaction) await msg.delete();
+		if (msg.deletable && !msg.interaction) await msg.delete();
 		return message.util!.send({
 			files: [
 				{

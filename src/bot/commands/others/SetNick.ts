@@ -108,7 +108,6 @@ export default class SetNickNameCommand extends Command {
 
 		collector.on('end', () => {
 			this.client.components.delete(customID);
-			// if (!msg.deleted) await msg.edit({ components: [] });
 		});
 	}
 

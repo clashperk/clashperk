@@ -71,7 +71,7 @@ export default class WarSummaryCommand extends Command {
 
 	private async getCWL(clanTag: string) {
 		const res = await this.client.http.clanWarLeague(clanTag);
-		if (res.statusCode === 504) return { statusCode: 504 };
+		if (res.statusCode === 504 || res.state === 'notInWar') return { statusCode: 504 };
 		if (!res.ok) return this.client.http.currentClanWar(clanTag);
 		const rounds = res.rounds.filter(d => !d.warTags.includes('#0'));
 

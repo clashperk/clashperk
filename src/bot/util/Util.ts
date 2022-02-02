@@ -110,7 +110,7 @@ export class Util extends Discord.Util {
 	}
 
 	public static delay(ms: number) {
-		return this.delayFor(ms);
+		return new Promise(resolve => setTimeout(resolve, ms));
 	}
 
 	public static paginate<T>(pages: T[], page = 1, pageLength = 1) {

@@ -1,6 +1,6 @@
 import { MessageEmbed, Message, MessageButton, MessageActionRow } from 'discord.js';
 import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
-import { Collections, STOP_REASONS, WarType } from '../../util/Constants';
+import { Collections, WarType } from '../../util/Constants';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
 import { WHITE_NUMBERS } from '../../util/NumEmojis';
 import { Command, Argument } from 'discord-akairo';
@@ -212,8 +212,7 @@ export default class WarCommand extends Command {
 
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 		});
 	}
 

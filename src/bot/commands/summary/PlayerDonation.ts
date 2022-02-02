@@ -1,6 +1,6 @@
 import { BLUE_NUMBERS } from '../../util/NumEmojis';
 import { MessageEmbed, Message, MessageActionRow, MessageButton } from 'discord.js';
-import { Collections, STOP_REASONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Season, Util } from '../../util/Util';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -97,8 +97,7 @@ export default class PlayerDonationSummaryCommand extends Command {
 
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customId);
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 		});
 	}
 

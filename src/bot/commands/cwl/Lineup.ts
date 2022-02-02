@@ -4,7 +4,6 @@ import { BLUE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
 import { EMOJIS, HERO_PETS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
 import { Util } from '../../util/Util';
-import { STOP_REASONS } from '../../util/Constants';
 
 const states: { [key: string]: string } = {
 	inWar: 'Battle Day',
@@ -165,8 +164,7 @@ export default class CWLLineupCommand extends Command {
 			this.client.components.delete(MenuID);
 			this.client.components.delete(PlayerCustomID);
 			this.client.components.delete(CompareCustomID);
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 		});
 	}
 

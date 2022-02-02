@@ -1,6 +1,6 @@
 import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
 import { Message, TextChannel, MessageEmbed, MessageButton, MessageActionRow } from 'discord.js';
-import { Flags, Collections, STOP_REASONS } from '../../util/Constants';
+import { Flags, Collections } from '../../util/Constants';
 import { Util } from '../../util/Util';
 
 const names: { [key: string]: string } = {
@@ -170,8 +170,7 @@ export default class SetupCommand extends Command {
 
 		collector.on('end', async (_, reason) => {
 			Object.values(customIds).forEach(id => this.client.components.delete(id));
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 		});
 	}
 

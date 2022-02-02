@@ -73,14 +73,8 @@ export default class ClanFeedLog {
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			try {
-				(channel.isThread() && (channel.locked || !channel.permissionsFor(channel.guild.me!).has(1n << 38n)));
-			} catch (e) {
-				console.log(e);
-				console.log(cache, channel);
-			}
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
-			if (channel.permissionsFor(channel.guild.me!)!.has(permissions, false)) {
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS'))) return;
+			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
 				if (!channel.isThread() && this.hasWebhookPermission(channel)) {
 					const webhook = await this.webhook(id);
 					if (webhook) return this.handleMessage(id, webhook, data);

@@ -2,7 +2,6 @@ import { Message, MessageActionRow, MessageEmbed, MessageSelectMenu } from 'disc
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
-import { STOP_REASONS } from '../../util/Constants';
 import { Util } from '../../util/Util';
 
 export default class CWLStarsCommand extends Command {
@@ -173,8 +172,7 @@ export default class CWLStarsCommand extends Command {
 
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 		});
 	}
 

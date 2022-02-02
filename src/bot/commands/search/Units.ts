@@ -1,6 +1,6 @@
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import { MessageEmbed, Message, MessageButton, User, MessageSelectMenu, MessageActionRow } from 'discord.js';
-import { STOP_REASONS, TroopInfo, TroopJSON } from '../../util/Constants';
+import { TroopInfo, TroopJSON } from '../../util/Constants';
 import RAW_TROOPS_DATA from '../../util/TroopsInfo';
 import { Command, Argument } from 'discord-akairo';
 import { Player } from 'clashofclans.js';
@@ -126,8 +126,7 @@ export default class UnitsCommand extends Command {
 			for (const customID of Object.values(CUSTOM_ID)) {
 				this.client.components.delete(customID);
 			}
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 		});
 	}
 

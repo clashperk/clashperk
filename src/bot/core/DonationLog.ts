@@ -49,7 +49,7 @@ export default class DonationLog {
 	}
 
 	private async permissionsFor(id: string, cache: any, data: any) {
-		const permissions = [
+		const permissions: PermissionString[] = [
 			'SEND_MESSAGES',
 			'EMBED_LINKS',
 			'USE_EXTERNAL_EMOJIS',
@@ -58,8 +58,8 @@ export default class DonationLog {
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(channel.guild.me!).has(1n << 38n))) return;
-			if (channel.permissionsFor(channel.guild.me!)!.has(permissions as PermissionString[], false)) {
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS'))) return;
+			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
 				if (!channel.isThread() && this.hasWebhookPermission(channel)) {
 					const webhook = await this.webhook(id);
 					if (webhook) return this.handleMessage(id, webhook, data);

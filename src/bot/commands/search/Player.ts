@@ -1,6 +1,6 @@
 import { EMOJIS, TOWN_HALLS, HEROES, PLAYER_LEAGUES, SIEGE_MACHINES } from '../../util/Emojis';
 import { MessageEmbed, Util, Message, User, MessageSelectMenu, MessageActionRow } from 'discord.js';
-import { Collections, leagueId, STOP_REASONS } from '../../util/Constants';
+import { Collections, leagueId } from '../../util/Constants';
 import { Command, Argument } from 'discord-akairo';
 import { Player, WarClan } from 'clashofclans.js';
 import { Season } from '../../util/Util';
@@ -91,8 +91,7 @@ export default class PlayerCommand extends Command {
 
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 		});
 	}
 

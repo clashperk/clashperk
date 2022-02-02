@@ -1,5 +1,5 @@
 import { Message, MessageActionRow, MessageButton, MessageSelectMenu, TextChannel } from 'discord.js';
-import { Collections, STOP_REASONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Reminder } from '../../struct/RemindScheduler';
 import { Command } from 'discord-akairo';
 import ms from 'ms';
@@ -215,8 +215,7 @@ export default class ReminderCreateCommand extends Command {
 			for (const id of Object.values(customIds)) {
 				this.client.components.delete(id);
 			}
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: mutate(true).slice(0, 4) });
+			if (!/delete/i.test(reason)) await msg.edit({ components: mutate(true).slice(0, 4) });
 		});
 	}
 }

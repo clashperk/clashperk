@@ -1,5 +1,5 @@
 import { Message, MessageActionRow, MessageButton } from 'discord.js';
-import { Collections, STOP_REASONS } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { ClanGames } from '../../util/Util';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -108,8 +108,7 @@ export default class ClanGamesCommand extends Command {
 			for (const customID of Object.values(CUSTOM_ID)) {
 				this.client.components.delete(customID);
 			}
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 		});
 	}
 

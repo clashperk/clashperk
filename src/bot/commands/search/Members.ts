@@ -1,6 +1,5 @@
 import { Message, MessageActionRow, MessageButton } from 'discord.js';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
-import { STOP_REASONS } from '../../util/Constants';
 import { Clan, PlayerItem } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from 'discord-akairo';
@@ -197,8 +196,7 @@ export default class MembersCommand extends Command {
 			this.client.components.delete(discord);
 			this.client.components.delete(download);
 			this.client.components.delete(warPref);
-			if (STOP_REASONS.includes(reason)) return;
-			if (!msg.deleted) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 		});
 	}
 
