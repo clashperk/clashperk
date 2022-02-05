@@ -7,6 +7,7 @@ import ms from 'ms';
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
 		super('reminder-create', {
+			aliases: ['rem-add'],
 			category: 'beta',
 			channel: 'guild',
 			description: {},
