@@ -52,7 +52,8 @@ export default class RemindScheduler {
 			}
 
 			if (['delete', 'update'].includes(change.operationType)) {
-				const id = change.documentKey!.toHexString();
+				// @ts-expect-error
+				const id: string = change.documentKey!._id.toHexString();
 				if (this.queued.has(id)) {
 					const timeoutId = this.queued.get(id);
 					if (timeoutId) clearTimeout(timeoutId);
@@ -79,6 +80,7 @@ export default class RemindScheduler {
 				if (!data.ok) continue;
 				if (['notInWar', 'warEnded'].includes(data.state)) continue;
 				const endTime = moment(data.endTime).toDate();
+				if (Date.now() > new Date(endTime.getTime() - reminder.duration).getTime()) continue;
 
 				await this.collection.insertOne({
 					guild: reminder.guild,
@@ -160,15 +162,19 @@ export default class RemindScheduler {
 			}
 			mentions.sort((a, b) => a.position - b.position);
 
-			const dur = moment(data.endTime).toDate().getTime() - Date.now();
+			const dur = moment(data.state === 'preparation' ? data.startTime : data.endTime).toDate().getTime() - Date.now();
 			if (!mentions.length) return null;
+
+			const prefix = data.state === 'preparation' ? 'in ' : '';
+			const suffix = data.state === 'preparation' ? '' : ' left';
+			const warTiming = moment.duration(dur).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
 			const content = [
 				`📨 ${rem.message}`,
 				'\u200b',
 				...mentions.map(m => m.content),
 				'\u200b',
-				`**${clan.name} (${moment.duration(dur).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' })} left)**`
+				`**${clan.name} (${prefix}${warTiming}${suffix})**`
 			].join('\n');
 
 			const channel = this.client.channels.cache.get(rem.channel) as TextChannel | null;

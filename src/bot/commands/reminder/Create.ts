@@ -42,11 +42,17 @@ export default class ReminderCreateCommand extends Command {
 	public async exec(message: Message, { duration, text, channel }: { duration: string; text: string; channel?: TextChannel }) {
 		const clans = (await this.client.storage.findAll(message.guild!.id)).slice(0, 25);
 
-		if (!text) return message.util!.send('**You must provide a message for the reminder!**');
+		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS)
+			.find({ guild: message.guild!.id })
+			.count();
 		const dur = ms(duration);
+
+		if (reminders >= 25) return message.util!.send(`**You can only have 25 reminders.**`);
+		if (!text) return message.util!.send('**You must provide a message for the reminder!**');
 		if (!dur) return message.util!.send('**You must provide a valid duration. e.g 2h, 2.5h, 30m**');
 		if (dur < 15 * 60 * 1000) return message.util!.send('**Duration must be at least 15 minutes.**');
 		if (dur > 45 * 60 * 60 * 1000) return message.util!.send('**Duration must be less than 45 hours.**');
+		if (dur % (15 * 60 * 1000) !== 0) return message.util!.send('**Duration must be a multiple of 15 minutes. e.g 2h, 2.25h, 2.5h, 15m, 45m**');
 
 		const customIds = {
 			roles: this.client.uuid(message.author.id),
@@ -134,7 +140,6 @@ export default class ReminderCreateCommand extends Command {
 						.setDisabled(disable)
 				);
 
-
 			const row4 = new MessageActionRow()
 				.addComponents(
 					new MessageSelectMenu()
@@ -194,6 +199,7 @@ export default class ReminderCreateCommand extends Command {
 			}
 
 			if (action.customId === customIds.save && action.isButton()) {
+				await action.deferUpdate();
 				const reminder = {
 					guild: message.guild!.id,
 					channel: channel?.id ?? message.channel.id,
@@ -208,7 +214,7 @@ export default class ReminderCreateCommand extends Command {
 
 				const { insertedId } = await this.client.db.collection<Reminder>(Collections.REMINDERS).insertOne(reminder);
 				await this.client.remindScheduler.create({ ...reminder, _id: insertedId });
-				return action.update({ components: mutate(true).slice(0, 4) });
+				await action.editReply({ components: mutate(true).slice(0, 4) });
 			}
 		});
 
