@@ -39,51 +39,43 @@ export default class Http extends Client {
 		return Promise.all(members.map(mem => this.fetch(`/players/${encodeURIComponent(mem.tag)}`)));
 	}
 
-	public async clanWarLeagueRounds(clanTag: string, body: ClanWarLeagueGroup, fetchAllRounds = false, start?: number, end?: number) {
+	public async getCurrentWars(clanTag: string): Promise<(ClanWar & { warTag?: string; round?: number })[]> {
+		const date = new Date().getUTCDate();
+		if (!(date >= 1 && date <= 10)) {
+			const data = await this.currentClanWar(clanTag);
+			return data.ok ? [data] : [];
+		}
+
+		return this.getClanWarLeague(clanTag);
+	}
+
+	private async getClanWarLeague(clanTag: string) {
+		const res = await this.clanWarLeague(clanTag);
+		if (res.statusCode === 504 || res.state === 'notInWar') return [];
+		if (!res.ok) {
+			const data = await this.currentClanWar(clanTag);
+			return data.ok ? [data] : [];
+		}
+		return this.clanWarLeagueRounds(clanTag, res);
+	}
+
+	private async clanWarLeagueRounds(clanTag: string, body: ClanWarLeagueGroup) {
 		const chunks = [];
-		for (const { warTags } of body.rounds.filter(en => !en.warTags.includes('#0')).slice(start, end)) {
+		for (const { warTags } of body.rounds.filter(en => !en.warTags.includes('#0')).slice(-2)) {
 			for (const warTag of warTags) {
-				const data: ClanWar = await this.clanWarLeagueWar(warTag);
+				const data = await this.clanWarLeagueWar(warTag);
 				if (!data.ok) continue;
 				const round = body.rounds.findIndex(en => en.warTags.includes(warTag));
-				if (!fetchAllRounds && (data.clan.tag === clanTag || data.opponent.tag === clanTag)) {
-					chunks.push(Object.assign(data, { warTag, round: round + 1 }));
+				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
+					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
+					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
+					chunks.push(Object.assign(data, { warTag, round: round + 1 }, { clan, opponent }));
 					break;
-				}
-				if (fetchAllRounds) {
-					chunks.push(Object.assign(data, { warTag, round: round + 1 }));
 				}
 			}
 		}
 
 		return chunks;
-	}
-
-	public getCurrentWar(clanTag: string /* round?: number */): Promise<ClanWar & { warTag?: string; round?: number }> {
-		// if (this.leagueWar) return this.getClanWarLeague(clanTag, round);
-		return this.currentClanWar(clanTag);
-	}
-
-	public async getClanWarLeague(clanTag: string, round?: number) {
-		const res = await this.clanWarLeague(clanTag);
-		if (res.statusCode === 504) null;
-		if (!res.ok) return null; // this.currentClanWar(clanTag);
-
-		const num = this.getRoundIndex(res, round);
-		const wars = await this.clanWarLeagueRounds(clanTag, res, false, ...num);
-		if (!wars.length) null;
-		return wars.find(en => en.state === 'preparation') ?? wars.pop()!;
-	}
-
-	public getRoundIndex(res: ClanWarLeagueGroup, round?: number) {
-		const rounds = res.rounds.filter(en => !en.warTags.includes('#0'));
-		return round && round <= rounds.length
-			? [round - 1, round]
-			: rounds.length === 7 ? [-2] : [-1];
-	}
-
-	private get leagueGroup() {
-		return new Date().getDate() >= 1 && new Date().getDate() <= 10;
 	}
 
 	public async login() {

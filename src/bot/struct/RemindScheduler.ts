@@ -39,11 +39,31 @@ export default class RemindScheduler {
 	}
 
 	public async init() {
-		this.collection.watch([], { fullDocument: 'updateLookup' }).on('change', change => {
-			if (['update', 'insert'].includes(change.operationType)) {
+		this.collection.watch([{
+			$match: {
+				operationType: { $in: ['insert', 'update', 'delete'] }
+			}
+		}], { fullDocument: 'updateLookup' }).on('change', change => {
+			if (['insert'].includes(change.operationType)) {
 				const reminder = change.fullDocument!;
 				if (reminder.timestamp.getTime() < (Date.now() + this.refreshRate)) {
 					this.queue(reminder);
+				}
+			}
+
+			if (['delete', 'update'].includes(change.operationType)) {
+				const id = change.documentKey!.toHexString();
+				if (this.queued.has(id)) {
+					const timeoutId = this.queued.get(id);
+					if (timeoutId) clearTimeout(timeoutId);
+					this.queued.delete(id);
+				}
+
+				if (change.operationType === 'update') {
+					const reminder = change.fullDocument!;
+					if (reminder.timestamp.getTime() < (Date.now() + this.refreshRate)) {
+						this.queue(reminder);
+					}
 				}
 			}
 		});
@@ -54,24 +74,27 @@ export default class RemindScheduler {
 
 	public async create(reminder: Reminder) {
 		for (const tag of reminder.clans) {
-			const data = await this.client.http.currentClanWar(tag);
-			if (!data.ok) continue;
-			if (['notInWar', 'warEnded'].includes(data.state)) continue;
-			const endTime = moment(data.endTime).toDate();
+			const wars = await this.client.http.getCurrentWars(tag);
+			for (const data of wars) {
+				if (!data.ok) continue;
+				if (['notInWar', 'warEnded'].includes(data.state)) continue;
+				const endTime = moment(data.endTime).toDate();
 
-			await this.collection.insertOne({
-				guild: reminder.guild,
-				tag: data.clan.tag,
-				reminderId: reminder._id,
-				timestamp: new Date(endTime.getTime() - reminder.duration),
-				createdAt: new Date()
-			});
+				await this.collection.insertOne({
+					guild: reminder.guild,
+					tag: data.clan.tag,
+					warTag: data.warTag,
+					reminderId: reminder._id,
+					timestamp: new Date(endTime.getTime() - reminder.duration),
+					createdAt: new Date()
+				});
+			}
 		}
 	}
 
 	private queue(reminder: ReminderTemp) {
 		this.queued.set(
-			reminder.reminderId.toHexString(),
+			reminder._id.toHexString(),
 			setTimeout(() => {
 				this.trigger(reminder);
 			}, reminder.timestamp.getTime() - Date.now())
@@ -79,9 +102,9 @@ export default class RemindScheduler {
 	}
 
 	private async delete(reminder: ReminderTemp) {
-		const timeoutId = this.queued.get(reminder.reminderId.toHexString());
+		const timeoutId = this.queued.get(reminder._id.toHexString());
 		if (timeoutId) clearTimeout(timeoutId);
-		this.queued.delete(reminder.reminderId.toHexString());
+		this.queued.delete(reminder._id.toHexString());
 		return this.collection.deleteOne({ _id: reminder._id });
 	}
 
@@ -168,7 +191,7 @@ export default class RemindScheduler {
 		const now = new Date().getTime();
 		for (const reminder of reminders) {
 			if (!this.client.guilds.cache.has(reminder.guild)) continue;
-			if (this.queued.has(reminder.reminderId.toHexString())) continue;
+			if (this.queued.has(reminder._id.toHexString())) continue;
 
 			if (reminder.timestamp.getTime() < now) {
 				this.trigger(reminder);

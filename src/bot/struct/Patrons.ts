@@ -11,7 +11,11 @@ export default class Patrons {
 	public constructor(private readonly client: Client) {
 		this.collection = this.client.db.collection(Collections.PATRONS);
 
-		this.collection.watch().on('change', async change => {
+		this.collection.watch([{
+			$match: {
+				operationType: { $in: ['insert', 'update', 'delete'] }
+			}
+		}]).on('change', async change => {
 			if (['update', 'insert'].includes(change.operationType)) {
 				await this.refresh();
 			}

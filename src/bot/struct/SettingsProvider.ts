@@ -9,7 +9,11 @@ export default class SettingsProvider {
 	public constructor(db: Db) {
 		this.db = db.collection(Collections.SETTINGS);
 
-		this.db.watch([], { fullDocument: 'updateLookup' }).on('change', change => {
+		this.db.watch([{
+			$match: {
+				operationType: { $in: ['insert', 'update', 'delete'] }
+			}
+		}], { fullDocument: 'updateLookup' }).on('change', change => {
 			if (['update', 'insert'].includes(change.operationType)) {
 				this.settings.set(change.fullDocument!.id, change.fullDocument);
 			}
