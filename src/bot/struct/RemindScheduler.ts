@@ -165,8 +165,7 @@ export default class RemindScheduler {
 			const dur = moment(data.state === 'preparation' ? data.startTime : data.endTime).toDate().getTime() - Date.now();
 			if (!mentions.length) return null;
 
-			const prefix = data.state === 'preparation' ? 'in ' : '';
-			const suffix = data.state === 'preparation' ? '' : ' left';
+			const prefix = data.state === 'preparation' ? 'starts in' : 'ends in';
 			const warTiming = moment.duration(dur).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
 			const content = [
@@ -174,7 +173,7 @@ export default class RemindScheduler {
 				'\u200b',
 				...mentions.map(m => m.content),
 				'\u200b',
-				`**${clan.name} (${prefix}${warTiming}${suffix})**`
+				`**${clan.name} (War ${prefix} ${warTiming})**`
 			].join('\n');
 
 			const channel = this.client.channels.cache.get(rem.channel) as TextChannel | null;
