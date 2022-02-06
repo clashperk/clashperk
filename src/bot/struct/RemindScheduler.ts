@@ -143,35 +143,44 @@ export default class RemindScheduler {
 			);
 			if (!members.length) return null;
 
-			const users = await this.client.http.getDiscordLinks(members);
-			if (!users.length) return null;
+			const links = await this.client.http.getDiscordLinks(members);
+			if (!links.length) return null;
 
 			const guild = this.client.guilds.cache.get(rem.guild);
 			if (!guild) return null;
 
-			const guildMembers = await guild.members.fetch({ user: users.map(({ user }) => user) }).catch(() => null);
-			const mentions: { position: number; content: string }[] = [];
+			const guildMembers = await guild.members.fetch({ user: links.map(({ user }) => user) }).catch(() => null);
+			const mentions: { position: number; id: string; name: string }[] = [];
 
-			for (const user of users) {
-				const member = members.find(mem => mem.tag === user.tag)!;
-				const mention = guildMembers?.get(user.user)?.toString() ?? `<@${user.user}>`;
+			for (const link of links) {
+				const member = members.find(mem => mem.tag === link.tag)!;
+				const mention = guildMembers?.get(link.user)?.toString() ?? `<@${link.user}>`;
 				mentions.push({
-					position: member.mapPosition,
-					content: `${mention} (${member.name}) ${member.attacks?.length ?? 0}/${attacksPerMember}`
+					id: mention,
+					name: member.name,
+					position: member.mapPosition
 				});
 			}
+
+			if (!mentions.length) return null;
 			mentions.sort((a, b) => a.position - b.position);
 
-			const dur = moment(data.state === 'preparation' ? data.startTime : data.endTime).toDate().getTime() - Date.now();
-			if (!mentions.length) return null;
+			const users = Object.entries(
+				mentions.reduce((acc, cur) => {
+					if (!acc.hasOwnProperty(cur.id)) acc[cur.id] = [];
+					acc[cur.id].push(cur);
+					return acc;
+				}, {} as { [key: string]: { position: number; id: string; name: string }[] })
+			);
 
 			const prefix = data.state === 'preparation' ? 'starts in' : 'ends in';
+			const dur = moment(data.state === 'preparation' ? data.startTime : data.endTime).toDate().getTime() - Date.now();
 			const warTiming = moment.duration(dur).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
 			const content = [
 				`📨 ${rem.message}`,
 				'\u200b',
-				...mentions.map(m => m.content),
+				...users.map(([mention, members]) => `${mention} (${members.map(mem => mem.name).join(', ')})`),
 				'\u200b',
 				`**${clan.name} (War ${prefix} ${warTiming})**`
 			].join('\n');
@@ -184,8 +193,7 @@ export default class RemindScheduler {
 			this.client.logger.error('Reminder Failed', { label: 'REMINDER' });
 		}
 
-		await this.delete(reminder);
-		return true;
+		return this.delete(reminder);
 	}
 
 	private async _refresh() {

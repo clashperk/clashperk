@@ -96,9 +96,28 @@ export default class InteractionListener extends Listener {
 	}
 
 	public exec(interaction: Interaction) {
+		this.autocomplete(interaction);
 		this.commandInteraction(interaction);
 		this.contextInteraction(interaction);
 		this.componentInteraction(interaction);
+	}
+
+	public async autocomplete(interaction: Interaction) {
+		if (!interaction.isAutocomplete()) return;
+
+		// console.log(interaction.options.getString('duration'));
+
+
+		return interaction.respond([
+			{
+				name: '1h',
+				value: '1h'
+			},
+			{
+				name: '2h',
+				value: '2h'
+			}
+		]);
 	}
 
 	private async contextInteraction(interaction: Interaction) {

@@ -4,11 +4,17 @@ import { Reminder } from '../../struct/RemindScheduler';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
 
+const roles: { [key: string]: string } = {
+	member: 'Member',
+	admin: 'Elder',
+	coLeader: 'Co-Leader',
+	leader: 'Leader'
+};
+
 export default class ReminderListCommand extends Command {
 	public constructor() {
 		super('reminder-list', {
-			aliases: ['rem-list'],
-			category: 'beta',
+			category: 'reminder',
 			channel: 'guild',
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],
@@ -22,20 +28,22 @@ export default class ReminderListCommand extends Command {
 			.toArray();
 
 		const label = (duration: number) => moment.duration(duration)
-			.format('D[d], H[h], m[m], s[s]', { trim: 'both mid' });
+			.format('H[h], m[m], s[s]', { trim: 'both mid' });
 
 		const embed = new MessageEmbed();
-		for (const reminder of reminders) {
+		reminders.forEach((reminder, index) => {
 			embed.addField(
-				label(reminder.duration),
+				`${index + 1}. ${label(reminder.duration)} remaining`,
 				[
-					`Message: ${reminder.message.substring(0, 100)}`,
-					`Channel: <#${reminder.channel}>`,
-					`Roles: ${reminder.roles.join(', ')}`,
-					`Town Halls: ${reminder.townHalls.join(', ')}`
-				].join('\n')
+					`**Channel:** <#${reminder.channel}>`,
+					reminder.roles.length === 4 ? '' : `**Roles:** ${reminder.roles.map(role => roles[role]).join(', ')}`,
+					reminder.townHalls.length === 13 ? '' : `**Town Halls:** ${reminder.townHalls.join(', ')}`,
+					reminder.remaining.length === 2 ? '' : `**Remaining Hits:** ${reminder.remaining.join(', ')}`,
+					`**Custom Message:** ${reminder.message.substring(0, 100)}...`,
+					'\u200b'
+				].filter(txt => txt.length).join('\n')
 			);
-		}
+		});
 
 		return message.util!.send({ embeds: [embed] });
 	}

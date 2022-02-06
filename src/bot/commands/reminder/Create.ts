@@ -7,8 +7,7 @@ import ms from 'ms';
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
 		super('reminder-create', {
-			aliases: ['rem-add'],
-			category: 'beta',
+			category: 'reminder',
 			channel: 'guild',
 			description: {},
 			optionFlags: ['--duration', '--channel', '--message'],
@@ -24,16 +23,16 @@ export default class ReminderCreateCommand extends Command {
 			type: 'string'
 		};
 
-		const channel = yield {
-			flag: '--channel',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: 'textChannel'
-		};
-
 		const text = yield {
 			flag: '--message',
 			match: msg.interaction ? 'option' : 'rest',
 			type: 'string'
+		};
+
+		const channel = yield {
+			flag: '--channel',
+			match: msg.interaction ? 'option' : 'phrase',
+			type: 'textChannel'
 		};
 
 		return { duration, text, channel };
@@ -171,7 +170,7 @@ export default class ReminderCreateCommand extends Command {
 			return [row1, row2, row3, row4, row5];
 		};
 
-		const msg = await message.channel.send({ content: '**War Reminder Setup**', components: mutate() });
+		const msg = await message.util!.send({ content: '**War Reminder Setup**', components: mutate() });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000

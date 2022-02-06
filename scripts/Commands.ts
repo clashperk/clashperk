@@ -946,6 +946,47 @@ export const COMMANDS: Command[] = [
 		description: 'Redeem/Manage Patreon subscription (if you wish to support us)'
 	},
 	{
+		name: 'reminder',
+		description: 'Set a reminder for a clan',
+		options: [
+			{
+				name: 'create',
+				description: 'Create a reminder',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'duration',
+						description: 'Remaining duration to mention war members (Multiple of 15 mins e.g 15m, 30m, 1h, 1.25h, 1.5h)',
+						type: ApplicationCommandOptionType.String,
+						required: true,
+						autocomplete: true
+					},
+					{
+						name: 'message',
+						description: 'Reminder message for the notification',
+						type: ApplicationCommandOptionType.String,
+						required: true
+					},
+					{
+						name: 'channel',
+						description: 'Channel to send reminder in',
+						type: ApplicationCommandOptionType.Channel
+					}
+				]
+			},
+			{
+				name: 'list',
+				description: 'List all reminders',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'delete',
+				description: 'Delete a reminder',
+				type: ApplicationCommandOptionType.Subcommand
+			}
+		]
+	},
+	{
 		name: 'stats',
 		description: 'Stats command group',
 		options: [

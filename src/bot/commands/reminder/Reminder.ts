@@ -5,7 +5,7 @@ export default class ReminderCommand extends Command {
 	public constructor() {
 		super('reminder', {
 			aliases: ['reminder'],
-			category: 'setup',
+			category: 'reminder',
 			channel: 'guild',
 			description: {
 				content: [

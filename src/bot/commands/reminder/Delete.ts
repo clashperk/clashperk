@@ -8,8 +8,7 @@ import { ObjectId } from 'mongodb';
 export default class ReminderDeleteCommand extends Command {
 	public constructor() {
 		super('reminder-delete', {
-			aliases: ['rem-del'],
-			category: 'beta',
+			category: 'reminder',
 			channel: 'guild',
 			description: {},
 			userPermissions: ['MANAGE_GUILD'],
@@ -46,8 +45,8 @@ export default class ReminderDeleteCommand extends Command {
 							reminders
 								.filter(rem => state.reminders.has(rem._id.toHexString()))
 								.map(
-									rem => ({
-										'label': label(rem.duration),
+									(rem, i) => ({
+										'label': `${i + 1}. ${label(rem.duration)} remaining`,
 										'value': rem._id.toHexString(),
 										'description': `${rem.message.substring(0, 100)}`,
 										'default': state.selected === rem._id.toHexString()
