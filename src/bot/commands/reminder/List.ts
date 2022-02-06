@@ -26,6 +26,7 @@ export default class ReminderListCommand extends Command {
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS)
 			.find({ guild: message.guild!.id })
 			.toArray();
+		if (!reminders.length) return message.util!.send('**You have no reminders.**');
 
 		const label = (duration: number) => moment.duration(duration)
 			.format('H[h], m[m], s[s]', { trim: 'both mid' });

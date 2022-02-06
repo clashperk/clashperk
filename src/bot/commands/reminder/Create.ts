@@ -44,11 +44,11 @@ export default class ReminderCreateCommand extends Command {
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS)
 			.find({ guild: message.guild!.id })
 			.count();
-		const dur = ms(duration);
 
 		if (reminders >= 25) return message.util!.send(`**You can only have 25 reminders.**`);
 		if (!text) return message.util!.send('**You must provide a message for the reminder!**');
-		if (!dur) return message.util!.send('**You must provide a valid duration. e.g 2h, 2.5h, 30m**');
+		if (!duration || (duration && !ms(duration))) return message.util!.send('**You must provide a valid duration. e.g 2h, 2.5h, 30m**');
+		const dur = ms(duration);
 		if (dur < 15 * 60 * 1000) return message.util!.send('**Duration must be at least 15 minutes.**');
 		if (dur > 45 * 60 * 60 * 1000) return message.util!.send('**Duration must be less than 45 hours.**');
 		if (dur % (15 * 60 * 1000) !== 0) return message.util!.send('**Duration must be a multiple of 15 minutes. e.g 2h, 2.25h, 2.5h, 15m, 45m**');
@@ -212,8 +212,8 @@ export default class ReminderCreateCommand extends Command {
 				};
 
 				const { insertedId } = await this.client.db.collection<Reminder>(Collections.REMINDERS).insertOne(reminder);
-				await this.client.remindScheduler.create({ ...reminder, _id: insertedId });
-				await action.editReply({ components: mutate(true).slice(0, 4) });
+				this.client.remindScheduler.create({ ...reminder, _id: insertedId });
+				await action.editReply({ components: mutate(true), content: 'Successfully saved!' });
 			}
 		});
 
@@ -221,7 +221,7 @@ export default class ReminderCreateCommand extends Command {
 			for (const id of Object.values(customIds)) {
 				this.client.components.delete(id);
 			}
-			if (!/delete/i.test(reason)) await msg.edit({ components: mutate(true).slice(0, 4) });
+			if (!/delete/i.test(reason)) await msg.edit({ components: mutate(true) });
 		});
 	}
 }

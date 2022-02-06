@@ -1,6 +1,7 @@
 import { CommandInteractionOption, Interaction, PermissionResolvable, TextChannel } from 'discord.js';
 import { Listener, Command, Flag } from 'discord-akairo';
 import { Messages, Settings } from '../../util/Constants';
+// import { ObjectId } from 'mongodb';
 
 const EPHEMERAL_COMMANDS = ['help', 'invite', 'status', 'whois', 'verify'];
 
@@ -104,20 +105,20 @@ export default class InteractionListener extends Listener {
 
 	public async autocomplete(interaction: Interaction) {
 		if (!interaction.isAutocomplete()) return;
+		const dur = interaction.options.getString('duration');
 
-		// console.log(interaction.options.getString('duration'));
-
-
-		return interaction.respond([
-			{
-				name: '1h',
-				value: '1h'
-			},
-			{
-				name: '2h',
-				value: '2h'
+		if (dur && !isNaN(parseInt(dur, 10))) {
+			const duration = parseInt(dur, 10);
+			if (duration < 60 && dur.includes('m')) {
+				return interaction.respond(['15m', '30m', '45m', '1h'].map(value => ({ value, name: value })));
 			}
-		]);
+
+			return interaction.respond(
+				['h', '.25h', '.5h', '.75h'].map(num => ({ value: `${duration}${num}`, name: `${duration}${num}` }))
+			);
+		}
+
+		return interaction.respond(['30m', '1h', '2.5h', '5h'].map(value => ({ value, name: value })));
 	}
 
 	private async contextInteraction(interaction: Interaction) {
@@ -180,6 +181,10 @@ export default class InteractionListener extends Listener {
 
 		if (this.client.components.has(interaction.customId)) return;
 		if ((await this.client.automaton.exec(interaction))) return;
+
+		// if (ObjectId.isValid(interaction.customId) && interaction.isButton()) {
+		// 	if ((await this.client.remindScheduler.expand(interaction.customId, interaction))) return;
+		// }
 
 		this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.tag}]`, { label: 'COMPONENT_EXPIRED' });
 		await interaction.update({ components: [] });

@@ -3,29 +3,8 @@ import { Collection, ObjectId } from 'mongodb';
 import { TextChannel } from 'discord.js';
 import Client from './Client';
 import moment from 'moment';
-
-export interface ReminderTemp {
-	_id: ObjectId;
-	guild: string;
-	tag: string;
-	warTag?: string;
-	reminderId: ObjectId;
-	timestamp: Date;
-	createdAt: Date;
-}
-
-export interface Reminder {
-	_id: ObjectId;
-	guild: string;
-	channel: string;
-	message: string;
-	duration: number;
-	roles: string[];
-	townHalls: number[];
-	clans: string[];
-	remaining: number[];
-	createdAt: Date;
-}
+import { Util } from '../util/Util';
+import { ORANGE_NUMBERS } from '../util/NumEmojis';
 
 export default class RemindScheduler {
 	protected collection!: Collection<ReminderTemp>;
@@ -54,11 +33,7 @@ export default class RemindScheduler {
 			if (['delete', 'update'].includes(change.operationType)) {
 				// @ts-expect-error
 				const id: string = change.documentKey!._id.toHexString();
-				if (this.queued.has(id)) {
-					const timeoutId = this.queued.get(id);
-					if (timeoutId) clearTimeout(timeoutId);
-					this.queued.delete(id);
-				}
+				if (this.queued.has(id)) this.clear(id);
 
 				if (change.operationType === 'update') {
 					const reminder = change.fullDocument!;
@@ -80,14 +55,18 @@ export default class RemindScheduler {
 				if (!data.ok) continue;
 				if (['notInWar', 'warEnded'].includes(data.state)) continue;
 				const endTime = moment(data.endTime).toDate();
-				if (Date.now() > new Date(endTime.getTime() - reminder.duration).getTime()) continue;
+
+				const ms = endTime.getTime() - reminder.duration;
+				if (Date.now() > new Date(ms).getTime()) continue;
 
 				await this.collection.insertOne({
 					guild: reminder.guild,
 					tag: data.clan.tag,
+					name: data.clan.name,
 					warTag: data.warTag,
 					reminderId: reminder._id,
-					timestamp: new Date(endTime.getTime() - reminder.duration),
+					triggered: false,
+					timestamp: new Date(ms),
 					createdAt: new Date()
 				});
 			}
@@ -104,10 +83,14 @@ export default class RemindScheduler {
 	}
 
 	private async delete(reminder: ReminderTemp) {
-		const timeoutId = this.queued.get(reminder._id.toHexString());
-		if (timeoutId) clearTimeout(timeoutId);
-		this.queued.delete(reminder._id.toHexString());
+		this.clear(reminder._id.toHexString());
 		return this.collection.deleteOne({ _id: reminder._id });
+	}
+
+	private clear(id: string) {
+		const timeoutId = this.queued.get(id);
+		if (timeoutId) clearTimeout(timeoutId);
+		return this.queued.delete(id);
 	}
 
 	private async getClanMembers(tag: string) {
@@ -124,6 +107,8 @@ export default class RemindScheduler {
 			const data = reminder.warTag
 				? await this.client.http.clanWarLeagueWar(reminder.warTag)
 				: await this.client.http.currentClanWar(reminder.tag);
+			if (data.statusCode === 503) return this.clear(reminder._id.toHexString());
+
 			if (['notInWar', 'warEnded'].includes(data.state)) return null;
 
 			const clanMembers = rem.roles.length === 4 ? [] : await this.getClanMembers(reminder.tag);
@@ -131,7 +116,10 @@ export default class RemindScheduler {
 			const attacksPerMember = data.attacksPerMember || 1;
 
 			const members = clan.members.filter(
-				mem => rem.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0))
+				mem => {
+					if (reminder.warTag) return true;
+					return rem.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0));
+				}
 			).filter(
 				mem => rem.townHalls.includes(mem.townhallLevel)
 			).filter(
@@ -150,15 +138,19 @@ export default class RemindScheduler {
 			if (!guild) return null;
 
 			const guildMembers = await guild.members.fetch({ user: links.map(({ user }) => user) }).catch(() => null);
-			const mentions: { position: number; id: string; name: string }[] = [];
+			const mentions: UserMention[] = [];
 
 			for (const link of links) {
 				const member = members.find(mem => mem.tag === link.tag)!;
-				const mention = guildMembers?.get(link.user)?.toString() ?? `<@${link.user}>`;
+				const mention = guildMembers?.get(link.user) ?? `<@${link.user}>`;
 				mentions.push({
-					id: mention,
+					id: link.user,
+					mention: mention.toString(),
 					name: member.name,
-					position: member.mapPosition
+					tag: member.tag,
+					position: member.mapPosition,
+					townHallLevel: member.townhallLevel,
+					attacks: member.attacks?.length ?? 0
 				});
 			}
 
@@ -167,27 +159,34 @@ export default class RemindScheduler {
 
 			const users = Object.entries(
 				mentions.reduce((acc, cur) => {
-					if (!acc.hasOwnProperty(cur.id)) acc[cur.id] = [];
-					acc[cur.id].push(cur);
+					if (!acc.hasOwnProperty(cur.mention)) acc[cur.mention] = [];
+					acc[cur.mention].push(cur);
 					return acc;
-				}, {} as { [key: string]: { position: number; id: string; name: string }[] })
+				}, {} as { [key: string]: UserMention[] })
 			);
 
 			const prefix = data.state === 'preparation' ? 'starts in' : 'ends in';
 			const dur = moment(data.state === 'preparation' ? data.startTime : data.endTime).toDate().getTime() - Date.now();
 			const warTiming = moment.duration(dur).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
-			const content = [
+			const text = [
 				`📨 ${rem.message}`,
 				'\u200b',
-				...users.map(([mention, members]) => `${mention} (${members.map(mem => mem.name).join(', ')})`),
+				users.map(([mention, members]) => {
+					const list = members.map(
+						mem => `${ORANGE_NUMBERS[mem.townHallLevel]} ${mem.name}`
+					).join('\n');
+					return `${mention}\n${list}`;
+				}).join('\n'),
 				'\u200b',
 				`**${clan.name} (War ${prefix} ${warTiming})**`
 			].join('\n');
 
 			const channel = this.client.channels.cache.get(rem.channel) as TextChannel | null;
 			if (channel?.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES'])) {
-				await channel.send({ content, allowedMentions: { parse: ['users'] } });
+				for (const content of Util.splitMessage(text)) {
+					await channel.send({ content, allowedMentions: { parse: ['users'] } });
+				}
 			}
 		} catch (error) {
 			this.client.logger.error('Reminder Failed', { label: 'REMINDER' });
@@ -203,6 +202,7 @@ export default class RemindScheduler {
 
 		const now = new Date().getTime();
 		for (const reminder of reminders) {
+			if (reminder.triggered) continue;
 			if (!this.client.guilds.cache.has(reminder.guild)) continue;
 			if (this.queued.has(reminder._id.toHexString())) continue;
 
@@ -213,4 +213,39 @@ export default class RemindScheduler {
 			}
 		}
 	}
+}
+
+export interface ReminderTemp {
+	_id: ObjectId;
+	guild: string;
+	name: string;
+	tag: string;
+	warTag?: string;
+	reminderId: ObjectId;
+	triggered: boolean;
+	timestamp: Date;
+	createdAt: Date;
+}
+
+export interface Reminder {
+	_id: ObjectId;
+	guild: string;
+	channel: string;
+	message: string;
+	duration: number;
+	roles: string[];
+	townHalls: number[];
+	clans: string[];
+	remaining: number[];
+	createdAt: Date;
+}
+
+interface UserMention {
+	position: number;
+	id: string;
+	mention: string;
+	name: string;
+	tag: string;
+	townHallLevel: number;
+	attacks: number;
 }

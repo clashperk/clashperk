@@ -20,6 +20,7 @@ export default class ReminderDeleteCommand extends Command {
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS)
 			.find({ guild: message.guild!.id })
 			.toArray();
+		if (!reminders.length) return message.util!.send('**You have no reminders.**');
 
 		const customIds = {
 			'menu': this.client.uuid(message.author.id),
