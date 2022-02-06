@@ -5,6 +5,13 @@ import { Command } from 'discord-akairo';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 
+const roles: { [key: string]: string } = {
+	member: 'Member',
+	admin: 'Elder',
+	coLeader: 'Co-Leader',
+	leader: 'Leader'
+};
+
 export default class ReminderDeleteCommand extends Command {
 	public constructor() {
 		super('reminder-delete', {
@@ -22,6 +29,7 @@ export default class ReminderDeleteCommand extends Command {
 			.toArray();
 		if (!reminders.length) return message.util!.send('**You have no reminders.**');
 
+		const clans = await this.client.storage.findAll(message.guild!.id);
 		const customIds = {
 			'menu': this.client.uuid(message.author.id),
 			'delete': this.client.uuid(message.author.id),
@@ -36,7 +44,7 @@ export default class ReminderDeleteCommand extends Command {
 			reminders: new Set(reminders.map(rem => rem._id.toHexString()))
 		};
 
-		const options = (disabled: boolean, all = false) => {
+		const options = (men = false, view = false, del = false) => {
 			const menu = new MessageActionRow()
 				.addComponents(
 					new MessageSelectMenu()
@@ -46,15 +54,15 @@ export default class ReminderDeleteCommand extends Command {
 							reminders
 								.filter(rem => state.reminders.has(rem._id.toHexString()))
 								.map(
-									(rem, i) => ({
-										'label': `${i + 1}. ${label(rem.duration)} remaining`,
+									rem => ({
+										'label': `${label(rem.duration)} remaining`,
 										'value': rem._id.toHexString(),
 										'description': `${rem.message.substring(0, 100)}`,
 										'default': state.selected === rem._id.toHexString()
 									})
 								)
 						)
-						.setDisabled(all)
+						.setDisabled(men)
 				);
 
 			const button = new MessageActionRow()
@@ -63,14 +71,14 @@ export default class ReminderDeleteCommand extends Command {
 						.setCustomId(customIds.view)
 						.setLabel('View')
 						.setStyle('PRIMARY')
-						.setDisabled(disabled)
+						.setDisabled(view)
 				)
 				.addComponents(
 					new MessageButton()
 						.setCustomId(customIds.delete)
 						.setLabel('Delete')
 						.setStyle('DANGER')
-						.setDisabled(disabled)
+						.setDisabled(del)
 				);
 
 			return [menu, button];
@@ -78,14 +86,32 @@ export default class ReminderDeleteCommand extends Command {
 
 		const embeds = () => {
 			const reminder = reminders.find(rem => rem._id.toHexString() === state.selected)!;
-			return new MessageEmbed()
-				.addField(`${reminder.duration >= (3600 * 1000) ? 'Hours' : 'Minutes'} Remaining`, label(reminder.duration))
-				.addField('Message', reminder.message)
-				.addField('Channel', `<#${reminder.channel}>`)
-				.setFooter({ text: `ID: ${reminder._id.toHexString()}` });
+			const embed = new MessageEmbed().setColor(this.client.embed(message));
+			embed.addField('Duration', `${label(reminder.duration)} remaining`);
+			embed.addField('Channel', `<#${reminder.channel}>`);
+			if (reminder.roles.length === 4) {
+				embed.addField('Roles', 'Any');
+			} else {
+				embed.addField('Roles', reminder.roles.map(role => roles[role]).join(', '));
+			}
+			if (reminder.townHalls.length === 13) {
+				embed.addField('Town Halls', 'Any');
+			} else {
+				embed.addField('Town Halls', reminder.townHalls.join(', '));
+			}
+			if (reminder.remaining.length === 2) {
+				embed.addField('Remaining Hits', 'Any');
+			} else {
+				embed.addField('Remaining Hits', reminder.remaining.join(', '));
+			}
+			const _clans = clans.filter(clan => reminder.clans.includes(clan.tag)).map(clan => clan.name);
+			if (_clans.length) embed.addField('Clans', _clans.join(', ').substring(0, 1024));
+			else embed.addField('Clans', reminder.clans.join(', ').substring(0, 1024));
+			embed.addField('Message', reminder.message.substring(0, 1024));
+			return embed;
 		};
 
-		const msg = await message.util!.send({ content: '**Manage Reminders!**', components: options(true) });
+		const msg = await message.util!.send({ content: '**Manage War Reminders**', components: options(false, true, true) });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
@@ -94,13 +120,16 @@ export default class ReminderDeleteCommand extends Command {
 		collector.on('collect', async action => {
 			if (action.customId === customIds.menu && action.isSelectMenu()) {
 				state.selected = action.values[0]!;
-				await action.update({ components: options(false), embeds: [] });
+				await action.update({ components: options(false, true, false), embeds: [embeds()] });
 			}
 
 			if (action.customId === customIds.view) {
-				const components = options(false);
-				components[1].components[0].setDisabled(true);
-				await action.update({ embeds: [embeds()], components });
+				const rems = reminders.filter(rem => state.reminders.has(rem._id.toHexString()));
+				await action.update({
+					embeds: rems.length ? [embeds()] : [],
+					components: rems.length ? options(false, true, false) : [],
+					content: rems.length ? '**Manage War Reminders**' : '**You don\'t have any more reminders!**'
+				});
 			}
 
 			if (action.customId === customIds.delete) {
@@ -112,9 +141,12 @@ export default class ReminderDeleteCommand extends Command {
 				await this.client.db.collection<ReminderTemp>(Collections.REMINDERS_TEMP)
 					.deleteMany({ reminderId: new ObjectId(state.selected!) });
 
-				await action.editReply({ components: options(true), embeds: [] });
-
-				await action.followUp({ ephemeral: true, content: '**Successfully deleted!**' });
+				const rems = reminders.filter(rem => state.reminders.has(rem._id.toHexString()));
+				await action.editReply({
+					embeds: [],
+					components: rems.length ? options(false, true, false) : [],
+					content: rems.length ? '**Manage War Reminders**' : '**You don\'t have any more reminders!**'
+				});
 			}
 		});
 
@@ -122,7 +154,7 @@ export default class ReminderDeleteCommand extends Command {
 			for (const id of Object.values(customIds)) {
 				this.client.components.delete(id);
 			}
-			if (!/delete/i.test(reason)) await msg.edit({ components: options(true, true) });
+			if (!/delete/i.test(reason)) await msg.edit({ components: options(true, true, true) });
 		});
 	}
 }

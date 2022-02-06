@@ -46,12 +46,17 @@ export default class ReminderCreateCommand extends Command {
 			.count();
 
 		if (reminders >= 25) return message.util!.send(`**You can only have 25 reminders.**`);
+		if (!duration || (duration && !ms(duration))) {
+			return message.util!.send('**You must provide a valid duration. e.g 2h, 2.5h, 30m**');
+		}
 		if (!text) return message.util!.send('**You must provide a message for the reminder!**');
-		if (!duration || (duration && !ms(duration))) return message.util!.send('**You must provide a valid duration. e.g 2h, 2.5h, 30m**');
+
 		const dur = ms(duration);
 		if (dur < 15 * 60 * 1000) return message.util!.send('**Duration must be at least 15 minutes.**');
 		if (dur > 45 * 60 * 60 * 1000) return message.util!.send('**Duration must be less than 45 hours.**');
-		if (dur % (15 * 60 * 1000) !== 0) return message.util!.send('**Duration must be a multiple of 15 minutes. e.g 2h, 2.25h, 2.5h, 15m, 45m**');
+		if (dur % (15 * 60 * 1000) !== 0) {
+			return message.util!.send('**Duration must be a multiple of 15 minutes. e.g 15m, 30m, 45m, 1h, 1.25h, 1.5h, 1.75h**');
+		}
 
 		const customIds = {
 			roles: this.client.uuid(message.author.id),
@@ -213,7 +218,7 @@ export default class ReminderCreateCommand extends Command {
 
 				const { insertedId } = await this.client.db.collection<Reminder>(Collections.REMINDERS).insertOne(reminder);
 				this.client.remindScheduler.create({ ...reminder, _id: insertedId });
-				await action.editReply({ components: mutate(true), content: 'Successfully saved!' });
+				await action.editReply({ components: mutate(true), content: '**Successfully saved!**' });
 			}
 		});
 

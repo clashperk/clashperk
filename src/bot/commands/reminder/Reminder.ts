@@ -4,7 +4,7 @@ import { Message } from 'discord.js';
 export default class ReminderCommand extends Command {
 	public constructor() {
 		super('reminder', {
-			aliases: ['reminder'],
+			aliases: ['reminder', 'autoping'],
 			category: 'reminder',
 			channel: 'guild',
 			description: {
