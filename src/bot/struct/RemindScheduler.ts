@@ -117,7 +117,7 @@ export default class RemindScheduler {
 
 			const members = clan.members.filter(
 				mem => {
-					if (reminder.warTag) return true;
+					if (reminder.warTag && !mem.attacks?.length) return true;
 					return rem.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0));
 				}
 			).filter(
@@ -173,10 +173,16 @@ export default class RemindScheduler {
 				`📨 ${rem.message}`,
 				'\u200b',
 				users.map(([mention, members]) => {
-					const list = members.map(
-						mem => `${ORANGE_NUMBERS[mem.townHallLevel]} ${mem.name}`
+					const mapped = members.map(
+						(mem, i) => {
+							const ping = i === 0 ? ` ${mention}` : '';
+							const hits = (data.state === 'preparation' || attacksPerMember === 1)
+								? ''
+								: ` (${mem.attacks}/${attacksPerMember})`;
+							return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]}${ping} ${mem.name}${hits}`;
+						}
 					).join('\n');
-					return `${mention}\n${list}`;
+					return mapped;
 				}).join('\n'),
 				'\u200b',
 				`**${clan.name} (War ${prefix} ${warTiming})**`
