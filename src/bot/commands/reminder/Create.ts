@@ -46,12 +46,13 @@ export default class ReminderCreateCommand extends Command {
 			.count();
 
 		if (reminders >= 25) return message.util!.send(`**You can only have 25 reminders.**`);
-		if (!duration || (duration && !ms(duration))) {
+		if (!/\d+?\.?\d+?[hm]|\d[hm]/g.test(duration)) {
 			return message.util!.send('**You must provide a valid duration. e.g 2h, 2.5h, 30m**');
 		}
+
+		const dur = duration.match(/\d+?\.?\d+?[hm]|\d[hm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
 		if (!text) return message.util!.send('**You must provide a message for the reminder!**');
 
-		const dur = ms(duration);
 		if (dur < 15 * 60 * 1000) return message.util!.send('**Duration must be at least 15 minutes.**');
 		if (dur > 45 * 60 * 60 * 1000) return message.util!.send('**Duration must be less than 45 hours.**');
 		if (dur % (15 * 60 * 1000) !== 0) {
@@ -107,7 +108,12 @@ export default class ReminderCreateCommand extends Command {
 								.fill(0)
 								.map((_, i) => {
 									const hall = (i + 2).toString();
-									return { 'value': hall, 'label': hall, 'default': state.townHalls.includes(hall) };
+									return {
+										'value': hall,
+										'label': hall,
+										'description': `Town Hall ${hall}`,
+										'default': state.townHalls.includes(hall)
+									};
 								})
 						)
 						.setDisabled(disable)

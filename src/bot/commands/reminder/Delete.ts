@@ -144,7 +144,7 @@ export default class ReminderDeleteCommand extends Command {
 				const rems = reminders.filter(rem => state.reminders.has(rem._id.toHexString()));
 				await action.editReply({
 					embeds: [],
-					components: rems.length ? options(false, true, false) : [],
+					components: rems.length ? options(false, true, true) : [],
 					content: rems.length ? '**Manage War Reminders**' : '**You don\'t have any more reminders!**'
 				});
 			}
@@ -154,7 +154,7 @@ export default class ReminderDeleteCommand extends Command {
 			for (const id of Object.values(customIds)) {
 				this.client.components.delete(id);
 			}
-			if (!/delete/i.test(reason)) await msg.edit({ components: options(true, true, true) });
+			if (!/delete/i.test(reason)) await msg.edit({ components: state.reminders.size ? options(true, true, true) : [] });
 		});
 	}
 }

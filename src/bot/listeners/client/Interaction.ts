@@ -1,6 +1,8 @@
 import { CommandInteractionOption, Interaction, PermissionResolvable, TextChannel } from 'discord.js';
 import { Listener, Command, Flag } from 'discord-akairo';
 import { Messages, Settings } from '../../util/Constants';
+import moment from 'moment';
+import ms from 'ms';
 // import { ObjectId } from 'mongodb';
 
 const EPHEMERAL_COMMANDS = ['help', 'invite', 'status', 'whois', 'verify'];
@@ -107,6 +109,9 @@ export default class InteractionListener extends Listener {
 		if (!interaction.isAutocomplete()) return;
 		const dur = interaction.options.getString('duration');
 
+		const label = (duration: number) => moment.duration(duration)
+			.format('H[h] m[m]', { trim: 'both mid' });
+
 		if (dur && !isNaN(parseInt(dur, 10))) {
 			const duration = parseInt(dur, 10);
 			if (duration < 60 && dur.includes('m')) {
@@ -114,11 +119,13 @@ export default class InteractionListener extends Listener {
 			}
 
 			return interaction.respond(
-				['h', '.25h', '.5h', '.75h'].map(num => ({ value: `${duration}${num}`, name: `${duration}${num}` }))
+				['h', '.25h', '.5h', '.75h'].map(
+					num => ({ value: `${duration}${num}`, name: label(ms(`${duration}${num}`)) })
+				)
 			);
 		}
 
-		return interaction.respond(['30m', '1h', '2.5h', '5h'].map(value => ({ value, name: value })));
+		return interaction.respond(['30m', '1h', '2.5h', '5h'].map(value => ({ value, name: label(ms(value)) })));
 	}
 
 	private async contextInteraction(interaction: Interaction) {
