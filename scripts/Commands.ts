@@ -971,6 +971,11 @@ export const COMMANDS: Command[] = [
 						name: 'channel',
 						description: 'Channel to send reminder in',
 						type: ApplicationCommandOptionType.Channel
+					},
+					{
+						name: 'clans',
+						description: 'Optional clan tags or aliases to choose specific clans',
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			},

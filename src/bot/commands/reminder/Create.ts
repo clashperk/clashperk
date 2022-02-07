@@ -3,6 +3,7 @@ import { Collections } from '../../util/Constants';
 import { Reminder } from '../../struct/RemindScheduler';
 import { Command } from 'discord-akairo';
 import ms from 'ms';
+import { ClanStore } from '../../struct/StorageHandler';
 
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
@@ -10,7 +11,7 @@ export default class ReminderCreateCommand extends Command {
 			category: 'reminder',
 			channel: 'guild',
 			description: {},
-			optionFlags: ['--duration', '--channel', '--message'],
+			optionFlags: ['--duration', '--channel', '--message', '--clans'],
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['EMBED_LINKS']
 		});
@@ -35,11 +36,37 @@ export default class ReminderCreateCommand extends Command {
 			type: 'textChannel'
 		};
 
-		return { duration, text, channel };
+		const tags = yield {
+			flag: '--clans',
+			match: msg.interaction ? 'option' : 'phrase',
+			type: (msg: Message, args?: string) => args ? args.split(/ +/g) : null
+		};
+
+		return { duration, text, channel, tags };
 	}
 
-	public async exec(message: Message, { duration, text, channel }: { duration: string; text: string; channel?: TextChannel }) {
-		const clans = (await this.client.storage.findAll(message.guild!.id)).slice(0, 25);
+	private async getClans(message: Message, aliases?: string[]) {
+		if (!aliases?.length) return this.client.storage.findAll(message.guild!.id);
+		const cursor = this.client.db.collection<ClanStore>(Collections.CLAN_STORES)
+			.find({
+				guild: message.guild!.id,
+				$or: [
+					{
+						tag: { $in: aliases.map(tag => this.client.http.fixTag(tag)) }
+					},
+					{
+						alias: { $in: aliases.map(alias => alias.toLowerCase()) }
+					}
+				]
+			});
+
+		const clans = await cursor.toArray();
+		return clans.length ? clans : this.client.storage.findAll(message.guild!.id);
+	}
+
+	public async exec(message: Message, { duration, text, channel, tags }: { duration: string; text: string; channel?: TextChannel; tags?: string[] }) {
+		const clans = await this.getClans(message, tags ?? []);
+		if (!clans.length) return message.util!.send('**You server doesn\'t have any clans. Why not add some?**');
 
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS)
 			.find({ guild: message.guild!.id })
@@ -157,7 +184,7 @@ export default class ReminderCreateCommand extends Command {
 						.setCustomId(customIds.clans)
 						.setMaxValues(clans.length)
 						.setOptions(
-							clans.map(
+							clans.slice(0, 25).map(
 								clan => ({
 									'label': clan.name,
 									'value': clan.tag,
@@ -166,7 +193,7 @@ export default class ReminderCreateCommand extends Command {
 								})
 							)
 						)
-						.setDisabled(disable)
+						.setDisabled(disable || clans.length > 25)
 				);
 
 			const row5 = new MessageActionRow()
@@ -181,7 +208,19 @@ export default class ReminderCreateCommand extends Command {
 			return [row1, row2, row3, row4, row5];
 		};
 
-		const msg = await message.util!.send({ content: '**War Reminder Setup**', components: mutate() });
+		const msg = await message.util!.send({
+			components: mutate(),
+			content: [
+				'**War Reminder Setup**',
+				...(clans.length > 25
+					? [
+						'',
+						`*Clan selection menu is not available for more than 25 clans. ${clans.length} clans were selected automatically!*`,
+						`*To create a reminder for specific clans, pass clan tags or aliases through 'clans' option while executing the command.*`
+					]
+					: [])
+			].join('\n')
+		});
 		const collector = msg.createMessageComponentCollector({
 			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
