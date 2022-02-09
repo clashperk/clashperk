@@ -229,24 +229,24 @@ export default class StorageHandler {
 	}
 
 	public async getWarTags(tag: string): Promise<ClanWarLeagueGroup | null> {
-		const data = await this.client.db.collection<any>(Collections.CWL_GROUPS)
+		const data = await this.client.db.collection(Collections.CWL_GROUPS)
 			.find({ 'clans.tag': tag })
 			.sort({ createdAt: -1 })
 			.limit(1)
 			.next();
-		// if (data?.warTags?.[tag]?.length !== 7) return null;
+		if (!data || data.warTags?.[tag]?.length !== data.clans.length - 1) return null;
 
 		if (
 			(new Date().getMonth() === new Date(data.season as string).getMonth()) ||
 			(new Date(data.season as string).getMonth() === (new Date().getMonth() - 1) && new Date().getDate() <= 8)
-		) return data as ClanWarLeagueGroup;
+		) return data as any;
 
-		return Promise.resolve(null);
+		return null;
 	}
 
 	public async pushWarTags(tag: string, body: ClanWarLeagueGroup) {
 		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
-		if (rounds.length !== 7) return null;
+		if (rounds.length !== body.clans.length - 1) return null;
 
 		const data = await this.client.db.collection(Collections.CWL_GROUPS)
 			.find({ 'clans.tag': tag })

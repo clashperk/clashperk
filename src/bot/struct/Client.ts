@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, Intents, Snowflake, Options, LimitedCollection } from 'discord.js';
+import { MessageEmbed, Message, Intents, Snowflake, Options, Sweepers } from 'discord.js';
 import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } from 'discord-akairo';
 import RemindScheduler from './RemindScheduler';
 import { loadSync } from '@grpc/proto-loader';
@@ -116,7 +116,7 @@ export default class Client extends AkairoClient {
 				MessageManager: {
 					maxSize: 15,
 					sweepInterval: 5 * 60,
-					sweepFilter: LimitedCollection.filterByLifetime({
+					sweepFilter: Sweepers.filterByLifetime({
 						lifetime: 10 * 60,
 						getComparisonTimestamp: msg => msg.createdTimestamp
 					})
