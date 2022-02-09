@@ -234,7 +234,7 @@ export default class StorageHandler {
 			.sort({ createdAt: -1 })
 			.limit(1)
 			.next();
-		if (data?.warTags?.[tag]?.length !== 7) return null;
+		// if (data?.warTags?.[tag]?.length !== 7) return null;
 
 		if (
 			(new Date().getMonth() === new Date(data.season as string).getMonth()) ||
