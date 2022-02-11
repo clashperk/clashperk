@@ -45,8 +45,9 @@ export default class MaintenanceHandler {
 
 		for (const setting of this.client.settings.flatten()) {
 			if (!setting.eventsChannel) continue;
+			if (setting.eventsChannel === SUPPORT_SERVER_GENERAL_CHANNEL_ID) continue;
 			const channel = this.client.channels.cache.get(setting.eventsChannel) as TextChannel | null;
-			if (!channel?.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES'])) continue;
+			if (!channel?.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES', 'USE_EXTERNAL_EMOJIS'])) continue;
 
 			await channel.send(`**${EMOJIS.COC_LOGO} ${this.getMessage(dur)}**`);
 		}
