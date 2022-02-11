@@ -5,6 +5,7 @@ import Client from './Client';
 import moment from 'moment';
 import { Util } from '../util/Util';
 import { ORANGE_NUMBERS } from '../util/NumEmojis';
+import { ClanWar } from 'clashofclans.js';
 
 export default class RemindScheduler {
 	protected collection!: Collection<ReminderTemp>;
@@ -64,6 +65,7 @@ export default class RemindScheduler {
 					tag: data.clan.tag,
 					name: data.clan.name,
 					warTag: data.warTag,
+					duration: reminder.duration,
 					reminderId: reminder._id,
 					triggered: false,
 					timestamp: new Date(ms),
@@ -98,18 +100,35 @@ export default class RemindScheduler {
 		return data.ok ? data.memberList : [];
 	}
 
+	private wasInMaintenance(reminder: ReminderTemp, data: ClanWar) {
+		const timestamp = moment(data.endTime).toDate().getTime() - reminder.duration;
+		return timestamp > reminder.timestamp.getTime();
+	}
+
 	private async trigger(reminder: ReminderTemp) {
+		const id = reminder._id.toHexString();
 		try {
 			const rem = await this.client.db.collection<Reminder>(Collections.REMINDERS).findOne({ _id: reminder.reminderId });
-			if (!rem) return null;
-			if (!this.client.channels.cache.has(rem.channel)) return null;
+			if (!rem) return this.delete(reminder);
+			if (!this.client.channels.cache.has(rem.channel)) return this.delete(reminder);
 
 			const data = reminder.warTag
 				? await this.client.http.clanWarLeagueWar(reminder.warTag)
 				: await this.client.http.currentClanWar(reminder.tag);
-			if (data.statusCode === 503) return this.clear(reminder._id.toHexString());
+			if (data.statusCode === 503) return this.clear(id);
 
-			if (['notInWar', 'warEnded'].includes(data.state)) return null;
+			if (['notInWar', 'warEnded'].includes(data.state)) return this.delete(reminder);
+
+			if (this.wasInMaintenance(reminder, data)) {
+				this.client.logger.info(
+					`Reminder shifted ${reminder.timestamp.toISOString()} => ${moment(data.endTime).toDate().toISOString()}`,
+					{ label: 'REMINDER' }
+				);
+				return this.collection.updateOne(
+					{ _id: reminder._id },
+					{ $set: { timestamp: new Date(moment(data.endTime).toDate().getTime() - reminder.duration) } }
+				);
+			}
 
 			const clanMembers = rem.roles.length === 4 ? [] : await this.getClanMembers(reminder.tag);
 			const clan = data.clan.tag === reminder.tag ? data.clan : data.opponent;
@@ -129,13 +148,13 @@ export default class RemindScheduler {
 					return clanMember && rem.roles.includes(clanMember.role);
 				}
 			);
-			if (!members.length) return null;
+			if (!members.length) return this.delete(reminder);
 
 			const links = await this.client.http.getDiscordLinks(members);
-			if (!links.length) return null;
+			if (!links.length) return this.delete(reminder);
 
 			const guild = this.client.guilds.cache.get(rem.guild);
-			if (!guild) return null;
+			if (!guild) return this.delete(reminder);
 
 			const guildMembers = await guild.members.fetch({ user: links.map(({ user }) => user) }).catch(() => null);
 			const mentions: UserMention[] = [];
@@ -154,7 +173,7 @@ export default class RemindScheduler {
 				});
 			}
 
-			if (!mentions.length) return null;
+			if (!mentions.length) return this.delete(reminder);
 			mentions.sort((a, b) => a.position - b.position);
 
 			const users = Object.entries(
@@ -195,7 +214,8 @@ export default class RemindScheduler {
 				}
 			}
 		} catch (error) {
-			this.client.logger.error('Reminder Failed', { label: 'REMINDER' });
+			this.client.logger.error(`Reminder Failed ${error as string}`, { label: 'REMINDER' });
+			return this.clear(id);
 		}
 
 		return this.delete(reminder);
@@ -227,6 +247,7 @@ export interface ReminderTemp {
 	name: string;
 	tag: string;
 	warTag?: string;
+	duration: number;
 	reminderId: ObjectId;
 	triggered: boolean;
 	timestamp: Date;
