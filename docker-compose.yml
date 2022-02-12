@@ -1,47 +1,13 @@
-version: '3.9'
+version: 3.x
 
 services:
   clashperk_bot:
     image: clashperk_bot
-    depends_on:
-      - mongodb
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - '8080:8080'
     env_file:
       - .env
+    mem_limit: 2gb
     container_name: clashperk_bot
-
-  mongodb:
-    image: mongo
-    restart: always
-    ports:
-      - '27019:27017'
-    container_name: mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
-    volumes:
-      - 'mongodb-volume-db:/data/db'
-      - 'mongodb-volume-config:/data/configdb'
-
-  mongo-express:
-    image: mongo-express
-    depends_on:
-      - mongodb
-    restart: always
-    ports:
-      - '8081:8081'
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password
-      ME_CONFIG_MONGODB_URL: mongodb://root:password@mongodb:27017
-    container_name: mongo-express
-
-volumes:
-  mongodb-volume-db:
-    name: mongodb-volume-db
-  mongodb-volume-config:
-    name: mongodb-volume-config

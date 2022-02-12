@@ -1,12 +1,12 @@
 FROM node:16-slim
 
+RUN apt-get update && apt-get install -y git
+
 WORKDIR /app
 
-COPY package.json /app/package.json
+COPY . /app
 
 RUN npm i
-
-COPY . /app
 
 RUN npm run build
 
