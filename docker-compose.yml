@@ -1,4 +1,4 @@
-version: 3.x
+version: "3.6"
 
 services:
   clashperk_bot:
@@ -11,3 +11,9 @@ services:
       - .env
     mem_limit: 2gb
     container_name: clashperk_bot
+    networks:
+      - default_net
+
+networks:
+  default_net:
+    name: default_net
