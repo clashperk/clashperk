@@ -20,13 +20,11 @@ export default class RemindScheduler {
 
 	public async init() {
 		this.collection.watch([{
-			$match: {
-				operationType: { $in: ['insert', 'update', 'delete'] }
-			}
+			$match: { operationType: { $in: ['insert', 'update', 'delete'] } }
 		}], { fullDocument: 'updateLookup' }).on('change', change => {
 			if (['insert'].includes(change.operationType)) {
-				const reminder = change.fullDocument!;
-				if (reminder.timestamp.getTime() < (Date.now() + this.refreshRate)) {
+				const reminder = change.fullDocument;
+				if (reminder && reminder.timestamp.getTime() < (Date.now() + this.refreshRate)) {
 					this.queue(reminder);
 				}
 			}
@@ -37,8 +35,8 @@ export default class RemindScheduler {
 				if (this.queued.has(id)) this.clear(id);
 
 				if (change.operationType === 'update') {
-					const reminder = change.fullDocument!;
-					if (reminder.timestamp.getTime() < (Date.now() + this.refreshRate)) {
+					const reminder = change.fullDocument;
+					if (reminder && reminder.timestamp.getTime() < (Date.now() + this.refreshRate)) {
 						this.queue(reminder);
 					}
 				}
@@ -115,8 +113,7 @@ export default class RemindScheduler {
 			const data = reminder.warTag
 				? await this.client.http.clanWarLeagueWar(reminder.warTag)
 				: await this.client.http.currentClanWar(reminder.tag);
-			if (data.statusCode === 503) return this.clear(id);
-
+			if (!data.ok) return this.clear(id);
 			if (['notInWar', 'warEnded'].includes(data.state)) return this.delete(reminder);
 
 			if (this.wasInMaintenance(reminder, data)) {
@@ -214,7 +211,7 @@ export default class RemindScheduler {
 				}
 			}
 		} catch (error) {
-			this.client.logger.error(`Reminder Failed ${error as string}`, { label: 'REMINDER' });
+			this.client.logger.error(error, { label: 'REMINDER' });
 			return this.clear(id);
 		}
 
