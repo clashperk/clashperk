@@ -25,7 +25,7 @@ export class Automaton {
 				const buttons = new MessageActionRow()
 					.addComponents(
 						new MessageButton()
-							.setLabel('Refresh')
+							.setEmoji(EMOJIS.REFRESH)
 							.setStyle('SECONDARY')
 							.setCustomId(`BOOSTER${match.groups.tag}_ASC`)
 					)
@@ -66,7 +66,7 @@ export class Automaton {
 			}
 			case 'DONATION': {
 				const button = new MessageButton()
-					.setLabel('Refresh')
+					.setEmoji(EMOJIS.REFRESH)
 					.setStyle('SECONDARY')
 					.setCustomId(`DONATION${match.groups.tag}_ASC`);
 
