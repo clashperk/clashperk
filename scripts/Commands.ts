@@ -325,12 +325,6 @@ export const COMMANDS: Command[] = [
 				description: 'Tag of the player or clan',
 				required: true,
 				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'user',
-				description: 'Optional user (Only valid for a player tag)',
-				required: false,
-				type: ApplicationCommandOptionType.User
 			}
 		]
 	},
