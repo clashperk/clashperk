@@ -1,5 +1,6 @@
 import { User } from 'discord.js';
 import { Collection } from 'mongodb';
+import { UserInfo } from '../types';
 import { Collections } from '../util/Constants';
 import Client from './Client';
 

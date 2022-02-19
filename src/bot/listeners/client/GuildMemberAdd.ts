@@ -1,6 +1,7 @@
 import { Collections } from '../../util/Constants';
 import { Listener } from 'discord-akairo';
 import { GuildMember } from 'discord.js';
+import { UserInfo } from '../../types';
 
 export default class GuildMemberAddListener extends Listener {
 	public constructor() {

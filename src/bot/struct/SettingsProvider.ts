@@ -21,7 +21,7 @@ export default class SettingsProvider {
 	}
 
 	public async init() {
-		const collection = await this.db.find().toArray();
+		const collection = await this.db.find({}, { projection: { _id: 0 } }).toArray();
 		for (const data of collection) {
 			this.settings.set(data.id, data);
 		}
