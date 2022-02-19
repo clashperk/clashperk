@@ -186,7 +186,10 @@ export default class RemindScheduler {
 			const warTiming = moment.duration(dur).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
 			const text = [
+				`🔔 **${clan.name} (War ${prefix} ${warTiming})**`,
+				'',
 				`📨 ${rem.message}`,
+				'',
 				'\u200b',
 				users.map(([mention, members]) => {
 					const mapped = members.map(
@@ -199,9 +202,7 @@ export default class RemindScheduler {
 						}
 					).join('\n');
 					return mapped;
-				}).join('\n'),
-				'\u200b',
-				`**${clan.name} (War ${prefix} ${warTiming})**`
+				}).join('\n')
 			].join('\n');
 
 			const channel = this.client.channels.cache.get(rem.channel) as TextChannel | null;
