@@ -186,11 +186,9 @@ export default class RemindScheduler {
 			const warTiming = moment.duration(dur).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
 			const text = [
-				`🔔 **${clan.name} (War ${prefix} ${warTiming})**`,
-				'',
+				`\u200e🔔 **${clan.name} (War ${prefix} ${warTiming})**`,
 				`📨 ${rem.message}`,
 				'',
-				'\u200b',
 				users.map(([mention, members]) => {
 					const mapped = members.map(
 						(mem, i) => {
