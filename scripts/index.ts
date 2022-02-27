@@ -6,7 +6,7 @@ import { COMMANDS, PRIVATE_COMMANDS } from './Commands';
 import fetch from 'node-fetch';
 import { ApplicationCommand } from 'discord.js';
 
-const applicationGuildCommands = async () => {
+const applicationGuildCommands = async (commands: typeof COMMANDS) => {
 	console.log('Building Guild Application Commands');
 	const res = await fetch(
 		`${RouteBases.api}${Routes.applicationGuildCommands('635462521729581058', '509784317598105619')}`,
@@ -16,7 +16,7 @@ const applicationGuildCommands = async () => {
 				'Authorization': `Bot ${process.env.TOKEN!}`,
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify(COMMANDS)
+			body: JSON.stringify(commands)
 		}
 	);
 	await res.json().then(data => res.ok ? console.log(JSON.stringify(data)) : console.log(data));
@@ -99,8 +99,12 @@ async function init() {
 		return commandPermission();
 	}
 
+	if (process.argv.includes('--delete')) {
+		return applicationGuildCommands([]);
+	}
+
 	// await applicationCommands();
-	await applicationGuildCommands();
+	await applicationGuildCommands(COMMANDS);
 }
 
 init();

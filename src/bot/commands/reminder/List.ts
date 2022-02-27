@@ -24,10 +24,10 @@ export default class ReminderListCommand extends Command {
 
 	public async exec(message: Message) {
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS)
-			.find({ guild: '738397904456122398' })
+			.find({ guild: message.guild!.id })
 			.toArray();
 		if (!reminders.length) return message.util!.send('**You have no reminders.**');
-		const clans = await this.client.storage.findAll('738397904456122398');
+		const clans = await this.client.storage.findAll(message.guild!.id);
 
 		const label = (duration: number) => moment.duration(duration)
 			.format('H[h], m[m], s[s]', { trim: 'both mid' });
