@@ -13,7 +13,8 @@ export default class LinkListCommand extends Command {
 			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
-			description: {}
+			description: {},
+			flags: ['--show-tags']
 		});
 	}
 
@@ -24,10 +25,15 @@ export default class LinkListCommand extends Command {
 			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
 		};
 
-		return { data };
+		const showTags = yield {
+			match: 'flag',
+			flag: '--show-tags'
+		};
+
+		return { data, showTags };
 	}
 
-	public async exec(message: Message, { data }: { data: Clan }) {
+	public async exec(message: Message, { data, showTags }: { data: Clan; showTags: boolean }) {
 		if (!data.members) return message.util!.send(`${data.name} does not have any clan members...`);
 		const memberTags: { tag: string; user: string; user_tag?: string }[] = await this.client.http.getDiscordLinks(data.memberList);
 		const dbMembers = await this.client.db.collection(Collections.LINKED_PLAYERS)
@@ -60,34 +66,43 @@ export default class LinkListCommand extends Command {
 			m => !notInDiscord.some(en => en.tag === m.tag) && !memberTags.some(en => en.tag === m.tag && guildMembers.has(en.user))
 		);
 
-		const embed = this.getEmbed(guildMembers, data, false, onDiscord, offDiscord, notInDiscord);
+		const embed = this.getEmbed(guildMembers, data, showTags, onDiscord, offDiscord, notInDiscord);
 		if (!onDiscord.length) return message.util!.send({ embeds: [embed.setColor(this.client.embed(message))] });
 
-		const customId = this.client.uuid(message.author.id);
-		const button = new MessageButton()
-			.setStyle('SECONDARY')
-			.setLabel('Show Tags')
-			.setEmoji(EMOJIS.HASH)
-			.setCustomId(customId);
+		// const customId = this.client.uuid(message.author.id);
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setStyle('SECONDARY')
+					.setEmoji(EMOJIS.REFRESH)
+					.setCustomId(JSON.stringify({ tag: data.tag, cmd: 'links' }))
+			)
+			.addComponents(
+				new MessageButton()
+					.setStyle('SECONDARY')
+					.setEmoji(EMOJIS.HASH)
+					.setCustomId(JSON.stringify({ tag: data.tag, cmd: 'links', args: '--show-tags' }))
+			);
 
-		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
-		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customId && action.user.id === message.author.id,
-			time: 5 * 60 * 1000
-		});
+		return message.util!.send({ embeds: [embed], components: [row] });
+		// const msg = await message.util!.send({ embeds: [embed], components: [row] });
+		// const collector = msg.createMessageComponentCollector({
+		// 	filter: action => action.customId === customId && action.user.id === message.author.id,
+		// 	time: 5 * 60 * 1000
+		// });
 
-		collector.on('collect', async action => {
-			if (action.customId === customId) {
-				const embed = this.getEmbed(guildMembers, data, true, onDiscord, offDiscord, notInDiscord);
-				await action.update({ embeds: [embed.setColor(this.client.embed(message))] });
-				return collector.stop();
-			}
-		});
+		// collector.on('collect', async action => {
+		// 	if (action.customId === customId) {
+		// 		const embed = this.getEmbed(guildMembers, data, true, onDiscord, offDiscord, notInDiscord);
+		// 		await action.update({ embeds: [embed.setColor(this.client.embed(message))] });
+		// 		// return collector.stop();
+		// 	}
+		// });
 
-		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customId);
-			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
-		});
+		// collector.on('end', async (_, reason) => {
+		// 	this.client.components.delete(customId);
+		// 	if (!/delete/i.test(reason)) await msg.edit({ components: [] });
+		// });
 	}
 
 	private getEmbed(guildMembers: Collection<string, GuildMember>, data: Clan, showTag: boolean, onDiscord: { tag: string; user: string }[], offDiscord: ClanMember[], notInDiscord: any[]) {

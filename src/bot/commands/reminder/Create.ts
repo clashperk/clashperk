@@ -72,7 +72,9 @@ export default class ReminderCreateCommand extends Command {
 			.find({ guild: message.guild!.id })
 			.count();
 
-		if (reminders >= 25) return message.util!.send(`**You can only have 25 reminders.**`);
+		if (reminders >= 25 && !this.client.patrons.get(message.guild!.id)) {
+			return message.util!.send(`**You can only have 25 reminders.**`);
+		}
 		if (!/\d+?\.?\d+?[hm]|\d[hm]/g.test(duration)) {
 			return message.util!.send('**You must provide a valid duration. e.g 2h, 2.5h, 30m**');
 		}

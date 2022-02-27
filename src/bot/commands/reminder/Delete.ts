@@ -4,6 +4,7 @@ import { Reminder, ReminderTemp } from '../../struct/RemindScheduler';
 import { Command } from 'discord-akairo';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
+import ReminderCommand from './Reminder';
 
 const roles: { [key: string]: string } = {
 	member: 'Member',
@@ -18,16 +19,48 @@ export default class ReminderDeleteCommand extends Command {
 			category: 'reminder',
 			channel: 'guild',
 			description: {},
+			optionFlags: ['--id'],
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['EMBED_LINKS']
 		});
 	}
 
-	public async exec(message: Message) {
+	public *args(msg: Message): unknown {
+		const id = yield {
+			flag: '--id',
+			match: msg.interaction ? 'option' : 'phrase',
+			type: 'string'
+		};
+
+		const clear = yield {
+			flag: '--clear',
+			match: 'flag'
+		};
+
+		return { id, clear };
+	}
+
+	public async exec(message: Message, { id, clear }: { id?: string; clear: boolean }) {
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS)
 			.find({ guild: message.guild!.id })
 			.toArray();
 		if (!reminders.length) return message.util!.send('**You have no reminders.**');
+
+		if (clear) {
+			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteMany({ guild: message.guild!.id });
+			await this.client.db.collection<ReminderCommand>(Collections.REMINDERS_TEMP).deleteMany({ guild: message.guild!.id });
+			return message.util!.send('**All reminders cleared.**');
+		}
+
+		if (id) {
+			const reminderId = reminders[Number(id) - 1]?._id as ObjectId | null;
+			if (!reminderId) return message.util!.send('**Reminder not found.**');
+			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteOne({ _id: reminderId });
+			await this.client.db.collection<ReminderTemp>(Collections.REMINDERS_TEMP).deleteMany({ reminderId });
+			return message.util!.send(`**Reminder #${id} deleted.**`);
+		}
+
+		if (reminders.length > 25) return message.util!.send('**You have too many reminders, pass id to delete reminders.**');
 
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const customIds = {
@@ -111,7 +144,11 @@ export default class ReminderDeleteCommand extends Command {
 			return embed;
 		};
 
-		const msg = await message.util!.send({ content: '**Manage War Reminders**', components: options(false, true, true) });
+		const msg = await message.util!.send({
+			embeds: [],
+			content: '**Manage War Reminders**',
+			components: options(false, true, true)
+		});
 		const collector = msg.createMessageComponentCollector({
 			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000

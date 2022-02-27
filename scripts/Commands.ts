@@ -969,13 +969,28 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'delete',
-				description: 'Delete a reminder',
+				description: 'Delete reminders',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'id',
-						description: 'Reminder ID',
+						description: 'Reminder Id',
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'clear',
+						description: 'Clear all reminders',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Yes',
+								value: 'true'
+							},
+							{
+								name: 'No',
+								value: 'false'
+							}
+						]
 					}
 				]
 			}
