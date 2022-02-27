@@ -415,7 +415,7 @@ export const COMMANDS: Command[] = [
 						value: 'link_channel'
 					},
 					{
-						name: 'War Embed',
+						name: 'War Feed',
 						value: 'war'
 					},
 					{
@@ -646,6 +646,10 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'War Summary',
 						value: 'wars'
+					},
+					{
+						name: 'Trophies',
+						value: 'trophies'
 					},
 					{
 						name: 'Clan Games',
@@ -884,32 +888,17 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'config',
-		description: 'Change embed color or server prefix',
+		description: 'Manage server configuration',
 		options: [
 			{
-				name: 'prefix',
-				description: 'Change server prefix',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'prefix',
-						description: 'The new prefix',
-						type: ApplicationCommandOptionType.String
-					}
-				]
+				name: 'color_code',
+				description: 'Hex color code (e.g #ed4245) [Patron Only]',
+				type: ApplicationCommandOptionType.String
 			},
 			{
-				name: 'color',
-				description: 'Change embed color (Patron Only)',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'hex_code',
-						description: 'Hex color code (e.g #ed4245)',
-						type: ApplicationCommandOptionType.String,
-						required: true
-					}
-				]
+				name: 'events_channel',
+				description: 'Clash related events channel',
+				type: ApplicationCommandOptionType.String
 			}
 		]
 	},
@@ -981,7 +970,14 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'delete',
 				description: 'Delete a reminder',
-				type: ApplicationCommandOptionType.Subcommand
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'id',
+						description: 'Reminder ID',
+						type: ApplicationCommandOptionType.String
+					}
+				]
 			}
 		]
 	},
