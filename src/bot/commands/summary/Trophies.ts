@@ -29,15 +29,17 @@ export default class ClanSummaryCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setAuthor({ name: `${message.guild!.name} Best Trophies` })
-			.setDescription([
-				'```',
-				`\u200e # TROPHY  ${'NAME'}`,
-				members.slice(0, 50).map((member, index) => {
-					const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
-					return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
-				}).join('\n'),
-				'```'
-			].join('\n'));
+			.setDescription(
+				[
+					'```',
+					`\u200e # TROPHY  ${'NAME'}`,
+					members.slice(0, 100).map((member, index) => {
+						const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
+						return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
+					}).join('\n'),
+					'```'
+				].join('\n')
+			);
 
 		return message.util!.send({ embeds: [embed] });
 	}
