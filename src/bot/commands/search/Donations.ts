@@ -3,6 +3,7 @@ import { Collections } from '../../util/Constants';
 import { Season, Util } from '../../util/Util';
 import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
+import { EMOJIS } from '../../util/Emojis';
 
 export default class DonationsCommand extends Command {
 	public constructor() {
@@ -109,23 +110,23 @@ export default class DonationsCommand extends Command {
 
 		const embed = getEmbed();
 		const customId = {
-			sort: sameSeason ? `DONATION${data.tag}_DESC` : this.client.uuid(message.author.id),
-			refresh: `DONATION${data.tag}_ASC`
+			sort: sameSeason ? JSON.stringify({ tag: data.tag, cmd: 'donation', sort: -1 }) : this.client.uuid(message.author.id),
+			refresh: JSON.stringify({ tag: data.tag, cmd: 'donation', sort: 1 })
 		};
 
 		const row = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
 					.setStyle('SECONDARY')
-					.setCustomId(customId.sort)
-					.setLabel('Sort by Received')
+					.setCustomId(customId.refresh)
+					.setEmoji(EMOJIS.REFRESH)
+					.setDisabled(!sameSeason)
 			)
 			.addComponents(
 				new MessageButton()
 					.setStyle('SECONDARY')
-					.setCustomId(customId.refresh)
-					.setLabel('Refresh')
-					.setDisabled(!sameSeason)
+					.setCustomId(customId.sort)
+					.setLabel('Sort by Received')
 			);
 
 		const msg = await message.util!.send({ embeds: [embed], components: [row] });

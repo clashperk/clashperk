@@ -8,6 +8,13 @@ import Client from '../struct/Client';
 
 const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
 
+interface ParsedCommandId {
+	tag: string;
+	sort: number;
+	cmd: string;
+	[key: string]: any;
+}
+
 export class Automaton {
 	private readonly client: Client;
 
@@ -15,68 +22,105 @@ export class Automaton {
 		this.client = client;
 	}
 
-	public async exec(interaction: ButtonInteraction | SelectMenuInteraction) {
+	private parseCommandId(customId: string): ParsedCommandId | null {
 		const match = new RegExp(/(?<command>^BOOSTER|DONATION)(?<tag>(#[PYLQGRJCUV0289]+))_(?<order>(ASC|DESC))/)
-			.exec(interaction.customId);
-		if (!(match?.groups?.tag && match.groups.command && match.groups.order)) return false;
+			.exec(customId);
+		if ((match?.groups?.tag && match.groups.command && match.groups.order)) {
+			return {
+				tag: match.groups.tag,
+				sort: match.groups.order === 'DESC' ? -1 : 1,
+				cmd: match.groups.command.toLowerCase()
+			};
+		}
 
-		switch (match.groups.command) {
-			case 'BOOSTER': {
+		if (/^{.*}$/g.test(customId)) {
+			return JSON.parse(customId);
+		}
+
+		return null;
+	}
+
+	public async exec(interaction: ButtonInteraction | SelectMenuInteraction) {
+		const parsed = this.parseCommandId(interaction.customId);
+		if (!parsed) return false;
+
+		switch (parsed.cmd) {
+			case 'booster': {
 				const buttons = new MessageActionRow()
 					.addComponents(
 						new MessageButton()
 							.setEmoji(EMOJIS.REFRESH)
 							.setStyle('SECONDARY')
-							.setCustomId(`BOOSTER${match.groups.tag}_ASC`)
+							.setCustomId(JSON.stringify({ ...parsed, sort: 1, menu: false }))
 					)
 					.addComponents(
 						new MessageButton()
 							.setLabel('Recently Active')
 							.setStyle('SECONDARY')
-							.setCustomId(`BOOSTER${match.groups.tag}_DESC`)
+							.setCustomId(JSON.stringify({ ...parsed, sort: -1, menu: false }))
 					);
 
 				const menus = new MessageActionRow()
 					.addComponents(
 						new MessageSelectMenu()
 							.setPlaceholder('Select a super troop!')
-							.setCustomId(`BOOSTER${match.groups.tag}_${match.groups.order}_MENU`)
+							.setCustomId(JSON.stringify({ ...parsed, menu: true }))
 							.addOptions(Object.entries(SUPER_TROOPS).map(([key, value]) => ({ label: key, value: key, emoji: value })))
 					);
 
 				await interaction.update({ components: [], content: `**Fetching data... ${EMOJIS.LOADING}**`, embeds: [] });
-				const msg = await this.getBoosterEmbed(interaction, match.groups.tag, match.groups.order === 'DESC');
+				const msg = await this.getBoosterEmbed(interaction, parsed.tag, parsed.sort === -1);
 				await interaction.editReply({
 					content: msg.content, embeds: msg.embeds,
 					components: msg.embeds.length ? [buttons, menus] : []
 				});
 
-				if (msg.noActive && match.groups.order === 'DESC') {
+				if (msg.noActive && parsed.sort === -1 && interaction.isButton()) {
 					await interaction.followUp({ ephemeral: true, content: '**No recently active members are boosting in this clan.**' });
 				}
 
 				if (msg.noValue && interaction.isSelectMenu()) {
 					await interaction.followUp({
 						ephemeral: true,
-						content: `**No ${match.groups.order === 'DESC' ? 'recently active ' : ''}members are boosting ${interaction.values[0]} in this clan.**`
+						content: `**No ${parsed.sort === -1 ? 'recently active ' : ''}members are boosting ${interaction.values[0]} in this clan.**`
 					});
 				}
 
 				return true;
 			}
-			case 'DONATION': {
-				const button = new MessageButton()
-					.setEmoji(EMOJIS.REFRESH)
-					.setStyle('SECONDARY')
-					.setCustomId(`DONATION${match.groups.tag}_ASC`);
+			case 'donation': {
+				const menu = new MessageActionRow()
+					.addComponents(
+						new MessageButton()
+							.setEmoji(EMOJIS.REFRESH)
+							.setStyle('SECONDARY')
+							.setCustomId(JSON.stringify({ ...parsed, sort: 1 }))
+					)
+					.addComponents(
+						new MessageButton()
+							.setLabel('Sort by Received')
+							.setStyle('SECONDARY')
+							.setCustomId(JSON.stringify({ ...parsed, sort: -1 }))
+					);
 
 				await interaction.update({ components: [], content: `**Fetching data... ${EMOJIS.LOADING}**`, embeds: [] });
-				const msg = await this.getDonationEmbed(interaction, match.groups.tag, match.groups.order as 'ASC' | 'DESC');
+				const msg = await this.getDonationEmbed(interaction, parsed.tag, parsed.sort);
 				await interaction.editReply({
 					content: msg.content, embeds: msg.embeds,
-					components: msg.embeds.length ? [new MessageActionRow({ components: [button] })] : []
+					components: msg.embeds.length ? [menu] : []
 				});
 
+				return true;
+			}
+			case 'links': {
+				// @ts-expect-error
+				await interaction.util.update(interaction);
+				await this.client.commandHandler.handleDirectCommand(
+					// @ts-ignore
+					interaction,
+					`${parsed.tag} ${(parsed.args ?? '') as string}`,
+					this.client.commandHandler.modules.get('link-list')
+				);
 				return true;
 			}
 			default: {
@@ -163,7 +207,7 @@ export class Automaton {
 		}, 0);
 	}
 
-	private async getDonationEmbed(interaction: ButtonInteraction | SelectMenuInteraction | Message, tag: string | Clan, order: 'ASC' | 'DESC') {
+	private async getDonationEmbed(interaction: ButtonInteraction | SelectMenuInteraction | Message, tag: string | Clan, sort: number) {
 		const data = typeof tag === 'string' ? await this.client.http.clan(tag) : tag;
 		if (!data.ok) return { embeds: [], content: `**${status(data.statusCode)}**` };
 		if (!data.members) return { embeds: [], content: `\u200e**${data.name}** does not have any clan members...` };
@@ -203,7 +247,7 @@ export class Automaton {
 		const donated = members.reduce((pre, mem) => mem.donated + pre, 0);
 		const received = members.reduce((pre, mem) => mem.received + pre, 0);
 
-		if (order === 'DESC') {
+		if (sort === -1) {
 			members.sort((a, b) => b.received - a.received);
 		}
 

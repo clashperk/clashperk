@@ -1,5 +1,6 @@
 import { Message, CommandInteraction, Interaction, InteractionReplyOptions, ButtonInteraction, Collection, Snowflake } from 'discord.js';
 import 'moment-duration-format';
+import { EMOJIS } from './Emojis';
 
 export class InteractionUtil {
 	public shouldEdit: boolean;
@@ -29,7 +30,7 @@ export class InteractionUtil {
 	public async send(options: string | InteractionReplyOptions): Promise<Message> {
 		const transformedOptions = (this.constructor as typeof InteractionUtil).transformOptions(options);
 		if (this.shouldEdit) {
-			const messageId = this.lastResponse!.flags.has('EPHEMERAL') ? '@original' : this.lastResponse!.id;
+			const messageId = this.lastResponse?.flags.has('EPHEMERAL') ? '@original' : this.lastResponse?.id ?? '@original';
 			try {
 				const msg = await this.message.webhook.editMessage(messageId, transformedOptions);
 				return msg as Message;
@@ -43,6 +44,11 @@ export class InteractionUtil {
 		const sent = await this.message.webhook.send(transformedOptions);
 		this.setLastResponse(sent as Message);
 		return sent as Message;
+	}
+
+	public update(interaction: ButtonInteraction) {
+		this.shouldEdit = Boolean(true);
+		return interaction.update({ content: `**Fetching data... ${EMOJIS.LOADING}**`, components: [], embeds: [] });
 	}
 
 	public async sendNew(options: string | InteractionReplyOptions) {

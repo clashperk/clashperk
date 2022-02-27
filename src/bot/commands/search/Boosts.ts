@@ -38,22 +38,22 @@ export default class BoostsCommand extends Command {
 		const buttons = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
-					.setLabel('Refresh')
+					.setEmoji(EMOJIS.REFRESH)
 					.setStyle('SECONDARY')
-					.setCustomId(`BOOSTER${data.tag}_ASC`)
+					.setCustomId(JSON.stringify({ tag: data.tag, cmd: 'booster', sort: 1, menu: false }))
 			)
 			.addComponents(
 				new MessageButton()
 					.setLabel('Recently Active')
 					.setStyle('SECONDARY')
-					.setCustomId(`BOOSTER${data.tag}_DESC`)
+					.setCustomId(JSON.stringify({ tag: data.tag, cmd: 'booster', sort: -1, menu: false }))
 			);
 
 		const menus = new MessageActionRow()
 			.addComponents(
 				new MessageSelectMenu()
 					.setPlaceholder('Select a super troop!')
-					.setCustomId(`BOOSTER${data.tag}_ASC_MENU`)
+					.setCustomId(JSON.stringify({ tag: data.tag, cmd: 'booster', sort: 1, menu: true }))
 					.addOptions(Object.entries(SUPER_TROOPS).map(([key, value]) => ({ label: key, value: key, emoji: value })))
 			);
 
