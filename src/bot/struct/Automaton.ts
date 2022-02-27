@@ -118,7 +118,7 @@ export class Automaton {
 				await this.client.commandHandler.handleDirectCommand(
 					// @ts-ignore
 					interaction,
-					`${parsed.tag} ${(parsed.args ?? '') as string}`,
+					`--tag ${parsed.tag} ${(parsed.args ?? '') as string}`,
 					this.client.commandHandler.modules.get('link-list')
 				);
 				return true;

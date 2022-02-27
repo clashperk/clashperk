@@ -13,6 +13,7 @@ export default class LinkListCommand extends Command {
 			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
+			optionFlags: ['--tag'],
 			description: {},
 			flags: ['--show-tags']
 		});
@@ -85,24 +86,6 @@ export default class LinkListCommand extends Command {
 			);
 
 		return message.util!.send({ embeds: [embed], components: [row] });
-		// const msg = await message.util!.send({ embeds: [embed], components: [row] });
-		// const collector = msg.createMessageComponentCollector({
-		// 	filter: action => action.customId === customId && action.user.id === message.author.id,
-		// 	time: 5 * 60 * 1000
-		// });
-
-		// collector.on('collect', async action => {
-		// 	if (action.customId === customId) {
-		// 		const embed = this.getEmbed(guildMembers, data, true, onDiscord, offDiscord, notInDiscord);
-		// 		await action.update({ embeds: [embed.setColor(this.client.embed(message))] });
-		// 		// return collector.stop();
-		// 	}
-		// });
-
-		// collector.on('end', async (_, reason) => {
-		// 	this.client.components.delete(customId);
-		// 	if (!/delete/i.test(reason)) await msg.edit({ components: [] });
-		// });
 	}
 
 	private getEmbed(guildMembers: Collection<string, GuildMember>, data: Clan, showTag: boolean, onDiscord: { tag: string; user: string }[], offDiscord: ClanMember[], notInDiscord: any[]) {
