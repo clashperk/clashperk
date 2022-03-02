@@ -20,6 +20,7 @@ export default class ReminderDeleteCommand extends Command {
 			channel: 'guild',
 			description: {},
 			optionFlags: ['--id'],
+			flags: ['--clear'],
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['EMBED_LINKS']
 		});
