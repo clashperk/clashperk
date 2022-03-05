@@ -1,6 +1,6 @@
 {
 	"name": "clashperk",
-	"version": "1.4.6",
+	"version": "1.5.0",
 	"author": "SUVAJIT (suvajit.me@gmail.com)",
 	"license": "MIT",
 	"description": "Clash of Clans Discord Bot",
@@ -9,7 +9,7 @@
 	"private": true,
 	"scripts": {
 		"build": "rimraf dist && tsc",
-		"start": "pm2 start dist/src/index.js --name bot",
+		"start": "npm run build && node --enable-source-maps dist/src/index.js",
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
 		"dev": "node --enable-source-maps dist/src/index.js",
@@ -26,9 +26,10 @@
 		"clashofclans.js": "^1.5.3",
 		"common-tags": "^1.8.0",
 		"discord-akairo": "github:csuvajit/discord-akairo#main",
-		"discord.js": "^13.6.0",
+		"discord.js": "github:monbrey/discord.js#modals",
 		"dotenv": "^10.0.0",
 		"exceljs": "^4.2.1",
+		"i18next": "^21.6.13",
 		"moment": "^2.29.1",
 		"moment-duration-format": "^2.3.2",
 		"mongodb": "^4.2.0",

@@ -37,13 +37,13 @@ export default class MembersCommand extends Command {
 				usage: '<#clanTag>',
 				examples: ['#8QU8J9LP']
 			},
-			optionFlags: ['--tag', '--with']
+			optionFlags: ['--tag', '--option']
 		});
 	}
 
 	public *args(msg: Message): unknown {
 		const sub = yield {
-			flag: '--with',
+			flag: '--option',
 			unordered: true,
 			type: [
 				['link-list', 'links', 'discord'],

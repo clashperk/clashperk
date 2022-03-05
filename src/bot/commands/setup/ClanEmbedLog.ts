@@ -1,8 +1,8 @@
 import { Collections, Flags, Settings, EMBEDS } from '../../util/Constants';
-import { Command, Argument, Flag, PrefixSupplier } from 'discord-akairo';
+import { Command, Flag, PrefixSupplier } from 'discord-akairo';
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS } from '../../util/Emojis';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
-import { Util, Message, User, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
+import { Util, Message, MessageActionRow, MessageButton, TextChannel, Modal, MessageEmbed } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 
 export default class ClanEmbedCommand extends Command {
@@ -27,72 +27,22 @@ export default class ClanEmbedCommand extends Command {
 			}
 		};
 
-		const user = yield {
-			match: 'none',
-			type: 'member',
-			prompt: {
-				start: 'Who is the leader of the clan? (@mention clan leader)',
-				retry: 'Please mention a valid member...'
-			}
-		};
-
-		const accepts = yield {
-			'match': 'none',
-			'type': Argument.validate('string', (msg, txt) => txt.length <= 200),
-			'prompt': {
-				start: 'What Town-Halls are accepted? (write anything)',
-				retry: 'Embed field must be 200 or fewer in length.',
-				time: 1 * 60 * 1000
-			},
-			'default': ''
-		};
-
-		const description = yield {
-			'match': 'none',
-			'type': Argument.validate('string', (msg, txt) => txt.length <= 300),
-			'prompt': {
-				start: 'What would you like to set the description? (write anything or `auto` to sync with clan description or `none` to leave it empty)',
-				retry: 'Embed description must be 300 or fewer in length.',
-				time: 1.5 * 60 * 1000
-			},
-			'default': ' \u200b'
-		};
-
-		const yesNo = yield {
-			match: 'none',
-			type: (msg: Message, txt: string) => {
-				if (!txt) return null;
-				if (/^y(?:e(?:a|s)?)?$/i.test(txt)) return true;
-				return false;
-			},
-			prompt: {
-				start: 'Would you like to set a custom color of the embed? (yes/no)'
-			}
-		};
-
-		const color = yield (
-			// eslint-disable-next-line multiline-ternary
-			yesNo ? {
-				match: 'none',
-				type: (msg: Message, txt: string) => {
-					if (!txt) return null;
-					const resolver = this.handler.resolver.types.get('color')!;
-					return resolver(msg, txt) || this.client.embed(msg);
-				},
-				prompt: {
-					start: 'What is the hex code of the color? (e.g. #f96854)'
-				}
-			} : {
-				'match': 'none',
-				'default': (msg: Message) => this.client.embed(msg)
-			}
-		);
-
-		return { data, user, accepts, description, color };
+		return { data };
 	}
 
-	public async exec(message: Message, { data, accepts, user, description, color }: { data: Clan; accepts: string; user: User; description: string; color?: number }) {
+	private async getUser(clan: Clan): Promise<any> {
+		const leader = clan.memberList.find(m => m.role === 'leader');
+		if (leader) {
+			const user = await this.client.db.collection(Collections.LINKED_PLAYERS)
+				.findOne({ 'entries.tag': leader.tag });
+			if (user) return { id: user.user as string, name: leader.name, toString: () => `<@${user.user as string}>`, ...user };
+		}
+		return null;
+	}
+
+	public async exec(message: Message, { data, description, color }: { data: Clan; description: string; color?: number }) {
 		const clans = await this.client.storage.findAll(message.guild!.id);
+		description ??= '';
 
 		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
@@ -100,13 +50,112 @@ export default class ClanEmbedCommand extends Command {
 			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
 		}
 
-		const dbUser = await this.client.db.collection(Collections.LINKED_PLAYERS)
-			.findOne({ user: message.author.id });
+		const user = await this.getUser(data);
+		if (!user) return message.util!.send('**Clan leader is not linked to the bot!**');
+
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
-		if (!clan.verified && !this.verifyClan(code, data, dbUser?.entries ?? [])) {
+		if (!clan.verified && !this.verifyClan(code, data, user?.entries ?? []) && !this.client.isOwner(message.author.id)) {
 			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
 			return message.util!.send({ embeds: [embed] });
+		}
+
+		const __customIds = {
+			a: this.client.uuid(message.author.id),
+			b: this.client.uuid(message.author.id),
+			c: this.client.uuid(message.author.id)
+		};
+
+		const m = await message.util!.send({
+			embeds: [
+				new MessageEmbed()
+					.setAuthor({ name: `${data.name} | Clan Embed`, iconURL: data.badgeUrls.medium })
+					.setDescription([
+						data.description,
+						'',
+						'**Leader**',
+						// eslint-disable-next-line
+						`${user.name} (${user.toString()})`
+					].join('\n'))
+			],
+			components: [
+				new MessageActionRow()
+					.addComponents(
+						new MessageButton()
+							.setLabel('Customize')
+							.setStyle('SECONDARY')
+							.setCustomId(__customIds.a)
+					)
+					.addComponents(
+						new MessageButton()
+							.setLabel('Save')
+							.setStyle('SECONDARY')
+							.setCustomId(__customIds.b)
+					)
+			]
+		});
+
+		try {
+			await m.awaitMessageComponent({
+				filter: ({ customId }) => Object.values(__customIds).includes(customId),
+				time: 5 * 60 * 1000
+			}).then(async interaction => {
+				const modal = new Modal({
+					customId: __customIds.c,
+					title: `${data.name} | Clan Embed`,
+					components: [
+						{
+							type: 'ACTION_ROW',
+							components: [
+								{
+									type: 'TEXT_INPUT',
+									style: 'PARAGRAPH',
+									customId: 'description',
+									label: 'Clan Description',
+									placeholder: 'Write anything or `auto` to sync with clan description.',
+									maxLength: 300
+								}
+							]
+						},
+						{
+							type: 'ACTION_ROW',
+							components: [
+								{
+									type: 'TEXT_INPUT',
+									style: 'SHORT',
+									customId: 'hex-color-code',
+									label: 'hex colour code',
+									placeholder: 'Hex colour code for the embed (e.g. #f96854)',
+									maxLength: 10
+								}
+							]
+						}
+					]
+				});
+
+				await interaction.update({ components: [] });
+				if (interaction.customId === __customIds.b) {
+					// await interaction.update({ components: [] });
+				} else {
+					await interaction.showModal(modal);
+					try {
+						await interaction.awaitModalSubmit({
+							time: 5 * 60 * 1000,
+							filter: interaction => interaction.customId === __customIds.c
+						}).then(async action => {
+							const des = action.fields.getField('description').value;
+							const hex = action.fields.getField('hex-color-code').value as `#${string}` | null;
+							color = hex ? Util.resolveColor(hex) : undefined;
+							description = des === 'auto' ? data.description : des || '';
+							await action.deferUpdate();
+						});
+					} catch {
+						return interaction.update({ components: [] });
+					}
+				}
+			});
+		} catch {
+			return;
 		}
 
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
@@ -140,22 +189,24 @@ export default class ClanEmbedCommand extends Command {
 						: Util.cleanContent(description, message.channel) || ''
 			].join('\n'))
 			.addField('Clan Leader', [
-				`${EMOJIS.OWNER} ${user.toString()} (${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'})`
-			].join('\n'))
-			.addField('Requirements', [
-				`${EMOJIS.TOWNHALL} ${accepts}`,
+				`${EMOJIS.OWNER} ${user.toString() as string} (${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'})`
+			].join('\n'));
+		if (data.requiredTownhallLevel) {
+			embed.addField('Requirements', [
+				`${EMOJIS.TOWNHALL} ${data.requiredTownhallLevel}`,
 				'**Trophies Required**',
 				`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
 				`**Location** \n${location}`
-			].join('\n'))
-			.addField('War Performance', [
-				`${EMOJIS.OK} ${data.warWins} Won ${data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''}`,
-				'**War Frequency & Streak**',
-				`${data.warFrequency.toLowerCase() === 'morethanonceperweek'
-					? '🎟️ More Than Once Per Week'
-					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`} ${'🏅'} ${data.warWinStreak}`,
-				'**War League**', `${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
-			].join('\n'))
+			].join('\n'));
+		}
+		embed.addField('War Performance', [
+			`${EMOJIS.OK} ${data.warWins} Won ${data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''}`,
+			'**War Frequency & Streak**',
+			`${data.warFrequency.toLowerCase() === 'morethanonceperweek'
+				? '🎟️ More Than Once Per Week'
+				: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`} ${'🏅'} ${data.warWinStreak}`,
+			'**War League**', `${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
+		].join('\n'))
 			.addField('Town Halls', [
 				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`).join(' ')
 			].join('\n'))
@@ -178,8 +229,8 @@ export default class ClanEmbedCommand extends Command {
 				name: data.name,
 				message: messageId,
 				embed: {
-					accepts,
-					userId: user.id,
+					accepts: data.requiredTownhallLevel,
+					userId: user?.id,
 					description: Util.cleanContent(description, message.channel)
 				}
 			});
@@ -192,8 +243,7 @@ export default class ClanEmbedCommand extends Command {
 		};
 
 		const existing = await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
-			.findOne({ tag: data.tag });
-
+			.findOne({ tag: data.tag, guild: message.guild!.id });
 		if (!existing) {
 			const msg = await message.channel.send({ embeds: [embed] });
 			return mutate(msg.id, message.channel.id);
@@ -213,11 +263,17 @@ export default class ClanEmbedCommand extends Command {
 			.addComponents(
 				new MessageButton()
 					.setCustomId(customIds.create)
-					.setStyle('SECONDARY')
+					.setStyle('PRIMARY')
 					.setLabel('Create New Embed')
 			);
 
-		const msg = await message.channel.send({ content: '**Select an option for this action.**', components: [row] });
+		const messageURL = this.getMessageURL(message.guild!.id, existing.channel, existing.message);
+		const msg = await message.util!.send({
+			content: [
+				`**This clan already has an active Clan Embed. [Jump ↗️](<${messageURL}>)**`
+			].join('\n'),
+			components: [row]
+		});
 		const collector = msg.createMessageComponentCollector({
 			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
@@ -236,7 +292,10 @@ export default class ClanEmbedCommand extends Command {
 					});
 				}
 
-				await action.update({ content: '**Successfully updated the existing embed.**', components: [] });
+				await action.update({
+					components: [],
+					content: `**Successfully updated the existing embed. [Jump ↗️](<${messageURL}>)**`
+				});
 				return mutate(existing.message, existing.channel);
 			}
 
@@ -270,5 +329,9 @@ export default class ClanEmbedCommand extends Command {
 		const verifiedTags = tags.filter(en => en.verified).map(en => en.tag);
 		return clan.memberList.filter(m => ['coLeader', 'leader'].includes(m.role))
 			.some(m => verifiedTags.includes(m.tag)) || clan.description.toUpperCase().includes(code);
+	}
+
+	private getMessageURL(guildId: string, channelId: string, messageId: string) {
+		return `https://discord.com/channels/${guildId}/${channelId}/${messageId}`;
 	}
 }

@@ -52,7 +52,7 @@ export const COMMANDS: Command[] = [
 		]
 	},
 	{
-		name: 'points',
+		name: 'clan-games',
 		description: 'Clan Games points of all clan members',
 		options: [
 			{
@@ -65,7 +65,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'attacks',
-		description: 'Clan attacks and defenses for all members',
+		description: 'Clan attacks and defences for all members',
 		options: [
 			{
 				name: 'tag',
@@ -86,7 +86,7 @@ export const COMMANDS: Command[] = [
 				required: false
 			},
 			{
-				name: 'with',
+				name: 'option',
 				description: 'Select an option',
 				type: ApplicationCommandOptionType.String,
 				required: false,
@@ -167,7 +167,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'donations',
-		description: 'Clan member\'s donations and receives',
+		description: 'Clan members\' donations and receives',
 		options: [
 			{
 				name: 'tag',
@@ -290,7 +290,7 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the clan or player account',
+				description: 'Tag of a clan or player account',
 				required: true,
 				type: ApplicationCommandOptionType.String
 			},
@@ -322,7 +322,7 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Tag of the player or clan',
+				description: 'Tag of a player or clan',
 				required: true,
 				type: ApplicationCommandOptionType.String
 			}
@@ -442,7 +442,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Tag of a clan',
 				type: ApplicationCommandOptionType.String
 			},
 			{
@@ -507,7 +507,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'tag',
-				description: 'Tag of the clan',
+				description: 'Tag of a clan',
 				type: ApplicationCommandOptionType.String
 			},
 			{
@@ -527,7 +527,7 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'command',
-				description: 'Name of the command',
+				description: 'Name of a command',
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -680,7 +680,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'warlog',
-		description: 'Shows last 10 clan war logs with War ID',
+		description: 'Shows the last 10 clan war logs with War ID',
 		options: [
 			{
 				name: 'tag',
@@ -691,12 +691,12 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'verify',
-		description: 'Verify and link a player using API token',
+		description: 'Verify and link a player using an API token',
 		options: [
 			{
 				name: 'tag',
 				required: true,
-				description: 'Tag of the player account',
+				description: 'Tag of a player account',
 				type: ApplicationCommandOptionType.String
 			},
 			{
@@ -751,12 +751,12 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'name',
 						required: true,
-						description: 'Name of the alias',
+						description: 'Name of an alias',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'tag',
-						description: 'Tag of the clan',
+						description: 'Tag of a clan',
 						required: true,
 						type: ApplicationCommandOptionType.String
 					}
@@ -774,7 +774,7 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'name',
-						description: 'Tag of the clan or name of the alias',
+						description: 'Tag of a clan or name of an alias',
 						required: true,
 						type: ApplicationCommandOptionType.String
 					}
@@ -788,7 +788,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'autorole',
-		description: 'Auto assign roles to members based upon their role in the clan.',
+		description: 'Auto-assign roles to members based upon their role in the clan.',
 		options: [
 			{
 				name: 'co-leads',
@@ -811,7 +811,7 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'tag',
 				required: false,
-				description: 'Tag of the clan. Do not pass the tag if you want same type roles for all clans.',
+				description: 'Tag of a clan. Do not pass the tag if you want the same type of roles for all clans.',
 				type: ApplicationCommandOptionType.String
 			},
 			{
@@ -876,7 +876,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'nickname',
-		description: 'Choose nickname from linked players',
+		description: 'Choose a nickname from linked players',
 		options: [
 			{
 				name: 'user',
@@ -1177,7 +1177,7 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'attempt',
-						description: 'Fresh defenses or cleanup defenses. (Default: Both)',
+						description: 'Fresh defences or cleanup defences. (Default: Both)',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{

@@ -5,7 +5,7 @@ import moment from 'moment';
 import ms from 'ms';
 // import { ObjectId } from 'mongodb';
 
-const EPHEMERAL_COMMANDS = ['help', 'invite', 'status', 'whois', 'verify'];
+const EPHEMERAL_COMMANDS = ['help', 'invite', 'status', 'whois', 'verify', 'setup'];
 
 interface Parsed {
 	type: string;

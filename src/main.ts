@@ -11,8 +11,30 @@ import { RewriteFrames } from '@sentry/integrations';
 import { execSync } from 'child_process';
 import Client from './bot/struct/Client';
 import * as Sentry from '@sentry/node';
+import i18next from 'i18next';
 
 const client = new Client({ owner: process.env.OWNER! });
+
+i18next.init({
+	debug: false,
+	cleanCode: true,
+	fallbackLng: ['en-US'],
+	defaultNS: 'translation',
+	lng: 'en-US',
+	ns: ['translation'],
+	resources: {
+		'en-US': {
+			translation: {
+				key: 'hello world'
+			}
+		},
+		'es-ES': {
+			translation: {
+				key: 'hola mundo'
+			}
+		}
+	}
+});
 
 if (process.env.SENTRY) {
 	Sentry.init({
