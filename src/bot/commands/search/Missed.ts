@@ -9,7 +9,7 @@ import moment from 'moment';
 export default class MissedAttacksCommand extends Command {
 	public constructor() {
 		super('missed', {
-			aliases: ['missed', 'missing', 'remaining', 'rem'],
+			aliases: ['remaining', 'missed', 'missing', 'rem'],
 			category: 'war',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
