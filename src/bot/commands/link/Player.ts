@@ -96,14 +96,7 @@ export default class LinkPlayerCommand extends Command {
 		// Update Role
 		if (data.clan) this.client.rpcHandler.roleManager.newLink(data);
 
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message))
-			.setDescription([
-				`Linked **${member.user.tag}** to **${data.name}** (${data.tag})`,
-				'',
-				'If you don\'t provide the tag for other lookup commands, the bot will use the first one you linked.'
-			].join('\n'));
-		return message.util!.send({ embeds: [embed] });
+		return message.util!.send(`Linked **${member.user.tag}** to **${data.name}** (${data.tag})`);
 	}
 
 	private isVerified(data: any, tag: string) {

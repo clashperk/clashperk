@@ -1,5 +1,5 @@
 import { Collections, EMBEDS, Flags, Settings } from '../../util/Constants';
-import { Command, Argument, PrefixSupplier } from 'discord-akairo';
+import { Command, Argument } from 'discord-akairo';
 import { Message, GuildMember, TextChannel } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 
@@ -18,8 +18,8 @@ export default class LinkClanCommand extends Command {
 				{
 					'id': 'parsed',
 					'match': 'rest',
-					'type': Argument.union('member', 'textChannel'),
-					'default': (msg: Message) => msg.member
+					'default': (msg: Message) => msg.member,
+					'type': Argument.union('member', 'textChannel')
 				}
 			]
 		});
@@ -89,22 +89,14 @@ export default class LinkClanCommand extends Command {
 				}
 			}, { upsert: true });
 
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message))
-			.setDescription([
-				`Linked **${parsed.user.tag}** to **${data.name}** (${data.tag})`,
-				'',
-				'If you don\'t provide the tag for other lookup commands, the bot will use the last one you linked.'
-			].join('\n'));
-		return message.util!.send({ embeds: [embed] });
+		return message.util!.send(`Linked **${parsed.user.tag}** to **${data.name}** (${data.tag})`);
 	}
 
 	private async enforceSecurity(message: Message, data: Clan) {
-		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
-			await message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
+			await message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT()] });
 			return Promise.resolve(false);
 		}
 
@@ -113,7 +105,7 @@ export default class LinkClanCommand extends Command {
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
 		if (!clan.verified && !this.verifyClan(code, data, dbUser?.entries ?? [])) {
-			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
+			const embed = EMBEDS.VERIFY_CLAN(data, code);
 			await message.util!.send({ embeds: [embed] });
 			return Promise.resolve(false);
 		}

@@ -68,7 +68,8 @@ export enum Flags {
 	CLAN_EMBED_LOG = 1 << 3,
 	CLAN_GAMES_LOG = 1 << 4,
 	CLAN_WAR_LOG = 1 << 5,
-	CHANNEL_LINKED = 1 << 6
+	CHANNEL_LINKED = 1 << 6,
+	SERVER_LINKED = 1 << 7,
 }
 
 export enum Settings {
@@ -93,19 +94,17 @@ export const URLS = {
 };
 
 export const EMBEDS = {
-	CLAN_LIMIT: (prefix: string) => new MessageEmbed()
+	CLAN_LIMIT: () => new MessageEmbed()
 		.setDescription([
 			`You can only claim 2 clans per server!`,
 			'',
 			'**Want more than that?**',
 			'Please consider supporting us on patreon!',
 			'',
-			'[Become a Patron](https://www.patreon.com/clashperk)',
-			'',
-			`Use \`${prefix}setup\` command to view all linked clans and \`${prefix}help remove\` to know about the process of removing any clan.`
+			'[Become a Patron](https://www.patreon.com/clashperk)'
 		].join('\n')),
 
-	VERIFY_CLAN: (clan: Clan, code: string, prefix: string) => new MessageEmbed()
+	VERIFY_CLAN: (clan: Clan, code: string) => new MessageEmbed()
 		.setTitle(`${clan.name} (${clan.tag})`)
 		.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
 		.setDescription([
@@ -119,7 +118,7 @@ export const EMBEDS = {
 		].join('\n'))
 		.addField('• Simplified', [
 			'Verify your Player account using Player [API Token](https://link.clashofclans.com/?action=OpenMoreSettings) and run this command again.',
-			`Type \`${prefix}verify\` to know more about the Player API Token. Run \`${prefix}verify #PLAYER_TAG TOKEN\` to quickly verify your player account.`,
+			`Type \`/verify\` to know more about the Player API Token. Run \`/verify #PLAYER_TAG TOKEN\` to quickly verify your player account.`,
 			'\u200b'
 		].join('\n'), true)
 		.addField('• Manual', [

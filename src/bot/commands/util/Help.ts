@@ -1,4 +1,4 @@
-import { Command, PrefixSupplier } from 'discord-akairo';
+import { Command } from 'discord-akairo';
 import { Message, PermissionString } from 'discord.js';
 import { URLS } from '../../util/Constants';
 
@@ -41,7 +41,6 @@ export default class HelpCommand extends Command {
 	public exec(message: Message, { command }: { command?: Command }) {
 		if (!command) return this.execCommandList(message);
 
-		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const description: Description = Object.assign({
 			content: 'No description available.',
 			usage: '',
@@ -53,7 +52,7 @@ export default class HelpCommand extends Command {
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setDescription([
-				`\`${prefix}${command.aliases[0].replace(/-/g, '')} ${description.usage}\``,
+				`\`/${command.aliases[0]} ${description.usage}\``,
 				'',
 				Array.isArray(description.content)
 					? description.content.join('\n')
@@ -70,7 +69,7 @@ export default class HelpCommand extends Command {
 		}
 
 		if (description.examples.length) {
-			const cmd = `${prefix}${command.aliases[0].replace(/-/g, '')}`;
+			const cmd = `/${command.aliases[0]}`;
 			embed.setDescription([
 				embed.description,
 				'',
@@ -121,11 +120,10 @@ export default class HelpCommand extends Command {
 	}
 
 	private execHelpList(message: Message, option: any) {
-		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const embed = this.client.util.embed()
 			.setColor(this.client.embed(message))
 			.setAuthor({ name: 'Command List', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
-			.setDescription(`To view more details for a command, do \`${prefix}help <command>\``);
+			.setDescription(`To view more details for a command, do \`/help command: name\``);
 
 		const categories = [];
 		for (const category of this.handler.categories.values()) {
@@ -144,7 +142,7 @@ export default class HelpCommand extends Command {
 						const description = Array.isArray(cmd.description.content)
 							? cmd.description.content[0]
 							: cmd.description.content;
-						return `**\`${prefix}${cmd.aliases[0].replace(/-/g, '')}\`**\n${description as string}`;
+						return `**\`/${cmd.aliases[0]}\`**\n${description as string}`;
 					})
 					.join('\n')
 			].join('\n'));

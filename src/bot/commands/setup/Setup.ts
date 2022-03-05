@@ -1,4 +1,4 @@
-import { Command, Flag, PrefixSupplier, Argument } from 'discord-akairo';
+import { Command, Flag, Argument } from 'discord-akairo';
 import { Message, TextChannel, MessageEmbed, MessageButton, MessageActionRow } from 'discord.js';
 import { Flags, Collections } from '../../util/Constants';
 import { Util } from '../../util/Util';
@@ -22,39 +22,10 @@ export default class SetupCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Enable features or assign clans to channels.',
-					'',
-					'• **[Channel Link](https://clashperk.com/guide/)**',
-					'• `#CLAN_TAG #CHANNEL`',
-					'',
-					'• **[Clan Feed](https://clashperk.com/guide/)**',
-					'• `FEED #CLAN_TAG`',
-					'• `FEED #CLAN_TAG @ROLE`',
-					'',
-					'• **[War Feed](https://clashperk.com/guide/)**',
-					'• `WAR #CLAN_TAG`',
-					'',
-					'• **[Last Seen](https://clashperk.com/guide/)**',
-					'• `LASTSEEN #CLAN_TAG`',
-					'• `LASTSEEN #CLAN_TAG #HEX_COLOR`',
-					'',
-					'• **[Clan Games](https://clashperk.com/guide/)**',
-					'• `GAMES #CLAN_TAG`',
-					'• `GAMES #CLAN_TAG #HEX_COLOR`',
-					'',
-					'• **[Clan Embed](https://clashperk.com/guide/)**',
-					'• `EMBED #CLAN_TAG`',
-					'',
-					'• **[Donation Log](https://clashperk.com/guide/)**',
-					'• `DONATION #CLAN_TAG`',
-					'• `DONATION #CLAN_TAG #HEX_COLOR`'
+					'Enable features or assign clans to channels.'
 				],
-				usage: '[#clanTag|Type] [#channel] [args]',
-				examples: [
-					'#8QU8J9LP #clashperk',
-					'FEED #8QU8J9LP @ROLE',
-					'LASTSEEN #8QU8J9LP #ff0'
-				]
+				usage: '[option] [#clanTag] [#channel] [color] [role]',
+				examples: []
 			},
 			optionFlags: ['--option', '--tag', '--channel']
 		});
@@ -65,6 +36,7 @@ export default class SetupCommand extends Command {
 			type: Argument.union(
 				[
 					['setup-clan-embed', 'embed', 'clanembed'],
+					['setup-server-link', 'link'],
 					['setup-last-seen', 'lastseen', 'lastonline'],
 					['setup-clan-feed', 'feed', 'memberlog', 'clan-feed'],
 					['setup-donations', 'donation', 'donations', 'donation-log'],
@@ -99,16 +71,10 @@ export default class SetupCommand extends Command {
 			return this.handler.handleDirectCommand(message, `${tag} ${channel.id}`, this.handler.modules.get('link-clan')!);
 		}
 
-		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
 			.setDescription([
-				`\`${prefix}setup ${this.description.usage as string}\``,
-				'',
-				this.description.content.join('\n'),
-				'',
-				'**Examples**',
-				this.description.examples.map((en: string) => `\`${prefix}setup ${en}\``).join('\n')
+				this.description.content.join('\n')
 			].join('\n'));
 
 		const customIds = {
@@ -128,7 +94,7 @@ export default class SetupCommand extends Command {
 					.setStyle('SECONDARY')
 					.setLabel('Show Clan List')
 			);
-		const msg = await message.channel.send({ embeds: [embed], components: [row] });
+		const msg = await message.util!.send({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
@@ -142,13 +108,13 @@ export default class SetupCommand extends Command {
 				if (!embeds.length) {
 					await action.followUp({
 						content: `${message.guild!.name} doesn't have any clans. Why not add some?`,
-						components: []
+						ephemeral: true
 					});
 					return;
 				}
 
 				for (const chunks of Util.chunk(embeds, 10)) {
-					await action.followUp({ embeds: chunks });
+					await action.followUp({ embeds: chunks, ephemeral: true });
 				}
 			}
 
@@ -159,12 +125,12 @@ export default class SetupCommand extends Command {
 				if (!embeds.length) {
 					await action.followUp({
 						content: `${message.guild!.name} doesn't have any clans. Why not add some?`,
-						components: []
+						ephemeral: true
 					});
 					return;
 				}
 
-				await action.followUp({ embeds });
+				await action.followUp({ embeds, ephemeral: true });
 			}
 		});
 

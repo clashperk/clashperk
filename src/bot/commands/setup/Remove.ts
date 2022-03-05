@@ -23,51 +23,22 @@ export default class RemoveCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: [
-					'Disable features or remove clans from channels.',
-					'',
-					'• **[Unlink Channel](https://clashperk.com/guide/)**',
-					'• `#CHANNEL`',
-					'',
-					'• **[Clan Feed](https://clashperk.com/guide/)**',
-					'• `FEED #CLAN_TAG`',
-					'',
-					'• **[War Feed](https://clashperk.com/guide/)**',
-					'• `WAR #CLAN_TAG`',
-					'',
-					'• **[Last Seen](https://clashperk.com/guide/)**',
-					'• `LASTSEEN #CLAN_TAG`',
-					'',
-					'• **[Clan Games](https://clashperk.com/guide/)**',
-					'• `GAMES #CLAN_TAG`',
-					'',
-					'• **[Clan Embed](https://clashperk.com/guide/)**',
-					'• `EMBED #CLAN_TAG`',
-					'',
-					'• **[Donation Log](https://clashperk.com/guide/)**',
-					'• `DONATION #CLAN_TAG`',
-					'',
-					'• **[Everything^](https://clashperk.com/guide/)**',
-					'• `ALL #CLAN_TAG`'
+					'Disable features or remove clans from channels.'
 				],
-				usage: '<#channel|Type> <#clanTag>',
-				examples: [
-					'#clashperk',
-					'FEED #8QU8J9LP',
-					'LASTSEEN #8QU8J9LP'
-				]
+				usage: '[option] [#clanTag] [#channel]',
+				examples: []
 			},
-			optionFlags: ['--channel', '--option', '--tag']
+			optionFlags: ['--option', '--tag']
 		});
 	}
 
 	public *args(msg: Message): unknown {
 		const bit = yield {
-			flag: ['--option', '--channel'],
+			flag: ['--option'],
 			match: msg.interaction ? 'option' : 'phrase',
 			type: Argument.union(
 				[
-					['all'],
-					['autorole', 'autoroles', 'role', 'roles'],
+					['link-channel'], ['all'], ['autorole', 'autoroles', 'role', 'roles'],
 					[Flags.CLAN_EMBED_LOG.toString(), 'embed', 'clanembed'],
 					[Flags.LAST_SEEN_LOG.toString(), 'lastseen', 'lastonline'],
 					[Flags.CLAN_WAR_LOG.toString(), 'war', 'wars', 'clan-wars'],
@@ -121,13 +92,17 @@ export default class RemoveCommand extends Command {
 			return message.util!.send(`Couldn't find any clan linked to ${bit.toString()}`);
 		}
 
+		if (bit === 'link-channel') {
+			return message.util!.send(`Specify the channel to remove the clan from.`);
+		}
+
 		if (bit === 'autorole' && !tag) {
 			await this.client.db.collection(Collections.CLAN_STORES)
 				.updateMany(
 					{ guild: message.guild!.id, autoRole: 2 },
 					{ $unset: { autoRole: '', roles: '', role_ids: '', secureRole: '' } }
 				);
-			return message.util!.send(`**Autorole disabled for all clans.**`);
+			return message.util!.send(`**Auto-role disabled for all clans.**`);
 		}
 
 		if (!tag) return message.util!.send('**You must specify a clan tag to run this command.**');
@@ -140,7 +115,7 @@ export default class RemoveCommand extends Command {
 					{ guild: message.guild!.id, tag: data.tag, autoRole: 1 },
 					{ $unset: { autoRole: '', roles: '', role_ids: '', secureRole: '' } }
 				);
-			return message.util!.send(`Autorole disabled for **${data.name as string} (${data.tag as string})**`);
+			return message.util!.send(`Auto-role disabled for **${data.name as string} (${data.tag as string})**`);
 		}
 
 		if (!data) {

@@ -70,13 +70,13 @@ export default class DonationsCommand extends Command {
 					donated: sameSeason
 						? mem.donations >= m.donations?.value
 							? m.donations.gained as number + (mem.donations - m.donations.value)
-							: mem.donations
+							: Math.max(mem.donationsReceived, m.donationsReceived.gained)
 						: m.donations.gained,
 
 					received: sameSeason
 						? mem.donationsReceived >= m.donationsReceived?.value
 							? m.donationsReceived.gained as number + (mem.donationsReceived - m.donationsReceived.value)
-							: mem.donationsReceived
+							: Math.max(mem.donations, m.donations.gained)
 						: m.donationsReceived.gained
 				});
 			}

@@ -1,6 +1,6 @@
 import { MessageEmbed, Message, TextChannel, User, PermissionString, Channel } from 'discord.js';
 import { Flags, missingPermissions, Settings, Collections, EMBEDS } from '../../util/Constants';
-import { Command, PrefixSupplier } from 'discord-akairo';
+import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 
 export default class WarLogCommand extends Command {
@@ -33,11 +33,10 @@ export default class WarLogCommand extends Command {
 	}
 
 	public async exec(message: Message, { data, channel }: { data: Clan; channel: TextChannel }) {
-		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
-			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
+			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT()] });
 		}
 
 		const dbUser = await this.client.db.collection(Collections.LINKED_PLAYERS)
@@ -45,7 +44,7 @@ export default class WarLogCommand extends Command {
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
 		if (!clan.verified && !this.verifyClan(code, data, dbUser?.entries ?? [])) {
-			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
+			const embed = EMBEDS.VERIFY_CLAN(data, code);
 			return message.util!.send({ embeds: [embed] });
 		}
 

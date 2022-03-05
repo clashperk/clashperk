@@ -1,6 +1,6 @@
 import { MessageEmbed, Message, TextChannel, User, PermissionString, Channel } from 'discord.js';
 import { Flags, missingPermissions, Settings, Collections, EMBEDS } from '../../util/Constants';
-import { Command, PrefixSupplier } from 'discord-akairo';
+import { Command } from 'discord-akairo';
 import { Clan } from 'clashofclans.js';
 
 export default class ClanGamesBoardCommand extends Command {
@@ -9,44 +9,41 @@ export default class ClanGamesBoardCommand extends Command {
 			category: 'setup',
 			channel: 'guild',
 			description: {},
-			optionFlags: ['--tag', '--channel', '--extra'],
+			optionFlags: ['--tag', '--channel', '--color'],
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
 		});
 	}
 
-	public *args(msg: Message): unknown {
+	public *args(): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
+			match: 'option',
 			type: (msg: Message, tag: string) => this.client.resolver.getClan(msg, tag)
 		};
 
 		const channel = yield {
 			'flag': '--channel',
-			'unordered': [1, 2],
 			'type': 'textChannel',
-			'default': (msg: Message) => msg.channel,
-			'match': msg.interaction ? 'option' : 'phrase'
+			'match': 'option',
+			'default': (msg: Message) => msg.channel
 		};
 
 		const hexColor = yield {
 			'type': 'color',
-			'flag': '--extra',
-			'unordered': [1, 2],
-			'default': (msg: Message) => this.client.embed(msg),
-			'match': msg.interaction ? 'option' : 'phrase'
+			'flag': '--color',
+			'match': 'option',
+			'default': (msg: Message) => this.client.embed(msg)
 		};
 
 		return { data, channel, hexColor };
 	}
 
 	public async exec(message: Message, { data, channel, hexColor }: { data: Clan; channel: TextChannel; hexColor?: number }) {
-		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
-			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
+			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT()] });
 		}
 
 		const dbUser = await this.client.db.collection(Collections.LINKED_PLAYERS)
@@ -54,7 +51,7 @@ export default class ClanGamesBoardCommand extends Command {
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
 		if (!clan.verified && !this.verifyClan(code, data, dbUser?.entries ?? [])) {
-			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
+			const embed = EMBEDS.VERIFY_CLAN(data, code);
 			return message.util!.send({ embeds: [embed] });
 		}
 

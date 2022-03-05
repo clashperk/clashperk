@@ -8,7 +8,7 @@ import { Clan } from 'clashofclans.js';
 export default class ClanGamesCommand extends Command {
 	public constructor() {
 		super('clangames', {
-			aliases: ['points', 'clangames', 'cg'],
+			aliases: ['clan-games', 'cg', 'points'],
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],

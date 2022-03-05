@@ -1,5 +1,5 @@
 import { Collections, Flags, Settings, EMBEDS } from '../../util/Constants';
-import { Command, Flag, PrefixSupplier } from 'discord-akairo';
+import { Command, Flag } from 'discord-akairo';
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS } from '../../util/Emojis';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { Util, Message, MessageActionRow, MessageButton, TextChannel, Modal, MessageEmbed } from 'discord.js';
@@ -11,23 +11,37 @@ export default class ClanEmbedCommand extends Command {
 			category: 'setup',
 			channel: 'guild',
 			description: {},
-			optionFlags: ['--tag'],
+			optionFlags: ['--tag', '--color'],
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['EMBED_LINKS']
 		});
 	}
 
-	public *args(msg: Message): unknown {
+	public *args(): unknown {
 		const data = yield {
 			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
+			match: 'option',
 			type: async (msg: Message, args: string) => {
 				if (!this.client.patrons.get(msg.guild!.id)) return this.bePatron(msg);
 				return this.client.resolver.resolveClan(msg, args);
 			}
 		};
 
-		return { data };
+		const color = yield {
+			'type': 'color',
+			'flag': '--color',
+			'match': 'option',
+			'default': (msg: Message) => this.client.embed(msg)
+		};
+
+		// const channel = yield {
+		// 	'type': 'textChannel',
+		// 	'flag': '--channel',
+		// 	'match': 'option',
+		// 	'default': (msg: Message) => msg.channel
+		// };
+
+		return { data, color };
 	}
 
 	private async getUser(clan: Clan): Promise<any> {
@@ -40,14 +54,12 @@ export default class ClanEmbedCommand extends Command {
 		return null;
 	}
 
-	public async exec(message: Message, { data, description, color }: { data: Clan; description: string; color?: number }) {
+	public async exec(message: Message, { data, description, color, accepts }: { data: Clan; description: string; color?: number; accepts?: string }) {
 		const clans = await this.client.storage.findAll(message.guild!.id);
-		description ??= '';
 
-		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
 		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag) && !this.client.isOwner(message.author.id)) {
-			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT(prefix)] });
+			return message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT()] });
 		}
 
 		const user = await this.getUser(data);
@@ -56,7 +68,7 @@ export default class ClanEmbedCommand extends Command {
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
 		if (!clan.verified && !this.verifyClan(code, data, user?.entries ?? []) && !this.client.isOwner(message.author.id)) {
-			const embed = EMBEDS.VERIFY_CLAN(data, code, prefix);
+			const embed = EMBEDS.VERIFY_CLAN(data, code);
 			return message.util!.send({ embeds: [embed] });
 		}
 
@@ -122,31 +134,29 @@ export default class ClanEmbedCommand extends Command {
 							components: [
 								{
 									type: 'TEXT_INPUT',
-									style: 'SHORT',
-									customId: 'hex-color-code',
-									label: 'hex colour code',
-									placeholder: 'Hex colour code for the embed (e.g. #f96854)',
-									maxLength: 10
+									style: 'PARAGRAPH',
+									customId: 'accepts',
+									label: 'Requirements',
+									placeholder: 'Write anything as a requirement message (e.g TH 10+)',
+									maxLength: 100
 								}
 							]
 						}
 					]
 				});
 
-				await interaction.update({ components: [] });
 				if (interaction.customId === __customIds.b) {
-					// await interaction.update({ components: [] });
+					await interaction.update({ components: [] });
 				} else {
 					await interaction.showModal(modal);
+					await interaction.editReply({ components: [] });
 					try {
 						await interaction.awaitModalSubmit({
 							time: 5 * 60 * 1000,
 							filter: interaction => interaction.customId === __customIds.c
 						}).then(async action => {
-							const des = action.fields.getField('description').value;
-							const hex = action.fields.getField('hex-color-code').value as `#${string}` | null;
-							color = hex ? Util.resolveColor(hex) : undefined;
-							description = des === 'auto' ? data.description : des || '';
+							description = action.fields.getField('description').value;
+							accepts = action.fields.getField('accepts').value;
 							await action.deferUpdate();
 						});
 					} catch {
@@ -158,6 +168,7 @@ export default class ClanEmbedCommand extends Command {
 			return;
 		}
 
+		accepts = accepts?.trim() || data.requiredTownhallLevel ? `TH ${data.requiredTownhallLevel!}+` : 'Any';
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
 		const reduced = fetched.filter(res => res.ok).reduce((count, member) => {
 			const townHall = member.townHallLevel;
@@ -187,18 +198,20 @@ export default class ClanEmbedCommand extends Command {
 					: description.toLowerCase() === 'none'
 						? ''
 						: Util.cleanContent(description, message.channel) || ''
-			].join('\n'))
-			.addField('Clan Leader', [
-				`${EMOJIS.OWNER} ${user.toString() as string} (${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'})`
 			].join('\n'));
-		if (data.requiredTownhallLevel) {
-			embed.addField('Requirements', [
-				`${EMOJIS.TOWNHALL} ${data.requiredTownhallLevel}`,
-				'**Trophies Required**',
-				`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
-				`**Location** \n${location}`
-			].join('\n'));
-		}
+		if (color) embed.setColor(color);
+
+		embed.addField('Clan Leader', [
+			`${EMOJIS.OWNER} ${user.toString() as string} (${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'})`
+		].join('\n'));
+
+		embed.addField('Requirements', [
+			`${EMOJIS.TOWNHALL} ${accepts}`,
+			'**Trophies Required**',
+			`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
+			`**Location** \n${location}`
+		].join('\n'));
+
 		embed.addField('War Performance', [
 			`${EMOJIS.OK} ${data.warWins} Won ${data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''}`,
 			'**War Frequency & Streak**',
@@ -206,13 +219,14 @@ export default class ClanEmbedCommand extends Command {
 				? '🎟️ More Than Once Per Week'
 				: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`} ${'🏅'} ${data.warWinStreak}`,
 			'**War League**', `${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
-		].join('\n'))
-			.addField('Town Halls', [
-				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`).join(' ')
-			].join('\n'))
-			.setFooter({ text: 'Synced', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
-			.setTimestamp();
-		if (color) embed.setColor(color);
+		].join('\n'));
+
+		embed.addField('Town Halls', [
+			townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`).join(' ')
+		].join('\n'));
+
+		embed.setFooter({ text: 'Synced', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) });
+		embed.setTimestamp();
 
 		description = description.toLowerCase() === 'auto'
 			? 'auto'

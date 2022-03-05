@@ -6,7 +6,7 @@ export default class PrefixCommand extends Command {
 	public constructor() {
 		super('config-prefix', {
 			aliases: ['prefix'],
-			category: 'config',
+			category: 'none',
 			channel: 'guild',
 			quoted: false,
 			description: {

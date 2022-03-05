@@ -1,12 +1,12 @@
 import { Collections, Settings } from '../../util/Constants';
-import { Message, MessageActionRow, MessageButton } from 'discord.js';
+import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { Patron } from '../../struct/Patrons';
 import { Command } from 'discord-akairo';
 
 export default class PatronCommand extends Command {
 	public constructor() {
 		super('patron', {
-			aliases: ['patron', 'donate', 'patreon'],
+			aliases: ['patron'],
 			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
@@ -59,33 +59,11 @@ export default class PatronCommand extends Command {
 			return message.util!.send('Failed!');
 		}
 
-		const embed = this.client.util.embed()
-			// .setColor(16345172)
-			.setAuthor({
-				name: this.client.user!.username,
-				iconURL: this.client.user!.displayAvatarURL({ format: 'png' }),
-				url: 'https://www.patreon.com/clashperk'
-			})
-			.setDescription([
-				'Help us with our hosting related expenses.',
-				'Any help is beyond appreciated. Thanks!',
-				'',
-				'**Benefits**',
-				'• Only one sec cooldown and faster updates.',
-				'• Special commands, custom Embed colors.',
-				'• Self updating Clan Promotional Embed.',
-				'• Claim unlimited number of clans.',
-				'',
-				'• Export to Excel File',
-				'\u200e \u2002• Current/historic war attacks.',
-				'\u200e \u2002• Clan Members with many stats.',
-				'\u200e \u2002• Current CWL attacks and summary.',
-				'\u200e \u2002• Season stats with Discord username.',
-				'',
-				'• Patron Role on our Support Discord.',
-				'',
-				'**[Support us on Patreon](https://www.patreon.com/clashperk) | [Support Discord](https://discord.gg/ppuppun)**'
-			].join('\n'));
+		const content = [
+			'Help us with our hosting related expenses.',
+			'Any help is beyond appreciated. Thanks!',
+			'<https://www.patreon.com/clashperk>'
+		].join('\n');
 
 		const customId = this.client.uuid(message.author.id);
 		const button = new MessageButton()
@@ -93,7 +71,11 @@ export default class PatronCommand extends Command {
 			.setStyle('SECONDARY')
 			.setLabel('Our Current Patrons');
 
-		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow().addComponents(button)] });
+		if (!this.client.isOwner(message.author.id)) {
+			return message.util!.send({ content });
+		}
+
+		const msg = await message.util!.send({ content, components: [new MessageActionRow().addComponents(button)] });
 		const collector = msg.createMessageComponentCollector({
 			filter: action => action.customId === customId && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
@@ -102,15 +84,14 @@ export default class PatronCommand extends Command {
 		const patrons = (await this.patrons()).filter(patron => patron.active && patron.userId !== this.client.ownerID);
 		collector.on('collect', async action => {
 			if (action.customId === customId) {
+				const embed = new MessageEmbed();
 				embed.setDescription([
-					embed.description,
-					'',
 					`**Our Current Patrons (${patrons.length})**`,
 					patrons.map(patron => `• ${patron.username}`)
 						.join('\n')
 				].join('\n'));
 
-				await action.update({ embeds: [embed] });
+				await action.reply({ embeds: [embed], ephemeral: true });
 				return collector.stop();
 			}
 		});

@@ -10,13 +10,12 @@ const texts: Text = {
 	guild: 'You must be in a guild to use this command.',
 	restrict: 'You can\'t use this command because you have been restricted.',
 	textCommand: [
-		'**Text-based commands are no longer supported. Please use slash commands!**',
+		'**Text-based commands are being replaced in favour of slash commands.**',
 		'',
-		'At the end of April 2022, access to the message content will be restricted and bots will not be able to read our text messages. Read more about this > <https://support-dev.discord.com/hc/en-us/articles/4404772028055>',
+		'On May 1, 2022, text-based commands will no longer work and the bot will completely stop responding to text-based commands (even this message).',
 		'',
-		'Discord wants us to move to the new slash commands. So I request everyone start using slash commands and get used to it. Know more about slash commands > <https://support.discord.com/hc/en-us/articles/1500000368501-Slash-Commands-FAQ>',
-		'',
-		'Thank you!'
+		'Try typing `/` to see a list of available commands.',
+		'https://i.imgur.com/jcWPjDf.png'
 	].join('\n')
 };
 

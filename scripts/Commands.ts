@@ -412,7 +412,11 @@ export const COMMANDS: Command[] = [
 				choices: [
 					{
 						name: 'Channel Link',
-						value: 'link_channel'
+						value: 'link-channel'
+					},
+					{
+						name: 'Server Link',
+						value: 'link'
 					},
 					{
 						name: 'War Feed',
@@ -451,9 +455,14 @@ export const COMMANDS: Command[] = [
 				type: ApplicationCommandOptionType.Channel
 			},
 			{
-				name: 'extra',
-				description: 'Role for clan feed or Hex color code.',
+				name: 'color',
+				description: 'Hex color code (only for donation log, clan games, last seen and clan embed)',
 				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'role',
+				description: 'Role for the flag notification (only for clan feed)',
+				type: ApplicationCommandOptionType.Role
 			}
 		]
 	},
@@ -469,7 +478,11 @@ export const COMMANDS: Command[] = [
 				choices: [
 					{
 						name: 'Channel Link',
-						value: 'link_channel'
+						value: 'link-channel'
+					},
+					{
+						name: 'Clan Feed',
+						value: 'feed'
 					},
 					{
 						name: 'War Embed',
@@ -484,10 +497,6 @@ export const COMMANDS: Command[] = [
 						value: 'games'
 					},
 					{
-						name: 'Clan Feed',
-						value: 'feed'
-					},
-					{
 						name: 'Clan Embed',
 						value: 'embed'
 					},
@@ -500,7 +509,7 @@ export const COMMANDS: Command[] = [
 						value: 'autorole'
 					},
 					{
-						name: 'Remove All',
+						name: 'Remove Clan',
 						value: 'all'
 					}
 				]

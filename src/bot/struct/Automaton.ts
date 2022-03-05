@@ -229,11 +229,11 @@ export class Automaton {
 					tag: mem.tag,
 					donated: mem.donations >= m.donations?.value
 						? m.donations.gained as number + (mem.donations - m.donations.value)
-						: mem.donations,
+						: Math.max(mem.donations, m.donations.gained),
 
 					received: mem.donationsReceived >= m.donationsReceived?.value
 						? m.donationsReceived.gained as number + (mem.donationsReceived - m.donationsReceived.value)
-						: mem.donationsReceived
+						: Math.max(mem.donationsReceived, m.donationsReceived.gained)
 				});
 			}
 		}
