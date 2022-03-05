@@ -31,7 +31,7 @@ export default class CommandBlockedListener extends Listener {
 	public exec(message: Message, command: Command, reason: string) {
 		const msg = texts[reason];
 		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
-		this.client.logger.debug(`${command.id} ~ ${reason}`, { label });
+		this.client.logger.log(`${command.id} ~ ${reason}`, { label });
 
 		if (reason === 'beta' && message.interaction && msg) {
 			return message.util!.send(msg);

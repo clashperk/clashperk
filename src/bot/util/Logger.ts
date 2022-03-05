@@ -24,6 +24,10 @@ export default class Logger {
 		return this.write(message, { label, tag: 'debug' });
 	}
 
+	public log(message: string | any, { label }: { label?: string }) {
+		return this.write(message, { label: chalk.red.bold(label), tag: 'debug' });
+	}
+
 	public info(message: string | any, { label }: { label?: string }) {
 		return this.write(message, { label, tag: 'info' });
 	}
@@ -50,7 +54,7 @@ export default class Logger {
 	}
 
 	private get shard() {
-		return this.client?.shard?.ids ? ` [SHARD ${this.client.shard.ids[0]}]` : '';
+		return this.client?.shard?.ids ? ` [SHARD${this.client.shard.ids[0].toString().padStart(2)}]` : '';
 	}
 }
 
