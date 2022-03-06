@@ -11,26 +11,32 @@ export default class ServerLinkCommand extends Command {
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {},
-			args: [
-				{
-					id: 'data',
-					type: (msg, tag) => this.client.resolver.getClan(msg, tag)
-				}
-			]
+			optionFlags: ['--tag']
 		});
 	}
 
+	public *args(): unknown {
+		const data = yield {
+			flag: '--tag',
+			match: 'option',
+			type: (msg: Message, tag: string) => this.client.resolver.getClan(msg, tag)
+		};
+
+		return { data };
+	}
+
 	public async exec(message: Message, { data }: { data: Clan }) {
+		const clan = await this.client.storage.collection.findOne({ tag: data.tag, guild: message.guild!.id });
+		if (clan) return message.util!.send(`**${clan.name} (${clan.tag})** is already linked to ${message.guild!.name}`);
+
 		if (!await this.enforceSecurity(message, data)) return;
-		const store = await this.client.storage.collection.findOne({ tag: data.tag, guild: message.guild!.id });
-		if (store) return message.util!.send(`**${store.name} (${store.tag})** is already linked to ${message.guild!.name}`);
 		return message.util!.send(`Successfully linked **${data.name} (${data.tag})** to **${message.guild!.name}**`);
 	}
 
 	private async enforceSecurity(message: Message, data: Clan) {
 		const clans = await this.client.storage.findAll(message.guild!.id);
 		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
-		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag)) {
+		if (clans.length >= max && !clans.filter(clan => clan.active).map(clan => clan.tag).includes(data.tag) && !this.client.isOwner(message.author.id)) {
 			await message.util!.send({ embeds: [EMBEDS.CLAN_LIMIT()] });
 			return false;
 		}
@@ -39,7 +45,7 @@ export default class ServerLinkCommand extends Command {
 			.findOne({ user: message.author.id });
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
-		if (!clan.verified && !this.verifyClan(code, data, user?.entries ?? [])) {
+		if (!clan.verified && !this.verifyClan(code, data, user?.entries ?? []) && !this.client.isOwner(message.author.id)) {
 			const embed = EMBEDS.VERIFY_CLAN(data, code);
 			await message.util!.send({ embeds: [embed] });
 			return false;
