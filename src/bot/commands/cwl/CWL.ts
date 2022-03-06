@@ -53,14 +53,7 @@ export default class CWLCommand extends Command {
 				['cwl-roster', 'roster'],
 				['cwl-attacks', 'attacks'],
 				['cwl-stars', 'stars', 'star'],
-				['cwl-members', 'members', 'mem'],
-				/**
-				 * @deprecated
-				 */
-				['cwl-gained', 'gain', 'gained'],
-				['cwl-legends', 'top', 'mvp', 'legends'],
-				['cwl-ranking', 'ranking', 'ranks', 'rank'],
-				['cwl-missed', 'missing', 'rem', 'remaining', 'missed']
+				['cwl-members', 'members', 'mem']
 			],
 			otherwise: (message: Message) => {
 				const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;

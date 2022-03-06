@@ -15,27 +15,29 @@ export default class FlagListCommand extends Command {
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
 				content: [
-					'Shows the list of all flagged players.',
-					'',
-					'**Flags**',
-					'`--download` or `-dl` to export as excel.'
+					'Shows the list of all flagged players.'
 				],
-				usage: '[page] [--download/-dl]',
-				examples: ['', '2', '-dl', '--download']
+				usage: '[page] [--export]',
+				examples: []
 			},
-			args: [
-				{
-					'id': 'page',
-					'type': 'integer',
-					'default': 1
-				},
-				{
-					id: 'download',
-					match: 'flag',
-					flag: ['--download', '-dl']
-				}
-			]
+			flags: ['--export'],
+			optionFlags: ['--page']
 		});
+	}
+
+	public *args(): unknown {
+		const page = yield {
+			'type': 'integer',
+			'default': 1
+		};
+
+		const download = yield {
+			type: 'flag',
+			match: 'flag',
+			flag: ['--export']
+		};
+
+		return { page, download };
 	}
 
 	public async exec(message: Message, { page, download }: { page: number; download: boolean }) {

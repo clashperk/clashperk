@@ -4,6 +4,7 @@ import { EMOJIS, CWL_LEAGUES, TOWN_HALLS } from '../../util/Emojis';
 import { ORANGE_NUMBERS } from '../../util/NumEmojis';
 import { Util, Message, MessageActionRow, MessageButton, TextChannel, Modal, MessageEmbed } from 'discord.js';
 import { Clan } from 'clashofclans.js';
+import { UserInfo } from '../../types';
 
 export default class ClanEmbedCommand extends Command {
 	public constructor() {
@@ -11,9 +12,9 @@ export default class ClanEmbedCommand extends Command {
 			category: 'setup',
 			channel: 'guild',
 			description: {},
-			optionFlags: ['--tag', '--color'],
 			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['EMBED_LINKS']
+			clientPermissions: ['EMBED_LINKS'],
+			optionFlags: ['--tag', '--color', '--channel']
 		});
 	}
 
@@ -34,27 +35,27 @@ export default class ClanEmbedCommand extends Command {
 			'default': (msg: Message) => this.client.embed(msg)
 		};
 
-		// const channel = yield {
-		// 	'type': 'textChannel',
-		// 	'flag': '--channel',
-		// 	'match': 'option',
-		// 	'default': (msg: Message) => msg.channel
-		// };
+		const channel = yield {
+			'type': 'textChannel',
+			'flag': '--channel',
+			'match': 'option',
+			'default': (msg: Message) => msg.channel
+		};
 
-		return { data, color };
+		return { data, color, channel };
 	}
 
-	private async getUser(clan: Clan): Promise<any> {
+	private async getUser(clan: Clan): Promise<{ id: string; name: string; toString(): string; entries?: any[] } | null> {
 		const leader = clan.memberList.find(m => m.role === 'leader');
 		if (leader) {
-			const user = await this.client.db.collection(Collections.LINKED_PLAYERS)
+			const user = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS)
 				.findOne({ 'entries.tag': leader.tag });
-			if (user) return { id: user.user as string, name: leader.name, toString: () => `<@${user.user as string}>`, ...user };
+			if (user) return { id: user.user, name: leader.name, toString: () => `<@${user.user}>`, ...user };
 		}
 		return null;
 	}
 
-	public async exec(message: Message, { data, description, color, accepts }: { data: Clan; description: string; color?: number; accepts?: string }) {
+	public async exec(message: Message, { data, description, color, accepts, channel }: { data: Clan; description?: string; color?: number; accepts?: string; channel: TextChannel }) {
 		const clans = await this.client.storage.findAll(message.guild!.id);
 
 		const max = this.client.settings.get<number>(message.guild!.id, Settings.CLAN_LIMIT, 2);
@@ -67,7 +68,7 @@ export default class ClanEmbedCommand extends Command {
 
 		const code = ['CP', message.guild!.id.substr(-2)].join('');
 		const clan = clans.find(clan => clan.tag === data.tag) ?? { verified: false };
-		if (!clan.verified && !this.verifyClan(code, data, user?.entries ?? []) && !this.client.isOwner(message.author.id)) {
+		if (!clan.verified && !this.verifyClan(code, data, user.entries ?? []) && !this.client.isOwner(message.author.id)) {
 			const embed = EMBEDS.VERIFY_CLAN(data, code);
 			return message.util!.send({ embeds: [embed] });
 		}
@@ -193,16 +194,16 @@ export default class ClanEmbedCommand extends Command {
 			.setDescription([
 				`${EMOJIS.CLAN} **${data.clanLevel}** ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
 				'',
-				description.toLowerCase() === 'auto'
+				description?.toLowerCase() === 'auto'
 					? data.description
-					: description.toLowerCase() === 'none'
+					: description?.toLowerCase() === 'none'
 						? ''
-						: Util.cleanContent(description, message.channel) || ''
+						: Util.cleanContent(description ?? '', message.channel)
 			].join('\n'));
 		if (color) embed.setColor(color);
 
 		embed.addField('Clan Leader', [
-			`${EMOJIS.OWNER} ${user.toString() as string} (${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'})`
+			`${EMOJIS.OWNER} ${user.toString()} (${data.memberList.filter(m => m.role === 'leader').map(m => `${m.name}`)[0] || 'None'})`
 		].join('\n'));
 
 		embed.addField('Requirements', [
@@ -228,11 +229,11 @@ export default class ClanEmbedCommand extends Command {
 		embed.setFooter({ text: 'Synced', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) });
 		embed.setTimestamp();
 
-		description = description.toLowerCase() === 'auto'
+		description = description?.toLowerCase() === 'auto'
 			? 'auto'
-			: description.toLowerCase() === 'none'
+			: description?.toLowerCase() === 'none'
 				? ''
-				: description;
+				: description ?? '';
 
 		const mutate = async (messageId: string, channelId: string) => {
 			const id = await this.client.storage.register(message, {
@@ -243,9 +244,9 @@ export default class ClanEmbedCommand extends Command {
 				name: data.name,
 				message: messageId,
 				embed: {
-					accepts: data.requiredTownhallLevel,
-					userId: user?.id,
-					description: Util.cleanContent(description, message.channel)
+					accepts,
+					userId: user.id,
+					description: Util.cleanContent(description ?? '', message.channel)
 				}
 			});
 
@@ -260,7 +261,7 @@ export default class ClanEmbedCommand extends Command {
 			.findOne({ tag: data.tag, guild: message.guild!.id });
 		if (!existing) {
 			const msg = await message.channel.send({ embeds: [embed] });
-			return mutate(msg.id, message.channel.id);
+			return mutate(msg.id, channel.id);
 		}
 
 		const customIds = {
@@ -316,7 +317,7 @@ export default class ClanEmbedCommand extends Command {
 			if (action.customId === customIds.create) {
 				await action.update({ content: '**Successfully created a new embed.**', components: [] });
 				const msg = await message.channel.send({ embeds: [embed] });
-				return mutate(msg.id, message.channel.id);
+				return mutate(msg.id, channel.id);
 			}
 		});
 

@@ -14,22 +14,10 @@ export default class FlagCommand extends Command {
 					'',
 					'This is a feature to mark players as banned or flagged and get notified whenever they join back to the clan or clan family.',
 					'',
-					'To receive notification you must setup **Clan Feed** with a mentionable role. Flags are per server basis. It doesn\'t travel among Discord servers and not accessible from other servers.',
-					'',
-					'• **Add Flag**',
-					'• `flag add #PLAYER_TAG ...REASON`',
-					'',
-					'• **Remove Flag**',
-					'• `flag remove #PLAYER_TAG`',
-					'',
-					'• **Flag List**',
-					'• `flag list [--export]`',
-					'',
-					'• **View Flag**',
-					'• `flag show #PLAYER_TAG`'
+					'To receive notification you must setup **Clan Feed** with a mentionable role. Flags are per server basis. It doesn\'t travel among Discord servers and not accessible from other servers.'
 				],
-				usage: '<method> <...args>',
-				examples: ['add #9Q92C8R20 Hopper', 'show #9Q92C8R20', 'remove #9Q92C8R20', 'list --export']
+				usage: '',
+				examples: []
 			}
 		});
 	}
