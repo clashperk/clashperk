@@ -71,12 +71,6 @@ export default class SetupCommand extends Command {
 			return this.handler.handleDirectCommand(message, `${tag} ${channel.id}`, this.handler.modules.get('link-clan')!);
 		}
 
-		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
-			.setDescription([
-				this.description.content.join('\n')
-			].join('\n'));
-
 		const customIds = {
 			feat: this.client.uuid(message.author.id),
 			list: this.client.uuid(message.author.id)
@@ -85,16 +79,29 @@ export default class SetupCommand extends Command {
 			.addComponents(
 				new MessageButton()
 					.setCustomId(customIds.feat)
-					.setStyle('SECONDARY')
-					.setLabel('Show Enabled Features')
+					.setStyle('PRIMARY')
+					.setLabel('Enabled Features')
 			)
 			.addComponents(
 				new MessageButton()
 					.setCustomId(customIds.list)
-					.setStyle('SECONDARY')
-					.setLabel('Show Clan List')
+					.setStyle('PRIMARY')
+					.setLabel('Clan List')
+			)
+			.addComponents(
+				new MessageButton()
+					.setURL('https://clashperk.com/guide')
+					.setStyle('LINK')
+					.setLabel('Guide')
 			);
-		const msg = await message.util!.send({ embeds: [embed], components: [row] });
+
+		const msg = await message.util!.send({
+			content: [
+				'**Follow the steps below to setup the bot.**'
+			].join('\n'),
+			components: [row],
+			files: ['https://cdn.discordapp.com/attachments/765056295937114113/944927383012667472/unknown.png']
+		});
 		const collector = msg.createMessageComponentCollector({
 			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
@@ -136,7 +143,8 @@ export default class SetupCommand extends Command {
 
 		collector.on('end', async (_, reason) => {
 			Object.values(customIds).forEach(id => this.client.components.delete(id));
-			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
+			// @ts-expect-error
+			if (!/delete/i.test(reason)) await message.editReply({ components: [] });
 		});
 	}
 
