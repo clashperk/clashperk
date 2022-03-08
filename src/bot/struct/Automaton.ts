@@ -162,7 +162,7 @@ export class Automaton {
 					if (!(troop.name in pre)) pre[troop.name] = [];
 					const boosted = boostTimes.find(mem => mem.tag === curr.tag)?.superTroops?.find(en => en.name === troop.name);
 					const duration = boosted?.timestamp ? (BOOST_DURATION - (Date.now() - boosted.timestamp)) : 0;
-					pre[troop.name].push({ name: curr.name, duration, online: lastSeen.includes(curr.tag) });
+					pre[troop.name].push({ name: curr.name, duration: duration > 0 ? duration : 0, online: lastSeen.includes(curr.tag) });
 				}
 			}
 			return pre;
