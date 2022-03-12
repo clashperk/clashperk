@@ -56,7 +56,7 @@ export default class LinkCommand extends Command {
 
 	public async exec(message: Message, { tag, member, def, option }: { tag: string; member: GuildMember; def: boolean; option: string }) {
 		if (option !== 'link-add') {
-			return this.handler.handleDirectCommand(message, `--tag ${tag}`, this.handler.modules.get(option)!);
+			return this.handler.handleDirectCommand(message, tag ? `--tag ${tag}` : '', this.handler.modules.get(option)!);
 		}
 
 		if (!tag) {
@@ -149,7 +149,7 @@ export default class LinkCommand extends Command {
 				if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 			});
 		} else if (tags[0].ok) { // eslint-disable-line
-			return this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
+			return this.handler.runCommand(message, clanCommand, { data: tags[0], member });
 		} else if (tags[1].ok) {
 			return this.handler.runCommand(message, playerCommand, { data: tags[1], member: member, def });
 		} else {

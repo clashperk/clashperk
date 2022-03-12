@@ -587,35 +587,35 @@ export const COMMANDS: Command[] = [
 				required: true,
 				choices: [
 					{
-						name: 'CWL Roster',
+						name: 'Roster',
 						value: 'roster'
 					},
 					{
-						name: 'CWL Round',
+						name: 'Round',
 						value: 'round'
 					},
 					{
-						name: 'CWL Lineup',
+						name: 'Lineup',
 						value: 'lineup'
 					},
 					{
-						name: 'CWL Stars',
+						name: 'Stars',
 						value: 'stars'
 					},
 					{
-						name: 'CWL Attacks',
+						name: 'Attacks',
 						value: 'attacks'
 					},
 					{
-						name: 'CWL Stats',
+						name: 'Stats',
 						value: 'stats'
 					},
 					{
-						name: 'CWL Members',
+						name: 'Members',
 						value: 'members'
 					},
 					{
-						name: 'CWL Export',
+						name: 'Export',
 						value: 'export'
 					}
 				]

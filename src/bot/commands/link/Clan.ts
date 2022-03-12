@@ -17,7 +17,6 @@ export default class LinkClanCommand extends Command {
 				},
 				{
 					'id': 'member',
-					'match': 'rest',
 					'type': 'member',
 					'default': (msg: Message) => msg.member
 				}
