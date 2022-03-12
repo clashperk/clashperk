@@ -3,6 +3,7 @@ import { Message, Role, Snowflake } from 'discord.js';
 import { Command } from 'discord-akairo';
 
 export interface Args {
+	option?: 'enable' | 'disable' | null;
 	tag?: string;
 	member?: Role;
 	admin?: Role;
@@ -33,6 +34,11 @@ export default class AutoRoleCommand extends Command {
 	}
 
 	public *args(): unknown {
+		const option = yield {
+			'type': ['enable', 'disable'],
+			'default': 'enable'
+		};
+
 		const member = yield {
 			flag: '--members',
 			type: 'role',
@@ -61,17 +67,12 @@ export default class AutoRoleCommand extends Command {
 			match: 'flag'
 		};
 
-		return { tag, member, admin, coLeader, secureRole };
+		return { option, tag, member, admin, coLeader, secureRole };
 	}
 
-	public async exec(message: Message, { tag, member, admin, coLeader, secureRole }: Args) {
-		if (!message.interaction) {
-			return message.util!.send(
-				{
-					content: 'This command only works with slash command.',
-					files: ['https://cdn.discordapp.com/attachments/583980382089773069/853316608307232787/unknown.png']
-				}
-			);
+	public async exec(message: Message, { tag, member, admin, coLeader, secureRole, option }: Args) {
+		if (option === 'disable') {
+			return this.handler.runCommand(message, this.handler.modules.get('setup-disable')!, { bit: 'auto-role', tag });
 		}
 
 		if (!(member && admin && coLeader)) {

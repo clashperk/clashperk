@@ -266,8 +266,8 @@ export class RoleManager {
 		).filter(en => secureRole ? en.verified : true);
 	}
 
-	private checkRole(guild: Guild, member: GuildMember, role_id: Snowflake) {
-		const role = guild.roles.cache.get(role_id);
+	private checkRole(guild: Guild, member: GuildMember, roleId: Snowflake) {
+		const role = guild.roles.cache.get(roleId);
 		return role && member.roles.highest.position > role.position;
 	}
 

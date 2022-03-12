@@ -1,5 +1,5 @@
-import { Command, Flag, Argument } from 'discord-akairo';
-import { Message, TextChannel, MessageEmbed, MessageButton, MessageActionRow } from 'discord.js';
+import { Command, Flag } from 'discord-akairo';
+import { Message, MessageEmbed, MessageButton, MessageActionRow } from 'discord.js';
 import { Flags, Collections } from '../../util/Constants';
 import { Util } from '../../util/Util';
 
@@ -21,56 +21,23 @@ export default class SetupCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: [
-					'Enable features or assign clans to channels.'
-				],
+				content: 'Enable features or assign clans to channels.',
 				usage: '[option] [#clanTag] [#channel] [color] [role]',
 				examples: []
-			},
-			optionFlags: ['--option', '--tag', '--channel']
+			}
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const method = yield {
-			type: Argument.union(
-				[
-					['setup-clan-embed', 'embed', 'clanembed'],
-					['setup-server-link', 'link'],
-					['setup-last-seen', 'lastseen', 'lastonline'],
-					['setup-clan-feed', 'feed', 'memberlog', 'clan-feed'],
-					['setup-donations', 'donation', 'donations', 'donation-log'],
-					['setup-clan-games', 'game', 'games', 'clangames', 'cgboard'],
-					['setup-clan-wars', 'war', 'wars', 'clanwarlog', 'clan-wars', 'war-feed']
-				],
-				(msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
-			),
-			flag: ['--option'],
-			match: msg.interaction ? 'option' : 'phrase'
+	public *args(): unknown {
+		const option = yield {
+			type: [['setup-enable', 'enable'], ['setup-disable', 'disable']],
+			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})
 		};
 
-		if (method && (method as string).includes('setup')) return Flag.continue(method);
-
-		const tag = yield {
-			flag: '--tag',
-			match: msg.interaction ? 'option' : 'none',
-			type: (msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
-		};
-
-		const channel = yield {
-			flag: '--channel',
-			type: 'textChannel',
-			match: msg.interaction ? 'option' : 'phrase'
-		};
-
-		return { channel, tag: tag ? tag : method };
+		return Flag.continue(option);
 	}
 
-	public async exec(message: Message, { channel, tag }: { channel?: TextChannel; tag?: string }) {
-		if (channel && tag) {
-			return this.handler.handleDirectCommand(message, `${tag} ${channel.id}`, this.handler.modules.get('link-clan')!);
-		}
-
+	public async exec(message: Message) {
 		const customIds = {
 			feat: this.client.uuid(message.author.id),
 			list: this.client.uuid(message.author.id)

@@ -21,9 +21,11 @@ export default class AliasListCommand extends Command {
 		const chunks = Util.splitMessage([
 			`**${message.guild!.name} Clan Aliases**`,
 			'',
-			clans.map(clan => `• **${clan.name as string} (${clan.tag as string})**\n\u2002 **Alias:** ${clan.alias as string}`).join('\n\n')
+			clans.map(
+				clan => `• **${clan.name as string} (${clan.tag as string})**\n\u2002 **Alias:** ${clan.alias as string}`
+			).join('\n\n')
 		].join('\n'));
 
-		for (const chunk of chunks) await message.channel.send(chunk);
+		for (const chunk of chunks) await message.util!.sendNew(chunk);
 	}
 }

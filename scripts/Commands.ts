@@ -289,42 +289,62 @@ export const COMMANDS: Command[] = [
 		description: 'Links a clan or player account',
 		options: [
 			{
-				name: 'tag',
-				description: 'Tag of a clan or player account',
-				required: true,
-				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'user',
-				description: 'Optional user',
-				type: ApplicationCommandOptionType.User
-			},
-			{
-				name: 'default',
-				description: 'Set it default account',
-				type: ApplicationCommandOptionType.String,
-				choices: [
+				name: 'create',
+				description: 'Links a clan or player account',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
 					{
-						name: 'Yes',
-						value: 'true'
+						name: 'tag',
+						description: 'Tag of a clan or player account',
+						required: true,
+						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'No',
-						value: 'false'
+						name: 'user',
+						description: 'Optional user',
+						type: ApplicationCommandOptionType.User
+					},
+					{
+						name: 'default',
+						description: 'Set it default account',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Yes',
+								value: 'true'
+							},
+							{
+								name: 'No',
+								value: 'false'
+							}
+						]
 					}
 				]
-			}
-		]
-	},
-	{
-		name: 'unlink',
-		description: 'Unlinks a clan or player account',
-		options: [
+			},
 			{
-				name: 'tag',
-				description: 'Tag of a player or clan',
-				required: true,
-				type: ApplicationCommandOptionType.String
+				name: 'list',
+				description: 'List of linked players',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'tag',
+						description: 'Clan tag / alias or @user mention',
+						type: ApplicationCommandOptionType.String
+					}
+				]
+			},
+			{
+				name: 'delete',
+				description: 'Unlinks a clan or player account',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'tag',
+						description: 'Tag of a player or clan',
+						required: true,
+						type: ApplicationCommandOptionType.String
+					}
+				]
 			}
 		]
 	},
@@ -333,7 +353,7 @@ export const COMMANDS: Command[] = [
 		description: 'Manage player flags in a server or clan',
 		options: [
 			{
-				name: 'add',
+				name: 'create',
 				description: 'Flag a player account',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
@@ -346,32 +366,6 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'reason',
 						description: 'Reason of this flag',
-						required: true,
-						type: ApplicationCommandOptionType.String
-					}
-				]
-			},
-			{
-				name: 'remove',
-				description: 'Remove a flag from existing player account',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'tag',
-						description: 'Player Tag',
-						type: ApplicationCommandOptionType.String,
-						required: true
-					}
-				]
-			},
-			{
-				name: 'show',
-				description: 'Show the flag for a player account',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'tag',
-						description: 'Player Tag',
 						required: true,
 						type: ApplicationCommandOptionType.String
 					}
@@ -398,6 +392,32 @@ export const COMMANDS: Command[] = [
 						]
 					}
 				]
+			},
+			{
+				name: 'search',
+				description: 'Show the flag for a player account',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'tag',
+						description: 'Player Tag',
+						required: true,
+						type: ApplicationCommandOptionType.String
+					}
+				]
+			},
+			{
+				name: 'delete',
+				description: 'Remove a flag from existing player account',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'tag',
+						description: 'Player Tag',
+						type: ApplicationCommandOptionType.String,
+						required: true
+					}
+				]
 			}
 		]
 	},
@@ -406,123 +426,138 @@ export const COMMANDS: Command[] = [
 		description: 'Enable features or assign clans to channels.',
 		options: [
 			{
-				name: 'option',
-				description: 'Select an option',
-				type: ApplicationCommandOptionType.String,
-				choices: [
+				name: 'enable',
+				description: 'Enable features or assign clans to channels.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
 					{
-						name: 'Channel Link',
-						value: 'link-channel'
+						name: 'option',
+						description: 'Select an option',
+						type: ApplicationCommandOptionType.String,
+						required: true,
+						choices: [
+							{
+								name: 'Channel Link',
+								value: 'channel-link'
+							},
+							{
+								name: 'Server Link',
+								value: 'server-link'
+							},
+							{
+								name: 'War Feed',
+								value: 'war-feed'
+							},
+							{
+								name: 'Last Seen',
+								value: 'lastseen'
+							},
+							{
+								name: 'Clan Games',
+								value: 'clan-games'
+							},
+							{
+								name: 'Clan Feed',
+								value: 'clan-feed'
+							},
+							{
+								name: 'Clan Embed',
+								value: 'clan-embed'
+							},
+							{
+								name: 'Donation Log',
+								value: 'donation-log'
+							}
+						]
 					},
 					{
-						name: 'Server Link',
-						value: 'link'
+						name: 'tag',
+						description: 'Tag of a clan',
+						required: true,
+						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'War Feed',
-						value: 'war'
+						name: 'channel',
+						description: 'Channel for the specified feature (defaults to the current channel)',
+						type: ApplicationCommandOptionType.Channel
 					},
 					{
-						name: 'Last Seen',
-						value: 'lastseen'
+						name: 'color',
+						description: 'Hex color code (only for donation log, clan games, last seen and clan embed)',
+						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'Clan Games',
-						value: 'games'
-					},
-					{
-						name: 'Clan Feed',
-						value: 'feed'
-					},
-					{
-						name: 'Clan Embed',
-						value: 'embed'
-					},
-					{
-						name: 'Donation Log',
-						value: 'donation'
+						name: 'role',
+						description: 'Role for the flag notification (only for clan feed)',
+						type: ApplicationCommandOptionType.Role
 					}
 				]
 			},
 			{
-				name: 'tag',
-				description: 'Tag of a clan',
-				type: ApplicationCommandOptionType.String
+				name: 'list',
+				description: 'List of enable features',
+				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
-				name: 'channel',
-				description: 'Channel for the specified feature (defaults to the current channel)',
-				type: ApplicationCommandOptionType.Channel
-			},
-			{
-				name: 'color',
-				description: 'Hex color code (only for donation log, clan games, last seen and clan embed)',
-				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'role',
-				description: 'Role for the flag notification (only for clan feed)',
-				type: ApplicationCommandOptionType.Role
-			}
-		]
-	},
-	{
-		name: 'remove',
-		description: 'Disable features or remove clans from channels.',
-		options: [
-			{
-				name: 'option',
-				required: true,
-				description: 'Select an option',
-				type: ApplicationCommandOptionType.String,
-				choices: [
+				name: 'disable',
+				description: 'Disable features or remove clans from channels.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
 					{
-						name: 'Channel Link',
-						value: 'link-channel'
+						name: 'option',
+						required: true,
+						description: 'Select an option',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Channel Link',
+								value: 'channel-link'
+							},
+							{
+								name: 'Clan Feed',
+								value: 'clan-feed'
+							},
+							{
+								name: 'War Feed',
+								value: 'war-feed'
+							},
+							{
+								name: 'Last Seen',
+								value: 'lastseen'
+							},
+							{
+								name: 'Clan Games',
+								value: 'clan-games'
+							},
+							{
+								name: 'Clan Embed',
+								value: 'clan-embed'
+							},
+							{
+								name: 'Donation Log',
+								value: 'donation-log'
+							},
+							{
+								name: 'Auto Role',
+								value: 'auto-role'
+							},
+							{
+								name: 'Remove Clan',
+								value: 'remove-clan'
+							}
+						]
 					},
 					{
-						name: 'Clan Feed',
-						value: 'feed'
+						name: 'tag',
+						description: 'Tag of a clan',
+						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'War Embed',
-						value: 'war'
-					},
-					{
-						name: 'Last Seen',
-						value: 'lastseen'
-					},
-					{
-						name: 'Clan Games',
-						value: 'games'
-					},
-					{
-						name: 'Clan Embed',
-						value: 'embed'
-					},
-					{
-						name: 'Donation Log',
-						value: 'donation'
-					},
-					{
-						name: 'Auto Role',
-						value: 'autorole'
-					},
-					{
-						name: 'Remove Clan',
-						value: 'all'
+						name: 'channel',
+						description: 'Channel to be removed',
+						type: ApplicationCommandOptionType.Channel
 					}
 				]
-			},
-			{
-				name: 'tag',
-				description: 'Tag of a clan',
-				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'channel',
-				description: 'Channel to be removed',
-				type: ApplicationCommandOptionType.Channel
 			}
 		]
 	},
@@ -543,7 +578,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'cwl',
-		description: 'CWL season overview and summary',
+		description: 'CWL season summary and overview',
 		options: [
 			{
 				name: 'option',
@@ -753,7 +788,7 @@ export const COMMANDS: Command[] = [
 		description: 'Create, Remove or View clan aliases',
 		options: [
 			{
-				name: 'add',
+				name: 'create',
 				description: 'Create an alias for a clan',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
@@ -777,7 +812,7 @@ export const COMMANDS: Command[] = [
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
-				name: 'remove',
+				name: 'delete',
 				description: 'Remove an alias for a clan',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
@@ -800,42 +835,61 @@ export const COMMANDS: Command[] = [
 		description: 'Auto-assign roles to members based upon their role in the clan.',
 		options: [
 			{
-				name: 'co-leads',
-				required: true,
-				description: 'Co-Leader Role',
-				type: ApplicationCommandOptionType.Role
-			},
-			{
-				name: 'elders',
-				required: true,
-				description: 'Elder Role',
-				type: ApplicationCommandOptionType.Role
-			},
-			{
-				name: 'members',
-				required: true,
-				description: 'Member Role',
-				type: ApplicationCommandOptionType.Role
-			},
-			{
-				name: 'tag',
-				required: false,
-				description: 'Tag of a clan. Do not pass the tag if you want the same type of roles for all clans.',
-				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'verify',
-				required: false,
-				description: 'Roles will be given to verified players only.',
-				type: ApplicationCommandOptionType.String,
-				choices: [
+				name: 'enable',
+				description: 'Auto-assign roles to members based upon their role in the clan.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
 					{
-						name: 'Yes',
-						value: 'true'
+						name: 'co-leads',
+						required: true,
+						description: 'Co-Leader Role',
+						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'No',
-						value: 'false'
+						name: 'elders',
+						required: true,
+						description: 'Elder Role',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'members',
+						required: true,
+						description: 'Member Role',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'tag',
+						required: false,
+						description: 'Tag of a clan. Do not pass the tag if you want the same type of roles for all clans.',
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'verify',
+						required: false,
+						description: 'Roles will be given to verified players only.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Yes',
+								value: 'true'
+							},
+							{
+								name: 'No',
+								value: 'false'
+							}
+						]
+					}
+				]
+			},
+			{
+				name: 'disable',
+				description: 'Disable Auto Role',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'tag',
+						description: 'Tag of a clan',
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			}

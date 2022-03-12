@@ -25,10 +25,10 @@ export default class FlagCommand extends Command {
 	public *args(): unknown {
 		const sub = yield {
 			type: [
-				['flag-add', 'add'],
+				['flag-add', 'create'],
 				['flag-list', 'list'],
-				['flag-show', 'show', 'check', 'view'],
-				['flag-remove', 'remove', 'del', 'delete']
+				['flag-show', 'search'],
+				['flag-remove', 'delete']
 			],
 			otherwise: (message: Message) => {
 				const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;

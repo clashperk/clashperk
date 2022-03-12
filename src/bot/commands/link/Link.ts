@@ -10,33 +10,10 @@ export default class LinkCommand extends Command {
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
-					'Links a Player or Clan to a Discord account.',
-					'',
-					'• __**Link Player Tag**__',
-					'• `link #PLAYER_TAG` (Self)',
-					'',
-					'• **Set default account**',
-					'• `link #PLAYER_TAG --default`',
-					'',
-					'• **On behalf of the @USER**',
-					'• `link PLAYER_TAG @USER`',
-					'',
-					'• __**Link Clan Tag**__',
-					'• `link #CLAN_TAG` (Self)',
-					'',
-					'• **On behalf of the @USER**',
-					'• `link #CLAN_TAG @USER`',
-					'',
-					'• **List all Members**',
-					'• `list #CLAN_TAG`'
+					'Links a Player or Clan to a Discord account.'
 				],
 				usage: '<#tag> [@user] [--default]',
-				examples: [
-					'list',
-					'#8QU8J9LP',
-					'#9Q92C8R20 @Suvajit',
-					'#9Q92C8R20 --default'
-				]
+				examples: []
 			},
 			flags: ['--default'],
 			optionFlags: ['--user', '--tag']
@@ -45,16 +22,14 @@ export default class LinkCommand extends Command {
 
 	public *args(msg: Message): unknown {
 		const tag = yield {
-			flag: '--tag',
 			type: Argument.union(
 				[
-					['link-add', 'add'],
+					['link-add', 'create'],
 					['link-list', 'list'],
-					['link-remove', 'remove']
+					['link-remove', 'delete']
 				],
 				(msg: Message, tag: string) => this.parseTag(tag)
-			),
-			match: msg.interaction ? 'option' : 'phrase'
+			)
 		};
 
 		if (['link-add', 'link-remove', 'link-list', 'link-alias'].includes(tag)) return Flag.continue(tag);

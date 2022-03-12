@@ -1,4 +1,4 @@
-import { Command, Argument, PrefixSupplier } from 'discord-akairo';
+import { Command } from 'discord-akairo';
 import { Message, TextChannel, MessageEmbed } from 'discord.js';
 import { Flags, Collections } from '../../util/Constants';
 import { ObjectId } from 'mongodb';
@@ -13,90 +13,86 @@ const names: { [key: string]: string } = {
 	[Flags.CHANNEL_LINKED]: 'Linked Channel'
 };
 
-export default class RemoveCommand extends Command {
+export default class SetupDisableCommand extends Command {
 	public constructor() {
-		super('remove', {
-			aliases: ['remove', 'stop', 'toggle', 'delete', 'disable'],
+		super('setup-disable', {
 			category: 'setup',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: [
-					'Disable features or remove clans from channels.'
-				],
+				content: ['Disable features or remove clans from channels.'],
 				usage: '[option] [#clanTag] [#channel]',
 				examples: []
 			},
-			optionFlags: ['--option', '--tag']
+			optionFlags: ['--option', '--tag', '--channel']
 		});
 	}
 
-	public *args(msg: Message): unknown {
+	public *args(): unknown {
 		const bit = yield {
 			flag: ['--option'],
-			match: msg.interaction ? 'option' : 'phrase',
-			type: Argument.union(
-				[
-					['link-channel'], ['all'], ['autorole', 'autoroles', 'role', 'roles'],
-					[Flags.CLAN_EMBED_LOG.toString(), 'embed', 'clanembed'],
-					[Flags.LAST_SEEN_LOG.toString(), 'lastseen', 'lastonline'],
-					[Flags.CLAN_WAR_LOG.toString(), 'war', 'wars', 'clan-wars'],
-					[Flags.CLAN_GAMES_LOG.toString(), 'game', 'games', 'clangames'],
-					[Flags.CLAN_FEED_LOG.toString(), 'feed', 'memberlog', 'clan-feed'],
-					[Flags.DONATION_LOG.toString(), 'donation', 'donations', 'donationlog']
-				],
-				'textChannel'
-			)
+			match: 'option',
+			type: [
+				['channel-link'], ['all', 'remove-clan'], ['auto-role'],
+				[Flags.CLAN_EMBED_LOG.toString(), 'clan-embed'],
+				[Flags.LAST_SEEN_LOG.toString(), 'lastseen'],
+				[Flags.CLAN_WAR_LOG.toString(), 'war-feed'],
+				[Flags.CLAN_GAMES_LOG.toString(), 'clan-games'],
+				[Flags.CLAN_FEED_LOG.toString(), 'clan-feed'],
+				[Flags.DONATION_LOG.toString(), 'donation-log']
+			]
+		};
+
+		const channel = yield {
+			'type': 'textChannel',
+			'match': 'option',
+			'flag': '--channel',
+			'default': (msg: Message) => msg.channel
 		};
 
 		const tag = yield {
 			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
+			match: 'option',
+			type: (msg: Message, tag: string) => tag ? this.client.http.fixTag(tag) : null
 		};
 
-		return { bit, tag };
+		return { bit, tag, channel };
 	}
 
-	public async exec(message: Message, { bit, tag }: { bit?: string | TextChannel; tag?: string }) {
+	public async exec(message: Message, { bit, tag, channel }: { bit?: string; channel: TextChannel; tag?: string }) {
 		if (!bit) {
-			const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 			const embed = new MessageEmbed()
 				.setColor(this.client.embed(message))
 				.setDescription([
-					`\`${prefix}remove ${this.description.usage as string}\``,
+					`\`/setup disable ${this.description.usage as string}\``,
 					'',
 					this.description.content.join('\n'),
 					'',
 					'**Examples**',
-					this.description.examples.map((en: string) => `\`${prefix}remove ${en}\``).join('\n')
+					this.description.examples.map((en: string) => `\`/setup disable ${en}\``).join('\n')
 				].join('\n'));
 			return message.util!.send({ embeds: [embed] });
 		}
 
-		if (bit instanceof TextChannel) {
+		if (bit === 'channel-link') {
 			const { value } = await this.client.storage.collection.findOneAndUpdate(
-				{ channels: bit.id }, { $pull: { channels: bit.id } }, { returnDocument: 'after' }
+				{ channels: channel.id }, { $pull: { channels: channel.id } }, { returnDocument: 'after' }
 			);
 
 			if (value) {
 				const id = value._id.toHexString();
 				if (!value.channels?.length) await this.updateFlag(id, Flags.CHANNEL_LINKED);
 				return message.util!.send(
-					`Successfully deleted **${value.name} (${value.tag})** from <#${bit.id}>`
+					`Successfully deleted **${value.name} (${value.tag})** from <#${channel.id}>`
 				);
 			}
 
 			// eslint-disable-next-line
-			return message.util!.send(`Couldn't find any clan linked to ${bit.toString()}`);
+			return message.util!.send(`Couldn't find any clan linked to ${channel.toString()}`);
 		}
 
-		if (bit === 'link-channel') {
-			return message.util!.send(`Specify the channel to remove the clan from.`);
-		}
-
-		if (bit === 'autorole' && !tag) {
+		if (bit === 'auto-role' && !tag) {
 			await this.client.db.collection(Collections.CLAN_STORES)
 				.updateMany(
 					{ guild: message.guild!.id, autoRole: 2 },
@@ -109,7 +105,7 @@ export default class RemoveCommand extends Command {
 		const data = await this.client.db.collection(Collections.CLAN_STORES)
 			.findOne({ tag, guild: message.guild!.id });
 
-		if (bit === 'autorole' && data) {
+		if (bit === 'auto-role' && data) {
 			await this.client.db.collection(Collections.CLAN_STORES)
 				.updateMany(
 					{ guild: message.guild!.id, tag: data.tag, autoRole: 1 },
