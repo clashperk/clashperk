@@ -79,26 +79,27 @@ export default class MissedAttacksCommand extends Command {
 	}
 
 	private async getWar(message: Message, id: number | string, tag: string) {
-		let data: any = null;
-		if (typeof id === 'string' && tag) {
-			data = await this.client.db.collection(Collections.CLAN_WARS)
-				.find({
+		const collection = this.client.db.collection(Collections.CLAN_WARS);
+		const data = typeof id === 'string' && tag
+			? await collection.find(
+				{
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
-					warType: { $ne: WarType.CWL },
-					state: 'warEnded'
-				})
-				.sort({ preparationStartTime: -1 })
+					warType: { $ne: WarType.CWL }, state: 'warEnded'
+				}
+			)
+				.sort({ _id: -1 })
 				.limit(1)
-				.next();
-		} else if (typeof id === 'number') {
-			data = await this.client.db.collection(Collections.CLAN_WARS).findOne({ id });
-		}
+				.next()
+			: typeof id === 'number' ? await collection.findOne({ id }) : null;
 
 		if (!data) {
 			return message.util!.send('**No War found for the specified War ID.**');
 		}
 
-		return this.sendResult(message, data);
+		const clan = data.clan.tag === tag ? data.clan : data.opponent;
+		const opponent = data.clan.tag === tag ? data.opponent : data.clan;
+		// @ts-expect-error
+		return this.sendResult(message, { ...data, clan, opponent });
 	}
 
 	private sendResult(message: Message, body: ClanWar & { id?: number }) {

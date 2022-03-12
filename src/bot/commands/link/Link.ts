@@ -1,4 +1,4 @@
-import { Command, PrefixSupplier, Argument, Flag } from 'discord-akairo';
+import { Command, PrefixSupplier, Argument } from 'discord-akairo';
 import { Message, MessageEmbed, GuildMember, MessageActionRow, MessageButton } from 'discord.js';
 
 export default class LinkCommand extends Command {
@@ -20,19 +20,20 @@ export default class LinkCommand extends Command {
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const tag = yield {
-			type: Argument.union(
-				[
-					['link-add', 'create'],
-					['link-list', 'list'],
-					['link-remove', 'delete']
-				],
-				(msg: Message, tag: string) => this.parseTag(tag)
-			)
+	public *args(): unknown {
+		const option = yield {
+			type: [
+				['link-add', 'create'],
+				['link-list', 'list'],
+				['link-remove', 'delete']
+			]
 		};
 
-		if (['link-add', 'link-remove', 'link-list', 'link-alias'].includes(tag)) return Flag.continue(tag);
+		const tag = yield {
+			type: 'string',
+			match: 'option',
+			flag: '--tag'
+		};
 
 		const member = yield {
 			'type': Argument.union('member', (msg, id) => {
@@ -42,7 +43,7 @@ export default class LinkCommand extends Command {
 			}),
 			'flag': '--user',
 			'default': (msg: Message) => msg.member,
-			'match': msg.interaction ? 'option' : 'rest'
+			'match': 'option'
 		};
 
 		const def = yield {
@@ -50,10 +51,14 @@ export default class LinkCommand extends Command {
 			flag: ['--default']
 		};
 
-		return { tag, member, def };
+		return { tag, member, def, option };
 	}
 
-	public async exec(message: Message, { tag, member, def }: { tag: string; member: GuildMember; def: boolean }) {
+	public async exec(message: Message, { tag, member, def, option }: { tag: string; member: GuildMember; def: boolean; option: string }) {
+		if (option !== 'link-add') {
+			return this.handler.handleDirectCommand(message, `--tag ${tag}`, this.handler.modules.get(option)!);
+		}
+
 		if (!tag) {
 			const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
 			const embed = new MessageEmbed()
@@ -72,6 +77,7 @@ export default class LinkCommand extends Command {
 			);
 		}
 
+		tag = this.parseTag(tag)!;
 		const clanCommand = this.handler.modules.get('link-clan')!;
 		const playerCommand = this.handler.modules.get('link-add')!;
 		const tags = await Promise.all([this.client.http.clan(tag), this.client.http.player(tag)]);
@@ -93,24 +99,24 @@ export default class LinkCommand extends Command {
 			const row = new MessageActionRow()
 				.addComponents(
 					new MessageButton()
-						.setStyle('SECONDARY')
-						.setLabel('LINK PLAYER')
+						.setStyle('PRIMARY')
+						.setLabel('Link Player')
 						.setCustomId(PlayerCustomID)
 				)
 				.addComponents(
 					new MessageButton()
-						.setStyle('SECONDARY')
-						.setLabel('LINK CLAN')
+						.setStyle('PRIMARY')
+						.setLabel('Link Clan')
 						.setCustomId(ClanCustomID)
 				)
 				.addComponents(
 					new MessageButton()
 						.setStyle('DANGER')
-						.setLabel('CANCEL')
+						.setLabel('Cancel')
 						.setCustomId(CancelID)
 				);
-			const msg = await message.util!.send({ embeds: [embed], components: [row] });
 
+			const msg = await message.util!.send({ embeds: [embed], components: [row] });
 			const collector = msg.createMessageComponentCollector({
 				filter: action => [ClanCustomID, PlayerCustomID, CancelID].includes(action.customId) && action.user.id === message.author.id,
 				time: 5 * 60 * 1000
@@ -147,12 +153,8 @@ export default class LinkCommand extends Command {
 		} else if (tags[1].ok) {
 			return this.handler.runCommand(message, playerCommand, { data: tags[1], member: member, def });
 		} else {
-			return message.util!.send('**I tried to search the tag as a clan and player but couldn\'t find a match.**');
+			return message.util!.send('**I have tried to search the tag as a clan and player but couldn\'t find a match.**');
 		}
-	}
-
-	private async delay(ms: number) {
-		return new Promise(res => setTimeout(res, ms));
 	}
 
 	private parseTag(tag?: string) {
