@@ -125,12 +125,12 @@ export default class LinkCommand extends Command {
 			collector.on('collect', async action => {
 				if (action.customId === ClanCustomID) {
 					await action.update({ components: [] });
-					await this.handler.runCommand(message, clanCommand, { data: tags[0], parsed: member });
+					await this.handler.runCommand(message, clanCommand, { data: tags[0], member });
 				}
 
 				if (action.customId === PlayerCustomID) {
 					await action.update({ components: [] });
-					await this.handler.runCommand(message, playerCommand, { data: tags[1], member: member, def });
+					await this.handler.runCommand(message, playerCommand, { data: tags[1], member, def });
 				}
 
 				if (action.customId === CancelID) {
@@ -151,7 +151,7 @@ export default class LinkCommand extends Command {
 		} else if (tags[0].ok) { // eslint-disable-line
 			return this.handler.runCommand(message, clanCommand, { data: tags[0], member });
 		} else if (tags[1].ok) {
-			return this.handler.runCommand(message, playerCommand, { data: tags[1], member: member, def });
+			return this.handler.runCommand(message, playerCommand, { data: tags[1], member, def });
 		} else {
 			return message.util!.send('**I have tried to search the tag as a clan and player but couldn\'t find a match.**');
 		}
