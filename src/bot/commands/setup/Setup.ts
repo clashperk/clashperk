@@ -38,20 +38,20 @@ export default class SetupCommand extends Command {
 	}
 
 	public async exec(message: Message) {
-		const customIds = {
-			feat: this.client.uuid(message.author.id),
-			list: this.client.uuid(message.author.id)
+		const CUSTOM_ID = {
+			FEATURES: this.client.uuid(message.author.id),
+			LIST: this.client.uuid(message.author.id)
 		};
 		const row = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
-					.setCustomId(customIds.feat)
+					.setCustomId(CUSTOM_ID.FEATURES)
 					.setStyle('PRIMARY')
 					.setLabel('Enabled Features')
 			)
 			.addComponents(
 				new MessageButton()
-					.setCustomId(customIds.list)
+					.setCustomId(CUSTOM_ID.LIST)
 					.setStyle('PRIMARY')
 					.setLabel('Clan List')
 			)
@@ -70,12 +70,12 @@ export default class SetupCommand extends Command {
 			files: ['https://cdn.discordapp.com/attachments/765056295937114113/944927383012667472/unknown.png']
 		});
 		const collector = msg.createMessageComponentCollector({
-			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
+			filter: action => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async action => {
-			if (action.customId === customIds.feat) {
+			if (action.customId === CUSTOM_ID.FEATURES) {
 				row.components[0].setDisabled(true);
 				await action.update({ components: [row] });
 				const embeds = await this.getFeatures(message);
@@ -92,7 +92,7 @@ export default class SetupCommand extends Command {
 				}
 			}
 
-			if (action.customId === customIds.list) {
+			if (action.customId === CUSTOM_ID.LIST) {
 				row.components[1].setDisabled(true);
 				await action.update({ components: [row] });
 				const embeds = await this.getClanList(message);
@@ -109,7 +109,7 @@ export default class SetupCommand extends Command {
 		});
 
 		collector.on('end', async (_, reason) => {
-			Object.values(customIds).forEach(id => this.client.components.delete(id));
+			Object.values(CUSTOM_ID).forEach(id => this.client.components.delete(id));
 			// @ts-expect-error
 			if (!/delete/i.test(reason)) await message.editReply({ components: [] });
 		});

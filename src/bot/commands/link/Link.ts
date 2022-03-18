@@ -95,45 +95,49 @@ export default class LinkCommand extends Command {
 					tags.map((a, i) => `**${types[i + 1]}**\n${a.name} (${a.tag})\n`).join('\n')
 				].join('\n'));
 
-			const [ClanCustomID, PlayerCustomID, CancelID] = [this.client.uuid(message.author.id), this.client.uuid(message.author.id), this.client.uuid(message.author.id)];
+			const CUSTOM_ID = {
+				CLAN: this.client.uuid(message.author.id),
+				PLAYER: this.client.uuid(message.author.id),
+				CANCEL: this.client.uuid(message.author.id)
+			};
 			const row = new MessageActionRow()
 				.addComponents(
 					new MessageButton()
 						.setStyle('PRIMARY')
 						.setLabel('Link Player')
-						.setCustomId(PlayerCustomID)
+						.setCustomId(CUSTOM_ID.PLAYER)
 				)
 				.addComponents(
 					new MessageButton()
 						.setStyle('PRIMARY')
 						.setLabel('Link Clan')
-						.setCustomId(ClanCustomID)
+						.setCustomId(CUSTOM_ID.CLAN)
 				)
 				.addComponents(
 					new MessageButton()
 						.setStyle('DANGER')
 						.setLabel('Cancel')
-						.setCustomId(CancelID)
+						.setCustomId(CUSTOM_ID.CANCEL)
 				);
 
 			const msg = await message.util!.send({ embeds: [embed], components: [row] });
 			const collector = msg.createMessageComponentCollector({
-				filter: action => [ClanCustomID, PlayerCustomID, CancelID].includes(action.customId) && action.user.id === message.author.id,
+				filter: action => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === message.author.id,
 				time: 5 * 60 * 1000
 			});
 
 			collector.on('collect', async action => {
-				if (action.customId === ClanCustomID) {
+				if (action.customId === CUSTOM_ID.CLAN) {
 					await action.update({ components: [] });
 					await this.handler.runCommand(message, clanCommand, { data: tags[0], member });
 				}
 
-				if (action.customId === PlayerCustomID) {
+				if (action.customId === CUSTOM_ID.PLAYER) {
 					await action.update({ components: [] });
 					await this.handler.runCommand(message, playerCommand, { data: tags[1], member, def });
 				}
 
-				if (action.customId === CancelID) {
+				if (action.customId === CUSTOM_ID.CANCEL) {
 					await action.update({
 						embeds: [],
 						components: [],
@@ -143,9 +147,7 @@ export default class LinkCommand extends Command {
 			});
 
 			collector.on('end', async (_, reason) => {
-				this.client.components.delete(CancelID);
-				this.client.components.delete(ClanCustomID);
-				this.client.components.delete(PlayerCustomID);
+				Object.values(CUSTOM_ID).forEach(id => this.client.components.delete(id));
 				if (!/delete/i.test(reason)) await msg.edit({ components: [] });
 			});
 		} else if (tags[0].ok) { // eslint-disable-line
