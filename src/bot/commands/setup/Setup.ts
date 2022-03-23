@@ -43,6 +43,7 @@ export default class SetupCommand extends Command {
 			.addComponents(new MessageButton().setCustomId(CUSTOM_ID.LIST).setStyle('PRIMARY').setLabel('Clan List'))
 			.addComponents(new MessageButton().setURL('https://clashperk.com/guide').setStyle('LINK').setLabel('Guide'));
 
+		await interaction.deferReply({ ephemeral: true });
 		const msg = await interaction.editReply({
 			content: ['**Follow the steps below to setup the bot.**'].join('\n'),
 			components: [row],
