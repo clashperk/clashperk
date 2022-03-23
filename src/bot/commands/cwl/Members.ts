@@ -1,65 +1,52 @@
-import { Command } from 'discord-akairo';
-import { Util, Message } from 'discord.js';
-import { EMOJIS } from '../../util/Emojis';
-import { Clan, Player } from 'clashofclans.js';
+import { Command } from '../../lib';
+import { CommandInteraction, MessageEmbed, Util } from 'discord.js';
+import { Player } from 'clashofclans.js';
 
 export default class CWLMembersCommand extends Command {
 	public constructor() {
 		super('cwl-members', {
-			aliases: ['cwl-members', 'cwl-mem'],
 			category: 'cwl',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'Shows the full list of CWL participants.',
-				usage: '<clanTag>',
-				examples: ['#8QU8J9LP']
+				content: 'Shows the full list of CWL participants.'
 			},
-			optionFlags: ['--tag']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const data = yield {
-			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
-		};
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+		if (!clan) return;
 
-		return { data };
-	}
-
-	public async exec(message: Message, { data }: { data: Clan }) {
-		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
-
-		const body = await this.client.http.clanWarLeague(data.tag);
+		const body = await this.client.http.clanWarLeague(clan.tag);
 		if (body.statusCode === 504 || body.state === 'notInWar') {
-			return message.util!.send('**[504 Request Timeout] Your clan is still searching for opponent!**');
+			return interaction.editReply('**[504 Request Timeout] Your clan is still searching for opponent!**');
 		}
 
 		if (!body.ok) {
-			const embed = this.client.util.embed()
+			const embed = new MessageEmbed()
 				.setColor(3093046)
 				.setAuthor({
-					name: `${data.name} (${data.tag})`,
-					iconURL: `${data.badgeUrls.medium}`,
-					url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${data.tag}`
+					name: `${clan.name} (${clan.tag})`,
+					iconURL: `${clan.badgeUrls.medium}`,
+					url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${clan.tag}`
 				})
-				.setThumbnail(data.badgeUrls.medium)
+				.setThumbnail(clan.badgeUrls.medium)
 				.setDescription('Clan is not in CWL');
-			return message.util!.send({ embeds: [embed] });
+			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const clanMembers = body.clans.find(clan => clan.tag === data.tag)!.members;
+		const clanMembers = body.clans.find((_clan) => _clan.tag === clan.tag)!.members;
 		const fetched = await this.client.http.detailedClanMembers(clanMembers);
-		const memberList = fetched.filter(m => typeof m.name === 'string')
-			.map(m => {
-				const member = {
+		const memberList = fetched
+			.filter((m) => m.ok)
+			.map((m) => {
+				return {
 					name: m.name,
 					tag: m.tag,
 					townHallLevel: m.townHallLevel,
-					heroes: m.heroes.length ? m.heroes.filter(a => a.village === 'home') : []
+					heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : []
 				};
-				return member;
 			});
 
 		/* [[1, 4], [2], [3]].reduce((a, b) => {
@@ -68,12 +55,14 @@ export default class CWLMembersCommand extends Command {
 		}, []);*/
 
 		let members = '';
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message))
-			.setAuthor({ name: `${data.name} (${data.tag}) ~ ${memberList.length}`, iconURL: data.badgeUrls.medium });
+		const embed = new MessageEmbed()
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `${clan.name} (${clan.tag}) ~ ${memberList.length}`, iconURL: clan.badgeUrls.medium });
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
-			members += `\u200e${this.padStart(member.townHallLevel)} ${this.heroes(member.heroes).map(x => this.padStart(x.level)).join(' ')}  ${Util.escapeInlineCode(member.name)}`;
+			members += `\u200e${this.padStart(member.townHallLevel)} ${this.heroes(member.heroes)
+				.map((x) => this.padStart(x.level))
+				.join(' ')}  ${Util.escapeInlineCode(member.name)}`;
 			members += '\n';
 		}
 
@@ -83,16 +72,11 @@ export default class CWLMembersCommand extends Command {
 			embed.setDescription(`\`\`\`\u200e${header}\n${result[0]}\`\`\``);
 		}
 
-		return message.util!.send({ embeds: [embed] });
+		return interaction.editReply({ embeds: [embed] });
 	}
 
 	private heroes(items: Player['heroes']) {
-		return Object.assign([
-			{ level: '  ' },
-			{ level: '  ' },
-			{ level: '  ' },
-			{ level: '  ' }
-		], items);
+		return Object.assign([{ level: '  ' }, { level: '  ' }, { level: '  ' }, { level: '  ' }], items);
 	}
 
 	private padStart(num: number | string) {

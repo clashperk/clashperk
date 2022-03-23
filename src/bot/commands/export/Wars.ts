@@ -1,9 +1,9 @@
-import { Collections } from '../../util/Constants';
-import { Command, Argument } from 'discord-akairo';
+import { Collections, Messages } from '../../util/Constants';
+import { Command } from '../../lib';
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
 import Excel from '../../struct/Excel';
-import { Message } from 'discord.js';
-import { Util } from '../../util/Util';
+import { CommandInteraction } from 'discord.js';
+import { Util } from '../../util';
 
 // TODO: Fix TS
 export default class WarExport extends Command {
@@ -11,36 +11,24 @@ export default class WarExport extends Command {
 		super('export-wars', {
 			category: 'export',
 			channel: 'guild',
-			description: {},
-			optionFlags: ['--wars'],
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
+			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const num = yield {
-			'default': 25,
-			'flag': '--wars',
-			'match': msg.interaction ? 'option' : 'phrase',
-			'type': Argument.range('integer', 1, Infinity, true)
-		};
-
-		return { num };
-	}
-
-	public async exec(message: Message, { num }: { num: number }) {
-		const clans = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild: message.guild!.id })
-			.toArray();
+	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number }) {
+		let num = Number(args.wars ?? 25);
+		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild.id }).toArray();
 
 		if (!clans.length) {
-			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
+			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
-		num = this.client.patrons.get(message.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
+		num = this.client.patrons.get(interaction.guild.id) ? Math.min(num, 45) : Math.min(25, num);
 		const chunks = [];
 		for (const { tag, name } of clans) {
-			const wars = await this.client.db.collection(Collections.CLAN_WARS)
+			const wars = await this.client.db
+				.collection(Collections.CLAN_WARS)
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 					state: { $in: ['inWar', 'warEnded'] }
@@ -52,26 +40,27 @@ export default class WarExport extends Command {
 			const members: { [key: string]: any } = {};
 			for (const war of wars) {
 				const clan: WarClan = war.clan.tag === tag ? war.clan : war.opponent;
-				const attacks = clan.members.filter(m => m.attacks?.length)
-					.map(m => m.attacks!)
+				const attacks = clan.members
+					.filter((m) => m.attacks?.length)
+					.map((m) => m.attacks!)
 					.flat();
 
 				for (const m of clan.members) {
 					const member = members[m.tag]
 						? members[m.tag]
-						: members[m.tag] = {
-							name: m.name,
-							tag: m.tag,
-							attacks: 0,
-							stars: 0,
-							newStars: 0,
-							dest: 0,
-							defStars: 0,
-							starTypes: [],
-							defCount: 0,
-							of: 0,
-							defDestruction: 0
-						};
+						: (members[m.tag] = {
+								name: m.name,
+								tag: m.tag,
+								attacks: 0,
+								stars: 0,
+								newStars: 0,
+								dest: 0,
+								defStars: 0,
+								starTypes: [],
+								defCount: 0,
+								of: 0,
+								defDestruction: 0
+						  });
 					member.of += war.attacksPerMember;
 
 					for (const atk of m.attacks ?? []) {
@@ -97,14 +86,15 @@ export default class WarExport extends Command {
 			}
 
 			chunks.push({
-				name, tag,
+				name,
+				tag,
 				members: Object.values(members)
 					.sort((a, b) => b.dest - a.dest)
 					.sort((a, b) => b.stars - a.stars)
 			});
 		}
 
-		if (!chunks.length) return message.util!.send('No data available at this moment!');
+		if (!chunks.length) return interaction.editReply('No data available at this moment!');
 
 		const workbook = new Excel();
 		for (const { name, members, tag } of chunks) {
@@ -136,50 +126,55 @@ export default class WarExport extends Command {
 				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 			}
 
-			sheet.addRows(members.filter(m => m.of > 0)
-				.map(m => [
-					m.name,
-					m.tag,
-					m.of,
-					m.stars,
-					m.newStars,
-					(m.stars / m.of || 0).toFixed(2),
-					m.dest.toFixed(2),
-					(m.dest / m.of || 0).toFixed(2),
-					this.starCount(m.starTypes, 3),
-					this.starCount(m.starTypes, 2),
-					this.starCount(m.starTypes, 1),
-					this.starCount(m.starTypes, 0),
-					m.of - m.attacks,
-					m.defStars,
-					(m.defStars / m.defCount || 0).toFixed(),
-					m.defDestruction.toFixed(2),
-					(m.defDestruction / m.defCount || 0).toFixed(2)
-				]));
+			sheet.addRows(
+				members
+					.filter((m) => m.of > 0)
+					.map((m) => [
+						m.name,
+						m.tag,
+						m.of,
+						m.stars,
+						m.newStars,
+						(m.stars / m.of || 0).toFixed(2),
+						m.dest.toFixed(2),
+						(m.dest / m.of || 0).toFixed(2),
+						this.starCount(m.starTypes, 3),
+						this.starCount(m.starTypes, 2),
+						this.starCount(m.starTypes, 1),
+						this.starCount(m.starTypes, 0),
+						m.of - m.attacks,
+						m.defStars,
+						(m.defStars / m.defCount || 0).toFixed(),
+						m.defDestruction.toFixed(2),
+						(m.defDestruction / m.defCount || 0).toFixed(2)
+					])
+			);
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send({
+		return interaction.editReply({
 			content: `**War Export (Last ${num})**`,
-			files: [{
-				attachment: Buffer.from(buffer),
-				name: 'clan_war_stats.xlsx'
-			}]
+			files: [
+				{
+					attachment: Buffer.from(buffer),
+					name: 'clan_war_stats.xlsx'
+				}
+			]
 		});
 	}
 
 	private starCount(stars: number[] = [], count: number) {
-		return stars.filter(star => star === count).length;
+		return stars.filter((star) => star === count).length;
 	}
 
 	private getPreviousBestAttack(attacks: ClanWarAttack[], defenderTag: string, attackerTag: string) {
-		return attacks.filter(atk => atk.defenderTag === defenderTag && atk.attackerTag !== attackerTag)
-			.sort((a, b) => (b.destructionPercentage ** b.stars) - (a.destructionPercentage ** a.stars))[0]!;
+		return attacks
+			.filter((atk) => atk.defenderTag === defenderTag && atk.attackerTag !== attackerTag)
+			.sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)[0]!;
 	}
 
 	private freshAttack(attacks: ClanWarAttack[], defenderTag: string, order: number) {
-		const hits = attacks.filter(atk => atk.defenderTag === defenderTag)
-			.sort((a, b) => a.order - b.order);
-		return (hits.length === 1 || hits[0]!.order === order);
+		const hits = attacks.filter((atk) => atk.defenderTag === defenderTag).sort((a, b) => a.order - b.order);
+		return hits.length === 1 || hits[0]!.order === order;
 	}
 }

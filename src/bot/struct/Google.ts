@@ -11,7 +11,13 @@ export default {
 		});
 
 		return fetch(`${GOOGLE_MAPS_API_BASE_URL}/geocode/json?${search}`)
-			.then(res => res.json()).catch(() => null);
+			.then(
+				(res) =>
+					res.json() as unknown as {
+						results: { geometry: { location: { lat: string; lng: string } }; formatted_address: string }[];
+					}
+			)
+			.catch(() => null);
 	},
 
 	async timezone(query: string) {
@@ -23,11 +29,12 @@ export default {
 			timestamp: new Date().getTime() / 1000
 		});
 
-		const lat = location.geometry.location.lat as string;
-		const lng = location.geometry.location.lng as string;
+		const lat = location.geometry.location.lat;
+		const lng = location.geometry.location.lng;
 
 		const timezone = await fetch(`${GOOGLE_MAPS_API_BASE_URL}/timezone/json?${search}&location=${lat},${lng}`)
-			.then(res => res.json()).catch(() => null);
+			.then((res) => res.json())
+			.catch(() => null);
 
 		if (!timezone) return null;
 		return { location, timezone };

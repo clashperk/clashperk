@@ -1,50 +1,26 @@
-import { Command, Flag } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Command } from '../../lib';
+import { CommandInteraction } from 'discord.js';
+import { Messages } from '../../util/Constants';
 
 export default class AliasCommand extends Command {
 	public constructor() {
 		super('alias', {
-			aliases: ['alias'],
 			category: 'setup',
 			channel: 'guild',
 			description: {
-				content: [
-					'Create, Remove or View clan aliases.',
-					'',
-					'• **Alias Create**',
-					'• `alias add NAME #CLAN_TAG`',
-					'',
-					'• **Alias Remove**',
-					'• `alias remove NAME`',
-					'• `alias remove #CLAN_TAG`',
-					'',
-					'• **Alias List**',
-					'• `alias list`'
-				],
-				usage: '<option> [name] [clanTag]',
-				examples: [
-					'add AH #8QU8J9LP',
-					'remove AH',
-					'list'
-				],
-				image: {
-					url: 'https://i.imgur.com/8fWqtY5.png',
-					text: ''
-				}
+				content: ['Create, Remove or View clan aliases.']
 			}
 		});
 	}
 
-	public *args(): unknown {
-		const sub = yield {
-			type: [
-				['alias-list', 'list'],
-				['alias-add', 'add', 'create'],
-				['alias-remove', 'remove', 'delete']
-			],
-			otherwise: (msg: Message) => this.handler.handleDirectCommand(msg, 'alias', this.handler.modules.get('help')!)
-		};
+	public exec(interaction: CommandInteraction<'cached'>, args: { command: string }) {
+		const command = {
+			list: this.handler.modules.get('alias-list')!,
+			create: this.handler.modules.get('alias-create')!,
+			delete: this.handler.modules.get('alias-delete')!
+		}[args.command];
 
-		return Flag.continue(sub);
+		if (!command) return interaction.reply(Messages.COMMAND.OPTION_NOT_FOUND);
+		return this.handler.exec(interaction, command, args);
 	}
 }

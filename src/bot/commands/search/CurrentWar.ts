@@ -1,167 +1,151 @@
-import { MessageEmbed, Message, MessageButton, MessageActionRow } from 'discord.js';
-import { Clan, ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
+import { MessageEmbed, CommandInteraction, MessageButton, MessageActionRow } from 'discord.js';
+import { ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import { Collections, WarType } from '../../util/Constants';
-import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
-import { WHITE_NUMBERS } from '../../util/NumEmojis';
-import { Command, Argument } from 'discord-akairo';
+import { EMOJIS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/Emojis';
+import { Command } from '../../lib';
 import Workbook from '../../struct/Excel';
-import { Util } from '../../util/Util';
+import { Util } from '../../util';
 import moment from 'moment';
 
 export default class WarCommand extends Command {
 	public constructor() {
 		super('war', {
-			aliases: ['war'],
 			category: 'war',
+			channel: 'guild',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: [
-					'Current or previous clan war details.',
-					'',
-					'Get War ID from `warlog` command.'
-				],
-				usage: '<#clanTag|last|warID>',
-				examples: ['36081', '#8QU8J9LP', '#8QU8J9LP last']
+				content: ['Current or previous clan war details.', '', 'Get War ID from `warlog` command.']
 			},
-			optionFlags: ['--tag', '--war-id']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const warID = yield {
-			flag: '--war-id',
-			type: Argument.union([['last']], Argument.range('integer', 1001, 9e6)),
-			unordered: msg.interaction ? false : true,
-			match: msg.interaction ? 'option' : 'phrase'
-		};
+	// TODO : Args Parsing with last war id
 
-		const data = yield {
-			flag: '--tag',
-			unordered: msg.interaction ? false : true,
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
-		};
-
-		return { data, warID };
-	}
-
-	public async exec(message: Message, { data, warID }: { data: Clan; warID?: number }) {
-		if (warID) return this.getWar(message, warID, data.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; war_id?: number }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+		if (!clan) return;
+		if (args.war_id) return this.getWar(interaction, args.war_id, clan.tag);
 
 		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
-			.setAuthor({ name: `\u200e${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium });
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `\u200e${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
-		if (!data.isWarLogPublic) {
-			const res = await this.client.http.clanWarLeague(data.tag);
+		if (!clan.isWarLogPublic) {
+			const res = await this.client.http.clanWarLeague(clan.tag);
 			if (res.ok) {
-				return this.handler.runCommand(message, this.handler.modules.get('cwl-round')!, { data });
+				// TODO: Fix
+				return this.handler.exec(interaction, this.handler.modules.get('cwl-round')!, { tag: clan.tag });
 			}
 			embed.setDescription('Private War Log');
-			return message.util!.send({ embeds: [embed] });
+			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const body = await this.client.http.currentClanWar(data.tag);
+		const body = await this.client.http.currentClanWar(clan.tag);
 		if (!body.ok) {
-			return message.util!.send('**504 Request Timeout!**');
+			return interaction.editReply('**504 Request Timeout!**');
 		}
 		if (body.state === 'notInWar') {
-			const res = await this.client.http.clanWarLeague(data.tag);
+			const res = await this.client.http.clanWarLeague(clan.tag);
 			if (res.ok) {
-				return this.handler.runCommand(message, this.handler.modules.get('cwl-round')!, { data });
+				// TODO: Fix
+				return this.handler.exec(interaction, this.handler.modules.get('cwl-round')!, { tag: clan.tag });
 			}
 			embed.setDescription('Not in War');
-			return message.util!.send({ embeds: [embed] });
+			return interaction.editReply({ embeds: [embed] });
 		}
 
-		return this.sendResult(message, body);
+		return this.sendResult(interaction, body);
 	}
 
-	private async getWar(message: Message, id: number | string, tag: string) {
+	private async getWar(interaction: CommandInteraction, id: number | string, tag: string) {
 		const collection = this.client.db.collection(Collections.CLAN_WARS);
-		const data = typeof id === 'string' && tag
-			? await collection.find(
-				{
-					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
-					warType: { $ne: WarType.CWL }, state: 'warEnded'
-				}
-			)
-				.sort({ _id: -1 })
-				.limit(1)
-				.next()
-			: typeof id === 'number' ? await collection.findOne({ id }) : null;
+		const data =
+			typeof id === 'string' && tag
+				? await collection
+						.find({
+							$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
+							warType: { $ne: WarType.CWL },
+							state: 'warEnded'
+						})
+						.sort({ _id: -1 })
+						.limit(1)
+						.next()
+				: typeof id === 'number'
+				? await collection.findOne({ id })
+				: null;
 
 		if (!data) {
-			return message.util!.send('**No War found for the specified War ID.**');
+			return interaction.editReply('**No War found for the specified War ID.**');
 		}
 
 		const clan = data.clan.tag === tag ? data.clan : data.opponent;
 		const opponent = data.clan.tag === tag ? data.opponent : data.clan;
 		// @ts-expect-error
-		return this.sendResult(message, { ...data, clan, opponent });
+		return this.sendResult(interaction, { ...data, clan, opponent });
 	}
 
-	private async sendResult(message: Message, body: ClanWar) {
+	private async sendResult(interaction: CommandInteraction<'cached'>, body: ClanWar) {
 		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
+			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
 
 		if (body.state === 'preparation') {
 			const startTimestamp = new Date(moment(body.startTime).toDate()).getTime();
-			embed.setDescription([
-				'**War Against**',
-				`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
-				'',
-				'**War State**',
-				'Preparation',
-				`War Start Time: ${Util.getRelativeTime(startTimestamp)}`,
-				'',
-				'**War Size**',
-				`${body.teamSize} vs ${body.teamSize}`
-			].join('\n'));
+			embed.setDescription(
+				[
+					'**War Against**',
+					`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
+					'',
+					'**War State**',
+					'Preparation',
+					`War Start Time: ${Util.getRelativeTime(startTimestamp)}`,
+					'',
+					'**War Size**',
+					`${body.teamSize} vs ${body.teamSize}`
+				].join('\n')
+			);
 		}
 
 		if (body.state === 'inWar') {
 			const endTimestamp = new Date(moment(body.endTime).toDate()).getTime();
-			embed.setDescription([
-				'**War Against**',
-				`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
-				'',
-				'**War State**',
-				`Battle Day (${body.teamSize} vs ${body.teamSize})`,
-				`End Time: ${Util.getRelativeTime(endTimestamp)}`,
-				'',
-				'**War Size**',
-				`${body.teamSize} vs ${body.teamSize}`,
-				'',
-				'**War Stats**',
-				`${this.getLeaderBoard(body.clan, body.opponent, body.attacksPerMember)}`
-			].join('\n'));
+			embed.setDescription(
+				[
+					'**War Against**',
+					`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
+					'',
+					'**War State**',
+					`Battle Day (${body.teamSize} vs ${body.teamSize})`,
+					`End Time: ${Util.getRelativeTime(endTimestamp)}`,
+					'',
+					'**War Size**',
+					`${body.teamSize} vs ${body.teamSize}`,
+					'',
+					'**War Stats**',
+					`${this.getLeaderBoard(body.clan, body.opponent, body.attacksPerMember)}`
+				].join('\n')
+			);
 		}
 
 		if (body.state === 'warEnded') {
 			const endTimestamp = new Date(moment(body.endTime).toDate()).getTime();
-			embed.setDescription([
-				'**War Against**',
-				`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
-				'',
-				'**War State**',
-				`War Ended (${body.teamSize} vs ${body.teamSize})`,
-				`Ended: ${Util.getRelativeTime(endTimestamp)}`,
-				'',
-				'**War Stats**',
-				`${this.getLeaderBoard(body.clan, body.opponent, body.attacksPerMember)}`
-			].join('\n'));
+			embed.setDescription(
+				[
+					'**War Against**',
+					`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
+					'',
+					'**War State**',
+					`War Ended (${body.teamSize} vs ${body.teamSize})`,
+					`Ended: ${Util.getRelativeTime(endTimestamp)}`,
+					'',
+					'**War Stats**',
+					`${this.getLeaderBoard(body.clan, body.opponent, body.attacksPerMember)}`
+				].join('\n')
+			);
 		}
 
-		embed.addField('Rosters', [
-			`\u200e${Util.escapeMarkdown(body.clan.name)}`,
-			`${this.count(body.clan.members)}`
-		].join('\n'));
-		embed.addField('\u200b', [
-			`\u200e${Util.escapeMarkdown(body.opponent.name)}`,
-			`${this.count(body.opponent.members)}`
-		].join('\n'));
+		embed.addField('Rosters', [`\u200e${Util.escapeMarkdown(body.clan.name)}`, `${this.count(body.clan.members)}`].join('\n'));
+		embed.addField('\u200b', [`\u200e${Util.escapeMarkdown(body.opponent.name)}`, `${this.count(body.opponent.members)}`].join('\n'));
 
 		if (body.hasOwnProperty('id')) {
 			// @ts-expect-error
@@ -169,42 +153,38 @@ export default class WarCommand extends Command {
 		}
 
 		if (body.state === 'preparation') {
-			return message.util!.send({ embeds: [embed] });
+			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const customID = this.client.uuid(message.author.id);
-		const button = new MessageButton()
-			.setLabel('Download')
-			.setEmoji('📥')
-			.setStyle('SECONDARY')
-			.setCustomId(customID);
+		const customID = this.client.uuid(interaction.user.id);
+		const button = new MessageButton().setLabel('Download').setEmoji('📥').setStyle('SECONDARY').setCustomId(customID);
 
-		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const msg = await interaction.editReply({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customID && action.user.id === message.author.id,
+			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
-		collector.on('collect', async action => {
+		collector.on('collect', async (action) => {
 			if (action.customId === customID) {
-				if (this.client.patrons.get(message)) {
+				if (this.client.patrons.get(interaction)) {
 					await action.update({ components: [] });
 					const buffer = await this.warStats(body);
-					await action.followUp(
-						{
-							content: `**${body.clan.name} vs ${body.opponent.name}**`,
-							files: [{ attachment: Buffer.from(buffer), name: 'war_stats.xlsx' }]
-						}
-					);
+					await action.followUp({
+						content: `**${body.clan.name} vs ${body.opponent.name}**`,
+						files: [{ attachment: Buffer.from(buffer), name: 'war_stats.xlsx' }]
+					});
 				} else {
 					const embed = new MessageEmbed()
-						.setDescription([
-							'**Patron Only Command**',
-							'This command is only available on Patron servers.',
-							'Visit https://patreon.com/clashperk for more details.',
-							'',
-							'**Demo War Attacks Export**'
-						].join('\n'))
+						.setDescription(
+							[
+								'**Patron Only Command**',
+								'This command is only available on Patron servers.',
+								'Visit https://patreon.com/clashperk for more details.',
+								'',
+								'**Demo War Attacks Export**'
+							].join('\n')
+						)
 						.setImage('https://i.imgur.com/Uc5G2oS.png'); // TODO: Update Image
 
 					await action.reply({ embeds: [embed], ephemeral: true });
@@ -214,25 +194,24 @@ export default class WarCommand extends Command {
 
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
-			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
 	}
 
 	private count(members: ClanWarMember[] = []) {
-		const reduced = members.reduce((count, member) => {
+		const reduced = members.reduce<{ [key: string]: number }>((count, member) => {
 			const townHall = member.townhallLevel;
 			count[townHall] = (count[townHall] || 0) + 1;
 			return count;
-		}, {} as { [key: string]: number });
+		}, {});
 
 		const townHalls = Object.entries(reduced)
-			.map(entry => ({ level: Number(entry[0]), total: Number(entry[1]) }))
+			.map((entry) => ({ level: Number(entry[0]), total: Number(entry[1]) }))
 			.sort((a, b) => b.level - a.level);
 
 		return this.chunk(townHalls)
-			.map(
-				chunks => chunks.map(th => `${TOWN_HALLS[th.level]}${WHITE_NUMBERS[th.total]}`).join(' ')
-			).join('\n');
+			.map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]}${WHITE_NUMBERS[th.total]}`).join(' '))
+			.join('\n');
 	}
 
 	private chunk(items: { level: number; total: number }[] = []) {
@@ -272,7 +251,7 @@ export default class WarCommand extends Command {
 		}
 
 		sheet.addRows(
-			data.map(m => [
+			data.map((m) => [
 				m.name,
 				m.tag,
 				m.attack?.stars,
@@ -294,38 +273,46 @@ export default class WarCommand extends Command {
 	private getLeaderBoard(clan: WarClan, opponent: WarClan, attacksPerMember: number) {
 		const attacksTotal = Math.floor(clan.members.length * attacksPerMember);
 		return [
-			`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars.toString().padEnd(8, ' ')}\u200f\``,
-			`\`\u200e${`${clan.attacks}/${attacksTotal}`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.SWORD} \u2002 \`\u200e ${`${opponent.attacks}/${attacksTotal}`.padEnd(8, ' ')}\u200f\``,
-			`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.FIRE} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
+			`\`\u200e${clan.stars.toString().padStart(8, ' ')} \u200f\`\u200e \u2002 ${EMOJIS.STAR} \u2002 \`\u200e ${opponent.stars
+				.toString()
+				.padEnd(8, ' ')}\u200f\``,
+			`\`\u200e${`${clan.attacks}/${attacksTotal}`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${
+				EMOJIS.SWORD
+			} \u2002 \`\u200e ${`${opponent.attacks}/${attacksTotal}`.padEnd(8, ' ')}\u200f\``,
+			`\`\u200e${`${clan.destructionPercentage.toFixed(2)}%`.padStart(8, ' ')} \u200f\`\u200e \u2002 ${
+				EMOJIS.FIRE
+			} \u2002 \`\u200e ${`${opponent.destructionPercentage.toFixed(2)}%`.padEnd(8, ' ')}\u200f\``
 		].join('\n');
 	}
 
 	private flatHits(data: ClanWar) {
-		return data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition).reduce((previous, member) => {
-			const atk = member.attacks?.map((attack, num) => ({
-				attack,
-				tag: member.tag,
-				name: member.name,
-				mapPosition: member.mapPosition,
-				townhallLevel: member.townhallLevel,
-				bestOpponentAttack: num === 0 ? member.bestOpponentAttack : {},
-				defender: data.opponent.members.find(m => m.tag === attack.defenderTag)
-			}));
-
-			if (atk) {
-				previous.push(...atk);
-			} else {
-				previous.push({
+		return data.clan.members
+			.sort((a, b) => a.mapPosition - b.mapPosition)
+			.reduce<any[]>((previous, member) => {
+				const atk = member.attacks?.map((attack, num) => ({
+					attack,
 					tag: member.tag,
 					name: member.name,
 					mapPosition: member.mapPosition,
 					townhallLevel: member.townhallLevel,
-					bestOpponentAttack: member.bestOpponentAttack
-				});
-			}
+					bestOpponentAttack: num === 0 ? member.bestOpponentAttack : {},
+					defender: data.opponent.members.find((m) => m.tag === attack.defenderTag)
+				}));
 
-			previous.push({});
-			return previous;
-		}, [] as any[]);
+				if (atk) {
+					previous.push(...atk);
+				} else {
+					previous.push({
+						tag: member.tag,
+						name: member.name,
+						mapPosition: member.mapPosition,
+						townhallLevel: member.townhallLevel,
+						bestOpponentAttack: member.bestOpponentAttack
+					});
+				}
+
+				previous.push({});
+				return previous;
+			}, []);
 	}
 }

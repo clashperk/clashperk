@@ -1,4 +1,4 @@
-import { Listener } from 'discord-akairo';
+import { Listener } from '../../lib';
 
 export default class DebugListener extends Listener {
 	public constructor() {

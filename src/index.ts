@@ -1,16 +1,13 @@
-import Env from 'dotenv';
-Env.config();
+import 'reflect-metadata';
 
 import Discord from 'discord.js';
-import shell from 'shelljs';
-import path from 'path';
-import os from 'os';
+import { fileURLToPath, URL } from 'url';
 
 class Manager extends Discord.ShardingManager {
 	public constructor() {
-		super(path.join(__dirname, 'main.js'), {
-			token: process.env.TOKEN,
-			execArgv: ['--enable-source-maps', '--trace-warnings']
+		super(fileURLToPath(new URL('main.js', import.meta.url)), {
+			token: process.env.TOKEN!,
+			execArgv: ['--enable-source-maps', '--trace-warnings', '--es-module-specifier-resolution=node']
 		});
 	}
 
@@ -21,10 +18,8 @@ class Manager extends Discord.ShardingManager {
 
 const ShardingManager = new Manager();
 
-setInterval(() => {
-	if (process.env.NODE_ENV === 'production' && (os.freemem() / (1024 * 1024)) < 1024) {
-		shell.exec('sync; echo 1 > /proc/sys/vm/drop_caches');
-	}
-}, 60 * 1000);
+process.on('unhandledRejection', (error) => {
+	console.error(error);
+});
 
-ShardingManager.init();
+await ShardingManager.init();

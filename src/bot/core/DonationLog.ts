@@ -1,8 +1,7 @@
 import { MessageEmbed, Collection, PermissionString, TextChannel, WebhookClient, ThreadChannel } from 'discord.js';
-import { BLUE_NUMBERS, RED_NUMBERS } from '../util/NumEmojis';
-import { PLAYER_LEAGUES, EMOJIS } from '../util/Emojis';
+import { BLUE_NUMBERS, RED_NUMBERS, PLAYER_LEAGUES, EMOJIS } from '../util/Emojis';
 import { Collections } from '../util/Constants';
-import Client from '../struct/Client';
+import { Client } from '../struct/Client';
 import { ObjectId } from 'mongodb';
 
 export interface Donation {
@@ -39,7 +38,7 @@ export default class DonationLog {
 	}
 
 	public async exec(tag: string, data: any) {
-		const clans = this.cached.filter(d => d.tag === tag);
+		const clans = this.cached.filter((d) => d.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
 			if (cache) await this.permissionsFor(id, cache, data);
@@ -49,16 +48,12 @@ export default class DonationLog {
 	}
 
 	private async permissionsFor(id: string, cache: any, data: any) {
-		const permissions: PermissionString[] = [
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'VIEW_CHANNEL'
-		];
+		const permissions: PermissionString[] = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'VIEW_CHANNEL'];
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS'))) return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
+				return;
 			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
 				if (!channel.isThread() && this.hasWebhookPermission(channel)) {
 					const webhook = await this.webhook(id);
@@ -76,7 +71,10 @@ export default class DonationLog {
 	}
 
 	private hasWebhookPermission(channel: TextChannel) {
-		return channel.permissionsFor(channel.guild.me!)!.has(['MANAGE_WEBHOOKS']) && channel.permissionsFor(channel.guild.id)!.has(['USE_EXTERNAL_EMOJIS']);
+		return (
+			channel.permissionsFor(channel.guild.me!)!.has(['MANAGE_WEBHOOKS']) &&
+			channel.permissionsFor(channel.guild.id)!.has(['USE_EXTERNAL_EMOJIS'])
+		);
 	}
 
 	private recreateWebhook(id: string) {
@@ -102,13 +100,14 @@ export default class DonationLog {
 		const channel = this.client.channels.cache.get(cache.channel) as TextChannel;
 		const webhooks = await channel.fetchWebhooks();
 		if (webhooks.size) {
-			const webhook = webhooks.find(hook => (hook.owner as any)?.id === this.client.user?.id);
+			const webhook = webhooks.find((hook) => (hook.owner as any)?.id === this.client.user?.id);
 
 			if (webhook) {
 				cache.webhook = new WebhookClient({ id: webhook.id, token: webhook.token! });
 				this.cached.set(id, cache);
 
-				await this.client.db.collection(Collections.DONATION_LOGS)
+				await this.client.db
+					.collection(Collections.DONATION_LOGS)
 					.updateOne(
 						{ channel: channel.id, guild: channel.guild.id },
 						{ $set: { webhook_id: webhook.id, webhook_token: webhook.token } }
@@ -119,16 +118,16 @@ export default class DonationLog {
 		}
 
 		if (webhooks.size === 10) return this.stopWebhookCheck(id);
-		const webhook = await channel.createWebhook(
-			this.client.user!.username,
-			{ avatar: this.client.user!.displayAvatarURL({ size: 2048, format: 'png' }) }
-		).catch(() => null);
+		const webhook = await channel
+			.createWebhook(this.client.user!.username, { avatar: this.client.user!.displayAvatarURL({ size: 2048, format: 'png' }) })
+			.catch(() => null);
 
 		if (webhook) {
 			cache.webhook = new WebhookClient({ id: webhook.id, token: webhook.token! });
 			this.cached.set(id, cache);
 
-			await this.client.db.collection(Collections.DONATION_LOGS)
+			await this.client.db
+				.collection(Collections.DONATION_LOGS)
 				.updateOne(
 					{ channel: channel.id, guild: channel.guild.id },
 					{ $set: { webhook_id: webhook.id, webhook_token: webhook.token } }
@@ -151,46 +150,62 @@ export default class DonationLog {
 		if (cache.color) embed.setColor(cache.color);
 
 		if (data.donated.length) {
-			embed.addField(`${EMOJIS.USER_BLUE} Donated`, [
-				data.donated.map(m => {
-					if (m.donated > 200) {
-						const [div, mod] = this.divmod(m.donated);
-						const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[div > 900 ? 900 : div]} ${m.name}`];
-						if (mod > 0) return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[mod]} ${m.name}`).join('\n');
-						return list.join('\n');
-					}
-					return `\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[m.donated]} ${m.name}`;
-				}).join('\n').substring(0, 1024)
-			].join('\n'));
+			embed.addField(
+				`${EMOJIS.USER_BLUE} Donated`,
+				[
+					data.donated
+						.map((m) => {
+							if (m.donated > 200) {
+								const [div, mod] = this.divmod(m.donated);
+								const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[div > 900 ? 900 : div]} ${m.name}`];
+								if (mod > 0)
+									return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[mod]} ${m.name}`).join('\n');
+								return list.join('\n');
+							}
+							return `\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[m.donated]} ${m.name}`;
+						})
+						.join('\n')
+						.substring(0, 1024)
+				].join('\n')
+			);
 		}
 
 		if (data.received.length) {
-			embed.addField(`${EMOJIS.USER_RED} Received`, [
-				data.received.map(m => {
-					if (m.received > 200) {
-						const [div, mod] = this.divmod(m.received);
-						const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[div > 900 ? 900 : div]} ${m.name}`];
-						if (mod > 0) return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[mod]} ${m.name}`).join('\n');
-						return list.join('\n');
-					}
-					return `\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[m.received]} ${m.name}`;
-				}).join('\n').substring(0, 1024)
-			].join('\n'));
+			embed.addField(
+				`${EMOJIS.USER_RED} Received`,
+				[
+					data.received
+						.map((m) => {
+							if (m.received > 200) {
+								const [div, mod] = this.divmod(m.received);
+								const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[div > 900 ? 900 : div]} ${m.name}`];
+								if (mod > 0)
+									return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[mod]} ${m.name}`).join('\n');
+								return list.join('\n');
+							}
+							return `\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[m.received]} ${m.name}`;
+						})
+						.join('\n')
+						.substring(0, 1024)
+				].join('\n')
+			);
 		}
 
 		if (channel instanceof TextChannel || channel instanceof ThreadChannel) {
 			await channel.send({ embeds: [embed] }).catch(() => null);
-			return this.client.db.collection(Collections.DONATION_LOGS)
+			return this.client.db
+				.collection(Collections.DONATION_LOGS)
 				.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 		}
 
 		try {
 			const message = await channel.send({ embeds: [embed] });
-			await this.client.db.collection(Collections.DONATION_LOGS)
+			await this.client.db
+				.collection(Collections.DONATION_LOGS)
 				.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 			if (message.channel_id !== cache.channel) {
 				await channel.deleteMessage(message.id);
-				return this.recreateWebhook(id);
+				return await this.recreateWebhook(id);
 			}
 		} catch (error: any) {
 			if (error.code === 10015) {
@@ -204,9 +219,10 @@ export default class DonationLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(Collections.DONATION_LOGS)
-			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
-			.forEach(data => {
+		await this.client.db
+			.collection(Collections.DONATION_LOGS)
+			.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })
+			.forEach((data) => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
 					tag: data.tag,
 					color: data.color,
@@ -217,8 +233,7 @@ export default class DonationLog {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(Collections.DONATION_LOGS)
-			.findOne({ clan_id: new ObjectId(id) });
+		const data = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;
 		return this.cached.set(id, {

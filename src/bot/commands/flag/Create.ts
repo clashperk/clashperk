@@ -1,88 +1,71 @@
 import { Collections } from '../../util/Constants';
-import { Util, Message } from 'discord.js';
+import { Util, CommandInteraction, MessageEmbed } from 'discord.js';
 import { Player } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
+import { Command } from '../../lib';
 
-export default class FlagAddCommand extends Command {
+export default class FlagCreateCommand extends Command {
 	public constructor() {
-		super('flag-add', {
+		super('flag-create', {
 			category: 'none',
 			channel: 'guild',
-			description: {},
 			userPermissions: ['MANAGE_GUILD'],
-			optionFlags: ['--tag', '--reason']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const tags = yield {
-			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: async (msg: Message, args: string) => {
-				const tags = args ? args.split(/ +/g) : [];
-				if (tags.length > 1) return args.split(/ +/g);
-				return this.client.resolver.getPlayer(msg, args);
-			}
-		};
+	public async exec(interaction: CommandInteraction<'cached'>, args: { reason?: string; tag?: string }) {
+		const tags = args.tag?.split(/ +/g) ?? [];
 
-		const reason = yield {
-			flag: '--reason',
-			match: msg.interaction ? 'option' : 'rest'
-		};
+		if (!args.reason) return interaction.editReply('You must provide a reason to flag.');
+		if (args.reason.length > 900) return interaction.editReply('Reason must be 1024 or fewer in length.');
 
-		return { tags, reason };
-	}
+		const flags = await this.client.db.collection(Collections.FLAGS).countDocuments({ guild: interaction.guild.id });
 
-	public async exec(message: Message, { reason, tags }: { reason: string; tags: string[] | string }) {
-		// @ts-expect-error
-		if (!Array.isArray(tags)) tags = [tags.tag];
-
-		if (!reason) return message.util!.send('You must provide a reason to flag.');
-		if (reason.length > 900) return message.util!.send('Reason must be 1024 or fewer in length.');
-
-		const flags = await this.client.db.collection(Collections.FLAGS)
-			.find({ guild: message.guild!.id })
-			.count();
-
-		if (flags >= 200 && !this.client.patrons.get(message.guild!.id)) {
-			const embed = this.client.util.embed()
-				.setDescription([
+		if (flags >= 200 && !this.client.patrons.get(interaction.guild.id)) {
+			const embed = new MessageEmbed().setDescription(
+				[
 					'You can only flag 200 players per guild!',
 					'',
 					'**Want more than that?**',
 					'Please consider supporting us on patreon!',
 					'',
 					'[Become a Patron](https://www.patreon.com/clashperk)'
-				].join('\n'));
+				].join('\n')
+			);
 
-			return message.util!.send({ embeds: [embed] });
+			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const players: Player[] = await Promise.all(tags.map(en => this.client.http.player(this.fixTag(en))));
+		const players: Player[] = await Promise.all(tags.map((en) => this.client.http.player(this.fixTag(en))));
 		const newFlags = [] as { name: string; tag: string }[];
-		for (const data of players.filter(en => en.ok)) {
-			const { value } = await this.client.db.collection(Collections.FLAGS)
-				.findOneAndUpdate({ guild: message.guild!.id, tag: data.tag }, {
+		for (const data of players.filter((en) => en.ok)) {
+			const { value } = await this.client.db.collection(Collections.FLAGS).findOneAndUpdate(
+				{ guild: interaction.guild.id, tag: data.tag },
+				{
 					$set: {
-						guild: message.guild!.id,
-						user: message.author.id,
-						user_tag: message.author.tag,
+						guild: interaction.guild.id,
+						user: interaction.user.id,
+						user_tag: interaction.user.tag,
 						tag: data.tag,
 						name: data.name,
-						reason: Util.cleanContent(reason, message.channel),
+						reason: Util.cleanContent(args.reason, interaction.channel!),
 						createdAt: new Date()
 					}
-				}, { upsert: true, returnDocument: 'after' });
+				},
+				{ upsert: true, returnDocument: 'after' }
+			);
 
 			newFlags.push({ name: value!.name, tag: value!.tag });
 		}
 
-		return message.util!.send(
-			`Successfully flagged ${newFlags.length > 1 ? `${newFlags.length} players!\n\n` : ''}${newFlags.map(flag => `${flag.name} (${flag.tag})`).join('\n')}`
+		return interaction.editReply(
+			`Successfully flagged ${newFlags.length > 1 ? `${newFlags.length} players!\n\n` : ''}${newFlags
+				.map((flag) => `${flag.name} (${flag.tag})`)
+				.join('\n')}`
 		);
 	}
 
 	private fixTag(tag: string) {
-		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`;
+		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O/g, '0')}`;
 	}
 }

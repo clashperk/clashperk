@@ -1,120 +1,92 @@
-import { MessageEmbed, Message, MessageSelectMenu, User, MessageActionRow } from 'discord.js';
+import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow } from 'discord.js';
 import { BUILDER_TROOPS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
-import { TroopJSON } from '../../util/Constants';
-import RAW_TROOPS_DATA from '../../util/TroopsInfo';
-import { Command, Argument } from 'discord-akairo';
+import RAW_TROOPS_DATA from '../../util/Troops';
+import { Command } from '../../lib';
 import { Player, Clan } from 'clashofclans.js';
-import { Util } from '../../util/Util';
+import { Util } from '../../util';
+import { TroopJSON } from '../../types';
 
 export default class RushedCommand extends Command {
 	public constructor() {
 		super('rushed', {
-			aliases: ['rushed', 'rush'],
 			category: 'search',
+			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: [
 					'Rushed troops, spells, and heroes.',
 					'',
 					'• `rushed clan <clanTag>` - list of rushed and non-rushed clan members.'
-				],
-				usage: '<playerTag>',
-				examples: ['#9Q92C8R20', 'clan #8QU8J9LP']
-			},
-			flags: ['--clan', 'clan'],
-			optionFlags: ['--tag', '--base']
+				]
+			}
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const flag = yield {
-			match: 'flag',
-			flag: ['--clan', 'clan']
-		};
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; clan?: boolean }) {
+		const data = args.clan
+			? await this.client.resolver.resolveClan(interaction, args.tag)
+			: await this.client.resolver.resolvePlayer(interaction, args.tag, 1);
+		if (!data) return;
 
-		const base = yield {
-			flag: '--base',
-			unordered: true,
-			type: Argument.range('integer', 1, 25),
-			match: msg.interaction ? 'option' : 'phrase'
-		};
+		if (args.clan) return this.clan(interaction, data as Clan);
+		const embed = this.embed(data as Player).setColor(this.client.embed(interaction));
+		const msg = await interaction.editReply({ embeds: [embed] });
 
-		const data = yield {
-			flag: '--tag',
-			unordered: true,
-			match: msg.interaction ? 'option' : 'phrase',
-			type: async (message: Message, args: string) => {
-				if (flag) return this.client.resolver.resolveClan(message, args);
-				return this.client.resolver.resolvePlayer(message, args, base ?? 1);
-			}
-		};
-
-		return { data, flag };
-	}
-
-	public async exec(message: Message, { data, flag }: { data: (Clan | Player) & { user?: User }; flag: boolean }) {
-		if (flag) return this.clan(message, data as Clan);
-		const embed = this.embed(data as Player).setColor(this.client.embed(message));
-		const msg = await message.util!.send({ embeds: [embed] });
-
-		if (!data.user) return;
-		const players = await this.client.links.getPlayers(data.user);
+		// @ts-expect-error
+		if (!data.user) return; // TODO: Fix
+		// @ts-expect-error
+		const players = await this.client.resolver.getPlayers(data.user.id);
 		if (!players.length) return;
 
-		const options = players.map(op => ({
+		const options = players.map((op) => ({
 			description: op.tag,
-			label: op.name, value: op.tag,
+			label: op.name,
+			value: op.tag,
 			emoji: TOWN_HALLS[op.townHallLevel]
 		}));
 
-		const customID = this.client.uuid(message.author.id);
-		const menu = new MessageSelectMenu()
-			.setCustomId(customID)
-			.setPlaceholder('Select an account!')
-			.addOptions(options);
+		const customID = this.client.uuid(interaction.user.id);
+		const menu = new MessageSelectMenu().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
 
 		await msg.edit({ components: [new MessageActionRow({ components: [menu] })] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customID && action.user.id === message.author.id,
+			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
-		collector.on('collect', async action => {
+		collector.on('collect', async (action) => {
 			if (action.customId === customID && action.isSelectMenu()) {
-				const data = players.find(en => en.tag === action.values[0])!;
-				const embed = this.embed(data).setColor(this.client.embed(message));
+				const data = players.find((en) => en.tag === action.values[0])!;
+				const embed = this.embed(data).setColor(this.client.embed(interaction));
 				await action.update({ embeds: [embed] });
 			}
 		});
 
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customID);
-			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
 	}
 
 	private embed(data: Player) {
-		const embed = new MessageEmbed()
-			.setAuthor({ name: `${data.name} (${data.tag})` });
+		const embed = new MessageEmbed().setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const apiTroops = this.apiTroops(data);
-		const Troops = RAW_TROOPS_DATA.TROOPS
-			.filter(troop => !troop.seasonal)
-			.filter(unit => {
-				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
-				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
-				// const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
-				// return Boolean(homeTroops || builderTroops);
-				return Boolean(homeTroops);
-			});
+		const Troops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal).filter((unit) => {
+			const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+			const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
+			// const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
+			// return Boolean(homeTroops || builderTroops);
+			return Boolean(homeTroops);
+		});
 
-		const TroopsObj = Troops.reduce((prev, curr) => {
+		const TroopsObj = Troops.reduce<TroopJSON>((prev, curr) => {
 			if (!(curr.unlock.building in prev)) prev[curr.unlock.building] = [];
 			prev[curr.unlock.building].push(curr);
 			return prev;
-		}, {} as TroopJSON);
+		}, {});
 
-		const titles: { [key: string]: string } = {
+		const titles: Record<string, string> = {
 			'Barracks': 'Elixir Troops',
 			'Dark Barracks': 'Dark Troops',
 			'Spell Factory': 'Elixir Spells',
@@ -138,84 +110,83 @@ export default class RushedCommand extends Command {
 		}
 
 		for (const category of units.sort((a, b) => a.index - b.index)) {
-			const unitsArray = category.units.map(
-				unit => {
-					const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
-					const { maxLevel, level } = apiTroops
-						.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
+			const unitsArray = category.units.map((unit) => {
+				const hallLevel = unit.village === 'home' ? data.townHallLevel : data.builderHallLevel;
+				const { maxLevel, level } = apiTroops.find(
+					(u) => u.name === unit.name && u.village === unit.village && u.type === unit.category
+				) ?? { maxLevel: unit.levels[unit.levels.length - 1], level: 0 };
 
-					return {
-						type: unit.category,
-						village: unit.village,
-						name: unit.name,
-						level,
-						hallMaxLevel: unit.levels[hallLevel! - 2],
-						maxLevel
-					};
-				}
-			);
+				return {
+					type: unit.category,
+					village: unit.village,
+					name: unit.name,
+					level,
+					hallMaxLevel: unit.levels[hallLevel! - 2],
+					maxLevel
+				};
+			});
 
 			if (unitsArray.length) {
 				embed.addField(
 					`${category.title} (${unitsArray.length})`,
 					Util.chunk(unitsArray, 4)
-						.map(
-							chunks => chunks.map(unit => {
-								const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-								const level = this.padStart(unit.level);
-								const maxLevel = this.padEnd(unit.hallMaxLevel);
-								return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
-							}).join(' ')
+						.map((chunks) =>
+							chunks
+								.map((unit) => {
+									const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+									const level = this.padStart(unit.level);
+									const maxLevel = this.padEnd(unit.hallMaxLevel);
+									return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
+								})
+								.join(' ')
 						)
 						.join('\n')
 				);
 			}
 		}
 
-		embed.setDescription([
-			`Rushed units for Town Hall ${data.townHallLevel}`,
-			'',
-			'**Percentage**',
-			`${this.rushedPercentage(data)}% (Lab)`,
-			`${this.heroRushed(data)}% (Hero)`,
-			`${this.rushedOverall(data)}% (Overall)`,
-			'\u200b'
-		].join('\n'));
+		embed.setDescription(
+			[
+				`Rushed units for Town Hall ${data.townHallLevel}`,
+				'',
+				'**Percentage**',
+				`${this.rushedPercentage(data)}% (Lab)`,
+				`${this.heroRushed(data)}% (Hero)`,
+				`${this.rushedOverall(data)}% (Overall)`,
+				'\u200b'
+			].join('\n')
+		);
 
 		if (embed.fields.length) {
 			embed.setFooter({ text: `Total ${this.totalPercentage(data.townHallLevel, Troops.length)}` });
 		} else {
-			embed.setDescription(
-				`No rushed units for Town Hall ${data.townHallLevel}`
-			);
+			embed.setDescription(`No rushed units for Town Hall ${data.townHallLevel}`);
 		}
 		return embed;
 	}
 
-	private async clan(message: Message, data: Clan) {
-		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
+	private async clan(interaction: CommandInteraction, data: Clan) {
+		if (data.members < 1) return interaction.editReply(`\u200e**${data.name}** does not have any clan members...`);
 
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
 		const members = [];
-		for (const obj of fetched.filter(res => res.ok)) {
+		for (const obj of fetched.filter((res) => res.ok)) {
 			members.push({ name: obj.name, rushed: this.reduce(obj), townHallLevel: obj.townHallLevel });
 		}
 
-		const embed = this.client.util.embed()
-			.setAuthor({ name: `${data.name} (${data.tag})` })
-			.setDescription([
+		const embed = new MessageEmbed().setAuthor({ name: `${data.name} (${data.tag})` }).setDescription(
+			[
 				'Rushed Percentage',
 				'```\u200eTH   LAB  HERO  NAME',
 				members
 					.sort((a, b) => Number(b.rushed.overall) - Number(a.rushed.overall))
-					.map(
-						en => `${this.padding(en.townHallLevel)}  ${this.per(en.rushed.lab)}  ${this.per(en.rushed.hero)}  ${en.name}`
-					)
+					.map((en) => `${this.padding(en.townHallLevel)}  ${this.per(en.rushed.lab)}  ${this.per(en.rushed.hero)}  ${en.name}`)
 					.join('\n'),
 				'```'
-			].join('\n'));
+			].join('\n')
+		);
 
-		return message.util!.send({ embeds: [embed] });
+		return interaction.editReply({ embeds: [embed] });
 	}
 
 	private per(num: string) {
@@ -245,21 +216,21 @@ export default class RushedCommand extends Command {
 
 	private apiTroops(data: Player) {
 		return [
-			...data.troops.map(u => ({
+			...data.troops.map((u) => ({
 				name: u.name,
 				level: u.level,
 				maxLevel: u.maxLevel,
 				type: 'troop',
 				village: u.village
 			})),
-			...data.heroes.map(u => ({
+			...data.heroes.map((u) => ({
 				name: u.name,
 				level: u.level,
 				maxLevel: u.maxLevel,
 				type: 'hero',
 				village: u.village
 			})),
-			...data.spells.map(u => ({
+			...data.spells.map((u) => ({
 				name: u.name,
 				level: u.level,
 				maxLevel: u.maxLevel,
@@ -271,52 +242,59 @@ export default class RushedCommand extends Command {
 
 	private rushedPercentage(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter(unit => !unit.seasonal)
-			.reduce((prev, unit) => {
-				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+			(prev, unit) => {
+				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home' && unit.category !== 'hero') {
 					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
 					prev.total += unit.levels[data.townHallLevel - 2];
 				}
 				return prev;
-			}, { total: 0, levels: 0 });
+			},
+			{ total: 0, levels: 0 }
+		);
 		if (rem.total === 0) return (0).toFixed(2);
-		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
+		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
 	}
 
 	private heroRushed(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter(unit => !unit.seasonal)
-			.reduce((prev, unit) => {
-				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+			(prev, unit) => {
+				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.category === 'hero' && unit.village === 'home') {
 					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
 					prev.total += unit.levels[data.townHallLevel - 2];
 				}
 				return prev;
-			}, { total: 0, levels: 0 });
+			},
+			{ total: 0, levels: 0 }
+		);
 		if (rem.total === 0) return (0).toFixed(2);
-		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
+		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
 	}
 
 	private rushedOverall(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter(unit => !unit.seasonal)
-			.reduce((prev, unit) => {
-				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+			(prev, unit) => {
+				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home') {
 					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
 					prev.total += unit.levels[data.townHallLevel - 2];
 				}
 				return prev;
-			}, { total: 0, levels: 0 });
+			},
+			{ total: 0, levels: 0 }
+		);
 		if (rem.total === 0) return (0).toFixed(2);
-		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
+		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
 	}
 
 	private totalPercentage(hallLevel: number, rushed: number) {
-		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter(troop => !troop.seasonal)
-			.filter(unit => unit.village === 'home' && unit.levels[hallLevel - 2] > 0);
+		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal).filter(
+			(unit) => unit.village === 'home' && unit.levels[hallLevel - 2] > 0
+		);
 		return `${rushed}/${totalTroops.length} (${((rushed * 100) / totalTroops.length).toFixed(2)}%)`;
 	}
 }

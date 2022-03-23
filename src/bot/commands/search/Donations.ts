@@ -1,143 +1,137 @@
-import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { Collections } from '../../util/Constants';
-import { Season, Util } from '../../util/Util';
-import { Command } from 'discord-akairo';
-import { Clan } from 'clashofclans.js';
+import { Season, Util } from '../../util';
+import { Args, Command } from '../../lib';
 import { EMOJIS } from '../../util/Emojis';
 
 export default class DonationsCommand extends Command {
 	public constructor() {
 		super('donations', {
-			aliases: ['donations', 'donation', 'don'],
 			category: 'activity',
+			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: [
 					'Clan members with donations for current / last season.',
 					'',
 					'• **Season ID must be under 6 months old and must follow `YYYY-MM` format.**'
-				],
-				usage: '<#clanTag> [seasonId|last]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP LAST', '#8QU8J9LP 2021-02']
+				]
 			},
-			optionFlags: ['--tag', '--season']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const season = yield {
-			flag: '--season',
-			type: [...Util.getSeasonIds(), [Util.getLastSeasonId(), 'last']],
-			unordered: msg.interaction ? false : [0, 1],
-			match: msg.interaction ? 'option' : 'phrase'
+	public args(): Args {
+		return {
+			season: {
+				match: 'ENUM',
+				enums: [...Util.getSeasonIds(), [Util.getLastSeasonId(), 'last']],
+				default: Util.getLastSeasonId()
+			}
 		};
-
-		const data = yield {
-			flag: '--tag',
-			unordered: msg.interaction ? false : [0, 1],
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
-		};
-
-		return { data, season };
 	}
 
-	public async exec(message: Message, { data, season }: { data: Clan; season: string }) {
-		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		{ tag, season, reverse }: { tag?: string; season: string; reverse?: boolean }
+	) {
+		const clan = await this.client.resolver.resolveClan(interaction, tag);
+		if (!clan) return;
+		if (clan.members < 1) return interaction.editReply(`\u200e**${clan.name}** does not have any clan members...`);
 
 		if (!season) season = Season.ID;
-		const sameSeason = Boolean(Season.ID === Season.generateID(season));
+		const sameSeason = Season.ID === Season.generateID(season);
 
-		const dbMembers = await this.client.db.collection(Collections.CLAN_MEMBERS)
-			.find({ season, clanTag: data.tag, tag: { $in: data.memberList.map(m => m.tag) } })
+		const dbMembers = await this.client.db
+			.collection(Collections.CLAN_MEMBERS)
+			.find({ season, clanTag: clan.tag, tag: { $in: clan.memberList.map((m) => m.tag) } })
 			.toArray();
 
 		if (!dbMembers.length && !sameSeason) {
-			return message.util!.send(`**No data found for the season \`${season}\`**`);
+			return interaction.editReply(`**No data found for the season \`${season}\`**`);
 		}
 
 		const members: { tag: string; name: string; donated: number; received: number }[] = [];
-		for (const mem of data.memberList) {
-			if (!dbMembers.find(m => m.tag === mem.tag) && sameSeason) {
+		for (const mem of clan.memberList) {
+			if (!dbMembers.find((m) => m.tag === mem.tag) && sameSeason) {
 				members.push({ name: mem.name, tag: mem.tag, donated: mem.donations, received: mem.donationsReceived });
 			}
 
-			const m = dbMembers.find(m => m.tag === mem.tag);
+			const m = dbMembers.find((m) => m.tag === mem.tag);
 			if (m) {
 				members.push({
 					name: mem.name,
 					tag: mem.tag,
 					donated: sameSeason
 						? mem.donations >= m.donations?.value
-							? m.donations.gained as number + (mem.donations - m.donations.value)
+							? (m.donations.gained as number) + (mem.donations - m.donations.value)
 							: Math.max(mem.donations, m.donations.gained)
 						: m.donations.gained,
 
 					received: sameSeason
 						? mem.donationsReceived >= m.donationsReceived?.value
-							? m.donationsReceived.gained as number + (mem.donationsReceived - m.donationsReceived.value)
+							? (m.donationsReceived.gained as number) + (mem.donationsReceived - m.donationsReceived.value)
 							: Math.max(mem.donationsReceived, m.donationsReceived.gained)
 						: m.donationsReceived.gained
 				});
 			}
 		}
 
-		const receivedMax = Math.max(...members.map(m => m.received));
+		const receivedMax = Math.max(...members.map((m) => m.received));
 		const rs = receivedMax > 99999 ? 6 : receivedMax > 999999 ? 7 : 5;
-		const donatedMax = Math.max(...members.map(m => m.donated));
+		const donatedMax = Math.max(...members.map((m) => m.donated));
 		const ds = donatedMax > 99999 ? 6 : donatedMax > 999999 ? 7 : 5;
 
 		members.sort((a, b) => b.donated - a.donated);
 		const donated = members.reduce((pre, mem) => mem.donated + pre, 0);
 		const received = members.reduce((pre, mem) => mem.received + pre, 0);
+		if (reverse) members.sort((a, b) => b.received - a.received);
 
 		const getEmbed = () => {
 			const embed = new MessageEmbed()
-				.setColor(this.client.embed(message))
-				.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
-				.setDescription([
-					'```',
-					`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'}`,
-					members.map((mem, index) => {
-						const donation = `${this.donation(mem.donated, ds)} ${this.donation(mem.received, rs)}`;
-						return `${(index + 1).toString().padStart(2, ' ')} ${donation}  \u200e${this.padEnd(mem.name.substring(0, 15))}`;
-					}).join('\n'),
-					'```'
-				].join('\n'));
+				.setColor(this.client.embed(interaction))
+				.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
+				.setDescription(
+					[
+						'```',
+						`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'}`,
+						members
+							.map((mem, index) => {
+								const donation = `${this.donation(mem.donated, ds)} ${this.donation(mem.received, rs)}`;
+								return `${(index + 1).toString().padStart(2, ' ')} ${donation}  \u200e${this.padEnd(
+									mem.name.substring(0, 15)
+								)}`;
+							})
+							.join('\n'),
+						'```'
+					].join('\n')
+				);
 
 			return embed.setFooter({ text: `[DON ${donated} | REC ${received}] (Season ${season})` });
 		};
 
 		const embed = getEmbed();
 		const customId = {
-			sort: sameSeason ? JSON.stringify({ tag: data.tag, cmd: 'donation', sort: -1 }) : this.client.uuid(message.author.id),
-			refresh: JSON.stringify({ tag: data.tag, cmd: 'donation', sort: 1 })
+			sort: sameSeason ? JSON.stringify({ tag: clan.tag, cmd: this.id, reverse: true }) : this.client.uuid(interaction.user.id),
+			refresh: JSON.stringify({ tag: clan.tag, cmd: this.id, reverse: false })
 		};
 
 		const row = new MessageActionRow()
 			.addComponents(
-				new MessageButton()
-					.setStyle('SECONDARY')
-					.setCustomId(customId.refresh)
-					.setEmoji(EMOJIS.REFRESH)
-					.setDisabled(!sameSeason)
+				new MessageButton().setStyle('SECONDARY').setCustomId(customId.refresh).setEmoji(EMOJIS.REFRESH).setDisabled(!sameSeason)
 			)
-			.addComponents(
-				new MessageButton()
-					.setStyle('SECONDARY')
-					.setCustomId(customId.sort)
-					.setLabel('Sort by Received')
-			);
+			.addComponents(new MessageButton().setStyle('SECONDARY').setCustomId(customId.sort).setLabel('Sort by Received'));
 
-		const msg = await message.util!.send({ embeds: [embed], components: [row] });
+		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 		if (sameSeason) return;
 
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customId.sort && action.user.id === message.author.id,
-			max: 1, time: 5 * 60 * 1000
+			filter: (action) => action.customId === customId.sort && action.user.id === interaction.user.id,
+			max: 1,
+			time: 5 * 60 * 1000
 		});
 
-		collector.on('collect', async action => {
+		collector.on('collect', async (action) => {
 			if (action.customId === customId.sort) {
 				members.sort((a, b) => b.received - a.received);
 				const embed = getEmbed();
@@ -147,7 +141,7 @@ export default class DonationsCommand extends Command {
 
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customId.sort);
-			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
 	}
 

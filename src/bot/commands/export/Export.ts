@@ -1,72 +1,33 @@
-import { Command, Flag, PrefixSupplier } from 'discord-akairo';
-import { Message, MessageEmbed } from 'discord.js';
+import { Command } from '../../lib';
+import { CommandInteraction } from 'discord.js';
+import { Messages } from '../../util/Constants';
 
 export default class ExportCommand extends Command {
 	public constructor() {
 		super('export', {
-			aliases: ['export'],
 			category: 'activity',
+			channel: 'guild',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
 				content: [
 					'Export war or season stats to excel for all clans.',
 					'',
-					'• **Missed Attacks**',
-					'• `MISSED [NUMBER]`',
-					'',
-					'• **Season Stats**',
-					'• `SEASON [SEASON_ID]`',
-					'',
-					'• **Export War Stats**',
-					'• `WARS [NUMBER]`',
-					'',
-					'• **Export Clan Members (Patron Only)**',
-					'• `MEMBERS`',
-					'',
-					'• **Last Played War Dates**',
-					'• `LASTWAR`',
-					'',
-					'- Season ID must be under 6 months old and must follow `YYYY-MM` format.',
-					'',
 					'**[Support us on Patreon](https://patreon.com/clashperk)**'
-				],
-				usage: '<wars|missed|season|clans> [number|season]',
-				examples: ['wars', 'missed', 'season', 'wars 10', 'missed 10', 'season 2021-01']
-			},
-			optionFlags: ['--option']
+				]
+			}
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const sub = yield {
-			flag: '--option',
-			type: [
-				['export-missed', 'missed'],
-				['export-season', 'season'],
-				['export-wars', 'war', 'wars'],
-				['export-members', 'member', 'members'],
-				['export-last-wars', 'lastwar', 'lastwars', 'lw']
-			],
-			match: msg.interaction ? 'option' : 'phrase',
-			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})
-		};
+	public exec(interaction: CommandInteraction<'cached'>, args: { command: string }) {
+		const command = {
+			missed: this.handler.modules.get('export-missed')!,
+			season: this.handler.modules.get('export-season')!,
+			war: this.handler.modules.get('export-wars')!,
+			member: this.handler.modules.get('export-members')!,
+			lastwar: this.handler.modules.get('export-last-wars')!
+		}[args.command];
 
-		return Flag.continue(sub);
-	}
-
-	public exec(message: Message) {
-		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
-		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
-			.setDescription([
-				`\`${prefix}export ${this.description.usage as string}\``,
-				'',
-				this.description.content.join('\n'),
-				'',
-				'**Examples**',
-				this.description.examples.map((en: string) => `\`${prefix}export ${en}\``).join('\n')
-			].join('\n'));
-
-		return message.util!.send({ embeds: [embed] });
+		if (!command) return interaction.reply(Messages.COMMAND.OPTION_NOT_FOUND);
+		return this.handler.exec(interaction, command, args);
 	}
 }

@@ -1,86 +1,52 @@
 import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { Collections } from '../../util/Constants';
-import { EMOJIS } from '../../util/Emojis';
-import { Command } from 'discord-akairo';
+import { Command } from '../../lib';
 import Excel from '../../struct/Excel';
-import { Message, MessageEmbed } from 'discord.js';
-import { Util } from '../../util/Util';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { Util } from '../../util';
+import { Messages } from '../../util/Constants';
 
-const months = [
-	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-	'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default class CWLExport extends Command {
 	public constructor() {
 		super('cwl-export', {
-			aliases: ['cwl-export'],
 			category: 'cwl',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
-				content: 'Export war stats to excel for all clans.',
-				examples: [''],
-				usage: '[...#clanTag|...aliases]'
-			},
-			optionFlags: ['--tag']
+				content: 'Export war stats to excel for all clans.'
+			}
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const tags = yield {
-			'flag': '--tag',
-			'default': [],
-			'match': msg.interaction ? 'option' : 'content',
-			'type': (msg: Message, args?: string) => args ? args.split(/ +/g) : null
-		};
-
-		return { tags };
-	}
-
-	private async getClans(message: Message, aliases: string[]) {
-		const cursor = this.client.db.collection<{ tag: string; name: string }>(Collections.CLAN_STORES)
-			.find({
-				guild: message.guild!.id,
-				$or: [
-					{
-						tag: { $in: aliases.map(tag => this.fixTag(tag)) }
-					},
-					{
-						alias: { $in: aliases.map(alias => alias.toLowerCase()) }
-					}
-				]
-			});
-
-		return cursor.toArray();
-	}
-
-	private fixTag(tag: string) {
-		return this.client.http.fixTag(tag);
-	}
-
-	public async exec(message: Message, { tags }: { tags?: string[] }) {
-		if (!this.client.patrons.get(message)) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
+		if (!this.client.patrons.get(interaction)) {
 			const embed = new MessageEmbed()
-				.setDescription([
-					'**Patron Only Command**',
-					'This command is only available on Patron servers.',
-					'Visit https://patreon.com/clashperk for more details.',
-					'',
-					'**Demo CWL Export**'
-				].join('\n'))
+				.setDescription(
+					[
+						'**Patron Only Command**',
+						'This command is only available on Patron servers.',
+						'Visit https://patreon.com/clashperk for more details.',
+						'',
+						'**Demo CWL Export**'
+					].join('\n')
+				)
 				.setImage('https://cdn.discordapp.com/attachments/806179502508998657/846700124134178826/unknown.png');
-			return message.channel.send({ embeds: [embed] });
+			return interaction.reply({ embeds: [embed], ephemeral: true });
 		}
 
-		let clans = [];
-		if (tags?.length) {
-			clans = await this.getClans(message, tags);
-			if (!clans.length) return message.util!.send(`*No clans found in my database for the specified argument.*`);
-		} else {
-			clans = await this.client.storage.findAll(message.guild!.id);
+		// TODO: Fix
+		await interaction.deferReply();
+
+		const tags = args.tag?.split(/ +/g) ?? [];
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guildId, tags)
+			: await this.client.storage.findAll(interaction.guildId);
+
+		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
+		if (!clans.length) {
+			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
-		const msg = await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
 		const chunks = [];
 		for (const clan of clans) {
 			const res = await this.client.http.clanWarLeague(clan.tag).catch(() => null);
@@ -90,7 +56,10 @@ export default class CWLExport extends Command {
 				const { members, perRound } = await this.rounds(data, clan);
 				if (!members.length) continue;
 				chunks.push({
-					name: clan.name, tag: clan.tag, members, perRound,
+					name: clan.name,
+					tag: clan.tag,
+					members,
+					perRound,
 					id: `${months[new Date(data.season).getMonth()]} ${new Date(data.season).getFullYear()}`
 				});
 				continue;
@@ -99,12 +68,15 @@ export default class CWLExport extends Command {
 			const { members, perRound } = await this.rounds(res, clan);
 			if (!members.length) continue;
 			chunks.push({
-				name: clan.name, tag: clan.tag, members, perRound,
+				name: clan.name,
+				tag: clan.tag,
+				members,
+				perRound,
 				id: `${months[new Date().getMonth()]} ${new Date().getFullYear()}`
 			});
 		}
 
-		if (!chunks.length) return message.util!.send('Nobody attacked in your clan yet, try again after sometime.');
+		if (!chunks.length) return interaction.editReply('Nobody attacked in your clan yet, try again after sometime.');
 
 		const workbook = new Excel();
 		for (const { members, name, tag, id } of chunks) {
@@ -135,30 +107,32 @@ export default class CWLExport extends Command {
 				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 			}
 
-			sheet.addRows(members.filter(m => m.of > 0)
-				.map(m => [
-					m.name,
-					m.tag,
-					m.of,
-					m.stars,
-					(m.stars / m.of).toFixed(2),
-					m.dest.toFixed(2),
-					(m.dest / m.of).toFixed(2),
-					this.starCount(m.starTypes, 3),
-					this.starCount(m.starTypes, 2),
-					this.starCount(m.starTypes, 1),
-					this.starCount(m.starTypes, 0),
-					m.of - m.attacks,
-					m.defStars,
-					(m.defStars / m.defCount).toFixed(),
-					m.defDestruction.toFixed(2),
-					(m.defDestruction / m.defCount).toFixed(2)
-				]));
+			sheet.addRows(
+				members
+					.filter((m) => m.of > 0)
+					.map((m) => [
+						m.name,
+						m.tag,
+						m.of,
+						m.stars,
+						(m.stars / m.of).toFixed(2),
+						m.dest.toFixed(2),
+						(m.dest / m.of).toFixed(2),
+						this.starCount(m.starTypes, 3),
+						this.starCount(m.starTypes, 2),
+						this.starCount(m.starTypes, 1),
+						this.starCount(m.starTypes, 0),
+						m.of - m.attacks,
+						m.defStars,
+						(m.defStars / m.defCount).toFixed(),
+						m.defDestruction.toFixed(2),
+						(m.defDestruction / m.defCount).toFixed(2)
+					])
+			);
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		if (msg.deletable && !msg.interaction) await msg.delete();
-		return message.util!.send({
+		return interaction.editReply({
 			files: [
 				{
 					attachment: Buffer.from(buffer),
@@ -208,8 +182,8 @@ export default class CWLExport extends Command {
 				}
 
 				sheet.addRows(
-					round.clan.members.map(m => {
-						const opponent = round.opponent.members.find(en => en.tag === m.attacks?.[0]?.defenderTag);
+					round.clan.members.map((m) => {
+						const opponent = round.opponent.members.find((en) => en.tag === m.attacks?.[0]?.defenderTag);
 						const gained = m.bestOpponentAttack && m.attacks?.length ? m.attacks[0].stars - m.bestOpponentAttack.stars : '';
 						return [
 							round.clan.name,
@@ -221,9 +195,9 @@ export default class CWLExport extends Command {
 							m.attacks?.length ? m.attacks[0].destructionPercentage.toFixed(2) : '',
 							opponent ? opponent.name : '',
 							opponent ? opponent.tag : '',
-							round.clan.members.findIndex(en => en.tag === m.tag) + 1,
+							round.clan.members.findIndex((en) => en.tag === m.tag) + 1,
 							m.townhallLevel,
-							opponent ? round.opponent.members.findIndex(en => en.tag === opponent.tag) + 1 : '',
+							opponent ? round.opponent.members.findIndex((en) => en.tag === opponent.tag) + 1 : '',
 							opponent ? opponent.townhallLevel : '',
 							m.bestOpponentAttack?.stars ?? '',
 							m.bestOpponentAttack?.destructionPercentage.toFixed(2) ?? ''
@@ -237,11 +211,11 @@ export default class CWLExport extends Command {
 	}
 
 	private starCount(stars = [], count: number) {
-		return stars.filter(star => star === count).length;
+		return stars.filter((star) => star === count).length;
 	}
 
 	private async rounds(body: ClanWarLeagueGroup, clan: { tag: string }) {
-		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
+		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 		const clanTag = clan.tag;
 		const members: { [key: string]: any } = {};
 
@@ -251,25 +225,25 @@ export default class CWLExport extends Command {
 				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
 				if (!data.ok) continue;
 
-				if ((data.clan.tag === clanTag) || (data.opponent.tag === clanTag)) {
+				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 					if (['inWar', 'warEnded'].includes(data.state)) {
 						for (const m of clan.members) {
 							const member = members[m.tag]
 								? members[m.tag]
-								: members[m.tag] = {
-									name: m.name,
-									tag: m.tag,
-									of: 0,
-									attacks: 0,
-									stars: 0,
-									dest: 0,
-									defStars: 0,
-									defDestruction: 0,
-									starTypes: [],
-									defCount: 0
-								};
+								: (members[m.tag] = {
+										name: m.name,
+										tag: m.tag,
+										of: 0,
+										attacks: 0,
+										stars: 0,
+										dest: 0,
+										defStars: 0,
+										defDestruction: 0,
+										starTypes: [],
+										defCount: 0
+								  });
 							member.of += 1;
 
 							if (m.attacks) {
@@ -295,7 +269,9 @@ export default class CWLExport extends Command {
 
 		return {
 			perRound,
-			members: Object.values(members).sort((a, b) => b.dest - a.dest).sort((a, b) => b.stars - a.stars)
+			members: Object.values(members)
+				.sort((a, b) => b.dest - a.dest)
+				.sort((a, b) => b.stars - a.stars)
 		};
 	}
 }

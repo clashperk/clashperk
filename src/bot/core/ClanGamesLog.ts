@@ -1,9 +1,9 @@
 import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake, ThreadChannel, SnowflakeUtil } from 'discord.js';
 import { Collections } from '../util/Constants';
-import { APIMessage } from 'discord-api-types';
-import { ClanGames, Util } from '../util/Util';
+import { APIMessage } from 'discord-api-types/v9';
+import { ClanGames, Util } from '../util';
 import { Clan } from 'clashofclans.js';
-import Client from '../struct/Client';
+import { Client } from '../struct/Client';
 import { ObjectId } from 'mongodb';
 
 interface Cache {
@@ -31,7 +31,7 @@ export default class ClanGamesLog {
 	}
 
 	public async exec(tag: string, clan: Clan, data: Payload) {
-		const clans = this.cached.filter(d => d.tag === tag);
+		const clans = this.cached.filter((d) => d.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
 			if (cache) await this.permissionsFor(cache, clan, data);
@@ -52,7 +52,8 @@ export default class ClanGamesLog {
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS'))) return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
+				return;
 			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
 				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
 
@@ -95,9 +96,7 @@ export default class ClanGamesLog {
 			);
 			cache.message = msg.id;
 		} else {
-			await this.collection.updateOne(
-				{ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } }
-			);
+			await this.collection.updateOne({ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
 		}
 		return msg;
 	}
@@ -110,29 +109,32 @@ export default class ClanGamesLog {
 	private async edit(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, data: Payload) {
 		const embed = this.embed(cache, clan, data);
 
-		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] })
-			.catch(error => {
-				if (error.code === 10008) {
-					delete cache.message;
-					return this.send(cache, channel, clan, data);
-				}
-				return null;
-			});
+		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] }).catch((error) => {
+			if (error.code === 10008) {
+				delete cache.message;
+				return this.send(cache, channel, clan, data);
+			}
+			return null;
+		});
 	}
 
 	private embed(cache: Cache, clan: Clan, data: Payload) {
 		const embed = new MessageEmbed()
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
-			.setDescription([
-				`Clan Games Scoreboard [${clan.members}/50]`,
-				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-				data.members.slice(0, 55)
-					.map((m, i) => {
-						const points = this.padStart(m.points || '0');
-						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
-					}).join('\n'),
-				'```'
-			].join('\n'))
+			.setDescription(
+				[
+					`Clan Games Scoreboard [${clan.members}/50]`,
+					`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
+					data.members
+						.slice(0, 55)
+						.map((m, i) => {
+							const points = this.padStart(m.points || '0');
+							return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
+						})
+						.join('\n'),
+					'```'
+				].join('\n')
+			)
 			.setFooter({ text: `Points: ${data.total} [Avg: ${(data.total / clan.members).toFixed(2)}]` })
 			.setTimestamp();
 		if (cache.color) embed.setColor(cache.color);
@@ -161,17 +163,16 @@ export default class ClanGamesLog {
 	}
 
 	private async _init() {
-		await this.collection.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
-			.forEach(data => {
-				this.cached.set((data.clan_id as ObjectId).toHexString(), {
-					_id: data.clan_id,
-					tag: data.tag,
-					color: data.color,
-					guild: data.guild,
-					channel: data.channel,
-					message: data.message
-				});
+		await this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } }).forEach((data) => {
+			this.cached.set((data.clan_id as ObjectId).toHexString(), {
+				_id: data.clan_id,
+				tag: data.tag,
+				color: data.color,
+				guild: data.guild,
+				channel: data.channel,
+				message: data.message
 			});
+		});
 	}
 
 	private async flush(intervalId: NodeJS.Timeout) {

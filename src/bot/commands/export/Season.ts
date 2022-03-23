@@ -1,8 +1,8 @@
 import { Clan, ClanMember } from 'clashofclans.js';
-import { Collections } from '../../util/Constants';
-import { Collection, GuildMember, Message, Snowflake } from 'discord.js';
-import { Season, Util } from '../../util/Util';
-import { Command } from 'discord-akairo';
+import { Collections, Messages } from '../../util/Constants';
+import { Collection, GuildMember, CommandInteraction } from 'discord.js';
+import { Season } from '../../util';
+import { Command } from '../../lib';
 import Excel from '../../struct/Excel';
 
 export default class ExportSeason extends Command {
@@ -10,101 +10,60 @@ export default class ExportSeason extends Command {
 		super('export-season', {
 			category: 'export',
 			channel: 'guild',
-			description: {},
-			optionFlags: ['--season', '--tag'],
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
+			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const season = yield {
-			flag: '--season',
-			unordered: true,
-			type: [...Util.getSeasonIds(), [Util.getLastSeasonId(), 'last']],
-			match: msg.interaction ? 'option' : 'phrase'
-		};
+	public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; tag?: string }) {
+		// TODO: Add support Season validation
+		const season = args.season ?? Season.ID;
+		const tags = args.tag?.split(/ +/g) ?? [];
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guildId, tags)
+			: await this.client.storage.findAll(interaction.guildId);
 
-		const tags = yield {
-			flag: '--tag',
-			unordered: true,
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, args?: string) => args ? args.split(/ +/g) : null
-		};
-
-		return { season, tags };
-	}
-
-	private async getClans(message: Message, aliases: string[]) {
-		const cursor = this.client.db.collection(Collections.CLAN_STORES)
-			.find({
-				guild: message.guild!.id,
-				$or: [
-					{
-						tag: { $in: aliases.map(tag => this.fixTag(tag)) }
-					},
-					{
-						alias: { $in: aliases.map(alias => alias.toLowerCase()) }
-					}
-				]
-			});
-
-		return cursor.toArray();
-	}
-
-	private fixTag(tag: string) {
-		return this.client.http.fixTag(tag);
-	}
-
-	public async exec(message: Message, { season, tags }: { season?: string; tags?: string[] }) {
-		if (!season) season = Season.ID;
-
-		let clans = [];
-		if (tags?.length) {
-			clans = await this.getClans(message, tags);
-			if (!clans.length) return message.util!.send(`*No clans found in my database for the specified argument.*`);
-		} else {
-			clans = await this.client.storage.findAll(message.guild!.id);
-		}
-
+		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
 		if (!clans.length) {
-			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
+			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
 		const workbook = new Excel();
 		const sheet = workbook.addWorksheet(season);
-		const patron = this.client.patrons.get(message.guild!.id);
+		const patron = this.client.patrons.get(interaction.guild.id);
 
-		const _clans: Clan[] = (await Promise.all(clans.map(clan => this.client.http.clan(clan.tag)))).filter(res => res.ok);
-		const allMembers = _clans.reduce((previous, current) => {
-			previous.push(...current.memberList.map(mem => ({ ...mem, clanTag: current.tag })));
+		const _clans: Clan[] = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
+		const allMembers = _clans.reduce<(ClanMember & { clanTag: string })[]>((previous, current) => {
+			previous.push(...current.memberList.map((mem) => ({ ...mem, clanTag: current.tag })));
 			return previous;
-		}, [] as (ClanMember & { clanTag: string })[]);
+		}, []);
 
 		const memberTags: { tag: string; user: string }[] = [];
 		let guildMembers = new Collection<string, GuildMember>();
 		if (patron) {
 			memberTags.push(...(await this.client.http.getDiscordLinks(allMembers)));
-			const dbMembers = await this.client.db.collection(Collections.LINKED_PLAYERS)
-				.find({ 'entries.tag': { $in: allMembers.map(m => m.tag) } })
+			const dbMembers = await this.client.db
+				.collection(Collections.LINKED_PLAYERS)
+				.find({ 'entries.tag': { $in: allMembers.map((m) => m.tag) } })
 				.toArray();
-			if (dbMembers.length) this.updateUsers(message, dbMembers);
+			if (dbMembers.length) this.updateUsers(interaction, dbMembers);
 			for (const member of dbMembers) {
 				for (const m of member.entries) {
-					if (!allMembers.find(mem => mem.tag === m.tag)) continue;
-					if (memberTags.find(mem => mem.tag === m.tag)) continue;
+					if (!allMembers.find((mem) => mem.tag === m.tag)) continue;
+					if (memberTags.find((mem) => mem.tag === m.tag)) continue;
 					memberTags.push({ tag: m.tag, user: member.user });
 				}
 			}
 			const fetchedMembers = await Promise.all(
-				this.chunks(memberTags).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
+				this.chunks(memberTags).map((members) => interaction.guild.members.fetch({ user: members.map((m) => m.user) }))
 			);
 			guildMembers = guildMembers.concat(...fetchedMembers);
 		}
 
-		const members = (await Promise.all(_clans.map(clan => this.aggregationQuery(clan, season!)))).flat();
+		const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season)))).flat();
 		for (const mem of members) {
-			const user = memberTags.find(user => user.tag === mem.tag)?.user;
-			mem.user_tag = guildMembers.get((user as Snowflake)!)?.user.tag;
+			const user = memberTags.find((user) => user.tag === mem.tag)?.user;
+			mem.user_tag = guildMembers.get(user!)?.user.tag;
 		}
 		guildMembers.clear();
 
@@ -142,7 +101,7 @@ export default class ExportSeason extends Command {
 
 		const achievements = ['War League Legend', 'Gold Grab', 'Elixir Escapade', 'Heroic Heist', 'Games Champion'];
 		sheet.addRows(
-			members.map(m => {
+			members.map((m) => {
 				const rows = [
 					m.name,
 					m.tag,
@@ -157,7 +116,7 @@ export default class ExportSeason extends Command {
 					m.trophies.value,
 					m.versusTrophies.gained,
 					m.warStars.gained,
-					...achievements.map(ac => m.achievements.find((a: { name: string }) => a.name === ac).gained),
+					...achievements.map((ac) => m.achievements.find((a: { name: string }) => a.name === ac).gained),
 					m.score
 				];
 
@@ -168,76 +127,84 @@ export default class ExportSeason extends Command {
 		);
 
 		if (!members.length) {
-			return message.util!.send(`**No record found for the specified season ID \`${season}\`**`);
+			return interaction.editReply(`**No record found for the specified season ID \`${season}\`**`);
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send({
+		return interaction.editReply({
 			content: `**Season Export (${season})**`,
-			files: [{
-				attachment: Buffer.from(buffer),
-				name: 'season_export.xlsx'
-			}]
+			files: [
+				{
+					attachment: Buffer.from(buffer),
+					name: 'season_export.xlsx'
+				}
+			]
 		});
 	}
 
 	private async aggregationQuery(clan: Clan, season_id: string) {
-		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS)
-			.aggregate([
-				{
-					$match: {
-						clanTag: clan.tag,
-						season: season_id,
-						tag: { $in: clan.memberList.map(m => m.tag) }
-					}
-				}, {
-					$lookup: {
-						from: Collections.LAST_SEEN,
-						localField: 'tag', foreignField: 'tag', as: 'last_seen'
-					}
-				}, {
-					$unwind: {
-						path: '$last_seen'
-					}
-				}, {
-					$set: {
-						entries: {
-							$filter: {
-								input: '$last_seen.entries', as: 'en',
-								cond: {
-									$gte: [
-										'$$en.entry',
-										new Date(Date.now() - (30 * 24 * 60 * 60 * 1000))
-									]
-								}
+		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS).aggregate([
+			{
+				$match: {
+					clanTag: clan.tag,
+					season: season_id,
+					tag: { $in: clan.memberList.map((m) => m.tag) }
+				}
+			},
+			{
+				$lookup: {
+					from: Collections.LAST_SEEN,
+					localField: 'tag',
+					foreignField: 'tag',
+					as: 'last_seen'
+				}
+			},
+			{
+				$unwind: {
+					path: '$last_seen'
+				}
+			},
+			{
+				$set: {
+					entries: {
+						$filter: {
+							input: '$last_seen.entries',
+							as: 'en',
+							cond: {
+								$gte: ['$$en.entry', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)]
 							}
 						}
 					}
-				}, {
-					$unset: 'last_seen'
-				}, {
-					$set: {
-						score: {
-							$sum: '$entries.count'
-						}
-					}
-				}, {
-					$unset: 'entries'
-				}, {
-					$sort: {
-						createdAt: -1
+				}
+			},
+			{
+				$unset: 'last_seen'
+			},
+			{
+				$set: {
+					score: {
+						$sum: '$entries.count'
 					}
 				}
-			]);
+			},
+			{
+				$unset: 'entries'
+			},
+			{
+				$sort: {
+					createdAt: -1
+				}
+			}
+		]);
 
 		return cursor.toArray();
 	}
 
-	private updateUsers(message: Message, members: any[]) {
+	private updateUsers(interaction: CommandInteraction, members: any[]) {
 		for (const data of members) {
-			const member = message.guild!.members.cache.get(data.user);
+			const member = interaction.guild!.members.cache.get(data.user);
 			if (member && data.user_tag !== member.user.tag) {
-				this.client.resolver.updateUserTag(message.guild!, data.user);
+				this.client.resolver.updateUserTag(interaction.guild!, data.user);
 			}
 		}
 	}

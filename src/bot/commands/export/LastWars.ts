@@ -1,7 +1,7 @@
-import { Collections } from '../../util/Constants';
-import { Argument, Command } from 'discord-akairo';
+import { Collections, Messages } from '../../util/Constants';
+import { Command } from '../../lib';
 import Excel from '../../struct/Excel';
-import { Message } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import ms from 'ms';
 
 // TODO: Fix TS
@@ -10,94 +10,88 @@ export default class LastWarsExport extends Command {
 		super('export-last-wars', {
 			category: 'export',
 			channel: 'guild',
-			description: {},
-			optionFlags: ['--wars'],
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
+			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const num = yield {
-			'default': 25,
-			'flag': '--wars',
-			'match': msg.interaction ? 'option' : 'phrase',
-			'type': Argument.range('integer', 1, Infinity, true)
-		};
-
-		return { num };
-	}
-
-	public async exec(message: Message, { num }: { num: number }) {
-		const clans = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild: message.guild!.id })
-			.toArray();
+	public async exec(interaction: CommandInteraction, args: { wars?: number }) {
+		let num = Number(args.wars ?? 25);
+		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
 
 		if (!clans.length) {
-			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
+			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
-		num = this.client.patrons.get(message.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
-		const clanList = (await Promise.all(clans.map(clan => this.client.http.clan(clan.tag)))).filter(res => res.ok);
-		const memberList = clanList.map(clan => clan.memberList.map(m => ({ ...m, clan: clan.name }))).flat();
+		num = this.client.patrons.get(interaction.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
+		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
+		const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();
 
 		const workbook = new Excel();
 		const sheet = workbook.addWorksheet('Details');
 		const members = [] as { name: string; tag: string; total: number; clan: string; date: Date }[];
 		for (const clan of clans) {
-			const data = await this.client.db.collection(Collections.CLAN_WARS).aggregate<{ name: string; tag: string; total: number; clan: string; date: Date }>([
-				{
-					$match: {
-						$or: [
-							{ 'clan.tag': clan.tag },
-							{ 'opponent.tag': clan.tag }
-						],
-						state: 'warEnded'
-					}
-				}, {
-					$sort: {
-						_id: -1
-					}
-				}, {
-					$limit: num
-				}, {
-					$project: {
-						member: '$clan.members',
-						clan: '$clan.name',
-						date: '$endTime'
-					}
-				}, {
-					$unwind: {
-						path: '$member'
-					}
-				}, {
-					$sort: {
-						date: -1
-					}
-				}, {
-					$group: {
-						_id: '$member.tag',
-						name: {
-							$first: '$member.name'
-						},
-						tag: {
-							$first: '$member.tag'
-						},
-						date: {
-							$first: '$date'
-						},
-						total: {
-							$sum: 1
-						},
-						clan: {
-							$first: '$clan'
+			const data = await this.client.db
+				.collection(Collections.CLAN_WARS)
+				.aggregate<{ name: string; tag: string; total: number; clan: string; date: Date }>([
+					{
+						$match: {
+							$or: [{ 'clan.tag': clan.tag }, { 'opponent.tag': clan.tag }],
+							state: 'warEnded'
+						}
+					},
+					{
+						$sort: {
+							_id: -1
+						}
+					},
+					{
+						$limit: num
+					},
+					{
+						$project: {
+							member: '$clan.members',
+							clan: '$clan.name',
+							date: '$endTime'
+						}
+					},
+					{
+						$unwind: {
+							path: '$member'
+						}
+					},
+					{
+						$sort: {
+							date: -1
+						}
+					},
+					{
+						$group: {
+							_id: '$member.tag',
+							name: {
+								$first: '$member.name'
+							},
+							tag: {
+								$first: '$member.tag'
+							},
+							date: {
+								$first: '$date'
+							},
+							total: {
+								$sum: 1
+							},
+							clan: {
+								$first: '$clan'
+							}
+						}
+					},
+					{
+						$sort: {
+							date: -1
 						}
 					}
-				}, {
-					$sort: {
-						date: -1
-					}
-				}
-			]).toArray();
+				])
+				.toArray();
 
 			members.push(...data);
 		}
@@ -119,24 +113,21 @@ export default class LastWarsExport extends Command {
 		}
 
 		sheet.addRows(
-			members.filter(
-				mem => memberList.find(m => m.tag === mem.tag)
-			).map(
-				m => [m.name, m.tag, m.clan, m.total, m.date, ms(Date.now() - m.date.getTime())]
-			).concat(
-				memberList.filter(mem => !members.find(m => m.tag === mem.tag))
-					.map(mem => [mem.name, mem.tag, mem.clan, 0])
-			)
+			members
+				.filter((mem) => memberList.find((m) => m.tag === mem.tag))
+				.map((m) => [m.name, m.tag, m.clan, m.total, m.date, ms(Date.now() - m.date.getTime())])
+				.concat(memberList.filter((mem) => !members.find((m) => m.tag === mem.tag)).map((mem) => [mem.name, mem.tag, mem.clan, 0]))
 		);
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send({
+		return interaction.editReply({
 			content: `**Last Played Wars (Last ${num})**`,
-			files: [{
-				attachment: Buffer.from(buffer),
-				name: 'last_played_wars.xlsx'
-			}]
+			files: [
+				{
+					attachment: Buffer.from(buffer),
+					name: 'last_played_wars.xlsx'
+				}
+			]
 		});
 	}
 }
-

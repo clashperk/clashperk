@@ -2,7 +2,7 @@ import { MessageEmbed, PermissionString, TextChannel, Collection, WebhookClient,
 import { TOWN_HALLS, EMOJIS, PLAYER_LEAGUES, HEROES } from '../util/Emojis';
 import { Collections } from '../util/Constants';
 import { Player } from 'clashofclans.js';
-import Client from '../struct/Client';
+import { Client } from '../struct/Client';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
 
@@ -29,7 +29,8 @@ interface Feed {
 	};
 	members: Member[];
 	memberList: {
-		tag: string; role: string;
+		tag: string;
+		role: string;
 		clan: { tag: string };
 	}[];
 }
@@ -40,19 +41,24 @@ export default class ClanFeedLog {
 	public constructor(private readonly client: Client) {
 		this.cached = new Collection();
 
-		this.client.db.collection(Collections.EVENT_LOGS).watch([{
-			$match: {
-				operationType: { $in: ['insert'] }
-			}
-		}]).on('change', async change => {
-			if (change.operationType === 'insert') {
-				return this.exec(change.fullDocument!.tag, change.fullDocument);
-			}
-		});
+		this.client.db
+			.collection(Collections.EVENT_LOGS)
+			.watch([
+				{
+					$match: {
+						operationType: { $in: ['insert'] }
+					}
+				}
+			])
+			.on('change', async (change) => {
+				if (change.operationType === 'insert') {
+					return this.exec(change.fullDocument!.tag, change.fullDocument);
+				}
+			});
 	}
 
 	public async exec(tag: string, data: any) {
-		const clans = this.cached.filter(d => d.tag === tag);
+		const clans = this.cached.filter((d) => d.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
 			if (cache) await this.permissionsFor(cache, data, id);
@@ -62,7 +68,7 @@ export default class ClanFeedLog {
 	}
 
 	private async delay(ms: number) {
-		return new Promise(res => setTimeout(res, ms));
+		return new Promise((res) => setTimeout(res, ms));
 	}
 
 	private async permissionsFor(cache: any, data: Feed, id: string) {
@@ -77,7 +83,8 @@ export default class ClanFeedLog {
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS'))) return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
+				return;
 			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
 				if (!channel.isThread() && this.hasWebhookPermission(channel)) {
 					const webhook = await this.webhook(id);
@@ -99,7 +106,10 @@ export default class ClanFeedLog {
 	}
 
 	private hasWebhookPermission(channel: TextChannel) {
-		return channel.permissionsFor(channel.guild.me!)!.has(['MANAGE_WEBHOOKS']) && channel.permissionsFor(channel.guild.id)!.has(['USE_EXTERNAL_EMOJIS']);
+		return (
+			channel.permissionsFor(channel.guild.me!)!.has(['MANAGE_WEBHOOKS']) &&
+			channel.permissionsFor(channel.guild.id)!.has(['USE_EXTERNAL_EMOJIS'])
+		);
 	}
 
 	private recreateWebhook(id: string) {
@@ -125,13 +135,14 @@ export default class ClanFeedLog {
 		const channel = this.client.channels.cache.get(cache.channel) as TextChannel;
 		const webhooks = await channel.fetchWebhooks();
 		if (webhooks.size) {
-			const webhook = webhooks.find(hook => (hook.owner as any)?.id === this.client.user?.id);
+			const webhook = webhooks.find((hook) => (hook.owner as any)?.id === this.client.user?.id);
 
 			if (webhook) {
 				cache.webhook = new WebhookClient({ id: webhook.id, token: webhook.token! });
 				this.cached.set(id, cache);
 
-				await this.client.db.collection(Collections.CLAN_FEED_LOGS)
+				await this.client.db
+					.collection(Collections.CLAN_FEED_LOGS)
 					.updateOne(
 						{ channel: channel.id, guild: channel.guild.id },
 						{ $set: { webhook_id: webhook.id, webhook_token: webhook.token } }
@@ -142,16 +153,16 @@ export default class ClanFeedLog {
 		}
 
 		if (webhooks.size === 10) return this.stopWebhookCheck(id);
-		const webhook = await channel.createWebhook(
-			this.client.user!.username,
-			{ avatar: this.client.user!.displayAvatarURL({ size: 2048, format: 'png' }) }
-		).catch(() => null);
+		const webhook = await channel
+			.createWebhook(this.client.user!.username, { avatar: this.client.user!.displayAvatarURL({ size: 2048, format: 'png' }) })
+			.catch(() => null);
 
 		if (webhook) {
 			cache.webhook = new WebhookClient({ id: webhook.id, token: webhook.token! });
 			this.cached.set(id, cache);
 
-			await this.client.db.collection(Collections.CLAN_FEED_LOGS)
+			await this.client.db
+				.collection(Collections.CLAN_FEED_LOGS)
 				.updateOne(
 					{ channel: channel.id, guild: channel.guild.id },
 					{ $set: { webhook_id: webhook.id, webhook_token: webhook.token } }
@@ -164,28 +175,30 @@ export default class ClanFeedLog {
 	}
 
 	private async clanUpdate(channel: TextChannel | WebhookClient | ThreadChannel, data: Feed, id: string) {
-		const members = data.members.filter(mem => ['JOINED', 'LEFT'].includes(mem.op));
+		const members = data.members.filter((mem) => ['JOINED', 'LEFT'].includes(mem.op));
 		if (!members.length) return null;
 		const delay = members.length >= 5 ? 2000 : 250;
 		const cache = this.cached.get(id);
 
 		members.sort((a, b) => a.rand - b.rand);
-		const messages = await Promise.all(members.map(mem => this.embed(id, mem, data)));
+		const messages = await Promise.all(members.map((mem) => this.embed(id, mem, data)));
 
 		for (const message of messages) {
 			if (!message) continue;
 			if (channel instanceof TextChannel || channel instanceof ThreadChannel) {
 				await channel.send({ embeds: [message.embed], content: message.content });
-				await this.client.db.collection(Collections.CLAN_FEED_LOGS)
+				await this.client.db
+					.collection(Collections.CLAN_FEED_LOGS)
 					.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 			} else {
 				try {
 					const msg = await channel.send({ embeds: [message.embed], content: message.content });
-					await this.client.db.collection(Collections.CLAN_FEED_LOGS)
+					await this.client.db
+						.collection(Collections.CLAN_FEED_LOGS)
 						.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 					if (msg.channel_id !== cache.channel) {
 						await channel.deleteMessage(msg.id);
-						return this.recreateWebhook(id);
+						return await this.recreateWebhook(id);
 					}
 				} catch (error: any) {
 					if (error.code === 10015) {
@@ -204,7 +217,7 @@ export default class ClanFeedLog {
 		const cache = this.cached.get(id);
 		if (!cache) return null;
 		const player: Player = await this.client.http.player(member.tag);
-		if (!player.ok) return console.log(`PLAYER_LOG_FETCH_FAILED_${member.tag}`);
+		if (!player.ok) return;
 
 		let content = null;
 		const embed = new MessageEmbed()
@@ -213,22 +226,25 @@ export default class ClanFeedLog {
 			.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
 		if (member.op === 'LEFT') {
 			embed.setFooter({ text: `Left ${data.clan.name}`, iconURL: data.clan.badge });
-			embed.setDescription([
-				`${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}**`,
-				`${EMOJIS.EXP} **${player.expLevel}**`,
-				`${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
-			].join(' '));
+			embed.setDescription(
+				[
+					`${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}**`,
+					`${EMOJIS.EXP} **${player.expLevel}**`,
+					`${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
+				].join(' ')
+			);
 		} else {
-			const flag = await this.client.db.collection(Collections.FLAGS)
-				.findOne({ guild: cache.guild, tag: member.tag });
+			const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: cache.guild, tag: member.tag });
 
 			embed.setFooter({ text: `Joined ${data.clan.name}`, iconURL: data.clan.badge });
-			embed.setDescription([
-				`${TOWN_HALLS[player.townHallLevel]}**${player.townHallLevel}**`,
-				`${this.formatHeroes(player)}`,
-				`${EMOJIS.WAR_STAR}**${player.warStars}**`,
-				`${PLAYER_LEAGUES[player.league ? player.league.id : 29000000]}**${player.trophies}**`
-			].join(' '));
+			embed.setDescription(
+				[
+					`${TOWN_HALLS[player.townHallLevel]}**${player.townHallLevel}**`,
+					`${this.formatHeroes(player)}`,
+					`${EMOJIS.WAR_STAR}**${player.warStars}**`,
+					`${PLAYER_LEAGUES[player.league?.id ?? 29000000]}**${player.trophies}**`
+				].join(' ')
+			);
 
 			if (flag) {
 				const guild = this.client.guilds.cache.get(cache.guild)!;
@@ -237,13 +253,15 @@ export default class ClanFeedLog {
 					const role = guild.roles.cache.get(cache.role);
 					content = `${role!.toString()}`;
 				}
-				embed.setDescription([
-					embed.description,
-					'',
-					'**Flag**',
-					`${flag.reason as string}`,
-					`\`${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('DD-MM-YYYY kk:mm')})\``
-				].join('\n'));
+				embed.setDescription(
+					[
+						embed.description,
+						'',
+						'**Flag**',
+						`${flag.reason as string}`,
+						`\`${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('DD-MM-YYYY kk:mm')})\``
+					].join('\n')
+				);
 			}
 		}
 		embed.setTimestamp();
@@ -255,8 +273,8 @@ export default class ClanFeedLog {
 			const heroes = member.heroes.filter(({ village }) => village === 'home');
 			return heroes.length
 				? heroes.length > 3
-					? heroes.map(hero => `${HEROES[hero.name]}**${hero.level}**`).join(' ')
-					: `${EMOJIS.EXP}**${member.expLevel}** ${heroes.map(hero => `${HEROES[hero.name]}**${hero.level}**`).join(' ')}`
+					? heroes.map((hero) => `${HEROES[hero.name]}**${hero.level}**`).join(' ')
+					: `${EMOJIS.EXP}**${member.expLevel}** ${heroes.map((hero) => `${HEROES[hero.name]}**${hero.level}**`).join(' ')}`
 				: `${EMOJIS.EXP} **${member.expLevel}**`;
 		}
 
@@ -264,27 +282,29 @@ export default class ClanFeedLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(Collections.CLAN_FEED_LOGS)
-			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
-			.forEach(data => {
+		await this.client.db
+			.collection(Collections.CLAN_FEED_LOGS)
+			.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })
+			.forEach((data) => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
 					guild: data.guild,
 					channel: data.channel,
-					tag: data.tag, role: data.role,
+					tag: data.tag,
+					role: data.role,
 					webhook: data.webhook_id ? new WebhookClient({ id: data.webhook_id, token: data.webhook_token }) : null
 				});
 			});
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(Collections.CLAN_FEED_LOGS)
-			.findOne({ clan_id: new ObjectId(id) });
+		const data = await this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clan_id: new ObjectId(id) });
 
 		if (!data) return null;
 		return this.cached.set(id, {
 			guild: data.guild,
 			channel: data.channel,
-			tag: data.tag, role: data.role
+			tag: data.tag,
+			role: data.role
 		});
 	}
 

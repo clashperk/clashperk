@@ -1,38 +1,32 @@
-import { Command, Flag } from 'discord-akairo';
+import { CommandInteraction } from 'discord.js';
+import { Command } from '../../lib';
+import { Messages } from '../../util/Constants';
 
 export default class SetupEnableCommand extends Command {
 	public constructor() {
 		super('setup-enable', {
-			category: 'setup',
+			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: [
-					'Enable features or assign clans to channels.'
-				],
-				usage: '[option] [#clanTag] [#channel] [color] [role]',
-				examples: []
-			},
-			optionFlags: ['--option']
+				content: ['Enable features or assign clans to channels.']
+			}
 		});
 	}
 
-	public *args(): unknown {
-		const method = yield {
-			type: [
-				['setup-channel-link', 'channel-link'],
-				['setup-clan-embed', 'clan-embed'],
-				['setup-server-link', 'server-link'],
-				['setup-last-seen', 'lastseen'],
-				['setup-clan-feed', 'clan-feed'],
-				['setup-donations', 'donation-log'],
-				['setup-clan-games', 'clan-games'],
-				['setup-clan-wars', 'war-feed']
-			],
-			flag: ['--option'],
-			match: 'option'
-		};
+	public exec(interaction: CommandInteraction<'cached'>, args: { option: string }) {
+		const command = {
+			'channel-link': this.handler.modules.get('setup-channel-link')!,
+			'clan-embed': this.handler.modules.get('setup-clan-embed')!,
+			'server-link': this.handler.modules.get('setup-server-link')!,
+			'lastseen': this.handler.modules.get('setup-clan-log')!,
+			'clan-feed': this.handler.modules.get('setup-clan-log')!,
+			'donation-log': this.handler.modules.get('setup-clan-log')!,
+			'clan-games': this.handler.modules.get('setup-clan-log')!,
+			'war-feed': this.handler.modules.get('setup-clan-log')!
+		}[args.option];
 
-		return Flag.continue(method);
+		if (!command) return interaction.reply(Messages.COMMAND.OPTION_NOT_FOUND);
+		return this.handler.exec(interaction, command, args);
 	}
 }

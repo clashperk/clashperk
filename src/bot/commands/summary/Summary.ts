@@ -1,67 +1,30 @@
-import { Command, Flag, PrefixSupplier } from 'discord-akairo';
-import { Message, MessageEmbed } from 'discord.js';
+import { Command } from '../../lib';
+import { CommandInteraction } from 'discord.js';
+import { Messages } from '../../util/Constants';
 
 export default class SummaryCommand extends Command {
 	public constructor() {
 		super('summary', {
-			aliases: ['summary'],
-			category: 'search',
+			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: [
-					'Summary of wars/clans/clan games for all clans.',
-					'',
-					'• **War Summary**',
-					'• `WAR`',
-					'',
-					'• **Clan Games**',
-					'• `GAME`',
-					'',
-					'• **Clan Summary**',
-					'• `CLAN`',
-					'',
-					'• **Top Donations**',
-					'• `DONATION`'
-				],
-				usage: '[war|clan|game|don]',
-				examples: ['war', 'clan', 'game', 'don']
-			},
-			optionFlags: ['--option']
+				content: ['Summary of wars/clans/clan games for all clans.']
+			}
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const sub = yield {
-			flag: '--option',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: [
-				['war-summary', 'war', 'wars'],
-				['clan-summary', 'clan', 'clans'],
-				['trophy-summary', 'trophy', 'trophies'],
-				['donation-summary', 'don', 'donation', 'donations'],
-				['clan-games-summary', 'game', 'games', 'score', 'scores'],
-				['player-donation-summary', 'player-donations', 'playerdon', 'pd']
-			],
-			otherwise: (msg: Message) => this.handler.runCommand(msg, this, {})
-		};
+	public exec(interaction: CommandInteraction, args: { option: string }) {
+		const command = {
+			'wars': this.handler.modules.get('war-summary')!,
+			'clans': this.handler.modules.get('clan-summary')!,
+			'trophies': this.handler.modules.get('trophy-summary')!,
+			'donations': this.handler.modules.get('donation-summary')!,
+			'games': this.handler.modules.get('clan-games-summary')!,
+			'player-donations': this.handler.modules.get('player-donation-summary')!
+		}[args.option];
 
-		return Flag.continue(sub);
-	}
-
-	public exec(message: Message) {
-		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
-		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
-			.setDescription([
-				`\`${prefix}summary ${this.description.usage as string}\``,
-				'',
-				this.description.content.join('\n'),
-				'',
-				'**Examples**',
-				this.description.examples.map((en: string) => `\`${prefix}summary ${en}\``).join('\n')
-			].join('\n'));
-
-		return message.util!.send({ embeds: [embed] });
+		if (!command) return interaction.reply(Messages.COMMAND.OPTION_NOT_FOUND);
+		return this.handler.exec(interaction, command, args);
 	}
 }

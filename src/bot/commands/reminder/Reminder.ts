@@ -1,32 +1,26 @@
-import { Command, Flag } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Command } from '../../lib';
+import { CommandInteraction } from 'discord.js';
+import { Messages } from '../../util/Constants';
 
 export default class ReminderCommand extends Command {
 	public constructor() {
 		super('reminder', {
-			aliases: ['reminder', 'autoping'],
 			category: 'setup',
 			channel: 'guild',
 			description: {
-				content: [
-					'Create, delete or view war attack reminders.'
-				],
-				usage: '',
-				examples: []
+				content: ['Create, delete or view war attack reminders.']
 			}
 		});
 	}
 
-	public *args(): unknown {
-		const sub = yield {
-			type: [
-				['reminder-create', 'create'],
-				['reminder-delete', 'delete'],
-				['reminder-list', 'list']
-			],
-			otherwise: (msg: Message) => this.handler.handleDirectCommand(msg, 'reminder', this.handler.modules.get('help')!)
-		};
+	public exec(interaction: CommandInteraction, args: { command: string }) {
+		const command = {
+			create: this.handler.modules.get('reminder-create')!,
+			delete: this.handler.modules.get('reminder-delete')!,
+			list: this.handler.modules.get('reminder-list')!
+		}[args.command];
 
-		return Flag.continue(sub);
+		if (!command) return interaction.reply(Messages.COMMAND.OPTION_NOT_FOUND);
+		return this.handler.exec(interaction, command, args);
 	}
 }

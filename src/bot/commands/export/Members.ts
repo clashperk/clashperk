@@ -1,11 +1,10 @@
-import { GuildMember, Message, MessageEmbed, Collection } from 'discord.js';
-import RAW_TROOPS_DATA from '../../util/TroopsInfo';
-import { Collections } from '../../util/Constants';
-import { EMOJIS } from '../../util/Emojis';
+import { GuildMember, CommandInteraction, MessageEmbed, Collection } from 'discord.js';
+import RAW_TROOPS_DATA from '../../util/Troops';
+import { Collections, Messages } from '../../util/Constants';
 import Workbook from '../../struct/Excel';
-import { Command } from 'discord-akairo';
+import { Command } from '../../lib';
 import { Player } from 'clashofclans.js';
-import { Util } from '../../util/Util';
+import { Util } from '../../util';
 
 const achievements = [
 	'Gold Grab',
@@ -32,123 +31,93 @@ export default class ExportClanMembersCommand extends Command {
 		super('export-members', {
 			category: 'export',
 			channel: 'guild',
-			description: {},
-			clientPermissions: ['EMBED_LINKS'],
-			optionFlags: ['--tag']
+			clientPermissions: ['EMBED_LINKS']
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const tags = yield {
-			flag: '--tag',
-			unordered: true,
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, args?: string) => args ? args.split(/ +/g) : null
-		};
-
-		return { tags };
-	}
-
-	private async getClans(message: Message, aliases: string[]) {
-		const cursor = this.client.db.collection(Collections.CLAN_STORES)
-			.find({
-				guild: message.guild!.id,
-				$or: [
-					{
-						tag: { $in: aliases.map(tag => this.fixTag(tag)) }
-					},
-					{
-						alias: { $in: aliases.map(alias => alias.toLowerCase()) }
-					}
-				]
-			});
-
-		return cursor.toArray();
-	}
-
-	private fixTag(tag: string) {
-		return this.client.http.fixTag(tag);
-	}
-
-	public async exec(message: Message, { tags }: { tags?: string[] }) {
-		if (!this.client.patrons.get(message)) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
+		if (!this.client.patrons.get(interaction)) {
 			const embed = new MessageEmbed()
-				.setDescription([
-					'**Patron only Command**',
-					'This command is only available on Patron servers.',
-					'Visit https://patreon.com/clashperk for more details.'
-				].join('\n'))
+				.setDescription(
+					[
+						'**Patron only Command**',
+						'This command is only available on Patron servers.',
+						'Visit https://patreon.com/clashperk for more details.'
+					].join('\n')
+				)
 				.setImage('https://i.imgur.com/Uc5G2oS.png');
-			return message.util!.send({ embeds: [embed] });
+			return interaction.reply({ embeds: [embed], ephemeral: true });
 		}
 
-		const msg = await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
-		let clans = [];
-		if (tags?.length) {
-			clans = await this.getClans(message, tags);
-			if (!clans.length) return message.util!.send(`*No clans found in my database for the specified argument.*`);
-		} else {
-			clans = await this.client.storage.findAll(message.guild!.id);
-		}
+		// TODO: Fix
+		await interaction.deferReply();
 
+		const tags = args.tag?.split(/ +/g) ?? [];
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guildId, tags)
+			: await this.client.storage.findAll(interaction.guildId);
+
+		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
 		if (!clans.length) {
-			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
+			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
-		const _clans = await Promise.all(clans.map(clan => this.client.http.clan(clan.tag)));
+		const _clans = await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)));
 		const members = [];
-		for (const clan of _clans.filter(res => res.ok)) {
+		for (const clan of _clans.filter((res) => res.ok)) {
 			const fetched = await this.client.http.detailedClanMembers(clan.memberList);
-			const mems = fetched.filter(res => res.ok).map(m => ({
-				name: m.name,
-				tag: m.tag,
-				clan: clan.name,
-				townHallLevel: m.townHallLevel,
-				heroes: m.heroes.length ? m.heroes.filter(a => a.village === 'home') : [],
-				achievements: this.getAchievements(m),
-				pets: m.troops.filter(troop => troop.name in PETS)
-					.sort((a, b) => PETS[a.name] - PETS[b.name]),
-				rushed: Number(this.rushedPercentage(m)),
-				heroRem: Number(this.heroUpgrades(m)),
-				labRem: Number(this.labUpgrades(m))
-			}));
+			const mems = fetched
+				.filter((res) => res.ok)
+				.map((m) => ({
+					name: m.name,
+					tag: m.tag,
+					clan: clan.name,
+					townHallLevel: m.townHallLevel,
+					heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : [],
+					achievements: this.getAchievements(m),
+					pets: m.troops.filter((troop) => troop.name in PETS).sort((a, b) => PETS[a.name] - PETS[b.name]),
+					rushed: Number(this.rushedPercentage(m)),
+					heroRem: Number(this.heroUpgrades(m)),
+					labRem: Number(this.labUpgrades(m))
+				}));
 
 			members.push(...mems);
 		}
 
 		const memberTags = [];
 		memberTags.push(...(await this.client.http.getDiscordLinks(members)));
-		const dbMembers = await this.client.db.collection(Collections.LINKED_PLAYERS)
-			.find({ 'entries.tag': { $in: members.map(m => m.tag) } })
+		const dbMembers = await this.client.db
+			.collection(Collections.LINKED_PLAYERS)
+			.find({ 'entries.tag': { $in: members.map((m) => m.tag) } })
 			.toArray();
-		if (dbMembers.length) this.updateUsers(message, dbMembers);
+		if (dbMembers.length) this.updateUsers(interaction, dbMembers);
 		for (const member of dbMembers) {
 			for (const m of member.entries) {
-				if (!members.find(mem => mem.tag === m.tag)) continue;
-				if (memberTags.find(mem => mem.tag === m.tag)) continue;
+				if (!members.find((mem) => mem.tag === m.tag)) continue;
+				if (memberTags.find((mem) => mem.tag === m.tag)) continue;
 				memberTags.push({ tag: m.tag, user: member.user });
 			}
 		}
 		let guildMembers = new Collection<string, GuildMember>();
 		const fetchedMembers = await Promise.all(
-			Util.chunk(memberTags, 100).map(members => message.guild!.members.fetch({ user: members.map(m => m.user) }))
+			Util.chunk(memberTags, 100).map((members) => interaction.guild.members.fetch({ user: members.map((m) => m.user) }))
 		);
 		guildMembers = guildMembers.concat(...fetchedMembers);
 
 		for (const mem of members) {
-			const user = memberTags.find(user => user.tag === mem.tag)?.user;
+			const user = memberTags.find((user) => user.tag === mem.tag)?.user;
 			// @ts-expect-error
 			mem.user_tag = guildMembers.get(user)?.user.tag;
 		}
 		guildMembers.clear();
 
-		members.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
+		members
+			.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
 			.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
 		const buffer = await this.excel(members);
-		if (msg.deletable && !message.interaction) await msg.delete();
-		return message.util!.send({
-			content: `**${message.guild!.name} Members**`,
+		return interaction.editReply({
+			content: `**${interaction.guild.name} Members**`,
 			files: [{ attachment: Buffer.from(buffer), name: 'clan_members.xlsx' }]
 		});
 	}
@@ -174,7 +143,7 @@ export default class ExportClanMembersCommand extends Command {
 			{ header: 'Electro Owl', width: 10 },
 			{ header: 'Mighty Yak', width: 10 },
 			{ header: 'Unicorn', width: 10 },
-			...achievements.map(header => ({ header, width: 16 }))
+			...achievements.map((header) => ({ header, width: 16 }))
 		] as any[];
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
@@ -183,8 +152,15 @@ export default class ExportClanMembersCommand extends Command {
 		}
 
 		sheet.addRows(
-			members.map(m => [
-				m.name, m.tag, m.user_tag, m.clan, m.townHallLevel, m.rushed, m.labRem, m.heroRem,
+			members.map((m) => [
+				m.name,
+				m.tag,
+				m.user_tag,
+				m.clan,
+				m.townHallLevel,
+				m.rushed,
+				m.labRem,
+				m.heroRem,
 				...m.heroes.map((h: any) => h.level).concat(Array(4 - m.heroes.length).fill('')),
 				...m.pets.map((h: any) => h.level).concat(Array(4 - m.pets.length).fill('')),
 				...m.achievements.map((v: any) => v.value)
@@ -195,80 +171,86 @@ export default class ExportClanMembersCommand extends Command {
 	}
 
 	private getAchievements(data: Player) {
-		return achievements.map(name => ({ name, value: data.achievements.find(en => en.name === name)?.value ?? 0 }));
+		return achievements.map((name) => ({ name, value: data.achievements.find((en) => en.name === name)?.value ?? 0 }));
 	}
 
-	private updateUsers(message: Message, members: any[]) {
+	private updateUsers(interaction: CommandInteraction, members: any[]) {
 		for (const data of members) {
-			const member = message.guild!.members.cache.get(data.user);
+			const member = interaction.guild!.members.cache.get(data.user);
 			if (member && data.user_tag !== member.user.tag) {
-				this.client.resolver.updateUserTag(message.guild!, data.user);
+				this.client.resolver.updateUserTag(interaction.guild!, data.user);
 			}
 		}
 	}
 
 	private rushedPercentage(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter(unit => !unit.seasonal)
-			.reduce((prev, unit) => {
-				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+			(prev, unit) => {
+				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home') {
 					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
 					prev.total += unit.levels[data.townHallLevel - 2];
 				}
 				return prev;
-			}, { total: 0, levels: 0 });
+			},
+			{ total: 0, levels: 0 }
+		);
 		if (rem.total === 0) return 0;
-		return (100 - ((rem.levels * 100) / rem.total)).toFixed(2);
+		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
 	}
 
 	private labUpgrades(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter(unit => !unit.seasonal)
-			.reduce((prev, unit) => {
-				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+			(prev, unit) => {
+				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.category !== 'hero' && unit.village === 'home') {
 					prev.levels += apiTroop?.level ?? 0;
 					prev.total += unit.levels[data.townHallLevel - 1];
 				}
 				return prev;
-			}, { total: 0, levels: 0 });
+			},
+			{ total: 0, levels: 0 }
+		);
 		if (rem.total === 0) return 0;
 		return ((rem.levels * 100) / rem.total).toFixed(2);
 	}
 
 	private heroUpgrades(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter(unit => !unit.seasonal)
-			.reduce((prev, unit) => {
-				const apiTroop = apiTroops.find(u => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+			(prev, unit) => {
+				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.category === 'hero' && unit.village === 'home') {
 					prev.levels += apiTroop?.level ?? 0;
 					prev.total += unit.levels[data.townHallLevel - 1];
 				}
 				return prev;
-			}, { total: 0, levels: 0 });
+			},
+			{ total: 0, levels: 0 }
+		);
 		if (rem.total === 0) return 0;
 		return ((rem.levels * 100) / rem.total).toFixed(2);
 	}
 
 	private apiTroops(data: Player) {
 		return [
-			...data.troops.map(u => ({
+			...data.troops.map((u) => ({
 				name: u.name,
 				level: u.level,
 				maxLevel: u.maxLevel,
 				type: 'troop',
 				village: u.village
 			})),
-			...data.heroes.map(u => ({
+			...data.heroes.map((u) => ({
 				name: u.name,
 				level: u.level,
 				maxLevel: u.maxLevel,
 				type: 'hero',
 				village: u.village
 			})),
-			...data.spells.map(u => ({
+			...data.spells.map((u) => ({
 				name: u.name,
 				level: u.level,
 				maxLevel: u.maxLevel,

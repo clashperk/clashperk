@@ -1,11 +1,11 @@
-import { Message } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import { Collections } from '../../util/Constants';
 import { Reminder } from '../../struct/RemindScheduler';
-import { Command } from 'discord-akairo';
-import { Util } from '../../util/Util';
+import { Command } from '../../lib';
+import { Util } from '../../util';
 import moment from 'moment';
 
-const roles: { [key: string]: string } = {
+const roles: Record<string, string> = {
 	member: 'Member',
 	admin: 'Elder',
 	coLeader: 'Co-Leader',
@@ -17,30 +17,28 @@ export default class ReminderListCommand extends Command {
 		super('reminder-list', {
 			category: 'reminder',
 			channel: 'guild',
-			description: {},
-			clientPermissions: ['EMBED_LINKS']
+			clientPermissions: ['EMBED_LINKS'],
+			defer: true,
+			ephemeral: true
 		});
 	}
 
-	public async exec(message: Message) {
-		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS)
-			.find({ guild: message.guild!.id })
-			.toArray();
-		if (!reminders.length) return message.util!.send('**You have no reminders.**');
-		const clans = await this.client.storage.findAll(message.guild!.id);
+	public async exec(interaction: CommandInteraction) {
+		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).find({ guild: interaction.guild!.id }).toArray();
+		if (!reminders.length) return interaction.editReply('**You have no reminders.**');
+		const clans = await this.client.storage.findAll(interaction.guild!.id);
 
-		const label = (duration: number) => moment.duration(duration)
-			.format('H[h], m[m], s[s]', { trim: 'both mid' });
+		const label = (duration: number) => moment.duration(duration).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
 		const chunks = reminders.map((reminder, index) => {
-			const _clans = clans.filter(clan => reminder.clans.includes(clan.tag)).map(clan => clan.name);
+			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
 			return [
 				`**🔔 Reminder (${index + 1})**`,
 				`${label(reminder.duration)} remaining`,
 				'**Channel**',
 				`<#${reminder.channel}>`,
 				'**Roles**',
-				reminder.roles.length === 4 ? 'Any' : `${reminder.roles.map(role => roles[role]).join(', ')}`,
+				reminder.roles.length === 4 ? 'Any' : `${reminder.roles.map((role) => roles[role]).join(', ')}`,
 				'**Town Halls**',
 				reminder.townHalls.length === 13 ? 'Any' : `${reminder.townHalls.join(', ')}`,
 				'**Remaining Hits**',
@@ -52,7 +50,7 @@ export default class ReminderListCommand extends Command {
 			].join('\n');
 		});
 
-		const contents = Util.splitMessage(chunks.join('\n\u200b\n'), { 'maxLength': 2000, 'char': '\n\u200b\n' });
-		for (const content of contents) await message.channel.send(content);
+		const contents = Util.splitMessage(chunks.join('\n\u200b\n'), { maxLength: 2000, char: '\n\u200b\n' });
+		for (const content of contents) await interaction.followUp(content);
 	}
 }

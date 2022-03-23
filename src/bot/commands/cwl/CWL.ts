@@ -1,88 +1,39 @@
-import { Command, Flag, PrefixSupplier } from 'discord-akairo';
-import { MessageEmbed, Message } from 'discord.js';
+import { Args, Command } from '../../lib';
+import { CommandInteraction } from 'discord.js';
 
 export default class CWLCommand extends Command {
 	public constructor() {
 		super('cwl', {
-			aliases: ['cwl'],
 			category: 'war',
+			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: [
-					'CWL season overview and summary.',
-					'',
-					'**Available Methods**',
-					'• roster `<clanTag>`',
-					'• round `<clanTag>`',
-					'• stars `<clanTag>`',
-					'• attacks `<clanTag>`',
-					'• stats `<clanTag>`',
-					'• members `<clanTag>`',
-					'• lineup `<clanTag>`',
-					'• ranks `<clanTag>`',
-					'• export `<method>`',
-					'',
-					'For additional `<...args>` usage refer to the examples below.'
-				],
-				examples: [
-					'roster #8QU8J9LP',
-					'round #8QU8J9LP',
-					'attacks #8QU8J9LP',
-					'stats #8QU8J9LP',
-					'members #8QU8J9LP',
-					'lineup #8QU8J9LP',
-					'stars #8QU8J9LP',
-					'ranks #8QU8J9LP',
-					'export clans/all'
-				],
-				usage: '<method> <...args>'
-			},
-			optionFlags: ['--option']
+				content: ['CWL season overview and summary.']
+			}
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const command = yield {
-			flag: '--option',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: [
-				['cwl-round', 'round'],
-				['cwl-stats', 'stats'],
-				['cwl-lineup', 'lineup'],
-				['cwl-export', 'export'],
-				['cwl-roster', 'roster'],
-				['cwl-attacks', 'attacks'],
-				['cwl-stars', 'stars', 'star'],
-				['cwl-members', 'members', 'mem']
-			],
-			otherwise: (message: Message) => {
-				const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
-				const embed = new MessageEmbed()
-					.setColor(this.client.embed(message))
-					.setAuthor({ name: 'Command List', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
-					.setDescription(`To view more details for a command, do \`${prefix}help <command>\``);
-				const commands = this.handler.categories.get('cwl')!.values();
-				embed.addField('__**CWL**__', [
-					Array.from(commands)
-						.concat(this.getCommand('cwl-round'))
-						.concat(this.getCommand('cwl-roster'))
-						.map(command => {
-							const description: string = Array.isArray(command.description.content)
-								? command.description.content[0]
-								: command.description.content;
-							return `**\`${prefix}${command.id.replace(/-/g, '\u2002')}\`**\n${description}`;
-						})
-						.join('\n')
-				].join('\n'));
-
-				return { embeds: [embed] };
+	public args(): Args {
+		return {
+			option: {
+				id: 'command',
+				match: 'STRING'
 			}
 		};
-
-		return Flag.continue(command);
 	}
 
-	private getCommand(id: string) {
-		return this.handler.modules.get(id)!;
+	public exec(interaction: CommandInteraction, args: { command: string }) {
+		const command = {
+			round: this.handler.modules.get('cwl-round')!,
+			stats: this.handler.modules.get('cwl-stats')!,
+			lineup: this.handler.modules.get('cwl-lineup')!,
+			export: this.handler.modules.get('cwl-export')!,
+			roster: this.handler.modules.get('cwl-roster')!,
+			attacks: this.handler.modules.get('cwl-attacks')!,
+			stars: this.handler.modules.get('cwl-stars')!,
+			members: this.handler.modules.get('cwl-members')!
+		}[args.command];
+
+		return this.handler.exec(interaction, command ?? this.handler.modules.get('cwl-roster')!, args);
 	}
 }

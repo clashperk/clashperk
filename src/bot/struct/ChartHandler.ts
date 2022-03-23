@@ -1,9 +1,6 @@
 import Chart from '@clashperk/quickchart';
 
-const months = [
-	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-	'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const sizes = {
 	1: { width: 500, height: 300 },
@@ -131,14 +128,14 @@ export default {
 							label: `Addition`,
 							backgroundColor: '#36a2eb80',
 							borderColor: '#36a2eb',
-							data: [...collection.map(d => d.value.addition)]
+							data: [...collection.map((d) => d.value.addition)]
 						},
 						{
 							type: 'bar',
 							label: 'Deletion',
 							backgroundColor: '#ff638480',
 							borderColor: '#ff6384',
-							data: [...collection.map(d => Math.abs(d.value.deletion))]
+							data: [...collection.map((d) => Math.abs(d.value.deletion))]
 						},
 						{
 							type: 'line',
@@ -146,7 +143,7 @@ export default {
 							backgroundColor: '#69c49a',
 							borderColor: '#69c49a',
 							fill: false,
-							data: [...collection.map(d => d.value.addition - d.value.deletion)]
+							data: [...collection.map((d) => d.value.addition - d.value.deletion)]
 						}
 					]
 				},

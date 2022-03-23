@@ -12,4 +12,4 @@ RUN npm i
 
 RUN npm run build
 
-CMD ["node", "--trace-warnings", "--enable-source-maps", "dist/src/index.js"]
+CMD ["node", "--trace-warnings", "--enable-source-maps", "--es-module-specifier-resolution=node", "dist/src/index.js"]

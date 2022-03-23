@@ -1,9 +1,9 @@
 import { Collections, Flags } from '../util/Constants';
 import { ObjectId, Collection } from 'mongodb';
-import { Message } from 'discord.js';
-import Client from './Client';
+import { CommandInteraction } from 'discord.js';
+import { Client } from './Client';
 import { ClanWarLeagueGroup } from 'clashofclans.js';
-import { Season } from '../util/Util';
+import { Season } from '../util';
 
 export interface ClanStore {
 	_id: ObjectId;
@@ -36,28 +36,53 @@ export default class StorageHandler {
 		return this.collection.find({ guild: id }).toArray();
 	}
 
-	public async register(message: Message, data: any) {
+	public async search(guildId: string, query: string[]) {
+		if (!query.length) return [];
+		return this.collection
+			.find({
+				$or: [
+					{
+						tag: { $in: query.map((tag) => this.fixTag(tag)) }
+					},
+					{
+						guild: guildId,
+						alias: { $in: query.map((alias) => alias.toLowerCase()) }
+					}
+				]
+			})
+			.toArray();
+	}
+
+	private fixTag(tag: string) {
+		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O/g, '0')}`;
+	}
+
+	public async register(message: CommandInteraction, data: any) {
 		const ex = await this.collection.findOne({ guild: message.guild!.id, autoRole: 2 });
 
 		const collection = await this.collection.findOneAndUpdate(
 			{ tag: data.tag, guild: data.guild },
 			{
 				$set: {
-					name: data.name, tag: data.tag,
-					paused: false, verified: true, active: true,
-					guild: message.guild!.id, patron: this.client.patrons.get(message.guild!.id)
+					name: data.name,
+					tag: data.tag,
+					paused: false,
+					verified: true,
+					active: true,
+					guild: message.guild!.id,
+					patron: this.client.patrons.get(message.guild!.id)
 				},
 				$setOnInsert: ex
 					? {
-						roles: ex.roles,
-						createdAt: new Date(),
-						role_ids: ex.role_ids,
-						autoRole: ex.autoRole,
-						secureRole: ex.secureRole
-					}
+							roles: ex.roles,
+							createdAt: new Date(),
+							role_ids: ex.role_ids,
+							autoRole: ex.autoRole,
+							secureRole: ex.secureRole
+					  }
 					: {
-						createdAt: new Date()
-					},
+							createdAt: new Date()
+					  },
 				$bit: {
 					flag: { or: Number(data.op) }
 				}
@@ -68,8 +93,9 @@ export default class StorageHandler {
 		const id = collection.value!._id.toHexString();
 		switch (data.op) {
 			case Flags.DONATION_LOG:
-				await this.client.db.collection(Collections.DONATION_LOGS)
-					.updateOne({ tag: data.tag, guild: data.guild }, {
+				await this.client.db.collection(Collections.DONATION_LOGS).updateOne(
+					{ tag: data.tag, guild: data.guild },
+					{
 						$set: {
 							clan_id: new ObjectId(id),
 							tag: data.tag,
@@ -81,11 +107,14 @@ export default class StorageHandler {
 						$min: {
 							createdAt: new Date()
 						}
-					}, { upsert: true });
+					},
+					{ upsert: true }
+				);
 				break;
 			case Flags.CLAN_FEED_LOG:
-				await this.client.db.collection(Collections.CLAN_FEED_LOGS)
-					.updateOne({ tag: data.tag, guild: data.guild }, {
+				await this.client.db.collection(Collections.CLAN_FEED_LOGS).updateOne(
+					{ tag: data.tag, guild: data.guild },
+					{
 						$set: {
 							clan_id: new ObjectId(id),
 							tag: data.tag,
@@ -97,11 +126,14 @@ export default class StorageHandler {
 						$min: {
 							createdAt: new Date()
 						}
-					}, { upsert: true });
+					},
+					{ upsert: true }
+				);
 				break;
 			case Flags.LAST_SEEN_LOG:
-				await this.client.db.collection(Collections.LAST_SEEN_LOGS)
-					.updateOne({ tag: data.tag, guild: data.guild }, {
+				await this.client.db.collection(Collections.LAST_SEEN_LOGS).updateOne(
+					{ tag: data.tag, guild: data.guild },
+					{
 						$set: {
 							clan_id: new ObjectId(id),
 							tag: data.tag,
@@ -114,11 +146,14 @@ export default class StorageHandler {
 						$min: {
 							createdAt: new Date()
 						}
-					}, { upsert: true });
+					},
+					{ upsert: true }
+				);
 				break;
 			case Flags.CLAN_GAMES_LOG:
-				await this.client.db.collection(Collections.CLAN_GAMES_LOGS)
-					.updateOne({ tag: data.tag, guild: data.guild }, {
+				await this.client.db.collection(Collections.CLAN_GAMES_LOGS).updateOne(
+					{ tag: data.tag, guild: data.guild },
+					{
 						$set: {
 							clan_id: new ObjectId(id),
 							tag: data.tag,
@@ -131,11 +166,14 @@ export default class StorageHandler {
 						$min: {
 							createdAt: new Date()
 						}
-					}, { upsert: true });
+					},
+					{ upsert: true }
+				);
 				break;
 			case Flags.CLAN_EMBED_LOG:
-				await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
-					.updateOne({ tag: data.tag, guild: data.guild }, {
+				await this.client.db.collection(Collections.CLAN_EMBED_LOGS).updateOne(
+					{ tag: data.tag, guild: data.guild },
+					{
 						$set: {
 							clan_id: new ObjectId(id),
 							tag: data.tag,
@@ -149,11 +187,14 @@ export default class StorageHandler {
 						$min: {
 							createdAt: new Date()
 						}
-					}, { upsert: true });
+					},
+					{ upsert: true }
+				);
 				break;
 			case Flags.CLAN_WAR_LOG:
-				await this.client.db.collection(Collections.CLAN_WAR_LOGS)
-					.updateOne({ tag: data.tag, guild: data.guild }, {
+				await this.client.db.collection(Collections.CLAN_WAR_LOGS).updateOne(
+					{ tag: data.tag, guild: data.guild },
+					{
 						$set: {
 							clan_id: new ObjectId(id),
 							tag: data.tag,
@@ -164,7 +205,9 @@ export default class StorageHandler {
 						$min: {
 							createdAt: new Date()
 						}
-					}, { upsert: true });
+					},
+					{ upsert: true }
+				);
 				break;
 			default:
 				break;
@@ -174,62 +217,50 @@ export default class StorageHandler {
 	}
 
 	public async delete(id: string) {
-		await this.client.db.collection(Collections.DONATION_LOGS)
-			.deleteOne({ clan_id: new ObjectId(id) });
+		await this.client.db.collection(Collections.DONATION_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 
-		await this.client.db.collection(Collections.CLAN_FEED_LOGS)
-			.deleteOne({ clan_id: new ObjectId(id) });
+		await this.client.db.collection(Collections.CLAN_FEED_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 
-		await this.client.db.collection(Collections.LAST_SEEN_LOGS)
-			.deleteOne({ clan_id: new ObjectId(id) });
+		await this.client.db.collection(Collections.LAST_SEEN_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 
-		await this.client.db.collection(Collections.CLAN_GAMES_LOGS)
-			.deleteOne({ clan_id: new ObjectId(id) });
+		await this.client.db.collection(Collections.CLAN_GAMES_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 
-		await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
-			.deleteOne({ clan_id: new ObjectId(id) });
+		await this.client.db.collection(Collections.CLAN_EMBED_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 
-		await this.client.db.collection(Collections.CLAN_WAR_LOGS)
-			.deleteOne({ clan_id: new ObjectId(id) });
+		await this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 
-		return this.client.db.collection(Collections.CLAN_STORES)
-			.deleteOne({ _id: new ObjectId(id) });
+		return this.client.db.collection(Collections.CLAN_STORES).deleteOne({ _id: new ObjectId(id) });
 	}
 
 	public async remove(id: string, data: any) {
 		if (data.op === Flags.DONATION_LOG) {
-			return this.client.db.collection(Collections.DONATION_LOGS)
-				.deleteOne({ clan_id: new ObjectId(id) });
+			return this.client.db.collection(Collections.DONATION_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 		}
 
 		if (data.op === Flags.CLAN_FEED_LOG) {
-			return this.client.db.collection(Collections.CLAN_FEED_LOGS)
-				.deleteOne({ clan_id: new ObjectId(id) });
+			return this.client.db.collection(Collections.CLAN_FEED_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 		}
 
 		if (data.op === Flags.LAST_SEEN_LOG) {
-			return this.client.db.collection(Collections.LAST_SEEN_LOGS)
-				.deleteOne({ clan_id: new ObjectId(id) });
+			return this.client.db.collection(Collections.LAST_SEEN_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 		}
 
 		if (data.op === Flags.CLAN_GAMES_LOG) {
-			return this.client.db.collection(Collections.CLAN_GAMES_LOGS)
-				.deleteOne({ clan_id: new ObjectId(id) });
+			return this.client.db.collection(Collections.CLAN_GAMES_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 		}
 
 		if (data.op === Flags.CLAN_EMBED_LOG) {
-			return this.client.db.collection(Collections.CLAN_EMBED_LOGS)
-				.deleteOne({ clan_id: new ObjectId(id) });
+			return this.client.db.collection(Collections.CLAN_EMBED_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 		}
 
 		if (data.op === Flags.CLAN_WAR_LOG) {
-			return this.client.db.collection(Collections.CLAN_WAR_LOGS)
-				.deleteOne({ clan_id: new ObjectId(id) });
+			return this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clan_id: new ObjectId(id) });
 		}
 	}
 
 	public async getWarTags(tag: string): Promise<ClanWarLeagueGroup | null> {
-		const data = await this.client.db.collection(Collections.CWL_GROUPS)
+		const data = await this.client.db
+			.collection(Collections.CWL_GROUPS)
 			.find({ 'clans.tag': tag })
 			.sort({ createdAt: -1 })
 			.limit(1)
@@ -237,18 +268,20 @@ export default class StorageHandler {
 		if (!data || data.warTags?.[tag]?.length !== data.clans.length - 1) return null;
 
 		if (
-			(new Date().getMonth() === new Date(data.season as string).getMonth()) ||
-			(new Date(data.season as string).getMonth() === (new Date().getMonth() - 1) && new Date().getDate() <= 8)
-		) return data as any;
+			new Date().getMonth() === new Date(data.season as string).getMonth() ||
+			(new Date(data.season as string).getMonth() === new Date().getMonth() - 1 && new Date().getDate() <= 8)
+		)
+			return data as any;
 
 		return null;
 	}
 
 	public async pushWarTags(tag: string, body: ClanWarLeagueGroup) {
-		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
+		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 		if (rounds.length !== body.clans.length - 1) return null;
 
-		const data = await this.client.db.collection(Collections.CWL_GROUPS)
+		const data = await this.client.db
+			.collection(Collections.CWL_GROUPS)
 			.find({ 'clans.tag': tag })
 			.sort({ createdAt: -1 })
 			.limit(1)
@@ -256,10 +289,10 @@ export default class StorageHandler {
 		if (data?.season === this.seasonID) return null;
 		if (data && new Date().getMonth() <= new Date(data.season as string).getMonth()) return null;
 
-		const warTags = body.clans.reduce((pre, clan) => {
+		const warTags = body.clans.reduce<{ [key: string]: string[] }>((pre, clan) => {
 			pre[clan.tag] = [];
 			return pre;
-		}, {} as { [key: string]: string[] });
+		}, {});
 
 		for (const round of rounds) {
 			for (const warTag of round.warTags) {
@@ -274,24 +307,25 @@ export default class StorageHandler {
 	}
 
 	private async pushToDB(tag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
-		return this.client.db.collection(Collections.CWL_GROUPS)
-			.updateOne({ 'clans.tag': tag, 'season': Season.generateID(season) }, {
+		return this.client.db.collection(Collections.CWL_GROUPS).updateOne(
+			{ 'clans.tag': tag, 'season': Season.generateID(season) },
+			{
 				$set: {
-					warTags, rounds
+					warTags,
+					rounds
 				},
 				$setOnInsert: {
 					id: await this.uuid(),
 					createdAt: new Date(),
-					clans: clans.map(clan => ({ tag: clan.tag, name: clan.name }))
+					clans: clans.map((clan) => ({ tag: clan.tag, name: clan.name }))
 				}
-			}, { upsert: true });
+			},
+			{ upsert: true }
+		);
 	}
 
 	private async uuid() {
-		const cursor = this.client.db.collection(Collections.CWL_GROUPS)
-			.find()
-			.sort({ id: -1 })
-			.limit(1);
+		const cursor = this.client.db.collection(Collections.CWL_GROUPS).find().sort({ id: -1 }).limit(1);
 
 		const uuid: number = (await cursor.next())?.id ?? 0;
 		cursor.close();

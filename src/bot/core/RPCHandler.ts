@@ -7,7 +7,7 @@ import LastSeenLog from './LastSeenLog';
 import ClanFeedLog from './ClanFeedLog';
 import DonationLog from './DonationLog';
 import ClanWarLog from './ClanWarLog';
-import Client from '../struct/Client';
+import { Client } from '../struct/Client';
 import Queue from '../struct/Queue';
 
 export default class RPCHandler {
@@ -31,7 +31,7 @@ export default class RPCHandler {
 	public pause(forced = false, ms = 5 * 60 * 1000) {
 		if (this.paused) return this.paused;
 		this.paused = Boolean(true);
-		if (forced) setTimeout(() => this.paused = Boolean(false), ms);
+		if (forced) setTimeout(() => (this.paused = Boolean(false)), ms);
 		return this.paused;
 	}
 
@@ -94,27 +94,39 @@ export default class RPCHandler {
 		await this.clanGamesLog.init();
 		await this.clanWarLog.init();
 
-		const collection = await this.client.db.collection(Collections.CLAN_STORES)
+		const collection = await this.client.db
+			.collection(Collections.CLAN_STORES)
 			.find({
-				paused: false, active: true, flag: { $gt: 0 },
-				guild: { $in: this.client.guilds.cache.map(guild => guild.id) }
+				paused: false,
+				active: true,
+				flag: { $gt: 0 },
+				guild: { $in: this.client.guilds.cache.map((guild) => guild.id) }
 			})
 			.toArray();
-		const sorted = collection.map(data => ({ data, rand: Math.random() }))
+		const sorted = collection
+			.map((data) => ({ data, rand: Math.random() }))
 			.sort((a, b) => a.rand - b.rand)
-			.map(col => col.data);
+			.map((col) => col.data);
 
-		await new Promise(resolve => {
-			this.client.rpc.loadClans({
-				data: JSON.stringify(sorted)
-			}, (err: any, res: any) => resolve(res?.data));
+		await new Promise((resolve) => {
+			this.client.rpc.loadClans(
+				{
+					data: JSON.stringify(sorted)
+				},
+				(err: any, res: any) => resolve(res?.data)
+			);
 		});
 
 		await this.broadcast();
-		return new Promise(resolve => this.client.rpc.init({
-			shardId: this.client.shard!.ids[0],
-			shards: this.client.shard!.count
-		}, (err: any, res: any) => resolve(res?.data)));
+		return new Promise((resolve) =>
+			this.client.rpc.init(
+				{
+					shardId: this.client.shard!.ids[0],
+					shards: this.client.shard!.count
+				},
+				(err: any, res: any) => resolve(res?.data)
+			)
+		);
 	}
 
 	public async add(id: string, data: { tag: string; guild: string; op: number }) {
@@ -131,7 +143,7 @@ export default class RPCHandler {
 		if (data.op.toString() in OP) {
 			await OP[data.op].add(id);
 		} else {
-			Object.values(OP).map(Op => Op.add(id));
+			Object.values(OP).map((Op) => Op.add(id));
 		}
 
 		const patron = Boolean(this.client.patrons.get(data.guild));
@@ -151,7 +163,7 @@ export default class RPCHandler {
 		if (data.op.toString() in OP) {
 			OP[data.op].delete(id);
 		} else {
-			Object.values(OP).map(Op => Op.delete(id));
+			Object.values(OP).map((Op) => Op.delete(id));
 		}
 
 		return this.client.rpc.remove({ data: JSON.stringify(data) }, () => null);

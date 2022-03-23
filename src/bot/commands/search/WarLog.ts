@@ -1,58 +1,50 @@
-import { MessageEmbed, Message } from 'discord.js';
+import { MessageEmbed, CommandInteraction } from 'discord.js';
 import { Collections, WarType } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
-import { Command } from 'discord-akairo';
-import { Clan } from 'clashofclans.js';
-import 'moment-duration-format';
+import { Command } from '../../lib';
 import moment from 'moment';
-import { Util } from '../../util/Util';
+import { Util } from '../../util';
 
 export default class WarLogCommand extends Command {
 	public constructor() {
 		super('warlog', {
-			aliases: ['warlog', 'wl'],
 			category: 'war',
+			channel: 'guild',
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
-				content: 'Shows last 10 Clan War Logs with War ID.',
-				usage: '<#clanTag>',
-				examples: ['#8QU8J9LP']
-			},
-			optionFlags: ['--tag']
+				content: 'Shows last 10 clan war logs with war Id.'
+			}
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const data = yield {
-			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
-		};
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
+		const data = await this.client.resolver.resolveClan(interaction, args.tag);
+		if (!data) return;
 
-		return { data };
-	}
-
-	public async exec(message: Message, { data }: { data: Clan }) {
 		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
+			.setColor(this.client.embed(interaction))
 			.setAuthor({
 				name: `${data.name} (${data.tag})`,
 				iconURL: `${data.badgeUrls.medium}`,
 				url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`
 			})
-			.setDescription([
-				`${data.warWins} Wins, ${data.isWarLogPublic ? `${data.warLosses!} Losses,` : ''} ${data.warWinStreak} Win Streak`
-			].join('\n'));
+			.setDescription(
+				[`${data.warWins} Wins, ${data.isWarLogPublic ? `${data.warLosses!} Losses,` : ''} ${data.warWinStreak} Win Streak`].join(
+					'\n'
+				)
+			);
 
 		if (!data.isWarLogPublic) {
 			embed.setDescription('War Log is Private');
-			return message.util!.send({ embeds: [embed] });
+			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const wars = await this.client.db.collection(Collections.CLAN_WARS)
+		const wars = await this.client.db
+			.collection(Collections.CLAN_WARS)
 			.find({
 				$or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }],
-				warType: { $ne: WarType.CWL }, state: 'warEnded'
+				warType: { $ne: WarType.CWL },
+				state: 'warEnded'
 			})
 			.sort({ preparationStartTime: -1 })
 			.limit(11)
@@ -60,7 +52,7 @@ export default class WarLogCommand extends Command {
 
 		const body = await this.client.http.clanWarLog(data.tag, { limit: 10 });
 		if (!body.ok) {
-			return message.util!.send('**504 Request Timeout!**');
+			return interaction.editReply('**504 Request Timeout!**');
 		}
 
 		for (const item of body.items) {
@@ -68,22 +60,26 @@ export default class WarLogCommand extends Command {
 			const { clan, opponent } = item;
 			const time = Util.duration(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
 			embed.addField(
-				`\u200b\n\u200e${this.result(item.result)} ${opponent.name || 'Clan War League'} ${extra ? `\u200e(#${extra.id as string})` : ''}`,
+				`\u200b\n\u200e${this.result(item.result)} ${opponent.name || 'Clan War League'} ${
+					extra ? `\u200e(#${extra.id as string})` : ''
+				}`,
 				[
-					`${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${EMOJIS.FIRE} ${(clan.destructionPercentage || 0).toFixed(2)}% ${opponent.name ? `/ ${(opponent.destructionPercentage || 0).toFixed(2)}%` : ''}`,
-					`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${EMOJIS.SWORD} ${clan.attacks}${extra ? ` / ${extra.attacks as string}` : ''} ${EMOJIS.CLOCK} ${time} ago`
+					`${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${EMOJIS.FIRE} ${(
+						clan.destructionPercentage || 0
+					).toFixed(2)}% ${opponent.name ? `/ ${(opponent.destructionPercentage || 0).toFixed(2)}%` : ''}`,
+					`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${
+						EMOJIS.SWORD
+					} ${clan.attacks}${extra ? ` / ${extra.attacks as string}` : ''} ${EMOJIS.CLOCK} ${time} ago`
 				].join('\n')
 			);
 		}
 
-		return message.util!.send({ embeds: [embed] });
+		return interaction.editReply({ embeds: [embed] });
 	}
 
 	private getWarInfo(wars: any[], war: any) {
 		const data = wars.find(
-			en => en.clan.tag === war.clan.tag &&
-				en.opponent.tag === war.opponent?.tag &&
-				this.compareDate(war.endTime, en.endTime)
+			(en) => en.clan.tag === war.clan.tag && en.opponent.tag === war.opponent?.tag && this.compareDate(war.endTime, en.endTime)
 		);
 		if (!data) return null;
 		return { id: data.id, attacks: data.opponent.attacks };
@@ -104,6 +100,6 @@ export default class WarLogCommand extends Command {
 	}
 
 	private compareDate(apiDate: string, dbDate: Date) {
-		return (new Date(moment(apiDate).toDate()) >= dbDate);
+		return new Date(moment(apiDate).toDate()) >= dbDate;
 	}
 }

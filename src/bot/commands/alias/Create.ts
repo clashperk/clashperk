@@ -1,58 +1,47 @@
 import { Collections } from '../../util/Constants';
-import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Command } from '../../lib';
+import { CommandInteraction } from 'discord.js';
 
-export default class AliasAddCommand extends Command {
+export default class AliasCreateCommand extends Command {
 	public constructor() {
-		super('alias-add', {
+		super('alias-create', {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
-			optionFlags: ['--tag', '--name'],
-			description: {}
+			defer: true,
+			ephemeral: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const name = yield {
-			flag: '--name',
-			type: 'lowercase',
-			match: msg.interaction ? 'option' : 'phrase'
-		};
-
-		const tag = yield {
-			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => tag ? this.parseTag(tag) : null
-		};
-
-		return { tag, name };
-	}
-
 	private parseTag(tag?: string) {
-		return tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null;
+		return tag ? `#${tag.toUpperCase().replace(/O/g, '0').replace(/^#/g, '')}` : null;
 	}
 
-	public async exec(message: Message, { tag, name: alias }: { tag: string; name: string }) {
-		if (!alias) {
-			return message.util!.send('**You must provide an alias to run this command.**');
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; name?: string }) {
+		if (!args.name) {
+			return interaction.editReply('**You must provide an alias to run this command.**');
 		}
-		if (alias.startsWith('#')) {
-			return message.util!.send('**Clan alias must not start with a hash (#).**');
+		if (args.name.startsWith('#')) {
+			return interaction.editReply('**Clan alias must not start with a hash (#).**');
 		}
 
-		const clan = await this.client.db.collection(Collections.CLAN_STORES)
-			.findOne({ guild: message.guild!.id, alias });
+		const tag = this.parseTag(args.tag);
+		if (!tag) {
+			return interaction.editReply('**You must provide a clan tag to run this command.**');
+		}
+
+		const clan = await this.client.db.collection(Collections.CLAN_STORES).findOne({ guild: interaction.guild.id, alias: args.name });
 		if (clan) {
-			return message.util!.send(`_An alias with the name **${alias}** already exists!_`);
+			return interaction.editReply(`_An alias with the name **${args.name}** already exists!_`);
 		}
 
-		const updated = await this.client.db.collection(Collections.CLAN_STORES)
-			.updateOne({ guild: message.guild!.id, tag }, { $set: { alias: alias.trim() } });
+		const updated = await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.updateOne({ guild: interaction.guild.id, tag }, { $set: { alias: args.name.trim() } });
 		if (!updated.matchedCount) {
-			return message.util!.send('*The clan must be linked to the server to create an alias.*');
+			return interaction.editReply('*The clan must be linked to the server to create an alias.*');
 		}
 
-		return message.util!.send(`_Successfully created an alias with the name **${alias}**_`);
+		return interaction.editReply(`_Successfully created an alias with the name **${args.name}**_`);
 	}
 }

@@ -1,4 +1,4 @@
-import { APIMessage } from 'discord-api-types';
+import { APIMessage } from 'discord-api-types/v9';
 import * as Discord from 'discord.js';
 import 'moment-duration-format';
 import moment from 'moment';
@@ -10,6 +10,58 @@ const DURATION = {
 	DAY: 1000 * 60 * 60 * 24
 };
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+export class Season {
+	private static getSeasonEnd(month: number, year: number, autoFix = true): Date {
+		const now = new Date();
+		now.setUTCFullYear(year);
+		now.setUTCMonth(month, 0);
+		now.setUTCHours(5, 0, 0, 0);
+
+		const newDate = now.getUTCDay() === 0 ? now.getUTCDate() - 6 : now.getUTCDate() - (now.getUTCDay() - 1);
+		now.setUTCDate(newDate);
+
+		if (Date.now() >= now.getTime() && autoFix) {
+			return this.getSeasonEnd(month + 1, year);
+		}
+
+		return now;
+	}
+
+	public static get ending() {
+		return Date.now() > new Date(this.getTimestamp.getTime() + 60 * 60 * 1000).getTime();
+	}
+
+	public static get ended() {
+		return this.getTimestamp.getMonth() !== new Date().getMonth();
+	}
+
+	public static get previousID() {
+		return new Date().toISOString().substring(0, 7);
+	}
+
+	public static get ID() {
+		return this.getTimestamp.toISOString().substring(0, 7);
+	}
+
+	public static get getTimestamp() {
+		const now = new Date();
+		return this.getSeasonEnd(now.getMonth() + 1, now.getFullYear());
+	}
+
+	public static get startTimestamp() {
+		return this.getSeasonEnd(this.getTimestamp.getMonth(), this.getTimestamp.getFullYear(), false);
+	}
+
+	public static get endTimestamp() {
+		return new Date(this.getTimestamp);
+	}
+
+	public static generateID(date: Date | string) {
+		return new Date(date).toISOString().substring(0, 7);
+	}
+}
+
 // @ts-expect-error
 export class Util extends Discord.Util {
 	public constructor() {
@@ -17,9 +69,10 @@ export class Util extends Discord.Util {
 	}
 
 	public static tagToId(tag: string) {
-		const id = tag.substring(1)
+		const id = tag
+			.substring(1)
 			.split('')
-			.reduce((sum, char) => (sum * 14n) + BigInt(('0289PYLQGRJCUV').indexOf(char)), 0n);
+			.reduce((sum, char) => sum * 14n + BigInt('0289PYLQGRJCUV'.indexOf(char)), 0n);
 		return id;
 	}
 
@@ -28,7 +81,7 @@ export class Util extends Discord.Util {
 		let tag = '';
 		while (id !== 0n) {
 			const i = Number(id % 14n);
-			tag = `${('0289PYLQGRJCUV')[i]}${tag}`;
+			tag = `${'0289PYLQGRJCUV'[i]}${tag}`;
 			id /= 14n;
 		}
 
@@ -46,7 +99,7 @@ export class Util extends Discord.Util {
 	}
 
 	public static escapeBackTick(name: string) {
-		return name.replace('\`', '');
+		return name.replace('`', '');
 	}
 
 	/**
@@ -110,7 +163,7 @@ export class Util extends Discord.Util {
 	}
 
 	public static delay(ms: number) {
-		return new Promise(resolve => setTimeout(resolve, ms));
+		return new Promise((resolve) => setTimeout(resolve, ms));
 	}
 
 	public static paginate<T>(pages: T[], page = 1, pageLength = 1) {
@@ -118,12 +171,13 @@ export class Util extends Discord.Util {
 		if (page < 1) page = 1;
 		if (page > maxPage) page = maxPage;
 		const startIndex = (page - 1) * pageLength;
-		const sliced = pages.length > pageLength
-			? pages.slice(startIndex, startIndex + pageLength)
-			: pages;
+		const sliced = pages.length > pageLength ? pages.slice(startIndex, startIndex + pageLength) : pages;
 
 		return {
-			pages: sliced, page, maxPage, pageLength,
+			pages: sliced,
+			page,
+			maxPage,
+			pageLength,
 			next() {
 				page += 1;
 				if (page < 1) page = this.maxPage;
@@ -154,7 +208,7 @@ export class Util extends Discord.Util {
 	private static _format(ms: number, msAbs: number, dur: number, long: string, short: string, l = false) {
 		const plural = msAbs >= dur * 1.5;
 		let num: number | string = ms / dur;
-		num = Number.isInteger(num) ? num : (num).toFixed(1);
+		num = Number.isInteger(num) ? num : num.toFixed(1);
 		return `${num}${l ? ` ${long}${plural ? 's' : ''}` : short}`;
 	}
 
@@ -165,58 +219,6 @@ export class Util extends Discord.Util {
 		if (abs >= DURATION.MINUTE) return this._format(num, abs, DURATION.MINUTE, 'minute', 'm', long);
 		if (abs >= DURATION.SECOND) return this._format(num, abs, DURATION.SECOND, 'second', 's', long);
 		return `${num}${long ? ' ' : ''}ms`;
-	}
-}
-
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class Season {
-	private static getSeasonEnd(month: number, year: number, autoFix = true): Date {
-		const now = new Date();
-		now.setUTCFullYear(year);
-		now.setUTCMonth(month, 0);
-		now.setUTCHours(5, 0, 0, 0);
-
-		const newDate = now.getUTCDay() === 0 ? now.getUTCDate() - 6 : now.getUTCDate() - (now.getUTCDay() - 1);
-		now.setUTCDate(newDate);
-
-		if (Date.now() >= now.getTime() && autoFix) {
-			return this.getSeasonEnd(month + 1, year);
-		}
-
-		return now;
-	}
-
-	public static get ending() {
-		return Date.now() > new Date(this.getTimestamp.getTime() + (60 * 60 * 1000)).getTime();
-	}
-
-	public static get ended() {
-		return this.getTimestamp.getMonth() !== new Date().getMonth();
-	}
-
-	public static get previousID() {
-		return new Date().toISOString().substring(0, 7);
-	}
-
-	public static get ID() {
-		return this.getTimestamp.toISOString().substring(0, 7);
-	}
-
-	public static get getTimestamp() {
-		const now = new Date();
-		return this.getSeasonEnd(now.getMonth() + 1, now.getFullYear());
-	}
-
-	public static get startTimestamp() {
-		return this.getSeasonEnd(this.getTimestamp.getMonth(), this.getTimestamp.getFullYear(), false);
-	}
-
-	public static get endTimestamp() {
-		return new Date(this.getTimestamp);
-	}
-
-	public static generateID(date: Date | string) {
-		return new Date(date).toISOString().substring(0, 7);
 	}
 }
 

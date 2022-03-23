@@ -1,51 +1,29 @@
-import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
-import { WHITE_NUMBERS } from '../../util/NumEmojis';
-import { Collections } from '../../util/Constants';
-import { EMOJIS } from '../../util/Emojis';
-import { Command } from 'discord-akairo';
-import { Season } from '../../util/Util';
+import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { WHITE_NUMBERS, EMOJIS } from '../../util/Emojis';
+import { Collections, Messages } from '../../util/Constants';
+import { Command } from '../../lib';
+import { Season } from '../../util';
 import Workbook from '../../struct/Excel';
 
 export default class ClanSummaryCommand extends Command {
 	public constructor() {
 		super('clan-summary', {
-			category: 'search',
+			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
-			description: {},
-			optionFlags: ['--season']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const SEASON_IDS = Array(3).fill('').map((_, i) => {
-			const now = new Date(Season.ID);
-			now.setHours(0, 0, 0, 0);
-			now.setMonth(now.getMonth() - i, 0);
-			return Season.generateID(now);
-		});
-
-		const season = yield {
-			flag: '--season',
-			type: [
-				Season.ID,
-				...SEASON_IDS,
-				[SEASON_IDS[0], 'last']
-			],
-			match: msg.interaction ? 'option' : 'phrase'
-		};
-
-		return { season };
-	}
-
-	public async exec(message: Message, { season }: { season?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, { season }: { season?: string }) {
 		if (!season) season = Season.ID;
-		const clans = await this.client.db.collection<{ name: string; tag: string }>(Collections.CLAN_STORES)
-			.find({ guild: message.guild!.id })
+		const clans = await this.client.db
+			.collection<{ name: string; tag: string }>(Collections.CLAN_STORES)
+			.find({ guild: interaction.guild.id })
 			.toArray();
 
 		if (!clans.length) {
-			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
+			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
 		const embeds = [];
@@ -64,13 +42,21 @@ export default class ClanSummaryCommand extends Command {
 			const action = await this.getActivity(clan.tag);
 			const season_stats = await this.getSeason(clan.tag, season);
 
-			const won = wars.filter(war => war.result).length;
-			const lost = wars.filter(war => !war.result).length;
+			const won = wars.filter((war) => war.result).length;
+			const lost = wars.filter((war) => !war.result).length;
 
 			collection.push({
-				won, lost, avg_online: action?.avg_online, avg_total: action?.avg_total,
-				name: clan.name, attackWins: season_stats?.attackWins, tag: clan.tag, wars: wars.length,
-				donations: season_stats?.donations, donationsReceived: season_stats?.donationsReceived, defenseWins: season_stats?.defenseWins
+				won,
+				lost,
+				avg_online: action?.avg_online,
+				avg_total: action?.avg_total,
+				name: clan.name,
+				attackWins: season_stats?.attackWins,
+				tag: clan.tag,
+				wars: wars.length,
+				donations: season_stats?.donations,
+				donationsReceived: season_stats?.donationsReceived,
+				defenseWins: season_stats?.defenseWins
 			});
 
 			if (!action || !season_stats) continue;
@@ -83,18 +69,22 @@ export default class ClanSummaryCommand extends Command {
 			OBJ.ACTIVE_MEMBERS.push({ name: clan.name, value: Math.floor(action.avg_online), key: `${EMOJIS.USER_BLUE} Active Members` });
 		}
 
-		if (!OBJ.DONATED.length) return message.util!.send('**No data available at this moment!**');
+		if (!OBJ.DONATED.length) return interaction.editReply('**No data available at this moment!**');
 
 		const fields = Object.values(OBJ);
-		for (const field of Array(3).fill(0).map(() => fields.splice(0, 2))) {
+		for (const field of Array(3)
+			.fill(0)
+			.map(() => fields.splice(0, 2))) {
 			const embed = new MessageEmbed();
 			for (const data of field) {
 				data.sort((a, b) => b.value - a.value);
 				const pad = data[0].value.toLocaleString().length + 1;
 
 				embed.addField(
-					data[0].key, [
-						data.slice(0, 15)
+					data[0].key,
+					[
+						data
+							.slice(0, 15)
 							.map((en, i) => {
 								const num = en.value.toLocaleString().padStart(pad, ' ');
 								return `${WHITE_NUMBERS[++i]} \`\u200e${num} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``;
@@ -109,154 +99,173 @@ export default class ClanSummaryCommand extends Command {
 		}
 
 		const customId = this.client.uuid();
-		const button = new MessageButton()
-			.setCustomId(customId)
-			.setStyle('SECONDARY')
-			.setLabel('Download');
-		const msg = await message.util!.send({ embeds, components: [new MessageActionRow().addComponents(button)] });
+		const button = new MessageButton().setCustomId(customId).setStyle('SECONDARY').setLabel('Download');
+		const msg = await interaction.editReply({ embeds, components: [new MessageActionRow().addComponents(button)] });
 
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customId,
-			max: 1, time: 5 * 60 * 1000
+			filter: (action) => action.customId === customId,
+			max: 1,
+			time: 5 * 60 * 1000
 		});
 
-		collector.on('collect', async action => {
+		collector.on('collect', async (action) => {
 			if (action.customId === customId) {
 				await action.deferReply();
 				const buffer = await this.getBuffer(collection);
 
 				await action.followUp({
-					files: [{
-						attachment: Buffer.from(buffer),
-						name: 'clan_stats.xlsx'
-					}]
+					files: [
+						{
+							attachment: Buffer.from(buffer),
+							name: 'clan_stats.xlsx'
+						}
+					]
 				});
 			}
 		});
 
 		collector.on('end', async (_, reason) => {
 			this.client.components.delete(customId);
-			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
 	}
 
 	private async getWars(tag: string, season: string): Promise<{ result: boolean; stars: number[] }[]> {
-		return this.client.db.collection(Collections.CLAN_WARS).aggregate<{ result: boolean; stars: number[] }>(
-			[
+		return this.client.db
+			.collection(Collections.CLAN_WARS)
+			.aggregate<{ result: boolean; stars: number[] }>([
 				{
 					$match: {
 						$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
-						state: 'warEnded', season
+						state: 'warEnded',
+						season
 					}
-				}, {
+				},
+				{
 					$project: {
 						result: {
 							$switch: {
-								'branches': [
+								branches: [
 									{
-										'case': { $gt: ['$clan.stars', '$opponent.stars'] },
-										'then': true
+										case: { $gt: ['$clan.stars', '$opponent.stars'] },
+										then: true
 									},
 									{
-										'case': { $gt: ['$clan.destructionPercentage', '$opponent.destructionPercentage'] },
-										'then': true
+										case: { $gt: ['$clan.destructionPercentage', '$opponent.destructionPercentage'] },
+										then: true
 									}
 								],
-								'default': false
+								default: false
 							}
 						},
 						stars: '$clan.members.attacks.stars'
 					}
 				}
-			]
-		).toArray();
+			])
+			.toArray();
 	}
 
 	private async getActivity(tag: string): Promise<{ avg_total: number; avg_online: number } | null> {
-		return this.client.db.collection(Collections.LAST_SEEN).aggregate<{ avg_total: number; avg_online: number }>([
-			{
-				$match: {
-					'clan.tag': tag
-				}
-			}, {
-				$sort: {
-					lastSeen: -1
-				}
-			}, {
-				$limit: 50
-			}, {
-				$unwind: {
-					path: '$entries'
-				}
-			}, {
-				$group: {
-					_id: {
-						date: {
-							$dateToString: {
-								date: '$entries.entry',
-								format: '%Y-%m-%d'
-							}
+		return this.client.db
+			.collection(Collections.LAST_SEEN)
+			.aggregate<{ avg_total: number; avg_online: number }>([
+				{
+					$match: {
+						'clan.tag': tag
+					}
+				},
+				{
+					$sort: {
+						lastSeen: -1
+					}
+				},
+				{
+					$limit: 50
+				},
+				{
+					$unwind: {
+						path: '$entries'
+					}
+				},
+				{
+					$group: {
+						_id: {
+							date: {
+								$dateToString: {
+									date: '$entries.entry',
+									format: '%Y-%m-%d'
+								}
+							},
+							tag: '$tag'
 						},
-						tag: '$tag'
-					},
-					count: {
-						$sum: '$entries.count'
+						count: {
+							$sum: '$entries.count'
+						}
+					}
+				},
+				{
+					$group: {
+						_id: '$_id.date',
+						online: {
+							$sum: 1
+						},
+						total: {
+							$sum: '$count'
+						}
+					}
+				},
+				{
+					$group: {
+						_id: null,
+						avg_online: {
+							$avg: '$online'
+						},
+						avg_total: {
+							$avg: '$total'
+						}
 					}
 				}
-			}, {
-				$group: {
-					_id: '$_id.date',
-					online: {
-						$sum: 1
-					},
-					total: {
-						$sum: '$count'
-					}
-				}
-			}, {
-				$group: {
-					_id: null,
-					avg_online: {
-						$avg: '$online'
-					},
-					avg_total: {
-						$avg: '$total'
-					}
-				}
-			}
-		]).next();
+			])
+			.next();
 	}
 
 	private async getSeason(tag: string, season: string) {
-		return this.client.db.collection(Collections.CLAN_MEMBERS).aggregate([
-			{
-				$match: {
-					season, clanTag: tag
-				}
-			}, {
-				$sort: {
-					'donations.gained': -1
-				}
-			}, {
-				$limit: 50
-			}, {
-				$group: {
-					_id: null,
-					donations: {
-						$sum: '$donations.gained'
-					},
-					donationsReceived: {
-						$sum: '$donationsReceived.gained'
-					},
-					attackWins: {
-						$sum: '$attackWins'
-					},
-					defenseWins: {
-						$sum: '$defenseWins'
+		return this.client.db
+			.collection(Collections.CLAN_MEMBERS)
+			.aggregate([
+				{
+					$match: {
+						season,
+						clanTag: tag
+					}
+				},
+				{
+					$sort: {
+						'donations.gained': -1
+					}
+				},
+				{
+					$limit: 50
+				},
+				{
+					$group: {
+						_id: null,
+						donations: {
+							$sum: '$donations.gained'
+						},
+						donationsReceived: {
+							$sum: '$donationsReceived.gained'
+						},
+						attackWins: {
+							$sum: '$attackWins'
+						},
+						defenseWins: {
+							$sum: '$defenseWins'
+						}
 					}
 				}
-			}
-		]).next();
+			])
+			.next();
 	}
 
 	private async getBuffer(collection: any[] = []) {
@@ -284,9 +293,18 @@ export default class ClanSummaryCommand extends Command {
 		}
 
 		sheet.addRows(
-			collection.map(m => [
-				m.name, m.tag, m.wars, m.won, m.lost, m.donations, m.donationsReceived,
-				m.attackWins, m.defenseWins, Math.floor(m.avg_total ?? 0), Math.floor(m.avg_online ?? 0)
+			collection.map((m) => [
+				m.name,
+				m.tag,
+				m.wars,
+				m.won,
+				m.lost,
+				m.donations,
+				m.donationsReceived,
+				m.attackWins,
+				m.defenseWins,
+				Math.floor(m.avg_total ?? 0),
+				Math.floor(m.avg_online ?? 0)
 			])
 		);
 

@@ -11,7 +11,7 @@ export default class Http extends Client {
 		super({ baseURL: process.env.BASE_URL });
 
 		this.timeout = 10000;
-		this.keys = [...process.env.CLASH_TOKENS!.split(',')];
+		this.keys = [...(process.env.CLASH_TOKENS?.split(',') ?? [])];
 	}
 
 	public async fetch(path: string) {
@@ -36,7 +36,7 @@ export default class Http extends Client {
 	}
 
 	public detailedClanMembers(members: { tag: string }[] = []): Promise<Player[]> {
-		return Promise.all(members.map(mem => this.fetch(`/players/${encodeURIComponent(mem.tag)}`)));
+		return Promise.all(members.map((mem) => this.fetch(`/players/${encodeURIComponent(mem.tag)}`)));
 	}
 
 	public async getCurrentWars(clanTag: string): Promise<(ClanWar & { warTag?: string; round?: number })[]> {
@@ -61,11 +61,11 @@ export default class Http extends Client {
 
 	private async clanWarLeagueRounds(clanTag: string, body: ClanWarLeagueGroup) {
 		const chunks = [];
-		for (const { warTags } of body.rounds.filter(en => !en.warTags.includes('#0')).slice(-2)) {
+		for (const { warTags } of body.rounds.filter((en) => !en.warTags.includes('#0')).slice(-2)) {
 			for (const warTag of warTags) {
 				const data = await this.clanWarLeagueWar(warTag);
 				if (!data.ok) continue;
-				const round = body.rounds.findIndex(en => en.warTags.includes(warTag));
+				const round = body.rounds.findIndex((en) => en.warTags.includes(warTag));
 				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
@@ -144,7 +144,7 @@ export default class Http extends Client {
 		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);
 
 		if (!Array.isArray(data)) return [];
-		return data.filter(en => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag)).map(en => this.fixTag(en.playerTag));
+		return data.filter((en) => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag)).map((en) => this.fixTag(en.playerTag));
 	}
 
 	public async getDiscordLinks(members: { tag: string }[]) {
@@ -156,15 +156,13 @@ export default class Http extends Client {
 			},
 			timeout: 30000,
 			agent,
-			body: JSON.stringify(members.map(mem => mem.tag))
+			body: JSON.stringify(members.map((mem) => mem.tag))
 		}).catch(() => null);
 		const data: { playerTag: string; discordId: string }[] = await res?.json().catch(() => []);
 
 		if (!Array.isArray(data)) return [];
-		return data.filter(
-			en => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag) && /^\d{17,19}/.test(en.discordId)
-		).map(
-			en => ({ tag: this.fixTag(en.playerTag), user: en.discordId })
-		);
+		return data
+			.filter((en) => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag) && /^\d{17,19}/.test(en.discordId))
+			.map((en) => ({ tag: this.fixTag(en.playerTag), user: en.discordId }));
 	}
 }

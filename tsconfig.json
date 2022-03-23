@@ -9,20 +9,11 @@
 		"forceConsistentCasingInFileNames": true,
 		"inlineSources": true,
 		"lib": [
-			"ES2020",
 			"esnext",
-			"esnext.array",
-			"esnext.intl",
-			"esnext.symbol"
 		],
-		"module": "CommonJS",
+		"module": "esnext",
 		"moduleResolution": "node",
 		"outDir": "dist/",
-		"paths": {
-			"#scripts/*": [
-				"./scripts/*"
-			]
-		},
 		"pretty": true,
 		"removeComments": false,
 		"resolveJsonModule": true,
@@ -34,8 +25,6 @@
 	},
 	"include": [
 		"src",
-		"scripts",
-		"root.ts",
-		"index.d.ts"
+		"scripts"
 	]
 }

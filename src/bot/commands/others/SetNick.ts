@@ -1,12 +1,14 @@
-import { Message, GuildMember, MessageActionRow, MessageSelectMenu } from 'discord.js';
-import { Argument, Command } from 'discord-akairo';
+import { GuildMember, MessageActionRow, MessageSelectMenu, CommandInteraction } from 'discord.js';
+import { Args, Command } from '../../lib';
+import { UserInfo } from '../../types';
+import { Collections } from '../../util/Constants';
 import { TOWN_HALLS } from '../../util/Emojis';
 
 export default class SetNickNameCommand extends Command {
 	public constructor() {
 		super('setnick', {
-			aliases: ['nick', 'setnick', 'nickname'],
 			category: 'setup',
+			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			description: {
 				content: [
@@ -14,88 +16,69 @@ export default class SetNickNameCommand extends Command {
 					'',
 					'Must include "|" to add a prefix or suffix of the nickname.',
 					'Prefix ends with "|" and Suffix starts with "|"'
-				],
-				usage: '<@user> [...extra]',
-				examples: ['@Suvajit', '@Suvajit AH |', '@Suvajit | AH'],
-				image: {
-					text: [
-						'**More Examples**'
-					],
-					url: 'https://i.imgur.com/rrAK4uj.png'
-				}
+				]
 			},
-			optionFlags: ['--user']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const member = yield {
-			type: Argument.union('member', (msg, id) => {
-				if (!id) return null;
-				if (!/^\d{17,19}/.test(id)) return null;
-				return msg.guild!.members.fetch(id).catch(() => null);
-			}),
-			flag: '--user',
-			match: msg.interaction ? 'option' : 'phrase'
+	public args(): Args {
+		return {
+			user: {
+				id: 'member',
+				match: 'MEMBER'
+			}
 		};
-
-		const txt = yield {
-			type: 'string',
-			match: 'rest'
-		};
-
-		return { txt, member };
 	}
 
-	public async exec(message: Message, { txt, member }: { txt?: string; member?: GuildMember }) {
+	public async exec(interaction: CommandInteraction<'cached'>, { txt, member }: { txt?: string; member?: GuildMember }) {
 		if (!member) {
-			return message.util!.send('**You must mention a valid member to use this command.**');
+			return interaction.editReply('**You must mention a valid member to use this command.**');
 		}
 
-		if (member.id !== message.author.id && !message.member!.permissions.has('MANAGE_NICKNAMES')) {
-			return message.util!.send('**You are missing `Manage Nicknames` permission to use this command.**');
+		if (member.id !== interaction.user.id && !interaction.member.permissions.has('MANAGE_NICKNAMES')) {
+			return interaction.editReply('**You are missing `Manage Nicknames` permission to use this command.**');
 		}
 
-		if (message.guild!.me!.roles.highest.position <= member.roles.highest.position || member.id === message.guild!.ownerId) {
-			const own = member.id === message.author.id;
-			return message.util!.send(`**I do not have permission to change ${own ? 'your ' : ''}nickname${own ? '.' : ' of this member!'}**`);
+		if (interaction.guild.me!.roles.highest.position <= member.roles.highest.position || member.id === interaction.guild.ownerId) {
+			const own = member.id === interaction.user.id;
+			return interaction.editReply(
+				`**I do not have permission to change ${own ? 'your ' : ''}nickname${own ? '.' : ' of this member!'}**`
+			);
 		}
 
-		const players = await this.client.links.getPlayers(member.user);
+		const players = await this.getPlayers(member.user.id);
 		if (!players.length) {
-			return message.util!.send(`**No player accounts are linked to ${member.user.tag}**`);
+			return interaction.editReply(`**No player accounts are linked to ${member.user.tag}**`);
 		}
 
-		const options = players.map(op => ({
-			label: op.name, value: op.tag,
+		const options = players.map((op) => ({
+			label: op.name,
+			value: op.tag,
 			emoji: TOWN_HALLS[op.townHallLevel],
 			description: `${op.tag}`
 		}));
-		const customID = this.client.uuid(message.author.id, member.id);
-		const row = new MessageActionRow()
-			.addComponents(
-				new MessageSelectMenu()
-					.setCustomId(customID)
-					.setPlaceholder('Select an account!')
-					.addOptions(options)
-			);
+		const customID = this.client.uuid(interaction.user.id, member.id);
+		const row = new MessageActionRow().addComponents(
+			new MessageSelectMenu().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options)
+		);
 
-		const msg = await message.util!.send({ content: `**Setting up ${member.user.tag}\'s nickname...**`, components: [row] });
+		const msg = await interaction.editReply({ content: `**Setting up ${member.user.tag}\'s nickname...**`, components: [row] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customID && [member.id, message.author.id].includes(action.user.id),
+			filter: (action) => action.customId === customID && [member.id, interaction.user.id].includes(action.user.id),
 			time: 5 * 60 * 1000
 		});
 
-		collector.on('collect', async action => {
+		collector.on('collect', async (action) => {
 			if (action.isSelectMenu() && action.customId === customID) {
-				const name = this.getName(options.find(opt => opt.value === action.values[0])!.label, txt);
+				const name = this.getName(options.find((opt) => opt.value === action.values[0])!.label, txt);
 				if (name.length > 31) {
 					await action.reply({
 						ephemeral: true,
 						content: '**Nickname must be 31 or fewer in length.**'
 					});
 				} else {
-					await member.setNickname(name, `Nickname set by ${message.author.tag}`).catch(() => null);
+					await member.setNickname(name, `Nickname set by ${interaction.user.tag}`).catch(() => null);
 
 					row.components[0].setDisabled(true);
 					return action.update({
@@ -119,5 +102,20 @@ export default class SetNickNameCommand extends Command {
 		}
 
 		return name;
+	}
+
+	public async getPlayers(userId: string) {
+		const data = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ user: userId });
+		const others = await this.client.http.getPlayerTags(userId);
+
+		const playerTagSet = new Set([...(data?.entries ?? []).map((en) => en.tag), ...others.map((tag) => tag)]);
+
+		return (
+			await Promise.all(
+				Array.from(playerTagSet)
+					.slice(0, 25)
+					.map((tag) => this.client.http.player(tag))
+			)
+		).filter((res) => res.ok);
 	}
 }

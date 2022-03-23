@@ -1,6 +1,6 @@
 import { TextChannel } from 'discord.js';
 import { EMOJIS } from '../util/Emojis';
-import Client from '../struct/Client';
+import { Client } from '../struct/Client';
 import moment from 'moment';
 
 const SUPPORT_SERVER_GENERAL_CHANNEL_ID = '609074828707758150';
@@ -47,7 +47,10 @@ export default class MaintenanceHandler {
 			if (!setting.eventsChannel) continue;
 			if (setting.eventsChannel === SUPPORT_SERVER_GENERAL_CHANNEL_ID) continue;
 			const channel = this.client.channels.cache.get(setting.eventsChannel) as TextChannel | null;
-			if (channel?.isText() && channel.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES', 'USE_EXTERNAL_EMOJIS', 'VIEW_CHANNEL'])) {
+			if (
+				channel?.isText() &&
+				channel.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES', 'USE_EXTERNAL_EMOJIS', 'VIEW_CHANNEL'])
+			) {
 				await channel.send(`**${EMOJIS.COC_LOGO} ${this.getMessage(dur)}**`);
 			}
 		}

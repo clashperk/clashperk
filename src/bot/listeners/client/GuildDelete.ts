@@ -1,7 +1,7 @@
 import { Collections } from '../../util/Constants';
-import { Guild, Webhook } from 'discord.js';
+import { Guild, MessageEmbed, Webhook } from 'discord.js';
 import { EMOJIS } from '../../util/Emojis';
-import { Listener } from 'discord-akairo';
+import { Listener } from '../../lib';
 
 export default class GuildDeleteListener extends Listener {
 	public webhook: Webhook | null = null;
@@ -30,13 +30,13 @@ export default class GuildDeleteListener extends Listener {
 		await this.client.stats.deletion();
 		await this.client.stats.guilds(guild, 0);
 
-		const values = await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0]) as number[];
+		const values = (await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0])) as number[];
 		const guilds = values.reduce((prev, curr) => curr + prev, 0);
 
 		const user = await this.client.users.fetch(guild.ownerId);
 		const webhook = await this.fetchWebhook().catch(() => null);
 		if (webhook) {
-			const embed = this.client.util.embed()
+			const embed = new MessageEmbed()
 				.setColor(0xeb3508)
 				.setAuthor({ name: `${guild.name} (${guild.id})`, iconURL: guild.iconURL()! })
 				.setTitle(`${EMOJIS.OWNER} ${user.tag} (${user.id})`)
@@ -60,8 +60,9 @@ export default class GuildDeleteListener extends Listener {
 	private async delete(guild: Guild) {
 		const db = this.client.db.collection(Collections.CLAN_STORES);
 
-		await db.find({ guild: guild.id })
-			.forEach(data => this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild: guild.id }));
+		await db
+			.find({ guild: guild.id })
+			.forEach((data) => this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild: guild.id }));
 
 		await db.updateMany({ guild: guild.id }, { $set: { paused: true } });
 	}

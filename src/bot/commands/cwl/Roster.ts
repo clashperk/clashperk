@@ -1,50 +1,38 @@
-import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS } from '../../util/NumEmojis';
-import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { MessageEmbed, Message, MessageButton, MessageActionRow } from 'discord.js';
-import { EMOJIS, TOWN_HALLS } from '../../util/Emojis';
-import { Command } from 'discord-akairo';
-import { Util } from '../../util/Util';
+import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS, EMOJIS, TOWN_HALLS } from '../../util/Emojis';
+import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
+import { MessageEmbed, CommandInteraction, MessageButton, MessageActionRow } from 'discord.js';
+import { Command } from '../../lib';
+import { Util } from '../../util';
 import moment from 'moment';
 
 export default class CWLRosterCommand extends Command {
 	public constructor() {
 		super('cwl-roster', {
-			aliases: ['roster', 'cwl-roster'],
+			name: 'roster',
 			category: 'war',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
-				content: 'CWL Roster and Town Hall distribution.',
-				usage: '<#clanTag>',
-				examples: ['#8QU8J9LP']
+				content: 'CWL Roster and Town Hall distribution.'
 			},
-			optionFlags: ['--tag']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const data = yield {
-			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
-		};
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+		if (!clan) return;
 
-		return { data };
-	}
-
-	public async exec(message: Message, { data }: { data: Clan }) {
-		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
-
-		const body = await this.client.http.clanWarLeague(data.tag);
+		const body = await this.client.http.clanWarLeague(clan.tag);
 		if (body.statusCode === 504 || body.state === 'notInWar') {
-			return message.util!.send('**[504 Request Timeout] Your clan is still searching for opponent!**');
+			return interaction.editReply('**[504 Request Timeout] Your clan is still searching for opponent!**');
 		}
 
 		if (!body.ok) {
-			return message.util!.send(`**${data.name} is not in Clan War League!**`);
+			return interaction.editReply(`**${clan.name} is not in Clan War League!**`);
 		}
 
-		this.client.storage.pushWarTags(data.tag, body);
-		return this.rounds(message, body, data.tag);
+		this.client.storage.pushWarTags(clan.tag, body);
+		return this.rounds(interaction, body, clan.tag);
 	}
 
 	private async fetch(warTag: string) {
@@ -52,8 +40,8 @@ export default class CWLRosterCommand extends Command {
 		return { warTag, ...data };
 	}
 
-	private async rounds(message: Message, body: ClanWarLeagueGroup, clanTag: string) {
-		const rounds = body.rounds.filter(r => !r.warTags.includes('#0'));
+	private async rounds(interaction: CommandInteraction<'cached'>, body: ClanWarLeagueGroup, clanTag: string) {
+		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 
 		const clanRounds = [];
 		let [stars, destruction] = [0, 0];
@@ -66,8 +54,8 @@ export default class CWLRosterCommand extends Command {
 			};
 		} = {};
 
-		const warTags = rounds.map(round => round.warTags).flat();
-		const wars: (ClanWar & { warTag: string })[] = await Promise.all(warTags.map(warTag => this.fetch(warTag)));
+		const warTags = rounds.map((round) => round.warTags).flat();
+		const wars: (ClanWar & { warTag: string })[] = await Promise.all(warTags.map((warTag) => this.fetch(warTag)));
 		for (const data of body.clans) {
 			ranking[data.tag] = {
 				name: data.name,
@@ -92,18 +80,14 @@ export default class CWLRosterCommand extends Command {
 			}
 
 			if (data.state === 'warEnded') {
-				clan.stars += this.winner(data.clan, data.opponent)
-					? data.clan.stars + 10
-					: data.clan.stars;
+				clan.stars += this.winner(data.clan, data.opponent) ? data.clan.stars + 10 : data.clan.stars;
 				clan.destruction += data.clan.destructionPercentage * data.teamSize;
 
-				opponent.stars += this.winner(data.opponent, data.clan)
-					? data.opponent.stars + 10
-					: data.opponent.stars;
+				opponent.stars += this.winner(data.opponent, data.clan) ? data.opponent.stars + 10 : data.opponent.stars;
 				opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
 			}
 
-			if ((data.clan.tag === clanTag) || (data.opponent.tag === clanTag)) {
+			if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 				const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 				const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 				if (data.state === 'warEnded') {
@@ -116,107 +100,119 @@ export default class CWLRosterCommand extends Command {
 				}
 
 				clanRounds.push({
-					clan, opponent, state: data.state,
-					round: body.rounds.findIndex(round => round.warTags.includes(data.warTag))
+					clan,
+					opponent,
+					state: data.state,
+					round: body.rounds.findIndex((round) => round.warTags.includes(data.warTag))
 				});
 			}
 		}
 
-		const flatTownHalls = body.clans.map(clan => clan.members).flat().map(mem => mem.townHallLevel);
+		const flatTownHalls = body.clans
+			.map((clan) => clan.members)
+			.flat()
+			.map((mem) => mem.townHallLevel);
 		const [max, min] = [Math.max(...flatTownHalls), Math.min(...flatTownHalls)];
-		const townHalls = Array(Math.min(5, (max - min) + 1)).fill(0).map((_, i) => max - i);
+		const townHalls = Array(Math.min(5, max - min + 1))
+			.fill(0)
+			.map((_, i) => max - i);
 
 		const ranks = Object.values(ranking);
 		ranks.sort((a, b) => b.destruction - a.destruction).sort((a, b) => b.stars - a.stars);
-		const next = clanRounds.find(round => round.state === 'preparation');
-		const rank = ranks.findIndex(a => a.tag === clanTag);
+		const next = clanRounds.find((round) => round.state === 'preparation');
+		const rank = ranks.findIndex((a) => a.tag === clanTag);
 
-		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
-			.setDescription([
+		const embed = new MessageEmbed().setColor(this.client.embed(interaction)).setDescription(
+			[
 				'**Clan War League Rosters**',
-				`${EMOJIS.HASH} ${townHalls.map(th => ORANGE_NUMBERS[th]).join('')} **Clan**`,
-				ranks.sort((a, b) => b.stars - a.stars)
-					.map(
-						(clan, i) => `${BLUE_NUMBERS[++i]} ${this.flat(clan.tag, townHalls, body)} \u200e${clan.name}`
-					)
+				`${EMOJIS.HASH} ${townHalls.map((th) => ORANGE_NUMBERS[th]).join('')} **Clan**`,
+				ranks
+					.sort((a, b) => b.stars - a.stars)
+					.map((clan, i) => `${BLUE_NUMBERS[++i]} ${this.flat(clan.tag, townHalls, body)} \u200e${clan.name}`)
 					.join('\n')
-			].join('\n'));
+			].join('\n')
+		);
 
 		if (next) {
-			const oppRank = ranks.findIndex(clan => clan.tag === next.opponent.tag);
-			const flatTownHalls = [...next.clan.members, ...next.opponent.members].map(mem => mem.townhallLevel);
+			const oppRank = ranks.findIndex((clan) => clan.tag === next.opponent.tag);
+			const flatTownHalls = [...next.clan.members, ...next.opponent.members].map((mem) => mem.townhallLevel);
 			const [max, min] = [Math.max(...flatTownHalls), Math.min(...flatTownHalls)];
-			const townHalls = Array(Math.max(Math.min(5, (max - min) + 1), 2)).fill(0).map((_, i) => max - i);
+			const townHalls = Array(Math.max(Math.min(5, max - min + 1), 2))
+				.fill(0)
+				.map((_, i) => max - i);
 
-			embed.addField('\u200e', [
-				`**Next War (Round #${next.round + 1})**`,
-				`${EMOJIS.HASH} ${townHalls.map(th => ORANGE_NUMBERS[th]).join('')} **Clan**`,
-				`${BLUE_NUMBERS[rank + 1]} ${this.getNextRoster(next.clan, townHalls)} ${next.clan.name}`,
-				`${BLUE_NUMBERS[oppRank + 1]} ${this.getNextRoster(next.opponent, townHalls)} ${next.opponent.name}`
-			].join('\n'));
+			embed.addField(
+				'\u200e',
+				[
+					`**Next War (Round #${next.round + 1})**`,
+					`${EMOJIS.HASH} ${townHalls.map((th) => ORANGE_NUMBERS[th]).join('')} **Clan**`,
+					`${BLUE_NUMBERS[rank + 1]} ${this.getNextRoster(next.clan, townHalls)} ${next.clan.name}`,
+					`${BLUE_NUMBERS[oppRank + 1]} ${this.getNextRoster(next.opponent, townHalls)} ${next.opponent.name}`
+				].join('\n')
+			);
 		}
 
 		if (next?.round || rounds.length >= 2) {
 			embed.addField('\u200b', `Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`);
 		}
 
-		const customID = this.client.uuid(message.author.id);
-		const button = new MessageButton()
-			.setCustomId(customID)
-			.setStyle('SECONDARY')
-			.setLabel('Detailed Roster');
-		const msg = await message.util!.send({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
-		const collector = await msg.awaitMessageComponent({
-			filter: action => action.customId === customID && action.user.id === message.author.id,
-			time: 5 * 60 * 1000
-		}).catch(() => null);
+		const customID = this.client.uuid(interaction.user.id);
+		const button = new MessageButton().setCustomId(customID).setStyle('SECONDARY').setLabel('Detailed Roster');
+		const msg = await interaction.editReply({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const collector = await msg
+			.awaitMessageComponent({
+				filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
+				time: 5 * 60 * 1000
+			})
+			.catch(() => null);
 
 		this.client.components.delete(customID);
 		if (!collector) return;
 
 		embed.fields = [];
-		embed.setFooter({ text: `Clan War League ${moment(body.season).format('MMMM YYYY')}` })
+		embed
+			.setFooter({ text: `Clan War League ${moment(body.season).format('MMMM YYYY')}` })
 			.setAuthor({ name: 'CWL Roster' })
 			.setDescription('CWL Roster and Town-Hall Distribution');
 
 		for (const clan of body.clans) {
-			const reduced = clan.members.reduce((count, member) => {
+			const reduced = clan.members.reduce<{ [key: string]: number }>((count, member) => {
 				const townHall = member.townHallLevel;
 				count[townHall] = (count[townHall] || 0) + 1;
 				return count;
-			}, {} as { [key: string]: number });
+			}, {});
 
 			const townHalls = Object.entries(reduced)
-				.map(entry => ({ level: Number(entry[0]), total: Number(entry[1]) }))
+				.map((entry) => ({ level: Number(entry[0]), total: Number(entry[1]) }))
 				.sort((a, b) => b.level - a.level);
 
-			embed.addField(`\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`, [
-				Util.chunk(townHalls, 5).map(
-					chunks => chunks.map(
-						th => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`
-					).join(' ')
-				).join('\n')
-			].join('\n'));
+			embed.addField(
+				`\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`,
+				[
+					Util.chunk(townHalls, 5)
+						.map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`).join(' '))
+						.join('\n')
+				].join('\n')
+			);
 		}
 
-		return message.util!.send({ embeds: [embed] });
+		return interaction.editReply({ embeds: [embed] });
 	}
 
 	private getNextRoster(clan: WarClan, townHalls: number[]) {
 		const roster = this.roster(clan);
-		return townHalls.map(th => WHITE_NUMBERS[roster[th] || 0]).join('');
+		return townHalls.map((th) => WHITE_NUMBERS[roster[th] || 0]).join('');
 	}
 
 	private flat(tag: string, townHalls: number[], body: ClanWarLeagueGroup) {
-		const roster = this.roster(body.clans.find(clan => clan.tag === tag)!);
-		return townHalls.map(th => WHITE_NUMBERS[roster[th] || 0]).join('');
+		const roster = this.roster(body.clans.find((clan) => clan.tag === tag)!);
+		return townHalls.map((th) => WHITE_NUMBERS[roster[th] || 0]).join('');
 	}
 
 	private roster(clan: any) {
 		return clan.members.reduce((count: any, member: any) => {
-			const townHall = (member.townHallLevel || member.townhallLevel);
-			count[townHall] = (count[townHall] as number || 0) + 1;
+			const townHall = member.townHallLevel || member.townhallLevel;
+			count[townHall] = ((count[townHall] as number) || 0) + 1;
 			return count;
 		}, {} as { [key: string]: number });
 	}

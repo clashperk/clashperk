@@ -1,48 +1,41 @@
-import { Command } from 'discord-akairo';
-import { Clan } from 'clashofclans.js';
-import { Message } from 'discord.js';
+import { Command } from '../../lib';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 
 export default class TrophiesCommand extends Command {
 	public constructor() {
 		super('trophies', {
-			aliases: ['trophies', 'trophy'],
 			category: 'none',
+			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'List of clan members with trophies.',
-				usage: '<#clanTag>',
-				examples: ['#2Q98URCGY']
+				content: 'List of clan members with trophies.'
 			},
-			optionFlags: ['--tag']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const data = yield {
-			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
-		};
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+		if (!clan) return;
+		if (clan.members < 1) return interaction.editReply(`\u200e**${clan.name}** does not have any clan members...`);
 
-		return { data };
-	}
+		const embed = new MessageEmbed()
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
+			.setDescription(
+				[
+					'```',
+					`\u200e # TROPHY  ${'NAME'}`,
+					clan.memberList
+						.map((member, index) => {
+							const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
+							return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
+						})
+						.join('\n'),
+					'```'
+				].join('\n')
+			);
 
-	public async exec(message: Message, { data }: { data: Clan }) {
-		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
-
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message))
-			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
-			.setDescription([
-				'```',
-				`\u200e # TROPHY  ${'NAME'}`,
-				data.memberList.map((member, index) => {
-					const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
-					return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
-				}).join('\n'),
-				'```'
-			].join('\n'));
-
-		return message.util!.send({ embeds: [embed] });
+		return interaction.editReply({ embeds: [embed] });
 	}
 }

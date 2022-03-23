@@ -1,6 +1,6 @@
 import { addBreadcrumb, Severity, captureException, setContext } from '@sentry/node';
-import { Listener, Command } from 'discord-akairo';
-import { Message, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
+import { Listener, Command } from '../../lib';
+import { CommandInteraction, MessageActionRow, MessageButton, TextChannel } from 'discord.js';
 
 export default class ErrorListener extends Listener {
 	public constructor() {
@@ -11,80 +11,74 @@ export default class ErrorListener extends Listener {
 		});
 	}
 
-	public exec(error: any, message: Message, command?: Command) {
+	public exec(error: Error, interaction: CommandInteraction, command?: Command) {
+		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.tag}` : `${interaction.user.tag}`;
+		// eslint-disable-next-line @typescript-eslint/no-base-to-string
+		this.client.logger.error(`${command?.id ?? 'unknown'} ~ ${error.toString()}`, { label });
+		console.error(error);
+
 		addBreadcrumb({
 			message: 'command_errored',
-			category: command ? command.category.id : 'inhibitor',
+			category: command ? command.category : 'inhibitor',
 			level: Severity.Error,
 			data: {
 				user: {
-					id: message.author.id,
-					username: message.author.tag
+					id: interaction.user.id,
+					username: interaction.user.tag
 				},
-				guild: message.guild
+				guild: interaction.guild
 					? {
-						id: message.guild.id,
-						name: message.guild.name
-					}
+							id: interaction.guild.id,
+							name: interaction.guild.name
+					  }
 					: null,
 				command: command
 					? {
-						id: command.id,
-						aliases: command.aliases,
-						category: command.category.id
-					}
+							id: command.id,
+							category: command.category
+					  }
 					: null,
-				message: {
-					id: message.id,
-					content: message.content
+				interaction: {
+					id: interaction.id,
+					content: interaction.commandName
 				}
 			}
 		});
 
 		setContext('command_started', {
 			user: {
-				id: message.author.id,
-				username: message.author.tag
+				id: interaction.user.id,
+				username: interaction.user.tag
 			},
-			guild: message.guild
+			guild: interaction.guild
 				? {
-					id: message.guild.id,
-					name: message.guild.name,
-					channel_id: message.channel.id
-				}
+						id: interaction.guild.id,
+						name: interaction.guild.name,
+						channel_id: interaction.channel!.id
+				  }
 				: null,
 			command: {
 				id: command?.id,
-				aliases: command?.aliases,
-				category: command?.category.id
+				category: command?.category
 			},
-			message: {
-				id: message.id,
-				content: message.content
+			interaction: {
+				id: interaction.id,
+				content: interaction.commandName
 			}
 		});
 
 		captureException(error);
 
-		const label = message.guild ? `${message.guild.name}/${message.author.tag}` : `${message.author.tag}`;
-		this.client.logger.error(`${command!.id} ~ ${error.toString() as string}`, { label });
-		this.client.logger.error(error, { label });
-
-		if (message.guild ? (message.channel as TextChannel).permissionsFor(this.client.user!)?.has('SEND_MESSAGES') : true) {
-			return message.channel.send({
-				content: [
-					'\\❌ Something went wrong, report us!',
-					`\`\`\`\n${error.toString() as string}\`\`\``
-				].join('\n'),
+		if (interaction.guild ? (interaction.channel as TextChannel).permissionsFor(this.client.user!)?.has('SEND_MESSAGES') : true) {
+			return interaction.followUp({
+				// eslint-disable-next-line @typescript-eslint/no-base-to-string
+				content: ['\\❌ Something went wrong while executing that command.', `\`\`\`\n${error.toString()}\`\`\``].join('\n'),
 				components: [
-					new MessageActionRow()
-						.addComponents(
-							new MessageButton()
-								.setStyle('LINK')
-								.setLabel('Contact Support')
-								.setURL('https://discord.gg//ppuppun')
-						)
-				]
+					new MessageActionRow().addComponents(
+						new MessageButton().setStyle('LINK').setLabel('Contact Support').setURL('https://discord.gg//ppuppun')
+					)
+				],
+				ephemeral: true
 			});
 		}
 	}

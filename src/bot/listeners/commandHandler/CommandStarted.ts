@@ -1,40 +1,40 @@
 import { addBreadcrumb, Severity, setContext } from '@sentry/node';
-import { Listener, Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Listener, Command } from '../../lib';
+import { CommandInteraction } from 'discord.js';
+import { CommandHandlerEvents } from '../../lib/util';
 
 export default class CommandStartedListener extends Listener {
 	public constructor() {
-		super('commandStarted', {
-			event: 'commandStarted',
+		super(CommandHandlerEvents.COMMAND_EXECUTED, {
+			event: CommandHandlerEvents.COMMAND_EXECUTED,
 			emitter: 'commandHandler',
 			category: 'commandHandler'
 		});
 	}
 
-	public exec(message: Message, command: Command, args: any) {
+	public exec(interaction: CommandInteraction, command: Command, args: unknown) {
 		addBreadcrumb({
 			message: 'command_started',
-			category: command.category.id,
+			category: command.category,
 			level: Severity.Info,
 			data: {
 				user: {
-					id: message.author.id,
-					username: message.author.tag
+					id: interaction.user.id,
+					username: interaction.user.tag
 				},
-				guild: message.guild
+				guild: interaction.guild
 					? {
-						id: message.guild.id,
-						name: message.guild.name
-					}
+							id: interaction.guild.id,
+							name: interaction.guild.name
+					  }
 					: null,
 				command: {
 					id: command.id,
-					aliases: command.aliases,
-					category: command.category.id
+					category: command.category
 				},
-				message: {
-					id: message.id,
-					content: message.content
+				interaction: {
+					id: interaction.id,
+					content: interaction.commandName
 				},
 				args
 			}
@@ -42,41 +42,38 @@ export default class CommandStartedListener extends Listener {
 
 		setContext('command_started', {
 			user: {
-				id: message.author.id,
-				username: message.author.tag
+				id: interaction.user.id,
+				username: interaction.user.tag
 			},
-			guild: message.guild
+			guild: interaction.guild
 				? {
-					id: message.guild.id,
-					name: message.guild.name,
-					channel_id: message.channel.id
-				}
+						id: interaction.guild.id,
+						name: interaction.guild.name,
+						channel_id: interaction.channel!.id
+				  }
 				: null,
 			command: {
 				id: command.id,
-				aliases: command.aliases,
-				category: command.category.id
+				category: command.category
 			},
-			message: {
-				id: message.id,
-				content: message.content
+			interaction: {
+				id: interaction.id,
+				content: interaction.commandName
 			},
 			args
 		});
 
-		const label = message.guild ? `${message.guild.name}/${message.author.tag} ${message.interaction ? '/' : ''}` : `${message.author.tag}`;
+		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.tag}` : `${interaction.user.tag}`;
 		this.client.logger.debug(`${command.id}`, { label });
-
-		// Counters
-		return this.counter(message, command);
+		return this.counter(interaction, command);
 	}
 
-	private counter(message: Message, command: Command) {
-		if ('token' in message) this.client.stats.interactions(message as any, command.id);
-		if (command.category.id === 'owner') return;
-		if (this.client.isOwner(message.author.id)) return;
-		this.client.stats.users(message.author);
+	private counter(interaction: CommandInteraction, command: Command) {
+		if (interaction.inCachedGuild()) this.client.stats.interactions(interaction, command.id);
+		if (command.category === 'owner') return;
+		if (this.client.isOwner(interaction.user.id)) return;
+		this.client.stats.users(interaction.user);
 		this.client.stats.commands(command.id);
-		if (message.guild) this.client.stats.guilds(message.guild);
+		if (interaction.guild) this.client.stats.guilds(interaction.guild);
 	}
 }

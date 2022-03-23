@@ -1,12 +1,12 @@
 import { ClanWar, WarClan } from 'clashofclans.js';
-import { Message, MessageEmbed } from 'discord.js';
-import { Collections } from '../../util/Constants';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { Collections, Messages } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
-import { Command } from 'discord-akairo';
+import { Command } from '../../lib';
 import moment from 'moment';
-import { Util } from '../../util/Util';
+import { Util } from '../../util';
 
-const states: { [key: string]: string } = {
+const states: Record<string, string> = {
 	inWar: '**End Time~**',
 	preparation: '**Start Time~**',
 	warEnded: '**End Time~**'
@@ -15,24 +15,20 @@ const states: { [key: string]: string } = {
 export default class WarSummaryCommand extends Command {
 	public constructor() {
 		super('war-summary', {
-			aliases: ['matches', 'wars'],
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
-			description: {}
+			defer: true
 		});
 	}
 
-	public async exec(message: Message) {
-		if (!message.interaction) await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
-		const clans = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild: message.guild!.id })
-			.toArray();
-		if (!clans.length) return message.util!.send(`**${message.guild!.name} does not have any clans. Why not add some?**`);
+	public async exec(interaction: CommandInteraction) {
+		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
+		if (!clans.length) return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 
 		const embed = new MessageEmbed();
 		for (const clan of clans) {
-			const data = await this.getWAR(clan.tag) as ClanWar & { round?: number };
+			const data = (await this.getWAR(clan.tag)) as ClanWar & { round?: number };
 			if (!data.ok) continue;
 			if (data.state === 'notInWar') continue;
 
@@ -46,17 +42,14 @@ export default class WarSummaryCommand extends Command {
 			);
 		}
 
-		if (!embed.length) return message.util!.send('**No clans are in war at this moment!**');
-		const embeds = Array(Math.ceil(embed.fields.length / 15)).fill(0)
-			.map(
-				() => embed.fields.splice(0, 15)
-			)
-			.map(
-				fields => new MessageEmbed({ color: this.client.embed(message), fields })
-			);
-		if (embeds.length === 1) return message.util!.send({ embeds: [embeds.shift()!] });
+		if (!embed.length) return interaction.editReply('**No clans are in war at this moment!**');
+		const embeds = Array(Math.ceil(embed.fields.length / 15))
+			.fill(0)
+			.map(() => embed.fields.splice(0, 15))
+			.map((fields) => new MessageEmbed({ color: this.client.embed(interaction), fields }));
+		if (embeds.length === 1) return interaction.editReply({ embeds: [embeds.shift()!] });
 		for (const embed of embeds) {
-			await message.util!.sendNew({ embeds: [embed] });
+			await interaction.followUp({ embeds: [embed] });
 		}
 	}
 
@@ -73,17 +66,17 @@ export default class WarSummaryCommand extends Command {
 		const res = await this.client.http.clanWarLeague(clanTag);
 		if (res.statusCode === 504 || res.state === 'notInWar') return { statusCode: 504 };
 		if (!res.ok) return this.client.http.currentClanWar(clanTag);
-		const rounds = res.rounds.filter(d => !d.warTags.includes('#0'));
+		const rounds = res.rounds.filter((d) => !d.warTags.includes('#0'));
 
 		const chunks = [];
 		for (const { warTags } of rounds.slice(-2)) {
 			for (const warTag of warTags) {
 				const data = await this.client.http.clanWarLeagueWar(warTag);
 				if (!data.ok) continue;
-				if ((data.clan.tag === clanTag) || (data.opponent.tag === clanTag)) {
+				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					chunks.push({
 						...data,
-						round: res.rounds.findIndex(d => d.warTags.includes(warTag)) + 1,
+						round: res.rounds.findIndex((d) => d.warTags.includes(warTag)) + 1,
 						clan: data.clan.tag === clanTag ? data.clan : data.opponent,
 						opponent: data.clan.tag === clanTag ? data.opponent : data.clan
 					});
@@ -93,7 +86,11 @@ export default class WarSummaryCommand extends Command {
 		}
 
 		if (!chunks.length) return { statusCode: 504 };
-		return chunks.find(en => en.state === 'inWar') ?? chunks.find(en => en.state === 'preparation') ?? chunks.find(en => en.state === 'warEnded');
+		return (
+			chunks.find((en) => en.state === 'inWar') ??
+			chunks.find((en) => en.state === 'preparation') ??
+			chunks.find((en) => en.state === 'warEnded')
+		);
 	}
 
 	private getLeaderBoard(clan: WarClan, opponent: WarClan) {

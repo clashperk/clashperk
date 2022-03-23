@@ -1,51 +1,42 @@
 import { Collections } from '../../util/Constants';
-import { Message, MessageEmbed } from 'discord.js';
-import { Player } from 'clashofclans.js';
-import { Command } from 'discord-akairo';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { Command } from '../../lib';
 
-export default class FlagShowCommand extends Command {
+export default class FlagSearchCommand extends Command {
 	public constructor() {
-		super('flag-show', {
+		super('flag-search', {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
-			description: {},
-			optionFlags: ['--tag']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const data = yield {
-			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.getPlayer(msg, tag)
-		};
-
-		return { data };
-	}
-
-	public async exec(message: Message, { data }: { data: Player }) {
-		const flag = await this.client.db.collection(Collections.FLAGS)
-			.findOne({ guild: message.guild!.id, tag: data.tag });
+	public async exec(interaction: CommandInteraction, args: { tag?: string }) {
+		const player = await this.client.resolver.resolvePlayer(interaction, args.tag);
+		if (!player) return;
+		const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: interaction.guild!.id, tag: player.tag });
 
 		if (!flag) {
-			return message.util!.send(`**${data.name}** is not flagged!`);
+			return interaction.editReply(`**${player.name}** is not flagged!`);
 		}
 
 		const user = await this.client.users.fetch(flag.user).catch(() => null);
 		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
-			.setAuthor({ name: `${data.name} (${data.tag})` })
-			.setDescription([
-				'**Executor**',
-				user ? user.tag : `Unknown#0000 (${flag.user as string})`,
-				'',
-				'**Reason**',
-				`${flag.reason as string}`
-			].join('\n'))
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `${player.name} (${player.tag})` })
+			.setDescription(
+				[
+					'**Executor**',
+					user ? user.tag : `Unknown#0000 (${flag.user as string})`,
+					'',
+					'**Reason**',
+					`${flag.reason as string}`
+				].join('\n')
+			)
 			.setFooter({ text: 'Date' })
 			.setTimestamp(flag.createdAt);
 
-		return message.util!.send({ embeds: [embed] });
+		return interaction.editReply({ embeds: [embed] });
 	}
 }

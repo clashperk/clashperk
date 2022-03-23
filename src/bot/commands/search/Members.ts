@@ -1,9 +1,8 @@
-import { Message, MessageActionRow, MessageButton } from 'discord.js';
-import { ORANGE_NUMBERS } from '../../util/NumEmojis';
-import { Clan, PlayerItem } from 'clashofclans.js';
-import { EMOJIS } from '../../util/Emojis';
-import { Command } from 'discord-akairo';
-import { Util } from '../../util/Util';
+import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { PlayerItem } from 'clashofclans.js';
+import { EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis';
+import { Command } from '../../lib';
+import { Util } from '../../util';
 
 const roleIds: { [key: string]: number } = {
 	member: 1,
@@ -12,7 +11,7 @@ const roleIds: { [key: string]: number } = {
 	leader: 4
 };
 
-const roleNames: { [key: string]: string } = {
+const roleNames: Record<string, string> = {
 	member: 'Mem',
 	admin: 'Eld',
 	coLeader: 'Co',
@@ -29,166 +28,153 @@ const PETS: { [key: string]: number } = {
 export default class MembersCommand extends Command {
 	public constructor() {
 		super('members', {
-			aliases: ['members', 'member', 'mem', 'warweight', 'ww'],
 			category: 'search',
+			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
 			description: {
-				content: 'Clan members with Town Halls and Heroes.',
-				usage: '<#clanTag>',
-				examples: ['#8QU8J9LP']
+				content: 'Clan members with Town Halls and Heroes.'
 			},
-			optionFlags: ['--tag', '--option']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const sub = yield {
-			flag: '--option',
-			unordered: true,
-			type: [
-				['link-list', 'links', 'discord'],
-				['trophies', 'trophy'],
-				['roles', 'role'],
-				['tags', 'tag']
-			],
-			match: msg.interaction ? 'option' : 'phrase'
-		};
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; option: string }) {
+		const data = await this.client.resolver.resolveClan(interaction, args.tag);
+		if (!data) return;
 
-		const data = yield {
-			flag: '--tag',
-			unordered: true,
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
-		};
+		const command = {
+			discord: this.handler.modules.get('link-list')!,
+			trophies: this.handler.modules.get('trophies')!
+		}[args.option];
+		if (command) return this.handler.exec(interaction, command, { tag: args.tag });
 
-		return { data, sub };
-	}
-
-	public async exec(message: Message, { data, sub }: { data: Clan; sub: string }) {
-		if (['link-list', 'trophies'].includes(sub)) {
-			return this.handler.runCommand(message, this.handler.modules.get(sub)!, { data });
-		}
-
-		if (data.members < 1) return message.util!.send(`\u200e**${data.name}** does not have any clan members...`);
-		await message.util!.send(`**Fetching data... ${EMOJIS.LOADING}**`);
+		if (data.members < 1) return interaction.editReply(`\u200e**${data.name}** does not have any clan members...`);
+		await interaction.editReply(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
-		const members = fetched.filter(res => res.ok).map(m => ({
-			name: m.name, tag: m.tag,
-			warPreference: m.warPreference === 'in',
-			role: {
-				id: roleIds[m.role ?? data.memberList.find(mem => mem.tag === m.tag)!.role],
-				name: roleNames[m.role ?? data.memberList.find(mem => mem.tag === m.tag)!.role]
-			},
-			townHallLevel: m.townHallLevel,
-			heroes: m.heroes.length ? m.heroes.filter(a => a.village === 'home') : [],
-			pets: m.troops.filter(troop => troop.name in PETS)
-				.sort((a, b) => PETS[a.name] - PETS[b.name])
-		}));
+		const members = fetched
+			.filter((res) => res.ok)
+			.map((m) => ({
+				name: m.name,
+				tag: m.tag,
+				warPreference: m.warPreference === 'in',
+				role: {
+					id: roleIds[m.role ?? data.memberList.find((mem) => mem.tag === m.tag)!.role],
+					name: roleNames[m.role ?? data.memberList.find((mem) => mem.tag === m.tag)!.role]
+				},
+				townHallLevel: m.townHallLevel,
+				heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : [],
+				pets: m.troops.filter((troop) => troop.name in PETS).sort((a, b) => PETS[a.name] - PETS[b.name])
+			}));
 
-		members.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
+		members
+			.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
 			.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message))
+		const embed = new MessageEmbed()
+			.setColor(this.client.embed(interaction))
 			.setFooter({ text: `Total ${fetched.length === data.members ? data.members : `${fetched.length}/${data.members}`}/50` })
 			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
-			.setDescription([
-				'```',
-				`TH BK AQ GW RC  ${'NAME'}`,
-				members.map(
-					mem => {
-						const heroes = this.heroes(mem.heroes).map(hero => this.padStart(hero.level)).join(' ');
-						return `${mem.townHallLevel.toString().padStart(2, ' ')} ${heroes}  \u200e${mem.name}`;
-					}
-				).join('\n'),
-				'```'
-			].join('\n'));
+			.setDescription(
+				[
+					'```',
+					`TH BK AQ GW RC  ${'NAME'}`,
+					members
+						.map((mem) => {
+							const heroes = this.heroes(mem.heroes)
+								.map((hero) => this.padStart(hero.level))
+								.join(' ');
+							return `${mem.townHallLevel.toString().padStart(2, ' ')} ${heroes}  \u200e${mem.name}`;
+						})
+						.join('\n'),
+					'```'
+				].join('\n')
+			);
 
-		if (sub === 'tags') {
-			embed.setDescription([
-				'```',
-				`\u200e${'TAG'.padStart(10, ' ')}  ${'NAME'}`,
-				members.map(mem => `\u200e${mem.tag.padStart(10, ' ')}  ${mem.name}`).join('\n'),
-				'```'
-			].join('\n'));
+		if (args.option === 'tags') {
+			embed.setDescription(
+				[
+					'```',
+					`\u200e${'TAG'.padStart(10, ' ')}  ${'NAME'}`,
+					members.map((mem) => `\u200e${mem.tag.padStart(10, ' ')}  ${mem.name}`).join('\n'),
+					'```'
+				].join('\n')
+			);
 		}
 
-		if (sub === 'roles') {
+		if (args.option === 'roles') {
 			const _members = [...members].sort((a, b) => b.role.id - a.role.id);
-			embed.setDescription([
-				'```',
-				`\u200e ${'ROLE'.padEnd(4, ' ')}  ${'NAME'}`,
-				_members.map(mem => `\u200e ${mem.role.name.padEnd(4, ' ')}  ${mem.name}`).join('\n'),
-				'```'
-			].join('\n'));
+			embed.setDescription(
+				[
+					'```',
+					`\u200e ${'ROLE'.padEnd(4, ' ')}  ${'NAME'}`,
+					_members.map((mem) => `\u200e ${mem.role.name.padEnd(4, ' ')}  ${mem.name}`).join('\n'),
+					'```'
+				].join('\n')
+			);
 		}
 
 		const [discord, download, warPref] = [
-			this.client.uuid(message.author.id),
-			this.client.uuid(message.author.id),
-			this.client.uuid(message.author.id)
+			this.client.uuid(interaction.user.id),
+			this.client.uuid(interaction.user.id),
+			this.client.uuid(interaction.user.id)
 		];
 
 		const components = [
 			new MessageActionRow()
 				.addComponents(
-					new MessageButton()
-						.setLabel('Discord Links')
-						.setCustomId(discord)
-						.setStyle('SECONDARY')
-						.setEmoji(EMOJIS.DISCORD)
+					new MessageButton().setLabel('Discord Links').setCustomId(discord).setStyle('SECONDARY').setEmoji(EMOJIS.DISCORD)
 				)
-				.addComponents(
-					new MessageButton()
-						.setEmoji('📥')
-						.setLabel('Download')
-						.setCustomId(download)
-						.setStyle('SECONDARY')
-				),
-			new MessageActionRow()
-				.addComponents(
-					new MessageButton()
-						.setEmoji(EMOJIS.CROSS_SWORD)
-						.setLabel('War Preference')
-						.setCustomId(warPref)
-						.setStyle('SECONDARY')
-				)
+				.addComponents(new MessageButton().setEmoji('📥').setLabel('Download').setCustomId(download).setStyle('SECONDARY')),
+			new MessageActionRow().addComponents(
+				new MessageButton().setEmoji(EMOJIS.CROSS_SWORD).setLabel('War Preference').setCustomId(warPref).setStyle('SECONDARY')
+			)
 		];
 
-		const msg = await message.util!.send({ embeds: [embed], components });
+		const msg = await interaction.editReply({ embeds: [embed], components });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => [discord, download, warPref].includes(action.customId) && action.user.id === message.author.id,
+			filter: (action) => [discord, download, warPref].includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
-		collector.on('collect', async action => {
+		collector.on('collect', async (action) => {
 			if (action.customId === discord) {
 				await action.update({ components: [] });
-				await this.handler.runCommand(message, this.handler.modules.get('link-list')!, { data });
+				await this.handler.exec(interaction, this.handler.modules.get('link-list')!, { data });
 			}
 
 			if (action.customId === warPref) {
-				const optedIn = members.filter(m => m.warPreference);
-				const optedOut = members.filter(m => !m.warPreference);
-				embed.setDescription([
-					`**OPTED-IN ~ ${optedIn.length}**`,
-					optedIn.map(
-						m => `\u200e**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(15, ' ')} \u200f\``
-					).join('\n'),
-					'',
-					`**OPTED-OUT ~ ${optedOut.length}**`,
-					optedOut.map(
-						m => `\u200e✘ ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(15, ' ')} \u200f\``
-					).join('\n')
-				].join('\n'));
+				const optedIn = members.filter((m) => m.warPreference);
+				const optedOut = members.filter((m) => !m.warPreference);
+				embed.setDescription(
+					[
+						`**OPTED-IN ~ ${optedIn.length}**`,
+						optedIn
+							.map(
+								(m) =>
+									`\u200e**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(
+										15,
+										' '
+									)} \u200f\``
+							)
+							.join('\n'),
+						'',
+						`**OPTED-OUT ~ ${optedOut.length}**`,
+						optedOut
+							.map(
+								(m) =>
+									`\u200e✘ ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(15, ' ')} \u200f\``
+							)
+							.join('\n')
+					].join('\n')
+				);
 				embed.setFooter({ text: `War Preference (${optedIn.length}/${members.length})` });
 				await action.update({ embeds: [embed], components: [] });
 			}
 
 			if (action.customId === download) {
 				await action.update({ components: [] });
-				return this.handler.runCommand(message, this.handler.modules.get('export-members')!, { tags: [data.tag] });
+				return this.handler.exec(interaction, this.handler.modules.get('export-members')!, { tag: data.tag });
 			}
 		});
 
@@ -196,17 +182,12 @@ export default class MembersCommand extends Command {
 			this.client.components.delete(discord);
 			this.client.components.delete(download);
 			this.client.components.delete(warPref);
-			if (!/delete/i.test(reason)) await msg.edit({ components: [] });
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
 	}
 
 	private heroes(items: PlayerItem[]) {
-		return Object.assign([
-			{ level: '  ' },
-			{ level: '  ' },
-			{ level: '  ' },
-			{ level: '  ' }
-		], items);
+		return Object.assign([{ level: '  ' }, { level: '  ' }, { level: '  ' }, { level: '  ' }], items);
 	}
 
 	private padStart(num: number | string) {

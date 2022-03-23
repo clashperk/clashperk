@@ -1,47 +1,38 @@
 import { Collections } from '../../util/Constants';
-import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Command } from '../../lib';
+import { CommandInteraction } from 'discord.js';
 
-export default class AliasRemoveCommand extends Command {
+export default class AliasDeleteCommand extends Command {
 	public constructor() {
-		super('alias-remove', {
+		super('alias-delete', {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
-			optionFlags: ['--name'],
-			description: {}
+			ephemeral: true,
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const name = yield {
-			id: 'name',
-			type: 'lowercase',
-			flag: '--name',
-			match: msg.interaction ? 'option' : 'phrase'
-		};
-
-		return { name };
-	}
-
 	private parseTag(tag?: string) {
-		return tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null;
+		return tag ? `#${tag.toUpperCase().replace(/O/g, '0').replace(/^#/g, '')}` : null;
 	}
 
-	public async exec(message: Message, { name: alias }: { name?: string }) {
-		if (!alias) return message.util!.send('You must provide a clan tag or clan alias to run this command.');
+	public async exec(interaction: CommandInteraction<'cached'>, args: { name?: string }) {
+		if (!args.name) return interaction.editReply('You must provide a clan tag or clan alias to run this command.');
 
-		const deleted = await this.client.db.collection(Collections.CLAN_STORES)
-			.findOneAndUpdate({
-				guild: message.guild!.id,
+		const deleted = await this.client.db.collection(Collections.CLAN_STORES).findOneAndUpdate(
+			{
+				guild: interaction.guild.id,
 				alias: { $exists: true },
-				$or: [{ tag: this.parseTag(alias) }, { alias: alias.trim() }]
-			}, { $unset: { alias: '' } });
+				$or: [{ tag: this.parseTag(args.name) }, { alias: args.name.trim() }]
+			},
+			{ $unset: { alias: '' } }
+		);
 
 		if (!deleted.value) {
-			return message.util!.send('**No matches found!**');
+			return interaction.editReply('**No matches found!**');
 		}
 
-		return message.util!.send(`_Successfully deleted **${deleted.value.alias as string}**_`);
+		return interaction.editReply(`_Successfully deleted **${deleted.value.alias as string}**_`);
 	}
 }

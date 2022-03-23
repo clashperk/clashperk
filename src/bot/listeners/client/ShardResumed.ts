@@ -1,4 +1,4 @@
-import { Listener } from 'discord-akairo';
+import { Listener } from '../../lib';
 
 export default class ShardResumeListener extends Listener {
 	public constructor() {

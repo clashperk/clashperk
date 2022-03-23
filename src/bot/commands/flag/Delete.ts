@@ -1,38 +1,29 @@
 import { Collections } from '../../util/Constants';
-import { Command } from 'discord-akairo';
-import { Message } from 'discord.js';
+import { Command } from '../../lib';
+import { CommandInteraction } from 'discord.js';
 
 // TODO: Fix Reply
-export default class FlagRemoveCommand extends Command {
+export default class FlagDeleteCommand extends Command {
 	public constructor() {
-		super('flag-remove', {
-			aliases: ['unflag'],
+		super('flag-delete', {
 			category: 'none',
 			channel: 'guild',
-			description: {},
 			userPermissions: ['MANAGE_GUILD'],
-			optionFlags: ['--tag']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const tag = yield {
-			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => tag ? `#${tag.toUpperCase().replace(/o|O/g, '0').replace(/^#/g, '')}` : null
-		};
-
-		return { tag };
+	private fixTag(tag: string) {
+		return `#${tag.toUpperCase().replace(/O/g, '0').replace(/^#/g, '')}`;
 	}
 
-	public async exec(message: Message, { tag }: { tag?: string }) {
-		if (!tag) return message.util!.send('**You must provide a player tag to run this command.**');
-		const data = await this.client.db.collection(Collections.FLAGS)
-			.deleteOne({ guild: message.guild!.id, tag });
+	public async exec(interaction: CommandInteraction, { tag }: { tag?: string }) {
+		if (!tag) return interaction.editReply('**You must provide a player tag to run this command.**');
+		const data = await this.client.db.collection(Collections.FLAGS).deleteOne({ guild: interaction.guild!.id, tag: this.fixTag(tag) });
 		if (!data.deletedCount) {
-			return message.util!.send('Tag not found!');
+			return interaction.editReply('Tag not found!');
 		}
 
-		return message.util!.send(`Successfully unflagged **${tag}**`);
+		return interaction.editReply(`Successfully unflagged **${tag}**`);
 	}
 }

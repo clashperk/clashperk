@@ -1,12 +1,12 @@
+/* eslint-disable */
 import { MessageEmbed, Message, Collection, TextChannel, PermissionString, Snowflake, ThreadChannel } from 'discord.js';
-import { EMOJIS, TOWN_HALLS, CWL_LEAGUES } from '../util/Emojis';
-import { ORANGE_NUMBERS } from '../util/NumEmojis';
+import { EMOJIS, TOWN_HALLS, CWL_LEAGUES, ORANGE_NUMBERS } from '../util/Emojis';
 import { Collections } from '../util/Constants';
-import { APIMessage } from 'discord-api-types';
+import { APIMessage } from 'discord-api-types/v9';
 import { Clan } from 'clashofclans.js';
-import Client from '../struct/Client';
+import { Client } from '../struct/Client';
 import { ObjectId } from 'mongodb';
-import { Util } from '../util/Util';
+import { Util } from '../util';
 
 export interface Cache {
 	_id: ObjectId;
@@ -29,7 +29,7 @@ export default class ClanEmbedLog {
 	}
 
 	public async exec(tag: string, clan: Clan) {
-		const clans = this.cached.filter(d => d.tag === tag);
+		const clans = this.cached.filter((d) => d.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id)!;
 			await this.permissionsFor(cache, clan);
@@ -68,7 +68,8 @@ export default class ClanEmbedLog {
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel) as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS'))) return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
+				return;
 			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
 				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
 				return this.handleMessage(cache, channel, clan);
@@ -99,14 +100,13 @@ export default class ClanEmbedLog {
 	private async edit(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan) {
 		const embed = await this.embed(cache, clan);
 
-		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] })
-			.catch(error => {
-				if (error.code === 10008) {
-					delete cache.message;
-					return this.send(cache, channel, clan);
-				}
-				return null;
-			});
+		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] }).catch((error) => {
+			if (error.code === 10008) {
+				delete cache.message;
+				return this.send(cache, channel, clan);
+			}
+			return null;
+		});
 	}
 
 	private async mutate(cache: Cache, msg: APIMessage | null) {
@@ -123,9 +123,7 @@ export default class ClanEmbedLog {
 			);
 			cache.message = msg.id;
 		} else {
-			await this.collection.updateOne(
-				{ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } }
-			);
+			await this.collection.updateOne({ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
 		}
 		return msg;
 	}
@@ -139,7 +137,7 @@ export default class ClanEmbedLog {
 		}, {} as { [key: string]: number });
 
 		const townHalls = Object.entries(reduced)
-			.map(arr => ({ level: Number(arr[0]), total: arr[1] }))
+			.map((arr) => ({ level: Number(arr[0]), total: arr[1] }))
 			.sort((a, b) => b.level - a.level);
 
 		const location = data.location
@@ -154,31 +152,55 @@ export default class ClanEmbedLog {
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)
-			.setDescription([
-				`${EMOJIS.CLAN} **${data.clanLevel}** ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
-				'',
-				clanDescription || ''
-			].join('\n'))
-			.addField('Clan Leader', [
-				`${EMOJIS.OWNER} <@!${cache.embed.userId as string}> (${data.memberList.find(m => m.role === 'leader')?.name ?? 'None'})`
-			].join('\n'))
-			.addField('Requirements', [
-				`${EMOJIS.TOWNHALL} ${cache.embed.accepts as string}`,
-				'**Trophies Required**',
-				`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
-				`**Location** \n${location}`
-			].join('\n'))
-			.addField('War Performance', [
-				`${EMOJIS.OK} ${data.warWins} Won ${data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''}`,
-				'**War Frequency & Streak**',
-				`${data.warFrequency.toLowerCase() === 'morethanonceperweek'
-					? '🎟️ More Than Once Per Week'
-					: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, char => char.toUpperCase())}`} ${'🏅'} ${data.warWinStreak}`,
-				'**War League**', `${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
-			].join('\n'))
-			.addField('Town Halls', [
-				townHalls.slice(0, 7).map(th => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`).join(' ') || `${EMOJIS.WRONG} None`
-			].join('\n'))
+			.setDescription(
+				[
+					`${EMOJIS.CLAN} **${data.clanLevel}** ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
+					'',
+					clanDescription || ''
+				].join('\n')
+			)
+			.addField(
+				'Clan Leader',
+				[
+					`${EMOJIS.OWNER} <@!${cache.embed.userId as string}> (${
+						data.memberList.find((m) => m.role === 'leader')?.name ?? 'None'
+					})`
+				].join('\n')
+			)
+			.addField(
+				'Requirements',
+				[
+					`${EMOJIS.TOWNHALL} ${cache.embed.accepts as string}`,
+					'**Trophies Required**',
+					`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
+					`**Location** \n${location}`
+				].join('\n')
+			)
+			.addField(
+				'War Performance',
+				[
+					`${EMOJIS.OK} ${data.warWins} Won ${
+						data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''
+					}`,
+					'**War Frequency & Streak**',
+					`${
+						data.warFrequency.toLowerCase() === 'morethanonceperweek'
+							? '🎟️ More Than Once Per Week'
+							: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`
+					} ${'🏅'} ${data.warWinStreak}`,
+					'**War League**',
+					`${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
+				].join('\n')
+			)
+			.addField(
+				'Town Halls',
+				[
+					townHalls
+						.slice(0, 7)
+						.map((th) => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`)
+						.join(' ') || `${EMOJIS.WRONG} None`
+				].join('\n')
+			)
 			.setTimestamp()
 			.setFooter({ text: 'Synced', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) });
 
@@ -186,9 +208,10 @@ export default class ClanEmbedLog {
 	}
 
 	public async init() {
-		await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
-			.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
-			.forEach(data => {
+		await this.client.db
+			.collection(Collections.CLAN_EMBED_LOGS)
+			.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })
+			.forEach((data) => {
 				this.cached.set((data.clan_id as ObjectId).toHexString(), {
 					_id: data.clan_id,
 					message: data.message,
@@ -201,8 +224,7 @@ export default class ClanEmbedLog {
 	}
 
 	public async add(_id: string) {
-		const data = await this.client.db.collection(Collections.CLAN_EMBED_LOGS)
-			.findOne({ clan_id: new ObjectId(_id) });
+		const data = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clan_id: new ObjectId(_id) });
 
 		if (!data) return null;
 		return this.cached.set(_id, {

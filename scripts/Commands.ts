@@ -167,7 +167,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'donations',
-		description: 'Clan members\' donations and receives',
+		description: "Clan members' donations and receives",
 		options: [
 			{
 				name: 'tag',
@@ -232,7 +232,6 @@ export const COMMANDS: Command[] = [
 						value: 'false'
 					}
 				]
-
 			}
 		]
 	},
@@ -259,7 +258,7 @@ export const COMMANDS: Command[] = [
 				required: false
 			},
 			{
-				name: 'war-id',
+				name: 'war_id',
 				description: 'Search by War ID',
 				type: ApplicationCommandOptionType.String,
 				required: false
@@ -277,7 +276,7 @@ export const COMMANDS: Command[] = [
 				required: false
 			},
 			{
-				name: 'war-id',
+				name: 'war_id',
 				description: 'Search by War ID',
 				type: ApplicationCommandOptionType.String,
 				required: false
@@ -753,7 +752,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'activity',
-		description: 'Shows clan activity graph',
+		description: 'Graph of hourly active clan members',
 		options: [
 			{
 				name: 'clans',
@@ -971,7 +970,7 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'location',
-				description: 'Search by country or city name (we don\'t store your location, only offset. e.g GMT+5:00)',
+				description: "Search by country or city name (we don't store your location, only offset. e.g GMT+5:00)",
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -1140,7 +1139,7 @@ export const COMMANDS: Command[] = [
 						name: 'season',
 						description: 'Limit the data to the last X months.',
 						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds().map(season => ({ name: `Since ${season.name}`, value: season.value }))
+						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
 					},
 					{
 						name: 'attempt',
@@ -1236,7 +1235,7 @@ export const COMMANDS: Command[] = [
 						name: 'season',
 						description: 'Limit the data to the last X months.',
 						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds().map(season => ({ name: `Since ${season.name}`, value: season.value }))
+						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
 					},
 					{
 						name: 'attempt',

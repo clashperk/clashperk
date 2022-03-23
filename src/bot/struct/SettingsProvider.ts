@@ -9,15 +9,22 @@ export default class SettingsProvider {
 	public constructor(db: Db) {
 		this.db = db.collection(Collections.SETTINGS);
 
-		this.db.watch([{
-			$match: {
-				operationType: { $in: ['insert', 'update', 'delete'] }
-			}
-		}], { fullDocument: 'updateLookup' }).on('change', change => {
-			if (['update', 'insert'].includes(change.operationType)) {
-				this.settings.set(change.fullDocument!.id, change.fullDocument);
-			}
-		});
+		this.db
+			.watch(
+				[
+					{
+						$match: {
+							operationType: { $in: ['insert', 'update', 'delete'] }
+						}
+					}
+				],
+				{ fullDocument: 'updateLookup' }
+			)
+			.on('change', (change) => {
+				if (['update', 'insert'].includes(change.operationType)) {
+					this.settings.set(change.fullDocument!.id, change.fullDocument);
+				}
+			});
 	}
 
 	public async init() {
@@ -27,7 +34,7 @@ export default class SettingsProvider {
 		}
 	}
 
-	public get<T>(guild: string | Guild, key: string, defaultValue: any): T {
+	public get<T>(guild: string | Guild, key: string, defaultValue?: any): T {
 		const id = (this.constructor as typeof SettingsProvider).guildID(guild);
 		if (this.settings.has(id)) {
 			const value = this.settings.get(id)[key];
@@ -67,7 +74,7 @@ export default class SettingsProvider {
 	private static guildID(guild: string | Guild) {
 		if (guild instanceof Guild) return guild.id;
 		if (guild === 'global' || guild === null) return 'global'; // eslint-disable-line
-		if (typeof guild === 'string' && /^\d+$/.test(guild)) return guild;
+		if (/^\d+$/.test(guild)) return guild;
 		throw new TypeError('Invalid guild specified. Must be a Guild instance, guild ID, "global", or null.');
 	}
 }

@@ -1,220 +1,162 @@
-import { Command } from 'discord-akairo';
-import { Collections } from '../../util/Constants';
+import { Command } from '../../lib';
+import { Collections, Messages } from '../../util/Constants';
 import Chart from '../../struct/ChartHandler';
-import { Message } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
+import { UserInfo } from '../../types';
 
-const months = [
-	'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-	'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-];
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default class ClanActivityCommand extends Command {
 	public constructor() {
 		super('activity', {
-			aliases: ['activity', 'av'],
 			category: 'activity',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
 			description: {
 				content: [
-					'Shows active members per hour graph for clans.',
+					'Graph of hourly active clan members.',
 					'',
 					'Maximum 3 clans are accepted.',
 					'',
-					'Set your time zone using **/timezone** command for better experience.'
-				],
-				usage: '[#clanTags]',
-				examples: ['#8QU8J9LP', '#8QU8J9LP #8UUYQ92L']
+					'Please set your timezone with the `/timezone` command. It enables you to view the graphs in your timezone.'
+				]
 			},
-			optionFlags: ['--clans', '--days']
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const tags = yield {
-			flag: '--clans',
-			unordered: true,
-			match: msg.interaction ? 'option' : 'content',
-			type: async (msg: Message, args: string) => {
-				const tags = args ? args.split(/ +/g) : [];
-				if (tags.length > 1) return args.split(/ +/g);
-				return this.client.resolver.resolveClan(msg, args);
-			}
-		};
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; days?: number }) {
+		const tags = args.clans?.split(/ +/g) ?? [];
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guild.id, tags)
+			: await this.client.storage.findAll(interaction.guild.id);
 
-		const days = yield {
-			flag: '--days',
-			match: 'option',
-			unordered: true,
-			type: ['1', '3', '7', '24']
-		};
-
-		return { tags, days: Number(days) || 1 };
-	}
-
-	private async getClans(message: Message, aliases: string[]) {
-		const clans = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({
-				$or: [
-					{
-						tag: { $in: aliases.map(tag => this.fixTag(tag)) }
-					},
-					{
-						guild: message.guild!.id,
-						alias: { $in: aliases.map(alias => alias.toLowerCase()) }
-					}
-				]
-			})
-			.toArray();
-
-		return clans.map(clan => clan.tag);
-	}
-
-	private fixTag(tag: string) {
-		return `#${tag.toUpperCase().replace(/^#/g, '').replace(/O|o/g, '0')}`;
-	}
-
-	public async exec(message: Message, { tags, days }: { tags: string[] | string; days: number }) {
-		// @ts-expect-error
-		if (!Array.isArray(tags)) tags = [tags.tag];
-		tags.splice(3);
-		if (!tags.length) return;
-
-		const clanTags = await this.getClans(message, tags);
-		if (!clanTags.length) {
-			return message.util!.send(`*No clans found in my database for the specified argument.*`);
+		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
+		if (!clans.length) {
+			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
-		const clans = await this.aggregationQuery(clanTags, days);
-		if (!clans.length) return message.util!.send('*Not enough data available at this moment!*');
+		const result = await this.aggregate(
+			clans.map((clan) => clan.tag),
+			args.days ?? 1
+		);
+		if (!result.length) return interaction.editReply(Messages.NO_DATA);
 
-		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: message.author.id });
+		const user = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
 		const timezone = user?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
-		const datasets = clans.map(clan => ({ name: clan.name, data: this.datasets(clan, timezone.offset, days) }));
+		const datasets = result.map((clan) => ({ name: clan.name, data: this.datasets(clan, timezone.offset, args.days ?? 1) }));
 
 		const hrStart = process.hrtime();
-		const buffer = await Chart.clanActivity(datasets, [`Active Members Per Hour (${timezone.name as string})`], days);
+		const buffer = await Chart.clanActivity(datasets, [`Active Members Per Hour (${timezone.name})`], args.days);
 		const diff = process.hrtime(hrStart);
 
-		this.client.logger.debug(`Rendered in ${((diff[0] * 1000) + (diff[1] / 1000000)).toFixed(2)}ms`, { label: 'CHART' });
-		return message.util!.send({
+		this.client.logger.debug(`Rendered in ${(diff[0] * 1000 + diff[1] / 1000000).toFixed(2)}ms`, { label: 'CHART' });
+		return interaction.editReply({
 			files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }],
-			content: [
-				user ? '' : `_Set your time zone using \`/timezone\` command for better experience._`
-			].join('\n')
+			content: user ? null : Messages.SET_TIMEZONE
 		});
 	}
 
-	private aggregationQuery(clanTags: string[], days = 1) {
-		return this.client.db.collection(Collections.LAST_SEEN).aggregate([
-			{
-				$match: {
-					'clan.tag': { $in: clanTags }
-				}
-			},
-			{
-				$match: {
-					entries: {
-						$exists: true
+	private aggregate(clanTags: string[], days = 1) {
+		return this.client.db
+			.collection(Collections.LAST_SEEN)
+			.aggregate([
+				{
+					$match: {
+						'clan.tag': { $in: clanTags }
 					}
-				}
-			},
-			{
-				$project: {
-					tag: '$tag',
-					clan: '$clan',
-					entries: {
-						$filter: {
-							input: '$entries',
-							as: 'en',
-							cond: {
-								$gte: [
-									'$$en.entry', new Date(Date.now() - (days * 24 * 60 * 60 * 1000))
-								]
+				},
+				{
+					$match: {
+						entries: {
+							$exists: true
+						}
+					}
+				},
+				{
+					$project: {
+						tag: '$tag',
+						clan: '$clan',
+						entries: {
+							$filter: {
+								input: '$entries',
+								as: 'en',
+								cond: {
+									$gte: ['$$en.entry', new Date(Date.now() - days * 24 * 60 * 60 * 1000)]
+								}
 							}
 						}
 					}
-				}
-			},
-			{
-				$unwind: {
-					path: '$entries'
-				}
-			},
-			{
-				$group: {
-					_id: {
-						id: '$entries.entry',
-						clan: '$clan',
-						tag: '$tag'
+				},
+				{
+					$unwind: {
+						path: '$entries'
 					}
-				}
-			},
-			{
-				$group: {
-					_id: {
-						id: '$_id.id',
-						clan: '$_id.clan'
-					},
-					count: {
-						$sum: 1
-					}
-				}
-			},
-			{
-				$group: {
-					_id: '$_id.clan.tag',
-					entries: {
-						$addToSet: {
-							time: {
-								$dateToString: {
-									format: '%Y-%m-%dT%H:00',
-									date: '$_id.id'
-								}
-							},
-							count: '$count'
+				},
+				{
+					$group: {
+						_id: {
+							id: '$entries.entry',
+							clan: '$clan',
+							tag: '$tag'
 						}
-					},
-					name: {
-						$first: '$_id.clan.name'
+					}
+				},
+				{
+					$group: {
+						_id: {
+							id: '$_id.id',
+							clan: '$_id.clan'
+						},
+						count: {
+							$sum: 1
+						}
+					}
+				},
+				{
+					$group: {
+						_id: '$_id.clan.tag',
+						entries: {
+							$addToSet: {
+								time: {
+									$dateToString: {
+										format: '%Y-%m-%dT%H:00',
+										date: '$_id.id'
+									}
+								},
+								count: '$count'
+							}
+						},
+						name: {
+							$first: '$_id.clan.name'
+						}
 					}
 				}
-			}
-		]).toArray();
+			])
+			.toArray();
 	}
 
 	private datasets(data: any, offset: any, days = 1) {
-		const dataSets: { count: number; time: string }[] = new Array(days * 24).fill(0)
-			.map((_, i) => {
-				const decrement = new Date().getTime() - (60 * 60 * 1000 * i);
-				const timeObj = new Date(decrement).toISOString()
-					.substring(0, 14)
-					.concat('00');
-				const id = data.entries.find((e: any) => e.time === timeObj);
-				if (id) return { time: id.time, count: id.count };
-				return {
-					time: timeObj,
-					count: 0
-				};
-			});
+		const dataSets: { count: number; time: string }[] = new Array(days * 24).fill(0).map((_, i) => {
+			const decrement = new Date().getTime() - 60 * 60 * 1000 * i;
+			const timeObj = new Date(decrement).toISOString().substring(0, 14).concat('00');
+			const id = data.entries.find((e: any) => e.time === timeObj);
+			if (id) return { time: id.time, count: id.count };
+			return {
+				time: timeObj,
+				count: 0
+			};
+		});
 
-		/*
-		const avg = Array(24).fill(0).map(() => dataSets.splice(0, days))
-			.reduce((previous, current) => {
-				const count = current.reduce((prev, curr) => curr.count + prev, 0) / days;
-				previous.push({ count: Math.floor(count), time: current[0].time });
-				return previous;
-			}, []);
-		*/
 		return dataSets.reverse().map((a, i) => {
-			const time = new Date(new Date(a.time).getTime() + (offset * 1000));
+			const time = new Date(new Date(a.time).getTime() + offset * 1000);
 			let hour = this.format(time, days > 7 ? time.getMonth() : null);
 			if (time.getHours() === 0) hour = this.format(time, time.getMonth());
 			if (time.getHours() === 1) hour = this.format(time, time.getMonth());
 
 			return {
-				'short': (i + 1) % 2 === 0 ? hour : [1].includes(days) ? '' : hour,
-				'count': a.count
+				short: (i + 1) % 2 === 0 ? hour : [1].includes(days) ? '' : hour,
+				count: a.count
 			};
 		});
 	}

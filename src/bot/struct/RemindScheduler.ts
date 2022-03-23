@@ -1,10 +1,10 @@
 import { Collections } from '../util/Constants';
 import { Collection, ObjectId } from 'mongodb';
 import { TextChannel } from 'discord.js';
-import Client from './Client';
+import { Client } from './Client';
 import moment from 'moment';
-import { Util } from '../util/Util';
-import { ORANGE_NUMBERS } from '../util/NumEmojis';
+import { Util } from '../util';
+import { ORANGE_NUMBERS } from '../util/Emojis';
 import { ClanWar } from 'clashofclans.js';
 
 export default class RemindScheduler {
@@ -19,29 +19,35 @@ export default class RemindScheduler {
 	}
 
 	public async init() {
-		this.collection.watch([{
-			$match: { operationType: { $in: ['insert', 'update', 'delete'] } }
-		}], { fullDocument: 'updateLookup' }).on('change', change => {
-			if (['insert'].includes(change.operationType)) {
-				const reminder = change.fullDocument;
-				if (reminder && reminder.timestamp.getTime() < (Date.now() + this.refreshRate)) {
-					this.queue(reminder);
-				}
-			}
-
-			if (['delete', 'update'].includes(change.operationType)) {
-				// @ts-expect-error
-				const id: string = change.documentKey!._id.toHexString();
-				if (this.queued.has(id)) this.clear(id);
-
-				if (change.operationType === 'update') {
+		this.collection
+			.watch(
+				[
+					{
+						$match: { operationType: { $in: ['insert', 'update', 'delete'] } }
+					}
+				],
+				{ fullDocument: 'updateLookup' }
+			)
+			.on('change', (change) => {
+				if (['insert'].includes(change.operationType)) {
 					const reminder = change.fullDocument;
-					if (reminder && reminder.timestamp.getTime() < (Date.now() + this.refreshRate)) {
+					if (reminder && reminder.timestamp.getTime() < Date.now() + this.refreshRate) {
 						this.queue(reminder);
 					}
 				}
-			}
-		});
+
+				if (['delete', 'update'].includes(change.operationType)) {
+					const id: string = change.documentKey!._id.toHexString();
+					if (this.queued.has(id)) this.clear(id);
+
+					if (change.operationType === 'update') {
+						const reminder = change.fullDocument;
+						if (reminder && reminder.timestamp.getTime() < Date.now() + this.refreshRate) {
+							this.queue(reminder);
+						}
+					}
+				}
+			});
 
 		await this._refresh();
 		setInterval(this._refresh.bind(this), this.refreshRate);
@@ -59,6 +65,7 @@ export default class RemindScheduler {
 				if (Date.now() > new Date(ms).getTime()) continue;
 
 				await this.collection.insertOne({
+					_id: new ObjectId(),
 					guild: reminder.guild,
 					tag: data.clan.tag,
 					name: data.clan.name,
@@ -107,21 +114,21 @@ export default class RemindScheduler {
 		const id = reminder._id.toHexString();
 		try {
 			const rem = await this.client.db.collection<Reminder>(Collections.REMINDERS).findOne({ _id: reminder.reminderId });
-			if (!rem) return this.delete(reminder);
-			if (!this.client.channels.cache.has(rem.channel)) return this.delete(reminder);
+			if (!rem) return await this.delete(reminder);
+			if (!this.client.channels.cache.has(rem.channel)) return await this.delete(reminder);
 
 			const data = reminder.warTag
 				? await this.client.http.clanWarLeagueWar(reminder.warTag)
 				: await this.client.http.currentClanWar(reminder.tag);
 			if (!data.ok) return this.clear(id);
-			if (['notInWar', 'warEnded'].includes(data.state)) return this.delete(reminder);
+			if (['notInWar', 'warEnded'].includes(data.state)) return await this.delete(reminder);
 
 			if (this.wasInMaintenance(reminder, data)) {
 				this.client.logger.info(
 					`Reminder shifted ${reminder.timestamp.toISOString()} => ${moment(data.endTime).toDate().toISOString()}`,
 					{ label: 'REMINDER' }
 				);
-				return this.collection.updateOne(
+				return await this.collection.updateOne(
 					{ _id: reminder._id },
 					{ $set: { timestamp: new Date(moment(data.endTime).toDate().getTime() - reminder.duration) } }
 				);
@@ -131,33 +138,30 @@ export default class RemindScheduler {
 			const clan = data.clan.tag === reminder.tag ? data.clan : data.opponent;
 			const attacksPerMember = data.attacksPerMember || 1;
 
-			const members = clan.members.filter(
-				mem => {
+			const members = clan.members
+				.filter((mem) => {
 					if (reminder.warTag && !mem.attacks?.length) return true;
 					return rem.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0));
-				}
-			).filter(
-				mem => rem.townHalls.includes(mem.townhallLevel)
-			).filter(
-				mem => {
+				})
+				.filter((mem) => rem.townHalls.includes(mem.townhallLevel))
+				.filter((mem) => {
 					if (rem.roles.length === 4) return true;
-					const clanMember = clanMembers.find(m => m.tag === mem.tag);
+					const clanMember = clanMembers.find((m) => m.tag === mem.tag);
 					return clanMember && rem.roles.includes(clanMember.role);
-				}
-			);
-			if (!members.length) return this.delete(reminder);
+				});
+			if (!members.length) return await this.delete(reminder);
 
 			const links = await this.client.http.getDiscordLinks(members);
-			if (!links.length) return this.delete(reminder);
+			if (!links.length) return await this.delete(reminder);
 
 			const guild = this.client.guilds.cache.get(rem.guild);
-			if (!guild) return this.delete(reminder);
+			if (!guild) return await this.delete(reminder);
 
 			const guildMembers = await guild.members.fetch({ user: links.map(({ user }) => user) }).catch(() => null);
 			const mentions: UserMention[] = [];
 
 			for (const link of links) {
-				const member = members.find(mem => mem.tag === link.tag)!;
+				const member = members.find((mem) => mem.tag === link.tag)!;
 				const mention = guildMembers?.get(link.user) ?? `<@${link.user}>`;
 				mentions.push({
 					id: link.user,
@@ -170,37 +174,40 @@ export default class RemindScheduler {
 				});
 			}
 
-			if (!mentions.length) return this.delete(reminder);
+			if (!mentions.length) return await this.delete(reminder);
 			mentions.sort((a, b) => a.position - b.position);
 
 			const users = Object.entries(
-				mentions.reduce((acc, cur) => {
+				mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
 					if (!acc.hasOwnProperty(cur.mention)) acc[cur.mention] = [];
 					acc[cur.mention].push(cur);
 					return acc;
-				}, {} as { [key: string]: UserMention[] })
+				}, {})
 			);
 
 			const prefix = data.state === 'preparation' ? 'starts in' : 'ends in';
-			const dur = moment(data.state === 'preparation' ? data.startTime : data.endTime).toDate().getTime() - Date.now();
+			const dur =
+				moment(data.state === 'preparation' ? data.startTime : data.endTime)
+					.toDate()
+					.getTime() - Date.now();
 			const warTiming = moment.duration(dur).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
 			const text = [
 				`\u200e🔔 **${clan.name} (War ${prefix} ${warTiming})**`,
 				`📨 ${rem.message}`,
 				'',
-				users.map(([mention, members]) => {
-					const mapped = members.map(
-						(mem, i) => {
-							const ping = i === 0 ? ` ${mention}` : '';
-							const hits = (data.state === 'preparation' || attacksPerMember === 1)
-								? ''
-								: ` (${mem.attacks}/${attacksPerMember})`;
-							return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]}${ping} ${mem.name}${hits}`;
-						}
-					).join('\n');
-					return mapped;
-				}).join('\n')
+				users
+					.map(([mention, members]) => {
+						return members
+							.map((mem, i) => {
+								const ping = i === 0 ? ` ${mention}` : '';
+								const hits =
+									data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
+								return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]}${ping} ${mem.name}${hits}`;
+							})
+							.join('\n');
+					})
+					.join('\n')
 			].join('\n');
 
 			const channel = this.client.channels.cache.get(rem.channel) as TextChannel | null;
@@ -218,9 +225,11 @@ export default class RemindScheduler {
 	}
 
 	private async _refresh() {
-		const reminders = await this.collection.find({
-			timestamp: { $lt: new Date(Date.now() + this.refreshRate) }
-		}).toArray();
+		const reminders = await this.collection
+			.find({
+				timestamp: { $lt: new Date(Date.now() + this.refreshRate) }
+			})
+			.toArray();
 
 		const now = new Date().getTime();
 		for (const reminder of reminders) {

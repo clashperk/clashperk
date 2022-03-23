@@ -1,70 +1,57 @@
 import { Collections } from '../../util/Constants';
-import { RED_NUMBERS } from '../../util/NumEmojis';
-import { Command } from 'discord-akairo';
+import { RED_NUMBERS } from '../../util/Emojis';
+import { Args, Command } from '../../lib';
 import Excel from '../../struct/Excel';
-import { Message } from 'discord.js';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 import moment from 'moment';
 
 // TODO: Fix TS
 export default class FlagListCommand extends Command {
 	public constructor() {
 		super('flag-list', {
-			aliases: ['flags'],
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['MANAGE_GUILD'],
 			description: {
-				content: [
-					'Shows the list of all flagged players.'
-				],
-				usage: '[page] [--export]',
-				examples: []
+				content: ['Shows the list of all flagged players.']
 			},
-			flags: ['--export'],
-			optionFlags: ['--page']
+			defer: true
 		});
 	}
 
-	public *args(): unknown {
-		const page = yield {
-			'type': 'integer',
-			'default': 1
+	public args(): Args {
+		return {
+			export: {
+				match: 'BOOLEAN'
+			}
 		};
-
-		const download = yield {
-			type: 'flag',
-			match: 'flag',
-			flag: ['--export']
-		};
-
-		return { page, download };
 	}
 
-	public async exec(message: Message, { page, download }: { page: number; download: boolean }) {
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message));
-		const data = await this.client.db.collection(Collections.FLAGS)
-			.find({ guild: message.guild!.id })
-			.toArray();
+	public async exec(interaction: CommandInteraction<'cached'>, args: { export?: boolean }) {
+		const page = 1;
+		const embed = new MessageEmbed().setColor(this.client.embed(interaction));
+		const data = await this.client.db.collection(Collections.FLAGS).find({ guild: interaction.guild.id }).toArray();
 
 		let buffer = null;
 		if (data.length) {
-			if (download) buffer = await this.excel(data);
+			if (args.export) buffer = await this.excel(data);
 			const paginated = this.paginate(data, page);
 			let index = (paginated.page - 1) * 25;
-			embed.setAuthor({ name: message.guild!.name, iconURL: message.guild!.iconURL()! })
+			embed
+				.setAuthor({ name: interaction.guild.name, iconURL: interaction.guild.iconURL()! })
 				.setTitle('Flags')
-				.setDescription(paginated.items.map(x => `${RED_NUMBERS[++index]} ${x.name as string} ${x.tag as string}`).join('\n'))
+				.setDescription(paginated.items.map((x) => `${RED_NUMBERS[++index]} ${x.name as string} ${x.tag as string}`).join('\n'))
 				.setFooter({ text: `Page ${paginated.page}/${paginated.maxPage}` });
 		} else {
-			embed.setDescription(`${message.guild!.name} does not have any flagged players. Why not add some?`);
+			embed.setDescription(`${interaction.guild.name} does not have any flagged players. Why not add some?`);
 		}
 
-		return message.util!.send({
+		return interaction.editReply({
 			embeds: [embed],
-			files: buffer && download
-				? [{ attachment: Buffer.from(buffer), name: `${message.guild!.name.toLowerCase()}_flag_list.xlsx` }]
-				: undefined
+			files:
+				buffer && args.export
+					? [{ attachment: Buffer.from(buffer), name: `${interaction.guild.name.toLowerCase()}_flag_list.xlsx` }]
+					: undefined
 		});
 	}
 
@@ -82,7 +69,7 @@ export default class FlagListCommand extends Command {
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
 		sheet.addRows([
-			...members.map(m => ({
+			...members.map((m) => ({
 				name: m.name,
 				tag: m.tag,
 				author: m.user_tag,
@@ -102,7 +89,9 @@ export default class FlagListCommand extends Command {
 
 		return {
 			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
-			page, maxPage, pageLength
+			page,
+			maxPage,
+			pageLength
 		};
 	}
 }

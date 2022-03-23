@@ -1,62 +1,58 @@
 import { Collections, Settings } from '../../util/Constants';
 import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { Patron } from '../../struct/Patrons';
-import { Command } from 'discord-akairo';
+import { Args, Command } from '../../lib';
 
 export default class PatronCommand extends Command {
 	public constructor() {
 		super('patron', {
-			aliases: ['patron'],
 			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: 'Get info about the bot\'s patreon.'
-			},
-			args: [
-				{
-					id: 'action',
-					type: ['add', 'del', 'dec']
-				},
-				{
-					id: 'id',
-					type: 'string'
-				}
-			]
+				content: "Get info about the bot's patreon."
+			}
 		});
 	}
 
-	public async exec(message: Message, { action, id }: { action: string; id: string }) {
+	public args(): Args {
+		return {
+			action: {
+				match: 'STRING'
+			},
+			id: {
+				match: 'STRING'
+			}
+		};
+	}
+
+	public async run(message: Message, { action, id }: { action: string; id: string }) {
 		if (action && id && this.client.isOwner(message.author.id)) {
 			const patrons = await this.patrons();
-			const patron = patrons.find(d => d.userId === id || d.id === id);
+			const patron = patrons.find((d) => d.userId === id || d.id === id);
 			for (const guild of patron?.guilds ?? []) {
 				if (action === 'add') await this.add(guild.id);
 				if (['del', 'dec'].includes(action)) await this.del(guild.id);
 			}
 
 			if (action === 'add' && patron) {
-				await this.client.db.collection(Collections.PATRONS)
-					.updateOne(
-						{ id: patron.id },
-						{ $set: { active: true, declined: false, cancelled: false } }
-					);
+				await this.client.db
+					.collection(Collections.PATRONS)
+					.updateOne({ id: patron.id }, { $set: { active: true, declined: false, cancelled: false } });
 
 				await this.client.patrons.refresh();
-				return message.util!.send('Success!');
+				return message.channel.send('Success!');
 			}
 
 			if (['del', 'dec'].includes(action) && patron) {
-				await this.client.db.collection(Collections.PATRONS)
-					.updateOne(
-						{ id: patron.id },
-						{ $set: { active: false, declined: action === 'dec', cancelled: action === 'del' } }
-					);
+				await this.client.db
+					.collection(Collections.PATRONS)
+					.updateOne({ id: patron.id }, { $set: { active: false, declined: action === 'dec', cancelled: action === 'del' } });
 
 				await this.client.patrons.refresh();
-				return message.util!.send('Success!');
+				return message.channel.send('Success!');
 			}
 
-			return message.util!.send('Failed!');
+			return message.channel.send('Failed!');
 		}
 
 		const content = [
@@ -66,30 +62,25 @@ export default class PatronCommand extends Command {
 		].join('\n');
 
 		const customId = this.client.uuid(message.author.id);
-		const button = new MessageButton()
-			.setCustomId(customId)
-			.setStyle('SECONDARY')
-			.setLabel('Our Current Patrons');
+		const button = new MessageButton().setCustomId(customId).setStyle('SECONDARY').setLabel('Our Current Patrons');
 
 		if (!this.client.isOwner(message.author.id)) {
-			return message.util!.send({ content });
+			return message.channel.send({ content });
 		}
 
-		const msg = await message.util!.send({ content, components: [new MessageActionRow().addComponents(button)] });
+		const msg = await message.channel.send({ content, components: [new MessageActionRow().addComponents(button)] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => action.customId === customId && action.user.id === message.author.id,
+			filter: (action) => action.customId === customId && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
 		});
 
-		const patrons = (await this.patrons()).filter(patron => patron.active && patron.userId !== this.client.ownerID);
-		collector.on('collect', async action => {
+		const patrons = (await this.patrons()).filter((patron) => patron.active && patron.userId !== this.client.ownerId);
+		collector.on('collect', async (action) => {
 			if (action.customId === customId) {
 				const embed = new MessageEmbed();
-				embed.setDescription([
-					`**Our Current Patrons (${patrons.length})**`,
-					patrons.map(patron => `• ${patron.username}`)
-						.join('\n')
-				].join('\n'));
+				embed.setDescription(
+					[`**Our Current Patrons (${patrons.length})**`, patrons.map((patron) => `• ${patron.username}`).join('\n')].join('\n')
+				);
 
 				await action.reply({ embeds: [embed], ephemeral: true });
 				return collector.stop();
@@ -103,34 +94,32 @@ export default class PatronCommand extends Command {
 	}
 
 	private patrons() {
-		return this.client.db.collection<Patron>(Collections.PATRONS)
-			.find()
-			.sort({ createdAt: 1 })
-			.toArray();
+		return this.client.db.collection<Patron>(Collections.PATRONS).find().sort({ createdAt: 1 }).toArray();
 	}
 
 	private async add(guild: string) {
 		await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild }, { $set: { active: true, patron: true } });
 
-		await this.client.db.collection(Collections.CLAN_STORES)
+		await this.client.db
+			.collection(Collections.CLAN_STORES)
 			.find({ guild })
-			.forEach(data => {
+			.forEach((data) => {
 				this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 });
 			});
 	}
 
 	private async del(guild: string) {
-		this.client.settings.delete(guild, Settings.CLAN_LIMIT); // Delete ClanLimit
+		await this.client.settings.delete(guild, Settings.CLAN_LIMIT); // Delete ClanLimit
 
 		await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild }, { $set: { patron: false } });
 
-		await this.client.db.collection(Collections.CLAN_STORES)
+		await this.client.db
+			.collection(Collections.CLAN_STORES)
 			.find({ guild })
 			.skip(2)
-			// @ts-expect-error
-			.forEach(async data => {
-				await this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: data._id }, { $set: { active: false } });
-				await this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild });
+			.forEach((data) => {
+				this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: data._id }, { $set: { active: false } });
+				this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild });
 			});
 	}
 }

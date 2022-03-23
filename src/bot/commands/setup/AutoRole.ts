@@ -1,146 +1,119 @@
 import { Collections } from '../../util/Constants';
-import { Message, Role, Snowflake } from 'discord.js';
-import { Command } from 'discord-akairo';
+import { CommandInteraction, Role, Snowflake } from 'discord.js';
+import { Args, Command } from '../../lib';
 
-export interface Args {
-	option?: 'enable' | 'disable' | null;
+export interface IArgs {
+	command?: 'enable' | 'disable' | null;
 	tag?: string;
-	member?: Role;
-	admin?: Role;
-	coLeader?: Role;
-	secureRole: boolean;
+	members?: Role;
+	elders?: Role;
+	coLeads?: Role;
+	verify: boolean;
 }
 
 export default class AutoRoleCommand extends Command {
 	public constructor() {
 		super('setup-auto-role', {
+			name: 'autorole',
 			category: 'setup',
-			aliases: ['autorole'],
 			channel: 'guild',
 			description: {
 				content: [
-					'Auto assign roles to members based upon their role in the clan.',
+					'Auto-assign roles to members based upon their role in the clan.',
 					'',
-					'- This command works with slash command only.',
 					'- Players must be linked to our system to receive roles.',
-					'- You can either use same roles for all clans or individual roles for each clan, but not both.'
+					'- You can either use the same roles for all clans or individual roles for each clan, but not both.'
 				]
 			},
 			userPermissions: ['MANAGE_GUILD'],
-			flags: ['--verify'],
-			optionFlags: ['--tag', '--members', '--elders', '--co-leads'],
-			clientPermissions: ['EMBED_LINKS', 'MANAGE_ROLES']
+			clientPermissions: ['EMBED_LINKS', 'MANAGE_ROLES'],
+			defer: true,
+			ephemeral: true
 		});
 	}
 
-	public *args(): unknown {
-		const option = yield {
-			'type': ['enable', 'disable'],
-			'default': 'enable'
+	public args(): Args {
+		return {
+			'co-leads': {
+				id: 'coLeads',
+				match: 'ROLE'
+			},
+			'verify': {
+				match: 'BOOLEAN'
+			}
 		};
-
-		const member = yield {
-			flag: '--members',
-			type: 'role',
-			match: 'option'
-		};
-
-		const admin = yield {
-			flag: '--elders',
-			type: 'role',
-			match: 'option'
-		};
-
-		const coLeader = yield {
-			flag: '--co-leads',
-			type: 'role',
-			match: 'option'
-		};
-
-		const tag = yield {
-			flag: '--tag',
-			match: 'option'
-		};
-
-		const secureRole = yield {
-			flag: '--verify',
-			match: 'flag'
-		};
-
-		return { option, tag, member, admin, coLeader, secureRole };
 	}
 
-	public async exec(message: Message, { tag, member, admin, coLeader, secureRole, option }: Args) {
-		if (option === 'disable') {
-			return this.handler.runCommand(message, this.handler.modules.get('setup-disable')!, { bit: 'auto-role', tag });
+	public async exec(interaction: CommandInteraction, { tag, members, elders, coLeads, verify, command }: IArgs) {
+		if (command === 'disable') {
+			return this.handler.exec(interaction, this.handler.modules.get('setup-disable')!, { bit: 'auto-role', tag });
 		}
 
-		if (!(member && admin && coLeader)) {
-			return message.util!.send('You must provide 3 valid roles!');
+		if (!(members && elders && coLeads)) {
+			return interaction.editReply('You must provide 3 valid roles!');
 		}
 
-		if ([member, admin, coLeader].filter(role => role.managed || role.id === message.guild!.id).length) {
-			return message.util!.send('Bot roles can\'t be used.');
+		if ([members, elders, coLeads].filter((role) => role.managed || role.id === interaction.guild!.id).length) {
+			return interaction.editReply("Bot roles can't be used.");
 		}
 
-		if ([member, admin, coLeader].filter(role => role.position > message.guild!.me!.roles.highest.position).length) {
-			return message.util!.send('My role must be higher than these roles.');
+		if ([members, elders, coLeads].filter((role) => role.position > interaction.guild!.me!.roles.highest.position).length) {
+			return interaction.editReply('My role must be higher than these roles.');
 		}
 
 		if (tag) {
 			const clan = await this.client.http.clan(tag);
-			if (!clan.ok) return message.util!.send('Invalid clan tag!');
+			if (!clan.ok) return interaction.editReply('Invalid clan tag!');
 
-			await this.client.db.collection(Collections.CLAN_STORES)
-				.updateMany(
-					{ guild: message.guild!.id, autoRole: 2 },
-					{ $unset: { role_ids: '', roles: '', autoRole: '' } }
-				);
+			await this.client.db
+				.collection(Collections.CLAN_STORES)
+				.updateMany({ guild: interaction.guild!.id, autoRole: 2 }, { $unset: { role_ids: '', roles: '', autoRole: '' } });
 
-			const ex = await this.client.db.collection(Collections.CLAN_STORES)
-				.findOne({ tag: { $ne: clan.tag }, role_ids: { $in: [member.id, admin.id, coLeader.id] } });
+			const ex = await this.client.db
+				.collection(Collections.CLAN_STORES)
+				.findOne({ tag: { $ne: clan.tag }, role_ids: { $in: [members.id, elders.id, coLeads.id] } });
 
-			if (ex) return message.util!.send('This roles have already been used for another clan.');
+			if (ex) return interaction.editReply('This roles have already been used for another clan.');
 
-			const up = await this.client.db.collection(Collections.CLAN_STORES)
-				.updateOne({ tag: clan.tag, guild: message.guild!.id }, {
-					$set: {
-						roles: { member: member.id, admin: admin.id, coLeader: coLeader.id },
-						autoRole: 1, secureRole
-					},
-					$addToSet: { role_ids: { $each: [member.id, admin.id, coLeader.id] } }
-				});
-
-			if (!up.matchedCount) return message.util!.send('Clan not found in this server!');
-
-			this.updateLinksAndRoles([clan]);
-			return message.util!.send('**Successfully enabled automatic role management!**');
-		}
-
-		const clans = await this.client.storage.findAll(message.guild!.id);
-		if (!clans.length) return message.util!.send('No clans in this server');
-
-		await this.client.db.collection(Collections.CLAN_STORES)
-			.updateMany(
-				{ guild: message.guild!.id, autoRole: 1 },
-				{ $unset: { role_ids: '', roles: '', autoRole: '' } }
-			);
-
-		await this.client.db.collection<{ role_ids: Snowflake[] }>(Collections.CLAN_STORES)
-			.updateMany(
-				{ guild: message.guild!.id },
+			const up = await this.client.db.collection(Collections.CLAN_STORES).updateOne(
+				{ tag: clan.tag, guild: interaction.guild!.id },
 				{
 					$set: {
-						roles: { member: member.id, admin: admin.id, coLeader: coLeader.id },
-						autoRole: 2, secureRole
+						roles: { member: members.id, elder: elders.id, coLeader: coLeads.id },
+						autoRole: 1,
+						secureRole: verify
 					},
-					$addToSet: { role_ids: { $each: [member.id, admin.id, coLeader.id] } }
+					$addToSet: { role_ids: { $each: [members.id, elders.id, coLeads.id] } }
 				}
 			);
 
+			if (!up.matchedCount) return interaction.editReply('Clan not found in this server!');
+
+			this.updateLinksAndRoles([clan]);
+			return interaction.editReply('**Successfully enabled automatic role management!**');
+		}
+
+		const clans = await this.client.storage.findAll(interaction.guild!.id);
+		if (!clans.length) return interaction.editReply('No clans in this server');
+
+		await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.updateMany({ guild: interaction.guild!.id, autoRole: 1 }, { $unset: { role_ids: '', roles: '', autoRole: '' } });
+
+		await this.client.db.collection<{ role_ids: Snowflake[] }>(Collections.CLAN_STORES).updateMany(
+			{ guild: interaction.guild!.id },
+			{
+				$set: {
+					roles: { member: members.id, admin: elders.id, coLeader: coLeads.id },
+					autoRole: 2,
+					secureRole: verify
+				},
+				$addToSet: { role_ids: { $each: [members.id, elders.id, coLeads.id] } }
+			}
+		);
 
 		this.updateLinksAndRoles(clans);
-		return message.util!.send('**Successfully enabled automatic role management!**');
+		return interaction.editReply('**Successfully enabled automatic role management!**');
 	}
 
 	private async updateLinksAndRoles(clans: { tag: string }[]) {
@@ -148,51 +121,55 @@ export default class AutoRoleCommand extends Command {
 			const data = await this.client.http.clan(clan.tag);
 			if (!data.ok) continue;
 
-			const members = await this.client.db.collection(Collections.LINKED_PLAYERS)
+			const links = await this.client.db
+				.collection(Collections.LINKED_PLAYERS)
 				.aggregate([
 					{
 						$match: {
-							'entries.tag': data.memberList.map(mem => mem.tag)
+							'entries.tag': data.memberList.map((mem) => mem.tag)
 						}
-					}, {
+					},
+					{
 						$unwind: {
 							path: '$entries'
 						}
-					}, {
+					},
+					{
 						$project: {
-							tag: '$entries.tag', user: '$user'
+							tag: '$entries.tag',
+							user: '$user'
 						}
 					}
-				]).toArray();
+				])
+				.toArray();
 
 			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
 			for (const { user, tag } of unknowns) {
-				if (members.find(mem => mem.tag === tag && mem.user === user)) continue;
+				if (links.find((mem) => mem.tag === tag && mem.user === user)) continue;
 
-				const member = data.memberList.find(mem => mem.tag === tag) ?? await this.client.http.player(tag);
-				if (!member.name) continue;
+				const players = data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.player(tag));
+				if (!players.name) continue;
 				try {
-					await this.client.db.collection(Collections.LINKED_PLAYERS)
-						.updateOne(
-							{ user, 'entries.tag': { $ne: tag } },
-							{
-								$push: {
-									entries: { tag, name: member.name, verified: false, unknown: true }
-								},
-								$setOnInsert: {
-									clan: {
-										tag: data.tag,
-										name: data.name
-									},
-									createdAt: new Date()
-								},
-								$set: {
-									user_tag: this.client.users.cache.get(user)?.tag
-								}
+					await this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
+						{ user, 'entries.tag': { $ne: tag } },
+						{
+							$push: {
+								entries: { tag, name: players.name, verified: false, unknown: true }
 							},
-							{ upsert: true }
-						);
-				} catch { }
+							$setOnInsert: {
+								clan: {
+									tag: data.tag,
+									name: data.name
+								},
+								createdAt: new Date()
+							},
+							$set: {
+								user_tag: this.client.users.cache.get(user)?.tag
+							}
+						},
+						{ upsert: true }
+					);
+				} catch {}
 			}
 
 			await this.client.rpcHandler.roleManager.queue(data);

@@ -1,9 +1,9 @@
-import { Command, Argument } from 'discord-akairo';
-import { Collections } from '../../util/Constants';
+import { Command } from '../../lib';
+import { Collections, Messages } from '../../util/Constants';
 import Excel from '../../struct/Excel';
-import { Message } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 
-const warTypes: { [key: string]: string } = {
+const warTypes: Record<string, string> = {
 	1: 'Regular',
 	2: 'Friendly',
 	3: 'CWL'
@@ -15,38 +15,26 @@ export default class ExportMissed extends Command {
 		super('export-missed', {
 			category: 'export',
 			channel: 'guild',
-			description: {},
-			optionFlags: ['--wars'],
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS']
+			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const num = yield {
-			'default': 25,
-			'flag': '--wars',
-			'match': msg.interaction ? 'option' : 'phrase',
-			'type': Argument.range('integer', 1, Infinity, true)
-		};
-
-		return { num };
-	}
-
-	public async exec(message: Message, { num }: { num: number }) {
-		const clans = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild: message.guild!.id })
-			.toArray();
+	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number }) {
+		let num = Number(args.wars ?? 25);
+		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild.id }).toArray();
 
 		if (!clans.length) {
-			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
+			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
-		num = this.client.patrons.get(message.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
+		num = this.client.patrons.get(interaction.guild.id) ? Math.min(num, 45) : Math.min(25, num);
 		const chunks = [];
 		const missed: { [key: string]: { name: string; tag: string; count: number; missed: Date[] } } = {};
 
 		for (const { tag } of clans) {
-			const wars = await this.client.db.collection(Collections.CLAN_WARS)
+			const wars = await this.client.db
+				.collection(Collections.CLAN_WARS)
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 					state: 'warEnded'
@@ -63,12 +51,12 @@ export default class ExportMissed extends Command {
 
 					const _mem = missed[m.tag] // eslint-disable-line
 						? missed[m.tag]
-						: missed[m.tag] = {
-							name: m.name,
-							tag: m.tag,
-							missed: [] as Date[],
-							count: war.attacksPerMember
-						};
+						: (missed[m.tag] = {
+								name: m.name,
+								tag: m.tag,
+								missed: [] as Date[],
+								count: war.attacksPerMember
+						  });
 					_mem.missed.push(war.endTime);
 
 					const mem = {
@@ -80,7 +68,7 @@ export default class ExportMissed extends Command {
 						opponent: opponent.name,
 						teamSize: war.teamSize,
 						timestamp: new Date(war.endTime),
-						missed: (war.attacksPerMember - (m.attacks?.length ?? 0)),
+						missed: war.attacksPerMember - (m.attacks?.length ?? 0),
 						warType: warTypes[war.warType]
 					};
 
@@ -89,7 +77,10 @@ export default class ExportMissed extends Command {
 					}
 
 					if (m.attacks?.length === 1) {
-						mem.stars = m.attacks.map((m: any) => [m.stars, m.destructionPercentage.toFixed(2)]).flat().concat(...[0, 0]);
+						mem.stars = m.attacks
+							.map((m: any) => [m.stars, m.destructionPercentage.toFixed(2)])
+							.flat()
+							.concat(...[0, 0]);
 					}
 
 					if (m.attacks?.length === 2) {
@@ -101,7 +92,7 @@ export default class ExportMissed extends Command {
 			}
 		}
 
-		if (!chunks.length) return message.util!.send('No data available at this moment!');
+		if (!chunks.length) return interaction.editReply(Messages.NO_DATA);
 
 		const workbook = new Excel();
 		const sheet = workbook.addWorksheet('Missed Attacks');
@@ -125,12 +116,13 @@ export default class ExportMissed extends Command {
 		}
 
 		sheet.addRows(
-			chunks.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-				.map(m => [m.name, m.tag, m.clan, m.opponent, m.warID, m.timestamp, m.warType, m.teamSize, m.missed])
+			chunks
+				.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+				.map((m) => [m.name, m.tag, m.clan, m.opponent, m.warID, m.timestamp, m.warType, m.teamSize, m.missed])
 		);
 
 		// extra pages
-		const twoMissed = Object.values(missed).filter(m => m.count === 2);
+		const twoMissed = Object.values(missed).filter((m) => m.count === 2);
 		if (twoMissed.length) {
 			const sheet = workbook.addWorksheet('2 Missed Attacks');
 			sheet.columns = [
@@ -150,10 +142,10 @@ export default class ExportMissed extends Command {
 				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 			}
 
-			sheet.addRows(twoMissed.map(m => [m.name, m.tag, ...m.missed.slice(0, 5)]));
+			sheet.addRows(twoMissed.map((m) => [m.name, m.tag, ...m.missed.slice(0, 5)]));
 		}
 
-		const oneMissed = Object.values(missed).filter(m => m.count === 1);
+		const oneMissed = Object.values(missed).filter((m) => m.count === 1);
 		if (oneMissed.length) {
 			const sheet = workbook.addWorksheet('1 Missed Attacks');
 			sheet.columns = [
@@ -173,16 +165,18 @@ export default class ExportMissed extends Command {
 				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 			}
 
-			sheet.addRows(oneMissed.map(m => [m.name, m.tag, ...m.missed.slice(0, 5)]));
+			sheet.addRows(oneMissed.map((m) => [m.name, m.tag, ...m.missed.slice(0, 5)]));
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return message.util!.send({
+		return interaction.editReply({
 			content: `**Missed Attacks (Last ${num})**`,
-			files: [{
-				attachment: Buffer.from(buffer),
-				name: 'clan_war_missed.xlsx'
-			}]
+			files: [
+				{
+					attachment: Buffer.from(buffer),
+					name: 'clan_war_missed.xlsx'
+				}
+			]
 		});
 	}
 }

@@ -1,9 +1,9 @@
 import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake, ThreadChannel } from 'discord.js';
 import { Collections } from '../util/Constants';
-import { APIMessage } from 'discord-api-types';
+import { APIMessage } from 'discord-api-types/v9';
 import { Clan } from 'clashofclans.js';
-import Client from '../struct/Client';
-import { Util } from '../util/Util';
+import { Client } from '../struct/Client';
+import { Util } from '../util';
 import { ObjectId } from 'mongodb';
 
 export interface Cache {
@@ -26,7 +26,7 @@ export default class LastSeenLog {
 	}
 
 	public async exec(tag: string, clan: Clan, members = []) {
-		const clans = this.cached.filter(cache => cache.tag === tag);
+		const clans = this.cached.filter((cache) => cache.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
 			if (cache) await this.permissionsFor(cache, clan, members);
@@ -64,7 +64,8 @@ export default class LastSeenLog {
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS'))) return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
+				return;
 			if (channel.permissionsFor(this.client.user!)?.has(permissions, false)) {
 				await this.throttle(channel.id);
 				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
@@ -95,14 +96,13 @@ export default class LastSeenLog {
 
 	private async edit(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, members = []) {
 		const embed = this.embed(clan, cache, members);
-		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] })
-			.catch(error => {
-				if (error.code === 10008) {
-					delete cache.message;
-					return this.send(cache, channel, clan, members);
-				}
-				return null;
-			});
+		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] }).catch((error) => {
+			if (error.code === 10008) {
+				delete cache.message;
+				return this.send(cache, channel, clan, members);
+			}
+			return null;
+		});
 	}
 
 	private async mutate(cache: Cache, msg: APIMessage | null) {
@@ -119,9 +119,7 @@ export default class LastSeenLog {
 			);
 			cache.message = msg.id;
 		} else {
-			await this.collection.updateOne(
-				{ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } }
-			);
+			await this.collection.updateOne({ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
 		}
 		return msg;
 	}
@@ -135,14 +133,14 @@ export default class LastSeenLog {
 		const embed = new MessageEmbed();
 		if (cache.color) embed.setColor(cache.color);
 		embed.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
-		embed.setDescription([
-			`**[Last seen and last 24h activity scores](https://clashperk.com/faq)**`,
-			`\`\`\`\n\u200eLAST-ON 24H  NAME`,
-			members.map(
-				m => `${getTime(m.lastSeen)}  ${Math.min(99, m.count).toString().padStart(2, ' ')}  ${m.name}`
-			).join('\n'),
-			'\`\`\`'
-		].join('\n'));
+		embed.setDescription(
+			[
+				`**[Last seen and last 24h activity scores](https://clashperk.com/faq)**`,
+				`\`\`\`\n\u200eLAST-ON 24H  NAME`,
+				members.map((m) => `${getTime(m.lastSeen)}  ${Math.min(99, m.count).toString().padStart(2, ' ')}  ${m.name}`).join('\n'),
+				'```'
+			].join('\n')
+		);
 		embed.setFooter({ text: `Synced [${members.length}/${clan.members}]` });
 		embed.setTimestamp();
 
@@ -150,17 +148,16 @@ export default class LastSeenLog {
 	}
 
 	public async init() {
-		await this.collection.find({ guild: { $in: this.client.guilds.cache.map(guild => guild.id) } })
-			.forEach(data => {
-				this.cached.set((data.clan_id as ObjectId).toHexString(), {
-					tag: data.tag,
-					_id: data.clan_id,
-					guild: data.guild,
-					color: data.color,
-					channel: data.channel,
-					message: data.message
-				});
+		await this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } }).forEach((data) => {
+			this.cached.set((data.clan_id as ObjectId).toHexString(), {
+				tag: data.tag,
+				_id: data.clan_id,
+				guild: data.guild,
+				color: data.color,
+				channel: data.channel,
+				message: data.message
 			});
+		});
 	}
 
 	public async add(_id: string) {

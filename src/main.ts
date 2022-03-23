@@ -1,21 +1,15 @@
-import { __rootdir__ } from '../root';
-import '../src/bot/util/Extension';
-import Env from 'dotenv';
-Env.config();
-
-// @ts-ignore
-import Auth from '../auth';
-Auth.config();
+import 'reflect-metadata';
+import 'moment-duration-format';
 
 import { RewriteFrames } from '@sentry/integrations';
+import { Client } from './bot/struct/Client';
 import { execSync } from 'child_process';
-import Client from './bot/struct/Client';
 import * as Sentry from '@sentry/node';
 import i18next from 'i18next';
 
-const client = new Client({ owner: process.env.OWNER! });
+const client = new Client();
 
-i18next.init({
+await i18next.init({
 	debug: false,
 	cleanCode: true,
 	fallbackLng: ['en-US'],
@@ -43,25 +37,25 @@ if (process.env.SENTRY) {
 		environment: process.env.NODE_ENV ?? 'development',
 		release: execSync('git rev-parse HEAD').toString().trim(),
 		integrations: [
-			new RewriteFrames({ root: __rootdir__, prefix: '/' }),
+			new RewriteFrames({ root: process.cwd(), prefix: '/' }),
 			new Sentry.Integrations.Http({ tracing: true, breadcrumbs: false })
 		]
 	});
 }
 
-client.on('error', error => {
+client.on('error', (error) => {
+	console.error(error);
 	Sentry.captureException(error);
-	client.logger.error(error, { label: 'CLIENT_ERROR' });
 });
 
-client.on('warn', warn => {
+client.on('warn', (warn) => {
+	console.warn(warn);
 	Sentry.captureMessage(warn);
-	client.logger.warn(warn, { label: 'CLIENT_WARN' });
 });
 
-process.on('unhandledRejection', error => {
+process.on('unhandledRejection', (error) => {
+	console.error(error);
 	Sentry.captureException(error);
-	client.logger.error(error, { label: 'UNHANDLED_REJECTION' });
 });
 
-client.start(process.env.TOKEN!);
+await client.init(process.env.TOKEN!);

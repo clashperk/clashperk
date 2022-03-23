@@ -1,7 +1,7 @@
-import { Message, MessageActionRow, MessageButton, MessageSelectMenu } from 'discord.js';
+import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from 'discord.js';
 import { Included, Patron } from '../../struct/Patrons';
 import { Collections } from '../../util/Constants';
-import { Command } from 'discord-akairo';
+import { Command } from '../../lib';
 
 const rewards = {
 	bronze: '3705318',
@@ -12,61 +12,66 @@ const rewards = {
 export default class RedeemCommand extends Command {
 	public constructor() {
 		super('redeem', {
-			aliases: ['redeem'],
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
 				content: 'Redeem/Manage Patreon subscription.'
-			}
+			},
+			defer: true,
+			ephemeral: true
 		});
 	}
 
-	public async exec(message: Message) {
+	public async exec(interaction: CommandInteraction<'cached'>) {
 		const data = await this.client.patrons.fetchAPI();
-		if (!data) return message.util!.send('**Something went wrong (unresponsive api), please contact us!**');
+		if (!data) return interaction.editReply('**Something went wrong (unresponsive api), please contact us!**');
 
-		const patron = data.included.find(entry => entry.attributes.social_connections?.discord?.user_id === message.author.id);
+		const patron = data.included.find((entry) => entry.attributes.social_connections?.discord?.user_id === interaction.user.id);
 		if (!patron) {
-			const embed = this.client.util.embed()
+			const embed = new MessageEmbed()
 				.setColor(16345172)
-				.setDescription([
-					'I could not find any patreon account connected to your discord.',
-					'',
-					'Make sure that you are connected and subscribed to ClashPerk.',
-					'Not subscribed yet? [Become a Patron](https://www.patreon.com/clashperk)'
-				].join('\n'))
+				.setDescription(
+					[
+						'I could not find any patreon account connected to your discord.',
+						'',
+						'Make sure that you are connected and subscribed to ClashPerk.',
+						'Not subscribed yet? [Become a Patron](https://www.patreon.com/clashperk)'
+					].join('\n')
+				)
 				.addField('How to connect?', 'https://www.patreon.com/settings/apps')
 				.setImage('https://i.imgur.com/APME0CX.png');
 
-			return message.util!.send({ embeds: [embed] });
+			return interaction.editReply({ embeds: [embed] });
 		}
 
-		if (this.client.patrons.get(message.guild!.id)) {
-			return message.util!.send('**This server already has an active subscription.**');
+		if (this.client.patrons.get(interaction.guild.id)) {
+			return interaction.editReply('**This server already has an active subscription.**');
 		}
 
 		const collection = this.client.db.collection<Patron>(Collections.PATRONS);
 		const user = await collection.findOne({ id: patron.id });
 
-		const pledge = data.data.find(entry => entry.relationships.user.data.id === patron.id);
-		if (!pledge) return message.util!.send('**Something went wrong (unknown pledge), please contact us!**');
+		const pledge = data.data.find((entry) => entry.relationships.user.data.id === patron.id);
+		if (!pledge) return interaction.editReply('**Something went wrong (unknown pledge), please contact us!**');
 
 		if (pledge.attributes.patron_status !== 'active_patron') {
-			return message.util!.send('**Something went wrong (declined pledge), please contact us!**');
+			return interaction.editReply('**Something went wrong (declined pledge), please contact us!**');
 		}
 
 		const rewardId = pledge.relationships.currently_entitled_tiers.data[0]?.id;
 		if (!rewardId) {
-			return message.util!.send('**Something went wrong (unknown tier), please contact us!**');
+			return interaction.editReply('**Something went wrong (unknown tier), please contact us!**');
 		}
 
-		const embed = this.client.util.embed()
+		const embed = new MessageEmbed()
 			.setColor(16345172)
-			.setDescription([
-				`Subscription enabled for **${message.guild!.name}**`,
-				`Thank you so much for the support ${message.author.toString()}`
-			].join('\n'));
+			.setDescription(
+				[
+					`Subscription enabled for **${interaction.guild.name}**`,
+					`Thank you so much for the support ${interaction.user.toString()}`
+				].join('\n')
+			);
 
 		if (!user) {
 			await collection.updateOne(
@@ -76,13 +81,15 @@ export default class RedeemCommand extends Command {
 						id: patron.id,
 						name: patron.attributes.full_name,
 						rewardId,
-						userId: message.author.id,
-						username: message.author.username,
-						guilds: [{
-							id: message.guild!.id,
-							name: message.guild!.name,
-							limit: 50
-						}],
+						userId: interaction.user.id,
+						username: interaction.user.username,
+						guilds: [
+							{
+								id: interaction.guild.id,
+								name: interaction.guild.name,
+								limit: 50
+							}
+						],
 						redeemed: true,
 						active: true,
 						declined: false,
@@ -97,56 +104,54 @@ export default class RedeemCommand extends Command {
 			);
 
 			await this.client.patrons.refresh();
-			await this.sync(message.guild!.id);
-			return message.util!.send({ embeds: [embed] });
+			await this.sync(interaction.guild.id);
+			return interaction.editReply({ embeds: [embed] });
 		}
 
 		const redeemed = this.redeemed({ ...user, rewardId });
 		if (redeemed) {
-			if (!this.isNew(user, message, patron)) await this.client.patrons.refresh();
-			const embed = this.client.util.embed()
+			if (!this.isNew(user, interaction, patron)) await this.client.patrons.refresh();
+			const embed = new MessageEmbed()
 				.setColor(16345172)
-				.setDescription([
-					'You\'ve already claimed your subscription!',
-					'If you think it\'s wrong, please [contact us.](https://discord.gg/ppuppun)'
-				].join('\n'));
+				.setDescription(
+					[
+						"You've already claimed your subscription!",
+						"If you think it's wrong, please [contact us.](https://discord.gg/ppuppun)"
+					].join('\n')
+				);
 
 			const customIds = {
-				button: this.client.uuid(message.author.id),
-				menu: this.client.uuid(message.author.id)
+				button: this.client.uuid(interaction.user.id),
+				menu: this.client.uuid(interaction.user.id)
 			};
-			const row = new MessageActionRow()
-				.addComponents(
-					new MessageButton()
-						.setStyle('SECONDARY')
-						.setCustomId(customIds.button)
-						.setLabel('Manage Servers')
-				);
-			const msg = await message.util!.send({ embeds: [embed], components: [row] });
+			const row = new MessageActionRow().addComponents(
+				new MessageButton().setStyle('SECONDARY').setCustomId(customIds.button).setLabel('Manage Servers')
+			);
+			const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 			const collector = msg.createMessageComponentCollector({
-				filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
+				filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 				time: 5 * 60 * 1000
 			});
 
-			const menus = new MessageActionRow()
-				.addComponents(
-					new MessageSelectMenu()
-						.setPlaceholder('Select a server!')
-						.setCustomId(customIds.menu)
-						.addOptions(user.guilds.map(guild => ({ label: guild.name, value: guild.id })))
-				);
+			const menus = new MessageActionRow().addComponents(
+				new MessageSelectMenu()
+					.setPlaceholder('Select a server!')
+					.setCustomId(customIds.menu)
+					.addOptions(user.guilds.map((guild) => ({ label: guild.name, value: guild.id })))
+			);
 
-			collector.on('collect', async action => {
+			collector.on('collect', async (action) => {
 				if (action.customId === customIds.button) {
 					return action.update({
-						embeds: [], components: [menus],
+						embeds: [],
+						components: [menus],
 						content: '**Select a server to disable subscription.**'
 					});
 				}
 
 				if (action.customId === customIds.menu && action.isSelectMenu()) {
 					const id = action.values[0].trim();
-					const guild = user.guilds.find(guild => guild.id === id);
+					const guild = user.guilds.find((guild) => guild.id === id);
 					if (!guild) return action.update({ content: '**Something went wrong (unknown server), please contact us!**' });
 					await action.deferUpdate();
 					await collection.updateOne({ _id: user._id }, { $pull: { guilds: { id } } });
@@ -162,8 +167,8 @@ export default class RedeemCommand extends Command {
 			{ id: patron.id },
 			{
 				$set: {
-					userId: message.author.id,
-					username: message.author.username,
+					userId: interaction.user.id,
+					username: interaction.user.username,
 					active: true,
 					declined: false,
 					cancelled: false,
@@ -174,8 +179,8 @@ export default class RedeemCommand extends Command {
 				},
 				$push: {
 					guilds: {
-						id: message.guild!.id,
-						name: message.guild!.name,
+						id: interaction.guild.id,
+						name: interaction.guild.name,
 						limit: 50
 					}
 				}
@@ -183,33 +188,32 @@ export default class RedeemCommand extends Command {
 		);
 
 		await this.client.patrons.refresh();
-		await this.sync(message.guild!.id);
-		return message.channel.send({ embeds: [embed] });
+		await this.sync(interaction.guild.id);
+		return interaction.editReply({ embeds: [embed] });
 	}
 
-	private isNew(user: Patron, message: Message, patron: Included) {
-		if (user.userId !== message.author.id) {
-			this.client.db.collection(Collections.PATRONS)
-				.updateOne(
-					{ id: patron.id },
-					{
-						$set: {
-							userId: message.author.id,
-							username: message.author.username
-						}
+	private isNew(user: Patron, interaction: CommandInteraction, patron: Included) {
+		if (user.userId !== interaction.user.id) {
+			this.client.db.collection(Collections.PATRONS).updateOne(
+				{ id: patron.id },
+				{
+					$set: {
+						userId: interaction.user.id,
+						username: interaction.user.username
 					}
-				);
+				}
+			);
 			return true;
 		}
 		return false;
 	}
 
 	private async sync(guild: string) {
-		await this.client.db.collection(Collections.CLAN_STORES)
-			.updateMany({ guild }, { $set: { active: true, patron: true } });
-		await this.client.db.collection(Collections.CLAN_STORES)
+		await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild }, { $set: { active: true, patron: true } });
+		await this.client.db
+			.collection(Collections.CLAN_STORES)
 			.find({ guild })
-			.forEach(data => {
+			.forEach((data) => {
 				this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: data.guild, op: 0 });
 			});
 	}

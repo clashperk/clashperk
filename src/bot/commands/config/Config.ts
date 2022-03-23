@@ -1,76 +1,61 @@
-import { Message, TextChannel } from 'discord.js';
-import { Argument, Command, PrefixSupplier } from 'discord-akairo';
+import { CommandInteraction, HexColorString, MessageEmbed } from 'discord.js';
+import { Command } from '../../lib';
+import { Util } from '../../util';
 import { Settings } from '../../util/Constants';
 
 export default class ConfigCommand extends Command {
 	public constructor() {
 		super('config', {
-			aliases: ['config', 'settings'],
 			category: 'config',
 			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
 			description: {
-				content: ['Manage server configuration.'],
-				examples: [],
-				usage: []
-			},
-			optionFlags: ['--color_code', '--events_channel']
+				content: ['Manage server configuration.']
+			}
 		});
 	}
 
-	public *args(): unknown {
-		const channel = yield {
-			match: 'option',
-			flag: '--events_channel',
-			type: Argument.union(['none', 'reset'], 'textChannel')
-		};
-
-		const color = yield {
-			'match': 'option',
-			'flag': '--color_code',
-			'type': Argument.union(['none', 'reset'], 'color'),
-			'default': (message: Message) => this.client.embed(message)
-		};
-
-		return { color, channel };
-	}
-
-	public exec(message: Message, { color, channel }: { color?: number | string; channel?: TextChannel | string }) {
-		if (color) {
-			if (['reset', 'none'].includes(color as string)) {
-				this.client.settings.delete(message.guild!, 'color');
-				color = this.client.embed(message);
+	public exec(interaction: CommandInteraction<'cached'>, args: { color_code?: string; events_channel?: string }) {
+		if (args.color_code) {
+			if (['reset', 'none'].includes(args.color_code)) {
+				this.client.settings.delete(interaction.guild, Settings.COLOR);
 			}
-			this.client.settings.set(message.guild!, 'color', color);
+			this.client.settings.set(interaction.guild, Settings.COLOR, Util.resolveColor(args.color_code as HexColorString));
 		}
 
-		if (channel) {
-			if (['reset', 'none'].includes(channel as string)) {
-				this.client.settings.delete(message.guild!, Settings.EVENTS_CHANNEL);
-			} else if (channel instanceof TextChannel) {
-				this.client.settings.set(message.guild!, Settings.EVENTS_CHANNEL, channel.id);
+		if (args.events_channel) {
+			if (['reset', 'none'].includes(args.events_channel)) {
+				this.client.settings.delete(interaction.guild, Settings.EVENTS_CHANNEL);
+			} else if (/\d{17,19}/g.test(args.events_channel)) {
+				const channel = this.client.channels.cache.get(args.events_channel.match(/\d{17,19}/g)![0]);
+				if (!channel?.isText()) {
+					return interaction.reply({
+						content: 'Type of channel is not text.',
+						ephemeral: true
+					});
+				}
+				this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, channel.id);
 			}
 		}
 
-		return this.fallback(message);
+		return this.fallback(interaction);
 	}
 
-	public async fallback(message: Message) {
-		const color = this.client.settings.get<number>(message.guild!, Settings.COLOR, null);
-		const prefix = (this.handler.prefix as PrefixSupplier)(message) as string;
+	public fallback(interaction: CommandInteraction<'cached'>) {
+		const color = this.client.settings.get<number>(interaction.guild, Settings.COLOR, null);
 
-		const channelId = this.client.settings.get<string>(message.guild!, Settings.EVENTS_CHANNEL, null);
-		const channel = message.guild!.channels.cache.get(channelId);
+		const channelId = this.client.settings.get<string>(interaction.guild, Settings.EVENTS_CHANNEL, null);
+		const channel = interaction.guild.channels.cache.get(channelId);
 
-		const embed = this.client.util.embed()
-			.setColor(this.client.embed(message))
-			.setAuthor({ name: `Settings of ${message.guild!.name}` })
-			.addField('Prefix', prefix)
-			.addField('Patron', this.client.patrons.get(message.guild!.id) ? 'Yes' : 'No')
+		const embed = new MessageEmbed()
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `Settings of ${interaction.guild.name}` })
+			.addField('Prefix', '/')
+			.addField('Patron', this.client.patrons.get(interaction.guild.id) ? 'Yes' : 'No')
 			.addField('Color', color ? `#${color.toString(16).toUpperCase()}` : 'None')
 			// eslint-disable-next-line @typescript-eslint/no-base-to-string
 			.addField('Events Channel', channel ? channel.toString() : 'None');
 
-		return message.util!.send({ embeds: [embed] });
+		return interaction.reply({ embeds: [embed] });
 	}
 }

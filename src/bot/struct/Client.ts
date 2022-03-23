@@ -1,184 +1,82 @@
-import { MessageEmbed, Message, Intents, Snowflake, Options, Sweepers } from 'discord.js';
-import { AkairoClient, CommandHandler, ListenerHandler, InhibitorHandler } from 'discord-akairo';
+import Discord, { Intents, Interaction, Message, Snowflake } from 'discord.js';
+import { Db } from 'mongodb';
+import { container } from 'tsyringe';
+import { fileURLToPath, URL } from 'url';
+import RPCHandler from '../core/RPCHandler';
+import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib';
+import Logger from '../util/Logger';
+import { Automaton } from './Automaton';
+import { Database } from './Database';
+import Http from './Http';
+import Patrons from './Patrons';
+import SettingsProvider from './SettingsProvider';
+import StatsHandler from './StatsHandler';
+import StorageHandler from './StorageHandler';
+import * as uuid from 'uuid';
+import Resolver from './Resolver';
 import RemindScheduler from './RemindScheduler';
 import { loadSync } from '@grpc/proto-loader';
-import RPCHandler from '../core/RPCHandler';
-import Settings from './SettingsProvider';
-import { Connection } from './Database';
-import LinkHandler from './LinkHandler';
-import { Automaton } from './Automaton';
-import Storage from './StorageHandler';
 import * as gRPC from '@grpc/grpc-js';
-import Logger from '../util/Logger';
-import Stats from './StatsHandler';
-import Resolver from './Resolver';
-import Patrons from './Patrons';
-import * as uuid from 'uuid';
-import { Db } from 'mongodb';
-import Http from './Http';
 import path from 'path';
+import { Settings } from '../util/Constants';
 
-const packageDefinition = loadSync(
-	path.join('scripts', 'routes.proto'),
-	{
+const { route: Route } = gRPC.loadPackageDefinition(
+	loadSync(path.join('scripts/routes.proto'), {
 		keepCase: true,
 		longs: String,
 		enums: String,
 		defaults: true,
 		oneofs: true
-	}
+	})
 );
 
-const { routeguide: Route } = gRPC.loadPackageDefinition(packageDefinition);
+export class Client extends Discord.Client {
+	public commandHandler = new CommandHandler(this, {
+		directory: fileURLToPath(new URL('../commands', import.meta.url))
+	});
 
-export default class Client extends AkairoClient {
+	public listenerHandler = new ListenerHandler(this, {
+		directory: fileURLToPath(new URL('../listeners', import.meta.url))
+	});
+
+	public inhibitorHandler = new InhibitorHandler(this, {
+		directory: fileURLToPath(new URL('../inhibitors', import.meta.url))
+	});
+
+	public logger: Logger;
 	public db!: Db;
-	public rpc!: any;
-	public http!: Http;
-	public stats!: Stats;
-	public patrons!: Patrons;
-	public storage!: Storage;
-	public resolver!: Resolver;
-	public settings!: Settings;
-	public links!: LinkHandler;
-	public automaton!: Automaton;
-	public rpcHandler!: RPCHandler;
+	public settings!: SettingsProvider;
+	public http = new Http();
+	public stats!: StatsHandler;
+	public storage!: StorageHandler;
 	public remindScheduler!: RemindScheduler;
-	public logger: Logger = new Logger(this);
+
+	// TODO: Fix this
+	public rpc: any;
+	public rpcHandler!: RPCHandler;
+	public patrons!: Patrons;
+	public automaton!: Automaton;
 	public components = new Map<string, Snowflake[]>();
+	public resolver!: Resolver;
+	public ownerId: string;
 
-	public commandHandler: CommandHandler = new CommandHandler(this, {
-		directory: path.join(__dirname, '..', 'commands'),
-		aliasReplacement: /-/g,
-		allowMention: true,
-		commandUtil: true,
-		handleEdits: true,
-		commandUtilLifetime: 5 * 60 * 1000,
-		commandUtilSweepInterval: 5 * 60 * 1000,
-		defaultCooldown: (message: Message) => this.patrons.get(message) ? 1000 : 3000,
-		prefix: message => process.env.NODE_ENV === 'production' ? this.settings.get(message.guild!, 'prefix', '!') : '+',
-		argumentDefaults: {
-			prompt: {
-				modifyStart: (msg, txt) => ({
-					embeds: [
-						new MessageEmbed()
-							.setAuthor({ name: txt })
-							.setFooter({ text: 'Type `cancel` to cancel the command.' })
-					]
-				}),
-				modifyRetry: (msg, txt) => ({
-					embeds: [
-						new MessageEmbed()
-							.setAuthor({ name: txt })
-							.setFooter({ text: 'Type `cancel` to cancel the command.' })
-					]
-				}),
-				timeout: {
-					embeds: [
-						new MessageEmbed()
-							.setAuthor({ name: 'Time ran out, command has been cancelled!' })
-					]
-				},
-				ended: {
-					embeds: [
-						new MessageEmbed()
-							.setAuthor({ name: 'Too many retries, command has been cancelled!' })
-					]
-				},
-				cancel: {
-					embeds: [new MessageEmbed()
-						.setAuthor({ name: 'Command has been cancelled!' })]
-				},
-				retries: 1,
-				time: 30000
-			}
-		}
-	});
-
-	public inhibitorHandler: InhibitorHandler = new InhibitorHandler(this, {
-		directory: path.join(__dirname, '..', 'inhibitors')
-	});
-
-	public listenerHandler: ListenerHandler = new ListenerHandler(this, {
-		directory: path.join(__dirname, '..', 'listeners')
-	});
-
-	public constructor(config: { owner: string }) {
+	public constructor() {
 		super({
-			ownerID: config.owner,
-			intents: [
-				Intents.FLAGS.GUILDS,
-				Intents.FLAGS.GUILD_MEMBERS,
-				Intents.FLAGS.GUILD_WEBHOOKS,
-				Intents.FLAGS.GUILD_MESSAGES
-			],
-			makeCache: Options.cacheWithLimits({
-				MessageManager: {
-					maxSize: 15,
-					sweepInterval: 5 * 60,
-					sweepFilter: Sweepers.filterByLifetime({
-						lifetime: 10 * 60,
-						getComparisonTimestamp: msg => msg.createdTimestamp
-					})
-				},
-				PresenceManager: 0,
-				UserManager: {
-					maxSize: 100,
-					keepOverLimit: user => user.id === this.user!.id
-				},
-				GuildMemberManager: {
-					maxSize: 100,
-					keepOverLimit: member => member.id === this.user!.id
-				}
-			})
+			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_WEBHOOKS, Intents.FLAGS.GUILD_MESSAGES]
 		});
+
+		this.logger = new Logger(this);
+		this.ownerId = process.env.OWNER!;
+		container.register(Client, { useValue: this });
 	}
 
-	private async init() {
-		this.commandHandler.useInhibitorHandler(this.inhibitorHandler);
-		this.commandHandler.useListenerHandler(this.listenerHandler);
-		this.listenerHandler.setEmitters({
-			commandHandler: this.commandHandler,
-			inhibitorHandler: this.inhibitorHandler,
-			listenerHandler: this.listenerHandler
-		});
-
-		this.commandHandler.loadAll();
-		this.inhibitorHandler.loadAll();
-		this.listenerHandler.loadAll();
-
-		await Connection.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
-		this.db = Connection.db('clashperk');
-		// await Connection.createIndex(this.db);
-
-		this.settings = new Settings(this.db);
-		this.stats = new Stats(this);
-
-		this.remindScheduler = new RemindScheduler(this);
-
-		this.http = new Http();
-		await this.http.login();
-
-		// @ts-expect-error
-		this.rpc = new Route.RouteGuide(process.env.SERVER, gRPC.credentials.createInsecure());
-
-		this.patrons = new Patrons(this);
-		await this.settings.init();
-		await this.patrons.refresh();
-
-		this.storage = new Storage(this);
-		this.resolver = new Resolver(this);
-		this.links = new LinkHandler(this);
-		this.automaton = new Automaton(this);
-		this.rpcHandler = new RPCHandler(this);
-
-		this.once('ready', () => {
-			if (process.env.NODE_ENV === 'production') return this.run();
-		});
+	public isOwner(user: string | Discord.User) {
+		const userId = this.users.resolveId(user);
+		return userId === process.env.OWNER!;
 	}
 
-	public embed(message: Message | Snowflake) {
-		return this.settings.get<number>(typeof message === 'string' ? message : message.guild!, 'color', undefined);
+	public embed(guild: Message | Snowflake | Interaction) {
+		return this.settings.get<number>(typeof guild === 'string' ? guild : guild.guild!, Settings.COLOR, null);
 	}
 
 	public uuid(...userIds: Snowflake[]) {
@@ -193,46 +91,39 @@ export default class Client extends AkairoClient {
 		this.remindScheduler.init();
 	}
 
-	public async start(token: string) {
-		await this.init();
+	public async init(token: string) {
+		await this.commandHandler.register();
+		await this.listenerHandler.register();
+		await this.inhibitorHandler.register();
+
+		await Database.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
+		this.db = Database.db('clashperk');
+
+		this.settings = new SettingsProvider(this.db);
+		await this.settings.init();
+
+		this.storage = new StorageHandler(this);
+		this.rpcHandler = new RPCHandler(this);
+
+		this.patrons = new Patrons(this);
+		await this.patrons.refresh();
+
+		this.automaton = new Automaton(this);
+		this.stats = new StatsHandler(this);
+		this.resolver = new Resolver(this);
+		this.remindScheduler = new RemindScheduler(this);
+
+		await this.http.login();
+
+		// @ts-expect-error
+		this.rpc = new Route.RouteGuide(process.env.SERVER, gRPC.credentials.createInsecure());
+
+		this.once('ready', () => {
+			if (process.env.NODE_ENV === 'production') return this.run();
+		});
+
 		return this.login(token);
 	}
 }
 
-declare module 'discord-akairo' {
-	interface AkairoClient {
-		db: Db;
-		rpc: any;
-		http: Http;
-		stats: Stats;
-		logger: Logger;
-		patrons: Patrons;
-		storage: Storage;
-		resolver: Resolver;
-		settings: Settings;
-		links: LinkHandler;
-		automaton: Automaton;
-		rpcHandler: RPCHandler;
-		embed(msg: Message): number;
-		commandHandler: CommandHandler;
-		listenerHandler: ListenerHandler;
-		remindScheduler: RemindScheduler;
-		inhibitorHandler: InhibitorHandler;
-		components: Map<string, Snowflake[]>;
-		uuid(...userIds: Snowflake[]): string;
-	}
-}
-
-declare module 'discord.js' {
-	interface CommandInteraction {
-		author: User;
-	}
-
-	interface ButtonInteraction {
-		author: User;
-	}
-
-	interface SelectMenuInteraction {
-		author: User;
-	}
-}
+export default Client;

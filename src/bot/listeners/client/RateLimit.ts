@@ -1,5 +1,5 @@
 import { MessageEmbed, Webhook } from 'discord.js';
-import { Listener } from 'discord-akairo';
+import { Listener } from '../../lib';
 
 export default class RateLimitListener extends Listener {
 	public count: number;
@@ -22,7 +22,7 @@ export default class RateLimitListener extends Listener {
 			this.count = 0;
 			if (!this.embeds.length) return;
 			const webhook = await this.fetchWebhook().catch(() => null);
-			if (!webhook) return this.embeds = [];
+			if (!webhook) return (this.embeds = []);
 
 			const embeds = [...this.embeds];
 			this.embeds = [];
@@ -47,22 +47,24 @@ export default class RateLimitListener extends Listener {
 
 		const embed = new MessageEmbed()
 			.setAuthor({ name: 'Rate Limit' })
-			.setDescription([
-				'**Time Out**',
-				timeout,
-				'',
-				'**Limit**',
-				limit,
-				'',
-				'**HTTP Method**',
-				method.toUpperCase(),
-				'',
-				'**Route**',
-				route,
-				'',
-				'**Path**',
-				decodeURIComponent(path)
-			].join('\n'))
+			.setDescription(
+				[
+					'**Time Out**',
+					timeout,
+					'',
+					'**Limit**',
+					limit,
+					'',
+					'**HTTP Method**',
+					method.toUpperCase(),
+					'',
+					'**Route**',
+					route,
+					'',
+					'**Path**',
+					decodeURIComponent(path)
+				].join('\n')
+			)
 			.setFooter({ text: `Shard ${this.client.shard!.ids[0]}` })
 			.setTimestamp();
 

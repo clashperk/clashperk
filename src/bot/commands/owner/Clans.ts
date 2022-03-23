@@ -1,109 +1,90 @@
-import { MessageEmbed, Message, Guild, TextChannel, MessageActionRow, MessageButton } from 'discord.js';
-import { Command, Argument } from 'discord-akairo';
+import { MessageEmbed, Message, TextChannel, MessageActionRow, MessageButton } from 'discord.js';
+import { Command } from '../../lib';
 import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 
 export default class ClansCommand extends Command {
 	public constructor() {
 		super('clans', {
-			aliases: ['clans'],
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				usage: '<page>',
-				examples: ['2'],
-				content: 'Shows all clans related to the server or channel.'
-			},
-			args: [
-				{
-					'id': 'page',
-					'type': Argument.range('number', 1, 100),
-					'default': 1,
-					'unordered': true
-				},
-				{
-					'id': 'guild',
-					'type': async (msg, id) => {
-						const guilds = await this.client.shard!.broadcastEval(
-							(client, id) => {
-								const guild = client.guilds.cache.get(id);
-								if (guild) {
-									return {
-										id: guild.id,
-										name: guild.name,
-										iconURL: guild.iconURL(),
-										memberCount: guild.memberCount
-									};
-								}
-								return null;
-							}, { context: id }
-						);
-						const guild = guilds.find(guild => guild !== null);
-						if (!guild) return null;
-						return guild;
-					},
-					'default': (message: Message) => message.guild,
-					'unordered': true
-				}
-			]
+				content: "You can't use this anyway, so why explain?"
+			}
 		});
 	}
 
-	public async exec(message: Message, { guild, page }: { guild: Guild; page: number }) {
-		const mods = message.guild!.id === '509784317598105619' && message.member!.permissions.has('MANAGE_GUILD') ? [message.author.id] : [];
-		if (!(this.client.isOwner(message.author.id) || mods.includes(message.author.id))) {
-			return this.handler.handleDirectCommand(message, '-', this.handler.modules.get('setup')!);
-		}
-		await message.util!.send(`**Feching data... ${EMOJIS.LOADING}**`);
+	private async getGuild(message: Message, id: string) {
+		const guilds = await this.client.shard!.broadcastEval(
+			(client, id) => {
+				const guild = client.guilds.cache.get(id);
+				if (guild) {
+					return {
+						id: guild.id,
+						name: guild.name,
+						iconURL: guild.iconURL(),
+						memberCount: guild.memberCount
+					};
+				}
+				return null;
+			},
+			{ context: id }
+		);
+		const guild = guilds.find((guild) => guild !== null);
+		if (!guild) return message.guild!;
+		return guild;
+	}
+
+	public async run(message: Message, { id, page = 1 }: { id: string; page: number }) {
+		const guild = id ? await this.getGuild(message, id) : message.guild!;
 
 		const premium = this.client.patrons.get(guild.id);
 		const clans = await this.client.storage.findAll(guild.id);
-		const data = await Promise.all(clans.map(async doc => {
-			const donationlog = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clan_id: doc._id });
-			const playerlog = await this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clan_id: doc._id });
-			const onlinelog = await this.client.db.collection(Collections.LAST_SEEN_LOGS).findOne({ clan_id: doc._id });
-			const clanembed = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clan_id: doc._id });
-			const clangames = await this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clan_id: doc._id });
-			const clanwar = await this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clan_id: doc._id });
-			const channels = await this.client.db.collection(Collections.LINKED_CHANNELS)
-				.find({ guild: guild.id, tag: doc.tag })
-				.toArray();
+		const data = await Promise.all(
+			clans.map(async (doc) => {
+				const donationlog = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clan_id: doc._id });
+				const playerlog = await this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clan_id: doc._id });
+				const onlinelog = await this.client.db.collection(Collections.LAST_SEEN_LOGS).findOne({ clan_id: doc._id });
+				const clanembed = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clan_id: doc._id });
+				const clangames = await this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clan_id: doc._id });
+				const clanwar = await this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clan_id: doc._id });
+				const channels = await this.client.db
+					.collection(Collections.LINKED_CHANNELS)
+					.find({ guild: guild.id, tag: doc.tag })
+					.toArray();
 
-			return {
-				tag: doc.tag,
-				name: doc.name,
-				donationlog: donationlog && doc.active && doc.flag > 0 ? donationlog.channel : null,
-				playerlog: playerlog && doc.active && doc.flag > 0 ? playerlog.channel : null,
-				onlinelog: onlinelog && doc.active && doc.flag > 0 ? onlinelog.channel : null,
-				clanembedlog: clanembed && doc.active && doc.flag > 0 ? clanembed.channel : null,
-				clangameslog: clangames && doc.active && doc.flag > 0 ? clangames.channel : null,
-				clanwarlog: clanwar && doc.active && doc.flag > 0 ? clanwar.channel : null,
-				channels: channels.length ? channels : []
-			};
-		}));
+				return {
+					tag: doc.tag,
+					name: doc.name,
+					donationlog: donationlog && doc.active && doc.flag > 0 ? donationlog.channel : null,
+					playerlog: playerlog && doc.active && doc.flag > 0 ? playerlog.channel : null,
+					onlinelog: onlinelog && doc.active && doc.flag > 0 ? onlinelog.channel : null,
+					clanembedlog: clanembed && doc.active && doc.flag > 0 ? clanembed.channel : null,
+					clangameslog: clangames && doc.active && doc.flag > 0 ? clangames.channel : null,
+					clanwarlog: clanwar && doc.active && doc.flag > 0 ? clanwar.channel : null,
+					channels: channels.length ? channels : []
+				};
+			})
+		);
 
 		const icon = typeof guild.iconURL === 'function' ? guild.iconURL()! : guild.iconURL;
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(message))
-			.setAuthor({ name: `${guild.name}`, iconURL: icon as string })
-			.setTitle(`Members: ${guild.memberCount}`);
+			.setAuthor({ name: guild.name, iconURL: icon as string })
+			.setTitle(`Members: ${guild.memberCount as number}`);
 		if (!data.length) {
 			embed.setDescription(`${message.guild!.name} doesn't have any clans. Why not add some?`);
-			return message.util!.send({ embeds: [embed] });
+			return message.channel.send({ embeds: [embed] });
 		}
 
 		const paginated = this.paginate(data, page);
 
-		embed.setDescription([
-			`${premium ? '**Patron** \nYes' : ''}`,
-			'',
-			this.desc(paginated)
-		].join('\n'));
+		embed.setDescription([`${premium ? '**Patron** \nYes' : ''}`, '', this.desc(paginated)].join('\n'));
 		embed.setFooter({ text: `Page ${paginated.page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})` });
 
 		if (clans.length <= 2) {
-			return message.util!.send({ embeds: [embed] });
+			return message.channel.send({ embeds: [embed] });
 		}
 
 		const customIds = {
@@ -111,39 +92,33 @@ export default class ClansCommand extends Command {
 			prev: this.client.uuid(message.author.id)
 		};
 		const row = new MessageActionRow()
-			.addComponents(
-				new MessageButton()
-					.setEmoji('⬅️')
-					.setStyle('SECONDARY')
-					.setCustomId(customIds.prev)
-			)
-			.addComponents(
-				new MessageButton()
-					.setEmoji('➡️')
-					.setStyle('SECONDARY')
-					.setCustomId(customIds.next)
-			);
+			.addComponents(new MessageButton().setEmoji('⬅️').setStyle('SECONDARY').setCustomId(customIds.prev))
+			.addComponents(new MessageButton().setEmoji('➡️').setStyle('SECONDARY').setCustomId(customIds.next));
 
-		const msg = await message.util!.send({ embeds: [embed], components: [row] });
+		const msg = await message.channel.send({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector({
-			filter: action => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
 		});
 
-		collector.on('collect', async action => {
+		collector.on('collect', async (action) => {
 			if (action.customId === customIds.next) {
 				page += 1;
 				if (page < 1) page = paginated.maxPage;
 				if (page > paginated.maxPage) page = 1;
 				await action.update({
 					embeds: [
-						embed.setFooter({
-							text: `Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
-						}).setDescription([
-							`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`,
-							'',
-							this.desc(this.paginate(data, page))
-						].join('\n'))
+						embed
+							.setFooter({
+								text: `Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${
+									data.length === 1 ? 'clan' : 'clans'
+								})`
+							})
+							.setDescription(
+								[`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`, '', this.desc(this.paginate(data, page))].join(
+									'\n'
+								)
+							)
 					]
 				});
 			}
@@ -154,13 +129,17 @@ export default class ClansCommand extends Command {
 				if (page > paginated.maxPage) page = 1;
 				await action.update({
 					embeds: [
-						embed.setFooter({
-							text: `Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${data.length === 1 ? 'clan' : 'clans'})`
-						}).setDescription([
-							`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`,
-							'',
-							this.desc(this.paginate(data, page))
-						].join('\n'))
+						embed
+							.setFooter({
+								text: `Page ${this.paginate(data, page).page}/${paginated.maxPage} (${data.length} ${
+									data.length === 1 ? 'clan' : 'clans'
+								})`
+							})
+							.setDescription(
+								[`${premium ? `**Patron** \nYes ${EMOJIS.AUTHORIZE}` : ''}`, '', this.desc(this.paginate(data, page))].join(
+									'\n'
+								)
+							)
 					]
 				});
 			}
@@ -173,59 +152,64 @@ export default class ClansCommand extends Command {
 	}
 
 	private desc(paginated: any) {
-		return paginated.items.map((item: any) => {
-			const donationlog = this.client.channels.cache.has(item.donationlog);
-			const playerlog = this.client.channels.cache.has(item.playerlog);
-			const onlinelog = this.client.channels.cache.has(item.onlinelog);
-			const clanembedlog = this.client.channels.cache.has(item.clanembedlog);
-			const clangameslog = this.client.channels.cache.has(item.clangameslog);
-			const clanwarlog = this.client.channels.cache.has(item.clanwarlog);
-			const logs = [
-				item.donationlog
-					? donationlog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.donationlog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.donationlog as string}>`
-					: '',
-				item.playerlog
-					? playerlog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.playerlog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.playerlog as string}>`
-					: '',
-				item.onlinelog
-					? onlinelog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.onlinelog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.onlinelog as string}>`
-					: '',
-				item.clanembedlog
-					? clanembedlog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.clanembedlog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.clanembedlog as string}>`
-					: '',
-				item.clangameslog
-					? clangameslog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.clangameslog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.clangameslog as string}>`
-					: '',
-				item.clanwarlog
-					? clanwarlog
-						? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.clanwarlog as string}>`
-						: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.clanwarlog as string}>`
-					: '',
-				(item.channels as any[]).filter((ch: any) => this.client.channels.cache.has(ch.channel))
-					.map(((ch: any) => `${EMOJIS.HASH} \`${(this.client.channels.cache.get(ch.channel)! as TextChannel).name}\``))
-					.join('\n')
-			];
-			return [
-				`**[${item.name as string} (${item.tag as string})](${this.openInGame(item.tag)})**`,
-				`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
-				`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
-				`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`,
-				`${logs[3].length ? `**Clan Embed**\n${logs[3]}` : ''}`,
-				`${logs[4].length ? `**Clan Games Board**\n${logs[4]}` : ''}`,
-				`${logs[5].length ? `**Clan War Feed**\n${logs[5]}` : ''}`,
-				`${logs[6].length ? `**Linked Channels**\n${logs[6]}` : ''}`
-			].filter(item => item.length).join('\n');
-		}).join('\n\n');
+		return paginated.items
+			.map((item: any) => {
+				const donationlog = this.client.channels.cache.has(item.donationlog);
+				const playerlog = this.client.channels.cache.has(item.playerlog);
+				const onlinelog = this.client.channels.cache.has(item.onlinelog);
+				const clanembedlog = this.client.channels.cache.has(item.clanembedlog);
+				const clangameslog = this.client.channels.cache.has(item.clangameslog);
+				const clanwarlog = this.client.channels.cache.has(item.clanwarlog);
+				const logs = [
+					item.donationlog
+						? donationlog
+							? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.donationlog as string}>`
+							: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.donationlog as string}>`
+						: '',
+					item.playerlog
+						? playerlog
+							? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.playerlog as string}>`
+							: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.playerlog as string}>`
+						: '',
+					item.onlinelog
+						? onlinelog
+							? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.onlinelog as string}>`
+							: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.onlinelog as string}>`
+						: '',
+					item.clanembedlog
+						? clanembedlog
+							? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.clanembedlog as string}>`
+							: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.clanembedlog as string}>`
+						: '',
+					item.clangameslog
+						? clangameslog
+							? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.clangameslog as string}>`
+							: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.clangameslog as string}>`
+						: '',
+					item.clanwarlog
+						? clanwarlog
+							? `${EMOJIS.OK} Enabled \n${EMOJIS.HASH} <#${item.clanwarlog as string}>`
+							: `${EMOJIS.WRONG} Disabled \n${EMOJIS.HASH} <#${item.clanwarlog as string}>`
+						: '',
+					(item.channels as any[])
+						.filter((ch: any) => this.client.channels.cache.has(ch.channel))
+						.map((ch: any) => `${EMOJIS.HASH} \`${(this.client.channels.cache.get(ch.channel)! as TextChannel).name}\``)
+						.join('\n')
+				];
+				return [
+					`**[${item.name as string} (${item.tag as string})](${this.openInGame(item.tag)})**`,
+					`${logs[0].length ? `**DonationLog**\n${logs[0]}` : ''}`,
+					`${logs[1].length ? `**PlayerLog**\n${logs[1]}` : ''}`,
+					`${logs[2].length ? `**Last-Online Board**\n${logs[2]}` : ''}`,
+					`${logs[3].length ? `**Clan Embed**\n${logs[3]}` : ''}`,
+					`${logs[4].length ? `**Clan Games Board**\n${logs[4]}` : ''}`,
+					`${logs[5].length ? `**Clan War Feed**\n${logs[5]}` : ''}`,
+					`${logs[6].length ? `**Linked Channels**\n${logs[6]}` : ''}`
+				]
+					.filter((item) => item.length)
+					.join('\n');
+			})
+			.join('\n\n');
 	}
 
 	private openInGame(tag: string) {
@@ -240,11 +224,13 @@ export default class ClansCommand extends Command {
 
 		return {
 			items: items.length > pageLength ? items.slice(startIndex, startIndex + pageLength) : items,
-			page, maxPage, pageLength
+			page,
+			maxPage,
+			pageLength
 		};
 	}
 
 	private async delay(ms: number) {
-		return new Promise(res => setTimeout(res, ms));
+		return new Promise((res) => setTimeout(res, ms));
 	}
 }

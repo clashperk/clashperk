@@ -10,8 +10,13 @@ export default class Workbook extends Excel.Workbook {
 		this.lastPrinted = new Date();
 		this.views = [
 			{
-				x: 0, y: 0, width: 10000, height: 20000,
-				firstSheet: 0, activeTab: 1, visibility: 'visible'
+				x: 0,
+				y: 0,
+				width: 10000,
+				height: 20000,
+				firstSheet: 0,
+				activeTab: 1,
+				visibility: 'visible'
 			}
 		];
 	}

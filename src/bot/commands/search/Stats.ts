@@ -1,10 +1,9 @@
-import { BLUE_NUMBERS, ORANGE_NUMBERS } from '../../util/NumEmojis';
+import { BLUE_NUMBERS, ORANGE_NUMBERS, EMOJIS } from '../../util/Emojis';
 import { Collections, WarType } from '../../util/Constants';
-import { Argument, Command } from 'discord-akairo';
-import { Message, MessageEmbed } from 'discord.js';
+import { Args, Command } from '../../lib';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 import { Clan, ClanWarAttack, WarClan } from 'clashofclans.js';
-import { EMOJIS } from '../../util/Emojis';
-import { Util } from '../../util/Util';
+import { Util } from '../../util';
 import moment from 'moment';
 
 export type Compare = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };
@@ -23,120 +22,108 @@ const WarTypes = {
 export default class StatsCommand extends Command {
 	public constructor() {
 		super('stats', {
-			aliases: ['stats'],
 			category: 'search',
 			channel: 'guild',
 			description: {
 				content: 'War attack success and defense failure rates.'
 			},
-			optionFlags: ['--tag', '--compare', '--type', '--stars', '--season', '--attempt'],
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS']
+			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			defer: true
 		});
 	}
 
-	public *args(msg: Message): unknown {
-		const mode = yield {
-			'default': 'attacks',
-			'type': ['attacks', 'defense']
-		};
-
-		const data = yield {
-			flag: '--tag',
-			match: msg.interaction ? 'option' : 'phrase',
-			type: (msg: Message, tag: string) => this.client.resolver.resolveClan(msg, tag)
-		};
-
-		const compare = yield {
-			match: 'option',
-			flag: '--compare',
-			type: Argument.union(
-				[['all'], ['equal']],
-				(msg: Message, text: string) => {
-					if (!text) return 'all';
-					if (!/^\d{1,2}(vs?|\s+)\d{1,2}$/i.test(text)) return 'all';
-					const match = /^(?<attackerTownHall>\d{1,2})(vs?|\s+)(?<defenderTownHall>\d{1,2})$/i.exec(text);
+	public args(): Args {
+		return {
+			stars: {
+				match: 'STRING',
+				default: '==3'
+			},
+			type: {
+				match: 'STRING',
+				default: 'noFriendly'
+			},
+			season: {
+				match: 'ENUM',
+				enums: Util.getSeasonIds(),
+				default: Util.getLastSeasonId()
+			},
+			compare: {
+				match: 'STRING',
+				default: (value: string) => {
+					if (!value) return 'all';
+					if (value === 'equal') return 'equal';
+					if (!/^\d{1,2}(vs?|\s+)\d{1,2}$/i.test(value)) return 'all';
+					const match = /^(?<attackerTownHall>\d{1,2})(vs?|\s+)(?<defenderTownHall>\d{1,2})$/i.exec(value);
 					const attackerTownHall = Number(match?.groups?.attackerTownHall);
 					const defenderTownHall = Number(match?.groups?.defenderTownHall);
 					if (!(attackerTownHall > 1 && attackerTownHall < 15 && defenderTownHall > 1 && defenderTownHall < 15)) return 'all';
 					return { attackerTownHall, defenderTownHall };
 				}
-			)
+			}
 		};
-
-		const stars = yield {
-			'default': '==3',
-			'type': 'string',
-			'match': 'option',
-			'flag': '--stars'
-		};
-
-		const type = yield {
-			'flag': '--type',
-			'type': 'string',
-			'match': 'option',
-			'default': 'noFriendly'
-		};
-
-		const season = yield {
-			'match': 'option',
-			'flag': '--season',
-			'default': Util.getLastSeasonId(),
-			'type': [...Util.getSeasonIds()]
-		};
-
-		const attempt = yield {
-			match: 'option',
-			flag: '--attempt',
-			type: ['fresh', 'cleanup']
-		};
-
-		return { mode, data, compare, type, stars, season, attempt };
 	}
 
-	public async exec(message: Message, { mode, data, compare, type, stars, season, attempt }: { mode: Mode; data: Clan; compare: Compare; type: WarTypeArg; stars: string; season: string; attempt?: string }) {
-		const extra = type === 'regular'
-			? { warType: WarType.REGULAR }
-			: type === 'cwl'
+	public async exec(
+		interaction: CommandInteraction,
+		{
+			command: mode,
+			data,
+			compare,
+			type,
+			stars,
+			season,
+			attempt
+		}: { command: Mode; data: Clan; compare: Compare; type: WarTypeArg; stars: string; season: string; attempt?: string }
+	) {
+		const extra =
+			type === 'regular'
+				? { warType: WarType.REGULAR }
+				: type === 'cwl'
 				? { warType: WarType.CWL }
 				: type === 'friendly'
-					? { warType: WarType.FRIENDLY }
-					: type === 'noFriendly'
-						? { warType: { $ne: WarType.FRIENDLY } }
-						: type === 'noCWL'
-							? { warType: { $ne: WarType.CWL } }
-							: {};
+				? { warType: WarType.FRIENDLY }
+				: type === 'noFriendly'
+				? { warType: { $ne: WarType.FRIENDLY } }
+				: type === 'noCWL'
+				? { warType: { $ne: WarType.CWL } }
+				: {};
 
-		const wars = await this.client.db.collection(Collections.CLAN_WARS)
+		const wars = await this.client.db
+			.collection(Collections.CLAN_WARS)
 			.find({
 				$or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }],
 				preparationStartTime: { $gte: new Date(season) },
 				...extra
-			}).toArray();
+			})
+			.toArray();
 
 		const members: { [key: string]: { name: string; tag: string; total: number; success: number; hall: number } } = {};
 		for (const war of wars) {
 			const clan: WarClan = war.clan.tag === data.tag ? war.clan : war.opponent;
 			const opponent: WarClan = war.clan.tag === data.tag ? war.opponent : war.clan;
-			const attacks = (mode === 'attacks' ? clan : opponent).members.filter(m => m.attacks?.length).map(m => m.attacks!).flat();
+			const attacks = (mode === 'attacks' ? clan : opponent).members
+				.filter((m) => m.attacks?.length)
+				.map((m) => m.attacks!)
+				.flat();
 			for (const m of clan.members) {
 				if (typeof compare === 'object' && compare.attackerTownHall !== m.townhallLevel) continue;
-				const clanMember = data.memberList.find(mem => mem.tag === m.tag);
+				const clanMember = data.memberList.find((mem) => mem.tag === m.tag);
 				const member = members[m.tag] // eslint-disable-line
 					? members[m.tag]
-					: members[m.tag] = {
-						name: clanMember?.name ?? m.name,
-						tag: m.tag,
-						total: 0,
-						success: 0,
-						hall: m.townhallLevel
-					};
+					: (members[m.tag] = {
+							name: clanMember?.name ?? m.name,
+							tag: m.tag,
+							total: 0,
+							success: 0,
+							hall: m.townhallLevel
+					  });
 
-				for (const attack of (mode === 'attacks') ? (m.attacks ?? []) : []) {
+				for (const attack of mode === 'attacks' ? m.attacks ?? [] : []) {
 					if (attempt === 'fresh' && !this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
 					if (attempt === 'cleanup' && this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
 
 					if (typeof compare === 'string' && compare === 'equal') {
-						const defender = opponent.members.find(m => m.tag === attack.defenderTag)!;
+						const defender = opponent.members.find((m) => m.tag === attack.defenderTag)!;
 						if (defender.townhallLevel === m.townhallLevel) {
 							member.total += 1;
 							if (this.getStars(attack.stars, stars)) member.success += 1;
@@ -144,7 +131,7 @@ export default class StatsCommand extends Command {
 					} else if (typeof compare === 'object') {
 						const { attackerTownHall, defenderTownHall } = compare;
 						if (m.townhallLevel === attackerTownHall) {
-							const defender = opponent.members.find(m => m.tag === attack.defenderTag)!;
+							const defender = opponent.members.find((m) => m.tag === attack.defenderTag)!;
 							if (defender.townhallLevel === defenderTownHall) {
 								member.total += 1;
 								if (this.getStars(attack.stars, stars)) member.success += 1;
@@ -156,19 +143,20 @@ export default class StatsCommand extends Command {
 					}
 				}
 
-				for (const _attack of (m.bestOpponentAttack && mode === 'defense') ? [m.bestOpponentAttack] : []) {
-					const attack = (m.opponentAttacks > 1 && attempt === 'fresh')
-						? attacks.filter(atk => atk.defenderTag === _attack.defenderTag)
-							.sort((a, b) => a.order - b.order)[0]!
-						: attacks.filter(atk => atk.defenderTag === _attack.defenderTag)
-							.sort((a, b) => (b.destructionPercentage ** b.stars) - (a.destructionPercentage ** a.stars))[0]!;
+				for (const _attack of m.bestOpponentAttack && mode === 'defense' ? [m.bestOpponentAttack] : []) {
+					const attack =
+						m.opponentAttacks > 1 && attempt === 'fresh'
+							? attacks.filter((atk) => atk.defenderTag === _attack.defenderTag).sort((a, b) => a.order - b.order)[0]!
+							: attacks
+									.filter((atk) => atk.defenderTag === _attack.defenderTag)
+									.sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)[0]!;
 
 					const isFresh = this._isFreshAttack(attacks, attack.defenderTag, attack.order);
 					if (attempt === 'cleanup' && isFresh) continue;
 					if (attempt === 'fresh' && !isFresh) continue;
 
 					if (typeof compare === 'string' && compare === 'equal') {
-						const attacker = opponent.members.find(m => m.tag === attack.attackerTag)!;
+						const attacker = opponent.members.find((m) => m.tag === attack.attackerTag)!;
 						if (attacker.townhallLevel === m.townhallLevel) {
 							member.total += 1;
 							if (this.getStars(attack.stars, stars)) member.success += 1;
@@ -176,7 +164,7 @@ export default class StatsCommand extends Command {
 					} else if (typeof compare === 'object') {
 						const { attackerTownHall, defenderTownHall } = compare;
 						if (m.townhallLevel === defenderTownHall) {
-							const attacker = opponent.members.find(m => m.tag === attack.attackerTag)!;
+							const attacker = opponent.members.find((m) => m.tag === attack.attackerTag)!;
 							if (attacker.townhallLevel === attackerTownHall) {
 								member.total += 1;
 								if (this.getStars(attack.stars, stars)) member.success += 1;
@@ -190,20 +178,21 @@ export default class StatsCommand extends Command {
 			}
 		}
 
-		const clanMemberTags = data.memberList.map(m => m.tag);
+		const clanMemberTags = data.memberList.map((m) => m.tag);
 		const stats = Object.values(members)
-			.filter(m => m.total > 0 && clanMemberTags.includes(m.tag) && (attempt ? m.success > 0 : true))
-			.map(mem => ({ ...mem, rate: (mem.success * 100) / mem.total }))
+			.filter((m) => m.total > 0 && clanMemberTags.includes(m.tag) && (attempt ? m.success > 0 : true))
+			.map((mem) => ({ ...mem, rate: (mem.success * 100) / mem.total }))
 			.sort((a, b) => b.success - a.success)
 			.sort((a, b) => b.rate - a.rate);
 		if (!stats.length) {
-			return message.util!.send('**No stats are available for this filter or clan.**');
+			return interaction.editReply('**No stats are available for this filter or clan.**');
 		}
 
-		const hall = typeof compare === 'object'
-			? `TH ${Object.values(compare).join('vs')}`
-			: `${compare.replace(/\b(\w)/g, char => char.toUpperCase())} TH`;
-		const tail = attempt ? `% (${attempt.replace(/\b(\w)/g, char => char.toUpperCase())})` : 'Rates';
+		const hall =
+			typeof compare === 'object'
+				? `TH ${Object.values(compare).join('vs')}`
+				: `${compare.replace(/\b(\w)/g, (char) => char.toUpperCase())} TH`;
+		const tail = attempt ? `% (${attempt.replace(/\b(\w)/g, (char) => char.toUpperCase())})` : 'Rates';
 
 		const starType = `${stars.startsWith('>') ? '>= ' : ''}${stars.replace(/[>=]+/, '')}`;
 		const embed = new MessageEmbed()
@@ -214,19 +203,22 @@ export default class StatsCommand extends Command {
 						`**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} ${tail}**`,
 						'',
 						`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} \`RATE%  HITS   ${'NAME'.padEnd(15, ' ')}\u200f\``,
-						stats.map(
-							(m, i) => {
+						stats
+							.map((m, i) => {
 								const percentage = this._padStart(m.rate.toFixed(1), 5);
-								return `\u200e${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.hall]} \`${percentage} ${this._padStart(m.success, 3)}/${this._padEnd(m.total, 3)} ${this._padEnd(m.name, 14)} \u200f\``;
-							}
-						).join('\n')
+								return `\u200e${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.hall]} \`${percentage} ${this._padStart(
+									m.success,
+									3
+								)}/${this._padEnd(m.total, 3)} ${this._padEnd(m.name, 14)} \u200f\``;
+							})
+							.join('\n')
 					].join('\n'),
 					{ maxLength: 4096 }
 				)[0]
 			)
 			.setFooter({ text: `War Types: ${WarTypes[type]} (Since ${moment(season).format('MMM YYYY')})` });
 
-		return message.util!.send({ embeds: [embed] });
+		return interaction.editReply({ embeds: [embed] });
 	}
 
 	private getStars(earned: number, stars: string) {
@@ -255,8 +247,7 @@ export default class StatsCommand extends Command {
 	}
 
 	private _isFreshAttack(attacks: ClanWarAttack[], defenderTag: string, order: number) {
-		const hits = attacks.filter(atk => atk.defenderTag === defenderTag)
-			.sort((a, b) => a.order - b.order);
-		return (hits.length === 1 || hits[0]!.order === order);
+		const hits = attacks.filter((atk) => atk.defenderTag === defenderTag).sort((a, b) => a.order - b.order);
+		return hits.length === 1 || hits[0]!.order === order;
 	}
 }

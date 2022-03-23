@@ -1,46 +1,47 @@
-import { Collections } from '../../util/Constants';
-import { Message, MessageEmbed } from 'discord.js';
-import { Command } from 'discord-akairo';
+import { Collections, Messages } from '../../util/Constants';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { Command } from '../../lib';
 import { Clan } from 'clashofclans.js';
 
 export default class ClanSummaryCommand extends Command {
 	public constructor() {
 		super('trophy-summary', {
-			category: 'search',
+			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
-			description: {}
+			defer: true
 		});
 	}
 
-	public async exec(message: Message) {
-		const clans = await this.client.db.collection(Collections.CLAN_STORES)
-			.find({ guild: message.guild!.id })
-			.toArray();
+	public async exec(interaction: CommandInteraction) {
+		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
 
 		if (!clans.length) {
-			return message.util!.send(`**No clans are linked to ${message.guild!.name}**`);
+			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
-		const collection: Clan[] = await Promise.all(clans.map(clan => this.client.http.clan(clan.tag)));
-		const members = collection.map(clan => clan.memberList).flat();
+		const collection: Clan[] = await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)));
+		const members = collection.map((clan) => clan.memberList).flat();
 		members.sort((a, b) => b.trophies - a.trophies);
 
 		const embed = new MessageEmbed()
-			.setColor(this.client.embed(message))
-			.setAuthor({ name: `${message.guild!.name} Best Trophies` })
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `${interaction.guild!.name} Best Trophies` })
 			.setDescription(
 				[
 					'```',
 					`\u200e # TROPHY  ${'NAME'}`,
-					members.slice(0, 100).map((member, index) => {
-						const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
-						return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
-					}).join('\n'),
+					members
+						.slice(0, 100)
+						.map((member, index) => {
+							const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
+							return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
+						})
+						.join('\n'),
 					'```'
 				].join('\n')
 			);
 
-		return message.util!.send({ embeds: [embed] });
+		return interaction.editReply({ embeds: [embed] });
 	}
 }
