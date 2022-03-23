@@ -25,6 +25,6 @@ export default class SummaryCommand extends Command {
 		}[args.option];
 
 		if (!command) return interaction.reply(Messages.COMMAND.OPTION_NOT_FOUND);
-		return this.handler.exec(interaction, command, args);
+		return this.handler.continue(interaction, command);
 	}
 }

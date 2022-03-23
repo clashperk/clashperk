@@ -139,6 +139,14 @@ export class CommandHandler extends BaseHandler {
 			}
 		}
 
+		for (const [key, value] of Object.entries(args)) {
+			if (key in resolved) continue;
+			if (value?.default) {
+				const def = value.default;
+				resolved[key] = typeof def === 'function' ? def(resolved[key]) : def;
+			}
+		}
+
 		return resolved;
 	}
 
@@ -148,6 +156,11 @@ export class CommandHandler extends BaseHandler {
 		if (this.preInhibitor(interaction, command)) return;
 
 		const args = this.argumentRunner(interaction, command);
+		return this.exec(interaction, command, args);
+	}
+
+	public continue(interaction: Interaction, command: Command) {
+		const args = this.argumentRunner(interaction as CommandInteraction, command);
 		return this.exec(interaction, command, args);
 	}
 

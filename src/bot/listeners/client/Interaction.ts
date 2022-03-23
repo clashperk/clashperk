@@ -48,6 +48,7 @@ export default class InteractionListener extends Listener {
 		if (!command) return;
 		if (this.client.commandHandler.preInhibitor(interaction, command)) return;
 
+		// TODO: resolve args
 		const options: CommandInteractionOption =
 			interaction.targetType === 'MESSAGE'
 				? { name: 'message', value: interaction.options.getMessage('message')?.content ?? '', type: 'STRING' }

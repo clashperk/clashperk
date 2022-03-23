@@ -22,6 +22,6 @@ export default class LinkCommand extends Command {
 		}[args.command];
 
 		if (!command) return interaction.reply(Messages.COMMAND.OPTION_NOT_FOUND);
-		return this.handler.exec(interaction, command, args);
+		return this.handler.continue(interaction, command);
 	}
 }

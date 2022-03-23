@@ -31,7 +31,7 @@ export default class SetupCommand extends Command {
 			disable: this.handler.modules.get('setup-disable')!
 		}[args.command];
 		if (command) {
-			return this.handler.exec(interaction, command, args);
+			return this.handler.continue(interaction, command);
 		}
 
 		const CUSTOM_ID = {
