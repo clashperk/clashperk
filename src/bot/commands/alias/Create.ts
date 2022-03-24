@@ -32,7 +32,7 @@ export default class AliasCreateCommand extends Command {
 
 		const clan = await this.client.db.collection(Collections.CLAN_STORES).findOne({ guild: interaction.guild.id, alias: args.name });
 		if (clan) {
-			return interaction.editReply(`_An alias with the name **${args.name}** already exists!_`);
+			return interaction.editReply(`An alias with the name **${args.name}** already exists.`);
 		}
 
 		const updated = await this.client.db
@@ -42,6 +42,6 @@ export default class AliasCreateCommand extends Command {
 			return interaction.editReply('*The clan must be linked to the server to create an alias.*');
 		}
 
-		return interaction.editReply(`_Successfully created an alias with the name **${args.name}**_`);
+		return interaction.editReply(`Successfully created an alias with the name **${args.name}**`);
 	}
 }

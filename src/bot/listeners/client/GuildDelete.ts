@@ -16,7 +16,7 @@ export default class GuildDeleteListener extends Listener {
 
 	private async fetchWebhook() {
 		if (this.webhook) return this.webhook;
-		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'defaultWebhook', undefined)).catch(() => null);
+		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'defaultWebhook', null)).catch(() => null);
 		this.webhook = webhook;
 		return webhook;
 	}
@@ -60,9 +60,9 @@ export default class GuildDeleteListener extends Listener {
 	private async delete(guild: Guild) {
 		const db = this.client.db.collection(Collections.CLAN_STORES);
 
-		await db
-			.find({ guild: guild.id })
-			.forEach((data) => this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild: guild.id }));
+		await db.find({ guild: guild.id }).forEach((data) => {
+			this.client.rpcHandler.delete(data._id.toString(), { tag: data.tag, op: 0, guild: guild.id });
+		});
 
 		await db.updateMany({ guild: guild.id }, { $set: { paused: true } });
 	}

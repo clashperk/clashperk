@@ -49,7 +49,7 @@ export default class ClanEmbedCommand extends Command {
 			channel
 		}: { tag: string; description?: string; color?: number; accepts?: string; channel: TextChannel }
 	) {
-		if (this.client.patrons.get(interaction)) {
+		if (!this.client.patrons.get(interaction)) {
 			const embed = new MessageEmbed()
 				.setDescription(
 					[

@@ -33,6 +33,6 @@ export default class AliasDeleteCommand extends Command {
 			return interaction.editReply('**No matches found!**');
 		}
 
-		return interaction.editReply(`_Successfully deleted **${deleted.value.alias as string}**_`);
+		return interaction.editReply(`Successfully deleted **${deleted.value.alias as string}**`);
 	}
 }
