@@ -192,12 +192,12 @@ export default class ReminderCreateCommand extends Command {
 				return action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.ROLES && action.isSelectMenu()) {
+			if (action.customId === CUSTOM_ID.CLANS && action.isSelectMenu()) {
 				state.clans = action.values;
 				return action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.ROLES && action.isButton()) {
+			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {
 				await action.deferUpdate();
 				const reminder = {
 					// TODO: remove this

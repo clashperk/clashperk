@@ -168,10 +168,10 @@ export default class Resolver {
 			return null;
 		}
 
-		const dbUser = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
+		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
 		const code = ['CP', interaction.guild.id.substr(-2)].join('');
-		const clan = clans.find((clan) => clan.tag === data.tag) ?? { verified: false };
-		if (!clan.verified && !this.verifyClan(code, data, dbUser?.entries ?? [])) {
+		const clan = clans.find((clan) => clan.tag === data.tag);
+		if (!clan?.verified && !this.verifyClan(code, data, user?.entries ?? []) && !this.client.isOwner(interaction.user)) {
 			await interaction.editReply({ content: Messages.SERVER.VERIFY });
 			return null;
 		}

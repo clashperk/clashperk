@@ -16,15 +16,9 @@ export default class GuildCreateListener extends Listener {
 
 	private async fetchWebhook() {
 		if (this.webhook) return this.webhook;
-		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'defaultWebhook', undefined)).catch(() => null);
+		const webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'defaultWebhook', null)).catch(() => null);
 		this.webhook = webhook;
 		return webhook;
-	}
-
-	private changeNickname(guild: Guild) {
-		if (!guild.me?.permissions.has('CHANGE_NICKNAME')) return;
-		const prefix = this.client.settings.get<string>(guild, 'prefix', '!');
-		return guild.me.setNickname(`${this.client.user!.username} [ ${prefix} ]`).catch(() => null);
 	}
 
 	public async exec(guild: Guild) {
@@ -34,7 +28,6 @@ export default class GuildCreateListener extends Listener {
 		await this.intro(guild).catch(() => null);
 		await this.restore(guild);
 		await this.client.stats.post();
-		await this.changeNickname(guild);
 		await this.client.stats.addition(guild.id);
 		await this.client.stats.guilds(guild, 0);
 
@@ -66,18 +59,15 @@ export default class GuildCreateListener extends Listener {
 	}
 
 	private async intro(guild: Guild) {
-		const prefix = this.client.settings.get<string>(guild, 'prefix', '!');
 		const embed = new MessageEmbed()
 			.setAuthor({
 				name: 'Thanks for inviting me, have a nice day!',
-				iconURL: this.client.user!.displayAvatarURL({ format: 'png' })
+				iconURL: this.client.user!.displayAvatarURL()
 			})
 			.setDescription(
 				[
-					`Use the prefix \`${prefix}\` to run my commands.`,
-					`To change my prefix, just type \`${prefix}prefix ?\``,
-					'',
-					`To get the full list of commands type \`${prefix}help\``
+					'Text-based commands are being replaced in favour of slash commands.',
+					'Try typing `/` to see a list of available commands.'
 				].join('\n')
 			)
 			.addField(
@@ -93,11 +83,12 @@ export default class GuildCreateListener extends Listener {
 					'',
 					'If you like the bot, please support us on [Patreon](https://www.patreon.com/clashperk)'
 				].join('\n')
-			);
+			)
+			.setImage('https://i.imgur.com/jcWPjDf.png');
 
 		if (guild.systemChannelId) {
 			const channel = guild.channels.cache.get(guild.systemChannelId) as TextChannel;
-			if (channel.permissionsFor(guild.me!)!.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false)) {
+			if (channel.permissionsFor(guild.me!)!.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'])) {
 				return channel.send({ embeds: [embed] });
 			}
 		}
@@ -105,7 +96,7 @@ export default class GuildCreateListener extends Listener {
 		const channel = guild.channels.cache
 			.filter((channel) => channel.type === 'GUILD_TEXT')
 			.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-			.filter((channel) => channel.permissionsFor(channel.guild.me!)!.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL'], false))
+			.filter((channel) => channel.permissionsFor(channel.guild.me!)!.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL']))
 			.first();
 		if (channel) return (channel as TextChannel).send({ embeds: [embed] });
 		return this.client.logger.info(`Failed on ${guild.name} (${guild.id})`, { label: 'INTRO_MESSAGE' });
