@@ -100,7 +100,7 @@ export default class DebugCommand extends Command {
 				)} \u200f\` \`\u200e ${'UPDATED'} \u200f\` \`\u200e ${'WAR LOG'} \u200f\``,
 				clans
 					.map((clan) => {
-						const lastRan = clan.lastRan ? ms(Date.now() - clan.lastRan.getTime()) : 'Unknown';
+						const lastRan = clan.lastRan ? ms(Date.now() - clan.lastRan.getTime()) : '...';
 						const warLog = fetched.find((res) => res.tag === clan.tag)?.isWarLogPublic;
 						const sign = clan.active && !clan.paused && clan.flag > 0 && warLog ? emojis.tick : emojis.cross;
 						return `${sign} \`\u200e ${clan.name.padEnd(15, ' ')} \u200f\` \`\u200e ${lastRan.padStart(

@@ -22,9 +22,9 @@ export default class ExportCommand extends Command {
 		const command = {
 			missed: this.handler.modules.get('export-missed')!,
 			season: this.handler.modules.get('export-season')!,
-			war: this.handler.modules.get('export-wars')!,
-			member: this.handler.modules.get('export-members')!,
-			lastwar: this.handler.modules.get('export-last-wars')!
+			wars: this.handler.modules.get('export-wars')!,
+			members: this.handler.modules.get('export-members')!,
+			lastwars: this.handler.modules.get('export-last-wars')!
 		}[args.option];
 
 		if (!command) return interaction.reply(Messages.COMMAND.OPTION_NOT_FOUND);
