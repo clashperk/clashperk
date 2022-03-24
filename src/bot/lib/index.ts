@@ -5,11 +5,9 @@ import {
 	CommandInteractionOption,
 	Constants,
 	GuildChannel,
-	HexColorString,
 	Interaction,
 	Message,
-	PermissionString,
-	Util
+	PermissionString
 } from 'discord.js';
 import EventEmitter from 'events';
 import { extname } from 'path';
@@ -17,7 +15,7 @@ import { Client } from '../struct/Client';
 import { container } from 'tsyringe';
 import readdirp from 'readdirp';
 import { pathToFileURL } from 'url';
-import { BuiltInReasons, CommandEvents, CommandHandlerEvents } from './util';
+import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util';
 
 type ArgsMatchType =
 	| 'SUB_COMMAND'
@@ -34,14 +32,15 @@ type ArgsMatchType =
 	| 'COLOR'
 	| 'ENUM';
 
-export interface Args {
-	[key: string]: {
+export type Args = Record<
+	string,
+	{
 		id?: string;
 		match: ArgsMatchType;
 		enums?: (string | string[])[];
 		default?: unknown | ((value: unknown) => unknown);
-	} | null;
-}
+	} | null
+>;
 
 export class BaseHandler extends EventEmitter {
 	public readonly directory: string;
@@ -66,23 +65,39 @@ export class BaseHandler extends EventEmitter {
 	}
 
 	public construct(mod: Command | Listener | Inhibitor) {
+		if (this.modules.has(mod.id)) {
+			throw new Error(`Module "${mod.id}" already exists.`);
+		}
 		this.modules.set(mod.id, mod);
 	}
 }
 
 export class CommandHandler extends BaseHandler {
+	public readonly aliases: Collection<string, string>;
 	public override modules!: Collection<string, Command>;
 
 	public constructor(public client: Client, { directory }: { directory: string }) {
 		super(client, { directory });
 
 		container.register(CommandHandler, { useValue: this });
+		this.aliases = new Collection();
+
 		client.on(Constants.Events.INTERACTION_CREATE, (interaction: Interaction) => {
 			if (!interaction.isCommand()) return;
-			const command = this.modules.get(interaction.commandName);
-			if (!command) return;
 			return this.handleInteraction(interaction);
 		});
+	}
+
+	public override construct(command: Command) {
+		super.construct(command);
+		if (this.aliases.has(command.name ?? command.id)) {
+			throw new Error(`Command "${command.id}" already exists.`);
+		}
+		this.aliases.set(command.name ?? command.id, command.id);
+	}
+
+	public getCommand(name: string): Command | null {
+		return this.modules.get(name) ?? this.modules.get(this.aliases.get(name)!) ?? null;
 	}
 
 	public transformInteraction(
@@ -114,7 +129,7 @@ export class CommandHandler extends BaseHandler {
 			} else if (option.type === 'ROLE') {
 				resolved[key] = option.role ?? null;
 			} else if (option.type === 'USER') {
-				resolved[key] = args[key]?.match === 'MEMBER' ? option.member ?? null : option.user ?? null;
+				resolved[key] = args[name]?.match === 'MEMBER' ? option.member ?? null : option.user ?? null;
 			} else {
 				resolved[key] = option.value ?? null;
 			}
@@ -123,26 +138,28 @@ export class CommandHandler extends BaseHandler {
 				resolved[key] = resolved[key] === 'true';
 			}
 
-			if (resolved[key] && args[key]?.match === 'COLOR') {
-				resolved[key] = Util.resolveColor(resolved[key] as HexColorString);
+			if (resolved[key] && args[name]?.match === 'COLOR') {
+				resolved[key] = ResolveColor(resolved[key] as string);
 			}
 
-			if (resolved[key] && args[key]?.match === 'ENUM') {
+			if (resolved[key] && args[name]?.match === 'ENUM') {
 				const value = resolved[key] as string;
-				const flatten = args[key]?.enums?.find((text) => (Array.isArray(text) ? text.includes(value) : text === value));
+				const flatten = args[name]?.enums?.find((text) => (Array.isArray(text) ? text.includes(value) : text === value));
 				resolved[key] = flatten ? (Array.isArray(flatten) ? flatten.at(0)! : flatten) : null;
 			}
 
-			if (!resolved[key] && args[key]?.default) {
-				const def = args[key]?.default;
+			if (!resolved[key] && args[name]?.default) {
+				const def = args[name]?.default;
 				resolved[key] = typeof def === 'function' ? def(resolved[key]) : def;
 			}
 		}
 
-		for (const [key, value] of Object.entries(args)) {
+		for (const [name, option] of Object.entries(args)) {
+			const key = (option?.id ?? name).toLowerCase(); // KEY_OVERRIDE
 			if (key in resolved) continue;
-			if (value?.default) {
-				const def = value.default;
+
+			if (option?.default) {
+				const def = option.default;
 				resolved[key] = typeof def === 'function' ? def(resolved[key]) : def;
 			}
 		}
@@ -151,7 +168,7 @@ export class CommandHandler extends BaseHandler {
 	}
 
 	public handleInteraction(interaction: CommandInteraction) {
-		const command = this.modules.get(interaction.commandName);
+		const command = this.getCommand(interaction.commandName);
 		if (!command) return;
 		if (this.preInhibitor(interaction, command)) return;
 

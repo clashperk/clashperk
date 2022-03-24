@@ -966,12 +966,13 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'timezone',
-		description: 'Set your time zone offset',
+		description: 'Set your timezone offset',
 		options: [
 			{
 				name: 'location',
 				description: "Search by country or city name (we don't store your location, only offset. e.g GMT+5:00)",
-				type: ApplicationCommandOptionType.String
+				type: ApplicationCommandOptionType.String,
+				required: true
 			}
 		]
 	},

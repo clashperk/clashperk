@@ -50,7 +50,7 @@ export default class ExportClanMembersCommand extends Command {
 		}
 
 		// TODO: Fix
-		await interaction.deferReply();
+		if (!interaction.deferred) await interaction.deferReply();
 
 		const tags = args.tag?.split(/ +/g) ?? [];
 		const clans = tags.length

@@ -1,3 +1,5 @@
+import { HexColorString, Util } from 'discord.js';
+
 export const CommandHandlerEvents = {
 	COMMAND_ENDED: 'commandEnded',
 	COMMAND_EXECUTED: 'commandExecuted',
@@ -26,3 +28,11 @@ export const BuiltInReasons = {
 	CLIENT: 'client',
 	OWNER: 'owner'
 } as const;
+
+export const ResolveColor = (hex: string) => {
+	try {
+		return Util.resolveColor(hex as HexColorString);
+	} catch {
+		return null;
+	}
+};

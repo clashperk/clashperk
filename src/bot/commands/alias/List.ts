@@ -7,7 +7,9 @@ export default class AliasListCommand extends Command {
 	public constructor() {
 		super('alias-list', {
 			category: 'none',
-			channel: 'guild'
+			channel: 'guild',
+			defer: true,
+			ephemeral: true
 		});
 	}
 
@@ -27,6 +29,6 @@ export default class AliasListCommand extends Command {
 			].join('\n')
 		);
 
-		for (const chunk of chunks) await interaction.followUp(chunk);
+		for (const content of chunks) await interaction.followUp({ content, ephemeral: true });
 	}
 }

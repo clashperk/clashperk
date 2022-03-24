@@ -1,5 +1,5 @@
-import { CommandInteraction, TextChannel, PermissionString } from 'discord.js';
-import { Command } from '../../lib';
+import { CommandInteraction, TextChannel, PermissionString, Interaction } from 'discord.js';
+import { Args, Command } from '../../lib';
 import { EMOJIS } from '../../util/Emojis';
 import { Clan } from 'clashofclans.js';
 import { Util } from '../../util';
@@ -24,6 +24,15 @@ export default class DebugCommand extends Command {
 		});
 	}
 
+	public args(interaction: Interaction): Args {
+		return {
+			channel: {
+				match: 'CHANNEL',
+				default: interaction.channel
+			}
+		};
+	}
+
 	public async exec(interaction: CommandInteraction<'cached'>, { channel }: { channel: TextChannel }) {
 		const permissions: PermissionString[] = [
 			'VIEW_CHANNEL',
@@ -46,7 +55,7 @@ export default class DebugCommand extends Command {
 		);
 
 		const UEE_FOR_SLASH = channel.permissionsFor(interaction.guild.roles.everyone)!.has('USE_EXTERNAL_EMOJIS');
-		const UEE_FOR_TEXT = channel.permissionsFor(this.client.user!)!.has('USE_EXTERNAL_EMOJIS');
+		const UEE_FOR_TEXT = channel.permissionsFor(interaction.guild.me!)!.has('USE_EXTERNAL_EMOJIS');
 		const emojis =
 			UEE_FOR_SLASH || UEE_FOR_TEXT
 				? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
@@ -56,7 +65,7 @@ export default class DebugCommand extends Command {
 			[
 				`**${this.client.user!.username} Debug Menu**`,
 				'',
-				'**Command Prefix',
+				'**Command Prefix**',
 				'/',
 				'',
 				'**Server ID**',

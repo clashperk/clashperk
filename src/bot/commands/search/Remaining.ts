@@ -6,7 +6,7 @@ import { ClanWar } from 'clashofclans.js';
 import { Util } from '../../util';
 import moment from 'moment';
 
-export default class MissedAttacksCommand extends Command {
+export default class RemainingCommand extends Command {
 	public constructor() {
 		super('remaining', {
 			category: 'war',

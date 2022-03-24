@@ -4,16 +4,17 @@ import Google from '../../struct/Google';
 import { CommandInteraction, MessageEmbed } from 'discord.js';
 import moment from 'moment';
 
-export default class OffsetCommand extends Command {
+export default class TimezoneCommand extends Command {
 	public constructor() {
-		super('offset', {
+		super('timezone', {
 			category: 'none',
 			clientPermissions: ['EMBED_LINKS'],
 			channel: 'guild',
 			description: {
 				content: 'Sets your timezone offset.'
 			},
-			defer: true
+			defer: true,
+			ephemeral: true
 		});
 	}
 
@@ -47,7 +48,7 @@ export default class OffsetCommand extends Command {
 			.setTitle(`${raw.location.formatted_address}`)
 			.setDescription(
 				[
-					`**${raw.timezone.timeZoneName as string}**`,
+					`**${raw.timezone.timeZoneName}**`,
 					moment(new Date(Date.now() + offset * 1000)).format('MM/DD/YYYY hh:mm A'),
 					'',
 					'**Offset**',
@@ -55,7 +56,7 @@ export default class OffsetCommand extends Command {
 				].join('\n')
 			)
 			.setFooter({ text: `${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
-		return interaction.editReply({ embeds: [embed], content: `Time zone set to **${raw.timezone.timeZoneName as string}**` });
+		return interaction.editReply({ embeds: [embed] });
 	}
 
 	private offset(seconds: number, ms = true) {

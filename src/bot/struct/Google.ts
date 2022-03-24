@@ -33,7 +33,15 @@ export default {
 		const lng = location.geometry.location.lng;
 
 		const timezone = await fetch(`${GOOGLE_MAPS_API_BASE_URL}/timezone/json?${search}&location=${lat},${lng}`)
-			.then((res) => res.json())
+			.then(
+				(res) =>
+					res.json() as unknown as {
+						rawOffset: string;
+						dstOffset: string;
+						timeZoneName: string;
+						timeZoneId: string;
+					}
+			)
 			.catch(() => null);
 
 		if (!timezone) return null;

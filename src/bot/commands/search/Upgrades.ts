@@ -8,7 +8,7 @@ import { TroopJSON } from '../../types';
 
 export default class UpgradesCommand extends Command {
 	public constructor() {
-		super('upgrades', {
+		super('upgrade', {
 			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],

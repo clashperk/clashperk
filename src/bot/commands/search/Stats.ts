@@ -2,7 +2,7 @@ import { BLUE_NUMBERS, ORANGE_NUMBERS, EMOJIS } from '../../util/Emojis';
 import { Collections, WarType } from '../../util/Constants';
 import { Args, Command } from '../../lib';
 import { CommandInteraction, MessageEmbed } from 'discord.js';
-import { Clan, ClanWarAttack, WarClan } from 'clashofclans.js';
+import { ClanWarAttack, WarClan } from 'clashofclans.js';
 import { Util } from '../../util';
 import moment from 'moment';
 
@@ -48,33 +48,38 @@ export default class StatsCommand extends Command {
 				default: Util.getLastSeasonId()
 			},
 			compare: {
-				match: 'STRING',
-				default: (value: string) => {
-					if (!value) return 'all';
-					if (value === 'equal') return 'equal';
-					if (!/^\d{1,2}(vs?|\s+)\d{1,2}$/i.test(value)) return 'all';
-					const match = /^(?<attackerTownHall>\d{1,2})(vs?|\s+)(?<defenderTownHall>\d{1,2})$/i.exec(value);
-					const attackerTownHall = Number(match?.groups?.attackerTownHall);
-					const defenderTownHall = Number(match?.groups?.defenderTownHall);
-					if (!(attackerTownHall > 1 && attackerTownHall < 15 && defenderTownHall > 1 && defenderTownHall < 15)) return 'all';
-					return { attackerTownHall, defenderTownHall };
-				}
+				match: 'STRING'
 			}
 		};
+	}
+
+	private compare(value: string): Compare {
+		if (!value) return 'all';
+		if (value === 'equal') return 'equal';
+		if (!/^\d{1,2}(vs?|\s+)\d{1,2}$/i.test(value)) return 'all';
+		const match = /^(?<attackerTownHall>\d{1,2})(vs?|\s+)(?<defenderTownHall>\d{1,2})$/i.exec(value);
+		const attackerTownHall = Number(match?.groups?.attackerTownHall);
+		const defenderTownHall = Number(match?.groups?.defenderTownHall);
+		if (!(attackerTownHall > 1 && attackerTownHall < 15 && defenderTownHall > 1 && defenderTownHall < 15)) return 'all';
+		return { attackerTownHall, defenderTownHall };
 	}
 
 	public async exec(
 		interaction: CommandInteraction,
 		{
 			command: mode,
-			data,
+			tag,
 			compare,
 			type,
 			stars,
 			season,
 			attempt
-		}: { command: Mode; data: Clan; compare: Compare; type: WarTypeArg; stars: string; season: string; attempt?: string }
+		}: { command: Mode; tag?: string; compare: string | Compare; type: WarTypeArg; stars: string; season: string; attempt?: string }
 	) {
+		const data = await this.client.resolver.resolveClan(interaction, tag);
+		if (!data) return;
+
+		compare = this.compare(compare as string);
 		const extra =
 			type === 'regular'
 				? { warType: WarType.REGULAR }

@@ -1,7 +1,5 @@
 import { GuildMember, MessageActionRow, MessageSelectMenu, CommandInteraction } from 'discord.js';
 import { Args, Command } from '../../lib';
-import { UserInfo } from '../../types';
-import { Collections } from '../../util/Constants';
 import { TOWN_HALLS } from '../../util/Emojis';
 
 export default class SetNickNameCommand extends Command {
@@ -47,7 +45,7 @@ export default class SetNickNameCommand extends Command {
 			);
 		}
 
-		const players = await this.getPlayers(member.user.id);
+		const players = await this.client.resolver.getPlayers(member.user.id);
 		if (!players.length) {
 			return interaction.editReply(`**No player accounts are linked to ${member.user.tag}**`);
 		}
@@ -102,20 +100,5 @@ export default class SetNickNameCommand extends Command {
 		}
 
 		return name;
-	}
-
-	public async getPlayers(userId: string) {
-		const data = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ user: userId });
-		const others = await this.client.http.getPlayerTags(userId);
-
-		const playerTagSet = new Set([...(data?.entries ?? []).map((en) => en.tag), ...others.map((tag) => tag)]);
-
-		return (
-			await Promise.all(
-				Array.from(playerTagSet)
-					.slice(0, 25)
-					.map((tag) => this.client.http.player(tag))
-			)
-		).filter((res) => res.ok);
 	}
 }

@@ -26,7 +26,7 @@ export default class ReminderCreateCommand extends Command {
 			: await this.client.storage.findAll(interaction.guildId);
 
 		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
-		if (!clans.length) return interaction.editReply(`**No clans are linked to ${interaction.guild.name}**`);
+		if (!clans.length) return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).countDocuments({ guild: interaction.guild.id });
 		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {

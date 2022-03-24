@@ -41,15 +41,13 @@ export default class MembersCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; option: string }) {
 		const data = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!data) return;
+		if (data.members < 1) return interaction.editReply(`\u200e**${data.name}** does not have any clan members...`);
 
 		const command = {
 			discord: this.handler.modules.get('link-list')!,
 			trophies: this.handler.modules.get('trophies')!
 		}[args.option];
 		if (command) return this.handler.exec(interaction, command, { tag: args.tag });
-
-		if (data.members < 1) return interaction.editReply(`\u200e**${data.name}** does not have any clan members...`);
-		await interaction.editReply(`**Fetching data... ${EMOJIS.LOADING}**`);
 
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
 		const members = fetched
@@ -134,13 +132,14 @@ export default class MembersCommand extends Command {
 		const msg = await interaction.editReply({ embeds: [embed], components });
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => [discord, download, warPref].includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
+			time: 10 * 1000,
+			max: 1
 		});
 
 		collector.on('collect', async (action) => {
 			if (action.customId === discord) {
-				await action.update({ components: [] });
-				await this.handler.exec(interaction, this.handler.modules.get('link-list')!, { data });
+				await action.deferUpdate();
+				return this.handler.exec(action, this.handler.modules.get('link-list')!, { data });
 			}
 
 			if (action.customId === warPref) {
@@ -173,8 +172,7 @@ export default class MembersCommand extends Command {
 			}
 
 			if (action.customId === download) {
-				await action.update({ components: [] });
-				return this.handler.exec(interaction, this.handler.modules.get('export-members')!, { tag: data.tag });
+				return this.handler.exec(action, this.handler.modules.get('export-members')!, { tag: data.tag });
 			}
 		});
 

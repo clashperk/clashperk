@@ -20,7 +20,7 @@ export default class ConfigCommand extends Command {
 			if (['reset', 'none'].includes(args.color_code)) {
 				this.client.settings.delete(interaction.guild, Settings.COLOR);
 			}
-			this.client.settings.set(interaction.guild, Settings.COLOR, Util.resolveColor(args.color_code as HexColorString));
+			this.client.settings.set(interaction.guild, Settings.COLOR, this.getColor(args.color_code));
 		}
 
 		if (args.events_channel) {
@@ -29,10 +29,7 @@ export default class ConfigCommand extends Command {
 			} else if (/\d{17,19}/g.test(args.events_channel)) {
 				const channel = this.client.channels.cache.get(args.events_channel.match(/\d{17,19}/g)![0]);
 				if (!channel?.isText()) {
-					return interaction.reply({
-						content: 'Type of channel is not text.',
-						ephemeral: true
-					});
+					return interaction.reply({ content: 'Type of channel is not text.', ephemeral: true });
 				}
 				this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, channel.id);
 			}
@@ -43,9 +40,9 @@ export default class ConfigCommand extends Command {
 
 	public fallback(interaction: CommandInteraction<'cached'>) {
 		const color = this.client.settings.get<number>(interaction.guild, Settings.COLOR, null);
-
-		const channelId = this.client.settings.get<string>(interaction.guild, Settings.EVENTS_CHANNEL, null);
-		const channel = interaction.guild.channels.cache.get(channelId);
+		const channel = interaction.guild.channels.cache.get(
+			this.client.settings.get<string>(interaction.guild, Settings.EVENTS_CHANNEL, null)
+		);
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(interaction))
@@ -57,5 +54,13 @@ export default class ConfigCommand extends Command {
 			.addField('Events Channel', channel ? channel.toString() : 'None');
 
 		return interaction.reply({ embeds: [embed] });
+	}
+
+	private getColor(hex: string) {
+		try {
+			return Util.resolveColor(hex as HexColorString);
+		} catch {
+			return null;
+		}
 	}
 }

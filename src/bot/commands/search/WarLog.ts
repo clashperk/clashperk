@@ -13,7 +13,8 @@ export default class WarLogCommand extends Command {
 			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
 			description: {
 				content: 'Shows last 10 clan war logs with war Id.'
-			}
+			},
+			defer: true
 		});
 	}
 

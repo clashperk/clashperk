@@ -18,7 +18,8 @@ export default class RushedCommand extends Command {
 					'',
 					'• `rushed clan <clanTag>` - list of rushed and non-rushed clan members.'
 				]
-			}
+			},
+			defer: true
 		});
 	}
 
