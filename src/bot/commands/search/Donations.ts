@@ -26,7 +26,7 @@ export default class DonationsCommand extends Command {
 			season: {
 				match: 'ENUM',
 				enums: [...Util.getSeasonIds(), [Util.getLastSeasonId(), 'last']],
-				default: Util.getLastSeasonId()
+				default: Season.ID
 			}
 		};
 	}

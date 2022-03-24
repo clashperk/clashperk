@@ -120,7 +120,7 @@ export class CommandHandler extends BaseHandler {
 
 		const resolved: Record<string, unknown> = {};
 		for (const [name, option] of Object.entries(this.transformInteraction(interaction.options.data))) {
-			const key = (args[name]?.id ?? name).toLowerCase(); // KEY_OVERRIDE
+			const key = (args[name]?.id ?? name).toString(); // KEY_OVERRIDE
 
 			if (['SUB_COMMAND', 'SUB_COMMAND_GROUP'].includes(option.type)) {
 				resolved[key] = option.name; // SUB_COMMAND OR SUB_COMMAND_GROUP
@@ -155,7 +155,7 @@ export class CommandHandler extends BaseHandler {
 		}
 
 		for (const [name, option] of Object.entries(args)) {
-			const key = (option?.id ?? name).toLowerCase(); // KEY_OVERRIDE
+			const key = (option?.id ?? name).toString(); // KEY_OVERRIDE
 			if (key in resolved) continue;
 
 			if (option?.default) {

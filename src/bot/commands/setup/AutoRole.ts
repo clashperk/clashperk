@@ -45,7 +45,6 @@ export default class AutoRoleCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction, { tag, members, elders, coLeads, verify, command }: IArgs) {
-		console.log(tag, members?.id, elders?.id, coLeads?.id, verify, command);
 		if (command === 'disable') {
 			return this.handler.exec(interaction, this.handler.modules.get('setup-disable')!, { bit: 'auto-role', tag });
 		}

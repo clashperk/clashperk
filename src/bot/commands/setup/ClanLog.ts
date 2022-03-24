@@ -1,7 +1,6 @@
 import { MessageEmbed, CommandInteraction, TextChannel, Role } from 'discord.js';
 import { Flags, missingPermissions } from '../../util/Constants';
 import { Args, Command } from '../../lib';
-import { Clan } from 'clashofclans.js';
 
 const FEATURES: Record<string, string> = {
 	[Flags.DONATION_LOG]: 'Donation Log',
@@ -77,20 +76,15 @@ export default class ClanLogCommand extends Command {
 			.setTitle(`\u200e${data.name} | ${FEATURES[flag]}`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
-			.setColor(this.client.embed(interaction));
-		if (args.role) embed.addField('Role', args.role.toString());
-		embed.addField('Channel', args.channel.toString()); // eslint-disable-line
-		if (args.color) embed.setColor(args.color);
-		embed.addField('Color', args.color?.toString(16) ?? 'None');
+			.setColor(this.client.embed(interaction))
+			.addField('Channel', args.channel.toString()); // eslint-disable-line
+
+		if (args.role && flag === Flags.CLAN_FEED_LOG) embed.addField('Role', args.role.toString());
+		if ([Flags.DONATION_LOG, Flags.LAST_SEEN_LOG, Flags.CLAN_GAMES_LOG].includes(flag)) {
+			embed.addField('Color', args.color?.toString(16) ?? 'None');
+			if (args.color) embed.setColor(args.color);
+		}
 
 		return interaction.editReply({ embeds: [embed] });
-	}
-
-	private verifyClan(code: string, clan: Clan, tags: { tag: string; verified: boolean }[]) {
-		const verifiedTags = tags.filter((en) => en.verified).map((en) => en.tag);
-		return (
-			clan.memberList.filter((m) => ['coLeader', 'leader'].includes(m.role)).some((m) => verifiedTags.includes(m.tag)) ||
-			clan.description.toUpperCase().includes(code)
-		);
 	}
 }
