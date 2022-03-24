@@ -2,9 +2,9 @@ import { GuildMember, MessageActionRow, MessageSelectMenu, CommandInteraction } 
 import { Args, Command } from '../../lib';
 import { TOWN_HALLS } from '../../util/Emojis';
 
-export default class SetNickNameCommand extends Command {
+export default class NickNameCommand extends Command {
 	public constructor() {
-		super('setnick', {
+		super('nickname', {
 			category: 'setup',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
