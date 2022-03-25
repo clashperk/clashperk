@@ -637,12 +637,20 @@ export const COMMANDS: Command[] = [
 				type: ApplicationCommandOptionType.String,
 				choices: [
 					{
-						name: 'Clan War Stats',
+						name: 'Clan Wars',
 						value: 'wars'
 					},
 					{
 						name: 'Season Stats',
 						value: 'season'
+					},
+					{
+						name: 'Clan Members',
+						value: 'members'
+					},
+					{
+						name: 'CWL Stats',
+						value: 'cwl'
 					},
 					{
 						name: 'Last War Dates',
@@ -651,10 +659,6 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'Missed Wars',
 						value: 'missed'
-					},
-					{
-						name: 'Clan Members',
-						value: 'members'
 					}
 				]
 			},
@@ -665,7 +669,7 @@ export const COMMANDS: Command[] = [
 				choices: getSeasonIds()
 			},
 			{
-				name: 'tag',
+				name: 'clans',
 				description: 'Clan tags or aliases to filter clans',
 				type: ApplicationCommandOptionType.String
 			},
@@ -944,7 +948,7 @@ export const COMMANDS: Command[] = [
 				name: 'user',
 				description: 'The user',
 				type: ApplicationCommandOptionType.User,
-				required: false
+				required: true
 			}
 		]
 	},

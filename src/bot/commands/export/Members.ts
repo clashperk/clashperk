@@ -1,4 +1,4 @@
-import { GuildMember, CommandInteraction, MessageEmbed, Collection } from 'discord.js';
+import { GuildMember, CommandInteraction, MessageEmbed, Collection, Interaction } from 'discord.js';
 import RAW_TROOPS_DATA from '../../util/Troops';
 import { Collections, Messages } from '../../util/Constants';
 import Workbook from '../../struct/Excel';
@@ -31,11 +31,12 @@ export default class ExportClanMembersCommand extends Command {
 		super('export-members', {
 			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS']
+			clientPermissions: ['EMBED_LINKS'],
+			defer: true
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
+	public condition(interaction: Interaction<'cached'>) {
 		if (!this.client.patrons.get(interaction)) {
 			const embed = new MessageEmbed()
 				.setDescription(
@@ -46,13 +47,13 @@ export default class ExportClanMembersCommand extends Command {
 					].join('\n')
 				)
 				.setImage('https://i.imgur.com/Uc5G2oS.png');
-			return interaction.reply({ embeds: [embed], ephemeral: true });
+			return { embeds: [embed] };
 		}
+		return null;
+	}
 
-		// TODO: Fix
-		if (!interaction.deferred) await interaction.deferReply();
-
-		const tags = args.tag?.split(/ +/g) ?? [];
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
+		const tags = args.clans?.split(/ +/g) ?? [];
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.findAll(interaction.guildId);
@@ -65,10 +66,10 @@ export default class ExportClanMembersCommand extends Command {
 		const _clans = await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)));
 		const members = [];
 		for (const clan of _clans.filter((res) => res.ok)) {
-			const fetched = await this.client.http.detailedClanMembers(clan.memberList);
-			const mems = fetched
-				.filter((res) => res.ok)
-				.map((m) => ({
+			for (const mem of clan.memberList) {
+				const m = await this.client.http.player(mem.tag);
+				if (!m.ok) continue;
+				members.push({
 					name: m.name,
 					tag: m.tag,
 					clan: clan.name,
@@ -79,9 +80,8 @@ export default class ExportClanMembersCommand extends Command {
 					rushed: Number(this.rushedPercentage(m)),
 					heroRem: Number(this.heroUpgrades(m)),
 					labRem: Number(this.labUpgrades(m))
-				}));
-
-			members.push(...mems);
+				});
+			}
 		}
 
 		const memberTags = [];

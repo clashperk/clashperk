@@ -9,11 +9,7 @@ export default class ExportCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
-				content: [
-					'Export war or season stats to excel for all clans.',
-					'',
-					'**[Support us on Patreon](https://patreon.com/clashperk)**'
-				]
+				content: ['Export war or season stats to excel for all clans.']
 			}
 		});
 	}
@@ -24,7 +20,8 @@ export default class ExportCommand extends Command {
 			season: this.handler.modules.get('export-season')!,
 			wars: this.handler.modules.get('export-wars')!,
 			members: this.handler.modules.get('export-members')!,
-			lastwars: this.handler.modules.get('export-last-wars')!
+			lastwars: this.handler.modules.get('export-last-wars')!,
+			cwl: this.handler.modules.get('export-cwl')!
 		}[args.option];
 
 		if (!command) return interaction.reply(Messages.COMMAND.OPTION_NOT_FOUND);

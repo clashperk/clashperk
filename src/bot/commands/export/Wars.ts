@@ -5,7 +5,6 @@ import Excel from '../../struct/Excel';
 import { CommandInteraction } from 'discord.js';
 import { Util } from '../../util';
 
-// TODO: Fix TS
 export default class WarExport extends Command {
 	public constructor() {
 		super('export-wars', {
@@ -16,14 +15,18 @@ export default class WarExport extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number }) {
-		let num = Number(args.wars ?? 25);
-		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild.id }).toArray();
+	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string }) {
+		const tags = args.clans?.split(/ +/g) ?? [];
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guildId, tags)
+			: await this.client.storage.findAll(interaction.guildId);
 
+		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
 		if (!clans.length) {
 			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
+		let num = Number(args.wars ?? 25);
 		num = this.client.patrons.get(interaction.guild.id) ? Math.min(num, 45) : Math.min(25, num);
 		const chunks = [];
 		for (const { tag, name } of clans) {
@@ -98,7 +101,7 @@ export default class WarExport extends Command {
 
 		const workbook = new Excel();
 		for (const { name, members, tag } of chunks) {
-			const sheet = workbook.addWorksheet(Util.escapeSheetName(`${name as string} (${tag as string})`));
+			const sheet = workbook.addWorksheet(Util.escapeSheetName(`${name} (${tag})`));
 			sheet.columns = [
 				{ header: 'Name', width: 20 },
 				{ header: 'Tag', width: 16 },
@@ -117,7 +120,7 @@ export default class WarExport extends Command {
 				{ header: 'Avg Def Stars', width: 10 },
 				{ header: 'Total Def Dest', width: 10 },
 				{ header: 'Avg Def Dest', width: 10 }
-			] as any;
+			];
 
 			sheet.getRow(1).font = { bold: true, size: 10 };
 			sheet.getRow(1).height = 40;

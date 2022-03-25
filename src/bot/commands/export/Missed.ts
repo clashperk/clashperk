@@ -9,7 +9,6 @@ const warTypes: Record<string, string> = {
 	3: 'CWL'
 };
 
-// TODO: Fix TS
 export default class ExportMissed extends Command {
 	public constructor() {
 		super('export-missed', {
@@ -20,14 +19,18 @@ export default class ExportMissed extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number }) {
-		let num = Number(args.wars ?? 25);
-		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild.id }).toArray();
+	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string }) {
+		const tags = args.clans?.split(/ +/g) ?? [];
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guildId, tags)
+			: await this.client.storage.findAll(interaction.guildId);
 
+		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
 		if (!clans.length) {
 			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
+		let num = Number(args.wars ?? 25);
 		num = this.client.patrons.get(interaction.guild.id) ? Math.min(num, 45) : Math.min(25, num);
 		const chunks = [];
 		const missed: { [key: string]: { name: string; tag: string; count: number; missed: Date[] } } = {};
@@ -106,7 +109,7 @@ export default class ExportMissed extends Command {
 			{ header: 'War Type', width: 10 },
 			{ header: 'Team Size', width: 10 },
 			{ header: 'Missed', width: 10 }
-		] as any; // TODO: Fix Later
+		];
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
 		sheet.getRow(1).height = 40;
@@ -133,7 +136,7 @@ export default class ExportMissed extends Command {
 				{ header: 'Miss #3', width: 16 },
 				{ header: 'Miss #4', width: 16 },
 				{ header: 'Miss #5', width: 16 }
-			] as any; // TODO: Fix Later
+			];
 
 			sheet.getRow(1).font = { bold: true, size: 10 };
 			sheet.getRow(1).height = 40;
@@ -156,7 +159,7 @@ export default class ExportMissed extends Command {
 				{ header: 'Miss #3', width: 16 },
 				{ header: 'Miss #4', width: 16 },
 				{ header: 'Miss #5', width: 16 }
-			] as any; // TODO: Fix Later
+			];
 
 			sheet.getRow(1).font = { bold: true, size: 10 };
 			sheet.getRow(1).height = 40;

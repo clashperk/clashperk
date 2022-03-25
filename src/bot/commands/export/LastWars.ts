@@ -4,7 +4,6 @@ import Excel from '../../struct/Excel';
 import { CommandInteraction } from 'discord.js';
 import ms from 'ms';
 
-// TODO: Fix TS
 export default class LastWarsExport extends Command {
 	public constructor() {
 		super('export-last-wars', {
@@ -15,15 +14,19 @@ export default class LastWarsExport extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction, args: { wars?: number }) {
-		let num = Number(args.wars ?? 25);
-		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
+	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string }) {
+		const tags = args.clans?.split(/ +/g) ?? [];
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guildId, tags)
+			: await this.client.storage.findAll(interaction.guildId);
 
+		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
 		if (!clans.length) {
 			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
-		num = this.client.patrons.get(interaction.guild!.id) ? Math.min(num, 45) : Math.min(25, num);
+		let num = Number(args.wars ?? 25);
+		num = this.client.patrons.get(interaction.guild.id) ? Math.min(num, 45) : Math.min(25, num);
 		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
 		const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();
 
@@ -103,7 +106,7 @@ export default class LastWarsExport extends Command {
 			{ header: 'Total Wars', width: 10 },
 			{ header: 'Last War Date', width: 16 },
 			{ header: 'Duration', width: 16 }
-		] as any;
+		];
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
 		sheet.getRow(1).height = 40;

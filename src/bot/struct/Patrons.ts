@@ -35,7 +35,7 @@ export default class Patrons {
 
 	public get(interaction: Interaction | string): boolean {
 		if (typeof interaction === 'string') return this.patrons.has(interaction);
-		return this.patrons.has(interaction.user.id) || this.patrons.has(interaction.guild!.id);
+		return this.patrons.has(interaction.guild!.id);
 	}
 
 	public async refresh() {

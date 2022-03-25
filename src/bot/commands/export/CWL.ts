@@ -1,16 +1,16 @@
 import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { Command } from '../../lib';
 import Excel from '../../struct/Excel';
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, Interaction, MessageEmbed } from 'discord.js';
 import { Util } from '../../util';
 import { Messages } from '../../util/Constants';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-export default class CWLExport extends Command {
+export default class ExportCWL extends Command {
 	public constructor() {
-		super('cwl-export', {
-			category: 'cwl',
+		super('export-cwl', {
+			category: 'none',
 			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
 			description: {
 				content: 'Export war stats to excel for all clans.'
@@ -18,26 +18,24 @@ export default class CWLExport extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
+	public condition(interaction: Interaction<'cached'>) {
 		if (!this.client.patrons.get(interaction)) {
 			const embed = new MessageEmbed()
 				.setDescription(
 					[
 						'**Patron Only Command**',
 						'This command is only available on Patron servers.',
-						'Visit https://patreon.com/clashperk for more details.',
-						'',
-						'**Demo CWL Export**'
+						'Visit https://patreon.com/clashperk for more details.'
 					].join('\n')
 				)
 				.setImage('https://cdn.discordapp.com/attachments/806179502508998657/846700124134178826/unknown.png');
-			return interaction.reply({ embeds: [embed], ephemeral: true });
+			return { embeds: [embed] };
 		}
+		return null;
+	}
 
-		// TODO: Fix
-		await interaction.deferReply();
-
-		const tags = args.tag?.split(/ +/g) ?? [];
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
+		const tags = args.clans?.split(/ +/g) ?? [];
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.findAll(interaction.guildId);

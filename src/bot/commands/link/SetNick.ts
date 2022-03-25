@@ -9,12 +9,7 @@ export default class NickNameCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
 			description: {
-				content: [
-					'Sets nickname of a member in discord.',
-					'',
-					'Must include "|" to add a prefix or suffix of the nickname.',
-					'Prefix ends with "|" and Suffix starts with "|"'
-				]
+				content: ['Sets nickname of a member in Discord.']
 			},
 			defer: true
 		});

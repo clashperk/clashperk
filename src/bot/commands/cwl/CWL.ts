@@ -27,7 +27,7 @@ export default class CWLCommand extends Command {
 			round: this.handler.modules.get('cwl-round')!,
 			stats: this.handler.modules.get('cwl-stats')!,
 			lineup: this.handler.modules.get('cwl-lineup')!,
-			export: this.handler.modules.get('cwl-export')!,
+			export: this.handler.modules.get('export-cwl')!,
 			roster: this.handler.modules.get('cwl-roster')!,
 			attacks: this.handler.modules.get('cwl-attacks')!,
 			stars: this.handler.modules.get('cwl-stars')!,

@@ -211,7 +211,10 @@ export default class RemindScheduler {
 			].join('\n');
 
 			const channel = this.client.channels.cache.get(rem.channel) as TextChannel | null;
-			if (channel?.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES', 'USE_EXTERNAL_EMOJIS'])) {
+			if (
+				channel?.isText() &&
+				channel.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES', 'USE_EXTERNAL_EMOJIS', 'VIEW_CHANNEL'])
+			) {
 				for (const content of Util.splitMessage(text)) {
 					await channel.send({ content, allowedMentions: { parse: ['users'] } });
 				}

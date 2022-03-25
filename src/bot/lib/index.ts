@@ -1,4 +1,5 @@
 import {
+	BaseCommandInteraction,
 	ClientEvents,
 	Collection,
 	CommandInteraction,
@@ -7,6 +8,8 @@ import {
 	GuildChannel,
 	Interaction,
 	Message,
+	MessageComponentInteraction,
+	MessageOptions,
 	PermissionString
 } from 'discord.js';
 import EventEmitter from 'events';
@@ -41,6 +44,8 @@ export type Args = Record<
 		default?: unknown | ((value: unknown) => unknown);
 	} | null
 >;
+
+type BaseInteraction = BaseCommandInteraction | MessageComponentInteraction;
 
 export class BaseHandler extends EventEmitter {
 	public readonly directory: string;
@@ -176,14 +181,15 @@ export class CommandHandler extends BaseHandler {
 		return this.exec(interaction, command, args);
 	}
 
-	public continue(interaction: Interaction, command: Command) {
+	public continue(interaction: BaseInteraction, command: Command) {
 		const args = this.argumentRunner(interaction as CommandInteraction, command);
 		return this.exec(interaction, command, args);
 	}
 
-	public async exec(interaction: Interaction, command: Command, args: Record<string, unknown> = {}) {
+	public async exec(interaction: BaseInteraction, command: Command, args: Record<string, unknown> = {}) {
+		if (await this.postInhibitor(interaction, command)) return;
 		try {
-			if (command.defer && interaction.isApplicationCommand() && !interaction.deferred && !interaction.replied) {
+			if (command.defer && !interaction.deferred && !interaction.replied) {
 				await interaction.deferReply({ ephemeral: command.ephemeral });
 			}
 			this.emit(CommandHandlerEvents.COMMAND_EXECUTED, interaction, command, args);
@@ -191,6 +197,19 @@ export class CommandHandler extends BaseHandler {
 		} catch (error) {
 			this.emit(CommandHandlerEvents.ERROR, error, interaction, command);
 		}
+	}
+
+	public async postInhibitor(interaction: BaseInteraction, command: Command) {
+		const passed = command.condition(interaction);
+		if (!passed) return false;
+
+		this.emit(CommandHandlerEvents.COMMAND_BLOCKED, interaction, command, BuiltInReasons.POST);
+		if (interaction.replied) {
+			await interaction.followUp({ ...passed, ephemeral: true });
+		} else {
+			await interaction.reply({ ...passed, ephemeral: true });
+		}
+		return true;
 	}
 
 	public preInhibitor(interaction: Interaction, command: Command) {
@@ -352,6 +371,11 @@ export class Command implements CommandOptions {
 		this.category = category ?? 'default';
 		this.client = container.resolve(Client);
 		this.handler = container.resolve(CommandHandler);
+	}
+
+	public condition(interaction: Interaction): MessageOptions | null;
+	public condition(): MessageOptions | null {
+		return null;
 	}
 
 	public args(interaction?: Interaction): Args;

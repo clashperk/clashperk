@@ -17,6 +17,22 @@ export default class ClanEmbedCommand extends Command {
 		});
 	}
 
+	public condition(interaction: Interaction<'cached'>) {
+		if (!this.client.patrons.get(interaction.guild.id)) {
+			const embed = new MessageEmbed()
+				.setDescription(
+					[
+						'**Patron Only Feature**',
+						'This feature is only available on Patron servers.',
+						'Visit https://patreon.com/clashperk for more details.'
+					].join('\n')
+				)
+				.setImage('https://i.imgur.com/txkD6q7.png');
+			return { embeds: [embed] };
+		}
+		return null;
+	}
+
 	public args(interaction: Interaction<'cached'>): Args {
 		return {
 			color: {
@@ -30,15 +46,6 @@ export default class ClanEmbedCommand extends Command {
 		};
 	}
 
-	private async getUser(clan: Clan): Promise<{ id: string; name: string; toString: () => string; entries?: any[] } | null> {
-		const leader = clan.memberList.find((m) => m.role === 'leader');
-		if (leader) {
-			const user = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': leader.tag });
-			if (user) return { id: user.user, name: leader.name, toString: () => `<@${user.user}>`, ...user };
-		}
-		return null;
-	}
-
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
 		{
@@ -49,22 +56,6 @@ export default class ClanEmbedCommand extends Command {
 			channel
 		}: { tag: string; description?: string; color?: number; accepts?: string; channel: TextChannel }
 	) {
-		if (!this.client.patrons.get(interaction)) {
-			const embed = new MessageEmbed()
-				.setDescription(
-					[
-						'**Patron Only Feature**',
-						'This feature is only available on Patron servers.',
-						'Visit https://patreon.com/clashperk for more details.',
-						'',
-						'**Demo Clan Embed**'
-					].join('\n')
-				)
-				.setImage('https://i.imgur.com/txkD6q7.png');
-
-			return interaction.editReply({ embeds: [embed] });
-		}
-
 		const data = await this.client.resolver.enforceSecurity(interaction, tag);
 		if (!data) return;
 
@@ -333,5 +324,14 @@ export default class ClanEmbedCommand extends Command {
 
 	private getMessageURL(guildId: string, channelId: string, messageId: string) {
 		return `https://discord.com/channels/${guildId}/${channelId}/${messageId}`;
+	}
+
+	private async getUser(clan: Clan): Promise<{ id: string; name: string; toString: () => string; entries?: any[] } | null> {
+		const leader = clan.memberList.find((m) => m.role === 'leader');
+		if (leader) {
+			const user = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': leader.tag });
+			if (user) return { id: user.user, name: leader.name, toString: () => `<@${user.user}>`, ...user };
+		}
+		return null;
 	}
 }

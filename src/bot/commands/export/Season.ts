@@ -15,10 +15,8 @@ export default class ExportSeason extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; tag?: string }) {
-		// TODO: Add support Season validation
-		const season = args.season ?? Season.ID;
-		const tags = args.tag?.split(/ +/g) ?? [];
+	public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; clans?: string }) {
+		const tags = args.clans?.split(/ +/g) ?? [];
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.findAll(interaction.guildId);
@@ -28,6 +26,7 @@ export default class ExportSeason extends Command {
 			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
 		}
 
+		const season = args.season ?? Season.ID;
 		const workbook = new Excel();
 		const sheet = workbook.addWorksheet(season);
 		const patron = this.client.patrons.get(interaction.guild.id);
@@ -86,11 +85,11 @@ export default class ExportSeason extends Command {
 			{ header: 'Elixir Escapade', width: 10 },
 			{ header: 'Heroic Heist', width: 10 },
 			{ header: 'Clan Games', width: 10 },
-			{ header: 'Total Activity', width: 10 }
+			{ header: 'Activity Score', width: 10 }
 		];
 
 		if (!patron) columns.splice(2, 1);
-		if (season !== Season.ID) columns.splice(-1);
+		// if (season !== Season.ID) columns.splice(-1);
 		sheet.columns = [...columns] as any[];
 		sheet.getRow(1).font = { bold: true, size: 10 };
 		sheet.getRow(1).height = 40;
@@ -121,7 +120,7 @@ export default class ExportSeason extends Command {
 				];
 
 				if (!patron) rows.splice(2, 1);
-				if (season !== Season.ID) rows.splice(-1);
+				// if (season !== Season.ID) rows.splice(-1);
 				return rows;
 			})
 		);
@@ -166,29 +165,11 @@ export default class ExportSeason extends Command {
 			},
 			{
 				$set: {
-					entries: {
-						$filter: {
-							input: '$last_seen.entries',
-							as: 'en',
-							cond: {
-								$gte: ['$$en.entry', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)]
-							}
-						}
-					}
+					score: `$last_seen.seasons.${season_id}`
 				}
 			},
 			{
 				$unset: 'last_seen'
-			},
-			{
-				$set: {
-					score: {
-						$sum: '$entries.count'
-					}
-				}
-			},
-			{
-				$unset: 'entries'
 			},
 			{
 				$sort: {

@@ -26,7 +26,8 @@ export const BuiltInReasons = {
 	GUILD: 'guild',
 	CHANNEL: 'channel',
 	CLIENT: 'client',
-	OWNER: 'owner'
+	OWNER: 'owner',
+	POST: 'postInhibitor'
 } as const;
 
 export const ResolveColor = (hex: string) => {

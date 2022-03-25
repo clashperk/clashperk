@@ -71,7 +71,9 @@ export default class MembersCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(interaction))
-			.setFooter({ text: `Total ${fetched.length === data.members ? data.members : `${fetched.length}/${data.members}`}/50` })
+			.setFooter({
+				text: `Total ${fetched.length === data.members ? data.members : `${fetched.length}/${data.members}`}/50`
+			})
 			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.medium })
 			.setDescription(
 				[
@@ -132,14 +134,14 @@ export default class MembersCommand extends Command {
 		const msg = await interaction.editReply({ embeds: [embed], components });
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => [discord, download, warPref].includes(action.customId) && action.user.id === interaction.user.id,
-			time: 10 * 1000,
+			time: 5 * 60 * 1000,
 			max: 1
 		});
 
 		collector.on('collect', async (action) => {
 			if (action.customId === discord) {
 				await action.deferUpdate();
-				return this.handler.exec(action, this.handler.modules.get('link-list')!, { data });
+				return this.handler.exec(action, this.handler.modules.get('link-list')!, { tag: data.tag });
 			}
 
 			if (action.customId === warPref) {
