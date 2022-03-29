@@ -19,6 +19,7 @@ import { container } from 'tsyringe';
 import readdirp from 'readdirp';
 import { pathToFileURL } from 'url';
 import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util';
+import { i18n } from '../util/i18n';
 
 type ArgsMatchType =
 	| 'SUB_COMMAND'
@@ -354,6 +355,7 @@ export class Command implements CommandOptions {
 	};
 
 	public handler: CommandHandler;
+	public i18n = i18n;
 
 	public constructor(
 		id: string,
@@ -410,6 +412,7 @@ export class Listener implements ListenerOptions {
 	public once?: boolean;
 	public handler: ListenerHandler;
 	public client: Client;
+	public i18n = i18n;
 
 	public constructor(id: string, { emitter, event, once }: ListenerOptions) {
 		this.id = id;
@@ -439,6 +442,7 @@ export class Inhibitor implements InhibitorOptions {
 	public priority: number;
 	public handler: InhibitorHandler;
 	public client: Client;
+	public i18n = i18n;
 
 	public constructor(id: string, { category, priority, reason }: InhibitorOptions) {
 		this.id = id;

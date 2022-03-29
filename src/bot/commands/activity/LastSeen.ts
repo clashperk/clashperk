@@ -18,7 +18,7 @@ export default class LastSeenCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { tag }: { tag?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, { tag, score }: { tag?: string; score?: boolean }) {
 		const clan = await this.client.resolver.resolveClan(interaction, tag);
 		if (!clan) return;
 
@@ -42,7 +42,7 @@ export default class LastSeenCommand extends Command {
 			return Util.duration(ms + 1e3).padEnd(7, ' ');
 		};
 
-		const members = await this.aggregationQuery(clan);
+		const members = await this.aggregationQuery(clan, score ? 30 : 1);
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
@@ -56,48 +56,49 @@ export default class LastSeenCommand extends Command {
 				].join('\n')
 			)
 			.setFooter({ text: `Members [${clan.members}/50]`, iconURL: interaction.user.displayAvatarURL() });
+		if (score) {
+			members.sort((a, b) => b.count - a.count);
+			embed.setDescription(
+				[
+					`Clan Member Activities (Last ${30} Days)`,
+					`\`\`\`\n\u200e${'TOTAL'.padStart(4, ' ')} AVG  ${'NAME'}\n${members
+						.map(
+							(m) =>
+								`${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / 30)
+									.toString()
+									.padStart(3, ' ')}  ${m.name}`
+						)
+						.join('\n')}`,
+					'```'
+				].join('\n')
+			);
+		} else {
+			embed.setDescription(
+				[
+					'**[Last seen and last 24h activity scores](https://clashperk.com/faq)**',
+					`\`\`\`\n\u200eLAST-ON 24H  NAME\n${members
+						.map((m) => `${getTime(m.lastSeen)}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
+						.join('\n')}`,
+					'```'
+				].join('\n')
+			);
+		}
 
-		const customID = this.client.uuid(interaction.user.id);
-		const button = new MessageButton()
-			.setStyle('SECONDARY')
-			.setCustomId(customID)
-			.setEmoji(EMOJIS.ACTIVITY)
-			.setLabel('Show Activity Scores');
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setStyle('SECONDARY')
+					.setCustomId(JSON.stringify({ cmd: this.id, _: 0 }))
+					.setEmoji(EMOJIS.REFRESH)
+			)
+			.addComponents(
+				new MessageButton()
+					.setStyle('PRIMARY')
+					.setCustomId(JSON.stringify({ cmd: this.id, score: !score }))
+					.setLabel(score ? 'Last Seen' : 'Scoreboard')
+			);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
-		const collector = msg.createMessageComponentCollector({
-			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customID) {
-				collector.stop();
-				const members = await this.aggregationQuery(clan, 30);
-
-				members.sort((a, b) => b.count - a.count);
-				embed.setDescription(
-					[
-						`Clan Member Activities (Last ${30} Days)`,
-						`\`\`\`\n\u200e${'TOTAL'.padStart(4, ' ')} AVG  ${'NAME'}\n${members
-							.map(
-								(m) =>
-									`${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / 30)
-										.toString()
-										.padStart(3, ' ')}  ${m.name}`
-							)
-							.join('\n')}`,
-						'```'
-					].join('\n')
-				);
-				return action.update({ embeds: [embed], components: [] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customID);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private filter(clan: Clan, db: any) {

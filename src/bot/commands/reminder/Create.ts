@@ -1,5 +1,5 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu, TextChannel } from 'discord.js';
-import { Collections, Messages } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Reminder } from '../../struct/RemindScheduler';
 import { Command } from '../../lib';
 import ms from 'ms';
@@ -25,8 +25,8 @@ export default class ReminderCreateCommand extends Command {
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.findAll(interaction.guildId);
 
-		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
-		if (!clans.length) return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).countDocuments({ guild: interaction.guild.id });
 		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {

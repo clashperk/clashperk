@@ -56,7 +56,6 @@ export default class LinkListCommand extends Command {
 		const embed = this.getEmbed(guildMembers, clan, showTags!, onDiscord, offDiscord, notInDiscord);
 		if (!onDiscord.length) return interaction.editReply({ embeds: [embed.setColor(this.client.embed(interaction))] });
 
-		// const customId = this.client.uuid(interaction.author.id);
 		const row = new MessageActionRow()
 			.addComponents(
 				new MessageButton()

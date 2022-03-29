@@ -1,5 +1,5 @@
 import { Command } from '../../lib';
-import { Collections, Messages } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import Chart from '../../struct/ChartHandler';
 import { CommandInteraction } from 'discord.js';
 import { UserInfo } from '../../types';
@@ -31,16 +31,16 @@ export default class ClanActivityCommand extends Command {
 			? await this.client.storage.search(interaction.guild.id, tags)
 			: await this.client.storage.findAll(interaction.guild.id);
 
-		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
+		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {
-			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
 		const result = await this.aggregate(
 			clans.map((clan) => clan.tag),
 			args.days ?? 1
 		);
-		if (!result.length) return interaction.editReply(Messages.NO_DATA);
+		if (!result.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
 		const user = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
 		const timezone = user?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
@@ -53,7 +53,7 @@ export default class ClanActivityCommand extends Command {
 		this.client.logger.debug(`Rendered in ${(diff[0] * 1000 + diff[1] / 1000000).toFixed(2)}ms`, { label: 'CHART' });
 		return interaction.editReply({
 			files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }],
-			content: user ? null : Messages.SET_TIMEZONE
+			content: user ? null : this.i18n('command.timezone.set', { lng: interaction.locale })
 		});
 	}
 

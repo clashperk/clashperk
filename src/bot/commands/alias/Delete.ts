@@ -18,7 +18,7 @@ export default class AliasDeleteCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { name?: string }) {
-		if (!args.name) return interaction.editReply('You must provide a clan tag or clan alias to run this command.');
+		if (!args.name) return interaction.editReply(this.i18n('command.alias.delete.no_name', { lng: interaction.locale }));
 
 		const deleted = await this.client.db.collection(Collections.CLAN_STORES).findOneAndUpdate(
 			{
@@ -30,9 +30,9 @@ export default class AliasDeleteCommand extends Command {
 		);
 
 		if (!deleted.value) {
-			return interaction.editReply('**No matches found!**');
+			return interaction.editReply(this.i18n('command.alias.delete.no_result', { lng: interaction.locale, name: args.name }));
 		}
 
-		return interaction.editReply(`Successfully deleted **${deleted.value.alias as string}**`);
+		return interaction.editReply(this.i18n('command.alias.delete.success', { lng: interaction.locale, name: deleted.value.alias }));
 	}
 }

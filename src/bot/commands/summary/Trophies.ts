@@ -1,4 +1,4 @@
-import { Collections, Messages } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { CommandInteraction, MessageEmbed } from 'discord.js';
 import { Command } from '../../lib';
 import { Clan } from 'clashofclans.js';
@@ -17,7 +17,7 @@ export default class ClanSummaryCommand extends Command {
 		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
 
 		if (!clans.length) {
-			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
 		const collection: Clan[] = await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)));

@@ -3,7 +3,6 @@ import { Command } from '../../lib';
 import Excel from '../../struct/Excel';
 import { CommandInteraction, Interaction, MessageEmbed } from 'discord.js';
 import { Util } from '../../util';
-import { Messages } from '../../util/Constants';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -41,9 +40,9 @@ export default class ExportCWL extends Command {
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.findAll(interaction.guildId);
 
-		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
+		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {
-			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
 		const chunks = [];
@@ -75,7 +74,7 @@ export default class ExportCWL extends Command {
 			});
 		}
 
-		if (!chunks.length) return interaction.editReply('Nobody attacked in your clan yet, try again after sometime.');
+		if (!chunks.length) return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
 
 		const workbook = new Excel();
 		for (const { members, name, tag, id } of chunks) {

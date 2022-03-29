@@ -1,6 +1,6 @@
 import { CommandInteractionOption, Interaction } from 'discord.js';
 import { Listener } from '../../lib';
-import { Messages, Settings } from '../../util/Constants';
+import { Settings } from '../../util/Constants';
 import moment from 'moment';
 import ms from 'ms';
 
@@ -65,7 +65,7 @@ export default class InteractionListener extends Listener {
 		if (userIds?.length && userIds.includes(interaction.user.id)) return;
 		if (userIds?.length && !userIds.includes(interaction.user.id)) {
 			this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.tag}]`, { label: 'COMPONENT_BLOCKED' });
-			return interaction.reply({ content: Messages.COMPONENT.UNAUTHORIZED, ephemeral: true });
+			return interaction.reply({ content: this.i18n('common.component.unauthorized', { lng: interaction.locale }), ephemeral: true });
 		}
 
 		if (this.client.components.has(interaction.customId)) return;
@@ -73,7 +73,7 @@ export default class InteractionListener extends Listener {
 
 		this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.tag}]`, { label: 'COMPONENT_EXPIRED' });
 		await interaction.update({ components: [] });
-		return interaction.followUp({ content: Messages.COMPONENT.EXPIRED, ephemeral: true });
+		return interaction.followUp({ content: this.i18n('common.component.expired', { lng: interaction.locale }), ephemeral: true });
 	}
 
 	private inhibitor(interaction: Interaction) {

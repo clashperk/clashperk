@@ -23,14 +23,18 @@ export default class CWLStatsCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(clan.tag);
 		if (body.statusCode === 504 || body.state === 'notInWar') {
-			return interaction.editReply('**[504 Request Timeout] Your clan is still searching for opponent!**');
+			return interaction.editReply(
+				this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		if (!body.ok) {
 			const cw = await this.client.storage.getWarTags(clan.tag);
 			if (cw) return this.rounds(interaction, cw, clan);
 
-			return interaction.editReply(`**${clan.name} is not in Clan War League!**`);
+			return interaction.editReply(
+				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		this.client.storage.pushWarTags(clan.tag, body);
@@ -216,7 +220,7 @@ export default class CWLStatsCommand extends Command {
 			}
 		}
 
-		if (!collection.length) return interaction.editReply('**No stats are available yet, try again later!**');
+		if (!collection.length) return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
 		const description = collection
 			.map((arr) => {
 				const header = arr[0].join('\n');

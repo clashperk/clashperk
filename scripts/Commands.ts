@@ -738,7 +738,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'verify',
-		description: 'Verify and link a player using an API token',
+		description: 'Verify and link a player using an API token.',
 		options: [
 			{
 				name: 'tag',
@@ -756,7 +756,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'activity',
-		description: 'Graph of hourly active clan members',
+		description: 'Shows a graph of hourly active clan members.',
 		options: [
 			{
 				name: 'clans',

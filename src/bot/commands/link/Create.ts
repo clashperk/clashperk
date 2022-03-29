@@ -30,9 +30,7 @@ export default class LinkCreateCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; member?: GuildMember; default?: boolean }) {
 		if (!args.tag) {
-			return interaction.editReply({
-				content: '**You must provide a valid argument to run this command, check examples and usage below.**'
-			});
+			return interaction.editReply(this.i18n('command.link.no_tag', { lng: interaction.locale }));
 		}
 
 		const member = args.member ?? interaction.member;

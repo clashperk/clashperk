@@ -24,23 +24,18 @@ export default class CWLRoundCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(clan.tag);
 		if (body.statusCode === 504 || body.state === 'notInWar') {
-			return interaction.editReply('**[504 Request Timeout] Your clan is still searching for opponent!**');
+			return interaction.editReply(
+				this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		if (!body.ok) {
 			const cw = await this.client.storage.getWarTags(clan.tag);
 			if (cw) return this.rounds(interaction, cw, clan.tag);
 
-			const embed = new MessageEmbed()
-				.setColor(this.client.embed(interaction))
-				.setAuthor({
-					name: `${clan.name} (${clan.tag})`,
-					iconURL: `${clan.badgeUrls.medium}`,
-					url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${clan.tag}`
-				})
-				.setThumbnail(clan.badgeUrls.medium)
-				.setDescription('Clan is not in CWL');
-			return interaction.editReply({ embeds: [embed] });
+			return interaction.editReply(
+				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		this.client.storage.pushWarTags(clan.tag, body);
@@ -119,7 +114,7 @@ export default class CWLRoundCommand extends Command {
 		}
 
 		if (!chunks.length || chunks.length !== rounds.length)
-			return interaction.editReply('**[504 Request Timeout] Your clan is still searching for opponent!**');
+			return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
 		const round = chunks.find((c) => c.state === 'inWar') ?? chunks.slice(-1)[0];
 		if (chunks.length === 1) {
 			return interaction.editReply({ embeds: [round.embed] });

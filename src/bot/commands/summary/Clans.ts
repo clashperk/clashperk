@@ -1,6 +1,6 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { WHITE_NUMBERS, EMOJIS } from '../../util/Emojis';
-import { Collections, Messages } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Command } from '../../lib';
 import { Season } from '../../util';
 import Workbook from '../../struct/Excel';
@@ -23,7 +23,7 @@ export default class ClanSummaryCommand extends Command {
 			.toArray();
 
 		if (!clans.length) {
-			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
 		const embeds = [];

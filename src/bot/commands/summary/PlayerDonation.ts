@@ -1,6 +1,6 @@
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis';
 import { MessageEmbed, CommandInteraction, MessageActionRow, MessageButton } from 'discord.js';
-import { Collections, Messages } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Season, Util } from '../../util';
 import { Command } from '../../lib';
 import { Clan } from 'clashofclans.js';
@@ -20,7 +20,7 @@ export default class PlayerDonationSummaryCommand extends Command {
 
 		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild.id }).toArray();
 		if (!clans.length) {
-			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
 		const fetched: Clan[] = (await Promise.all(clans.map((en) => this.client.http.clan(en.tag)))).filter((res) => res.ok);

@@ -6,28 +6,21 @@ import { Client } from './bot/struct/Client';
 import { execSync } from 'child_process';
 import * as Sentry from '@sentry/node';
 import i18next from 'i18next';
+import { fileURLToPath } from 'url';
+import Backend from 'i18next-fs-backend';
 
 const client = new Client();
 
-await i18next.init({
+const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
+await i18next.use(Backend).init({
 	debug: false,
 	cleanCode: true,
-	fallbackLng: ['en-US'],
-	defaultNS: 'translation',
 	lng: 'en-US',
+	fallbackLng: ['en-US'],
+	preload: ['en-US', 'es-ES'],
+	defaultNS: 'translation',
 	ns: ['translation'],
-	resources: {
-		'en-US': {
-			translation: {
-				key: 'hello world'
-			}
-		},
-		'es-ES': {
-			translation: {
-				key: 'hola mundo'
-			}
-		}
-	}
+	backend: { loadPath: fileURLToPath(locales) }
 });
 
 if (process.env.SENTRY) {

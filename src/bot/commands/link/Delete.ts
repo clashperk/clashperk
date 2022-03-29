@@ -23,9 +23,7 @@ export default class LinkDeleteCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
 		const tag = this.parseTag(args.tag);
 		if (!tag) {
-			return interaction.editReply({
-				content: '**You must provide a valid argument to run this command, check the examples and usage below.**'
-			});
+			return interaction.editReply(this.i18n('command.link.no_tag', { lng: interaction.locale }));
 		}
 
 		const unlinked = await this.unlinkClan(interaction.user.id, tag);

@@ -1,5 +1,5 @@
 import { Clan, ClanMember } from 'clashofclans.js';
-import { Collections, Messages } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Collection, GuildMember, CommandInteraction } from 'discord.js';
 import { Season } from '../../util';
 import { Command } from '../../lib';
@@ -21,9 +21,9 @@ export default class ExportSeason extends Command {
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.findAll(interaction.guildId);
 
-		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
+		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {
-			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
 		const season = args.season ?? Season.ID;

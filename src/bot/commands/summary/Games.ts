@@ -1,5 +1,5 @@
 import { ClanGames } from '../../util';
-import { Collections, Messages } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis';
 import { CommandInteraction, MessageEmbed } from 'discord.js';
 import { Command } from '../../lib';
@@ -36,7 +36,7 @@ export default class ClanGamesSummaryCommand extends Command {
 
 	public async exec(interaction: CommandInteraction, { season }: { season: string }) {
 		const tags = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
-		if (!tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+		if (!tags.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
 		const clans = await this.client.db
 			.collection(Collections.CLAN_GAMES)

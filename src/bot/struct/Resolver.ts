@@ -1,4 +1,4 @@
-import { Collections, Messages, Settings, status } from '../util/Constants';
+import { Collections, Settings, status } from '../util/Constants';
 import { Guild, User, Interaction, CommandInteraction, GuildMember } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import Client from './Client';
@@ -164,7 +164,7 @@ export default class Resolver {
 				.map((clan) => clan.tag)
 				.includes(data.tag)
 		) {
-			await interaction.editReply({ content: Messages.SERVER.CLAN_LIMIT });
+			await interaction.editReply({ content: this.client.i18n('common.clan_limit', { lng: interaction.locale }) });
 			return null;
 		}
 
@@ -172,7 +172,7 @@ export default class Resolver {
 		const code = ['CP', interaction.guild.id.substr(-2)].join('');
 		const clan = clans.find((clan) => clan.tag === data.tag);
 		if (!clan?.verified && !this.verifyClan(code, data, user?.entries ?? []) && !this.client.isOwner(interaction.user)) {
-			await interaction.editReply({ content: Messages.SERVER.VERIFY });
+			await interaction.editReply({ content: this.client.i18n('common.clan_verification', { lng: interaction.locale }) });
 			return null;
 		}
 
