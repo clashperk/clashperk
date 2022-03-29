@@ -34,7 +34,7 @@ export default class LinkCreateCommand extends Command {
 		}
 
 		const member = args.member ?? interaction.member;
-		if (member.user.bot) return interaction.editReply("Bots can't link accounts.");
+		if (member.user.bot) return interaction.editReply(this.i18n('command.link.create.no_bots', { lng: interaction.locale }));
 
 		const tags = await Promise.all([this.client.http.clan(args.tag), this.client.http.player(args.tag)]);
 		const types: Record<string, string> = {
@@ -45,7 +45,7 @@ export default class LinkCreateCommand extends Command {
 		if (tags.every((a) => a.ok)) {
 			const embed = new MessageEmbed().setDescription(
 				[
-					'**What would you like to link? A Player or a Clan?**',
+					this.i18n('command.link.create.prompt', { lng: interaction.locale }),
 					'',
 					tags.map((a, i) => `**${types[i + 1]}**\n${a.name} (${a.tag})\n`).join('\n')
 				].join('\n')
@@ -53,13 +53,11 @@ export default class LinkCreateCommand extends Command {
 
 			const CUSTOM_ID = {
 				CLAN: this.client.uuid(interaction.user.id),
-				PLAYER: this.client.uuid(interaction.user.id),
-				CANCEL: this.client.uuid(interaction.user.id)
+				PLAYER: this.client.uuid(interaction.user.id)
 			};
 			const row = new MessageActionRow()
 				.addComponents(new MessageButton().setStyle('PRIMARY').setLabel('Link Player').setCustomId(CUSTOM_ID.PLAYER))
-				.addComponents(new MessageButton().setStyle('PRIMARY').setLabel('Link Clan').setCustomId(CUSTOM_ID.CLAN))
-				.addComponents(new MessageButton().setStyle('DANGER').setLabel('Cancel').setCustomId(CUSTOM_ID.CANCEL));
+				.addComponents(new MessageButton().setStyle('PRIMARY').setLabel('Link Clan').setCustomId(CUSTOM_ID.CLAN));
 
 			const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 			const collector = msg.createMessageComponentCollector({
@@ -77,14 +75,6 @@ export default class LinkCreateCommand extends Command {
 					await action.update({ components: [] });
 					await this.playerLink(interaction, { player: tags[1], member, def: Boolean(args.default) });
 				}
-
-				if (action.customId === CUSTOM_ID.CANCEL) {
-					await action.update({
-						embeds: [],
-						components: [],
-						content: '**This command has been cancelled.**'
-					});
-				}
 			});
 
 			collector.on('end', async (_, reason) => {
@@ -96,7 +86,7 @@ export default class LinkCreateCommand extends Command {
 		} else if (tags[1].ok) {
 			return this.playerLink(interaction, { player: tags[1], member, def: Boolean(args.default) });
 		} else {
-			return interaction.editReply("**I have tried to search the tag as a clan and player but couldn't find a match.**");
+			return interaction.editReply(this.i18n('command.link.create.fail', { lng: interaction.locale }));
 		}
 	}
 
@@ -127,22 +117,20 @@ export default class LinkCreateCommand extends Command {
 		const doc = await this.getPlayer(player.tag);
 		// only owner can set default account
 		if (doc && doc.user === member.id && ((def && member.id !== interaction.user.id) || !def)) {
-			return interaction.editReply(`**${member.user.tag}** is already linked to **${player.name} (${player.tag})**`);
+			await this.resetLinkAPI(member.id, player.tag);
+			return interaction.editReply(
+				this.i18n('command.link.create.link_exists', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
+			);
 		}
 
 		if (doc && doc.user !== member.id) {
 			return interaction.editReply(
-				[
-					`**${player.name} (${player.tag})** is already linked to another Discord account.`,
-					'',
-					'If you own this player account, you can Force-Link using Player API Token.',
-					`Type \`/help verify\` to know more about the Player API Token.`
-				].join('\n')
+				this.i18n('command.link.create.already_linked', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
 			);
 		}
 
 		if (doc && doc.entries.length >= 25) {
-			return interaction.editReply('You can only link 25 player accounts.');
+			return interaction.editReply(this.i18n('command.link.create.max_limit', { lng: interaction.locale }));
 		}
 
 		// only owner can set default account
@@ -176,11 +164,17 @@ export default class LinkCreateCommand extends Command {
 		);
 
 		// Fix Conflicts
-		this.resetLinkAPI(member.id, player.tag);
+		await this.resetLinkAPI(member.id, player.tag);
 		// Update Role
 		if (player.clan) this.client.rpcHandler.roleManager.newLink(player);
 
-		return interaction.editReply(`Linked **${member.user.tag}** to **${player.name}** (${player.tag})`);
+		return interaction.editReply(
+			this.i18n('command.link.create.success', {
+				lng: interaction.locale,
+				user: `**${member.user.tag}**`,
+				target: `**${player.name} (${player.tag})**`
+			})
+		);
 	}
 
 	private isVerified(data: any, tag: string) {

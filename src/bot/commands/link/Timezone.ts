@@ -20,7 +20,7 @@ export default class TimezoneCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { location: string }) {
 		const raw = await Google.timezone(args.location);
-		if (!raw) return interaction.editReply('Location not found, make your search more specific and try again.');
+		if (!raw) return interaction.editReply(this.i18n('command.timezone.no_result', { lng: interaction.locale }));
 
 		const offset = Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset);
 		await this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(

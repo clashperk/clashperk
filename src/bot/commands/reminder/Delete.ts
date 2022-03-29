@@ -33,23 +33,24 @@ export default class ReminderDeleteCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, { id, clear }: { id?: string; clear: boolean }) {
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).find({ guild: interaction.guild.id }).toArray();
-		if (!reminders.length) return interaction.editReply('**You have no reminders.**');
+		if (!reminders.length) return interaction.editReply(this.i18n('command.reminder.delete.no_reminders', { lng: interaction.locale }));
 
 		if (clear) {
 			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteMany({ guild: interaction.guild.id });
 			await this.client.db.collection<ReminderTemp>(Collections.REMINDERS_TEMP).deleteMany({ guild: interaction.guildId });
-			return interaction.editReply('**All reminders cleared.**');
+			return interaction.editReply(this.i18n('command.reminder.delete.cleared', { lng: interaction.locale }));
 		}
 
 		if (id) {
 			const reminderId = reminders[Number(id) - 1]?._id as ObjectId | null;
-			if (!reminderId) return interaction.editReply('**Reminder not found.**');
+			if (!reminderId) return interaction.editReply(this.i18n('command.reminder.delete.not_found', { lng: interaction.locale, id }));
 			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteOne({ _id: reminderId });
 			await this.client.db.collection<ReminderTemp>(Collections.REMINDERS_TEMP).deleteMany({ reminderId });
-			return interaction.editReply(`**Reminder #${id} deleted.**`);
+			return interaction.editReply(this.i18n('command.reminder.delete.success', { lng: interaction.locale, id }));
 		}
 
-		if (reminders.length > 25) return interaction.editReply('**You have too many reminders, pass id to delete reminders.**');
+		if (reminders.length > 25)
+			return interaction.editReply(this.i18n('command.reminder.delete.too_many_reminders', { lng: interaction.locale }));
 
 		const clans = await this.client.storage.findAll(interaction.guild.id);
 		const customIds = {

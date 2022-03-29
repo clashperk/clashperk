@@ -3,6 +3,7 @@ import { Guild, User, Interaction, CommandInteraction, GuildMember } from 'disco
 import { Player, Clan } from 'clashofclans.js';
 import Client from './Client';
 import { UserInfo } from '../types';
+import { i18n } from '../util/i18n';
 
 export default class Resolver {
 	private readonly client: Client;
@@ -36,7 +37,7 @@ export default class Resolver {
 
 		if (tags.length) return this.getPlayer(interaction, tags[Math.min(tags.length - 1, num - 1)], user);
 		if (interaction.user.id === user.id) {
-			return this.fail(interaction, '**You must provide a player tag to run this command!**');
+			return this.fail(interaction, i18n('common.no_player_tag', { lng: interaction.locale }));
 		}
 
 		return this.fail(interaction, `**No Player Linked to ${user.tag}!**`);
@@ -61,11 +62,11 @@ export default class Resolver {
 			return this.fail(interaction, `**${status(404)}**`);
 		}
 
-		const data = await this.getLinkedClan(interaction.channel!.id, parsed.id);
+		const data = await this.getLinkedClan(interaction, parsed.id);
 		if (data) return this.getClan(interaction, data.tag);
 
 		if (interaction.user.id === parsed.id) {
-			return this.fail(interaction, '**You must provide a clan tag to run this command!**');
+			return this.fail(interaction, i18n('common.no_clan_tag', { lng: interaction.locale }));
 		}
 
 		return this.fail(interaction, `**No Clan Linked to ${parsed.user.tag}!**`);
@@ -114,11 +115,13 @@ export default class Resolver {
 		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O/g, '0') ?? ''}`;
 	}
 
-	private async getLinkedClan(channel_id: string, user_id: string) {
-		const clan = await this.client.db.collection(Collections.CLAN_STORES).findOne({ channels: channel_id });
+	private async getLinkedClan(interaction: Interaction, user_id: string) {
+		const clan = await this.client.db.collection(Collections.CLAN_STORES).findOne({ channels: interaction.channel!.id });
 		if (clan) return clan;
 		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: user_id });
 		if (user?.clan) return user.clan;
+		const guild = await this.client.db.collection(Collections.CLAN_STORES).findOne({ guild: interaction.guild!.id });
+		if (guild) return guild;
 		return null;
 	}
 
@@ -147,9 +150,7 @@ export default class Resolver {
 
 	public async enforceSecurity(interaction: CommandInteraction<'cached'>, tag?: string) {
 		if (!tag) {
-			await interaction.editReply({
-				content: '**You must provide a clan tag to run this command!**'
-			});
+			await interaction.editReply(i18n('common.no_clan_tag', { lng: interaction.locale }));
 			return null;
 		}
 		const data = await this.getClan(interaction, tag);
