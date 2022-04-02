@@ -69,7 +69,7 @@ export default class ClanWarLog {
 			return this.handleMessage(cache, channel, null, data);
 		}
 
-		if (data.warID === cache.warID) {
+		if (data.uid === cache.uid) {
 			return this.handleMessage(cache, channel, cache.messageID ?? null, data);
 		}
 
@@ -132,11 +132,11 @@ export default class ClanWarLog {
 			);
 		}
 
-		cache.warID = data.warID;
+		cache.uid = data.uid;
 		cache.messageID = message.id;
 		return this.collection.updateOne(
 			{ clan_id: new ObjectId(cache._id) },
-			{ $set: { messageID: message.id, warID: data.warID, updatedAt: new Date(), failed: 0 } }
+			{ $set: { messageID: message.id, uid: data.uid, updatedAt: new Date(), failed: 0 } }
 		);
 	}
 
@@ -412,7 +412,7 @@ export default class ClanWarLog {
 				tag: data.tag,
 				_id: data.clan_id,
 				guild: data.guild,
-				warID: data.warID,
+				uid: data.uid,
 				channel: data.channel,
 				rounds: data.rounds || {},
 				messageID: data.messageID
@@ -428,7 +428,7 @@ export default class ClanWarLog {
 			tag: data.tag,
 			_id: data.clan_id,
 			guild: data.guild,
-			warID: data.warID,
+			uid: data.uid,
 			channel: data.channel,
 			rounds: data.rounds || {},
 			messageID: data.messageID
@@ -468,7 +468,7 @@ interface PayLoad extends ClanWar {
 	recent?: Recent[];
 	result: string;
 	round: number;
-	warID: number;
+	uid: string;
 	warTag?: string;
 	attacksPerMember: number;
 	remaining: ClanWarMember[];
@@ -481,7 +481,7 @@ interface Cache {
 	channel: string;
 	tag: string;
 	rounds: any;
-	warID: number;
+	uid: string;
 	_id: ObjectId;
 	messageID?: string;
 }

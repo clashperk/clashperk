@@ -96,7 +96,7 @@ export default class ExportCWL extends Command {
 				{ header: 'Avg Def Stars', width: 8 },
 				{ header: 'Total Def Dest', width: 8 },
 				{ header: 'Avg Def Dest', width: 8 }
-			] as any;
+			];
 
 			sheet.getRow(1).font = { bold: true, size: 10 };
 			sheet.getRow(1).height = 40;
