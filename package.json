@@ -9,15 +9,21 @@
 	"exports": {
 		"main": "./dist/src/index.js"
 	},
+	"workspaces": [
+		"locales/*"
+	],
 	"private": true,
 	"scripts": {
-		"build": "rimraf dist && tsc",
+		"prebuild": "rimraf dist",
+		"build": "tsc",
+		"postbuild": "node --es-module-specifier-resolution=node dist/locales/index.js",
 		"start": "npm run build && node --enable-source-maps --es-module-specifier-resolution=node dist/src/index.js",
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
 		"dev": "node -r dotenv/config --enable-source-maps --es-module-specifier-resolution=node dist/src/index.js",
 		"deploy": "node --es-module-specifier-resolution=node dist/scripts/index.js",
-		"patrons": "node --es-module-specifier-resolution=node dist/scripts/Patrons.js"
+		"patrons": "node --es-module-specifier-resolution=node dist/scripts/Patrons.js",
+		"preinstall": "git pull --recurse-submodules && git submodule update --remote --recursive --init"
 	},
 	"dependencies": {
 		"@clashperk/clashofclans.js": "github:clashperk/clashofclans.js#gh",
@@ -33,6 +39,7 @@
 		"dotenv": "^10.0.0",
 		"exceljs": "^4.2.1",
 		"i18next": "^21.6.13",
+		"i18next-fs-backend": "^1.1.4",
 		"moment": "^2.29.1",
 		"moment-duration-format": "^2.3.2",
 		"mongodb": "^4.4.1",
@@ -46,6 +53,7 @@
 	},
 	"devDependencies": {
 		"@types/common-tags": "^1.8.1",
+		"@types/i18next-fs-backend": "^1.1.2",
 		"@types/moment-duration-format": "^2.2.3",
 		"@types/ms": "^0.7.31",
 		"@types/node": "^14.17.9",
@@ -54,7 +62,7 @@
 		"@types/uuid": "^8.3.1",
 		"@typescript-eslint/eslint-plugin": "^5.4.0",
 		"@typescript-eslint/parser": "^5.4.0",
-		"discord-api-types": "^0.29.0",
+		"discord-api-types": "^0.30.0",
 		"eslint": "^8.3.0",
 		"eslint-config-marine": "^9.0.6",
 		"eslint-config-prettier": "^8.3.0",
@@ -116,11 +124,20 @@
 		"overrides": [
 			{
 				"files": [
+					"*.json"
+				],
+				"options": {
+					"tabWidth": 2,
+					"printWidth": 120
+				}
+			},
+			{
+				"files": [
 					"*.md"
 				],
 				"options": {
 					"useTabs": false,
-					"tabWidth": 4
+					"tabWidth": 2
 				}
 			},
 			{

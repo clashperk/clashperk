@@ -54,7 +54,13 @@ export default class ClanLogCommand extends Command {
 
 		const permission = missingPermissions(args.channel, interaction.guild.me!, this.clientPermissions!);
 		if (permission.missing) {
-			return interaction.editReply(`I\'m missing ${permission.missingPerms} to run that command.`);
+			return interaction.editReply(
+				this.i18n('command.setup.enable.missing_access', {
+					lng: interaction.locale,
+					channel: args.channel.toString(), // eslint-disable-line
+					permission: permission.missingPerms
+				})
+			);
 		}
 
 		const id = await this.client.storage.register(interaction, {

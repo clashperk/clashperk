@@ -25,6 +25,8 @@
 	},
 	"include": [
 		"src",
-		"scripts"
+		"scripts",
+		"locales",
+		"locales/**/*.json"
 	]
 }

@@ -1,5 +1,5 @@
 import { Command } from '../../lib';
-import { Collections, Messages } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import Excel from '../../struct/Excel';
 import { CommandInteraction } from 'discord.js';
 
@@ -25,9 +25,9 @@ export default class ExportMissed extends Command {
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.findAll(interaction.guildId);
 
-		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
+		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {
-			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
 		let num = Number(args.wars ?? 25);
@@ -95,7 +95,7 @@ export default class ExportMissed extends Command {
 			}
 		}
 
-		if (!chunks.length) return interaction.editReply(Messages.NO_DATA);
+		if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
 		const workbook = new Excel();
 		const sheet = workbook.addWorksheet('Missed Attacks');

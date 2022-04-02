@@ -45,6 +45,18 @@ export class Automaton {
 				await this.client.commandHandler.exec(interaction, command, { showTags: parsed.args, ...parsed });
 				return true;
 			}
+			case 'clan-games': {
+				const command = this.client.commandHandler.modules.get('clan-games')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, { ...parsed });
+				return true;
+			}
+			case 'lastseen': {
+				const command = this.client.commandHandler.modules.get('lastseen')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, { ...parsed });
+				return true;
+			}
 			default: {
 				return false;
 			}

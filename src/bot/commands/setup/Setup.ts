@@ -61,7 +61,7 @@ export default class SetupCommand extends Command {
 				const embeds = await this.getFeatures(interaction);
 				if (!embeds.length) {
 					await action.followUp({
-						content: `${interaction.guild.name} doesn't have any clans. Why not add some?`,
+						content: this.i18n('common.no_clans_linked', { lng: interaction.locale }),
 						ephemeral: true
 					});
 					return;
@@ -78,7 +78,7 @@ export default class SetupCommand extends Command {
 				const embeds = await this.getClanList(interaction);
 				if (!embeds.length) {
 					await action.followUp({
-						content: `${interaction.guild.name} doesn't have any clans. Why not add some?`,
+						content: this.i18n('common.no_clans_linked', { lng: interaction.locale }),
 						ephemeral: true
 					});
 					return;

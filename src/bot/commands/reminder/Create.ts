@@ -1,5 +1,5 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu, TextChannel } from 'discord.js';
-import { Collections, Messages } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Reminder } from '../../struct/RemindScheduler';
 import { Command } from '../../lib';
 import ms from 'ms';
@@ -25,24 +25,26 @@ export default class ReminderCreateCommand extends Command {
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.findAll(interaction.guildId);
 
-		if (!clans.length && tags.length) return interaction.editReply(Messages.SERVER.NO_CLANS_FOUND);
-		if (!clans.length) return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).countDocuments({ guild: interaction.guild.id });
 		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {
-			return interaction.editReply(`**You can only have 25 reminders.**`);
+			return interaction.editReply(this.i18n('command.reminder.create.max_limit', { lng: interaction.locale }));
 		}
 		if (!/\d+?\.?\d+?[hm]|\d[hm]/g.test(args.duration)) {
-			return interaction.editReply('**You must provide a valid duration. e.g 2h, 2.5h, 30m**');
+			return interaction.editReply(this.i18n('command.reminder.create.invalid_duration_format', { lng: interaction.locale }));
 		}
 
 		const dur = args.duration.match(/\d+?\.?\d+?[hm]|\d[hm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
-		if (!args.message) return interaction.editReply('**You must provide a interaction for the reminder!**');
+		if (!args.message) return interaction.editReply(this.i18n('command.reminder.create.no_message', { lng: interaction.locale }));
 
-		if (dur < 15 * 60 * 1000) return interaction.editReply('**Duration must be at least 15 minutes.**');
-		if (dur > 45 * 60 * 60 * 1000) return interaction.editReply('**Duration must be less than 45 hours.**');
+		if (dur < 15 * 60 * 1000)
+			return interaction.editReply(this.i18n('command.reminder.create.duration_limit', { lng: interaction.locale }));
+		if (dur > 45 * 60 * 60 * 1000)
+			return interaction.editReply(this.i18n('command.reminder.create.duration_limit', { lng: interaction.locale }));
 		if (dur % (15 * 60 * 1000) !== 0) {
-			return interaction.editReply('**Duration must be a multiple of 15 minutes. e.g 15m, 30m, 45m, 1h, 1.25h, 1.5h, 1.75h**');
+			return interaction.editReply(this.i18n('command.reminder.create.duration_order', { lng: interaction.locale }));
 		}
 
 		const CUSTOM_ID = {
@@ -164,9 +166,10 @@ export default class ReminderCreateCommand extends Command {
 				'**War Reminder Setup**',
 				...(clans.length > 25
 					? [
-							'',
-							`*Clan selection menu is not available for more than 25 clans. ${clans.length} clans were selected automatically!*`,
-							`*To create a reminder for specific clans, pass clan tags or aliases through 'clans' option while executing the command.*`
+							`\n*${this.i18n('command.reminder.create.too_many_clans', {
+								lng: interaction.locale,
+								clans: `${clans.length}`
+							})}*`
 					  ]
 					: [])
 			].join('\n')
@@ -215,7 +218,10 @@ export default class ReminderCreateCommand extends Command {
 
 				const { insertedId } = await this.client.db.collection<Reminder>(Collections.REMINDERS).insertOne(reminder);
 				this.client.remindScheduler.create({ ...reminder, _id: insertedId });
-				await action.editReply({ components: mutate(true), content: '**Successfully saved!**' });
+				await action.editReply({
+					components: mutate(true),
+					content: this.i18n('command.reminder.create.success', { lng: interaction.locale })
+				});
 			}
 		});
 

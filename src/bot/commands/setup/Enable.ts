@@ -1,6 +1,5 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib';
-import { Messages } from '../../util/Constants';
 
 export default class SetupEnableCommand extends Command {
 	public constructor() {
@@ -26,7 +25,7 @@ export default class SetupEnableCommand extends Command {
 			'war-feed': this.handler.modules.get('setup-clan-log')!
 		}[args.option];
 
-		if (!command) return interaction.reply(Messages.COMMAND.OPTION_NOT_FOUND);
+		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
 		return this.handler.continue(interaction, command);
 	}
 }

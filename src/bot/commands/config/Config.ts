@@ -29,7 +29,10 @@ export default class ConfigCommand extends Command {
 			} else if (/\d{17,19}/g.test(args.events_channel)) {
 				const channel = this.client.channels.cache.get(args.events_channel.match(/\d{17,19}/g)![0]);
 				if (!channel?.isText()) {
-					return interaction.reply({ content: 'Type of channel is not text.', ephemeral: true });
+					return interaction.reply({
+						content: this.i18n('command.config.no_text_channel', { lng: interaction.locale }),
+						ephemeral: true
+					});
 				}
 				this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, channel.id);
 			}

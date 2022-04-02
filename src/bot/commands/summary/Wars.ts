@@ -1,6 +1,6 @@
 import { ClanWar, WarClan } from 'clashofclans.js';
 import { CommandInteraction, MessageEmbed } from 'discord.js';
-import { Collections, Messages } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from '../../lib';
 import moment from 'moment';
@@ -24,7 +24,7 @@ export default class WarSummaryCommand extends Command {
 
 	public async exec(interaction: CommandInteraction) {
 		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
-		if (!clans.length) return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
 		const embed = new MessageEmbed();
 		for (const clan of clans) {

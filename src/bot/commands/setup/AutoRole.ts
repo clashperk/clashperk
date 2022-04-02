@@ -50,20 +50,20 @@ export default class AutoRoleCommand extends Command {
 		}
 
 		if (!(members && elders && coLeads)) {
-			return interaction.editReply('You must provide 3 valid roles!');
+			return interaction.editReply(this.i18n('command.autorole.enable.no_roles', { lng: interaction.locale }));
 		}
 
 		if ([members, elders, coLeads].filter((role) => role.managed || role.id === interaction.guild!.id).length) {
-			return interaction.editReply("Bot roles can't be used.");
+			return interaction.editReply(this.i18n('command.autorole.enable.no_system_roles', { lng: interaction.locale }));
 		}
 
 		if ([members, elders, coLeads].filter((role) => role.position > interaction.guild!.me!.roles.highest.position).length) {
-			return interaction.editReply('My role must be higher than these roles.');
+			return interaction.editReply(this.i18n('command.autorole.enable.no_higher_roles', { lng: interaction.locale }));
 		}
 
 		if (tag) {
 			const clan = await this.client.http.clan(tag);
-			if (!clan.ok) return interaction.editReply('Invalid clan tag!');
+			if (!clan.ok) return interaction.editReply(this.i18n('command.autorole.enable.invalid_clan_tag', { lng: interaction.locale }));
 
 			await this.client.db
 				.collection(Collections.CLAN_STORES)
@@ -73,7 +73,7 @@ export default class AutoRoleCommand extends Command {
 				.collection(Collections.CLAN_STORES)
 				.findOne({ tag: { $ne: clan.tag }, role_ids: { $in: [members.id, elders.id, coLeads.id] } });
 
-			if (ex) return interaction.editReply('This roles have already been used for another clan.');
+			if (ex) return interaction.editReply(this.i18n('command.autorole.enable.roles_already_used', { lng: interaction.locale }));
 
 			const up = await this.client.db.collection(Collections.CLAN_STORES).updateOne(
 				{ tag: clan.tag, guild: interaction.guild!.id },
@@ -87,14 +87,17 @@ export default class AutoRoleCommand extends Command {
 				}
 			);
 
-			if (!up.matchedCount) return interaction.editReply('Clan not found in this server!');
+			if (!up.matchedCount)
+				return interaction.editReply(this.i18n('command.autorole.enable.clan_not_linked', { lng: interaction.locale }));
 
 			this.updateLinksAndRoles([clan]);
-			return interaction.editReply('**Successfully enabled automatic role management!**');
+			return interaction.editReply(
+				this.i18n('command.autorole.enable.success_clan', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		const clans = await this.client.storage.findAll(interaction.guild!.id);
-		if (!clans.length) return interaction.editReply('No clans in this server');
+		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
 		await this.client.db
 			.collection(Collections.CLAN_STORES)
@@ -113,7 +116,9 @@ export default class AutoRoleCommand extends Command {
 		);
 
 		this.updateLinksAndRoles(clans);
-		return interaction.editReply('**Successfully enabled automatic role management!**');
+		return interaction.editReply(
+			this.i18n('command.autorole.enable.success', { lng: interaction.locale, count: clans.length.toString() })
+		);
 	}
 
 	private async updateLinksAndRoles(clans: { tag: string }[]) {

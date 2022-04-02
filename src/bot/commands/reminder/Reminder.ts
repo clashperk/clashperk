@@ -1,6 +1,5 @@
 import { Command } from '../../lib';
 import { CommandInteraction } from 'discord.js';
-import { Messages } from '../../util/Constants';
 
 export default class ReminderCommand extends Command {
 	public constructor() {
@@ -20,7 +19,7 @@ export default class ReminderCommand extends Command {
 			list: this.handler.modules.get('reminder-list')!
 		}[args.command];
 
-		if (!command) return interaction.reply(Messages.COMMAND.OPTION_NOT_FOUND);
+		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
 		return this.handler.continue(interaction, command);
 	}
 }

@@ -1,5 +1,6 @@
 import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'discord-api-types/v9';
 import moment from 'moment';
+import { command } from '../locales/default';
 
 export function getSeasonIds() {
 	return Array(Math.min(24, 10 + new Date().getMonth()))
@@ -29,7 +30,7 @@ export interface Command {
 export const COMMANDS: Command[] = [
 	{
 		name: 'clan',
-		description: 'Clan summary and basic details',
+		description: command.clan.description,
 		options: [
 			{
 				name: 'tag',
@@ -41,7 +42,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'lastseen',
-		description: 'Last seen and activities of clan members',
+		description: command.lastseen.description,
 		options: [
 			{
 				name: 'tag',
@@ -53,7 +54,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'clan-games',
-		description: 'Clan Games points of all clan members',
+		description: command.clan_games.description,
 		options: [
 			{
 				name: 'tag',
@@ -65,7 +66,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'attacks',
-		description: 'Clan attacks and defences for all members',
+		description: command.attacks.description,
 		options: [
 			{
 				name: 'tag',
@@ -77,7 +78,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'members',
-		description: 'Clan members with some basic details',
+		description: command.members.description,
 		options: [
 			{
 				name: 'tag',
@@ -113,7 +114,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'units',
-		description: 'Player unit, spell and hero levels',
+		description: command.units.description,
 		options: [
 			{
 				name: 'tag',
@@ -125,7 +126,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'player',
-		description: 'Player summary and some basic details',
+		description: command.player.description,
 		options: [
 			{
 				name: 'tag',
@@ -137,7 +138,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'roster',
-		description: 'CWL Roster and Town Hall distribution',
+		description: command.cwl.roster.description,
 		options: [
 			{
 				name: 'tag',
@@ -149,7 +150,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'round',
-		description: 'CWL summary for the current round',
+		description: command.cwl.round.description,
 		options: [
 			{
 				name: 'tag',
@@ -167,7 +168,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'donations',
-		description: "Clan members' donations and receives",
+		description: command.donations.description,
 		options: [
 			{
 				name: 'tag',
@@ -186,7 +187,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'compo',
-		description: 'Town Hall compositions',
+		description: command.compo.description,
 		options: [
 			{
 				name: 'tag',
@@ -197,8 +198,8 @@ export const COMMANDS: Command[] = [
 		]
 	},
 	{
-		name: 'upgrade',
-		description: 'Remaining upgrades of troops, spells and heroes',
+		name: 'upgrades',
+		description: command.upgrades.description,
 		options: [
 			{
 				name: 'tag',
@@ -210,7 +211,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'rushed',
-		description: 'Rushed troops, spells, and heroes',
+		description: command.rushed.description,
 		options: [
 			{
 				name: 'tag',
@@ -237,7 +238,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'profile',
-		description: 'Info about linked accounts',
+		description: command.profile.description,
 		options: [
 			{
 				name: 'user',
@@ -249,7 +250,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'war',
-		description: 'Current or previous clan war details',
+		description: command.war.description,
 		options: [
 			{
 				name: 'tag',
@@ -267,7 +268,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'remaining',
-		description: 'Remaining or missed clan wars attacks',
+		description: command.remaining.description,
 		options: [
 			{
 				name: 'tag',
@@ -285,11 +286,11 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'link',
-		description: 'Links a clan or player account',
+		description: command.link.description,
 		options: [
 			{
 				name: 'create',
-				description: 'Links a clan or player account',
+				description: command.link.create.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -322,7 +323,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'list',
-				description: 'List of linked players',
+				description: command.link.list.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -334,7 +335,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'delete',
-				description: 'Unlinks a clan or player account',
+				description: command.link.delete.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -349,11 +350,11 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'flag',
-		description: 'Manage player flags in a server or clan',
+		description: command.flag.description,
 		options: [
 			{
 				name: 'create',
-				description: 'Flag a player account',
+				description: command.flag.create.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -372,7 +373,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'list',
-				description: 'Get all flags for the server or clan',
+				description: command.flag.list.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -394,7 +395,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'search',
-				description: 'Show the flag for a player account',
+				description: command.flag.search.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -407,7 +408,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'delete',
-				description: 'Remove a flag from existing player account',
+				description: command.flag.delete.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -422,11 +423,11 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'setup',
-		description: 'Enable features or assign clans to channels.',
+		description: command.setup.description,
 		options: [
 			{
 				name: 'enable',
-				description: 'Enable features or assign clans to channels.',
+				description: command.setup.enable.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -494,12 +495,12 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'list',
-				description: 'List of enable features',
+				description: command.setup.list.description,
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'disable',
-				description: 'Disable features or remove clans from channels.',
+				description: command.setup.disable.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -562,11 +563,11 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'invite',
-		description: 'Get support server and bot invite link'
+		description: command.invite.description
 	},
 	{
 		name: 'help',
-		description: 'Get all commands or info about a command',
+		description: command.help.description,
 		options: [
 			{
 				name: 'command',
@@ -577,7 +578,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'cwl',
-		description: 'CWL season summary and overview',
+		description: command.cwl.description,
 		options: [
 			{
 				name: 'option',
@@ -628,7 +629,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'export',
-		description: 'Export war/season/clan stats to Excel',
+		description: command.export.description,
 		options: [
 			{
 				name: 'option',
@@ -682,7 +683,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'summary',
-		description: 'Summary of wars/clans/clan games for all clans',
+		description: command.summary.description,
 		options: [
 			{
 				name: 'option',
@@ -727,7 +728,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'warlog',
-		description: 'Shows the last 10 clan war logs with War ID',
+		description: command.warlog.description,
 		options: [
 			{
 				name: 'tag',
@@ -738,7 +739,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'verify',
-		description: 'Verify and link a player using an API token',
+		description: command.verify.description,
 		options: [
 			{
 				name: 'tag',
@@ -756,7 +757,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'activity',
-		description: 'Graph of hourly active clan members',
+		description: command.activity.description,
 		options: [
 			{
 				name: 'clans',
@@ -788,11 +789,11 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'alias',
-		description: 'Create, Remove or View clan aliases',
+		description: command.alias.description,
 		options: [
 			{
 				name: 'create',
-				description: 'Create an alias for a clan',
+				description: command.alias.create.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -811,12 +812,12 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'list',
-				description: 'Get aliases for all clans',
+				description: command.alias.list.description,
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'delete',
-				description: 'Remove an alias for a clan',
+				description: command.alias.delete.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -831,15 +832,15 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'debug',
-		description: 'Shows some basic debug information.'
+		description: command.debug.description
 	},
 	{
 		name: 'autorole',
-		description: 'Auto-assign roles to members based upon their role in the clan.',
+		description: command.autorole.description,
 		options: [
 			{
 				name: 'enable',
-				description: 'Auto-assign roles to members based upon their role in the clan.',
+				description: command.autorole.enable.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -886,7 +887,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'disable',
-				description: 'Disable Auto Role',
+				description: command.autorole.disable.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -900,7 +901,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'boosts',
-		description: 'Clan members with active Super Troops',
+		description: command.boosts.description,
 		options: [
 			{
 				name: 'tag',
@@ -912,7 +913,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'lineup',
-		description: 'Shows current war lineup details',
+		description: command.lineup.description,
 		options: [
 			{
 				name: 'tag',
@@ -924,7 +925,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'army',
-		description: 'Render an army composition link',
+		description: command.army.description,
 		options: [
 			{
 				name: 'link',
@@ -942,7 +943,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'nickname',
-		description: 'Choose a nickname from linked players',
+		description: command.nickname.description,
 		options: [
 			{
 				name: 'user',
@@ -954,7 +955,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'config',
-		description: 'Manage server configuration',
+		description: command.config.description,
 		options: [
 			{
 				name: 'color_code',
@@ -970,7 +971,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'timezone',
-		description: 'Set your timezone offset',
+		description: command.timezone.description,
 		options: [
 			{
 				name: 'location',
@@ -982,7 +983,7 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'search',
-		description: 'Search any clans by name',
+		description: command.search.description,
 		options: [
 			{
 				name: 'name',
@@ -993,15 +994,15 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'redeem',
-		description: 'Redeem/Manage Patreon subscription (if you wish to support us)'
+		description: command.redeem.description
 	},
 	{
 		name: 'reminder',
-		description: 'Set a reminder for a clan',
+		description: command.reminder.description,
 		options: [
 			{
 				name: 'create',
-				description: 'Create a reminder',
+				description: command.reminder.create.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1031,12 +1032,12 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'list',
-				description: 'List all reminders',
+				description: command.reminder.list.description,
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'delete',
-				description: 'Delete reminders',
+				description: command.reminder.delete.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1065,11 +1066,11 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'stats',
-		description: 'Stats command group',
+		description: command.stats.description,
 		options: [
 			{
 				name: 'attacks',
-				description: 'Shows attack success rates',
+				description: command.stats.attacks.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1165,7 +1166,7 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'defense',
-				description: 'Shows defense failure rates',
+				description: command.stats.defense.description,
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{

@@ -27,14 +27,18 @@ export default class CWLAttacksCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(clan.tag);
 		if (body.statusCode === 504 || body.state === 'notInWar') {
-			return interaction.editReply('**[504 Request Timeout] Your clan is still searching for opponent!**');
+			return interaction.editReply(
+				this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		if (!body.ok) {
 			const group = await this.client.storage.getWarTags(clan.tag);
 			if (group) return this.rounds(interaction, group, clan.tag);
 
-			return interaction.editReply(`**${clan.name} is not in Clan War League!**`);
+			return interaction.editReply(
+				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		this.client.storage.pushWarTags(clan.tag, body);
@@ -159,7 +163,8 @@ export default class CWLAttacksCommand extends Command {
 			}
 		}
 
-		if (!chunks.length || chunks.length !== rounds.length) return interaction.editReply('**504 Request Timeout!**');
+		if (!chunks.length || chunks.length !== rounds.length)
+			return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
 		const round = chunks.find((c) => c.state === 'inWar') ?? chunks.slice(-1)[0];
 		if (chunks.length === 1) {
 			return interaction.editReply({ embeds: [round.embed] });

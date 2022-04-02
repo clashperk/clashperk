@@ -75,25 +75,6 @@ export const enum Settings {
 	EVENTS_CHANNEL = 'eventsChannel'
 }
 
-export const Messages = {
-	COMPONENT: {
-		EXPIRED: 'This component has expired, run the command again.',
-		UNAUTHORIZED: 'You must execute the command to interact with components.'
-	},
-	SERVER: {
-		CLAN_LIMIT:
-			'You can only add 2 clans on your server. To add more clans, please support us on our [Patreon](https://patreon.com/clashperk)',
-		VERIFY: 'We need to ensure that you are a leader or co-leader of this clan. Please verify your player account with the API token.',
-		NO_CLANS_LINKED: 'No clans are linked to this server. Why not link some?',
-		NO_CLANS_FOUND: 'No clans were found in our Database for the argument you specified.'
-	},
-	SET_TIMEZONE: 'Please set your timezone with the `/timezone` command. It enables you to view the graphs in your timezone.',
-	NO_DATA: 'We are still collecting! No data is available at this moment.',
-	COMMAND: {
-		OPTION_NOT_FOUND: 'Something went wrong while executing this command. (option not found)'
-	}
-} as const;
-
 export function missingPermissions(channel: TextChannel, member: GuildMember, permissions: string[]) {
 	const missingPerms = channel
 		.permissionsFor(member)!

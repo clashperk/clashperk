@@ -11,7 +11,8 @@ const sizes = {
 
 export default {
 	clanActivity(collection: any[] = [], title: string[], days = 1) {
-		const colors = ['#266ef7', '#c63304', '#50c878'];
+		const colors = ['#266ef7', '#c63304', '#ffc107', '#50c878', '#ffac75', '#4dc1fa', '#cb5aff'];
+		days = collection.length > 3 ? 3 : days;
 		const datasets = collection.map((obj: any, i) => ({
 			label: obj.name,
 			type: days > 7 ? 'bar' : 'line',

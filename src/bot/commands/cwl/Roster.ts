@@ -24,11 +24,15 @@ export default class CWLRosterCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(clan.tag);
 		if (body.statusCode === 504 || body.state === 'notInWar') {
-			return interaction.editReply('**[504 Request Timeout] Your clan is still searching for opponent!**');
+			return interaction.editReply(
+				this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		if (!body.ok) {
-			return interaction.editReply(`**${clan.name} is not in Clan War League!**`);
+			return interaction.editReply(
+				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		this.client.storage.pushWarTags(clan.tag, body);

@@ -20,20 +20,15 @@ export default class CWLMembersCommand extends Command {
 
 		const body = await this.client.http.clanWarLeague(clan.tag);
 		if (body.statusCode === 504 || body.state === 'notInWar') {
-			return interaction.editReply('**[504 Request Timeout] Your clan is still searching for opponent!**');
+			return interaction.editReply(
+				this.i18n('command.cwl.still_searching', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		if (!body.ok) {
-			const embed = new MessageEmbed()
-				.setColor(3093046)
-				.setAuthor({
-					name: `${clan.name} (${clan.tag})`,
-					iconURL: `${clan.badgeUrls.medium}`,
-					url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${clan.tag}`
-				})
-				.setThumbnail(clan.badgeUrls.medium)
-				.setDescription('Clan is not in CWL');
-			return interaction.editReply({ embeds: [embed] });
+			return interaction.editReply(
+				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		const clanMembers = body.clans.find((_clan) => _clan.tag === clan.tag)!.members;

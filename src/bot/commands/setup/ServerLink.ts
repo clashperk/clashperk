@@ -16,7 +16,14 @@ export default class ServerLinkCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag: string }) {
 		const clan = await this.client.storage.collection.findOne({ tag: args.tag, guild: interaction.guild.id });
-		if (clan) return interaction.editReply(`**${clan.name} (${clan.tag})** is already linked to ${interaction.guild.name}`);
+		if (clan)
+			return interaction.editReply(
+				this.i18n('command.setup.enable.server_link.already_linked', {
+					lng: interaction.locale,
+					clan: `${clan.name} (${clan.tag})`,
+					guild: interaction.guild.name
+				})
+			);
 
 		const data = await this.client.resolver.enforceSecurity(interaction, args.tag);
 		if (!data) return;
@@ -34,6 +41,12 @@ export default class ServerLinkCommand extends Command {
 			guild: interaction.guild.id
 		});
 
-		return interaction.editReply(`Successfully linked **${data.name} (${data.tag})** to **${interaction.guild.name}**`);
+		return interaction.editReply(
+			this.i18n('command.setup.enable.server_link.success', {
+				lng: interaction.locale,
+				clan: `${data.name} (${data.tag})`,
+				guild: interaction.guild.name
+			})
+		);
 	}
 }

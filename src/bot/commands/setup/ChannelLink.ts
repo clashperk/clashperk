@@ -42,8 +42,11 @@ export default class ChannelLinkCommand extends Command {
 		const store = await this.client.storage.collection.findOne({ channels: args.channel.id });
 		if (store) {
 			return interaction.editReply(
-				// eslint-disable-next-line @typescript-eslint/no-base-to-string
-				`**${store.name} (${store.tag})** is already linked to ${args.channel.toString()}`
+				this.i18n('command.setup.enable.channel_link.already_linked', {
+					lng: interaction.locale,
+					clan: `${store.name} (${store.tag})`,
+					channel: args.channel.toString() // eslint-disable-line @typescript-eslint/no-base-to-string
+				})
 			);
 		}
 
@@ -80,7 +83,12 @@ export default class ChannelLinkCommand extends Command {
 			});
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-base-to-string
-		return interaction.editReply(`Successfully linked **${data.name} (${data.tag})** to ${args.channel.toString()}`);
+		return interaction.editReply(
+			this.i18n('command.setup.enable.channel_link.success', {
+				lng: interaction.locale,
+				channel: `<#${args.channel.id}>`,
+				clan: `${data.name} (${data.tag})`
+			})
+		);
 	}
 }

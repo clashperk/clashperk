@@ -19,6 +19,7 @@ import { loadSync } from '@grpc/proto-loader';
 import * as gRPC from '@grpc/grpc-js';
 import path from 'path';
 import { Settings } from '../util/Constants';
+import { i18n } from '../util/i18n';
 
 const { route: Route } = gRPC.loadPackageDefinition(
 	loadSync(path.join('scripts/routes.proto'), {
@@ -50,8 +51,9 @@ export class Client extends Discord.Client {
 	public stats!: StatsHandler;
 	public storage!: StorageHandler;
 	public remindScheduler!: RemindScheduler;
+	public i18n = i18n;
 
-	// TODO: Fix this
+	// TODO: Fix this (can't be fixed)
 	public rpc: any;
 	public rpcHandler!: RPCHandler;
 	public patrons!: Patrons;

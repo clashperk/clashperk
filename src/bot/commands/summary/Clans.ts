@@ -1,13 +1,13 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { WHITE_NUMBERS, EMOJIS } from '../../util/Emojis';
-import { Collections, Messages } from '../../util/Constants';
+import { Collections } from '../../util/Constants';
 import { Command } from '../../lib';
 import { Season } from '../../util';
 import Workbook from '../../struct/Excel';
 
-export default class ClanSummaryCommand extends Command {
+export default class SummaryClansCommand extends Command {
 	public constructor() {
-		super('clan-summary', {
+		super('summary-clans', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS'],
@@ -23,7 +23,7 @@ export default class ClanSummaryCommand extends Command {
 			.toArray();
 
 		if (!clans.length) {
-			return interaction.editReply(Messages.SERVER.NO_CLANS_LINKED);
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
 		const embeds = [];
@@ -71,32 +71,27 @@ export default class ClanSummaryCommand extends Command {
 
 		if (!OBJ.DONATED.length) return interaction.editReply('**No data available at this moment!**');
 
+		// Array(3).fill(0).map(() => [].splice(0, 2))
 		const fields = Object.values(OBJ);
-		for (const field of Array(3)
-			.fill(0)
-			.map(() => fields.splice(0, 2))) {
-			const embed = new MessageEmbed();
-			for (const data of field) {
-				data.sort((a, b) => b.value - a.value);
-				const pad = data[0].value.toLocaleString().length + 1;
+		const embed = new MessageEmbed();
+		for (const stats of fields) {
+			stats.sort((a, b) => b.value - a.value);
+			const pad = stats[0].value.toLocaleString().length + 1;
 
-				embed.addField(
-					data[0].key,
-					[
-						data
-							.slice(0, 15)
-							.map((en, i) => {
-								const num = en.value.toLocaleString().padStart(pad, ' ');
-								return `${WHITE_NUMBERS[++i]} \`\u200e${num} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``;
-							})
-							.join('\n')
-					].join('\n'),
-					true
-				);
-			}
-
-			embeds.push(embed);
+			embed.addField(
+				stats[0].key,
+				[
+					stats
+						.slice(0, 15)
+						.map((en, i) => {
+							const num = en.value.toLocaleString().padStart(pad, ' ');
+							return `${WHITE_NUMBERS[++i]} \`\u200e${num} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``;
+						})
+						.join('\n')
+				].join('\n')
+			);
 		}
+		embeds.push(embed);
 
 		const customId = this.client.uuid();
 		const button = new MessageButton().setCustomId(customId).setStyle('SECONDARY').setLabel('Download');
@@ -283,7 +278,7 @@ export default class ClanSummaryCommand extends Command {
 			{ header: 'Defenses', width: 10 },
 			{ header: 'Avg. Activity', width: 10 },
 			{ header: 'Avg. Active Members', width: 16 }
-		] as any; // TODO: Fix Later
+		];
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
 		sheet.getRow(1).height = 40;

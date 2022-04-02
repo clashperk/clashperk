@@ -3,6 +3,7 @@ import { Collections } from '../../util/Constants';
 import { ClanGames } from '../../util';
 import { Command } from '../../lib';
 import { Clan } from 'clashofclans.js';
+import { EMOJIS } from '../../util/Emojis';
 
 export default class ClanGamesCommand extends Command {
 	public constructor() {
@@ -17,7 +18,7 @@ export default class ClanGamesCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; force: boolean; filter: boolean }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; max: boolean; filter: boolean }) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 
@@ -31,55 +32,26 @@ export default class ClanGamesCommand extends Command {
 
 		const queried = await this.query(clan.tag, clan);
 		const members = this.filter(queried, memberList);
-		const embed = this.embed(clan, members, args.force, args.filter).setColor(this.client.embed(interaction));
+		const embed = this.embed(clan, members, args.max, args.filter).setColor(this.client.embed(interaction));
 
-		const CUSTOM_ID = {
-			MAX_POINTS: this.client.uuid(interaction.user.id),
-			PERMISSIBLE_POINTS: this.client.uuid(interaction.user.id)
-		};
 		const row = new MessageActionRow()
-			.addComponents(new MessageButton().setCustomId(CUSTOM_ID.MAX_POINTS).setLabel('Maximum Points').setStyle('SECONDARY'))
 			.addComponents(
 				new MessageButton()
-					.setCustomId(CUSTOM_ID.PERMISSIBLE_POINTS)
+					.setCustomId(JSON.stringify({ cmd: this.id, max: false }))
+					.setEmoji(EMOJIS.REFRESH)
 					.setStyle('SECONDARY')
-					.setLabel('Permissible Points')
-					.setDisabled(true)
+			)
+			.addComponents(
+				new MessageButton()
+					.setCustomId(JSON.stringify({ cmd: this.id, max: !args.max, filter: false }))
+					.setLabel(args.max ? 'Permissible Points' : 'Maximum Points')
+					.setStyle('PRIMARY')
 			);
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-		const collector = msg.createMessageComponentCollector({
-			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === CUSTOM_ID.MAX_POINTS) {
-				const embed = this.embed(clan, members, true).setColor(this.client.embed(interaction));
-
-				row.components[0].setDisabled(true);
-				row.components[1].setDisabled(false);
-				return action.update({ embeds: [embed], components: [row] });
-			}
-
-			if (action.customId === CUSTOM_ID.PERMISSIBLE_POINTS) {
-				const embed = this.embed(clan, members, false).setColor(this.client.embed(interaction));
-
-				row.components[0].setDisabled(false);
-				row.components[1].setDisabled(true);
-				return action.update({ embeds: [embed], components: [row] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			for (const customID of Object.values(CUSTOM_ID)) {
-				this.client.components.delete(customID);
-			}
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
-	private embed(clan: Clan, members: Member[], force = false, filter = false) {
-		const total = members.reduce((prev, mem) => prev + (force ? mem.points : Math.min(mem.points, this.MAX)), 0);
+	private embed(clan: Clan, members: Member[], max = false, filter = false) {
+		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
 		const embed = new MessageEmbed()
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
 			.setDescription(
@@ -90,7 +62,7 @@ export default class ClanGamesCommand extends Command {
 						.slice(0, 55)
 						.filter((d) => (filter ? d.points > 0 : d.points >= 0))
 						.map((m, i) => {
-							const points = this.padStart(force ? m.points : Math.min(this.MAX, m.points));
+							const points = this.padStart(max ? m.points : Math.min(this.MAX, m.points));
 							return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
 						})
 						.join('\n'),
