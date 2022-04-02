@@ -165,7 +165,12 @@ export default class ReminderCreateCommand extends Command {
 			content: [
 				'**War Reminder Setup**',
 				...(clans.length > 25
-					? [`\n*${this.i18n('command.reminder.create.too_many_clans', { lng: interaction.locale, clans: clans.length })}*`]
+					? [
+							`\n*${this.i18n('command.reminder.create.too_many_clans', {
+								lng: interaction.locale,
+								clans: `${clans.length}`
+							})}*`
+					  ]
 					: [])
 			].join('\n')
 		});

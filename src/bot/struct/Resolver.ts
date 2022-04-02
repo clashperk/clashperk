@@ -40,7 +40,7 @@ export default class Resolver {
 			return this.fail(interaction, i18n('common.no_player_tag', { lng: interaction.locale }));
 		}
 
-		return this.fail(interaction, `**No Player Linked to ${user.tag}!**`);
+		return this.fail(interaction, i18n('common.player_not_linked', { lng: interaction.locale, user: parsed.user.tag }));
 	}
 
 	private async clanAlias(guild: string, alias: string) {
@@ -69,7 +69,7 @@ export default class Resolver {
 			return this.fail(interaction, i18n('common.no_clan_tag', { lng: interaction.locale }));
 		}
 
-		return this.fail(interaction, `**No Clan Linked to ${parsed.user.tag}!**`);
+		return this.fail(interaction, i18n('common.clan_not_linked', { lng: interaction.locale, user: parsed.user.tag }));
 	}
 
 	public async getPlayer(interaction: Interaction, tag: string, user?: User): Promise<(Player & { user?: User }) | null> {

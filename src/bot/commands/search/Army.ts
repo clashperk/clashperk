@@ -19,12 +19,8 @@ export default class ArmyCommand extends Command {
 		});
 	}
 
-	private getURL(url: string) {
-		if (!ARMY_URL_REGEX.test(url)) return null;
-		return new URL(url.match(ARMY_URL_REGEX)![0]!);
-	}
-
 	public async exec(interaction: CommandInteraction, args: { link?: string; name?: string }) {
+		console.log(args);
 		const url = this.getURL(args.link!);
 		const army = url?.searchParams.get('army');
 		if (!army) return interaction.editReply(`**You must provide a valid army composition link.**\nhttps://i.imgur.com/uqDnt5s.png`);
@@ -243,5 +239,10 @@ export default class ArmyCommand extends Command {
 
 	private padding(num: number) {
 		return `${num.toString().padStart(2, ' ')}${num > 99 ? '' : 'x'}`;
+	}
+
+	private getURL(url: string) {
+		if (!ARMY_URL_REGEX.test(url)) return null;
+		return new URL(url.match(ARMY_URL_REGEX)![0]!);
 	}
 }

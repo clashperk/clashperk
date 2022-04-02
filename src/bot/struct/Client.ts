@@ -53,7 +53,7 @@ export class Client extends Discord.Client {
 	public remindScheduler!: RemindScheduler;
 	public i18n = i18n;
 
-	// TODO: Fix this
+	// TODO: Fix this (can't be fixed)
 	public rpc: any;
 	public rpcHandler!: RPCHandler;
 	public patrons!: Patrons;

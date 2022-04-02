@@ -15,7 +15,7 @@ interface Prop {
 
 export default class ClanGamesSummaryCommand extends Command {
 	public constructor() {
-		super('clan-games-summary', {
+		super('summary-clan-games', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
