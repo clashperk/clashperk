@@ -173,7 +173,7 @@ export default class Resolver {
 		const code = ['CP', interaction.guild.id.substr(-2)].join('');
 		const clan = clans.find((clan) => clan.tag === data.tag);
 		if (!clan?.verified && !this.verifyClan(code, data, user?.entries ?? []) && !this.client.isOwner(interaction.user)) {
-			await interaction.editReply({ content: this.client.i18n('common.clan_verification', { lng: interaction.locale }) });
+			await interaction.editReply({ content: this.client.i18n('common.clan_verification', { lng: interaction.locale, code }) });
 			return null;
 		}
 

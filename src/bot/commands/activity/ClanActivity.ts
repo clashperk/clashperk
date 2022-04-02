@@ -16,7 +16,7 @@ export default class ClanActivityCommand extends Command {
 				content: [
 					'Graph of hourly active clan members.',
 					'',
-					'Maximum 3 clans are accepted.',
+					'Maximum 7 clans are accepted.',
 					'',
 					'Please set your timezone with the `/timezone` command. It enables you to view the graphs in your timezone.'
 				]
@@ -29,7 +29,7 @@ export default class ClanActivityCommand extends Command {
 		const tags = args.clans?.split(/ +/g) ?? [];
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guild.id, tags)
-			: await this.client.storage.findAll(interaction.guild.id);
+			: (await this.client.storage.findAll(interaction.guild.id)).slice(0, 7);
 
 		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {
