@@ -23,7 +23,7 @@
 		"dev": "node -r dotenv/config --enable-source-maps --es-module-specifier-resolution=node dist/src/index.js",
 		"deploy": "node --es-module-specifier-resolution=node dist/scripts/index.js",
 		"patrons": "node --es-module-specifier-resolution=node dist/scripts/Patrons.js",
-		"pull": "git pull --recurse-submodules && git submodule update --remote --recursive --init"
+		"preinstall": "git pull --recurse-submodules && git submodule update --remote --recursive --init"
 	},
 	"dependencies": {
 		"@clashperk/clashofclans.js": "github:clashperk/clashofclans.js#gh",
