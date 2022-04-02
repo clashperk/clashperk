@@ -157,8 +157,11 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.CLAN_WARS).createIndexes([
 				{
-					key: { 'clan.tag': 1, 'opponent.tag': 1, 'warID': 1 },
+					key: { uid: 1 },
 					unique: true
+				},
+				{
+					key: { id: 1 }
 				},
 				{
 					key: { 'clan.tag': 1 }
@@ -173,9 +176,6 @@ class MongoDB extends MongoClient {
 					key: { 'opponent.members.tag': 1 }
 				},
 				{
-					key: { id: 1 }
-				},
-				{
 					key: { leagueGroupId: 1 },
 					sparse: true
 				},
@@ -185,9 +185,6 @@ class MongoDB extends MongoClient {
 				},
 				{
 					key: { warType: 1 }
-				},
-				{
-					key: { nonce: 1 }
 				}
 			]),
 
