@@ -1,4 +1,4 @@
-import { CommandInteractionOption, Interaction } from 'discord.js';
+import { Interaction } from 'discord.js';
 import { Listener } from '../../lib';
 import { Settings } from '../../util/Constants';
 import moment from 'moment';
@@ -48,12 +48,10 @@ export default class InteractionListener extends Listener {
 		if (!command) return;
 		if (this.client.commandHandler.preInhibitor(interaction, command)) return;
 
-		// TODO: resolve args
-		const options: CommandInteractionOption =
+		const args =
 			interaction.targetType === 'MESSAGE'
-				? { name: 'message', value: interaction.options.getMessage('message')?.content ?? '', type: 'STRING' }
-				: { name: 'user', value: interaction.options.getUser('user')!.id, type: 'USER' };
-		const args = this.client.commandHandler.transformInteraction([options]);
+				? { message: interaction.options.getMessage('message')?.content ?? '' }
+				: { user: interaction.options.getUser('user')!.id };
 		return this.client.commandHandler.exec(interaction, command, args);
 	}
 

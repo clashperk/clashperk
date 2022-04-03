@@ -19,9 +19,8 @@ export default class ArmyCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction, args: { link?: string; name?: string }) {
-		console.log(args);
-		const url = this.getURL(args.link!);
+	public async exec(interaction: CommandInteraction, args: { link?: string; message?: string; name?: string }) {
+		const url = this.getURL(args.link ?? args.message!);
 		const army = url?.searchParams.get('army');
 		if (!army) return interaction.editReply(`**You must provide a valid army composition link.**\nhttps://i.imgur.com/uqDnt5s.png`);
 
