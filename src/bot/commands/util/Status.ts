@@ -72,6 +72,6 @@ export default class StatusCommand extends Command {
 	}
 
 	private count(collection: string) {
-		return this.client.db.collection(collection).countDocuments();
+		return this.client.db.collection(collection).estimatedDocumentCount();
 	}
 }
