@@ -538,10 +538,6 @@ export const COMMANDS: Command[] = [
 								value: 'donation-log'
 							},
 							{
-								name: 'Auto Role',
-								value: 'auto-role'
-							},
-							{
 								name: 'Remove Clan',
 								value: 'remove-clan'
 							}
@@ -550,7 +546,8 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'tag',
 						description: 'Tag of a clan',
-						type: ApplicationCommandOptionType.String
+						type: ApplicationCommandOptionType.String,
+						required: true
 					},
 					{
 						name: 'channel',

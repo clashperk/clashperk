@@ -48,12 +48,13 @@ export default class SetupDisableCommand extends Command {
 		};
 	}
 
-	public async exec(
-		interaction: CommandInteraction,
-		{ option: bit, tag, channel }: { option: string; channel: TextChannel; tag?: string }
-	) {
-		tag = this.client.http.fixTag(tag!);
-		if (bit === 'channel-link') {
+	private parseTag(tag?: string) {
+		return tag ? this.client.http.fixTag(tag) : undefined;
+	}
+
+	public async exec(interaction: CommandInteraction, { option, tag, channel }: { option: string; channel: TextChannel; tag?: string }) {
+		tag = this.parseTag(tag);
+		if (option === 'channel-link') {
 			const { value } = await this.client.storage.collection.findOneAndUpdate(
 				{ channels: channel.id },
 				{ $pull: { channels: channel.id } },
@@ -70,7 +71,7 @@ export default class SetupDisableCommand extends Command {
 			return interaction.editReply(`Couldn't find any clan linked to ${channel.toString()}`);
 		}
 
-		if (bit === 'auto-role' && !tag) {
+		if (option === 'auto-role' && !tag) {
 			await this.client.db
 				.collection(Collections.CLAN_STORES)
 				.updateMany(
@@ -83,7 +84,7 @@ export default class SetupDisableCommand extends Command {
 		if (!tag) return interaction.editReply('**You must specify a clan tag to run this command.**');
 		const data = await this.client.db.collection(Collections.CLAN_STORES).findOne({ tag, guild: interaction.guild!.id });
 
-		if (bit === 'auto-role' && data) {
+		if (option === 'auto-role' && data) {
 			await this.client.db
 				.collection(Collections.CLAN_STORES)
 				.updateMany(
@@ -98,18 +99,18 @@ export default class SetupDisableCommand extends Command {
 		}
 
 		const id = data._id.toHexString();
-		if (bit === 'all') {
+		if (option === 'all') {
 			await this.client.storage.delete(id);
 			await this.client.rpcHandler.delete(id, { tag: data.tag, op: 0, guild: interaction.guild!.id });
 			return interaction.editReply(`**Successfully Deleted ${data.name as string} (${data.tag as string})**`);
 		}
 
-		const deleted = await this.client.storage.remove(data._id.toHexString(), { op: Number(bit) });
-		if (deleted?.deletedCount) await this.updateFlag(id, Number(bit));
-		await this.client.rpcHandler.delete(id, { op: Number(bit), tag: data.tag, guild: interaction.guild!.id });
+		const deleted = await this.client.storage.remove(data._id.toHexString(), { op: Number(option) });
+		if (deleted?.deletedCount) await this.updateFlag(id, Number(option));
+		await this.client.rpcHandler.delete(id, { op: Number(option), tag: data.tag, guild: interaction.guild!.id });
 
 		await this.delete(id, data.tag, data.flag, interaction.guild!.id);
-		return interaction.editReply(`**Successfully Removed ${names[bit]} for ${data.name as string} (${data.tag as string})**`);
+		return interaction.editReply(`**Successfully Removed ${names[option]} for ${data.name as string} (${data.tag as string})**`);
 	}
 
 	private async delete(id: string, tag: string, flag: number, guild: string) {
@@ -122,14 +123,16 @@ export default class SetupDisableCommand extends Command {
 			this.client.db.collection(Collections.CLAN_WAR_LOGS).countDocuments({ clan_id: new ObjectId(id) })
 		]).then((collection) => collection.every((num) => num === 0));
 
-		const bit = Flags.CHANNEL_LINKED;
-		if (data && (flag & bit) !== bit) {
+		const option = Flags.CHANNEL_LINKED;
+		if (data && (flag & option) !== option) {
 			this.client.rpcHandler.delete(id, { tag, op: 0, guild });
 			return this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: new ObjectId(id) }, { $set: { flag: 0 } });
 		}
 	}
 
-	private updateFlag(id: string, bit: number) {
-		return this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: new ObjectId(id) }, { $bit: { flag: { xor: bit } } });
+	private updateFlag(id: string, option: number) {
+		return this.client.db
+			.collection(Collections.CLAN_STORES)
+			.updateOne({ _id: new ObjectId(id) }, { $option: { flag: { xor: option } } });
 	}
 }

@@ -197,16 +197,16 @@ export default class RemindScheduler {
 				`📨 ${rem.message}`,
 				'',
 				users
-					.map(([mention, members]) => {
-						return members
+					.map(([mention, members]) =>
+						members
 							.map((mem, i) => {
 								const ping = i === 0 ? ` ${mention}` : '';
 								const hits =
 									data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
 								return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]}${ping} ${mem.name}${hits}`;
 							})
-							.join('\n');
-					})
+							.join('\n')
+					)
 					.join('\n')
 			].join('\n');
 

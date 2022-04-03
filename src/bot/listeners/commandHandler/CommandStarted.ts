@@ -22,19 +22,14 @@ export default class CommandStartedListener extends Listener {
 					id: interaction.user.id,
 					username: interaction.user.tag
 				},
-				guild: interaction.guild
-					? {
-							id: interaction.guild.id,
-							name: interaction.guild.name
-					  }
-					: null,
+				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
 				command: {
 					id: command.id,
 					category: command.category
 				},
 				interaction: {
 					id: interaction.id,
-					content: interaction.commandName
+					command: interaction.commandName
 				},
 				args
 			}
@@ -58,7 +53,7 @@ export default class CommandStartedListener extends Listener {
 			},
 			interaction: {
 				id: interaction.id,
-				content: interaction.commandName
+				command: interaction.commandName
 			},
 			args
 		});

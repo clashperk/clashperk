@@ -164,14 +164,12 @@ export default class ReminderCreateCommand extends Command {
 			components: mutate(),
 			content: [
 				'**War Reminder Setup**',
-				...(clans.length > 25
-					? [
-							`\n*${this.i18n('command.reminder.create.too_many_clans', {
-								lng: interaction.locale,
-								clans: `${clans.length}`
-							})}*`
-					  ]
-					: [])
+				clans.length > 25
+					? `\n*${this.i18n('command.reminder.create.too_many_clans', {
+							lng: interaction.locale,
+							clans: `${clans.length}`
+					  })}*`
+					: ''
 			].join('\n')
 		});
 		const collector = msg.createMessageComponentCollector({

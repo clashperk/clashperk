@@ -35,14 +35,12 @@ export default class CWLMembersCommand extends Command {
 		const fetched = await this.client.http.detailedClanMembers(clanMembers);
 		const memberList = fetched
 			.filter((m) => m.ok)
-			.map((m) => {
-				return {
-					name: m.name,
-					tag: m.tag,
-					townHallLevel: m.townHallLevel,
-					heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : []
-				};
-			});
+			.map((m) => ({
+				name: m.name,
+				tag: m.tag,
+				townHallLevel: m.townHallLevel,
+				heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : []
+			}));
 
 		/* [[1, 4], [2], [3]].reduce((a, b) => {
 			a.push(...b);
