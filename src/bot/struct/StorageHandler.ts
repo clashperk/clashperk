@@ -39,17 +39,20 @@ export default class StorageHandler {
 	public async search(guildId: string, query: string[]) {
 		if (!query.length) return [];
 		return this.collection
-			.find({
-				$or: [
-					{
-						tag: { $in: query.map((tag) => this.fixTag(tag)) }
-					},
-					{
-						guild: guildId,
-						alias: { $in: query.map((alias) => alias.toLowerCase()) }
-					}
-				]
-			})
+			.find(
+				{
+					$or: [
+						{
+							tag: { $in: query.map((tag) => this.fixTag(tag)) }
+						},
+						{
+							guild: guildId,
+							alias: { $in: query.map((alias) => alias) }
+						}
+					]
+				},
+				{ collation: { locale: 'en', strength: 2 } }
+			)
 			.toArray();
 	}
 

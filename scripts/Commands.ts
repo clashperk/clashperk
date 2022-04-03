@@ -799,7 +799,7 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'name',
 						required: true,
-						description: 'Name of an alias',
+						description: 'Name of an alias.',
 						type: ApplicationCommandOptionType.String
 					},
 					{

@@ -24,6 +24,9 @@ export default class AliasCreateCommand extends Command {
 		if (args.name.startsWith('#')) {
 			return interaction.editReply(this.i18n('command.alias.create.no_hash', { lng: interaction.locale }));
 		}
+		if (args.name && /\s+/g.test(args.name)) {
+			return interaction.editReply(this.i18n('command.alias.create.no_whitespace', { lng: interaction.locale }));
+		}
 
 		const tag = this.parseTag(args.tag);
 		if (!tag) {
