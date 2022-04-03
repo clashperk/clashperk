@@ -55,7 +55,7 @@ export function i18n<K extends Leaves<typeof Locale>, I extends Record<Keys<GetD
 	key: CheckDictString<K, typeof Locale>,
 	args: I & { lng: string }
 ): Interpolate<GetDictValue<K, typeof Locale>, I> {
-	return i18next.t(key, args); // .replace(/[^\S\r\n]+$/gm, '');
+	return i18next.t(key, { ...args, interpolation: { escapeValue: false } }); // .replace(/[^\S\r\n]+$/gm, '');
 }
 
 export function format<K extends Leaves<typeof Locale>>(key: CheckDictString<K, typeof Locale>): K {
