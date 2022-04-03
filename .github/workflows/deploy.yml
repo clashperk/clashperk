@@ -19,6 +19,9 @@ jobs:
         with:
           node-version: 16
 
+      - name: Submodule
+        run: npm run pull
+        
       - name: NPM Install
         run: npm i
 
