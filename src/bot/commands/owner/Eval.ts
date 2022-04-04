@@ -15,7 +15,7 @@ export default class EvalCommand extends Command {
 		});
 	}
 
-	public async run(message: Message, { content: code, depth, shard }: { content: string; depth: number; shard: number }) {
+	public async run(message: Message, { content: code, depth, shard }: { content: string; depth?: number; shard?: boolean }) {
 		let hrDiff;
 		let evaled;
 		try {
@@ -28,17 +28,14 @@ export default class EvalCommand extends Command {
 
 		const result = this._result(evaled, hrDiff, depth, shard);
 		if (Array.isArray(result)) {
-			return result.map(async (res, index) => {
-				if (index === 0) return message.channel.send(res);
-				return message.channel.send(res);
-			});
+			return result.slice(0, 5).map((content) => message.channel.send(content));
 		}
 		return message.channel.send(result);
 	}
 
-	private _result(result: string, hrDiff: number[], depth: number, shard: number) {
+	private _result(result: string, hrDiff: number[], depth?: number, shard?: boolean) {
 		const inspected = util
-			.inspect(result, { depth: shard ? depth + 1 : depth })
+			.inspect(result, { depth: shard && depth ? depth + 1 : depth ?? 0 })
 			.replace(new RegExp('!!NL!!', 'g'), '\n')
 			.replace(this.replaceToken, '--🙄--');
 

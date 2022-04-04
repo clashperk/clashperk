@@ -131,8 +131,6 @@ export default class SetupDisableCommand extends Command {
 	}
 
 	private updateFlag(id: string, option: number) {
-		return this.client.db
-			.collection(Collections.CLAN_STORES)
-			.updateOne({ _id: new ObjectId(id) }, { $option: { flag: { xor: option } } });
+		return this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: new ObjectId(id) }, { $bit: { flag: { xor: option } } });
 	}
 }

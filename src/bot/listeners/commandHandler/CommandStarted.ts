@@ -44,7 +44,7 @@ export default class CommandStartedListener extends Listener {
 				? {
 						id: interaction.guild.id,
 						name: interaction.guild.name,
-						channel_id: interaction.channel!.id
+						channel_id: interaction.channel?.id ?? null
 				  }
 				: null,
 			command: {

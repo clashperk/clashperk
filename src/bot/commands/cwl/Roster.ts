@@ -10,6 +10,7 @@ export default class CWLRosterCommand extends Command {
 		super('cwl-roster', {
 			name: 'roster',
 			category: 'war',
+			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'CWL Roster and Town Hall distribution.'

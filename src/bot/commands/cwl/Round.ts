@@ -10,6 +10,7 @@ export default class CWLRoundCommand extends Command {
 		super('cwl-round', {
 			name: 'round',
 			category: 'war',
+			channel: 'guild',
 			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
 			description: {
 				content: 'Shows info about the current round.'
