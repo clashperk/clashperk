@@ -65,7 +65,7 @@ export default class StatsCommand extends Command {
 	}
 
 	public async exec(
-		interaction: CommandInteraction,
+		interaction: CommandInteraction<'cached'>,
 		{
 			command: mode,
 			tag,

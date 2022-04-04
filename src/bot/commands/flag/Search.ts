@@ -12,10 +12,10 @@ export default class FlagSearchCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction, args: { tag?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
 		const player = await this.client.resolver.resolvePlayer(interaction, args.tag);
 		if (!player) return;
-		const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: interaction.guild!.id, tag: player.tag });
+		const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: interaction.guild.id, tag: player.tag });
 
 		if (!flag) {
 			return interaction.editReply(`**${player.name}** is not flagged!`);

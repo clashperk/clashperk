@@ -1,5 +1,5 @@
 import { Collections, Settings, status } from '../util/Constants';
-import { Guild, User, Interaction, CommandInteraction, GuildMember } from 'discord.js';
+import { Guild, User, Interaction, CommandInteraction } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import Client from './Client';
 import { UserInfo } from '../types';
@@ -12,20 +12,19 @@ export default class Resolver {
 		this.client = client;
 	}
 
-	public async resolvePlayer(interaction: Interaction, args?: string, num = 1): Promise<(Player & { user?: User }) | null> {
+	public async resolvePlayer(interaction: Interaction<'cached'>, args?: string, num = 1): Promise<(Player & { user?: User }) | null> {
 		args = args?.replace(/[\u200e|\u200f]+/g, '') ?? '';
-		const parsed = await this.argumentParser(interaction, args);
-		const tag = parsed && typeof parsed === 'boolean';
+		const parsed = await this.parseArgument(interaction, args);
 
-		if (tag) return this.getPlayer(interaction, args);
-		if (!parsed) {
+		if (parsed.isTag) return this.getPlayer(interaction, args);
+		if (!parsed.user) {
 			return this.fail(interaction, `**${status(404)}**`);
 		}
 
 		const { user } = parsed;
 		const otherTags: string[] = [];
 		const data = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: user.id });
-		if (data && data.user_tag !== user.tag) this.updateUserTag(interaction.guild!, user.id);
+		if (data && data.user_tag !== user.tag) this.updateUserTag(interaction.guild, user.id);
 
 		if (!data?.entries?.length || num > data.entries?.length) {
 			otherTags.push(...(await this.client.http.getPlayerTags(user.id)));
@@ -49,23 +48,27 @@ export default class Resolver {
 			.findOne({ guild, alias }, { collation: { strength: 2, locale: 'en' }, projection: { tag: 1, name: 1 } });
 	}
 
-	public async resolveClan(interaction: Interaction, args?: string): Promise<Clan | null> {
+	public async resolveClan(interaction: Interaction<'cached'>, args?: string): Promise<Clan | null> {
 		args = args?.replace(/[\u200e|\u200f]+/g, '') ?? '';
-		const parsed = await this.argumentParser(interaction, args);
+		const parsed = await this.parseArgument(interaction, args);
 
-		const clan = await this.clanAlias(interaction.guild!.id, args.trim());
-		const tag = parsed && typeof parsed === 'boolean';
-		if (tag) return this.getClan(interaction, clan && !args.startsWith('#') ? clan.tag : args, true);
+		const clan = await this.clanAlias(interaction.guild.id, args.trim());
+		if (parsed.isTag) return this.getClan(interaction, clan && !args.startsWith('#') ? clan.tag : args, true);
 
-		if (!parsed) {
+		if (!parsed.user) {
 			if (clan) return this.getClan(interaction, clan.tag);
 			return this.fail(interaction, `**${status(404)}**`);
 		}
 
-		const data = await this.getLinkedClan(interaction, parsed.id);
-		if (data) return this.getClan(interaction, data.tag);
+		if (parsed.matched) {
+			const data = await this.getLinkedUserClan(parsed.user.id);
+			if (data) return this.getClan(interaction, data.tag);
+		} else {
+			const data = await this.getLinkedClan(interaction, parsed.user.id);
+			if (data) return this.getClan(interaction, data.tag);
+		}
 
-		if (interaction.user.id === parsed.id) {
+		if (interaction.user.id === parsed.user.id) {
 			return this.fail(interaction, i18n('common.no_clan_tag', { lng: interaction.locale }));
 		}
 
@@ -100,14 +103,16 @@ export default class Resolver {
 		return null;
 	}
 
-	private argumentParser(interaction: Interaction, args: string) {
-		if (!args) return interaction.member as GuildMember;
+	private async parseArgument(interaction: Interaction<'cached'>, args: string) {
+		if (!args) return { user: interaction.member.user, matched: false, isTag: false };
+
 		const id = /<@!?(\d{17,19})>/.exec(args)?.[1] ?? /^\d{17,19}/.exec(args)?.[0];
 		if (id) {
-			if (interaction.guild!.members.cache.has(id)) return interaction.guild!.members.cache.get(id);
-			return interaction.guild!.members.fetch(id).catch(() => null);
+			const member = interaction.guild.members.cache.get(id) ?? (await interaction.guild.members.fetch(id).catch(() => null));
+			if (member) return { user: member.user, matched: true, isTag: false };
+			return { user: null, matched: true, isTag: false };
 		}
-		return /^#?[0289CGJLOPQRUVY]+$/gi.test(args);
+		return { user: null, matched: false, isTag: /^#?[0289CGJLOPQRUVY]+$/gi.test(args) };
 	}
 
 	private parseTag(tag: string) {
@@ -115,18 +120,23 @@ export default class Resolver {
 		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O/g, '0') ?? ''}`;
 	}
 
-	private async getLinkedClan(interaction: Interaction, user_id: string) {
+	private async getLinkedClan(interaction: Interaction, userId: string) {
 		const clan = await this.client.db.collection(Collections.CLAN_STORES).findOne({ channels: interaction.channel!.id });
 		if (clan) return clan;
-		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: user_id });
-		if (user?.clan) return user.clan;
+		const user = await this.getLinkedUserClan(userId);
+		if (user) return user;
 		const guild = await this.client.db.collection(Collections.CLAN_STORES).findOne({ guild: interaction.guild!.id });
 		if (guild) return guild;
 		return null;
 	}
 
-	public updateUserTag(guild: Guild, user_id: string) {
-		const member = guild.members.cache.get(user_id);
+	private async getLinkedUserClan(userId: string) {
+		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: userId });
+		return user?.clan ?? null;
+	}
+
+	public updateUserTag(guild: Guild, userId: string) {
+		const member = guild.members.cache.get(userId);
 		if (!member) return null;
 		return this.client.db
 			.collection(Collections.LINKED_PLAYERS)
