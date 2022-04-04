@@ -1,4 +1,4 @@
-import Discord, { Intents, Interaction, Message, Snowflake } from 'discord.js';
+import Discord, { Intents, Interaction, Message, Options, Snowflake, Sweepers } from 'discord.js';
 import { Db } from 'mongodb';
 import { container } from 'tsyringe';
 import { fileURLToPath, URL } from 'url';
@@ -64,7 +64,26 @@ export class Client extends Discord.Client {
 
 	public constructor() {
 		super({
-			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_WEBHOOKS, Intents.FLAGS.GUILD_MESSAGES]
+			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_WEBHOOKS, Intents.FLAGS.GUILD_MESSAGES],
+			makeCache: Options.cacheWithLimits({
+				MessageManager: {
+					maxSize: 15,
+					sweepInterval: 5 * 60,
+					sweepFilter: Sweepers.filterByLifetime({
+						lifetime: 10 * 60,
+						getComparisonTimestamp: (msg) => msg.createdTimestamp
+					})
+				},
+				PresenceManager: 0,
+				UserManager: {
+					maxSize: 100,
+					keepOverLimit: (user) => user.id === this.user!.id
+				},
+				GuildMemberManager: {
+					maxSize: 100,
+					keepOverLimit: (member) => member.id === this.user!.id
+				}
+			})
 		});
 
 		this.logger = new Logger(this);
