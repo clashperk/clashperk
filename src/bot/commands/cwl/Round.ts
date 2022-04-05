@@ -51,7 +51,7 @@ export default class CWLRoundCommand extends Command {
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
-				if (!data.ok) continue;
+				if (!data.ok || data.state === 'notInWar') continue;
 
 				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
@@ -114,6 +114,12 @@ export default class CWLRoundCommand extends Command {
 			}
 		}
 
+		const clan = body.clans.find((clan) => clan.tag === clanTag)!;
+		if (!chunks.length && body.season !== Util.getCWLSeasonId()) {
+			return interaction.editReply(
+				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
+		}
 		if (!chunks.length || chunks.length !== rounds.length)
 			return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
 		const round = chunks.find((c) => c.state === 'inWar') ?? chunks.slice(-1)[0];

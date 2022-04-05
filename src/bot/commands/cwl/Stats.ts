@@ -70,7 +70,7 @@ export default class CWLStatsCommand extends Command {
 		const wars: (ClanWar & { warTag: string })[] = await Promise.all(warTags.map((warTag) => this.fetch(warTag)));
 
 		for (const data of wars) {
-			if (!data.ok) continue;
+			if (!data.ok || data.state === 'notInWar') continue;
 
 			if (data.state === 'inWar') {
 				const clan = ranking[data.clan.tag] // eslint-disable-line
@@ -220,6 +220,11 @@ export default class CWLStatsCommand extends Command {
 			}
 		}
 
+		if (!collection.length && body.season !== Util.getCWLSeasonId()) {
+			return interaction.editReply(
+				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
+		}
 		if (!collection.length) return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
 		const description = collection
 			.map((arr) => {

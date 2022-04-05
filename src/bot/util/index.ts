@@ -142,6 +142,10 @@ export class Util extends Discord.Util {
 		return Season.generateID(Season.startTimestamp);
 	}
 
+	public static getCWLSeasonId() {
+		return new Date().toISOString().substring(0, 7);
+	}
+
 	public static getRelativeTime(ms: number) {
 		return `<t:${Math.floor(ms / 1000)}:R>`;
 	}

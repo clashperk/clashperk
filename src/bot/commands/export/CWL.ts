@@ -48,7 +48,7 @@ export default class ExportCWL extends Command {
 		const chunks = [];
 		for (const clan of clans) {
 			const res = await this.client.http.clanWarLeague(clan.tag).catch(() => null);
-			if (!res?.ok) {
+			if (!res?.ok || res.state === 'notInWar') {
 				const data = await this.client.storage.getWarTags(clan.tag);
 				if (!data) continue;
 				const { members, perRound } = await this.rounds(data, clan);
@@ -221,7 +221,7 @@ export default class ExportCWL extends Command {
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
-				if (!data.ok) continue;
+				if (!data.ok || data.state === 'notInWar') continue;
 
 				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;

@@ -59,7 +59,7 @@ export default class CWLStarsCommand extends Command {
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
-				if (!data.ok) continue;
+				if (!data.ok || data.state === 'notInWar') continue;
 
 				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
@@ -96,6 +96,11 @@ export default class CWLStarsCommand extends Command {
 		}
 
 		const leaderboard = Object.values(members);
+		if (!leaderboard.length && body.season !== Util.getCWLSeasonId()) {
+			return interaction.editReply(
+				this.i18n('command.cwl.not_in_season', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
+		}
 		if (!leaderboard.length) return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
 		leaderboard.sort((a, b) => b.dest - a.dest).sort((a, b) => b.stars - a.stars);
 
