@@ -61,8 +61,7 @@ export default class ErrorListener extends Listener {
 		captureException(error);
 
 		const message = {
-			// eslint-disable-next-line @typescript-eslint/no-base-to-string
-			content: ['\\❌ Something went wrong while executing that command.', `\`\`\`\n${error.toString()}\`\`\``].join('\n'),
+			content: '\\❌ Something went wrong while executing that command.',
 			components: [
 				new MessageActionRow().addComponents(
 					new MessageButton().setStyle('LINK').setLabel('Contact Support').setURL('https://discord.gg//ppuppun')
@@ -72,7 +71,7 @@ export default class ErrorListener extends Listener {
 		};
 
 		try {
-			if (!interaction.replied) await interaction.reply(message);
+			if (!interaction.deferred) await interaction.reply(message);
 			await interaction.followUp(message);
 		} catch (err) {
 			// eslint-disable-next-line
