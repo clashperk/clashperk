@@ -79,7 +79,9 @@ export default class ClanCommand extends Command {
 				'**Location**',
 				`${location}${rank}`,
 				'**Requirements**',
-				`⚙️ ${clanTypes[clan.type]} ${EMOJIS.TROPHY} ${clan.requiredTrophies} Required`,
+				`⚙️ ${clanTypes[clan.type]} ${EMOJIS.TROPHY} ${clan.requiredTrophies} Required ${
+					clan.requiredTownhallLevel ? `${EMOJIS.TOWNHALL} ${clan.requiredTownhallLevel}+` : ''
+				}`,
 				'\u200b\u2002'
 			].join('\n')
 		);
