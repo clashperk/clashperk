@@ -60,7 +60,7 @@ export default class ClanEmbedCommand extends Command {
 		if (!data) return;
 
 		const user = await this.getUser(data);
-		if (!user) return interaction.editReply('**Clan leader is not linked to the bot!**');
+		if (!user) return interaction.editReply('Clan leader is not linked to the bot. Use `/link` command to link the player account.');
 
 		const __customIds = {
 			a: this.client.uuid(interaction.user.id),
@@ -240,15 +240,15 @@ export default class ClanEmbedCommand extends Command {
 
 		description = description?.toLowerCase() === 'auto' ? 'auto' : description?.toLowerCase() === 'none' ? '' : description ?? '';
 
-		const mutate = async (messageId: string, channelId: string) => {
+		const mutate = async (message: string, channel: string) => {
 			const id = await this.client.storage.register(interaction, {
 				op: Flags.CLAN_EMBED_LOG,
 				guild: interaction.guild.id,
-				channel: channelId,
+				channel,
 				tag: data.tag,
 				color,
 				name: data.name,
-				interaction: messageId,
+				message,
 				embed: {
 					accepts,
 					userId: user.id,
@@ -279,7 +279,7 @@ export default class ClanEmbedCommand extends Command {
 			.addComponents(new MessageButton().setCustomId(customIds.edit).setStyle('SECONDARY').setLabel('Edit Existing Embed'))
 			.addComponents(new MessageButton().setCustomId(customIds.create).setStyle('PRIMARY').setLabel('Create New Embed'));
 
-		const messageURL = this.getMessageURL(interaction.guild.id, existing.channel, existing.interaction);
+		const messageURL = this.getMessageURL(interaction.guild.id, existing.channel, existing.message);
 		const msg = await interaction.editReply({
 			content: [`**This clan already has an active Clan Embed. [Jump ↗️](<${messageURL}>)**`].join('\n'),
 			components: [row]
@@ -293,7 +293,7 @@ export default class ClanEmbedCommand extends Command {
 			if (action.customId === customIds.edit) {
 				try {
 					const channel = interaction.guild.channels.cache.get(existing.channel);
-					await (channel as TextChannel)!.messages.edit(existing.interaction, { embeds: [embed] });
+					await (channel as TextChannel)!.messages.edit(existing.message, { embeds: [embed] });
 				} catch {
 					row.components[0].setDisabled(true);
 					return action.update({
@@ -306,7 +306,7 @@ export default class ClanEmbedCommand extends Command {
 					components: [],
 					content: `**Successfully updated the existing embed. [Jump ↗️](<${messageURL}>)**`
 				});
-				return mutate(existing.interaction, existing.channel);
+				return mutate(existing.message, existing.channel);
 			}
 
 			if (action.customId === customIds.create) {

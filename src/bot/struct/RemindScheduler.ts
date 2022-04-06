@@ -125,7 +125,9 @@ export default class RemindScheduler {
 
 			if (this.wasInMaintenance(reminder, data)) {
 				this.client.logger.info(
-					`Reminder shifted ${reminder.timestamp.toISOString()} => ${moment(data.endTime).toDate().toISOString()}`,
+					`Reminder shifted [${reminder.tag}] ${reminder.timestamp.toISOString()} => ${moment(data.endTime)
+						.toDate()
+						.toISOString()}`,
 					{ label: 'REMINDER' }
 				);
 				return await this.collection.updateOne(
