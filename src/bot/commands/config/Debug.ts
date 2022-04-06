@@ -44,7 +44,7 @@ export default class DebugCommand extends Command {
 			'READ_MESSAGE_HISTORY'
 		];
 
-		const clans = await this.client.storage.findAll(interaction.guild.id);
+		const clans = await this.client.storage.find(interaction.guild.id);
 		const fetched: Clan[] = (await Promise.all(clans.map((en) => this.client.http.clan(en.tag)))).filter((res) => res.ok);
 
 		const rpc: RPC = await new Promise((resolve) =>
@@ -55,11 +55,9 @@ export default class DebugCommand extends Command {
 		);
 
 		const UEE_FOR_SLASH = channel.permissionsFor(interaction.guild.roles.everyone)!.has('USE_EXTERNAL_EMOJIS');
-		const UEE_FOR_TEXT = channel.permissionsFor(interaction.guild.me!)!.has('USE_EXTERNAL_EMOJIS');
-		const emojis =
-			UEE_FOR_SLASH || UEE_FOR_TEXT
-				? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
-				: { cross: '❌', tick: '☑️', none: '⬛' };
+		const emojis = UEE_FOR_SLASH
+			? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
+			: { cross: '❌', tick: '☑️', none: '⬛' };
 
 		const chunks = Util.splitMessage(
 			[
@@ -88,10 +86,10 @@ export default class DebugCommand extends Command {
 				'',
 				`**Loop Time ${rpc.clans && rpc.players && rpc.wars ? '' : '(Processing...)'}**`,
 				`${emojis.none} \` ${'CLANS'.padStart(7, ' ')} \` \` ${'WARS'.padStart(7, ' ')} \` \` ${'PLAYERS'} \``,
-				`${emojis.tick} \` ${this.fixTime(rpc.clans, '2m').padStart(7, ' ')} \` \` ${this.fixTime(rpc.wars, '10m').padStart(
+				`${emojis.tick} \` ${this.fixTime(rpc.clans).padStart(7, ' ')} \` \` ${this.fixTime(rpc.wars).padStart(
 					7,
 					' '
-				)} \` \` ${this.fixTime(rpc.players, '1h').padStart(7, ' ')} \``,
+				)} \` \` ${this.fixTime(rpc.players).padStart(7, ' ')} \``,
 				'',
 				'**Clan Status and Player Loop Info**',
 				`${emojis.none} \`\u200e ${'CLAN NAME'.padEnd(
@@ -115,8 +113,8 @@ export default class DebugCommand extends Command {
 		for (const chunk of chunks) await interaction.followUp(chunk);
 	}
 
-	private fixTime(num: number, total: string) {
-		return num === 0 ? `.../${total}` : `${ms(num)}/${total}`;
+	private fixTime(num: number) {
+		return num === 0 ? `...` : `${ms(num)}`;
 	}
 
 	private fixName(perm: string) {

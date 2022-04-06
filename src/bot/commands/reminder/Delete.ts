@@ -52,7 +52,7 @@ export default class ReminderDeleteCommand extends Command {
 		if (reminders.length > 25)
 			return interaction.editReply(this.i18n('command.reminder.delete.too_many_reminders', { lng: interaction.locale }));
 
-		const clans = await this.client.storage.findAll(interaction.guild.id);
+		const clans = await this.client.storage.find(interaction.guild.id);
 		const customIds = {
 			menu: this.client.uuid(interaction.user.id),
 			delete: this.client.uuid(interaction.user.id),

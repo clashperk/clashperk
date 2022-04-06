@@ -32,7 +32,7 @@ export default class StorageHandler {
 		this.collection = client.db.collection(Collections.CLAN_STORES);
 	}
 
-	public async findAll(id: string) {
+	public async find(id: string) {
 		return this.collection.find({ guild: id }).toArray();
 	}
 
@@ -46,10 +46,10 @@ export default class StorageHandler {
 							tag: { $in: query.map((tag) => this.fixTag(tag)) }
 						},
 						{
-							guild: guildId,
 							alias: { $in: query.map((alias) => alias) }
 						}
-					]
+					],
+					guild: guildId
 				},
 				{ collation: { locale: 'en', strength: 2 } }
 			)

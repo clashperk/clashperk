@@ -96,7 +96,7 @@ export default class AutoRoleCommand extends Command {
 			);
 		}
 
-		const clans = await this.client.storage.findAll(interaction.guild!.id);
+		const clans = await this.client.storage.find(interaction.guild!.id);
 		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
 		await this.client.db

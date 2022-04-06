@@ -56,7 +56,7 @@ export default class ExportClanMembersCommand extends Command {
 		const tags = args.clans?.split(/ +/g) ?? [];
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.findAll(interaction.guildId);
+			: await this.client.storage.find(interaction.guildId);
 
 		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {

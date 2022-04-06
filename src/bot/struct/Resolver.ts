@@ -166,7 +166,7 @@ export default class Resolver {
 		const data = await this.getClan(interaction, tag);
 		if (!data) return null;
 
-		const clans = await this.client.storage.findAll(interaction.guild.id);
+		const clans = await this.client.storage.find(interaction.guild.id);
 		const max = this.client.settings.get<number>(interaction.guild.id, Settings.CLAN_LIMIT, 2);
 		if (
 			clans.length >= max &&

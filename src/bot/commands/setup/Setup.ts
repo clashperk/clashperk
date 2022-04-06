@@ -95,7 +95,7 @@ export default class SetupCommand extends Command {
 	}
 
 	private async getClanList(interaction: CommandInteraction) {
-		const clans = await this.client.storage.findAll(interaction.guild!.id);
+		const clans = await this.client.storage.find(interaction.guild!.id);
 		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
 		if (!clans.length) return [];
 
@@ -120,7 +120,7 @@ export default class SetupCommand extends Command {
 	}
 
 	private async getFeatures(interaction: CommandInteraction) {
-		const clans = await this.client.storage.findAll(interaction.guild!.id);
+		const clans = await this.client.storage.find(interaction.guild!.id);
 		const fetched = await Promise.all(
 			clans.map(async (clan) => {
 				const bit1 = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clan_id: clan._id });

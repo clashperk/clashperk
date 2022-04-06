@@ -26,7 +26,7 @@ export default class ReminderListCommand extends Command {
 	public async exec(interaction: CommandInteraction) {
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).find({ guild: interaction.guild!.id }).toArray();
 		if (!reminders.length) return interaction.editReply('**You have no reminders.**');
-		const clans = await this.client.storage.findAll(interaction.guild!.id);
+		const clans = await this.client.storage.find(interaction.guild!.id);
 
 		const label = (duration: number) => moment.duration(duration).format('H[h], m[m], s[s]', { trim: 'both mid' });
 
