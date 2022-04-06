@@ -1,6 +1,6 @@
 import { addBreadcrumb, Severity, setContext } from '@sentry/node';
 import { Listener, Command } from '../../lib';
-import { CommandInteraction } from 'discord.js';
+import { BaseCommandInteraction, Interaction, MessageComponentInteraction } from 'discord.js';
 import { CommandHandlerEvents } from '../../lib/util';
 
 export default class CommandStartedListener extends Listener {
@@ -12,7 +12,7 @@ export default class CommandStartedListener extends Listener {
 		});
 	}
 
-	public exec(interaction: CommandInteraction, command: Command, args: unknown) {
+	public exec(interaction: MessageComponentInteraction | BaseCommandInteraction, command: Command, args: unknown) {
 		addBreadcrumb({
 			message: 'command_started',
 			category: command.category,
@@ -23,13 +23,15 @@ export default class CommandStartedListener extends Listener {
 					username: interaction.user.tag
 				},
 				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
+				channel: interaction.channel?.id ?? null,
 				command: {
 					id: command.id,
 					category: command.category
 				},
 				interaction: {
 					id: interaction.id,
-					command: interaction.commandName
+					command: interaction.isApplicationCommand() ? interaction.commandName : null,
+					customId: interaction.isMessageComponent() ? interaction.customId : null
 				},
 				args
 			}
@@ -40,20 +42,16 @@ export default class CommandStartedListener extends Listener {
 				id: interaction.user.id,
 				username: interaction.user.tag
 			},
-			guild: interaction.guild
-				? {
-						id: interaction.guild.id,
-						name: interaction.guild.name,
-						channel_id: interaction.channel?.id ?? null
-				  }
-				: null,
+			guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
+			channel: interaction.channel?.id ?? null,
 			command: {
 				id: command.id,
 				category: command.category
 			},
 			interaction: {
 				id: interaction.id,
-				command: interaction.commandName
+				command: interaction.isApplicationCommand() ? interaction.commandName : null,
+				customId: interaction.isMessageComponent() ? interaction.customId : null
 			},
 			args
 		});
@@ -63,7 +61,7 @@ export default class CommandStartedListener extends Listener {
 		return this.counter(interaction, command);
 	}
 
-	private counter(interaction: CommandInteraction, command: Command) {
+	private counter(interaction: Interaction, command: Command) {
 		if (interaction.inCachedGuild()) this.client.stats.interactions(interaction, command.id);
 		if (command.category === 'owner') return;
 		if (this.client.isOwner(interaction.user.id)) return;

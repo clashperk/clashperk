@@ -2,7 +2,7 @@ import { Collections } from '../util/Constants';
 import { Client } from './Client';
 import qs from 'querystring';
 import https from 'https';
-import { User, Guild, CommandInteraction, ButtonInteraction } from 'discord.js';
+import { User, Guild, Interaction } from 'discord.js';
 
 export default class StatsHandler {
 	public messages = new Map<string, NodeJS.Timeout>();
@@ -60,7 +60,7 @@ export default class StatsHandler {
 		);
 	}
 
-	public async interactions(interaction: CommandInteraction | ButtonInteraction, command: string) {
+	public async interactions(interaction: Interaction, command: string) {
 		await this.client.db.collection(Collections.BOT_INTERACTIONS).updateOne(
 			{ user: interaction.user.id },
 			{

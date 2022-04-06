@@ -1,6 +1,6 @@
 import { addBreadcrumb, Severity, captureException, setContext } from '@sentry/node';
 import { Listener, Command } from '../../lib';
-import { CommandInteraction, DiscordAPIError, MessageActionRow, MessageButton } from 'discord.js';
+import { BaseCommandInteraction, DiscordAPIError, MessageActionRow, MessageButton, MessageComponentInteraction } from 'discord.js';
 import { inspect } from 'util';
 
 export default class ErrorListener extends Listener {
@@ -12,7 +12,7 @@ export default class ErrorListener extends Listener {
 		});
 	}
 
-	public async exec(error: Error, interaction: CommandInteraction, command?: Command) {
+	public async exec(error: Error, interaction: MessageComponentInteraction | BaseCommandInteraction, command?: Command) {
 		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.tag}` : `${interaction.user.tag}`;
 		// eslint-disable-next-line @typescript-eslint/no-base-to-string
 		this.client.logger.error(`${command?.id ?? 'unknown'} ~ ${error.toString()}`, { label });
@@ -28,10 +28,15 @@ export default class ErrorListener extends Listener {
 					username: interaction.user.tag
 				},
 				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
-				command: command ? { id: command.id, category: command.category } : null,
+				channel: interaction.channel?.id ?? null,
+				command: {
+					id: command?.id,
+					category: command?.category
+				},
 				interaction: {
 					id: interaction.id,
-					command: interaction.commandName
+					command: interaction.isApplicationCommand() ? interaction.commandName : null,
+					customId: interaction.isMessageComponent() ? interaction.customId : null
 				}
 			}
 		});
@@ -41,20 +46,16 @@ export default class ErrorListener extends Listener {
 				id: interaction.user.id,
 				username: interaction.user.tag
 			},
-			guild: interaction.guild
-				? {
-						id: interaction.guild.id,
-						name: interaction.guild.name,
-						channel_id: interaction.channel?.id ?? null
-				  }
-				: null,
+			guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
+			channel: interaction.channel?.id ?? null,
 			command: {
 				id: command?.id,
 				category: command?.category
 			},
 			interaction: {
 				id: interaction.id,
-				command: interaction.commandName
+				command: interaction.isApplicationCommand() ? interaction.commandName : null,
+				customId: interaction.isMessageComponent() ? interaction.customId : null
 			}
 		});
 
