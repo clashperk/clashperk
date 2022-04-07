@@ -11,30 +11,6 @@ const OP: { [key: string]: number } = {
 	LEFT: 0xeb3508 // RED
 };
 
-interface Member {
-	op: string;
-	tag: string;
-	name: string;
-	rand: number;
-	role: string;
-	donations: number;
-	donationsReceived: number;
-}
-
-interface Feed {
-	clan: {
-		tag: string;
-		name: string;
-		badge: string;
-	};
-	members: Member[];
-	memberList: {
-		tag: string;
-		role: string;
-		clan: { tag: string };
-	}[];
-}
-
 export default class ClanFeedLog {
 	public cached: Collection<string, any>;
 
@@ -225,7 +201,7 @@ export default class ClanFeedLog {
 			.setTitle(`\u200e${player.name} (${player.tag})`)
 			.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
 		if (member.op === 'LEFT') {
-			embed.setFooter({ text: `Left ${data.clan.name}`, iconURL: data.clan.badge });
+			embed.setFooter({ text: `Left ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
 			embed.setDescription(
 				[
 					`${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}**`,
@@ -235,8 +211,7 @@ export default class ClanFeedLog {
 			);
 		} else {
 			const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: cache.guild, tag: member.tag });
-
-			embed.setFooter({ text: `Joined ${data.clan.name}`, iconURL: data.clan.badge });
+			embed.setFooter({ text: `Joined ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
 			embed.setDescription(
 				[
 					`${TOWN_HALLS[player.townHallLevel]}**${player.townHallLevel}**`,
@@ -250,8 +225,8 @@ export default class ClanFeedLog {
 				const guild = this.client.guilds.cache.get(cache.guild)!;
 				const user = await this.client.users.fetch(flag.user, { cache: false }).catch(() => null);
 				if (guild.roles.cache.has(cache.role)) {
-					const role = guild.roles.cache.get(cache.role);
-					content = `${role!.toString()}`;
+					const role = guild.roles.cache.get(cache.role)!;
+					content = `${role.toString()}`;
 				}
 				embed.setDescription(
 					[
@@ -311,4 +286,28 @@ export default class ClanFeedLog {
 	public delete(id: string) {
 		return this.cached.delete(id);
 	}
+}
+
+interface Member {
+	op: string;
+	tag: string;
+	name: string;
+	rand: number;
+	role: string;
+	donations: number;
+	donationsReceived: number;
+}
+
+interface Feed {
+	clan: {
+		tag: string;
+		name: string;
+		badge: string;
+	};
+	members: Member[];
+	memberList: {
+		tag: string;
+		role: string;
+		clan: { tag: string };
+	}[];
 }
