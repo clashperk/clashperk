@@ -114,7 +114,7 @@ export default class ClanWarLog {
 		if (!message) {
 			if (cache.messageID) delete cache.messageID;
 			if (data.warTag) cache.rounds[data.round] = { warTag: data.warTag, messageID: null, round: data.round };
-			return this.collection.updateOne({ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
+			return this.collection.updateOne({ clan_id: new ObjectId(cache._id) }, { $set: { uid: data.uid }, $inc: { failed: 1 } });
 		}
 
 		if (data.warTag) {

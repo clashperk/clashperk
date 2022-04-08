@@ -69,6 +69,14 @@ export default class LinkCreateCommand extends Command {
 				if (action.customId === CUSTOM_ID.CLAN) {
 					await action.update({ components: [] });
 					await this.clanLink(member, tags[0]);
+					const clan = tags[0];
+					await interaction.editReply(
+						this.i18n('command.link.create.success', {
+							lng: interaction.locale,
+							user: `**${member.user.tag}**`,
+							target: `**${clan.name} (${clan.tag})**`
+						})
+					);
 				}
 
 				if (action.customId === CUSTOM_ID.PLAYER) {
@@ -82,7 +90,15 @@ export default class LinkCreateCommand extends Command {
 				if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 			});
 		} else if (tags[0].ok) {
-			return this.clanLink(member, tags[0]);
+			await this.clanLink(member, tags[0]);
+			const clan = tags[0];
+			return interaction.editReply(
+				this.i18n('command.link.create.success', {
+					lng: interaction.locale,
+					user: `**${member.user.tag}**`,
+					target: `**${clan.name} (${clan.tag})**`
+				})
+			);
 		} else if (tags[1].ok) {
 			return this.playerLink(interaction, { player: tags[1], member, def: Boolean(args.default) });
 		} else {
