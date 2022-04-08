@@ -53,7 +53,9 @@ export default class ClanCommand extends Command {
 			[
 				`${EMOJIS.CLAN} **${clan.clanLevel}** ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${clan.clanVersusPoints}**`,
 				'',
-				`${clan.description}\n\n${clan.labels.map((d) => `${CLAN_LABELS[d.name]} ${d.name}`).join('\n')}`
+				`${clan.description}${clan.description ? '\n\n' : ''}${clan.labels
+					.map((d) => `${CLAN_LABELS[d.name]} ${d.name}`)
+					.join('\n')}`
 			].join('\n')
 		);
 
@@ -136,33 +138,15 @@ export default class ClanCommand extends Command {
 			].join('\n')
 		);
 
-		const customId = this.client.uuid(interaction.user.id);
-		const row = new MessageActionRow().addComponents(
-			new MessageButton().setLabel('Clan Badge').setStyle('SECONDARY').setCustomId(customId)
-		);
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-
-		const collector = msg.createMessageComponentCollector({
-			filter: (action) => action.customId === customId && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
-
-		collector.once('collect', async (action) => {
-			await action.reply({
-				embeds: [
-					{
-						color: this.client.embed(interaction),
-						image: { url: clan.badgeUrls.large },
-						author: { name: `${clan.name} (${clan.tag})` }
-					}
-				]
-			});
-		});
-
-		collector.once('end', async (_, reason) => {
-			this.client.components.delete(customId);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setEmoji(EMOJIS.REFRESH)
+					.setStyle('SECONDARY')
+					.setCustomId(JSON.stringify({ cmd: 'clan', tag: clan.tag }))
+			)
+			.addComponents(new MessageButton().setLabel('Clan Badge').setStyle('LINK').setURL(clan.badgeUrls.large));
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private async getActivity(clan: Clan): Promise<{ avg_total: number; avg_online: number } | null> {
