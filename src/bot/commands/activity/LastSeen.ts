@@ -26,15 +26,14 @@ export default class LastSeenCommand extends Command {
 			.collection(Collections.CLAN_STORES)
 			.countDocuments({ guild: interaction.guild.id, tag: clan.tag });
 		if (!allowed && interaction.guild.id !== '509784317598105619') {
-			return interaction.editReply({
-				content: '**You must link this clan to a channel to use this command!**',
-				files: ['https://cdn.discordapp.com/attachments/752914644779139242/852062721280311327/unknown.png']
-			});
+			return interaction.editReply(
+				this.i18n('common.guild_unauthorized', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
 		}
 
 		const enough = await this.client.db.collection(Collections.LAST_SEEN).countDocuments({ 'clan.tag': clan.tag });
 		if (!enough) {
-			return interaction.editReply(`Not enough data available for **${clan.name} (${clan.tag})**`);
+			return interaction.editReply(this.i18n('common.no_clan_data', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` }));
 		}
 
 		const getTime = (ms?: number) => {

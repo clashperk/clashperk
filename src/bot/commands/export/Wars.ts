@@ -97,7 +97,7 @@ export default class WarExport extends Command {
 			});
 		}
 
-		if (!chunks.length) return interaction.editReply('No data available at this moment!');
+		if (!chunks.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
 		const workbook = new Excel();
 		for (const { name, members, tag } of chunks) {

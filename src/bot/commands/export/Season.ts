@@ -126,7 +126,8 @@ export default class ExportSeason extends Command {
 		);
 
 		if (!members.length) {
-			return interaction.editReply(`**No record found for the specified season ID \`${season}\`**`);
+			// TODO: season id
+			return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();

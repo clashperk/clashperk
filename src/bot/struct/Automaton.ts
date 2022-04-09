@@ -4,7 +4,7 @@ import { Client } from '../struct/Client';
 interface ParsedCommandId {
 	tag: string;
 	cmd: string;
-	[key: string]: any;
+	[key: string]: string | number;
 }
 
 export class Automaton {
@@ -20,7 +20,6 @@ export class Automaton {
 		if (!parsed) return false;
 
 		switch (parsed.cmd) {
-			case 'booster':
 			case 'boosts': {
 				const command = this.client.commandHandler.modules.get('boosts')!;
 				await interaction.deferUpdate();
@@ -31,14 +30,12 @@ export class Automaton {
 				});
 				return true;
 			}
-			case 'donation':
 			case 'donations': {
 				const command = this.client.commandHandler.modules.get('donations')!;
 				await interaction.deferUpdate();
 				await this.client.commandHandler.exec(interaction, command, { reverse: parsed.sort === -1, ...parsed });
 				return true;
 			}
-			case 'links':
 			case 'link-list': {
 				const command = this.client.commandHandler.modules.get('link-list')!;
 				await interaction.deferUpdate();
