@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { MessageEmbed, Message, Collection, TextChannel, PermissionString, Snowflake, ThreadChannel } from 'discord.js';
 import { EMOJIS, TOWN_HALLS, CWL_LEAGUES, ORANGE_NUMBERS } from '../util/Emojis';
 import { Collections } from '../util/Constants';
@@ -130,11 +129,11 @@ export default class ClanEmbedLog {
 
 	private async embed(cache: Cache, data: Clan) {
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
-		const reduced = fetched.reduce((count, member) => {
+		const reduced = fetched.reduce<{ [key: string]: number }>((count, member) => {
 			const townHall = member.townHallLevel;
 			count[townHall] = (count[townHall] || 0) + 1;
 			return count;
-		}, {} as { [key: string]: number });
+		}, {});
 
 		const townHalls = Object.entries(reduced)
 			.map((arr) => ({ level: Number(arr[0]), total: arr[1] }))

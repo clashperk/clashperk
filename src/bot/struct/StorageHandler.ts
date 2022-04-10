@@ -262,12 +262,7 @@ export default class StorageHandler {
 	}
 
 	public async getWarTags(tag: string): Promise<ClanWarLeagueGroup | null> {
-		const data = await this.client.db
-			.collection(Collections.CWL_GROUPS)
-			.find({ 'clans.tag': tag })
-			.sort({ createdAt: -1 })
-			.limit(1)
-			.next();
+		const data = await this.client.db.collection(Collections.CWL_GROUPS).findOne({ 'clans.tag': tag }, { sort: { _id: -1 } });
 		if (!data || data.warTags?.[tag]?.length !== data.clans.length - 1) return null;
 
 		if (
