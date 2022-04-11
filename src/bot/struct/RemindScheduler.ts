@@ -91,7 +91,7 @@ export default class RemindScheduler {
 
 	private async delete(reminder: ReminderTemp) {
 		this.clear(reminder._id.toHexString());
-		return this.collection.deleteOne({ _id: reminder._id });
+		return this.collection.updateOne({ _id: reminder._id }, { $set: { triggered: true } });
 	}
 
 	private clear(id: string) {
