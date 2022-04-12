@@ -42,7 +42,7 @@ export default class RemindScheduler {
 
 					if (change.operationType === 'update') {
 						const reminder = change.fullDocument;
-						if (reminder && reminder.timestamp.getTime() < Date.now() + this.refreshRate) {
+						if (reminder && !reminder.triggered && reminder.timestamp.getTime() < Date.now() + this.refreshRate) {
 							this.queue(reminder);
 						}
 					}
