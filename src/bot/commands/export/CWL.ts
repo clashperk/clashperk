@@ -233,6 +233,8 @@ export default class ExportCWL extends Command {
 				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
+					clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
+					opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
 					if (['inWar', 'warEnded'].includes(data.state)) {
 						for (const m of clan.members) {
 							const member = members[m.tag]

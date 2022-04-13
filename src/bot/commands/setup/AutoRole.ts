@@ -79,7 +79,7 @@ export default class AutoRoleCommand extends Command {
 				{ tag: clan.tag, guild: interaction.guild!.id },
 				{
 					$set: {
-						roles: { member: members.id, elder: elders.id, coLeader: coLeads.id },
+						roles: { member: members.id, admin: elders.id, coLeader: coLeads.id },
 						autoRole: 1,
 						secureRole: verify
 					},
