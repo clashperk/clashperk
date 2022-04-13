@@ -2,7 +2,8 @@ import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { Command } from '../../lib';
 import Excel from '../../struct/Excel';
 import { CommandInteraction, Interaction, MessageEmbed } from 'discord.js';
-import { Util } from '../../util';
+import { Season, Util } from '../../util';
+import { Collections } from '../../util/Constants';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -34,7 +35,8 @@ export default class ExportCWL extends Command {
 		return null;
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string }) {
+		const season = args.season === Season.ID ? null : args.season;
 		const tags = args.clans?.split(/ +/g) ?? [];
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -47,11 +49,11 @@ export default class ExportCWL extends Command {
 
 		const chunks = [];
 		for (const clan of clans) {
-			const res = await this.client.http.clanWarLeague(clan.tag).catch(() => null);
+			const res = season ? null : await this.client.http.clanWarLeague(clan.tag);
 			if (!res?.ok || res.state === 'notInWar') {
-				const data = await this.client.storage.getWarTags(clan.tag);
+				const data = await this.client.storage.getWarTags(clan.tag, season);
 				if (!data) continue;
-				const { members, perRound } = await this.rounds(data, clan);
+				const { members, perRound } = await this.rounds(data, clan, season);
 				if (!members.length) continue;
 				chunks.push({
 					name: clan.name,
@@ -74,7 +76,9 @@ export default class ExportCWL extends Command {
 			});
 		}
 
-		if (!chunks.length) return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
+		if (!chunks.length) {
+			return interaction.editReply(this.i18n('command.cwl.no_season_data', { lng: interaction.locale, season: season ?? Season.ID }));
+		}
 
 		const workbook = new Excel();
 		for (const { members, name, tag, id } of chunks) {
@@ -134,7 +138,7 @@ export default class ExportCWL extends Command {
 			files: [
 				{
 					attachment: Buffer.from(buffer),
-					name: 'clan_war_league_stars.xlsx'
+					name: 'clan_war_league_stats.xlsx'
 				},
 				{
 					attachment: Buffer.from(await this.perRoundStats(chunks).xlsx.writeBuffer()),
@@ -170,7 +174,7 @@ export default class ExportCWL extends Command {
 					{ header: 'Defender TH', width: 10 },
 					{ header: 'Defender Stars', width: 10 },
 					{ header: 'Defender Destruction', width: 10 }
-				] as any;
+				];
 
 				sheet.getRow(1).font = { bold: true, size: 10 };
 				sheet.getRow(1).height = 40;
@@ -212,7 +216,7 @@ export default class ExportCWL extends Command {
 		return stars.filter((star) => star === count).length;
 	}
 
-	private async rounds(body: ClanWarLeagueGroup, clan: { tag: string }) {
+	private async rounds(body: ClanWarLeagueGroup, clan: { tag: string }, season?: string | null) {
 		const rounds = body.rounds.filter((r) => !r.warTags.includes('#0'));
 		const clanTag = clan.tag;
 		const members: { [key: string]: any } = {};
@@ -220,8 +224,11 @@ export default class ExportCWL extends Command {
 		const perRound = [];
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
-				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
-				if (!data.ok || data.state === 'notInWar') continue;
+				const data = season
+					? await this.client.db.collection<ClanWar>(Collections.CLAN_WARS).findOne({ warTag })
+					: await this.client.http.clanWarLeagueWar(warTag);
+				if (!data) continue;
+				if ((!data.ok || data.state === 'notInWar') && !season) continue;
 
 				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;

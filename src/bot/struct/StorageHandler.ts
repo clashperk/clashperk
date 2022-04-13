@@ -261,15 +261,18 @@ export default class StorageHandler {
 		}
 	}
 
-	public async getWarTags(tag: string): Promise<ClanWarLeagueGroup | null> {
-		const data = await this.client.db.collection(Collections.CWL_GROUPS).findOne({ 'clans.tag': tag }, { sort: { _id: -1 } });
+	public async getWarTags(tag: string, season?: string | null): Promise<ClanWarLeagueGroup | null> {
+		const data = await this.client.db
+			.collection(Collections.CWL_GROUPS)
+			.findOne(season ? { 'clans.tag': tag, season } : { 'clans.tag': tag }, { sort: { _id: -1 } });
 		if (!data || data.warTags?.[tag]?.length !== data.clans.length - 1) return null;
+		if (season) return data as unknown as ClanWarLeagueGroup;
 
 		if (
 			new Date().getMonth() === new Date(data.season as string).getMonth() ||
 			(new Date(data.season as string).getMonth() === new Date().getMonth() - 1 && new Date().getDate() <= 8)
 		)
-			return data as any;
+			return data as unknown as ClanWarLeagueGroup;
 
 		return null;
 	}

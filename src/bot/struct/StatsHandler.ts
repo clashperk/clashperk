@@ -60,19 +60,10 @@ export default class StatsHandler {
 		);
 	}
 
-	public async interactions(interaction: Interaction, command: string) {
-		await this.client.db.collection(Collections.BOT_INTERACTIONS).updateOne(
-			{ user: interaction.user.id },
-			{
-				$inc: {
-					usage: 1
-				},
-				$set: {
-					guild: interaction.guild!.id
-				}
-			},
-			{ upsert: true }
-		);
+	public async interactions(interaction: Interaction<'cached'>, command: string) {
+		await this.client.db
+			.collection(Collections.BOT_INTERACTIONS)
+			.updateOne({ user: interaction.user.id, guild: interaction.guild.id }, { $inc: { usage: 1 } }, { upsert: true });
 
 		return this.client.db.collection(Collections.BOT_STATS).updateOne(
 			{ id: 'stats' },
