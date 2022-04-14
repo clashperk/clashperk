@@ -1,8 +1,8 @@
-import { MessageAttachment, Message, MessageEmbed } from 'discord.js';
-import { Args, Command } from '../../lib';
-import { Collections } from '../../util/Constants';
-import Chart from '../../struct/ChartHandler';
+import { Message, MessageAttachment, MessageEmbed } from 'discord.js';
 import moment from 'moment';
+import { Args, Command } from '../../lib';
+import Chart from '../../struct/ChartHandler';
+import { Collections } from '../../util/Constants';
 
 export default class UsageCommand extends Command {
 	public constructor() {
@@ -30,7 +30,7 @@ export default class UsageCommand extends Command {
 		if (graph) {
 			const buffer = await this.buffer(Number(limit));
 			const file = new MessageAttachment(buffer, 'growth.png');
-			return message.channel.send({ /* embed, */ files: [file] });
+			return message.channel.send({ files: [file] });
 		}
 
 		const { commands } = await this.commands();
@@ -60,25 +60,30 @@ export default class UsageCommand extends Command {
 	}
 
 	private async commands() {
-		const data = await this.client.db.collection(Collections.BOT_STATS).findOne({ id: 'stats' });
-		const commands: { uses: number; id: string }[] = [];
-		for (const [key, value] of Object.entries(data?.commands ?? {})) {
-			if (!this.client.commandHandler.modules.get(key)?.id) continue;
-			commands.push({ uses: Number(value), id: key });
-		}
+		const result = await this.client.db
+			.collection<{ uses: number; command: string; total: number }>(Collections.BOT_COMMANDS)
+			.find()
+			.toArray();
+
+		const commands = result
+			.filter((cmd) => this.handler.modules.has(cmd.command))
+			.map((cmd) => ({
+				id: cmd.command,
+				uses: cmd.total
+			}));
 
 		return { commands: this.sort(commands), total: this.total(commands) };
 	}
 
 	private async growth() {
 		const cursor = this.client.db.collection(Collections.BOT_GROWTH).find();
-		const data = await cursor.sort({ createdAt: -1 }).limit(1).next();
+		const data = await cursor.sort({ _id: -1 }).limit(1).next();
 		return { addition: data?.addition, deletion: data?.deletion, growth: data?.addition - data?.deletion };
 	}
 
 	private async buffer(limit: number) {
 		const growth = await this.growth();
-		const collection = await this.client.db.collection(Collections.BOT_GROWTH).find().sort({ createdAt: -1 }).limit(limit).toArray();
+		const collection = await this.client.db.collection(Collections.BOT_GROWTH).find().sort({ _id: -1 }).limit(limit).toArray();
 		return Chart.growth(
 			collection.reverse().map((growth) => ({ date: new Date(growth.key), value: growth })),
 			{ ...growth }
@@ -86,16 +91,15 @@ export default class UsageCommand extends Command {
 	}
 
 	private async commandsTotal() {
-		const data = await this.client.db.collection(Collections.BOT_STATS).findOne({ id: 'stats' });
-
-		return data?.commands_used ?? 0;
+		const data = await this.client.db.collection(Collections.BOT_STATS).findOne({ name: 'COMMANDS_USED' });
+		return data?.count ?? 0;
 	}
 
 	private usage(): Promise<{ usage: number; createdAt: Date }[]> {
 		return this.client.db
 			.collection<{ usage: number; createdAt: Date }>(Collections.BOT_USAGE)
 			.find()
-			.sort({ createdAt: -1 })
+			.sort({ _id: -1 })
 			.limit(15)
 			.toArray();
 	}

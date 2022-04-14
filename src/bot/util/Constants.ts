@@ -46,6 +46,7 @@ export const enum Collections {
 	BOT_GUILDS = 'BotGuilds',
 	BOT_USERS = 'BotUsers',
 	BOT_STATS = 'BotStats',
+	BOT_COMMANDS = 'BotCommands',
 	BOT_INTERACTIONS = 'BotInteractions'
 }
 

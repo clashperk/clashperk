@@ -20,7 +20,11 @@ export default class StatsHandler {
 
 		const clans = await this.client.db.collection(Collections.CLAN_STORES).estimatedDocumentCount();
 		const players = await this.client.db.collection(Collections.LAST_SEEN).estimatedDocumentCount();
-		await this.client.db.collection(Collections.BOT_STATS).updateOne({ id: 'stats' }, { $set: { guilds, clans, players } });
+
+		const collection = this.client.db.collection(Collections.BOT_STATS);
+		await collection.updateOne({ name: 'GUILDS' }, { $set: { count: guilds } });
+		await collection.updateOne({ name: 'PLAYERS' }, { $set: { count: players } });
+		await collection.updateOne({ name: 'CLANS' }, { $set: { count: clans } });
 
 		const form = qs.stringify({ server_count: guilds, shard_count: this.client.shard!.count });
 		https
@@ -64,16 +68,7 @@ export default class StatsHandler {
 		await this.client.db
 			.collection(Collections.BOT_INTERACTIONS)
 			.updateOne({ user: interaction.user.id, guild: interaction.guild.id }, { $inc: { usage: 1 } }, { upsert: true });
-
-		return this.client.db.collection(Collections.BOT_STATS).updateOne(
-			{ id: 'stats' },
-			{
-				$inc: {
-					[`interactions.${command}`]: 1
-				}
-			},
-			{ upsert: true }
-		);
+		await this.client.db.collection(Collections.BOT_COMMANDS).updateOne({ command }, { $inc: { total: 1, uses: 1 } });
 	}
 
 	public historic(command: string) {
@@ -96,16 +91,9 @@ export default class StatsHandler {
 	}
 
 	public async commands(command: string) {
-		await this.client.db.collection(Collections.BOT_STATS).updateOne(
-			{ id: 'stats' },
-			{
-				$inc: {
-					commands_used: 1,
-					[`commands.${command}`]: 1
-				}
-			},
-			{ upsert: true }
-		);
+		await this.client.db
+			.collection(Collections.BOT_STATS)
+			.updateOne({ name: 'COMMANDS_USED' }, { $inc: { count: 1 } }, { upsert: true });
 
 		return this.historic(command);
 	}
