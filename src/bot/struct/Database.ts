@@ -26,15 +26,12 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.BOT_INTERACTIONS).createIndex({ user: 1 }, { unique: true }),
 
-			db.collection(Collections.BOT_STATS).createIndex({ id: 1 }),
+			db.collection(Collections.BOT_STATS).createIndex({ name: 1 }, { unique: true }),
 
 			db.collection(Collections.BOT_USAGE).createIndexes([
 				{
 					key: { key: 1 },
 					unique: true
-				},
-				{
-					key: { createdAt: 1 }
 				}
 			]),
 
