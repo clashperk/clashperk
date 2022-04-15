@@ -42,7 +42,7 @@ export default class InteractionListener extends Listener {
 	private async contextInteraction(interaction: Interaction) {
 		if (!interaction.isContextMenu()) return;
 		if (this.inhibitor(interaction)) return;
-		if (!interaction.inGuild()) return;
+		if (!interaction.inCachedGuild()) return;
 
 		const command = this.client.commandHandler.modules.get(interaction.commandName.toLowerCase());
 		if (!command) return;
@@ -51,7 +51,7 @@ export default class InteractionListener extends Listener {
 		const args =
 			interaction.targetType === 'MESSAGE'
 				? { message: interaction.options.getMessage('message')?.content ?? '' }
-				: { user: interaction.options.getUser('user')!.id };
+				: { member: interaction.options.getMember('user', false) };
 		return this.client.commandHandler.exec(interaction, command, args);
 	}
 

@@ -37,11 +37,8 @@ export default class ProfileCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${member.user.tag}`, iconURL: member.user.displayAvatarURL() })
-			.setDescription(['**Created**', `${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`, '\u200b'].join('\n'));
-
-		let index = 0;
-		const collection = [];
+			.setAuthor({ name: `${member.user.tag} (${member.user.id})`, iconURL: member.user.displayAvatarURL() })
+			.setDescription(['**Created**', `${moment(member.user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`].join('\n'));
 
 		const clan: Clan = await this.client.http.clan(data?.clan?.tag ?? '💩');
 		if (clan.statusCode === 503) {
@@ -52,12 +49,17 @@ export default class ProfileCommand extends Command {
 			embed.setDescription(
 				[
 					embed.description,
+					'',
+					'**Clan**',
 					`${EMOJIS.CLAN} [${clan.name} (${
 						clan.tag
 					})](https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)})`,
-					...[`${EMOJIS.EMPTY} Level ${clan.clanLevel} ${EMOJIS.USERS} ${clan.members} Member${clan.members === 1 ? '' : 's'}`]
+					...[`${EMOJIS.EMPTY} Level ${clan.clanLevel} ${EMOJIS.USERS} ${clan.members} Member${clan.members === 1 ? '' : 's'}`],
+					'\u200b'
 				].join('\n')
 			);
+		} else {
+			embed.setDescription([embed.description, '\u200b'].join('\n'));
 		}
 
 		const otherTags = await this.client.http.getPlayerTags(member.id);
@@ -66,15 +68,17 @@ export default class ProfileCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		}
 
+		let accounts = 0;
+		const collection = [];
 		const tags = new Set([...(data?.entries.map((en: any) => en.tag) ?? []), ...otherTags]);
 		const hideLink = Boolean(tags.size >= 12);
+
 		for (const tag of tags.values()) {
 			const player: Player = await this.client.http.player(tag);
 			if (player.statusCode === 404) this.deleteBanned(member.id, tag);
 			if (!player.ok) continue;
 
-			index += 1; // Increment
-
+			accounts += 1;
 			const signature = this.isVerified(data, tag) ? EMOJIS.VERIFIED : this.isLinked(data, tag) ? EMOJIS.AUTHORIZE : '';
 			collection.push({
 				field: `${TOWN_HALLS[player.townHallLevel]} ${hideLink ? '' : '['}${player.name} (${player.tag})${
@@ -83,22 +87,19 @@ export default class ProfileCommand extends Command {
 				values: [this.heroes(player), this.clanName(player)].filter((a) => a.length)
 			});
 
-			if (index === 25) break;
+			if (accounts === 25) break;
 		}
 		tags.clear();
 
-		embed.setFooter({
-			text: `${collection.length} Player${collection.length === 1 ? '' : 's'} Linked`,
-			iconURL: 'https://cdn.discordapp.com/emojis/658538492409806849.png'
-		});
-		if (hideLink) collection.map((a) => embed.addField(a.field, [...a.values, '\u200b'].join('\n')));
-		else collection.map((a) => embed.addField('\u200b', [a.field, ...a.values].join('\n')));
+		collection.map((a, i) =>
+			embed.addField(i === 0 ? `**Player Accounts [${collection.length}]**` : '\u200b', [a.field, ...a.values].join('\n'))
+		);
 
-		const popEmbed = () => {
+		const pop = () => {
 			embed.fields.pop();
-			if (embed.length > 6000) popEmbed();
+			if (embed.length > 6000) pop();
 		};
-		if (embed.length > 6000) popEmbed();
+		if (embed.length > 6000) pop();
 
 		return interaction.editReply({ embeds: [embed] });
 	}
