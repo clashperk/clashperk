@@ -47,13 +47,12 @@ export default class ClanActivityCommand extends Command {
 		const datasets = result.map((clan) => ({ name: clan.name, data: this.datasets(clan, timezone.offset, args.days ?? 1) }));
 
 		const hrStart = process.hrtime();
-		const buffer = await Chart.clanActivity(datasets, [`Active Members Per Hour (${timezone.name})`], args.days);
+		const url = await Chart.activity(datasets, [`Active Members Per Hour (${timezone.name})`], args.days);
 		const diff = process.hrtime(hrStart);
 
 		this.client.logger.debug(`Rendered in ${(diff[0] * 1000 + diff[1] / 1000000).toFixed(2)}ms`, { label: 'CHART' });
 		return interaction.editReply({
-			files: [{ attachment: Buffer.from(buffer), name: 'activity.png' }],
-			content: user ? null : this.i18n('command.timezone.set', { lng: interaction.locale })
+			content: user ? url : `${this.i18n('command.timezone.set', { lng: interaction.locale })}\n${url}`
 		});
 	}
 

@@ -87,13 +87,13 @@ export default class LastSeenCommand extends Command {
 			.addComponents(
 				new MessageButton()
 					.setStyle('SECONDARY')
-					.setCustomId(JSON.stringify({ cmd: this.id, _: 0 }))
+					.setCustomId(JSON.stringify({ cmd: this.id, _: 0, tag: clan.tag }))
 					.setEmoji(EMOJIS.REFRESH)
 			)
 			.addComponents(
 				new MessageButton()
 					.setStyle('PRIMARY')
-					.setCustomId(JSON.stringify({ cmd: this.id, score: !score }))
+					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, score: !score }))
 					.setLabel(score ? 'Last Seen' : 'Scoreboard')
 			);
 

@@ -1,4 +1,4 @@
-import { Message, MessageAttachment, MessageEmbed } from 'discord.js';
+import { Message, MessageEmbed } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib';
 import Chart from '../../struct/ChartHandler';
@@ -26,11 +26,11 @@ export default class UsageCommand extends Command {
 		};
 	}
 
-	public async run(message: Message, { growth: graph, limit }: { growth: string; limit: number }) {
+	public async run(message: Message, { growth: graph, limit }: { growth: string; limit?: number }) {
+		limit ??= 15;
 		if (graph) {
-			const buffer = await this.buffer(Number(limit));
-			const file = new MessageAttachment(buffer, 'growth.png');
-			return message.channel.send({ files: [file] });
+			const url = await this.buffer(Number(limit));
+			return message.channel.send(url);
 		}
 
 		const { commands } = await this.commands();

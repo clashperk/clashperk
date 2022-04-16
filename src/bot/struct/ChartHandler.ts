@@ -1,4 +1,5 @@
-import Chart from '@clashperk/quickchart';
+import fetch from 'node-fetch';
+import { nanoid } from 'nanoid';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -10,7 +11,7 @@ const sizes = {
 };
 
 export default {
-	clanActivity(collection: any[] = [], title: string[], days = 1) {
+	async activity(collection: any[] = [], title: string[], days = 1) {
 		const colors = ['#266ef7', '#c63304', '#ffc107', '#50c878', '#ffac75', '#4dc1fa', '#cb5aff'];
 		days = collection.length > 3 ? 3 : days;
 		const datasets = collection.map((obj: any, i) => ({
@@ -58,60 +59,19 @@ export default {
 			}
 		};
 
-		return Chart.render(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, true);
-	},
-
-	playerActivity(collection: any[] = [], title: string) {
-		const colors = ['#266ef7', '#c63304', '#50c878'];
-		const datasets = collection.map((obj, i) => ({
-			label: obj.name,
-			type: 'line',
-			fill: false,
-			backgroundColor: colors[i],
-			borderColor: colors[i],
-			borderWidth: 2,
-			pointBorderColor: colors[i],
-			pointBackgroundColor: colors[i],
-			pointRadius: 2,
-			data: [...obj.data.map((d: any) => d.count)]
-		}));
-
-		const body = {
-			backgroundColor: 'white',
-			width: 400,
-			height: 200,
-			devicePixelRatio: 2.0,
-			format: 'png',
-			chart: {
-				type: 'bar',
-				data: {
-					labels: [...collection[0].data.map((d: any) => d.short)],
-					datasets: [...datasets]
-				},
-				options: {
-					responsive: false,
-					legend: {
-						position: 'top',
-						display: true,
-						labels: {
-							fontSize: 10,
-							padding: 4
-						}
-					},
-					title: {
-						display: true,
-						fontSize: 10,
-						padding: 2,
-						text: [...title]
-					}
-				}
+		const url = `https://chart.clashperk.com/chart/${nanoid()}`;
+		await fetch(url, {
+			body: JSON.stringify(body),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
 			}
-		};
+		}).then((res) => res.json());
 
-		return Chart.render(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, true);
+		return url;
 	},
 
-	growth(collection: any[] = [], { addition, deletion, growth }: { addition: number; deletion: number; growth: number }) {
+	async growth(collection: any[] = [], { addition, deletion, growth }: { addition: number; deletion: number; growth: number }) {
 		const total = collection.reduce((pre, curr) => Number(pre) + Number(curr.value.addition - curr.value.deletion), 0);
 		const body = {
 			backgroundColor: 'white',
@@ -168,6 +128,15 @@ export default {
 			}
 		};
 
-		return Chart.render(body.width, body.height, body.backgroundColor, body.devicePixelRatio, body.chart, true);
+		const url = `https://chart.clashperk.com/chart/${nanoid()}`;
+		await fetch(url, {
+			body: JSON.stringify(body),
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		}).then((res) => res.json());
+
+		return url;
 	}
 };
