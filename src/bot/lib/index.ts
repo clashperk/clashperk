@@ -183,6 +183,7 @@ export class CommandHandler extends BaseHandler {
 	}
 
 	public continue(interaction: BaseInteraction, command: Command) {
+		if (this.preInhibitor(interaction, command)) return;
 		const args = this.argumentRunner(interaction as CommandInteraction, command);
 		return this.exec(interaction, command, args);
 	}
@@ -250,7 +251,7 @@ export class CommandHandler extends BaseHandler {
 			}
 		}
 
-		if (command.userPermissions) {
+		if (command.userPermissions?.length) {
 			const missing = interaction.channel?.permissionsFor(interaction.user)?.missing(command.userPermissions);
 			if (missing?.length) {
 				this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.USER, missing);

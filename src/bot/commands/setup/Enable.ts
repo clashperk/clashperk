@@ -6,9 +6,8 @@ export default class SetupEnableCommand extends Command {
 		super('setup-enable', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
 			description: {
-				content: ['Enable features or assign clans to channels.']
+				content: 'Enable features or assign clans to channels.'
 			}
 		});
 	}
