@@ -59,7 +59,7 @@ export default {
 			}
 		};
 
-		const url = `https://chart.clashperk.com/chart/${nanoid()}`;
+		const url = `https://chart.clashperk.com/${nanoid()}`;
 		await fetch(url, {
 			body: JSON.stringify(body),
 			method: 'POST',
@@ -128,7 +128,7 @@ export default {
 			}
 		};
 
-		const url = `https://chart.clashperk.com/chart/${nanoid()}`;
+		const url = `https://chart.clashperk.com/${nanoid()}`;
 		await fetch(url, {
 			body: JSON.stringify(body),
 			method: 'POST',
