@@ -244,7 +244,7 @@ export default class StatsCommand extends Command {
 	}
 
 	private _padEnd(num: number | string, maxLength: number) {
-		return num.toString().padEnd(maxLength, ' ');
+		return Util.escapeBackTick(num.toString()).padEnd(maxLength, ' ');
 	}
 
 	private _padStart(num: number | string, maxLength: number) {
