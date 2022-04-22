@@ -106,7 +106,7 @@ export default class ClanEmbedCommand extends Command {
 										style: 'PARAGRAPH',
 										customId: 'description',
 										label: 'Clan Description',
-										placeholder: 'Write anything or `auto` to sync with clan description.',
+										placeholder: 'Write anything or `auto` to sync with the clan.',
 										maxLength: 300
 									}
 								]
@@ -119,7 +119,7 @@ export default class ClanEmbedCommand extends Command {
 										style: 'PARAGRAPH',
 										customId: 'accepts',
 										label: 'Requirements',
-										placeholder: 'Write anything as a requirement interaction (e.g TH 10+)',
+										placeholder: 'Write anything or `auto` to sync with the clan.',
 										maxLength: 100
 									}
 								]
@@ -152,7 +152,6 @@ export default class ClanEmbedCommand extends Command {
 			return;
 		}
 
-		accepts = accepts?.trim() || data.requiredTownhallLevel ? `TH ${data.requiredTownhallLevel!}+` : 'Any';
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
 		const reduced = fetched
 			.filter((res) => res.ok)
@@ -180,11 +179,7 @@ export default class ClanEmbedCommand extends Command {
 				[
 					`${EMOJIS.CLAN} **${data.clanLevel}** ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
 					'',
-					description?.toLowerCase() === 'auto'
-						? data.description
-						: description?.toLowerCase() === 'none'
-						? ''
-						: Util.cleanContent(description ?? '', interaction.channel!)
+					description?.toLowerCase() === 'auto' ? data.description : Util.cleanContent(description ?? '', interaction.channel!)
 				].join('\n')
 			);
 		if (color) embed.setColor(color);
@@ -201,7 +196,13 @@ export default class ClanEmbedCommand extends Command {
 		embed.addField(
 			'Requirements',
 			[
-				`${EMOJIS.TOWNHALL} ${accepts}`,
+				`${EMOJIS.TOWNHALL} ${
+					!accepts || accepts.toLowerCase() === 'auto'
+						? data.requiredTownhallLevel
+							? `TH ${data.requiredTownhallLevel}+`
+							: 'Any'
+						: Util.cleanContent(accepts, interaction.channel!)
+				}`,
 				'**Trophies Required**',
 				`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
 				`**Location** \n${location}`
@@ -235,11 +236,11 @@ export default class ClanEmbedCommand extends Command {
 			].join('\n')
 		);
 
-		embed.setFooter({ text: 'Synced', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) });
+		embed.setFooter({ text: 'Synced' });
 		embed.setTimestamp();
 
-		description = description?.toLowerCase() === 'auto' ? 'auto' : description?.toLowerCase() === 'none' ? '' : description ?? '';
-
+		description = description?.toLowerCase() === 'auto' ? 'auto' : description ?? '';
+		accepts = !accepts || accepts.toLowerCase() === 'auto' ? 'auto' : accepts;
 		const mutate = async (message: string, channel: string) => {
 			const id = await this.client.storage.register(interaction, {
 				op: Flags.CLAN_EMBED_LOG,
@@ -250,9 +251,9 @@ export default class ClanEmbedCommand extends Command {
 				name: data.name,
 				message,
 				embed: {
-					accepts,
 					userId: user.id,
-					description: Util.cleanContent(description ?? '', interaction.channel!)
+					accepts: Util.cleanContent(accepts!, interaction.channel!),
+					description: Util.cleanContent(description!, interaction.channel!)
 				}
 			});
 

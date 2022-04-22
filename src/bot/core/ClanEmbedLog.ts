@@ -145,7 +145,14 @@ export default class ClanEmbedLog {
 				: `🌐 ${data.location.name}`
 			: `${EMOJIS.WRONG} None`;
 
-		const clanDescription = cache.embed.description === 'auto' ? data.description : cache.embed.description;
+		const clanDescription: string = cache.embed.description === 'auto' ? data.description : cache.embed.description;
+		const clanRequirements: string =
+			cache.embed.accepts === 'auto'
+				? data.requiredTownhallLevel
+					? `TH ${data.requiredTownhallLevel}+`
+					: 'Any'
+				: cache.embed.accepts;
+
 		const embed = new MessageEmbed()
 			.setColor(cache.color)
 			.setTitle(`${data.name} (${data.tag})`)
@@ -169,7 +176,7 @@ export default class ClanEmbedLog {
 			.addField(
 				'Requirements',
 				[
-					`${EMOJIS.TOWNHALL} ${cache.embed.accepts as string}`,
+					`${EMOJIS.TOWNHALL} ${clanRequirements || 'Any'}`,
 					'**Trophies Required**',
 					`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
 					`**Location** \n${location}`
@@ -201,7 +208,7 @@ export default class ClanEmbedLog {
 				].join('\n')
 			)
 			.setTimestamp()
-			.setFooter({ text: 'Synced', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) });
+			.setFooter({ text: 'Synced' });
 
 		return embed;
 	}
