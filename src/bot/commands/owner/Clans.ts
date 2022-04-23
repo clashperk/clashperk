@@ -43,12 +43,12 @@ export default class ClansCommand extends Command {
 		const clans = await this.client.storage.find(guild.id);
 		const data = await Promise.all(
 			clans.map(async (doc) => {
-				const donationlog = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clan_id: doc._id });
-				const playerlog = await this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clan_id: doc._id });
-				const onlinelog = await this.client.db.collection(Collections.LAST_SEEN_LOGS).findOne({ clan_id: doc._id });
-				const clanembed = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clan_id: doc._id });
-				const clangames = await this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clan_id: doc._id });
-				const clanwar = await this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clan_id: doc._id });
+				const donationlog = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clanId: doc._id });
+				const playerlog = await this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clanId: doc._id });
+				const onlinelog = await this.client.db.collection(Collections.LAST_SEEN_LOGS).findOne({ clanId: doc._id });
+				const clanembed = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clanId: doc._id });
+				const clangames = await this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clanId: doc._id });
+				const clanwar = await this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clanId: doc._id });
 				const channels = await this.client.db
 					.collection(Collections.LINKED_CHANNELS)
 					.find({ guild: guild.id, tag: doc.tag })

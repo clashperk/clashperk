@@ -195,14 +195,14 @@ export default class DonationLog {
 			await channel.send({ embeds: [embed] }).catch(() => null);
 			return this.client.db
 				.collection(Collections.DONATION_LOGS)
-				.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
+				.updateOne({ clanId: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 		}
 
 		try {
 			const message = await channel.send({ embeds: [embed] });
 			await this.client.db
 				.collection(Collections.DONATION_LOGS)
-				.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
+				.updateOne({ clanId: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 			if (message.channel_id !== cache.channel) {
 				await channel.deleteMessage(message.id);
 				return await this.recreateWebhook(id);
@@ -223,7 +223,7 @@ export default class DonationLog {
 			.collection(Collections.DONATION_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })
 			.forEach((data) => {
-				this.cached.set((data.clan_id as ObjectId).toHexString(), {
+				this.cached.set((data.clanId as ObjectId).toHexString(), {
 					tag: data.tag,
 					color: data.color,
 					channel: data.channel,
@@ -233,7 +233,7 @@ export default class DonationLog {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clan_id: new ObjectId(id) });
+		const data = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clanId: new ObjectId(id) });
 
 		if (!data) return null;
 		return this.cached.set(id, {

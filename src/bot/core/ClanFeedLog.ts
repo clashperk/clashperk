@@ -165,13 +165,13 @@ export default class ClanFeedLog {
 				await channel.send({ embeds: [message.embed], content: message.content });
 				await this.client.db
 					.collection(Collections.CLAN_FEED_LOGS)
-					.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
+					.updateOne({ clanId: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 			} else {
 				try {
 					const msg = await channel.send({ embeds: [message.embed], content: message.content });
 					await this.client.db
 						.collection(Collections.CLAN_FEED_LOGS)
-						.updateOne({ clan_id: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
+						.updateOne({ clanId: new ObjectId(id) }, { $set: { updatedAt: new Date() } });
 					if (msg.channel_id !== cache.channel) {
 						await channel.deleteMessage(msg.id);
 						return await this.recreateWebhook(id);
@@ -261,7 +261,7 @@ export default class ClanFeedLog {
 			.collection(Collections.CLAN_FEED_LOGS)
 			.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })
 			.forEach((data) => {
-				this.cached.set((data.clan_id as ObjectId).toHexString(), {
+				this.cached.set((data.clanId as ObjectId).toHexString(), {
 					guild: data.guild,
 					channel: data.channel,
 					tag: data.tag,
@@ -272,7 +272,7 @@ export default class ClanFeedLog {
 	}
 
 	public async add(id: string) {
-		const data = await this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clan_id: new ObjectId(id) });
+		const data = await this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clanId: new ObjectId(id) });
 
 		if (!data) return null;
 		return this.cached.set(id, {

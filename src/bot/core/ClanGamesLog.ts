@@ -85,7 +85,7 @@ export default class ClanGamesLog {
 	private async mutate(cache: Cache, msg: APIMessage | null) {
 		if (msg) {
 			await this.collection.updateOne(
-				{ clan_id: new ObjectId(cache._id) },
+				{ clanId: new ObjectId(cache._id) },
 				{
 					$set: {
 						failed: 0,
@@ -96,7 +96,7 @@ export default class ClanGamesLog {
 			);
 			cache.message = msg.id;
 		} else {
-			await this.collection.updateOne({ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
+			await this.collection.updateOne({ clanId: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
 		}
 		return msg;
 	}
@@ -164,8 +164,8 @@ export default class ClanGamesLog {
 
 	private async _init() {
 		await this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } }).forEach((data) => {
-			this.cached.set((data.clan_id as ObjectId).toHexString(), {
-				_id: data.clan_id,
+			this.cached.set((data.clanId as ObjectId).toHexString(), {
+				_id: data.clanId,
 				tag: data.tag,
 				color: data.color,
 				guild: data.guild,
@@ -189,11 +189,11 @@ export default class ClanGamesLog {
 
 	public async add(id: string) {
 		if (!ClanGames.Started) return null;
-		const data = await this.collection.findOne({ clan_id: new ObjectId(id) });
+		const data = await this.collection.findOne({ clanId: new ObjectId(id) });
 
 		if (!data) return null;
 		return this.cached.set(id, {
-			_id: data.clan_id,
+			_id: data.clanId,
 			tag: data.tag,
 			color: data.color,
 			guild: data.guild,

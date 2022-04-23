@@ -123,12 +123,12 @@ export default class SetupCommand extends Command {
 		const clans = await this.client.storage.find(interaction.guild!.id);
 		const fetched = await Promise.all(
 			clans.map(async (clan) => {
-				const bit1 = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clan_id: clan._id });
-				const bit2 = await this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clan_id: clan._id });
-				const bit3 = await this.client.db.collection(Collections.LAST_SEEN_LOGS).findOne({ clan_id: clan._id });
-				const bit4 = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clan_id: clan._id });
-				const bit5 = await this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clan_id: clan._id });
-				const bit6 = await this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clan_id: clan._id });
+				const bit1 = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clanId: clan._id });
+				const bit2 = await this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clanId: clan._id });
+				const bit3 = await this.client.db.collection(Collections.LAST_SEEN_LOGS).findOne({ clanId: clan._id });
+				const bit4 = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clanId: clan._id });
+				const bit5 = await this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clanId: clan._id });
+				const bit6 = await this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clanId: clan._id });
 
 				return {
 					name: clan.name,

@@ -114,14 +114,14 @@ export default class ClanWarLog {
 		if (!message) {
 			if (cache.messageID) delete cache.messageID;
 			if (data.warTag) cache.rounds[data.round] = { warTag: data.warTag, messageID: null, round: data.round };
-			return this.collection.updateOne({ clan_id: new ObjectId(cache._id) }, { $set: { uid: data.uid }, $inc: { failed: 1 } });
+			return this.collection.updateOne({ clanId: new ObjectId(cache._id) }, { $set: { uid: data.uid }, $inc: { failed: 1 } });
 		}
 
 		if (data.warTag) {
 			cache.rounds[data.round] = { warTag: data.warTag, messageID: message.id, round: data.round };
 
 			return this.collection.updateOne(
-				{ clan_id: new ObjectId(cache._id) },
+				{ clanId: new ObjectId(cache._id) },
 				{
 					$set: {
 						updatedAt: new Date(),
@@ -135,7 +135,7 @@ export default class ClanWarLog {
 		cache.uid = data.uid;
 		cache.messageID = message.id;
 		return this.collection.updateOne(
-			{ clan_id: new ObjectId(cache._id) },
+			{ clanId: new ObjectId(cache._id) },
 			{ $set: { messageID: message.id, uid: data.uid, updatedAt: new Date(), failed: 0 } }
 		);
 	}
@@ -408,9 +408,9 @@ export default class ClanWarLog {
 
 	public async init() {
 		await this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } }).forEach((data) => {
-			this.cached.set((data.clan_id as ObjectId).toHexString(), {
+			this.cached.set((data.clanId as ObjectId).toHexString(), {
 				tag: data.tag,
-				_id: data.clan_id,
+				_id: data.clanId,
 				guild: data.guild,
 				uid: data.uid,
 				channel: data.channel,
@@ -421,12 +421,12 @@ export default class ClanWarLog {
 	}
 
 	public async add(id: string) {
-		const data = await this.collection.findOne({ clan_id: new ObjectId(id) });
+		const data = await this.collection.findOne({ clanId: new ObjectId(id) });
 		if (!data) return null;
 
 		this.cached.set(id, {
 			tag: data.tag,
-			_id: data.clan_id,
+			_id: data.clanId,
 			guild: data.guild,
 			uid: data.uid,
 			channel: data.channel,

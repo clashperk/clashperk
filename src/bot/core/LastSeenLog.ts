@@ -108,7 +108,7 @@ export default class LastSeenLog {
 	private async mutate(cache: Cache, msg: APIMessage | null) {
 		if (msg) {
 			await this.collection.updateOne(
-				{ clan_id: new ObjectId(cache._id) },
+				{ clanId: new ObjectId(cache._id) },
 				{
 					$set: {
 						failed: 0,
@@ -119,7 +119,7 @@ export default class LastSeenLog {
 			);
 			cache.message = msg.id;
 		} else {
-			await this.collection.updateOne({ clan_id: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
+			await this.collection.updateOne({ clanId: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
 		}
 		return msg;
 	}
@@ -149,9 +149,9 @@ export default class LastSeenLog {
 
 	public async init() {
 		await this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } }).forEach((data) => {
-			this.cached.set((data.clan_id as ObjectId).toHexString(), {
+			this.cached.set((data.clanId as ObjectId).toHexString(), {
 				tag: data.tag,
-				_id: data.clan_id,
+				_id: data.clanId,
 				guild: data.guild,
 				color: data.color,
 				channel: data.channel,
@@ -161,12 +161,12 @@ export default class LastSeenLog {
 	}
 
 	public async add(_id: string) {
-		const data = await this.collection.findOne({ clan_id: new ObjectId(_id) });
+		const data = await this.collection.findOne({ clanId: new ObjectId(_id) });
 
 		if (!data) return null;
 		return this.cached.set(_id, {
 			tag: data.tag,
-			_id: data.clan_id,
+			_id: data.clanId,
 			guild: data.guild,
 			color: data.color,
 			channel: data.channel,
