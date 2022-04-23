@@ -44,7 +44,7 @@ export default class AutoRoleCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction, { tag, members, elders, coLeads, verify, command }: IArgs) {
+	public async exec(interaction: CommandInteraction<'cached'>, { tag, members, elders, coLeads, verify, command }: IArgs) {
 		if (command === 'disable') {
 			return this.handler.exec(interaction, this.handler.modules.get('setup-disable')!, { option: 'auto-role', tag });
 		}
@@ -53,11 +53,11 @@ export default class AutoRoleCommand extends Command {
 			return interaction.editReply(this.i18n('command.autorole.enable.no_roles', { lng: interaction.locale }));
 		}
 
-		if ([members, elders, coLeads].filter((role) => role.managed || role.id === interaction.guild!.id).length) {
+		if ([members, elders, coLeads].filter((role) => role.managed || role.id === interaction.guild.id).length) {
 			return interaction.editReply(this.i18n('command.autorole.enable.no_system_roles', { lng: interaction.locale }));
 		}
 
-		if ([members, elders, coLeads].filter((role) => role.position > interaction.guild!.me!.roles.highest.position).length) {
+		if ([members, elders, coLeads].filter((role) => role.position > interaction.guild.me!.roles.highest.position).length) {
 			return interaction.editReply(this.i18n('command.autorole.enable.no_higher_roles', { lng: interaction.locale }));
 		}
 
@@ -67,23 +67,24 @@ export default class AutoRoleCommand extends Command {
 
 			await this.client.db
 				.collection(Collections.CLAN_STORES)
-				.updateMany({ guild: interaction.guild!.id, autoRole: 2 }, { $unset: { role_ids: '', roles: '', autoRole: '' } });
+				.updateMany({ guild: interaction.guild.id, autoRole: 2 }, { $unset: { roleIds: '', roles: '', autoRole: '' } });
 
 			const ex = await this.client.db
 				.collection(Collections.CLAN_STORES)
-				.findOne({ tag: { $ne: clan.tag }, role_ids: { $in: [members.id, elders.id, coLeads.id] } });
+				.findOne({ tag: { $ne: clan.tag }, roleIds: { $in: [members.id, elders.id, coLeads.id] } });
 
-			if (ex) return interaction.editReply(this.i18n('command.autorole.enable.roles_already_used', { lng: interaction.locale }));
+			if (ex && !this.client.patrons.get(interaction.guild.id))
+				return interaction.editReply(this.i18n('command.autorole.enable.roles_already_used', { lng: interaction.locale }));
 
 			const up = await this.client.db.collection(Collections.CLAN_STORES).updateOne(
-				{ tag: clan.tag, guild: interaction.guild!.id },
+				{ tag: clan.tag, guild: interaction.guild.id },
 				{
 					$set: {
 						roles: { member: members.id, admin: elders.id, coLeader: coLeads.id },
 						autoRole: 1,
 						secureRole: verify
 					},
-					$addToSet: { role_ids: { $each: [members.id, elders.id, coLeads.id] } }
+					$addToSet: { roleIds: { $each: [members.id, elders.id, coLeads.id] } }
 				}
 			);
 
@@ -96,22 +97,22 @@ export default class AutoRoleCommand extends Command {
 			);
 		}
 
-		const clans = await this.client.storage.find(interaction.guild!.id);
+		const clans = await this.client.storage.find(interaction.guild.id);
 		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
 		await this.client.db
 			.collection(Collections.CLAN_STORES)
-			.updateMany({ guild: interaction.guild!.id, autoRole: 1 }, { $unset: { role_ids: '', roles: '', autoRole: '' } });
+			.updateMany({ guild: interaction.guild.id, autoRole: 1 }, { $unset: { roleIds: '', roles: '', autoRole: '', secureRole: '' } });
 
-		await this.client.db.collection<{ role_ids: Snowflake[] }>(Collections.CLAN_STORES).updateMany(
-			{ guild: interaction.guild!.id },
+		await this.client.db.collection<{ roleIds: Snowflake[] }>(Collections.CLAN_STORES).updateMany(
+			{ guild: interaction.guild.id },
 			{
 				$set: {
 					roles: { member: members.id, admin: elders.id, coLeader: coLeads.id },
 					autoRole: 2,
 					secureRole: verify
 				},
-				$addToSet: { role_ids: { $each: [members.id, elders.id, coLeads.id] } }
+				$addToSet: { roleIds: { $each: [members.id, elders.id, coLeads.id] } }
 			}
 		);
 

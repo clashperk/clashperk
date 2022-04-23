@@ -82,7 +82,7 @@ class MongoDB extends MongoClient {
 					key: { alias: 1 }
 				},
 				{
-					key: { role_ids: 1 }
+					key: { roleIds: 1 }
 				},
 				{
 					key: { tag: 1 }

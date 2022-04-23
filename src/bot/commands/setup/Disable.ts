@@ -72,13 +72,14 @@ export default class SetupDisableCommand extends Command {
 		}
 
 		if (option === 'auto-role' && !tag) {
-			await this.client.db
+			const { matchedCount } = await this.client.db
 				.collection(Collections.CLAN_STORES)
 				.updateMany(
 					{ guild: interaction.guild!.id, autoRole: 2 },
-					{ $unset: { autoRole: '', roles: '', role_ids: '', secureRole: '' } }
+					{ $unset: { autoRole: '', roles: '', roleIds: '', secureRole: '' } }
 				);
-			return interaction.editReply(`**Auto-role disabled for all clans.**`);
+			if (matchedCount) return interaction.editReply(`**Auto-role disabled for all clans.**`);
+			return interaction.editReply(`**No clans had auto-role enabled.**`);
 		}
 
 		if (!tag) return interaction.editReply('**You must specify a clan tag to run this command.**');
@@ -89,7 +90,7 @@ export default class SetupDisableCommand extends Command {
 				.collection(Collections.CLAN_STORES)
 				.updateMany(
 					{ guild: interaction.guild!.id, tag: data.tag, autoRole: 1 },
-					{ $unset: { autoRole: '', roles: '', role_ids: '', secureRole: '' } }
+					{ $unset: { autoRole: '', roles: '', roleIds: '', secureRole: '' } }
 				);
 			return interaction.editReply(`Auto-role disabled for **${data.name as string} (${data.tag as string})**`);
 		}
@@ -108,26 +109,7 @@ export default class SetupDisableCommand extends Command {
 		const deleted = await this.client.storage.remove(data._id.toHexString(), { op: Number(option) });
 		if (deleted?.deletedCount) await this.updateFlag(id, Number(option));
 		await this.client.rpcHandler.delete(id, { op: Number(option), tag: data.tag, guild: interaction.guild!.id });
-
-		await this.delete(id, data.tag, data.flag, interaction.guild!.id);
 		return interaction.editReply(`**Successfully Removed ${names[option]} for ${data.name as string} (${data.tag as string})**`);
-	}
-
-	private async delete(id: string, tag: string, flag: number, guild: string) {
-		const data = await Promise.all([
-			this.client.db.collection(Collections.DONATION_LOGS).countDocuments({ clan_id: new ObjectId(id) }),
-			this.client.db.collection(Collections.CLAN_FEED_LOGS).countDocuments({ clan_id: new ObjectId(id) }),
-			this.client.db.collection(Collections.LAST_SEEN_LOGS).countDocuments({ clan_id: new ObjectId(id) }),
-			this.client.db.collection(Collections.CLAN_EMBED_LOGS).countDocuments({ clan_id: new ObjectId(id) }),
-			this.client.db.collection(Collections.CLAN_GAMES_LOGS).countDocuments({ clan_id: new ObjectId(id) }),
-			this.client.db.collection(Collections.CLAN_WAR_LOGS).countDocuments({ clan_id: new ObjectId(id) })
-		]).then((collection) => collection.every((num) => num === 0));
-
-		const option = Flags.CHANNEL_LINKED;
-		if (data && (flag & option) !== option) {
-			this.client.rpcHandler.delete(id, { tag, op: 0, guild });
-			return this.client.db.collection(Collections.CLAN_STORES).updateOne({ _id: new ObjectId(id) }, { $set: { flag: 0 } });
-		}
 	}
 
 	private updateFlag(id: string, option: number) {

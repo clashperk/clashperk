@@ -35,8 +35,7 @@ export default class MessageListener extends Listener {
 
 		if (!command) return;
 		if (!this.client.isOwner(message.author.id)) {
-			this.client.logger.log(`${command.id} ~ text_command`, { label: `${message.guild.name}/${message.author.tag}` });
-			return this.fallback(message);
+			return this.client.logger.log(`${command.id} ~ text-command`, { label: `${message.guild.name}/${message.author.tag}` });
 		}
 
 		try {
@@ -53,19 +52,6 @@ export default class MessageListener extends Listener {
 			console.error(error);
 			await message.channel.send('**Something went wrong while executing that command.**');
 		}
-	}
-
-	private async fallback(message: Message) {
-		return message.channel.send(
-			[
-				'**Text-based commands are being replaced in favour of slash commands.**',
-				'',
-				'On May 1, 2022, text-based commands will no longer work and the bot will completely stop responding to text-based commands.',
-				'',
-				'Try typing `/` to see a list of available commands.',
-				'https://i.imgur.com/jcWPjDf.png'
-			].join('\n')
-		);
 	}
 
 	private inhibitor(message: Message) {

@@ -103,14 +103,14 @@ export class RoleManager {
 			.next();
 		if (!queried?.guilds.length) return null;
 
-		const guild_ids = queried.guilds.filter((id: Snowflake) => this.client.guilds.cache.has(id));
-		if (!guild_ids.length) return null;
+		const guildIds = queried.guilds.filter((id: Snowflake) => this.client.guilds.cache.has(id));
+		if (!guildIds.length) return null;
 
 		const cursor = this.client.db.collection(Collections.CLAN_STORES).aggregate<any>([
 			{
 				$match: {
 					autoRole: { $gt: 0 },
-					guild: { $in: guild_ids }
+					guild: { $in: guildIds }
 				}
 			},
 			{
@@ -126,7 +126,7 @@ export class RoleManager {
 			},
 			{
 				$set: {
-					guild_id: '$_id.guild',
+					guildId: '$_id.guild',
 					type: '$_id.autoRole'
 				}
 			},
@@ -138,16 +138,16 @@ export class RoleManager {
 			}
 		]);
 
-		const groups: { clans: any[]; guild_id: Snowflake; type: 1 | 2 }[] = await cursor.toArray();
+		const groups: { clans: any[]; guildId: Snowflake; type: 1 | 2 }[] = await cursor.toArray();
 		if (!groups.length) return cursor.close();
 
 		for (const group of groups.filter((ex) => ex.type === 2 && ex.clans.length)) {
-			await this.addSameTypeRole(group.guild_id, group.clans, data);
+			await this.addSameTypeRole(group.guildId, group.clans, data);
 		}
 
 		for (const group of groups.filter((ex) => ex.type === 1 && ex.clans.length)) {
 			const clan = group.clans.find((clan) => clan.tag === data.clan.tag);
-			if (clan) await this.addUniqueTypeRole(group.guild_id, clan, data);
+			if (clan) await this.addUniqueTypeRole(group.guildId, clan, data);
 		}
 
 		return cursor.close();
@@ -160,13 +160,13 @@ export class RoleManager {
 			.toArray();
 
 		const flattened = this.flatPlayers(collection, clan.secureRole);
-		const user_ids = flattened.reduce<Snowflake[]>((prev, curr) => {
+		const userIds = flattened.reduce<Snowflake[]>((prev, curr) => {
 			if (!prev.includes(curr.user)) prev.push(curr.user);
 			return prev;
 		}, []);
 
 		// fetch guild members at once
-		const members = await this.client.guilds.cache.get(guild)?.members.fetch({ user: user_ids, force: true });
+		const members = await this.client.guilds.cache.get(guild)?.members.fetch({ user: userIds, force: true });
 		if (!members?.size) return null;
 
 		for (const member of data.members) {
@@ -195,13 +195,13 @@ export class RoleManager {
 			.toArray();
 
 		const flattened = this.flatPlayers(collection, clan.secureRole);
-		const user_ids = flattened.reduce<Snowflake[]>((prev, curr) => {
+		const userIds = flattened.reduce<Snowflake[]>((prev, curr) => {
 			if (!prev.includes(curr.user)) prev.push(curr.user);
 			return prev;
 		}, []);
 
 		// fetch guild members at once
-		const members = await this.client.guilds.cache.get(guild)?.members.fetch({ user: user_ids, force: true });
+		const members = await this.client.guilds.cache.get(guild)?.members.fetch({ user: userIds, force: true });
 		if (!members?.size) return null;
 
 		const players = (await this.client.http.detailedClanMembers(flattened)).filter((res) => res.ok);
@@ -227,47 +227,47 @@ export class RoleManager {
 
 	private async manageRole(
 		members: Collection<string, GuildMember>,
-		user_id: Snowflake,
-		guild_id: Snowflake,
+		userId: Snowflake,
+		guildId: Snowflake,
 		clanRole: string,
 		roles: { [key: string]: Snowflake },
 		reason: string
 	) {
-		return this.addRoles(members, guild_id, user_id, roles[clanRole], Object.values(roles), reason);
+		return this.addRoles(members, guildId, userId, roles[clanRole], Object.values(roles), reason);
 	}
 
 	public async addRoles(
 		members: Collection<string, GuildMember>,
-		guild_id: Snowflake,
-		user_id: Snowflake,
-		role_id: Snowflake,
+		guildId: Snowflake,
+		userId: Snowflake,
+		roleId: Snowflake,
 		roles: Snowflake[],
 		reason: string
 	) {
-		const guild = this.client.guilds.cache.get(guild_id);
+		const guild = this.client.guilds.cache.get(guildId);
 
-		if (!role_id && !roles.length) return null; // eslint-disable-line
+		if (!roleId && !roles.length) return null; // eslint-disable-line
 		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return null;
 
-		if (!members.has(user_id)) return null;
-		const member = members.get(user_id)!;
+		if (!members.has(userId)) return null;
+		const member = members.get(userId)!;
 		if (member.user.bot) return null;
 
 		const excluded = roles
-			.filter((id) => id !== role_id && this.checkRole(guild, guild.me!, id))
+			.filter((id) => id !== roleId && this.checkRole(guild, guild.me!, id))
 			.filter((id) => member.roles.cache.has(id));
 
 		if (excluded.length) {
 			await member.roles.remove(excluded, reason);
 		}
 
-		if (!role_id) return null; // eslint-disable-line
-		if (!guild.roles.cache.has(role_id)) return null;
+		if (!roleId) return null; // eslint-disable-line
+		if (!guild.roles.cache.has(roleId)) return null;
 
-		const role = guild.roles.cache.get(role_id)!;
+		const role = guild.roles.cache.get(roleId)!;
 		if (role.position > guild.me.roles.highest.position) return null;
 
-		if (member.roles.cache.has(role_id)) return null;
+		if (member.roles.cache.has(roleId)) return null;
 		return member.roles.add(role, reason).catch(() => null);
 	}
 

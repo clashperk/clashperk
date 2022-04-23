@@ -134,7 +134,7 @@ export default class SetupCommand extends Command {
 					name: clan.name,
 					tag: clan.tag,
 					alias: clan.alias ? `(${clan.alias}) ` : '',
-					roles: clan.role_ids?.map((id) => interaction.guild!.roles.cache.get(id)?.toString()) ?? [],
+					roles: clan.roleIds?.map((id) => interaction.guild!.roles.cache.get(id)?.toString()) ?? [],
 					channels: clan.channels?.map((id) => this.client.channels.cache.get(id)?.toString()) ?? [],
 					entries: [
 						{

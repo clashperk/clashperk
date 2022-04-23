@@ -21,7 +21,7 @@ export interface ClanStore {
 	channels?: string[];
 	autoRole: 1 | 2;
 	secureRole: boolean;
-	role_ids?: string[];
+	roleIds?: string[];
 	roles?: { coLeader?: string; admin?: string; member?: string }[];
 }
 
@@ -79,7 +79,7 @@ export default class StorageHandler {
 					? {
 							roles: ex.roles,
 							createdAt: new Date(),
-							role_ids: ex.role_ids,
+							roleIds: ex.roleIds,
 							autoRole: ex.autoRole,
 							secureRole: ex.secureRole
 					  }
