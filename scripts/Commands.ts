@@ -689,19 +689,15 @@ export const COMMANDS: Command[] = [
 				description: 'Select an option',
 				choices: [
 					{
-						name: 'War Summary',
+						name: 'Clan Wars',
 						value: 'wars'
-					},
-					{
-						name: 'Trophies',
-						value: 'trophies'
 					},
 					{
 						name: 'Clan Games',
 						value: 'games'
 					},
 					{
-						name: 'Clan Summary',
+						name: 'Clans',
 						value: 'clans'
 					},
 					{
@@ -711,6 +707,14 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'Player Donations',
 						value: 'player-donations'
+					},
+					{
+						name: 'Player Trophies',
+						value: 'trophies'
+					},
+					{
+						name: 'Player Attacks',
+						value: 'attacks'
 					}
 				]
 			},

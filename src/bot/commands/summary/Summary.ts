@@ -19,7 +19,7 @@ export default class SummaryCommand extends Command {
 			'clans': this.handler.modules.get('summary-clans')!,
 			'trophies': this.handler.modules.get('trophy-summary')!,
 			'donations': this.handler.modules.get('donation-summary')!,
-			'clan-games': this.handler.modules.get('clan-games-summary')!,
+			'clan-games': this.handler.modules.get('summary-clan-games')!,
 			'player-donations': this.handler.modules.get('player-donation-summary')!
 		}[args.option];
 
