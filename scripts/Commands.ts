@@ -694,10 +694,10 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'Clan Games',
-						value: 'games'
+						value: 'clan-games'
 					},
 					{
-						name: 'Clans',
+						name: 'Clan Stats',
 						value: 'clans'
 					},
 					{
@@ -711,10 +711,6 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'Player Trophies',
 						value: 'trophies'
-					},
-					{
-						name: 'Player Attacks',
-						value: 'attacks'
 					}
 				]
 			},
