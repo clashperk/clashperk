@@ -24,7 +24,7 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
-			db.collection(Collections.BOT_INTERACTIONS).createIndex({ user: 1 }, { unique: true }),
+			db.collection(Collections.BOT_INTERACTIONS).createIndex({ user: 1, guild: 1 }, { unique: true }),
 
 			db.collection(Collections.BOT_STATS).createIndex({ name: 1 }, { unique: true }),
 

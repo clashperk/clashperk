@@ -52,6 +52,13 @@ export default class LastWarsExport extends Command {
 						$limit: num
 					},
 					{
+						$set: {
+							clan: {
+								$cond: [{ $eq: ['$clan.tag', clan.tag] }, '$clan', '$opponent']
+							}
+						}
+					},
+					{
 						$project: {
 							member: '$clan.members',
 							clan: '$clan.name',

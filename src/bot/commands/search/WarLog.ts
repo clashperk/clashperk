@@ -47,8 +47,8 @@ export default class WarLogCommand extends Command {
 				warType: { $ne: WarType.CWL },
 				state: 'warEnded'
 			})
-			.sort({ preparationStartTime: -1 })
-			.limit(11)
+			.sort({ _id: -1 })
+			.limit(20)
 			.toArray();
 
 		const body = await this.client.http.clanWarLog(data.tag, { limit: 10 });
@@ -80,7 +80,8 @@ export default class WarLogCommand extends Command {
 
 	private getWarInfo(wars: any[], war: any) {
 		const data = wars.find(
-			(en) => en.clan.tag === war.clan.tag && en.opponent.tag === war.opponent?.tag && this.compareDate(war.endTime, en.endTime)
+			(en) =>
+				war.opponent?.tag && [en.clan.tag, en.opponent.tag].includes(war.opponent.tag) && this.compareDate(war.endTime, en.endTime)
 		);
 		if (!data) return null;
 		return { id: data.id, attacks: data.opponent.attacks };

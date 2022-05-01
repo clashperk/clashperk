@@ -119,6 +119,7 @@ export class Client extends Discord.Client {
 
 		await Database.connect().then(() => this.logger.info('Connected to MongoDB', { label: 'DATABASE' }));
 		this.db = Database.db('clashperk');
+		await Database.createIndex(this.db);
 
 		this.settings = new SettingsProvider(this.db);
 		await this.settings.init();
