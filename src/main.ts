@@ -3,7 +3,6 @@ import 'moment-duration-format';
 
 import { RewriteFrames } from '@sentry/integrations';
 import { Client } from './bot/struct/Client';
-import { execSync } from 'child_process';
 import * as Sentry from '@sentry/node';
 import i18next from 'i18next';
 import { fileURLToPath } from 'url';
@@ -28,7 +27,7 @@ if (process.env.SENTRY) {
 		dsn: process.env.SENTRY,
 		serverName: 'clashperk_bot',
 		environment: process.env.NODE_ENV ?? 'development',
-		release: execSync('git rev-parse HEAD').toString().trim(),
+		release: process.env.GIT_COMMIT,
 		integrations: [
 			new RewriteFrames({ root: process.cwd(), prefix: '/' }),
 			new Sentry.Integrations.Http({ tracing: true, breadcrumbs: false })
