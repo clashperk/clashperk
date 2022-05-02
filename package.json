@@ -49,7 +49,14 @@
 		"protoc-gen-grpc-web": "^1.3.0",
 		"readdirp": "^3.6.0",
 		"shelljs": "^0.8.4",
-		"uuid": "^8.3.2"
+		"uuid": "^8.3.2",
+		"reflect-metadata": "^0.1.13",
+		"tsyringe": "^4.6.0",
+		"discord-api-types": "^0.30.0",
+		"bufferutil": "^4.0.6",
+		"erlpack": "github:discord/erlpack",
+		"utf-8-validate": "^5.0.9",
+		"zlib-sync": "^0.1.7"
 	},
 	"devDependencies": {
 		"@types/common-tags": "^1.8.1",
@@ -62,15 +69,12 @@
 		"@types/uuid": "^8.3.1",
 		"@typescript-eslint/eslint-plugin": "^5.4.0",
 		"@typescript-eslint/parser": "^5.4.0",
-		"discord-api-types": "^0.30.0",
 		"eslint": "^8.3.0",
 		"eslint-config-marine": "^9.0.6",
 		"eslint-config-prettier": "^8.3.0",
 		"eslint-plugin-prettier": "^4.0.0",
 		"prettier": "^2.4.1",
-		"reflect-metadata": "^0.1.13",
 		"rimraf": "^3.0.2",
-		"tsyringe": "^4.6.0",
 		"typescript": "^4.6.2"
 	},
 	"engines": {
@@ -154,11 +158,5 @@
 				}
 			}
 		]
-	},
-	"optionalDependencies": {
-		"bufferutil": "^4.0.6",
-		"erlpack": "github:discord/erlpack",
-		"utf-8-validate": "^5.0.9",
-		"zlib-sync": "^0.1.7"
 	}
 }
