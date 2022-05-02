@@ -61,7 +61,7 @@ export default class WarCommand extends Command {
 	private async getWar(interaction: CommandInteraction, id: number | string, tag: string) {
 		const collection = this.client.db.collection(Collections.CLAN_WARS);
 		const data =
-			typeof id === 'string' && tag
+			id === 'last'
 				? await collection
 						.find({
 							$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
@@ -71,9 +71,7 @@ export default class WarCommand extends Command {
 						.sort({ _id: -1 })
 						.limit(1)
 						.next()
-				: typeof id === 'number'
-				? await collection.findOne({ id })
-				: null;
+				: await collection.findOne({ id: Number(id), $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }] });
 
 		if (!data) {
 			return interaction.editReply('**No War found for the specified War ID.**');
