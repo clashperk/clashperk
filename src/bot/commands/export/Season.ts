@@ -85,6 +85,8 @@ export default class ExportSeason extends Command {
 			{ header: 'Elixir Escapade', width: 10 },
 			{ header: 'Heroic Heist', width: 10 },
 			{ header: 'Clan Games', width: 10 },
+			{ header: 'Capital Gold Looted', width: 10 },
+			{ header: 'Capital Gold Contributed', width: 10 },
 			{ header: 'Activity Score', width: 10 }
 		];
 
@@ -98,7 +100,15 @@ export default class ExportSeason extends Command {
 			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 		}
 
-		const achievements = ['War League Legend', 'Gold Grab', 'Elixir Escapade', 'Heroic Heist', 'Games Champion'];
+		const achievements = [
+			'War League Legend',
+			'Gold Grab',
+			'Elixir Escapade',
+			'Heroic Heist',
+			'Games Champion',
+			'Aggressive Capitalism',
+			'Most Valuable Clanmate'
+		];
 		sheet.addRows(
 			members.map((m) => {
 				const rows = [
@@ -115,7 +125,7 @@ export default class ExportSeason extends Command {
 					m.trophies.value,
 					m.versusTrophies.gained,
 					m.warStars.gained,
-					...achievements.map((ac) => m.achievements.find((a: { name: string }) => a.name === ac).gained),
+					...achievements.map((ac) => m.achievements.find((a: { name: string }) => a.name === ac)?.gained ?? 0),
 					m.score
 				];
 
