@@ -53,6 +53,7 @@ export default class ExportCWL extends Command {
 			if (!res?.ok || res.state === 'notInWar') {
 				const data = await this.client.storage.getWarTags(clan.tag, season);
 				if (!data) continue;
+				if (args.season && data.season !== args.season) continue;
 				const { members, perRound } = await this.rounds(data, clan, season);
 				if (!members.length) continue;
 				chunks.push({
@@ -65,6 +66,7 @@ export default class ExportCWL extends Command {
 				continue;
 			}
 
+			if (args.season && res.season !== args.season) continue;
 			const { members, perRound } = await this.rounds(res, clan);
 			if (!members.length) continue;
 			chunks.push({
