@@ -711,6 +711,10 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'Player Trophies',
 						value: 'trophies'
+					},
+					{
+						name: 'Player Attacks',
+						value: 'attacks'
 					}
 				]
 			},

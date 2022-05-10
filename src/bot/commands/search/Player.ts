@@ -165,8 +165,10 @@ export default class PlayerCommand extends Command {
 				`**Defense Won**\n${EMOJIS.SHIELD} ${data.achievements.find((d) => d.name === 'Unbreakable')!.value}`,
 				`**CWL War Stars**\n${EMOJIS.STAR} ${data.achievements.find((d) => d.name === 'War League Legend')!.value}`,
 				`**Clan Games Points**\n${EMOJIS.CLAN_GAMES} ${data.achievements.find((d) => d.name === 'Games Champion')!.value}`,
-				`**Capital Gold Looted**\n${EMOJIS.GOLD} ${data.achievements.find((d) => d.name === 'Aggressive Capitalism')?.value ?? 0}`,
-				`**Capital Gold Contributed**\n${EMOJIS.GOLD} ${
+				`**Capital Gold Looted**\n${EMOJIS.CAPITAL_GOLD} ${
+					data.achievements.find((d) => d.name === 'Aggressive Capitalism')?.value ?? 0
+				}`,
+				`**Capital Gold Contributed**\n${EMOJIS.CAPITAL_GOLD} ${
 					data.achievements.find((d) => d.name === 'Most Valuable Clanmate')?.value ?? 0
 				}`,
 				'\u200b\u2002'

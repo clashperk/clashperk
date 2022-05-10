@@ -20,7 +20,8 @@ export default class SummaryCommand extends Command {
 			'trophies': this.handler.modules.get('trophy-summary')!,
 			'donations': this.handler.modules.get('donation-summary')!,
 			'clan-games': this.handler.modules.get('summary-clan-games')!,
-			'player-donations': this.handler.modules.get('player-donation-summary')!
+			'player-donations': this.handler.modules.get('player-donation-summary')!,
+			'attacks': this.handler.modules.get('attack-summary')!
 		}[args.option];
 
 		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
