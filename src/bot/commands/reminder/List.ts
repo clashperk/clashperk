@@ -51,6 +51,10 @@ export default class ReminderListCommand extends Command {
 		});
 
 		const contents = Util.splitMessage(chunks.join('\n\u200b\n'), { maxLength: 2000, char: '\n\u200b\n' });
-		for (const content of contents) await interaction.followUp(content);
+		for (const content of contents)
+			await interaction.followUp({
+				content,
+				ephemeral: true
+			});
 	}
 }
