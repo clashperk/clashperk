@@ -22,6 +22,15 @@ export default class ClanGamesCommand extends Command {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 
+		const allowed = await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.countDocuments({ guild: interaction.guild.id, tag: clan.tag });
+		if (!allowed && interaction.guild.id !== '509784317598105619') {
+			return interaction.editReply(
+				this.i18n('common.guild_unauthorized', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+			);
+		}
+
 		const fetched = await this.client.http.detailedClanMembers(clan.memberList);
 		const memberList = fetched
 			.filter((res) => res.ok)
