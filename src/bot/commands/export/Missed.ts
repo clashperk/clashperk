@@ -58,7 +58,7 @@ export default class ExportMissed extends Command {
 								name: m.name,
 								tag: m.tag,
 								missed: [] as Date[],
-								count: war.attacksPerMember
+								count: war.attacksPerMember - (m.attacks?.length ?? 0)
 						  });
 					_mem.missed.push(war.endTime);
 
