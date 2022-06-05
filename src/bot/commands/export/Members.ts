@@ -126,7 +126,6 @@ export default class ExportClanMembersCommand extends Command {
 	private excel(members: any[]) {
 		const workbook = new Workbook();
 		const sheet = workbook.addWorksheet('Member List');
-
 		sheet.columns = [
 			{ header: 'NAME', width: 16 },
 			{ header: 'TAG', width: 16 },

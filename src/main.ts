@@ -7,6 +7,7 @@ import * as Sentry from '@sentry/node';
 import i18next from 'i18next';
 import { fileURLToPath } from 'url';
 import Backend from 'i18next-fs-backend';
+import { execSync } from 'child_process';
 
 const client = new Client();
 
@@ -27,7 +28,7 @@ if (process.env.SENTRY) {
 		dsn: process.env.SENTRY,
 		serverName: 'clashperk_bot',
 		environment: process.env.NODE_ENV ?? 'development',
-		release: process.env.GIT_COMMIT,
+		release: execSync('git rev-parse HEAD').toString().trim(),
 		integrations: [
 			new RewriteFrames({ root: process.cwd(), prefix: '/' }),
 			new Sentry.Integrations.Http({ tracing: true, breadcrumbs: false })
