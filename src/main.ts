@@ -17,7 +17,7 @@ await i18next.use(Backend).init({
 	cleanCode: true,
 	lng: 'en-US',
 	fallbackLng: ['en-US'],
-	preload: ['en-US', 'es-ES'],
+	preload: ['en-US', 'es-ES', 'fr'],
 	defaultNS: 'translation',
 	ns: ['translation'],
 	backend: { loadPath: fileURLToPath(locales) }

@@ -62,4 +62,4 @@ export function format<K extends Leaves<typeof Locale>>(key: CheckDictString<K, 
 	return key;
 }
 
-i18n('command.timezone.set', { lng: 'en-US' } as const);
+export declare function fmt<K extends Leaves<typeof Locale>>(key: CheckDictString<K, typeof Locale>): any;

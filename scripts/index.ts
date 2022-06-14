@@ -5,6 +5,7 @@ import { Routes, RouteBases } from 'discord-api-types/v9';
 import { COMMANDS, PRIVATE_COMMANDS } from './Commands';
 import fetch from 'node-fetch';
 import { ApplicationCommand } from 'discord.js';
+import { inspect } from 'util';
 
 const applicationGuildCommands = async (commands: typeof COMMANDS) => {
 	console.log('Building Guild Application Commands');
@@ -16,12 +17,12 @@ const applicationGuildCommands = async (commands: typeof COMMANDS) => {
 		},
 		body: JSON.stringify(commands)
 	});
-	await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(data)));
+	await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(inspect(data, { depth: Infinity }))));
 	console.log(`Updated ${COMMANDS.length} Guild Application Commands`);
 };
 
 const commandPermission = async () => {
-	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands('526971716711350273', '509784317598105619')}`, {
+	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands('526971716711350273', '609250675431309313')}`, {
 		method: 'PUT',
 		headers: {
 			'Authorization': `Bot ${process.env.BOT_TOKEN!}`,

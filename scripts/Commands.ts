@@ -1,6 +1,23 @@
 import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'discord-api-types/v9';
 import moment from 'moment';
 import { command } from '../locales/default';
+import i18next from 'i18next';
+import { fmt } from '../src/bot/util/i18n';
+
+import { fileURLToPath } from 'url';
+import Backend from 'i18next-fs-backend';
+
+const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
+await i18next.use(Backend).init({
+	debug: false,
+	cleanCode: true,
+	lng: 'en-US',
+	fallbackLng: ['en-US'],
+	preload: ['en-US', 'es-ES', 'fr'],
+	defaultNS: 'translation',
+	ns: ['translation'],
+	backend: { loadPath: fileURLToPath(locales) }
+});
 
 export function getSeasonIds() {
 	return Array(Math.min(24, 10 + new Date().getMonth()))
@@ -19,18 +36,27 @@ export enum CommandType {
 	MESSAGE = 3
 }
 
+export const translation: typeof fmt = (text: string): Record<string, string> => {
+	return ['fr'].reduce<Record<string, string>>((acc, lang) => {
+		acc[lang] = i18next.t(text, { lng: lang, escapeValue: false }).substring(0, 100);
+		return acc;
+	}, {});
+};
+
 export interface Command {
 	name: string;
 	type?: number;
 	description: string;
 	default_permission?: boolean;
 	options?: APIApplicationCommandOption[];
+	description_localizations?: Record<string, string>;
 }
 
 export const COMMANDS: Command[] = [
 	{
 		name: 'clan',
 		description: command.clan.description,
+		description_localizations: translation('command.clan.description'),
 		options: [
 			{
 				name: 'tag',
@@ -43,6 +69,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'lastseen',
 		description: command.lastseen.description,
+		description_localizations: translation('command.lastseen.description'),
 		options: [
 			{
 				name: 'tag',
@@ -55,6 +82,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'clan-games',
 		description: command.clan_games.description,
+		description_localizations: translation('command.clan_games.description'),
 		options: [
 			{
 				name: 'tag',
@@ -67,6 +95,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'attacks',
 		description: command.attacks.description,
+		description_localizations: translation('command.attacks.description'),
 		options: [
 			{
 				name: 'tag',
@@ -79,6 +108,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'members',
 		description: command.members.description,
+		description_localizations: translation('command.members.description'),
 		options: [
 			{
 				name: 'tag',
@@ -115,6 +145,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'units',
 		description: command.units.description,
+		description_localizations: translation('command.units.description'),
 		options: [
 			{
 				name: 'tag',
@@ -127,6 +158,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'player',
 		description: command.player.description,
+		description_localizations: translation('command.player.description'),
 		options: [
 			{
 				name: 'tag',
@@ -139,6 +171,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'roster',
 		description: command.cwl.roster.description,
+		description_localizations: translation('command.cwl.roster.description'),
 		options: [
 			{
 				name: 'tag',
@@ -151,6 +184,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'round',
 		description: command.cwl.round.description,
+		description_localizations: translation('command.cwl.round.description'),
 		options: [
 			{
 				name: 'tag',
@@ -169,6 +203,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'donations',
 		description: command.donations.description,
+		description_localizations: translation('command.donations.description'),
 		options: [
 			{
 				name: 'tag',
@@ -188,6 +223,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'compo',
 		description: command.compo.description,
+		description_localizations: translation('command.compo.description'),
 		options: [
 			{
 				name: 'tag',
@@ -200,6 +236,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'upgrades',
 		description: command.upgrades.description,
+		description_localizations: translation('command.upgrades.description'),
 		options: [
 			{
 				name: 'tag',
@@ -212,6 +249,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'rushed',
 		description: command.rushed.description,
+		description_localizations: translation('command.rushed.description'),
 		options: [
 			{
 				name: 'tag',
@@ -239,6 +277,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'profile',
 		description: command.profile.description,
+		description_localizations: translation('command.profile.description'),
 		options: [
 			{
 				name: 'user',
@@ -251,6 +290,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'war',
 		description: command.war.description,
+		description_localizations: translation('command.war.description'),
 		options: [
 			{
 				name: 'tag',
@@ -269,6 +309,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'remaining',
 		description: command.remaining.description,
+		description_localizations: translation('command.remaining.description'),
 		options: [
 			{
 				name: 'tag',
@@ -287,6 +328,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'link',
 		description: command.link.description,
+		description_localizations: translation('command.link.description'),
 		options: [
 			{
 				name: 'create',
@@ -351,6 +393,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'flag',
 		description: command.flag.description,
+		description_localizations: translation('command.flag.description'),
 		options: [
 			{
 				name: 'create',
@@ -424,10 +467,12 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'setup',
 		description: command.setup.description,
+		description_localizations: translation('command.setup.description'),
 		options: [
 			{
 				name: 'enable',
 				description: command.setup.enable.description,
+				description_localizations: translation('command.setup.enable.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -496,11 +541,13 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'list',
 				description: command.setup.list.description,
+				description_localizations: translation('command.setup.list.description'),
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'disable',
 				description: command.setup.disable.description,
+				description_localizations: translation('command.setup.disable.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -560,11 +607,13 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'invite',
-		description: command.invite.description
+		description: command.invite.description,
+		description_localizations: translation('command.invite.description')
 	},
 	{
 		name: 'help',
 		description: command.help.description,
+		description_localizations: translation('command.help.description'),
 		options: [
 			{
 				name: 'command',
@@ -576,6 +625,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'cwl',
 		description: command.cwl.description,
+		description_localizations: translation('command.cwl.description'),
 		options: [
 			{
 				name: 'option',
@@ -627,6 +677,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'export',
 		description: command.export.description,
+		description_localizations: translation('command.export.description'),
 		options: [
 			{
 				name: 'option',
@@ -681,6 +732,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'summary',
 		description: command.summary.description,
+		description_localizations: translation('command.summary.description'),
 		options: [
 			{
 				name: 'option',
@@ -730,6 +782,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'warlog',
 		description: command.warlog.description,
+		description_localizations: translation('command.warlog.description'),
 		options: [
 			{
 				name: 'tag',
@@ -741,6 +794,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'verify',
 		description: command.verify.description,
+		description_localizations: translation('command.verify.description'),
 		options: [
 			{
 				name: 'tag',
@@ -759,6 +813,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'activity',
 		description: command.activity.description,
+		description_localizations: translation('command.activity.description'),
 		options: [
 			{
 				name: 'clans',
@@ -791,10 +846,12 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'alias',
 		description: command.alias.description,
+		description_localizations: translation('command.alias.description'),
 		options: [
 			{
 				name: 'create',
 				description: command.alias.create.description,
+				description_localizations: translation('command.alias.create.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -814,11 +871,13 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'list',
 				description: command.alias.list.description,
+				description_localizations: translation('command.alias.list.description'),
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'delete',
 				description: command.alias.delete.description,
+				description_localizations: translation('command.alias.delete.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -833,15 +892,18 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'debug',
-		description: command.debug.description
+		description: command.debug.description,
+		description_localizations: translation('command.debug.description')
 	},
 	{
 		name: 'autorole',
 		description: command.autorole.description,
+		description_localizations: translation('command.autorole.description'),
 		options: [
 			{
 				name: 'enable',
 				description: command.autorole.enable.description,
+				description_localizations: translation('command.autorole.enable.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -889,6 +951,7 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'disable',
 				description: command.autorole.disable.description,
+				description_localizations: translation('command.autorole.disable.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -903,6 +966,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'boosts',
 		description: command.boosts.description,
+		description_localizations: translation('command.boosts.description'),
 		options: [
 			{
 				name: 'tag',
@@ -915,6 +979,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'lineup',
 		description: command.lineup.description,
+		description_localizations: translation('command.lineup.description'),
 		options: [
 			{
 				name: 'tag',
@@ -927,6 +992,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'army',
 		description: command.army.description,
+		description_localizations: translation('command.army.description'),
 		options: [
 			{
 				name: 'link',
@@ -945,6 +1011,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'nickname',
 		description: command.nickname.description,
+		description_localizations: translation('command.nickname.description'),
 		options: [
 			{
 				name: 'user',
@@ -957,6 +1024,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'config',
 		description: command.config.description,
+		description_localizations: translation('command.config.description'),
 		options: [
 			{
 				name: 'color_code',
@@ -973,6 +1041,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'timezone',
 		description: command.timezone.description,
+		description_localizations: translation('command.timezone.description'),
 		options: [
 			{
 				name: 'location',
@@ -985,6 +1054,7 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'search',
 		description: command.search.description,
+		description_localizations: translation('command.search.description'),
 		options: [
 			{
 				name: 'name',
@@ -995,15 +1065,18 @@ export const COMMANDS: Command[] = [
 	},
 	{
 		name: 'redeem',
-		description: command.redeem.description
+		description: command.redeem.description,
+		description_localizations: translation('command.redeem.description')
 	},
 	{
 		name: 'reminder',
 		description: command.reminder.description,
+		description_localizations: translation('command.reminder.description'),
 		options: [
 			{
 				name: 'create',
 				description: command.reminder.create.description,
+				description_localizations: translation('command.reminder.create.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1034,11 +1107,13 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'list',
 				description: command.reminder.list.description,
+				description_localizations: translation('command.reminder.list.description'),
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'delete',
 				description: command.reminder.delete.description,
+				description_localizations: translation('command.reminder.delete.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1068,10 +1143,12 @@ export const COMMANDS: Command[] = [
 	{
 		name: 'stats',
 		description: command.stats.description,
+		description_localizations: translation('command.stats.description'),
 		options: [
 			{
 				name: 'attacks',
 				description: command.stats.attacks.description,
+				description_localizations: translation('command.stats.attacks.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1168,6 +1245,7 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'defense',
 				description: command.stats.defense.description,
+				description_localizations: translation('command.stats.defense.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1246,7 +1324,7 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'attempt',
-						description: 'Fresh defences or cleanup defences. (Default: Both)',
+						description: 'Fresh defenses or cleanup defenses. (Default: Both)',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
