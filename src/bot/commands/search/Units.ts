@@ -1,8 +1,8 @@
-import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import { MessageEmbed, CommandInteraction, MessageButton, MessageSelectMenu, MessageActionRow, Message } from 'discord.js';
+import { Player } from 'clashofclans.js';
+import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import RAW_TROOPS_DATA from '../../util/Troops';
 import { Command } from '../../lib';
-import { Player } from 'clashofclans.js';
 import { TroopInfo, TroopJSON } from '../../types';
 
 export default class UnitsCommand extends Command {

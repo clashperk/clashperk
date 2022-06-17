@@ -1,3 +1,8 @@
+import EventEmitter from 'events';
+import { extname } from 'path';
+import { pathToFileURL } from 'url';
+import { container } from 'tsyringe';
+import readdirp from 'readdirp';
 import {
 	BaseCommandInteraction,
 	ClientEvents,
@@ -12,14 +17,9 @@ import {
 	MessageEmbed,
 	PermissionString
 } from 'discord.js';
-import EventEmitter from 'events';
-import { extname } from 'path';
 import { Client } from '../struct/Client';
-import { container } from 'tsyringe';
-import readdirp from 'readdirp';
-import { pathToFileURL } from 'url';
-import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util';
 import { i18n } from '../util/i18n';
+import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util';
 
 type ArgsMatchType =
 	| 'SUB_COMMAND'

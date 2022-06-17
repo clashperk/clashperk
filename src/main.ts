@@ -1,13 +1,13 @@
 import 'reflect-metadata';
 import 'moment-duration-format';
 
+import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { RewriteFrames } from '@sentry/integrations';
-import { Client } from './bot/struct/Client';
 import * as Sentry from '@sentry/node';
 import i18next from 'i18next';
-import { fileURLToPath } from 'url';
 import Backend from 'i18next-fs-backend';
-import { execSync } from 'child_process';
+import { Client } from './bot/struct/Client';
 
 const client = new Client();
 

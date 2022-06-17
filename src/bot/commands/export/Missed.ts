@@ -1,7 +1,7 @@
+import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib';
 import { Collections } from '../../util/Constants';
 import Excel from '../../struct/Excel';
-import { CommandInteraction } from 'discord.js';
 
 const warTypes: Record<string, string> = {
 	1: 'Regular',

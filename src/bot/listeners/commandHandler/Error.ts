@@ -1,7 +1,7 @@
-import { addBreadcrumb, Severity, captureException, setContext } from '@sentry/node';
-import { Listener, Command } from '../../lib';
-import { BaseCommandInteraction, DiscordAPIError, MessageActionRow, MessageButton, MessageComponentInteraction } from 'discord.js';
 import { inspect } from 'util';
+import { addBreadcrumb, Severity, captureException, setContext } from '@sentry/node';
+import { BaseCommandInteraction, DiscordAPIError, MessageActionRow, MessageButton, MessageComponentInteraction } from 'discord.js';
+import { Listener, Command } from '../../lib';
 
 export default class ErrorListener extends Listener {
 	public constructor() {

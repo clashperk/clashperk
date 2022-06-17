@@ -1,8 +1,8 @@
 import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow } from 'discord.js';
+import { Player, Clan } from 'clashofclans.js';
 import { BUILDER_TROOPS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import RAW_TROOPS_DATA from '../../util/Troops';
 import { Command } from '../../lib';
-import { Player, Clan } from 'clashofclans.js';
 import { Util } from '../../util';
 import { TroopJSON } from '../../types';
 

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
-import Discord from 'discord.js';
 import { fileURLToPath, URL } from 'url';
+import Discord from 'discord.js';
 
 class Manager extends Discord.ShardingManager {
 	public constructor() {
@@ -11,8 +11,8 @@ class Manager extends Discord.ShardingManager {
 		});
 	}
 
-	public init() {
-		return this.spawn({ timeout: -1 }).catch(() => console.log('fucked up'));
+	public async init() {
+		return this.spawn({ timeout: -1 }).catch((error) => console.log(error));
 	}
 }
 

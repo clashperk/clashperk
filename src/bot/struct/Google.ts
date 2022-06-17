@@ -1,5 +1,5 @@
-import fetch from 'node-fetch';
 import qs from 'querystring';
+import fetch from 'node-fetch';
 
 const GOOGLE_MAPS_API_BASE_URL = 'https://maps.googleapis.com/maps/api';
 

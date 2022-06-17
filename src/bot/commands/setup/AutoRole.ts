@@ -1,5 +1,5 @@
-import { Collections } from '../../util/Constants';
 import { CommandInteraction, Role, Snowflake } from 'discord.js';
+import { Collections } from '../../util/Constants';
 import { Args, Command } from '../../lib';
 
 export interface IArgs {

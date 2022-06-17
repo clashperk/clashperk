@@ -1,8 +1,8 @@
 import { Interaction } from 'discord.js';
-import { Listener } from '../../lib';
-import { Settings } from '../../util/Constants';
 import moment from 'moment';
 import ms from 'ms';
+import { Listener } from '../../lib';
+import { Settings } from '../../util/Constants';
 
 export default class InteractionListener extends Listener {
 	public constructor() {

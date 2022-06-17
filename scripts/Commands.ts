@@ -1,11 +1,10 @@
+import { fileURLToPath } from 'url';
 import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'discord-api-types/v9';
 import moment from 'moment';
-import { command } from '../locales/en';
 import i18next from 'i18next';
-import { fmt } from '../src/bot/util/i18n';
-
-import { fileURLToPath } from 'url';
 import Backend from 'i18next-fs-backend';
+import { command } from '../locales/en';
+import { fmt } from '../src/bot/util/i18n';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({

@@ -1,5 +1,5 @@
-import { Command } from '../../lib';
 import { CommandInteraction } from 'discord.js';
+import { Command } from '../../lib';
 import { Flags } from '../../util/Constants';
 
 export default class ServerLinkCommand extends Command {

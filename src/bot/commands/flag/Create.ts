@@ -1,6 +1,6 @@
-import { Collections } from '../../util/Constants';
 import { Util, CommandInteraction, MessageEmbed } from 'discord.js';
 import { Player } from 'clashofclans.js';
+import { Collections } from '../../util/Constants';
 import { Command } from '../../lib';
 
 export default class FlagCreateCommand extends Command {

@@ -1,10 +1,10 @@
 import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake, ThreadChannel } from 'discord.js';
-import { Collections } from '../util/Constants';
 import { APIMessage } from 'discord-api-types/v9';
 import { Clan } from 'clashofclans.js';
+import { ObjectId } from 'mongodb';
+import { Collections } from '../util/Constants';
 import { Client } from '../struct/Client';
 import { Util } from '../util';
-import { ObjectId } from 'mongodb';
 
 export interface Cache {
 	tag: string;
@@ -39,7 +39,7 @@ export default class LastSeenLog {
 		if (this.lastReq.has(id)) await Util.delay(1000);
 
 		if (this.lastReq.has(id)) {
-			clearTimeout(this.lastReq.get(id)!);
+			clearTimeout(this.lastReq.get(id));
 			this.lastReq.delete(id);
 		}
 

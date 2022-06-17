@@ -1,7 +1,7 @@
-import { Listener, Command } from '../../lib';
-import { CommandInteraction } from 'discord.js';
-import { CommandHandlerEvents } from '../../lib/util';
 import { stringify } from 'querystring';
+import { CommandInteraction } from 'discord.js';
+import { Listener, Command } from '../../lib';
+import { CommandHandlerEvents } from '../../lib/util';
 import { BIT_FIELD } from '../../util/Constants';
 
 const texts: Record<string, string> = {

@@ -1,8 +1,8 @@
 import { MessageEmbed, CommandInteraction } from 'discord.js';
+import moment from 'moment';
 import { Collections, WarType } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from '../../lib';
-import moment from 'moment';
 import { Util } from '../../util';
 
 export default class WarLogCommand extends Command {

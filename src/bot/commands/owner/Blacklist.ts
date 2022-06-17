@@ -1,5 +1,5 @@
-import { Settings } from '../../util/Constants';
 import { Message } from 'discord.js';
+import { Settings } from '../../util/Constants';
 import { Args, Command } from '../../lib';
 
 export default class BlacklistCommand extends Command {

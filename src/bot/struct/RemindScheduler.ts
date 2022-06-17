@@ -1,11 +1,11 @@
-import { Collections } from '../util/Constants';
 import { Collection, ObjectId } from 'mongodb';
 import { TextChannel } from 'discord.js';
-import { Client } from './Client';
 import moment from 'moment';
+import { ClanWar } from 'clashofclans.js';
 import { Util } from '../util';
 import { ORANGE_NUMBERS } from '../util/Emojis';
-import { ClanWar } from 'clashofclans.js';
+import { Collections } from '../util/Constants';
+import { Client } from './Client';
 
 export default class RemindScheduler {
 	protected collection!: Collection<ReminderTemp>;

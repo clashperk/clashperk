@@ -1,9 +1,9 @@
-import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis';
 import { MessageEmbed, CommandInteraction, MessageActionRow, MessageButton } from 'discord.js';
+import { Clan } from 'clashofclans.js';
+import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis';
 import { Collections } from '../../util/Constants';
 import { Season, Util } from '../../util';
 import { Command } from '../../lib';
-import { Clan } from 'clashofclans.js';
 
 export default class PlayerDonationSummaryCommand extends Command {
 	public constructor() {

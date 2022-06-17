@@ -1,5 +1,5 @@
-import { Collections } from '../../util/Constants';
 import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { Collections } from '../../util/Constants';
 import { Command } from '../../lib';
 
 export default class FlagSearchCommand extends Command {

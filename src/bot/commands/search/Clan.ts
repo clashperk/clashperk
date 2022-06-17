@@ -1,7 +1,7 @@
-import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis';
 import { MessageEmbed, Util, CommandInteraction, MessageButton, MessageActionRow } from 'discord.js';
-import { Command } from '../../lib';
 import { Clan } from 'clashofclans.js';
+import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis';
+import { Command } from '../../lib';
 import { Season } from '../../util';
 import { Collections } from '../../util/Constants';
 

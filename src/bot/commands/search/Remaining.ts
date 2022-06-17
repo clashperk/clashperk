@@ -1,10 +1,10 @@
-import { Command } from '../../lib';
 import { MessageEmbed, CommandInteraction } from 'discord.js';
+import { ClanWar } from 'clashofclans.js';
+import moment from 'moment';
+import { Command } from '../../lib';
 import { BLUE_NUMBERS } from '../../util/Emojis';
 import { Collections, WarType } from '../../util/Constants';
-import { ClanWar } from 'clashofclans.js';
 import { Util } from '../../util';
-import moment from 'moment';
 
 export default class RemainingCommand extends Command {
 	public constructor() {

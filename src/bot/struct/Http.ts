@@ -1,6 +1,6 @@
+import { Agent } from 'https';
 import { ClanWar, ClanWarLeagueGroup, Client, Player } from 'clashofclans.js';
 import fetch from 'node-fetch';
-import { Agent } from 'https';
 
 const agent = new Agent({ keepAlive: true });
 

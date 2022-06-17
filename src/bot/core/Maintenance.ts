@@ -1,7 +1,7 @@
 import { TextChannel } from 'discord.js';
+import moment from 'moment';
 import { EMOJIS } from '../util/Emojis';
 import { Client } from '../struct/Client';
-import moment from 'moment';
 
 const SUPPORT_SERVER_GENERAL_CHANNEL_ID = '609074828707758150';
 

@@ -1,7 +1,7 @@
-import { Args, Command } from '../../lib';
 import { MessageEmbed, GuildMember, MessageActionRow, MessageButton, CommandInteraction } from 'discord.js';
-import { Collections } from '../../util/Constants';
 import { Clan, Player } from 'clashofclans.js';
+import { Args, Command } from '../../lib';
+import { Collections } from '../../util/Constants';
 
 export default class LinkCreateCommand extends Command {
 	public constructor() {

@@ -1,6 +1,6 @@
 import { Clan, ClanMember } from 'clashofclans.js';
-import { Collections } from '../../util/Constants';
 import { Collection, GuildMember, CommandInteraction } from 'discord.js';
+import { Collections } from '../../util/Constants';
 import { Season } from '../../util';
 import { Command } from '../../lib';
 import Excel from '../../struct/Excel';

@@ -1,5 +1,5 @@
-import { Args, Command } from '../../lib';
 import { CommandInteraction } from 'discord.js';
+import { Args, Command } from '../../lib';
 
 export default class CWLCommand extends Command {
 	public constructor() {

@@ -1,4 +1,6 @@
 import { Collections, Flags } from '../util/Constants';
+import { Client } from '../struct/Client';
+import Queue from '../struct/Queue';
 import MaintenanceHandler from './Maintenance';
 import { RoleManager } from './RoleManager';
 import ClanEmbedLog from './ClanEmbedLog';
@@ -7,8 +9,6 @@ import LastSeenLog from './LastSeenLog';
 import ClanFeedLog from './ClanFeedLog';
 import DonationLog from './DonationLog';
 import ClanWarLog from './ClanWarLog';
-import { Client } from '../struct/Client';
-import Queue from '../struct/Queue';
 
 export default class RPCHandler {
 	private paused = Boolean(false);

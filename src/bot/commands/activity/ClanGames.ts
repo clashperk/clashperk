@@ -1,8 +1,8 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { Clan } from 'clashofclans.js';
 import { Collections } from '../../util/Constants';
 import { ClanGames } from '../../util';
 import { Command } from '../../lib';
-import { Clan } from 'clashofclans.js';
 import { EMOJIS } from '../../util/Emojis';
 
 export default class ClanGamesCommand extends Command {

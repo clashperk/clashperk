@@ -1,10 +1,16 @@
+import { fileURLToPath, URL } from 'url';
+import path from 'path';
 import Discord, { Intents, Interaction, Message, Options, Snowflake, Sweepers } from 'discord.js';
 import { Db } from 'mongodb';
 import { container } from 'tsyringe';
-import { fileURLToPath, URL } from 'url';
+import * as uuid from 'uuid';
+import { loadSync } from '@grpc/proto-loader';
+import * as gRPC from '@grpc/grpc-js';
 import RPCHandler from '../core/RPCHandler';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib';
 import Logger from '../util/Logger';
+import { Settings } from '../util/Constants';
+import { i18n } from '../util/i18n';
 import { Automaton } from './Automaton';
 import { Database } from './Database';
 import Http from './Http';
@@ -12,14 +18,8 @@ import Patrons from './Patrons';
 import SettingsProvider from './SettingsProvider';
 import StatsHandler from './StatsHandler';
 import StorageHandler from './StorageHandler';
-import * as uuid from 'uuid';
 import Resolver from './Resolver';
 import RemindScheduler from './RemindScheduler';
-import { loadSync } from '@grpc/proto-loader';
-import * as gRPC from '@grpc/grpc-js';
-import path from 'path';
-import { Settings } from '../util/Constants';
-import { i18n } from '../util/i18n';
 
 const { route: Route } = gRPC.loadPackageDefinition(
 	loadSync(path.join('scripts/routes.proto'), {

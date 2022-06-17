@@ -1,5 +1,5 @@
-import { Collections } from '../util/Constants';
 import { MongoClient, Db } from 'mongodb';
+import { Collections } from '../util/Constants';
 
 class MongoDB extends MongoClient {
 	public constructor() {

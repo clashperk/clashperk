@@ -1,10 +1,10 @@
+import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { ClanWarAttack, WarClan } from 'clashofclans.js';
+import moment from 'moment';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, EMOJIS } from '../../util/Emojis';
 import { Collections, WarType } from '../../util/Constants';
 import { Args, Command } from '../../lib';
-import { CommandInteraction, MessageEmbed } from 'discord.js';
-import { ClanWarAttack, WarClan } from 'clashofclans.js';
 import { Util } from '../../util';
-import moment from 'moment';
 
 export type Compare = 'all' | 'equal' | { attackerTownHall: number; defenderTownHall: number };
 export type WarTypeArg = 'regular' | 'cwl' | 'friendly' | 'noFriendly' | 'noCWL' | 'all';

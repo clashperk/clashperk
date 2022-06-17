@@ -1,10 +1,10 @@
-import { EMOJIS, TOWN_HALLS, HEROES, SIEGE_MACHINES } from '../../util/Emojis';
 import { MessageEmbed, Util, CommandInteraction, MessageSelectMenu, MessageActionRow } from 'discord.js';
+import { Player, WarClan } from 'clashofclans.js';
+import ms from 'ms';
+import { EMOJIS, TOWN_HALLS, HEROES, SIEGE_MACHINES } from '../../util/Emojis';
 import { Collections } from '../../util/Constants';
 import { Command } from '../../lib';
-import { Player, WarClan } from 'clashofclans.js';
 import { Season } from '../../util';
-import ms from 'ms';
 import { UserInfo } from '../../types';
 
 const roles: Record<string, string> = {

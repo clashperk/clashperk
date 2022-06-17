@@ -1,10 +1,10 @@
+import os from 'os';
+import moment from 'moment';
 import { MessageEmbed, CommandInteraction, Message, Guild } from 'discord.js';
 // import { version } from '../../../../package.json';
 import { Collections } from '../../util/Constants';
 import { Command } from '../../lib';
 import 'moment-duration-format';
-import moment from 'moment';
-import os from 'os';
 
 export default class StatusCommand extends Command {
 	public constructor() {

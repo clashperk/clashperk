@@ -1,10 +1,10 @@
 import { MessageEmbed, PermissionString, TextChannel, Collection, WebhookClient, ThreadChannel } from 'discord.js';
-import { TOWN_HALLS, EMOJIS, PLAYER_LEAGUES, HEROES } from '../util/Emojis';
-import { Collections } from '../util/Constants';
 import { Player } from 'clashofclans.js';
-import { Client } from '../struct/Client';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
+import { TOWN_HALLS, EMOJIS, PLAYER_LEAGUES, HEROES } from '../util/Emojis';
+import { Collections } from '../util/Constants';
+import { Client } from '../struct/Client';
 
 const OP: { [key: string]: number } = {
 	JOINED: 0x38d863, // GREEN

@@ -1,11 +1,11 @@
 import { MessageEmbed, CommandInteraction, MessageButton, MessageActionRow } from 'discord.js';
 import { ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
+import moment from 'moment';
 import { Collections, WarType } from '../../util/Constants';
 import { EMOJIS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/Emojis';
 import { Command } from '../../lib';
 import Workbook from '../../struct/Excel';
 import { Util } from '../../util';
-import moment from 'moment';
 
 export default class WarCommand extends Command {
 	public constructor() {

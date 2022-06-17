@@ -1,7 +1,7 @@
+import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib';
 import { Collections } from '../../util/Constants';
 import Chart from '../../struct/ChartHandler';
-import { CommandInteraction } from 'discord.js';
 import { UserInfo } from '../../types';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -52,7 +52,8 @@ export default class ClanActivityCommand extends Command {
 
 		this.client.logger.debug(`Rendered in ${(diff[0] * 1000 + diff[1] / 1000000).toFixed(2)}ms`, { label: 'CHART' });
 		return interaction.editReply({
-			content: user ? url : `${this.i18n('command.timezone.set', { lng: interaction.locale })}\n${url}`
+			// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+			content: user ? `${url}` : `${this.i18n('command.timezone.set', { lng: interaction.locale })}\n${url}`
 		});
 	}
 

@@ -1,6 +1,6 @@
-import { Collections } from '../util/Constants';
 import { Clan, Player } from 'clashofclans.js';
 import { Collection, Guild, GuildMember, Snowflake } from 'discord.js';
+import { Collections } from '../util/Constants';
 import { Client } from '../struct/Client';
 import Queue from '../struct/Queue';
 

@@ -1,9 +1,9 @@
 import { GuildMember, CommandInteraction, MessageEmbed, Collection, Interaction } from 'discord.js';
+import { Player } from 'clashofclans.js';
 import RAW_TROOPS_DATA from '../../util/Troops';
 import { Collections } from '../../util/Constants';
 import Workbook from '../../struct/Excel';
 import { Command } from '../../lib';
-import { Player } from 'clashofclans.js';
 import { Util } from '../../util';
 
 const achievements = [

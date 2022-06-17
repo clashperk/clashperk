@@ -1,9 +1,9 @@
 import { CommandInteraction, MessageButton, MessageActionRow, MessageSelectMenu, MessageEmbed } from 'discord.js';
+import { Player } from 'clashofclans.js';
 import { EMOJIS, SUPER_TROOPS } from '../../util/Emojis';
 import { Command } from '../../lib';
 import { Collections, BOOST_DURATION } from '../../util/Constants';
 import { Util } from '../../util';
-import { Player } from 'clashofclans.js';
 import RAW_TROOPS_DATA from '../../util/Troops';
 
 export default class BoostsCommand extends Command {

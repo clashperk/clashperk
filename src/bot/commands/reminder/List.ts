@@ -1,9 +1,9 @@
 import { CommandInteraction } from 'discord.js';
+import moment from 'moment';
 import { Collections } from '../../util/Constants';
 import { Reminder } from '../../struct/RemindScheduler';
 import { Command } from '../../lib';
 import { Util } from '../../util';
-import moment from 'moment';
 
 const roles: Record<string, string> = {
 	member: 'Member',

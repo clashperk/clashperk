@@ -1,8 +1,8 @@
+import qs from 'querystring';
 import env from 'dotenv';
 env.config();
 
 import fetch from 'node-fetch';
-import qs from 'querystring';
 
 import { Database } from '../src/bot/struct/Database';
 import { Collections } from '../src/bot/util/Constants';

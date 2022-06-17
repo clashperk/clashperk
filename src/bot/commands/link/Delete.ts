@@ -1,5 +1,5 @@
-import { Command } from '../../lib';
 import { CommandInteraction } from 'discord.js';
+import { Command } from '../../lib';
 import { Collections } from '../../util/Constants';
 import { UserInfo } from '../../types';
 

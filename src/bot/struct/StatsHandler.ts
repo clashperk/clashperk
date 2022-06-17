@@ -1,8 +1,8 @@
-import { Collections } from '../util/Constants';
-import { Client } from './Client';
 import qs from 'querystring';
 import https from 'https';
 import { User, Guild, Interaction } from 'discord.js';
+import { Collections } from '../util/Constants';
+import { Client } from './Client';
 
 export default class StatsHandler {
 	public messages = new Map<string, NodeJS.Timeout>();

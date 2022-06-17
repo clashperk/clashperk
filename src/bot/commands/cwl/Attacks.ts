@@ -1,9 +1,9 @@
 import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow, MessageButton } from 'discord.js';
 import { ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
+import moment from 'moment';
 import { RED_NUMBERS } from '../../util/Emojis';
 import { Command } from '../../lib';
 import { Util } from '../../util';
-import moment from 'moment';
 
 const stars: Record<string, string> = {
 	0: '☆☆☆',

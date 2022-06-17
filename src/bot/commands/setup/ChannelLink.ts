@@ -1,6 +1,6 @@
+import { CommandInteraction, Interaction, TextChannel } from 'discord.js';
 import { Flags } from '../../util/Constants';
 import { Args, Command } from '../../lib';
-import { CommandInteraction, Interaction, TextChannel } from 'discord.js';
 
 export default class ChannelLinkCommand extends Command {
 	public constructor() {

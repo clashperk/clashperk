@@ -11,7 +11,7 @@ const sizes = {
 };
 
 export default {
-	async activity(collection: any[] = [], title: string[], days = 1) {
+	async activity(collection: any[] = [], title: string[], days = 1): Promise<string> {
 		const colors = ['#266ef7', '#c63304', '#ffc107', '#50c878', '#ffac75', '#4dc1fa', '#cb5aff'];
 		days = collection.length > 3 ? 3 : days;
 		const datasets = collection.map((obj: any, i) => ({

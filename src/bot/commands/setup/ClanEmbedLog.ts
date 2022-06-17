@@ -1,8 +1,8 @@
+import { Util, CommandInteraction, MessageActionRow, MessageButton, TextChannel, Modal, MessageEmbed, Interaction } from 'discord.js';
+import { Clan } from 'clashofclans.js';
 import { Collections, Flags } from '../../util/Constants';
 import { Args, Command } from '../../lib';
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis';
-import { Util, CommandInteraction, MessageActionRow, MessageButton, TextChannel, Modal, MessageEmbed, Interaction } from 'discord.js';
-import { Clan } from 'clashofclans.js';
 import { UserInfo } from '../../types';
 
 export default class ClanEmbedCommand extends Command {

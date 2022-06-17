@@ -1,6 +1,6 @@
 import { Collection, GuildMember, CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
-import { Collections } from '../../util/Constants';
 import { Clan, ClanMember } from 'clashofclans.js';
+import { Collections } from '../../util/Constants';
 import { EMOJIS } from '../../util/Emojis';
 import { Command } from '../../lib';
 import { Util } from '../../util';

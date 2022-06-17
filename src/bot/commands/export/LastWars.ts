@@ -1,8 +1,8 @@
+import { CommandInteraction } from 'discord.js';
+import ms from 'ms';
 import { Collections } from '../../util/Constants';
 import { Command } from '../../lib';
 import Excel from '../../struct/Excel';
-import { CommandInteraction } from 'discord.js';
-import ms from 'ms';
 
 export default class LastWarsExport extends Command {
 	public constructor() {

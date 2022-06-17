@@ -1,5 +1,5 @@
-import { Command } from '../../lib';
 import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { Command } from '../../lib';
 import { URLS } from '../../util/Constants';
 
 interface Description {

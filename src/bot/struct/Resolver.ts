@@ -1,9 +1,9 @@
-import { Collections, Settings, status } from '../util/Constants';
 import { Guild, User, Interaction, CommandInteraction } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
-import Client from './Client';
+import { Collections, Settings, status } from '../util/Constants';
 import { UserInfo } from '../types';
 import { i18n } from '../util/i18n';
+import Client from './Client';
 
 export default class Resolver {
 	private readonly client: Client;

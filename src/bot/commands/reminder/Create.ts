@@ -1,9 +1,9 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu, TextChannel } from 'discord.js';
+import ms from 'ms';
+import { ObjectId } from 'mongodb';
 import { Collections } from '../../util/Constants';
 import { Reminder } from '../../struct/RemindScheduler';
 import { Command } from '../../lib';
-import ms from 'ms';
-import { ObjectId } from 'mongodb';
 
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
@@ -160,17 +160,14 @@ export default class ReminderCreateCommand extends Command {
 			return [row1, row2, row3, row4, row5];
 		};
 
+		const longText = this.i18n('command.reminder.create.too_many_clans', {
+			lng: interaction.locale,
+			clans: `${clans.length}`
+		});
 		const msg = await interaction.editReply({
 			components: mutate(),
-			content: [
-				'**War Reminder Setup**',
-				clans.length > 25
-					? `\n*${this.i18n('command.reminder.create.too_many_clans', {
-							lng: interaction.locale,
-							clans: `${clans.length}`
-					  })}*`
-					: ''
-			].join('\n')
+			// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+			content: ['**War Reminder Setup**', clans.length > 25 ? `\n*${longText}*` : ''].join('\n')
 		});
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,

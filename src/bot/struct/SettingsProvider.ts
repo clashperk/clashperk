@@ -1,6 +1,6 @@
-import { Collections } from '../util/Constants';
 import { Collection, Db } from 'mongodb';
 import { Guild } from 'discord.js';
+import { Collections } from '../util/Constants';
 
 export default class SettingsProvider {
 	protected db: Collection;

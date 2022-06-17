@@ -1,11 +1,11 @@
+import { inspect } from 'util';
 import env from 'dotenv';
 env.config();
 
 import { Routes, RouteBases } from 'discord-api-types/v9';
-import { COMMANDS, PRIVATE_COMMANDS } from './Commands';
 import fetch from 'node-fetch';
 import { ApplicationCommand } from 'discord.js';
-import { inspect } from 'util';
+import { COMMANDS, PRIVATE_COMMANDS } from './Commands';
 
 const applicationGuildCommands = async (commands: typeof COMMANDS) => {
 	console.log('Building Guild Application Commands');

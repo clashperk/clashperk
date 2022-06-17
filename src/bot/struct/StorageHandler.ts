@@ -1,9 +1,9 @@
-import { Collections, Flags } from '../util/Constants';
 import { ObjectId, Collection } from 'mongodb';
 import { CommandInteraction } from 'discord.js';
-import { Client } from './Client';
 import { ClanWarLeagueGroup } from 'clashofclans.js';
+import { Collections, Flags } from '../util/Constants';
 import { Season } from '../util';
+import { Client } from './Client';
 
 export interface ClanStore {
 	_id: ObjectId;

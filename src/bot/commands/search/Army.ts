@@ -1,8 +1,8 @@
-import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SIEGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis';
+import { URL } from 'url';
 import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SIEGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis';
 import RAW_TROOPS from '../../util/Troops';
 import { Command } from '../../lib';
-import { URL } from 'url';
 
 const [TOTAL_UNITS, TOTAL_SPELLS, TOTAL_SUPER_TROOPS, TOTAL_SIEGE] = [300, 11, 2, 1];
 const ARMY_URL_REGEX = /https?:\/\/link.clashofclans.com\/[a-z]{1,2}\?action=CopyArmy&army=[u|s]([\d+x-])+[s|u]?([\d+x-])+/g;

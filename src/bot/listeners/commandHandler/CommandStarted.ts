@@ -1,6 +1,6 @@
 import { addBreadcrumb, Severity, setContext } from '@sentry/node';
-import { Listener, Command } from '../../lib';
 import { BaseCommandInteraction, Interaction, MessageComponentInteraction } from 'discord.js';
+import { Listener, Command } from '../../lib';
 import { CommandHandlerEvents } from '../../lib/util';
 
 export default class CommandStartedListener extends Listener {

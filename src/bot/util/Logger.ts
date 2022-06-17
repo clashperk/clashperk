@@ -1,6 +1,6 @@
+import util from 'util';
 import moment from 'moment';
 import chalk from 'chalk';
-import util from 'util';
 import { Client } from '../struct/Client';
 
 const COLORS: Record<string, string> = {
