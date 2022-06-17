@@ -9,7 +9,7 @@ import {
 	Interaction,
 	Message,
 	MessageComponentInteraction,
-	MessageOptions,
+	MessageEmbed,
 	PermissionString
 } from 'discord.js';
 import EventEmitter from 'events';
@@ -376,8 +376,8 @@ export class Command implements CommandOptions {
 		this.handler = container.resolve(CommandHandler);
 	}
 
-	public condition(interaction: Interaction): MessageOptions | null;
-	public condition(): MessageOptions | null {
+	public condition(interaction: Interaction): { embeds: MessageEmbed[]; content?: string } | null;
+	public condition(): { embeds: MessageEmbed[]; content?: string } | null {
 		return null;
 	}
 

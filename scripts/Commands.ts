@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'discord-api-types/v9';
 import moment from 'moment';
-import { command } from '../locales/default';
+import { command } from '../locales/en';
 import i18next from 'i18next';
 import { fmt } from '../src/bot/util/i18n';
 
@@ -12,8 +12,14 @@ await i18next.use(Backend).init({
 	debug: false,
 	cleanCode: true,
 	lng: 'en-US',
-	fallbackLng: ['en-US'],
-	preload: ['en-US', 'es-ES', 'fr'],
+	fallbackLng: {
+		fr: ['fr-FR', 'en-US'], // French/Français
+		it: ['it-IT', 'en-US'], // Italian/Italiano
+		de: ['de-DE', 'en-US'], // German/Deutsch
+		no: ['no-NO', 'en-US'], // Norwegian/Norsk
+		nl: ['nl-NL', 'en-US'] // Dutch/Nederlands
+	},
+	preload: ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'nl-NL', 'it-IT', 'de-DE', 'no-NO'],
 	defaultNS: 'translation',
 	ns: ['translation'],
 	backend: { loadPath: fileURLToPath(locales) }
@@ -333,6 +339,7 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'create',
 				description: command.link.create.description,
+				description_localizations: translation('command.link.create.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -366,6 +373,7 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'list',
 				description: command.link.list.description,
+				description_localizations: translation('command.link.list.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -378,6 +386,7 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'delete',
 				description: command.link.delete.description,
+				description_localizations: translation('command.link.delete.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -398,6 +407,7 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'create',
 				description: command.flag.create.description,
+				description_localizations: translation('command.flag.create.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -417,6 +427,7 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'list',
 				description: command.flag.list.description,
+				description_localizations: translation('command.flag.list.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -439,6 +450,7 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'search',
 				description: command.flag.search.description,
+				description_localizations: translation('command.flag.search.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -452,6 +464,7 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'delete',
 				description: command.flag.delete.description,
+				description_localizations: translation('command.flag.delete.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{

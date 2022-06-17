@@ -16,7 +16,9 @@ const achievements = [
 	'Conqueror',
 	'Siege Sharer',
 	'Sharing is caring',
-	'Friend in Need'
+	'Friend in Need',
+	'Aggressive Capitalism',
+	'Most Valuable Clanmate'
 ];
 
 const PETS: { [key: string]: number } = {

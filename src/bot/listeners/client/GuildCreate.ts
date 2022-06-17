@@ -95,7 +95,7 @@ export default class GuildCreateListener extends Listener {
 
 		const channel = guild.channels.cache
 			.filter((channel) => channel.type === 'GUILD_TEXT')
-			.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+			.sort((a, b) => a.createdAt!.getTime() - b.createdAt!.getTime())
 			.filter((channel) => channel.permissionsFor(channel.guild.me!)!.has(['SEND_MESSAGES', 'EMBED_LINKS', 'VIEW_CHANNEL']))
 			.first();
 		if (channel) return (channel as TextChannel).send({ embeds: [embed] });

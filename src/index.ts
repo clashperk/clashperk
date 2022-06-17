@@ -12,7 +12,7 @@ class Manager extends Discord.ShardingManager {
 	}
 
 	public init() {
-		return this.spawn();
+		return this.spawn({ timeout: -1 }).catch(() => console.log('fucked up'));
 	}
 }
 
