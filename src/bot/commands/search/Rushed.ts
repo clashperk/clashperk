@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow } from 'discord.js';
+import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow, Interaction } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import { BUILDER_TROOPS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import RAW_TROOPS_DATA from '../../util/Troops';
@@ -30,7 +30,7 @@ export default class RushedCommand extends Command {
 		if (!data) return;
 
 		if (args.clan) return this.clan(interaction, data as Clan);
-		const embed = this.embed(data as Player).setColor(this.client.embed(interaction));
+		const embed = this.embed(data as Player, interaction).setColor(this.client.embed(interaction));
 		const msg = await interaction.editReply({ embeds: [embed] });
 
 		// @ts-expect-error
@@ -58,7 +58,7 @@ export default class RushedCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.customId === customID && action.isSelectMenu()) {
 				const data = players.find((en) => en.tag === action.values[0])!;
-				const embed = this.embed(data).setColor(this.client.embed(interaction));
+				const embed = this.embed(data, interaction).setColor(this.client.embed(interaction));
 				await action.update({ embeds: [embed] });
 			}
 		});
@@ -69,7 +69,7 @@ export default class RushedCommand extends Command {
 		});
 	}
 
-	private embed(data: Player) {
+	private embed(data: Player, interaction: Interaction) {
 		const embed = new MessageEmbed().setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const apiTroops = this.apiTroops(data);
@@ -161,13 +161,17 @@ export default class RushedCommand extends Command {
 		if (embed.fields.length) {
 			embed.setFooter({ text: `Total ${this.totalPercentage(data.townHallLevel, Troops.length)}` });
 		} else {
-			embed.setDescription(`No rushed units for Town Hall ${data.townHallLevel}`);
+			embed.setDescription(
+				this.i18n('command.rushed.no_rushed', { lng: interaction.locale, townhall: data.townHallLevel.toString() })
+			);
 		}
 		return embed;
 	}
 
 	private async clan(interaction: CommandInteraction, data: Clan) {
-		if (data.members < 1) return interaction.editReply(`\u200e**${data.name}** does not have any clan members...`);
+		if (data.members < 1) {
+			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
+		}
 
 		const fetched = await this.client.http.detailedClanMembers(data.memberList);
 		const members = [];

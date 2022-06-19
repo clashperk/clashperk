@@ -22,7 +22,7 @@ export default class ArmyCommand extends Command {
 	public async exec(interaction: CommandInteraction, args: { link?: string; message?: string; name?: string }) {
 		const url = this.getURL(args.link ?? args.message!);
 		const army = url?.searchParams.get('army');
-		if (!army) return interaction.editReply(`**You must provide a valid army composition link.**\nhttps://i.imgur.com/uqDnt5s.png`);
+		if (!army) return interaction.editReply(this.i18n('command.army.no_link', { lng: interaction.locale }));
 
 		const { prefix, suffix } = army.startsWith('s')
 			? {
@@ -52,7 +52,7 @@ export default class ArmyCommand extends Command {
 		const SPELL_COMPOS = (matches?.groups?.spells as string | null)?.split('-') ?? [];
 
 		if (!TROOP_COMPOS.length && !SPELL_COMPOS.length) {
-			return interaction.editReply(`**This army composition link is invalid.**\nhttps://i.imgur.com/uqDnt5s.png`);
+			return interaction.editReply(this.i18n('command.army.invalid_link', { lng: interaction.locale }));
 		}
 
 		const TROOP_IDS = TROOP_COMPOS.map((parts) => parts.split(/x/)).map((parts) => ({
@@ -68,7 +68,7 @@ export default class ArmyCommand extends Command {
 		const malformed = ![...TROOP_IDS, ...SPELL_IDS].every(
 			(en) => typeof en.id === 'number' && typeof en.total === 'number' && en.total <= TOTAL_UNITS
 		);
-		if (malformed) return interaction.editReply(`**This army composition link is invalid.**\nhttps://i.imgur.com/uqDnt5s.png`);
+		if (malformed) return interaction.editReply(this.i18n('command.army.invalid_link', { lng: interaction.locale }));
 
 		const uniqueSpells = SPELL_IDS.reduce<number[]>((prev, curr) => {
 			if (!prev.includes(curr.id)) prev.push(curr.id);
@@ -151,7 +151,7 @@ export default class ArmyCommand extends Command {
 		});
 
 		if (!spells.length && !troops.length && !superTroops.length && !siegeMachines.length) {
-			return interaction.editReply('**This army composition link is invalid.**');
+			return interaction.editReply(this.i18n('command.army.invalid_link', { lng: interaction.locale }));
 		}
 
 		const hallByUnlockTH = Math.max(
@@ -233,7 +233,10 @@ export default class ArmyCommand extends Command {
 			totalSpell > TOTAL_SPELLS ||
 			totalSiege > TOTAL_SIEGE ||
 			superTroops.length > TOTAL_SUPER_TROOPS;
-		return interaction.editReply({ embeds: [embed], content: invalid ? '**This link is invalid and may not work.**' : undefined });
+		return interaction.editReply({
+			embeds: [embed],
+			content: invalid ? this.i18n('command.army.possibly_invalid_link', { lng: interaction.locale }) : null
+		});
 	}
 
 	private padding(num: number) {

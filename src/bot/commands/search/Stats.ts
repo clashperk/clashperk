@@ -190,7 +190,7 @@ export default class StatsCommand extends Command {
 			.sort((a, b) => b.success - a.success)
 			.sort((a, b) => b.rate - a.rate);
 		if (!stats.length) {
-			return interaction.editReply('**No stats are available for this filter or clan.**');
+			return interaction.editReply(this.i18n('command.stats.no_stats', { lng: interaction.locale }));
 		}
 
 		const hall =

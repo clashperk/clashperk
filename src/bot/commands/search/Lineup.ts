@@ -49,7 +49,7 @@ export default class LineupCommand extends Command {
 				// TODO: Fix
 				return this.handler.exec(interaction, this.handler.modules.get('cwl-lineup')!, { tag: clan.tag });
 			}
-			embed.setDescription('Clan is not in war!');
+			embed.setDescription(this.i18n('command.lineup.not_in_war', { lng: interaction.locale }));
 			return interaction.editReply({ embeds: [embed] });
 		}
 

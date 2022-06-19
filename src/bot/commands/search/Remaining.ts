@@ -46,7 +46,7 @@ export default class RemainingCommand extends Command {
 			if (res.ok) {
 				return this.handler.exec(interaction, this.handler.modules.get('cwl-attacks')!, { tag: clan.tag });
 			}
-			embed.setDescription('Not in War');
+			embed.setDescription(this.i18n('command.lineup.not_in_war', { lng: interaction.locale }));
 			return interaction.editReply({ embeds: [embed] });
 		}
 
@@ -69,7 +69,7 @@ export default class RemainingCommand extends Command {
 				: await collection.findOne({ id: Number(id), $or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }] });
 
 		if (!data) {
-			return interaction.editReply('**No War found for the specified War ID.**');
+			return interaction.editReply(this.i18n('command.remaining.no_war_id', { lng: interaction.locale }));
 		}
 
 		const clan = data.clan.tag === tag ? data.clan : data.opponent;

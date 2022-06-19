@@ -65,7 +65,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.clan.options.tag.description,
+				description_localizations: translation('command.clan.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -78,7 +79,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.lastseen.options.tag.description,
+				description_localizations: translation('command.lastseen.options.tag.description'),
 				type: 3,
 				required: false
 			}
@@ -91,7 +93,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.clan_games.options.tag.description,
+				description_localizations: translation('command.clan_games.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -104,7 +107,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.attacks.options.tag.description,
+				description_localizations: translation('command.attacks.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -117,13 +121,15 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.members.options.tag.description,
+				description_localizations: translation('command.members.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			},
 			{
 				name: 'option',
-				description: 'Select an option',
+				description: command.members.options.option.description,
+				description_localizations: translation('command.members.options.option.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false,
 				choices: [
@@ -154,7 +160,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Player tag or @user mention',
+				description: command.units.options.tag.description,
+				description_localizations: translation('command.units.options.tag.description'),
 				required: false,
 				type: ApplicationCommandOptionType.String
 			}
@@ -167,7 +174,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Player tag or @user mention',
+				description: command.player.options.tag.description,
+				description_localizations: translation('command.player.options.tag.description'),
 				required: false,
 				type: ApplicationCommandOptionType.String
 			}
@@ -180,7 +188,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.cwl.roster.options.tag.description,
+				description_localizations: translation('command.cwl.roster.options.tag.description'),
 				type: 3,
 				required: false
 			}
@@ -193,13 +202,15 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.cwl.round.options.tag.description,
+				description_localizations: translation('command.cwl.round.options.tag.description'),
 				type: 3,
 				required: false
 			},
 			{
 				name: 'round',
-				description: 'Optional round',
+				description: command.cwl.round.options.round.description,
+				description_localizations: translation('command.cwl.round.options.round.description'),
 				type: 4,
 				required: false
 			}
@@ -212,13 +223,15 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.donations.options.tag.description,
+				description_localizations: translation('command.donations.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			},
 			{
 				name: 'season',
-				description: 'Season ID',
+				description: command.donations.options.season.description,
+				description_localizations: translation('command.donations.options.season.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false,
 				choices: getSeasonIds()
@@ -232,7 +245,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.compo.options.tag.description,
+				description_localizations: translation('command.compo.options.tag.description'),
 				type: 3,
 				required: false
 			}
@@ -245,7 +259,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Player tag or @user mention',
+				description: command.upgrades.options.tag.description,
+				description_localizations: translation('command.upgrades.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -258,13 +273,15 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Player tag or @user mention',
+				description: command.rushed.options.tag.description,
+				description_localizations: translation('command.rushed.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			},
 			{
 				name: 'clan',
-				description: 'Display all clan members',
+				description: command.rushed.options.clan.description,
+				description_localizations: translation('command.rushed.options.clan.description'),
 				type: ApplicationCommandOptionType.String,
 				choices: [
 					{
@@ -286,7 +303,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'user',
-				description: 'The user',
+				description: command.profile.options.user.description,
+				description_localizations: translation('command.profile.options.user.description'),
 				type: ApplicationCommandOptionType.User,
 				required: false
 			}
@@ -299,13 +317,15 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.war.options.tag.description,
+				description_localizations: translation('command.war.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			},
 			{
 				name: 'war_id',
-				description: 'Search by War ID',
+				description: command.war.options.war_id.description,
+				description_localizations: translation('command.war.options.war_id.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -318,13 +338,15 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.remaining.options.tag.description,
+				description_localizations: translation('command.remaining.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			},
 			{
 				name: 'war_id',
-				description: 'Search by War ID',
+				description: command.remaining.options.war_id.description,
+				description_localizations: translation('command.remaining.options.war_id.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -343,18 +365,21 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Tag of a clan or player account',
+						description: command.link.create.options.tag.description,
+						description_localizations: translation('command.link.create.options.tag.description'),
 						required: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'user',
-						description: 'Optional user',
+						description: command.link.create.options.user.description,
+						description_localizations: translation('command.link.create.options.user.description'),
 						type: ApplicationCommandOptionType.User
 					},
 					{
 						name: 'default',
-						description: 'Set it default account',
+						description: command.link.create.options.default.description,
+						description_localizations: translation('command.link.create.options.default.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -377,7 +402,8 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Clan tag / alias or @user mention',
+						description: command.link.list.options.tag.description,
+						description_localizations: translation('command.link.list.options.tag.description'),
 						type: ApplicationCommandOptionType.String
 					}
 				]
@@ -390,7 +416,8 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Tag of a player or clan',
+						description: command.link.delete.options.tag.description,
+						description_localizations: translation('command.link.delete.options.tag.description'),
 						required: true,
 						type: ApplicationCommandOptionType.String
 					}
@@ -411,13 +438,15 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Player Tag',
+						description: command.flag.create.options.tag.description,
+						description_localizations: translation('command.flag.create.options.tag.description'),
 						required: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'reason',
-						description: 'Reason of this flag',
+						description: command.flag.create.options.reason.description,
+						description_localizations: translation('command.flag.create.options.reason.description'),
 						required: true,
 						type: ApplicationCommandOptionType.String
 					}
@@ -431,7 +460,8 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'export',
-						description: 'Export to excel file?',
+						description: command.flag.list.options.export.description,
+						description_localizations: translation('command.flag.list.options.export.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -454,7 +484,8 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Player Tag',
+						description: command.flag.search.options.tag.description,
+						description_localizations: translation('command.flag.search.options.tag.description'),
 						required: true,
 						type: ApplicationCommandOptionType.String
 					}
@@ -468,7 +499,8 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Player Tag',
+						description: command.flag.delete.options.tag.description,
+						description_localizations: translation('command.flag.delete.options.tag.description'),
 						type: ApplicationCommandOptionType.String,
 						required: true
 					}
@@ -489,7 +521,8 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'option',
-						description: 'Select an option',
+						description: command.setup.enable.options.option.description,
+						description_localizations: translation('command.setup.enable.options.option.description'),
 						type: ApplicationCommandOptionType.String,
 						required: true,
 						choices: [
@@ -529,23 +562,27 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'tag',
-						description: 'Tag of a clan',
+						description: command.setup.enable.options.tag.description,
+						description_localizations: translation('command.setup.enable.options.tag.description'),
 						required: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'channel',
-						description: 'Channel for the specified feature (defaults to the current channel)',
+						description: command.setup.enable.options.channel.description,
+						description_localizations: translation('command.setup.enable.options.channel.description'),
 						type: ApplicationCommandOptionType.Channel
 					},
 					{
 						name: 'color',
-						description: 'Hex color code (only for donation log, clan games, last seen and clan embed)',
+						description: command.setup.enable.options.color.description,
+						description_localizations: translation('command.setup.enable.options.color.description'),
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'role',
-						description: 'Role for the flag notification (only for clan feed)',
+						description: command.setup.enable.options.role.description,
+						description_localizations: translation('command.setup.enable.options.role.description'),
 						type: ApplicationCommandOptionType.Role
 					}
 				]
@@ -565,7 +602,8 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'option',
 						required: true,
-						description: 'Select an option',
+						description: command.setup.disable.options.option.description,
+						description_localizations: translation('command.setup.disable.options.option.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -604,13 +642,15 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'tag',
-						description: 'Tag of a clan',
+						description: command.setup.disable.options.tag.description,
+						description_localizations: translation('command.setup.disable.options.tag.description'),
 						type: ApplicationCommandOptionType.String,
 						required: true
 					},
 					{
 						name: 'channel',
-						description: 'Channel to be removed',
+						description: command.setup.disable.options.channel.description,
+						description_localizations: translation('command.setup.disable.options.channel.description'),
 						type: ApplicationCommandOptionType.Channel
 					}
 				]
@@ -629,7 +669,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'command',
-				description: 'Name of a command',
+				description: command.help.options.name.description,
+				description_localizations: translation('command.help.options.name.description'),
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -641,7 +682,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'option',
-				description: 'Select an option',
+				description: command.cwl.options.option.description,
+				description_localizations: translation('command.cwl.options.option.description'),
 				type: ApplicationCommandOptionType.String,
 				required: true,
 				choices: [
@@ -681,7 +723,8 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.cwl.options.tag.description,
+				description_localizations: translation('command.cwl.options.tag.description'),
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -694,7 +737,8 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'option',
 				required: true,
-				description: 'Select an option',
+				description: command.export.options.option.description,
+				description_localizations: translation('command.export.options.option.description'),
 				type: ApplicationCommandOptionType.String,
 				choices: [
 					{
@@ -725,18 +769,21 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'season',
-				description: 'Season ID for season stats',
+				description: command.export.options.season.description,
+				description_localizations: translation('command.export.options.season.description'),
 				type: ApplicationCommandOptionType.String,
 				choices: getSeasonIds()
 			},
 			{
 				name: 'clans',
-				description: 'Clan tags or aliases to filter clans',
+				description: command.export.options.clans.description,
+				description_localizations: translation('command.export.options.clans.description'),
 				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'wars',
-				description: 'Number of wars (Default: 25)',
+				description: command.export.options.wars.description,
+				description_localizations: translation('command.export.options.wars.description'),
 				type: ApplicationCommandOptionType.Integer
 			}
 		]
@@ -750,7 +797,8 @@ export const COMMANDS: Command[] = [
 				name: 'option',
 				required: true,
 				type: ApplicationCommandOptionType.String,
-				description: 'Select an option',
+				description: command.summary.options.option.description,
+				description_localizations: translation('command.summary.options.option.description'),
 				choices: [
 					{
 						name: 'Clan Wars',
@@ -786,7 +834,8 @@ export const COMMANDS: Command[] = [
 				name: 'season',
 				required: false,
 				type: ApplicationCommandOptionType.String,
-				description: 'Season ID for Clan Summary',
+				description: command.summary.options.season.description,
+				description_localizations: translation('command.summary.options.season.description'),
 				choices: getSeasonIds()
 			}
 		]
@@ -798,7 +847,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.warlog.options.tag.description,
+				description_localizations: translation('command.warlog.options.tag.description'),
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -811,13 +861,15 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'tag',
 				required: true,
-				description: 'Tag of a player account',
+				description: command.verify.options.tag.description,
+				description_localizations: translation('command.verify.options.tag.description'),
 				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'token',
 				required: true,
-				description: 'API token for the player account',
+				description: command.verify.options.token.description,
+				description_localizations: translation('command.verify.options.token.description'),
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -830,13 +882,15 @@ export const COMMANDS: Command[] = [
 			{
 				name: 'clans',
 				required: false,
-				description: 'Clan Tags or Aliases (Maximum 3)',
+				description: command.activity.options.clans.description,
+				description_localizations: translation('command.activity.options.clans.description'),
 				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'days',
 				required: false,
-				description: 'Expand',
+				description: command.activity.options.days.description,
+				description_localizations: translation('command.activity.options.days.description'),
 				type: ApplicationCommandOptionType.Integer,
 				choices: [
 					{
@@ -869,12 +923,14 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'name',
 						required: true,
-						description: 'Name of an alias.',
+						description: command.alias.create.options.name.description,
+						description_localizations: translation('command.alias.create.options.name.description'),
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'tag',
-						description: 'Tag of a clan',
+						description: command.alias.create.options.tag.description,
+						description_localizations: translation('command.alias.create.options.tag.description'),
 						required: true,
 						type: ApplicationCommandOptionType.String
 					}
@@ -894,7 +950,8 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'name',
-						description: 'Tag of a clan or name of an alias',
+						description: command.alias.delete.options.name.description,
+						description_localizations: translation('command.alias.delete.options.name.description'),
 						required: true,
 						type: ApplicationCommandOptionType.String
 					}
@@ -921,31 +978,36 @@ export const COMMANDS: Command[] = [
 					{
 						name: 'co-leads',
 						required: true,
-						description: 'Co-Leader Role',
+						description: command.autorole.enable.options.co_leads.description,
+						description_localizations: translation('command.autorole.enable.options.co_leads.description'),
 						type: ApplicationCommandOptionType.Role
 					},
 					{
 						name: 'elders',
 						required: true,
-						description: 'Elder Role',
+						description: command.autorole.enable.options.elders.description,
+						description_localizations: translation('command.autorole.enable.options.elders.description'),
 						type: ApplicationCommandOptionType.Role
 					},
 					{
 						name: 'members',
 						required: true,
-						description: 'Member Role',
+						description: command.autorole.enable.options.members.description,
+						description_localizations: translation('command.autorole.enable.options.members.description'),
 						type: ApplicationCommandOptionType.Role
 					},
 					{
 						name: 'tag',
 						required: false,
-						description: 'Tag of a clan. Do not pass the tag if you want the same type of roles for all clans.',
+						description: command.autorole.enable.options.tag.description,
+						description_localizations: translation('command.autorole.enable.options.tag.description'),
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'verify',
 						required: false,
-						description: 'Roles will be given to verified players only.',
+						description: command.autorole.enable.options.verify.description,
+						description_localizations: translation('command.autorole.enable.options.verify.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -968,7 +1030,8 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Tag of a clan',
+						description: command.autorole.disable.options.tag.description,
+						description_localizations: translation('command.autorole.disable.options.tag.description'),
 						type: ApplicationCommandOptionType.String
 					}
 				]
@@ -982,7 +1045,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.boosts.options.tag.description,
+				description_localizations: translation('command.boosts.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -995,7 +1059,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'tag',
-				description: 'Clan tag / alias or @user mention',
+				description: command.lineup.options.tag.description,
+				description_localizations: translation('command.lineup.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -1008,13 +1073,15 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'link',
-				description: 'Army composition link',
+				description: command.army.options.link.description,
+				description_localizations: translation('command.army.options.link.description'),
 				type: ApplicationCommandOptionType.String,
 				required: true
 			},
 			{
 				name: 'name',
-				description: 'Optional name for this army',
+				description: command.army.options.name.description,
+				description_localizations: translation('command.army.options.name.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}
@@ -1027,7 +1094,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'user',
-				description: 'The user',
+				description: command.nickname.options.user.description,
+				description_localizations: translation('command.nickname.options.user.description'),
 				type: ApplicationCommandOptionType.User,
 				required: true
 			}
@@ -1040,12 +1108,14 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'color_code',
-				description: 'Hex color code (e.g #ed4245) [Patron Only]',
+				description: command.config.options.color_code.description,
+				description_localizations: translation('command.config.options.color_code.description'),
 				type: ApplicationCommandOptionType.String
 			},
 			{
 				name: 'events_channel',
-				description: 'Clash related events channel',
+				description: command.config.options.events_channel.description,
+				description_localizations: translation('command.config.options.events_channel.description'),
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -1057,7 +1127,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'location',
-				description: "Search by country or city name (we don't store your location, only offset. e.g GMT+5:00)",
+				description: command.timezone.options.location.description,
+				description_localizations: translation('command.timezone.options.location.description'),
 				type: ApplicationCommandOptionType.String,
 				required: true
 			}
@@ -1070,7 +1141,8 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'name',
-				description: 'Clan name (must be 3 characters long)',
+				description: command.search.options.name.description,
+				description_localizations: translation('command.search.options.name.description'),
 				type: ApplicationCommandOptionType.String
 			}
 		]
@@ -1093,25 +1165,29 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'duration',
-						description: 'Remaining duration to mention war members (Multiple of 15 mins e.g 15m, 30m, 1h, 1.25h, 1.5h)',
+						description: command.reminder.create.options.duration.description,
+						description_localizations: translation('command.reminder.create.options.duration.description'),
 						type: ApplicationCommandOptionType.String,
 						required: true,
 						autocomplete: true
 					},
 					{
 						name: 'message',
-						description: 'Reminder message for the notification',
+						description: command.reminder.create.options.message.description,
+						description_localizations: translation('command.reminder.create.options.message.description'),
 						type: ApplicationCommandOptionType.String,
 						required: true
 					},
 					{
 						name: 'channel',
-						description: 'Channel to send reminder in',
+						description: command.reminder.create.options.channel.description,
+						description_localizations: translation('command.reminder.create.options.channel.description'),
 						type: ApplicationCommandOptionType.Channel
 					},
 					{
 						name: 'clans',
-						description: 'Optional clan tags or aliases to choose specific clans',
+						description: command.reminder.create.options.clans.description,
+						description_localizations: translation('command.reminder.create.options.clans.description'),
 						type: ApplicationCommandOptionType.String
 					}
 				]
@@ -1130,12 +1206,12 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'id',
-						description: 'Reminder Id',
+						description: command.reminder.delete.options.id.description,
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'clear',
-						description: 'Clear all reminders',
+						description: command.reminder.delete.options.clear.description,
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1165,17 +1241,20 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Clan tag / alias or @user mention',
+						description: command.stats.options.tag.description,
+						description_localizations: translation('command.stats.options.tag.description'),
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'compare',
-						description: 'Compare Town Halls (e.g 14vs13, 12 13, all, equal)',
+						description: command.stats.options.compare.description,
+						description_localizations: translation('command.stats.options.compare.description'),
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'stars',
-						description: 'War stars earned. (Default: 3)',
+						description: command.stats.options.stars.description,
+						description_localizations: translation('command.stats.options.stars.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1202,7 +1281,8 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'type',
-						description: 'War Type [e.g Regular, CWL, Friendly] (Default: Regular and CWL)',
+						description: command.stats.options.type.description,
+						description_localizations: translation('command.stats.options.type.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1233,13 +1313,15 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'season',
-						description: 'Limit the data to the last X months.',
+						description: command.stats.options.season.description,
+						description_localizations: translation('command.stats.options.season.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
 					},
 					{
 						name: 'attempt',
-						description: 'Fresh attacks or cleanup attacks. (Default: Both)',
+						description: command.stats.options.attempt.description,
+						description_localizations: translation('command.stats.options.attempt.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1262,17 +1344,20 @@ export const COMMANDS: Command[] = [
 				options: [
 					{
 						name: 'tag',
-						description: 'Clan tag / alias or @user mention',
+						description: command.stats.options.tag.description,
+						description_localizations: translation('command.stats.options.tag.description'),
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'compare',
-						description: 'Compare Town Halls (e.g 14vs13, 12 13, all, equal)',
+						description: command.stats.options.compare.description,
+						description_localizations: translation('command.stats.options.compare.description'),
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'stars',
-						description: 'War stars earned. (Default: 3)',
+						description: command.stats.options.stars.description,
+						description_localizations: translation('command.stats.options.stars.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1299,7 +1384,8 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'type',
-						description: 'War Type [e.g Regular, CWL, Friendly] (Default: Regular and CWL)',
+						description: command.stats.options.type.description,
+						description_localizations: translation('command.stats.options.type.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1330,13 +1416,15 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'season',
-						description: 'Limit the data to the last X months.',
+						description: command.stats.options.season.description,
+						description_localizations: translation('command.stats.options.season.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
 					},
 					{
 						name: 'attempt',
-						description: 'Fresh defenses or cleanup defenses. (Default: Both)',
+						description: command.stats.options.attempt.description,
+						description_localizations: translation('command.stats.options.attempt.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{

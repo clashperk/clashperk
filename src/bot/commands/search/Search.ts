@@ -16,19 +16,17 @@ export default class ClanSearchCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction, { name }: { name?: string }) {
-		const data = await this.client.http.clans({ name, limit: 10 });
-		if (!data.ok) {
-			return interaction.editReply('Something went wrong!');
+		if (!name) {
+			return interaction.editReply(this.i18n('command.search.no_results', { lng: interaction.locale }));
 		}
-
-		if (!data.items.length) {
-			return interaction.editReply('I could not find any clans!');
+		const data = await this.client.http.clans({ name, limit: 10 });
+		if (!(data.ok && data.items.length)) {
+			return interaction.editReply(this.i18n('command.search.no_results', { lng: interaction.locale }));
 		}
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `Showing Top ${data.items.length} Results` })
-			.setTitle(`Searching clans with name ${name!}`)
+			.setTitle(this.i18n('command.search.searching', { lng: interaction.locale, name }))
 			.setDescription(
 				[
 					data.items

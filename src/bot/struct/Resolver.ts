@@ -18,7 +18,7 @@ export default class Resolver {
 
 		if (parsed.isTag) return this.getPlayer(interaction, args);
 		if (!parsed.user) {
-			return this.fail(interaction, `**${status(404)}**`);
+			return this.fail(interaction, `**${status(404, interaction.locale)}**`);
 		}
 
 		const { user } = parsed;
@@ -57,7 +57,7 @@ export default class Resolver {
 
 		if (!parsed.user) {
 			if (clan) return this.getClan(interaction, clan.tag);
-			return this.fail(interaction, `**${status(404)}**`);
+			return this.fail(interaction, `**${status(404, interaction.locale)}**`);
 		}
 
 		if (parsed.matched) {
@@ -79,7 +79,7 @@ export default class Resolver {
 		const data: Player = await this.client.http.fetch(`/players/${encodeURIComponent(this.parseTag(tag))}`);
 		if (data.ok) return { ...data, user };
 
-		return this.fail(interaction, `**${status(data.statusCode)}**`);
+		return this.fail(interaction, `**${status(data.statusCode, interaction.locale)}**`);
 	}
 
 	public async getClan(interaction: Interaction, tag: string, checkAlias = false): Promise<Clan | null> {
@@ -91,7 +91,7 @@ export default class Resolver {
 			if (clan) return this.getClan(interaction, clan.tag);
 		}
 
-		return this.fail(interaction, `**${status(data.statusCode)}**`);
+		return this.fail(interaction, `**${status(data.statusCode, interaction.locale)}**`);
 	}
 
 	private async fail(interaction: Interaction, content: string) {

@@ -37,7 +37,9 @@ export default class DonationsCommand extends Command {
 	) {
 		const clan = await this.client.resolver.resolveClan(interaction, tag);
 		if (!clan) return;
-		if (clan.members < 1) return interaction.editReply(`\u200e**${clan.name}** does not have any clan members...`);
+		if (clan.members < 1) {
+			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
+		}
 
 		if (!season) season = Season.ID;
 		const sameSeason = Season.ID === Season.generateID(season);
@@ -48,7 +50,7 @@ export default class DonationsCommand extends Command {
 			.toArray();
 
 		if (!dbMembers.length && !sameSeason) {
-			return interaction.editReply(`**No data found for the season \`${season}\`**`);
+			return interaction.editReply(this.i18n('command.donations.no_season_data', { lng: interaction.locale, season }));
 		}
 
 		const members: { tag: string; name: string; donated: number; received: number }[] = [];

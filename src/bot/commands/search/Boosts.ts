@@ -23,12 +23,16 @@ export default class BoostsCommand extends Command {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 		if (!clan.members) {
-			return interaction.followUp({ content: `\u200e**${clan.name}** does not have any clan members...`, ephemeral: true });
+			return interaction.followUp({
+				content: this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }),
+				ephemeral: true
+			});
 		}
 
 		const members = (await this.client.http.detailedClanMembers(clan.memberList)).filter((res) => res.ok);
 		const players = members.filter((mem) => mem.troops.filter((en) => en.superTroopIsActive).length);
-		if (!players.length) return interaction.followUp({ content: '**No members are boosting in this clan!**', ephemeral: true });
+		if (!players.length)
+			return interaction.followUp({ content: this.i18n('command.boosts.no_boosts', { lng: interaction.locale }), ephemeral: true });
 
 		const boostTimes = await this.client.db
 			.collection<{ tag: string; lastSeen: Date; superTroops?: { name: string; timestamp: number }[] }>(Collections.LAST_SEEN)
@@ -93,14 +97,16 @@ export default class BoostsCommand extends Command {
 		if (args.recent && !recently.length) {
 			return interaction.followUp({
 				ephemeral: true,
-				content: '**No recently active members are boosting in this clan.**'
+				content: this.i18n('command.boosts.no_recent_boosts', { lng: interaction.locale })
 			});
 		}
 
 		if (args.value && !selected) {
 			return interaction.followUp({
 				ephemeral: true,
-				content: `**No ${args.recent ? 'recently active ' : ''}members are boosting ${args.value} in this clan.**`
+				content: args.recent
+					? this.i18n('command.boosts.no_recent_unit_boosts', { lng: interaction.locale, unit: args.value })
+					: this.i18n('command.boosts.no_unit_boosts', { lng: interaction.locale, unit: args.value })
 			});
 		}
 
@@ -120,7 +126,7 @@ export default class BoostsCommand extends Command {
 
 		const menus = new MessageActionRow().addComponents(
 			new MessageSelectMenu()
-				.setPlaceholder('Select a super troop!')
+				.setPlaceholder('Select a Super Troop')
 				.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, recent: Boolean(args.recent), menu: true }))
 				.addOptions(Object.entries(SUPER_TROOPS).map(([key, value]) => ({ label: key, value: key, emoji: value })))
 		);

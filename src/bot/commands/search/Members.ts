@@ -41,7 +41,9 @@ export default class MembersCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; option: string }) {
 		const data = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!data) return;
-		if (data.members < 1) return interaction.editReply(`\u200e**${data.name}** does not have any clan members...`);
+		if (data.members < 1) {
+			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
+		}
 
 		const command = {
 			discord: this.handler.modules.get('link-list')!,
