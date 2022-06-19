@@ -42,7 +42,7 @@ export enum CommandType {
 }
 
 export const translation: typeof fmt = (text: string): Record<string, string> => {
-	return ['fr'].reduce<Record<string, string>>((acc, lang) => {
+	return ['fr', 'en-GB'].reduce<Record<string, string>>((acc, lang) => {
 		acc[lang] = i18next.t(text, { lng: lang, escapeValue: false }).substring(0, 100);
 		return acc;
 	}, {});
@@ -575,6 +575,9 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'color',
+						name_localizations: {
+							'en-GB': 'colour'
+						},
 						description: command.setup.enable.options.color.description,
 						description_localizations: translation('command.setup.enable.options.color.description'),
 						type: ApplicationCommandOptionType.String
@@ -1108,6 +1111,9 @@ export const COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'color_code',
+				name_localizations: {
+					'en-GB': 'colour_code'
+				},
 				description: command.config.options.color_code.description,
 				description_localizations: translation('command.config.options.color_code.description'),
 				type: ApplicationCommandOptionType.String
@@ -1338,6 +1344,9 @@ export const COMMANDS: Command[] = [
 			},
 			{
 				name: 'defense',
+				name_localizations: {
+					'en-GB': 'defence'
+				},
 				description: command.stats.defense.description,
 				description_localizations: translation('command.stats.defense.description'),
 				type: ApplicationCommandOptionType.Subcommand,

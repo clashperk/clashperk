@@ -65,8 +65,8 @@ export default class CommandStartedListener extends Listener {
 		if (interaction.inCachedGuild()) this.client.stats.interactions(interaction, command.id);
 		if (command.category === 'owner') return;
 		if (this.client.isOwner(interaction.user.id)) return;
-		this.client.stats.users(interaction.user);
+		this.client.stats.users(interaction);
 		this.client.stats.commands(command.id);
-		if (interaction.guild) this.client.stats.guilds(interaction.guild);
+		if (interaction.inCachedGuild()) this.client.stats.guilds(interaction.guild);
 	}
 }

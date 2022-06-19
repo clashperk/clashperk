@@ -1,6 +1,6 @@
 import qs from 'querystring';
 import https from 'https';
-import { User, Guild, Interaction } from 'discord.js';
+import { Guild, Interaction } from 'discord.js';
 import { Collections } from '../util/Constants';
 import { Client } from './Client';
 
@@ -65,9 +65,18 @@ export default class StatsHandler {
 	}
 
 	public async interactions(interaction: Interaction<'cached'>, command: string) {
-		await this.client.db
-			.collection(Collections.BOT_INTERACTIONS)
-			.updateOne({ user: interaction.user.id, guild: interaction.guild.id }, { $inc: { usage: 1 } }, { upsert: true });
+		await this.client.db.collection(Collections.BOT_INTERACTIONS).updateOne(
+			{ user: interaction.user.id, guild: interaction.guild.id },
+			{
+				$inc: { usage: 1 },
+				$set: {
+					locale: interaction.locale,
+					guildLocale: interaction.guildLocale,
+					lastUpdated: new Date()
+				}
+			},
+			{ upsert: true }
+		);
 		await this.client.db.collection(Collections.BOT_COMMANDS).updateOne({ command }, { $inc: { total: 1, uses: 1 } });
 	}
 
@@ -143,11 +152,11 @@ export default class StatsHandler {
 		);
 	}
 
-	public users(user: User) {
+	public users(interaction: Interaction) {
 		return this.client.db.collection(Collections.BOT_USERS).updateOne(
-			{ user: user.id },
+			{ user: interaction.user.id },
 			{
-				$set: { user: user.id, user_tag: user.tag },
+				$set: { user: interaction.user.id, user_tag: interaction.user.tag, locale: interaction.locale },
 				$inc: { usage: 1 },
 				$min: { createdAt: new Date() }
 			},
@@ -159,7 +168,7 @@ export default class StatsHandler {
 		return this.client.db.collection(Collections.BOT_GUILDS).updateOne(
 			{ guild: guild.id },
 			{
-				$set: { guild: guild.id, name: guild.name },
+				$set: { guild: guild.id, name: guild.name, locale: guild.preferredLocale },
 				$inc: { usage },
 				$max: { updatedAt: new Date() },
 				$min: { createdAt: new Date() }
