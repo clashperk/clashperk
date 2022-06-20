@@ -17,6 +17,7 @@
 		"prebuild": "rimraf dist",
 		"build": "tsc",
 		"postbuild": "node --es-module-specifier-resolution=node dist/locales/index.js",
+		"crowdin": "node --es-module-specifier-resolution=node dist/locales/crowdin.js",
 		"start": "npm run build && node --enable-source-maps --es-module-specifier-resolution=node dist/src/index.js",
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
 		"lint": "eslint --fix --ext .ts --ignore-path .gitignore .",
