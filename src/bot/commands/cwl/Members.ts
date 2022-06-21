@@ -1,6 +1,7 @@
-import { CommandInteraction, MessageEmbed, Util } from 'discord.js';
+import { CommandInteraction, MessageEmbed } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from '../../lib';
+import { Util } from '../../util';
 
 export default class CWLMembersCommand extends Command {
 	public constructor() {

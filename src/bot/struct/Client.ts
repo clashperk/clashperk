@@ -6,6 +6,7 @@ import { container } from 'tsyringe';
 import * as uuid from 'uuid';
 import { loadSync } from '@grpc/proto-loader';
 import * as gRPC from '@grpc/grpc-js';
+import * as Redis from 'redis';
 import RPCHandler from '../core/RPCHandler';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib';
 import Logger from '../util/Logger';
@@ -52,6 +53,13 @@ export class Client extends Discord.Client {
 	public storage!: StorageHandler;
 	public remindScheduler!: RemindScheduler;
 	public i18n = i18n;
+
+	public redis = Redis.createClient({
+		url: process.env.REDIS_URL
+	});
+
+	public subscriber = this.redis.duplicate();
+	public publisher = this.redis.duplicate();
 
 	// TODO: Fix this (can't be fixed)
 	public rpc: any;
@@ -123,6 +131,10 @@ export class Client extends Discord.Client {
 
 		this.settings = new SettingsProvider(this.db);
 		await this.settings.init();
+
+		await this.redis.connect();
+		await this.subscriber.connect();
+		await this.publisher.connect();
 
 		this.storage = new StorageHandler(this);
 		this.rpcHandler = new RPCHandler(this);

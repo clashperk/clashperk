@@ -42,28 +42,18 @@ export default class StatusCommand extends Command {
 		}
 
 		const owner = await this.client.users.fetch(this.client.ownerId);
-		const grpc: any = await new Promise((resolve) =>
-			this.client.rpc.stats({}, (err: any, res: any) => {
-				if (res) resolve(JSON.parse(res?.data));
-				else resolve({ heapUsed: 0 });
-			})
-		);
-
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(guild.id))
 			.setTitle('Stats')
 			.setAuthor({ name: `${this.client.user!.username}`, iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
 			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
-			.addField('RPC Usage', `${(grpc.heapUsed / 1024 / 1024).toFixed(2)} MB`, true)
 			.addField('Free Memory', `${this.freemem.toFixed(2)} MB`, true)
 			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }), true)
 			.addField('Servers', guilds.toLocaleString(), true)
 			.addField('Clans Total', `${(await this.count(Collections.CLAN_STORES)).toLocaleString()}`, true)
 			.addField('Players Total', `${(await this.count(Collections.LAST_SEEN)).toLocaleString()}`, true)
 			.addField('Shard', `${guild.shard.id}/${this.client.shard!.count}`, true)
-			// .addField('Version', `v${version}`, true)
 			.setFooter({ text: `© ${new Date().getFullYear()} ${owner.tag}`, iconURL: owner.displayAvatarURL({ dynamic: true }) });
-
 		return embed;
 	}
 

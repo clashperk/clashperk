@@ -36,9 +36,8 @@ export default class RPCHandler {
 	}
 
 	private async broadcast() {
-		const call = await this.client.rpc.broadcast({ shardId: this.client.shard!.ids[0], shards: this.client.shard!.count });
-		call.on('data', async (chunk: { data: string }) => {
-			const data = JSON.parse(chunk.data);
+		await this.client.subscriber.subscribe('channel', async (message) => {
+			const data = JSON.parse(message);
 
 			if (this.paused) return;
 			if (this.queue.remaining >= 2000) return;
@@ -73,15 +72,10 @@ export default class RPCHandler {
 			}
 		});
 
-		call.on('end', () => {
-			this.client.logger.warn('Server Disconnected', { label: 'GRPC' });
-		});
-
-		call.on('error', (error: any) => {
-			this.client.logger.warn(error.toString(), { label: 'GRPC' });
-		});
-
-		return Promise.resolve(0);
+		return this.client.publisher.publish(
+			'CONNECT',
+			JSON.stringify({ shardId: this.client.shard!.ids[0], shards: this.client.shard!.count })
+		);
 	}
 
 	public async init() {
@@ -108,24 +102,14 @@ export default class RPCHandler {
 			.sort((a, b) => a.rand - b.rand)
 			.map((col) => col.data);
 
-		await new Promise((resolve) => {
-			this.client.rpc.loadClans(
-				{
-					data: JSON.stringify(sorted)
-				},
-				(err: any, res: any) => resolve(res?.data)
-			);
-		});
-
+		await this.client.publisher.publish('LOAD', JSON.stringify(sorted));
 		await this.broadcast();
-		return new Promise((resolve) =>
-			this.client.rpc.init(
-				{
-					shardId: this.client.shard!.ids[0],
-					shards: this.client.shard!.count
-				},
-				(err: any, res: any) => resolve(res?.data)
-			)
+		return this.client.publisher.publish(
+			'INIT',
+			JSON.stringify({
+				shardId: this.client.shard!.ids[0],
+				shards: this.client.shard!.count
+			})
 		);
 	}
 
@@ -147,10 +131,10 @@ export default class RPCHandler {
 		}
 
 		const patron = Boolean(this.client.patrons.get(data.guild));
-		return this.client.rpc.add({ data: JSON.stringify({ tag: data.tag, patron, op: data.op, guild: data.guild }) }, () => null);
+		return this.client.publisher.publish('ADD', JSON.stringify({ tag: data.tag, patron, op: data.op, guild: data.guild }));
 	}
 
-	public delete(id: string, data: { tag: string; op: number; guild: string }) {
+	public async delete(id: string, data: { tag: string; op: number; guild: string }) {
 		const OP = {
 			[Flags.DONATION_LOG]: this.donationLog,
 			[Flags.CLAN_FEED_LOG]: this.clanFeedLog,
@@ -166,7 +150,7 @@ export default class RPCHandler {
 			Object.values(OP).map((Op) => Op.delete(id));
 		}
 
-		return this.client.rpc.remove({ data: JSON.stringify(data) }, () => null);
+		await this.client.publisher.publish('REMOVE', JSON.stringify(data));
 	}
 
 	public flush() {
@@ -176,6 +160,9 @@ export default class RPCHandler {
 		this.clanEmbedLog.cached.clear();
 		this.clanFeedLog.cached.clear();
 		this.lastSeenLog.cached.clear();
-		return this.client.rpc.flush({ shardId: this.client.shard!.ids[0], shards: this.client.shard!.count }, () => null);
+		return this.client.publisher.publish(
+			'FLUSH',
+			JSON.stringify({ shardId: this.client.shard!.ids[0], shards: this.client.shard!.count })
+		);
 	}
 }
