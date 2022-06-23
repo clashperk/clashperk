@@ -21,7 +21,8 @@ await i18next.use(Backend).init({
 		it: ['it-IT', 'en-US'], // Italian/Italiano
 		de: ['de-DE', 'en-US'], // German/Deutsch
 		no: ['no-NO', 'en-US'], // Norwegian/Norsk
-		nl: ['nl-NL', 'en-US'] // Dutch/Nederlands
+		nl: ['nl-NL', 'en-US'], // Dutch/Nederlands
+		default: ['en-US'] // Default Fallback Language
 	},
 	preload: ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'nl-NL', 'it-IT', 'de-DE', 'no-NO'],
 	defaultNS: 'translation',
