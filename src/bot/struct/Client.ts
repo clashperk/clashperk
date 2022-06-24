@@ -82,7 +82,6 @@ export class Client extends Discord.Client {
 						getComparisonTimestamp: (msg) => msg.createdTimestamp
 					})
 				},
-				PresenceManager: 0,
 				UserManager: {
 					maxSize: 100,
 					keepOverLimit: (user) => user.id === this.user!.id
@@ -90,7 +89,18 @@ export class Client extends Discord.Client {
 				GuildMemberManager: {
 					maxSize: 100,
 					keepOverLimit: (member) => member.id === this.user!.id
-				}
+				},
+				PresenceManager: 0,
+				VoiceStateManager: 0,
+				GuildBanManager: 0,
+				GuildInviteManager: 0,
+				GuildScheduledEventManager: 0,
+				GuildStickerManager: 0,
+				StageInstanceManager: 0,
+				ReactionUserManager: 0,
+				ReactionManager: 0,
+				BaseGuildEmojiManager: 0,
+				GuildEmojiManager: 0
 			})
 		});
 
