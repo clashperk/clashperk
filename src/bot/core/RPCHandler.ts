@@ -88,21 +88,6 @@ export default class RPCHandler {
 		await this.clanGamesLog.init();
 		await this.clanWarLog.init();
 
-		const collection = await this.client.db
-			.collection(Collections.CLAN_STORES)
-			.find({
-				paused: false,
-				active: true,
-				flag: { $gt: 0 },
-				guild: { $in: this.client.guilds.cache.map((guild) => guild.id) }
-			})
-			.toArray();
-		const sorted = collection
-			.map((data) => ({ data, rand: Math.random() }))
-			.sort((a, b) => a.rand - b.rand)
-			.map((col) => col.data);
-
-		await this.client.publisher.publish('LOAD', JSON.stringify(sorted));
 		await this.broadcast();
 		return this.client.publisher.publish(
 			'INIT',
@@ -115,6 +100,41 @@ export default class RPCHandler {
 
 	public async add(id: string, data: { tag: string; guild: string; op: number }) {
 		if (!this.client.guilds.cache.has(data.guild)) return;
+		const result = await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.aggregate([
+				{
+					$match: {
+						tag: data.tag,
+						active: true,
+						paused: false
+					}
+				},
+				{
+					$group: {
+						_id: '$tag',
+						patron: {
+							$addToSet: '$patron'
+						},
+						flag: {
+							$sum: '$flag'
+						}
+					}
+				},
+				{
+					$set: {
+						tag: '$_id',
+						patron: {
+							$in: [true, '$patron']
+						}
+					}
+				},
+				{
+					$unset: '_id'
+				}
+			])
+			.next();
+
 		const OP = {
 			[Flags.DONATION_LOG]: this.donationLog,
 			[Flags.CLAN_FEED_LOG]: this.clanFeedLog,
@@ -130,11 +150,15 @@ export default class RPCHandler {
 			Object.values(OP).map((Op) => Op.add(id));
 		}
 
-		const patron = Boolean(this.client.patrons.get(data.guild));
-		return this.client.publisher.publish('ADD', JSON.stringify({ tag: data.tag, patron, op: data.op, guild: data.guild }));
+		if (result) await this.client.publisher.publish('ADD', JSON.stringify(result));
 	}
 
 	public async delete(id: string, data: { tag: string; op: number; guild: string }) {
+		const clans = await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.find({ tag: data.tag, active: true, paused: false, guild: { $ne: data.guild } }, { projection: { _id: 1 } })
+			.toArray();
+
 		const OP = {
 			[Flags.DONATION_LOG]: this.donationLog,
 			[Flags.CLAN_FEED_LOG]: this.clanFeedLog,
@@ -150,7 +174,7 @@ export default class RPCHandler {
 			Object.values(OP).map((Op) => Op.delete(id));
 		}
 
-		await this.client.publisher.publish('REMOVE', JSON.stringify(data));
+		if (!clans.length) await this.client.publisher.publish('REMOVE', JSON.stringify(data));
 	}
 
 	public flush() {
