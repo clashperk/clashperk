@@ -16,21 +16,6 @@ export default class ClanFeedLog {
 
 	public constructor(private readonly client: Client) {
 		this.cached = new Collection();
-
-		this.client.db
-			.collection(Collections.EVENT_LOGS)
-			.watch([
-				{
-					$match: {
-						operationType: { $in: ['insert'] }
-					}
-				}
-			])
-			.on('change', async (change) => {
-				if (change.operationType === 'insert') {
-					return this.exec(change.fullDocument!.tag, change.fullDocument);
-				}
-			});
 	}
 
 	public async exec(tag: string, data: any) {
