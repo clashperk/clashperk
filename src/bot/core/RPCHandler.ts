@@ -150,7 +150,7 @@ export default class RPCHandler {
 			Object.values(OP).map((Op) => Op.add(id));
 		}
 
-		if (result) await this.client.publisher.publish('ADD', JSON.stringify(result));
+		if (result) await this.client.publisher.publish('ADD', JSON.stringify({ ...result, op: data.op }));
 	}
 
 	public async delete(id: string, data: { tag: string; op: number; guild: string }) {
