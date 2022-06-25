@@ -40,7 +40,8 @@ export default class DebugCommand extends Command {
 		const clans = await this.client.storage.find(interaction.guild.id);
 		const fetched: Clan[] = (await Promise.all(clans.map((en) => this.client.http.clan(en.tag)))).filter((res) => res.ok);
 
-		const cycle = await this.client.redis.hGetAll('CYCLE').then((data) => ({
+		const patron = this.client.patrons.get(interaction.guild.id);
+		const cycle = await this.client.redis.hGetAll(patron ? 'cycle_premium' : 'cycle').then((data) => ({
 			clans: Number(data.CLAN_LOOP || 0),
 			players: Number(data.PLAYER_LOOP || 0),
 			wars: Number(data.WAR_LOOP || 0)
