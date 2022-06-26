@@ -1,11 +1,8 @@
 import { fileURLToPath, URL } from 'url';
-import path from 'path';
 import Discord, { Intents, Interaction, Message, Options, Snowflake, Sweepers } from 'discord.js';
 import { Db } from 'mongodb';
 import { container } from 'tsyringe';
 import * as uuid from 'uuid';
-import { loadSync } from '@grpc/proto-loader';
-import * as gRPC from '@grpc/grpc-js';
 import * as Redis from 'redis';
 import RPCHandler from '../core/RPCHandler';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib';
@@ -21,16 +18,6 @@ import StatsHandler from './StatsHandler';
 import StorageHandler from './StorageHandler';
 import Resolver from './Resolver';
 import RemindScheduler from './RemindScheduler';
-
-const { route: Route } = gRPC.loadPackageDefinition(
-	loadSync(path.join('scripts/routes.proto'), {
-		keepCase: true,
-		longs: String,
-		enums: String,
-		defaults: true,
-		oneofs: true
-	})
-);
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -55,14 +42,13 @@ export class Client extends Discord.Client {
 	public i18n = i18n;
 
 	public redis = Redis.createClient({
-		url: process.env.REDIS_URL
+		url: process.env.REDIS_URL,
+		database: 1
 	});
 
 	public subscriber = this.redis.duplicate();
 	public publisher = this.redis.duplicate();
 
-	// TODO: Fix this (can't be fixed)
-	public rpc: any;
 	public rpcHandler!: RPCHandler;
 	public patrons!: Patrons;
 	public automaton!: Automaton;
@@ -158,9 +144,6 @@ export class Client extends Discord.Client {
 		this.remindScheduler = new RemindScheduler(this);
 
 		await this.http.login();
-
-		// @ts-expect-error
-		this.rpc = new Route.RouteGuide(process.env.SERVER, gRPC.credentials.createInsecure());
 
 		this.once('ready', () => {
 			if (process.env.NODE_ENV === 'production') return this.run();

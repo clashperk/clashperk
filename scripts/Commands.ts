@@ -1002,17 +1002,17 @@ export const COMMANDS: Command[] = [
 						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'tag',
+						name: 'clans',
 						required: false,
-						description: command.autorole.enable.options.tag.description,
-						description_localizations: translation('command.autorole.enable.options.tag.description'),
+						description: command.autorole.enable.options.clans.description,
+						description_localizations: translation('command.autorole.enable.options.clans.description'),
 						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'verify',
+						name: 'only_verified',
 						required: false,
-						description: command.autorole.enable.options.verify.description,
-						description_localizations: translation('command.autorole.enable.options.verify.description'),
+						description: command.autorole.enable.options.only_verified.description,
+						description_localizations: translation('command.autorole.enable.options.only_verified.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1034,10 +1034,26 @@ export const COMMANDS: Command[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'tag',
-						description: command.autorole.disable.options.tag.description,
-						description_localizations: translation('command.autorole.disable.options.tag.description'),
+						name: 'clans',
+						description: command.autorole.disable.options.clans.description,
+						description_localizations: translation('command.autorole.disable.options.clans.description'),
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'clear',
+						description: command.autorole.disable.options.clear.description,
+						description_localizations: translation('command.autorole.disable.options.clear.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Yes',
+								value: 'true'
+							},
+							{
+								name: 'No',
+								value: 'false'
+							}
+						]
 					}
 				]
 			}

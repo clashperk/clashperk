@@ -32,7 +32,6 @@ export default class SetupDisableCommand extends Command {
 				enums: [
 					['channel-link'],
 					['all', 'remove-clan'],
-					['auto-role'],
 					[Flags.CLAN_EMBED_LOG.toString(), 'clan-embed'],
 					[Flags.LAST_SEEN_LOG.toString(), 'lastseen'],
 					[Flags.CLAN_WAR_LOG.toString(), 'war-feed'],
@@ -64,52 +63,52 @@ export default class SetupDisableCommand extends Command {
 			if (value) {
 				const id = value._id.toHexString();
 				if (!value.channels?.length) await this.updateFlag(id, Flags.CHANNEL_LINKED);
-				return interaction.editReply(`Successfully deleted **${value.name} (${value.tag})** from <#${channel.id}>`);
+				return interaction.editReply(
+					this.i18n('command.setup.disable.channel_unlink', {
+						lng: interaction.locale,
+						clan: `**${value.name}**`,
+						channel: `<#${channel.id}>`
+					})
+				);
 			}
 
-			// eslint-disable-next-line
-			return interaction.editReply(`Couldn't find any clan linked to ${channel.toString()}`);
+			return interaction.editReply(
+				this.i18n('command.setup.disable.channel_not_found', {
+					lng: interaction.locale,
+					channel: channel.toString() // eslint-disable-line
+				})
+			);
 		}
 
-		if (option === 'auto-role' && !tag) {
-			const { matchedCount } = await this.client.db
-				.collection(Collections.CLAN_STORES)
-				.updateMany(
-					{ guild: interaction.guild!.id, autoRole: 2 },
-					{ $unset: { autoRole: '', roles: '', roleIds: '', secureRole: '' } }
-				);
-			if (matchedCount) return interaction.editReply(`**Auto-role disabled for all clans.**`);
-			return interaction.editReply(`**No clans had auto-role enabled.**`);
-		}
-
-		if (!tag) return interaction.editReply('**You must specify a clan tag to run this command.**');
+		if (!tag) return interaction.editReply(this.i18n('common.no_clan_tag', { lng: interaction.locale }));
 		const data = await this.client.db.collection(Collections.CLAN_STORES).findOne({ tag, guild: interaction.guild!.id });
 
-		if (option === 'auto-role' && data) {
-			await this.client.db
-				.collection(Collections.CLAN_STORES)
-				.updateMany(
-					{ guild: interaction.guild!.id, tag: data.tag, autoRole: 1 },
-					{ $unset: { autoRole: '', roles: '', roleIds: '', secureRole: '' } }
-				);
-			return interaction.editReply(`Auto-role disabled for **${data.name as string} (${data.tag as string})**`);
-		}
-
 		if (!data) {
-			return interaction.editReply("**I couldn't find this clan tag in this server!**");
+			return interaction.editReply(this.i18n('command.setup.disable.clan_not_linked', { lng: interaction.locale }));
 		}
 
 		const id = data._id.toHexString();
 		if (option === 'all') {
 			await this.client.storage.delete(id);
 			await this.client.rpcHandler.delete(id, { tag: data.tag, op: 0, guild: interaction.guild!.id });
-			return interaction.editReply(`**Successfully Deleted ${data.name as string} (${data.tag as string})**`);
+			return interaction.editReply(
+				this.i18n('command.setup.disable.clan_deleted', {
+					lng: interaction.locale,
+					clan: `**${data.name as string} (${data.tag as string})**`
+				})
+			);
 		}
 
 		const deleted = await this.client.storage.remove(data._id.toHexString(), { op: Number(option) });
 		if (deleted?.deletedCount) await this.updateFlag(id, Number(option));
 		await this.client.rpcHandler.delete(id, { op: Number(option), tag: data.tag, guild: interaction.guild!.id });
-		return interaction.editReply(`**Successfully Removed ${names[option]} for ${data.name as string} (${data.tag as string})**`);
+		return interaction.editReply(
+			this.i18n('command.setup.disable.feature_disabled', {
+				lng: interaction.locale,
+				feature: `**${names[option]}**`,
+				clan: `**${data.name as string} (${data.tag as string})**`
+			})
+		);
 	}
 
 	private updateFlag(id: string, option: number) {

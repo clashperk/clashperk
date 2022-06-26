@@ -19,7 +19,6 @@ export interface ClanStore {
 	verified: boolean;
 	lastRan?: Date;
 	channels?: string[];
-	autoRole: 1 | 2;
 	secureRole: boolean;
 	roleIds?: string[];
 	roles?: { coLeader?: string; admin?: string; member?: string }[];
@@ -61,31 +60,21 @@ export default class StorageHandler {
 	}
 
 	public async register(message: CommandInteraction, data: any) {
-		const ex = await this.collection.findOne({ guild: message.guild!.id, autoRole: 2 });
-
 		const collection = await this.collection.findOneAndUpdate(
 			{ tag: data.tag, guild: data.guild },
 			{
 				$set: {
 					name: data.name,
 					tag: data.tag,
-					paused: false,
-					verified: true,
-					active: true,
 					guild: message.guild!.id,
+					paused: false,
+					active: true,
+					verified: true,
 					patron: this.client.patrons.get(message.guild!.id)
 				},
-				$setOnInsert: ex
-					? {
-							roles: ex.roles,
-							createdAt: new Date(),
-							roleIds: ex.roleIds,
-							autoRole: ex.autoRole,
-							secureRole: ex.secureRole
-					  }
-					: {
-							createdAt: new Date()
-					  },
+				$setOnInsert: {
+					createdAt: new Date()
+				},
 				$bit: {
 					flag: { or: Number(data.op) }
 				}
