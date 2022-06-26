@@ -42,8 +42,7 @@ export class Client extends Discord.Client {
 	public i18n = i18n;
 
 	public redis = Redis.createClient({
-		url: process.env.REDIS_URL,
-		database: 1
+		url: process.env.REDIS_URL
 	});
 
 	public subscriber = this.redis.duplicate();
