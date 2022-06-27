@@ -34,9 +34,13 @@ export default class RateLimitListener extends Listener {
 		}, 5000);
 	}
 
+	private getWebhookId() {
+		return this.client.settings.get<string>('global', 'rateLimitWebhook', null);
+	}
+
 	private async fetchWebhook() {
 		if (this.webhook) return this.webhook;
-		this.webhook = await this.client.fetchWebhook(this.client.settings.get('global', 'rateLimitWebhook', undefined)).catch(() => null);
+		this.webhook = await this.client.fetchWebhook(this.getWebhookId()).catch(() => null);
 		return this.webhook;
 	}
 
@@ -44,6 +48,7 @@ export default class RateLimitListener extends Listener {
 		this.count += 1;
 		if (this.count >= 5) return this.client.rpcHandler.pause(true);
 		this.client.logger.warn({ timeout, limit, method, path, route }, { label: 'RATE_LIMIT' });
+		if (path.includes(this.getWebhookId())) return;
 
 		const embed = new MessageEmbed()
 			.setAuthor({ name: 'Rate Limit' })
