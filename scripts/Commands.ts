@@ -26,12 +26,16 @@ await i18next.use(Backend).init({
 });
 
 export function getSeasonIds() {
-	return Array(Math.min(24, 10 + new Date().getMonth()))
+	return Array(Math.min(24))
 		.fill(0)
 		.map((_, m) => {
 			const now = new Date();
 			now.setHours(0, 0, 0, 0);
 			now.setMonth(now.getMonth() - (m - 1), 0);
+			return now;
+		})
+		.filter((now) => now.getTime() >= new Date('2021-04').getTime())
+		.map((now) => {
 			return { name: moment(now).format('MMM YYYY'), value: moment(now).format('YYYY-MM') };
 		});
 }
@@ -1003,7 +1007,7 @@ export const COMMANDS: Command[] = [
 					},
 					{
 						name: 'clans',
-						required: false,
+						required: true,
 						description: command.autorole.enable.options.clans.description,
 						description_localizations: translation('command.autorole.enable.options.clans.description'),
 						type: ApplicationCommandOptionType.String

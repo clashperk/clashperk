@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkouk Reposotory
+      - name: Checkout Repository
         uses: actions/checkout@v2
 
       - name: Use Node.js 16
@@ -21,7 +21,7 @@ jobs:
 
       - name: Submodule
         run: npm run git-module
-        
+
       - name: NPM Install
         run: npm i
 

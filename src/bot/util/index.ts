@@ -136,14 +136,16 @@ export class Util extends Discord.Util {
 	 * @returns {string[]} SeasonIds
 	 */
 	public static getSeasonIds(): string[] {
-		return Array(Math.min(24, 10 + new Date().getMonth()))
+		return Array(Math.min(24))
 			.fill(0)
 			.map((_, m) => {
 				const now = new Date();
 				now.setHours(0, 0, 0, 0);
 				now.setMonth(now.getMonth() - (m - 1), 0);
-				return moment(now).format('YYYY-MM'); // YYYY-MM;
-			});
+				return now;
+			})
+			.filter((now) => now.getTime() >= new Date('2021-04').getTime())
+			.map((now) => moment(now).format('YYYY-MM'));
 	}
 
 	/**

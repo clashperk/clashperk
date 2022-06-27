@@ -47,10 +47,11 @@ export default class AutoRoleCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: IArgs) {
 		if (args.command === 'disable') return this.disable(interaction, args);
 
-		const tags = args.clans?.split(/ +/g) ?? [];
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
+		const tags = args.clans === '*' ? [] : args.clans?.split(/ +/g) ?? [];
+		const clans =
+			args.clans === '*'
+				? await this.client.storage.find(interaction.guildId)
+				: await this.client.storage.search(interaction.guildId, tags);
 
 		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {
