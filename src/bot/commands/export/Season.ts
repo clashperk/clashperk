@@ -122,7 +122,7 @@ export default class ExportSeason extends Command {
 					m.attackWins,
 					m.versusBattleWins.gained,
 					m.trophies.gained,
-					m.trophies.value,
+					m.currentTrophies,
 					m.versusTrophies.gained,
 					m.warStars.gained,
 					...achievements.map((ac) => m.achievements.find((a: { name: string }) => a.name === ac)?.gained ?? 0),
@@ -166,21 +166,21 @@ export default class ExportSeason extends Command {
 					from: Collections.LAST_SEEN,
 					localField: 'tag',
 					foreignField: 'tag',
-					as: 'last_seen'
+					as: 'lastSeen'
 				}
 			},
 			{
 				$unwind: {
-					path: '$last_seen'
+					path: '$lastSeen'
 				}
 			},
 			{
 				$set: {
-					score: `$last_seen.seasons.${season_id}`
+					score: `$lastSeen.seasons.${season_id}`
 				}
 			},
 			{
-				$unset: 'last_seen'
+				$unset: 'lastSeen'
 			},
 			{
 				$sort: {
