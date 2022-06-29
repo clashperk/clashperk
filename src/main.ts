@@ -37,8 +37,16 @@ if (process.env.SENTRY) {
 		environment: process.env.NODE_ENV ?? 'development',
 		release: execSync('git rev-parse HEAD').toString().trim(),
 		integrations: [
-			new RewriteFrames({ root: process.cwd(), prefix: '/' }),
-			new Sentry.Integrations.Http({ tracing: true, breadcrumbs: false })
+			new RewriteFrames({
+				iteratee(frame) {
+					if (frame.filename) {
+						const filename = frame.filename.replace(process.cwd(), '');
+						frame.filename = filename.replace(/\\/g, '/');
+					}
+					return frame;
+				}
+			}),
+			new Sentry.Integrations.Http({ tracing: true, breadcrumbs: true })
 		]
 	});
 }
