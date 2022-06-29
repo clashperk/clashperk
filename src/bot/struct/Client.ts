@@ -60,7 +60,7 @@ export class Client extends Discord.Client {
 			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_WEBHOOKS, Intents.FLAGS.GUILD_MESSAGES],
 			makeCache: Options.cacheWithLimits({
 				MessageManager: {
-					maxSize: 15,
+					maxSize: 10,
 					sweepInterval: 5 * 60,
 					sweepFilter: Sweepers.filterByLifetime({
 						lifetime: 10 * 60,
