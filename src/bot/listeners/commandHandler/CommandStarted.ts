@@ -1,4 +1,4 @@
-import { addBreadcrumb, Severity, setContext } from '@sentry/node';
+import { addBreadcrumb, setContext } from '@sentry/node';
 import { BaseCommandInteraction, Interaction, MessageComponentInteraction } from 'discord.js';
 import { Listener, Command } from '../../lib';
 import { CommandHandlerEvents } from '../../lib/util';
@@ -16,7 +16,7 @@ export default class CommandStartedListener extends Listener {
 		addBreadcrumb({
 			message: 'command_started',
 			category: command.category,
-			level: Severity.Info,
+			level: 'info',
 			data: {
 				user: {
 					id: interaction.user.id,

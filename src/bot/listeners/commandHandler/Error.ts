@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { addBreadcrumb, Severity, captureException, setContext } from '@sentry/node';
+import { addBreadcrumb, captureException, setContext } from '@sentry/node';
 import { BaseCommandInteraction, DiscordAPIError, MessageActionRow, MessageButton, MessageComponentInteraction } from 'discord.js';
 import { Listener, Command } from '../../lib';
 
@@ -21,7 +21,7 @@ export default class ErrorListener extends Listener {
 		addBreadcrumb({
 			message: 'command_errored',
 			category: command ? command.category : 'inhibitor',
-			level: Severity.Error,
+			level: 'error',
 			data: {
 				user: {
 					id: interaction.user.id,
