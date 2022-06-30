@@ -89,13 +89,7 @@ export default class RPCHandler {
 		await this.clanWarLog.init();
 
 		await this.broadcast();
-		return this.client.publisher.publish(
-			'INIT',
-			JSON.stringify({
-				shardId: this.client.shard!.ids[0],
-				shards: this.client.shard!.count
-			})
-		);
+		return this.client.publisher.publish('INIT', '{}');
 	}
 
 	public async add(id: string, data: { tag: string; guild: string; op: number }) {
@@ -177,16 +171,15 @@ export default class RPCHandler {
 		if (!clans.length) await this.client.publisher.publish('REMOVE', JSON.stringify(data));
 	}
 
-	public flush() {
+	public async flush() {
 		this.clanWarLog.cached.clear();
 		this.donationLog.cached.clear();
 		this.clanGamesLog.cached.clear();
 		this.clanEmbedLog.cached.clear();
 		this.clanFeedLog.cached.clear();
 		this.lastSeenLog.cached.clear();
-		return this.client.publisher.publish(
-			'FLUSH',
-			JSON.stringify({ shardId: this.client.shard!.ids[0], shards: this.client.shard!.count })
-		);
+
+		await this.client.subscriber.unsubscribe('channel');
+		return this.client.publisher.publish('FLUSH', '{}');
 	}
 }
