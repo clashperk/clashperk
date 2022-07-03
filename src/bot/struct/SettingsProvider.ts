@@ -18,7 +18,7 @@ export default class SettingsProvider {
 						}
 					}
 				],
-				{ fullDocument: 'updateLookup' }
+				{ fullDocument: 'updateLookup', maxTimeMS: 500, maxAwaitTimeMS: 500 }
 			)
 			.on('change', (change) => {
 				if (['update', 'insert'].includes(change.operationType)) {
@@ -35,7 +35,7 @@ export default class SettingsProvider {
 	}
 
 	public get<T>(guild: string | Guild, key: string, defaultValue?: any): T {
-		const id = (this.constructor as typeof SettingsProvider).guildID(guild);
+		const id = (this.constructor as typeof SettingsProvider).guildId(guild);
 		if (this.settings.has(id)) {
 			const value = this.settings.get(id)[key];
 			// eslint-disable-next-line
@@ -46,7 +46,7 @@ export default class SettingsProvider {
 	}
 
 	public async set(guild: string | Guild, key: string, value: any) {
-		const id = (this.constructor as typeof SettingsProvider).guildID(guild);
+		const id = (this.constructor as typeof SettingsProvider).guildId(guild);
 		const data = this.settings.get(id) || {};
 		data[key] = value;
 		this.settings.set(id, data);
@@ -54,7 +54,7 @@ export default class SettingsProvider {
 	}
 
 	public async delete(guild: string | Guild, key: string) {
-		const id = (this.constructor as typeof SettingsProvider).guildID(guild);
+		const id = (this.constructor as typeof SettingsProvider).guildId(guild);
 		const data = this.settings.get(id) || {};
 		delete data[key]; // eslint-disable-line
 
@@ -62,7 +62,7 @@ export default class SettingsProvider {
 	}
 
 	public async clear(guild: string | Guild) {
-		const id = (this.constructor as typeof SettingsProvider).guildID(guild);
+		const id = (this.constructor as typeof SettingsProvider).guildId(guild);
 		this.settings.delete(id);
 		return this.db.deleteOne({ id });
 	}
@@ -71,7 +71,7 @@ export default class SettingsProvider {
 		return this.settings.values();
 	}
 
-	private static guildID(guild: string | Guild) {
+	private static guildId(guild: string | Guild) {
 		if (guild instanceof Guild) return guild.id;
 		if (guild === 'global' || guild === null) return 'global'; // eslint-disable-line
 		if (/^\d+$/.test(guild)) return guild;

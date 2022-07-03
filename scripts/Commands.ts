@@ -16,7 +16,8 @@ await i18next.use(Backend).init({
 		it: ['it-IT', 'en-US'], // Italian/Italiano
 		de: ['de-DE', 'en-US'], // German/Deutsch
 		no: ['no-NO', 'en-US'], // Norwegian/Norsk
-		nl: ['nl-NL', 'en-US'] // Dutch/Nederlands
+		nl: ['nl-NL', 'en-US'], // Dutch/Nederlands
+		default: ['en-US'] // Default Fallback Language
 	},
 	preload: ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'nl-NL', 'it-IT', 'de-DE', 'no-NO'],
 	defaultNS: 'translation',
@@ -25,12 +26,16 @@ await i18next.use(Backend).init({
 });
 
 export function getSeasonIds() {
-	return Array(Math.min(24, 10 + new Date().getMonth()))
+	return Array(Math.min(24))
 		.fill(0)
 		.map((_, m) => {
 			const now = new Date();
 			now.setHours(0, 0, 0, 0);
 			now.setMonth(now.getMonth() - (m - 1), 0);
+			return now;
+		})
+		.filter((now) => now.getTime() >= new Date('2021-04').getTime())
+		.map((now) => {
 			return { name: moment(now).format('MMM YYYY'), value: moment(now).format('YYYY-MM') };
 		});
 }
@@ -1001,17 +1006,17 @@ export const COMMANDS: Command[] = [
 						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'tag',
-						required: false,
-						description: command.autorole.enable.options.tag.description,
-						description_localizations: translation('command.autorole.enable.options.tag.description'),
+						name: 'clans',
+						required: true,
+						description: command.autorole.enable.options.clans.description,
+						description_localizations: translation('command.autorole.enable.options.clans.description'),
 						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'verify',
+						name: 'only_verified',
 						required: false,
-						description: command.autorole.enable.options.verify.description,
-						description_localizations: translation('command.autorole.enable.options.verify.description'),
+						description: command.autorole.enable.options.only_verified.description,
+						description_localizations: translation('command.autorole.enable.options.only_verified.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1033,10 +1038,26 @@ export const COMMANDS: Command[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'tag',
-						description: command.autorole.disable.options.tag.description,
-						description_localizations: translation('command.autorole.disable.options.tag.description'),
+						name: 'clans',
+						description: command.autorole.disable.options.clans.description,
+						description_localizations: translation('command.autorole.disable.options.clans.description'),
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'clear',
+						description: command.autorole.disable.options.clear.description,
+						description_localizations: translation('command.autorole.disable.options.clear.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Yes',
+								value: 'true'
+							},
+							{
+								name: 'No',
+								value: 'false'
+							}
+						]
 					}
 				]
 			}

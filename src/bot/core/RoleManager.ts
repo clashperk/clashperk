@@ -21,7 +21,7 @@ export interface RPCFeed {
 		op: string;
 		tag: string;
 		name: string;
-		role: string;
+		role?: string;
 	}[];
 	memberList: {
 		tag: string;
@@ -33,7 +33,8 @@ export interface RPCFeed {
 const roles: { [key: string]: number } = {
 	member: 1,
 	admin: 2,
-	coLeader: 3
+	coLeader: 3,
+	leader: 4
 };
 
 export class RoleManager {
@@ -103,22 +104,19 @@ export class RoleManager {
 			.next();
 		if (!queried?.guilds.length) return null;
 
-		const guildIds = queried.guilds.filter((id: Snowflake) => this.client.guilds.cache.has(id));
-		if (!guildIds.length) return null;
+		const guilds = queried.guilds.filter((id: Snowflake) => this.client.guilds.cache.has(id));
+		if (!guilds.length) return null;
 
 		const cursor = this.client.db.collection(Collections.CLAN_STORES).aggregate<any>([
 			{
 				$match: {
-					autoRole: { $gt: 0 },
-					guild: { $in: guildIds }
+					roles: { $exists: true },
+					guild: { $in: [...guilds] }
 				}
 			},
 			{
 				$group: {
-					_id: {
-						guild: '$guild',
-						autoRole: '$autoRole'
-					},
+					_id: '$guild',
 					clans: {
 						$addToSet: '$$ROOT'
 					}
@@ -126,8 +124,7 @@ export class RoleManager {
 			},
 			{
 				$set: {
-					guildId: '$_id.guild',
-					type: '$_id.autoRole'
+					guildId: '$_id'
 				}
 			},
 			{
@@ -138,56 +135,18 @@ export class RoleManager {
 			}
 		]);
 
-		const groups: { clans: any[]; guildId: Snowflake; type: 1 | 2 }[] = await cursor.toArray();
+		const groups: { clans: any[]; guildId: Snowflake }[] = await cursor.toArray();
 		if (!groups.length) return cursor.close();
 
-		for (const group of groups.filter((ex) => ex.type === 2 && ex.clans.length)) {
-			await this.addSameTypeRole(group.guildId, group.clans, data);
-		}
-
-		for (const group of groups.filter((ex) => ex.type === 1 && ex.clans.length)) {
-			const clan = group.clans.find((clan) => clan.tag === data.clan.tag);
-			if (clan) await this.addUniqueTypeRole(group.guildId, clan, data);
+		for (const group of groups.filter((ex) => ex.clans.length)) {
+			await this.run(group.guildId, group.clans, data);
 		}
 
 		return cursor.close();
 	}
 
-	private async addUniqueTypeRole(guild: Snowflake, clan: any, data: RPCFeed) {
-		const collection = await this.client.db
-			.collection<{ user: Snowflake; entries: { tag: string; verified: boolean }[] }>(Collections.LINKED_PLAYERS)
-			.find({ 'entries.tag': { $in: data.members.map((mem) => mem.tag) } })
-			.toArray();
-
-		const flattened = this.flatPlayers(collection, clan.secureRole);
-		const userIds = flattened.reduce<Snowflake[]>((prev, curr) => {
-			if (!prev.includes(curr.user)) prev.push(curr.user);
-			return prev;
-		}, []);
-
-		// fetch guild members at once
-		const members = await this.client.guilds.cache.get(guild)?.members.fetch({ user: userIds, force: true });
-		if (!members?.size) return null;
-
-		for (const member of data.members) {
-			const mem = flattened.find((a) => a.tag === member.tag);
-			if (!mem) continue;
-			const acc = flattened.filter((a) => a.user === mem.user);
-
-			const tags = acc.map((en) => en.tag);
-			const multi = data.memberList.filter((mem) => tags.includes(mem.tag));
-			const role = this.getHighestRole(multi, [clan.tag]) || member.role;
-
-			const reason = ActionType[member.op].replace(/%PLAYER%/, member.name);
-			await this.manageRole(members, mem.user, guild, role, clan.roles, reason);
-			await this.delay(250);
-		}
-
-		return data.members.length;
-	}
-
-	private async addSameTypeRole(guild: Snowflake, clans: any[], data: RPCFeed) {
-		const clan = clans[0];
+	private async run(guild: Snowflake, clans: { tag: string; secureRole: boolean; roles: Record<string, string> }[], data: RPCFeed) {
+		const clan = clans.find((clan) => clan.tag === data.clan.tag)!;
 
 		const collection = await this.client.db
 			.collection<{ user: Snowflake; entries: { tag: string; verified: boolean }[] }>(Collections.LINKED_PLAYERS)
@@ -212,41 +171,37 @@ export class RoleManager {
 			const acc = flattened.filter((a) => a.user === mem.user);
 
 			const tags = acc.map((en) => en.tag);
-			const role = this.getHighestRole(
-				players.filter((en) => tags.includes(en.tag)),
-				clans.map((clan) => clan.tag)
-			);
+			const highestRoleClanRoles = clans
+				.map((clan) => ({
+					roles: clan.roles,
+					highestRole: this.getHighestRole(
+						players.filter((en) => tags.includes(en.tag)),
+						[clan.tag]
+					)
+				}))
+				.filter((mem) => mem.highestRole);
+			const highestRoles = highestRoleClanRoles.map(({ roles, highestRole }) => roles[highestRole!]).filter((id) => id);
 
 			const reason = ActionType[member.op].replace(/%PLAYER%/, member.name);
-			await this.manageRole(members, mem.user, guild, role, clan.roles, reason);
+			const roles = Array.from(new Set(clans.map((clan) => Object.values(clan.roles)).flat()));
+			await this.addRoles(members, guild, mem.user, highestRoles, roles, reason);
 			await this.delay(250);
 		}
 
 		return data.members.length;
 	}
 
-	private async manageRole(
-		members: Collection<string, GuildMember>,
-		userId: Snowflake,
-		guildId: Snowflake,
-		clanRole: string,
-		roles: { [key: string]: Snowflake },
-		reason: string
-	) {
-		return this.addRoles(members, guildId, userId, roles[clanRole], Object.values(roles), reason);
-	}
-
 	public async addRoles(
 		members: Collection<string, GuildMember>,
 		guildId: Snowflake,
 		userId: Snowflake,
-		roleId: Snowflake,
+		roleIds: Snowflake[],
 		roles: Snowflake[],
 		reason: string
 	) {
 		const guild = this.client.guilds.cache.get(guildId);
 
-		if (!roleId && !roles.length) return null; // eslint-disable-line
+		if (!roleIds.length && !roles.length) return null; // eslint-disable-line
 		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return null;
 
 		if (!members.has(userId)) return null;
@@ -254,21 +209,20 @@ export class RoleManager {
 		if (member.user.bot) return null;
 
 		const excluded = roles
-			.filter((id) => id !== roleId && this.checkRole(guild, guild.me!, id))
+			.filter((id) => !roleIds.includes(id) && this.checkRole(guild, guild.me!, id))
 			.filter((id) => member.roles.cache.has(id));
 
 		if (excluded.length) {
 			await member.roles.remove(excluded, reason);
 		}
 
-		if (!roleId) return null; // eslint-disable-line
-		if (!guild.roles.cache.has(roleId)) return null;
+		const included = roleIds
+			.filter((id) => guild.roles.cache.has(id))
+			.filter((id) => guild.me!.roles.highest.position > guild.roles.cache.get(id)!.position)
+			.filter((id) => !member.roles.cache.has(id));
 
-		const role = guild.roles.cache.get(roleId)!;
-		if (role.position > guild.me.roles.highest.position) return null;
-
-		if (member.roles.cache.has(roleId)) return null;
-		return member.roles.add(role, reason).catch(() => null);
+		if (!included.length) return null;
+		return member.roles.add(included, reason);
 	}
 
 	private flatPlayers(collection: { user: Snowflake; entries: { tag: string; verified: boolean }[] }[], secureRole: boolean) {
@@ -286,9 +240,10 @@ export class RoleManager {
 	}
 
 	private getHighestRole(players: { tag: string; role?: string; clan?: { tag: string } }[], clans: string[]) {
-		const unique = players.filter((a) => a.clan && clans.includes(a.clan.tag) && a.role! in roles).map((a) => a.role!);
-
-		return unique.sort((a, b) => roles[b] - roles[a])[0];
+		const highestRoles = players.filter((a) => a.clan && clans.includes(a.clan.tag) && a.role && a.role in roles).map((a) => a.role!);
+		const highestRole = highestRoles.sort((a, b) => roles[b] - roles[a])[0];
+		if (highestRole) return highestRole.replace('leader', 'coLeader');
+		return null;
 	}
 
 	private async delay(ms: number) {

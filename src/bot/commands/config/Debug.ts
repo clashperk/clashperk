@@ -5,13 +5,6 @@ import { Args, Command } from '../../lib';
 import { EMOJIS } from '../../util/Emojis';
 import { Util } from '../../util';
 
-interface RPC {
-	clans: number;
-	wars: number;
-	heapUsed: number;
-	players: number;
-}
-
 export default class DebugCommand extends Command {
 	public constructor() {
 		super('debug', {
@@ -47,12 +40,12 @@ export default class DebugCommand extends Command {
 		const clans = await this.client.storage.find(interaction.guild.id);
 		const fetched: Clan[] = (await Promise.all(clans.map((en) => this.client.http.clan(en.tag)))).filter((res) => res.ok);
 
-		const rpc: RPC = await new Promise((resolve) =>
-			this.client.rpc.stats({}, (err: any, res: any) => {
-				if (res) resolve(JSON.parse(res?.data));
-				else resolve({ heapUsed: 0, clans: 0, players: 0, wars: 0 });
-			})
-		);
+		const patron = this.client.patrons.get(interaction.guild.id);
+		const cycle = await this.client.redis.hGetAll(patron ? 'cycle_premium' : 'cycle').then((data) => ({
+			clans: Number(data.CLAN_LOOP || 0),
+			players: Number(data.PLAYER_LOOP || 0),
+			wars: Number(data.WAR_LOOP || 0)
+		}));
 
 		const UEE_FOR_SLASH = channel.permissionsFor(interaction.guild.roles.everyone)!.has('USE_EXTERNAL_EMOJIS');
 		const emojis = UEE_FOR_SLASH
@@ -84,12 +77,12 @@ export default class DebugCommand extends Command {
 				'**Slash Command Permission**',
 				`${UEE_FOR_SLASH ? emojis.tick : emojis.cross} Use External Emojis ${UEE_FOR_SLASH ? '' : '(for @everyone)'}`,
 				'',
-				`**Loop Time ${rpc.clans && rpc.players && rpc.wars ? '' : '(Processing...)'}**`,
+				`**Loop Time ${cycle.clans && cycle.players && cycle.wars ? '' : '(Processing...)'}**`,
 				`${emojis.none} \` ${'CLANS'.padStart(7, ' ')} \` \` ${'WARS'.padStart(7, ' ')} \` \` ${'PLAYERS'} \``,
-				`${emojis.tick} \` ${this.fixTime(rpc.clans).padStart(7, ' ')} \` \` ${this.fixTime(rpc.wars).padStart(
+				`${emojis.tick} \` ${this.fixTime(cycle.clans).padStart(7, ' ')} \` \` ${this.fixTime(cycle.wars).padStart(
 					7,
 					' '
-				)} \` \` ${this.fixTime(rpc.players).padStart(7, ' ')} \``,
+				)} \` \` ${this.fixTime(cycle.players).padStart(7, ' ')} \``,
 				'',
 				'**Clan Status and Player Loop Info**',
 				`${emojis.none} \`\u200e ${'CLAN NAME'.padEnd(

@@ -1,9 +1,9 @@
-import { MessageEmbed, CommandInteraction, MessageButton, MessageSelectMenu, MessageActionRow, Message } from 'discord.js';
 import { Player } from 'clashofclans.js';
-import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis';
-import RAW_TROOPS_DATA from '../../util/Troops';
+import { CommandInteraction, Message, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from 'discord.js';
 import { Command } from '../../lib';
 import { TroopInfo, TroopJSON } from '../../types';
+import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis';
+import RAW_TROOPS_DATA from '../../util/Troops';
 
 export default class UnitsCommand extends Command {
 	public constructor() {
@@ -106,15 +106,17 @@ export default class UnitsCommand extends Command {
 	private embed(data: Player, option = true) {
 		const embed = new MessageEmbed().setAuthor({ name: `${data.name} (${data.tag})` });
 
-		const Troops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal)
+		const Troops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal && !(troop.name in SUPER_TROOPS))
 			.filter((unit) => {
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > 0;
 				const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 1] > 0;
 				return Boolean(homeTroops || builderTroops);
 			})
 			.reduce<TroopJSON>((prev, curr) => {
-				if (!(curr.unlock.building in prev)) prev[curr.unlock.building] = [];
-				prev[curr.unlock.building].push(curr);
+				const unlockBuilding =
+					curr.category === 'hero' ? (curr.village === 'home' ? 'Town Hall' : 'Builder Hall') : curr.unlock.building;
+				if (!(unlockBuilding in prev)) prev[unlockBuilding] = [];
+				prev[unlockBuilding].push(curr);
 				return prev;
 			}, {});
 

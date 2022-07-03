@@ -1,14 +1,15 @@
-import { CommandInteraction, Role, Snowflake } from 'discord.js';
+import { CommandInteraction, Role } from 'discord.js';
 import { Collections } from '../../util/Constants';
 import { Args, Command } from '../../lib';
 
 export interface IArgs {
 	command?: 'enable' | 'disable' | null;
-	tag?: string;
+	clans?: string;
 	members?: Role;
 	elders?: Role;
 	coLeads?: Role;
 	verify: boolean;
+	clear?: boolean;
 }
 
 export default class AutoRoleCommand extends Command {
@@ -18,12 +19,7 @@ export default class AutoRoleCommand extends Command {
 			category: 'setup',
 			channel: 'guild',
 			description: {
-				content: [
-					'Auto-assign roles to members based upon their role in the clan.',
-					'',
-					'- Players must be linked to our system to receive roles.',
-					'- You can either use the same roles for all clans or individual roles for each clan, but not both.'
-				]
+				content: ['Auto-assign roles to members based upon their role in the clan.']
 			},
 			userPermissions: ['MANAGE_GUILD'],
 			clientPermissions: ['EMBED_LINKS', 'MANAGE_ROLES'],
@@ -38,16 +34,31 @@ export default class AutoRoleCommand extends Command {
 				id: 'coLeads',
 				match: 'ROLE'
 			},
-			'verify': {
+			'only_verified': {
+				id: 'verify',
+				match: 'BOOLEAN'
+			},
+			'clear': {
 				match: 'BOOLEAN'
 			}
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { tag, members, elders, coLeads, verify, command }: IArgs) {
-		if (command === 'disable') {
-			return this.handler.exec(interaction, this.handler.modules.get('setup-disable')!, { option: 'auto-role', tag });
+	public async exec(interaction: CommandInteraction<'cached'>, args: IArgs) {
+		if (args.command === 'disable') return this.disable(interaction, args);
+
+		const tags = args.clans === '*' ? [] : args.clans?.split(/ +/g) ?? [];
+		const clans =
+			args.clans === '*'
+				? await this.client.storage.find(interaction.guildId)
+				: await this.client.storage.search(interaction.guildId, tags);
+
+		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
+		if (!clans.length) {
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
+
+		const { members, elders, coLeads } = args;
 
 		if (!(members && elders && coLeads)) {
 			return interaction.editReply(this.i18n('command.autorole.enable.no_roles', { lng: interaction.locale }));
@@ -61,64 +72,32 @@ export default class AutoRoleCommand extends Command {
 			return interaction.editReply(this.i18n('command.autorole.enable.no_higher_roles', { lng: interaction.locale }));
 		}
 
-		if (tag) {
-			const clan = await this.client.http.clan(tag);
-			if (!clan.ok) return interaction.editReply(this.i18n('command.autorole.enable.invalid_clan_tag', { lng: interaction.locale }));
+		const duplicate = await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.findOne({ tag: { $nin: clans.map((clan) => clan.tag) }, roleIds: { $in: [members.id, elders.id, coLeads.id] } });
 
-			await this.client.db
-				.collection(Collections.CLAN_STORES)
-				.updateMany({ guild: interaction.guild.id, autoRole: 2 }, { $unset: { roleIds: '', roles: '', autoRole: '' } });
-
-			const ex = await this.client.db
-				.collection(Collections.CLAN_STORES)
-				.findOne({ tag: { $ne: clan.tag }, roleIds: { $in: [members.id, elders.id, coLeads.id] } });
-
-			if (ex && !this.client.patrons.get(interaction.guild.id))
-				return interaction.editReply(this.i18n('command.autorole.enable.roles_already_used', { lng: interaction.locale }));
-
-			const up = await this.client.db.collection(Collections.CLAN_STORES).updateOne(
-				{ tag: clan.tag, guild: interaction.guild.id },
-				{
-					$set: {
-						roles: { member: members.id, admin: elders.id, coLeader: coLeads.id },
-						autoRole: 1,
-						secureRole: verify
-					},
-					$addToSet: { roleIds: { $each: [members.id, elders.id, coLeads.id] } }
-				}
-			);
-
-			if (!up.matchedCount)
-				return interaction.editReply(this.i18n('command.autorole.enable.clan_not_linked', { lng: interaction.locale }));
-
-			this.updateLinksAndRoles([clan]);
-			return interaction.editReply(
-				this.i18n('command.autorole.enable.success_clan', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
-			);
+		if (duplicate && !this.client.patrons.get(interaction.guild.id)) {
+			return interaction.editReply(this.i18n('command.autorole.enable.roles_already_used', { lng: interaction.locale }));
 		}
 
-		const clans = await this.client.storage.find(interaction.guild.id);
-		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
-
-		await this.client.db
-			.collection(Collections.CLAN_STORES)
-			.updateMany({ guild: interaction.guild.id, autoRole: 1 }, { $unset: { roleIds: '', roles: '', autoRole: '', secureRole: '' } });
-
-		await this.client.db.collection<{ roleIds: Snowflake[] }>(Collections.CLAN_STORES).updateMany(
-			{ guild: interaction.guild.id },
+		await this.client.db.collection(Collections.CLAN_STORES).updateMany(
+			{ tag: { $in: clans.map((clan) => clan.tag) }, guild: interaction.guild.id },
 			{
 				$set: {
 					roles: { member: members.id, admin: elders.id, coLeader: coLeads.id },
-					autoRole: 2,
-					secureRole: verify
-				},
-				$addToSet: { roleIds: { $each: [members.id, elders.id, coLeads.id] } }
+					roleIds: [members.id, elders.id, coLeads.id],
+					secureRole: args.verify
+				}
 			}
 		);
 
 		this.updateLinksAndRoles(clans);
 		return interaction.editReply(
-			this.i18n('command.autorole.enable.success', { lng: interaction.locale, count: clans.length.toString() })
+			this.i18n('command.autorole.enable.success_with_count', {
+				lng: interaction.locale,
+				count: clans.length.toString(),
+				clans: `${clans.map((clan) => clan.name).join(', ')}`
+			})
 		);
 	}
 
@@ -180,5 +159,45 @@ export default class AutoRoleCommand extends Command {
 
 			await this.client.rpcHandler.roleManager.queue(data);
 		}
+	}
+
+	private async disable(interaction: CommandInteraction<'cached'>, args: IArgs) {
+		if (args.clear) {
+			const { matchedCount } = await this.client.db
+				.collection(Collections.CLAN_STORES)
+				.updateMany({ guild: interaction.guild.id }, { $unset: { roles: '', roleIds: '', secureRole: '' } });
+			return interaction.editReply(
+				this.i18n('command.autorole.disable.success_with_count', {
+					lng: interaction.locale,
+					count: matchedCount.toString(),
+					clans: ''
+				})
+			);
+		}
+
+		const tags = args.clans?.split(/ +/g) ?? [];
+		const clans = tags.length ? await this.client.storage.search(interaction.guildId, tags) : [];
+
+		if (!tags.length) {
+			return interaction.editReply(this.i18n('common.no_clan_tag', { lng: interaction.locale }));
+		}
+		if (!clans.length) {
+			return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
+		}
+
+		await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.updateMany(
+				{ guild: interaction.guild.id, tag: { $in: clans.map((clan) => clan.tag) } },
+				{ $unset: { roles: '', roleIds: '', secureRole: '' } }
+			);
+
+		return interaction.editReply(
+			this.i18n('command.autorole.disable.success_with_count', {
+				lng: interaction.locale,
+				count: clans.length.toString(),
+				clans: clans.map((clan) => clan.name).join(', ')
+			})
+		);
 	}
 }

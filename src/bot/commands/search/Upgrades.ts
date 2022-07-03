@@ -1,6 +1,6 @@
 import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow } from 'discord.js';
 import { Player } from 'clashofclans.js';
-import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import RAW_TROOPS_DATA from '../../util/Troops';
 import { Command } from '../../lib';
 import { Util } from '../../util';
@@ -67,7 +67,7 @@ export default class UpgradesCommand extends Command {
 			.setDescription(`Remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? `& BH${data.builderHallLevel}` : ''}`);
 
 		const apiTroops = this.apiTroops(data);
-		const Troops = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal)
+		const Troops = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS))
 			.filter((unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 1] > (apiTroop?.level ?? 0);
@@ -75,12 +75,14 @@ export default class UpgradesCommand extends Command {
 				return Boolean(homeTroops || builderTroops);
 			})
 			.reduce<TroopJSON>((prev, curr) => {
-				if (!(curr.unlock.building in prev)) prev[curr.unlock.building] = [];
-				prev[curr.unlock.building].push(curr);
+				const unlockBuilding =
+					curr.category === 'hero' ? (curr.village === 'home' ? 'Town Hall' : 'Builder Hall') : curr.unlock.building;
+				if (!(unlockBuilding in prev)) prev[unlockBuilding] = [];
+				prev[unlockBuilding].push(curr);
 				return prev;
 			}, {});
 
-		const rem = RAW_TROOPS_DATA.TROOPS.reduce(
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home') {

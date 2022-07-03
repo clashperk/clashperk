@@ -1,11 +1,9 @@
 import { fileURLToPath, URL } from 'url';
-import path from 'path';
 import Discord, { Intents, Interaction, Message, Options, Snowflake, Sweepers } from 'discord.js';
 import { Db } from 'mongodb';
 import { container } from 'tsyringe';
 import * as uuid from 'uuid';
-import { loadSync } from '@grpc/proto-loader';
-import * as gRPC from '@grpc/grpc-js';
+import * as Redis from 'redis';
 import RPCHandler from '../core/RPCHandler';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib';
 import Logger from '../util/Logger';
@@ -20,16 +18,6 @@ import StatsHandler from './StatsHandler';
 import StorageHandler from './StorageHandler';
 import Resolver from './Resolver';
 import RemindScheduler from './RemindScheduler';
-
-const { route: Route } = gRPC.loadPackageDefinition(
-	loadSync(path.join('scripts/routes.proto'), {
-		keepCase: true,
-		longs: String,
-		enums: String,
-		defaults: true,
-		oneofs: true
-	})
-);
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -53,8 +41,13 @@ export class Client extends Discord.Client {
 	public remindScheduler!: RemindScheduler;
 	public i18n = i18n;
 
-	// TODO: Fix this (can't be fixed)
-	public rpc: any;
+	public redis = Redis.createClient({
+		url: process.env.REDIS_URL
+	});
+
+	public subscriber = this.redis.duplicate();
+	public publisher = this.redis.duplicate();
+
 	public rpcHandler!: RPCHandler;
 	public patrons!: Patrons;
 	public automaton!: Automaton;
@@ -67,14 +60,13 @@ export class Client extends Discord.Client {
 			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_WEBHOOKS, Intents.FLAGS.GUILD_MESSAGES],
 			makeCache: Options.cacheWithLimits({
 				MessageManager: {
-					maxSize: 15,
+					maxSize: 10,
 					sweepInterval: 5 * 60,
 					sweepFilter: Sweepers.filterByLifetime({
 						lifetime: 10 * 60,
 						getComparisonTimestamp: (msg) => msg.createdTimestamp
 					})
 				},
-				PresenceManager: 0,
 				UserManager: {
 					maxSize: 100,
 					keepOverLimit: (user) => user.id === this.user!.id
@@ -82,7 +74,18 @@ export class Client extends Discord.Client {
 				GuildMemberManager: {
 					maxSize: 100,
 					keepOverLimit: (member) => member.id === this.user!.id
-				}
+				},
+				PresenceManager: 0,
+				VoiceStateManager: 0,
+				GuildBanManager: 0,
+				GuildInviteManager: 0,
+				GuildScheduledEventManager: 0,
+				GuildStickerManager: 0,
+				StageInstanceManager: 0,
+				ReactionUserManager: 0,
+				ReactionManager: 0,
+				BaseGuildEmojiManager: 0,
+				GuildEmojiManager: 0
 			})
 		});
 
@@ -124,6 +127,10 @@ export class Client extends Discord.Client {
 		this.settings = new SettingsProvider(this.db);
 		await this.settings.init();
 
+		await this.redis.connect();
+		await this.subscriber.connect();
+		await this.publisher.connect();
+
 		this.storage = new StorageHandler(this);
 		this.rpcHandler = new RPCHandler(this);
 
@@ -136,9 +143,6 @@ export class Client extends Discord.Client {
 		this.remindScheduler = new RemindScheduler(this);
 
 		await this.http.login();
-
-		// @ts-expect-error
-		this.rpc = new Route.RouteGuide(process.env.SERVER, gRPC.credentials.createInsecure());
 
 		this.once('ready', () => {
 			if (process.env.NODE_ENV === 'production') return this.run();

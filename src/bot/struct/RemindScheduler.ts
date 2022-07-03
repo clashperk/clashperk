@@ -26,7 +26,7 @@ export default class RemindScheduler {
 						$match: { operationType: { $in: ['insert', 'update', 'delete'] } }
 					}
 				],
-				{ fullDocument: 'updateLookup' }
+				{ fullDocument: 'updateLookup', maxTimeMS: 500, maxAwaitTimeMS: 500 }
 			)
 			.on('change', (change) => {
 				if (['insert'].includes(change.operationType)) {
@@ -218,7 +218,9 @@ export default class RemindScheduler {
 				channel.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES', 'USE_EXTERNAL_EMOJIS', 'VIEW_CHANNEL'])
 			) {
 				for (const content of Util.splitMessage(text)) {
-					await channel.send({ content, allowedMentions: { parse: ['users'] } });
+					try {
+						await channel.send({ content, allowedMentions: { parse: ['users'] } });
+					} catch {}
 				}
 			}
 		} catch (error) {
