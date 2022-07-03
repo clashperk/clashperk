@@ -1,6 +1,6 @@
 import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow, Interaction } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
-import { BUILDER_TROOPS, HOME_TROOPS, TOWN_HALLS } from '../../util/Emojis';
+import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis';
 import RAW_TROOPS_DATA from '../../util/Troops';
 import { Command } from '../../lib';
 import { Util } from '../../util';
@@ -73,7 +73,7 @@ export default class RushedCommand extends Command {
 		const embed = new MessageEmbed().setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const apiTroops = this.apiTroops(data);
-		const Troops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal).filter((unit) => {
+		const Troops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal && !(troop.name in SUPER_TROOPS)).filter((unit) => {
 			const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 			const homeTroops = unit.village === 'home' && unit.levels[data.townHallLevel - 2] > (apiTroop?.level ?? 0);
 			// const builderTroops = unit.village === 'builderBase' && unit.levels[data.builderHallLevel! - 2] > (apiTroop?.level ?? 0);
@@ -82,8 +82,10 @@ export default class RushedCommand extends Command {
 		});
 
 		const TroopsObj = Troops.reduce<TroopJSON>((prev, curr) => {
-			if (!(curr.unlock.building in prev)) prev[curr.unlock.building] = [];
-			prev[curr.unlock.building].push(curr);
+			const unlockBuilding =
+				curr.category === 'hero' ? (curr.village === 'home' ? 'Town Hall' : 'Builder Hall') : curr.unlock.building;
+			if (!(unlockBuilding in prev)) prev[unlockBuilding] = [];
+			prev[unlockBuilding].push(curr);
 			return prev;
 		}, {});
 
@@ -247,7 +249,7 @@ export default class RushedCommand extends Command {
 
 	private rushedPercentage(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home' && unit.category !== 'hero') {
@@ -264,7 +266,7 @@ export default class RushedCommand extends Command {
 
 	private heroRushed(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.category === 'hero' && unit.village === 'home') {
@@ -281,7 +283,7 @@ export default class RushedCommand extends Command {
 
 	private rushedOverall(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home') {
@@ -297,7 +299,7 @@ export default class RushedCommand extends Command {
 	}
 
 	private totalPercentage(hallLevel: number, rushed: number) {
-		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal).filter(
+		const totalTroops = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).filter(
 			(unit) => unit.village === 'home' && unit.levels[hallLevel - 2] > 0
 		);
 		return `${rushed}/${totalTroops.length} (${((rushed * 100) / totalTroops.length).toFixed(2)}%)`;

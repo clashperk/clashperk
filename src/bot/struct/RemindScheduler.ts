@@ -26,7 +26,7 @@ export default class RemindScheduler {
 						$match: { operationType: { $in: ['insert', 'update', 'delete'] } }
 					}
 				],
-				{ fullDocument: 'updateLookup' }
+				{ fullDocument: 'updateLookup', maxTimeMS: 500, maxAwaitTimeMS: 500 }
 			)
 			.on('change', (change) => {
 				if (['insert'].includes(change.operationType)) {

@@ -5,6 +5,7 @@ import { Collections } from '../../util/Constants';
 import Workbook from '../../struct/Excel';
 import { Command } from '../../lib';
 import { Util } from '../../util';
+import { SUPER_TROOPS } from '../../util/Emojis';
 
 const achievements = [
 	'Gold Grab',
@@ -189,7 +190,7 @@ export default class ExportClanMembersCommand extends Command {
 
 	private rushedPercentage(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.village === 'home') {
@@ -206,7 +207,7 @@ export default class ExportClanMembersCommand extends Command {
 
 	private labUpgrades(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.category !== 'hero' && unit.village === 'home') {
@@ -223,7 +224,7 @@ export default class ExportClanMembersCommand extends Command {
 
 	private heroUpgrades(data: Player) {
 		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal).reduce(
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
 				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
 				if (unit.category === 'hero' && unit.village === 'home') {
