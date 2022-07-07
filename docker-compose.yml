@@ -16,4 +16,5 @@ services:
 
 networks:
   default_net:
+    external: true
     name: default_net
