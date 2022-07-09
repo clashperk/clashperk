@@ -36,10 +36,10 @@ export default class LinkCreateCommand extends Command {
 		const member = args.member ?? interaction.member;
 		if (member.user.bot) return interaction.editReply(this.i18n('command.link.create.no_bots', { lng: interaction.locale }));
 
-		const tags = await Promise.all([this.client.http.clan(args.tag), this.client.http.player(args.tag)]);
+		const tags = await Promise.all([this.client.http.player(args.tag), this.client.http.clan(args.tag)]);
 		const types: Record<string, string> = {
-			1: 'CLAN',
-			2: 'PLAYER'
+			1: 'PLAYER',
+			2: 'CLAN'
 		};
 
 		if (tags.every((a) => a.ok)) {
@@ -68,8 +68,8 @@ export default class LinkCreateCommand extends Command {
 			collector.on('collect', async (action) => {
 				if (action.customId === CUSTOM_ID.CLAN) {
 					await action.update({ components: [] });
-					await this.clanLink(member, tags[0]);
-					const clan = tags[0];
+					await this.clanLink(member, tags[1]);
+					const clan = tags[1];
 					await interaction.editReply(
 						this.i18n('command.link.create.success', {
 							lng: interaction.locale,
@@ -81,7 +81,7 @@ export default class LinkCreateCommand extends Command {
 
 				if (action.customId === CUSTOM_ID.PLAYER) {
 					await action.update({ components: [] });
-					await this.playerLink(interaction, { player: tags[1], member, def: Boolean(args.default) });
+					await this.playerLink(interaction, { player: tags[0], member, def: Boolean(args.default) });
 				}
 			});
 
@@ -90,8 +90,8 @@ export default class LinkCreateCommand extends Command {
 				if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 			});
 		} else if (tags[0].ok) {
-			await this.clanLink(member, tags[0]);
-			const clan = tags[0];
+			await this.clanLink(member, tags[1]);
+			const clan = tags[1];
 			return interaction.editReply(
 				this.i18n('command.link.create.success', {
 					lng: interaction.locale,
@@ -100,7 +100,7 @@ export default class LinkCreateCommand extends Command {
 				})
 			);
 		} else if (tags[1].ok) {
-			return this.playerLink(interaction, { player: tags[1], member, def: Boolean(args.default) });
+			return this.playerLink(interaction, { player: tags[0], member, def: Boolean(args.default) });
 		} else {
 			return interaction.editReply(this.i18n('command.link.create.fail', { lng: interaction.locale }));
 		}

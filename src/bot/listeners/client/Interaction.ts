@@ -14,29 +14,38 @@ export default class InteractionListener extends Listener {
 	}
 
 	public exec(interaction: Interaction) {
-		this.autocomplete(interaction);
+		if (interaction.inCachedGuild()) this.autocomplete(interaction);
 		this.contextInteraction(interaction);
 		this.componentInteraction(interaction);
 	}
 
-	public async autocomplete(interaction: Interaction) {
+	public async autocomplete(interaction: Interaction<'cached'>) {
 		if (!interaction.isAutocomplete()) return;
-		const dur = interaction.options.getString('duration');
 
-		const label = (duration: number) => moment.duration(duration).format('H[h] m[m]', { trim: 'both mid' });
+		switch (interaction.options.getFocused(true).name) {
+			case 'duration': {
+				const dur = interaction.options.getString('duration');
+				const label = (duration: number) => moment.duration(duration).format('H[h] m[m]', { trim: 'both mid' });
 
-		if (dur && !isNaN(parseInt(dur, 10))) {
-			const duration = parseInt(dur, 10);
-			if (duration < 60 && dur.includes('m')) {
-				return interaction.respond(['15m', '30m', '45m', '1h'].map((value) => ({ value, name: value })));
+				if (dur && !isNaN(parseInt(dur, 10))) {
+					const duration = parseInt(dur, 10);
+					if (duration < 60 && dur.includes('m')) {
+						return interaction.respond(['15m', '30m', '45m', '1h'].map((value) => ({ value, name: value })));
+					}
+
+					return interaction.respond(
+						['h', '.25h', '.5h', '.75h'].map((num) => ({ value: `${duration}${num}`, name: label(ms(`${duration}${num}`)) }))
+					);
+				}
+
+				return interaction.respond(['30m', '1h', '2.5h', '5h'].map((value) => ({ value, name: label(ms(value)) })));
 			}
-
-			return interaction.respond(
-				['h', '.25h', '.5h', '.75h'].map((num) => ({ value: `${duration}${num}`, name: label(ms(`${duration}${num}`)) }))
-			);
+			case 'clans': {
+				const clans = await this.client.storage.find(interaction.guildId);
+				if (!clans.length) return;
+				return interaction.respond(clans.map((clan) => ({ value: clan.tag, name: clan.name })));
+			}
 		}
-
-		return interaction.respond(['30m', '1h', '2.5h', '5h'].map((value) => ({ value, name: label(ms(value)) })));
 	}
 
 	private async contextInteraction(interaction: Interaction) {

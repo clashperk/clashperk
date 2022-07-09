@@ -47,7 +47,7 @@ export default class SetupCommand extends Command {
 		const msg = await interaction.editReply({
 			content: ['**Follow the steps below to setup the bot.**'].join('\n'),
 			components: [row],
-			files: ['https://cdn.discordapp.com/attachments/765056295937114113/944927383012667472/unknown.png']
+			files: ['https://i.imgur.com/rEZV66g.png']
 		});
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,

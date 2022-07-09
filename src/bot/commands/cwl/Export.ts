@@ -5,7 +5,8 @@ export default class CWLExportCommand extends Command {
 	public constructor() {
 		super('cwl-export', {
 			category: 'none',
-			channel: 'guild'
+			channel: 'guild',
+			defer: true
 		});
 	}
 

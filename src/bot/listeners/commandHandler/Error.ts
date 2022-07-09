@@ -72,8 +72,8 @@ export default class ErrorListener extends Listener {
 		};
 
 		try {
-			if (!interaction.deferred) await interaction.reply(message);
-			await interaction.followUp(message);
+			if (!interaction.deferred) return await interaction.reply(message);
+			return await interaction.followUp(message);
 		} catch (err) {
 			// eslint-disable-next-line
 			this.client.logger.error(`${(err as DiscordAPIError).toString()}`, { label: 'ERRORED' });
