@@ -96,7 +96,7 @@ export default class RPCHandler {
 		if (!this.client.guilds.cache.has(data.guild)) return;
 		const result = await this.client.db
 			.collection(Collections.CLAN_STORES)
-			.aggregate([
+			.aggregate<{ tag: string; patron: boolean; flags: number[]; lastRan?: string }>([
 				{
 					$match: {
 						tag: data.tag,
@@ -110,8 +110,11 @@ export default class RPCHandler {
 						patron: {
 							$addToSet: '$patron'
 						},
-						flag: {
-							$sum: '$flag'
+						flags: {
+							$addToSet: '$flag'
+						},
+						lastRan: {
+							$max: '$lastRan'
 						}
 					}
 				},
@@ -144,7 +147,15 @@ export default class RPCHandler {
 			Object.values(OP).map((Op) => Op.add(id));
 		}
 
-		if (result) await this.client.publisher.publish('ADD', JSON.stringify({ ...result, op: data.op }));
+		if (result) {
+			const clan = {
+				tag: result.tag,
+				patron: result.patron,
+				flag: this.bitWiseOR(result.flags),
+				lastRan: result.lastRan
+			};
+			await this.client.publisher.publish('ADD', JSON.stringify({ ...clan, op: data.op }));
+		}
 	}
 
 	public async delete(id: string, data: { tag: string; op: number; guild: string }) {
@@ -169,6 +180,10 @@ export default class RPCHandler {
 		}
 
 		if (!clans.length) await this.client.publisher.publish('REMOVE', JSON.stringify(data));
+	}
+
+	private bitWiseOR(flags: number[]) {
+		return flags.reduce((acc, curr) => acc | curr, 0);
 	}
 
 	public async flush() {
