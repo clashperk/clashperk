@@ -1,4 +1,4 @@
-import { GuildMember, CommandInteraction, MessageEmbed, Collection, Interaction } from 'discord.js';
+import { GuildMember, CommandInteraction, Collection, Interaction, MessageEmbed } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import RAW_TROOPS_DATA from '../../util/Troops';
 import { Collections } from '../../util/Constants';
@@ -42,13 +42,7 @@ export default class ExportClanMembersCommand extends Command {
 	public condition(interaction: Interaction<'cached'>) {
 		if (!this.client.patrons.get(interaction)) {
 			const embed = new MessageEmbed()
-				.setDescription(
-					[
-						'**Patron only Command**',
-						'This command is only available on Patron servers.',
-						'Visit https://patreon.com/clashperk for more details.'
-					].join('\n')
-				)
+				.setDescription(this.i18n('common.patron_only', { lng: interaction.locale }))
 				.setImage('https://i.imgur.com/Uc5G2oS.png');
 			return { embeds: [embed] };
 		}

@@ -376,8 +376,8 @@ export class Command implements CommandOptions {
 		this.handler = container.resolve(CommandHandler);
 	}
 
-	public condition(interaction: Interaction): { embeds: MessageEmbed[]; content?: string } | null;
-	public condition(): { embeds: MessageEmbed[]; content?: string } | null {
+	public condition(interaction: Interaction): { embeds: MessageEmbed[] } | null;
+	public condition(): { embeds: MessageEmbed[] } | null {
 		return null;
 	}
 
