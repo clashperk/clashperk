@@ -22,13 +22,7 @@ export default class ExportCWL extends Command {
 	public condition(interaction: Interaction<'cached'>) {
 		if (!this.client.patrons.get(interaction)) {
 			const embed = new MessageEmbed()
-				.setDescription(
-					[
-						'**Patron Only Command**',
-						'This command is only available on Patron servers.',
-						'Visit https://patreon.com/clashperk for more details.'
-					].join('\n')
-				)
+				.setDescription(this.i18n('common.patron_only', { lng: interaction.locale }))
 				.setImage('https://cdn.discordapp.com/attachments/806179502508998657/846700124134178826/unknown.png');
 			return { embeds: [embed] };
 		}

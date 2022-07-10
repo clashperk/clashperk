@@ -20,13 +20,7 @@ export default class ClanEmbedCommand extends Command {
 	public condition(interaction: Interaction<'cached'>) {
 		if (!this.client.patrons.get(interaction.guild.id)) {
 			const embed = new MessageEmbed()
-				.setDescription(
-					[
-						'**Patron Only Feature**',
-						'This feature is only available on Patron servers.',
-						'Visit https://patreon.com/clashperk for more details.'
-					].join('\n')
-				)
+				.setDescription(this.i18n('common.patron_only', { lng: interaction.locale }))
 				.setImage('https://i.imgur.com/txkD6q7.png');
 			return { embeds: [embed] };
 		}
