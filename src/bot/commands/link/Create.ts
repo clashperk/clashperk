@@ -90,6 +90,8 @@ export default class LinkCreateCommand extends Command {
 				if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 			});
 		} else if (tags[0].ok) {
+			return this.playerLink(interaction, { player: tags[0], member, def: Boolean(args.default) });
+		} else if (tags[1].ok) {
 			await this.clanLink(member, tags[1]);
 			const clan = tags[1];
 			return interaction.editReply(
@@ -99,8 +101,6 @@ export default class LinkCreateCommand extends Command {
 					target: `**${clan.name} (${clan.tag})**`
 				})
 			);
-		} else if (tags[1].ok) {
-			return this.playerLink(interaction, { player: tags[0], member, def: Boolean(args.default) });
 		} else {
 			return interaction.editReply(this.i18n('command.link.create.fail', { lng: interaction.locale }));
 		}

@@ -115,8 +115,8 @@ export default class Resolver {
 		return { user: null, matched: false, isTag: /^#?[0289CGJLOPQRUVY]+$/gi.test(args) };
 	}
 
-	private parseTag(tag: string) {
-		const matched = tag.match(/^#?[0289CGJLOPQRUVY]+$/gi)?.[0];
+	private parseTag(tag?: string) {
+		const matched = tag?.match(/^#?[0289CGJLOPQRUVY]+$/gi)?.[0];
 		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O/g, '0') ?? ''}`;
 	}
 
