@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from 'url';
 import Discord, { Intents, Interaction, Message, Options, Snowflake, Sweepers } from 'discord.js';
 import { Db } from 'mongodb';
 import { container } from 'tsyringe';
-import * as uuid from 'uuid';
+import { nanoid } from 'nanoid';
 import * as Redis from 'redis';
 import RPCHandler from '../core/RPCHandler';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib';
@@ -104,7 +104,7 @@ export class Client extends Discord.Client {
 	}
 
 	public uuid(...userIds: Snowflake[]) {
-		const uniqueId = uuid.v4();
+		const uniqueId = nanoid();
 		this.components.set(uniqueId, userIds);
 		return uniqueId;
 	}
