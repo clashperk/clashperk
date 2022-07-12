@@ -70,6 +70,7 @@ export default class RemindScheduler {
 					tag: data.clan.tag,
 					name: data.clan.name,
 					warTag: data.warTag,
+					isFriendly: Boolean(data.isFriendly),
 					duration: reminder.duration,
 					reminderId: reminder._id,
 					triggered: false,
@@ -116,11 +117,14 @@ export default class RemindScheduler {
 			const rem = await this.client.db.collection<Reminder>(Collections.REMINDERS).findOne({ _id: reminder.reminderId });
 			if (!rem) return await this.delete(reminder);
 			if (!this.client.channels.cache.has(rem.channel)) return await this.delete(reminder);
+			// const warType = reminder.warTag ? 'cwl' : reminder.isFriendly ? 'friendly' : 'normal';
+			// if (!rem.warTypes.includes(warType)) return await this.delete(reminder);
 
 			const data = reminder.warTag
 				? await this.client.http.clanWarLeagueWar(reminder.warTag)
 				: await this.client.http.currentClanWar(reminder.tag);
 			if (!data.ok) return this.clear(id);
+
 			if (['notInWar', 'warEnded'].includes(data.state)) return await this.delete(reminder);
 
 			if (this.wasInMaintenance(reminder, data)) {
@@ -261,6 +265,7 @@ export interface ReminderTemp {
 	warTag?: string;
 	duration: number;
 	reminderId: ObjectId;
+	isFriendly: boolean;
 	triggered: boolean;
 	timestamp: Date;
 	createdAt: Date;
@@ -274,6 +279,7 @@ export interface Reminder {
 	duration: number;
 	roles: string[];
 	townHalls: number[];
+	warTypes: string[];
 	clans: string[];
 	remaining: number[];
 	createdAt: Date;

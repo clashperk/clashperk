@@ -111,6 +111,11 @@ export default class ReminderDeleteCommand extends Command {
 			} else {
 				embed.addField('Remaining Hits', reminder.remaining.join(', '));
 			}
+			if (reminder.warTypes.length === 3) {
+				embed.addField('War Types', 'Any');
+			} else {
+				embed.addField('War Types', reminder.warTypes.join(', ').toUpperCase());
+			}
 			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
 			if (_clans.length) embed.addField('Clans', _clans.join(', ').substring(0, 1024));
 			else embed.addField('Clans', reminder.clans.join(', ').substring(0, 1024));

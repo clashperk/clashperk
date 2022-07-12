@@ -43,6 +43,8 @@ export default class ReminderListCommand extends Command {
 				reminder.townHalls.length === 13 ? 'Any' : `${reminder.townHalls.join(', ')}`,
 				'**Remaining Hits**',
 				reminder.remaining.length === 2 ? 'Any' : `${reminder.remaining.join(', ')}`,
+				'**War Types**',
+				reminder.remaining.length === 3 ? 'Any' : `${reminder.remaining.join(', ').toLowerCase()}`,
 				'**Clans**',
 				_clans.length ? `${Util.escapeMarkdown(_clans.join(', '))}` : 'Any',
 				'**Message**',

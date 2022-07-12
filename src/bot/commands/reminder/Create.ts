@@ -52,7 +52,8 @@ export default class ReminderCreateCommand extends Command {
 			TOWN_HALLS: this.client.uuid(interaction.user.id),
 			REMAINING: this.client.uuid(interaction.user.id),
 			CLANS: this.client.uuid(interaction.user.id),
-			SAVE: this.client.uuid(interaction.user.id)
+			SAVE: this.client.uuid(interaction.user.id),
+			WAR_TYPE: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
@@ -61,10 +62,37 @@ export default class ReminderCreateCommand extends Command {
 				.fill(0)
 				.map((_, i) => (i + 2).toString()),
 			roles: ['leader', 'coLeader', 'admin', 'member'],
+			warTypes: ['cwl', 'normal', 'friendly'],
 			clans: clans.map((clan) => clan.tag)
 		};
 
 		const mutate = (disable = false) => {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const row0 = new MessageActionRow().addComponents(
+				new MessageSelectMenu()
+					.setPlaceholder('Select War Types')
+					.setMaxValues(3)
+					.setCustomId(CUSTOM_ID.WAR_TYPE)
+					.setOptions([
+						{
+							label: 'Normal',
+							value: 'normal',
+							default: state.warTypes.includes('normal')
+						},
+						{
+							label: 'Friendly',
+							value: 'friendly',
+							default: state.warTypes.includes('friendly')
+						},
+						{
+							label: 'CWL',
+							value: 'cwl',
+							default: state.warTypes.includes('cwl')
+						}
+					])
+					.setDisabled(disable)
+			);
+
 			const row1 = new MessageActionRow().addComponents(
 				new MessageSelectMenu()
 					.setPlaceholder('Select Attacks Remaining')
@@ -175,6 +203,11 @@ export default class ReminderCreateCommand extends Command {
 		});
 
 		collector.on('collect', async (action) => {
+			if (action.customId === CUSTOM_ID.WAR_TYPE && action.isSelectMenu()) {
+				state.warTypes = action.values;
+				return action.update({ components: mutate() });
+			}
+
 			if (action.customId === CUSTOM_ID.REMAINING && action.isSelectMenu()) {
 				state.remaining = action.values;
 				return action.update({ components: mutate() });
@@ -206,6 +239,7 @@ export default class ReminderCreateCommand extends Command {
 					townHalls: state.townHalls.map((num) => Number(num)),
 					roles: state.roles,
 					clans: state.clans,
+					warTypes: state.warTypes,
 					message: args.message.trim(),
 					duration: dur,
 					createdAt: new Date()

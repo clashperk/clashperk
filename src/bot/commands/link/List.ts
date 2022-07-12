@@ -90,27 +90,33 @@ export default class LinkListCommand extends Command {
 						const user = showTag
 							? member.tag.padStart(12, ' ')
 							: guildMembers.get(mem.user)!.displayName.substring(0, 12).padStart(12, ' ');
-						return `**✓** \`\u200e${this.parseName(member.name)}\u200f\` \u200e \` ${user} \u200f\``;
+						return { name: this.parseName(member.name), user };
+					})
+					.sort((a, b) => this.localeSort(a, b))
+					.map(({ name, user }) => {
+						return `**✓** \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
 					})
 					.join('\n'),
-				'',
-				`${EMOJIS.WRONG} **Players not on Discord: ${offDiscord.length + notInDiscord.length}**`,
+				notInDiscord.length ? `\n${EMOJIS.WRONG} **Players not on Discord: ${notInDiscord.length}**` : '',
 				notInDiscord
 					.map((mem) => {
 						const member = clan.memberList.find((m) => m.tag === mem.tag)!;
 						const user: string = showTag ? member.tag.padStart(12, ' ') : mem.user_tag.substring(0, 12).padStart(12, ' ');
-						return `✘ \`\u200e${this.parseName(member.name)}\u200f\` \u200e \` ${user} \u200f\``;
+						return { name: this.parseName(member.name), user };
+					})
+					.sort((a, b) => this.localeSort(a, b))
+					.map(({ name, user }) => {
+						return `✘ \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
 					})
 					.join('\n'),
+				offDiscord.length ? `\n${EMOJIS.WRONG} **Players not Linked: ${offDiscord.length}**` : '',
 				offDiscord
-					.sort((a, b) => {
-						const aName = a.name.toLowerCase();
-						const bName = b.name.toUpperCase();
-						return aName > bName ? 1 : aName < bName ? -1 : 0;
-					})
+					.sort((a, b) => this.localeSort(a, b))
 					.map((mem) => `✘ \`\u200e${this.parseName(mem.name)}\u200f\` \u200e \` ${mem.tag.padStart(12, ' ')} \u200f\``)
 					.join('\n')
-			].join('\n'),
+			]
+				.filter((text) => text)
+				.join('\n'),
 			{ maxLength: 4096 }
 		);
 
@@ -127,6 +133,11 @@ export default class LinkListCommand extends Command {
 	private parseName(name: string) {
 		return Util.escapeBackTick(name).padEnd(15, ' ');
 		// return name.replace(/[^\x00-\xF7]+/g, ' ').trim().padEnd(15, ' ');
+	}
+
+	private localeSort(a: { name: string }, b: { name: string }) {
+		// return a.name.localeCompare(b.name);
+		return a.name.replace(/[^\x00-\xF7]+/g, '').localeCompare(b.name.replace(/[^\x00-\xF7]+/g, ''));
 	}
 
 	private updateUsers(interaction: CommandInteraction, members: any[]) {

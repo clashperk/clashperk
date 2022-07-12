@@ -1,6 +1,7 @@
 import { Agent } from 'https';
 import { ClanWar, ClanWarLeagueGroup, Client, Player } from 'clashofclans.js';
 import fetch from 'node-fetch';
+import moment from 'moment';
 
 const agent = new Agent({ keepAlive: true });
 
@@ -39,22 +40,47 @@ export default class Http extends Client {
 		return Promise.all(members.map((mem) => this.fetch(`/players/${encodeURIComponent(mem.tag)}`)));
 	}
 
-	public async getCurrentWars(clanTag: string): Promise<(ClanWar & { warTag?: string; round?: number })[]> {
+	private isFriendly(data: ClanWar) {
+		const friendlyWarTimes = [
+			1000 * 60 * 60 * 24,
+			1000 * 60 * 60 * 20,
+			1000 * 60 * 60 * 16,
+			1000 * 60 * 60 * 12,
+			1000 * 60 * 60 * 8,
+			1000 * 60 * 60 * 6,
+			1000 * 60 * 60 * 4,
+			1000 * 60 * 60 * 2,
+			1000 * 60 * 60,
+			1000 * 60 * 30,
+			1000 * 60 * 15,
+			1000 * 60 * 5
+		];
+		return friendlyWarTimes.includes(this.toDate(data.startTime).getTime() - this.toDate(data.preparationStartTime).getTime());
+	}
+
+	private toDate(ISO: string) {
+		return new Date(moment(ISO).toDate());
+	}
+
+	public async getCurrentWars(clanTag: string): Promise<(ClanWar & { warTag?: string; round?: number; isFriendly?: boolean })[]> {
 		const date = new Date().getUTCDate();
 		if (!(date >= 1 && date <= 10)) {
-			const data = await this.currentClanWar(clanTag);
-			return data.ok ? [data] : [];
+			return this.getCurrentWar(clanTag);
 		}
 
 		return this.getClanWarLeague(clanTag);
+	}
+
+	private async getCurrentWar(clanTag: string) {
+		const data = await this.currentClanWar(clanTag);
+		return data.ok ? [Object.assign(data, { isFriendly: this.isFriendly(data) })] : [];
 	}
 
 	private async getClanWarLeague(clanTag: string) {
 		const res = await this.clanWarLeague(clanTag);
 		if (res.statusCode === 504 || res.state === 'notInWar') return [];
 		if (!res.ok) {
-			const data = await this.currentClanWar(clanTag);
-			return data.ok ? [data] : [];
+			return this.getCurrentWar(clanTag);
 		}
 		return this.clanWarLeagueRounds(clanTag, res);
 	}

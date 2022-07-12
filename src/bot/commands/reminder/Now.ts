@@ -1,8 +1,5 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu, TextChannel } from 'discord.js';
 import ms from 'ms';
-import { ObjectId } from 'mongodb';
-import { Collections } from '../../util/Constants';
-import { Reminder } from '../../struct/RemindScheduler';
 import { Command } from '../../lib';
 
 export default class ReminderNowCommand extends Command {
@@ -195,22 +192,7 @@ export default class ReminderNowCommand extends Command {
 
 			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {
 				await action.deferUpdate();
-				const reminder = {
-					// TODO: remove this
-					_id: new ObjectId(),
-					guild: interaction.guild.id,
-					channel: args.channel?.id ?? interaction.channel!.id,
-					remaining: state.remaining.map((num) => Number(num)),
-					townHalls: state.townHalls.map((num) => Number(num)),
-					roles: state.roles,
-					clans: state.clans,
-					message: args.message.trim(),
-					duration: dur,
-					createdAt: new Date()
-				};
 
-				const { insertedId } = await this.client.db.collection<Reminder>(Collections.REMINDERS).insertOne(reminder);
-				this.client.remindScheduler.create({ ...reminder, _id: insertedId });
 				await action.editReply({
 					components: mutate(true),
 					content: this.i18n('command.reminder.create.success', { lng: interaction.locale })
