@@ -2,7 +2,6 @@ import { CommandInteraction } from 'discord.js';
 import { Collections } from '../../util/Constants';
 import { Command } from '../../lib';
 
-// TODO: Fix Reply
 export default class FlagDeleteCommand extends Command {
 	public constructor() {
 		super('flag-delete', {
@@ -18,12 +17,12 @@ export default class FlagDeleteCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction, { tag }: { tag?: string }) {
-		if (!tag) return interaction.editReply('**You must provide a player tag to run this command.**');
+		if (!tag) return interaction.editReply(this.i18n('command.flag.delete.no_tag', { lng: interaction.locale }));
 		const data = await this.client.db.collection(Collections.FLAGS).deleteOne({ guild: interaction.guild!.id, tag: this.fixTag(tag) });
 		if (!data.deletedCount) {
-			return interaction.editReply('Tag not found!');
+			return interaction.editReply(this.i18n('command.flag.delete.no_result', { lng: interaction.locale, tag }));
 		}
 
-		return interaction.editReply(`Successfully unflagged **${tag}**`);
+		return interaction.editReply(this.i18n('command.flag.delete.success', { lng: interaction.locale, tag }));
 	}
 }

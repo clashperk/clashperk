@@ -42,7 +42,7 @@ export default class DonationSummaryCommand extends Command {
 
 		const fetched: Clan[] = (await Promise.all(clans.map((en) => this.client.http.clan(en.tag)))).filter((res) => res.ok);
 		if (!fetched.length) {
-			return interaction.editReply("**Something went wrong. I couldn't fetch all clans!**");
+			return interaction.editReply(this.i18n('common.fetch_failed', { lng: interaction.locale }));
 		}
 
 		const aggregated = await this.client.db
@@ -83,7 +83,7 @@ export default class DonationSummaryCommand extends Command {
 			])
 			.toArray();
 		if (!aggregated.length) {
-			return interaction.editReply('*Not enough data available at this moment!*');
+			return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 		}
 
 		aggregated.sort((a, b) => b.donations - a.donations);

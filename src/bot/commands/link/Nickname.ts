@@ -26,23 +26,25 @@ export default class NickNameCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, { txt, member }: { txt?: string; member?: GuildMember }) {
 		if (!member) {
-			return interaction.editReply('**You must mention a valid member to use this command.**');
+			return interaction.editReply(this.i18n('command.nickname.invalid_member', { lng: interaction.locale }));
 		}
 
 		if (member.id !== interaction.user.id && !interaction.member.permissions.has('MANAGE_NICKNAMES')) {
-			return interaction.editReply('**You are missing `Manage Nicknames` permission to use this command.**');
+			return interaction.editReply(this.i18n('command.nickname.missing_permission', { lng: interaction.locale }));
 		}
 
 		if (interaction.guild.me!.roles.highest.position <= member.roles.highest.position || member.id === interaction.guild.ownerId) {
 			const own = member.id === interaction.user.id;
 			return interaction.editReply(
-				`**I do not have permission to change ${own ? 'your ' : ''}nickname${own ? '.' : ' of this member!'}**`
+				this.i18n(own ? 'command.nickname.missing_access_self' : 'command.nickname.missing_access_other', {
+					lng: interaction.locale
+				})
 			);
 		}
 
 		const players = await this.client.resolver.getPlayers(member.user.id);
 		if (!players.length) {
-			return interaction.editReply(`**No player accounts are linked to ${member.user.tag}**`);
+			return interaction.editReply(this.i18n('command.nickname.no_players', { lng: interaction.locale, user: member.user.tag }));
 		}
 
 		const options = players.map((op) => ({
@@ -68,7 +70,7 @@ export default class NickNameCommand extends Command {
 				if (name.length > 31) {
 					await action.reply({
 						ephemeral: true,
-						content: '**Nickname must be 31 or fewer in length.**'
+						content: this.i18n('command.nickname.char_limit', { lng: interaction.locale })
 					});
 				} else {
 					await member.setNickname(name, `Nickname set by ${interaction.user.tag}`).catch(() => null);

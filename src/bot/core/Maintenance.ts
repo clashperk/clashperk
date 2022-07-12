@@ -2,6 +2,7 @@ import { TextChannel } from 'discord.js';
 import moment from 'moment';
 import { EMOJIS } from '../util/Emojis';
 import { Client } from '../struct/Client';
+import { i18n } from '../util/i18n';
 
 const SUPPORT_SERVER_GENERAL_CHANNEL_ID = '609074828707758150';
 
@@ -51,7 +52,11 @@ export default class MaintenanceHandler {
 				channel?.isText() &&
 				channel.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES', 'USE_EXTERNAL_EMOJIS', 'VIEW_CHANNEL'])
 			) {
-				await channel.send(`**${EMOJIS.COC_LOGO} ${this.getMessage(dur)}**`);
+				const message = i18n(this.isMaintenance ? 'common.maintenance_start' : 'common.maintenance_end', {
+					lng: channel.guild.preferredLocale,
+					duration: `(~${moment.duration(dur).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' })})`
+				});
+				await channel.send(`**${EMOJIS.COC_LOGO} ${message}**`);
 			}
 		}
 	}

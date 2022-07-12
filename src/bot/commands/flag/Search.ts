@@ -18,7 +18,7 @@ export default class FlagSearchCommand extends Command {
 		const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: interaction.guild.id, tag: player.tag });
 
 		if (!flag) {
-			return interaction.editReply(`**${player.name}** is not flagged!`);
+			return interaction.editReply(this.i18n('command.flag.search.not_found', { lng: interaction.locale, tag: player.tag }));
 		}
 
 		const user = await this.client.users.fetch(flag.user).catch(() => null);

@@ -25,7 +25,7 @@ export default class PlayerDonationSummaryCommand extends Command {
 
 		const fetched: Clan[] = (await Promise.all(clans.map((en) => this.client.http.clan(en.tag)))).filter((res) => res.ok);
 		if (!fetched.length) {
-			return interaction.editReply("**Something went wrong. I couldn't fetch all clans!**");
+			return interaction.editReply(this.i18n('common.fetch_failed', { lng: interaction.locale }));
 		}
 
 		const players = await this.globalDonations(clans, season);

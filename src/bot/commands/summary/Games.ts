@@ -45,7 +45,9 @@ export default class ClanGamesSummaryCommand extends Command {
 
 		const patron = this.client.patrons.get(interaction.guild!.id);
 		if ((clans.length < 3 && !patron) || clans.length < 2) {
-			return interaction.editReply(`**You must have minimum ${patron ? 2 : 3} clans in your server to use this command.**`);
+			return interaction.editReply(
+				this.i18n('command.summary.clan_games.min_clan_size', { lng: interaction.locale, clans: `${patron ? 2 : 3}` })
+			);
 		}
 
 		const performances: Prop[] = clans.map((clan) => ({
@@ -66,7 +68,7 @@ export default class ClanGamesSummaryCommand extends Command {
 			.setDescription(
 				[
 					'**Scoreboard**',
-					'Based on highest scores and completion times.',
+					this.i18n('command.summary.clan_games.scoreboard', { lng: interaction.locale }),
 					`${EMOJIS.HASH} **\`\u200e  ${'SCORE'.padEnd(6, ' ')} ${'CLAN'.padEnd(16, ' ')}\u200f\`**`,
 					...performances
 						.sort((a, b) => b.total - a.total)
@@ -80,7 +82,7 @@ export default class ClanGamesSummaryCommand extends Command {
 						),
 					'',
 					'**Performance**',
-					'Based on completing maximum points.',
+					this.i18n('command.summary.clan_games.performance', { lng: interaction.locale }),
 					`${EMOJIS.HASH} **\`\u200e ${Math.floor(this.MAX / 1000)}K  ${'CLAN'.padEnd(20, ' ')}\u200f\`**`,
 					...performances
 						.sort((a, b) => b.count - a.count)

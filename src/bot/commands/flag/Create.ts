@@ -57,11 +57,12 @@ export default class FlagCreateCommand extends Command {
 
 			newFlags.push({ name: value!.name, tag: value!.tag });
 		}
-
 		return interaction.editReply(
-			`Successfully flagged ${newFlags.length > 1 ? `${newFlags.length} players!\n\n` : ''}${newFlags
-				.map((flag) => `${flag.name} (${flag.tag})`)
-				.join('\n')}`
+			this.i18n('command.flag.create.success', {
+				lng: interaction.locale,
+				count: `${newFlags.length}`,
+				players: newFlags.map((en) => en.name).join(', ')
+			})
 		);
 	}
 

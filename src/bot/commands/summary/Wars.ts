@@ -42,7 +42,7 @@ export default class WarSummaryCommand extends Command {
 			);
 		}
 
-		if (!embed.length) return interaction.editReply('**No clans are in war at this moment!**');
+		if (!embed.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 		const embeds = Array(Math.ceil(embed.fields.length / 15))
 			.fill(0)
 			.map(() => embed.fields.splice(0, 15))

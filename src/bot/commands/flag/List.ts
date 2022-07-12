@@ -43,7 +43,7 @@ export default class FlagListCommand extends Command {
 				.setDescription(paginated.items.map((x) => `${RED_NUMBERS[++index]} ${x.name as string} ${x.tag as string}`).join('\n'))
 				.setFooter({ text: `Page ${paginated.page}/${paginated.maxPage}` });
 		} else {
-			embed.setDescription(`${interaction.guild.name} does not have any flagged players. Why not add some?`);
+			embed.setDescription(this.i18n('command.flag.list.no_flags', { lng: interaction.locale }));
 		}
 
 		return interaction.editReply({
@@ -65,7 +65,7 @@ export default class FlagListCommand extends Command {
 			{ header: 'AUTHOR', key: 'author', width: 20 },
 			{ header: 'DATE (UTC)', key: 'date', width: 30 },
 			{ header: 'REASON', key: 'reason', width: 50 }
-		] as any;
+		];
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
 		sheet.addRows([

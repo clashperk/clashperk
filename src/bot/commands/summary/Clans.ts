@@ -69,7 +69,7 @@ export default class SummaryClansCommand extends Command {
 			OBJ.ACTIVE_MEMBERS.push({ name: clan.name, value: Math.floor(action.avg_online), key: `${EMOJIS.USER_BLUE} Active Members` });
 		}
 
-		if (!OBJ.DONATED.length) return interaction.editReply('**No data available at this moment!**');
+		if (!OBJ.DONATED.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
 		// Array(3).fill(0).map(() => [].splice(0, 2))
 		const fields = Object.values(OBJ);
