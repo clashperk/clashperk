@@ -117,8 +117,8 @@ export default class RemindScheduler {
 			const rem = await this.client.db.collection<Reminder>(Collections.REMINDERS).findOne({ _id: reminder.reminderId });
 			if (!rem) return await this.delete(reminder);
 			if (!this.client.channels.cache.has(rem.channel)) return await this.delete(reminder);
-			// const warType = reminder.warTag ? 'cwl' : reminder.isFriendly ? 'friendly' : 'normal';
-			// if (!rem.warTypes.includes(warType)) return await this.delete(reminder);
+			const warType = reminder.warTag ? 'cwl' : reminder.isFriendly ? 'friendly' : 'normal';
+			if (!rem.warTypes.includes(warType)) return await this.delete(reminder);
 
 			const data = reminder.warTag
 				? await this.client.http.clanWarLeagueWar(reminder.warTag)

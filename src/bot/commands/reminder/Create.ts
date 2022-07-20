@@ -20,13 +20,16 @@ export default class ReminderCreateCommand extends Command {
 		interaction: CommandInteraction<'cached'>,
 		args: { duration: string; message: string; channel?: TextChannel; clans?: string }
 	) {
-		const tags = args.clans?.split(/ +/g) ?? [];
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
+		const tags = args.clans === '*' ? [] : args.clans?.split(/ +/g) ?? [];
+		const clans =
+			args.clans === '*'
+				? await this.client.storage.find(interaction.guildId)
+				: await this.client.storage.search(interaction.guildId, tags);
 
 		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
-		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+		if (!clans.length) {
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+		}
 
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).countDocuments({ guild: interaction.guild.id });
 		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {
@@ -67,7 +70,6 @@ export default class ReminderCreateCommand extends Command {
 		};
 
 		const mutate = (disable = false) => {
-			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const row0 = new MessageActionRow().addComponents(
 				new MessageSelectMenu()
 					.setPlaceholder('Select War Types')
@@ -166,36 +168,15 @@ export default class ReminderCreateCommand extends Command {
 			);
 
 			const row4 = new MessageActionRow().addComponents(
-				new MessageSelectMenu()
-					.setPlaceholder('Select Clans')
-					.setCustomId(CUSTOM_ID.CLANS)
-					.setMaxValues(clans.length)
-					.setOptions(
-						clans.slice(0, 25).map((clan) => ({
-							label: clan.name,
-							value: clan.tag,
-							description: `${clan.name} (${clan.tag})`,
-							default: state.clans.includes(clan.tag)
-						}))
-					)
-					.setDisabled(disable || clans.length > 25)
-			);
-
-			const row5 = new MessageActionRow().addComponents(
 				new MessageButton().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle('PRIMARY').setDisabled(disable)
 			);
 
-			return [row1, row2, row3, row4, row5];
+			return [row0, row1, row2, row3, row4];
 		};
 
-		const longText = this.i18n('command.reminder.create.too_many_clans', {
-			lng: interaction.locale,
-			clans: `${clans.length}`
-		});
 		const msg = await interaction.editReply({
 			components: mutate(),
-			// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-			content: ['**War Reminder Setup**', clans.length > 25 ? `\n*${longText}*` : ''].join('\n')
+			content: '**War Reminder Setup**'
 		});
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
