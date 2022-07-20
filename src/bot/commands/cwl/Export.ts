@@ -1,4 +1,4 @@
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, Interaction, MessageEmbed } from 'discord.js';
 import { Command } from '../../lib';
 
 export default class CWLExportCommand extends Command {
@@ -8,6 +8,16 @@ export default class CWLExportCommand extends Command {
 			channel: 'guild',
 			defer: true
 		});
+	}
+
+	public condition(interaction: Interaction<'cached'>) {
+		if (!this.client.patrons.get(interaction)) {
+			const embed = new MessageEmbed()
+				.setDescription(this.i18n('common.patron_only', { lng: interaction.locale }))
+				.setImage('https://cdn.discordapp.com/attachments/806179502508998657/846700124134178826/unknown.png');
+			return { embeds: [embed] };
+		}
+		return null;
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {

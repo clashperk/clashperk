@@ -1,4 +1,4 @@
-import { CommandInteraction, Role } from 'discord.js';
+import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Collections } from '../../util/Constants';
 import { Args, Command } from '../../lib';
 
@@ -8,6 +8,7 @@ export interface IArgs {
 	members?: Role;
 	elders?: Role;
 	coLeads?: Role;
+	commonRole?: Role;
 	verify: boolean;
 	clear?: boolean;
 }
@@ -34,7 +35,11 @@ export default class AutoRoleCommand extends Command {
 				id: 'coLeads',
 				match: 'ROLE'
 			},
-			'only_verified': {
+			'common-role': {
+				id: 'commonRole',
+				match: 'ROLE'
+			},
+			'only-verified': {
 				id: 'verify',
 				match: 'BOOLEAN'
 			},
@@ -58,18 +63,27 @@ export default class AutoRoleCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
-		const { members, elders, coLeads } = args;
+		const { members, elders, coLeads, commonRole } = args;
 
 		if (!(members && elders && coLeads)) {
 			return interaction.editReply(this.i18n('command.autorole.enable.no_roles', { lng: interaction.locale }));
 		}
 
-		if ([members, elders, coLeads].filter((role) => role.managed || role.id === interaction.guild.id).length) {
+		if ([members, elders, coLeads].some((role) => this.isSystemRole(role, interaction.guild))) {
 			return interaction.editReply(this.i18n('command.autorole.enable.no_system_roles', { lng: interaction.locale }));
 		}
 
-		if ([members, elders, coLeads].filter((role) => role.position > interaction.guild.me!.roles.highest.position).length) {
+		if ([members, elders, coLeads].some((role) => this.isHigherRole(role, interaction.guild))) {
 			return interaction.editReply(this.i18n('command.autorole.enable.no_higher_roles', { lng: interaction.locale }));
+		}
+
+		if (commonRole) {
+			if (this.isSystemRole(commonRole, interaction.guild)) {
+				return interaction.editReply(this.i18n('command.autorole.enable.no_system_roles', { lng: interaction.locale }));
+			}
+			if (this.isHigherRole(commonRole, interaction.guild)) {
+				return interaction.editReply(this.i18n('command.autorole.enable.no_higher_roles', { lng: interaction.locale }));
+			}
 		}
 
 		const duplicate = await this.client.db
@@ -84,7 +98,7 @@ export default class AutoRoleCommand extends Command {
 			{ tag: { $in: clans.map((clan) => clan.tag) }, guild: interaction.guild.id },
 			{
 				$set: {
-					roles: { member: members.id, admin: elders.id, coLeader: coLeads.id },
+					roles: { member: members.id, admin: elders.id, coLeader: coLeads.id, everyone: commonRole?.id ?? null },
 					roleIds: [members.id, elders.id, coLeads.id],
 					secureRole: args.verify
 				}
@@ -99,6 +113,14 @@ export default class AutoRoleCommand extends Command {
 				clans: `${clans.map((clan) => clan.name).join(', ')}`
 			})
 		);
+	}
+
+	private isSystemRole(role: Role, guild: Guild) {
+		return role.managed || role.id === guild.id;
+	}
+
+	private isHigherRole(role: Role, guild: Guild) {
+		return role.position > guild.me!.roles.highest.position;
 	}
 
 	private async updateLinksAndRoles(clans: { tag: string }[]) {

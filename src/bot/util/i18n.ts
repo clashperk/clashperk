@@ -13,9 +13,9 @@ import Locale from '../../../locales/en';
 
 type Join<K, P> = K extends string | number ? (P extends string | number ? `${K}${'' extends P ? '' : '.'}${P}` : never) : never;
 
-type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, ...0[]];
+type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...0[]];
 
-type Leaves<T, D extends number = 8> = [D] extends [never]
+type Leaves<T, D extends number = 10> = [D] extends [never]
 	? never
 	: T extends object
 	? { [K in keyof T]-?: Join<K, Leaves<T[K], Prev[D]>> }[keyof T]
@@ -58,8 +58,4 @@ export function i18n<K extends Leaves<typeof Locale>, I extends Record<Keys<GetD
 	return i18next.t(key, { ...args, interpolation: { escapeValue: false } }); // .replace(/[^\S\r\n]+$/gm, '');
 }
 
-export function format<K extends Leaves<typeof Locale>>(key: CheckDictString<K, typeof Locale>): K {
-	return key;
-}
-
-export declare function fmt<K extends Leaves<typeof Locale>>(key: CheckDictString<K, typeof Locale>): any;
+export type TranslationKey = CheckDictString<Leaves<typeof Locale>, typeof Locale>;

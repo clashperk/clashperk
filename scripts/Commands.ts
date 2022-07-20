@@ -4,7 +4,7 @@ import moment from 'moment';
 import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import { command } from '../locales/en';
-import { fmt } from '../src/bot/util/i18n';
+import { TranslationKey } from '../src/bot/util/i18n';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({
@@ -46,7 +46,7 @@ export enum CommandType {
 	MESSAGE = 3
 }
 
-export const translation: typeof fmt = (text: string): Record<string, string> => {
+export const translation = (text: TranslationKey): Record<string, string> => {
 	return ['fr', 'en-GB'].reduce<Record<string, string>>((acc, lang) => {
 		const locale = i18next.t(text, { lng: lang, escapeValue: false });
 		acc[lang] = locale.substring(0, 100);
@@ -1013,7 +1013,14 @@ export const COMMANDS: Command[] = [
 						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'only_verified',
+						name: 'common-role',
+						required: false,
+						description: command.autorole.enable.options.common_role.description,
+						description_localizations: translation('command.autorole.enable.options.common_role.description'),
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'only-verified',
 						required: false,
 						description: command.autorole.enable.options.only_verified.description,
 						description_localizations: translation('command.autorole.enable.options.only_verified.description'),
@@ -1207,16 +1214,17 @@ export const COMMANDS: Command[] = [
 						required: true
 					},
 					{
+						name: 'clans',
+						required: true,
+						description: command.reminder.create.options.clans.description,
+						description_localizations: translation('command.reminder.create.options.clans.description'),
+						type: ApplicationCommandOptionType.String
+					},
+					{
 						name: 'channel',
 						description: command.reminder.create.options.channel.description,
 						description_localizations: translation('command.reminder.create.options.channel.description'),
 						type: ApplicationCommandOptionType.Channel
-					},
-					{
-						name: 'clans',
-						description: command.reminder.create.options.clans.description,
-						description_localizations: translation('command.reminder.create.options.clans.description'),
-						type: ApplicationCommandOptionType.String
 					}
 				]
 			},
