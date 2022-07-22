@@ -47,7 +47,7 @@ export enum CommandType {
 }
 
 export const translation = (text: TranslationKey): Record<string, string> => {
-	return ['fr', 'en-GB'].reduce<Record<string, string>>((acc, lang) => {
+	return ['fr', 'en-GB', 'nl'].reduce<Record<string, string>>((acc, lang) => {
 		const locale = i18next.t(text, { lng: lang, escapeValue: false });
 		acc[lang] = locale.substring(0, 100);
 		return acc;

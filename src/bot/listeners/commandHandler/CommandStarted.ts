@@ -5,8 +5,8 @@ import { CommandHandlerEvents } from '../../lib/util';
 
 export default class CommandStartedListener extends Listener {
 	public constructor() {
-		super(CommandHandlerEvents.COMMAND_EXECUTED, {
-			event: CommandHandlerEvents.COMMAND_EXECUTED,
+		super(CommandHandlerEvents.COMMAND_STARTED, {
+			event: CommandHandlerEvents.COMMAND_STARTED,
 			emitter: 'commandHandler',
 			category: 'commandHandler'
 		});

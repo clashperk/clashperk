@@ -2,7 +2,7 @@ import { HexColorString, Util } from 'discord.js';
 
 export const CommandHandlerEvents = {
 	COMMAND_ENDED: 'commandEnded',
-	COMMAND_EXECUTED: 'commandExecuted',
+	COMMAND_STARTED: 'commandStarted',
 	ERROR: 'error',
 	COMMAND_INVALID: 'commandInvalid',
 	COMMAND_DISABLED: 'commandDisabled',
@@ -17,7 +17,7 @@ export interface CommandEvents {
 	[CommandHandlerEvents.COMMAND_BLOCKED]: [];
 	[CommandHandlerEvents.MISSING_PERMISSIONS]: [];
 	[CommandHandlerEvents.COMMAND_ENDED]: [];
-	[CommandHandlerEvents.COMMAND_EXECUTED]: [];
+	[CommandHandlerEvents.COMMAND_STARTED]: [];
 }
 
 export const BuiltInReasons = {

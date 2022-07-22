@@ -111,3 +111,36 @@ export const BIT_FIELD = new Permissions([
 	'MANAGE_THREADS',
 	'SEND_MESSAGES_IN_THREADS'
 ]).bitfield;
+
+export const locales: Record<string, string> = {
+	'en-US': 'English, US',
+	'en-GB': 'English, UK',
+	'bg': 'Bulgarian',
+	'zh-CN': 'Chinese, China',
+	'zh-TW': 'Chinese, Taiwan',
+	'hr': 'Croatian',
+	'cs': 'Czech',
+	'da': 'Danish',
+	'nl': 'Dutch',
+	'fi': 'Finnish',
+	'fr': 'French',
+	'de': 'German',
+	'el': 'Greek',
+	'hi': 'Hindi',
+	'hu': 'Hungarian',
+	'it': 'Italian',
+	'ja': 'Japanese',
+	'ko': 'Korean',
+	'lt': 'Lithuanian',
+	'no': 'Norwegian',
+	'pl': 'Polish',
+	'pt-BR': 'Portuguese, Brazilian',
+	'ro': 'Romanian, Romania',
+	'ru': 'Russian',
+	'es-ES': 'Spanish',
+	'sv-SE': 'Swedish',
+	'th': 'Thai',
+	'tr': 'Turkish',
+	'uk': 'Ukrainian',
+	'vi': 'Vietnamese'
+};

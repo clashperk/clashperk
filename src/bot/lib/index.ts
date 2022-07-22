@@ -194,10 +194,12 @@ export class CommandHandler extends BaseHandler {
 			if (command.defer && !interaction.deferred && !interaction.replied) {
 				await interaction.deferReply({ ephemeral: command.ephemeral });
 			}
-			this.emit(CommandHandlerEvents.COMMAND_EXECUTED, interaction, command, args);
+			this.emit(CommandHandlerEvents.COMMAND_STARTED, interaction, command, args);
 			await command.exec(interaction, args);
 		} catch (error) {
 			this.emit(CommandHandlerEvents.ERROR, error, interaction, command);
+		} finally {
+			this.emit(CommandHandlerEvents.COMMAND_ENDED, interaction, command, args);
 		}
 	}
 

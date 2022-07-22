@@ -164,6 +164,23 @@ export default class StatsHandler {
 		);
 	}
 
+	public async localeSuggested(interaction: Interaction) {
+		if (['en-GB', 'en-US'].includes(interaction.locale)) return true;
+		const { value: user } = await this.client.db.collection(Collections.BOT_USERS).findOneAndUpdate(
+			{ user: interaction.user.id },
+			{
+				$set: {
+					suggestedAt: new Date()
+				}
+			},
+			{
+				returnDocument: 'before'
+			}
+		);
+		if (!user) return true;
+		return Boolean(user.suggestedAt && (user.suggestedAt.getTime() as number) + 3 * 24 * 60 * 60 * 1000 > Date.now());
+	}
+
 	public guilds(guild: Guild, usage = 1) {
 		return this.client.db.collection(Collections.BOT_GUILDS).updateOne(
 			{ guild: guild.id },
