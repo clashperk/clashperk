@@ -20,7 +20,7 @@ export default class ReminderCreateCommand extends Command {
 		interaction: CommandInteraction<'cached'>,
 		args: { duration: string; message: string; channel?: TextChannel; clans?: string }
 	) {
-		const tags = args.clans === '*' ? [] : args.clans?.split(/ +/g) ?? [];
+		const tags = args.clans === '*' ? [] : this.client.resolver.resolveArgs(args.clans);
 		const clans =
 			args.clans === '*'
 				? await this.client.storage.find(interaction.guildId)

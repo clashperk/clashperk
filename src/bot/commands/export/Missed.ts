@@ -20,7 +20,7 @@ export default class ExportMissed extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string }) {
-		const tags = args.clans?.split(/ +/g) ?? [];
+		const tags = this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.find(interaction.guildId);

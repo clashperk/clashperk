@@ -158,6 +158,10 @@ export default class Resolver {
 		).filter((res) => res.ok);
 	}
 
+	public resolveArgs(args?: string) {
+		return args?.split(/[, ]+/g) ?? [];
+	}
+
 	public async enforceSecurity(interaction: CommandInteraction<'cached'>, tag?: string) {
 		if (!tag) {
 			await interaction.editReply(i18n('common.no_clan_tag', { lng: interaction.locale }));

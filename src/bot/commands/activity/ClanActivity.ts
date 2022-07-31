@@ -26,7 +26,7 @@ export default class ClanActivityCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; days?: number }) {
-		const tags = args.clans?.split(/ +/g) ?? [];
+		const tags = this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guild.id, tags)
 			: (await this.client.storage.find(interaction.guild.id)).slice(0, 7);

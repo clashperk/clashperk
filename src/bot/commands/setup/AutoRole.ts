@@ -52,7 +52,7 @@ export default class AutoRoleCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: IArgs) {
 		if (args.command === 'disable') return this.disable(interaction, args);
 
-		const tags = args.clans === '*' ? [] : args.clans?.split(/ +/g) ?? [];
+		const tags = args.clans === '*' ? [] : this.client.resolver.resolveArgs(args.clans);
 		const clans =
 			args.clans === '*'
 				? await this.client.storage.find(interaction.guildId)
@@ -197,7 +197,7 @@ export default class AutoRoleCommand extends Command {
 			);
 		}
 
-		const tags = args.clans?.split(/ +/g) ?? [];
+		const tags = this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length ? await this.client.storage.search(interaction.guildId, tags) : [];
 
 		if (!tags.length) {
