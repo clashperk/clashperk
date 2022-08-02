@@ -39,7 +39,10 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.CWL_GROUPS).createIndexes([
 				{
-					key: { 'clans.tag': 1, 'season': 1 },
+					key: { 'clans.tag': 1, 'season': 1 }
+				},
+				{
+					key: { uid: 1 },
 					unique: true
 				},
 				{

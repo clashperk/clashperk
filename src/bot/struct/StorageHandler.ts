@@ -1,8 +1,8 @@
+import { createHash } from 'crypto';
 import { ObjectId, Collection } from 'mongodb';
 import { CommandInteraction } from 'discord.js';
 import { ClanWarLeagueGroup } from 'clashofclans.js';
 import { Collections, Flags } from '../util/Constants';
-import { Season } from '../util';
 import { Client } from './Client';
 
 export interface ClanStore {
@@ -296,15 +296,26 @@ export default class StorageHandler {
 		return this.pushToDB(tag, body.clans, warTags, rounds, body.season);
 	}
 
+	private md5(id: string) {
+		return createHash('md5').update(id).digest('hex');
+	}
+
 	private async pushToDB(tag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
+		const uid = this.md5(
+			`${season}-${clans
+				.map((clan) => clan.tag)
+				.sort((a, b) => a.localeCompare(b))
+				.join('-')}`
+		);
 		return this.client.db.collection(Collections.CWL_GROUPS).updateOne(
-			{ 'clans.tag': tag, 'season': Season.generateID(season) },
+			{ uid },
 			{
 				$set: {
 					warTags,
 					rounds
 				},
 				$setOnInsert: {
+					uid,
 					id: await this.uuid(),
 					createdAt: new Date(),
 					clans: clans.map((clan) => ({ tag: clan.tag, name: clan.name }))
