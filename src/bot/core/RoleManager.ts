@@ -170,17 +170,22 @@ export class RoleManager {
 			const tags = acc.map((en) => en.tag);
 
 			// getting the member's highest role for each clan
-			const highestRoleClanRoles = clans
+			const highestClanRoles = clans
 				.map((clan) => ({
 					roles: clan.roles,
 					highestRole: this.getHighestRole(
 						players.filter((en) => tags.includes(en.tag)),
 						[clan.tag]
-					)
+					),
+					commonRoleId: clan.roles.everyone // <- this is the role that is common to all clan members
 				}))
 				.filter((mem) => mem.highestRole);
 			// mapping the highest role with discord role ids
-			const highestRoles = highestRoleClanRoles.map(({ roles, highestRole }) => roles[highestRole!]).filter((id) => id);
+			const highestRoles = highestClanRoles
+				// mapping the common role id with the highest role id
+				.map(({ roles, highestRole, commonRoleId }) => [roles[highestRole!], commonRoleId])
+				.flat()
+				.filter((id) => id);
 
 			const reason = ActionType[member.op].replace(/%PLAYER%/, member.name);
 			// flatten all the role ids for each clan
@@ -191,7 +196,6 @@ export class RoleManager {
 				userId: mem.user,
 				roleIds: highestRoles,
 				roles,
-				commonRoleId: clan.roles.everyone,
 				reason
 			});
 			await this.delay(250);
@@ -206,7 +210,6 @@ export class RoleManager {
 		userId,
 		roleIds,
 		roles,
-		commonRoleId,
 		reason
 	}: {
 		members: Collection<string, GuildMember>;
@@ -214,7 +217,6 @@ export class RoleManager {
 		userId: string;
 		roleIds: string[];
 		roles: string[];
-		commonRoleId: string | null;
 		reason: string;
 	}) {
 		const guild = this.client.guilds.cache.get(guildId);
@@ -226,15 +228,17 @@ export class RoleManager {
 		const member = members.get(userId)!;
 		if (member.user.bot) return null;
 
+		// filter out the roles that should be removed
 		const excluded = roles
-			.filter((id) => !roleIds.includes(id) && this.checkRole(guild, guild.me!, id))
+			.filter((id) => !roleIds.includes(id))
+			.filter((id) => this.checkRole(guild, guild.me!, id))
 			.filter((id) => member.roles.cache.has(id));
 
 		if (excluded.length) {
 			await member.roles.remove(excluded, reason);
 		}
 
-		if (roleIds.length && commonRoleId) roleIds.push(commonRoleId);
+		// filter out the roles that should be added
 		const included = roleIds
 			.filter((id) => guild.roles.cache.has(id))
 			.filter((id) => guild.me!.roles.highest.position > guild.roles.cache.get(id)!.position)

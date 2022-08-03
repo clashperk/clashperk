@@ -316,6 +316,7 @@ export default class StorageHandler {
 				},
 				$setOnInsert: {
 					uid,
+					season,
 					id: await this.uuid(),
 					createdAt: new Date(),
 					clans: clans.map((clan) => ({ tag: clan.tag, name: clan.name }))
