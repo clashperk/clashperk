@@ -47,7 +47,7 @@ export enum CommandType {
 }
 
 export const translation = (text: TranslationKey): Record<string, string> => {
-	return ['fr', 'en-GB', 'nl'].reduce<Record<string, string>>((acc, lang) => {
+	return ['fr', 'en-GB', 'nl', 'es-ES', 'de'].reduce<Record<string, string>>((acc, lang) => {
 		const locale = i18next.t(text, { lng: lang, escapeValue: false });
 		acc[lang] = locale.substring(0, 100);
 		return acc;
@@ -1495,8 +1495,39 @@ export const COMMANDS: Command[] = [
 export const PRIVATE_COMMANDS: Command[] = [
 	{
 		name: 'status',
-		description: 'Some basic information about the bot',
+		description: "You can't use it anyway, so why explain?",
 		default_permission: false
+	},
+	{
+		name: 'usage',
+		description: "You can't use it anyway, so why explain?",
+		options: [
+			{
+				name: 'chart',
+				description: 'It does something, yeah?',
+				type: ApplicationCommandOptionType.String,
+				required: false
+			}
+		],
+		default_permission: false
+	},
+	{
+		name: 'patron',
+		description: "You can't use it anyway, so why explain?",
+		default_permission: false
+	},
+	{
+		name: 'eval',
+		description: "You can't use it anyway, so why explain?",
+		default_permission: false,
+		options: [
+			{
+				name: 'code',
+				description: 'It does something, yeah?',
+				type: ApplicationCommandOptionType.String,
+				required: false
+			}
+		]
 	},
 	{
 		name: 'Whois',

@@ -190,7 +190,7 @@ export class RoleManager {
 			const reason = ActionType[member.op].replace(/%PLAYER%/, member.name);
 			// flatten all the role ids for each clan
 			const roles = Array.from(new Set(clans.map((clan) => Object.values(clan.roles)).flat()));
-			await this.addRoles({
+			const count = await this.addRoles({
 				members,
 				guildId,
 				userId: mem.user,
@@ -198,7 +198,7 @@ export class RoleManager {
 				roles,
 				reason
 			});
-			await this.delay(250);
+			if (count) await this.delay(250);
 		}
 
 		return data.members.length;
@@ -221,12 +221,12 @@ export class RoleManager {
 	}) {
 		const guild = this.client.guilds.cache.get(guildId);
 
-		if (!roleIds.length && !roles.length) return null;
-		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return null;
+		if (!roleIds.length && !roles.length) return 0;
+		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return 0;
 
-		if (!members.has(userId)) return null;
+		if (!members.has(userId)) return 0;
 		const member = members.get(userId)!;
-		if (member.user.bot) return null;
+		if (member.user.bot) return 0;
 
 		// filter out the roles that should be removed
 		const excluded = roles
@@ -244,8 +244,9 @@ export class RoleManager {
 			.filter((id) => guild.me!.roles.highest.position > guild.roles.cache.get(id)!.position)
 			.filter((id) => !member.roles.cache.has(id));
 
-		if (!included.length) return null;
-		return member.roles.add(included, reason);
+		if (!included.length) return excluded.length;
+		await member.roles.add(included, reason);
+		return included.length;
 	}
 
 	private flatPlayers(collection: { user: string; entries: { tag: string; verified: boolean }[] }[], secureRole: boolean) {

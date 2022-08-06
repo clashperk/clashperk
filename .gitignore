@@ -3,6 +3,7 @@ dist/
 yarn.lock
 .env
 auth.ts
+bot.ts
 auth.js
 .vs/
 .vscode/

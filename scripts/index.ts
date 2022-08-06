@@ -22,7 +22,7 @@ const applicationGuildCommands = async (commands: typeof COMMANDS) => {
 };
 
 const commandPermission = async () => {
-	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands('526971716711350273', '609250675431309313')}`, {
+	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands('526971716711350273', '509784317598105619')}`, {
 		method: 'PUT',
 		headers: {
 			'Authorization': `Bot ${process.env.BOT_TOKEN!}`,
