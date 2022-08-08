@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from 'url';
-import Discord, { Intents, Interaction, Message, Options, Snowflake } from 'discord.js';
+import Discord, { Intents, Interaction, Message, Options, Snowflake, Sweepers } from 'discord.js';
 import { Db } from 'mongodb';
 import { container } from 'tsyringe';
 import { nanoid } from 'nanoid';
@@ -59,15 +59,6 @@ export class Client extends Discord.Client {
 		super({
 			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_WEBHOOKS, Intents.FLAGS.GUILD_MESSAGES],
 			makeCache: Options.cacheWithLimits({
-				UserManager: {
-					maxSize: 50,
-					keepOverLimit: (user) => user.id === this.user!.id
-				},
-				GuildMemberManager: {
-					maxSize: 50,
-					keepOverLimit: (member) => member.id === this.user!.id
-				},
-				MessageManager: 0,
 				PresenceManager: 0,
 				VoiceStateManager: 0,
 				GuildBanManager: 0,
@@ -78,7 +69,32 @@ export class Client extends Discord.Client {
 				ReactionUserManager: 0,
 				ReactionManager: 0,
 				BaseGuildEmojiManager: 0,
-				GuildEmojiManager: 0
+				GuildEmojiManager: 0,
+				ApplicationCommandManager: 0,
+				ThreadMemberManager: 0,
+				ThreadManager: {
+					sweepInterval: 5 * 60,
+					sweepFilter: Sweepers.filterByLifetime({
+						getComparisonTimestamp: (thread) => thread.archiveTimestamp!,
+						excludeFromSweep: (thread) => !thread.archived
+					})
+				},
+				MessageManager: {
+					maxSize: 10,
+					sweepInterval: 5 * 60,
+					sweepFilter: Sweepers.filterByLifetime({
+						lifetime: 10 * 60,
+						getComparisonTimestamp: (msg) => msg.createdTimestamp
+					})
+				},
+				UserManager: {
+					maxSize: 1,
+					keepOverLimit: (user) => user.id === this.user!.id
+				},
+				GuildMemberManager: {
+					maxSize: 1,
+					keepOverLimit: (member) => member.id === this.user!.id
+				}
 			})
 		});
 

@@ -15,8 +15,8 @@ export default class PermissionInhibitor extends Inhibitor {
 		if (!interaction.channel) return false;
 
 		if (interaction.channel.isThread()) {
-			return !interaction.channel.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES_IN_THREADS']);
+			return !interaction.appPermissions?.has(['SEND_MESSAGES_IN_THREADS']);
 		}
-		return !interaction.channel.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES', 'VIEW_CHANNEL']);
+		return !interaction.appPermissions?.has(['SEND_MESSAGES', 'VIEW_CHANNEL']);
 	}
 }
