@@ -1,7 +1,7 @@
 import { CommandInteraction, TextChannel } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { Args, Command } from '../../lib';
-import { Flags, Collections } from '../../util/Constants';
+import { Args, Command } from '../../lib/index.js';
+import { Flags, Collections } from '../../util/Constants.js';
 
 const names: Record<string, string> = {
 	[Flags.DONATION_LOG]: 'Donation Log',

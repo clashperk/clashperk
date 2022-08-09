@@ -1,7 +1,7 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
-import { Collections } from '../../util/Constants';
-import { Command } from '../../lib';
-import { Season } from '../../util';
+import { Collections } from '../../util/Constants.js';
+import { Command } from '../../lib/index.js';
+import { Season } from '../../util/index.js';
 
 export default class ClanSummaryCommand extends Command {
 	public constructor() {

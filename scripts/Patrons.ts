@@ -1,12 +1,9 @@
 import qs from 'querystring';
-import env from 'dotenv';
-env.config();
+import { request as fetch } from 'undici';
 
-import fetch from 'node-fetch';
-
-import { Database } from '../src/bot/struct/Database';
-import { Collections } from '../src/bot/util/Constants';
-import { Included, Member } from '../src/bot/struct/Patrons';
+import { Database } from '../src/bot/struct/Database.js';
+import { Collections } from '../src/bot/util/Constants.js';
+import { Included, Member } from '../src/bot/struct/Patrons.js';
 
 (async () => {
 	await Database.connect().then(() => console.log('MongoDB Connected!'));
@@ -23,9 +20,9 @@ import { Included, Member } from '../src/bot/struct/Patrons';
 
 	const data = (await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
 		headers: { authorization: `Bearer ${process.env.PATREON_API!}` },
-		timeout: 10000
+		bodyTimeout: 10000
 	})
-		.then((res) => res.json())
+		.then((res) => res.body.json())
 		.catch(() => null)) as { data: Member[]; included: Included[] };
 
 	const patrons = await collection.find({ active: true }).toArray();

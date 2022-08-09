@@ -1,8 +1,8 @@
 import { CommandInteraction } from 'discord.js';
-import { Command } from '../../lib';
-import { Collections } from '../../util/Constants';
-import Chart from '../../struct/ChartHandler';
-import { UserInfo } from '../../types';
+import { Command } from '../../lib/index.js';
+import { Collections } from '../../util/Constants.js';
+import Chart from '../../struct/ChartHandler.js';
+import { UserInfo } from '../../types/index.js';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

@@ -1,9 +1,9 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
-import { Collections } from '../../util/Constants';
-import { Reminder, ReminderTemp } from '../../struct/RemindScheduler';
-import { Args, Command } from '../../lib';
+import { Collections } from '../../util/Constants.js';
+import { Reminder, ReminderTemp } from '../../struct/RemindScheduler.js';
+import { Args, Command } from '../../lib/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',

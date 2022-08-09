@@ -1,8 +1,8 @@
 import { stringify } from 'querystring';
 import { CommandInteraction } from 'discord.js';
-import { Listener, Command } from '../../lib';
-import { CommandHandlerEvents } from '../../lib/util';
-import { BIT_FIELD } from '../../util/Constants';
+import { Listener, Command } from '../../lib/index.js';
+import { CommandHandlerEvents } from '../../lib/util.js';
+import { BIT_FIELD } from '../../util/Constants.js';
 
 const texts: Record<string, string> = {
 	guild: 'You must be in a server to use this command.',

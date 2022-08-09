@@ -76,7 +76,7 @@ export class Util extends Discord.Util {
 		return id;
 	}
 
-	public static splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
+	public static override splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
 		text = Util.verifyString(text);
 		if (text.length <= maxLength) return [text];
 		let splitText = [text];
@@ -110,7 +110,7 @@ export class Util extends Discord.Util {
 		let tag = '';
 		while (id !== 0n) {
 			const i = Number(id % 14n);
-			tag = `${'0289PYLQGRJCUV'[i]}${tag}`;
+			tag = `${'0289PYLQGRJCUV'[i]}${tag}`; // eslint-disable-line
 			id /= 14n;
 		}
 

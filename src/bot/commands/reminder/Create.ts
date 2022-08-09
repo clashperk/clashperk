@@ -1,9 +1,9 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu, TextChannel } from 'discord.js';
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
-import { Collections } from '../../util/Constants';
-import { Reminder } from '../../struct/RemindScheduler';
-import { Command } from '../../lib';
+import { Collections } from '../../util/Constants.js';
+import { Reminder } from '../../struct/RemindScheduler.js';
+import { Command } from '../../lib/index.js';
 
 export default class ReminderCreateCommand extends Command {
 	public constructor() {

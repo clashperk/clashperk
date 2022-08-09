@@ -1,4 +1,4 @@
-import { Listener } from '../../lib';
+import { Listener } from '../../lib/index.js';
 
 export default class ShardDisconnectListener extends Listener {
 	public constructor() {

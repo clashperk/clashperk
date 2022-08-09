@@ -1,6 +1,6 @@
 import { MessageEmbed, CommandInteraction, TextChannel, Role } from 'discord.js';
-import { Flags, missingPermissions } from '../../util/Constants';
-import { Args, Command } from '../../lib';
+import { Flags, missingPermissions } from '../../util/Constants.js';
+import { Args, Command } from '../../lib/index.js';
 
 const FEATURES: Record<string, string> = {
 	[Flags.DONATION_LOG]: 'Donation Log',

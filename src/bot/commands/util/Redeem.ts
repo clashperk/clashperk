@@ -1,7 +1,7 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from 'discord.js';
-import { Included, Patron } from '../../struct/Patrons';
-import { Collections } from '../../util/Constants';
-import { Command } from '../../lib';
+import { Included, Patron } from '../../struct/Patrons.js';
+import { Collections } from '../../util/Constants.js';
+import { Command } from '../../lib/index.js';
 
 const rewards = {
 	bronze: '3705318',

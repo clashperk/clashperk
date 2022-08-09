@@ -1,6 +1,6 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu, TextChannel } from 'discord.js';
 import ms from 'ms';
-import { Command } from '../../lib';
+import { Command } from '../../lib/index.js';
 
 export default class ReminderNowCommand extends Command {
 	public constructor() {

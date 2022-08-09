@@ -4,20 +4,20 @@ import { Db } from 'mongodb';
 import { container } from 'tsyringe';
 import { nanoid } from 'nanoid';
 import * as Redis from 'redis';
-import RPCHandler from '../core/RPCHandler';
-import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib';
-import Logger from '../util/Logger';
-import { Settings } from '../util/Constants';
-import { i18n } from '../util/i18n';
-import { Automaton } from './Automaton';
-import { Database } from './Database';
-import Http from './Http';
-import Patrons from './Patrons';
-import SettingsProvider from './SettingsProvider';
-import StatsHandler from './StatsHandler';
-import StorageHandler from './StorageHandler';
-import Resolver from './Resolver';
-import RemindScheduler from './RemindScheduler';
+import RPCHandler from '../core/RPCHandler.js';
+import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/index.js';
+import Logger from '../util/Logger.js';
+import { Settings } from '../util/Constants.js';
+import { i18n } from '../util/i18n.js';
+import { Automaton } from './Automaton.js';
+import { Database } from './Database.js';
+import Http from './Http.js';
+import Patrons from './Patrons.js';
+import SettingsProvider from './SettingsProvider.js';
+import StatsHandler from './StatsHandler.js';
+import StorageHandler from './StorageHandler.js';
+import Resolver from './Resolver.js';
+import RemindScheduler from './RemindScheduler.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {

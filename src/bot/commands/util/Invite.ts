@@ -1,7 +1,7 @@
 import { stringify } from 'querystring';
 import { CommandInteraction, MessageEmbed } from 'discord.js';
-import { Command } from '../../lib';
-import { BIT_FIELD } from '../../util/Constants';
+import { Command } from '../../lib/index.js';
+import { BIT_FIELD } from '../../util/Constants.js';
 
 export default class InviteCommand extends Command {
 	public constructor() {

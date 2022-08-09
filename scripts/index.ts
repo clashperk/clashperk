@@ -1,11 +1,11 @@
+import 'reflect-metadata';
 import { inspect } from 'util';
-import env from 'dotenv';
-env.config();
-
 import { Routes, RouteBases } from 'discord-api-types/v9';
-import fetch from 'node-fetch';
+import { request as fetch, Dispatcher } from 'undici';
 import { ApplicationCommand } from 'discord.js';
-import { COMMANDS, PRIVATE_COMMANDS } from './Commands';
+import { COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
+
+const isOk = (res: Dispatcher.ResponseData) => res.statusCode >= 200 && res.statusCode < 300;
 
 const applicationGuildCommands = async (commands: typeof COMMANDS) => {
 	console.log('Building Guild Application Commands');
@@ -17,7 +17,7 @@ const applicationGuildCommands = async (commands: typeof COMMANDS) => {
 		},
 		body: JSON.stringify(commands)
 	});
-	await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(inspect(data, { depth: Infinity }))));
+	await res.body.json().then((data) => (isOk(res) ? console.log(JSON.stringify(data)) : console.log(inspect(data, { depth: Infinity }))));
 	console.log(`Updated ${COMMANDS.length} Guild Application Commands`);
 };
 
@@ -30,9 +30,9 @@ const commandPermission = async () => {
 		},
 		body: JSON.stringify(PRIVATE_COMMANDS)
 	});
-	const commands = (await res.json()) as ApplicationCommand[];
+	const commands = (await res.body.json()) as ApplicationCommand[];
 	console.log(commands);
-	if (!res.ok) return;
+	if (!isOk(res)) return;
 
 	await fetch(`${RouteBases.api}${Routes.guildApplicationCommandsPermissions('526971716711350273', '509784317598105619')}`, {
 		method: 'PUT',
@@ -62,7 +62,7 @@ const commandPermission = async () => {
 				]
 			}))
 		)
-	}).then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(data)));
+	}).then((data) => (isOk(res) ? console.log(JSON.stringify(data)) : console.log(data)));
 };
 
 const applicationCommands = async () => {
@@ -75,7 +75,7 @@ const applicationCommands = async () => {
 		},
 		body: JSON.stringify(COMMANDS)
 	});
-	await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(data)));
+	await res.body.json().then((data) => (isOk(res) ? console.log(JSON.stringify(data)) : console.log(data)));
 	console.log(`Updated ${COMMANDS.length} Application Commands`);
 };
 

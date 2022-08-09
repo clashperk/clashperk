@@ -1,8 +1,8 @@
 import { MessageEmbed, Collection, PermissionString, TextChannel, WebhookClient, ThreadChannel } from 'discord.js';
 import { ObjectId } from 'mongodb';
-import { BLUE_NUMBERS, RED_NUMBERS, PLAYER_LEAGUES, EMOJIS } from '../util/Emojis';
-import { Collections } from '../util/Constants';
-import { Client } from '../struct/Client';
+import { BLUE_NUMBERS, RED_NUMBERS, PLAYER_LEAGUES, EMOJIS } from '../util/Emojis.js';
+import { Collections } from '../util/Constants.js';
+import { Client } from '../struct/Client.js';
 
 export interface Donation {
 	clan: {
@@ -157,12 +157,16 @@ export default class DonationLog {
 						.map((m) => {
 							if (m.donated > 200) {
 								const [div, mod] = this.divmod(m.donated);
-								const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[div > 900 ? 900 : div]} ${m.name}`];
+								const list = [
+									`\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[(div > 900 ? 900 : div).toString()]!} ${m.name}`
+								];
 								if (mod > 0)
-									return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[mod]} ${m.name}`).join('\n');
+									return list
+										.concat(`\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[mod.toString()]!} ${m.name}`)
+										.join('\n');
 								return list.join('\n');
 							}
-							return `\u200e${PLAYER_LEAGUES[m.league]} ${BLUE_NUMBERS[m.donated]} ${m.name}`;
+							return `\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[m.donated]!} ${m.name}`;
 						})
 						.join('\n')
 						.substring(0, 1024)
@@ -178,12 +182,16 @@ export default class DonationLog {
 						.map((m) => {
 							if (m.received > 200) {
 								const [div, mod] = this.divmod(m.received);
-								const list = [`\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[div > 900 ? 900 : div]} ${m.name}`];
+								const list = [
+									`\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[(div > 900 ? 900 : div).toString()]!} ${m.name}`
+								];
 								if (mod > 0)
-									return list.concat(`\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[mod]} ${m.name}`).join('\n');
+									return list
+										.concat(`\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[mod.toString()]!} ${m.name}`)
+										.join('\n');
 								return list.join('\n');
 							}
-							return `\u200e${PLAYER_LEAGUES[m.league]} ${RED_NUMBERS[m.received]} ${m.name}`;
+							return `\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[m.received]!} ${m.name}`;
 						})
 						.join('\n')
 						.substring(0, 1024)

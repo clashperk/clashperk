@@ -1,9 +1,9 @@
 import { Util, CommandInteraction, MessageActionRow, MessageButton, TextChannel, Modal, MessageEmbed, Interaction } from 'discord.js';
 import { Clan } from 'clashofclans.js';
-import { Collections, Flags } from '../../util/Constants';
-import { Args, Command } from '../../lib';
-import { EMOJIS, CWL_LEAGUES, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis';
-import { UserInfo } from '../../types';
+import { Collections, Flags } from '../../util/Constants.js';
+import { Args, Command } from '../../lib/index.js';
+import { EMOJIS, CWL_LEAGUES, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { UserInfo } from '../../types/index.js';
 
 export default class ClanEmbedCommand extends Command {
 	public constructor() {

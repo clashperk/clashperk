@@ -1,10 +1,10 @@
 import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow } from 'discord.js';
 import { Player } from 'clashofclans.js';
-import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis';
-import RAW_TROOPS_DATA from '../../util/Troops';
-import { Command } from '../../lib';
-import { Util } from '../../util';
-import { TroopJSON } from '../../types';
+import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
+import RAW_TROOPS_DATA from '../../util/Troops.js';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
+import { TroopJSON } from '../../types/index.js';
 
 export default class UpgradesCommand extends Command {
 	public constructor() {

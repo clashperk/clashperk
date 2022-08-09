@@ -1,7 +1,7 @@
 import util from 'util';
 import { Message } from 'discord.js';
-import { Command } from '../../lib';
-import { Util } from '../../util';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
 
 export default class EvalCommand extends Command {
 	private readonly _replaceToken!: string;

@@ -1,8 +1,8 @@
 import { MessageEmbed, CommandInteraction } from 'discord.js';
 import { ClanWarMember, Player, WarClan } from 'clashofclans.js';
-import { BLUE_NUMBERS, EMOJIS, HERO_PETS } from '../../util/Emojis';
-import { Command } from '../../lib';
-import { Util } from '../../util';
+import { BLUE_NUMBERS, EMOJIS, HERO_PETS } from '../../util/Emojis.js';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
 
 const states: Record<string, string> = {
 	inWar: 'Battle Day',

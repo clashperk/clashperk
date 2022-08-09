@@ -1,11 +1,11 @@
 import { MessageEmbed, Util, CommandInteraction, MessageSelectMenu, MessageActionRow } from 'discord.js';
 import { Player, WarClan } from 'clashofclans.js';
 import ms from 'ms';
-import { EMOJIS, TOWN_HALLS, HEROES, SIEGE_MACHINES } from '../../util/Emojis';
-import { Collections } from '../../util/Constants';
-import { Command } from '../../lib';
-import { Season } from '../../util';
-import { UserInfo } from '../../types';
+import { EMOJIS, TOWN_HALLS, HEROES, SIEGE_MACHINES } from '../../util/Emojis.js';
+import { Collections } from '../../util/Constants.js';
+import { Command } from '../../lib/index.js';
+import { Season } from '../../util/index.js';
+import { UserInfo } from '../../types/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',

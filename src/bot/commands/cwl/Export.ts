@@ -1,5 +1,5 @@
 import { CommandInteraction, Interaction, MessageEmbed } from 'discord.js';
-import { Command } from '../../lib';
+import { Command } from '../../lib/index.js';
 
 export default class CWLExportCommand extends Command {
 	public constructor() {

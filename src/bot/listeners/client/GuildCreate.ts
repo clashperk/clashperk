@@ -1,7 +1,7 @@
 import { Guild, MessageEmbed, TextChannel, Webhook } from 'discord.js';
-import { Collections } from '../../util/Constants';
-import { EMOJIS } from '../../util/Emojis';
-import { Listener } from '../../lib';
+import { Collections } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
+import { Listener } from '../../lib/index.js';
 
 export default class GuildCreateListener extends Listener {
 	private webhook: Webhook | null = null;

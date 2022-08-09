@@ -1,5 +1,5 @@
 import { CommandInteraction } from 'discord.js';
-import { Command } from '../../lib';
+import { Command } from '../../lib/index.js';
 
 export default class AliasCommand extends Command {
 	public constructor() {

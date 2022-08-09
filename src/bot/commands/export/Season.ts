@@ -1,9 +1,9 @@
 import { Clan, ClanMember } from 'clashofclans.js';
 import { Collection, GuildMember, CommandInteraction } from 'discord.js';
-import { Collections } from '../../util/Constants';
-import { Season } from '../../util';
-import { Command } from '../../lib';
-import Excel from '../../struct/Excel';
+import { Collections } from '../../util/Constants.js';
+import { Season } from '../../util/index.js';
+import { Command } from '../../lib/index.js';
+import Excel from '../../struct/Excel.js';
 
 export default class ExportSeason extends Command {
 	public constructor() {

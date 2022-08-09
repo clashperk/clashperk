@@ -1,8 +1,8 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
 import { PlayerItem } from 'clashofclans.js';
-import { EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis';
-import { Command } from '../../lib';
-import { Util } from '../../util';
+import { EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
 
 const roleIds: { [key: string]: number } = {
 	member: 1,

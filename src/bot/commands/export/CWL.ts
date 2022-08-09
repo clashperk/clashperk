@@ -1,9 +1,9 @@
 import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { CommandInteraction, Interaction, MessageEmbed } from 'discord.js';
-import { Command } from '../../lib';
-import Excel from '../../struct/Excel';
-import { Season, Util } from '../../util';
-import { Collections } from '../../util/Constants';
+import { Command } from '../../lib/index.js';
+import Excel from '../../struct/Excel.js';
+import { Season, Util } from '../../util/index.js';
+import { Collections } from '../../util/Constants.js';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

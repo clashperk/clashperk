@@ -1,9 +1,9 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
-import { WHITE_NUMBERS, EMOJIS } from '../../util/Emojis';
-import { Collections } from '../../util/Constants';
-import { Command } from '../../lib';
-import { Season } from '../../util';
-import Workbook from '../../struct/Excel';
+import { WHITE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
+import { Collections } from '../../util/Constants.js';
+import { Command } from '../../lib/index.js';
+import { Season } from '../../util/index.js';
+import Workbook from '../../struct/Excel.js';
 
 export default class SummaryClansCommand extends Command {
 	public constructor() {

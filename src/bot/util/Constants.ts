@@ -83,8 +83,8 @@ export function missingPermissions(channel: TextChannel, member: GuildMember, pe
 		missing: Boolean(missingPerms.length > 0),
 		missingPerms:
 			missingPerms.length > 1
-				? `${missingPerms.slice(0, -1).join(', ')} and ${missingPerms.slice(-1)[0]} permissions`
-				: `${missingPerms[0]} permission`
+				? `${missingPerms.slice(0, -1).join(', ')} and ${missingPerms.slice(-1)[0]!} permissions`
+				: `${missingPerms[0]!} permission`
 	};
 }
 

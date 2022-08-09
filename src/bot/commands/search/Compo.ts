@@ -1,6 +1,6 @@
 import { MessageEmbed, CommandInteraction, Util } from 'discord.js';
-import { TOWN_HALLS, EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis';
-import { Command } from '../../lib';
+import { TOWN_HALLS, EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { Command } from '../../lib/index.js';
 
 export default class CompoCommand extends Command {
 	public constructor() {

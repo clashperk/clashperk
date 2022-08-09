@@ -1,9 +1,9 @@
 import { MessageEmbed, Util, CommandInteraction, MessageButton, MessageActionRow } from 'discord.js';
 import { Clan } from 'clashofclans.js';
-import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis';
-import { Command } from '../../lib';
-import { Season } from '../../util';
-import { Collections } from '../../util/Constants';
+import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis.js';
+import { Command } from '../../lib/index.js';
+import { Season } from '../../util/index.js';
+import { Collections } from '../../util/Constants.js';
 
 const clanTypes: Record<string, string> = {
 	inviteOnly: 'Invite Only',

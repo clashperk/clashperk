@@ -1,7 +1,7 @@
 import { CommandInteraction, MessageActionRow, MessageEmbed, MessageSelectMenu } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
-import { Command } from '../../lib';
-import { Util } from '../../util';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
 
 export default class CWLStarsCommand extends Command {
 	public constructor() {

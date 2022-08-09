@@ -1,7 +1,7 @@
 import { CommandInteraction, MessageEmbed, MessageButton, MessageActionRow } from 'discord.js';
-import { Command } from '../../lib';
-import { Flags, Collections } from '../../util/Constants';
-import { Util } from '../../util';
+import { Command } from '../../lib/index.js';
+import { Flags, Collections } from '../../util/Constants.js';
+import { Util } from '../../util/index.js';
 
 const names: Record<string, string> = {
 	[Flags.DONATION_LOG]: 'Donation Log',

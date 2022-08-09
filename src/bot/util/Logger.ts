@@ -1,7 +1,7 @@
 import util from 'util';
 import moment from 'moment';
 import chalk from 'chalk';
-import { Client } from '../struct/Client';
+import { Client } from '../struct/Client.js';
 
 const COLORS: Record<string, string> = {
 	debug: 'yellow',
@@ -54,6 +54,6 @@ export default class Logger {
 	}
 
 	private get shard() {
-		return this.client?.shard?.ids ? ` [SHARD${this.client.shard.ids[0].toString().padStart(2)}]` : '';
+		return this.client?.shard?.ids ? ` [SHARD${this.client.shard.ids[0]!.toString().padStart(2)}]` : '';
 	}
 }

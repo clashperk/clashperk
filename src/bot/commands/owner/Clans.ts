@@ -1,7 +1,7 @@
 import { MessageEmbed, Message, TextChannel, MessageActionRow, MessageButton } from 'discord.js';
-import { Command } from '../../lib';
-import { Collections } from '../../util/Constants';
-import { EMOJIS } from '../../util/Emojis';
+import { Command } from '../../lib/index.js';
+import { Collections } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 export default class ClansCommand extends Command {
 	public constructor() {

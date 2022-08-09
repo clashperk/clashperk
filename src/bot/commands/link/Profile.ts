@@ -1,11 +1,11 @@
 import { MessageEmbed, GuildMember, CommandInteraction, MessageActionRow, MessageButton, User, Interaction } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import moment from 'moment';
-import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis';
-import { Args, Command } from '../../lib';
-import { Collections } from '../../util/Constants';
-import Workbook from '../../struct/Excel';
-import { UserInfo } from '../../types';
+import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis.js';
+import { Args, Command } from '../../lib/index.js';
+import { Collections } from '../../util/Constants.js';
+import Workbook from '../../struct/Excel.js';
+import { UserInfo } from '../../types/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
