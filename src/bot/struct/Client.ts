@@ -157,6 +157,7 @@ export class Client extends Discord.Client {
 			if (process.env.NODE_ENV === 'production') return this.run();
 		});
 
+		this.logger.debug('Connecting to the Gateway', { label: 'DISCORD' });
 		return this.login(token);
 	}
 }

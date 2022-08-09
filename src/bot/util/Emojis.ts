@@ -223,7 +223,8 @@ export const CLAN_LABELS: Record<string, string> = {
 	'Underdog': '<:Underdog:731497811840991272>',
 	'Relaxed': '<:Relaxed:731498132839333992>',
 	'Competitive': '<:Competitive:731494196359463014>',
-	'Newbie Friendly': '<:NewbieFriendly:731494204072656916>'
+	'Newbie Friendly': '<:NewbieFriendly:731494204072656916>',
+	'Clan Capital': '<:ClanCapital:1006585763640647810>'
 };
 
 export const PLAYER_LABELS: Record<string, string> = {
@@ -244,7 +245,8 @@ export const PLAYER_LABELS: Record<string, string> = {
 	'Competitive': '<:Competitive:731494196359463014>',
 	'Veteran': '<:Veteran:731494218111123527>',
 	'Newbie': '<:Newbie:731494204072656916>',
-	'Amateur Attacker': '<:AmateurAttacker:731494197940715550>'
+	'Amateur Attacker': '<:AmateurAttacker:731494197940715550>',
+	'Clan Capital': '<:ClanCapital:1006585763640647810>'
 };
 
 export const WAR_STARS = {
