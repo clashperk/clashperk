@@ -2,9 +2,9 @@ import { MessageEmbed, PermissionString, TextChannel, Collection, WebhookClient,
 import { Player } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { TOWN_HALLS, EMOJIS, PLAYER_LEAGUES, HEROES } from '../util/Emojis';
-import { Collections } from '../util/Constants';
-import { Client } from '../struct/Client';
+import { TOWN_HALLS, EMOJIS, PLAYER_LEAGUES, HEROES } from '../util/Emojis.js';
+import { Collections } from '../util/Constants.js';
+import { Client } from '../struct/Client.js';
 
 const OP: { [key: string]: number } = {
 	JOINED: 0x38d863, // GREEN
@@ -189,7 +189,7 @@ export default class ClanFeedLog {
 			embed.setFooter({ text: `Left ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
 			embed.setDescription(
 				[
-					`${TOWN_HALLS[player.townHallLevel]} **${player.townHallLevel}**`,
+					`${TOWN_HALLS[player.townHallLevel]!} **${player.townHallLevel}**`,
 					`${EMOJIS.EXP} **${player.expLevel}**`,
 					`${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
 				].join(' ')
@@ -199,10 +199,10 @@ export default class ClanFeedLog {
 			embed.setFooter({ text: `Joined ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
 			embed.setDescription(
 				[
-					`${TOWN_HALLS[player.townHallLevel]}**${player.townHallLevel}**`,
+					`${TOWN_HALLS[player.townHallLevel]!}**${player.townHallLevel}**`,
 					`${this.formatHeroes(player)}`,
 					`${EMOJIS.WAR_STAR}**${player.warStars}**`,
-					`${PLAYER_LEAGUES[player.league?.id ?? 29000000]}**${player.trophies}**`
+					`${PLAYER_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`
 				].join(' ')
 			);
 
@@ -233,8 +233,8 @@ export default class ClanFeedLog {
 			const heroes = member.heroes.filter(({ village }) => village === 'home');
 			return heroes.length
 				? heroes.length > 3
-					? heroes.map((hero) => `${HEROES[hero.name]}**${hero.level}**`).join(' ')
-					: `${EMOJIS.EXP}**${member.expLevel}** ${heroes.map((hero) => `${HEROES[hero.name]}**${hero.level}**`).join(' ')}`
+					? heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')
+					: `${EMOJIS.EXP}**${member.expLevel}** ${heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')}`
 				: `${EMOJIS.EXP} **${member.expLevel}**`;
 		}
 

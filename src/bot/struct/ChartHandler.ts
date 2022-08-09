@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+import { request as fetch } from 'undici';
 import { nanoid } from 'nanoid';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -66,7 +66,7 @@ export default {
 			headers: {
 				'Content-Type': 'application/json'
 			}
-		}).then((res) => res.json());
+		}).then((res) => res.body.json());
 
 		return url;
 	},
@@ -82,7 +82,7 @@ export default {
 			chart: {
 				type: 'bar',
 				data: {
-					labels: [...collection.map((d: any) => `${months[d.date.getMonth()]} ${d.date.getDate() as number}`)],
+					labels: [...collection.map((d: any) => `${months[d.date.getMonth()]!} ${d.date.getDate() as number}`)],
 					datasets: [
 						{
 							type: 'bar',
@@ -135,7 +135,7 @@ export default {
 			headers: {
 				'Content-Type': 'application/json'
 			}
-		}).then((res) => res.json());
+		}).then((res) => res.body.json());
 
 		return url;
 	}

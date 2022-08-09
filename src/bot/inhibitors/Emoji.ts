@@ -1,5 +1,5 @@
 import { Interaction } from 'discord.js';
-import { Command, Inhibitor } from '../lib';
+import { Command, Inhibitor } from '../lib/index.js';
 
 export default class GuildBanInhibitor extends Inhibitor {
 	public constructor() {

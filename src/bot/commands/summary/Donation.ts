@@ -1,9 +1,9 @@
 import { MessageEmbed, CommandInteraction } from 'discord.js';
 import { Clan } from 'clashofclans.js';
-import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis';
-import { Collections } from '../../util/Constants';
-import { Season, Util } from '../../util';
-import { Command } from '../../lib';
+import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
+import { Collections } from '../../util/Constants.js';
+import { Season, Util } from '../../util/index.js';
+import { Command } from '../../lib/index.js';
 
 export interface Aggregated {
 	tag: string;

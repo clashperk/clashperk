@@ -1,5 +1,5 @@
 import { captureException } from '@sentry/node';
-import { Command } from '../../lib';
+import { Command } from '../../lib/index.js';
 
 export default class ErrorCommand extends Command {
 	public constructor() {

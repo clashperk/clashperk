@@ -1,7 +1,7 @@
 import { CommandInteraction, HexColorString, MessageEmbed } from 'discord.js';
-import { Command } from '../../lib';
-import { Util } from '../../util';
-import { Settings } from '../../util/Constants';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
+import { Settings } from '../../util/Constants.js';
 
 export default class ConfigCommand extends Command {
 	public constructor() {

@@ -7,7 +7,7 @@ class Manager extends Discord.ShardingManager {
 	public constructor() {
 		super(fileURLToPath(new URL('main.js', import.meta.url)), {
 			token: process.env.TOKEN!,
-			execArgv: ['--enable-source-maps', '--trace-warnings', '--es-module-specifier-resolution=node']
+			execArgv: ['--enable-source-maps', '--trace-warnings']
 		});
 	}
 

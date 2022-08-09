@@ -1,10 +1,10 @@
 import { ClanWar, WarClan } from 'clashofclans.js';
 import { CommandInteraction, MessageEmbed } from 'discord.js';
 import moment from 'moment';
-import { Collections } from '../../util/Constants';
-import { EMOJIS } from '../../util/Emojis';
-import { Command } from '../../lib';
-import { Util } from '../../util';
+import { Collections } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
 
 const states: Record<string, string> = {
 	inWar: '**End Time~**',

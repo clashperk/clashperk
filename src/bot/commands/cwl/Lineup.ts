@@ -1,8 +1,8 @@
 import { MessageEmbed, CommandInteraction, MessageButton, MessageActionRow, MessageSelectMenu } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember, Player, WarClan } from 'clashofclans.js';
-import { EMOJIS, HERO_PETS, BLUE_NUMBERS, WHITE_NUMBERS } from '../../util/Emojis';
-import { Command } from '../../lib';
-import { Util } from '../../util';
+import { EMOJIS, HERO_PETS, BLUE_NUMBERS, WHITE_NUMBERS } from '../../util/Emojis.js';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
 
 const states: Record<string, string> = {
 	inWar: 'Battle Day',

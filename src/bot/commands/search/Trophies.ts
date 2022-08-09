@@ -1,5 +1,5 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
-import { Command } from '../../lib';
+import { Command } from '../../lib/index.js';
 
 export default class TrophiesCommand extends Command {
 	public constructor() {

@@ -1,6 +1,6 @@
 import { GuildMember, MessageActionRow, MessageSelectMenu, CommandInteraction } from 'discord.js';
-import { Args, Command } from '../../lib';
-import { TOWN_HALLS } from '../../util/Emojis';
+import { Args, Command } from '../../lib/index.js';
+import { TOWN_HALLS } from '../../util/Emojis.js';
 
 export default class NickNameCommand extends Command {
 	public constructor() {

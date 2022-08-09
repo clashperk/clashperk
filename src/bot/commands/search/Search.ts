@@ -1,5 +1,5 @@
 import { MessageEmbed, CommandInteraction } from 'discord.js';
-import { Command } from '../../lib';
+import { Command } from '../../lib/index.js';
 
 export default class ClanSearchCommand extends Command {
 	public constructor() {

@@ -1,7 +1,7 @@
 import { BaseCommandInteraction, MessageComponentInteraction } from 'discord.js';
-import { Listener, Command } from '../../lib';
-import { CommandHandlerEvents } from '../../lib/util';
-import { locales } from '../../util/Constants';
+import { Listener, Command } from '../../lib/index.js';
+import { CommandHandlerEvents } from '../../lib/util.js';
+import { locales } from '../../util/Constants.js';
 
 export default class CommandEndedListener extends Listener {
 	public constructor() {

@@ -2,10 +2,10 @@ import { Collection, ObjectId } from 'mongodb';
 import { TextChannel } from 'discord.js';
 import moment from 'moment';
 import { ClanWar } from 'clashofclans.js';
-import { Util } from '../util';
-import { ORANGE_NUMBERS } from '../util/Emojis';
-import { Collections } from '../util/Constants';
-import { Client } from './Client';
+import { Util } from '../util/index.js';
+import { ORANGE_NUMBERS } from '../util/Emojis.js';
+import { Collections } from '../util/Constants.js';
+import { Client } from './Client.js';
 
 export default class RemindScheduler {
 	protected collection!: Collection<ReminderTemp>;
@@ -186,7 +186,7 @@ export default class RemindScheduler {
 			const users = Object.entries(
 				mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
 					if (!acc.hasOwnProperty(cur.mention)) acc[cur.mention] = [];
-					acc[cur.mention].push(cur);
+					acc[cur.mention]!.push(cur);
 					return acc;
 				}, {})
 			);
@@ -209,7 +209,7 @@ export default class RemindScheduler {
 								const ping = i === 0 ? ` ${mention}` : '';
 								const hits =
 									data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
-								return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]}${ping} ${mem.name}${hits}`;
+								return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${mem.name}${hits}`;
 							})
 							.join('\n')
 					)

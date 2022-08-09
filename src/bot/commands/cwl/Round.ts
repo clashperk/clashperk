@@ -1,9 +1,9 @@
 import { ClanWar, ClanWarLeagueGroup, ClanWarMember } from 'clashofclans.js';
 import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow } from 'discord.js';
 import moment from 'moment';
-import { EMOJIS, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis';
-import { Command } from '../../lib';
-import { Util } from '../../util';
+import { EMOJIS, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
 
 export default class CWLRoundCommand extends Command {
 	public constructor() {

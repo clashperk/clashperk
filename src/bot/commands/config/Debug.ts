@@ -1,9 +1,9 @@
 import { CommandInteraction, TextChannel, PermissionString, Interaction } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import ms from 'ms';
-import { Args, Command } from '../../lib';
-import { EMOJIS } from '../../util/Emojis';
-import { Util } from '../../util';
+import { Args, Command } from '../../lib/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
 
 export default class DebugCommand extends Command {
 	public constructor() {

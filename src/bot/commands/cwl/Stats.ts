@@ -1,9 +1,9 @@
 import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { MessageEmbed, CommandInteraction } from 'discord.js';
 import moment from 'moment';
-import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis';
-import { Command } from '../../lib';
-import { Util } from '../../util';
+import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
 
 export default class CWLStatsCommand extends Command {
 	public constructor() {

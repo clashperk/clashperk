@@ -1,8 +1,8 @@
 import { Clan, Player } from 'clashofclans.js';
 import { Collection, Guild, GuildMember } from 'discord.js';
-import { Collections } from '../util/Constants';
-import { Client } from '../struct/Client';
-import Queue from '../struct/Queue';
+import { Collections } from '../util/Constants.js';
+import { Client } from '../struct/Client.js';
+import Queue from '../struct/Queue.js';
 
 const ActionType: Record<string, string> = {
 	LEFT: '"%PLAYER% left"',

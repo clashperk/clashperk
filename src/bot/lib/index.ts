@@ -17,9 +17,9 @@ import {
 	MessageEmbed,
 	PermissionString
 } from 'discord.js';
-import { Client } from '../struct/Client';
-import { i18n } from '../util/i18n';
-import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util';
+import { Client } from '../struct/Client.js';
+import { i18n } from '../util/i18n.js';
+import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util.js';
 
 type ArgsMatchType =
 	| 'SUB_COMMAND'
@@ -80,7 +80,7 @@ export class BaseHandler extends EventEmitter {
 
 export class CommandHandler extends BaseHandler {
 	public readonly aliases: Collection<string, string>;
-	public override modules!: Collection<string, Command>;
+	public declare modules: Collection<string, Command>;
 
 	public constructor(public client: Client, { directory }: { directory: string }) {
 		super(client, { directory });
@@ -266,7 +266,7 @@ export class CommandHandler extends BaseHandler {
 }
 
 export class ListenerHandler extends BaseHandler {
-	public override modules!: Collection<string, Listener>;
+	public declare modules: Collection<string, Listener>;
 	private readonly emitters: Collection<string, EventEmitter>;
 
 	public constructor(client: Client, { directory }: { directory: string }) {
@@ -299,7 +299,7 @@ export class ListenerHandler extends BaseHandler {
 }
 
 export class InhibitorHandler extends BaseHandler {
-	public override modules!: Collection<string, Inhibitor>;
+	public declare modules: Collection<string, Inhibitor>;
 
 	public constructor(client: Client, { directory }: { directory: string }) {
 		super(client, { directory });

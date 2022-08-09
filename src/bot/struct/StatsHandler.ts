@@ -1,8 +1,8 @@
 import qs from 'querystring';
 import https from 'https';
 import { Guild, Interaction } from 'discord.js';
-import { Collections } from '../util/Constants';
-import { Client } from './Client';
+import { Collections } from '../util/Constants.js';
+import { Client } from './Client.js';
 
 export default class StatsHandler {
 	public messages = new Map<string, NodeJS.Timeout>();
@@ -49,7 +49,7 @@ export default class StatsHandler {
 			.end(form);
 	}
 
-	public async message(id: string) {
+	public message(id: string) {
 		if (this.messages.has(id)) return null;
 		this.messages.set(id, setTimeout(() => this.messages.delete(id), 60 * 60 * 1000).unref());
 

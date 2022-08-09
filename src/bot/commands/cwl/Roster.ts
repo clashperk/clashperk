@@ -1,9 +1,9 @@
 import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { MessageEmbed, CommandInteraction, MessageButton, MessageActionRow } from 'discord.js';
 import moment from 'moment';
-import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS, EMOJIS, TOWN_HALLS } from '../../util/Emojis';
-import { Command } from '../../lib';
-import { Util } from '../../util';
+import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS, EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
 
 export default class CWLRosterCommand extends Command {
 	public constructor() {

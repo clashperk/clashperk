@@ -1,6 +1,6 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
-import { Command } from '../../lib';
-import { URLS } from '../../util/Constants';
+import { Command } from '../../lib/index.js';
+import { URLS } from '../../util/Constants.js';
 
 interface Description {
 	content: string;

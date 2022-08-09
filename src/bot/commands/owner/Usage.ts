@@ -1,8 +1,8 @@
 import { Message, MessageEmbed } from 'discord.js';
 import moment from 'moment';
-import { Args, Command } from '../../lib';
-import Chart from '../../struct/ChartHandler';
-import { Collections } from '../../util/Constants';
+import { Args, Command } from '../../lib/index.js';
+import Chart from '../../struct/ChartHandler.js';
+import { Collections } from '../../util/Constants.js';
 
 export default class UsageCommand extends Command {
 	public constructor() {

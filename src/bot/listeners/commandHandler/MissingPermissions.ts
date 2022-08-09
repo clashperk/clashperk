@@ -1,5 +1,5 @@
 import { CommandInteraction, TextChannel, PermissionString, User } from 'discord.js';
-import { Listener, Command } from '../../lib';
+import { Listener, Command } from '../../lib/index.js';
 
 export default class MissingPermissionsListener extends Listener {
 	public constructor() {

@@ -1,8 +1,8 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
 import moment from 'moment';
-import { Collections } from '../../util/Constants';
-import { Command } from '../../lib';
-import Google from '../../struct/Google';
+import { Collections } from '../../util/Constants.js';
+import { Command } from '../../lib/index.js';
+import Google from '../../struct/Google.js';
 
 export default class TimezoneCommand extends Command {
 	public constructor() {

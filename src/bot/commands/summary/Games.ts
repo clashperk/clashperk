@@ -1,9 +1,9 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
 import moment from 'moment';
-import { ClanGames } from '../../util';
-import { Collections } from '../../util/Constants';
-import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis';
-import { Command } from '../../lib';
+import { ClanGames } from '../../util/index.js';
+import { Collections } from '../../util/Constants.js';
+import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
+import { Command } from '../../lib/index.js';
 
 interface Prop {
 	count: number;

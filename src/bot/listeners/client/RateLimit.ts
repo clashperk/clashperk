@@ -1,5 +1,5 @@
 import { MessageEmbed, Webhook } from 'discord.js';
-import { Listener } from '../../lib';
+import { Listener } from '../../lib/index.js';
 
 export default class RateLimitListener extends Listener {
 	public count: number;
@@ -70,7 +70,7 @@ export default class RateLimitListener extends Listener {
 					decodeURIComponent(path)
 				].join('\n')
 			)
-			.setFooter({ text: `Shard ${this.client.shard!.ids[0]}` })
+			.setFooter({ text: `Shard ${this.client.shard!.ids[0]!}` })
 			.setTimestamp();
 
 		return this.embeds.push(embed);

@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
-import { Listener } from '../../lib';
-import { Settings } from '../../util/Constants';
+import { Listener } from '../../lib/index.js';
+import { Settings } from '../../util/Constants.js';
 
 export default class MessageListener extends Listener {
 	public constructor() {

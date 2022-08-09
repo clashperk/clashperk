@@ -2,9 +2,9 @@ import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake, Thr
 import { APIMessage } from 'discord-api-types/v9';
 import { Clan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
-import { Collections } from '../util/Constants';
-import { Client } from '../struct/Client';
-import { Util } from '../util';
+import { Collections } from '../util/Constants.js';
+import { Client } from '../struct/Client.js';
+import { Util } from '../util/index.js';
 
 export interface Cache {
 	tag: string;

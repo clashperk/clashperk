@@ -1,5 +1,5 @@
 import { Interaction } from 'discord.js';
-import { Inhibitor } from '../lib';
+import { Inhibitor } from '../lib/index.js';
 
 export default class PermissionInhibitor extends Inhibitor {
 	public constructor() {

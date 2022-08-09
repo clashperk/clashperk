@@ -1,5 +1,5 @@
 import qs from 'querystring';
-import fetch from 'node-fetch';
+import { request as fetch } from 'undici';
 
 const GOOGLE_MAPS_API_BASE_URL = 'https://maps.googleapis.com/maps/api';
 
@@ -13,7 +13,7 @@ export default {
 		return fetch(`${GOOGLE_MAPS_API_BASE_URL}/geocode/json?${search}`)
 			.then(
 				(res) =>
-					res.json() as unknown as {
+					res.body.json() as unknown as {
 						results: { geometry: { location: { lat: string; lng: string } }; formatted_address: string }[];
 					}
 			)
@@ -35,7 +35,7 @@ export default {
 		const timezone = await fetch(`${GOOGLE_MAPS_API_BASE_URL}/timezone/json?${search}&location=${lat},${lng}`)
 			.then(
 				(res) =>
-					res.json() as unknown as {
+					res.body.json() as unknown as {
 						rawOffset: string;
 						dstOffset: string;
 						timeZoneName: string;

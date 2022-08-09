@@ -1,5 +1,5 @@
 import { ButtonInteraction, SelectMenuInteraction } from 'discord.js';
-import { Client } from '../struct/Client';
+import { Client } from '../struct/Client.js';
 
 interface ParsedCommandId {
 	tag: string;

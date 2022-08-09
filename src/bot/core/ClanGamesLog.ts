@@ -2,9 +2,9 @@ import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake, Thr
 import { APIMessage } from 'discord-api-types/v9';
 import { Clan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
-import { Collections } from '../util/Constants';
-import { ClanGames, Util } from '../util';
-import { Client } from '../struct/Client';
+import { Collections } from '../util/Constants.js';
+import { ClanGames, Util } from '../util/index.js';
+import { Client } from '../struct/Client.js';
 
 interface Cache {
 	tag: string;
@@ -183,7 +183,9 @@ export default class ClanGamesLog {
 	}
 
 	private _flush() {
-		const intervalId = setInterval(() => this.flush(intervalId), 5 * 60 * 1000);
+		const intervalId: NodeJS.Timeout = setInterval(() => {
+			this.flush(intervalId);
+		}, 5 * 60 * 1000);
 		return intervalId.unref();
 	}
 

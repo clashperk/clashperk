@@ -1,14 +1,14 @@
-import { Collections, Flags } from '../util/Constants';
-import { Client } from '../struct/Client';
-import Queue from '../struct/Queue';
-import MaintenanceHandler from './Maintenance';
-import { RoleManager } from './RoleManager';
-import ClanEmbedLog from './ClanEmbedLog';
-import ClanGamesLog from './ClanGamesLog';
-import LastSeenLog from './LastSeenLog';
-import ClanFeedLog from './ClanFeedLog';
-import DonationLog from './DonationLog';
-import ClanWarLog from './ClanWarLog';
+import { Collections, Flags } from '../util/Constants.js';
+import { Client } from '../struct/Client.js';
+import Queue from '../struct/Queue.js';
+import MaintenanceHandler from './Maintenance.js';
+import { RoleManager } from './RoleManager.js';
+import ClanEmbedLog from './ClanEmbedLog.js';
+import ClanGamesLog from './ClanGamesLog.js';
+import LastSeenLog from './LastSeenLog.js';
+import ClanFeedLog from './ClanFeedLog.js';
+import DonationLog from './DonationLog.js';
+import ClanWarLog from './ClanWarLog.js';
 
 export default class RPCHandler {
 	private paused = Boolean(false);

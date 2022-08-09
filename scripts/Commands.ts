@@ -2,9 +2,9 @@ import { fileURLToPath } from 'url';
 import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'discord-api-types/v9';
 import moment from 'moment';
 import i18next from 'i18next';
-import Backend from 'i18next-fs-backend';
-import { command } from '../locales/en';
-import { TranslationKey } from '../src/bot/util/i18n';
+import { command } from '../locales/en.js';
+import { TranslationKey } from '../src/bot/util/i18n.js';
+import { Backend } from '../src/bot/util/Backend.js';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({
@@ -12,17 +12,18 @@ await i18next.use(Backend).init({
 	cleanCode: true,
 	lng: 'en-US',
 	fallbackLng: {
-		fr: ['fr-FR', 'en-US'], // French/Français
-		it: ['it-IT', 'en-US'], // Italian/Italiano
-		de: ['de-DE', 'en-US'], // German/Deutsch
-		no: ['no-NO', 'en-US'], // Norwegian/Norsk
-		nl: ['nl-NL', 'en-US'], // Dutch/Nederlands
-		default: ['en-US'] // Default Fallback Language
+		'fr': ['fr-FR', 'en-US'], // French/Français
+		'it': ['it-IT', 'en-US'], // Italian/Italiano
+		'de': ['de-DE', 'en-US'], // German/Deutsch
+		'no': ['no-NO', 'en-US'], // Norwegian/Norsk
+		'nl': ['nl-NL', 'en-US'], // Dutch/Nederlands
+		'es-ES': ['es-ES', 'en-US'], // Spanish/Español
+		'default': ['en-US'] // Default Fallback Language
 	},
 	preload: ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'nl-NL', 'it-IT', 'de-DE', 'no-NO'],
 	defaultNS: 'translation',
 	ns: ['translation'],
-	backend: { loadPath: fileURLToPath(locales) }
+	backend: { paths: [fileURLToPath(locales)] }
 });
 
 export function getSeasonIds() {

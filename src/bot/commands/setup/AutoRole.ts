@@ -1,6 +1,6 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
-import { Collections } from '../../util/Constants';
-import { Args, Command } from '../../lib';
+import { Collections } from '../../util/Constants.js';
+import { Args, Command } from '../../lib/index.js';
 
 export interface IArgs {
 	command?: 'enable' | 'disable' | null;

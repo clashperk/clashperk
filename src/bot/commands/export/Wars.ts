@@ -1,9 +1,9 @@
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
-import { Collections } from '../../util/Constants';
-import { Command } from '../../lib';
-import Excel from '../../struct/Excel';
-import { Util } from '../../util';
+import { Collections } from '../../util/Constants.js';
+import { Command } from '../../lib/index.js';
+import Excel from '../../struct/Excel.js';
+import { Util } from '../../util/index.js';
 
 export default class WarExport extends Command {
 	public constructor() {

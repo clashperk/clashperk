@@ -1,5 +1,5 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
-import { Command } from '../../lib';
+import { Command } from '../../lib/index.js';
 
 export default class ClanAttacksCommand extends Command {
 	public constructor() {

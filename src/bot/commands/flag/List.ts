@@ -1,9 +1,9 @@
 import { CommandInteraction, MessageEmbed } from 'discord.js';
 import moment from 'moment';
-import { Collections } from '../../util/Constants';
-import { RED_NUMBERS } from '../../util/Emojis';
-import { Args, Command } from '../../lib';
-import Excel from '../../struct/Excel';
+import { Collections } from '../../util/Constants.js';
+import { RED_NUMBERS } from '../../util/Emojis.js';
+import { Args, Command } from '../../lib/index.js';
+import Excel from '../../struct/Excel.js';
 
 // TODO: Fix TS
 export default class FlagListCommand extends Command {

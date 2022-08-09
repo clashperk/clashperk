@@ -1,7 +1,7 @@
 import { GuildMember } from 'discord.js';
-import { Collections } from '../../util/Constants';
-import { Listener } from '../../lib';
-import { UserInfo } from '../../types';
+import { Collections } from '../../util/Constants.js';
+import { Listener } from '../../lib/index.js';
+import { UserInfo } from '../../types/index.js';
 
 export default class GuildMemberAddListener extends Listener {
 	public constructor() {

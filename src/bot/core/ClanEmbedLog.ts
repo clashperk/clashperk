@@ -2,10 +2,10 @@ import { MessageEmbed, Message, Collection, TextChannel, PermissionString, Snowf
 import { APIMessage } from 'discord-api-types/v9';
 import { Clan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
-import { EMOJIS, TOWN_HALLS, CWL_LEAGUES, ORANGE_NUMBERS } from '../util/Emojis';
-import { Collections } from '../util/Constants';
-import { Client } from '../struct/Client';
-import { Util } from '../util';
+import { EMOJIS, TOWN_HALLS, CWL_LEAGUES, ORANGE_NUMBERS } from '../util/Emojis.js';
+import { Collections } from '../util/Constants.js';
+import { Client } from '../struct/Client.js';
+import { Util } from '../util/index.js';
 
 export interface Cache {
 	_id: ObjectId;
@@ -203,7 +203,7 @@ export default class ClanEmbedLog {
 				[
 					townHalls
 						.slice(0, 7)
-						.map((th) => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`)
+						.map((th) => `${TOWN_HALLS[th.level]!} ${ORANGE_NUMBERS[th.total]!}\u200b`)
 						.join(' ') || `${EMOJIS.WRONG} None`
 				].join('\n')
 			)

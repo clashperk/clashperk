@@ -1,8 +1,8 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
-import { Collections } from '../../util/Constants';
-import { Season, Util } from '../../util';
-import { Args, Command } from '../../lib';
-import { EMOJIS } from '../../util/Emojis';
+import { Collections } from '../../util/Constants.js';
+import { Season, Util } from '../../util/index.js';
+import { Args, Command } from '../../lib/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
 
 export default class DonationsCommand extends Command {
 	public constructor() {

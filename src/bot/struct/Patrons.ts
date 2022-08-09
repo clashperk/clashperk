@@ -1,9 +1,9 @@
 import qs from 'querystring';
 import { Collection } from 'mongodb';
-import fetch from 'node-fetch';
+import { request as fetch } from 'undici';
 import { Interaction } from 'discord.js';
-import { Collections, Settings } from '../util/Constants';
-import { Client } from './Client';
+import { Collections, Settings } from '../util/Constants.js';
+import { Client } from './Client.js';
 
 export default class Patrons {
 	private readonly collection: Collection<Patron>;
@@ -168,9 +168,9 @@ export default class Patrons {
 
 		const data = (await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
 			headers: { authorization: `Bearer ${process.env.PATREON_API!}` },
-			timeout: 10000
+			bodyTimeout: 10000
 		})
-			.then((res) => res.json())
+			.then((res) => res.body.json())
 			.catch(() => null)) as { data: Member[]; included: Included[] } | null;
 
 		return data?.data ? data : null;

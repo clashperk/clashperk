@@ -1,11 +1,11 @@
 import { GuildMember, CommandInteraction, Collection, Interaction, MessageEmbed } from 'discord.js';
 import { Player } from 'clashofclans.js';
-import RAW_TROOPS_DATA from '../../util/Troops';
-import { Collections } from '../../util/Constants';
-import Workbook from '../../struct/Excel';
-import { Command } from '../../lib';
-import { Util } from '../../util';
-import { SUPER_TROOPS } from '../../util/Emojis';
+import RAW_TROOPS_DATA from '../../util/Troops.js';
+import { Collections } from '../../util/Constants.js';
+import Workbook from '../../struct/Excel.js';
+import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
+import { SUPER_TROOPS } from '../../util/Emojis.js';
 
 const achievements = [
 	'Gold Grab',

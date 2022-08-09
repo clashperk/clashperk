@@ -2,8 +2,8 @@ import { createHash } from 'crypto';
 import { ObjectId, Collection } from 'mongodb';
 import { CommandInteraction } from 'discord.js';
 import { ClanWarLeagueGroup } from 'clashofclans.js';
-import { Collections, Flags } from '../util/Constants';
-import { Client } from './Client';
+import { Collections, Flags } from '../util/Constants.js';
+import { Client } from './Client.js';
 
 export interface ClanStore {
 	_id: ObjectId;
@@ -248,6 +248,8 @@ export default class StorageHandler {
 		if (data.op === Flags.CLAN_WAR_LOG) {
 			return this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clanId: new ObjectId(id) });
 		}
+
+		return null;
 	}
 
 	public async getWarTags(tag: string, season?: string | null): Promise<ClanWarLeagueGroup | null> {
@@ -288,8 +290,8 @@ export default class StorageHandler {
 			for (const warTag of round.warTags) {
 				const data = await this.client.http.clanWarLeagueWar(warTag);
 				if (!data.ok) continue;
-				if (!warTags[data.clan.tag].includes(warTag)) warTags[data.clan.tag].push(warTag);
-				if (!warTags[data.opponent.tag].includes(warTag)) warTags[data.opponent.tag].push(warTag);
+				if (!warTags[data.clan.tag]!.includes(warTag)) warTags[data.clan.tag]!.push(warTag);
+				if (!warTags[data.opponent.tag]!.includes(warTag)) warTags[data.opponent.tag]!.push(warTag);
 			}
 		}
 
@@ -300,7 +302,7 @@ export default class StorageHandler {
 		return createHash('md5').update(id).digest('hex');
 	}
 
-	private async pushToDB(tag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
+	private async pushToDB(_tag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
 		const uid = this.md5(
 			`${season}-${clans
 				.map((clan) => clan.tag)

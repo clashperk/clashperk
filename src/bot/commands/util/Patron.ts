@@ -1,7 +1,7 @@
 import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
-import { Collections, Settings } from '../../util/Constants';
-import { Patron } from '../../struct/Patrons';
-import { Args, Command } from '../../lib';
+import { Collections, Settings } from '../../util/Constants.js';
+import { Patron } from '../../struct/Patrons.js';
+import { Args, Command } from '../../lib/index.js';
 
 export default class PatronCommand extends Command {
 	public constructor() {
