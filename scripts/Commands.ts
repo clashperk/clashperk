@@ -293,10 +293,12 @@ export const COMMANDS: Command[] = [
 				choices: [
 					{
 						name: 'Yes',
+						name_localizations: translation('common.choices.yes'),
 						value: 'true'
 					},
 					{
 						name: 'No',
+						name_localizations: translation('common.choices.no'),
 						value: 'false'
 					}
 				]
@@ -391,10 +393,12 @@ export const COMMANDS: Command[] = [
 						choices: [
 							{
 								name: 'Yes',
+								name_localizations: translation('common.choices.yes'),
 								value: 'true'
 							},
 							{
 								name: 'No',
+								name_localizations: translation('common.choices.no'),
 								value: 'false'
 							}
 						]
@@ -473,10 +477,12 @@ export const COMMANDS: Command[] = [
 						choices: [
 							{
 								name: 'Yes',
+								name_localizations: translation('common.choices.yes'),
 								value: 'true'
 							},
 							{
 								name: 'No',
+								name_localizations: translation('common.choices.no'),
 								value: 'false'
 							}
 						]
@@ -1253,10 +1259,12 @@ export const COMMANDS: Command[] = [
 						choices: [
 							{
 								name: 'Yes',
+								name_localizations: translation('common.choices.yes'),
 								value: 'true'
 							},
 							{
 								name: 'No',
+								name_localizations: translation('common.choices.no'),
 								value: 'false'
 							}
 						]

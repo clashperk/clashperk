@@ -34,6 +34,7 @@ export default class UsageCommand extends Command {
 		}
 
 		const { commands } = await this.commands();
+		const maxDigit = Math.max(...commands.map((cmd) => cmd.uses.toString().length));
 		const usage = await this.usage();
 		const embed = new MessageEmbed()
 			.setAuthor({ name: `${this.client.user!.username}`, iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
@@ -48,10 +49,9 @@ export default class UsageCommand extends Command {
 				`__**\`\u200e # ${'Uses'.padStart(6, ' ')}  ${'Command'.padEnd(15, ' ')}\u200f\`**__`,
 				...commands.splice(0, 15).map(({ id, uses }, index) => {
 					const command = this.client.commandHandler.modules.get(id)!.id.replace(/-/g, '');
-					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${uses.toString().padStart(5, ' ')}x  ${command.padEnd(
-						15,
-						' '
-					)}\u200f\``;
+					return `\`\u200e${(index + 1).toString().padStart(2, ' ')} ${uses
+						.toString()
+						.padStart(maxDigit, ' ')}x  ${command.padEnd(15, ' ')}\u200f\``;
 				})
 			].join('\n')
 		);

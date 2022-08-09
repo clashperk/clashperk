@@ -45,21 +45,12 @@ export default class LastSeenCommand extends Command {
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
-			.setDescription(
-				[
-					'**[Last seen and last 24h activity scores](https://clashperk.com/faq)**',
-					`\`\`\`\n\u200eLAST-ON 24H  NAME\n${members
-						.map((m) => `${getTime(m.lastSeen)}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
-						.join('\n')}`,
-					'```'
-				].join('\n')
-			)
 			.setFooter({ text: `Members [${clan.members}/50]`, iconURL: interaction.user.displayAvatarURL() });
 		if (score) {
 			members.sort((a, b) => b.count - a.count);
 			embed.setDescription(
 				[
-					`Clan Member Activities (Last ${30} Days)`,
+					this.i18n('command.lastseen.title_activity', { lng: interaction.locale }),
 					`\`\`\`\n\u200e${'TOTAL'.padStart(4, ' ')} AVG  ${'NAME'}\n${members
 						.map(
 							(m) =>
@@ -74,7 +65,7 @@ export default class LastSeenCommand extends Command {
 		} else {
 			embed.setDescription(
 				[
-					'**[Last seen and last 24h activity scores](https://clashperk.com/faq)**',
+					`**[${this.i18n('command.lastseen.title_lastseen', { lng: interaction.locale })}](https://clashperk.com/faq)**`,
 					`\`\`\`\n\u200eLAST-ON 24H  NAME\n${members
 						.map((m) => `${getTime(m.lastSeen)}  ${Math.min(m.count, 99).toString().padStart(2, ' ')}  ${m.name}`)
 						.join('\n')}`,

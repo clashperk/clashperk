@@ -41,7 +41,8 @@ export default class ClanGamesCommand extends Command {
 
 		const queried = await this.query(clan.tag, clan);
 		const members = this.filter(queried, memberList);
-		const embed = this.embed(clan, members, args.max, args.filter).setColor(this.client.embed(interaction));
+		const embed = this.embed(interaction, { clan, members, max: args.max, filter: args.filter });
+		embed.setColor(this.client.embed(interaction));
 
 		const row = new MessageActionRow()
 			.addComponents(
@@ -59,13 +60,18 @@ export default class ClanGamesCommand extends Command {
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
-	private embed(clan: Clan, members: Member[], max = false, filter = false) {
+	private embed(
+		interaction: CommandInteraction,
+		{ clan, members, max = false, filter = false }: { clan: Clan; members: Member[]; max?: boolean; filter?: boolean }
+	) {
 		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
 		const embed = new MessageEmbed()
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
 			.setDescription(
 				[
-					`**[Clan Games Scoreboard (${this.seasonId})](https://clashperk.com/faq)**`,
+					`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${
+						this.seasonId
+					})](https://clashperk.com/faq)**`,
 					`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
 					members
 						.slice(0, 55)

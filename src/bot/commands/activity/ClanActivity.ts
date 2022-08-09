@@ -47,7 +47,11 @@ export default class ClanActivityCommand extends Command {
 		const datasets = result.map((clan) => ({ name: clan.name, data: this.datasets(clan, timezone.offset, args.days ?? 1) }));
 
 		const hrStart = process.hrtime();
-		const url = await Chart.activity(datasets, [`Active Members Per Hour (${timezone.name})`], args.days);
+		const url = await Chart.activity(
+			datasets,
+			[`${this.i18n('command.activity.title', { lng: interaction.locale })} (${timezone.name})`],
+			args.days
+		);
 		const diff = process.hrtime(hrStart);
 
 		this.client.logger.debug(`Rendered in ${(diff[0] * 1000 + diff[1] / 1000000).toFixed(2)}ms`, { label: 'CHART' });
