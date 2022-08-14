@@ -6,13 +6,15 @@ import { ApplicationCommand } from 'discord.js';
 import { COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 
 const isOk = (res: Dispatcher.ResponseData) => res.statusCode >= 200 && res.statusCode < 300;
+const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
+const guildId = process.env.GUILD_ID ?? '509784317598105619';
 
-const applicationGuildCommands = async (commands: typeof COMMANDS) => {
+const applicationGuildCommands = async (token: string, commands: typeof COMMANDS) => {
 	console.log('Building Guild Application Commands');
-	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands('635462521729581058', '609250675431309313')}`, {
+	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands(getClientId(token), guildId)}`, {
 		method: 'PUT',
 		headers: {
-			'Authorization': `Bot ${process.env.TOKEN!}`,
+			'Authorization': `Bot ${token}`,
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify(commands)
@@ -21,11 +23,11 @@ const applicationGuildCommands = async (commands: typeof COMMANDS) => {
 	console.log(`Updated ${COMMANDS.length} Guild Application Commands`);
 };
 
-const commandPermission = async () => {
-	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands('526971716711350273', '509784317598105619')}`, {
+const commandPermission = async (token: string) => {
+	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands(getClientId(token), guildId)}`, {
 		method: 'PUT',
 		headers: {
-			'Authorization': `Bot ${process.env.BOT_TOKEN!}`,
+			'Authorization': `Bot ${token}`,
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify(PRIVATE_COMMANDS)
@@ -34,10 +36,10 @@ const commandPermission = async () => {
 	console.log(commands);
 	if (!isOk(res)) return;
 
-	await fetch(`${RouteBases.api}${Routes.guildApplicationCommandsPermissions('526971716711350273', '509784317598105619')}`, {
+	await fetch(`${RouteBases.api}${Routes.guildApplicationCommandsPermissions(getClientId(token), guildId)}`, {
 		method: 'PUT',
 		headers: {
-			'Authorization': `Bot ${process.env.BOT_TOKEN!}`,
+			'Authorization': `Bot ${token}`,
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify(
@@ -65,12 +67,12 @@ const commandPermission = async () => {
 	}).then((data) => (isOk(res) ? console.log(JSON.stringify(data)) : console.log(data)));
 };
 
-const applicationCommands = async () => {
-	console.log('Building Application Commands');
-	const res = await fetch(`${RouteBases.api}${Routes.applicationCommands('526971716711350273')}`, {
+const applicationCommands = async (token: string) => {
+	console.log('Building Application Commands', getClientId(token));
+	const res = await fetch(`${RouteBases.api}${Routes.applicationCommands(getClientId(token))}`, {
 		method: 'PUT',
 		headers: {
-			'Authorization': `Bot ${process.env.BOT_TOKEN!}`,
+			'Authorization': `Bot ${token}`,
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify(COMMANDS)
@@ -80,20 +82,20 @@ const applicationCommands = async () => {
 };
 
 async function init() {
+	const token = process.env.BOT_TOKEN!;
 	if (process.argv.includes('--gh-action')) {
-		return applicationCommands();
+		return applicationCommands(token);
 	}
 
 	if (process.argv.includes('--private')) {
-		return commandPermission();
+		return commandPermission(token);
 	}
 
 	if (process.argv.includes('--delete')) {
-		return applicationGuildCommands([]);
+		return applicationGuildCommands(token, []);
 	}
 
-	// await applicationCommands();
-	await applicationGuildCommands(COMMANDS);
+	await applicationGuildCommands(process.env.TOKEN!, [...COMMANDS, ...PRIVATE_COMMANDS]);
 }
 
 init();
