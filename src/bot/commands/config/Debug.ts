@@ -56,9 +56,6 @@ export default class DebugCommand extends Command {
 			[
 				`**${this.client.user!.username} Debug Menu**`,
 				'',
-				'**Command Prefix**',
-				'/',
-				'',
 				'**Server ID**',
 				`${interaction.guild.id}`,
 				'**Shard ID**',

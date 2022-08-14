@@ -15,7 +15,8 @@ export default class StatusCommand extends Command {
 			description: {
 				content: 'Shows some statistics of the bot.'
 			},
-			defer: true
+			defer: true,
+			ephemeral: true
 		});
 	}
 

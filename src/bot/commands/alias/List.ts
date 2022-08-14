@@ -21,7 +21,7 @@ export default class AliasListCommand extends Command {
 
 		const chunks = Util.splitMessage(
 			[
-				`**${interaction.guild.name} Clan Aliases**`,
+				`**${this.i18n('command.alias.list.title', { lng: interaction.locale })}**`,
 				'',
 				clans
 					.map((clan) => `• **${clan.name as string} (${clan.tag as string})**\n\u2002 **Alias:** ${clan.alias as string}`)

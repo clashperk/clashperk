@@ -49,12 +49,12 @@ export default class ConfigCommand extends Command {
 
 		const embed = new MessageEmbed()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `Settings of ${interaction.guild.name}` })
+			.setAuthor({ name: this.i18n('command.config.title', { lng: interaction.locale }) })
 			.addField('Prefix', '/')
 			.addField('Patron', this.client.patrons.get(interaction.guild.id) ? 'Yes' : 'No')
-			.addField('Color', color ? `#${color.toString(16).toUpperCase()}` : 'None')
+			.addField(this.i18n('common.color_code', { lng: interaction.locale }), color ? `#${color.toString(16).toUpperCase()}` : 'None')
 			// eslint-disable-next-line @typescript-eslint/no-base-to-string
-			.addField('Events Channel', channel ? channel.toString() : 'None');
+			.addField(this.i18n('command.config.events_channel', { lng: interaction.locale }), channel?.toString() ?? 'None');
 
 		return interaction.reply({ embeds: [embed] });
 	}
