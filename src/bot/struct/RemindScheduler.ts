@@ -73,6 +73,7 @@ export default class RemindScheduler {
 					isFriendly: Boolean(data.isFriendly),
 					duration: reminder.duration,
 					reminderId: reminder._id,
+					source: 'bot',
 					triggered: false,
 					timestamp: new Date(ms),
 					createdAt: new Date()
@@ -264,6 +265,7 @@ export interface ReminderTemp {
 	tag: string;
 	warTag?: string;
 	duration: number;
+	source?: string;
 	reminderId: ObjectId;
 	isFriendly: boolean;
 	triggered: boolean;

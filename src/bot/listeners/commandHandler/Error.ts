@@ -62,10 +62,13 @@ export default class ErrorListener extends Listener {
 		captureException(error);
 
 		const message = {
-			content: '\\❌ Something went wrong while executing that command.',
+			content: `\\❌ ${this.i18n('common.something_went_wrong', { lng: interaction.locale })}`,
 			components: [
 				new MessageActionRow().addComponents(
-					new MessageButton().setStyle('LINK').setLabel('Contact Support').setURL('https://discord.gg//ppuppun')
+					new MessageButton()
+						.setStyle('LINK')
+						.setLabel(this.i18n('component.button.contact_support', { lng: interaction.locale }))
+						.setURL('https://discord.gg//ppuppun')
 				)
 			],
 			ephemeral: true
