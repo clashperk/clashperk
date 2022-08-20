@@ -6,7 +6,7 @@ export default class LinkCommand extends Command {
 		super('link', {
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: 'Links a Player or Clan to a Discord account.'
 			}

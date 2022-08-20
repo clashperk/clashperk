@@ -1,4 +1,4 @@
-import { MessageEmbed, Collection, PermissionString, TextChannel, WebhookClient, ThreadChannel } from 'discord.js';
+import { EmbedBuilder, Collection, PermissionsString, TextChannel, WebhookClient, ThreadChannel } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { BLUE_NUMBERS, RED_NUMBERS, PLAYER_LEAGUES, EMOJIS } from '../util/Emojis.js';
 import { Collections } from '../util/Constants.js';
@@ -48,14 +48,13 @@ export default class DonationLog {
 	}
 
 	private async permissionsFor(id: string, cache: any, data: any) {
-		const permissions: PermissionString[] = ['SEND_MESSAGES', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'VIEW_CHANNEL'];
+		const permissions: PermissionsString[] = ['SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'ViewChannel'];
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
-				return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SendMessagesInThreads'))) return;
 			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
-				if (!channel.isThread() && this.hasWebhookPermission(channel)) {
+				if (channel.isTextBased() && this.hasWebhookPermission(channel)) {
 					const webhook = await this.webhook(id);
 					if (webhook) return this.handleMessage(id, webhook, data);
 				}
@@ -67,13 +66,13 @@ export default class DonationLog {
 
 	private async unarchive(thread: ThreadChannel) {
 		if (!(thread.editable && thread.manageable)) return null;
-		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
+		return thread.edit({ archived: false, locked: false });
 	}
 
 	private hasWebhookPermission(channel: TextChannel) {
 		return (
-			channel.permissionsFor(channel.guild.me!)!.has(['MANAGE_WEBHOOKS']) &&
-			channel.permissionsFor(channel.guild.id)!.has(['USE_EXTERNAL_EMOJIS'])
+			channel.permissionsFor(this.client.user!.id)!.has(['ManageWebhooks']) &&
+			channel.permissionsFor(channel.guild.id)!.has(['UseExternalEmojis'])
 		);
 	}
 
@@ -119,7 +118,10 @@ export default class DonationLog {
 
 		if (webhooks.size === 10) return this.stopWebhookCheck(id);
 		const webhook = await channel
-			.createWebhook(this.client.user!.username, { avatar: this.client.user!.displayAvatarURL({ size: 2048, format: 'png' }) })
+			.createWebhook({
+				name: this.client.user!.username,
+				avatar: this.client.user!.displayAvatarURL({ size: 2048, extension: 'png' })
+			})
 			.catch(() => null);
 
 		if (webhook) {
@@ -141,62 +143,66 @@ export default class DonationLog {
 
 	private async handleMessage(id: string, channel: TextChannel | WebhookClient | ThreadChannel, data: Donation) {
 		const cache = this.cached.get(id);
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.clan.tag)}`)
 			.setThumbnail(data.clan.badge)
-			.setFooter({ text: `${data.clan.members} Members`, iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
+			.setFooter({ text: `${data.clan.members} Members`, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
 			.setTimestamp();
 		if (cache.color) embed.setColor(cache.color);
 
 		if (data.donated.length) {
-			embed.addField(
-				`${EMOJIS.USER_BLUE} Donated`,
-				[
-					data.donated
-						.map((m) => {
-							if (m.donated > 200) {
-								const [div, mod] = this.divmod(m.donated);
-								const list = [
-									`\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[(div > 900 ? 900 : div).toString()]!} ${m.name}`
-								];
-								if (mod > 0)
-									return list
-										.concat(`\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[mod.toString()]!} ${m.name}`)
-										.join('\n');
-								return list.join('\n');
-							}
-							return `\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[m.donated]!} ${m.name}`;
-						})
-						.join('\n')
-						.substring(0, 1024)
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: `${EMOJIS.USER_BLUE} Donated`,
+					value: [
+						data.donated
+							.map((m) => {
+								if (m.donated > 200) {
+									const [div, mod] = this.divmod(m.donated);
+									const list = [
+										`\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[(div > 900 ? 900 : div).toString()]!} ${m.name}`
+									];
+									if (mod > 0)
+										return list
+											.concat(`\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[mod.toString()]!} ${m.name}`)
+											.join('\n');
+									return list.join('\n');
+								}
+								return `\u200e${PLAYER_LEAGUES[m.league]!} ${BLUE_NUMBERS[m.donated]!} ${m.name}`;
+							})
+							.join('\n')
+							.substring(0, 1024)
+					].join('\n')
+				}
+			]);
 		}
 
 		if (data.received.length) {
-			embed.addField(
-				`${EMOJIS.USER_RED} Received`,
-				[
-					data.received
-						.map((m) => {
-							if (m.received > 200) {
-								const [div, mod] = this.divmod(m.received);
-								const list = [
-									`\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[(div > 900 ? 900 : div).toString()]!} ${m.name}`
-								];
-								if (mod > 0)
-									return list
-										.concat(`\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[mod.toString()]!} ${m.name}`)
-										.join('\n');
-								return list.join('\n');
-							}
-							return `\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[m.received]!} ${m.name}`;
-						})
-						.join('\n')
-						.substring(0, 1024)
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: `${EMOJIS.USER_RED} Received`,
+					value: [
+						data.received
+							.map((m) => {
+								if (m.received > 200) {
+									const [div, mod] = this.divmod(m.received);
+									const list = [
+										`\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[(div > 900 ? 900 : div).toString()]!} ${m.name}`
+									];
+									if (mod > 0)
+										return list
+											.concat(`\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[mod.toString()]!} ${m.name}`)
+											.join('\n');
+									return list.join('\n');
+								}
+								return `\u200e${PLAYER_LEAGUES[m.league]!} ${RED_NUMBERS[m.received]!} ${m.name}`;
+							})
+							.join('\n')
+							.substring(0, 1024)
+					].join('\n')
+				}
+			]);
 		}
 
 		if (channel instanceof TextChannel || channel instanceof ThreadChannel) {

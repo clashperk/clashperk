@@ -1,4 +1,4 @@
-import { MessageEmbed, GuildMember, CommandInteraction, MessageActionRow, MessageButton, User, Interaction } from 'discord.js';
+import { EmbedBuilder, GuildMember, CommandInteraction, ActionRowBuilder, ButtonBuilder, User, Interaction, ButtonStyle } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import moment from 'moment';
 import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis.js';
@@ -19,7 +19,7 @@ export default class ProfileCommand extends Command {
 		super('profile', {
 			category: 'profile',
 			channel: 'guild',
-			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
+			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
 			description: {
 				content: 'Shows info about linked accounts.'
 			},
@@ -45,7 +45,7 @@ export default class ProfileCommand extends Command {
 			this.client.resolver.updateUserTag(interaction.guild, user.id);
 		}
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${user.tag} (${user.id})`, iconURL: user.displayAvatarURL() })
 			.setDescription(['**Created**', `${moment(user.createdAt).format('MMMM DD, YYYY, kk:mm:ss')}`].join('\n'));
@@ -58,7 +58,7 @@ export default class ProfileCommand extends Command {
 		if (clan.ok) {
 			embed.setDescription(
 				[
-					embed.description,
+					embed.data.description,
 					'',
 					'**Clan**',
 					`${EMOJIS.CLAN} [${clan.name} (${
@@ -69,12 +69,12 @@ export default class ProfileCommand extends Command {
 				].join('\n')
 			);
 		} else {
-			embed.setDescription([embed.description, '\u200b'].join('\n'));
+			embed.setDescription([embed.data.description, '\u200b'].join('\n'));
 		}
 
 		const otherTags = await this.client.http.getPlayerTags(user.id);
 		if (!data?.entries.length && !otherTags.length) {
-			embed.setDescription([embed.description, 'No accounts are linked. Why not add some?'].join('\n'));
+			embed.setDescription([embed.data.description, 'No accounts are linked. Why not add some?'].join('\n'));
 			return interaction.editReply({ embeds: [embed] });
 		}
 
@@ -109,25 +109,19 @@ export default class ProfileCommand extends Command {
 			});
 		}
 		tags.clear();
-
-		collection
-			.slice(0, 25)
-			.map((a, i) =>
-				embed.addField(i === 0 ? `**Player Accounts [${collection.length}]**` : '\u200b', [a.field, ...a.values].join('\n'))
-			);
-
-		const pop = () => {
-			embed.fields.pop();
-			if (embed.length > 6000) pop();
-		};
-		if (embed.length > 6000) pop();
+		embed.addFields(
+			collection.slice(0, 25).map((a, i) => ({
+				name: i === 0 ? `**Player Accounts [${collection.length}]**` : '\u200b',
+				value: [a.field, ...a.values].join('\n')
+			}))
+		);
 
 		const customId = this.client.uuid(interaction.user.id);
-		const row = new MessageActionRow().addComponents(
-			new MessageButton()
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
 				.setEmoji(EMOJIS.EXPORT)
 				.setCustomId(customId)
-				.setStyle('SECONDARY')
+				.setStyle(ButtonStyle.Secondary)
 				.setDisabled(links.length < 10)
 		);
 

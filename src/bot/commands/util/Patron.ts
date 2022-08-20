@@ -1,4 +1,4 @@
-import { Message, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { Message, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
 import { Collections, Settings } from '../../util/Constants.js';
 import { Patron } from '../../struct/Patrons.js';
 import { Args, Command } from '../../lib/index.js';
@@ -7,7 +7,7 @@ export default class PatronCommand extends Command {
 	public constructor() {
 		super('patron', {
 			category: 'none',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: "Get info about the bot's patreon."
 			}
@@ -62,13 +62,13 @@ export default class PatronCommand extends Command {
 		].join('\n');
 
 		const customId = this.client.uuid(message.author.id);
-		const button = new MessageButton().setCustomId(customId).setStyle('SECONDARY').setLabel('Our Current Patrons');
+		const button = new ButtonBuilder().setCustomId(customId).setStyle(ButtonStyle.Secondary).setLabel('Our Current Patrons');
 
 		if (!this.client.isOwner(message.author.id)) {
 			return message.channel.send({ content });
 		}
 
-		const msg = await message.channel.send({ content, components: [new MessageActionRow().addComponents(button)] });
+		const msg = await message.channel.send({ content, components: [new ActionRowBuilder<ButtonBuilder>().addComponents(button)] });
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => action.customId === customId && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
@@ -77,7 +77,7 @@ export default class PatronCommand extends Command {
 		const patrons = (await this.patrons()).filter((patron) => patron.active && patron.userId !== this.client.ownerId);
 		collector.on('collect', async (action) => {
 			if (action.customId === customId) {
-				const embed = new MessageEmbed();
+				const embed = new EmbedBuilder();
 				embed.setDescription(
 					[`**Our Current Patrons (${patrons.length})**`, patrons.map((patron) => `• ${patron.username}`).join('\n')].join('\n')
 				);

@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageButton, MessageActionRow, MessageSelectMenu, MessageEmbed } from 'discord.js';
+import { CommandInteraction, ButtonBuilder, ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { EMOJIS, SUPER_TROOPS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -11,7 +11,7 @@ export default class BoostsCommand extends Command {
 		super('boosts', {
 			category: 'search',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Clan members with active super troops.'
 			},
@@ -58,7 +58,7 @@ export default class BoostsCommand extends Command {
 			return pre;
 		}, {});
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction.guild.id))
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
 			.setDescription(
@@ -77,20 +77,22 @@ export default class BoostsCommand extends Command {
 		}
 
 		for (const [key, val] of Object.entries(memObj)) {
-			embed.addField(
-				`${SUPER_TROOPS[key]} ${key}`,
-				Util.splitMessage(
-					`${val
-						.map(
-							(mem) =>
-								`\u200e${mem.name}${mem.duration ? ` (${Util.duration(mem.duration)})` : ''} ${
-									mem.online ? EMOJIS.ONLINE : ''
-								}`
-						)
-						.join('\n')}\n\u200b`,
-					{ maxLength: 1024 }
-				)[0]
-			);
+			embed.addFields([
+				{
+					name: `${SUPER_TROOPS[key]} ${key}`,
+					value: Util.splitMessage(
+						`${val
+							.map(
+								(mem) =>
+									`\u200e${mem.name}${mem.duration ? ` (${Util.duration(mem.duration)})` : ''} ${
+										mem.online ? EMOJIS.ONLINE : ''
+									}`
+							)
+							.join('\n')}\n\u200b`,
+						{ maxLength: 1024 }
+					)[0]
+				}
+			]);
 			embed.setTimestamp();
 		}
 
@@ -110,22 +112,22 @@ export default class BoostsCommand extends Command {
 			});
 		}
 
-		const buttons = new MessageActionRow()
+		const buttons = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
-				new MessageButton()
+				new ButtonBuilder()
 					.setEmoji(EMOJIS.REFRESH)
-					.setStyle('SECONDARY')
+					.setStyle(ButtonStyle.Secondary)
 					.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id }))
 			)
 			.addComponents(
-				new MessageButton()
+				new ButtonBuilder()
 					.setLabel('Recently Active')
-					.setStyle('SECONDARY')
+					.setStyle(ButtonStyle.Secondary)
 					.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, recent: true }))
 			);
 
-		const menus = new MessageActionRow().addComponents(
-			new MessageSelectMenu()
+		const menus = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+			new SelectMenuBuilder()
 				.setPlaceholder('Select a Super Troop')
 				.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, recent: Boolean(args.recent), menu: true }))
 				.addOptions(Object.entries(SUPER_TROOPS).map(([key, value]) => ({ label: key, value: key, emoji: value })))

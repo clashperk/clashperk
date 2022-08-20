@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { ChannelType, Message, PermissionFlagsBits } from 'discord.js';
 import { Listener } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
 
@@ -16,10 +16,15 @@ export default class MessageListener extends Listener {
 		if (message.author.bot) return;
 		this.client.stats.message(message.guild.id);
 
-		if (message.channel.type === 'DM') return;
+		if (message.channel.type === ChannelType.DM) return;
 		if (this.inhibitor(message)) return;
-		if (message.channel.isThread() && !message.channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')) return;
-		if (!message.channel.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES', 'VIEW_CHANNEL'])) return;
+		if (
+			message.channel.isThread() &&
+			!message.channel.permissionsFor(this.client.user!)?.has(PermissionFlagsBits.SendMessagesInThreads)
+		)
+			return;
+		if (!message.channel.permissionsFor(this.client.user!)?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]))
+			return;
 
 		const prefix = this.client.settings.get<string>(message.guild.id, Settings.PREFIX, '!');
 		const lowerContent = message.content.toLowerCase();

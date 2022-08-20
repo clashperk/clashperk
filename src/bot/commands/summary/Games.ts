@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { ClanGames } from '../../util/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -18,7 +18,7 @@ export default class ClanGamesSummaryCommand extends Command {
 		super('summary-clan-games', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});
 	}
@@ -58,12 +58,12 @@ export default class ClanGamesSummaryCommand extends Command {
 			endedAt: clan.endedAt
 		}));
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: 'Clan Games Stats', iconURL: interaction.guild!.iconURL()! })
 			.setFooter({
 				text: `${moment(clans[0].createdAt).format('MMMM YYYY')}`,
-				iconURL: this.client.user!.displayAvatarURL({ format: 'png' })
+				iconURL: this.client.user!.displayAvatarURL({ extension: 'png' })
 			})
 			.setDescription(
 				[

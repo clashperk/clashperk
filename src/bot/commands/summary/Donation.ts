@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, CommandInteraction } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
@@ -24,16 +24,16 @@ export default class DonationSummaryCommand extends Command {
 		super('donation-summary', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			defer: true
 		});
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, { season }: { season?: string }) {
 		if (!season) season = Season.ID;
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${interaction.guild.name} Top Donations`, iconURL: interaction.guild.iconURL({ dynamic: true })! });
+			.setAuthor({ name: `${interaction.guild.name} Top Donations`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
 
 		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild.id }).toArray();
 		if (!clans.length) {
@@ -130,8 +130,8 @@ export default class DonationSummaryCommand extends Command {
 
 		const embeds = [
 			embed,
-			new MessageEmbed()
-				.setColor(embed.color!)
+			new EmbedBuilder()
+				.setColor(embed.data.color!)
 				.setDescription(
 					[
 						'**Top Players**',

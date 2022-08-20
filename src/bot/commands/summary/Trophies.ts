@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
 import { Season } from '../../util/index.js';
@@ -8,7 +8,7 @@ export default class ClanSummaryCommand extends Command {
 		super('trophy-summary', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			defer: true
 		});
 	}
@@ -36,7 +36,7 @@ export default class ClanSummaryCommand extends Command {
 							.toArray()
 				  ).map((member) => ({ name: member.name, trophies: member.trophies.value }));
 		members.sort((a, b) => b.trophies - a.trophies);
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${interaction.guild!.name} Best Trophies` })
 			.setDescription(

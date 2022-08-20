@@ -1,5 +1,5 @@
 import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { MessageEmbed, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, CommandInteraction } from 'discord.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -9,7 +9,7 @@ export default class CWLStatsCommand extends Command {
 	public constructor() {
 		super('cwl-stats', {
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Ranking and statistics for each round.'
 			},
@@ -239,12 +239,12 @@ export default class CWLStatsCommand extends Command {
 
 		const padding = Math.max(...ranks.map((r) => r.destruction)) > 9999 ? 6 : 5;
 		const embeds = [
-			new MessageEmbed()
+			new EmbedBuilder()
 				.setColor(this.client.embed(interaction))
 				.setTitle(`Clan War League Stats (${body.season})`)
 				.setDescription(description),
 
-			new MessageEmbed()
+			new EmbedBuilder()
 				.setColor(this.client.embed(interaction))
 				.setTitle('Clan War League Ranking')
 				.setDescription(

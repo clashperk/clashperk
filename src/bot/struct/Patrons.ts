@@ -1,7 +1,7 @@
 import qs from 'querystring';
 import { Collection } from 'mongodb';
 import { request as fetch } from 'undici';
-import { Interaction } from 'discord.js';
+import { BaseInteraction } from 'discord.js';
 import { Collections, Settings } from '../util/Constants.js';
 import { Client } from './Client.js';
 
@@ -36,7 +36,7 @@ export default class Patrons {
 		setInterval(() => this._autoDelete(false), 30 * 60 * 1000).unref();
 	}
 
-	public get(interaction: Interaction | string): boolean {
+	public get(interaction: BaseInteraction | string): boolean {
 		if (typeof interaction === 'string') return this.patrons.has(interaction);
 		return this.patrons.has(interaction.guild!.id);
 	}

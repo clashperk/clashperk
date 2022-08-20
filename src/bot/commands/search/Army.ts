@@ -1,5 +1,5 @@
 import { URL } from 'url';
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SIEGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis.js';
 import RAW_TROOPS from '../../util/Troops.js';
 import { Command } from '../../lib/index.js';
@@ -11,7 +11,7 @@ export default class ArmyCommand extends Command {
 	public constructor() {
 		super('army', {
 			category: 'search',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Parse army composition from a shared link.'
 			},
@@ -172,7 +172,7 @@ export default class ArmyCommand extends Command {
 		const hallBySpells = RAW_TROOPS.TROOPS_HOUSING.find((en) => en.spells >= Math.min(totalSpell, TOTAL_SPELLS))?.hall ?? 0;
 		const townHallLevel = Math.max(hallByUnlockTH, hallByTroops, hallBySpells);
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setDescription(
 				[
@@ -186,7 +186,7 @@ export default class ArmyCommand extends Command {
 		if (troops.length) {
 			embed.setDescription(
 				[
-					embed.description,
+					embed.data.description,
 					'',
 					'**Troops**',
 					troops.map((en) => `\u200e\`${this.padding(en.total)}\` ${TROOPS[en.name]}  ${en.name}`).join('\n')
@@ -195,35 +195,42 @@ export default class ArmyCommand extends Command {
 		}
 
 		if (spells.length) {
-			embed.addField(
-				'\u200b',
-				['**Spells**', spells.map((en) => `\u200e\`${this.padding(en.total)}\` ${SPELLS[en.name]} ${en.name}`).join('\n')].join(
-					'\n'
-				)
-			);
+			embed.addFields([
+				{
+					name: '\u200b',
+					value: [
+						'**Spells**',
+						spells.map((en) => `\u200e\`${this.padding(en.total)}\` ${SPELLS[en.name]} ${en.name}`).join('\n')
+					].join('\n')
+				}
+			]);
 		}
 
 		if (superTroops.length) {
-			embed.addField(
-				'\u200b',
-				[
-					'**Super Troops**',
-					superTroops.map((en) => `\u200e\`${this.padding(en.total)}\` ${SUPER_TROOPS[en.name]}  ${en.name}`).join('\n')
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: '\u200b',
+					value: [
+						'**Super Troops**',
+						superTroops.map((en) => `\u200e\`${this.padding(en.total)}\` ${SUPER_TROOPS[en.name]}  ${en.name}`).join('\n')
+					].join('\n')
+				}
+			]);
 		}
 
 		if (siegeMachines.length) {
-			embed.addField(
-				'\u200b',
-				[
-					'**Siege Machines**',
-					siegeMachines.map((en) => `\u200e\`${this.padding(en.total)}\` ${SIEGE_MACHINES[en.name]}  ${en.name}`).join('\n')
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: '\u200b',
+					value: [
+						'**Siege Machines**',
+						siegeMachines.map((en) => `\u200e\`${this.padding(en.total)}\` ${SIEGE_MACHINES[en.name]}  ${en.name}`).join('\n')
+					].join('\n')
+				}
+			]);
 		}
 
-		embed.setFooter({ text: interaction.user.tag, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) });
+		embed.setFooter({ text: interaction.user.tag, iconURL: interaction.user.displayAvatarURL({ forceStatic: false }) });
 		const mismatch = troops.length + spells.length + superTroops.length + siegeMachines.length !== TROOP_IDS.length + SPELL_IDS.length;
 
 		const invalid =

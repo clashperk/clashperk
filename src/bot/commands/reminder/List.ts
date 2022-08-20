@@ -1,4 +1,4 @@
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Collections } from '../../util/Constants.js';
 import { Reminder } from '../../struct/RemindScheduler.js';
@@ -17,7 +17,7 @@ export default class ReminderListCommand extends Command {
 		super('reminder-list', {
 			category: 'reminder',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			defer: true,
 			ephemeral: true
 		});
@@ -46,9 +46,9 @@ export default class ReminderListCommand extends Command {
 				'**War Types**',
 				reminder.warTypes.length === 3 ? 'Any' : `${reminder.warTypes.join(', ').toUpperCase()}`,
 				'**Clans**',
-				_clans.length ? `${Util.escapeMarkdown(_clans.join(', '))}` : 'Any',
+				_clans.length ? `${escapeMarkdown(_clans.join(', '))}` : 'Any',
 				'**Message**',
-				`${Util.escapeMarkdown(reminder.message.substring(0, 300))}`
+				`${escapeMarkdown(reminder.message.substring(0, 300))}`
 			].join('\n');
 		});
 

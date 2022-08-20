@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction, TextChannel, Role } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, TextChannel, Role } from 'discord.js';
 import { Flags, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 
@@ -16,8 +16,8 @@ export default class ClanLogCommand extends Command {
 		super('setup-clan-log', {
 			category: 'none',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['ADD_REACTIONS', 'EMBED_LINKS', 'USE_EXTERNAL_EMOJIS', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY'],
+			userPermissions: ['ManageGuild'],
+			clientPermissions: ['AddReactions', 'EmbedLinks', 'UseExternalEmojis', 'SendMessages', 'ReadMessageHistory', 'ManageWebhooks'],
 			defer: true,
 			ephemeral: true
 		});
@@ -50,9 +50,9 @@ export default class ClanLogCommand extends Command {
 			'clan-games': Flags.CLAN_GAMES_LOG,
 			'war-feed': Flags.CLAN_WAR_LOG
 		}[args.option];
-		if (!flag) return interaction.editReply({ content: 'Something went wrong!' });
+		if (!flag) return interaction.editReply(this.i18n('common.something_went_wrong', { lng: interaction.locale }));
 
-		const permission = missingPermissions(args.channel, interaction.guild.me!, this.clientPermissions!);
+		const permission = missingPermissions(args.channel, interaction.guild.members.me!, this.clientPermissions!);
 		if (permission.missing) {
 			return interaction.editReply(
 				this.i18n('command.setup.enable.missing_access', {
@@ -78,16 +78,16 @@ export default class ClanLogCommand extends Command {
 			tag: data.tag
 		});
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle(`\u200e${data.name} | ${FEATURES[flag]}`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setColor(this.client.embed(interaction))
-			.addField('Channel', args.channel.toString()); // eslint-disable-line
+			.addFields([{ name: 'Channel', value: args.channel.toString() }]); // eslint-disable-line
 
-		if (args.role && flag === Flags.CLAN_FEED_LOG) embed.addField('Role', args.role.toString());
+		if (args.role && flag === Flags.CLAN_FEED_LOG) embed.addFields([{ name: 'Role', value: args.role.toString() }]);
 		if ([Flags.DONATION_LOG, Flags.LAST_SEEN_LOG, Flags.CLAN_GAMES_LOG].includes(flag)) {
-			embed.addField('Color', args.color?.toString(16) ?? 'None');
+			embed.addFields([{ name: 'Color', value: args.color?.toString(16) ?? 'None' }]);
 			if (args.color) embed.setColor(args.color);
 		}
 

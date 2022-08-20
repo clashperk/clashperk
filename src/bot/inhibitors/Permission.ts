@@ -1,4 +1,4 @@
-import { Interaction } from 'discord.js';
+import { Interaction, PermissionFlagsBits } from 'discord.js';
 import { Inhibitor } from '../lib/index.js';
 
 export default class PermissionInhibitor extends Inhibitor {
@@ -15,8 +15,8 @@ export default class PermissionInhibitor extends Inhibitor {
 		if (!interaction.channel) return false;
 
 		if (interaction.channel.isThread()) {
-			return !interaction.appPermissions?.has(['SEND_MESSAGES_IN_THREADS']);
+			return !interaction.appPermissions?.has([PermissionFlagsBits.SendMessagesInThreads]);
 		}
-		return !interaction.appPermissions?.has(['SEND_MESSAGES', 'VIEW_CHANNEL']);
+		return !interaction.appPermissions?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]);
 	}
 }

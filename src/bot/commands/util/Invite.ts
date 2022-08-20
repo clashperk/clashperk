@@ -1,5 +1,5 @@
 import { stringify } from 'querystring';
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { BIT_FIELD } from '../../util/Constants.js';
 
@@ -19,8 +19,8 @@ export default class InviteCommand extends Command {
 			permissions: BIT_FIELD.toString()
 		});
 
-		const embed = new MessageEmbed()
-			.setAuthor({ name: this.client.user!.username, iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
+		const embed = new EmbedBuilder()
+			.setAuthor({ name: this.client.user!.username, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
 			.setDescription(
 				[
 					'ClashPerk can be added to as many servers as you want! Please share the bot with your friends. Thanks in advance!',

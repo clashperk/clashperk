@@ -1,17 +1,17 @@
-import { MessageEmbed, Webhook } from 'discord.js';
+import { EmbedBuilder, Webhook } from 'discord.js';
 import { Listener } from '../../lib/index.js';
 
 export default class RateLimitListener extends Listener {
 	public count: number;
 
-	public embeds: MessageEmbed[];
+	public embeds: EmbedBuilder[];
 
 	public webhook: Webhook | null = null;
 
 	public constructor() {
 		super('rateLimit', {
-			event: 'rateLimit',
-			emitter: 'client',
+			event: 'rateLimited',
+			emitter: 'rest',
 			category: 'client'
 		});
 
@@ -50,7 +50,7 @@ export default class RateLimitListener extends Listener {
 		this.client.logger.warn({ timeout, limit, method, path, route }, { label: 'RATE_LIMIT' });
 		if (path.includes(this.getWebhookId())) return;
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setAuthor({ name: 'Rate Limit' })
 			.setDescription(
 				[

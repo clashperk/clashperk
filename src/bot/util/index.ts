@@ -62,12 +62,8 @@ export class Season {
 	}
 }
 
-// @ts-expect-error
-export class Util extends Discord.Util {
-	public constructor() {
-		super();
-	}
-
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+export class Util {
 	public static tagToId(tag: string) {
 		const id = tag
 			.substring(1)
@@ -76,8 +72,7 @@ export class Util extends Discord.Util {
 		return id;
 	}
 
-	public static override splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
-		text = Util.verifyString(text);
+	public static splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
 		if (text.length <= maxLength) return [text];
 		let splitText = [text];
 		if (Array.isArray(char)) {

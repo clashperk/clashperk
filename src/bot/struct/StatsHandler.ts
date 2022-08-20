@@ -1,6 +1,6 @@
 import qs from 'querystring';
 import https from 'https';
-import { Guild, Interaction } from 'discord.js';
+import { BaseInteraction, Guild } from 'discord.js';
 import { Collections } from '../util/Constants.js';
 import { Client } from './Client.js';
 
@@ -64,7 +64,7 @@ export default class StatsHandler {
 		);
 	}
 
-	public async interactions(interaction: Interaction<'cached'>, command: string) {
+	public async interactions(interaction: BaseInteraction<'cached'>, command: string) {
 		await this.client.db.collection(Collections.BOT_INTERACTIONS).updateOne(
 			{ user: interaction.user.id, guild: interaction.guild.id },
 			{
@@ -152,7 +152,7 @@ export default class StatsHandler {
 		);
 	}
 
-	public users(interaction: Interaction) {
+	public users(interaction: BaseInteraction) {
 		return this.client.db.collection(Collections.BOT_USERS).updateOne(
 			{ user: interaction.user.id },
 			{
@@ -164,7 +164,7 @@ export default class StatsHandler {
 		);
 	}
 
-	public async localeSuggested(interaction: Interaction) {
+	public async localeSuggested(interaction: BaseInteraction) {
 		if (['en-GB', 'en-US'].includes(interaction.locale)) return true;
 		const { value: user } = await this.client.db.collection(Collections.BOT_USERS).findOneAndUpdate(
 			{ user: interaction.user.id },

@@ -1,4 +1,4 @@
-import { MessageEmbed, Util, CommandInteraction, MessageButton, MessageActionRow } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, escapeMarkdown, ButtonStyle } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -19,7 +19,7 @@ export default class ClanCommand extends Command {
 			description: {
 				content: 'Shows some basic info about your clan.'
 			},
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});
 	}
@@ -43,8 +43,8 @@ export default class ClanCommand extends Command {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 
-		const embed = new MessageEmbed()
-			.setTitle(`${Util.escapeMarkdown(clan.name)} (${clan.tag})`)
+		const embed = new EmbedBuilder()
+			.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
 			.setColor(this.client.embed(interaction))
 			.setThumbnail(clan.badgeUrls.medium);
@@ -73,20 +73,22 @@ export default class ClanCommand extends Command {
 				: `\n**Global Rank**\n📈 #${rankInfo.rank} ${EMOJIS.DOWN_KEY} ${rankInfo.gain}`
 			: '';
 
-		embed.addField(
-			'\u200e',
-			[
-				'**Clan Leader**',
-				`${EMOJIS.OWNER} ${leader.length ? `${Util.escapeMarkdown(leader.join(', '))}` : 'No Leader'}`,
-				'**Location**',
-				`${location}${rank}`,
-				'**Requirements**',
-				`⚙️ ${clanTypes[clan.type]} ${EMOJIS.TROPHY} ${clan.requiredTrophies} Required ${
-					clan.requiredTownhallLevel ? `${EMOJIS.TOWNHALL} ${clan.requiredTownhallLevel}+` : ''
-				}`,
-				'\u200b\u2002'
-			].join('\n')
-		);
+		embed.addFields([
+			{
+				name: '\u200e',
+				value: [
+					'**Clan Leader**',
+					`${EMOJIS.OWNER} ${leader.length ? `${escapeMarkdown(leader.join(', '))}` : 'No Leader'}`,
+					'**Location**',
+					`${location}${rank}`,
+					'**Requirements**',
+					`⚙️ ${clanTypes[clan.type]} ${EMOJIS.TROPHY} ${clan.requiredTrophies} Required ${
+						clan.requiredTownhallLevel ? `${EMOJIS.TOWNHALL} ${clan.requiredTownhallLevel}+` : ''
+					}`,
+					'\u200b\u2002'
+				].join('\n')
+			}
+		]);
 
 		const [action, season, wars] = await Promise.all([this.getActivity(clan), this.getSeason(clan), this.getWars(clan.tag)]);
 		const fields = [];
@@ -116,36 +118,38 @@ export default class ClanCommand extends Command {
 				...['**Total Wars**', `${EMOJIS.CROSS_SWORD} ${wars.length} Wars ${EMOJIS.OK} ${won} Won ${EMOJIS.WRONG} ${lost} Lost`]
 			);
 		}
-		if (fields.length) embed.addField(`**Season Stats (${Season.previousID})**`, [...fields, '\u200e'].join('\n'));
+		if (fields.length) embed.addFields([{ name: `**Season Stats (${Season.previousID})**`, value: [...fields, '\u200e'].join('\n') }]);
 
-		embed.addField(
-			'**War and League**',
-			[
-				'**War Log**',
-				`${clan.isWarLogPublic ? '🔓 Public' : '🔒 Private'}`,
-				'**War Performance**',
-				`${EMOJIS.OK} ${clan.warWins} Won ${
-					clan.isWarLogPublic ? `${EMOJIS.WRONG} ${clan.warLosses!} Lost ${EMOJIS.EMPTY} ${clan.warTies!} Tied` : ''
-				}`,
-				'**Win Streak**',
-				`${'🏅'} ${clan.warWinStreak}`,
-				'**War Frequency**',
-				clan.warFrequency.toLowerCase() === 'morethanonceperweek'
-					? '🎟️ More Than Once Per Week'
-					: `🎟️ ${clan.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`,
-				'**War League**',
-				`${CWL_LEAGUES[clan.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${clan.warLeague?.name ?? 'Unranked'}`
-			].join('\n')
-		);
+		embed.addFields([
+			{
+				name: '**War and League**',
+				value: [
+					'**War Log**',
+					`${clan.isWarLogPublic ? '🔓 Public' : '🔒 Private'}`,
+					'**War Performance**',
+					`${EMOJIS.OK} ${clan.warWins} Won ${
+						clan.isWarLogPublic ? `${EMOJIS.WRONG} ${clan.warLosses!} Lost ${EMOJIS.EMPTY} ${clan.warTies!} Tied` : ''
+					}`,
+					'**Win Streak**',
+					`${'🏅'} ${clan.warWinStreak}`,
+					'**War Frequency**',
+					clan.warFrequency.toLowerCase() === 'morethanonceperweek'
+						? '🎟️ More Than Once Per Week'
+						: `🎟️ ${clan.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`,
+					'**War League**',
+					`${CWL_LEAGUES[clan.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${clan.warLeague?.name ?? 'Unranked'}`
+				].join('\n')
+			}
+		]);
 
-		const row = new MessageActionRow()
+		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
-				new MessageButton()
+				new ButtonBuilder()
 					.setEmoji(EMOJIS.REFRESH)
-					.setStyle('SECONDARY')
+					.setStyle(ButtonStyle.Secondary)
 					.setCustomId(JSON.stringify({ cmd: 'clan', tag: clan.tag }))
 			)
-			.addComponents(new MessageButton().setLabel('Clan Badge').setStyle('LINK').setURL(clan.badgeUrls.large));
+			.addComponents(new ButtonBuilder().setLabel('Clan Badge').setStyle(ButtonStyle.Link).setURL(clan.badgeUrls.large));
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 

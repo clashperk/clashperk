@@ -1,4 +1,4 @@
-import { Util, CommandInteraction, MessageEmbed } from 'discord.js';
+import { cleanContent, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
@@ -8,7 +8,7 @@ export default class FlagCreateCommand extends Command {
 		super('flag-create', {
 			category: 'none',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
+			userPermissions: ['ManageGuild'],
 			defer: true
 		});
 	}
@@ -22,7 +22,7 @@ export default class FlagCreateCommand extends Command {
 		const flags = await this.client.db.collection(Collections.FLAGS).countDocuments({ guild: interaction.guild.id });
 
 		if (flags >= 200 && !this.client.patrons.get(interaction.guild.id)) {
-			const embed = new MessageEmbed().setDescription(
+			const embed = new EmbedBuilder().setDescription(
 				[
 					'You can only flag 200 players per guild!',
 					'',
@@ -48,7 +48,7 @@ export default class FlagCreateCommand extends Command {
 						user_tag: interaction.user.tag,
 						tag: data.tag,
 						name: data.name,
-						reason: Util.cleanContent(args.reason, interaction.channel!),
+						reason: cleanContent(args.reason, interaction.channel!),
 						createdAt: new Date()
 					}
 				},

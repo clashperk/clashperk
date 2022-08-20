@@ -7,8 +7,8 @@ export default class ServerLinkCommand extends Command {
 		super('setup-server-link', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
-			userPermissions: ['MANAGE_GUILD'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
+			userPermissions: ['ManageGuild'],
 			defer: true,
 			ephemeral: true
 		});

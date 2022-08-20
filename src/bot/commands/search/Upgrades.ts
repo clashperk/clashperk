@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
@@ -11,7 +11,7 @@ export default class UpgradesCommand extends Command {
 		super('upgrades', {
 			category: 'search',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Remaining upgrades of troops, spells and heroes.'
 			},
@@ -38,9 +38,9 @@ export default class UpgradesCommand extends Command {
 		}));
 
 		const customID = this.client.uuid(interaction.user.id);
-		const menu = new MessageSelectMenu().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
+		const menu = new SelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
 
-		await msg.edit({ components: [new MessageActionRow().addComponents(menu)] });
+		await interaction.editReply({ components: [new ActionRowBuilder<SelectMenuBuilder>().addComponents(menu)] });
 
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => [customID].includes(action.customId) && action.user.id === interaction.user.id,
@@ -62,7 +62,7 @@ export default class UpgradesCommand extends Command {
 	}
 
 	public embed(data: Player) {
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${data.name} (${data.tag})` })
 			.setDescription(`Remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? `& BH${data.builderHallLevel}` : ''}`);
 
@@ -142,7 +142,7 @@ export default class UpgradesCommand extends Command {
 			if (category.key === 'Barracks' && unitsArray.length) {
 				embed.setDescription(
 					[
-						embed.description,
+						embed.data.description,
 						'',
 						`**${category.title}**`,
 						unitsArray
@@ -160,26 +160,28 @@ export default class UpgradesCommand extends Command {
 			}
 
 			if (unitsArray.length && category.key !== 'Barracks') {
-				embed.addField(
-					'\u200b',
-					[
-						`**${category.title}**`,
-						unitsArray
-							.map((unit) => {
-								const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-								const level = this.padStart(unit.level);
-								const maxLevel = this.padEnd(unit.hallMaxLevel);
-								const upgradeTime = Util.ms(unit.upgradeTime * 1000).padStart(5, ' ');
-								const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
-								return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
-							})
-							.join('\n')
-					].join('\n')
-				);
+				embed.addFields([
+					{
+						name: '\u200b',
+						value: [
+							`**${category.title}**`,
+							unitsArray
+								.map((unit) => {
+									const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+									const level = this.padStart(unit.level);
+									const maxLevel = this.padEnd(unit.hallMaxLevel);
+									const upgradeTime = Util.ms(unit.upgradeTime * 1000).padStart(5, ' ');
+									const upgradeCost = this.format(unit.upgradeCost).padStart(6, ' ');
+									return `${unitIcon} \u2002 \`\u200e${level}/${maxLevel}\u200f\` \u2002 \u200e\`${upgradeTime} \u200f\` \u2002 \u200e\` ${upgradeCost} \u200f\``;
+								})
+								.join('\n')
+						].join('\n')
+					}
+				]);
 			}
 		}
 
-		if (!embed.fields.length && embed.description?.length) {
+		if (!embed.data.fields?.length && embed.data.description?.length) {
 			embed.setDescription(
 				`No remaining upgrades at TH${data.townHallLevel} ${data.builderHallLevel ? ` and BH${data.builderHallLevel}` : ''}`
 			);

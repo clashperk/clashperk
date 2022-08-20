@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, SelectMenuBuilder, ButtonStyle } from 'discord.js';
 import { Included, Patron } from '../../struct/Patrons.js';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
@@ -14,7 +14,7 @@ export default class RedeemCommand extends Command {
 		super('redeem', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: 'Redeem/Manage Patreon subscription.'
 			},
@@ -29,7 +29,7 @@ export default class RedeemCommand extends Command {
 
 		const patron = data.included.find((entry) => entry.attributes.social_connections?.discord?.user_id === interaction.user.id);
 		if (!patron) {
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setColor(16345172)
 				.setDescription(
 					[
@@ -39,7 +39,7 @@ export default class RedeemCommand extends Command {
 						'Not subscribed yet? [Become a Patron](https://www.patreon.com/clashperk)'
 					].join('\n')
 				)
-				.addField('How to connect?', 'https://www.patreon.com/settings/apps')
+				.addFields([{ name: 'How to connect?', value: 'https://www.patreon.com/settings/apps' }])
 				.setImage('https://i.imgur.com/APME0CX.png');
 
 			return interaction.editReply({ embeds: [embed] });
@@ -64,7 +64,7 @@ export default class RedeemCommand extends Command {
 			return interaction.editReply('**Something went wrong (unknown tier), please contact us!**');
 		}
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(16345172)
 			.setDescription(
 				[
@@ -111,7 +111,7 @@ export default class RedeemCommand extends Command {
 		const redeemed = this.redeemed({ ...user, rewardId });
 		if (redeemed) {
 			if (!this.isNew(user, interaction, patron)) await this.client.patrons.refresh();
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setColor(16345172)
 				.setDescription(
 					[
@@ -124,8 +124,8 @@ export default class RedeemCommand extends Command {
 				button: this.client.uuid(interaction.user.id),
 				menu: this.client.uuid(interaction.user.id)
 			};
-			const row = new MessageActionRow().addComponents(
-				new MessageButton().setStyle('SECONDARY').setCustomId(customIds.button).setLabel('Manage Servers')
+			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customIds.button).setLabel('Manage Servers')
 			);
 			const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 			const collector = msg.createMessageComponentCollector({
@@ -133,8 +133,8 @@ export default class RedeemCommand extends Command {
 				time: 5 * 60 * 1000
 			});
 
-			const menus = new MessageActionRow().addComponents(
-				new MessageSelectMenu()
+			const menus = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+				new SelectMenuBuilder()
 					.setPlaceholder('Select a server!')
 					.setCustomId(customIds.menu)
 					.addOptions(user.guilds.map((guild) => ({ label: guild.name, value: guild.id })))
@@ -142,7 +142,7 @@ export default class RedeemCommand extends Command {
 
 			collector.on('collect', async (action) => {
 				if (action.customId === customIds.button) {
-					return action.update({
+					await action.update({
 						embeds: [],
 						components: [menus],
 						content: '**Select a server to disable subscription.**'
@@ -152,7 +152,10 @@ export default class RedeemCommand extends Command {
 				if (action.customId === customIds.menu && action.isSelectMenu()) {
 					const id = action.values[0].trim();
 					const guild = user.guilds.find((guild) => guild.id === id);
-					if (!guild) return action.update({ content: '**Something went wrong (unknown server), please contact us!**' });
+					if (!guild) {
+						await action.update({ content: '**Something went wrong (unknown server), please contact us!**' });
+						return;
+					}
 					await action.deferUpdate();
 					await collection.updateOne({ _id: user._id }, { $pull: { guilds: { id } } });
 					await action.editReply({ components: [], content: `Subscription disabled for **${guild.name} (${guild.id})**` });

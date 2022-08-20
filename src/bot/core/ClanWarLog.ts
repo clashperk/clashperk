@@ -1,4 +1,4 @@
-import { MessageEmbed, Collection, TextChannel, PermissionString, ThreadChannel } from 'discord.js';
+import { EmbedBuilder, Collection, TextChannel, PermissionsString, ThreadChannel, escapeMarkdown } from 'discord.js';
 import { ClanWar, ClanWarMember, WarClan } from 'clashofclans.js';
 import { APIMessage } from 'discord-api-types/v9';
 import { ObjectId } from 'mongodb';
@@ -37,19 +37,18 @@ export default class ClanWarLog {
 	}
 
 	private async permissionsFor(cache: Cache, data: PayLoad) {
-		const permissions: PermissionString[] = [
-			'READ_MESSAGE_HISTORY',
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
+		const permissions: PermissionsString[] = [
+			'ReadMessageHistory',
+			'SendMessages',
+			'EmbedLinks',
+			'UseExternalEmojis',
+			'AddReactions',
+			'ViewChannel'
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
-				return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SendMessagesInThreads'))) return;
 			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
 				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
 				return this.getWarType(cache, channel, data);
@@ -59,7 +58,7 @@ export default class ClanWarLog {
 
 	private async unarchive(thread: ThreadChannel) {
 		if (!(thread.editable && thread.manageable)) return null;
-		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
+		return thread.edit({ archived: false, locked: false });
 	}
 
 	private async getWarType(cache: Cache, channel: TextChannel | ThreadChannel, data: PayLoad) {
@@ -146,7 +145,7 @@ export default class ClanWarLog {
 	}
 
 	private getRegularWarEmbed(data: PayLoad) {
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setURL(this.clanURL(data.clan.tag))
 			.setThumbnail(data.clan.badgeUrls.small);
@@ -157,7 +156,7 @@ export default class ClanWarLog {
 				.setDescription(
 					[
 						'**War Against**',
-						`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
+						`**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 						'',
 						'**War State**',
 						'Preparation Day',
@@ -177,7 +176,7 @@ export default class ClanWarLog {
 				.setDescription(
 					[
 						'**War Against**',
-						`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
+						`**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 						'',
 						'**War State**',
 						'Battle Day',
@@ -194,22 +193,24 @@ export default class ClanWarLog {
 			if (data.recent?.length) {
 				const max = Math.max(...data.recent.map((atk) => atk.attacker.destructionPercentage));
 				const pad = max === 100 ? 4 : 3;
-				embed.addField(
-					'Recent Attacks',
-					[
-						...data.recent.map(({ attacker, defender }) => {
-							const name = Util.escapeMarkdown(attacker.name);
-							const stars = this.getStars(attacker.oldStars, attacker.stars);
-							const destruction: string = Math.floor(attacker.destructionPercentage)
-								.toString()
-								.concat('%')
-								.padStart(pad, ' ');
-							return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
-								attacker.townHallLevel
-							]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
-						})
-					].join('\n')
-				);
+				embed.addFields([
+					{
+						name: 'Recent Attacks',
+						value: [
+							...data.recent.map(({ attacker, defender }) => {
+								const name = escapeMarkdown(attacker.name);
+								const stars = this.getStars(attacker.oldStars, attacker.stars);
+								const destruction: string = Math.floor(attacker.destructionPercentage)
+									.toString()
+									.concat('%')
+									.padStart(pad, ' ');
+								return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
+									attacker.townHallLevel
+								]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
+							})
+						].join('\n')
+					}
+				]);
 			}
 			embed.setTimestamp();
 		}
@@ -220,7 +221,7 @@ export default class ClanWarLog {
 				.setDescription(
 					[
 						'**War Against**',
-						`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
+						`**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 						'',
 						'**War State**',
 						'War Ended',
@@ -237,13 +238,13 @@ export default class ClanWarLog {
 
 		embed.setDescription(
 			[
-				embed.description,
+				embed.data.description,
 				'',
 				'**Rosters**',
-				`${Util.escapeMarkdown(data.clan.name)}`,
+				`${escapeMarkdown(data.clan.name)}`,
 				`${this.getRoster(data.clan.rosters)}`,
 				'',
-				`${Util.escapeMarkdown(data.opponent.name)}`,
+				`${escapeMarkdown(data.opponent.name)}`,
 				`${this.getRoster(data.opponent.rosters)}`
 			].join('\n')
 		);
@@ -252,14 +253,14 @@ export default class ClanWarLog {
 	}
 
 	private getRemaining(data: PayLoad) {
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setThumbnail(data.clan.badgeUrls.small)
 			.setURL(this.clanURL(data.clan.tag))
 			.setDescription(
 				[
 					'**War Against**',
-					`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
+					`**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
 				].join('\n')
 			);
 		const twoRem = data.remaining
@@ -274,12 +275,12 @@ export default class ClanWarLog {
 		const friendly = data.attacksPerMember === 1;
 		if (twoRem.length) {
 			const chunks = Util.splitMessage(twoRem.join('\n'), { maxLength: 1000 });
-			chunks.map((chunk, i) => embed.addField(i === 0 ? `${friendly ? 1 : 2} Missed Attacks` : '\u200b', chunk));
+			embed.addFields(chunks.map((chunk, i) => ({ name: i === 0 ? `${friendly ? 1 : 2} Missed Attacks` : '\u200b', value: chunk })));
 		}
 
 		if (oneRem.length && !friendly) {
 			const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
-			chunks.map((chunk, i) => embed.addField(i === 0 ? '1 Missed Attacks' : '\u200b', chunk));
+			embed.addFields(chunks.map((chunk, i) => ({ name: i === 0 ? '1 Missed Attacks' : '\u200b', value: chunk })));
 		}
 
 		if ((oneRem.length && !friendly) || twoRem.length) return embed;
@@ -288,29 +289,53 @@ export default class ClanWarLog {
 
 	private getLeagueWarEmbed(data: PayLoad) {
 		const { clan, opponent } = data;
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle(`\u200e${clan.name} (${clan.tag})`)
 			.setURL(this.clanURL(clan.tag))
 			.setThumbnail(clan.badgeUrls.small)
-			.addField('War Against', `\u200e[${Util.escapeMarkdown(opponent.name)} (${opponent.tag})](${this.clanURL(opponent.tag)})`)
-			.addField('Team Size', `${data.teamSize}`);
+			.addFields([
+				{
+					name: 'War Against',
+					value: `\u200e[${escapeMarkdown(opponent.name)} (${opponent.tag})](${this.clanURL(opponent.tag)})`
+				},
+				{
+					name: 'Team Size',
+					value: `${data.teamSize}`
+				}
+			]);
 
 		if (data.state === 'inWar') {
 			const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
 			embed.setColor(states[data.state]);
-			embed.addField('War State', ['Battle Day', `End Time: ${Util.getRelativeTime(endTimestamp)}`].join('\n'));
-			embed.addField('War Stats', this.getLeaderBoard(clan, opponent));
+			embed.addFields([
+				{ name: 'War State', value: ['Battle Day', `End Time: ${Util.getRelativeTime(endTimestamp)}`].join('\n') },
+				{ name: 'War Stats', value: this.getLeaderBoard(clan, opponent) }
+			]);
 		}
 
 		if (data.state === 'preparation') {
 			const startTimestamp = new Date(moment(data.startTime).toDate()).getTime();
 			embed.setColor(states[data.state]);
-			embed.addField('War State', ['Preparation Day', `War Start Time: ${Util.getRelativeTime(startTimestamp)}`].join('\n'));
+			embed.addFields([
+				{
+					name: 'War State',
+					value: ['Preparation Day', `War Start Time: ${Util.getRelativeTime(startTimestamp)}`].join('\n')
+				}
+			]);
 		}
 
 		if (data.state === 'warEnded') {
 			embed.setColor(results[data.result]);
-			embed.addField('War State', 'War Ended').addField('War Stats', this.getLeaderBoard(clan, opponent));
+			embed.addFields([
+				{
+					name: 'War State',
+					value: 'War Ended'
+				},
+				{
+					name: 'War Stats',
+					value: this.getLeaderBoard(clan, opponent)
+				}
+			]);
 		}
 
 		const rosters = [
@@ -322,28 +347,35 @@ export default class ClanWarLog {
 		];
 
 		if (rosters.join('\n').length > 1024) {
-			embed.addField('Rosters', rosters.slice(0, 2).join('\n'));
-			embed.addField('\u200e', rosters.slice(-2).join('\n'));
+			embed.addFields([
+				{ name: 'Rosters', value: rosters.slice(0, 2).join('\n') },
+				{ name: '\u200e', value: rosters.slice(-2).join('\n') }
+			]);
 		} else {
-			embed.addField('Rosters', rosters.join('\n'));
+			embed.addFields([{ name: 'Rosters', value: rosters.join('\n') }]);
 		}
 
 		if (data.recent?.length) {
 			const max = Math.max(...data.recent.map((atk) => atk.attacker.destructionPercentage));
 			const pad = max === 100 ? 4 : 3;
-			embed.addField(
-				'Recent Attacks',
-				[
-					...data.recent.map(({ attacker, defender }) => {
-						const name = Util.escapeMarkdown(attacker.name);
-						const stars = this.getStars(attacker.oldStars, attacker.stars);
-						const destruction: string = Math.floor(attacker.destructionPercentage).toString().concat('%').padStart(pad, ' ');
-						return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
-							attacker.townHallLevel
-						]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
-					})
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: 'Recent Attacks',
+					value: [
+						...data.recent.map(({ attacker, defender }) => {
+							const name = escapeMarkdown(attacker.name);
+							const stars = this.getStars(attacker.oldStars, attacker.stars);
+							const destruction: string = Math.floor(attacker.destructionPercentage)
+								.toString()
+								.concat('%')
+								.padStart(pad, ' ');
+							return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
+								attacker.townHallLevel
+							]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
+						})
+					].join('\n')
+				}
+			]);
 		}
 
 		if (data.remaining.length) {
@@ -353,7 +385,7 @@ export default class ClanWarLog {
 
 			if (oneRem.length) {
 				const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
-				chunks.map((chunk, i) => embed.addField(i === 0 ? 'Missed Attacks' : '\u200e', chunk));
+				embed.addFields(chunks.map((chunk, i) => ({ name: i === 0 ? 'Missed Attacks' : '\u200e', value: chunk })));
 			}
 		}
 

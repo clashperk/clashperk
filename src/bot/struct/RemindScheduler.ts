@@ -1,10 +1,10 @@
-import { Collection, ObjectId } from 'mongodb';
-import { TextChannel } from 'discord.js';
-import moment from 'moment';
 import { ClanWar } from 'clashofclans.js';
-import { Util } from '../util/index.js';
-import { ORANGE_NUMBERS } from '../util/Emojis.js';
+import { ChannelType, PermissionFlagsBits, TextChannel } from 'discord.js';
+import moment from 'moment';
+import { Collection, ObjectId } from 'mongodb';
 import { Collections } from '../util/Constants.js';
+import { ORANGE_NUMBERS } from '../util/Emojis.js';
+import { Util } from '../util/index.js';
 import { Client } from './Client.js';
 
 export default class RemindScheduler {
@@ -219,8 +219,10 @@ export default class RemindScheduler {
 
 			const channel = this.client.channels.cache.get(rem.channel) as TextChannel | null;
 			if (
-				channel?.isText() &&
-				channel.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES', 'USE_EXTERNAL_EMOJIS', 'VIEW_CHANNEL'])
+				channel?.type === ChannelType.GuildText &&
+				channel
+					.permissionsFor(this.client.user!)
+					?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.UseExternalEmojis, PermissionFlagsBits.ViewChannel])
 			) {
 				for (const content of Util.splitMessage(text)) {
 					try {

@@ -1,4 +1,4 @@
-import { GuildMember, Permissions, PermissionString, TextChannel } from 'discord.js';
+import { GuildMember, PermissionsBitField, PermissionsString, TextChannel, User } from 'discord.js';
 import i18next from 'i18next';
 
 export const status = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
@@ -67,20 +67,25 @@ export const enum Settings {
 	EVENTS_CHANNEL = 'eventsChannel'
 }
 
-export function missingPermissions(channel: TextChannel, member: GuildMember, permissions: string[]) {
+export function missingPermissions(channel: TextChannel, member: GuildMember | User, permissions: string[]) {
 	const missingPerms = channel
 		.permissionsFor(member)!
-		.missing(permissions as PermissionString[])
+		.missing(permissions as PermissionsString[])
 		.map((str) => {
-			if (str === 'VIEW_CHANNEL') return '`Read Messages`';
+			if (str === 'ViewChannel') return '`Read Messages`';
+			if (str === 'SendTTSMessages') return '`Send TTS Messages`';
+			if (str === 'UseVAD') return '`Use VAD`';
+			if (str === 'ManageGuild') return '`Manage Server`';
 			return `\`${str
-				.replace(/_/g, ' ')
+				.replace(/([A-Z])/g, ' $1')
 				.toLowerCase()
+				.trim()
 				.replace(/\b(\w)/g, (char) => char.toUpperCase())}\``;
 		});
 
 	return {
 		missing: Boolean(missingPerms.length > 0),
+		permissionStrings: missingPerms,
 		missingPerms:
 			missingPerms.length > 1
 				? `${missingPerms.slice(0, -1).join(', ')} and ${missingPerms.slice(-1)[0]!} permissions`
@@ -95,22 +100,7 @@ export const URLS = {
 
 export const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
 
-export const BIT_FIELD = new Permissions([
-	'CREATE_INSTANT_INVITE',
-	'ADD_REACTIONS',
-	'VIEW_CHANNEL',
-	'SEND_MESSAGES',
-	'EMBED_LINKS',
-	'ATTACH_FILES',
-	'READ_MESSAGE_HISTORY',
-	'USE_EXTERNAL_EMOJIS',
-	'MANAGE_MESSAGES',
-	'MANAGE_WEBHOOKS',
-	'MANAGE_NICKNAMES',
-	'MANAGE_ROLES',
-	'MANAGE_THREADS',
-	'SEND_MESSAGES_IN_THREADS'
-]).bitfield;
+export const BIT_FIELD = new PermissionsBitField(292997688385n).bitfield;
 
 export const locales: Record<string, string> = {
 	'en-US': 'English, US',

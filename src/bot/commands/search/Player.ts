@@ -1,4 +1,4 @@
-import { MessageEmbed, Util, CommandInteraction, MessageSelectMenu, MessageActionRow } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder, escapeMarkdown } from 'discord.js';
 import { Player, WarClan } from 'clashofclans.js';
 import ms from 'ms';
 import { EMOJIS, TOWN_HALLS, HEROES, SIEGE_MACHINES } from '../../util/Emojis.js';
@@ -27,7 +27,7 @@ export default class PlayerCommand extends Command {
 		super('player', {
 			category: 'search',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Player summary and some basic details.'
 			},
@@ -69,9 +69,9 @@ export default class PlayerCommand extends Command {
 		}));
 
 		const customID = this.client.uuid(interaction.user.id);
-		const menu = new MessageSelectMenu().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
+		const menu = new SelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
 
-		await msg.edit({ components: [new MessageActionRow({ components: [menu] })] });
+		await interaction.editReply({ components: [new ActionRowBuilder<SelectMenuBuilder>({ components: [menu] })] });
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => [customID].includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
@@ -120,8 +120,8 @@ export default class PlayerCommand extends Command {
 			EMOJIS.THREE_STARS
 		} ${war.starTypes.filter((num) => num === 3).length} ${EMOJIS.EMPTY_SWORD} ${war.of - war.attacks}`;
 		const weaponLevel = data.townHallWeaponLevel ? weaponLevels[data.townHallWeaponLevel] : '';
-		const embed = new MessageEmbed()
-			.setTitle(`${Util.escapeMarkdown(data.name)} (${data.tag})`)
+		const embed = new EmbedBuilder()
+			.setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.league?.iconUrls.small ?? `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`)
 			.setDescription(
@@ -131,58 +131,68 @@ export default class PlayerCommand extends Command {
 					} **${data.trophies}** ${EMOJIS.WAR_STAR} **${data.warStars}**`
 				].join('\n')
 			);
-		embed.addField(
-			'**Season Stats**',
-			[
-				`**Donated**\n${EMOJIS.TROOPS_DONATE} ${data.donations} ${EMOJIS.UP_KEY}`,
-				`**Received**\n${EMOJIS.TROOPS_DONATE} ${data.donationsReceived} ${EMOJIS.DOWN_KEY}`,
-				`**Attacks Won**\n${EMOJIS.SWORD} ${data.attackWins}`,
-				`**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}${war.total > 0 ? `\n**War Stats**\n${warStats}` : ''}`,
-				'\u200b\u2002'
-			].join('\n')
-		);
-		embed.addField(
-			'**Other Stats**',
-			[
-				`**Best Trophies**\n${EMOJIS.TROPHY} ${data.bestTrophies}`,
-				`${clan}**Last Seen**\n${EMOJIS.CLOCK} ${lastSeen}`,
-				'\u200b\u2002'
-			].join('\n')
-		);
-		embed.addField(
-			'**Achievement Stats**',
-			[
-				'**Total Loots**',
-				[
-					`${EMOJIS.GOLD} ${this.format(data.achievements.find((d) => d.name === 'Gold Grab')!.value)}`,
-					`${EMOJIS.ELIXIR} ${this.format(data.achievements.find((d) => d.name === 'Elixir Escapade')!.value)}`,
-					`${EMOJIS.DARK_ELIXIR} ${this.format(data.achievements.find((d) => d.name === 'Heroic Heist')!.value)}`
-				].join(' '),
-				`**Troops Donated**\n${EMOJIS.TROOPS_DONATE} ${data.achievements.find((d) => d.name === 'Friend in Need')!.value}`,
-				`**Spells Donated**\n${EMOJIS.SPELL_DONATE} ${data.achievements.find((d) => d.name === 'Sharing is caring')!.value}`,
-				`**Siege Donated**\n${SIEGE_MACHINES['Wall Wrecker']} ${data.achievements.find((d) => d.name === 'Siege Sharer')!.value}`,
-				`**Attacks Won**\n${EMOJIS.SWORD} ${data.achievements.find((d) => d.name === 'Conqueror')!.value}`,
-				`**Defense Won**\n${EMOJIS.SHIELD} ${data.achievements.find((d) => d.name === 'Unbreakable')!.value}`,
-				`**CWL War Stars**\n${EMOJIS.STAR} ${data.achievements.find((d) => d.name === 'War League Legend')!.value}`,
-				`**Clan Games Points**\n${EMOJIS.CLAN_GAMES} ${data.achievements.find((d) => d.name === 'Games Champion')!.value}`,
-				`**Capital Gold Looted**\n${EMOJIS.CAPITAL_GOLD} ${
-					data.achievements.find((d) => d.name === 'Aggressive Capitalism')?.value ?? 0
-				}`,
-				`**Capital Gold Contributed**\n${EMOJIS.CAPITAL_GOLD} ${
-					data.achievements.find((d) => d.name === 'Most Valuable Clanmate')?.value ?? 0
-				}`,
-				'\u200b\u2002'
-			].join('\n')
-		);
+		embed.addFields([
+			{
+				name: '**Season Stats**',
+				value: [
+					`**Donated**\n${EMOJIS.TROOPS_DONATE} ${data.donations} ${EMOJIS.UP_KEY}`,
+					`**Received**\n${EMOJIS.TROOPS_DONATE} ${data.donationsReceived} ${EMOJIS.DOWN_KEY}`,
+					`**Attacks Won**\n${EMOJIS.SWORD} ${data.attackWins}`,
+					`**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}${war.total > 0 ? `\n**War Stats**\n${warStats}` : ''}`,
+					'\u200b\u2002'
+				].join('\n')
+			}
+		]);
+		embed.addFields([
+			{
+				name: '**Other Stats**',
+				value: [
+					`**Best Trophies**\n${EMOJIS.TROPHY} ${data.bestTrophies}`,
+					`${clan}**Last Seen**\n${EMOJIS.CLOCK} ${lastSeen}`,
+					'\u200b\u2002'
+				].join('\n')
+			}
+		]);
+		embed.addFields([
+			{
+				name: '**Achievement Stats**',
+				value: [
+					'**Total Loots**',
+					[
+						`${EMOJIS.GOLD} ${this.format(data.achievements.find((d) => d.name === 'Gold Grab')!.value)}`,
+						`${EMOJIS.ELIXIR} ${this.format(data.achievements.find((d) => d.name === 'Elixir Escapade')!.value)}`,
+						`${EMOJIS.DARK_ELIXIR} ${this.format(data.achievements.find((d) => d.name === 'Heroic Heist')!.value)}`
+					].join(' '),
+					`**Troops Donated**\n${EMOJIS.TROOPS_DONATE} ${data.achievements.find((d) => d.name === 'Friend in Need')!.value}`,
+					`**Spells Donated**\n${EMOJIS.SPELL_DONATE} ${data.achievements.find((d) => d.name === 'Sharing is caring')!.value}`,
+					`**Siege Donated**\n${SIEGE_MACHINES['Wall Wrecker']} ${
+						data.achievements.find((d) => d.name === 'Siege Sharer')!.value
+					}`,
+					`**Attacks Won**\n${EMOJIS.SWORD} ${data.achievements.find((d) => d.name === 'Conqueror')!.value}`,
+					`**Defense Won**\n${EMOJIS.SHIELD} ${data.achievements.find((d) => d.name === 'Unbreakable')!.value}`,
+					`**CWL War Stars**\n${EMOJIS.STAR} ${data.achievements.find((d) => d.name === 'War League Legend')!.value}`,
+					`**Clan Games Points**\n${EMOJIS.CLAN_GAMES} ${data.achievements.find((d) => d.name === 'Games Champion')!.value}`,
+					`**Capital Gold Looted**\n${EMOJIS.CAPITAL_GOLD} ${
+						data.achievements.find((d) => d.name === 'Aggressive Capitalism')?.value ?? 0
+					}`,
+					`**Capital Gold Contributed**\n${EMOJIS.CAPITAL_GOLD} ${
+						data.achievements.find((d) => d.name === 'Most Valuable Clanmate')?.value ?? 0
+					}`,
+					'\u200b\u2002'
+				].join('\n')
+			}
+		]);
 
 		const heroes = data.heroes.filter((hero) => hero.village === 'home').map((hero) => `${HEROES[hero.name]} ${hero.level}`);
-		embed.addField('**Heroes**', [`${heroes.length ? heroes.join(' ') : `${EMOJIS.WRONG} None`}`, '\u200b\u2002'].join('\n'));
+		embed.addFields([
+			{ name: '**Heroes**', value: [`${heroes.length ? heroes.join(' ') : `${EMOJIS.WRONG} None`}`, '\u200b\u2002'].join('\n') }
+		]);
 
 		const user = await this.getLinkedUser(interaction, data.tag);
 		if (user) {
-			embed.addField('**Discord**', user.mention ?? `${EMOJIS.OK} Connected`);
+			embed.addFields([{ name: '**Discord**', value: user.mention ?? `${EMOJIS.OK} Connected` }]);
 		} else {
-			embed.addField('**Discord**', `${EMOJIS.WRONG} Not Found`);
+			embed.addFields([{ name: '**Discord**', value: `${EMOJIS.WRONG} Not Found` }]);
 		}
 
 		return embed;

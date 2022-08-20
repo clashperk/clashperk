@@ -8,7 +8,7 @@ export default class LinkDeleteCommand extends Command {
 		super('link-delete', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: [
 					'Unlinks a clan or player account.',

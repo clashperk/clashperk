@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, Collection, TextChannel, PermissionString, Snowflake, ThreadChannel } from 'discord.js';
+import { EmbedBuilder, Message, Collection, TextChannel, PermissionsString, Snowflake, ThreadChannel } from 'discord.js';
 import { APIMessage } from 'discord-api-types/v9';
 import { Clan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
@@ -56,19 +56,18 @@ export default class ClanEmbedLog {
 	}
 
 	private async permissionsFor(cache: Cache, clan: Clan) {
-		const permissions: PermissionString[] = [
-			'READ_MESSAGE_HISTORY',
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
+		const permissions: PermissionsString[] = [
+			'ReadMessageHistory',
+			'SendMessages',
+			'EmbedLinks',
+			'UseExternalEmojis',
+			'AddReactions',
+			'ViewChannel'
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel) as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
-				return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SendMessagesInThreads'))) return;
 			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
 				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
 				return this.handleMessage(cache, channel, clan);
@@ -78,7 +77,7 @@ export default class ClanEmbedLog {
 
 	private async unarchive(thread: ThreadChannel) {
 		if (!(thread.editable && thread.manageable)) return null;
-		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
+		return thread.edit({ archived: false, locked: false });
 	}
 
 	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan) {
@@ -145,7 +144,7 @@ export default class ClanEmbedLog {
 				: `🌐 ${data.location.name}`
 			: `${EMOJIS.WRONG} None`;
 
-		const clanDescription: string = cache.embed.description === 'auto' ? data.description : cache.embed.description;
+		const clanDescription: string = cache.embed.data.description === 'auto' ? data.description : cache.embed.data.description;
 		const clanRequirements: string =
 			cache.embed.accepts === 'auto'
 				? data.requiredTownhallLevel
@@ -153,7 +152,7 @@ export default class ClanEmbedLog {
 					: 'Any'
 				: cache.embed.accepts;
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(cache.color)
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
@@ -165,48 +164,50 @@ export default class ClanEmbedLog {
 					clanDescription || ''
 				].join('\n')
 			)
-			.addField(
-				'Clan Leader',
-				[
-					`${EMOJIS.OWNER} <@!${cache.embed.userId as string}> (${
-						data.memberList.find((m) => m.role === 'leader')?.name ?? 'None'
-					})`
-				].join('\n')
-			)
-			.addField(
-				'Requirements',
-				[
-					`${EMOJIS.TOWNHALL} ${clanRequirements || 'Any'}`,
-					'**Trophies Required**',
-					`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
-					`**Location** \n${location}`
-				].join('\n')
-			)
-			.addField(
-				'War Performance',
-				[
-					`${EMOJIS.OK} ${data.warWins} Won ${
-						data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''
-					}`,
-					'**War Frequency & Streak**',
-					`${
-						data.warFrequency.toLowerCase() === 'morethanonceperweek'
-							? '🎟️ More Than Once Per Week'
-							: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`
-					} ${'🏅'} ${data.warWinStreak}`,
-					'**War League**',
-					`${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
-				].join('\n')
-			)
-			.addField(
-				'Town Halls',
-				[
-					townHalls
-						.slice(0, 7)
-						.map((th) => `${TOWN_HALLS[th.level]!} ${ORANGE_NUMBERS[th.total]!}\u200b`)
-						.join(' ') || `${EMOJIS.WRONG} None`
-				].join('\n')
-			)
+			.addFields([
+				{
+					name: 'Clan Leader',
+					value: [
+						`${EMOJIS.OWNER} <@!${cache.embed.userId as string}> (${
+							data.memberList.find((m) => m.role === 'leader')?.name ?? 'None'
+						})`
+					].join('\n')
+				},
+				{
+					name: 'Requirements',
+					value: [
+						`${EMOJIS.TOWNHALL} ${clanRequirements || 'Any'}`,
+						'**Trophies Required**',
+						`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
+						`**Location** \n${location}`
+					].join('\n')
+				},
+				{
+					name: 'War Performance',
+					value: [
+						`${EMOJIS.OK} ${data.warWins} Won ${
+							data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''
+						}`,
+						'**War Frequency & Streak**',
+						`${
+							data.warFrequency.toLowerCase() === 'morethanonceperweek'
+								? '🎟️ More Than Once Per Week'
+								: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`
+						} ${'🏅'} ${data.warWinStreak}`,
+						'**War League**',
+						`${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
+					].join('\n')
+				},
+				{
+					name: 'Town Halls',
+					value: [
+						townHalls
+							.slice(0, 7)
+							.map((th) => `${TOWN_HALLS[th.level]!} ${ORANGE_NUMBERS[th.total]!}\u200b`)
+							.join(' ') || `${EMOJIS.WRONG} None`
+					].join('\n')
+				}
+			])
 			.setTimestamp()
 			.setFooter({ text: 'Synced' });
 

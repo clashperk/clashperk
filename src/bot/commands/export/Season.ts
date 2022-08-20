@@ -10,7 +10,7 @@ export default class ExportSeason extends Command {
 		super('export-season', {
 			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+			clientPermissions: ['AttachFiles', 'EmbedLinks'],
 			defer: true
 		});
 	}

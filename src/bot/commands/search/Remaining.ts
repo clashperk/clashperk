@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, escapeMarkdown } from 'discord.js';
 import { ClanWar } from 'clashofclans.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
@@ -11,7 +11,7 @@ export default class RemainingCommand extends Command {
 		super('remaining', {
 			category: 'war',
 			channel: 'guild',
-			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
+			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
 			description: {
 				content: ['Remaining or missed clan war attacks.', '', 'Get War ID from `warlog` command.']
 			},
@@ -24,7 +24,7 @@ export default class RemainingCommand extends Command {
 		if (!clan) return;
 		if (args.war_id) return this.getWar(interaction, args.war_id, clan.tag);
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
@@ -79,7 +79,7 @@ export default class RemainingCommand extends Command {
 	}
 
 	private sendResult(interaction: CommandInteraction, body: ClanWar & { id?: number }) {
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
 
@@ -87,7 +87,7 @@ export default class RemainingCommand extends Command {
 			embed.setDescription(
 				[
 					'**War Against**',
-					`${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
+					`${escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 					'',
 					'**War State**',
 					'Preparation'
@@ -105,7 +105,7 @@ export default class RemainingCommand extends Command {
 		embed.setDescription(
 			[
 				'**War Against**',
-				`${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
+				`${escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 				'',
 				'**War State**',
 				`${body.state.replace(/warEnded/g, 'War Ended').replace(/inWar/g, 'Battle Day')}`,
@@ -117,7 +117,7 @@ export default class RemainingCommand extends Command {
 		if (TwoRem.length) {
 			embed.setDescription(
 				[
-					embed.description,
+					embed.data.description,
 					'',
 					`**${body.attacksPerMember} ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
 					...TwoRem.sort((a, b) => a.mapPosition - b.mapPosition).map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)
@@ -128,7 +128,7 @@ export default class RemainingCommand extends Command {
 		if (OneRem.length && body.attacksPerMember !== 1) {
 			embed.setDescription(
 				[
-					embed.description,
+					embed.data.description,
 					'',
 					`**1 ${body.state === 'inWar' ? 'Remaining' : 'Missed'} Attack**`,
 					...OneRem.sort((a, b) => a.mapPosition - b.mapPosition).map((m) => `\u200e${BLUE_NUMBERS[m.mapPosition]} ${m.name}`)

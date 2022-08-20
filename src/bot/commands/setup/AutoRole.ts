@@ -22,8 +22,8 @@ export default class AutoRoleCommand extends Command {
 			description: {
 				content: ['Auto-assign roles to members based upon their role in the clan.']
 			},
-			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['EMBED_LINKS', 'MANAGE_ROLES'],
+			userPermissions: ['ManageGuild'],
+			clientPermissions: ['EmbedLinks', 'ManageRoles'],
 			defer: true,
 			ephemeral: true
 		});
@@ -120,7 +120,7 @@ export default class AutoRoleCommand extends Command {
 	}
 
 	private isHigherRole(role: Role, guild: Guild) {
-		return role.position > guild.me!.roles.highest.position;
+		return role.position > guild.members.me!.roles.highest.position;
 	}
 
 	private async updateLinksAndRoles(clans: { tag: string }[]) {

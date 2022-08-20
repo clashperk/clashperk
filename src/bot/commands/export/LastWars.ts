@@ -9,7 +9,7 @@ export default class LastWarsExport extends Command {
 		super('export-last-wars', {
 			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+			clientPermissions: ['AttachFiles', 'EmbedLinks'],
 			defer: true
 		});
 	}

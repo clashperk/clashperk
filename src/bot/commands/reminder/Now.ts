@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu, TextChannel } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, TextChannel, ButtonStyle } from 'discord.js';
 import ms from 'ms';
 import { Command } from '../../lib/index.js';
 
@@ -7,8 +7,8 @@ export default class ReminderNowCommand extends Command {
 		super('reminder-now', {
 			category: 'reminder',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['EMBED_LINKS'],
+			userPermissions: ['ManageGuild'],
+			clientPermissions: ['EmbedLinks'],
 			defer: true
 		});
 	}
@@ -60,8 +60,8 @@ export default class ReminderNowCommand extends Command {
 		};
 
 		const mutate = (disable = false) => {
-			const row1 = new MessageActionRow().addComponents(
-				new MessageSelectMenu()
+			const row1 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+				new SelectMenuBuilder()
 					.setPlaceholder('Select Attacks Remaining')
 					.setMaxValues(2)
 					.setCustomId(CUSTOM_ID.REMAINING)
@@ -81,8 +81,8 @@ export default class ReminderNowCommand extends Command {
 					])
 					.setDisabled(disable)
 			);
-			const row2 = new MessageActionRow().addComponents(
-				new MessageSelectMenu()
+			const row2 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+				new SelectMenuBuilder()
 					.setPlaceholder('Select Town Halls')
 					.setCustomId(CUSTOM_ID.TOWN_HALLS)
 					.setMaxValues(13)
@@ -101,9 +101,8 @@ export default class ReminderNowCommand extends Command {
 					)
 					.setDisabled(disable)
 			);
-
-			const row3 = new MessageActionRow().addComponents(
-				new MessageSelectMenu()
+			const row3 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+				new SelectMenuBuilder()
 					.setPlaceholder('Select Clan Roles')
 					.setCustomId(CUSTOM_ID.ROLES)
 					.setMaxValues(4)
@@ -131,9 +130,8 @@ export default class ReminderNowCommand extends Command {
 					])
 					.setDisabled(disable)
 			);
-
-			const row4 = new MessageActionRow().addComponents(
-				new MessageSelectMenu()
+			const row4 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+				new SelectMenuBuilder()
 					.setPlaceholder('Select Clans')
 					.setCustomId(CUSTOM_ID.CLANS)
 					.setMaxValues(clans.length)
@@ -147,9 +145,8 @@ export default class ReminderNowCommand extends Command {
 					)
 					.setDisabled(disable || clans.length > 25)
 			);
-
-			const row5 = new MessageActionRow().addComponents(
-				new MessageButton().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle('PRIMARY').setDisabled(disable)
+			const row5 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
 			);
 
 			return [row1, row2, row3, row4, row5];
@@ -172,22 +169,22 @@ export default class ReminderNowCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.customId === CUSTOM_ID.REMAINING && action.isSelectMenu()) {
 				state.remaining = action.values;
-				return action.update({ components: mutate() });
+				await action.update({ components: mutate() });
 			}
 
 			if (action.customId === CUSTOM_ID.TOWN_HALLS && action.isSelectMenu()) {
 				state.townHalls = action.values;
-				return action.update({ components: mutate() });
+				await action.update({ components: mutate() });
 			}
 
 			if (action.customId === CUSTOM_ID.ROLES && action.isSelectMenu()) {
 				state.roles = action.values;
-				return action.update({ components: mutate() });
+				await action.update({ components: mutate() });
 			}
 
 			if (action.customId === CUSTOM_ID.CLANS && action.isSelectMenu()) {
 				state.clans = action.values;
-				return action.update({ components: mutate() });
+				await action.update({ components: mutate() });
 			}
 
 			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {

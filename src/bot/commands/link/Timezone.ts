@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
@@ -8,7 +8,7 @@ export default class TimezoneCommand extends Command {
 	public constructor() {
 		super('timezone', {
 			category: 'none',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			channel: 'guild',
 			description: {
 				content: 'Sets your timezone offset.'
@@ -43,7 +43,7 @@ export default class TimezoneCommand extends Command {
 			{ upsert: true }
 		);
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setTitle(`${raw.location.formatted_address}`)
 			.setDescription(

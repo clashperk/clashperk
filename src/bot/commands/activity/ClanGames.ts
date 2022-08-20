@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
 import { ClanGames } from '../../util/index.js';
@@ -10,7 +10,7 @@ export default class ClanGamesCommand extends Command {
 		super('clan-games', {
 			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: ['Clan Games points of clan members.', '', '**[How does it work?](https://clashperk.com/faq)**']
 			},
@@ -44,18 +44,18 @@ export default class ClanGamesCommand extends Command {
 		const embed = this.embed(interaction, { clan, members, max: args.max, filter: args.filter });
 		embed.setColor(this.client.embed(interaction));
 
-		const row = new MessageActionRow()
+		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
-				new MessageButton()
+				new ButtonBuilder()
 					.setCustomId(JSON.stringify({ cmd: this.id, max: false }))
 					.setEmoji(EMOJIS.REFRESH)
-					.setStyle('SECONDARY')
+					.setStyle(ButtonStyle.Secondary)
 			)
 			.addComponents(
-				new MessageButton()
+				new ButtonBuilder()
 					.setCustomId(JSON.stringify({ cmd: this.id, max: !args.max, filter: false }))
 					.setLabel(args.max ? 'Permissible Points' : 'Maximum Points')
-					.setStyle('PRIMARY')
+					.setStyle(ButtonStyle.Primary)
 			);
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
@@ -65,7 +65,7 @@ export default class ClanGamesCommand extends Command {
 		{ clan, members, max = false, filter = false }: { clan: Clan; members: Member[]; max?: boolean; filter?: boolean }
 	) {
 		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
 			.setDescription(
 				[

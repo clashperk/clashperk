@@ -18,8 +18,8 @@ export default class SetupDisableCommand extends Command {
 		super('setup-disable', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
-			userPermissions: ['MANAGE_GUILD'],
+			clientPermissions: ['EmbedLinks'],
+			userPermissions: ['ManageGuild'],
 			defer: true,
 			ephemeral: true
 		});

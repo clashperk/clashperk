@@ -11,7 +11,7 @@ export default class ClanActivityCommand extends Command {
 		super('activity', {
 			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
+			clientPermissions: ['EmbedLinks', 'AttachFiles'],
 			description: {
 				content: [
 					'Graph of hourly active clan members.',

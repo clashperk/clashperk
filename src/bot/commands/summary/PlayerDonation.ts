@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction, MessageActionRow, MessageButton } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
@@ -10,7 +10,7 @@ export default class PlayerDonationSummaryCommand extends Command {
 		super('player-donation-summary', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			defer: true
 		});
 	}
@@ -36,7 +36,7 @@ export default class PlayerDonationSummaryCommand extends Command {
 		];
 
 		const getEmbed = () => {
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setColor(this.client.embed(interaction))
 				.setAuthor({ name: 'Top Players among Clan Family' })
 				.setDescription(
@@ -68,8 +68,8 @@ export default class PlayerDonationSummaryCommand extends Command {
 
 		const embed = getEmbed();
 		const customId = this.client.uuid(interaction.user.id);
-		const row = new MessageActionRow().addComponents(
-			new MessageButton().setStyle('SECONDARY').setCustomId(customId).setLabel('Sort by Received')
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customId).setLabel('Sort by Received')
 		);
 
 		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
@@ -83,7 +83,7 @@ export default class PlayerDonationSummaryCommand extends Command {
 			if (action.customId === customId) {
 				players.sort((a, b) => b.receives - a.receives);
 				const embed = getEmbed();
-				return action.update({ embeds: [embed], components: [] });
+				await action.update({ embeds: [embed], components: [] });
 			}
 		});
 

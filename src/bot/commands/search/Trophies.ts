@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 
 export default class TrophiesCommand extends Command {
@@ -6,7 +6,7 @@ export default class TrophiesCommand extends Command {
 		super('trophies', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: 'List of clan members with trophies.'
 			},
@@ -21,7 +21,7 @@ export default class TrophiesCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
 		}
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
 			.setDescription(

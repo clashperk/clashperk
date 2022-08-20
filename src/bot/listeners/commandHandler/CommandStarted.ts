@@ -1,5 +1,5 @@
 import { addBreadcrumb, setContext } from '@sentry/node';
-import { BaseCommandInteraction, Interaction, MessageComponentInteraction } from 'discord.js';
+import { BaseInteraction, CommandInteraction, MessageComponentInteraction } from 'discord.js';
 import { Listener, Command } from '../../lib/index.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
 
@@ -12,7 +12,7 @@ export default class CommandStartedListener extends Listener {
 		});
 	}
 
-	public exec(interaction: MessageComponentInteraction | BaseCommandInteraction, command: Command, args: unknown) {
+	public exec(interaction: MessageComponentInteraction | CommandInteraction, command: Command, args: unknown) {
 		addBreadcrumb({
 			message: 'command_started',
 			category: command.category,
@@ -30,7 +30,7 @@ export default class CommandStartedListener extends Listener {
 				},
 				interaction: {
 					id: interaction.id,
-					command: interaction.isApplicationCommand() ? interaction.commandName : null,
+					command: interaction.isCommand() ? interaction.commandName : null,
 					customId: interaction.isMessageComponent() ? interaction.customId : null
 				},
 				args
@@ -50,7 +50,7 @@ export default class CommandStartedListener extends Listener {
 			},
 			interaction: {
 				id: interaction.id,
-				command: interaction.isApplicationCommand() ? interaction.commandName : null,
+				command: interaction.isCommand() ? interaction.commandName : null,
 				customId: interaction.isMessageComponent() ? interaction.customId : null
 			},
 			args
@@ -61,7 +61,7 @@ export default class CommandStartedListener extends Listener {
 		return this.counter(interaction, command);
 	}
 
-	private counter(interaction: Interaction, command: Command) {
+	private counter(interaction: BaseInteraction, command: Command) {
 		if (interaction.inCachedGuild()) this.client.stats.interactions(interaction, command.id);
 		if (command.category === 'owner') return;
 		if (this.client.isOwner(interaction.user.id)) return;

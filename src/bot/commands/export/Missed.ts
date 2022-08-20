@@ -14,7 +14,7 @@ export default class ExportMissed extends Command {
 		super('export-missed', {
 			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+			clientPermissions: ['AttachFiles', 'EmbedLinks'],
 			defer: true
 		});
 	}

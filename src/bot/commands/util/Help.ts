@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { URLS } from '../../util/Constants.js';
 
@@ -26,7 +26,7 @@ export default class HelpCommand extends Command {
 	public constructor() {
 		super('help', {
 			category: 'none',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: 'Get all commands or info about a command'
 			},
@@ -50,7 +50,7 @@ export default class HelpCommand extends Command {
 			command.description
 		);
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setDescription(
 				[
@@ -63,14 +63,14 @@ export default class HelpCommand extends Command {
 		if (description.examples.length) {
 			const cmd = `/${command.name ?? command.id}`;
 			embed.setDescription(
-				[embed.description, '', '**Examples**', `\`${cmd} ${description.examples.join(`\`\n\`${cmd} `)}\``].join('\n')
+				[embed.data.description, '', '**Examples**', `\`${cmd} ${description.examples.join(`\`\n\`${cmd} `)}\``].join('\n')
 			);
 		}
 
 		if (command.userPermissions) {
 			embed.setDescription(
 				[
-					embed.description,
+					embed.data.description,
 					'',
 					`**Permission${command.userPermissions.length === 1 ? '' : 's'} Required**`,
 					command.userPermissions
@@ -85,7 +85,7 @@ export default class HelpCommand extends Command {
 		if (description.image) {
 			embed.setDescription(
 				[
-					embed.description,
+					embed.data.description,
 					'',
 					Array.isArray(description.image.text) ? description.image.text.join('\n') : description.image.text
 				].join('\n')
@@ -101,9 +101,9 @@ export default class HelpCommand extends Command {
 	}
 
 	private execHelpList(interaction: CommandInteraction<'cached'>, option: typeof categories) {
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: 'Command List', iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
+			.setAuthor({ name: 'Command List', iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
 			.setDescription(`To view more details for a command, do \`/help command: query\``);
 
 		const categories = Object.values(
@@ -125,20 +125,27 @@ export default class HelpCommand extends Command {
 		const fields = Object.values(option);
 		categories.sort((a, b) => fields.indexOf(a.category) - fields.indexOf(b.category));
 		for (const { commands, category } of categories) {
-			embed.addField(
-				`**__${category}__**`,
-				commands
-					.map((cmd) => {
-						const description = Array.isArray(cmd.description?.content)
-							? cmd.description?.content[0] ?? ''
-							: cmd.description?.content ?? '';
-						return `**\`/${cmd.name ?? cmd.id}\`**\n${description}`;
-					})
-					.join('\n')
-			);
+			embed.addFields([
+				{
+					name: `**__${category}__**`,
+					value: commands
+						.map((cmd) => {
+							const description = Array.isArray(cmd.description?.content)
+								? cmd.description?.content[0] ?? ''
+								: cmd.description?.content ?? '';
+							return `**\`/${cmd.name ?? cmd.id}\`**\n${description}`;
+						})
+						.join('\n')
+				}
+			]);
 		}
 
-		embed.addField('\u200b', `**[Join Support Discord](${URLS.SUPPORT_SERVER})** | **[Support us on Patreon](${URLS.PATREON})**`);
+		embed.addFields([
+			{
+				name: '\u200b',
+				value: `**[Join Support Discord](${URLS.SUPPORT_SERVER})** | **[Support us on Patreon](${URLS.PATREON})**`
+			}
+		]);
 		return embed;
 	}
 }

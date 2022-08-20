@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction, MessageButton, MessageActionRow } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, escapeMarkdown, ButtonStyle } from 'discord.js';
 import { ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import moment from 'moment';
 import { Collections, WarType } from '../../util/Constants.js';
@@ -12,7 +12,7 @@ export default class WarCommand extends Command {
 		super('war', {
 			category: 'war',
 			channel: 'guild',
-			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
+			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
 			description: {
 				content: ['Current or previous clan war details.', '', 'Get War ID from `warlog` command.']
 			},
@@ -27,7 +27,7 @@ export default class WarCommand extends Command {
 		if (!clan) return;
 		if (args.war_id) return this.getWar(interaction, args.war_id, clan.tag);
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `\u200e${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
@@ -84,7 +84,7 @@ export default class WarCommand extends Command {
 	}
 
 	private async sendResult(interaction: CommandInteraction<'cached'>, body: ClanWar) {
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
 
@@ -93,7 +93,7 @@ export default class WarCommand extends Command {
 			embed.setDescription(
 				[
 					'**War Against**',
-					`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
+					`\u200e${escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 					'',
 					'**War State**',
 					'Preparation',
@@ -110,7 +110,7 @@ export default class WarCommand extends Command {
 			embed.setDescription(
 				[
 					'**War Against**',
-					`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
+					`\u200e${escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 					'',
 					'**War State**',
 					`Battle Day (${body.teamSize} vs ${body.teamSize})`,
@@ -130,7 +130,7 @@ export default class WarCommand extends Command {
 			embed.setDescription(
 				[
 					'**War Against**',
-					`\u200e${Util.escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
+					`\u200e${escapeMarkdown(body.opponent.name)} (${body.opponent.tag})`,
 					'',
 					'**War State**',
 					`War Ended (${body.teamSize} vs ${body.teamSize})`,
@@ -142,8 +142,16 @@ export default class WarCommand extends Command {
 			);
 		}
 
-		embed.addField('Rosters', [`\u200e${Util.escapeMarkdown(body.clan.name)}`, `${this.count(body.clan.members)}`].join('\n'));
-		embed.addField('\u200b', [`\u200e${Util.escapeMarkdown(body.opponent.name)}`, `${this.count(body.opponent.members)}`].join('\n'));
+		embed.addFields([
+			{
+				name: 'Rosters',
+				value: [`\u200e${escapeMarkdown(body.clan.name)}`, `${this.count(body.clan.members)}`].join('\n')
+			},
+			{
+				name: '\u200b',
+				value: [`\u200e${escapeMarkdown(body.opponent.name)}`, `${this.count(body.opponent.members)}`].join('\n')
+			}
+		]);
 
 		if (body.hasOwnProperty('id')) {
 			// @ts-expect-error
@@ -155,9 +163,12 @@ export default class WarCommand extends Command {
 		}
 
 		const customID = this.client.uuid(interaction.user.id);
-		const button = new MessageButton().setLabel('Download').setEmoji('📥').setStyle('SECONDARY').setCustomId(customID);
+		const button = new ButtonBuilder().setLabel('Download').setEmoji('📥').setStyle(ButtonStyle.Secondary).setCustomId(customID);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const msg = await interaction.editReply({
+			embeds: [embed],
+			components: [new ActionRowBuilder<ButtonBuilder>({ components: [button] })]
+		});
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
@@ -173,7 +184,7 @@ export default class WarCommand extends Command {
 						files: [{ attachment: Buffer.from(buffer), name: 'war_stats.xlsx' }]
 					});
 				} else {
-					const embed = new MessageEmbed()
+					const embed = new EmbedBuilder()
 						.setDescription(
 							[
 								'**Patron Only Command**',

@@ -1,13 +1,12 @@
-import { CommandInteraction, HexColorString, MessageEmbed } from 'discord.js';
+import { CommandInteraction, HexColorString, EmbedBuilder, resolveColor } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Util } from '../../util/index.js';
 import { Settings } from '../../util/Constants.js';
 
 export default class ConfigCommand extends Command {
 	public constructor() {
 		super('config', {
 			category: 'config',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			channel: 'guild',
 			description: {
 				content: ['Manage server configuration.']
@@ -28,7 +27,7 @@ export default class ConfigCommand extends Command {
 				this.client.settings.delete(interaction.guild, Settings.EVENTS_CHANNEL);
 			} else if (/\d{17,19}/g.test(args.events_channel)) {
 				const channel = this.client.channels.cache.get(args.events_channel.match(/\d{17,19}/g)![0]);
-				if (!channel?.isText()) {
+				if (!channel?.isTextBased()) {
 					return interaction.reply({
 						content: this.i18n('command.config.no_text_channel', { lng: interaction.locale }),
 						ephemeral: true
@@ -47,21 +46,34 @@ export default class ConfigCommand extends Command {
 			this.client.settings.get<string>(interaction.guild, Settings.EVENTS_CHANNEL, null)
 		);
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: this.i18n('command.config.title', { lng: interaction.locale }) })
-			.addField('Prefix', '/')
-			.addField('Patron', this.client.patrons.get(interaction.guild.id) ? 'Yes' : 'No')
-			.addField(this.i18n('common.color_code', { lng: interaction.locale }), color ? `#${color.toString(16).toUpperCase()}` : 'None')
-			// eslint-disable-next-line @typescript-eslint/no-base-to-string
-			.addField(this.i18n('command.config.events_channel', { lng: interaction.locale }), channel?.toString() ?? 'None');
+			.addFields([
+				{
+					name: 'Prefix',
+					value: '/'
+				},
+				{
+					name: 'Patron',
+					value: this.client.patrons.get(interaction.guild.id) ? 'Yes' : 'No'
+				},
+				{
+					name: this.i18n('common.color_code', { lng: interaction.locale }),
+					value: color ? `#${color.toString(16).toUpperCase()}` : 'None'
+				},
+				{
+					name: this.i18n('command.config.events_channel', { lng: interaction.locale }),
+					value: channel?.toString() ?? 'None'
+				}
+			]);
 
 		return interaction.reply({ embeds: [embed] });
 	}
 
 	private getColor(hex: string) {
 		try {
-			return Util.resolveColor(hex as HexColorString);
+			return resolveColor(hex as HexColorString);
 		} catch {
 			return null;
 		}

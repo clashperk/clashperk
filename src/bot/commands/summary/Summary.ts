@@ -6,7 +6,7 @@ export default class SummaryCommand extends Command {
 		super('summary', {
 			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: ['Summary of wars/clans/clan games for all clans.']
 			}

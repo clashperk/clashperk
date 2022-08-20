@@ -4,18 +4,20 @@ import { pathToFileURL } from 'url';
 import { container } from 'tsyringe';
 import readdirp from 'readdirp';
 import {
-	BaseCommandInteraction,
+	BaseInteraction,
 	ClientEvents,
 	Collection,
 	CommandInteraction,
 	CommandInteractionOption,
-	Constants,
+	Events,
 	GuildChannel,
 	Interaction,
 	Message,
 	MessageComponentInteraction,
-	MessageEmbed,
-	PermissionString
+	EmbedBuilder,
+	PermissionsString,
+	ApplicationCommandOptionType,
+	RestEvents
 } from 'discord.js';
 import { Client } from '../struct/Client.js';
 import { i18n } from '../util/i18n.js';
@@ -45,8 +47,6 @@ export type Args = Record<
 		default?: unknown | ((value: unknown) => unknown);
 	} | null
 >;
-
-type BaseInteraction = BaseCommandInteraction | MessageComponentInteraction;
 
 export class BaseHandler extends EventEmitter {
 	public readonly directory: string;
@@ -88,7 +88,7 @@ export class CommandHandler extends BaseHandler {
 		container.register(CommandHandler, { useValue: this });
 		this.aliases = new Collection();
 
-		client.on(Constants.Events.INTERACTION_CREATE, (interaction: Interaction) => {
+		client.on(Events.InteractionCreate, (interaction: Interaction) => {
 			if (!interaction.isCommand()) return;
 			return this.handleInteraction(interaction);
 		});
@@ -111,7 +111,7 @@ export class CommandHandler extends BaseHandler {
 		result: Record<string, CommandInteractionOption> = {}
 	): Record<string, CommandInteractionOption> {
 		for (const option of options) {
-			if (['SUB_COMMAND', 'SUB_COMMAND_GROUP'].includes(option.type)) {
+			if ([ApplicationCommandOptionType.Subcommand, ApplicationCommandOptionType.SubcommandGroup].includes(option.type)) {
 				result.command = option;
 				return this.transformInteraction([...(option.options ?? [])], result);
 			}
@@ -128,13 +128,13 @@ export class CommandHandler extends BaseHandler {
 		for (const [name, option] of Object.entries(this.transformInteraction(interaction.options.data))) {
 			const key = (args[name]?.id ?? name).toString(); // KEY_OVERRIDE
 
-			if (['SUB_COMMAND', 'SUB_COMMAND_GROUP'].includes(option.type)) {
+			if ([ApplicationCommandOptionType.Subcommand, ApplicationCommandOptionType.SubcommandGroup].includes(option.type)) {
 				resolved[key] = option.name; // SUB_COMMAND OR SUB_COMMAND_GROUP
-			} else if (option.type === 'CHANNEL') {
-				resolved[key] = (option.channel as GuildChannel | null)?.isText() ? option.channel : null;
-			} else if (option.type === 'ROLE') {
+			} else if (option.type === ApplicationCommandOptionType.Channel) {
+				resolved[key] = (option.channel as GuildChannel | null)?.isTextBased() ? option.channel : null;
+			} else if (option.type === ApplicationCommandOptionType.Role) {
 				resolved[key] = option.role ?? null;
-			} else if (option.type === 'USER') {
+			} else if (option.type === ApplicationCommandOptionType.User) {
 				resolved[key] = args[name]?.match === 'MEMBER' ? option.member ?? null : option.user ?? null;
 			} else {
 				resolved[key] = option.value ?? null;
@@ -182,13 +182,13 @@ export class CommandHandler extends BaseHandler {
 		return this.exec(interaction, command, args);
 	}
 
-	public continue(interaction: BaseInteraction, command: Command) {
+	public continue(interaction: CommandInteraction | MessageComponentInteraction, command: Command) {
 		if (this.preInhibitor(interaction, command)) return;
 		const args = this.argumentRunner(interaction as CommandInteraction, command);
 		return this.exec(interaction, command, args);
 	}
 
-	public async exec(interaction: BaseInteraction, command: Command, args: Record<string, unknown> = {}) {
+	public async exec(interaction: CommandInteraction | MessageComponentInteraction, command: Command, args: Record<string, unknown> = {}) {
 		if (await this.postInhibitor(interaction, command)) return;
 		try {
 			if (command.defer && !interaction.deferred && !interaction.replied) {
@@ -203,7 +203,7 @@ export class CommandHandler extends BaseHandler {
 		}
 	}
 
-	public async postInhibitor(interaction: BaseInteraction, command: Command) {
+	public async postInhibitor(interaction: CommandInteraction | MessageComponentInteraction, command: Command) {
 		const passed = command.condition(interaction);
 		if (!passed) return false;
 
@@ -216,7 +216,7 @@ export class CommandHandler extends BaseHandler {
 		return true;
 	}
 
-	public preInhibitor(interaction: Interaction, command: Command) {
+	public preInhibitor(interaction: BaseInteraction, command: Command) {
 		const reason = this.client.inhibitorHandler.run(interaction, command);
 		if (reason) {
 			this.emit(CommandHandlerEvents.COMMAND_BLOCKED, interaction, command, reason);
@@ -242,7 +242,7 @@ export class CommandHandler extends BaseHandler {
 		return this.runPermissionChecks(interaction, command);
 	}
 
-	private runPermissionChecks(interaction: Interaction, command: Command) {
+	private runPermissionChecks(interaction: BaseInteraction, command: Command) {
 		if (!interaction.inCachedGuild()) return false;
 
 		if (command.clientPermissions?.length) {
@@ -286,7 +286,8 @@ export class ListenerHandler extends BaseHandler {
 
 		const emitter = {
 			client: this.client as unknown as EventEmitter,
-			commandHandler: this.client.commandHandler
+			commandHandler: this.client.commandHandler,
+			rest: this.client.rest as unknown as EventEmitter
 		}[listener.emitter];
 		if (!emitter) return; // eslint-disable-line
 
@@ -307,7 +308,7 @@ export class InhibitorHandler extends BaseHandler {
 		container.register(InhibitorHandler, { useValue: this });
 	}
 
-	public run(interaction: Interaction, command: Command) {
+	public run(interaction: BaseInteraction, command: Command) {
 		const inhibitor = this.modules
 			.sort((a, b) => b.priority - a.priority)
 			.filter((inhibitor) => inhibitor.exec(interaction, command))
@@ -323,8 +324,8 @@ export interface CommandOptions {
 	ephemeral?: boolean;
 	channel?: 'dm' | 'guild';
 	defer?: boolean;
-	userPermissions?: PermissionString[];
-	clientPermissions?: PermissionString[];
+	userPermissions?: PermissionsString[];
+	clientPermissions?: PermissionsString[];
 	description?: {
 		content: string | string[];
 		usage?: string;
@@ -345,8 +346,8 @@ export class Command implements CommandOptions {
 	public ownerOnly?: boolean;
 	public channel?: 'dm' | 'guild';
 	public defer?: boolean;
-	public userPermissions?: PermissionString[];
-	public clientPermissions?: PermissionString[];
+	public userPermissions?: PermissionsString[];
+	public clientPermissions?: PermissionsString[];
 	public description?: {
 		content: string | string[];
 		usage?: string;
@@ -378,17 +379,17 @@ export class Command implements CommandOptions {
 		this.handler = container.resolve(CommandHandler);
 	}
 
-	public condition(interaction: Interaction): { embeds: MessageEmbed[] } | null;
-	public condition(): { embeds: MessageEmbed[] } | null {
+	public condition(interaction: BaseInteraction): { embeds: EmbedBuilder[] } | null;
+	public condition(): { embeds: EmbedBuilder[] } | null {
 		return null;
 	}
 
-	public args(interaction?: Interaction): Args;
+	public args(interaction?: BaseInteraction): Args;
 	public args(): Args {
 		return {};
 	}
 
-	public exec(interaction: Interaction, args: unknown): Promise<unknown> | unknown;
+	public exec(interaction: CommandInteraction | MessageComponentInteraction, args: unknown): Promise<unknown> | unknown;
 	public exec(): Promise<unknown> | unknown {
 		throw Error('This method needs to be overwritten inside of an actual command.');
 	}
@@ -401,17 +402,17 @@ export class Command implements CommandOptions {
 }
 
 export interface ListenerOptions {
-	emitter: 'client' | 'commandHandler';
+	emitter: 'client' | 'commandHandler' | 'rest';
 	category?: string;
 	once?: boolean;
-	event: keyof ClientEvents | keyof CommandEvents;
+	event: keyof ClientEvents | keyof CommandEvents | keyof RestEvents;
 }
 
 export class Listener implements ListenerOptions {
 	public id: string;
-	public emitter: 'client' | 'commandHandler';
+	public emitter: 'client' | 'commandHandler' | 'rest';
 	public category?: string;
-	public event: keyof ClientEvents | keyof CommandEvents;
+	public event: keyof ClientEvents | keyof CommandEvents | keyof RestEvents;
 	public once?: boolean;
 	public handler: ListenerHandler;
 	public client: Client;
@@ -456,7 +457,7 @@ export class Inhibitor implements InhibitorOptions {
 		this.handler = container.resolve(InhibitorHandler);
 	}
 
-	public exec(interaction: Interaction, command: Command): boolean;
+	public exec(interaction: BaseInteraction, command: Command): boolean;
 	public exec(): boolean {
 		throw Error('This method needs to be overwritten inside of an actual inhibitor.');
 	}

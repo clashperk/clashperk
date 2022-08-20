@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed, MessageButton, MessageActionRow } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Flags, Collections } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
@@ -18,7 +18,7 @@ export default class SetupCommand extends Command {
 		super('setup', {
 			category: 'setup',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: 'Enable features or assign clans to channels.'
 			}
@@ -38,10 +38,10 @@ export default class SetupCommand extends Command {
 			FEATURES: this.client.uuid(interaction.user.id),
 			LIST: this.client.uuid(interaction.user.id)
 		};
-		const row = new MessageActionRow()
-			.addComponents(new MessageButton().setCustomId(CUSTOM_ID.FEATURES).setStyle('PRIMARY').setLabel('Enabled Features'))
-			.addComponents(new MessageButton().setCustomId(CUSTOM_ID.LIST).setStyle('PRIMARY').setLabel('Clan List'))
-			.addComponents(new MessageButton().setURL('https://clashperk.com/guide').setStyle('LINK').setLabel('Guide'));
+		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(new ButtonBuilder().setCustomId(CUSTOM_ID.FEATURES).setStyle(ButtonStyle.Primary).setLabel('Enabled Features'))
+			.addComponents(new ButtonBuilder().setCustomId(CUSTOM_ID.LIST).setStyle(ButtonStyle.Primary).setLabel('Clan List'))
+			.addComponents(new ButtonBuilder().setURL('https://clashperk.com/guide').setStyle(ButtonStyle.Link).setLabel('Guide'));
 
 		await interaction.deferReply({ ephemeral: true });
 		const msg = await interaction.editReply({
@@ -102,7 +102,7 @@ export default class SetupCommand extends Command {
 		clanList.sort((a, b) => b.members - a.members);
 		const nameLen = Math.max(...clanList.map((clan) => clan.name.length)) + 1;
 		const tagLen = Math.max(...clanList.map((clan) => clan.tag.length)) + 1;
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${interaction.guild!.name} Clans`, iconURL: interaction.guild!.iconURL()! })
 			.setDescription(
@@ -178,14 +178,20 @@ export default class SetupCommand extends Command {
 			const roles = clan.roles.filter((en) => en);
 			const features = clan.entries; // .filter(en => en.ok && en.channel);
 
-			const embed = new MessageEmbed();
+			const embed = new EmbedBuilder();
 			embed.setAuthor({ name: `\u200e${clan.name} (${clan.tag})` });
 			if (channels.length) embed.setDescription(channels.join(', '));
 			if (roles.length) {
-				embed.addField('Roles', roles.join(' '), true);
+				embed.addFields([{ name: 'Roles', value: roles.join(' '), inline: true }]);
 			}
 			if (features.length) {
-				features.map((en) => embed.addField(names[en.flag], en.channel ? `${en.channel} ${en.role ?? ''}` : `-`, true));
+				embed.addFields(
+					features.map((en) => ({
+						name: names[en.flag],
+						value: en.channel ? `${en.channel} ${en.role ?? ''}` : `-`,
+						inline: true
+					}))
+				);
 			}
 
 			return embed;

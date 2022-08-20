@@ -222,7 +222,7 @@ export class RoleManager {
 		const guild = this.client.guilds.cache.get(guildId);
 
 		if (!roleIds.length && !roles.length) return 0;
-		if (!guild?.me?.permissions.has('MANAGE_ROLES')) return 0;
+		if (!guild?.members.me?.permissions.has('ManageRoles')) return 0;
 
 		if (!members.has(userId)) return 0;
 		const member = members.get(userId)!;
@@ -231,7 +231,7 @@ export class RoleManager {
 		// filter out the roles that should be removed
 		const excluded = roles
 			.filter((id) => !roleIds.includes(id))
-			.filter((id) => this.checkRole(guild, guild.me!, id))
+			.filter((id) => this.checkRole(guild, guild.members.me!, id))
 			.filter((id) => member.roles.cache.has(id));
 
 		if (excluded.length) {
@@ -241,7 +241,7 @@ export class RoleManager {
 		// filter out the roles that should be added
 		const included = roleIds
 			.filter((id) => guild.roles.cache.has(id))
-			.filter((id) => guild.me!.roles.highest.position > guild.roles.cache.get(id)!.position)
+			.filter((id) => guild.members.me!.roles.highest.position > guild.roles.cache.get(id)!.position)
 			.filter((id) => !member.roles.cache.has(id));
 
 		if (!included.length) return excluded.length;

@@ -1,4 +1,4 @@
-import { MessageEmbed, PermissionString, TextChannel, Collection, WebhookClient, ThreadChannel } from 'discord.js';
+import { EmbedBuilder, PermissionsString, TextChannel, Collection, WebhookClient, ThreadChannel } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
@@ -33,21 +33,20 @@ export default class ClanFeedLog {
 	}
 
 	private async permissionsFor(cache: any, data: Feed, id: string) {
-		const permissions: PermissionString[] = [
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
-			'READ_MESSAGE_HISTORY',
-			'VIEW_CHANNEL'
+		const permissions: PermissionsString[] = [
+			'SendMessages',
+			'EmbedLinks',
+			'UseExternalEmojis',
+			'AddReactions',
+			'ReadMessageHistory',
+			'ViewChannel'
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
-				return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SendMessagesInThreads'))) return;
 			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
-				if (!channel.isThread() && this.hasWebhookPermission(channel)) {
+				if (channel.isTextBased() && this.hasWebhookPermission(channel)) {
 					const webhook = await this.webhook(id);
 					if (webhook) return this.handleMessage(id, webhook, data);
 				}
@@ -59,7 +58,7 @@ export default class ClanFeedLog {
 
 	private async unarchive(thread: ThreadChannel) {
 		if (!(thread.editable && thread.manageable)) return null;
-		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
+		return thread.edit({ archived: false, locked: false });
 	}
 
 	private async handleMessage(id: string, channel: TextChannel | WebhookClient | ThreadChannel, data: Feed) {
@@ -68,8 +67,8 @@ export default class ClanFeedLog {
 
 	private hasWebhookPermission(channel: TextChannel) {
 		return (
-			channel.permissionsFor(channel.guild.me!)!.has(['MANAGE_WEBHOOKS']) &&
-			channel.permissionsFor(channel.guild.id)!.has(['USE_EXTERNAL_EMOJIS'])
+			channel.permissionsFor(this.client.user!.id)!.has(['ManageWebhooks']) &&
+			channel.permissionsFor(channel.guild.id)!.has(['UseExternalEmojis'])
 		);
 	}
 
@@ -115,7 +114,10 @@ export default class ClanFeedLog {
 
 		if (webhooks.size === 10) return this.stopWebhookCheck(id);
 		const webhook = await channel
-			.createWebhook(this.client.user!.username, { avatar: this.client.user!.displayAvatarURL({ size: 2048, format: 'png' }) })
+			.createWebhook({
+				name: this.client.user!.username,
+				avatar: this.client.user!.displayAvatarURL({ size: 2048, extension: 'png' })
+			})
 			.catch(() => null);
 
 		if (webhook) {
@@ -181,7 +183,7 @@ export default class ClanFeedLog {
 		if (!player.ok) return;
 
 		let content = null;
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(OP[member.op])
 			.setTitle(`\u200e${player.name} (${player.tag})`)
 			.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
@@ -215,7 +217,7 @@ export default class ClanFeedLog {
 				}
 				embed.setDescription(
 					[
-						embed.description,
+						embed.data.description,
 						'',
 						'**Flag**',
 						`${flag.reason as string}`,

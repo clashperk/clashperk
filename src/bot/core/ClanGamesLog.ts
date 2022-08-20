@@ -1,4 +1,4 @@
-import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake, ThreadChannel, SnowflakeUtil } from 'discord.js';
+import { EmbedBuilder, Collection, TextChannel, PermissionsString, Snowflake, ThreadChannel, SnowflakeUtil } from 'discord.js';
 import { APIMessage } from 'discord-api-types/v9';
 import { Clan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
@@ -41,24 +41,23 @@ export default class ClanGamesLog {
 	}
 
 	private async permissionsFor(cache: Cache, clan: Clan, data: Payload) {
-		const permissions: PermissionString[] = [
-			'READ_MESSAGE_HISTORY',
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
+		const permissions: PermissionsString[] = [
+			'ReadMessageHistory',
+			'SendMessages',
+			'EmbedLinks',
+			'UseExternalEmojis',
+			'AddReactions',
+			'ViewChannel'
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
-				return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SendMessagesInThreads'))) return;
 			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
 				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
 
 				if (cache.message && new Date().getDate() === ClanGames.STARTING_DATE) {
-					const lastMonthIndex = SnowflakeUtil.deconstruct(cache.message).date.getMonth();
+					const lastMonthIndex = new Date(Number(SnowflakeUtil.deconstruct(cache.message).timestamp)).getMonth();
 					if (lastMonthIndex < new Date().getMonth()) delete cache.message;
 				}
 
@@ -69,7 +68,7 @@ export default class ClanGamesLog {
 
 	private async unarchive(thread: ThreadChannel) {
 		if (!(thread.editable && thread.manageable)) return null;
-		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
+		return thread.edit({ archived: false, locked: false });
 	}
 
 	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, data: Payload) {
@@ -119,7 +118,7 @@ export default class ClanGamesLog {
 	}
 
 	private embed(cache: Cache, clan: Clan, data: Payload) {
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
 			.setDescription(
 				[

@@ -1,4 +1,4 @@
-import { MessageEmbed, Message, TextChannel, MessageActionRow, MessageButton } from 'discord.js';
+import { EmbedBuilder, Message, TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -8,7 +8,7 @@ export default class ClansCommand extends Command {
 		super('clans', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: "You can't use this anyway, so why explain?"
 			}
@@ -69,7 +69,7 @@ export default class ClansCommand extends Command {
 		);
 
 		const icon = typeof guild.iconURL === 'function' ? guild.iconURL()! : guild.iconURL;
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(message))
 			.setAuthor({ name: guild.name, iconURL: icon as string })
 			.setTitle(`Members: ${guild.memberCount as number}`);
@@ -91,9 +91,9 @@ export default class ClansCommand extends Command {
 			next: this.client.uuid(message.author.id),
 			prev: this.client.uuid(message.author.id)
 		};
-		const row = new MessageActionRow()
-			.addComponents(new MessageButton().setEmoji('⬅️').setStyle('SECONDARY').setCustomId(customIds.prev))
-			.addComponents(new MessageButton().setEmoji('➡️').setStyle('SECONDARY').setCustomId(customIds.next));
+		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(new ButtonBuilder().setEmoji('⬅️').setStyle(ButtonStyle.Secondary).setCustomId(customIds.prev))
+			.addComponents(new ButtonBuilder().setEmoji('➡️').setStyle(ButtonStyle.Secondary).setCustomId(customIds.next));
 
 		const msg = await message.channel.send({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector({

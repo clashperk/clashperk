@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
 
@@ -7,7 +7,7 @@ export default class FlagSearchCommand extends Command {
 		super('flag-search', {
 			category: 'none',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
+			userPermissions: ['ManageGuild'],
 			defer: true
 		});
 	}
@@ -22,7 +22,7 @@ export default class FlagSearchCommand extends Command {
 		}
 
 		const user = await this.client.users.fetch(flag.user).catch(() => null);
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${player.name} (${player.tag})` })
 			.setDescription(

@@ -6,7 +6,7 @@ export default class FlagCommand extends Command {
 		super('flag', {
 			category: 'setup',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
+			userPermissions: ['ManageGuild'],
 			description: {
 				content: [
 					'Manage player flags in a server or clan.',

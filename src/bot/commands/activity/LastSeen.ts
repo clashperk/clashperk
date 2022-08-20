@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -10,7 +10,7 @@ export default class LastSeenCommand extends Command {
 		super('lastseen', {
 			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: ['Approximate last seen of all clan members.', '', '**[How does it work?](https://clashperk.com/faq)**']
 			},
@@ -42,7 +42,7 @@ export default class LastSeenCommand extends Command {
 		};
 
 		const members = await this.aggregationQuery(clan, score ? 30 : 1);
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
 			.setFooter({ text: `Members [${clan.members}/50]`, iconURL: interaction.user.displayAvatarURL() });
@@ -74,16 +74,16 @@ export default class LastSeenCommand extends Command {
 			);
 		}
 
-		const row = new MessageActionRow()
+		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
-				new MessageButton()
-					.setStyle('SECONDARY')
+				new ButtonBuilder()
+					.setStyle(ButtonStyle.Secondary)
 					.setCustomId(JSON.stringify({ cmd: this.id, _: 0, tag: clan.tag }))
 					.setEmoji(EMOJIS.REFRESH)
 			)
 			.addComponents(
-				new MessageButton()
-					.setStyle('PRIMARY')
+				new ButtonBuilder()
+					.setStyle(ButtonStyle.Primary)
 					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, score: !score }))
 					.setLabel(score ? 'Last Seen' : 'Scoreboard')
 			);

@@ -1,4 +1,4 @@
-import { MessageEmbed, Collection, TextChannel, PermissionString, Snowflake, ThreadChannel } from 'discord.js';
+import { EmbedBuilder, Collection, TextChannel, PermissionsString, Snowflake, ThreadChannel } from 'discord.js';
 import { APIMessage } from 'discord-api-types/v9';
 import { Clan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
@@ -53,19 +53,18 @@ export default class LastSeenLog {
 	}
 
 	private async permissionsFor(cache: Cache, clan: Clan, members = []) {
-		const permissions: PermissionString[] = [
-			'READ_MESSAGE_HISTORY',
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
+		const permissions: PermissionsString[] = [
+			'ReadMessageHistory',
+			'SendMessages',
+			'EmbedLinks',
+			'UseExternalEmojis',
+			'AddReactions',
+			'ViewChannel'
 		];
 
 		if (this.client.channels.cache.has(cache.channel)) {
 			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
-				return;
+			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SendMessagesInThreads'))) return;
 			if (channel.permissionsFor(this.client.user!)?.has(permissions, false)) {
 				await this.throttle(channel.id);
 				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
@@ -76,7 +75,7 @@ export default class LastSeenLog {
 
 	private async unarchive(thread: ThreadChannel) {
 		if (!(thread.editable && thread.manageable)) return null;
-		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
+		return thread.edit({ archived: false, locked: false });
 	}
 
 	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, members = []) {
@@ -130,7 +129,7 @@ export default class LastSeenLog {
 			return Util.duration(ms + 1e3).padEnd(7, ' ');
 		};
 
-		const embed = new MessageEmbed();
+		const embed = new EmbedBuilder();
 		if (cache.color) embed.setColor(cache.color);
 		embed.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 		embed.setDescription(

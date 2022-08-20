@@ -7,7 +7,7 @@ export default class ChannelLinkCommand extends Command {
 		super('setup-channel-link', {
 			category: 'none',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
+			userPermissions: ['ManageGuild'],
 			defer: true,
 			ephemeral: true
 		});

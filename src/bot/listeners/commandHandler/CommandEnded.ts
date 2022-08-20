@@ -1,4 +1,4 @@
-import { BaseCommandInteraction, MessageComponentInteraction } from 'discord.js';
+import { CommandInteraction, MessageComponentInteraction } from 'discord.js';
 import { Listener, Command } from '../../lib/index.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
 import { locales } from '../../util/Constants.js';
@@ -12,7 +12,7 @@ export default class CommandEndedListener extends Listener {
 		});
 	}
 
-	public async exec(interaction: MessageComponentInteraction | BaseCommandInteraction, _command: Command, _args: unknown) {
+	public async exec(interaction: MessageComponentInteraction | CommandInteraction, _command: Command, _args: unknown) {
 		const suggested = await this.client.stats.localeSuggested(interaction);
 		if (!suggested) {
 			await interaction.followUp({

@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
@@ -27,7 +27,7 @@ export default class StatsCommand extends Command {
 			description: {
 				content: 'War attack success and defense failure rates.'
 			},
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});
 	}
@@ -200,7 +200,7 @@ export default class StatsCommand extends Command {
 		const tail = attempt ? `% (${attempt.replace(/\b(\w)/g, (char) => char.toUpperCase())})` : 'Rates';
 
 		const starType = `${stars.startsWith('>') ? '>= ' : ''}${stars.replace(/[>=]+/, '')}`;
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.small })
 			.setDescription(
 				Util.splitMessage(

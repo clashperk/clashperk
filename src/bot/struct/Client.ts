@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from 'url';
-import Discord, { Intents, Interaction, Message, Options, Snowflake, Sweepers } from 'discord.js';
+import Discord, { Message, Options, Snowflake, GatewayIntentBits, BaseInteraction } from 'discord.js';
 import { Db } from 'mongodb';
 import { container } from 'tsyringe';
 import { nanoid } from 'nanoid';
@@ -57,8 +57,14 @@ export class Client extends Discord.Client {
 
 	public constructor() {
 		super({
-			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_WEBHOOKS, Intents.FLAGS.GUILD_MESSAGES],
+			intents: [
+				GatewayIntentBits.Guilds,
+				GatewayIntentBits.GuildMembers,
+				GatewayIntentBits.GuildWebhooks,
+				GatewayIntentBits.GuildMessages
+			],
 			makeCache: Options.cacheWithLimits({
+				...Options.DefaultMakeCacheSettings,
 				PresenceManager: 0,
 				VoiceStateManager: 0,
 				GuildBanManager: 0,
@@ -72,30 +78,23 @@ export class Client extends Discord.Client {
 				GuildEmojiManager: 0,
 				ApplicationCommandManager: 0,
 				ThreadMemberManager: 0,
-				ThreadManager: {
-					sweepInterval: 5 * 60,
-					sweepFilter: Sweepers.filterByLifetime({
-						getComparisonTimestamp: (thread) => thread.archiveTimestamp!,
-						excludeFromSweep: (thread) => !thread.archived
-					})
-				},
-				MessageManager: {
-					maxSize: 10,
-					sweepInterval: 5 * 60,
-					sweepFilter: Sweepers.filterByLifetime({
-						lifetime: 10 * 60,
-						getComparisonTimestamp: (msg) => msg.createdTimestamp
-					})
-				},
+				MessageManager: 10,
 				UserManager: {
-					maxSize: 1,
+					maxSize: 0,
 					keepOverLimit: (user) => user.id === this.user!.id
 				},
 				GuildMemberManager: {
-					maxSize: 1,
+					maxSize: 0,
 					keepOverLimit: (member) => member.id === this.user!.id
 				}
-			})
+			}),
+			sweepers: {
+				...Options.DefaultSweeperSettings,
+				messages: {
+					interval: 5 * 60,
+					lifetime: 10 * 60
+				}
+			}
 		});
 
 		this.logger = new Logger(this);
@@ -108,7 +107,7 @@ export class Client extends Discord.Client {
 		return userId === process.env.OWNER!;
 	}
 
-	public embed(guild: Message | Snowflake | Interaction) {
+	public embed(guild: Message | Snowflake | BaseInteraction) {
 		return this.settings.get<number>(typeof guild === 'string' ? guild : guild.guild!, Settings.COLOR, null);
 	}
 

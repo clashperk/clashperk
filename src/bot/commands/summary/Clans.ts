@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
 import { WHITE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
@@ -10,7 +10,7 @@ export default class SummaryClansCommand extends Command {
 		super('summary-clans', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			defer: true
 		});
 	}
@@ -73,29 +73,31 @@ export default class SummaryClansCommand extends Command {
 
 		// Array(3).fill(0).map(() => [].splice(0, 2))
 		const fields = Object.values(OBJ);
-		const embed = new MessageEmbed();
+		const embed = new EmbedBuilder();
 		for (const stats of fields) {
 			stats.sort((a, b) => b.value - a.value);
 			const pad = stats[0].value.toLocaleString().length + 1;
 
-			embed.addField(
-				stats[0].key,
-				[
-					stats
-						.slice(0, 15)
-						.map((en, i) => {
-							const num = en.value.toLocaleString().padStart(pad, ' ');
-							return `${WHITE_NUMBERS[++i]} \`\u200e${num} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``;
-						})
-						.join('\n')
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: stats[0].key,
+					value: [
+						stats
+							.slice(0, 15)
+							.map((en, i) => {
+								const num = en.value.toLocaleString().padStart(pad, ' ');
+								return `${WHITE_NUMBERS[++i]} \`\u200e${num} \u200f\` \u200e\`${en.name.padEnd(15, ' ')}\u200f\``;
+							})
+							.join('\n')
+					].join('\n')
+				}
+			]);
 		}
 		embeds.push(embed);
 
 		const customId = this.client.uuid();
-		const button = new MessageButton().setCustomId(customId).setStyle('SECONDARY').setLabel('Download');
-		const msg = await interaction.editReply({ embeds, components: [new MessageActionRow().addComponents(button)] });
+		const button = new ButtonBuilder().setCustomId(customId).setStyle(ButtonStyle.Secondary).setLabel('Download');
+		const msg = await interaction.editReply({ embeds, components: [new ActionRowBuilder<ButtonBuilder>().addComponents(button)] });
 
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => action.customId === customId,
