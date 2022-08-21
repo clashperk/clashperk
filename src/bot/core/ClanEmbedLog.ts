@@ -1,129 +1,69 @@
-import { EmbedBuilder, Message, Collection, TextChannel, PermissionsString, Snowflake, ThreadChannel } from 'discord.js';
-import { APIMessage } from 'discord-api-types/v9';
+import { Collection, EmbedBuilder, PermissionsString, Snowflake, WebhookClient } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
-import { EMOJIS, TOWN_HALLS, CWL_LEAGUES, ORANGE_NUMBERS } from '../util/Emojis.js';
-import { Collections } from '../util/Constants.js';
 import { Client } from '../struct/Client.js';
-import { Util } from '../util/index.js';
+import { Collections } from '../util/Constants.js';
+import { CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../util/Emojis.js';
+import BaseLog from './BaseLog.js';
 
 export interface Cache {
-	_id: ObjectId;
+	clanId: ObjectId;
+	tag: string;
+	guild: string;
 	channel: Snowflake;
 	message?: Snowflake;
 	color: number;
 	embed: any;
-	tag: string;
-	msg?: Message;
+	threadId?: string;
 }
 
-export default class ClanEmbedLog {
-	public cached: Collection<string, Cache>;
-	public lastReq: Map<string, NodeJS.Timeout>;
-	protected collection = this.client.db.collection(Collections.CLAN_EMBED_LOGS);
+interface Feed {
+	clan: Clan;
+}
 
-	public constructor(private readonly client: Client) {
-		this.cached = new Collection();
-		this.lastReq = new Map();
+export default class ClanEmbedLog extends BaseLog {
+	public declare cached: Collection<string, Cache>;
+
+	public override get collection() {
+		return this.client.db.collection(Collections.CLAN_EMBED_LOGS);
 	}
 
-	public async exec(tag: string, clan: Clan) {
-		const clans = this.cached.filter((d) => d.tag === tag);
-		for (const id of clans.keys()) {
-			const cache = this.cached.get(id)!;
-			await this.permissionsFor(cache, clan);
-		}
-
-		return clans.clear();
+	public override get permissions(): PermissionsString[] {
+		return ['ReadMessageHistory', 'SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'AddReactions', 'ViewChannel'];
 	}
 
-	private async throttle(id: string) {
-		if (this.lastReq.has(id)) await Util.delay(1000);
-
-		const timeoutID = this.lastReq.get(id);
-		if (timeoutID) {
-			clearTimeout(timeoutID);
-			this.lastReq.delete(id);
-		}
-
-		const Timeout = setTimeout(() => {
-			this.lastReq.delete(id);
-			clearTimeout(Timeout);
-		}, 1000);
-		this.lastReq.set(id, Timeout);
-
-		return Promise.resolve(0);
+	public constructor(client: Client) {
+		super(client);
 	}
 
-	private async permissionsFor(cache: Cache, clan: Clan) {
-		const permissions: PermissionsString[] = [
-			'ReadMessageHistory',
-			'SendMessages',
-			'EmbedLinks',
-			'UseExternalEmojis',
-			'AddReactions',
-			'ViewChannel'
-		];
-
-		if (this.client.channels.cache.has(cache.channel)) {
-			const channel = this.client.channels.cache.get(cache.channel) as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SendMessagesInThreads'))) return;
-			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
-				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
-				return this.handleMessage(cache, channel, clan);
-			}
-		}
-	}
-
-	private async unarchive(thread: ThreadChannel) {
-		if (!(thread.editable && thread.manageable)) return null;
-		return thread.edit({ archived: false, locked: false });
-	}
-
-	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan) {
+	public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
 		if (!cache.message) {
-			const msg = await this.send(cache, channel, clan);
-			return this.mutate(cache, msg);
+			const msg = await this.send(cache, webhook, data);
+			return this.updateMessageId(cache, msg);
 		}
 
-		const msg = await this.edit(cache, channel, clan);
-		return this.mutate(cache, msg);
+		const msg = await this.edit(cache, webhook, data);
+		return this.updateMessageId(cache, msg);
 	}
 
-	private async send(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan) {
-		const embed = await this.embed(cache, clan);
-		return Util.sendMessage(this.client, channel.id, { embeds: [embed.toJSON()] }).catch(() => null);
-	}
-
-	private async edit(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan) {
-		const embed = await this.embed(cache, clan);
-
-		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] }).catch((error) => {
-			if (error.code === 10008) {
-				delete cache.message;
-				return this.send(cache, channel, clan);
-			}
+	private async send(cache: Cache, webhook: WebhookClient, data: Feed) {
+		const embed = await this.embed(cache, data.clan);
+		try {
+			return await super._send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+		} catch (error: any) {
+			this.client.logger.error(`${error.toString() as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
 			return null;
-		});
+		}
 	}
 
-	private async mutate(cache: Cache, msg: APIMessage | null) {
-		if (msg) {
-			await this.collection.updateOne(
-				{ clanId: new ObjectId(cache._id) },
-				{
-					$set: {
-						failed: 0,
-						message: msg.id,
-						updatedAt: new Date()
-					}
-				}
-			);
-			cache.message = msg.id;
-		} else {
-			await this.collection.updateOne({ clanId: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
+	private async edit(cache: Cache, webhook: WebhookClient, data: Feed) {
+		const embed = await this.embed(cache, data.clan);
+		try {
+			return await super._edit(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+		} catch (error: any) {
+			this.client.logger.error(`${error.toString() as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
+			return null;
 		}
-		return msg;
 	}
 
 	private async embed(cache: Cache, data: Clan) {
@@ -220,8 +160,9 @@ export default class ClanEmbedLog {
 			.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })
 			.forEach((data) => {
 				this.cached.set((data.clanId as ObjectId).toHexString(), {
-					_id: data.clanId,
+					clanId: data.clanId,
 					message: data.message,
+					guild: data.guild,
 					color: data.color,
 					embed: data.embed,
 					tag: data.tag,
@@ -235,16 +176,13 @@ export default class ClanEmbedLog {
 
 		if (!data) return null;
 		return this.cached.set(_id, {
-			_id: data.clanId,
+			clanId: data.clanId,
 			channel: data.channel,
+			guild: data.guild,
 			message: data.message,
 			color: data.color,
 			embed: data.embed,
 			tag: data.tag
 		});
-	}
-
-	public delete(_id: string) {
-		return this.cached.delete(_id);
 	}
 }

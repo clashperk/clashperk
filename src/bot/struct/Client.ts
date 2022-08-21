@@ -42,7 +42,8 @@ export class Client extends Discord.Client {
 	public i18n = i18n;
 
 	public redis = Redis.createClient({
-		url: process.env.REDIS_URL
+		url: process.env.REDIS_URL,
+		database: 1
 	});
 
 	public subscriber = this.redis.duplicate();
@@ -61,7 +62,8 @@ export class Client extends Discord.Client {
 				GatewayIntentBits.Guilds,
 				GatewayIntentBits.GuildMembers,
 				GatewayIntentBits.GuildWebhooks,
-				GatewayIntentBits.GuildMessages
+				GatewayIntentBits.GuildMessages,
+				GatewayIntentBits.MessageContent
 			],
 			makeCache: Options.cacheWithLimits({
 				...Options.DefaultMakeCacheSettings,
@@ -80,11 +82,11 @@ export class Client extends Discord.Client {
 				ThreadMemberManager: 0,
 				MessageManager: 10,
 				UserManager: {
-					maxSize: 0,
+					maxSize: 1,
 					keepOverLimit: (user) => user.id === this.user!.id
 				},
 				GuildMemberManager: {
-					maxSize: 0,
+					maxSize: 1,
 					keepOverLimit: (member) => member.id === this.user!.id
 				}
 			}),

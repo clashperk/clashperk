@@ -17,7 +17,15 @@ export default class ClanLogCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
-			clientPermissions: ['AddReactions', 'EmbedLinks', 'UseExternalEmojis', 'SendMessages', 'ReadMessageHistory', 'ManageWebhooks'],
+			clientPermissions: [
+				'AddReactions',
+				'EmbedLinks',
+				'UseExternalEmojis',
+				'SendMessages',
+				'ReadMessageHistory',
+				'ManageWebhooks',
+				'ViewChannel'
+			],
 			defer: true,
 			ephemeral: true
 		});
@@ -63,13 +71,25 @@ export default class ClanLogCommand extends Command {
 			);
 		}
 
+		const webhook = await this.client.storage.getWebhook(args.channel);
+		if (!webhook) {
+			return interaction.editReply(
+				// eslint-disable-next-line
+				this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+			);
+		}
+
 		const id = await this.client.storage.register(interaction, {
 			op: flag,
 			guild: interaction.guild.id,
 			channel: args.channel.id,
 			tag: data.tag,
 			name: data.name,
-			role: args.role ? args.role.id : null
+			role: args.role ? args.role.id : null,
+			webhook: {
+				id: webhook.id,
+				token: webhook.token
+			}
 		});
 
 		await this.client.rpcHandler.add(id, {

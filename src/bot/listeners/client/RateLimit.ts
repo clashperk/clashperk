@@ -1,4 +1,4 @@
-import { EmbedBuilder, Webhook } from 'discord.js';
+import { EmbedBuilder, RateLimitData, Webhook } from 'discord.js';
 import { Listener } from '../../lib/index.js';
 
 export default class RateLimitListener extends Listener {
@@ -44,30 +44,22 @@ export default class RateLimitListener extends Listener {
 		return this.webhook;
 	}
 
-	public exec({ timeout, limit, method, path, route }: { timeout: number; limit: number; method: string; path: string; route: string }) {
+	public exec({ limit, method, route, global, hash, majorParameter, timeToReset, url }: RateLimitData) {
 		this.count += 1;
 		if (this.count >= 5) return this.client.rpcHandler.pause(true);
-		this.client.logger.warn({ timeout, limit, method, path, route }, { label: 'RATE_LIMIT' });
-		if (path.includes(this.getWebhookId())) return;
+		this.client.logger.warn({ timeToReset, limit, method, url, route, global, hash, majorParameter }, { label: 'RATE_LIMIT' });
+		if (url.includes(this.getWebhookId())) return;
 
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: 'Rate Limit' })
 			.setDescription(
 				[
-					'**Time Out**',
-					timeout,
-					'',
-					'**Limit**',
-					limit,
-					'',
-					'**HTTP Method**',
-					method.toUpperCase(),
-					'',
-					'**Route**',
-					route,
-					'',
-					'**Path**',
-					decodeURIComponent(path)
+					`**Timeout:** ${timeToReset}`,
+					`**Global:** ${global.toString()}`,
+					`**Limit:** ${limit}`,
+					`**Method:** ${method.toUpperCase()}`,
+					`**Route:** ${route}`,
+					`**URL:** ${decodeURIComponent(new URL(url).pathname)}`
 				].join('\n')
 			)
 			.setFooter({ text: `Shard ${this.client.shard!.ids[0]!}` })

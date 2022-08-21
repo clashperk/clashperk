@@ -255,7 +255,16 @@ export default class ClanEmbedCommand extends Command {
 
 		description = description?.toLowerCase() === 'auto' ? 'auto' : description ?? '';
 		accepts = !accepts || accepts.toLowerCase() === 'auto' ? 'auto' : accepts;
-		const mutate = async (message: string, channel: string) => {
+
+		const webhook = await this.client.storage.getWebhook(channel);
+		if (!webhook) {
+			return interaction.editReply(
+				// eslint-disable-next-line
+				this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() })
+			);
+		}
+
+		const mutate = async (message: string, channel: string, webhook: { id: string; token: string }) => {
 			const id = await this.client.storage.register(interaction, {
 				op: Flags.CLAN_EMBED_LOG,
 				guild: interaction.guild.id,
@@ -268,7 +277,8 @@ export default class ClanEmbedCommand extends Command {
 					userId: user.id,
 					accepts: cleanContent(accepts!, interaction.channel!),
 					description: cleanContent(description!, interaction.channel!)
-				}
+				},
+				webhook: { id: webhook.id, token: webhook.token }
 			});
 
 			this.client.rpcHandler.add(id, {
@@ -282,8 +292,8 @@ export default class ClanEmbedCommand extends Command {
 			.collection(Collections.CLAN_EMBED_LOGS)
 			.findOne({ tag: data.tag, guild: interaction.guild.id });
 		if (!existing) {
-			const msg = await interaction.channel!.send({ embeds: [embed] });
-			return mutate(msg.id, channel.id);
+			const msg = await webhook.send(channel.isThread() ? { embeds: [embed] } : { embeds: [embed], threadId: channel.id });
+			return mutate(msg.id, channel.id, { id: webhook.id, token: webhook.token! });
 		}
 
 		const customIds = {
@@ -322,13 +332,13 @@ export default class ClanEmbedCommand extends Command {
 					components: [],
 					content: `**Successfully updated the existing embed. [Jump ↗️](<${messageURL}>)**`
 				});
-				await mutate(existing.message, existing.channel);
+				await mutate(existing.message, existing.channel, existing.webhook);
 			}
 
 			if (action.customId === customIds.create) {
 				await action.update({ content: '**Successfully created a new embed.**', components: [] });
 				const msg = await interaction.channel!.send({ embeds: [embed] });
-				return mutate(msg.id, channel.id);
+				return mutate(msg.id, channel.id, existing.webhook);
 			}
 		});
 

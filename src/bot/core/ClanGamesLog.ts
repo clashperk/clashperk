@@ -1,123 +1,63 @@
-import { EmbedBuilder, Collection, TextChannel, PermissionsString, Snowflake, ThreadChannel, SnowflakeUtil } from 'discord.js';
-import { APIMessage } from 'discord-api-types/v9';
+import { Collection, EmbedBuilder, PermissionsString, Snowflake, SnowflakeUtil, WebhookClient } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
-import { Collections } from '../util/Constants.js';
-import { ClanGames, Util } from '../util/index.js';
 import { Client } from '../struct/Client.js';
+import { Collections } from '../util/Constants.js';
+import { ClanGames } from '../util/index.js';
+import BaseLog from './BaseLog.js';
 
-interface Cache {
-	tag: string;
-	_id: ObjectId;
-	guild: Snowflake;
-	color?: number;
-	channel: Snowflake;
-	message?: Snowflake;
-}
-
-interface Payload {
-	total: number;
-	members: { name: string; points: number }[];
-}
-
-export default class ClanGamesLog {
-	public cached: Collection<string, Cache>;
+export default class ClanGamesLog extends BaseLog {
+	public declare cached: Collection<string, Cache>;
 	public intervalId!: NodeJS.Timeout;
-	protected collection = this.client.db.collection(Collections.CLAN_GAMES_LOGS);
 
-	public constructor(private readonly client: Client) {
-		this.client = client;
-		this.cached = new Collection();
+	public constructor(client: Client) {
+		super(client);
 	}
 
-	public async exec(tag: string, clan: Clan, data: Payload) {
-		const clans = this.cached.filter((d) => d.tag === tag);
-		for (const id of clans.keys()) {
-			const cache = this.cached.get(id);
-			if (cache) await this.permissionsFor(cache, clan, data);
+	public override get collection() {
+		return this.client.db.collection(Collections.CLAN_GAMES_LOGS);
+	}
+
+	public override get permissions(): PermissionsString[] {
+		return ['ReadMessageHistory', 'SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'AddReactions', 'ViewChannel'];
+	}
+
+	public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
+		if (cache.message && new Date().getDate() === ClanGames.STARTING_DATE) {
+			const lastMonthIndex = new Date(Number(SnowflakeUtil.deconstruct(cache.message).timestamp)).getMonth();
+			if (lastMonthIndex < new Date().getMonth()) delete cache.message;
 		}
 
-		return clans.clear();
-	}
-
-	private async permissionsFor(cache: Cache, clan: Clan, data: Payload) {
-		const permissions: PermissionsString[] = [
-			'ReadMessageHistory',
-			'SendMessages',
-			'EmbedLinks',
-			'UseExternalEmojis',
-			'AddReactions',
-			'ViewChannel'
-		];
-
-		if (this.client.channels.cache.has(cache.channel)) {
-			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SendMessagesInThreads'))) return;
-			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
-				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
-
-				if (cache.message && new Date().getDate() === ClanGames.STARTING_DATE) {
-					const lastMonthIndex = new Date(Number(SnowflakeUtil.deconstruct(cache.message).timestamp)).getMonth();
-					if (lastMonthIndex < new Date().getMonth()) delete cache.message;
-				}
-
-				return this.handleMessage(cache, channel, clan, data);
-			}
-		}
-	}
-
-	private async unarchive(thread: ThreadChannel) {
-		if (!(thread.editable && thread.manageable)) return null;
-		return thread.edit({ archived: false, locked: false });
-	}
-
-	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, data: Payload) {
 		if (!cache.message) {
-			const msg = await this.send(cache, channel, clan, data);
-			return this.mutate(cache, msg);
+			const msg = await this.send(cache, webhook, data);
+			return this.updateMessageId(cache, msg);
 		}
 
-		const msg = await this.edit(cache, channel, clan, data);
-		return this.mutate(cache, msg);
+		const msg = await this.edit(cache, webhook, data);
+		return this.updateMessageId(cache, msg);
 	}
 
-	private async mutate(cache: Cache, msg: APIMessage | null) {
-		if (msg) {
-			await this.collection.updateOne(
-				{ clanId: new ObjectId(cache._id) },
-				{
-					$set: {
-						failed: 0,
-						message: msg.id,
-						updatedAt: new Date()
-					}
-				}
-			);
-			cache.message = msg.id;
-		} else {
-			await this.collection.updateOne({ clanId: new ObjectId(cache._id) }, { $inc: { failed: 1 } });
-		}
-		return msg;
-	}
-
-	private async send(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, data: Payload) {
-		const embed = this.embed(cache, clan, data);
-		return Util.sendMessage(this.client, channel.id, { embeds: [embed.toJSON()] }).catch(() => null);
-	}
-
-	private async edit(cache: Cache, channel: TextChannel | ThreadChannel, clan: Clan, data: Payload) {
-		const embed = this.embed(cache, clan, data);
-
-		return Util.editMessage(this.client, channel.id, cache.message!, { embeds: [embed.toJSON()] }).catch((error) => {
-			if (error.code === 10008) {
-				delete cache.message;
-				return this.send(cache, channel, clan, data);
-			}
+	private async send(cache: Cache, webhook: WebhookClient, data: Feed) {
+		const embed = this.embed(cache, data);
+		try {
+			return await super._send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+		} catch (error: any) {
+			this.client.logger.error(`${error.toString() as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
 			return null;
-		});
+		}
 	}
 
-	private embed(cache: Cache, clan: Clan, data: Payload) {
+	private async edit(cache: Cache, webhook: WebhookClient, data: Feed) {
+		const embed = this.embed(cache, data);
+		try {
+			return await super._edit(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+		} catch (error: any) {
+			this.client.logger.error(`${error.toString() as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
+			return null;
+		}
+	}
+
+	private embed(cache: Cache, { clan, ...data }: Feed) {
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
 			.setDescription(
@@ -164,13 +104,28 @@ export default class ClanGamesLog {
 	private async _init() {
 		await this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } }).forEach((data) => {
 			this.cached.set((data.clanId as ObjectId).toHexString(), {
-				_id: data.clanId,
+				clanId: data.clanId,
 				tag: data.tag,
 				color: data.color,
 				guild: data.guild,
 				channel: data.channel,
 				message: data.message
 			});
+		});
+	}
+
+	public async add(id: string) {
+		if (!ClanGames.Started) return null;
+		const data = await this.collection.findOne({ clanId: new ObjectId(id) });
+
+		if (!data) return null;
+		return this.cached.set(id, {
+			clanId: data.clanId,
+			tag: data.tag,
+			color: data.color,
+			guild: data.guild,
+			channel: data.channel,
+			message: data.message
 		});
 	}
 
@@ -187,23 +142,20 @@ export default class ClanGamesLog {
 		}, 5 * 60 * 1000);
 		return intervalId.unref();
 	}
+}
 
-	public async add(id: string) {
-		if (!ClanGames.Started) return null;
-		const data = await this.collection.findOne({ clanId: new ObjectId(id) });
+interface Cache {
+	tag: string;
+	clanId: ObjectId;
+	guild: Snowflake;
+	color?: number;
+	channel: Snowflake;
+	message?: Snowflake;
+	threadId?: string;
+}
 
-		if (!data) return null;
-		return this.cached.set(id, {
-			_id: data.clanId,
-			tag: data.tag,
-			color: data.color,
-			guild: data.guild,
-			channel: data.channel,
-			message: data.message
-		});
-	}
-
-	public delete(id: string) {
-		return this.cached.delete(id);
-	}
+interface Feed {
+	clan: Clan;
+	total: number;
+	members: { name: string; points: number }[];
 }
