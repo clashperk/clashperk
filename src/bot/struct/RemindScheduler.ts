@@ -1,25 +1,26 @@
 import { ClanWar } from 'clashofclans.js';
-import { ChannelType, PermissionFlagsBits, TextChannel } from 'discord.js';
+import { APIMessage, NewsChannel, TextChannel, WebhookClient } from 'discord.js';
 import moment from 'moment';
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithId } from 'mongodb';
 import { Collections } from '../util/Constants.js';
 import { ORANGE_NUMBERS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import { Client } from './Client.js';
 
 export default class RemindScheduler {
-	protected collection!: Collection<ReminderTemp>;
-
+	protected schedulers!: Collection<Schedule>;
+	protected reminders!: Collection<Reminder>;
 	private readonly refreshRate: number;
-	private readonly queued = new Map();
+	private readonly queued = new Map<string, NodeJS.Timeout>();
 
 	public constructor(private readonly client: Client) {
 		this.refreshRate = 5 * 60 * 1000;
-		this.collection = this.client.db.collection(Collections.REMINDERS_TEMP);
+		this.schedulers = this.client.db.collection(Collections.SCHEDULERS);
+		this.reminders = this.client.db.collection(Collections.REMINDERS);
 	}
 
 	public async init() {
-		this.collection
+		this.schedulers
 			.watch(
 				[
 					{
@@ -30,9 +31,9 @@ export default class RemindScheduler {
 			)
 			.on('change', (change) => {
 				if (['insert'].includes(change.operationType)) {
-					const reminder = change.fullDocument;
-					if (reminder && reminder.timestamp.getTime() < Date.now() + this.refreshRate) {
-						this.queue(reminder);
+					const schedule = change.fullDocument;
+					if (schedule && schedule.timestamp.getTime() < Date.now() + this.refreshRate) {
+						this.queue(schedule);
 					}
 				}
 
@@ -41,9 +42,9 @@ export default class RemindScheduler {
 					if (this.queued.has(id)) this.clear(id);
 
 					if (change.operationType === 'update') {
-						const reminder = change.fullDocument;
-						if (reminder && !reminder.triggered && reminder.timestamp.getTime() < Date.now() + this.refreshRate) {
-							this.queue(reminder);
+						const schedule = change.fullDocument;
+						if (schedule && !schedule.triggered && schedule.timestamp.getTime() < Date.now() + this.refreshRate) {
+							this.queue(schedule);
 						}
 					}
 				}
@@ -53,26 +54,26 @@ export default class RemindScheduler {
 		setInterval(this._refresh.bind(this), this.refreshRate);
 	}
 
-	public async create(reminder: Reminder) {
-		for (const tag of reminder.clans) {
+	public async create(schedule: Reminder) {
+		for (const tag of schedule.clans) {
 			const wars = await this.client.http.getCurrentWars(tag);
 			for (const data of wars) {
 				if (!data.ok) continue;
 				if (['notInWar', 'warEnded'].includes(data.state)) continue;
 				const endTime = moment(data.endTime).toDate();
 
-				const ms = endTime.getTime() - reminder.duration;
+				const ms = endTime.getTime() - schedule.duration;
 				if (Date.now() > new Date(ms).getTime()) continue;
 
-				await this.collection.insertOne({
+				await this.schedulers.insertOne({
 					_id: new ObjectId(),
-					guild: reminder.guild,
+					guild: schedule.guild,
 					tag: data.clan.tag,
 					name: data.clan.name,
 					warTag: data.warTag,
 					isFriendly: Boolean(data.isFriendly),
-					duration: reminder.duration,
-					reminderId: reminder._id,
+					duration: schedule.duration,
+					reminderId: schedule._id,
 					source: 'bot',
 					triggered: false,
 					timestamp: new Date(ms),
@@ -82,18 +83,18 @@ export default class RemindScheduler {
 		}
 	}
 
-	private queue(reminder: ReminderTemp) {
+	private queue(schedule: Schedule) {
 		this.queued.set(
-			reminder._id.toHexString(),
+			schedule._id.toHexString(),
 			setTimeout(() => {
-				this.trigger(reminder);
-			}, reminder.timestamp.getTime() - Date.now())
+				this.trigger(schedule);
+			}, schedule.timestamp.getTime() - Date.now())
 		);
 	}
 
-	private async delete(reminder: ReminderTemp) {
-		this.clear(reminder._id.toHexString());
-		return this.collection.updateOne({ _id: reminder._id }, { $set: { triggered: true } });
+	private async delete(schedule: Schedule) {
+		this.clear(schedule._id.toHexString());
+		return this.schedulers.updateOne({ _id: schedule._id }, { $set: { triggered: true } });
 	}
 
 	private clear(id: string) {
@@ -107,62 +108,62 @@ export default class RemindScheduler {
 		return data.ok ? data.memberList : [];
 	}
 
-	private wasInMaintenance(reminder: ReminderTemp, data: ClanWar) {
-		const timestamp = moment(data.endTime).toDate().getTime() - reminder.duration;
-		return timestamp > reminder.timestamp.getTime();
+	private wasInMaintenance(schedule: Schedule, data: ClanWar) {
+		const timestamp = moment(data.endTime).toDate().getTime() - schedule.duration;
+		return timestamp > schedule.timestamp.getTime();
 	}
 
-	private async trigger(reminder: ReminderTemp) {
-		const id = reminder._id.toHexString();
+	private async trigger(schedule: Schedule) {
+		const id = schedule._id.toHexString();
 		try {
-			const rem = await this.client.db.collection<Reminder>(Collections.REMINDERS).findOne({ _id: reminder.reminderId });
-			if (!rem) return await this.delete(reminder);
-			if (!this.client.channels.cache.has(rem.channel)) return await this.delete(reminder);
-			const warType = reminder.warTag ? 'cwl' : reminder.isFriendly ? 'friendly' : 'normal';
-			if (!rem.warTypes.includes(warType)) return await this.delete(reminder);
+			const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
+			if (!reminder) return await this.delete(schedule);
+			if (!this.client.channels.cache.has(reminder.channel)) return await this.delete(schedule);
+			const warType = schedule.warTag ? 'cwl' : schedule.isFriendly ? 'friendly' : 'normal';
+			if (!reminder.warTypes.includes(warType)) return await this.delete(schedule);
 
-			const data = reminder.warTag
-				? await this.client.http.clanWarLeagueWar(reminder.warTag)
-				: await this.client.http.currentClanWar(reminder.tag);
+			const data = schedule.warTag
+				? await this.client.http.clanWarLeagueWar(schedule.warTag)
+				: await this.client.http.currentClanWar(schedule.tag);
 			if (!data.ok) return this.clear(id);
 
-			if (['notInWar', 'warEnded'].includes(data.state)) return await this.delete(reminder);
+			if (['notInWar', 'warEnded'].includes(data.state)) return await this.delete(schedule);
 
-			if (this.wasInMaintenance(reminder, data)) {
+			if (this.wasInMaintenance(schedule, data)) {
 				this.client.logger.info(
-					`Reminder shifted [${reminder.tag}] ${reminder.timestamp.toISOString()} => ${moment(data.endTime)
+					`Reminder shifted [${schedule.tag}] ${schedule.timestamp.toISOString()} => ${moment(data.endTime)
 						.toDate()
 						.toISOString()}`,
 					{ label: 'REMINDER' }
 				);
-				return await this.collection.updateOne(
-					{ _id: reminder._id },
-					{ $set: { timestamp: new Date(moment(data.endTime).toDate().getTime() - reminder.duration) } }
+				return await this.schedulers.updateOne(
+					{ _id: schedule._id },
+					{ $set: { timestamp: new Date(moment(data.endTime).toDate().getTime() - schedule.duration) } }
 				);
 			}
 
-			const clanMembers = rem.roles.length === 4 ? [] : await this.getClanMembers(reminder.tag);
-			const clan = data.clan.tag === reminder.tag ? data.clan : data.opponent;
+			const clanMembers = reminder.roles.length === 4 ? [] : await this.getClanMembers(schedule.tag);
+			const clan = data.clan.tag === schedule.tag ? data.clan : data.opponent;
 			const attacksPerMember = data.attacksPerMember || 1;
 
 			const members = clan.members
 				.filter((mem) => {
-					if (reminder.warTag && !mem.attacks?.length) return true;
-					return rem.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0));
+					if (schedule.warTag && !mem.attacks?.length) return true;
+					return reminder.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0));
 				})
-				.filter((mem) => rem.townHalls.includes(mem.townhallLevel))
+				.filter((mem) => reminder.townHalls.includes(mem.townhallLevel))
 				.filter((mem) => {
-					if (rem.roles.length === 4) return true;
+					if (reminder.roles.length === 4) return true;
 					const clanMember = clanMembers.find((m) => m.tag === mem.tag);
-					return clanMember && rem.roles.includes(clanMember.role);
+					return clanMember && reminder.roles.includes(clanMember.role);
 				});
-			if (!members.length) return await this.delete(reminder);
+			if (!members.length) return await this.delete(schedule);
 
 			const links = await this.client.http.getDiscordLinks(members);
-			if (!links.length) return await this.delete(reminder);
+			if (!links.length) return await this.delete(schedule);
 
-			const guild = this.client.guilds.cache.get(rem.guild);
-			if (!guild) return await this.delete(reminder);
+			const guild = this.client.guilds.cache.get(reminder.guild);
+			if (!guild) return await this.delete(schedule);
 
 			const guildMembers = await guild.members.fetch({ user: links.map(({ user }) => user) }).catch(() => null);
 			const mentions: UserMention[] = [];
@@ -181,7 +182,7 @@ export default class RemindScheduler {
 				});
 			}
 
-			if (!mentions.length) return await this.delete(reminder);
+			if (!mentions.length) return await this.delete(schedule);
 			mentions.sort((a, b) => a.position - b.position);
 
 			const users = Object.entries(
@@ -201,7 +202,7 @@ export default class RemindScheduler {
 
 			const text = [
 				`\u200e🔔 **${clan.name} (War ${prefix} ${warTiming})**`,
-				`📨 ${rem.message}`,
+				`📨 ${reminder.message}`,
 				'',
 				users
 					.map(([mention, members]) =>
@@ -217,17 +218,18 @@ export default class RemindScheduler {
 					.join('\n')
 			].join('\n');
 
-			const channel = this.client.channels.cache.get(rem.channel) as TextChannel | null;
-			if (
-				channel?.type === ChannelType.GuildText &&
-				channel
-					.permissionsFor(this.client.user!)
-					?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.UseExternalEmojis, PermissionFlagsBits.ViewChannel])
-			) {
+			const channel = this.client.util.hasPermissions(reminder.channel, [
+				'SendMessages',
+				'UseExternalEmojis',
+				'ViewChannel',
+				'ManageWebhooks'
+			]);
+			if (channel) {
+				if (channel.isThread) reminder.threadId = channel.channel.id;
+				const webhook = reminder.webhook ? new WebhookClient(reminder.webhook) : await this.webhook(channel.parent, reminder);
+
 				for (const content of Util.splitMessage(text)) {
-					try {
-						await channel.send({ content, allowedMentions: { parse: ['users'] } });
-					} catch {}
+					if (webhook) await this.deliver({ reminder, channel: channel.parent, webhook, content });
 				}
 			}
 		} catch (error) {
@@ -235,32 +237,65 @@ export default class RemindScheduler {
 			return this.clear(id);
 		}
 
-		return this.delete(reminder);
+		return this.delete(schedule);
+	}
+
+	private async deliver({
+		reminder,
+		channel,
+		content,
+		webhook
+	}: {
+		reminder: WithId<Reminder>;
+		webhook: WebhookClient;
+		content: string;
+		channel: TextChannel | NewsChannel | null;
+	}): Promise<APIMessage | null> {
+		try {
+			return await webhook.send({ content, allowedMentions: { parse: ['users'] }, threadId: reminder.threadId });
+		} catch (error: any) {
+			// Unknown Webhook / Unknown Channel
+			if ([10015, 10003].includes(error.code) && channel) {
+				const webhook = await this.webhook(channel, reminder);
+				if (webhook) return webhook.send({ content, allowedMentions: { parse: ['users'] }, threadId: reminder.threadId });
+			}
+			throw error;
+		}
+	}
+
+	private async webhook(channel: TextChannel | NewsChannel, reminder: WithId<Reminder>) {
+		const webhook = await this.client.storage.getWebhook(channel).catch(() => null);
+		if (webhook) {
+			reminder.webhook = { id: webhook.id, token: webhook.token! };
+			await this.reminders.updateOne({ _id: reminder._id }, { $set: { webhook: { id: webhook.id, token: webhook.token! } } });
+			return new WebhookClient({ id: webhook.id, token: webhook.token! });
+		}
+		return null;
 	}
 
 	private async _refresh() {
-		const reminders = await this.collection
+		const schedulers = await this.schedulers
 			.find({
 				timestamp: { $lt: new Date(Date.now() + this.refreshRate) }
 			})
 			.toArray();
 
 		const now = new Date().getTime();
-		for (const reminder of reminders) {
-			if (reminder.triggered) continue;
-			if (!this.client.guilds.cache.has(reminder.guild)) continue;
-			if (this.queued.has(reminder._id.toHexString())) continue;
+		for (const schedule of schedulers) {
+			if (schedule.triggered) continue;
+			if (!this.client.guilds.cache.has(schedule.guild)) continue;
+			if (this.queued.has(schedule._id.toHexString())) continue;
 
-			if (reminder.timestamp.getTime() < now) {
-				this.trigger(reminder);
+			if (schedule.timestamp.getTime() < now) {
+				this.trigger(schedule);
 			} else {
-				this.queue(reminder);
+				this.queue(schedule);
 			}
 		}
 	}
 }
 
-export interface ReminderTemp {
+export interface Schedule {
 	_id: ObjectId;
 	guild: string;
 	name: string;
@@ -281,6 +316,8 @@ export interface Reminder {
 	channel: string;
 	message: string;
 	duration: number;
+	webhook?: { id: string; token: string } | null;
+	threadId?: string;
 	roles: string[];
 	townHalls: number[];
 	warTypes: string[];

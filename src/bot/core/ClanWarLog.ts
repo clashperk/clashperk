@@ -434,7 +434,8 @@ export default class ClanWarLog extends BaseLog {
 				uid: data.uid,
 				channel: data.channel,
 				rounds: data.rounds || {},
-				message: data.message
+				message: data.message,
+				webhook: data.webhook ? new WebhookClient(data.webhook) : null
 			});
 		});
 	}
@@ -450,7 +451,8 @@ export default class ClanWarLog extends BaseLog {
 			uid: data.uid,
 			channel: data.channel,
 			rounds: data.rounds || {},
-			message: data.message
+			message: data.message,
+			webhook: data.webhook ? new WebhookClient(data.webhook) : null
 		});
 	}
 }
@@ -500,4 +502,5 @@ interface Cache {
 	rounds: any;
 	uid: string;
 	message?: string;
+	webhook: WebhookClient | null;
 }

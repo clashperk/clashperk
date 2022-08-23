@@ -9,6 +9,7 @@ import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/index.
 import Logger from '../util/Logger.js';
 import { Settings } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
+import { ClientUtil } from '../util/ClientUtil.js';
 import { Automaton } from './Automaton.js';
 import { Database } from './Database.js';
 import Http from './Http.js';
@@ -34,6 +35,7 @@ export class Client extends Discord.Client {
 
 	public logger: Logger;
 	public db!: Db;
+	public util: ClientUtil;
 	public settings!: SettingsProvider;
 	public http = new Http();
 	public stats!: StatsHandler;
@@ -52,7 +54,7 @@ export class Client extends Discord.Client {
 	public rpcHandler!: RPCHandler;
 	public patrons!: Patrons;
 	public automaton!: Automaton;
-	public components = new Map<string, Snowflake[]>();
+	public components = new Map<string, string[]>();
 	public resolver!: Resolver;
 	public ownerId: string;
 
@@ -100,6 +102,7 @@ export class Client extends Discord.Client {
 		});
 
 		this.logger = new Logger(this);
+		this.util = new ClientUtil(this);
 		this.ownerId = process.env.OWNER!;
 		container.register(Client, { useValue: this });
 	}

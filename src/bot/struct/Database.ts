@@ -243,7 +243,7 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
-			db.collection(Collections.REMINDERS_TEMP).createIndexes([
+			db.collection(Collections.SCHEDULERS).createIndexes([
 				{
 					key: { key: 1 }
 				},

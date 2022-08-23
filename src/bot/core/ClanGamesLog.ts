@@ -109,7 +109,8 @@ export default class ClanGamesLog extends BaseLog {
 				color: data.color,
 				guild: data.guild,
 				channel: data.channel,
-				message: data.message
+				message: data.message,
+				webhook: data.webhook ? new WebhookClient(data.webhook) : null
 			});
 		});
 	}
@@ -125,7 +126,8 @@ export default class ClanGamesLog extends BaseLog {
 			color: data.color,
 			guild: data.guild,
 			channel: data.channel,
-			message: data.message
+			message: data.message,
+			webhook: data.webhook ? new WebhookClient(data.webhook) : null
 		});
 	}
 
@@ -152,6 +154,7 @@ interface Cache {
 	channel: Snowflake;
 	message?: Snowflake;
 	threadId?: string;
+	webhook: WebhookClient | null;
 }
 
 interface Feed {

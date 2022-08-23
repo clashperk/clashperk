@@ -2,7 +2,7 @@ import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, Sele
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Collections } from '../../util/Constants.js';
-import { Reminder, ReminderTemp } from '../../struct/RemindScheduler.js';
+import { Reminder, Schedule } from '../../struct/RemindScheduler.js';
 import { Args, Command } from '../../lib/index.js';
 
 const roles: Record<string, string> = {
@@ -37,7 +37,7 @@ export default class ReminderDeleteCommand extends Command {
 
 		if (clear) {
 			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteMany({ guild: interaction.guild.id });
-			await this.client.db.collection<ReminderTemp>(Collections.REMINDERS_TEMP).deleteMany({ guild: interaction.guildId });
+			await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ guild: interaction.guildId });
 			return interaction.editReply(this.i18n('command.reminder.delete.cleared', { lng: interaction.locale }));
 		}
 
@@ -45,7 +45,7 @@ export default class ReminderDeleteCommand extends Command {
 			const reminderId = reminders[Number(id) - 1]?._id as ObjectId | null;
 			if (!reminderId) return interaction.editReply(this.i18n('command.reminder.delete.not_found', { lng: interaction.locale, id }));
 			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteOne({ _id: reminderId });
-			await this.client.db.collection<ReminderTemp>(Collections.REMINDERS_TEMP).deleteMany({ reminderId });
+			await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId });
 			return interaction.editReply(this.i18n('command.reminder.delete.success', { lng: interaction.locale, id }));
 		}
 
@@ -165,9 +165,7 @@ export default class ReminderDeleteCommand extends Command {
 				state.reminders.delete(state.selected!);
 
 				await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteOne({ _id: new ObjectId(state.selected!) });
-				await this.client.db
-					.collection<ReminderTemp>(Collections.REMINDERS_TEMP)
-					.deleteMany({ reminderId: new ObjectId(state.selected!) });
+				await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId: new ObjectId(state.selected!) });
 
 				const rems = reminders.filter((rem) => state.reminders.has(rem._id.toHexString()));
 				await action.editReply({

@@ -83,7 +83,8 @@ export default class LastSeenLog extends BaseLog {
 				guild: data.guild,
 				color: data.color,
 				channel: data.channel,
-				message: data.message
+				message: data.message,
+				webhook: data.webhook ? new WebhookClient(data.webhook) : null
 			});
 		});
 	}
@@ -98,7 +99,8 @@ export default class LastSeenLog extends BaseLog {
 			guild: data.guild,
 			color: data.color,
 			channel: data.channel,
-			message: data.message
+			message: data.message,
+			webhook: data.webhook ? new WebhookClient(data.webhook) : null
 		});
 	}
 }
@@ -117,4 +119,5 @@ interface Cache {
 	channel: Snowflake;
 	message?: Snowflake;
 	threadId?: string;
+	webhook: WebhookClient | null;
 }

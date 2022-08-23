@@ -15,6 +15,7 @@ export interface Cache {
 	color: number;
 	embed: any;
 	threadId?: string;
+	webhook: WebhookClient | null;
 }
 
 interface Feed {
@@ -166,7 +167,8 @@ export default class ClanEmbedLog extends BaseLog {
 					color: data.color,
 					embed: data.embed,
 					tag: data.tag,
-					channel: data.channel
+					channel: data.channel,
+					webhook: data.webhook ? new WebhookClient(data.webhook) : null
 				});
 			});
 	}
@@ -182,7 +184,8 @@ export default class ClanEmbedLog extends BaseLog {
 			message: data.message,
 			color: data.color,
 			embed: data.embed,
-			tag: data.tag
+			tag: data.tag,
+			webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
 		});
 	}
 }

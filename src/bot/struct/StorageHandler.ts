@@ -430,7 +430,7 @@ export default class StorageHandler {
 			.sort((a, b) => a.count - b.count)[0];
 
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		if (estimated && (estimated.count <= 10 || channelWebhooks.size >= 10)) {
+		if (estimated && (estimated.count <= 6 || channelWebhooks.size >= 8)) {
 			return channelWebhooks.get(estimated.webhookId)!;
 		}
 

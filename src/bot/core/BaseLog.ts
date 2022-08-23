@@ -2,17 +2,14 @@ import { APIMessage, Collection, NewsChannel, PermissionsString, TextChannel, We
 import { Collection as DbCollection, ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { Util } from '../util/index.js';
-import WebhookHandler from './WebhookHandler.js';
 
 export default class BaseLog {
 	public cached: Collection<string, Cache>;
 	public lastReq: Map<string, NodeJS.Timeout>;
-	public webhookHandler: WebhookHandler;
 
 	public constructor(public client: Client) {
 		this.cached = new Collection();
 		this.lastReq = new Map();
-		this.webhookHandler = new WebhookHandler(client);
 	}
 
 	public async throttle(id: string) {
@@ -56,7 +53,7 @@ export default class BaseLog {
 	}
 
 	public async permissionsFor(cache: Cache, data: unknown) {
-		const channel = this.webhookHandler.permissionsFor(cache.channel, this.permissions);
+		const channel = this.client.util.hasPermissions(cache.channel, this.permissions);
 		if (channel) {
 			if (channel.isThread) cache.threadId = channel.channel.id;
 			const webhook = await this.webhook(cache, channel.parent);
@@ -131,7 +128,7 @@ export default class BaseLog {
 		if (cache.webhook) return cache.webhook;
 		if (cache.deleted) return null;
 
-		const webhook = await this.webhookHandler.getWebhook(channel).catch(() => null);
+		const webhook = await this.client.storage.getWebhook(channel).catch(() => null);
 		if (webhook) {
 			cache.webhook = new WebhookClient({ id: webhook.id, token: webhook.token! });
 			await this.updateWebhook(cache, cache.webhook, cache.channel);
@@ -151,7 +148,7 @@ export default class BaseLog {
 interface Cache {
 	tag: string;
 	clanId: ObjectId;
-	webhook?: WebhookClient | null;
+	webhook: WebhookClient | null;
 	deleted?: boolean;
 	message?: string;
 	channel: string;

@@ -133,7 +133,7 @@ export default class ClanFeedLog extends BaseLog {
 				tag: data.tag,
 				role: data.role,
 				retries: data.retries ?? 0,
-				webhook: data.webhook?.id ? new WebhookClient({ id: data.webhook.id, token: data.webhook.token }) : null
+				webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
 			});
 		});
 	}
@@ -149,7 +149,7 @@ export default class ClanFeedLog extends BaseLog {
 			tag: data.tag,
 			role: data.role,
 			retries: data.retries ?? 0,
-			webhook: data.webhook?.id ? new WebhookClient({ id: data.webhook.id, token: data.webhook.token }) : null
+			webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
 		});
 	}
 }
@@ -181,7 +181,7 @@ interface Feed {
 interface Cache {
 	tag: string;
 	clanId: ObjectId;
-	webhook?: WebhookClient | null;
+	webhook: WebhookClient | null;
 	deleted?: boolean;
 	channel: string;
 	role: string | null;

@@ -117,7 +117,7 @@ export default class DonationLog extends BaseLog {
 					tag: data.tag,
 					color: data.color,
 					channel: data.channel,
-					webhook: data.webhook_id ? new WebhookClient({ id: data.webhook_id, token: data.webhook_token }) : null
+					webhook: data.webhook ? new WebhookClient(data.webhook) : null
 				});
 			});
 	}
@@ -133,7 +133,7 @@ export default class DonationLog extends BaseLog {
 			color: data.color,
 			channel: data.channel,
 			retries: 0,
-			webhook: data.webhook_id ? new WebhookClient({ id: data.webhook_id, token: data.webhook_token }) : null
+			webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
 		});
 	}
 }
@@ -167,7 +167,7 @@ interface Cache {
 	tag: string;
 	clanId: ObjectId;
 	color?: number | null;
-	webhook?: WebhookClient | null;
+	webhook: WebhookClient | null;
 	deleted?: boolean;
 	channel: string;
 	guild: string;
