@@ -54,26 +54,26 @@ export default class RemindScheduler {
 		setInterval(this._refresh.bind(this), this.refreshRate);
 	}
 
-	public async create(schedule: Reminder) {
-		for (const tag of schedule.clans) {
+	public async create(reminder: Reminder) {
+		for (const tag of reminder.clans) {
 			const wars = await this.client.http.getCurrentWars(tag);
 			for (const data of wars) {
 				if (!data.ok) continue;
 				if (['notInWar', 'warEnded'].includes(data.state)) continue;
 				const endTime = moment(data.endTime).toDate();
 
-				const ms = endTime.getTime() - schedule.duration;
+				const ms = endTime.getTime() - reminder.duration;
 				if (Date.now() > new Date(ms).getTime()) continue;
 
 				await this.schedulers.insertOne({
 					_id: new ObjectId(),
-					guild: schedule.guild,
+					guild: reminder.guild,
 					tag: data.clan.tag,
 					name: data.clan.name,
 					warTag: data.warTag,
 					isFriendly: Boolean(data.isFriendly),
-					duration: schedule.duration,
-					reminderId: schedule._id,
+					duration: reminder.duration,
+					reminderId: reminder._id,
 					source: 'bot',
 					triggered: false,
 					timestamp: new Date(ms),

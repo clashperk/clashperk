@@ -9,10 +9,12 @@ import {
 	ButtonStyle,
 	ComponentType,
 	TextInputStyle,
-	cleanContent
+	cleanContent,
+	PermissionsString,
+	WebhookClient
 } from 'discord.js';
 import { Clan } from 'clashofclans.js';
-import { Collections, Flags } from '../../util/Constants.js';
+import { Collections, Flags, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { UserInfo } from '../../types/index.js';
@@ -23,11 +25,21 @@ export default class ClanEmbedCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
-			clientPermissions: ['EmbedLinks'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true,
 			ephemeral: true
 		});
 	}
+
+	private readonly permissions: PermissionsString[] = [
+		'AddReactions',
+		'EmbedLinks',
+		'UseExternalEmojis',
+		'SendMessages',
+		'ReadMessageHistory',
+		'ManageWebhooks',
+		'ViewChannel'
+	];
 
 	public condition(interaction: Interaction<'cached'>) {
 		if (!this.client.patrons.get(interaction.guild.id)) {
@@ -64,6 +76,17 @@ export default class ClanEmbedCommand extends Command {
 	) {
 		const data = await this.client.resolver.enforceSecurity(interaction, tag);
 		if (!data) return;
+
+		const permission = missingPermissions(channel, interaction.guild.members.me!, this.permissions);
+		if (permission.missing) {
+			return interaction.editReply(
+				this.i18n('command.setup.enable.missing_access', {
+					lng: interaction.locale,
+					channel: channel.toString(), // eslint-disable-line
+					permission: permission.missingPerms
+				})
+			);
+		}
 
 		const user = await this.getUser(data);
 		if (!user) return interaction.editReply('Clan leader is not linked to the bot. Use `/link` command to link the player account.');
@@ -318,7 +341,12 @@ export default class ClanEmbedCommand extends Command {
 			if (action.customId === customIds.edit) {
 				try {
 					const channel = interaction.guild.channels.cache.get(existing.channel);
-					await (channel as TextChannel)!.messages.edit(existing.message, { embeds: [embed] });
+					const webhook = new WebhookClient(existing.webhook);
+					const msg = await webhook.editMessage(
+						existing.message,
+						channel?.isThread() ? { embeds: [embed] } : { embeds: [embed], threadId: channel?.id }
+					);
+					await mutate(existing.message, msg.channel_id, existing.webhook);
 				} catch {
 					row.components[0].setDisabled(true);
 					await action.update({
@@ -332,13 +360,14 @@ export default class ClanEmbedCommand extends Command {
 					components: [],
 					content: `**Successfully updated the existing embed. [Jump ↗️](<${messageURL}>)**`
 				});
-				await mutate(existing.message, existing.channel, existing.webhook);
 			}
 
 			if (action.customId === customIds.create) {
 				await action.update({ content: '**Successfully created a new embed.**', components: [] });
-				const msg = await interaction.channel!.send({ embeds: [embed] });
-				return mutate(msg.id, channel.id, existing.webhook);
+				// TODO: Create a new webhook
+				const webhook = new WebhookClient(existing.webhook);
+				const msg = await webhook.send({ embeds: [embed] });
+				return mutate(msg.id, msg.channel_id, existing.webhook);
 			}
 		});
 

@@ -122,7 +122,7 @@ export default class ExportSeason extends Command {
 					m.attackWins,
 					m.versusBattleWins.gained,
 					m.trophies.gained,
-					m.currentTrophies,
+					m.currentTrophies ?? Number(m.trophies.value) + Number(m.trophies.gained),
 					m.versusTrophies.gained,
 					m.warStars.gained,
 					...achievements.map((ac) => m.achievements.find((a: { name: string }) => a.name === ac)?.gained ?? 0),

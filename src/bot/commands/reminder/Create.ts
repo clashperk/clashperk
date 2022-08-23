@@ -1,9 +1,17 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, TextChannel, ButtonStyle } from 'discord.js';
+import {
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	SelectMenuBuilder,
+	TextChannel,
+	ButtonStyle,
+	PermissionsString
+} from 'discord.js';
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
-import { Collections } from '../../util/Constants.js';
+import { Collections, missingPermissions } from '../../util/Constants.js';
 import { Reminder } from '../../struct/RemindScheduler.js';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
@@ -11,14 +19,33 @@ export default class ReminderCreateCommand extends Command {
 			category: 'reminder',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
-			clientPermissions: ['EmbedLinks'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});
 	}
 
+	private readonly permissions: PermissionsString[] = [
+		'AddReactions',
+		'EmbedLinks',
+		'UseExternalEmojis',
+		'SendMessages',
+		'ReadMessageHistory',
+		'ManageWebhooks',
+		'ViewChannel'
+	];
+
+	public args(interaction: CommandInteraction<'cached'>): Args {
+		return {
+			channel: {
+				match: 'CHANNEL',
+				default: interaction.channel!
+			}
+		};
+	}
+
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { duration: string; message: string; channel?: TextChannel; clans?: string }
+		args: { duration: string; message: string; channel: TextChannel; clans?: string }
 	) {
 		const tags = args.clans === '*' ? [] : this.client.resolver.resolveArgs(args.clans);
 		const clans =
@@ -29,6 +56,25 @@ export default class ReminderCreateCommand extends Command {
 		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+		}
+
+		const permission = missingPermissions(args.channel, interaction.guild.members.me!, this.permissions);
+		if (permission.missing) {
+			return interaction.editReply(
+				this.i18n('command.reminder.create.missing_access', {
+					lng: interaction.locale,
+					channel: args.channel.toString(), // eslint-disable-line
+					permission: permission.missingPerms
+				})
+			);
+		}
+
+		const webhook = await this.client.storage.getWebhook(args.channel);
+		if (!webhook) {
+			return interaction.editReply(
+				// eslint-disable-next-line
+				this.i18n('command.reminder.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+			);
 		}
 
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).countDocuments({ guild: interaction.guild.id });
@@ -215,11 +261,12 @@ export default class ReminderCreateCommand extends Command {
 					// TODO: remove this
 					_id: new ObjectId(),
 					guild: interaction.guild.id,
-					channel: args.channel?.id ?? interaction.channel!.id,
+					channel: args.channel.id,
 					remaining: state.remaining.map((num) => Number(num)),
 					townHalls: state.townHalls.map((num) => Number(num)),
 					roles: state.roles,
 					clans: state.clans,
+					webhook: { id: webhook.id, token: webhook.token! },
 					warTypes: state.warTypes,
 					message: args.message.trim(),
 					duration: dur,

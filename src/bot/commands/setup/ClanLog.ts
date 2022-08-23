@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, TextChannel, Role } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, TextChannel, Role, PermissionsString } from 'discord.js';
 import { Flags, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 
@@ -17,19 +17,21 @@ export default class ClanLogCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
-			clientPermissions: [
-				'AddReactions',
-				'EmbedLinks',
-				'UseExternalEmojis',
-				'SendMessages',
-				'ReadMessageHistory',
-				'ManageWebhooks',
-				'ViewChannel'
-			],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true,
 			ephemeral: true
 		});
 	}
+
+	private readonly permissions: PermissionsString[] = [
+		'AddReactions',
+		'EmbedLinks',
+		'UseExternalEmojis',
+		'SendMessages',
+		'ReadMessageHistory',
+		'ManageWebhooks',
+		'ViewChannel'
+	];
 
 	public args(interaction: CommandInteraction<'cached'>): Args {
 		return {
@@ -60,7 +62,7 @@ export default class ClanLogCommand extends Command {
 		}[args.option];
 		if (!flag) return interaction.editReply(this.i18n('common.something_went_wrong', { lng: interaction.locale }));
 
-		const permission = missingPermissions(args.channel, interaction.guild.members.me!, this.clientPermissions!);
+		const permission = missingPermissions(args.channel, interaction.guild.members.me!, this.permissions);
 		if (permission.missing) {
 			return interaction.editReply(
 				this.i18n('command.setup.enable.missing_access', {

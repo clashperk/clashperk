@@ -67,10 +67,10 @@ export const enum Settings {
 	EVENTS_CHANNEL = 'eventsChannel'
 }
 
-export function missingPermissions(channel: TextChannel, member: GuildMember | User, permissions: string[]) {
+export function missingPermissions(channel: TextChannel, member: GuildMember | User, permissions: PermissionsString[]) {
 	const missingPerms = channel
 		.permissionsFor(member)!
-		.missing(permissions as PermissionsString[])
+		.missing(permissions)
 		.map((str) => {
 			if (str === 'ViewChannel') return '`Read Messages`';
 			if (str === 'SendTTSMessages') return '`Send TTS Messages`';
