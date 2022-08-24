@@ -18,9 +18,10 @@ await i18next.use(Backend).init({
 		'no': ['no-NO', 'en-US'], // Norwegian/Norsk
 		'nl': ['nl-NL', 'en-US'], // Dutch/Nederlands
 		'es-ES': ['es-ES', 'en-US'], // Spanish/Español
+		'pt-BR': ['pt-BR', 'en-US'], // Portuguese/Português
 		'default': ['en-US'] // Default Fallback Language
 	},
-	preload: ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'nl-NL', 'it-IT', 'de-DE', 'no-NO'],
+	preload: ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'nl-NL', 'it-IT', 'de-DE', 'no-NO', 'pt-BR'],
 	defaultNS: 'translation',
 	ns: ['translation'],
 	backend: { paths: [fileURLToPath(locales)] }
