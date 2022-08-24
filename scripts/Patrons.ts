@@ -1,5 +1,4 @@
-import qs from 'querystring';
-import { request as fetch } from 'undici';
+import { fetch } from 'undici';
 
 import { Database } from '../src/bot/struct/Database.js';
 import { Collections } from '../src/bot/util/Constants.js';
@@ -9,20 +8,19 @@ import { Included, Member } from '../src/bot/struct/Patrons.js';
 	await Database.connect().then(() => console.log('MongoDB Connected!'));
 	const collection = Database.db('clashperk').collection(Collections.PATRONS);
 
-	const query = qs.stringify({
-		'page[size]': 500,
+	const query = new URLSearchParams({
+		'page[size]': '500',
 		'fields[tier]': 'amount_cents,created_at',
 		'include': 'user,currently_entitled_tiers',
 		'fields[user]': 'social_connections,email,full_name,email,image_url',
 		'fields[member]':
 			'last_charge_status,last_charge_date,patron_status,email,pledge_relationship_start,currently_entitled_amount_cents,lifetime_support_cents'
-	});
+	}).toString();
 
 	const data = (await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
-		headers: { authorization: `Bearer ${process.env.PATREON_API!}` },
-		bodyTimeout: 10000
+		headers: { authorization: `Bearer ${process.env.PATREON_API!}` }
 	})
-		.then((res) => res.body.json())
+		.then((res) => res.json())
 		.catch(() => null)) as { data: Member[]; included: Included[] };
 
 	const patrons = await collection.find({ active: true }).toArray();

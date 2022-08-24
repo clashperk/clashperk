@@ -1,6 +1,7 @@
 import { ClanWar, ClanWarLeagueGroup, Client, Player } from 'clashofclans.js';
-import { request as fetch } from 'undici';
+import { fetch } from 'undici';
 import moment from 'moment';
+import TimeoutSignal from '../util/TimeoutSignal.js';
 
 export default class Http extends Client {
 	private bearerToken!: string;
@@ -18,14 +19,14 @@ export default class Http extends Client {
 				Authorization: `Bearer ${this._token}`,
 				Accept: 'application/json'
 			},
-			bodyTimeout: Number(this.timeout)
+			signal: TimeoutSignal(this.timeout!)
 		}).catch(() => null);
 
-		const parsed = await res?.body.json().catch(() => null);
-		if (!parsed) return { ok: false, statusCode: res?.statusCode ?? 504 };
+		const parsed: any = await res?.json().catch(() => null);
+		if (!parsed) return { ok: false, statusCode: res?.status ?? 504 };
 
-		const maxAge = res?.headers['cache-control']?.split('=')?.[1] ?? 0;
-		return Object.assign(parsed, { statusCode: res?.statusCode ?? 504, ok: res?.statusCode === 200, maxAge: Number(maxAge) * 1000 });
+		const maxAge = res?.headers.get('cache-control')?.split('=')?.[1] ?? 0;
+		return Object.assign(parsed, { statusCode: res?.status ?? 504, ok: res?.status === 200, maxAge: Number(maxAge) * 1000 });
 	}
 
 	public fixTag(tag: string) {
@@ -115,12 +116,12 @@ export default class Http extends Client {
 				username: process.env.DISCORD_LINK_USERNAME,
 				password: process.env.DISCORD_LINK_PASSWORD
 			}),
-			bodyTimeout: 10000
+			signal: TimeoutSignal(10_000)
 		}).catch(() => null);
-		const data = await res?.body.json().catch(() => null);
+		const data: any = await res?.json().catch(() => null);
 
 		if (data?.token) this.bearerToken = data.token;
-		return res?.statusCode === 200 && this.bearerToken;
+		return res?.status === 200 && this.bearerToken;
 	}
 
 	public async linkPlayerTag(discordId: string, playerTag: string) {
@@ -131,10 +132,10 @@ export default class Http extends Client {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({ playerTag, discordId }),
-			bodyTimeout: 10000
+			signal: TimeoutSignal(10_000)
 		}).catch(() => null);
 
-		return Promise.resolve(res?.statusCode === 200);
+		return Promise.resolve(res?.status === 200);
 	}
 
 	public async unlinkPlayerTag(playerTag: string) {
@@ -144,10 +145,10 @@ export default class Http extends Client {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
 			},
-			bodyTimeout: 10000
+			signal: TimeoutSignal(10_000)
 		}).catch(() => null);
 
-		return Promise.resolve(res?.statusCode === 200);
+		return Promise.resolve(res?.status === 200);
 	}
 
 	public async getPlayerTags(user: string) {
@@ -157,9 +158,9 @@ export default class Http extends Client {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
 			},
-			bodyTimeout: 10000
+			signal: TimeoutSignal(10_000)
 		}).catch(() => null);
-		const data: { playerTag: string; discordId: string }[] = await res?.body.json().catch(() => []);
+		const data = (await res?.json().catch(() => [])) as { playerTag: string; discordId: string }[];
 
 		if (!Array.isArray(data)) return [];
 		return data.filter((en) => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag)).map((en) => this.fixTag(en.playerTag));
@@ -172,10 +173,10 @@ export default class Http extends Client {
 				'Authorization': `Bearer ${this.bearerToken}`,
 				'Content-Type': 'application/json'
 			},
-			bodyTimeout: 30000,
+			signal: TimeoutSignal(10_000),
 			body: JSON.stringify(members.map((mem) => mem.tag))
 		}).catch(() => null);
-		const data: { playerTag: string; discordId: string }[] = await res?.body.json().catch(() => []);
+		const data = (await res?.json().catch(() => [])) as { playerTag: string; discordId: string }[];
 
 		if (!Array.isArray(data)) return [];
 		return data

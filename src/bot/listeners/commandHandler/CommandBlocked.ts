@@ -1,4 +1,3 @@
-import { stringify } from 'querystring';
 import { CommandInteraction } from 'discord.js';
 import { Listener, Command } from '../../lib/index.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
@@ -27,11 +26,11 @@ export default class CommandBlockedListener extends Listener {
 		this.client.logger.log(`${command.id} ~ ${reason}`, { label });
 
 		if (!interaction.inCachedGuild() && interaction.inGuild()) {
-			const query = stringify({
+			const query = new URLSearchParams({
 				client_id: interaction.applicationId,
 				scope: 'bot applications.commands',
 				permissions: BIT_FIELD.toString()
-			});
+			}).toString();
 			return interaction.reply({
 				content: `Please [invite the bot](https://discord.com/api/oauth2/authorize?${query}) again to execute its commands.`,
 				ephemeral: true

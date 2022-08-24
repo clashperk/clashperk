@@ -1,6 +1,6 @@
 import { EmbedBuilder, Collection, PermissionsString, escapeMarkdown, WebhookClient } from 'discord.js';
 import { ClanWar, ClanWarMember, WarClan } from 'clashofclans.js';
-import { APIMessage } from 'discord-api-types/v9';
+import { APIMessage } from 'discord-api-types/v10';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
 import { TOWN_HALLS, EMOJIS, WAR_STARS, BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/Emojis.js';

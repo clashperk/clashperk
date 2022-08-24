@@ -1,8 +1,8 @@
-import qs from 'querystring';
 import { Collection } from 'mongodb';
-import { request as fetch } from 'undici';
+import { fetch } from 'undici';
 import { BaseInteraction } from 'discord.js';
 import { Collections, Settings } from '../util/Constants.js';
+import TimeoutSignal from '../util/TimeoutSignal.js';
 import { Client } from './Client.js';
 
 export default class Patrons {
@@ -157,20 +157,20 @@ export default class Patrons {
 	}
 
 	public async fetchAPI() {
-		const query = qs.stringify({
-			'page[size]': 500,
+		const query = new URLSearchParams({
+			'page[size]': '500',
 			'fields[tier]': 'amount_cents,created_at',
 			'include': 'user,currently_entitled_tiers',
 			'fields[user]': 'social_connections,email,full_name,email,image_url',
 			'fields[member]':
 				'last_charge_status,last_charge_date,patron_status,email,pledge_relationship_start,currently_entitled_amount_cents,lifetime_support_cents'
-		});
+		}).toString();
 
 		const data = (await fetch(`https://www.patreon.com/api/oauth2/v2/campaigns/2589569/members?${query}`, {
 			headers: { authorization: `Bearer ${process.env.PATREON_API!}` },
-			bodyTimeout: 10000
+			signal: TimeoutSignal(10_000)
 		})
-			.then((res) => res.body.json())
+			.then((res) => res.json())
 			.catch(() => null)) as { data: Member[]; included: Included[] } | null;
 
 		return data?.data ? data : null;

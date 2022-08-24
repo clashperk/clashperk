@@ -13,7 +13,7 @@
 	"scripts": {
 		"prebuild": "rimraf dist",
 		"build": "tsc",
-		"postbuild": "node -r dotenv/config dist/locales/index.js",
+		"postbuild": "node -r dotenv/config dist/locales/export.js",
 		"crowdin": "node -r dotenv/config dist/locales/crowdin.js",
 		"start": "npm run build && node -r dotenv/config --enable-source-maps dist/src/index.js",
 		"test": "eslint --ext .ts --ignore-path .gitignore .",
@@ -37,7 +37,6 @@
 		"erlpack": "github:discord/erlpack",
 		"exceljs": "^4.2.1",
 		"i18next": "^21.6.13",
-		"i18next-fs-backend": "^1.1.5",
 		"moment": "^2.29.1",
 		"moment-duration-format": "^2.3.2",
 		"mongodb": "^4.4.1",

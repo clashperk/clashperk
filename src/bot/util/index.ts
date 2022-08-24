@@ -1,4 +1,4 @@
-import { APIMessage } from 'discord-api-types/v9';
+import { APIMessage } from 'discord-api-types/v10';
 import * as Discord from 'discord.js';
 import 'moment-duration-format';
 import moment from 'moment';

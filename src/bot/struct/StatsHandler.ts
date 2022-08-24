@@ -1,4 +1,3 @@
-import qs from 'querystring';
 import https from 'https';
 import { BaseInteraction, Guild } from 'discord.js';
 import { Collections } from '../util/Constants.js';
@@ -26,7 +25,7 @@ export default class StatsHandler {
 		await collection.updateOne({ name: 'PLAYERS' }, { $set: { count: players } });
 		await collection.updateOne({ name: 'CLANS' }, { $set: { count: clans } });
 
-		const form = qs.stringify({ server_count: guilds, shard_count: this.client.shard!.count });
+		const form = new URLSearchParams({ server_count: guilds.toString(), shard_count: this.client.shard!.count.toString() }).toString();
 		https
 			.request(
 				`https://top.gg/api/bots/${this.client.user!.id}/stats`,

@@ -1,4 +1,3 @@
-import { stringify } from 'querystring';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { BIT_FIELD } from '../../util/Constants.js';
@@ -13,11 +12,11 @@ export default class InviteCommand extends Command {
 	}
 
 	public exec(interaction: CommandInteraction<'cached'>) {
-		const query = stringify({
+		const query = new URLSearchParams({
 			client_id: this.client.user!.id,
 			scope: 'bot applications.commands',
 			permissions: BIT_FIELD.toString()
-		});
+		}).toString();
 
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: this.client.user!.username, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
