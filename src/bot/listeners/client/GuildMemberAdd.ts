@@ -13,9 +13,11 @@ export default class GuildMemberAddListener extends Listener {
 	}
 
 	public async exec(member: GuildMember) {
+		console.log(`${member.user.tag} has joined ${member.guild.name}`);
+
 		const clans = await this.client.db
 			.collection<{ tag: string }>(Collections.CLAN_STORES)
-			.find({ guild: member.guild.id, autoRole: { $gt: 0 } }, { projection: { tag: 1, _id: 0 } })
+			.find({ guild: member.guild.id, active: true, paused: false }, { projection: { tag: 1, _id: 0 } })
 			.toArray();
 		if (!clans.length) return;
 
