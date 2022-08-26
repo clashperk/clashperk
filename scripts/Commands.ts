@@ -18,6 +18,7 @@ export function getSeasonIds() {
 		.fill(0)
 		.map((_, m) => {
 			const now = new Date();
+
 			now.setHours(0, 0, 0, 0);
 			now.setMonth(now.getMonth() - (m - 1), 0);
 			return now;
