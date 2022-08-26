@@ -1,4 +1,4 @@
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import { addBreadcrumb, captureException, setContext } from '@sentry/node';
 import { DiscordAPIError, ActionRowBuilder, ButtonBuilder, MessageComponentInteraction, ButtonStyle, CommandInteraction } from 'discord.js';
 import { Listener, Command } from '../../lib/index.js';

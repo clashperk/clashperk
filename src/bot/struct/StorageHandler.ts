@@ -1,4 +1,4 @@
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import { ObjectId, Collection } from 'mongodb';
 import { CommandInteraction, NewsChannel, TextChannel } from 'discord.js';
 import { ClanWarLeagueGroup } from 'clashofclans.js';

@@ -1,4 +1,4 @@
-import { URL } from 'url';
+import { URL } from 'node:url';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SIEGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis.js';
 import RAW_TROOPS from '../../util/Troops.js';

@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import 'moment-duration-format';
 
-import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
 import { RewriteFrames } from '@sentry/integrations';
 import * as Sentry from '@sentry/node';
 import i18next from 'i18next';

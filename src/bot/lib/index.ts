@@ -1,6 +1,6 @@
-import EventEmitter from 'events';
-import { extname } from 'path';
-import { pathToFileURL } from 'url';
+import EventEmitter from 'node:events';
+import { extname } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { container } from 'tsyringe';
 import readdirp from 'readdirp';
 import {

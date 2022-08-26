@@ -1,4 +1,4 @@
-import util from 'util';
+import util from 'node:util';
 import { Message } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';

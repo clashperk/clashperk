@@ -1,4 +1,4 @@
-import https from 'https';
+import https from 'node:https';
 import { BaseInteraction, Guild } from 'discord.js';
 import { Collections } from '../util/Constants.js';
 import { Client } from './Client.js';

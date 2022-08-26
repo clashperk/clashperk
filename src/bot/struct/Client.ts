@@ -1,4 +1,4 @@
-import { fileURLToPath, URL } from 'url';
+import { fileURLToPath, URL } from 'node:url';
 import Discord, { Message, Options, Snowflake, GatewayIntentBits, BaseInteraction } from 'discord.js';
 import { Db } from 'mongodb';
 import { container } from 'tsyringe';
