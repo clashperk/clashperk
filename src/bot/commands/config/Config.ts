@@ -26,14 +26,17 @@ export default class ConfigCommand extends Command {
 			if (['reset', 'none'].includes(args.events_channel)) {
 				this.client.settings.delete(interaction.guild, Settings.EVENTS_CHANNEL);
 			} else if (/\d{17,19}/g.test(args.events_channel)) {
-				const channel = this.client.channels.cache.get(args.events_channel.match(/\d{17,19}/g)![0]);
-				if (!channel?.isTextBased()) {
+				const channel = this.client.util.hasPermissions(args.events_channel.match(/\d{17,19}/g)![0], [
+					'ManageWebhooks',
+					'ViewChannel'
+				]);
+				if (!channel) {
 					return interaction.reply({
 						content: this.i18n('command.config.no_text_channel', { lng: interaction.locale }),
 						ephemeral: true
 					});
 				}
-				this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, channel.id);
+				this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, channel.channel.id);
 			}
 		}
 
