@@ -19,9 +19,10 @@ await i18next.use(Backend).init({
 		'nl': ['nl-NL', 'en-US'], // Dutch/Nederlands
 		'es-ES': ['es-ES', 'en-US'], // Spanish/Español
 		'pt-BR': ['pt-BR', 'en-US'], // Portuguese/Português
+		'uk': ['uk-UA', 'en-US'], // Ukrainian/Українська
 		'default': ['en-US'] // Default Fallback Language
 	},
-	preload: ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'nl-NL', 'it-IT', 'de-DE', 'no-NO', 'pt-BR'],
+	preload: ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'nl-NL', 'it-IT', 'de-DE', 'no-NO', 'pt-BR', 'uk-UA'],
 	defaultNS: 'translation',
 	ns: ['translation'],
 	backend: { paths: [fileURLToPath(locales)] }
@@ -49,7 +50,7 @@ export enum CommandType {
 }
 
 export const translation = (text: TranslationKey): Record<string, string> => {
-	return ['fr', 'en-GB', 'nl', 'es-ES', 'de'].reduce<Record<string, string>>((acc, lang) => {
+	return ['fr', 'en-GB', 'nl', 'es-ES', 'de', 'uk'].reduce<Record<string, string>>((acc, lang) => {
 		const locale = i18next.t(text, { lng: lang, escapeValue: false });
 		acc[lang] = locale.substring(0, 100);
 		return acc;
