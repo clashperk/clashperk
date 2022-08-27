@@ -33,7 +33,7 @@ const commandPermission = async (token: string) => {
 	});
 	const commands = (await res.json()) as ApplicationCommand[];
 	console.log(commands);
-	if (!res.ok) return;
+	if (!res.ok) return null;
 
 	await fetch(`${RouteBases.api}${Routes.guildApplicationCommandsPermissions(getClientId(token), guildId)}`, {
 		method: 'PUT',
