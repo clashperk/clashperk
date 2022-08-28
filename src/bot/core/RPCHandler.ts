@@ -59,7 +59,7 @@ export default class RPCHandler {
 						await this.clanEmbedLog.exec(data.tag, data.clan);
 						break;
 					case Flags.CLAN_GAMES_LOG:
-						await this.clanGamesLog.exec(data.tag, data.clan, data.updated);
+						await this.clanGamesLog.exec(data.tag, data.clan, data);
 						break;
 					case Flags.CLAN_WAR_LOG:
 						await this.clanWarLog.exec(data.clan.tag, data);
