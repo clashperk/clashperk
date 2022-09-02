@@ -24,9 +24,15 @@ export class ClientUtil {
 	}
 
 	public getTextBasedChannel(channelId: string) {
-		const channel = this.client.channels.cache.get(channelId)!;
-		if ((channel.isThread() && channel.parent) || channel.type === ChannelType.GuildText || channel.type === ChannelType.GuildNews) {
-			return channel;
+		const channel = this.client.channels.cache.get(channelId);
+		if (channel) {
+			if (
+				(channel.isThread() && channel.parent) ||
+				channel.type === ChannelType.GuildText ||
+				channel.type === ChannelType.GuildNews
+			) {
+				return channel;
+			}
 		}
 		return null;
 	}

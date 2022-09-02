@@ -85,7 +85,7 @@ export default class ClanEmbedLog extends BaseLog {
 				: `🌐 ${data.location.name}`
 			: `${EMOJIS.WRONG} None`;
 
-		const clanDescription: string = cache.embed.data.description === 'auto' ? data.description : cache.embed.data.description;
+		const clanDescription: string = cache.embed.description === 'auto' ? data.description : cache.embed.description;
 		const clanRequirements: string =
 			cache.embed.accepts === 'auto'
 				? data.requiredTownhallLevel
