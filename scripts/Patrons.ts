@@ -1,4 +1,4 @@
-import { fetch } from 'undici';
+import fetch from 'node-fetch';
 
 import { Database } from '../src/bot/struct/Database.js';
 import { Collections } from '../src/bot/util/Constants.js';

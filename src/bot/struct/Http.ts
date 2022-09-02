@@ -1,5 +1,5 @@
 import { ClanWar, ClanWarLeagueGroup, Client, Player } from 'clashofclans.js';
-import { fetch } from 'undici';
+import fetch from 'node-fetch';
 import moment from 'moment';
 import TimeoutSignal from '../util/TimeoutSignal.js';
 

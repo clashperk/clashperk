@@ -1,5 +1,5 @@
 import { Collection } from 'mongodb';
-import { fetch } from 'undici';
+import fetch from 'node-fetch';
 import { BaseInteraction } from 'discord.js';
 import { Collections, Settings } from '../util/Constants.js';
 import TimeoutSignal from '../util/TimeoutSignal.js';
