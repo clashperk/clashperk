@@ -1,7 +1,7 @@
 import { ClanWar, ClanWarLeagueGroup, Client, Player } from 'clashofclans.js';
 import fetch from 'node-fetch';
 import moment from 'moment';
-import TimeoutSignal from '../util/TimeoutSignal.js';
+import TimeoutSignal from 'timeout-signal';
 
 export default class Http extends Client {
 	private bearerToken!: string;

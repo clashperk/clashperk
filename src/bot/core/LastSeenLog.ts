@@ -37,7 +37,7 @@ export default class LastSeenLog extends BaseLog {
 		try {
 			return await super._send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
 		} catch (error: any) {
-			this.client.logger.error(`${error.toString() as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
+			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
 			return null;
 		}
 	}
@@ -47,7 +47,7 @@ export default class LastSeenLog extends BaseLog {
 		try {
 			return await super._edit(cache, webhook, { embeds: [embed], threadId: cache.threadId });
 		} catch (error: any) {
-			this.client.logger.error(`${error.toString() as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
+			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
 			return null;
 		}
 	}

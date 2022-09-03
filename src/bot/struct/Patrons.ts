@@ -1,8 +1,8 @@
 import { Collection } from 'mongodb';
 import fetch from 'node-fetch';
+import TimeoutSignal from 'timeout-signal';
 import { BaseInteraction } from 'discord.js';
 import { Collections, Settings } from '../util/Constants.js';
-import TimeoutSignal from '../util/TimeoutSignal.js';
 import { Client } from './Client.js';
 
 export default class Patrons {

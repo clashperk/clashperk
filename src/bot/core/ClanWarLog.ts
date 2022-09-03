@@ -73,7 +73,7 @@ export default class ClanWarLog extends BaseLog {
 		try {
 			return await super._send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
 		} catch (error: any) {
-			this.client.logger.error(`${error.toString() as string} {${cache.clanId.toString()}}`, { label: 'ClanWarLog' });
+			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'ClanWarLog' });
 			return null;
 		}
 	}
@@ -83,7 +83,7 @@ export default class ClanWarLog extends BaseLog {
 		try {
 			return await webhook.editMessage(message, { embeds: [embed], threadId: cache.threadId });
 		} catch (error: any) {
-			this.client.logger.error(`${error.toString() as string} {${cache.clanId.toString()}}`, { label: 'ClanWarLog' });
+			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'ClanWarLog' });
 			if (error.code === 10008) {
 				delete cache.message;
 				return this.send(cache, webhook, data);

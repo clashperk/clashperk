@@ -30,7 +30,7 @@ export default class DonationLog extends BaseLog {
 		try {
 			return await super._send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
 		} catch (error: any) {
-			this.client.logger.error(`${error.toString() as string} {${cache.clanId.toString()}}`, { label: 'DonationLog' });
+			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'DonationLog' });
 			return null;
 		}
 	}

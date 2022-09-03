@@ -54,7 +54,7 @@ export default class ClanFeedLog extends BaseLog {
 		try {
 			return await super._send(cache, webhook, payload);
 		} catch (error: any) {
-			this.client.logger.error(`${error.toString() as string} {${cache.clanId.toString()}}`, { label: 'DonationLog' });
+			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'DonationLog' });
 			return null;
 		}
 	}

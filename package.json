@@ -43,6 +43,7 @@
 		"readdirp": "^3.6.0",
 		"redis": "^4.1.0",
 		"reflect-metadata": "^0.1.13",
+		"timeout-signal": "^1.1.0",
 		"tsyringe": "^4.6.0",
 		"utf-8-validate": "^5.0.9",
 		"zlib-sync": "^0.1.7"
