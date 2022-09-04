@@ -4,6 +4,7 @@ import { Collections } from '../../util/Constants.js';
 import { ClanGames } from '../../util/index.js';
 import { Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { ClanGamesData } from '../../types/index.js';
 
 export default class ClanGamesCommand extends Command {
 	public constructor() {
@@ -105,29 +106,10 @@ export default class ClanGamesCommand extends Command {
 		return now.toISOString().substring(0, 7);
 	}
 
-	private query(clanTag: string, clan: Clan) {
-		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS).aggregate<DBMember>([
+	private query(clanTag: string, _clan: Clan) {
+		const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<ClanGamesData>([
 			{
-				$match: { clanTag }
-			},
-			{
-				$match: {
-					season: this.seasonId
-				}
-			},
-			{
-				$match: {
-					$or: [
-						{
-							tag: {
-								$in: clan.memberList.map((m) => m.tag)
-							}
-						},
-						{
-							clanGamesTotal: { $gt: 0 }
-						}
-					]
-				}
+				$match: { __clans: clanTag, season: this.seasonId }
 			},
 			{
 				$limit: 60
@@ -137,15 +119,14 @@ export default class ClanGamesCommand extends Command {
 		return cursor.toArray();
 	}
 
-	private filter(dbMembers: DBMember[] = [], clanMembers: Member[] = []) {
+	private filter(dbMembers: ClanGamesData[] = [], clanMembers: Member[] = []) {
 		const members = clanMembers.map((member) => {
 			const mem = dbMembers.find((m) => m.tag === member.tag);
-			const ach = mem?.achievements.find((m) => m.name === 'Games Champion');
 			return {
 				name: member.name,
 				tag: member.tag,
-				points: mem ? member.points - ach!.value : 0,
-				endedAt: mem?.clanGamesEndTime
+				points: mem ? member.points - mem.initial : 0,
+				endedAt: mem?.completedAt
 			};
 		});
 
@@ -154,8 +135,8 @@ export default class ClanGamesCommand extends Command {
 			.map((mem) => ({
 				name: mem.name,
 				tag: mem.tag,
-				points: mem.achievements.find((m) => m.name === 'Games Champion')!.gained,
-				endedAt: mem.clanGamesEndTime
+				points: mem.current - mem.initial,
+				endedAt: mem.completedAt
 			}));
 
 		return [...members, ...missingMembers]
@@ -169,20 +150,9 @@ export default class ClanGamesCommand extends Command {
 	}
 }
 
-interface DBMember {
-	tag: string;
-	name: string;
-	achievements: {
-		gained: number;
-		name: string;
-		value: number;
-	}[];
-	clanGamesEndTime?: Date;
-}
-
 interface Member {
 	tag: string;
 	name: string;
 	points: number;
-	endedAt?: Date;
+	endedAt?: Date | null;
 }

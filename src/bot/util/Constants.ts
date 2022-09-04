@@ -28,6 +28,8 @@ export const enum Collections {
 	CLAN_GAMES = 'ClanGames',
 	CWL_GROUPS = 'CWLGroups',
 	CLAN_MEMBERS = 'ClanMembers',
+	CLAN_GAMES_POINTS = 'ClanGamesPointsImport',
+	PLAYER_SEASONS = 'PlayerSeasonImport',
 
 	PLAYERS = 'Players',
 	CLANS = 'Clans',

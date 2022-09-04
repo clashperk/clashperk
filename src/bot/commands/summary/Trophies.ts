@@ -29,12 +29,12 @@ export default class ClanSummaryCommand extends Command {
 						.flat()
 				: (
 						await this.client.db
-							.collection(Collections.CLAN_MEMBERS)
-							.find({ season, clanTag: { $in: clans.map((clan) => clan.tag) } })
-							.sort({ 'trophies.value': -1 })
+							.collection(Collections.PLAYER_SEASONS)
+							.find({ season, __clans: { $in: clans.map((clan) => clan.tag) } })
+							.sort({ 'trophies.current': -1 })
 							.limit(100)
 							.toArray()
-				  ).map((member) => ({ name: member.name, trophies: member.trophies.value }));
+				  ).map((member) => ({ name: member.name, trophies: member.trophies.current }));
 		members.sort((a, b) => b.trophies - a.trophies);
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))

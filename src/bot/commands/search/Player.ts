@@ -264,13 +264,6 @@ export default class PlayerCommand extends Command {
 		return member;
 	}
 
-	private async getSeason(tag: string, clanTag: string) {
-		const data = await this.client.db.collection(Collections.CLAN_MEMBERS).findOne({ tag, season: Season.ID, clanTag });
-		if (!data) return null;
-
-		return {}; // TODO: Finish it
-	}
-
 	private getLastSeen(lastSeen: Date) {
 		const timestamp = Date.now() - lastSeen.getTime();
 		return timestamp <= 1 * 24 * 60 * 60 * 1000

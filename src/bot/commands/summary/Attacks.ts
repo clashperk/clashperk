@@ -22,8 +22,8 @@ export default class ClanSummaryCommand extends Command {
 		}
 
 		const members = await this.client.db
-			.collection(Collections.CLAN_MEMBERS)
-			.find({ season, clanTag: { $in: clans.map((clan) => clan.tag) } }, { projection: { attackWins: 1, name: 1 } })
+			.collection(Collections.PLAYER_SEASONS)
+			.find({ season, __clans: { $in: clans.map((clan) => clan.tag) } }, { projection: { attackWins: 1, name: 1 } })
 			.sort({ attackWins: -1 })
 			.limit(100)
 			.toArray();
