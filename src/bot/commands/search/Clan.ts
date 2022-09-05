@@ -219,20 +219,63 @@ export default class ClanCommand extends Command {
 	}
 
 	private async getSeason(clan: Clan) {
+		[
+			{
+				$limit: 100
+			},
+			{
+				$match: {
+					__clans: {
+						$size: 3
+					}
+				}
+			},
+			{
+				$project: {
+					clans: {
+						$objectToArray: '$clans'
+					},
+					name: 1,
+					tag: 1,
+					attackWins: 1,
+					defenseWins: 1
+				}
+			},
+			{
+				$unwind: {
+					path: '$clans'
+				}
+			},
+			{
+				$project: {
+					name: 1,
+					tag: 1,
+					clanTag: '$clans.v.tag',
+					donations: '$clans.v.donations.total',
+					donationsReceived: '$clans.v.donationsReceived.total'
+				}
+			}
+		];
 		return this.client.db
-			.collection(Collections.CLAN_MEMBERS)
+			.collection(Collections.PLAYER_SEASONS)
 			.aggregate<{ donations: number; donationsReceived: number; attackWins: number; defenseWins: number }>([
 				{
 					$match: {
-						clanTag: clan.tag,
+						__clans: clan.tag,
 						season: Season.previousID,
 						tag: { $in: clan.memberList.map((m) => m.tag) }
 					}
 				},
 				{
-					$sort: {
-						'donations.gained': -1
+					$project: {
+						attackWins: 1,
+						defenseWins: 1,
+						donations: `$clans.${clan.tag}.donations.total`,
+						donationsReceived: `$clans.${clan.tag}.donationsReceived.total`
 					}
+				},
+				{
+					$sort: { donations: -1 }
 				},
 				{
 					$limit: 50
@@ -241,10 +284,10 @@ export default class ClanCommand extends Command {
 					$group: {
 						_id: null,
 						donations: {
-							$sum: '$donations.gained'
+							$sum: '$donations'
 						},
 						donationsReceived: {
-							$sum: '$donationsReceived.gained'
+							$sum: '$donationsReceived'
 						},
 						attackWins: {
 							$sum: '$attackWins'

@@ -4,7 +4,7 @@ import { Collections } from '../../util/Constants.js';
 import { ClanGames } from '../../util/index.js';
 import { Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
-import { ClanGamesData } from '../../types/index.js';
+import { ClanGamesModel } from '../../types/index.js';
 
 export default class ClanGamesCommand extends Command {
 	public constructor() {
@@ -107,7 +107,7 @@ export default class ClanGamesCommand extends Command {
 	}
 
 	private query(clanTag: string, _clan: Clan) {
-		const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<ClanGamesData>([
+		const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<ClanGamesModel>([
 			{
 				$match: { __clans: clanTag, season: this.seasonId }
 			},
@@ -119,7 +119,7 @@ export default class ClanGamesCommand extends Command {
 		return cursor.toArray();
 	}
 
-	private filter(dbMembers: ClanGamesData[] = [], clanMembers: Member[] = []) {
+	private filter(dbMembers: ClanGamesModel[] = [], clanMembers: Member[] = []) {
 		const members = clanMembers.map((member) => {
 			const mem = dbMembers.find((m) => m.tag === member.tag);
 			return {

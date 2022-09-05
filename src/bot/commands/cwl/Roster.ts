@@ -213,7 +213,7 @@ export default class CWLRosterCommand extends Command {
 			]);
 		}
 
-		return interaction.editReply({ embeds: [embed] });
+		return interaction.editReply({ embeds: [embed], components: [] });
 	}
 
 	private getNextRoster(clan: WarClan, townHalls: number[]) {

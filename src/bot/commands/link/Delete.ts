@@ -1,7 +1,7 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import { UserInfo } from '../../types/index.js';
+import { UserInfoModel } from '../../types/index.js';
 
 export default class LinkDeleteCommand extends Command {
 	public constructor() {
@@ -33,7 +33,9 @@ export default class LinkDeleteCommand extends Command {
 
 		const member = await this.getMember(tag, interaction);
 		if (interaction.user.id !== member.id) {
-			const author = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
+			const author = await this.client.db
+				.collection<UserInfoModel>(Collections.LINKED_PLAYERS)
+				.findOne({ user: interaction.user.id });
 			const accounts: string[] = author?.entries.filter((en) => en.verified).map((en) => en.tag) ?? [];
 			if (!accounts.length) {
 				return interaction.editReply(this.i18n('command.link.delete.no_access', { lng: interaction.locale }));

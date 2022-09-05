@@ -46,22 +46,53 @@ export default class DonationSummaryCommand extends Command {
 		}
 
 		const aggregated = await this.client.db
-			.collection<Aggregated>(Collections.CLAN_MEMBERS)
-			.aggregate([
+			.collection(Collections.PLAYER_SEASONS)
+			.aggregate<Aggregated>([
 				{
 					$match: {
 						season,
-						$or: fetched.map((clan) => clan.memberList.map((mem) => ({ clanTag: clan.tag, tag: mem.tag }))).flat()
+						$or: fetched.map((clan) => clan.memberList.map((mem) => ({ __clans: clan.tag, tag: mem.tag }))).flat()
+					}
+				},
+				{
+					$project: {
+						clans: {
+							$objectToArray: '$clans'
+						},
+						name: 1,
+						tag: 1
+					}
+				},
+				{
+					$unwind: {
+						path: '$clans'
+					}
+				},
+				{
+					$project: {
+						name: 1,
+						tag: 1,
+						clanTag: '$clans.v.tag',
+						clanName: '$clans.v.name',
+						donations: '$clans.v.donations.total',
+						donationsReceived: '$clans.v.donationsReceived.total'
+					}
+				},
+				{
+					$match: {
+						clanTag: {
+							$in: fetched.map((clan) => clan.tag)
+						}
 					}
 				},
 				{
 					$group: {
 						_id: '$clanTag',
 						donations: {
-							$sum: '$donations.gained'
+							$sum: '$donations'
 						},
 						donationsReceived: {
-							$sum: '$donationsReceived.gained'
+							$sum: '$donationsReceived'
 						},
 						name: {
 							$first: '$clanName'
@@ -74,8 +105,8 @@ export default class DonationSummaryCommand extends Command {
 								tag: '$tag',
 								name: '$name',
 								clanTag: '$clanTag',
-								donations: '$donations.gained',
-								donationsReceived: '$donationsReceived.gained'
+								donations: '$donations',
+								donationsReceived: '$donationsReceived'
 							}
 						}
 					}
@@ -120,7 +151,7 @@ export default class DonationSummaryCommand extends Command {
 								`${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(
 									clan.donationsReceived,
 									clan_rp
-								)}  ${clan.name.padEnd(15, ' ') as string}\u200f\``
+								)}  ${clan.name.padEnd(15, ' ')}\u200f\``
 						)
 						.join('\n'),
 					{ maxLength: 4000 }
@@ -146,7 +177,7 @@ export default class DonationSummaryCommand extends Command {
 										`${BLUE_NUMBERS[mem.clanIndex]} \`\u200e${this.donation(mem.donated, mem_dp)} ${this.donation(
 											mem.received,
 											mem_rp
-										)}  ${mem.name.padEnd(15, ' ') as string}\u200f\``
+										)}  ${mem.name.padEnd(15, ' ')}\u200f\``
 								)
 								.join('\n'),
 							{ maxLength: 2000 }

@@ -103,12 +103,43 @@ export default class PlayerDonationSummaryCommand extends Command {
 
 	private async globalDonations(clans: any[], seasonId: string) {
 		return this.client.db
-			.collection(Collections.CLAN_MEMBERS)
+			.collection(Collections.PLAYER_SEASONS)
 			.aggregate<{ name: string; tag: string; donations: number; receives: number }>([
 				{
 					$match: {
-						clanTag: { $in: clans.map((clan) => clan.tag) },
+						__clans: { $in: clans.map((clan) => clan.tag) },
 						season: seasonId
+					}
+				},
+				{
+					$project: {
+						clans: {
+							$objectToArray: '$clans'
+						},
+						name: 1,
+						tag: 1
+					}
+				},
+				{
+					$unwind: {
+						path: '$clans'
+					}
+				},
+				{
+					$project: {
+						name: 1,
+						tag: 1,
+						clanTag: '$clans.v.tag',
+						clanName: '$clans.v.name',
+						donations: '$clans.v.donations.total',
+						donationsReceived: '$clans.v.donationsReceived.total'
+					}
+				},
+				{
+					$match: {
+						clanTag: {
+							$in: clans.map((clan) => clan.tag)
+						}
 					}
 				},
 				{
@@ -121,10 +152,10 @@ export default class PlayerDonationSummaryCommand extends Command {
 							$first: '$tag'
 						},
 						donations: {
-							$sum: '$donations.gained'
+							$sum: '$donations'
 						},
 						receives: {
-							$sum: '$donationsReceived.gained'
+							$sum: '$donationsReceived'
 						}
 					}
 				},

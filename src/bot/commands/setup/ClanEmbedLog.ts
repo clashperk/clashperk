@@ -17,7 +17,7 @@ import { Clan } from 'clashofclans.js';
 import { Collections, Flags, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis.js';
-import { UserInfo } from '../../types/index.js';
+import { UserInfoModel } from '../../types/index.js';
 
 export default class ClanEmbedCommand extends Command {
 	public constructor() {
@@ -384,7 +384,7 @@ export default class ClanEmbedCommand extends Command {
 	private async getUser(clan: Clan): Promise<{ id: string; name: string; toString: () => string; entries?: any[] } | null> {
 		const leader = clan.memberList.find((m) => m.role === 'leader');
 		if (leader) {
-			const user = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': leader.tag });
+			const user = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': leader.tag });
 			if (user) return { id: user.user, name: leader.name, toString: () => `<@${user.user}>`, ...user };
 		}
 		return null;

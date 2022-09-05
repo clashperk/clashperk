@@ -5,7 +5,7 @@ import { EMOJIS, TOWN_HALLS, HEROES, SIEGE_MACHINES } from '../../util/Emojis.js
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
 import { Season } from '../../util/index.js';
-import { UserInfo } from '../../types/index.js';
+import { UserInfoModel } from '../../types/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -36,7 +36,7 @@ export default class PlayerCommand extends Command {
 	}
 
 	public async getPlayers(userId: string) {
-		const data = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ user: userId });
+		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: userId });
 		const others = await this.client.http.getPlayerTags(userId);
 
 		const playerTagSet = new Set([...(data?.entries ?? []).map((en) => en.tag), ...others.map((tag) => tag)]);

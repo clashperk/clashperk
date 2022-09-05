@@ -3,6 +3,7 @@ import { Collections } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
 import { Args, Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { PlayerSeasonModel } from '../../types/index.js';
 
 export default class DonationsCommand extends Command {
 	public constructor() {
@@ -44,9 +45,10 @@ export default class DonationsCommand extends Command {
 		if (!season) season = Season.ID;
 		const sameSeason = Season.ID === Season.generateID(season);
 
+		// TODO: projection
 		const dbMembers = await this.client.db
-			.collection(Collections.CLAN_MEMBERS)
-			.find({ season, clanTag: clan.tag, tag: { $in: clan.memberList.map((m) => m.tag) } })
+			.collection<PlayerSeasonModel>(Collections.PLAYER_SEASONS)
+			.find({ season, __clans: clan.tag, tag: { $in: clan.memberList.map((m) => m.tag) } })
 			.toArray();
 
 		if (!dbMembers.length && !sameSeason) {
@@ -65,16 +67,17 @@ export default class DonationsCommand extends Command {
 					name: mem.name,
 					tag: mem.tag,
 					donated: sameSeason
-						? mem.donations >= m.donations?.value
-							? (m.donations.gained as number) + (mem.donations - m.donations.value)
-							: Math.max(mem.donations, m.donations.gained)
-						: m.donations.gained,
+						? mem.donations >= m.clans[clan.tag].donations.current
+							? m.clans[clan.tag].donations.total + (mem.donations - m.clans[clan.tag].donations.current)
+							: Math.max(mem.donations, m.clans[clan.tag].donations.total)
+						: m.clans[clan.tag].donations.total,
 
 					received: sameSeason
-						? mem.donationsReceived >= m.donationsReceived?.value
-							? (m.donationsReceived.gained as number) + (mem.donationsReceived - m.donationsReceived.value)
-							: Math.max(mem.donationsReceived, m.donationsReceived.gained)
-						: m.donationsReceived.gained
+						? mem.donationsReceived >= m.clans[clan.tag].donationsReceived.current
+							? m.clans[clan.tag].donationsReceived.total +
+							  (mem.donationsReceived - m.clans[clan.tag].donationsReceived.current)
+							: Math.max(mem.donationsReceived, m.clans[clan.tag].donationsReceived.total)
+						: m.clans[clan.tag].donationsReceived.total
 				});
 			}
 		}

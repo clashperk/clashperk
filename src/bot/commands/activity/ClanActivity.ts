@@ -2,7 +2,7 @@ import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import Chart from '../../struct/ChartHandler.js';
-import { UserInfo } from '../../types/index.js';
+import { UserInfoModel } from '../../types/index.js';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -42,7 +42,7 @@ export default class ClanActivityCommand extends Command {
 		);
 		if (!result.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
-		const user = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
+		const user = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
 		const timezone = user?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
 		const datasets = result.map((clan) => ({ name: clan.name, data: this.datasets(clan, timezone.offset, args.days ?? 1) }));
 

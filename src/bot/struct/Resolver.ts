@@ -1,7 +1,7 @@
 import { Guild, User, CommandInteraction, BaseInteraction } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import { Collections, Settings, status } from '../util/Constants.js';
-import { UserInfo } from '../types/index.js';
+import { UserInfoModel } from '../types/index.js';
 import { i18n } from '../util/i18n.js';
 import Client from './Client.js';
 
@@ -148,7 +148,7 @@ export default class Resolver {
 	}
 
 	public async getPlayers(userId: string) {
-		const data = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ user: userId });
+		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: userId });
 		const others = await this.client.http.getPlayerTags(userId);
 
 		const playerTagSet = new Set([...(data?.entries ?? []).map((en) => en.tag), ...others.map((tag) => tag)]);

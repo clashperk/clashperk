@@ -5,7 +5,7 @@ import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import Workbook from '../../struct/Excel.js';
-import { UserInfo } from '../../types/index.js';
+import { UserInfoModel } from '../../types/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -39,7 +39,7 @@ export default class ProfileCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { member?: GuildMember; user?: User }) {
 		const user = args.user ?? (args.member ?? interaction.member).user;
-		const data = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ user: user.id });
+		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: user.id });
 
 		if (data && data.user_tag !== user.tag) {
 			this.client.resolver.updateUserTag(interaction.guild, user.id);
@@ -173,11 +173,11 @@ export default class ProfileCommand extends Command {
 		return workbook.xlsx.writeBuffer();
 	}
 
-	private isLinked(data: UserInfo | null, tag: string) {
+	private isLinked(data: UserInfoModel | null, tag: string) {
 		return Boolean(data?.entries.find((en) => en.tag === tag));
 	}
 
-	private isVerified(data: UserInfo | null, tag: string) {
+	private isVerified(data: UserInfoModel | null, tag: string) {
 		return Boolean(data?.entries.find((en) => en.tag === tag && en.verified));
 	}
 

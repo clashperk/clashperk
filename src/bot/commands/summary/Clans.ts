@@ -228,37 +228,28 @@ export default class SummaryClansCommand extends Command {
 
 	private async getSeason(tag: string, season: string) {
 		return this.client.db
-			.collection(Collections.CLAN_MEMBERS)
+			.collection(Collections.PLAYER_SEASONS)
 			.aggregate([
 				{
-					$match: {
-						season,
-						clanTag: tag
-					}
+					$match: { __clans: tag, season }
 				},
 				{
-					$sort: {
-						'donations.gained': -1
+					$project: {
+						attackWins: 1,
+						defenseWins: 1,
+						donations: `$clans.${tag}.donations.total`,
+						donationsReceived: `$clans.${tag}.donationsReceived.total`
 					}
 				},
-				{
-					$limit: 50
-				},
+				{ $sort: { donations: -1 } },
+				{ $limit: 50 },
 				{
 					$group: {
 						_id: null,
-						donations: {
-							$sum: '$donations.gained'
-						},
-						donationsReceived: {
-							$sum: '$donationsReceived.gained'
-						},
-						attackWins: {
-							$sum: '$attackWins'
-						},
-						defenseWins: {
-							$sum: '$defenseWins'
-						}
+						donations: { $sum: '$donations' },
+						donationsReceived: { $sum: '$donationsReceived' },
+						attackWins: { $sum: '$attackWins' },
+						defenseWins: { $sum: '$defenseWins' }
 					}
 				}
 			])
