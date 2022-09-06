@@ -64,8 +64,7 @@ export class Client extends Discord.Client {
 				GatewayIntentBits.Guilds,
 				GatewayIntentBits.GuildMembers,
 				GatewayIntentBits.GuildWebhooks,
-				GatewayIntentBits.GuildMessages,
-				GatewayIntentBits.MessageContent
+				GatewayIntentBits.GuildMessages
 			],
 			makeCache: Options.cacheWithLimits({
 				...Options.DefaultMakeCacheSettings,
