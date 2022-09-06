@@ -19,7 +19,7 @@ export const enum Collections {
 	LINKED_PLAYERS = 'LinkedPlayers',
 	LINKED_CHANNELS = 'LinkedChannels',
 	REMINDERS = 'Reminders',
-	SCHEDULERS = 'RemindersTemp',
+	SCHEDULERS = 'Schedulers',
 
 	PATRONS = 'Patrons',
 	SETTINGS = 'Settings',
