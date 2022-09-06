@@ -1,7 +1,5 @@
-import { APIMessage } from 'discord-api-types/v10';
-import * as Discord from 'discord.js';
-import 'moment-duration-format';
 import moment from 'moment';
+import 'moment-duration-format';
 
 const DURATION = {
 	SECOND: 1000,
@@ -110,16 +108,6 @@ export class Util {
 		}
 
 		return `#${tag}`;
-	}
-
-	public static editMessage(client: Discord.Client, channelId: string, messageId: string, data: unknown): Promise<APIMessage> {
-		// @ts-expect-error
-		return client.api.channels[channelId].messages[messageId].patch({ data });
-	}
-
-	public static sendMessage(client: Discord.Client, channelId: string, data: unknown): Promise<APIMessage> {
-		// @ts-expect-error
-		return client.api.channels[channelId].messages.post({ data });
 	}
 
 	public static escapeBackTick(name: string) {

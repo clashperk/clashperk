@@ -1,4 +1,13 @@
-import { APIMessage, Collection, NewsChannel, PermissionsString, TextChannel, WebhookClient, WebhookMessageOptions } from 'discord.js';
+import {
+	APIMessage,
+	Collection,
+	NewsChannel,
+	PermissionsString,
+	SnowflakeUtil,
+	TextChannel,
+	WebhookClient,
+	WebhookMessageOptions
+} from 'discord.js';
 import { Collection as DbCollection, ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { Util } from '../util/index.js';
@@ -114,6 +123,7 @@ export default class BaseLog {
 		} catch (error: any) {
 			if (error.code === 10008) {
 				delete cache.message;
+				// this.deleteMessage(cache);
 				return this._send(cache, webhook, payload);
 			}
 			// Unknown Webhook / Unknown Channel
@@ -122,6 +132,17 @@ export default class BaseLog {
 			}
 			throw error;
 		}
+	}
+
+	private async deleteMessage(cache: Cache) {
+		try {
+			if (cache.message) {
+				const deconstructed = SnowflakeUtil.deconstruct(cache.message);
+				if (Number(deconstructed.timestamp) < new Date('2022-09-05').getTime()) {
+					await (this.client.channels.cache.get(cache.channel) as TextChannel).messages.delete(cache.message);
+				}
+			}
+		} catch {}
 	}
 
 	public async webhook(cache: Cache, channel: TextChannel | NewsChannel): Promise<WebhookClient | null> {

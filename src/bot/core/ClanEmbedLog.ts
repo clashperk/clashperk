@@ -1,5 +1,5 @@
-import { Collection, EmbedBuilder, PermissionsString, Snowflake, WebhookClient } from 'discord.js';
 import { Clan } from 'clashofclans.js';
+import { Collection, EmbedBuilder, PermissionsString, Snowflake, WebhookClient } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
