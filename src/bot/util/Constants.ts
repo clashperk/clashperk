@@ -1,4 +1,4 @@
-import { GuildMember, PermissionsBitField, PermissionsString, TextChannel, User } from 'discord.js';
+import { AnyThreadChannel, GuildMember, NewsChannel, PermissionsBitField, PermissionsString, TextChannel, User } from 'discord.js';
 import i18next from 'i18next';
 
 export const status = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
@@ -72,7 +72,11 @@ export const enum Settings {
 	EVENTS_CHANNEL = 'eventsChannel'
 }
 
-export function missingPermissions(channel: TextChannel, member: GuildMember | User, permissions: PermissionsString[]) {
+export function missingPermissions(
+	channel: TextChannel | AnyThreadChannel | NewsChannel,
+	member: GuildMember | User,
+	permissions: PermissionsString[]
+) {
 	const missingPerms = channel
 		.permissionsFor(member)!
 		.missing(permissions)

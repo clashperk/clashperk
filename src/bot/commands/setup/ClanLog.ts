@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, TextChannel, Role, PermissionsString } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, TextChannel, Role, PermissionsString, AnyThreadChannel } from 'discord.js';
 import { Flags, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 
@@ -48,7 +48,7 @@ export default class ClanLogCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { tag?: string; channel: TextChannel; role?: Role; option: string; color?: number }
+		args: { tag?: string; channel: TextChannel | AnyThreadChannel; role?: Role; option: string; color?: number }
 	) {
 		const data = await this.client.resolver.enforceSecurity(interaction, args.tag);
 		if (!data) return;
@@ -73,7 +73,7 @@ export default class ClanLogCommand extends Command {
 			);
 		}
 
-		const webhook = await this.client.storage.getWebhook(args.channel);
+		const webhook = await this.client.storage.getWebhook(args.channel.isThread() ? args.channel.parent! : args.channel);
 		if (!webhook) {
 			return interaction.editReply(
 				// eslint-disable-next-line

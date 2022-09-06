@@ -11,7 +11,8 @@ import {
 	TextInputStyle,
 	cleanContent,
 	PermissionsString,
-	WebhookClient
+	WebhookClient,
+	AnyThreadChannel
 } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { Collections, Flags, missingPermissions } from '../../util/Constants.js';
@@ -72,7 +73,7 @@ export default class ClanEmbedCommand extends Command {
 			color,
 			accepts,
 			channel
-		}: { tag: string; description?: string; color?: number; accepts?: string; channel: TextChannel }
+		}: { tag: string; description?: string; color?: number; accepts?: string; channel: TextChannel | AnyThreadChannel }
 	) {
 		const data = await this.client.resolver.enforceSecurity(interaction, tag);
 		if (!data) return;
@@ -279,7 +280,7 @@ export default class ClanEmbedCommand extends Command {
 		description = description?.toLowerCase() === 'auto' ? 'auto' : description ?? '';
 		accepts = !accepts || accepts.toLowerCase() === 'auto' ? 'auto' : accepts;
 
-		const webhook = await this.client.storage.getWebhook(channel);
+		const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
 		if (!webhook) {
 			return interaction.editReply(
 				// eslint-disable-next-line
@@ -314,8 +315,9 @@ export default class ClanEmbedCommand extends Command {
 		const existing = await this.client.db
 			.collection(Collections.CLAN_EMBED_LOGS)
 			.findOne({ tag: data.tag, guild: interaction.guild.id });
+
 		if (!existing) {
-			const msg = await webhook.send(channel.isThread() ? { embeds: [embed] } : { embeds: [embed], threadId: channel.id });
+			const msg = await webhook.send(channel.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
 			return mutate(msg.id, channel.id, { id: webhook.id, token: webhook.token! });
 		}
 
@@ -344,7 +346,7 @@ export default class ClanEmbedCommand extends Command {
 					const webhook = new WebhookClient(existing.webhook);
 					const msg = await webhook.editMessage(
 						existing.message,
-						channel?.isThread() ? { embeds: [embed] } : { embeds: [embed], threadId: channel?.id }
+						channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] }
 					);
 					await mutate(existing.message, msg.channel_id, existing.webhook);
 				} catch {
@@ -364,10 +366,16 @@ export default class ClanEmbedCommand extends Command {
 
 			if (action.customId === customIds.create) {
 				await action.update({ content: '**Successfully created a new embed.**', components: [] });
-				// TODO: Create a new webhook
-				const webhook = new WebhookClient(existing.webhook);
-				const msg = await webhook.send({ embeds: [embed] });
-				return mutate(msg.id, msg.channel_id, existing.webhook);
+				const channel = interaction.guild.channels.cache.get(existing.channel);
+				try {
+					const webhook = new WebhookClient(existing.webhook);
+					const msg = await webhook.send(channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
+					return await mutate(msg.id, msg.channel_id, existing.webhook);
+				} catch (error: any) {
+					this.client.logger.error(error, { label: 'ClanEmbedSetup' });
+					const msg = await webhook.send(channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
+					return mutate(msg.id, msg.channel.id, { id: webhook.id, token: webhook.token! });
+				}
 			}
 		});
 

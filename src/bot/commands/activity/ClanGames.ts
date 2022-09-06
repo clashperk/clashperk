@@ -66,28 +66,30 @@ export default class ClanGamesCommand extends Command {
 		{ clan, members, max = false, filter = false }: { clan: Clan; members: Member[]; max?: boolean; filter?: boolean }
 	) {
 		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
-		const embed = new EmbedBuilder()
-			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
-			.setDescription(
-				[
-					`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${
-						this.seasonId
-					})](https://clashperk.com/faq)**`,
-					`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-					members
-						.slice(0, 55)
-						.filter((d) => (filter ? d.points > 0 : d.points >= 0))
-						.map((m, i) => {
-							const points = this.padStart(max ? m.points : Math.min(this.MAX, m.points));
-							return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
-						})
-						.join('\n'),
-					'```'
-				].join('\n')
-			)
-			.setFooter({
+		const embed = new EmbedBuilder().setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium }).setDescription(
+			[
+				`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${this.seasonId})](https://clashperk.com/faq)**`,
+				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
+				members
+					.slice(0, 55)
+					.filter((d) => (filter ? d.points > 0 : d.points >= 0))
+					.map((m, i) => {
+						const points = this.padStart(max ? m.points : Math.min(this.MAX, m.points));
+						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
+					})
+					.join('\n'),
+				'```'
+			].join('\n')
+		);
+		if (interaction.webhook.id === interaction.applicationId) {
+			embed.setFooter({
 				text: `Total Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]`
 			});
+		} else {
+			embed.setFooter({ text: `Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]` });
+			embed.setTimestamp();
+		}
+
 		return embed;
 	}
 

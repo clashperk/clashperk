@@ -10,14 +10,14 @@ import {
 	CommandInteraction,
 	CommandInteractionOption,
 	Events,
-	GuildChannel,
 	Interaction,
 	Message,
 	MessageComponentInteraction,
 	EmbedBuilder,
 	PermissionsString,
 	ApplicationCommandOptionType,
-	RestEvents
+	RestEvents,
+	GuildBasedChannel
 } from 'discord.js';
 import { Client } from '../struct/Client.js';
 import { i18n } from '../util/i18n.js';
@@ -131,7 +131,7 @@ export class CommandHandler extends BaseHandler {
 			if ([ApplicationCommandOptionType.Subcommand, ApplicationCommandOptionType.SubcommandGroup].includes(option.type)) {
 				resolved[key] = option.name; // SUB_COMMAND OR SUB_COMMAND_GROUP
 			} else if (option.type === ApplicationCommandOptionType.Channel) {
-				resolved[key] = (option.channel as GuildChannel | null)?.isTextBased() ? option.channel : null;
+				resolved[key] = (option.channel as GuildBasedChannel | null)?.isTextBased() ? option.channel : null;
 			} else if (option.type === ApplicationCommandOptionType.Role) {
 				resolved[key] = option.role ?? null;
 			} else if (option.type === ApplicationCommandOptionType.User) {

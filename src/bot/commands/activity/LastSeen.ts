@@ -44,8 +44,7 @@ export default class LastSeenCommand extends Command {
 		const members = await this.aggregationQuery(clan, score ? 30 : 1);
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
-			.setFooter({ text: `Members [${clan.members}/50]`, iconURL: interaction.user.displayAvatarURL() });
+			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 		if (score) {
 			members.sort((a, b) => b.count - a.count);
 			embed.setDescription(
@@ -72,6 +71,12 @@ export default class LastSeenCommand extends Command {
 					'```'
 				].join('\n')
 			);
+		}
+		if (interaction.webhook.id === interaction.applicationId) {
+			embed.setFooter({ text: `Members [${clan.members}/50]`, iconURL: interaction.user.displayAvatarURL() });
+		} else {
+			embed.setFooter({ text: `Synced [${members.length}/${clan.members}]` });
+			embed.setTimestamp();
 		}
 
 		const row = new ActionRowBuilder<ButtonBuilder>()
