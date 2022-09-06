@@ -190,7 +190,12 @@ export default class Resolver {
 		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
 		const code = ['CP', interaction.guild.id.substr(-2)].join('');
 		const clan = clans.find((clan) => clan.tag === data.tag);
-		if (!clan?.verified && !this.verifyClan(code, data, user?.entries ?? []) && !this.client.isOwner(interaction.user)) {
+		if (
+			!clan?.verified &&
+			!this.verifyClan(code, data, user?.entries ?? []) &&
+			!this.client.isOwner(interaction.user) &&
+			interaction.guildId === '1016659402817814620'
+		) {
 			await interaction.editReply({ content: this.client.i18n('common.clan_verification', { lng: interaction.locale, code }) });
 			return null;
 		}

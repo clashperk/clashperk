@@ -27,9 +27,12 @@ export const enum Collections {
 	CLAN_WARS = 'ClanWars',
 	CLAN_GAMES = 'ClanGames',
 	CWL_GROUPS = 'CWLGroups',
+
 	CLAN_MEMBERS = 'ClanMembers',
 	CLAN_GAMES_POINTS = 'ClanGamesPointsImport',
 	PLAYER_SEASONS = 'PlayerSeasonImport',
+	CAPITAL_CONTRIBUTIONS = 'CapitalContributions',
+	RAID_ATTACKS = 'RaidAttacks',
 
 	PLAYERS = 'Players',
 	CLANS = 'Clans',
