@@ -1,9 +1,20 @@
-import { Collection, EmbedBuilder, PermissionsString, Snowflake, SnowflakeUtil, WebhookClient } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	Collection,
+	EmbedBuilder,
+	PermissionsString,
+	Snowflake,
+	SnowflakeUtil,
+	WebhookClient
+} from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
 import { ClanGames } from '../util/index.js';
+import { EMOJIS } from '../util/Emojis.js';
 import BaseLog from './BaseLog.js';
 
 export default class ClanGamesLog extends BaseLog {
@@ -37,10 +48,32 @@ export default class ClanGamesLog extends BaseLog {
 		return this.updateMessageId(cache, msg);
 	}
 
+	private _components(tag: string) {
+		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(
+				new ButtonBuilder()
+					.setCustomId(JSON.stringify({ cmd: 'clan-games', max: false, tag }))
+					.setEmoji(EMOJIS.REFRESH)
+					.setStyle(ButtonStyle.Secondary)
+			)
+			.addComponents(
+				new ButtonBuilder()
+					.setCustomId(JSON.stringify({ cmd: 'clan-games', max: true, filter: false, tag }))
+					.setLabel('Maximum Points')
+					.setStyle(ButtonStyle.Primary)
+			);
+		return row;
+	}
+
 	private async send(cache: Cache, webhook: WebhookClient, data: Feed) {
 		const embed = this.embed(cache, data);
+
 		try {
-			return await super._send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+			return await super._send(cache, webhook, {
+				embeds: [embed],
+				threadId: cache.threadId,
+				components: [this._components(data.clan.tag)]
+			});
 		} catch (error: any) {
 			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
 			return null;
@@ -50,7 +83,11 @@ export default class ClanGamesLog extends BaseLog {
 	private async edit(cache: Cache, webhook: WebhookClient, data: Feed) {
 		const embed = this.embed(cache, data);
 		try {
-			return await super._edit(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+			return await super._edit(cache, webhook, {
+				embeds: [embed],
+				threadId: cache.threadId,
+				components: [this._components(data.clan.tag)]
+			});
 		} catch (error: any) {
 			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
 			return null;

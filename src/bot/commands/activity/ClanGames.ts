@@ -48,13 +48,13 @@ export default class ClanGamesCommand extends Command {
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId(JSON.stringify({ cmd: this.id, max: false }))
+					.setCustomId(JSON.stringify({ cmd: this.id, max: false, tag: clan.tag }))
 					.setEmoji(EMOJIS.REFRESH)
 					.setStyle(ButtonStyle.Secondary)
 			)
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId(JSON.stringify({ cmd: this.id, max: !args.max, filter: false }))
+					.setCustomId(JSON.stringify({ cmd: this.id, max: !args.max, filter: false, tag: clan.tag }))
 					.setLabel(args.max ? 'Permissible Points' : 'Maximum Points')
 					.setStyle(ButtonStyle.Primary)
 			);
