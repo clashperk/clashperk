@@ -1,5 +1,5 @@
 [submodule "locales"]
 	path = locales
-	branch = next
+	branch = main
 	update = rebase
 	url = https://github.com/clashperk/locales.git
