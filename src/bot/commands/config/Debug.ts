@@ -53,6 +53,10 @@ export default class DebugCommand extends Command {
 			? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
 			: { cross: '❌', tick: '☑️', none: '⬛' };
 
+		const webhooks = channel.permissionsFor(this.client.user!.id)?.has(['ManageWebhooks', 'ViewChannel'])
+			? await channel.fetchWebhooks()
+			: null;
+
 		const chunks = Util.splitMessage(
 			[
 				`**${this.client.user!.username} Debug Menu**`,
@@ -72,7 +76,10 @@ export default class DebugCommand extends Command {
 					})
 					.join('\n'),
 				'',
-				'**Slash Command Permission**',
+				'**Webhooks**',
+				webhooks?.size ?? 0,
+				'',
+				'**Webhook Permissions (Temporary)**',
 				`${UEE_FOR_SLASH ? emojis.tick : emojis.cross} Use External Emojis ${UEE_FOR_SLASH ? '' : '(for @everyone)'}`,
 				'',
 				`**Loop Time ${cycle.clans && cycle.players && cycle.wars ? '' : '(Processing...)'}**`,
@@ -110,10 +117,10 @@ export default class DebugCommand extends Command {
 
 	private fixName(perm: string) {
 		if (perm === 'VIEW_CHANNEL') return 'Read Messages';
-		return `\`${perm
+		return perm
 			.replace(/([A-Z])/g, ' $1')
 			.toLowerCase()
 			.trim()
-			.replace(/\b(\w)/g, (char) => char.toUpperCase())}\``;
+			.replace(/\b(\w)/g, (char) => char.toUpperCase());
 	}
 }
