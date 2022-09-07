@@ -162,7 +162,7 @@ export default class DonationSummaryCommand extends Command {
 		const embeds = [
 			embed,
 			new EmbedBuilder()
-				.setColor(embed.data.color!)
+				.setColor(this.client.embed(interaction))
 				.setDescription(
 					[
 						'**Top Players**',
