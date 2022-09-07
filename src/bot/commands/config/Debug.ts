@@ -34,7 +34,8 @@ export default class DebugCommand extends Command {
 			'AddReactions',
 			'AttachFiles',
 			'UseExternalEmojis',
-			'ReadMessageHistory'
+			'ReadMessageHistory',
+			'ManageWebhooks'
 		];
 
 		const clans = await this.client.storage.find(interaction.guild.id);
@@ -109,9 +110,10 @@ export default class DebugCommand extends Command {
 
 	private fixName(perm: string) {
 		if (perm === 'VIEW_CHANNEL') return 'Read Messages';
-		return perm
-			.replace(/_/g, ' ')
+		return `\`${perm
+			.replace(/([A-Z])/g, ' $1')
 			.toLowerCase()
-			.replace(/\b(\w)/g, (char) => char.toUpperCase());
+			.trim()
+			.replace(/\b(\w)/g, (char) => char.toUpperCase())}\``;
 	}
 }

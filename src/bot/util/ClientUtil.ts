@@ -38,9 +38,7 @@ export class ClientUtil {
 	}
 
 	public hasWebhookPermission(channel: TextChannel | NewsChannel) {
-		return (
-			channel.permissionsFor(this.client.user!.id)!.has(['ManageWebhooks', 'ViewChannel']) &&
-			channel.permissionsFor(channel.guild.id)!.has(['UseExternalEmojis'])
-		);
+		return channel.permissionsFor(this.client.user!.id)!.has(['ManageWebhooks', 'ViewChannel']);
+		// channel.permissionsFor(channel.guild.id)!.has(['UseExternalEmojis'])
 	}
 }
