@@ -1,4 +1,13 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
+import {
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	EmbedBuilder,
+	ButtonStyle,
+	ButtonInteraction,
+	BaseInteraction,
+	MessageType
+} from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
 import { ClanGames } from '../../util/index.js';
@@ -19,7 +28,10 @@ export default class ClanGamesCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; max: boolean; filter: boolean }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		args: { tag?: string; max: boolean; filter: boolean }
+	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 
@@ -62,7 +74,7 @@ export default class ClanGamesCommand extends Command {
 	}
 
 	private embed(
-		interaction: CommandInteraction,
+		interaction: BaseInteraction,
 		{ clan, members, max = false, filter = false }: { clan: Clan; members: Member[]; max?: boolean; filter?: boolean }
 	) {
 		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
@@ -81,7 +93,7 @@ export default class ClanGamesCommand extends Command {
 				'```'
 			].join('\n')
 		);
-		if (interaction.webhook.id === interaction.applicationId) {
+		if (interaction.isButton() && interaction.message.type === MessageType.ChatInputCommand) {
 			embed.setFooter({
 				text: `Total Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]`
 			});

@@ -52,7 +52,7 @@ export default class Resolver {
 			.findOne({ guild, alias }, { collation: { strength: 2, locale: 'en' }, projection: { tag: 1, name: 1 } });
 	}
 
-	public async resolveClan(interaction: CommandInteraction<'cached'>, args?: string): Promise<Clan | null> {
+	public async resolveClan(interaction: BaseInteraction<'cached'>, args?: string): Promise<Clan | null> {
 		args = args?.replace(/[\u200e|\u200f]+/g, '') ?? '';
 		const parsed = await this.parseArgument(interaction, args);
 
@@ -124,12 +124,12 @@ export default class Resolver {
 		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O/g, '0') ?? ''}`;
 	}
 
-	private async getLinkedClan(interaction: CommandInteraction, userId: string) {
+	private async getLinkedClan(interaction: BaseInteraction<'cached'>, userId: string) {
 		const clan = await this.client.db.collection(Collections.CLAN_STORES).findOne({ channels: interaction.channel!.id });
 		if (clan) return clan;
 		const user = await this.getLinkedUserClan(userId);
 		if (user) return user;
-		const guild = await this.client.db.collection(Collections.CLAN_STORES).findOne({ guild: interaction.guild!.id });
+		const guild = await this.client.db.collection(Collections.CLAN_STORES).findOne({ guild: interaction.guild.id });
 		if (guild) return guild;
 		return null;
 	}

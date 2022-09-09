@@ -1,4 +1,4 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ButtonInteraction, MessageType } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -18,7 +18,10 @@ export default class LastSeenCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { tag, score }: { tag?: string; score?: boolean }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		{ tag, score }: { tag?: string; score?: boolean }
+	) {
 		const clan = await this.client.resolver.resolveClan(interaction, tag);
 		if (!clan) return;
 
@@ -72,7 +75,8 @@ export default class LastSeenCommand extends Command {
 				].join('\n')
 			);
 		}
-		if (interaction.webhook.id === interaction.applicationId) {
+
+		if (interaction.isButton() && interaction.message.type === MessageType.ChatInputCommand) {
 			embed.setFooter({ text: `Members [${clan.members}/50]`, iconURL: interaction.user.displayAvatarURL() });
 		} else {
 			embed.setFooter({ text: `Synced [${members.length}/${clan.members}]` });
