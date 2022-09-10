@@ -95,6 +95,20 @@ export const COMMANDS: Command[] = [
 		]
 	},
 	{
+		name: 'clan-capital',
+		description: command.clan_capital.description,
+		description_localizations: translation('command.clan_capital.description'),
+		options: [
+			{
+				name: 'tag',
+				description: command.clan_capital.options.tag.description,
+				description_localizations: translation('command.clan_capital.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				required: false
+			}
+		]
+	},
+	{
 		name: 'attacks',
 		description: command.attacks.description,
 		description_localizations: translation('command.attacks.description'),
