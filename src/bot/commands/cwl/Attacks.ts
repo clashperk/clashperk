@@ -1,4 +1,13 @@
-import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow, MessageButton } from 'discord.js';
+import {
+	EmbedBuilder,
+	CommandInteraction,
+	SelectMenuBuilder,
+	ActionRowBuilder,
+	ButtonBuilder,
+	escapeInlineCode,
+	ButtonStyle,
+	escapeMarkdown
+} from 'discord.js';
 import { ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import moment from 'moment';
 import { RED_NUMBERS } from '../../util/Emojis.js';
@@ -16,7 +25,7 @@ export default class CWLAttacksCommand extends Command {
 	public constructor() {
 		super('cwl-attacks', {
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});
 	}
@@ -50,7 +59,7 @@ export default class CWLAttacksCommand extends Command {
 
 		let i = 0;
 		const missed: { [key: string]: { name: string; count: number } } = {};
-		const chunks: { embed: MessageEmbed; state: string; round: number }[] = [];
+		const chunks: { embed: EmbedBuilder; state: string; round: number }[] = [];
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
 				const data: ClanWar = await this.client.http.clanWarLeagueWar(warTag);
@@ -60,7 +69,7 @@ export default class CWLAttacksCommand extends Command {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 
-					const embed = new MessageEmbed()
+					const embed = new EmbedBuilder()
 						.setColor(this.client.embed(interaction))
 						.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
@@ -101,7 +110,7 @@ export default class CWLAttacksCommand extends Command {
 						if (attackers.length) {
 							embed.setDescription(
 								[
-									embed.description,
+									embed.data.description,
 									'',
 									`**Total Attacks - ${clanMembers.filter((m) => m.attacks).length}/${data.teamSize}**`,
 									attackers
@@ -119,7 +128,7 @@ export default class CWLAttacksCommand extends Command {
 						if (slackers.length) {
 							embed.setDescription(
 								[
-									embed.description,
+									embed.data.description,
 									'',
 									`**${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`,
 									slackers.map((mem) => `\`\u200e${this.index(mem.mapPosition)} ${this.padEnd(mem.name)}\``).join('\n')
@@ -127,7 +136,7 @@ export default class CWLAttacksCommand extends Command {
 							);
 						} else {
 							embed.setDescription(
-								[embed.description, '', `**No ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`].join('\n')
+								[embed.data.description, '', `**No ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`].join('\n')
 							);
 						}
 					}
@@ -182,15 +191,18 @@ export default class CWLAttacksCommand extends Command {
 			button: this.client.uuid(interaction.user.id)
 		};
 
-		const menu = new MessageSelectMenu().addOptions(options).setCustomId(ids.menu).setPlaceholder('Select a round!');
+		const menu = new SelectMenuBuilder().addOptions(options).setCustomId(ids.menu).setPlaceholder('Select a round!');
 
-		const button = new MessageButton()
-			.setStyle('SECONDARY')
+		const button = new ButtonBuilder()
+			.setStyle(ButtonStyle.Secondary)
 			.setCustomId(ids.button)
 			.setLabel('Show Overall Missed Attacks')
 			.setDisabled(!Object.keys(missed).length);
 
-		const rows = [new MessageActionRow().addComponents(menu), new MessageActionRow().addComponents(button)];
+		const rows = [
+			new ActionRowBuilder<SelectMenuBuilder>().addComponents(menu),
+			new ActionRowBuilder<ButtonBuilder>().addComponents(button)
+		];
 
 		const msg = await interaction.editReply({
 			embeds: [round.embed],
@@ -204,21 +216,21 @@ export default class CWLAttacksCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.customId === ids.menu && action.isSelectMenu()) {
 				const round = chunks.find((ch) => ch.round === Number(action.values[0]));
-				return action.update({ embeds: [round!.embed] });
+				await action.update({ embeds: [round!.embed] });
 			}
 
 			if (action.customId === ids.button) {
 				const members = Object.values(missed);
-				const embed = new MessageEmbed()
+				const embed = new EmbedBuilder()
 					.setColor(this.client.embed(interaction))
 					.setDescription(
 						[
 							'**All Missed Attacks**',
 							'',
-							members.map((mem) => `${RED_NUMBERS[mem.count]} ${Util.escapeMarkdown(mem.name)}`).join('\n')
+							members.map((mem) => `${RED_NUMBERS[mem.count]} ${escapeMarkdown(mem.name)}`).join('\n')
 						].join('\n')
 					);
-				embed.author = round.embed.author!;
+				embed.data.author = round.embed.data.author!;
 				rows[1].components[0].setDisabled(true);
 
 				await action.update({ components: [...rows] });
@@ -234,7 +246,7 @@ export default class CWLAttacksCommand extends Command {
 	}
 
 	private padEnd(name: string) {
-		return Util.escapeInlineCode(name).padEnd(20, ' ');
+		return escapeInlineCode(name).padEnd(20, ' ');
 	}
 
 	private index(num: number) {

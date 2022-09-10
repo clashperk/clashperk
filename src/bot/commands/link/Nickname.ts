@@ -1,4 +1,4 @@
-import { GuildMember, MessageActionRow, MessageSelectMenu, CommandInteraction } from 'discord.js';
+import { GuildMember, ActionRowBuilder, SelectMenuBuilder, CommandInteraction } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { TOWN_HALLS } from '../../util/Emojis.js';
 
@@ -7,7 +7,7 @@ export default class NickNameCommand extends Command {
 		super('nickname', {
 			category: 'setup',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'MANAGE_NICKNAMES'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: ['Sets nickname of a member in Discord.']
 			},
@@ -29,11 +29,14 @@ export default class NickNameCommand extends Command {
 			return interaction.editReply(this.i18n('command.nickname.invalid_member', { lng: interaction.locale }));
 		}
 
-		if (member.id !== interaction.user.id && !interaction.member.permissions.has('MANAGE_NICKNAMES')) {
+		if (member.id !== interaction.user.id && !interaction.member.permissions.has('ManageNicknames')) {
 			return interaction.editReply(this.i18n('command.nickname.missing_permission', { lng: interaction.locale }));
 		}
 
-		if (interaction.guild.me!.roles.highest.position <= member.roles.highest.position || member.id === interaction.guild.ownerId) {
+		if (
+			interaction.guild.members.me!.roles.highest.position <= member.roles.highest.position ||
+			member.id === interaction.guild.ownerId
+		) {
 			const own = member.id === interaction.user.id;
 			return interaction.editReply(
 				this.i18n(own ? 'command.nickname.missing_access_self' : 'command.nickname.missing_access_other', {
@@ -54,8 +57,8 @@ export default class NickNameCommand extends Command {
 			description: `${op.tag}`
 		}));
 		const customID = this.client.uuid(interaction.user.id, member.id);
-		const row = new MessageActionRow().addComponents(
-			new MessageSelectMenu().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options)
+		const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+			new SelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options)
 		);
 
 		const msg = await interaction.editReply({ content: `**Setting up ${member.user.tag}\'s nickname...**`, components: [row] });
@@ -76,7 +79,7 @@ export default class NickNameCommand extends Command {
 					await member.setNickname(name, `Nickname set by ${interaction.user.tag}`).catch(() => null);
 
 					row.components[0].setDisabled(true);
-					return action.update({
+					await action.update({
 						components: [row],
 						content: `**${member.user.tag}\'s** nickname set to **${name}**`
 					});

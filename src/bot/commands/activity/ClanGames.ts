@@ -1,16 +1,26 @@
-import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import {
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	EmbedBuilder,
+	ButtonStyle,
+	ButtonInteraction,
+	BaseInteraction,
+	MessageType
+} from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
 import { ClanGames } from '../../util/index.js';
 import { Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { ClanGamesModel } from '../../types/index.js';
 
 export default class ClanGamesCommand extends Command {
 	public constructor() {
 		super('clan-games', {
 			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: ['Clan Games points of clan members.', '', '**[How does it work?](https://clashperk.com/faq)**']
 			},
@@ -18,7 +28,10 @@ export default class ClanGamesCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; max: boolean; filter: boolean }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		args: { tag?: string; max: boolean; filter: boolean }
+	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 
@@ -44,49 +57,51 @@ export default class ClanGamesCommand extends Command {
 		const embed = this.embed(interaction, { clan, members, max: args.max, filter: args.filter });
 		embed.setColor(this.client.embed(interaction));
 
-		const row = new MessageActionRow()
+		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
-				new MessageButton()
-					.setCustomId(JSON.stringify({ cmd: this.id, max: false }))
+				new ButtonBuilder()
+					.setCustomId(JSON.stringify({ cmd: this.id, max: false, tag: clan.tag }))
 					.setEmoji(EMOJIS.REFRESH)
-					.setStyle('SECONDARY')
+					.setStyle(ButtonStyle.Secondary)
 			)
 			.addComponents(
-				new MessageButton()
-					.setCustomId(JSON.stringify({ cmd: this.id, max: !args.max, filter: false }))
+				new ButtonBuilder()
+					.setCustomId(JSON.stringify({ cmd: this.id, max: !args.max, filter: false, tag: clan.tag }))
 					.setLabel(args.max ? 'Permissible Points' : 'Maximum Points')
-					.setStyle('PRIMARY')
+					.setStyle(ButtonStyle.Primary)
 			);
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private embed(
-		interaction: CommandInteraction,
+		interaction: BaseInteraction,
 		{ clan, members, max = false, filter = false }: { clan: Clan; members: Member[]; max?: boolean; filter?: boolean }
 	) {
 		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
-		const embed = new MessageEmbed()
-			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
-			.setDescription(
-				[
-					`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${
-						this.seasonId
-					})](https://clashperk.com/faq)**`,
-					`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-					members
-						.slice(0, 55)
-						.filter((d) => (filter ? d.points > 0 : d.points >= 0))
-						.map((m, i) => {
-							const points = this.padStart(max ? m.points : Math.min(this.MAX, m.points));
-							return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
-						})
-						.join('\n'),
-					'```'
-				].join('\n')
-			)
-			.setFooter({
+		const embed = new EmbedBuilder().setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium }).setDescription(
+			[
+				`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${this.seasonId})](https://clashperk.com/faq)**`,
+				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
+				members
+					.slice(0, 55)
+					.filter((d) => (filter ? d.points > 0 : d.points >= 0))
+					.map((m, i) => {
+						const points = this.padStart(max ? m.points : Math.min(this.MAX, m.points));
+						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
+					})
+					.join('\n'),
+				'```'
+			].join('\n')
+		);
+		if (interaction.isButton() && interaction.message.type === MessageType.ChatInputCommand) {
+			embed.setFooter({
 				text: `Total Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]`
 			});
+		} else {
+			embed.setFooter({ text: `Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]` });
+			embed.setTimestamp();
+		}
+
 		return embed;
 	}
 
@@ -105,29 +120,10 @@ export default class ClanGamesCommand extends Command {
 		return now.toISOString().substring(0, 7);
 	}
 
-	private query(clanTag: string, clan: Clan) {
-		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS).aggregate<DBMember>([
+	private query(clanTag: string, _clan: Clan) {
+		const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<ClanGamesModel>([
 			{
-				$match: { clanTag }
-			},
-			{
-				$match: {
-					season: this.seasonId
-				}
-			},
-			{
-				$match: {
-					$or: [
-						{
-							tag: {
-								$in: clan.memberList.map((m) => m.tag)
-							}
-						},
-						{
-							clanGamesTotal: { $gt: 0 }
-						}
-					]
-				}
+				$match: { __clans: clanTag, season: this.seasonId }
 			},
 			{
 				$limit: 60
@@ -137,15 +133,14 @@ export default class ClanGamesCommand extends Command {
 		return cursor.toArray();
 	}
 
-	private filter(dbMembers: DBMember[] = [], clanMembers: Member[] = []) {
+	private filter(dbMembers: ClanGamesModel[] = [], clanMembers: Member[] = []) {
 		const members = clanMembers.map((member) => {
 			const mem = dbMembers.find((m) => m.tag === member.tag);
-			const ach = mem?.achievements.find((m) => m.name === 'Games Champion');
 			return {
 				name: member.name,
 				tag: member.tag,
-				points: mem ? member.points - ach!.value : 0,
-				endedAt: mem?.clanGamesEndTime
+				points: mem ? member.points - mem.initial : 0,
+				endedAt: mem?.completedAt
 			};
 		});
 
@@ -154,8 +149,8 @@ export default class ClanGamesCommand extends Command {
 			.map((mem) => ({
 				name: mem.name,
 				tag: mem.tag,
-				points: mem.achievements.find((m) => m.name === 'Games Champion')!.gained,
-				endedAt: mem.clanGamesEndTime
+				points: mem.current - mem.initial,
+				endedAt: mem.completedAt
 			}));
 
 		return [...members, ...missingMembers]
@@ -169,20 +164,9 @@ export default class ClanGamesCommand extends Command {
 	}
 }
 
-interface DBMember {
-	tag: string;
-	name: string;
-	achievements: {
-		gained: number;
-		name: string;
-		value: number;
-	}[];
-	clanGamesEndTime?: Date;
-}
-
 interface Member {
 	tag: string;
 	name: string;
 	points: number;
-	endedAt?: Date;
+	endedAt?: Date | null;
 }

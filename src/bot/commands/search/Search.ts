@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 
 export default class ClanSearchCommand extends Command {
@@ -10,7 +10,7 @@ export default class ClanSearchCommand extends Command {
 			description: {
 				content: 'Search in-game clans by name.'
 			},
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});
 	}
@@ -24,7 +24,7 @@ export default class ClanSearchCommand extends Command {
 			return interaction.editReply(this.i18n('command.search.no_results', { lng: interaction.locale }));
 		}
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setTitle(this.i18n('command.search.searching', { lng: interaction.locale, name }))
 			.setDescription(

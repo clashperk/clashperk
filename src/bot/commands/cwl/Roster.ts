@@ -1,5 +1,5 @@
 import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { MessageEmbed, CommandInteraction, MessageButton, MessageActionRow } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS, EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -11,7 +11,7 @@ export default class CWLRosterCommand extends Command {
 			name: 'roster',
 			category: 'war',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'CWL Roster and Town Hall distribution.'
 			},
@@ -127,7 +127,7 @@ export default class CWLRosterCommand extends Command {
 		const next = clanRounds.find((round) => round.state === 'preparation');
 		const rank = ranks.findIndex((a) => a.tag === clanTag);
 
-		const embed = new MessageEmbed().setColor(this.client.embed(interaction)).setDescription(
+		const embed = new EmbedBuilder().setColor(this.client.embed(interaction)).setDescription(
 			[
 				'**Clan War League Rosters**',
 				`${EMOJIS.HASH} ${townHalls.map((th) => ORANGE_NUMBERS[th]).join('')} **Clan**`,
@@ -146,24 +146,34 @@ export default class CWLRosterCommand extends Command {
 				.fill(0)
 				.map((_, i) => max - i);
 
-			embed.addField(
-				'\u200e',
-				[
-					`**Next War (Round #${next.round + 1})**`,
-					`${EMOJIS.HASH} ${townHalls.map((th) => ORANGE_NUMBERS[th]).join('')} **Clan**`,
-					`${BLUE_NUMBERS[rank + 1]} ${this.getNextRoster(next.clan, townHalls)} ${next.clan.name}`,
-					`${BLUE_NUMBERS[oppRank + 1]} ${this.getNextRoster(next.opponent, townHalls)} ${next.opponent.name}`
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: '\u200e',
+					value: [
+						`**Next War (Round #${next.round + 1})**`,
+						`${EMOJIS.HASH} ${townHalls.map((th) => ORANGE_NUMBERS[th]).join('')} **Clan**`,
+						`${BLUE_NUMBERS[rank + 1]} ${this.getNextRoster(next.clan, townHalls)} ${next.clan.name}`,
+						`${BLUE_NUMBERS[oppRank + 1]} ${this.getNextRoster(next.opponent, townHalls)} ${next.opponent.name}`
+					].join('\n')
+				}
+			]);
 		}
 
 		if (next?.round || rounds.length >= 2) {
-			embed.addField('\u200b', `Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`);
+			embed.addFields([
+				{
+					name: '\u200b',
+					value: `Rank #${rank + 1} ${EMOJIS.STAR} ${stars} ${EMOJIS.DESTRUCTION} ${destruction.toFixed()}%`
+				}
+			]);
 		}
 
 		const customID = this.client.uuid(interaction.user.id);
-		const button = new MessageButton().setCustomId(customID).setStyle('SECONDARY').setLabel('Detailed Roster');
-		const msg = await interaction.editReply({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const button = new ButtonBuilder().setCustomId(customID).setStyle(ButtonStyle.Secondary).setLabel('Detailed Roster');
+		const msg = await interaction.editReply({
+			embeds: [embed],
+			components: [new ActionRowBuilder<ButtonBuilder>({ components: [button] })]
+		});
 		const collector = await msg
 			.awaitMessageComponent({
 				filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
@@ -174,7 +184,7 @@ export default class CWLRosterCommand extends Command {
 		this.client.components.delete(customID);
 		if (!collector) return;
 
-		embed.fields = [];
+		embed.data.fields = [];
 		embed
 			.setFooter({ text: `Clan War League ${moment(body.season).format('MMMM YYYY')}` })
 			.setAuthor({ name: 'CWL Roster' })
@@ -191,17 +201,19 @@ export default class CWLRosterCommand extends Command {
 				.map((entry) => ({ level: Number(entry[0]), total: Number(entry[1]) }))
 				.sort((a, b) => b.level - a.level);
 
-			embed.addField(
-				`\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`,
-				[
-					Util.chunk(townHalls, 5)
-						.map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`).join(' '))
-						.join('\n')
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: `\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`,
+					value: [
+						Util.chunk(townHalls, 5)
+							.map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`).join(' '))
+							.join('\n')
+					].join('\n')
+				}
+			]);
 		}
 
-		return interaction.editReply({ embeds: [embed] });
+		return interaction.editReply({ embeds: [embed], components: [] });
 	}
 
 	private getNextRoster(clan: WarClan, townHalls: number[]) {

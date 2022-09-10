@@ -1,7 +1,7 @@
-import { Guild, User, Interaction, CommandInteraction } from 'discord.js';
+import { Guild, User, CommandInteraction, BaseInteraction } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import { Collections, Settings, status } from '../util/Constants.js';
-import { UserInfo } from '../types/index.js';
+import { UserInfoModel } from '../types/index.js';
 import { i18n } from '../util/i18n.js';
 import Client from './Client.js';
 
@@ -12,7 +12,11 @@ export default class Resolver {
 		this.client = client;
 	}
 
-	public async resolvePlayer(interaction: Interaction<'cached'>, args?: string, num = 1): Promise<(Player & { user?: User }) | null> {
+	public async resolvePlayer(
+		interaction: CommandInteraction<'cached'>,
+		args?: string,
+		num = 1
+	): Promise<(Player & { user?: User }) | null> {
 		args = args?.replace(/[\u200e|\u200f]+/g, '') ?? '';
 		const parsed = await this.parseArgument(interaction, args);
 
@@ -48,7 +52,7 @@ export default class Resolver {
 			.findOne({ guild, alias }, { collation: { strength: 2, locale: 'en' }, projection: { tag: 1, name: 1 } });
 	}
 
-	public async resolveClan(interaction: Interaction<'cached'>, args?: string): Promise<Clan | null> {
+	public async resolveClan(interaction: BaseInteraction<'cached'>, args?: string): Promise<Clan | null> {
 		args = args?.replace(/[\u200e|\u200f]+/g, '') ?? '';
 		const parsed = await this.parseArgument(interaction, args);
 
@@ -75,14 +79,14 @@ export default class Resolver {
 		return this.fail(interaction, i18n('common.clan_not_linked', { lng: interaction.locale, user: parsed.user.tag }));
 	}
 
-	public async getPlayer(interaction: Interaction, tag: string, user?: User): Promise<(Player & { user?: User }) | null> {
+	public async getPlayer(interaction: BaseInteraction, tag: string, user?: User): Promise<(Player & { user?: User }) | null> {
 		const data: Player = await this.client.http.fetch(`/players/${encodeURIComponent(this.parseTag(tag))}`);
 		if (data.ok) return { ...data, user };
 
 		return this.fail(interaction, `**${status(data.statusCode, interaction.locale)}**`);
 	}
 
-	public async getClan(interaction: Interaction, tag: string, checkAlias = false): Promise<Clan | null> {
+	public async getClan(interaction: BaseInteraction, tag: string, checkAlias = false): Promise<Clan | null> {
 		const data: Clan = await this.client.http.fetch(`/clans/${encodeURIComponent(this.parseTag(tag))}`);
 		if (data.ok) return data;
 
@@ -94,8 +98,8 @@ export default class Resolver {
 		return this.fail(interaction, `**${status(data.statusCode, interaction.locale)}**`);
 	}
 
-	private async fail(interaction: Interaction, content: string) {
-		if (interaction.isApplicationCommand()) {
+	private async fail(interaction: BaseInteraction, content: string) {
+		if (interaction.isCommand()) {
 			return interaction.editReply({ content }).then(() => null);
 		} else if (interaction.isMessageComponent()) {
 			return interaction.followUp({ content, ephemeral: true }).then(() => null);
@@ -103,7 +107,7 @@ export default class Resolver {
 		return null;
 	}
 
-	private async parseArgument(interaction: Interaction<'cached'>, args: string) {
+	private async parseArgument(interaction: BaseInteraction<'cached'>, args: string) {
 		if (!args) return { user: interaction.member.user, matched: false, isTag: false };
 
 		const id = /<@!?(\d{17,19})>/.exec(args)?.[1] ?? /^\d{17,19}/.exec(args)?.[0];
@@ -120,12 +124,12 @@ export default class Resolver {
 		return `#${matched?.toUpperCase().replace(/#/g, '').replace(/O/g, '0') ?? ''}`;
 	}
 
-	private async getLinkedClan(interaction: Interaction, userId: string) {
+	private async getLinkedClan(interaction: BaseInteraction<'cached'>, userId: string) {
 		const clan = await this.client.db.collection(Collections.CLAN_STORES).findOne({ channels: interaction.channel!.id });
 		if (clan) return clan;
 		const user = await this.getLinkedUserClan(userId);
 		if (user) return user;
-		const guild = await this.client.db.collection(Collections.CLAN_STORES).findOne({ guild: interaction.guild!.id });
+		const guild = await this.client.db.collection(Collections.CLAN_STORES).findOne({ guild: interaction.guild.id });
 		if (guild) return guild;
 		return null;
 	}
@@ -144,7 +148,7 @@ export default class Resolver {
 	}
 
 	public async getPlayers(userId: string) {
-		const data = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ user: userId });
+		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: userId });
 		const others = await this.client.http.getPlayerTags(userId);
 
 		const playerTagSet = new Set([...(data?.entries ?? []).map((en) => en.tag), ...others.map((tag) => tag)]);
@@ -186,7 +190,12 @@ export default class Resolver {
 		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
 		const code = ['CP', interaction.guild.id.substr(-2)].join('');
 		const clan = clans.find((clan) => clan.tag === data.tag);
-		if (!clan?.verified && !this.verifyClan(code, data, user?.entries ?? []) && !this.client.isOwner(interaction.user)) {
+		if (
+			!clan?.verified &&
+			!this.verifyClan(code, data, user?.entries ?? []) &&
+			!this.client.isOwner(interaction.user) &&
+			interaction.guildId === '1016659402817814620'
+		) {
 			await interaction.editReply({ content: this.client.i18n('common.clan_verification', { lng: interaction.locale, code }) });
 			return null;
 		}

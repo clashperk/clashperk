@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { Message, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
 import Chart from '../../struct/ChartHandler.js';
@@ -11,7 +11,7 @@ export default class UsageCommand extends Command {
 			description: {
 				content: "You can't use this anyway, so why explain?"
 			},
-			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES']
+			clientPermissions: ['EmbedLinks', 'AttachFiles']
 		});
 	}
 
@@ -36,8 +36,8 @@ export default class UsageCommand extends Command {
 		const { commands } = await this.commands();
 		const maxDigit = Math.max(...commands.map((cmd) => cmd.uses.toString().length));
 		const usage = await this.usage();
-		const embed = new MessageEmbed()
-			.setAuthor({ name: `${this.client.user!.username}`, iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
+		const embed = new EmbedBuilder()
+			.setAuthor({ name: `${this.client.user!.username}`, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
 			.setColor(this.client.embed(message))
 			.setTitle('Usage')
 			.setFooter({ text: `${Number(await this.commandsTotal()).toLocaleString()}x Total • Since April 2019` });

@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, CommandInteraction } from 'discord.js';
 import moment from 'moment';
 import { Collections, WarType } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -10,7 +10,7 @@ export default class WarLogCommand extends Command {
 		super('warlog', {
 			category: 'war',
 			channel: 'guild',
-			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
+			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
 			description: {
 				content: 'Shows last 10 clan war logs with war Id.'
 			},
@@ -22,7 +22,7 @@ export default class WarLogCommand extends Command {
 		const data = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!data) return;
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({
 				name: `${data.name} (${data.tag})`,
@@ -60,19 +60,23 @@ export default class WarLogCommand extends Command {
 			const extra = this.getWarInfo(wars, item);
 			const { clan, opponent } = item;
 			const time = Util.duration(Date.now() - new Date(moment(item.endTime).toDate()).getTime());
-			embed.addField(
-				`\u200b\n\u200e${this.result(item.result)} ${opponent.name || 'Clan War League'} ${
-					extra ? `\u200e(#${extra.id as string})` : ''
-				}`,
-				[
-					`${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${EMOJIS.FIRE} ${(
-						clan.destructionPercentage || 0
-					).toFixed(2)}% ${opponent.name ? `/ ${(opponent.destructionPercentage || 0).toFixed(2)}%` : ''}`,
-					`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${
-						EMOJIS.SWORD
-					} ${clan.attacks}${extra ? ` / ${extra.attacks as string}` : ''} ${EMOJIS.CLOCK} ${time} ago`
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: `\u200b\n\u200e${this.result(item.result)} ${opponent.name || 'Clan War League'} ${
+						extra ? `\u200e(#${extra.id as string})` : ''
+					}`,
+					value: [
+						`${EMOJIS.STAR} \`\u200e${this.padStart(clan.stars)} / ${this.padEnd(opponent.stars)}\u200f\`\u200e ${
+							EMOJIS.FIRE
+						} ${(clan.destructionPercentage || 0).toFixed(2)}% ${
+							opponent.name ? `/ ${(opponent.destructionPercentage || 0).toFixed(2)}%` : ''
+						}`,
+						`${EMOJIS.USERS} \`\u200e${this.padStart(item.teamSize)} / ${this.padEnd(item.teamSize)}\u200f\`\u200e ${
+							EMOJIS.SWORD
+						} ${clan.attacks}${extra ? ` / ${extra.attacks as string}` : ''} ${EMOJIS.CLOCK} ${time} ago`
+					].join('\n')
+				}
+			]);
 		}
 
 		return interaction.editReply({ embeds: [embed] });

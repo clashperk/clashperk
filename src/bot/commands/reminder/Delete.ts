@@ -1,8 +1,8 @@
-import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, SelectMenuBuilder, ButtonStyle } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Collections } from '../../util/Constants.js';
-import { Reminder, ReminderTemp } from '../../struct/RemindScheduler.js';
+import { Reminder, Schedule } from '../../struct/RemindScheduler.js';
 import { Args, Command } from '../../lib/index.js';
 
 const roles: Record<string, string> = {
@@ -17,8 +17,8 @@ export default class ReminderDeleteCommand extends Command {
 		super('reminder-delete', {
 			category: 'reminder',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['EMBED_LINKS'],
+			userPermissions: ['ManageGuild'],
+			clientPermissions: ['EmbedLinks'],
 			defer: true
 		});
 	}
@@ -37,7 +37,7 @@ export default class ReminderDeleteCommand extends Command {
 
 		if (clear) {
 			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteMany({ guild: interaction.guild.id });
-			await this.client.db.collection<ReminderTemp>(Collections.REMINDERS_TEMP).deleteMany({ guild: interaction.guildId });
+			await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ guild: interaction.guildId });
 			return interaction.editReply(this.i18n('command.reminder.delete.cleared', { lng: interaction.locale }));
 		}
 
@@ -45,7 +45,7 @@ export default class ReminderDeleteCommand extends Command {
 			const reminderId = reminders[Number(id) - 1]?._id as ObjectId | null;
 			if (!reminderId) return interaction.editReply(this.i18n('command.reminder.delete.not_found', { lng: interaction.locale, id }));
 			await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteOne({ _id: reminderId });
-			await this.client.db.collection<ReminderTemp>(Collections.REMINDERS_TEMP).deleteMany({ reminderId });
+			await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId });
 			return interaction.editReply(this.i18n('command.reminder.delete.success', { lng: interaction.locale, id }));
 		}
 
@@ -67,8 +67,8 @@ export default class ReminderDeleteCommand extends Command {
 		};
 
 		const options = (men = false, view = false, del = false) => {
-			const menu = new MessageActionRow().addComponents(
-				new MessageSelectMenu()
+			const menu = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+				new SelectMenuBuilder()
 					.setCustomId(customIds.menu)
 					.setPlaceholder('Select a reminder!')
 					.addOptions(
@@ -84,42 +84,54 @@ export default class ReminderDeleteCommand extends Command {
 					.setDisabled(men)
 			);
 
-			const button = new MessageActionRow()
-				.addComponents(new MessageButton().setCustomId(customIds.view).setLabel('View').setStyle('PRIMARY').setDisabled(view))
-				.addComponents(new MessageButton().setCustomId(customIds.delete).setLabel('Delete').setStyle('DANGER').setDisabled(del));
+			const button = new ActionRowBuilder<ButtonBuilder>()
+				.addComponents(
+					new ButtonBuilder().setCustomId(customIds.view).setLabel('View').setStyle(ButtonStyle.Primary).setDisabled(view)
+				)
+				.addComponents(
+					new ButtonBuilder().setCustomId(customIds.delete).setLabel('Delete').setStyle(ButtonStyle.Danger).setDisabled(del)
+				);
 
 			return [menu, button];
 		};
 
 		const embeds = () => {
 			const reminder = reminders.find((rem) => rem._id.toHexString() === state.selected)!;
-			const embed = new MessageEmbed().setColor(this.client.embed(interaction));
-			embed.addField('Duration', `${label(reminder.duration)} remaining`);
-			embed.addField('Channel', `<#${reminder.channel}>`);
+			const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
+			embed.addFields([
+				{
+					name: 'Duration',
+					value: `${label(reminder.duration)} remaining`
+				},
+				{
+					name: 'Channel',
+					value: `<#${reminder.channel}>`
+				}
+			]);
 			if (reminder.roles.length === 4) {
-				embed.addField('Roles', 'Any');
+				embed.addFields([{ name: 'Roles', value: 'Any' }]);
 			} else {
-				embed.addField('Roles', reminder.roles.map((role) => roles[role]).join(', '));
+				embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => roles[role]).join(', ') }]);
 			}
 			if (reminder.townHalls.length === 13) {
-				embed.addField('Town Halls', 'Any');
+				embed.addFields([{ name: 'Town Halls', value: 'Any' }]);
 			} else {
-				embed.addField('Town Halls', reminder.townHalls.join(', '));
+				embed.addFields([{ name: 'Town Halls', value: reminder.townHalls.join(', ') }]);
 			}
 			if (reminder.remaining.length === 2) {
-				embed.addField('Remaining Hits', 'Any');
+				embed.addFields([{ name: 'Remaining Hits', value: 'Any' }]);
 			} else {
-				embed.addField('Remaining Hits', reminder.remaining.join(', '));
+				embed.addFields([{ name: 'Remaining Hits', value: reminder.remaining.join(', ') }]);
 			}
 			if (reminder.warTypes.length === 3) {
-				embed.addField('War Types', 'Any');
+				embed.addFields([{ name: 'War Types', value: 'Any' }]);
 			} else {
-				embed.addField('War Types', reminder.warTypes.join(', ').toUpperCase());
+				embed.addFields([{ name: 'War Types', value: reminder.warTypes.join(', ').toUpperCase() }]);
 			}
 			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
-			if (_clans.length) embed.addField('Clans', _clans.join(', ').substring(0, 1024));
-			else embed.addField('Clans', reminder.clans.join(', ').substring(0, 1024));
-			embed.addField('Message', reminder.message.substring(0, 1024));
+			if (_clans.length) embed.addFields([{ name: 'Clans', value: _clans.join(', ').substring(0, 1024) }]);
+			else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').substring(0, 1024) }]);
+			embed.addFields([{ name: 'Message', value: reminder.message.substring(0, 1024) }]);
 			return embed;
 		};
 
@@ -153,9 +165,7 @@ export default class ReminderDeleteCommand extends Command {
 				state.reminders.delete(state.selected!);
 
 				await this.client.db.collection<Reminder>(Collections.REMINDERS).deleteOne({ _id: new ObjectId(state.selected!) });
-				await this.client.db
-					.collection<ReminderTemp>(Collections.REMINDERS_TEMP)
-					.deleteMany({ reminderId: new ObjectId(state.selected!) });
+				await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId: new ObjectId(state.selected!) });
 
 				const rems = reminders.filter((rem) => state.reminders.has(rem._id.toHexString()));
 				await action.editReply({

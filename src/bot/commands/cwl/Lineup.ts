@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction, MessageButton, MessageActionRow, MessageSelectMenu } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, SelectMenuBuilder, ButtonStyle } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember, Player, WarClan } from 'clashofclans.js';
 import { EMOJIS, HERO_PETS, BLUE_NUMBERS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -14,7 +14,7 @@ export default class CWLLineupCommand extends Command {
 	public constructor() {
 		super('cwl-lineup', {
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Lineup of the current/previous round.'
 			},
@@ -73,12 +73,14 @@ export default class CWLLineupCommand extends Command {
 			MENU: this.client.uuid(interaction.user.id)
 		};
 
-		const buttons = new MessageActionRow()
-			.addComponents(new MessageButton().setCustomId(CUSTOM_ID.PLAYER).setLabel('Show Player List').setStyle('SECONDARY'))
-			.addComponents(new MessageButton().setCustomId(CUSTOM_ID.COMPARE).setLabel('Compare').setStyle('SECONDARY').setDisabled(true));
+		const buttons = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(new ButtonBuilder().setCustomId(CUSTOM_ID.PLAYER).setLabel('Show Player List').setStyle(ButtonStyle.Secondary))
+			.addComponents(
+				new ButtonBuilder().setCustomId(CUSTOM_ID.COMPARE).setLabel('Compare').setStyle(ButtonStyle.Secondary).setDisabled(true)
+			);
 
-		const menus = new MessageActionRow().addComponents(
-			new MessageSelectMenu()
+		const menus = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+			new SelectMenuBuilder()
 				.setCustomId(CUSTOM_ID.MENU)
 				.setPlaceholder('Select War')
 				.addOptions([
@@ -110,7 +112,7 @@ export default class CWLLineupCommand extends Command {
 				clicked = Boolean(true);
 				buttons.components[0].setDisabled(true);
 				buttons.components[1].setDisabled(false);
-				return action.update({ embeds, components: [buttons, menus] });
+				await action.update({ embeds, components: [buttons, menus] });
 			}
 
 			if (action.customId === CUSTOM_ID.MENU && action.isSelectMenu()) {
@@ -186,7 +188,7 @@ export default class CWLLineupCommand extends Command {
 			clan.members.sort((a, b) => a.mapPosition - b.mapPosition),
 			opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
 		);
-		const embed = new MessageEmbed();
+		const embed = new EmbedBuilder();
 		embed.setAuthor({ name: `\u200e${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
 		embed.setDescription(
@@ -210,7 +212,7 @@ export default class CWLLineupCommand extends Command {
 
 	private getLineupList(state: string, round: number, data: { clan: WarClan; opponent: WarClan }) {
 		const embeds = [
-			new MessageEmbed()
+			new EmbedBuilder()
 				.setAuthor({
 					name: `\u200e${data.clan.name} (${data.clan.tag})`,
 					iconURL: data.clan.badgeUrls.medium,
@@ -224,7 +226,7 @@ export default class CWLLineupCommand extends Command {
 				)
 				.setFooter({ text: `Round #${round} (${states[state]})` }),
 
-			new MessageEmbed()
+			new EmbedBuilder()
 				.setAuthor({
 					name: `\u200e${data.opponent.name} (${data.opponent.tag})`,
 					iconURL: data.opponent.badgeUrls.medium,

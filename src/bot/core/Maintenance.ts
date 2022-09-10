@@ -49,8 +49,8 @@ export default class MaintenanceHandler {
 			if (setting.eventsChannel === SUPPORT_SERVER_GENERAL_CHANNEL_ID) continue;
 			const channel = this.client.channels.cache.get(setting.eventsChannel) as TextChannel | null;
 			if (
-				channel?.isText() &&
-				channel.permissionsFor(this.client.user!)?.has(['SEND_MESSAGES', 'USE_EXTERNAL_EMOJIS', 'VIEW_CHANNEL'])
+				channel?.isTextBased() &&
+				channel.permissionsFor(this.client.user!)?.has(['SendMessages', 'UseExternalEmojis', 'ViewChannel'])
 			) {
 				const message = i18n(this.isMaintenance ? 'common.maintenance_start' : 'common.maintenance_end', {
 					lng: channel.guild.preferredLocale,

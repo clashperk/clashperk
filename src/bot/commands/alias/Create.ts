@@ -7,7 +7,7 @@ export default class AliasCreateCommand extends Command {
 		super('alias-create', {
 			category: 'none',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
+			userPermissions: ['ManageGuild'],
 			defer: true,
 			ephemeral: true
 		});

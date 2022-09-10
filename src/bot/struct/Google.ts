@@ -1,19 +1,18 @@
-import qs from 'querystring';
-import { request as fetch } from 'undici';
+import fetch from 'node-fetch';
 
 const GOOGLE_MAPS_API_BASE_URL = 'https://maps.googleapis.com/maps/api';
 
 export default {
 	async location(query: string) {
-		const search = qs.stringify({
+		const search = new URLSearchParams({
 			address: query,
-			key: process.env.GOOGLE
-		});
+			key: process.env.GOOGLE!
+		}).toString();
 
 		return fetch(`${GOOGLE_MAPS_API_BASE_URL}/geocode/json?${search}`)
 			.then(
 				(res) =>
-					res.body.json() as unknown as {
+					res.json() as unknown as {
 						results: { geometry: { location: { lat: string; lng: string } }; formatted_address: string }[];
 					}
 			)
@@ -24,10 +23,10 @@ export default {
 		const location = (await this.location(query))?.results[0];
 		if (!location) return null;
 
-		const search = qs.stringify({
-			key: process.env.GOOGLE,
-			timestamp: new Date().getTime() / 1000
-		});
+		const search = new URLSearchParams({
+			key: process.env.GOOGLE!,
+			timestamp: (new Date().getTime() / 1000).toString()
+		}).toString();
 
 		const lat = location.geometry.location.lat;
 		const lng = location.geometry.location.lng;
@@ -35,7 +34,7 @@ export default {
 		const timezone = await fetch(`${GOOGLE_MAPS_API_BASE_URL}/timezone/json?${search}&location=${lat},${lng}`)
 			.then(
 				(res) =>
-					res.body.json() as unknown as {
+					res.json() as unknown as {
 						rawOffset: string;
 						dstOffset: string;
 						timeZoneName: string;

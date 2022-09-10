@@ -1,5 +1,5 @@
-import { fileURLToPath, URL } from 'url';
-import Discord, { Intents, Interaction, Message, Options, Snowflake, Sweepers } from 'discord.js';
+import { fileURLToPath, URL } from 'node:url';
+import Discord, { Message, Options, Snowflake, GatewayIntentBits, BaseInteraction } from 'discord.js';
 import { Db } from 'mongodb';
 import { container } from 'tsyringe';
 import { nanoid } from 'nanoid';
@@ -9,6 +9,7 @@ import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/index.
 import Logger from '../util/Logger.js';
 import { Settings } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
+import { ClientUtil } from '../util/ClientUtil.js';
 import { Automaton } from './Automaton.js';
 import { Database } from './Database.js';
 import Http from './Http.js';
@@ -34,6 +35,7 @@ export class Client extends Discord.Client {
 
 	public logger: Logger;
 	public db!: Db;
+	public util: ClientUtil;
 	public settings!: SettingsProvider;
 	public http = new Http();
 	public stats!: StatsHandler;
@@ -42,7 +44,8 @@ export class Client extends Discord.Client {
 	public i18n = i18n;
 
 	public redis = Redis.createClient({
-		url: process.env.REDIS_URL
+		url: process.env.REDIS_URL,
+		database: 1
 	});
 
 	public subscriber = this.redis.duplicate();
@@ -51,14 +54,20 @@ export class Client extends Discord.Client {
 	public rpcHandler!: RPCHandler;
 	public patrons!: Patrons;
 	public automaton!: Automaton;
-	public components = new Map<string, Snowflake[]>();
+	public components = new Map<string, string[]>();
 	public resolver!: Resolver;
 	public ownerId: string;
 
 	public constructor() {
 		super({
-			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_WEBHOOKS, Intents.FLAGS.GUILD_MESSAGES],
+			intents: [
+				GatewayIntentBits.Guilds,
+				GatewayIntentBits.GuildMembers,
+				GatewayIntentBits.GuildWebhooks,
+				GatewayIntentBits.GuildMessages
+			],
 			makeCache: Options.cacheWithLimits({
+				...Options.DefaultMakeCacheSettings,
 				PresenceManager: 0,
 				VoiceStateManager: 0,
 				GuildBanManager: 0,
@@ -72,21 +81,7 @@ export class Client extends Discord.Client {
 				GuildEmojiManager: 0,
 				ApplicationCommandManager: 0,
 				ThreadMemberManager: 0,
-				ThreadManager: {
-					sweepInterval: 5 * 60,
-					sweepFilter: Sweepers.filterByLifetime({
-						getComparisonTimestamp: (thread) => thread.archiveTimestamp!,
-						excludeFromSweep: (thread) => !thread.archived
-					})
-				},
-				MessageManager: {
-					maxSize: 10,
-					sweepInterval: 5 * 60,
-					sweepFilter: Sweepers.filterByLifetime({
-						lifetime: 10 * 60,
-						getComparisonTimestamp: (msg) => msg.createdTimestamp
-					})
-				},
+				MessageManager: 10,
 				UserManager: {
 					maxSize: 1,
 					keepOverLimit: (user) => user.id === this.user!.id
@@ -95,10 +90,18 @@ export class Client extends Discord.Client {
 					maxSize: 1,
 					keepOverLimit: (member) => member.id === this.user!.id
 				}
-			})
+			}),
+			sweepers: {
+				...Options.DefaultSweeperSettings,
+				messages: {
+					interval: 5 * 60,
+					lifetime: 10 * 60
+				}
+			}
 		});
 
 		this.logger = new Logger(this);
+		this.util = new ClientUtil(this);
 		this.ownerId = process.env.OWNER!;
 		container.register(Client, { useValue: this });
 	}
@@ -108,7 +111,7 @@ export class Client extends Discord.Client {
 		return userId === process.env.OWNER!;
 	}
 
-	public embed(guild: Message | Snowflake | Interaction) {
+	public embed(guild: Message | Snowflake | BaseInteraction) {
 		return this.settings.get<number>(typeof guild === 'string' ? guild : guild.guild!, Settings.COLOR, null);
 	}
 

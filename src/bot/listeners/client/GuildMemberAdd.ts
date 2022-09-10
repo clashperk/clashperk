@@ -1,7 +1,7 @@
 import { GuildMember } from 'discord.js';
 import { Collections } from '../../util/Constants.js';
 import { Listener } from '../../lib/index.js';
-import { UserInfo } from '../../types/index.js';
+import { UserInfoModel } from '../../types/index.js';
 
 export default class GuildMemberAddListener extends Listener {
 	public constructor() {
@@ -13,15 +13,13 @@ export default class GuildMemberAddListener extends Listener {
 	}
 
 	public async exec(member: GuildMember) {
-		console.log(`${member.user.tag} has joined ${member.guild.name}`);
-
 		const clans = await this.client.db
 			.collection<{ tag: string }>(Collections.CLAN_STORES)
 			.find({ guild: member.guild.id, active: true, paused: false }, { projection: { tag: 1, _id: 0 } })
 			.toArray();
 		if (!clans.length) return;
 
-		const data = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ user: member.id });
+		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: member.id });
 		if (!data?.entries.length) return;
 
 		const clanTags = clans.map((clan) => clan.tag);

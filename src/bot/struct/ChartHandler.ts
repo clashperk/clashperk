@@ -1,4 +1,4 @@
-import { request as fetch } from 'undici';
+import fetch from 'node-fetch';
 import { nanoid } from 'nanoid';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -66,7 +66,7 @@ export default {
 			headers: {
 				'Content-Type': 'application/json'
 			}
-		}).then((res) => res.body.json());
+		}).then((res) => res.json());
 
 		return url;
 	},
@@ -135,7 +135,7 @@ export default {
 			headers: {
 				'Content-Type': 'application/json'
 			}
-		}).then((res) => res.body.json());
+		}).then((res) => res.json());
 
 		return url;
 	}

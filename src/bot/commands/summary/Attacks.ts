@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
 import { Season } from '../../util/index.js';
@@ -8,7 +8,7 @@ export default class ClanSummaryCommand extends Command {
 		super('attack-summary', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			defer: true
 		});
 	}
@@ -22,12 +22,12 @@ export default class ClanSummaryCommand extends Command {
 		}
 
 		const members = await this.client.db
-			.collection(Collections.CLAN_MEMBERS)
-			.find({ season, clanTag: { $in: clans.map((clan) => clan.tag) } }, { projection: { attackWins: 1, name: 1 } })
+			.collection(Collections.PLAYER_SEASONS)
+			.find({ season, __clans: { $in: clans.map((clan) => clan.tag) } }, { projection: { attackWins: 1, name: 1 } })
 			.sort({ attackWins: -1 })
 			.limit(100)
 			.toArray();
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${interaction.guild!.name} Attack Wins` })
 			.setDescription(

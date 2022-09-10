@@ -10,7 +10,7 @@ export default class WarExport extends Command {
 		super('export-wars', {
 			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+			clientPermissions: ['AttachFiles', 'EmbedLinks'],
 			defer: true
 		});
 	}

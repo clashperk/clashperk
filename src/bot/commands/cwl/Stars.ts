@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageActionRow, MessageEmbed, MessageSelectMenu } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, EmbedBuilder, SelectMenuBuilder } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
@@ -7,7 +7,7 @@ export default class CWLStarsCommand extends Command {
 	public constructor() {
 		super('cwl-stars', {
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Shows total CWL stars and attacks.'
 			},
@@ -104,7 +104,7 @@ export default class CWLStarsCommand extends Command {
 		if (!leaderboard.length) return interaction.editReply(this.i18n('command.cwl.no_rounds', { lng: interaction.locale }));
 		leaderboard.sort((a, b) => b.dest - a.dest).sort((a, b) => b.stars - a.stars);
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
 			.setDescription(
@@ -123,7 +123,7 @@ export default class CWLStarsCommand extends Command {
 			);
 
 		const customID = this.client.uuid(interaction.user.id);
-		const menu = new MessageSelectMenu()
+		const menu = new SelectMenuBuilder()
 			.setCustomId(customID)
 			.setPlaceholder('Select a filter!')
 			.addOptions([
@@ -138,7 +138,10 @@ export default class CWLStarsCommand extends Command {
 					description: '[Offense - Defense] stars comparison.'
 				}
 			]);
-		const msg = await interaction.editReply({ embeds: [embed], components: [new MessageActionRow({ components: [menu] })] });
+		const msg = await interaction.editReply({
+			embeds: [embed],
+			components: [new ActionRowBuilder<SelectMenuBuilder>({ components: [menu] })]
+		});
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
@@ -147,13 +150,13 @@ export default class CWLStarsCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.customId === customID && action.isSelectMenu()) {
 				if (action.values[0] === 'TOTAL') {
-					return action.update({ embeds: [embed] });
+					await action.update({ embeds: [embed] });
 				}
 
 				if (action.values[0] === 'GAINED') {
 					leaderboard.sort((a, b) => b.stars - a.stars).sort((a, b) => b.stars - b.lost - (a.stars - a.lost));
 
-					const embed = new MessageEmbed()
+					const embed = new EmbedBuilder()
 						.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
 						.setColor(this.client.embed(interaction))
 						.setDescription(
@@ -172,7 +175,7 @@ export default class CWLStarsCommand extends Command {
 							].join('\n')
 						);
 
-					return action.update({ embeds: [embed] });
+					await action.update({ embeds: [embed] });
 				}
 			}
 		});

@@ -6,7 +6,7 @@ export default class ExportCommand extends Command {
 		super('export', {
 			category: 'activity',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+			clientPermissions: ['AttachFiles', 'EmbedLinks'],
 			description: {
 				content: ['Export war or season stats to excel for all clans.']
 			}

@@ -1,4 +1,4 @@
-import { MessageEmbed, GuildMember, MessageActionRow, MessageButton, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, GuildMember, ActionRowBuilder, ButtonBuilder, CommandInteraction, ButtonStyle } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -8,7 +8,7 @@ export default class LinkCreateCommand extends Command {
 		super('link-create', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: ['Links a Player or Clan to a Discord account.']
 			},
@@ -43,7 +43,7 @@ export default class LinkCreateCommand extends Command {
 		};
 
 		if (tags.every((a) => a.ok)) {
-			const embed = new MessageEmbed().setDescription(
+			const embed = new EmbedBuilder().setDescription(
 				[
 					this.i18n('command.link.create.prompt', { lng: interaction.locale }),
 					'',
@@ -55,9 +55,9 @@ export default class LinkCreateCommand extends Command {
 				CLAN: this.client.uuid(interaction.user.id),
 				PLAYER: this.client.uuid(interaction.user.id)
 			};
-			const row = new MessageActionRow()
-				.addComponents(new MessageButton().setStyle('PRIMARY').setLabel('Link Player').setCustomId(CUSTOM_ID.PLAYER))
-				.addComponents(new MessageButton().setStyle('PRIMARY').setLabel('Link Clan').setCustomId(CUSTOM_ID.CLAN));
+			const row = new ActionRowBuilder<ButtonBuilder>()
+				.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel('Link Player').setCustomId(CUSTOM_ID.PLAYER))
+				.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel('Link Clan').setCustomId(CUSTOM_ID.CLAN));
 
 			const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 			const collector = msg.createMessageComponentCollector({

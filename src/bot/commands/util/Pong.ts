@@ -4,10 +4,10 @@ import { BIT_FIELD } from '../../util/Constants.js';
 
 export default class InviteCommand extends Command {
 	public constructor() {
-		super('invite', {
+		super('pong', {
 			category: 'config',
 			description: { content: 'Get support server and bot invite link.' },
-			defer: false
+			defer: true
 		});
 	}
 
@@ -30,6 +30,6 @@ export default class InviteCommand extends Command {
 				].join('\n')
 			);
 
-		return interaction.reply({ embeds: [embed], ephemeral: true });
+		return interaction.editReply({ embeds: [embed] });
 	}
 }

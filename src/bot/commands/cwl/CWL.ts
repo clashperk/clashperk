@@ -6,7 +6,7 @@ export default class CWLCommand extends Command {
 		super('cwl', {
 			category: 'war',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: ['CWL season overview and summary.']
 			}

@@ -4,13 +4,14 @@ import { Collections } from '../../util/Constants.js';
 import { Season } from '../../util/index.js';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
+import { achievements, PlayerSeasonModel } from '../../types/index.js';
 
 export default class ExportSeason extends Command {
 	public constructor() {
 		super('export-season', {
 			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+			clientPermissions: ['AttachFiles', 'EmbedLinks'],
 			defer: true
 		});
 	}
@@ -62,7 +63,7 @@ export default class ExportSeason extends Command {
 		const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season)))).flat();
 		for (const mem of members) {
 			const user = memberTags.find((user) => user.tag === mem.tag)?.user;
-			mem.user_tag = guildMembers.get(user!)?.user.tag;
+			mem.userTag = guildMembers.get(user!)?.user.tag;
 		}
 		guildMembers.clear();
 
@@ -100,33 +101,36 @@ export default class ExportSeason extends Command {
 			sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
 		}
 
-		const achievements = [
-			'War League Legend',
-			'Gold Grab',
-			'Elixir Escapade',
-			'Heroic Heist',
-			'Games Champion',
-			'Aggressive Capitalism',
-			'Most Valuable Clanmate'
-		];
+		const __achievements = (
+			[
+				'War League Legend',
+				'Gold Grab',
+				'Elixir Escapade',
+				'Heroic Heist',
+				'Games Champion',
+				'Aggressive Capitalism',
+				'Most Valuable Clanmate'
+			] as const
+		).map((a) => achievements[a]);
 		sheet.addRows(
 			members.map((m) => {
 				const rows = [
 					m.name,
 					m.tag,
-					m.user_tag,
-					m.clanName,
+					m.userTag,
+					m.clans[m.clanTag].name,
 					m.townHallLevel,
-					m.donations.gained,
-					m.donationsReceived.gained,
+					m.clans[m.clanTag].donations.total,
+					m.clans[m.clanTag].donationsReceived.total,
 					m.attackWins,
-					m.versusBattleWins.gained,
-					m.trophies.gained,
-					m.currentTrophies,
-					m.versusTrophies.gained,
-					m.warStars.gained,
-					...achievements.map((ac) => m.achievements.find((a: { name: string }) => a.name === ac)?.gained ?? 0),
-					m.score
+					m.versusBattleWins.current - m.versusBattleWins.initial,
+					m.trophies.current - m.trophies.initial,
+					m.trophies.current,
+					m.versusTrophies.current - m.versusTrophies.initial,
+					m.clanWarStars.current - m.clanWarStars.initial,
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+					...__achievements.map((ac) => (m[ac]?.current ?? 0) - (m[ac]?.initial ?? 0)),
+					m.score ?? 0
 				];
 
 				if (!patron) rows.splice(2, 1);
@@ -152,12 +156,12 @@ export default class ExportSeason extends Command {
 		});
 	}
 
-	private async aggregationQuery(clan: Clan, season_id: string) {
-		const cursor = this.client.db.collection(Collections.CLAN_MEMBERS).aggregate([
+	private async aggregationQuery(clan: Clan, seasonId: string) {
+		const cursor = this.client.db.collection(Collections.PLAYER_SEASONS).aggregate<PlayerSeasonModelAggregated>([
 			{
 				$match: {
-					clanTag: clan.tag,
-					season: season_id,
+					season: seasonId,
+					__clans: clan.tag,
 					tag: { $in: clan.memberList.map((m) => m.tag) }
 				}
 			},
@@ -166,26 +170,57 @@ export default class ExportSeason extends Command {
 					from: Collections.LAST_SEEN,
 					localField: 'tag',
 					foreignField: 'tag',
-					as: 'lastSeen'
+					as: 'lastSeen',
+					pipeline: [{ $project: { seasons: 1 } }]
 				}
 			},
 			{
 				$unwind: {
-					path: '$lastSeen'
+					path: '$lastSeen',
+					preserveNullAndEmptyArrays: true
 				}
 			},
 			{
 				$set: {
-					score: `$lastSeen.seasons.${season_id}`
+					score: `$lastSeen.seasons.${seasonId}`,
+					clans: {
+						[clan.tag]: `$clans.${clan.tag}`
+					},
+					clanTag: clan.tag
 				}
 			},
 			{
 				$unset: 'lastSeen'
 			},
 			{
-				$sort: {
-					createdAt: -1
+				$lookup: {
+					from: Collections.CLAN_GAMES_POINTS,
+					localField: 'tag',
+					foreignField: 'tag',
+					as: 'clanGamesPoints',
+					pipeline: [
+						{
+							$match: {
+								season: seasonId
+							}
+						},
+						{
+							$project: {
+								initial: 1,
+								current: 1
+							}
+						}
+					]
 				}
+			},
+			{
+				$unwind: {
+					path: '$clanGamesPoints',
+					preserveNullAndEmptyArrays: true
+				}
+			},
+			{
+				$sort: { _id: -1 }
 			}
 		]);
 
@@ -210,3 +245,9 @@ export default class ExportSeason extends Command {
 		return array;
 	}
 }
+
+type PlayerSeasonModelAggregated = PlayerSeasonModel & {
+	score?: number;
+	clanTag: string;
+	userTag?: string;
+};

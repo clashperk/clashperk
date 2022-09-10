@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction, MessageSelectMenu, MessageActionRow, Interaction } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
@@ -11,7 +11,7 @@ export default class RushedCommand extends Command {
 		super('rushed', {
 			category: 'search',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: [
 					'Rushed troops, spells, and heroes.',
@@ -47,9 +47,9 @@ export default class RushedCommand extends Command {
 		}));
 
 		const customID = this.client.uuid(interaction.user.id);
-		const menu = new MessageSelectMenu().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
+		const menu = new SelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
 
-		await msg.edit({ components: [new MessageActionRow({ components: [menu] })] });
+		await interaction.editReply({ components: [new ActionRowBuilder<SelectMenuBuilder>({ components: [menu] })] });
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
@@ -69,8 +69,8 @@ export default class RushedCommand extends Command {
 		});
 	}
 
-	private embed(data: Player, interaction: Interaction) {
-		const embed = new MessageEmbed().setAuthor({ name: `${data.name} (${data.tag})` });
+	private embed(data: Player, interaction: CommandInteraction) {
+		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const apiTroops = this.apiTroops(data);
 		const Troops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal && !(troop.name in SUPER_TROOPS)).filter((unit) => {
@@ -130,21 +130,23 @@ export default class RushedCommand extends Command {
 			});
 
 			if (unitsArray.length) {
-				embed.addField(
-					`${category.title} (${unitsArray.length})`,
-					Util.chunk(unitsArray, 4)
-						.map((chunks) =>
-							chunks
-								.map((unit) => {
-									const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-									const level = this.padStart(unit.level);
-									const maxLevel = this.padEnd(unit.hallMaxLevel);
-									return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
-								})
-								.join(' ')
-						)
-						.join('\n')
-				);
+				embed.addFields([
+					{
+						name: `${category.title} (${unitsArray.length})`,
+						value: Util.chunk(unitsArray, 4)
+							.map((chunks) =>
+								chunks
+									.map((unit) => {
+										const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+										const level = this.padStart(unit.level);
+										const maxLevel = this.padEnd(unit.hallMaxLevel);
+										return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
+									})
+									.join(' ')
+							)
+							.join('\n')
+					}
+				]);
 			}
 		}
 
@@ -160,7 +162,7 @@ export default class RushedCommand extends Command {
 			].join('\n')
 		);
 
-		if (embed.fields.length) {
+		if (embed.data.fields?.length) {
 			embed.setFooter({ text: `Total ${this.totalPercentage(data.townHallLevel, Troops.length)}` });
 		} else {
 			embed.setDescription(
@@ -181,7 +183,7 @@ export default class RushedCommand extends Command {
 			members.push({ name: obj.name, rushed: this.reduce(obj), townHallLevel: obj.townHallLevel });
 		}
 
-		const embed = new MessageEmbed().setAuthor({ name: `${data.name} (${data.tag})` }).setDescription(
+		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` }).setDescription(
 			[
 				'Rushed Percentage',
 				'```\u200eTH   LAB  HERO  NAME',

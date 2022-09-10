@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
 import { Command } from '../../lib/index.js';
 
 export default class ClanAttacksCommand extends Command {
@@ -6,7 +6,7 @@ export default class ClanAttacksCommand extends Command {
 		super('attacks', {
 			category: 'search',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: 'Shows attacks and defense of all members.'
 			},
@@ -34,7 +34,7 @@ export default class ClanAttacksCommand extends Command {
 		members.sort((a, b) => b.attackWins - a.attackWins);
 
 		const getEmbed = () => {
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setColor(this.client.embed(interaction))
 				.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
 				.setDescription(
@@ -59,8 +59,11 @@ export default class ClanAttacksCommand extends Command {
 		const embed = getEmbed();
 
 		const customId = this.client.uuid(interaction.user.id);
-		const button = new MessageButton().setCustomId(customId).setStyle('SECONDARY').setLabel('Sort by Defense');
-		const msg = await interaction.editReply({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const button = new ButtonBuilder().setCustomId(customId).setStyle(ButtonStyle.Secondary).setLabel('Sort by Defense');
+		const msg = await interaction.editReply({
+			embeds: [embed],
+			components: [new ActionRowBuilder<ButtonBuilder>({ components: [button] })]
+		});
 
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => action.customId === customId && action.user.id === interaction.user.id,

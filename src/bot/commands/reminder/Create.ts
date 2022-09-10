@@ -1,24 +1,51 @@
-import { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu, TextChannel } from 'discord.js';
+import {
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	SelectMenuBuilder,
+	TextChannel,
+	ButtonStyle,
+	PermissionsString
+} from 'discord.js';
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
-import { Collections } from '../../util/Constants.js';
+import { Collections, missingPermissions } from '../../util/Constants.js';
 import { Reminder } from '../../struct/RemindScheduler.js';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
 		super('reminder-create', {
 			category: 'reminder',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['EMBED_LINKS'],
+			userPermissions: ['ManageGuild'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});
 	}
 
+	private readonly permissions: PermissionsString[] = [
+		'AddReactions',
+		'EmbedLinks',
+		'UseExternalEmojis',
+		'SendMessages',
+		'ReadMessageHistory',
+		'ManageWebhooks',
+		'ViewChannel'
+	];
+
+	public args(interaction: CommandInteraction<'cached'>): Args {
+		return {
+			channel: {
+				match: 'CHANNEL',
+				default: interaction.channel!
+			}
+		};
+	}
+
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { duration: string; message: string; channel?: TextChannel; clans?: string }
+		args: { duration: string; message: string; channel: TextChannel; clans?: string }
 	) {
 		const tags = args.clans === '*' ? [] : this.client.resolver.resolveArgs(args.clans);
 		const clans =
@@ -29,6 +56,25 @@ export default class ReminderCreateCommand extends Command {
 		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+		}
+
+		const permission = missingPermissions(args.channel, interaction.guild.members.me!, this.permissions);
+		if (permission.missing) {
+			return interaction.editReply(
+				this.i18n('command.reminder.create.missing_access', {
+					lng: interaction.locale,
+					channel: args.channel.toString(), // eslint-disable-line
+					permission: permission.missingPerms
+				})
+			);
+		}
+
+		const webhook = await this.client.storage.getWebhook(args.channel);
+		if (!webhook) {
+			return interaction.editReply(
+				// eslint-disable-next-line
+				this.i18n('command.reminder.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+			);
 		}
 
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).countDocuments({ guild: interaction.guild.id });
@@ -70,8 +116,8 @@ export default class ReminderCreateCommand extends Command {
 		};
 
 		const mutate = (disable = false) => {
-			const row0 = new MessageActionRow().addComponents(
-				new MessageSelectMenu()
+			const row0 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+				new SelectMenuBuilder()
 					.setPlaceholder('Select War Types')
 					.setMaxValues(3)
 					.setCustomId(CUSTOM_ID.WAR_TYPE)
@@ -95,8 +141,8 @@ export default class ReminderCreateCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row1 = new MessageActionRow().addComponents(
-				new MessageSelectMenu()
+			const row1 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+				new SelectMenuBuilder()
 					.setPlaceholder('Select Attacks Remaining')
 					.setMaxValues(2)
 					.setCustomId(CUSTOM_ID.REMAINING)
@@ -116,8 +162,8 @@ export default class ReminderCreateCommand extends Command {
 					])
 					.setDisabled(disable)
 			);
-			const row2 = new MessageActionRow().addComponents(
-				new MessageSelectMenu()
+			const row2 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+				new SelectMenuBuilder()
 					.setPlaceholder('Select Town Halls')
 					.setCustomId(CUSTOM_ID.TOWN_HALLS)
 					.setMaxValues(13)
@@ -137,8 +183,8 @@ export default class ReminderCreateCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row3 = new MessageActionRow().addComponents(
-				new MessageSelectMenu()
+			const row3 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+				new SelectMenuBuilder()
 					.setPlaceholder('Select Clan Roles')
 					.setCustomId(CUSTOM_ID.ROLES)
 					.setMaxValues(4)
@@ -167,8 +213,8 @@ export default class ReminderCreateCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row4 = new MessageActionRow().addComponents(
-				new MessageButton().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle('PRIMARY').setDisabled(disable)
+			const row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
 			);
 
 			return [row0, row1, row2, row3, row4];
@@ -186,27 +232,27 @@ export default class ReminderCreateCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.customId === CUSTOM_ID.WAR_TYPE && action.isSelectMenu()) {
 				state.warTypes = action.values;
-				return action.update({ components: mutate() });
+				await action.update({ components: mutate() });
 			}
 
 			if (action.customId === CUSTOM_ID.REMAINING && action.isSelectMenu()) {
 				state.remaining = action.values;
-				return action.update({ components: mutate() });
+				await action.update({ components: mutate() });
 			}
 
 			if (action.customId === CUSTOM_ID.TOWN_HALLS && action.isSelectMenu()) {
 				state.townHalls = action.values;
-				return action.update({ components: mutate() });
+				await action.update({ components: mutate() });
 			}
 
 			if (action.customId === CUSTOM_ID.ROLES && action.isSelectMenu()) {
 				state.roles = action.values;
-				return action.update({ components: mutate() });
+				await action.update({ components: mutate() });
 			}
 
 			if (action.customId === CUSTOM_ID.CLANS && action.isSelectMenu()) {
 				state.clans = action.values;
-				return action.update({ components: mutate() });
+				await action.update({ components: mutate() });
 			}
 
 			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {
@@ -215,11 +261,12 @@ export default class ReminderCreateCommand extends Command {
 					// TODO: remove this
 					_id: new ObjectId(),
 					guild: interaction.guild.id,
-					channel: args.channel?.id ?? interaction.channel!.id,
+					channel: args.channel.id,
 					remaining: state.remaining.map((num) => Number(num)),
 					townHalls: state.townHalls.map((num) => Number(num)),
 					roles: state.roles,
 					clans: state.clans,
+					webhook: { id: webhook.id, token: webhook.token! },
 					warTypes: state.warTypes,
 					message: args.message.trim(),
 					duration: dur,

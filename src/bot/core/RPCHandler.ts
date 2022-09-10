@@ -20,6 +20,7 @@ export default class RPCHandler {
 	private readonly clanGamesLog = new ClanGamesLog(this.client);
 	private readonly lastSeenLog = new LastSeenLog(this.client);
 	private readonly clanFeedLog = new ClanFeedLog(this.client);
+
 	public roleManager = new RoleManager(this.client);
 
 	public constructor(private readonly client: Client) {
@@ -38,6 +39,7 @@ export default class RPCHandler {
 	private async broadcast() {
 		await this.client.subscriber.subscribe('channel', async (message) => {
 			const data = JSON.parse(message);
+			// console.log(data);
 
 			if (this.paused) return;
 			if (this.queue.remaining >= 2000) return;
@@ -49,17 +51,16 @@ export default class RPCHandler {
 						await this.donationLog.exec(data.tag, data);
 						break;
 					case Flags.LAST_SEEN_LOG:
-						await this.lastSeenLog.exec(data.tag, data.clan, data.members);
+						await this.lastSeenLog.exec(data.tag, data);
 						break;
 					case Flags.CLAN_FEED_LOG:
-						await this.clanFeedLog.exec(data.tag, data);
-						await this.roleManager.exec(data.tag, data);
+						await Promise.allSettled([this.clanFeedLog.exec(data.tag, data), this.roleManager.exec(data.tag, data)]);
 						break;
 					case Flags.CLAN_EMBED_LOG:
-						await this.clanEmbedLog.exec(data.tag, data.clan);
+						await this.clanEmbedLog.exec(data.tag, data);
 						break;
 					case Flags.CLAN_GAMES_LOG:
-						await this.clanGamesLog.exec(data.tag, data.clan, data);
+						await this.clanGamesLog.exec(data.tag, data);
 						break;
 					case Flags.CLAN_WAR_LOG:
 						await this.clanWarLog.exec(data.clan.tag, data);
@@ -67,6 +68,8 @@ export default class RPCHandler {
 					default:
 						break;
 				}
+			} catch (e) {
+				console.error(e);
 			} finally {
 				this.queue.shift();
 			}

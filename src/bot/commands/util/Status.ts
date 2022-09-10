@@ -1,6 +1,6 @@
 import os from 'os';
 import moment from 'moment';
-import { MessageEmbed, CommandInteraction, Message, Guild } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, Message, Guild } from 'discord.js';
 // import { version } from '../../../../package.json';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
@@ -11,7 +11,7 @@ export default class StatusCommand extends Command {
 		super('status', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: 'Shows some statistics of the bot.'
 			},
@@ -43,18 +43,48 @@ export default class StatusCommand extends Command {
 		}
 
 		const owner = await this.client.users.fetch(this.client.ownerId);
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(guild.id))
 			.setTitle('Stats')
-			.setAuthor({ name: `${this.client.user!.username}`, iconURL: this.client.user!.displayAvatarURL({ format: 'png' }) })
-			.addField('Memory Usage', `${memory.toFixed(2)} MB`, true)
-			.addField('Free Memory', `${this.freemem.toFixed(2)} MB`, true)
-			.addField('Uptime', moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }), true)
-			.addField('Servers', guilds.toLocaleString(), true)
-			.addField('Clans Total', `${(await this.count(Collections.CLAN_STORES)).toLocaleString()}`, true)
-			.addField('Players Total', `${(await this.count(Collections.LAST_SEEN)).toLocaleString()}`, true)
-			.addField('Shard', `${guild.shard.id}/${this.client.shard!.count}`, true)
-			.setFooter({ text: `© ${new Date().getFullYear()} ${owner.tag}`, iconURL: owner.displayAvatarURL({ dynamic: true }) });
+			.setAuthor({ name: `${this.client.user!.username}`, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
+			.addFields([
+				{
+					name: 'Memory Usage',
+					value: `${memory.toFixed(2)} MB`,
+					inline: true
+				},
+				{
+					name: 'Free Memory',
+					value: `${this.freemem.toFixed(2)} MB`,
+					inline: true
+				},
+				{
+					name: 'Uptime',
+					value: moment.duration(process.uptime() * 1000).format('D[d], H[h], m[m], s[s]', { trim: 'both mid' }),
+					inline: true
+				},
+				{
+					name: 'Servers',
+					value: guilds.toLocaleString(),
+					inline: true
+				},
+				{
+					name: 'Clans Total',
+					value: `${(await this.count(Collections.CLAN_STORES)).toLocaleString()}`,
+					inline: true
+				},
+				{
+					name: 'Players Total',
+					value: `${(await this.count(Collections.LAST_SEEN)).toLocaleString()}`,
+					inline: true
+				},
+				{
+					name: 'Shard',
+					value: `${guild.shard.id}/${this.client.shard!.count}`,
+					inline: true
+				}
+			])
+			.setFooter({ text: `© ${new Date().getFullYear()} ${owner.tag}`, iconURL: owner.displayAvatarURL({ forceStatic: false }) });
 		return embed;
 	}
 

@@ -76,6 +76,42 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
+			db.collection(Collections.PLAYER_SEASONS).createIndexes([
+				{
+					key: { tag: 1, season: 1 },
+					unique: true
+				},
+				{
+					key: { __clans: 1, season: 1 }
+				}
+			]),
+
+			db.collection(Collections.CLAN_GAMES_POINTS).createIndexes([
+				{
+					key: { tag: 1, season: 1 },
+					unique: true
+				},
+				{
+					key: { __clans: 1, season: 1 }
+				}
+			]),
+
+			db.collection(Collections.CAPITAL_CONTRIBUTIONS).createIndexes([
+				{
+					key: { tag: 1, season: 1 }
+				},
+				{
+					key: { 'clan.tag': 1 }
+				}
+			]),
+
+			db.collection(Collections.RAID_ATTACKS).createIndexes([
+				{
+					key: { tag: 1, weekId: 1 },
+					unique: true
+				}
+			]),
+
 			db.collection(Collections.CLAN_STORES).createIndexes([
 				{
 					key: { guild: 1, tag: 1 },
@@ -243,7 +279,7 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
-			db.collection(Collections.REMINDERS_TEMP).createIndexes([
+			db.collection(Collections.SCHEDULERS).createIndexes([
 				{
 					key: { key: 1 }
 				},

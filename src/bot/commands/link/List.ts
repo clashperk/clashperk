@@ -1,4 +1,4 @@
-import { Collection, GuildMember, CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { Collection, GuildMember, CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -10,7 +10,7 @@ export default class LinkListCommand extends Command {
 	public constructor() {
 		super('link-list', {
 			category: 'none',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			channel: 'guild',
 			defer: true
 		});
@@ -56,16 +56,16 @@ export default class LinkListCommand extends Command {
 		const embed = this.getEmbed(guildMembers, clan, showTags!, onDiscord, offDiscord, notInDiscord);
 		if (!onDiscord.length) return interaction.editReply({ embeds: [embed.setColor(this.client.embed(interaction))] });
 
-		const row = new MessageActionRow()
+		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
-				new MessageButton()
-					.setStyle('SECONDARY')
+				new ButtonBuilder()
+					.setStyle(ButtonStyle.Secondary)
 					.setEmoji(EMOJIS.REFRESH)
 					.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id }))
 			)
 			.addComponents(
-				new MessageButton()
-					.setStyle('SECONDARY')
+				new ButtonBuilder()
+					.setStyle(ButtonStyle.Secondary)
 					.setEmoji(EMOJIS.HASH)
 					.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, showTags: true }))
 			);
@@ -120,11 +120,11 @@ export default class LinkListCommand extends Command {
 			{ maxLength: 4096 }
 		);
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
 			.setDescription(chunks[0]);
 		if (chunks.length > 1) {
-			chunks.slice(1).map((chunk) => embed.addField('\u200b', chunk));
+			embed.addFields(chunks.slice(1).map((chunk) => ({ name: '\u200b', value: chunk })));
 		}
 
 		return embed;

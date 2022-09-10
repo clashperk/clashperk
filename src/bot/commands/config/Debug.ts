@@ -1,4 +1,4 @@
-import { CommandInteraction, TextChannel, PermissionString, Interaction } from 'discord.js';
+import { CommandInteraction, TextChannel, PermissionsString, Interaction } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import ms from 'ms';
 import { Args, Command } from '../../lib/index.js';
@@ -27,14 +27,15 @@ export default class DebugCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, { channel }: { channel: TextChannel }) {
-		const permissions: PermissionString[] = [
-			'VIEW_CHANNEL',
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'ADD_REACTIONS',
-			'ATTACH_FILES',
-			'USE_EXTERNAL_EMOJIS',
-			'READ_MESSAGE_HISTORY'
+		const permissions: PermissionsString[] = [
+			'ViewChannel',
+			'SendMessages',
+			'EmbedLinks',
+			'AddReactions',
+			'AttachFiles',
+			'UseExternalEmojis',
+			'ReadMessageHistory',
+			'ManageWebhooks'
 		];
 
 		const clans = await this.client.storage.find(interaction.guild.id);
@@ -47,10 +48,14 @@ export default class DebugCommand extends Command {
 			wars: Number(data.WAR_LOOP || 0)
 		}));
 
-		const UEE_FOR_SLASH = channel.permissionsFor(interaction.guild.roles.everyone)!.has('USE_EXTERNAL_EMOJIS');
+		const UEE_FOR_SLASH = channel.permissionsFor(interaction.guild.roles.everyone)!.has('UseExternalEmojis');
 		const emojis = UEE_FOR_SLASH
 			? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
 			: { cross: '❌', tick: '☑️', none: '⬛' };
+
+		const webhooks = channel.permissionsFor(this.client.user!.id)?.has(['ManageWebhooks', 'ViewChannel'])
+			? await channel.fetchWebhooks()
+			: null;
 
 		const chunks = Util.splitMessage(
 			[
@@ -66,12 +71,15 @@ export default class DebugCommand extends Command {
 				'**Channel Permissions**',
 				permissions
 					.map((perm) => {
-						const hasPerm = channel.permissionsFor(interaction.guild.me!)!.has(perm);
+						const hasPerm = channel.permissionsFor(interaction.guild.members.me!)!.has(perm);
 						return `${hasPerm ? emojis.tick : emojis.cross} ${this.fixName(perm)}`;
 					})
 					.join('\n'),
 				'',
-				'**Slash Command Permission**',
+				'**Webhooks**',
+				webhooks?.size ?? 0,
+				'',
+				'**Webhook Permissions (Temporary)**',
 				`${UEE_FOR_SLASH ? emojis.tick : emojis.cross} Use External Emojis ${UEE_FOR_SLASH ? '' : '(for @everyone)'}`,
 				'',
 				`**Loop Time ${cycle.clans && cycle.players && cycle.wars ? '' : '(Processing...)'}**`,
@@ -110,8 +118,9 @@ export default class DebugCommand extends Command {
 	private fixName(perm: string) {
 		if (perm === 'VIEW_CHANNEL') return 'Read Messages';
 		return perm
-			.replace(/_/g, ' ')
+			.replace(/([A-Z])/g, ' $1')
 			.toLowerCase()
+			.trim()
 			.replace(/\b(\w)/g, (char) => char.toUpperCase());
 	}
 }

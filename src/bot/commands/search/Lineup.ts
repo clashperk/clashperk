@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, CommandInteraction } from 'discord.js';
 import { ClanWarMember, Player, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, EMOJIS, HERO_PETS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -15,7 +15,7 @@ export default class LineupCommand extends Command {
 		super('lineup', {
 			category: 'war',
 			channel: 'guild',
-			clientPermissions: ['USE_EXTERNAL_EMOJIS', 'EMBED_LINKS'],
+			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],
 			description: {
 				content: ['Shows current war lineup details.']
 			},
@@ -27,7 +27,7 @@ export default class LineupCommand extends Command {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
@@ -64,7 +64,7 @@ export default class LineupCommand extends Command {
 			clan.members.sort((a, b) => a.mapPosition - b.mapPosition),
 			opponent.members.sort((a, b) => a.mapPosition - b.mapPosition)
 		);
-		const embed = new MessageEmbed();
+		const embed = new EmbedBuilder();
 		embed.setAuthor({ name: `\u200e${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
 
 		embed.setDescription(

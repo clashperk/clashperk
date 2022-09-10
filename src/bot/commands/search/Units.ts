@@ -1,5 +1,5 @@
 import { Player } from 'clashofclans.js';
-import { CommandInteraction, Message, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, SelectMenuBuilder, ButtonStyle } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
@@ -10,7 +10,7 @@ export default class UnitsCommand extends Command {
 		super('units', {
 			category: 'search',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Levels of troops, spells and heroes.'
 			},
@@ -32,27 +32,22 @@ export default class UnitsCommand extends Command {
 			SELECT_ACCOUNT: this.client.uuid(interaction.user.id)
 		};
 
-		const button = new MessageButton().setCustomId(CUSTOM_ID.MAX_LEVEL).setLabel('Max Level').setStyle('SECONDARY');
-		const msg = await interaction.editReply({ embeds: [embed], components: [new MessageActionRow({ components: [button] })] });
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setCustomId(CUSTOM_ID.MAX_LEVEL).setLabel('Max Level').setStyle(ButtonStyle.Secondary)
+		);
+		const msg = await interaction.editReply({ embeds: [embed], components: [buttonRow] });
 
 		const players = data.user ? await this.client.resolver.getPlayers(data.user.id) : [];
-		if (players.length) {
-			const options = players.map((op) => ({
-				description: op.tag,
-				label: op.name,
-				value: op.tag,
-				emoji: TOWN_HALLS[op.townHallLevel]
-			}));
-
-			const menu = new MessageSelectMenu()
-				.setCustomId(CUSTOM_ID.SELECT_ACCOUNT)
-				.setPlaceholder('Select an account!')
-				.addOptions(options);
-
-			await msg.edit({
-				components: [new MessageActionRow({ components: [button] }), new MessageActionRow({ components: [menu] })]
-			});
-		}
+		const options = players.map((op) => ({
+			description: op.tag,
+			label: op.name,
+			value: op.tag,
+			emoji: TOWN_HALLS[op.townHallLevel]
+		}));
+		const menuRow = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+			new SelectMenuBuilder().setCustomId(CUSTOM_ID.SELECT_ACCOUNT).setPlaceholder('Select an account!').addOptions(options)
+		);
+		await interaction.editReply({ components: options.length ? [buttonRow, menuRow] : [buttonRow] });
 
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
@@ -68,10 +63,8 @@ export default class UnitsCommand extends Command {
 					`Units for TH${data!.townHallLevel} ${data!.builderHallLevel ? `and BH${data!.builderHallLevel}` : ''}`
 				);
 
-				const msg = action.message as Message;
-				(msg.components[0].components[0] as MessageButton).setLabel('Town Hall Max Level').setCustomId(CUSTOM_ID.TOWN_HALL_MAX);
-
-				await action.update({ embeds: [embed], components: msg.components });
+				buttonRow.components[0].setLabel('Town Hall Max Level').setCustomId(CUSTOM_ID.TOWN_HALL_MAX);
+				await action.update({ embeds: [embed], components: options.length ? [buttonRow, menuRow] : [buttonRow] });
 			}
 
 			if (action.customId === CUSTOM_ID.TOWN_HALL_MAX) {
@@ -81,15 +74,13 @@ export default class UnitsCommand extends Command {
 					`Units for TH${data!.townHallLevel} Max ${data!.builderHallLevel ? `and BH${data!.builderHallLevel} Max` : ''}`
 				);
 
-				const msg = action.message as Message;
-				(msg.components[0].components[0] as MessageButton).setLabel('Max Level').setCustomId(CUSTOM_ID.MAX_LEVEL);
-
-				await action.update({ embeds: [embed], components: msg.components });
+				buttonRow.components[0].setLabel('Max Level').setCustomId(CUSTOM_ID.TOWN_HALL_MAX);
+				await action.update({ embeds: [embed], components: options.length ? [buttonRow, menuRow] : [buttonRow] });
 			}
 
 			if (action.customId === CUSTOM_ID.SELECT_ACCOUNT && action.isSelectMenu()) {
 				data = players.find((en) => en.tag === action.values[0])!;
-				const option = (action.message as Message).components[0].components[0].customId === CUSTOM_ID.MAX_LEVEL;
+				const option = action.message.components[0].components[0].customId === CUSTOM_ID.MAX_LEVEL;
 				const embed = this.embed(data, option).setColor(this.client.embed(interaction));
 				await action.update({ embeds: [embed] });
 			}
@@ -104,7 +95,7 @@ export default class UnitsCommand extends Command {
 	}
 
 	private embed(data: Player, option = true) {
-		const embed = new MessageEmbed().setAuthor({ name: `${data.name} (${data.tag})` });
+		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})` });
 
 		const Troops = RAW_TROOPS_DATA.TROOPS.filter((troop) => !troop.seasonal && !(troop.name in SUPER_TROOPS))
 			.filter((unit) => {
@@ -162,21 +153,23 @@ export default class UnitsCommand extends Command {
 			});
 
 			if (unitsArray.length) {
-				embed.addField(
-					category.title,
-					this.chunk(unitsArray)
-						.map((chunks) =>
-							chunks
-								.map((unit) => {
-									const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
-									const level = this.padStart(unit.level);
-									const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
-									return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
-								})
-								.join(' ')
-						)
-						.join('\n')
-				);
+				embed.addFields([
+					{
+						name: category.title,
+						value: this.chunk(unitsArray)
+							.map((chunks) =>
+								chunks
+									.map((unit) => {
+										const unitIcon = (unit.village === 'home' ? HOME_TROOPS : BUILDER_TROOPS)[unit.name];
+										const level = this.padStart(unit.level);
+										const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
+										return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
+									})
+									.join(' ')
+							)
+							.join('\n')
+					}
+				]);
 			}
 		}
 
@@ -202,23 +195,25 @@ export default class UnitsCommand extends Command {
 
 		const activeSuperTroops = data.troops.filter((en) => en.superTroopIsActive).map((en) => en.name);
 		if (superTroops.length && data.townHallLevel >= 11) {
-			embed.addField(
-				`Super Troops (${activeSuperTroops.length ? 'Active' : 'Usable'})`,
-				[
-					this.chunk(superTroops.filter((en) => (activeSuperTroops.length ? activeSuperTroops.includes(en.name) : true)))
-						.map((chunks) =>
-							chunks
-								.map((unit) => {
-									const unitIcon = SUPER_TROOPS[unit.name];
-									const level = this.padStart(unit.level);
-									const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
-									return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
-								})
-								.join(' ')
-						)
-						.join('\n')
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: `Super Troops (${activeSuperTroops.length ? 'Active' : 'Usable'})`,
+					value: [
+						this.chunk(superTroops.filter((en) => (activeSuperTroops.length ? activeSuperTroops.includes(en.name) : true)))
+							.map((chunks) =>
+								chunks
+									.map((unit) => {
+										const unitIcon = SUPER_TROOPS[unit.name];
+										const level = this.padStart(unit.level);
+										const maxLevel = option ? this.padEnd(unit.hallMaxLevel) : this.padEnd(unit.maxLevel);
+										return `${unitIcon} \`\u200e${level}/${maxLevel}\u200f\``;
+									})
+									.join(' ')
+							)
+							.join('\n')
+					].join('\n')
+				}
+			]);
 		}
 
 		return embed;

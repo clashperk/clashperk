@@ -1,5 +1,5 @@
 import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { CommandInteraction, Interaction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, Interaction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
 import { Season, Util } from '../../util/index.js';
@@ -11,7 +11,7 @@ export default class ExportCWL extends Command {
 	public constructor() {
 		super('export-cwl', {
 			category: 'none',
-			clientPermissions: ['ATTACH_FILES', 'EMBED_LINKS'],
+			clientPermissions: ['AttachFiles', 'EmbedLinks'],
 			description: {
 				content: 'Export war stats to excel for all clans.'
 			},
@@ -21,7 +21,7 @@ export default class ExportCWL extends Command {
 
 	public condition(interaction: Interaction<'cached'>) {
 		if (!this.client.patrons.get(interaction)) {
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setDescription(this.i18n('common.patron_only', { lng: interaction.locale }))
 				.setImage('https://cdn.discordapp.com/attachments/806179502508998657/846700124134178826/unknown.png');
 			return { embeds: [embed] };

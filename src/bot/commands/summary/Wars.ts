@@ -1,5 +1,5 @@
 import { ClanWar, WarClan } from 'clashofclans.js';
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -17,7 +17,7 @@ export default class WarSummaryCommand extends Command {
 		super('war-summary', {
 			category: 'none',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});
 	}
@@ -26,27 +26,29 @@ export default class WarSummaryCommand extends Command {
 		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
 		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
-		const embed = new MessageEmbed();
+		const embed = new EmbedBuilder();
 		for (const clan of clans) {
 			const data = (await this.getWAR(clan.tag)) as ClanWar & { round?: number };
 			if (!data.ok) continue;
 			if (data.state === 'notInWar') continue;
 
-			embed.addField(
-				`${data.clan.name} ${EMOJIS.VS_BLUE} ${data.opponent.name} ${data.round ? `(CWL Round #${data.round})` : ''}`,
-				[
-					`${this.getLeaderBoard(data.clan, data.opponent)}`,
-					`${states[data.state]} ${Util.getRelativeTime(moment(this._getTime(data)).toDate().getTime())}`,
-					'\u200b'
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: `${data.clan.name} ${EMOJIS.VS_BLUE} ${data.opponent.name} ${data.round ? `(CWL Round #${data.round})` : ''}`,
+					value: [
+						`${this.getLeaderBoard(data.clan, data.opponent)}`,
+						`${states[data.state]} ${Util.getRelativeTime(moment(this._getTime(data)).toDate().getTime())}`,
+						'\u200b'
+					].join('\n')
+				}
+			]);
 		}
 
-		if (!embed.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
-		const embeds = Array(Math.ceil(embed.fields.length / 15))
+		if (!embed.data.fields?.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+		const embeds = Array(Math.ceil(embed.data.fields.length / 15))
 			.fill(0)
-			.map(() => embed.fields.splice(0, 15))
-			.map((fields) => new MessageEmbed({ color: this.client.embed(interaction), fields }));
+			.map(() => embed.data.fields!.splice(0, 15))
+			.map((fields) => new EmbedBuilder({ color: this.client.embed(interaction), fields }));
 		if (embeds.length === 1) return interaction.editReply({ embeds: [embeds.shift()!] });
 		for (const embed of embeds) {
 			await interaction.followUp({ embeds: [embed] });

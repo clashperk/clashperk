@@ -7,7 +7,7 @@ export default class AliasDeleteCommand extends Command {
 		super('alias-delete', {
 			category: 'none',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
+			userPermissions: ['ManageGuild'],
 			ephemeral: true,
 			defer: true
 		});

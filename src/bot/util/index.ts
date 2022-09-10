@@ -1,7 +1,5 @@
-import { APIMessage } from 'discord-api-types/v9';
-import * as Discord from 'discord.js';
-import 'moment-duration-format';
 import moment from 'moment';
+import 'moment-duration-format';
 
 const DURATION = {
 	SECOND: 1000,
@@ -62,12 +60,8 @@ export class Season {
 	}
 }
 
-// @ts-expect-error
-export class Util extends Discord.Util {
-	public constructor() {
-		super();
-	}
-
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+export class Util {
 	public static tagToId(tag: string) {
 		const id = tag
 			.substring(1)
@@ -76,8 +70,7 @@ export class Util extends Discord.Util {
 		return id;
 	}
 
-	public static override splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
-		text = Util.verifyString(text);
+	public static splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
 		if (text.length <= maxLength) return [text];
 		let splitText = [text];
 		if (Array.isArray(char)) {
@@ -115,16 +108,6 @@ export class Util extends Discord.Util {
 		}
 
 		return `#${tag}`;
-	}
-
-	public static editMessage(client: Discord.Client, channelId: string, messageId: string, data: unknown): Promise<APIMessage> {
-		// @ts-expect-error
-		return client.api.channels[channelId].messages[messageId].patch({ data });
-	}
-
-	public static sendMessage(client: Discord.Client, channelId: string, data: unknown): Promise<APIMessage> {
-		// @ts-expect-error
-		return client.api.channels[channelId].messages.post({ data });
 	}
 
 	public static escapeBackTick(name: string) {

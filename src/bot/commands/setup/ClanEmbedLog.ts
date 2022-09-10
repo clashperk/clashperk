@@ -1,25 +1,50 @@
-import { Util, CommandInteraction, MessageActionRow, MessageButton, TextChannel, Modal, MessageEmbed, Interaction } from 'discord.js';
+import {
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	TextChannel,
+	ModalBuilder,
+	EmbedBuilder,
+	Interaction,
+	ButtonStyle,
+	ComponentType,
+	TextInputStyle,
+	cleanContent,
+	PermissionsString,
+	WebhookClient,
+	AnyThreadChannel
+} from 'discord.js';
 import { Clan } from 'clashofclans.js';
-import { Collections, Flags } from '../../util/Constants.js';
+import { Collections, Flags, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { EMOJIS, CWL_LEAGUES, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis.js';
-import { UserInfo } from '../../types/index.js';
+import { UserInfoModel } from '../../types/index.js';
 
 export default class ClanEmbedCommand extends Command {
 	public constructor() {
 		super('setup-clan-embed', {
 			category: 'none',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
-			clientPermissions: ['EMBED_LINKS'],
+			userPermissions: ['ManageGuild'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true,
 			ephemeral: true
 		});
 	}
 
+	private readonly permissions: PermissionsString[] = [
+		'AddReactions',
+		'EmbedLinks',
+		'UseExternalEmojis',
+		'SendMessages',
+		'ReadMessageHistory',
+		'ManageWebhooks',
+		'ViewChannel'
+	];
+
 	public condition(interaction: Interaction<'cached'>) {
 		if (!this.client.patrons.get(interaction.guild.id)) {
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setDescription(this.i18n('common.patron_only', { lng: interaction.locale }))
 				.setImage('https://i.imgur.com/txkD6q7.png');
 			return { embeds: [embed] };
@@ -48,10 +73,21 @@ export default class ClanEmbedCommand extends Command {
 			color,
 			accepts,
 			channel
-		}: { tag: string; description?: string; color?: number; accepts?: string; channel: TextChannel }
+		}: { tag: string; description?: string; color?: number; accepts?: string; channel: TextChannel | AnyThreadChannel }
 	) {
 		const data = await this.client.resolver.enforceSecurity(interaction, tag);
 		if (!data) return;
+
+		const permission = missingPermissions(channel, interaction.guild.members.me!, this.permissions);
+		if (permission.missing) {
+			return interaction.editReply(
+				this.i18n('command.setup.enable.missing_access', {
+					lng: interaction.locale,
+					channel: channel.toString(), // eslint-disable-line
+					permission: permission.missingPerms
+				})
+			);
+		}
 
 		const user = await this.getUser(data);
 		if (!user) return interaction.editReply('Clan leader is not linked to the bot. Use `/link` command to link the player account.');
@@ -64,7 +100,7 @@ export default class ClanEmbedCommand extends Command {
 
 		const m = await interaction.editReply({
 			embeds: [
-				new MessageEmbed().setAuthor({ name: `${data.name} | Clan Embed`, iconURL: data.badgeUrls.medium }).setDescription(
+				new EmbedBuilder().setAuthor({ name: `${data.name} | Clan Embed`, iconURL: data.badgeUrls.medium }).setDescription(
 					[
 						data.description,
 						'',
@@ -75,9 +111,9 @@ export default class ClanEmbedCommand extends Command {
 				)
 			],
 			components: [
-				new MessageActionRow()
-					.addComponents(new MessageButton().setLabel('Customize').setStyle('SECONDARY').setCustomId(__customIds.a))
-					.addComponents(new MessageButton().setLabel('Save').setStyle('SECONDARY').setCustomId(__customIds.b))
+				new ActionRowBuilder<ButtonBuilder>()
+					.addComponents(new ButtonBuilder().setLabel('Customize').setStyle(ButtonStyle.Secondary).setCustomId(__customIds.a))
+					.addComponents(new ButtonBuilder().setLabel('Save').setStyle(ButtonStyle.Secondary).setCustomId(__customIds.b))
 			]
 		});
 
@@ -88,16 +124,16 @@ export default class ClanEmbedCommand extends Command {
 					time: 5 * 60 * 1000
 				})
 				.then(async (interaction) => {
-					const modal = new Modal({
+					const modal = new ModalBuilder({
 						customId: __customIds.c,
 						title: `${data.name} | Clan Embed`,
 						components: [
 							{
-								type: 'ACTION_ROW',
+								type: ComponentType.ActionRow,
 								components: [
 									{
-										type: 'TEXT_INPUT',
-										style: 'PARAGRAPH',
+										type: ComponentType.TextInput,
+										style: TextInputStyle.Paragraph,
 										customId: 'description',
 										label: 'Clan Description',
 										placeholder: 'Write anything or `auto` to sync with the clan.',
@@ -106,11 +142,11 @@ export default class ClanEmbedCommand extends Command {
 								]
 							},
 							{
-								type: 'ACTION_ROW',
+								type: ComponentType.ActionRow,
 								components: [
 									{
-										type: 'TEXT_INPUT',
-										style: 'PARAGRAPH',
+										type: ComponentType.TextInput,
+										style: TextInputStyle.Paragraph,
 										customId: 'accepts',
 										label: 'Requirements',
 										placeholder: 'Write anything or `auto` to sync with the clan.',
@@ -133,8 +169,8 @@ export default class ClanEmbedCommand extends Command {
 									filter: (interaction) => interaction.customId === __customIds.c
 								})
 								.then(async (action) => {
-									description = action.fields.getField('description').value;
-									accepts = action.fields.getField('accepts').value;
+									description = action.fields.getTextInputValue('description');
+									accepts = action.fields.getTextInputValue('accepts');
 									await action.deferUpdate();
 								});
 						} catch {
@@ -165,7 +201,7 @@ export default class ClanEmbedCommand extends Command {
 				: `🌐 ${data.location.name}`
 			: `${EMOJIS.WRONG} None`;
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)
@@ -173,69 +209,86 @@ export default class ClanEmbedCommand extends Command {
 				[
 					`${EMOJIS.CLAN} **${data.clanLevel}** ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
 					'',
-					description?.toLowerCase() === 'auto' ? data.description : Util.cleanContent(description ?? '', interaction.channel!)
+					description?.toLowerCase() === 'auto' ? data.description : cleanContent(description ?? '', interaction.channel!)
 				].join('\n')
 			);
 		if (color) embed.setColor(color);
 
-		embed.addField(
-			'Clan Leader',
-			[
-				`${EMOJIS.OWNER} ${user.toString()} (${
-					data.memberList.filter((m) => m.role === 'leader').map((m) => `${m.name}`)[0] || 'None'
-				})`
-			].join('\n')
-		);
+		embed.addFields([
+			{
+				name: 'Clan Leader',
+				value: [
+					`${EMOJIS.OWNER} ${user.toString()} (${
+						data.memberList.filter((m) => m.role === 'leader').map((m) => `${m.name}`)[0] || 'None'
+					})`
+				].join('\n')
+			}
+		]);
 
-		embed.addField(
-			'Requirements',
-			[
-				`${EMOJIS.TOWNHALL} ${
-					!accepts || accepts.toLowerCase() === 'auto'
-						? data.requiredTownhallLevel
-							? `TH ${data.requiredTownhallLevel}+`
-							: 'Any'
-						: Util.cleanContent(accepts, interaction.channel!)
-				}`,
-				'**Trophies Required**',
-				`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
-				`**Location** \n${location}`
-			].join('\n')
-		);
+		embed.addFields([
+			{
+				name: 'Requirements',
+				value: [
+					`${EMOJIS.TOWNHALL} ${
+						!accepts || accepts.toLowerCase() === 'auto'
+							? data.requiredTownhallLevel
+								? `TH ${data.requiredTownhallLevel}+`
+								: 'Any'
+							: cleanContent(accepts, interaction.channel!)
+					}`,
+					'**Trophies Required**',
+					`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
+					`**Location** \n${location}`
+				].join('\n')
+			}
+		]);
 
-		embed.addField(
-			'War Performance',
-			[
-				`${EMOJIS.OK} ${data.warWins} Won ${
-					data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''
-				}`,
-				'**War Frequency & Streak**',
-				`${
-					data.warFrequency.toLowerCase() === 'morethanonceperweek'
-						? '🎟️ More Than Once Per Week'
-						: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`
-				} ${'🏅'} ${data.warWinStreak}`,
-				'**War League**',
-				`${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
-			].join('\n')
-		);
+		embed.addFields([
+			{
+				name: 'War Performance',
+				value: [
+					`${EMOJIS.OK} ${data.warWins} Won ${
+						data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''
+					}`,
+					'**War Frequency & Streak**',
+					`${
+						data.warFrequency.toLowerCase() === 'morethanonceperweek'
+							? '🎟️ More Than Once Per Week'
+							: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`
+					} ${'🏅'} ${data.warWinStreak}`,
+					'**War League**',
+					`${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
+				].join('\n')
+			}
+		]);
 
-		embed.addField(
-			'Town Halls',
-			[
-				townHalls
-					.slice(0, 7)
-					.map((th) => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`)
-					.join(' ')
-			].join('\n')
-		);
+		embed.addFields([
+			{
+				name: 'Town Halls',
+				value: [
+					townHalls
+						.slice(0, 7)
+						.map((th) => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`)
+						.join(' ')
+				].join('\n')
+			}
+		]);
 
 		embed.setFooter({ text: 'Synced' });
 		embed.setTimestamp();
 
 		description = description?.toLowerCase() === 'auto' ? 'auto' : description ?? '';
 		accepts = !accepts || accepts.toLowerCase() === 'auto' ? 'auto' : accepts;
-		const mutate = async (message: string, channel: string) => {
+
+		const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
+		if (!webhook) {
+			return interaction.editReply(
+				// eslint-disable-next-line
+				this.i18n('command.setup.enable.too_many_webhooks', { lng: interaction.locale, channel: channel.toString() })
+			);
+		}
+
+		const mutate = async (message: string, channel: string, webhook: { id: string; token: string }) => {
 			const id = await this.client.storage.register(interaction, {
 				op: Flags.CLAN_EMBED_LOG,
 				guild: interaction.guild.id,
@@ -246,9 +299,10 @@ export default class ClanEmbedCommand extends Command {
 				message,
 				embed: {
 					userId: user.id,
-					accepts: Util.cleanContent(accepts!, interaction.channel!),
-					description: Util.cleanContent(description!, interaction.channel!)
-				}
+					accepts: cleanContent(accepts!, interaction.channel!),
+					description: cleanContent(description!, interaction.channel!)
+				},
+				webhook: { id: webhook.id, token: webhook.token }
 			});
 
 			this.client.rpcHandler.add(id, {
@@ -261,18 +315,19 @@ export default class ClanEmbedCommand extends Command {
 		const existing = await this.client.db
 			.collection(Collections.CLAN_EMBED_LOGS)
 			.findOne({ tag: data.tag, guild: interaction.guild.id });
+
 		if (!existing) {
-			const msg = await interaction.channel!.send({ embeds: [embed] });
-			return mutate(msg.id, channel.id);
+			const msg = await webhook.send(channel.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
+			return mutate(msg.id, channel.id, { id: webhook.id, token: webhook.token! });
 		}
 
 		const customIds = {
 			edit: this.client.uuid(interaction.user.id),
 			create: this.client.uuid(interaction.user.id)
 		};
-		const row = new MessageActionRow()
-			.addComponents(new MessageButton().setCustomId(customIds.edit).setStyle('SECONDARY').setLabel('Edit Existing Embed'))
-			.addComponents(new MessageButton().setCustomId(customIds.create).setStyle('PRIMARY').setLabel('Create New Embed'));
+		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(new ButtonBuilder().setCustomId(customIds.edit).setStyle(ButtonStyle.Secondary).setLabel('Edit Existing Embed'))
+			.addComponents(new ButtonBuilder().setCustomId(customIds.create).setStyle(ButtonStyle.Primary).setLabel('Create New Embed'));
 
 		const messageURL = this.getMessageURL(interaction.guild.id, existing.channel, existing.message);
 		const msg = await interaction.editReply({
@@ -288,26 +343,39 @@ export default class ClanEmbedCommand extends Command {
 			if (action.customId === customIds.edit) {
 				try {
 					const channel = interaction.guild.channels.cache.get(existing.channel);
-					await (channel as TextChannel)!.messages.edit(existing.message, { embeds: [embed] });
+					const webhook = new WebhookClient(existing.webhook);
+					const msg = await webhook.editMessage(
+						existing.message,
+						channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] }
+					);
+					await mutate(existing.message, msg.channel_id, existing.webhook);
 				} catch {
 					row.components[0].setDisabled(true);
-					return action.update({
+					await action.update({
 						content: '**Failed to update the existing embed!**',
 						components: [row]
 					});
+					return;
 				}
 
 				await action.update({
 					components: [],
 					content: `**Successfully updated the existing embed. [Jump ↗️](<${messageURL}>)**`
 				});
-				return mutate(existing.message, existing.channel);
 			}
 
 			if (action.customId === customIds.create) {
 				await action.update({ content: '**Successfully created a new embed.**', components: [] });
-				const msg = await interaction.channel!.send({ embeds: [embed] });
-				return mutate(msg.id, channel.id);
+				const channel = interaction.guild.channels.cache.get(existing.channel);
+				try {
+					const webhook = new WebhookClient(existing.webhook);
+					const msg = await webhook.send(channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
+					return await mutate(msg.id, msg.channel_id, existing.webhook);
+				} catch (error: any) {
+					this.client.logger.error(error, { label: 'ClanEmbedSetup' });
+					const msg = await webhook.send(channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
+					return mutate(msg.id, msg.channel.id, { id: webhook.id, token: webhook.token! });
+				}
 			}
 		});
 
@@ -324,7 +392,7 @@ export default class ClanEmbedCommand extends Command {
 	private async getUser(clan: Clan): Promise<{ id: string; name: string; toString: () => string; entries?: any[] } | null> {
 		const leader = clan.memberList.find((m) => m.role === 'leader');
 		if (leader) {
-			const user = await this.client.db.collection<UserInfo>(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': leader.tag });
+			const user = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': leader.tag });
 			if (user) return { id: user.user, name: leader.name, toString: () => `<@${user.user}>`, ...user };
 		}
 		return null;

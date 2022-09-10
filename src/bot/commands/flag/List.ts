@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Collections } from '../../util/Constants.js';
 import { RED_NUMBERS } from '../../util/Emojis.js';
@@ -11,7 +11,7 @@ export default class FlagListCommand extends Command {
 		super('flag-list', {
 			category: 'none',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
+			userPermissions: ['ManageGuild'],
 			description: {
 				content: ['Shows the list of all flagged players.']
 			},
@@ -29,7 +29,7 @@ export default class FlagListCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { export?: boolean }) {
 		const page = 1;
-		const embed = new MessageEmbed().setColor(this.client.embed(interaction));
+		const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
 		const data = await this.client.db.collection(Collections.FLAGS).find({ guild: interaction.guild.id }).toArray();
 
 		let buffer = null;

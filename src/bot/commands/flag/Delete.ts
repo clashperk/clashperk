@@ -7,7 +7,7 @@ export default class FlagDeleteCommand extends Command {
 		super('flag-delete', {
 			category: 'none',
 			channel: 'guild',
-			userPermissions: ['MANAGE_GUILD'],
+			userPermissions: ['ManageGuild'],
 			defer: true
 		});
 	}

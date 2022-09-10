@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageEmbed } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, escapeInlineCode } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
@@ -7,7 +7,7 @@ export default class CWLMembersCommand extends Command {
 	public constructor() {
 		super('cwl-members', {
 			category: 'cwl',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Shows the full list of CWL participants.'
 			},
@@ -49,14 +49,14 @@ export default class CWLMembersCommand extends Command {
 		}, []);*/
 
 		let members = '';
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${clan.name} (${clan.tag}) ~ ${memberList.length}`, iconURL: clan.badgeUrls.medium });
 
 		for (const member of memberList.sort((a, b) => b.townHallLevel - a.townHallLevel)) {
 			members += `\u200e${this.padStart(member.townHallLevel)} ${this.heroes(member.heroes)
 				.map((x) => this.padStart(x.level))
-				.join(' ')}  ${Util.escapeInlineCode(member.name)}`;
+				.join(' ')}  ${escapeInlineCode(member.name)}`;
 			members += '\n';
 		}
 

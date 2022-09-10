@@ -1,30 +1,15 @@
 import { fileURLToPath } from 'url';
-import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'discord-api-types/v9';
+import { ApplicationCommandOptionType, APIApplicationCommandOption } from 'discord-api-types/v10';
 import moment from 'moment';
 import i18next from 'i18next';
 import { command } from '../locales/en.js';
 import { TranslationKey } from '../src/bot/util/i18n.js';
 import { Backend } from '../src/bot/util/Backend.js';
+import { defaultOptions, fallbackLng } from '../locales/index.js';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({
-	debug: false,
-	cleanCode: true,
-	lng: 'en-US',
-	fallbackLng: {
-		'fr': ['fr-FR', 'en-US'], // French/Français
-		'it': ['it-IT', 'en-US'], // Italian/Italiano
-		'de': ['de-DE', 'en-US'], // German/Deutsch
-		'no': ['no-NO', 'en-US'], // Norwegian/Norsk
-		'nl': ['nl-NL', 'en-US'], // Dutch/Nederlands
-		'es-ES': ['es-ES', 'en-US'], // Spanish/Español
-		'pt-BR': ['pt-BR', 'en-US'], // Portuguese/Português
-		'uk': ['uk-UA', 'en-US'], // Ukrainian/Українська
-		'default': ['en-US'] // Default Fallback Language
-	},
-	preload: ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'nl-NL', 'it-IT', 'de-DE', 'no-NO', 'pt-BR', 'uk-UA'],
-	defaultNS: 'translation',
-	ns: ['translation'],
+	...defaultOptions,
 	backend: { paths: [fileURLToPath(locales)] }
 });
 
@@ -50,10 +35,10 @@ export enum CommandType {
 }
 
 export const translation = (text: TranslationKey): Record<string, string> => {
-	return ['fr', 'en-GB', 'nl', 'es-ES', 'de', 'uk'].reduce<Record<string, string>>((acc, lang) => {
+	return Object.keys(fallbackLng).reduce<Record<string, string>>((record, lang) => {
 		const locale = i18next.t(text, { lng: lang, escapeValue: false });
-		acc[lang] = locale.substring(0, 100);
-		return acc;
+		record[lang] = locale;
+		return record;
 	}, {});
 };
 
@@ -104,6 +89,20 @@ export const COMMANDS: Command[] = [
 				name: 'tag',
 				description: command.clan_games.options.tag.description,
 				description_localizations: translation('command.clan_games.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'clan-capital',
+		description: command.clan_capital.description,
+		description_localizations: translation('command.clan_capital.description'),
+		options: [
+			{
+				name: 'tag',
+				description: command.clan_capital.options.tag.description,
+				description_localizations: translation('command.clan_capital.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}

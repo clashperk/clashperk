@@ -1,4 +1,4 @@
-import { GuildMember, CommandInteraction, Collection, Interaction, MessageEmbed } from 'discord.js';
+import { GuildMember, CommandInteraction, Collection, Interaction, EmbedBuilder } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
 import { Collections } from '../../util/Constants.js';
@@ -34,14 +34,14 @@ export default class ExportClanMembersCommand extends Command {
 		super('export-members', {
 			category: 'export',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS'],
+			clientPermissions: ['EmbedLinks'],
 			defer: true
 		});
 	}
 
 	public condition(interaction: Interaction<'cached'>) {
 		if (!this.client.patrons.get(interaction)) {
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setDescription(this.i18n('common.patron_only', { lng: interaction.locale }))
 				.setImage('https://i.imgur.com/Uc5G2oS.png');
 			return { embeds: [embed] };

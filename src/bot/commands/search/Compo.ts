@@ -1,4 +1,4 @@
-import { MessageEmbed, CommandInteraction, Util } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, parseEmoji } from 'discord.js';
 import { TOWN_HALLS, EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 
@@ -7,7 +7,7 @@ export default class CompoCommand extends Command {
 		super('compo', {
 			category: 'search',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'USE_EXTERNAL_EMOJIS'],
+			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			description: {
 				content: 'Calculates TH compositions of a clan.'
 			},
@@ -37,8 +37,8 @@ export default class CompoCommand extends Command {
 			.sort((a, b) => b.level - a.level);
 		const avg = townHalls.reduce((p, c) => p + c.total * c.level, 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
 
-		const { id } = Util.parseEmoji(EMOJIS.TOWNHALL)!;
-		const embed = new MessageEmbed()
+		const { id } = parseEmoji(EMOJIS.TOWNHALL)!;
+		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
 			.setColor(this.client.embed(interaction))
 			.setThumbnail(clan.badgeUrls.small)

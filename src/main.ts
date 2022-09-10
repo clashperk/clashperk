@@ -1,11 +1,12 @@
 import 'reflect-metadata';
 import 'moment-duration-format';
 
-import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
 import { RewriteFrames } from '@sentry/integrations';
 import * as Sentry from '@sentry/node';
 import i18next from 'i18next';
+import { defaultOptions } from '../locales/index.js';
 import { Client } from './bot/struct/Client.js';
 import { Backend } from './bot/util/Backend.js';
 
@@ -13,23 +14,7 @@ const client = new Client();
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({
-	debug: false,
-	cleanCode: true,
-	lng: 'en-US',
-	fallbackLng: {
-		'fr': ['fr-FR', 'en-US'], // French/Français
-		'it': ['it-IT', 'en-US'], // Italian/Italiano
-		'de': ['de-DE', 'en-US'], // German/Deutsch
-		'no': ['no-NO', 'en-US'], // Norwegian/Norsk
-		'nl': ['nl-NL', 'en-US'], // Dutch/Nederlands
-		'es-ES': ['es-ES', 'en-US'], // Spanish/Español
-		'pt-BR': ['pt-BR', 'en-US'], // Portuguese/Português
-		'uk': ['uk-UA', 'en-US'], // Ukrainian/Українська
-		'default': ['en-US'] // Default Fallback Language
-	},
-	preload: ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'nl-NL', 'it-IT', 'de-DE', 'no-NO', 'pt-BR', 'uk-UA'],
-	defaultNS: 'translation',
-	ns: ['translation'],
+	...defaultOptions,
 	backend: { paths: [fileURLToPath(locales)] }
 });
 

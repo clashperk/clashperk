@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageActionRow, MessageButton, MessageEmbed } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
 import { PlayerItem } from 'clashofclans.js';
 import { EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -30,7 +30,7 @@ export default class MembersCommand extends Command {
 		super('members', {
 			category: 'search',
 			channel: 'guild',
-			clientPermissions: ['EMBED_LINKS', 'ATTACH_FILES'],
+			clientPermissions: ['EmbedLinks', 'AttachFiles'],
 			description: {
 				content: 'Clan members with Town Halls and Heroes.'
 			},
@@ -71,7 +71,7 @@ export default class MembersCommand extends Command {
 			.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
 			.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setFooter({
 				text: `Total ${fetched.length === data.members ? data.members : `${fetched.length}/${data.members}`}/50`
@@ -123,13 +123,23 @@ export default class MembersCommand extends Command {
 		];
 
 		const components = [
-			new MessageActionRow()
+			new ActionRowBuilder<ButtonBuilder>()
 				.addComponents(
-					new MessageButton().setLabel('Discord Links').setCustomId(discord).setStyle('SECONDARY').setEmoji(EMOJIS.DISCORD)
+					new ButtonBuilder()
+						.setLabel('Discord Links')
+						.setCustomId(discord)
+						.setStyle(ButtonStyle.Secondary)
+						.setEmoji(EMOJIS.DISCORD)
 				)
-				.addComponents(new MessageButton().setEmoji('📥').setLabel('Download').setCustomId(download).setStyle('SECONDARY')),
-			new MessageActionRow().addComponents(
-				new MessageButton().setEmoji(EMOJIS.CROSS_SWORD).setLabel('War Preference').setCustomId(warPref).setStyle('SECONDARY')
+				.addComponents(
+					new ButtonBuilder().setEmoji('📥').setLabel('Download').setCustomId(download).setStyle(ButtonStyle.Secondary)
+				),
+			new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder()
+					.setEmoji(EMOJIS.CROSS_SWORD)
+					.setLabel('War Preference')
+					.setCustomId(warPref)
+					.setStyle(ButtonStyle.Secondary)
 			)
 		];
 

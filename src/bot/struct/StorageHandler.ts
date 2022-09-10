@@ -1,6 +1,6 @@
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import { ObjectId, Collection } from 'mongodb';
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, NewsChannel, TextChannel } from 'discord.js';
 import { ClanWarLeagueGroup } from 'clashofclans.js';
 import { Collections, Flags } from '../util/Constants.js';
 import { Client } from './Client.js';
@@ -94,7 +94,11 @@ export default class StorageHandler {
 							guild: data.guild,
 							name: data.name,
 							channel: data.channel,
-							color: data.color
+							color: data.color,
+							webhook: {
+								id: data.webhook.id,
+								token: data.webhook.token
+							}
 						},
 						$min: {
 							createdAt: new Date()
@@ -113,7 +117,11 @@ export default class StorageHandler {
 							guild: data.guild,
 							name: data.name,
 							channel: data.channel,
-							role: data.role
+							role: data.role,
+							webhook: {
+								id: data.webhook.id,
+								token: data.webhook.token
+							}
 						},
 						$min: {
 							createdAt: new Date()
@@ -133,7 +141,11 @@ export default class StorageHandler {
 							name: data.name,
 							channel: data.channel,
 							color: data.color,
-							message: data.message
+							message: data.message,
+							webhook: {
+								id: data.webhook.id,
+								token: data.webhook.token
+							}
 						},
 						$min: {
 							createdAt: new Date()
@@ -153,7 +165,11 @@ export default class StorageHandler {
 							name: data.name,
 							channel: data.channel,
 							color: data.color,
-							message: data.message
+							message: data.message,
+							webhook: {
+								id: data.webhook.id,
+								token: data.webhook.token
+							}
 						},
 						$min: {
 							createdAt: new Date()
@@ -192,7 +208,11 @@ export default class StorageHandler {
 							tag: data.tag,
 							guild: data.guild,
 							name: data.name,
-							channel: data.channel
+							channel: data.channel,
+							webhook: {
+								id: data.webhook.id,
+								token: data.webhook.token
+							}
 						},
 						$min: {
 							createdAt: new Date()
@@ -250,6 +270,177 @@ export default class StorageHandler {
 		}
 
 		return null;
+	}
+
+	public async getWebhookWorkloads(guild: string) {
+		const result = await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.aggregate<Record<string, { name: string; tag: string; webhook: { id: string; token: string } }[]>>([
+				{ $match: { guild: guild } },
+				{
+					$facet: {
+						[Collections.DONATION_LOGS]: [
+							{
+								$lookup: {
+									from: Collections.DONATION_LOGS,
+									localField: '_id',
+									foreignField: 'clanId',
+									as: 'webhook',
+									pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
+								}
+							},
+							{
+								$unwind: '$webhook'
+							},
+							{
+								$project: {
+									tag: 1,
+									name: 1,
+									webhook: 1
+								}
+							}
+						],
+						[Collections.CLAN_FEED_LOGS]: [
+							{
+								$lookup: {
+									from: 'ClanFeedLogs',
+									localField: '_id',
+									foreignField: 'clanId',
+									as: 'webhook',
+									pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
+								}
+							},
+							{
+								$unwind: '$webhook'
+							},
+							{
+								$project: {
+									tag: 1,
+									name: 1,
+									webhook: 1
+								}
+							}
+						],
+						[Collections.LAST_SEEN_LOGS]: [
+							{
+								$lookup: {
+									from: Collections.LAST_SEEN_LOGS,
+									localField: '_id',
+									foreignField: 'clanId',
+									as: 'webhook',
+									pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
+								}
+							},
+							{
+								$unwind: '$webhook'
+							},
+							{
+								$project: {
+									tag: 1,
+									name: 1,
+									webhook: 1
+								}
+							}
+						],
+						[Collections.CLAN_GAMES_LOGS]: [
+							{
+								$lookup: {
+									from: Collections.CLAN_GAMES_LOGS,
+									localField: '_id',
+									foreignField: 'clanId',
+									as: 'webhook',
+									pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
+								}
+							},
+							{
+								$unwind: '$webhook'
+							},
+							{
+								$project: {
+									tag: 1,
+									name: 1,
+									webhook: 1
+								}
+							}
+						],
+						[Collections.CLAN_WAR_LOGS]: [
+							{
+								$lookup: {
+									from: Collections.CLAN_WAR_LOGS,
+									localField: '_id',
+									foreignField: 'clanId',
+									as: 'webhook',
+									pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
+								}
+							},
+							{
+								$unwind: '$webhook'
+							},
+							{
+								$project: {
+									tag: 1,
+									name: 1,
+									webhook: 1
+								}
+							}
+						],
+						[Collections.CLAN_EMBED_LOGS]: [
+							{
+								$lookup: {
+									from: Collections.CLAN_EMBED_LOGS,
+									localField: '_id',
+									foreignField: 'clanId',
+									as: 'webhook',
+									pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
+								}
+							},
+							{
+								$unwind: '$webhook'
+							},
+							{
+								$project: {
+									tag: 1,
+									name: 1,
+									webhook: 1
+								}
+							}
+						]
+					}
+				}
+			])
+			.toArray();
+
+		return result.length ? Object.values(result[0]).flat() : [];
+	}
+
+	public async getWebhook(channel: TextChannel | NewsChannel) {
+		const channelWebhooks = await channel.fetchWebhooks();
+
+		const clans = await this.getWebhookWorkloads(channel.guild.id);
+		const estimated = channelWebhooks
+			.filter((webhook) => webhook.applicationId === this.client.user!.id)
+			.map((webhook) => webhook.id)
+			.map((webhookId) => {
+				const count = clans.reduce((counter, clan) => {
+					if (clan.webhook.id === webhookId) counter += 1;
+					return counter;
+				}, 0);
+				return { webhookId, count };
+			})
+			.sort((a, b) => a.count - b.count)[0];
+
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (estimated && (estimated.count <= 6 || channelWebhooks.size >= 8)) {
+			return channelWebhooks.get(estimated.webhookId)!;
+		}
+
+		if (channelWebhooks.size >= 10) return null;
+
+		const webhook = await channel.createWebhook({
+			name: this.client.user!.username,
+			avatar: this.client.user!.displayAvatarURL({ extension: 'png', size: 2048 })
+		});
+		return webhook;
 	}
 
 	public async getWarTags(tag: string, season?: string | null): Promise<ClanWarLeagueGroup | null> {

@@ -1,4 +1,4 @@
-import util from 'util';
+import util from 'node:util';
 import moment from 'moment';
 import chalk from 'chalk';
 import { Client } from '../struct/Client.js';

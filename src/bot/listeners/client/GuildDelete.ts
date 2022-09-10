@@ -1,4 +1,4 @@
-import { Guild, MessageEmbed, Webhook } from 'discord.js';
+import { Guild, EmbedBuilder, Webhook } from 'discord.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Listener } from '../../lib/index.js';
@@ -36,7 +36,7 @@ export default class GuildDeleteListener extends Listener {
 		const user = await this.client.users.fetch(guild.ownerId);
 		const webhook = await this.fetchWebhook().catch(() => null);
 		if (webhook) {
-			const embed = new MessageEmbed()
+			const embed = new EmbedBuilder()
 				.setColor(0xeb3508)
 				.setAuthor({ name: `${guild.name} (${guild.id})`, iconURL: guild.iconURL()! })
 				.setTitle(`${EMOJIS.OWNER} ${user.tag} (${user.id})`)
@@ -45,7 +45,7 @@ export default class GuildDeleteListener extends Listener {
 			return webhook.send({
 				embeds: [embed],
 				username: this.client.user!.username,
-				avatarURL: this.client.user!.displayAvatarURL({ format: 'png' }),
+				avatarURL: this.client.user!.displayAvatarURL({ forceStatic: false }),
 				content: `**Total ${guilds} | Growth ${await this.growth()}**`
 			});
 		}

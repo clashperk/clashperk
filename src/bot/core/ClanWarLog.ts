@@ -1,12 +1,13 @@
-import { MessageEmbed, Collection, TextChannel, PermissionString, ThreadChannel } from 'discord.js';
+import { EmbedBuilder, Collection, PermissionsString, escapeMarkdown, WebhookClient } from 'discord.js';
 import { ClanWar, ClanWarMember, WarClan } from 'clashofclans.js';
-import { APIMessage } from 'discord-api-types/v9';
+import { APIMessage } from 'discord-api-types/v10';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
 import { TOWN_HALLS, EMOJIS, WAR_STARS, BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/Emojis.js';
 import { Collections } from '../util/Constants.js';
 import { Client } from '../struct/Client.js';
 import { Util } from '../util/index.js';
+import BaseLog from './BaseLog.js';
 
 const states: { [key: string]: number } = {
 	preparation: 16745216,
@@ -19,134 +20,119 @@ const results: { [key: string]: number } = {
 	tied: 5861569
 };
 
-export default class ClanWarLog {
-	public cached: Collection<string, Cache>;
-	public collection = this.client.db.collection(Collections.CLAN_WAR_LOGS);
+export default class ClanWarLog extends BaseLog {
+	public declare cached: Collection<string, Cache>;
 
-	public constructor(private readonly client: Client) {
-		this.cached = new Collection();
+	public constructor(client: Client) {
+		super(client);
 	}
 
-	public async exec(tag: string, data: PayLoad) {
-		const clans = this.cached.filter((d) => d.tag === tag);
-		for (const id of clans.keys()) {
-			const cache = this.cached.get(id);
-			if (cache) await this.permissionsFor(cache, data);
-		}
-		return clans.clear();
+	public override get collection() {
+		return this.client.db.collection(Collections.CLAN_WAR_LOGS);
 	}
 
-	private async permissionsFor(cache: Cache, data: PayLoad) {
-		const permissions: PermissionString[] = [
-			'READ_MESSAGE_HISTORY',
-			'SEND_MESSAGES',
-			'EMBED_LINKS',
-			'USE_EXTERNAL_EMOJIS',
-			'ADD_REACTIONS',
-			'VIEW_CHANNEL'
-		];
-
-		if (this.client.channels.cache.has(cache.channel)) {
-			const channel = this.client.channels.cache.get(cache.channel)! as TextChannel | ThreadChannel;
-			if (channel.isThread() && (channel.locked || !channel.permissionsFor(this.client.user!)?.has('SEND_MESSAGES_IN_THREADS')))
-				return;
-			if (channel.permissionsFor(this.client.user!)?.has(permissions)) {
-				if (channel.isThread() && channel.archived && !(await this.unarchive(channel))) return;
-				return this.getWarType(cache, channel, data);
-			}
-		}
+	public override get permissions(): PermissionsString[] {
+		return ['ReadMessageHistory', 'SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'AddReactions', 'ViewChannel'];
 	}
 
-	private async unarchive(thread: ThreadChannel) {
-		if (!(thread.editable && thread.manageable)) return null;
-		return thread.edit({ autoArchiveDuration: 'MAX', archived: false, locked: false });
-	}
-
-	private async getWarType(cache: Cache, channel: TextChannel | ThreadChannel, data: PayLoad) {
+	public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
 		if (data.warTag && cache.rounds[data.round]?.warTag === data.warTag) {
-			return this.handleMessage(cache, channel, cache.rounds[data.round]?.messageID ?? null, data);
+			return this._handleMessage(cache, webhook, cache.rounds[data.round]?.message ?? null, data);
 		} else if (data.warTag) {
-			return this.handleMessage(cache, channel, null, data);
+			return this._handleMessage(cache, webhook, null, data);
 		}
 
 		if (data.uid === cache.uid) {
-			return this.handleMessage(cache, channel, cache.messageID ?? null, data);
+			return this._handleMessage(cache, webhook, cache.message ?? null, data);
 		}
 
-		return this.handleMessage(cache, channel, null, data);
+		return this._handleMessage(cache, webhook, null, data);
 	}
 
-	private async handleMessage(cache: Cache, channel: TextChannel | ThreadChannel, messageID: string | null, data: PayLoad) {
+	private async _handleMessage(cache: Cache, webhook: WebhookClient, message: string | null, data: Feed) {
 		if (!data.warTag && data.remaining.length && data.state === 'warEnded') {
 			const embed = this.getRemaining(data);
 			try {
-				if (embed) await channel.send({ embeds: [embed] });
+				if (embed) await webhook.send({ embeds: [embed], threadId: cache.threadId });
 			} catch (error) {
 				this.client.logger.warn(error, { label: 'WAR_REMAINING_MESSAGE' });
 			}
 		}
 
-		if (!messageID) {
-			const msg = await this.send(channel, data);
+		if (!message) {
+			const msg = await this.send(cache, webhook, data);
 			return this.mutate(cache, data, msg);
 		}
 
-		const msg = await this.edit(channel, messageID, data);
+		const msg = await this.edit(cache, webhook, message, data);
 		return this.mutate(cache, data, msg);
 	}
 
-	private async send(channel: TextChannel | ThreadChannel, data: PayLoad) {
+	private async send(cache: Cache, webhook: WebhookClient, data: Feed) {
 		const embed = this.embed(data);
-		return Util.sendMessage(this.client, channel.id, { embeds: [embed.toJSON()] }).catch(() => null);
+		try {
+			return await super._send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+		} catch (error: any) {
+			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'ClanWarLog' });
+			return null;
+		}
 	}
 
-	private async edit(channel: TextChannel | ThreadChannel, messageID: string, data: PayLoad) {
+	private async edit(cache: Cache, webhook: WebhookClient, message: string, data: Feed) {
 		const embed = this.embed(data);
-		return Util.editMessage(this.client, channel.id, messageID, { embeds: [embed.toJSON()] }).catch((error) => {
+		try {
+			return await webhook.editMessage(message, { embeds: [embed], threadId: cache.threadId });
+		} catch (error: any) {
+			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'ClanWarLog' });
 			if (error.code === 10008) {
-				return this.send(channel, data);
+				delete cache.message;
+				return this.send(cache, webhook, data);
+			}
+			// Unknown Webhook / Unknown Channel
+			if ([10015, 10003].includes(error.code)) {
+				await this.deleteWebhook(cache);
 			}
 			return null;
-		});
+		}
 	}
 
-	private async mutate(cache: Cache, data: PayLoad, message: APIMessage | null) {
+	private async mutate(cache: Cache, data: Feed, message: APIMessage | null) {
 		if (!message) {
-			if (cache.messageID) delete cache.messageID;
-			if (data.warTag) cache.rounds[data.round] = { warTag: data.warTag, messageID: null, round: data.round };
-			return this.collection.updateOne({ clanId: new ObjectId(cache._id) }, { $set: { uid: data.uid }, $inc: { failed: 1 } });
+			if (cache.message) delete cache.message;
+			if (data.warTag) cache.rounds[data.round] = { warTag: data.warTag, message: null, round: data.round };
+			return this.collection.updateOne({ clanId: new ObjectId(cache.clanId) }, { $set: { uid: data.uid }, $inc: { failed: 1 } });
 		}
 
 		if (data.warTag) {
-			cache.rounds[data.round] = { warTag: data.warTag, messageID: message.id, round: data.round };
+			cache.rounds[data.round] = { warTag: data.warTag, message: message.id, round: data.round };
 
 			return this.collection.updateOne(
-				{ clanId: new ObjectId(cache._id) },
+				{ clanId: new ObjectId(cache.clanId) },
 				{
 					$set: {
 						updatedAt: new Date(),
 						failed: 0,
-						[`rounds.${data.round}`]: { warTag: data.warTag, messageID: message.id, round: data.round }
+						[`rounds.${data.round}`]: { warTag: data.warTag, message: message.id, round: data.round }
 					}
 				}
 			);
 		}
 
 		cache.uid = data.uid;
-		cache.messageID = message.id;
+		cache.message = message.id;
 		return this.collection.updateOne(
-			{ clanId: new ObjectId(cache._id) },
-			{ $set: { messageID: message.id, uid: data.uid, updatedAt: new Date(), failed: 0 } }
+			{ clanId: new ObjectId(cache.clanId) },
+			{ $set: { message: message.id, uid: data.uid, updatedAt: new Date(), failed: 0 } }
 		);
 	}
 
-	private embed(data: PayLoad) {
+	private embed(data: Feed) {
 		if (data.warTag) return this.getLeagueWarEmbed(data);
 		return this.getRegularWarEmbed(data);
 	}
 
-	private getRegularWarEmbed(data: PayLoad) {
-		const embed = new MessageEmbed()
+	private getRegularWarEmbed(data: Feed) {
+		const embed = new EmbedBuilder()
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setURL(this.clanURL(data.clan.tag))
 			.setThumbnail(data.clan.badgeUrls.small);
@@ -157,7 +143,7 @@ export default class ClanWarLog {
 				.setDescription(
 					[
 						'**War Against**',
-						`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
+						`**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 						'',
 						'**War State**',
 						'Preparation Day',
@@ -177,7 +163,7 @@ export default class ClanWarLog {
 				.setDescription(
 					[
 						'**War Against**',
-						`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
+						`**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 						'',
 						'**War State**',
 						'Battle Day',
@@ -194,22 +180,24 @@ export default class ClanWarLog {
 			if (data.recent?.length) {
 				const max = Math.max(...data.recent.map((atk) => atk.attacker.destructionPercentage));
 				const pad = max === 100 ? 4 : 3;
-				embed.addField(
-					'Recent Attacks',
-					[
-						...data.recent.map(({ attacker, defender }) => {
-							const name = Util.escapeMarkdown(attacker.name);
-							const stars = this.getStars(attacker.oldStars, attacker.stars);
-							const destruction: string = Math.floor(attacker.destructionPercentage)
-								.toString()
-								.concat('%')
-								.padStart(pad, ' ');
-							return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
-								attacker.townHallLevel
-							]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
-						})
-					].join('\n')
-				);
+				embed.addFields([
+					{
+						name: 'Recent Attacks',
+						value: [
+							...data.recent.map(({ attacker, defender }) => {
+								const name = escapeMarkdown(attacker.name);
+								const stars = this.getStars(attacker.oldStars, attacker.stars);
+								const destruction: string = Math.floor(attacker.destructionPercentage)
+									.toString()
+									.concat('%')
+									.padStart(pad, ' ');
+								return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
+									attacker.townHallLevel
+								]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
+							})
+						].join('\n')
+					}
+				]);
 			}
 			embed.setTimestamp();
 		}
@@ -220,7 +208,7 @@ export default class ClanWarLog {
 				.setDescription(
 					[
 						'**War Against**',
-						`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
+						`**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`,
 						'',
 						'**War State**',
 						'War Ended',
@@ -237,13 +225,13 @@ export default class ClanWarLog {
 
 		embed.setDescription(
 			[
-				embed.description,
+				embed.data.description,
 				'',
 				'**Rosters**',
-				`${Util.escapeMarkdown(data.clan.name)}`,
+				`${escapeMarkdown(data.clan.name)}`,
 				`${this.getRoster(data.clan.rosters)}`,
 				'',
-				`${Util.escapeMarkdown(data.opponent.name)}`,
+				`${escapeMarkdown(data.opponent.name)}`,
 				`${this.getRoster(data.opponent.rosters)}`
 			].join('\n')
 		);
@@ -251,15 +239,15 @@ export default class ClanWarLog {
 		return embed;
 	}
 
-	private getRemaining(data: PayLoad) {
-		const embed = new MessageEmbed()
+	private getRemaining(data: Feed) {
+		const embed = new EmbedBuilder()
 			.setTitle(`${data.clan.name} (${data.clan.tag})`)
 			.setThumbnail(data.clan.badgeUrls.small)
 			.setURL(this.clanURL(data.clan.tag))
 			.setDescription(
 				[
 					'**War Against**',
-					`**[${Util.escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
+					`**[${escapeMarkdown(data.opponent.name)} (${data.opponent.tag})](${this.clanURL(data.opponent.tag)})**`
 				].join('\n')
 			);
 		const twoRem = data.remaining
@@ -274,43 +262,67 @@ export default class ClanWarLog {
 		const friendly = data.attacksPerMember === 1;
 		if (twoRem.length) {
 			const chunks = Util.splitMessage(twoRem.join('\n'), { maxLength: 1000 });
-			chunks.map((chunk, i) => embed.addField(i === 0 ? `${friendly ? 1 : 2} Missed Attacks` : '\u200b', chunk));
+			embed.addFields(chunks.map((chunk, i) => ({ name: i === 0 ? `${friendly ? 1 : 2} Missed Attacks` : '\u200b', value: chunk })));
 		}
 
 		if (oneRem.length && !friendly) {
 			const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
-			chunks.map((chunk, i) => embed.addField(i === 0 ? '1 Missed Attacks' : '\u200b', chunk));
+			embed.addFields(chunks.map((chunk, i) => ({ name: i === 0 ? '1 Missed Attacks' : '\u200b', value: chunk })));
 		}
 
 		if ((oneRem.length && !friendly) || twoRem.length) return embed;
 		return null;
 	}
 
-	private getLeagueWarEmbed(data: PayLoad) {
+	private getLeagueWarEmbed(data: Feed) {
 		const { clan, opponent } = data;
-		const embed = new MessageEmbed()
+		const embed = new EmbedBuilder()
 			.setTitle(`\u200e${clan.name} (${clan.tag})`)
 			.setURL(this.clanURL(clan.tag))
 			.setThumbnail(clan.badgeUrls.small)
-			.addField('War Against', `\u200e[${Util.escapeMarkdown(opponent.name)} (${opponent.tag})](${this.clanURL(opponent.tag)})`)
-			.addField('Team Size', `${data.teamSize}`);
+			.addFields([
+				{
+					name: 'War Against',
+					value: `\u200e[${escapeMarkdown(opponent.name)} (${opponent.tag})](${this.clanURL(opponent.tag)})`
+				},
+				{
+					name: 'Team Size',
+					value: `${data.teamSize}`
+				}
+			]);
 
 		if (data.state === 'inWar') {
 			const endTimestamp = new Date(moment(data.endTime).toDate()).getTime();
 			embed.setColor(states[data.state]);
-			embed.addField('War State', ['Battle Day', `End Time: ${Util.getRelativeTime(endTimestamp)}`].join('\n'));
-			embed.addField('War Stats', this.getLeaderBoard(clan, opponent));
+			embed.addFields([
+				{ name: 'War State', value: ['Battle Day', `End Time: ${Util.getRelativeTime(endTimestamp)}`].join('\n') },
+				{ name: 'War Stats', value: this.getLeaderBoard(clan, opponent) }
+			]);
 		}
 
 		if (data.state === 'preparation') {
 			const startTimestamp = new Date(moment(data.startTime).toDate()).getTime();
 			embed.setColor(states[data.state]);
-			embed.addField('War State', ['Preparation Day', `War Start Time: ${Util.getRelativeTime(startTimestamp)}`].join('\n'));
+			embed.addFields([
+				{
+					name: 'War State',
+					value: ['Preparation Day', `War Start Time: ${Util.getRelativeTime(startTimestamp)}`].join('\n')
+				}
+			]);
 		}
 
 		if (data.state === 'warEnded') {
 			embed.setColor(results[data.result]);
-			embed.addField('War State', 'War Ended').addField('War Stats', this.getLeaderBoard(clan, opponent));
+			embed.addFields([
+				{
+					name: 'War State',
+					value: 'War Ended'
+				},
+				{
+					name: 'War Stats',
+					value: this.getLeaderBoard(clan, opponent)
+				}
+			]);
 		}
 
 		const rosters = [
@@ -322,28 +334,35 @@ export default class ClanWarLog {
 		];
 
 		if (rosters.join('\n').length > 1024) {
-			embed.addField('Rosters', rosters.slice(0, 2).join('\n'));
-			embed.addField('\u200e', rosters.slice(-2).join('\n'));
+			embed.addFields([
+				{ name: 'Rosters', value: rosters.slice(0, 2).join('\n') },
+				{ name: '\u200e', value: rosters.slice(-2).join('\n') }
+			]);
 		} else {
-			embed.addField('Rosters', rosters.join('\n'));
+			embed.addFields([{ name: 'Rosters', value: rosters.join('\n') }]);
 		}
 
 		if (data.recent?.length) {
 			const max = Math.max(...data.recent.map((atk) => atk.attacker.destructionPercentage));
 			const pad = max === 100 ? 4 : 3;
-			embed.addField(
-				'Recent Attacks',
-				[
-					...data.recent.map(({ attacker, defender }) => {
-						const name = Util.escapeMarkdown(attacker.name);
-						const stars = this.getStars(attacker.oldStars, attacker.stars);
-						const destruction: string = Math.floor(attacker.destructionPercentage).toString().concat('%').padStart(pad, ' ');
-						return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
-							attacker.townHallLevel
-						]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
-					})
-				].join('\n')
-			);
+			embed.addFields([
+				{
+					name: 'Recent Attacks',
+					value: [
+						...data.recent.map(({ attacker, defender }) => {
+							const name = escapeMarkdown(attacker.name);
+							const stars = this.getStars(attacker.oldStars, attacker.stars);
+							const destruction: string = Math.floor(attacker.destructionPercentage)
+								.toString()
+								.concat('%')
+								.padStart(pad, ' ');
+							return `${stars} \`\u200e${destruction}\` ${BLUE_NUMBERS[attacker.mapPosition]!}${ORANGE_NUMBERS[
+								attacker.townHallLevel
+							]!}${EMOJIS.VS}${BLUE_NUMBERS[defender.mapPosition]!}${ORANGE_NUMBERS[defender.townHallLevel]!} ${name}`;
+						})
+					].join('\n')
+				}
+			]);
 		}
 
 		if (data.remaining.length) {
@@ -353,7 +372,7 @@ export default class ClanWarLog {
 
 			if (oneRem.length) {
 				const chunks = Util.splitMessage(oneRem.join('\n'), { maxLength: 1000 });
-				chunks.map((chunk, i) => embed.addField(i === 0 ? 'Missed Attacks' : '\u200e', chunk));
+				embed.addFields(chunks.map((chunk, i) => ({ name: i === 0 ? 'Missed Attacks' : '\u200e', value: chunk })));
 			}
 		}
 
@@ -410,12 +429,13 @@ export default class ClanWarLog {
 		await this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } }).forEach((data) => {
 			this.cached.set((data.clanId as ObjectId).toHexString(), {
 				tag: data.tag,
-				_id: data.clanId,
+				clanId: data.clanId,
 				guild: data.guild,
 				uid: data.uid,
 				channel: data.channel,
 				rounds: data.rounds || {},
-				messageID: data.messageID
+				message: data.message,
+				webhook: data.webhook ? new WebhookClient(data.webhook) : null
 			});
 		});
 	}
@@ -426,17 +446,14 @@ export default class ClanWarLog {
 
 		this.cached.set(id, {
 			tag: data.tag,
-			_id: data.clanId,
+			clanId: data.clanId,
 			guild: data.guild,
 			uid: data.uid,
 			channel: data.channel,
 			rounds: data.rounds || {},
-			messageID: data.messageID
+			message: data.message,
+			webhook: data.webhook ? new WebhookClient(data.webhook) : null
 		});
-	}
-
-	public delete(id: string) {
-		return this.cached.delete(id);
 	}
 }
 
@@ -464,7 +481,7 @@ interface Recent {
 	defender: Defender;
 }
 
-interface PayLoad extends ClanWar {
+interface Feed extends ClanWar {
 	recent?: Recent[];
 	result: string;
 	round: number;
@@ -478,10 +495,12 @@ interface PayLoad extends ClanWar {
 
 interface Cache {
 	guild: string;
+	clanId: ObjectId;
+	threadId?: string;
 	channel: string;
 	tag: string;
 	rounds: any;
 	uid: string;
-	_id: ObjectId;
-	messageID?: string;
+	message?: string;
+	webhook: WebhookClient | null;
 }
