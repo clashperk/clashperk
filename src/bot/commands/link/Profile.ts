@@ -108,13 +108,23 @@ export default class ProfileCommand extends Command {
 				external: this.isLinked(data, tag) ? 'No' : 'Yes'
 			});
 		}
-		tags.clear();
+
 		embed.addFields(
 			collection.slice(0, 25).map((a, i) => ({
 				name: i === 0 ? `**Player Accounts [${collection.length}]**` : '\u200b',
 				value: [a.field, ...a.values].join('\n')
 			}))
 		);
+
+		const embedLengthExceeded = () => {
+			return embed.data.description!.length + embed.data.fields!.reduce((a, b) => a + b.name.length + b.value.length, 0) > 5900;
+		};
+
+		const popEmbed = () => {
+			embed.data.fields!.pop();
+			if (embedLengthExceeded()) popEmbed();
+		};
+		if (embedLengthExceeded()) popEmbed();
 
 		const customId = this.client.uuid(interaction.user.id);
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
