@@ -5,7 +5,8 @@ import {
 	SelectMenuBuilder,
 	TextChannel,
 	ButtonStyle,
-	PermissionsString
+	PermissionsString,
+	AnyThreadChannel
 } from 'discord.js';
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
@@ -45,7 +46,7 @@ export default class ReminderCreateCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { duration: string; message: string; channel: TextChannel; clans?: string }
+		args: { duration: string; message: string; channel: TextChannel | AnyThreadChannel; clans?: string }
 	) {
 		const tags = args.clans === '*' ? [] : this.client.resolver.resolveArgs(args.clans);
 		const clans =
@@ -69,7 +70,7 @@ export default class ReminderCreateCommand extends Command {
 			);
 		}
 
-		const webhook = await this.client.storage.getWebhook(args.channel);
+		const webhook = await this.client.storage.getWebhook(args.channel.isThread() ? args.channel.parent! : args.channel);
 		if (!webhook) {
 			return interaction.editReply(
 				// eslint-disable-next-line
