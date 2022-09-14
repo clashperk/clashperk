@@ -60,6 +60,18 @@ export class Automaton {
 				await this.client.commandHandler.exec(interaction, command, { ...parsed });
 				return true;
 			}
+			case 'capital-raids': {
+				const command = this.client.commandHandler.modules.get('capital-raids')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, { ...parsed });
+				return true;
+			}
+			case 'capital-contributions': {
+				const command = this.client.commandHandler.modules.get('capital-contributions')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, { ...parsed });
+				return true;
+			}
 			default: {
 				return false;
 			}
