@@ -5,6 +5,12 @@ import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
 import { Util } from '../../util/index.js';
 
+export enum WarType {
+	REGULAR = 1,
+	FRIENDLY,
+	CWL
+}
+
 export default class WarExport extends Command {
 	public constructor() {
 		super('export-wars', {
@@ -34,9 +40,10 @@ export default class WarExport extends Command {
 				.collection(Collections.CLAN_WARS)
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
-					state: { $in: ['inWar', 'warEnded'] }
+					state: { $in: ['inWar', 'warEnded'] },
+					warType: WarType.REGULAR
 				})
-				.sort({ preparationStartTime: -1 })
+				.sort({ _id: -1 })
 				.limit(num)
 				.toArray();
 
