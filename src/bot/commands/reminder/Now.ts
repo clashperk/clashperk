@@ -17,13 +17,16 @@ export default class ReminderNowCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { message: string; clans?: string }) {
 		if (!args.message) return interaction.editReply(this.i18n('command.reminder.now.no_message', { lng: interaction.locale }));
 
-		const tags = this.client.resolver.resolveArgs(args.clans);
-		const clans = tags.length
-			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
+		const tags = args.clans === '*' ? [] : this.client.resolver.resolveArgs(args.clans);
+		const clans =
+			args.clans === '*'
+				? await this.client.storage.find(interaction.guildId)
+				: await this.client.storage.search(interaction.guildId, tags);
 
 		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
-		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+		if (!clans.length) {
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+		}
 
 		const CUSTOM_ID = {
 			ROLES: this.client.uuid(interaction.user.id),
