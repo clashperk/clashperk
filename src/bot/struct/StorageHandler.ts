@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { ObjectId, Collection } from 'mongodb';
+import { ObjectId, Collection, WithId } from 'mongodb';
 import { CommandInteraction, NewsChannel, TextChannel } from 'discord.js';
 import { ClanWarLeagueGroup } from 'clashofclans.js';
 import { Collections, Flags } from '../util/Constants.js';
@@ -35,7 +35,7 @@ export default class StorageHandler {
 		return this.collection.find({ guild: id }).toArray();
 	}
 
-	public async search(guildId: string, query: string[]) {
+	public async search(guildId: string, query: string[]): Promise<WithId<ClanStore>[]> {
 		if (!query.length) return [];
 		return this.collection
 			.find(

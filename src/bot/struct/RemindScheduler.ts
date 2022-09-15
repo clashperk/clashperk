@@ -1,5 +1,5 @@
 import { ClanWar } from 'clashofclans.js';
-import { APIMessage, NewsChannel, TextChannel, WebhookClient } from 'discord.js';
+import { APIMessage, Guild, NewsChannel, TextChannel, WebhookClient } from 'discord.js';
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { Collections } from '../util/Constants.js';
@@ -113,6 +113,87 @@ export default class RemindScheduler {
 		return timestamp > schedule.timestamp.getTime();
 	}
 
+	public async getReminderText(
+		reminder: Pick<Reminder, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message'>,
+		schedule: Pick<Schedule, 'tag' | 'warTag'>,
+		data: ClanWar,
+		_guild: Guild
+	) {
+		const clanMembers = reminder.roles.length === 4 ? [] : await this.getClanMembers(schedule.tag);
+		const clan = data.clan.tag === schedule.tag ? data.clan : data.opponent;
+		const attacksPerMember = data.attacksPerMember || 1;
+
+		const members = clan.members
+			.filter((mem) => {
+				if (schedule.warTag && !mem.attacks?.length) return true;
+				return reminder.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0));
+			})
+			.filter((mem) => reminder.townHalls.includes(mem.townhallLevel))
+			.filter((mem) => {
+				if (reminder.roles.length === 4) return true;
+				const clanMember = clanMembers.find((m) => m.tag === mem.tag);
+				return clanMember && reminder.roles.includes(clanMember.role);
+			});
+		if (!members.length) return null;
+
+		const links = await this.client.http.getDiscordLinks(members);
+		if (!links.length) return null;
+
+		// const guildMembers = await guild.members.fetch({ user: links.map(({ user }) => user) }).catch(() => null);
+		const mentions: UserMention[] = [];
+
+		for (const link of links) {
+			const member = members.find((mem) => mem.tag === link.tag)!;
+			// const mention = guildMembers?.get(link.user) ?? `<@${link.user}>`;
+			const mention = `<@${link.user}>`;
+			mentions.push({
+				id: link.user,
+				mention: mention.toString(),
+				name: member.name,
+				tag: member.tag,
+				position: member.mapPosition,
+				townHallLevel: member.townhallLevel,
+				attacks: member.attacks?.length ?? 0
+			});
+		}
+
+		if (!mentions.length) return null;
+		mentions.sort((a, b) => a.position - b.position);
+
+		const users = Object.entries(
+			mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
+				if (!acc.hasOwnProperty(cur.mention)) acc[cur.mention] = [];
+				acc[cur.mention]!.push(cur);
+				return acc;
+			}, {})
+		);
+
+		const prefix = data.state === 'preparation' ? 'starts in' : 'ends in';
+		const dur =
+			moment(data.state === 'preparation' ? data.startTime : data.endTime)
+				.toDate()
+				.getTime() - Date.now();
+		const warTiming = moment.duration(dur).format('H[h], m[m], s[s]', { trim: 'both mid' });
+
+		return [
+			`\u200e🔔 **${clan.name} (War ${prefix} ${warTiming})**`,
+			`📨 ${reminder.message}`,
+			'',
+			users
+				.map(([mention, members]) =>
+					members
+						.map((mem, i) => {
+							const ping = i === 0 ? ` ${mention}` : '';
+							const hits =
+								data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
+							return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${mem.name}${hits}`;
+						})
+						.join('\n')
+				)
+				.join('\n')
+		].join('\n');
+	}
+
 	private async trigger(schedule: Schedule) {
 		const id = schedule._id.toHexString();
 		try {
@@ -142,81 +223,11 @@ export default class RemindScheduler {
 				);
 			}
 
-			const clanMembers = reminder.roles.length === 4 ? [] : await this.getClanMembers(schedule.tag);
-			const clan = data.clan.tag === schedule.tag ? data.clan : data.opponent;
-			const attacksPerMember = data.attacksPerMember || 1;
-
-			const members = clan.members
-				.filter((mem) => {
-					if (schedule.warTag && !mem.attacks?.length) return true;
-					return reminder.remaining.includes(attacksPerMember - (mem.attacks?.length ?? 0));
-				})
-				.filter((mem) => reminder.townHalls.includes(mem.townhallLevel))
-				.filter((mem) => {
-					if (reminder.roles.length === 4) return true;
-					const clanMember = clanMembers.find((m) => m.tag === mem.tag);
-					return clanMember && reminder.roles.includes(clanMember.role);
-				});
-			if (!members.length) return await this.delete(schedule);
-
-			const links = await this.client.http.getDiscordLinks(members);
-			if (!links.length) return await this.delete(schedule);
-
 			const guild = this.client.guilds.cache.get(reminder.guild);
 			if (!guild) return await this.delete(schedule);
 
-			const guildMembers = await guild.members.fetch({ user: links.map(({ user }) => user) }).catch(() => null);
-			const mentions: UserMention[] = [];
-
-			for (const link of links) {
-				const member = members.find((mem) => mem.tag === link.tag)!;
-				const mention = guildMembers?.get(link.user) ?? `<@${link.user}>`;
-				mentions.push({
-					id: link.user,
-					mention: mention.toString(),
-					name: member.name,
-					tag: member.tag,
-					position: member.mapPosition,
-					townHallLevel: member.townhallLevel,
-					attacks: member.attacks?.length ?? 0
-				});
-			}
-
-			if (!mentions.length) return await this.delete(schedule);
-			mentions.sort((a, b) => a.position - b.position);
-
-			const users = Object.entries(
-				mentions.reduce<{ [key: string]: UserMention[] }>((acc, cur) => {
-					if (!acc.hasOwnProperty(cur.mention)) acc[cur.mention] = [];
-					acc[cur.mention]!.push(cur);
-					return acc;
-				}, {})
-			);
-
-			const prefix = data.state === 'preparation' ? 'starts in' : 'ends in';
-			const dur =
-				moment(data.state === 'preparation' ? data.startTime : data.endTime)
-					.toDate()
-					.getTime() - Date.now();
-			const warTiming = moment.duration(dur).format('H[h], m[m], s[s]', { trim: 'both mid' });
-
-			const text = [
-				`\u200e🔔 **${clan.name} (War ${prefix} ${warTiming})**`,
-				`📨 ${reminder.message}`,
-				'',
-				users
-					.map(([mention, members]) =>
-						members
-							.map((mem, i) => {
-								const ping = i === 0 ? ` ${mention}` : '';
-								const hits =
-									data.state === 'preparation' || attacksPerMember === 1 ? '' : ` (${mem.attacks}/${attacksPerMember})`;
-								return `\u200e${ORANGE_NUMBERS[mem.townHallLevel]!}${ping} ${mem.name}${hits}`;
-							})
-							.join('\n')
-					)
-					.join('\n')
-			].join('\n');
+			const text = await this.getReminderText(reminder, schedule, data, guild);
+			if (!text) return await this.delete(schedule);
 
 			const channel = this.client.util.hasPermissions(reminder.channel, [
 				'SendMessages',

@@ -1,6 +1,7 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, TextChannel, ButtonStyle } from 'discord.js';
-import ms from 'ms';
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, SelectMenuBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
+import { EMOJIS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
 
 export default class ReminderNowCommand extends Command {
 	public constructor() {
@@ -13,10 +14,9 @@ export default class ReminderNowCommand extends Command {
 		});
 	}
 
-	public async exec(
-		interaction: CommandInteraction<'cached'>,
-		args: { duration: string; message: string; channel?: TextChannel; clans?: string }
-	) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { message: string; clans?: string }) {
+		if (!args.message) return interaction.editReply(this.i18n('command.reminder.now.no_message', { lng: interaction.locale }));
+
 		const tags = this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -25,29 +25,13 @@ export default class ReminderNowCommand extends Command {
 		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
-		// const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).countDocuments({ guild: interaction.guild.id });
-		// if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {
-		// 	return interaction.editReply(this.i18n('command.reminder.create.max_limit', { lng: interaction.locale }));
-		// }
-		if (!/\d+?\.?\d+?[hm]|\d[hm]/g.test(args.duration)) {
-			return interaction.editReply(this.i18n('command.reminder.create.invalid_duration_format', { lng: interaction.locale }));
-		}
-
-		const dur = args.duration.match(/\d+?\.?\d+?[hm]|\d[hm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
-		if (!args.message) return interaction.editReply(this.i18n('command.reminder.create.no_message', { lng: interaction.locale }));
-
-		if (dur < 15 * 60 * 1000 || dur > 45 * 60 * 60 * 1000)
-			return interaction.editReply(this.i18n('command.reminder.create.duration_limit', { lng: interaction.locale }));
-		if (dur % (15 * 60 * 1000) !== 0) {
-			return interaction.editReply(this.i18n('command.reminder.create.duration_order', { lng: interaction.locale }));
-		}
-
 		const CUSTOM_ID = {
 			ROLES: this.client.uuid(interaction.user.id),
 			TOWN_HALLS: this.client.uuid(interaction.user.id),
 			REMAINING: this.client.uuid(interaction.user.id),
 			CLANS: this.client.uuid(interaction.user.id),
-			SAVE: this.client.uuid(interaction.user.id)
+			SAVE: this.client.uuid(interaction.user.id),
+			WAR_TYPE: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
@@ -56,10 +40,36 @@ export default class ReminderNowCommand extends Command {
 				.fill(0)
 				.map((_, i) => (i + 2).toString()),
 			roles: ['leader', 'coLeader', 'admin', 'member'],
+			warTypes: ['cwl', 'normal', 'friendly'],
 			clans: clans.map((clan) => clan.tag)
 		};
 
 		const mutate = (disable = false) => {
+			const row0 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+				new SelectMenuBuilder()
+					.setPlaceholder('Select War Types')
+					.setMaxValues(3)
+					.setCustomId(CUSTOM_ID.WAR_TYPE)
+					.setOptions([
+						{
+							label: 'Normal',
+							value: 'normal',
+							default: state.warTypes.includes('normal')
+						},
+						{
+							label: 'Friendly',
+							value: 'friendly',
+							default: state.warTypes.includes('friendly')
+						},
+						{
+							label: 'CWL',
+							value: 'cwl',
+							default: state.warTypes.includes('cwl')
+						}
+					])
+					.setDisabled(disable)
+			);
+
 			const row1 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
 				new SelectMenuBuilder()
 					.setPlaceholder('Select Attacks Remaining')
@@ -101,6 +111,7 @@ export default class ReminderNowCommand extends Command {
 					)
 					.setDisabled(disable)
 			);
+
 			const row3 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
 				new SelectMenuBuilder()
 					.setPlaceholder('Select Clan Roles')
@@ -130,43 +141,31 @@ export default class ReminderNowCommand extends Command {
 					])
 					.setDisabled(disable)
 			);
-			const row4 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-				new SelectMenuBuilder()
-					.setPlaceholder('Select Clans')
-					.setCustomId(CUSTOM_ID.CLANS)
-					.setMaxValues(clans.length)
-					.setOptions(
-						clans.slice(0, 25).map((clan) => ({
-							label: clan.name,
-							value: clan.tag,
-							description: `${clan.name} (${clan.tag})`,
-							default: state.clans.includes(clan.tag)
-						}))
-					)
-					.setDisabled(disable || clans.length > 25)
-			);
-			const row5 = new ActionRowBuilder<ButtonBuilder>().addComponents(
-				new ButtonBuilder().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
+
+			const row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder()
+					.setCustomId(CUSTOM_ID.SAVE)
+					.setLabel('Remind Now')
+					.setEmoji('🔔')
+					.setStyle(ButtonStyle.Primary)
+					.setDisabled(disable)
 			);
 
-			return [row1, row2, row3, row4, row5];
+			return [row0, row1, row2, row3, row4];
 		};
 
-		const longText = this.i18n('command.reminder.create.too_many_clans', {
-			lng: interaction.locale,
-			clans: `${clans.length}`
-		});
-		const msg = await interaction.editReply({
-			components: mutate(),
-			// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-			content: ['**War Reminder Setup**', clans.length > 25 ? `\n*${longText}*` : ''].join('\n')
-		});
+		const msg = await interaction.editReply({ components: mutate(), content: '**Instant Reminder Options**' });
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async (action) => {
+			if (action.customId === CUSTOM_ID.WAR_TYPE && action.isSelectMenu()) {
+				state.warTypes = action.values;
+				await action.update({ components: mutate() });
+			}
+
 			if (action.customId === CUSTOM_ID.REMAINING && action.isSelectMenu()) {
 				state.remaining = action.values;
 				await action.update({ components: mutate() });
@@ -188,12 +187,24 @@ export default class ReminderNowCommand extends Command {
 			}
 
 			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {
-				await action.deferUpdate();
+				await action.update({ components: [], content: `**Fetching wars...** ${EMOJIS.LOADING}` });
 
-				await action.editReply({
-					components: mutate(true),
-					content: this.i18n('command.reminder.create.success', { lng: interaction.locale })
+				const texts = await this.getWars(action as ButtonInteraction<'cached'>, {
+					remaining: state.remaining.map((num) => Number(num)),
+					townHalls: state.townHalls.map((num) => Number(num)),
+					roles: state.roles,
+					clans: state.clans,
+					message: args.message,
+					warTypes: state.warTypes
 				});
+
+				if (texts.length) {
+					await action.editReply({ content: `\u200e🔔 ${args.message}` });
+				} else {
+					await action.editReply({ content: this.i18n('command.reminder.now.no_match', { lng: interaction.locale }) });
+				}
+
+				await this.send(action as ButtonInteraction<'cached'>, texts);
 			}
 		});
 
@@ -201,5 +212,48 @@ export default class ReminderNowCommand extends Command {
 			for (const id of Object.values(CUSTOM_ID)) this.client.components.delete(id);
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: mutate(true) });
 		});
+	}
+
+	public async getWars(
+		interaction: ButtonInteraction<'cached'>,
+		reminder: {
+			roles: string[];
+			townHalls: number[];
+			remaining: number[];
+			clans: string[];
+			message: string;
+			warTypes: string[];
+		}
+	) {
+		const texts: string[] = [];
+		for (const tag of reminder.clans) {
+			const currentWars = await this.client.http.getCurrentWars(tag);
+			for (const data of currentWars) {
+				if (!data.ok) continue;
+				if (['notInWar', 'warEnded'].includes(data.state)) continue;
+
+				const warType = data.warTag ? 'cwl' : data.isFriendly ? 'friendly' : 'normal';
+				if (!reminder.warTypes.includes(warType)) continue;
+
+				const text = await this.client.remindScheduler.getReminderText(
+					{ ...reminder, guild: interaction.guild.id },
+					{ tag: data.clan.tag, warTag: data.warTag },
+					data,
+					interaction.guild
+				);
+
+				if (text) texts.push(text);
+			}
+		}
+		return texts;
+	}
+
+	private async send(interaction: ButtonInteraction<'cached'>, texts: string[]) {
+		for (const text of texts) {
+			for (const content of Util.splitMessage(text, { maxLength: 2000 })) {
+				await interaction.followUp({ content, allowedMentions: { parse: ['users'] } });
+			}
+			await Util.delay(1000);
+		}
 	}
 }

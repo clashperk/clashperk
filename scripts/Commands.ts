@@ -1324,6 +1324,28 @@ export const COMMANDS: Command[] = [
 						]
 					}
 				]
+			},
+			{
+				name: 'now',
+				description: command.reminder.now.description,
+				description_localizations: translation('command.reminder.now.description'),
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'message',
+						description: command.reminder.now.options.message.description,
+						description_localizations: translation('command.reminder.now.options.message.description'),
+						type: ApplicationCommandOptionType.String,
+						required: true
+					},
+					{
+						name: 'clans',
+						required: true,
+						description: command.reminder.now.options.clans.description,
+						description_localizations: translation('command.reminder.now.options.clans.description'),
+						type: ApplicationCommandOptionType.String
+					}
+				]
 			}
 		]
 	},
