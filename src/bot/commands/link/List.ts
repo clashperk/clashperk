@@ -45,7 +45,6 @@ export default class LinkListCommand extends Command {
 				members.push({ tag: m.tag, userId: member.user, name: clanMember.name });
 			}
 		}
-		console.log(members);
 
 		const userIds = members.reduce<string[]>((prev, curr) => {
 			if (!prev.includes(curr.userId)) prev.push(curr.userId);
