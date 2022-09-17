@@ -181,36 +181,48 @@ export const COMMANDS: Command[] = [
 		description_localizations: translation('command.members.description'),
 		options: [
 			{
-				name: 'tag',
-				description: command.members.options.tag.description,
-				description_localizations: translation('command.members.options.tag.description'),
-				type: ApplicationCommandOptionType.String,
-				required: false
-			},
-			{
 				name: 'option',
 				description: command.members.options.option.description,
 				description_localizations: translation('command.members.options.option.description'),
 				type: ApplicationCommandOptionType.String,
-				required: false,
+				required: true,
 				choices: [
 					{
-						name: 'Player Tags',
-						value: 'tags'
+						name: 'Heroes',
+						value: 'heroes'
 					},
 					{
 						name: 'Trophies',
 						value: 'trophies'
 					},
 					{
+						name: 'War Preferences',
+						value: 'warPref'
+					},
+					{
+						name: 'Discord Links',
+						value: 'discord'
+					},
+					{
 						name: 'Clan Roles',
 						value: 'roles'
 					},
 					{
-						name: 'Discord ID',
-						value: 'discord'
+						name: 'Player Tags',
+						value: 'tags'
+					},
+					{
+						name: 'Attacks',
+						value: 'attacks'
 					}
 				]
+			},
+			{
+				name: 'tag',
+				description: command.members.options.tag.description,
+				description_localizations: translation('command.members.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				required: false
 			}
 		]
 	},

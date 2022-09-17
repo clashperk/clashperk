@@ -1,6 +1,6 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { PlayerItem } from 'clashofclans.js';
-import { EMOJIS, ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 
@@ -39,19 +39,20 @@ export default class MembersCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; option: string }) {
+		const command = {
+			discord: this.handler.modules.get('link-list')!,
+			trophies: this.handler.modules.get('trophies')!,
+			attacks: this.handler.modules.get('attacks')!
+		}[args.option];
+		if (command) return this.handler.exec(interaction, command, { tag: args.tag });
+
 		const data = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!data) return;
 		if (data.members < 1) {
 			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
 		}
 
-		const command = {
-			discord: this.handler.modules.get('link-list')!,
-			trophies: this.handler.modules.get('trophies')!
-		}[args.option];
-		if (command) return this.handler.exec(interaction, command, { tag: args.tag });
-
-		const fetched = await this.client.http.detailedClanMembers(data.memberList);
+		const fetched = (await this.client.http.detailedClanMembers(data.memberList)).filter((res) => res.ok);
 		const members = fetched
 			.filter((res) => res.ok)
 			.map((m) => ({
@@ -116,84 +117,48 @@ export default class MembersCommand extends Command {
 			);
 		}
 
-		const [discord, download, warPref] = [
-			this.client.uuid(interaction.user.id),
-			this.client.uuid(interaction.user.id),
-			this.client.uuid(interaction.user.id)
-		];
+		if (args.option === 'warPref') {
+			const optedIn = members.filter((m) => m.warPreference);
+			const optedOut = members.filter((m) => !m.warPreference);
+			embed.setDescription(
+				[
+					`**OPTED-IN ~ ${optedIn.length}**`,
+					optedIn
+						.map(
+							(m) =>
+								`\u200e**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(15, ' ')} \u200f\``
+						)
+						.join('\n'),
+					'',
+					`**OPTED-OUT ~ ${optedOut.length}**`,
+					optedOut
+						.map((m) => `\u200e✘ ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(15, ' ')} \u200f\``)
+						.join('\n')
+				].join('\n')
+			);
+			embed.setFooter({ text: `War Preference (${optedIn.length}/${members.length})` });
+		}
 
-		const components = [
-			new ActionRowBuilder<ButtonBuilder>()
-				.addComponents(
-					new ButtonBuilder()
-						.setLabel('Discord Links')
-						.setCustomId(discord)
-						.setStyle(ButtonStyle.Secondary)
-						.setEmoji(EMOJIS.DISCORD)
-				)
-				.addComponents(
-					new ButtonBuilder().setEmoji('📥').setLabel('Download').setCustomId(download).setStyle(ButtonStyle.Secondary)
-				),
-			new ActionRowBuilder<ButtonBuilder>().addComponents(
-				new ButtonBuilder()
-					.setEmoji(EMOJIS.CROSS_SWORD)
-					.setLabel('War Preference')
-					.setCustomId(warPref)
-					.setStyle(ButtonStyle.Secondary)
-			)
-		];
+		const customId = this.client.uuid(interaction.user.id);
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setEmoji('📥').setLabel('Download').setCustomId(customId).setStyle(ButtonStyle.Secondary)
+		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components });
+		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector({
-			filter: (action) => [discord, download, warPref].includes(action.customId) && action.user.id === interaction.user.id,
+			filter: (action) => [customId].includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000,
 			max: 1
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === discord) {
-				await action.deferUpdate();
-				return this.handler.exec(action, this.handler.modules.get('link-list')!, { tag: data.tag });
-			}
-
-			if (action.customId === warPref) {
-				const optedIn = members.filter((m) => m.warPreference);
-				const optedOut = members.filter((m) => !m.warPreference);
-				embed.setDescription(
-					[
-						`**OPTED-IN ~ ${optedIn.length}**`,
-						optedIn
-							.map(
-								(m) =>
-									`\u200e**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(
-										15,
-										' '
-									)} \u200f\``
-							)
-							.join('\n'),
-						'',
-						`**OPTED-OUT ~ ${optedOut.length}**`,
-						optedOut
-							.map(
-								(m) =>
-									`\u200e✘ ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(15, ' ')} \u200f\``
-							)
-							.join('\n')
-					].join('\n')
-				);
-				embed.setFooter({ text: `War Preference (${optedIn.length}/${members.length})` });
-				await action.update({ embeds: [embed], components: [] });
-			}
-
-			if (action.customId === download) {
-				return this.handler.exec(action, this.handler.modules.get('export-members')!, { tag: data.tag });
+			if (action.customId === customId) {
+				return this.handler.exec(action, this.handler.modules.get('export-members')!, { clans: data.tag });
 			}
 		});
 
 		collector.on('end', async (_, reason) => {
-			this.client.components.delete(discord);
-			this.client.components.delete(download);
-			this.client.components.delete(warPref);
+			this.client.components.delete(customId);
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
 	}
