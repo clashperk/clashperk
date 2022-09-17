@@ -8,6 +8,8 @@ import { COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
 const guildId = process.env.GUILD_ID ?? '509784317598105619';
 
+console.log(new Date().toISOString());
+
 const applicationGuildCommands = async (token: string, commands: typeof COMMANDS) => {
 	console.log('Building Guild Application Commands');
 	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands(getClientId(token), guildId)}`, {
