@@ -166,6 +166,21 @@ export default class Http extends Client {
 		return data.filter((en) => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag)).map((en) => this.fixTag(en.playerTag));
 	}
 
+	public async getLinkedUser(tag: string) {
+		const res = await fetch(`https://cocdiscord.link/links/${encodeURIComponent(tag)}`, {
+			method: 'GET',
+			headers: {
+				'Authorization': `Bearer ${this.bearerToken}`,
+				'Content-Type': 'application/json'
+			},
+			signal: TimeoutSignal(10_000)
+		}).catch(() => null);
+		const data = (await res?.json().catch(() => [])) as { playerTag: string; discordId: string }[];
+
+		if (!Array.isArray(data)) return null;
+		return data.map((en) => ({ user: en.discordId }))[0] ?? null;
+	}
+
 	public async getDiscordLinks(members: { tag: string }[]) {
 		const res = await fetch('https://cocdiscord.link/batch', {
 			method: 'POST',

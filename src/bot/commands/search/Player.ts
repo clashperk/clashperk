@@ -92,7 +92,7 @@ export default class PlayerCommand extends Command {
 		});
 	}
 
-	private async embed(interaction: CommandInteraction, data: Player) {
+	private async embed(interaction: CommandInteraction<'cached'>, data: Player) {
 		const aggregated = await this.client.db
 			.collection(Collections.LAST_SEEN)
 			.aggregate([
@@ -273,11 +273,17 @@ export default class PlayerCommand extends Command {
 			: `${ms(timestamp, { long: true })} ago`;
 	}
 
-	private async getLinkedUser(interaction: CommandInteraction, tag: string) {
-		const data = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': tag });
-
+	private async getLinkedUser(interaction: CommandInteraction<'cached'>, tag: string) {
+		const data = await Promise.any([this.getLinkedFromDb(tag), this.client.http.getLinkedUser(tag)]);
 		if (!data) return null;
-		const user = await interaction.guild!.members.fetch(data.user).catch(() => null);
+
+		const user = await interaction.guild.members.fetch(data.user).catch(() => null);
 		return { mention: user?.toString() ?? null, userId: data.user };
+	}
+
+	private async getLinkedFromDb(tag: string) {
+		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': tag });
+		if (!data) return Promise.reject(0);
+		return data;
 	}
 }
