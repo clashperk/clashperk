@@ -4,6 +4,7 @@ import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
+import { UserInfoModel } from '../../types/index.js';
 
 // ASCII /[^\x00-\xF7]+/
 export default class LinkListCommand extends Command {
@@ -19,43 +20,49 @@ export default class LinkListCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, { tag, showTags }: { tag?: string; showTags?: boolean }) {
 		const clan = await this.client.resolver.resolveClan(interaction, tag);
 		if (!clan) return;
-		if (!clan.members) return interaction.editReply(`${clan.name} does not have any clan members...`);
+		if (!clan.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
 
-		const memberTags: { tag: string; user: string; user_tag?: string }[] = await this.client.http.getDiscordLinks(clan.memberList);
+		const memberTags = await this.client.http.getDiscordLinks(clan.memberList);
 		const dbMembers = await this.client.db
-			.collection(Collections.LINKED_PLAYERS)
+			.collection<UserInfoModel>(Collections.LINKED_PLAYERS)
 			.find({ 'entries.tag': { $in: clan.memberList.map((m) => m.tag) } })
 			.toArray();
+
+		const members: { name: string; tag: string; userId: string }[] = [];
+		for (const m of memberTags) {
+			const clanMember = clan.memberList.find((mem) => mem.tag === m.tag);
+			if (!clanMember) continue;
+			members.push({ tag: m.tag, userId: m.user, name: clanMember.name });
+		}
 
 		if (dbMembers.length) this.updateUsers(interaction, dbMembers);
 		for (const member of dbMembers) {
 			for (const m of member.entries) {
-				if (!clan.memberList.find((mem) => mem.tag === m.tag)) continue;
-				const ex = memberTags.find((mem) => mem.tag === m.tag);
-				if (ex) ex.user_tag = member.user_tag?.split('#')[0];
-				if (ex) continue;
-				memberTags.push({ tag: m.tag, user: member.user, user_tag: member.user_tag?.split('#')[0] });
+				const clanMember = clan.memberList.find((mem) => mem.tag === m.tag);
+				if (!clanMember) continue;
+
+				if (members.find((mem) => mem.tag === m.tag)) continue;
+				members.push({ tag: m.tag, userId: member.user, name: clanMember.name });
 			}
 		}
+		console.log(members);
 
-		const userIds = memberTags.reduce<string[]>((prev, curr) => {
-			if (!prev.includes(curr.user)) prev.push(curr.user);
+		const userIds = members.reduce<string[]>((prev, curr) => {
+			if (!prev.includes(curr.userId)) prev.push(curr.userId);
 			return prev;
 		}, []);
 		const guildMembers = await interaction.guild.members.fetch({ user: userIds });
 
 		// Players linked and on the guild.
-		const onDiscord = memberTags.filter((mem) => guildMembers.has(mem.user));
+		const onDiscord = members.filter((mem) => guildMembers.has(mem.userId));
 		// Linked to discord but not on the guild.
-		const notInDiscord = memberTags.filter((mem) => mem.user_tag && !guildMembers.has(mem.user));
+		const notInDiscord = members.filter((mem) => !guildMembers.has(mem.userId));
 		// Not linked to discord.
-		const offDiscord = clan.memberList.filter(
-			(m) => !notInDiscord.some((en) => en.tag === m.tag) && !memberTags.some((en) => en.tag === m.tag && guildMembers.has(en.user))
+		const notLinked = clan.memberList.filter(
+			(m) => !notInDiscord.some((en) => en.tag === m.tag) && !members.some((en) => en.tag === m.tag && guildMembers.has(en.userId))
 		);
 
-		const embed = this.getEmbed(guildMembers, clan, showTags!, onDiscord, offDiscord, notInDiscord);
-		if (!onDiscord.length) return interaction.editReply({ embeds: [embed.setColor(this.client.embed(interaction))] });
-
+		const embed = this.getEmbed(guildMembers, clan, showTags!, onDiscord, notLinked, notInDiscord);
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
 				new ButtonBuilder()
@@ -77,9 +84,9 @@ export default class LinkListCommand extends Command {
 		guildMembers: Collection<string, GuildMember>,
 		clan: Clan,
 		showTag: boolean,
-		onDiscord: { tag: string; user: string }[],
-		offDiscord: ClanMember[],
-		notInDiscord: any[]
+		onDiscord: { tag: string; userId: string }[],
+		notLinked: ClanMember[],
+		notInDiscord: { name: string; tag: string }[]
 	) {
 		const chunks = Util.splitMessage(
 			[
@@ -89,7 +96,7 @@ export default class LinkListCommand extends Command {
 						const member = clan.memberList.find((m) => m.tag === mem.tag)!;
 						const user = showTag
 							? member.tag.padStart(12, ' ')
-							: guildMembers.get(mem.user)!.displayName.substring(0, 12).padStart(12, ' ');
+							: guildMembers.get(mem.userId)!.displayName.substring(0, 12).padStart(12, ' ');
 						return { name: this.parseName(member.name), user };
 					})
 					.sort((a, b) => this.localeSort(a, b))
@@ -101,7 +108,7 @@ export default class LinkListCommand extends Command {
 				notInDiscord
 					.map((mem) => {
 						const member = clan.memberList.find((m) => m.tag === mem.tag)!;
-						const user: string = showTag ? member.tag.padStart(12, ' ') : mem.user_tag.substring(0, 12).padStart(12, ' ');
+						const user: string = member.tag.padStart(12, ' ');
 						return { name: this.parseName(member.name), user };
 					})
 					.sort((a, b) => this.localeSort(a, b))
@@ -109,8 +116,8 @@ export default class LinkListCommand extends Command {
 						return `✘ \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
 					})
 					.join('\n'),
-				offDiscord.length ? `\n${EMOJIS.WRONG} **Players not Linked: ${offDiscord.length}**` : '',
-				offDiscord
+				notLinked.length ? `\n${EMOJIS.WRONG} **Players not Linked: ${notLinked.length}**` : '',
+				notLinked
 					.sort((a, b) => this.localeSort(a, b))
 					.map((mem) => `✘ \`\u200e${this.parseName(mem.name)}\u200f\` \u200e \` ${mem.tag.padStart(12, ' ')} \u200f\``)
 					.join('\n')
