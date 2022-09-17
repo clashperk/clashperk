@@ -8,7 +8,7 @@ import { EMOJIS } from '../../util/Emojis.js';
 export default class CapitalRaidsCommand extends Command {
 	public constructor() {
 		super('capital-raids', {
-			category: 'activity',
+			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			defer: true

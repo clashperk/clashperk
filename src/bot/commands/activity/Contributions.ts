@@ -9,7 +9,7 @@ import { EMOJIS } from '../../util/Emojis.js';
 export default class CapitalContributionsCommand extends Command {
 	public constructor() {
 		super('capital-contributions', {
-			category: 'activity',
+			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			defer: true
