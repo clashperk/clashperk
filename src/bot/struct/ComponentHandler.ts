@@ -1,5 +1,5 @@
 import { ButtonInteraction, SelectMenuInteraction } from 'discord.js';
-import { Client } from '../struct/Client.js';
+import { Client } from './Client.js';
 
 interface ParsedCommandId {
 	tag: string;
@@ -7,8 +7,8 @@ interface ParsedCommandId {
 	[key: string]: string | number;
 }
 
-export class Automaton {
-	public constructor(public client: Client) {}
+export default class ComponentHandler {
+	public constructor(private readonly client: Client) {}
 
 	private parseCommandId(customId: string): ParsedCommandId | null {
 		if (/^{.*}$/g.test(customId)) return JSON.parse(customId);
@@ -24,7 +24,6 @@ export class Automaton {
 				const command = this.client.commandHandler.modules.get('boosts')!;
 				await interaction.deferUpdate();
 				await this.client.commandHandler.exec(interaction, command, {
-					recent: parsed.sort === -1,
 					value: interaction.isSelectMenu() ? interaction.values[0] : null,
 					...parsed
 				});
@@ -33,13 +32,17 @@ export class Automaton {
 			case 'donations': {
 				const command = this.client.commandHandler.modules.get('donations')!;
 				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { reverse: parsed.sort === -1, ...parsed });
+				await this.client.commandHandler.exec(interaction, command, {
+					sortBy: interaction.isSelectMenu() ? interaction.values : null,
+					orderBy: interaction.isSelectMenu() ? interaction.values[0] : null,
+					...parsed
+				});
 				return true;
 			}
 			case 'link-list': {
 				const command = this.client.commandHandler.modules.get('link-list')!;
 				await interaction.deferUpdate();
-				await this.client.commandHandler.exec(interaction, command, { showTags: parsed.args, ...parsed });
+				await this.client.commandHandler.exec(interaction, command, { ...parsed });
 				return true;
 			}
 			case 'clan-games': {

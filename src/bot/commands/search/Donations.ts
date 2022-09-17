@@ -1,4 +1,4 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, SelectMenuBuilder } from 'discord.js';
 import { Collections } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
 import { Args, Command } from '../../lib/index.js';
@@ -34,7 +34,12 @@ export default class DonationsCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		{ tag, season, reverse }: { tag?: string; season: string; reverse?: boolean }
+		{
+			tag,
+			season,
+			sortBy,
+			orderBy
+		}: { tag?: string; season: string; sortBy?: ('donated' | 'received' | 'townHall')[]; orderBy?: string }
 	) {
 		const clan = await this.client.resolver.resolveClan(interaction, tag);
 		if (!clan) return;
@@ -43,36 +48,45 @@ export default class DonationsCommand extends Command {
 		}
 
 		if (!season) season = Season.ID;
-		const sameSeason = Season.ID === Season.generateID(season);
+		const isSameSeason = Season.ID === Season.generateID(season);
 
-		// TODO: projection
 		const dbMembers = await this.client.db
-			.collection<PlayerSeasonModel>(Collections.PLAYER_SEASONS)
-			.find({ season, __clans: clan.tag, tag: { $in: clan.memberList.map((m) => m.tag) } })
+			.collection<Pick<PlayerSeasonModel, 'tag' | 'clans' | 'townHallLevel'>>(Collections.PLAYER_SEASONS)
+			.find(
+				{ season, __clans: clan.tag, tag: { $in: clan.memberList.map((m) => m.tag) } },
+				{ projection: { tag: 1, clans: 1, townHallLevel: 1 } }
+			)
 			.toArray();
 
-		if (!dbMembers.length && !sameSeason) {
+		if (!dbMembers.length && !isSameSeason) {
 			return interaction.editReply(this.i18n('command.donations.no_season_data', { lng: interaction.locale, season }));
 		}
 
-		const members: { tag: string; name: string; donated: number; received: number }[] = [];
-		for (const mem of clan.memberList) {
-			if (!dbMembers.find((m) => m.tag === mem.tag) && sameSeason) {
-				members.push({ name: mem.name, tag: mem.tag, donated: mem.donations, received: mem.donationsReceived });
-			}
+		const members: { tag: string; name: string; donated: number; received: number; townHall: number }[] = [];
 
+		if (isSameSeason) {
+			const notFound = clan.memberList.filter((m) => !dbMembers.some((d) => d.tag === m.tag));
+			const notFoundMembers = (await this.client.http.detailedClanMembers(notFound)).filter((res) => res.ok);
+			for (const member of notFoundMembers) {
+				const { tag, name, townHallLevel, donations, donationsReceived } = member;
+				members.push({ tag, name, donated: donations, received: donationsReceived, townHall: townHallLevel });
+			}
+		}
+
+		for (const mem of clan.memberList) {
 			const m = dbMembers.find((m) => m.tag === mem.tag);
 			if (m) {
 				members.push({
 					name: mem.name,
 					tag: mem.tag,
-					donated: sameSeason
+					townHall: m.townHallLevel,
+					donated: isSameSeason
 						? mem.donations >= m.clans[clan.tag].donations.current
 							? m.clans[clan.tag].donations.total + (mem.donations - m.clans[clan.tag].donations.current)
 							: Math.max(mem.donations, m.clans[clan.tag].donations.total)
 						: m.clans[clan.tag].donations.total,
 
-					received: sameSeason
+					received: isSameSeason
 						? mem.donationsReceived >= m.clans[clan.tag].donationsReceived.current
 							? m.clans[clan.tag].donationsReceived.total +
 							  (mem.donationsReceived - m.clans[clan.tag].donationsReceived.current)
@@ -90,8 +104,12 @@ export default class DonationsCommand extends Command {
 		members.sort((a, b) => b.donated - a.donated);
 		const donated = members.reduce((pre, mem) => mem.donated + pre, 0);
 		const received = members.reduce((pre, mem) => mem.received + pre, 0);
-		if (reverse) members.sort((a, b) => b.received - a.received);
 
+		for (const sort of sortBy ?? []) {
+			members.sort((a, b) => (orderBy === 'asc' ? a[sort] - b[sort] : b[sort] - a[sort]));
+		}
+
+		const isTh = sortBy?.includes('townHall');
 		const getEmbed = () => {
 			const embed = new EmbedBuilder()
 				.setColor(this.client.embed(interaction))
@@ -99,13 +117,13 @@ export default class DonationsCommand extends Command {
 				.setDescription(
 					[
 						'```',
-						`\u200e # ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'}`,
+						`\u200e${isTh ? 'TH' : ' #'} ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'}`,
 						members
-							.map((mem, index) => {
+							.map((mem, count) => {
 								const donation = `${this.donation(mem.donated, ds)} ${this.donation(mem.received, rs)}`;
-								return `${(index + 1).toString().padStart(2, ' ')} ${donation}  \u200e${this.padEnd(
-									mem.name.substring(0, 15)
-								)}`;
+								const name = this.padEnd(mem.name.substring(0, 15));
+								const thOrIndex = (isTh ? mem.townHall : count + 1).toString().padStart(2, ' ');
+								return `${thOrIndex} ${donation}  \u200e${name}`;
 							})
 							.join('\n'),
 						'```'
@@ -117,22 +135,68 @@ export default class DonationsCommand extends Command {
 
 		const embed = getEmbed();
 		const customId = {
-			sort: sameSeason ? JSON.stringify({ tag: clan.tag, cmd: this.id, reverse: true }) : this.client.uuid(interaction.user.id),
-			refresh: JSON.stringify({ tag: clan.tag, cmd: this.id, reverse: false })
+			order: isSameSeason ? JSON.stringify({ tag: clan.tag, cmd: this.id, sortBy, _: 1 }) : this.client.uuid(interaction.user.id),
+			sort: isSameSeason ? JSON.stringify({ tag: clan.tag, cmd: this.id, orderBy, _: 2 }) : this.client.uuid(interaction.user.id),
+			refresh: JSON.stringify({ tag: clan.tag, cmd: this.id, sortBy, orderBy })
 		};
 
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(
-				new ButtonBuilder()
-					.setStyle(ButtonStyle.Secondary)
-					.setCustomId(customId.refresh)
-					.setEmoji(EMOJIS.REFRESH)
-					.setDisabled(!sameSeason)
-			)
-			.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customId.sort).setLabel('Sort by Received'));
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId(customId.refresh)
+				.setEmoji(EMOJIS.REFRESH)
+				.setDisabled(!isSameSeason)
+		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-		if (sameSeason) return;
+		const sortingRow = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+			new SelectMenuBuilder()
+				.setCustomId(customId.sort)
+				.setPlaceholder('Sort by')
+				.setMaxValues(2)
+				.addOptions([
+					{
+						label: 'Donations',
+						description: 'Sorted by donations',
+						value: 'donated',
+						default: sortBy?.includes('donated')
+					},
+					{
+						label: 'Donations Received',
+						description: 'Sorted by donations received',
+						value: 'received',
+						default: sortBy?.includes('received')
+					},
+					{
+						label: 'Town-Hall Level',
+						description: 'Sorted by Town-Hall level',
+						value: 'townHall',
+						default: sortBy?.includes('townHall')
+					}
+				])
+		);
+
+		const orderingRow = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+			new SelectMenuBuilder()
+				.setCustomId(customId.order)
+				.setPlaceholder('Order by')
+				.addOptions([
+					{
+						label: 'Descending',
+						description: 'High to Low',
+						value: 'desc',
+						default: orderBy === 'desc'
+					},
+					{
+						label: 'Ascending',
+						description: 'Low to High',
+						value: 'asc',
+						default: orderBy === 'asc'
+					}
+				])
+		);
+
+		const msg = await interaction.editReply({ embeds: [embed], components: [row, sortingRow, orderingRow] });
+		if (isSameSeason) return;
 
 		const collector = msg.createMessageComponentCollector({
 			filter: (action) => action.customId === customId.sort && action.user.id === interaction.user.id,

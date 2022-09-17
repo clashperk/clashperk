@@ -10,7 +10,6 @@ import Logger from '../util/Logger.js';
 import { Settings } from '../util/Constants.js';
 import { i18n } from '../util/i18n.js';
 import { ClientUtil } from '../util/ClientUtil.js';
-import { Automaton } from './Automaton.js';
 import { Database } from './Database.js';
 import Http from './Http.js';
 import Patrons from './Patrons.js';
@@ -53,7 +52,6 @@ export class Client extends Discord.Client {
 
 	public rpcHandler!: RPCHandler;
 	public patrons!: Patrons;
-	public automaton!: Automaton;
 	public components = new Map<string, string[]>();
 	public resolver!: Resolver;
 	public ownerId: string;
@@ -149,7 +147,6 @@ export class Client extends Discord.Client {
 		this.patrons = new Patrons(this);
 		await this.patrons.refresh();
 
-		this.automaton = new Automaton(this);
 		this.stats = new StatsHandler(this);
 		this.resolver = new Resolver(this);
 		this.remindScheduler = new RemindScheduler(this);

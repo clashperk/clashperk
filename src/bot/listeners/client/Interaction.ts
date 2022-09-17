@@ -2,15 +2,19 @@ import { Interaction } from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
 import { Listener } from '../../lib/index.js';
+import ComponentHandler from '../../struct/ComponentHandler.js';
 import { Settings } from '../../util/Constants.js';
 
 export default class InteractionListener extends Listener {
+	private readonly componentHandler: ComponentHandler;
+
 	public constructor() {
 		super('interaction', {
 			emitter: 'client',
 			category: 'client',
 			event: 'interactionCreate'
 		});
+		this.componentHandler = new ComponentHandler(this.client);
 	}
 
 	public exec(interaction: Interaction) {
@@ -75,7 +79,7 @@ export default class InteractionListener extends Listener {
 		}
 
 		if (this.client.components.has(interaction.customId)) return;
-		if (await this.client.automaton.exec(interaction)) return;
+		if (await this.componentHandler.exec(interaction)) return;
 
 		this.client.logger.debug(`[${interaction.guild!.name}/${interaction.user.tag}]`, { label: 'COMPONENT_EXPIRED' });
 		await interaction.update({ components: [] });
