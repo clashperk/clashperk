@@ -28,7 +28,7 @@ export default class ErrorListener extends Listener {
 					username: interaction.user.tag
 				},
 				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
-				channel: interaction.channel?.id ?? null,
+				channel: interaction.channel ?? interaction.channelId ?? null,
 				command: {
 					id: command?.id,
 					category: command?.category
@@ -47,7 +47,7 @@ export default class ErrorListener extends Listener {
 				username: interaction.user.tag
 			},
 			guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
-			channel: interaction.channel?.id ?? null,
+			channel: interaction.channel ?? interaction.channelId ?? null,
 			command: {
 				id: command?.id,
 				category: command?.category

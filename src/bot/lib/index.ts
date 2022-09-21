@@ -309,11 +309,15 @@ export class InhibitorHandler extends BaseHandler {
 	}
 
 	public run(interaction: BaseInteraction, command: Command) {
-		const inhibitor = this.modules
-			.sort((a, b) => b.priority - a.priority)
-			.filter((inhibitor) => inhibitor.exec(interaction, command))
-			.at(0);
-		return inhibitor?.reason ?? null;
+		try {
+			const inhibitor = this.modules
+				.sort((a, b) => b.priority - a.priority)
+				.filter((inhibitor) => inhibitor.exec(interaction, command))
+				.at(0);
+			return inhibitor?.reason ?? null;
+		} catch (error) {
+			this.emit(CommandHandlerEvents.ERROR, error, interaction, command);
+		}
 	}
 }
 
