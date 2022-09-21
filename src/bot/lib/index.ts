@@ -89,7 +89,7 @@ export class CommandHandler extends BaseHandler {
 		this.aliases = new Collection();
 
 		client.on(Events.InteractionCreate, (interaction: Interaction) => {
-			if (!interaction.isCommand()) return;
+			if (!interaction.isChatInputCommand()) return;
 			return this.handleInteraction(interaction);
 		});
 	}
@@ -141,7 +141,7 @@ export class CommandHandler extends BaseHandler {
 			}
 
 			if (resolved[key] && args[name]?.match === 'BOOLEAN') {
-				resolved[key] = resolved[key] === 'true';
+				resolved[key] = typeof resolved[key] === 'boolean' || resolved[key] === 'true';
 			}
 
 			if (resolved[key] && args[name]?.match === 'COLOR') {

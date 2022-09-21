@@ -1,4 +1,4 @@
-import { CommandInteraction, TextChannel, PermissionsString, User } from 'discord.js';
+import { TextChannel, PermissionsString, User, Interaction, AutocompleteInteraction } from 'discord.js';
 import { Listener, Command } from '../../lib/index.js';
 import { missingPermissions } from '../../util/Constants.js';
 
@@ -11,7 +11,12 @@ export default class MissingPermissionsListener extends Listener {
 		});
 	}
 
-	public exec(interaction: CommandInteraction, command: Command, type: 'user' | 'client', missing: PermissionsString[]) {
+	public exec(
+		interaction: Exclude<Interaction, AutocompleteInteraction>,
+		command: Command,
+		type: 'user' | 'client',
+		missing: PermissionsString[]
+	) {
 		const text = {
 			client: () => {
 				const name = this.missingPermissions(interaction.channel as TextChannel, this.client.user!, missing);

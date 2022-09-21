@@ -1620,8 +1620,20 @@ export const PRIVATE_COMMANDS: Command[] = [
 		options: [
 			{
 				name: 'code',
-				description: 'It does something, yeah?',
+				description: 'Code to evaluate.',
 				type: ApplicationCommandOptionType.String,
+				required: true
+			},
+			{
+				name: 'shard',
+				description: 'Whether to run the code on all shards or just the current one.',
+				type: ApplicationCommandOptionType.Boolean,
+				required: false
+			},
+			{
+				name: 'depth',
+				description: 'Depth of the returned object.',
+				type: ApplicationCommandOptionType.Number,
 				required: false
 			}
 		]

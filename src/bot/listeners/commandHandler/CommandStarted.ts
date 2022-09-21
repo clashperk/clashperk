@@ -1,6 +1,6 @@
 import { addBreadcrumb, setContext } from '@sentry/node';
-import { BaseInteraction, CommandInteraction, MessageComponentInteraction } from 'discord.js';
-import { Listener, Command } from '../../lib/index.js';
+import { BaseInteraction, ChannelType, Interaction, InteractionType } from 'discord.js';
+import { Command, Listener } from '../../lib/index.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
 
 export default class CommandStartedListener extends Listener {
@@ -12,7 +12,7 @@ export default class CommandStartedListener extends Listener {
 		});
 	}
 
-	public exec(interaction: MessageComponentInteraction | CommandInteraction, command: Command, args: unknown) {
+	public exec(interaction: Interaction, command: Command, args: unknown) {
 		addBreadcrumb({
 			message: 'command_started',
 			category: command.category,
@@ -20,16 +20,19 @@ export default class CommandStartedListener extends Listener {
 			data: {
 				user: {
 					id: interaction.user.id,
-					username: interaction.user.tag
+					tag: interaction.user.tag
 				},
 				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
-				channel: interaction.channel ?? interaction.channelId ?? null,
+				channel: interaction.channel
+					? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] }
+					: interaction.channelId,
 				command: {
 					id: command.id,
 					category: command.category
 				},
 				interaction: {
 					id: interaction.id,
+					type: InteractionType[interaction.type],
 					command: interaction.isCommand() ? interaction.commandName : null,
 					customId: interaction.isMessageComponent() ? interaction.customId : null
 				},
@@ -40,16 +43,19 @@ export default class CommandStartedListener extends Listener {
 		setContext('command_started', {
 			user: {
 				id: interaction.user.id,
-				username: interaction.user.tag
+				tag: interaction.user.tag
 			},
 			guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
-			channel: interaction.channel?.id ?? null,
+			channel: interaction.channel
+				? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] }
+				: interaction.channelId,
 			command: {
 				id: command.id,
 				category: command.category
 			},
 			interaction: {
 				id: interaction.id,
+				type: InteractionType[interaction.type],
 				command: interaction.isCommand() ? interaction.commandName : null,
 				customId: interaction.isMessageComponent() ? interaction.customId : null
 			},

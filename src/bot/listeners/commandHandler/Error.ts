@@ -1,7 +1,16 @@
 import { inspect } from 'node:util';
 import { addBreadcrumb, captureException, setContext } from '@sentry/node';
-import { DiscordAPIError, ActionRowBuilder, ButtonBuilder, MessageComponentInteraction, ButtonStyle, CommandInteraction } from 'discord.js';
-import { Listener, Command } from '../../lib/index.js';
+import {
+	ActionRowBuilder,
+	AutocompleteInteraction,
+	ButtonBuilder,
+	ButtonStyle,
+	ChannelType,
+	DiscordAPIError,
+	Interaction,
+	InteractionType
+} from 'discord.js';
+import { Command, Listener } from '../../lib/index.js';
 
 export default class ErrorListener extends Listener {
 	public constructor() {
@@ -12,7 +21,7 @@ export default class ErrorListener extends Listener {
 		});
 	}
 
-	public async exec(error: Error, interaction: MessageComponentInteraction | CommandInteraction, command?: Command) {
+	public async exec(error: Error, interaction: Exclude<Interaction, AutocompleteInteraction>, command?: Command) {
 		const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.tag}` : `${interaction.user.tag}`;
 		// eslint-disable-next-line @typescript-eslint/no-base-to-string
 		this.client.logger.error(`${command?.id ?? 'unknown'} ~ ${error.toString()}`, { label });
@@ -25,16 +34,19 @@ export default class ErrorListener extends Listener {
 			data: {
 				user: {
 					id: interaction.user.id,
-					username: interaction.user.tag
+					tag: interaction.user.tag
 				},
 				guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
-				channel: interaction.channel ?? interaction.channelId ?? null,
+				channel: interaction.channel
+					? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] }
+					: interaction.channelId,
 				command: {
 					id: command?.id,
 					category: command?.category
 				},
 				interaction: {
 					id: interaction.id,
+					type: InteractionType[interaction.type],
 					command: interaction.isCommand() ? interaction.commandName : null,
 					customId: interaction.isMessageComponent() ? interaction.customId : null
 				}
@@ -44,16 +56,19 @@ export default class ErrorListener extends Listener {
 		setContext('command_started', {
 			user: {
 				id: interaction.user.id,
-				username: interaction.user.tag
+				tag: interaction.user.tag
 			},
 			guild: interaction.guild ? { id: interaction.guild.id, name: interaction.guild.name } : null,
-			channel: interaction.channel ?? interaction.channelId ?? null,
+			channel: interaction.channel
+				? { id: interaction.channel.id, type: ChannelType[interaction.channel.type] }
+				: interaction.channelId,
 			command: {
 				id: command?.id,
 				category: command?.category
 			},
 			interaction: {
 				id: interaction.id,
+				type: InteractionType[interaction.type],
 				command: interaction.isCommand() ? interaction.commandName : null,
 				customId: interaction.isMessageComponent() ? interaction.customId : null
 			}

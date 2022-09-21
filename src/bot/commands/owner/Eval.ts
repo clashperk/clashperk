@@ -1,6 +1,6 @@
 import util from 'node:util';
-import { Message } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { CommandInteraction } from 'discord.js';
+import { Args, Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 
 export default class EvalCommand extends Command {
@@ -12,11 +12,29 @@ export default class EvalCommand extends Command {
 			ownerOnly: true,
 			description: {
 				content: "You can't use this anyway, so why explain?"
-			}
+			},
+			defer: true,
+			ephemeral: true
 		});
 	}
 
-	public async run(message: Message, { content: code, depth, shard }: { content: string; depth?: number; shard?: boolean }) {
+	public args(): Args {
+		return {
+			code: {
+				match: 'STRING'
+			},
+			shard: {
+				match: 'BOOLEAN'
+			},
+			depth: {
+				match: 'NUMBER'
+			}
+		};
+	}
+
+	public async exec(interaction: CommandInteraction, { code, depth, shard }: { code: string; depth?: number; shard?: boolean }) {
+		console.log({ code, depth, shard });
+
 		let hrDiff;
 		let evaled;
 		try {
@@ -24,14 +42,14 @@ export default class EvalCommand extends Command {
 			evaled = await (shard ? this.client.shard!.broadcastEval((client, code) => eval(code), { context: code }) : eval(code)); // eslint-disable-line
 			hrDiff = process.hrtime(hrStart);
 		} catch (error) {
-			return message.channel.send(`*Error while evaluating!*\`\`\`js\n${error as string}\`\`\``);
+			return interaction.followUp({ content: `*Error while evaluating!*\`\`\`js\n${error as string}\`\`\``, ephemeral: true });
 		}
 
 		const result = this._result(evaled, hrDiff, depth, shard);
 		if (Array.isArray(result)) {
-			return result.slice(0, 5).map((content) => message.channel.send(content));
+			return result.slice(0, 5).map((content) => interaction.followUp({ content, ephemeral: true }));
 		}
-		return message.channel.send(result);
+		return interaction.followUp({ content: result as string, ephemeral: true });
 	}
 
 	private _result(result: string, hrDiff: number[], depth?: number, shard?: boolean) {
