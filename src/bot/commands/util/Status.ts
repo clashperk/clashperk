@@ -1,10 +1,14 @@
+import { fileURLToPath, URL } from 'url';
 import os from 'os';
+import { readFile } from 'node:fs/promises';
 import moment from 'moment';
 import { EmbedBuilder, CommandInteraction, Message, Guild } from 'discord.js';
-// import { version } from '../../../../package.json';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
 import 'moment-duration-format';
+
+const pkgPath = fileURLToPath(new URL('../../../../../package.json', import.meta.url).href);
+const pkg = JSON.parse((await readFile(pkgPath)).toString()) as { version: string };
 
 export default class StatusCommand extends Command {
 	public constructor() {
@@ -69,18 +73,28 @@ export default class StatusCommand extends Command {
 					inline: true
 				},
 				{
-					name: 'Clans Total',
+					name: 'Clans',
 					value: `${(await this.count(Collections.CLAN_STORES)).toLocaleString()}`,
 					inline: true
 				},
 				{
-					name: 'Players Total',
+					name: 'Players',
 					value: `${(await this.count(Collections.LAST_SEEN)).toLocaleString()}`,
 					inline: true
 				},
 				{
 					name: 'Shard',
 					value: `${guild.shard.id}/${this.client.shard!.count}`,
+					inline: true
+				},
+				{
+					name: 'Version',
+					value: `[${pkg.version}](https://github.com/clashperk)`,
+					inline: true
+				},
+				{
+					name: 'Runtime',
+					value: `[Node.js ${process.version}](https://nodejs.org)`,
 					inline: true
 				}
 			])

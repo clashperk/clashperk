@@ -30,10 +30,14 @@ export default class ClanGamesCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { tag?: string; max: boolean; filter: boolean }
+		args: { tag?: string; max: boolean; filter: boolean; season?: string }
 	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
+
+		if (this.seasonId !== args.season && !(interaction.isButton() && interaction.message.type === MessageType.ChatInputCommand)) {
+			return interaction.editReply({ components: [] });
+		}
 
 		const allowed = await this.client.db
 			.collection(Collections.CLAN_STORES)
@@ -60,13 +64,13 @@ export default class ClanGamesCommand extends Command {
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId(JSON.stringify({ cmd: this.id, max: false, tag: clan.tag }))
+					.setCustomId(JSON.stringify({ cmd: this.id, max: false, tag: clan.tag, season: this.seasonId }))
 					.setEmoji(EMOJIS.REFRESH)
 					.setStyle(ButtonStyle.Secondary)
 			)
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId(JSON.stringify({ cmd: this.id, max: !args.max, filter: false, tag: clan.tag }))
+					.setCustomId(JSON.stringify({ cmd: this.id, max: !args.max, filter: false, tag: clan.tag, season: this.seasonId }))
 					.setLabel(args.max ? 'Permissible Points' : 'Maximum Points')
 					.setStyle(ButtonStyle.Primary)
 			);

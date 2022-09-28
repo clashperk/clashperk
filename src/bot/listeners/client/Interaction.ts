@@ -54,11 +54,13 @@ export default class InteractionListener extends Listener {
 
 	private async contextInteraction(interaction: Interaction) {
 		if (!interaction.isContextMenuCommand()) return;
-		if (this.inhibitor(interaction)) return;
-		if (!interaction.inCachedGuild()) return;
 
-		const command = this.client.commandHandler.modules.get(interaction.commandName.toLowerCase());
+		const commandId = interaction.commandName.replace(/\s+/g, '-').toLowerCase();
+		if (commandId === 'clear-components') return interaction.reply({ components: [] });
+
+		const command = this.client.commandHandler.modules.get(commandId);
 		if (!command) return;
+
 		if (this.client.commandHandler.preInhibitor(interaction, command)) return;
 
 		const args = interaction.isMessageContextMenuCommand()
@@ -87,7 +89,9 @@ export default class InteractionListener extends Listener {
 	}
 
 	private inhibitor(interaction: Interaction) {
-		if (!interaction.inGuild()) return true;
+		// TODO: Add more checks
+		if (!interaction.inCachedGuild()) return true;
+		if (!interaction.channel) return true;
 
 		const guilds = this.client.settings.get<string[]>('global', Settings.GUILD_BLACKLIST, []);
 		if (guilds.includes(interaction.guildId)) return true;

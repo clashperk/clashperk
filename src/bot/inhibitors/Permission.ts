@@ -11,8 +11,8 @@ export default class PermissionInhibitor extends Inhibitor {
 
 	public exec(interaction: Interaction) {
 		if (interaction.inGuild() && !interaction.inCachedGuild()) return true;
-		if (!interaction.inCachedGuild()) return false;
-		if (!interaction.channel) return false;
+		if (!interaction.inCachedGuild()) return true;
+		if (!interaction.channel) return true;
 
 		if (interaction.channel.isThread()) {
 			return !interaction.appPermissions?.has([PermissionFlagsBits.SendMessagesInThreads]);

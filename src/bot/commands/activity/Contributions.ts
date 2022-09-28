@@ -16,11 +16,17 @@ export default class CapitalContributionsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; clear?: boolean }) {
+		if (args.clear) {
+			return interaction.editReply({ components: [] });
+		}
+
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 
-		const weekId = args.week ?? this.raidWeek().weekId;
+		const currentWeekId = this.raidWeek().weekId;
+		const weekId = args.week ?? currentWeekId;
+
 		const startWeek = moment(weekId).utc(true).add(7, 'h').utc().toDate();
 		const endWeek = moment(weekId).utc(true).add(7, 'd').add(7, 'h').toDate();
 
@@ -58,15 +64,14 @@ export default class CapitalContributionsCommand extends Command {
 				new ButtonBuilder()
 					.setStyle(ButtonStyle.Secondary)
 					.setEmoji(EMOJIS.REFRESH)
-					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag }))
+					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId }))
 			)
 			.addComponents(
 				new ButtonBuilder()
-					.setLabel('Raids')
 					.setStyle(ButtonStyle.Secondary)
-					.setEmoji(EMOJIS.CAPITAL_RAID)
-					.setCustomId(JSON.stringify({ cmd: 'capital-raids', tag: clan.tag }))
-					.setDisabled(true)
+					.setEmoji(EMOJIS.REFRESH)
+					.setLabel('Preserve')
+					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId, clear: true }))
 			);
 
 		const embed = this.getCapitalContributionsEmbed({ clan, weekId, contributions });
@@ -123,19 +128,5 @@ export default class CapitalContributionsCommand extends Command {
 		today.setUTCDate(today.getUTCDate() + 5);
 		today.setUTCMinutes(0, 0, 0);
 		return { weekDate: today, weekId: today.toISOString().substring(0, 10), isRaidWeek };
-	}
-
-	private getWeekIds() {
-		const weekIds = [];
-		const friday = moment().endOf('month').day('Friday');
-		if (friday.date() > 7) friday.subtract(7, 'd');
-		while (weekIds.length < 5) {
-			if (friday.toDate().getTime() < Date.now()) {
-				weekIds.push(friday.format('YYYY-MM-DD'));
-			}
-			friday.subtract(7, 'd');
-		}
-
-		return weekIds;
 	}
 }

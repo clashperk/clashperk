@@ -15,10 +15,16 @@ export default class CapitalRaidsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; clear?: boolean }) {
+		if (args.clear) {
+			return interaction.editReply({ components: [] });
+		}
+
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
-		const weekId = args.week ?? this.raidWeek().weekId;
+
+		const currentWeekId = this.raidWeek().weekId;
+		const weekId = args.week ?? currentWeekId;
 
 		const attacks = await this.client.db
 			.collection(Collections.RAID_ATTACKS)
@@ -41,21 +47,12 @@ export default class CapitalRaidsCommand extends Command {
 			])
 			.toArray();
 
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(
-				new ButtonBuilder()
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji(EMOJIS.REFRESH)
-					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag }))
-			)
-			.addComponents(
-				new ButtonBuilder()
-					.setLabel('Contributions')
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji(EMOJIS.CAPITAL_GOLD)
-					.setCustomId(JSON.stringify({ cmd: 'capital-contributions', tag: clan.tag }))
-					.setDisabled(true)
-			);
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Secondary)
+				.setEmoji(EMOJIS.REFRESH)
+				.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId }))
+		);
 
 		const embed = this.getCapitalRaidEmbed({ clan, weekId, attacks });
 		return interaction.editReply({ embeds: [embed], components: [row] });

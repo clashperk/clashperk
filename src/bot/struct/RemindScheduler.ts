@@ -285,11 +285,7 @@ export default class RemindScheduler {
 	}
 
 	private async _refresh() {
-		const schedulers = await this.schedulers
-			.find({
-				timestamp: { $lt: new Date(Date.now() + this.refreshRate) }
-			})
-			.toArray();
+		const schedulers = await this.schedulers.find({ timestamp: { $lt: new Date(Date.now() + this.refreshRate) } }).toArray();
 
 		const now = new Date().getTime();
 		for (const schedule of schedulers) {

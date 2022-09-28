@@ -2,7 +2,6 @@ import 'reflect-metadata';
 import { inspect } from 'util';
 import { Routes, RouteBases } from 'discord-api-types/v10';
 import fetch from 'node-fetch';
-import { ApplicationCommand } from 'discord.js';
 import { COMMANDS, PRIVATE_COMMANDS } from './Commands.js';
 
 const getClientId = (token: string) => Buffer.from(token.split('.')[0], 'base64').toString();
@@ -33,39 +32,8 @@ const commandPermission = async (token: string) => {
 		},
 		body: JSON.stringify(PRIVATE_COMMANDS)
 	});
-	const commands = (await res.json()) as ApplicationCommand[];
-	console.log(commands);
-	if (!res.ok) return null;
-
-	await fetch(`${RouteBases.api}${Routes.guildApplicationCommandsPermissions(getClientId(token), guildId)}`, {
-		method: 'PUT',
-		headers: {
-			'Authorization': `Bot ${token}`,
-			'Content-Type': 'application/json'
-		},
-		body: JSON.stringify(
-			commands.map((cmd) => ({
-				id: cmd.id,
-				permissions: [
-					{
-						id: '716298719720505448', // Bug Hunter
-						permission: true,
-						type: 1
-					},
-					{
-						id: '616457953058226176', // Support
-						permission: true,
-						type: 1
-					},
-					{
-						id: '444432489818357760', // Developer
-						permission: true,
-						type: 1
-					}
-				]
-			}))
-		)
-	}).then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(data)));
+	await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(inspect(data, { depth: Infinity }))));
+	console.log(`Updated ${PRIVATE_COMMANDS.length} Guild Application Commands`);
 };
 
 const applicationCommands = async (token: string) => {

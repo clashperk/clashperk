@@ -52,17 +52,22 @@ export default class ClanGamesLog extends BaseLog {
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId(JSON.stringify({ cmd: 'clan-games', max: false, tag }))
+					.setCustomId(JSON.stringify({ cmd: 'clan-games', max: false, tag, season: this.seasonId }))
 					.setEmoji(EMOJIS.REFRESH)
 					.setStyle(ButtonStyle.Secondary)
 			)
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId(JSON.stringify({ cmd: 'clan-games', max: true, filter: false, tag }))
+					.setCustomId(JSON.stringify({ cmd: 'clan-games', max: true, filter: false, tag, season: this.seasonId }))
 					.setLabel('Maximum Points')
 					.setStyle(ButtonStyle.Primary)
 			);
 		return row;
+	}
+
+	private get seasonId() {
+		const now = new Date();
+		return now.toISOString().substring(0, 7);
 	}
 
 	private async send(cache: Cache, webhook: WebhookClient, data: Feed) {
@@ -99,7 +104,7 @@ export default class ClanGamesLog extends BaseLog {
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
 			.setDescription(
 				[
-					`Clan Games Scoreboard [${clan.members}/50]`,
+					`**[Clan Games Scoreboard (${this.seasonId})](https://clashperk.com/faq)**`,
 					`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
 					data.members
 						.slice(0, 55)

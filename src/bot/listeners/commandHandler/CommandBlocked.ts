@@ -31,10 +31,15 @@ export default class CommandBlockedListener extends Listener {
 				scope: 'bot applications.commands',
 				permissions: BIT_FIELD.toString()
 			}).toString();
+			this.client.logger.log('Guild is not cached.', { label });
 			return interaction.reply({
 				content: `Please [invite the bot](https://discord.com/api/oauth2/authorize?${query}) again to execute its commands.`,
 				ephemeral: true
 			});
+		}
+
+		if (!interaction.channel) {
+			throw new ReferenceError('Channel is not cached.');
 		}
 
 		if (!content) return;
