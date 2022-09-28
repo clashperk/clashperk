@@ -47,12 +47,19 @@ export default class CapitalRaidsCommand extends Command {
 			])
 			.toArray();
 
-		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder()
-				.setStyle(ButtonStyle.Secondary)
-				.setEmoji(EMOJIS.REFRESH)
-				.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId }))
-		);
+		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(
+				new ButtonBuilder()
+					.setStyle(ButtonStyle.Secondary)
+					.setEmoji(EMOJIS.REFRESH)
+					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId }))
+			)
+			.addComponents(
+				new ButtonBuilder()
+					.setStyle(ButtonStyle.Secondary)
+					.setLabel('Preserve')
+					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId, clear: true }))
+			);
 
 		const embed = this.getCapitalRaidEmbed({ clan, weekId, attacks });
 		return interaction.editReply({ embeds: [embed], components: [row] });

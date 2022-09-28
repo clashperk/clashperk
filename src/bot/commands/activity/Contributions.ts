@@ -69,7 +69,6 @@ export default class CapitalContributionsCommand extends Command {
 			.addComponents(
 				new ButtonBuilder()
 					.setStyle(ButtonStyle.Secondary)
-					.setEmoji(EMOJIS.REFRESH)
 					.setLabel('Preserve')
 					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId, clear: true }))
 			);
