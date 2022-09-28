@@ -35,7 +35,7 @@ export default class ClanGamesCommand extends Command {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 
-		if (this.seasonId !== args.season && !(interaction.isButton() && interaction.message.type === MessageType.ChatInputCommand)) {
+		if (this.seasonId !== args.season && interaction.isButton() && interaction.message.type === MessageType.Default) {
 			return interaction.editReply({ components: [] });
 		}
 
