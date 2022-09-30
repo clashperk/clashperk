@@ -14,7 +14,7 @@ export default class LastWarsExport extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string; season?: string }) {
 		const tags = this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -31,6 +31,7 @@ export default class LastWarsExport extends Command {
 		const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();
 
 		const workbook = new Excel();
+		const query = args.season ? { season: args.season } : {};
 		const sheet = workbook.addWorksheet('Details');
 		const members = [] as { name: string; tag: string; total: number; clan: string; date: Date }[];
 		for (const clan of clans) {
@@ -40,7 +41,8 @@ export default class LastWarsExport extends Command {
 					{
 						$match: {
 							$or: [{ 'clan.tag': clan.tag }, { 'opponent.tag': clan.tag }],
-							state: 'warEnded'
+							state: 'warEnded',
+							...query
 						}
 					},
 					{

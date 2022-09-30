@@ -21,7 +21,7 @@ export default class WarExport extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string; season?: string }) {
 		const tags = this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -34,6 +34,7 @@ export default class WarExport extends Command {
 
 		let num = Number(args.wars ?? 25);
 		num = this.client.patrons.get(interaction.guild.id) ? Math.min(num, 45) : Math.min(25, num);
+		const query = args.season ? { season: args.season } : {};
 		const chunks = [];
 		for (const { tag, name } of clans) {
 			const wars = await this.client.db
@@ -41,7 +42,8 @@ export default class WarExport extends Command {
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 					state: { $in: ['inWar', 'warEnded'] },
-					warType: WarType.REGULAR
+					warType: WarType.REGULAR,
+					...query
 				})
 				.sort({ _id: -1 })
 				.limit(num)

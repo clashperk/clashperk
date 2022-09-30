@@ -19,7 +19,7 @@ export default class ExportMissed extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string; season?: string }) {
 		const tags = this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -35,12 +35,14 @@ export default class ExportMissed extends Command {
 		const chunks = [];
 		const missed: { [key: string]: { name: string; tag: string; count: number; missed: Date[] } } = {};
 
+		const query = args.season ? { season: args.season } : {};
 		for (const { tag } of clans) {
 			const wars = await this.client.db
 				.collection(Collections.CLAN_WARS)
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
-					state: 'warEnded'
+					state: 'warEnded',
+					...query
 				})
 				.sort({ _id: -1 })
 				.limit(num)
