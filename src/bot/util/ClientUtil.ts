@@ -1,4 +1,4 @@
-import { ChannelType, NewsChannel, PermissionsString, TextChannel } from 'discord.js';
+import { ChannelType, ForumChannel, NewsChannel, PermissionsString, TextChannel } from 'discord.js';
 import Client from '../struct/Client.js';
 
 export class ClientUtil {
@@ -37,7 +37,7 @@ export class ClientUtil {
 		return null;
 	}
 
-	public hasWebhookPermission(channel: TextChannel | NewsChannel) {
+	public hasWebhookPermission(channel: TextChannel | NewsChannel | ForumChannel) {
 		return channel.permissionsFor(this.client.user!.id)!.has(['ManageWebhooks', 'ViewChannel']);
 		// channel.permissionsFor(channel.guild.id)!.has(['UseExternalEmojis'])
 	}

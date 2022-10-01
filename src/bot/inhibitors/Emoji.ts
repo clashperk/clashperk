@@ -13,6 +13,6 @@ export default class GuildBanInhibitor extends Inhibitor {
 		if (!interaction.inCachedGuild()) return false;
 		if (!interaction.channel) return false;
 		if (!command.clientPermissions?.includes('UseExternalEmojis')) return false;
-		return !interaction.channel.permissionsFor(interaction.guild.roles.everyone).has(PermissionFlagsBits.UseExternalEmojis);
+		return !interaction.channel.permissionsFor(interaction.guild.roles.everyone.id)?.has(PermissionFlagsBits.UseExternalEmojis);
 	}
 }

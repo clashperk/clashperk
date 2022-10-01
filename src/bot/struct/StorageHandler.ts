@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { ObjectId, Collection, WithId } from 'mongodb';
-import { CommandInteraction, NewsChannel, TextChannel } from 'discord.js';
+import { CommandInteraction, ForumChannel, NewsChannel, TextChannel } from 'discord.js';
 import { ClanWarLeagueGroup } from 'clashofclans.js';
 import { Collections, Flags } from '../util/Constants.js';
 import { Client } from './Client.js';
@@ -413,7 +413,7 @@ export default class StorageHandler {
 		return result.length ? Object.values(result[0]).flat() : [];
 	}
 
-	public async getWebhook(channel: TextChannel | NewsChannel) {
+	public async getWebhook(channel: TextChannel | NewsChannel | ForumChannel) {
 		const channelWebhooks = await channel.fetchWebhooks();
 
 		const clans = await this.getWebhookWorkloads(channel.guild.id);

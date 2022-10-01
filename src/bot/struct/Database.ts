@@ -63,19 +63,6 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
-			db.collection(Collections.CLAN_MEMBERS).createIndexes([
-				{
-					key: { tag: 1, season: 1, clanTag: 1 },
-					unique: true
-				},
-				{
-					key: { season: 1, clanTag: 1 }
-				},
-				{
-					key: { clanTag: 1 }
-				}
-			]),
-
 			db.collection(Collections.PLAYER_SEASONS).createIndexes([
 				{
 					key: { tag: 1, season: 1 },
@@ -224,17 +211,6 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
-			db.collection(Collections.CLANS).createIndexes([
-				{
-					key: { ttl: 1 },
-					expireAfterSeconds: 60 * 24
-				},
-				{
-					key: { tag: 1 },
-					unique: true
-				}
-			]),
-
 			db.collection(Collections.FLAGS).createIndex({ guild: 1, tag: 1 }, { unique: true }),
 
 			db.collection(Collections.LAST_SEEN).createIndexes([
@@ -268,7 +244,7 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.PATRONS).createIndex({ id: 1 }, { unique: true }),
 
-			db.collection(Collections.SETTINGS).createIndex({ id: 1 }, { unique: true }),
+			db.collection(Collections.SETTINGS).createIndex({ guildId: 1 }, { unique: true }),
 
 			db.collection(Collections.REMINDERS).createIndexes([
 				{

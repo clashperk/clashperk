@@ -192,7 +192,7 @@ export default class ReminderNowCommand extends Command {
 			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {
 				await action.update({ components: [], content: `**Fetching wars...** ${EMOJIS.LOADING}` });
 
-				const texts = await this.getWars(action as ButtonInteraction<'cached'>, {
+				const texts = await this.getWars(action, {
 					remaining: state.remaining.map((num) => Number(num)),
 					townHalls: state.townHalls.map((num) => Number(num)),
 					roles: state.roles,
@@ -207,7 +207,7 @@ export default class ReminderNowCommand extends Command {
 					await action.editReply({ content: this.i18n('command.reminder.now.no_match', { lng: interaction.locale }) });
 				}
 
-				await this.send(action as ButtonInteraction<'cached'>, texts);
+				await this.send(action, texts);
 			}
 		});
 

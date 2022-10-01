@@ -1,12 +1,13 @@
 import {
 	APIMessage,
 	Collection,
+	ForumChannel,
 	NewsChannel,
 	PermissionsString,
 	SnowflakeUtil,
 	TextChannel,
 	WebhookClient,
-	WebhookMessageOptions
+	WebhookCreateMessageOptions
 } from 'discord.js';
 import { Collection as DbCollection, ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
@@ -105,7 +106,7 @@ export default class BaseLog {
 		return msg;
 	}
 
-	public async _send(cache: Cache, webhook: WebhookClient, payload: WebhookMessageOptions) {
+	public async _send(cache: Cache, webhook: WebhookClient, payload: WebhookCreateMessageOptions) {
 		try {
 			return await webhook.send(payload);
 		} catch (error: any) {
@@ -117,7 +118,7 @@ export default class BaseLog {
 		}
 	}
 
-	public async _edit(cache: Cache, webhook: WebhookClient, payload: WebhookMessageOptions) {
+	public async _edit(cache: Cache, webhook: WebhookClient, payload: WebhookCreateMessageOptions) {
 		try {
 			return await webhook.editMessage(cache.message!, payload);
 		} catch (error: any) {
@@ -145,7 +146,7 @@ export default class BaseLog {
 		} catch {}
 	}
 
-	public async webhook(cache: Cache, channel: TextChannel | NewsChannel): Promise<WebhookClient | null> {
+	public async webhook(cache: Cache, channel: TextChannel | NewsChannel | ForumChannel): Promise<WebhookClient | null> {
 		if (cache.webhook) return cache.webhook;
 		if (cache.deleted) return null;
 

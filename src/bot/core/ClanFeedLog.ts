@@ -1,5 +1,5 @@
 import { Player } from 'clashofclans.js';
-import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageOptions } from 'discord.js';
+import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookCreateMessageOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
@@ -40,7 +40,7 @@ export default class ClanFeedLog extends BaseLog {
 			if (!message) continue;
 			const msg = await this.send(cache, webhook, {
 				embeds: [message.embed],
-				content: message.content,
+				content: message.content!,
 				threadId: cache.threadId
 			});
 			await this.updateMessageId(cache, msg);
@@ -50,7 +50,7 @@ export default class ClanFeedLog extends BaseLog {
 		return members.length;
 	}
 
-	private async send(cache: Cache, webhook: WebhookClient, payload: WebhookMessageOptions) {
+	private async send(cache: Cache, webhook: WebhookClient, payload: WebhookCreateMessageOptions) {
 		try {
 			return await super._send(cache, webhook, payload);
 		} catch (error: any) {

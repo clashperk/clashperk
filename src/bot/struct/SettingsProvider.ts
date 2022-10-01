@@ -3,7 +3,7 @@ import { Guild } from 'discord.js';
 import { Collections } from '../util/Constants.js';
 
 export default class SettingsProvider {
-	protected db: Collection;
+	protected db: Collection<Settings>;
 	private readonly settings = new Map();
 
 	public constructor(db: Db) {
@@ -22,7 +22,7 @@ export default class SettingsProvider {
 			)
 			.on('change', (change) => {
 				if (['update', 'insert'].includes(change.operationType)) {
-					this.settings.set(change.fullDocument!.id, change.fullDocument);
+					this.settings.set(change.fullDocument!.guildId, change.fullDocument);
 				}
 			});
 	}
@@ -30,7 +30,7 @@ export default class SettingsProvider {
 	public async init() {
 		const collection = await this.db.find({}, { projection: { _id: 0 } }).toArray();
 		for (const data of collection) {
-			this.settings.set(data.id, data);
+			this.settings.set(data.guildId, data);
 		}
 	}
 
@@ -77,4 +77,8 @@ export default class SettingsProvider {
 		if (/^\d+$/.test(guild)) return guild;
 		throw new TypeError('Invalid guild specified. Must be a Guild instance, guild ID, "global", or null.');
 	}
+}
+
+interface Settings {
+	guildId: string;
 }
