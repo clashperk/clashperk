@@ -31,14 +31,12 @@ export function getSeasonIds() {
 export function getWeekIds() {
 	const weekIds: { name: string; value: string }[] = [];
 	const friday = moment().endOf('month').day('Friday').startOf('day');
-	if (friday.date() > 7) friday.subtract(7, 'd');
 	while (weekIds.length < 6) {
 		if (friday.toDate().getTime() < Date.now()) {
 			weekIds.push({ name: friday.format('DD MMM, YYYY'), value: friday.format('YYYY-MM-DD') });
 		}
 		friday.subtract(7, 'd');
 	}
-
 	return weekIds;
 }
 
