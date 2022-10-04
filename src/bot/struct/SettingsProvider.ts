@@ -35,9 +35,9 @@ export default class SettingsProvider {
 	}
 
 	public get<T>(guild: string | Guild, key: string, defaultValue?: any): T {
-		const id = (this.constructor as typeof SettingsProvider).guildId(guild);
-		if (this.settings.has(id)) {
-			const value = this.settings.get(id)[key];
+		const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
+		if (this.settings.has(guildId)) {
+			const value = this.settings.get(guildId)[key];
 			// eslint-disable-next-line
 			return value == null ? defaultValue : value;
 		}
@@ -46,25 +46,25 @@ export default class SettingsProvider {
 	}
 
 	public async set(guild: string | Guild, key: string, value: any) {
-		const id = (this.constructor as typeof SettingsProvider).guildId(guild);
-		const data = this.settings.get(id) || {};
+		const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
+		const data = this.settings.get(guildId) || {};
 		data[key] = value;
-		this.settings.set(id, data);
-		return this.db.updateOne({ id }, { $set: { [key]: value } }, { upsert: true });
+		this.settings.set(guildId, data);
+		return this.db.updateOne({ guildId }, { $set: { [key]: value } }, { upsert: true });
 	}
 
 	public async delete(guild: string | Guild, key: string) {
-		const id = (this.constructor as typeof SettingsProvider).guildId(guild);
-		const data = this.settings.get(id) || {};
+		const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
+		const data = this.settings.get(guildId) || {};
 		delete data[key]; // eslint-disable-line
 
-		return this.db.updateOne({ id }, { $unset: { [key]: '' } });
+		return this.db.updateOne({ guildId }, { $unset: { [key]: '' } });
 	}
 
 	public async clear(guild: string | Guild) {
-		const id = (this.constructor as typeof SettingsProvider).guildId(guild);
-		this.settings.delete(id);
-		return this.db.deleteOne({ id });
+		const guildId = (this.constructor as typeof SettingsProvider).guildId(guild);
+		this.settings.delete(guildId);
+		return this.db.deleteOne({ guildId });
 	}
 
 	public flatten() {
