@@ -7,9 +7,9 @@ import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 
 const states: Record<string, string> = {
-	inWar: '**End Time~**',
-	preparation: '**Start Time~**',
-	warEnded: '**End Time~**'
+	inWar: '**End Time:**',
+	preparation: '**Start Time:**',
+	warEnded: '**End Time:**'
 };
 
 export default class WarSummaryCommand extends Command {
@@ -27,16 +27,16 @@ export default class WarSummaryCommand extends Command {
 		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
 		const embed = new EmbedBuilder();
-		for (const clan of clans) {
-			const data = (await this.getWAR(clan.tag)) as ClanWar & { round?: number };
-			if (!data.ok) continue;
-			if (data.state === 'notInWar') continue;
-
+		const result = await Promise.all(clans.map((clan) => this.getWAR(clan.tag) as Promise<ClanWar & { round?: number }>));
+		const wars = result.filter((res) => res.ok && res.state !== 'notInWar');
+		wars.sort((a, b) => this.remAtkDiff(a) - this.remAtkDiff(b));
+		wars.sort((a, b) => this.dateDiff(a) - this.dateDiff(b));
+		for (const data of wars) {
 			embed.addFields([
 				{
 					name: `${data.clan.name} ${EMOJIS.VS_BLUE} ${data.opponent.name} ${data.round ? `(CWL Round #${data.round})` : ''}`,
 					value: [
-						`${this.getLeaderBoard(data.clan, data.opponent)}`,
+						`${data.state === 'preparation' ? '' : this.getLeaderBoard(data.clan, data.opponent)}`,
 						`${states[data.state]} ${Util.getRelativeTime(moment(this._getTime(data)).toDate().getTime())}`,
 						'\u200b'
 					].join('\n')
@@ -91,7 +91,7 @@ export default class WarSummaryCommand extends Command {
 		return (
 			chunks.find((en) => en.state === 'inWar') ??
 			chunks.find((en) => en.state === 'preparation') ??
-			chunks.find((en) => en.state === 'warEnded')
+			chunks.find((en) => en.state === 'warEnded')!
 		);
 	}
 
@@ -105,5 +105,13 @@ export default class WarSummaryCommand extends Command {
 
 	private _getTime(data: ClanWar) {
 		return data.state === 'preparation' ? data.startTime : data.endTime;
+	}
+
+	private dateDiff(data: ClanWar) {
+		return Math.abs(moment(data.endTime).toDate().getTime() - new Date().getTime());
+	}
+
+	private remAtkDiff(data: ClanWar) {
+		return (data.clan.attacks * 100) / (data.teamSize * (data.attacksPerMember || 1));
 	}
 }
