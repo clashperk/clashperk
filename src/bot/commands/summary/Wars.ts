@@ -29,9 +29,16 @@ export default class WarSummaryCommand extends Command {
 		const embed = new EmbedBuilder();
 		const result = await Promise.all(clans.map((clan) => this.getWAR(clan.tag) as Promise<ClanWar & { round?: number }>));
 		const wars = result.filter((res) => res.ok && res.state !== 'notInWar');
+
 		wars.sort((a, b) => this.remAtkDiff(a) - this.remAtkDiff(b));
 		wars.sort((a, b) => this.dateDiff(a) - this.dateDiff(b));
-		for (const data of wars) {
+
+		const prepWars = wars.filter((war) => war.state === 'preparation');
+		const inWarWars = wars.filter((war) => war.state === 'inWar' && !this.isCompleted(war));
+		const completedWars = wars.filter((war) => war.state === 'inWar' && this.isCompleted(war));
+		const endedWars = wars.filter((war) => war.state === 'warEnded');
+
+		for (const data of [...inWarWars, ...completedWars, ...prepWars, ...endedWars]) {
 			embed.addFields([
 				{
 					name: `${data.clan.name} ${EMOJIS.VS_BLUE} ${data.opponent.name} ${data.round ? `(CWL Round #${data.round})` : ''}`,
@@ -113,5 +120,9 @@ export default class WarSummaryCommand extends Command {
 
 	private remAtkDiff(data: ClanWar) {
 		return (data.clan.attacks * 100) / (data.teamSize * (data.attacksPerMember || 1));
+	}
+
+	private isCompleted(data: ClanWar) {
+		return data.clan.attacks === data.teamSize * (data.attacksPerMember || 1);
 	}
 }
