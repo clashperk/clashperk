@@ -168,52 +168,68 @@ export default class CWLRosterCommand extends Command {
 			]);
 		}
 
-		const customID = this.client.uuid(interaction.user.id);
-		const button = new ButtonBuilder().setCustomId(customID).setStyle(ButtonStyle.Secondary).setLabel('Detailed Roster');
-		const msg = await interaction.editReply({
-			embeds: [embed],
-			components: [new ActionRowBuilder<ButtonBuilder>({ components: [button] })]
+		const customIds = {
+			detailed: this.client.uuid(interaction.user.id),
+			summarized: this.client.uuid(interaction.user.id)
+		};
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setCustomId(customIds.detailed).setStyle(ButtonStyle.Secondary).setLabel('Detailed Roster')
+		);
+		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+
+		const collector = msg.createMessageComponentCollector({
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+			time: 5 * 60 * 1000
 		});
-		const collector = await msg
-			.awaitMessageComponent({
-				filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
-				time: 5 * 60 * 1000
-			})
-			.catch(() => null);
 
-		this.client.components.delete(customID);
-		if (!collector) return;
+		collector.on('collect', async (action) => {
+			if (action.customId === customIds.detailed) {
+				const embed = new EmbedBuilder();
+				embed
+					.setFooter({ text: `Clan War League ${moment(body.season).format('MMMM YYYY')}` })
+					.setAuthor({ name: 'CWL Roster' })
+					.setDescription('CWL Roster and Town-Hall Distribution')
+					.setColor(this.client.embed(interaction));
 
-		embed.data.fields = [];
-		embed
-			.setFooter({ text: `Clan War League ${moment(body.season).format('MMMM YYYY')}` })
-			.setAuthor({ name: 'CWL Roster' })
-			.setDescription('CWL Roster and Town-Hall Distribution');
+				for (const clan of body.clans) {
+					const reduced = clan.members.reduce<{ [key: string]: number }>((count, member) => {
+						const townHall = member.townHallLevel;
+						count[townHall] = (count[townHall] || 0) + 1;
+						return count;
+					}, {});
 
-		for (const clan of body.clans) {
-			const reduced = clan.members.reduce<{ [key: string]: number }>((count, member) => {
-				const townHall = member.townHallLevel;
-				count[townHall] = (count[townHall] || 0) + 1;
-				return count;
-			}, {});
+					const townHalls = Object.entries(reduced)
+						.map((entry) => ({ level: Number(entry[0]), total: Number(entry[1]) }))
+						.sort((a, b) => b.level - a.level);
 
-			const townHalls = Object.entries(reduced)
-				.map((entry) => ({ level: Number(entry[0]), total: Number(entry[1]) }))
-				.sort((a, b) => b.level - a.level);
-
-			embed.addFields([
-				{
-					name: `\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`,
-					value: [
-						Util.chunk(townHalls, 5)
-							.map((chunks) => chunks.map((th) => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`).join(' '))
-							.join('\n')
-					].join('\n')
+					embed.addFields([
+						{
+							name: `\u200e${clan.tag === clanTag ? `__${clan.name} (${clan.tag})__` : `${clan.name} (${clan.tag})`}`,
+							value: [
+								Util.chunk(townHalls, 5)
+									.map((chunks) =>
+										chunks.map((th) => `${TOWN_HALLS[th.level]} ${WHITE_NUMBERS[th.total]}\u200b`).join(' ')
+									)
+									.join('\n')
+							].join('\n')
+						}
+					]);
 				}
-			]);
-		}
 
-		return interaction.editReply({ embeds: [embed], components: [] });
+				const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+					new ButtonBuilder().setCustomId(customIds.summarized).setStyle(ButtonStyle.Secondary).setLabel('Summarized Roster')
+				);
+				await action.update({ embeds: [embed], components: [row] });
+			}
+			if (action.customId === customIds.summarized) {
+				await action.update({ embeds: [embed], components: [row] });
+			}
+		});
+
+		collector.on('end', async (_, reason) => {
+			Object.values(customIds).forEach((id) => this.client.components.delete(id));
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+		});
 	}
 
 	private getNextRoster(clan: WarClan, townHalls: number[]) {
