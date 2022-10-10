@@ -1,5 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, SelectMenuBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
+import { MAX_TOWNHALL_LEVEL } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
@@ -39,7 +40,7 @@ export default class ReminderNowCommand extends Command {
 
 		const state = {
 			remaining: ['1', '2'],
-			townHalls: Array(13)
+			townHalls: Array(MAX_TOWNHALL_LEVEL - 1)
 				.fill(0)
 				.map((_, i) => (i + 2).toString()),
 			roles: ['leader', 'coLeader', 'admin', 'member'],
@@ -98,9 +99,9 @@ export default class ReminderNowCommand extends Command {
 				new SelectMenuBuilder()
 					.setPlaceholder('Select Town Halls')
 					.setCustomId(CUSTOM_ID.TOWN_HALLS)
-					.setMaxValues(13)
+					.setMaxValues(MAX_TOWNHALL_LEVEL - 1)
 					.setOptions(
-						Array(13)
+						Array(MAX_TOWNHALL_LEVEL - 1)
 							.fill(0)
 							.map((_, i) => {
 								const hall = (i + 2).toString();

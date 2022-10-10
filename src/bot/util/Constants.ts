@@ -105,6 +105,8 @@ export const URLS = {
 
 export const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
 
+export const MAX_TOWNHALL_LEVEL = 15;
+
 export const BIT_FIELD = new PermissionsBitField(292997688385n).bitfield;
 
 export const locales: Record<string, string> = {

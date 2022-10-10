@@ -10,7 +10,7 @@ import {
 } from 'discord.js';
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
-import { Collections, missingPermissions } from '../../util/Constants.js';
+import { Collections, MAX_TOWNHALL_LEVEL, missingPermissions } from '../../util/Constants.js';
 import { Reminder } from '../../struct/RemindScheduler.js';
 import { Args, Command } from '../../lib/index.js';
 
@@ -108,7 +108,7 @@ export default class ReminderCreateCommand extends Command {
 
 		const state = {
 			remaining: ['1', '2'],
-			townHalls: Array(13)
+			townHalls: Array(MAX_TOWNHALL_LEVEL - 1)
 				.fill(0)
 				.map((_, i) => (i + 2).toString()),
 			roles: ['leader', 'coLeader', 'admin', 'member'],
@@ -167,9 +167,9 @@ export default class ReminderCreateCommand extends Command {
 				new SelectMenuBuilder()
 					.setPlaceholder('Select Town Halls')
 					.setCustomId(CUSTOM_ID.TOWN_HALLS)
-					.setMaxValues(13)
+					.setMaxValues(MAX_TOWNHALL_LEVEL - 1)
 					.setOptions(
-						Array(13)
+						Array(MAX_TOWNHALL_LEVEL - 1)
 							.fill(0)
 							.map((_, i) => {
 								const hall = (i + 2).toString();

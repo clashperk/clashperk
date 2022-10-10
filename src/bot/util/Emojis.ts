@@ -20,14 +20,19 @@ export const ELIXIR_TROOPS: Record<string, string> = {
 	'Miner': '<:Miner:696281535111757895>',
 	'Electro Dragon': '<:ElectroDragon:696281556930527352>',
 	'Yeti': '<:Yeti:696281814293282857>',
-	'Dragon Rider': '<:DragonRider:854290952888909834>'
+	'Dragon Rider': '<:DragonRider:854290952888909834>',
+	'Electro Titan': '<:ElectroTitan:1029113633243922572>'
 };
 
 export const HERO_PETS: Record<string, string> = {
-	'Electro Owl': '<:Owl:831123515939356703>',
 	'L.A.S.S.I': '<:LASSI:831123509827731527>',
+	'Electro Owl': '<:Owl:831123515939356703>',
 	'Mighty Yak': '<:Yak:831123515067334707>',
-	'Unicorn': '<:Unicorn:831123514613694564>'
+	'Unicorn': '<:Unicorn:831123514613694564>',
+	'Poison Lizard': '<:PoisonLizard:1029115995845046323>',
+	'Diggy': '<:Diggy:1029115689157525504>',
+	'Frosty': '<:Frosty:1029115796271669369>',
+	'Phoenix': '<:Phoenix:1029115881982271549>'
 };
 
 export const DARK_ELIXIR_TROOPS: Record<string, string> = {
@@ -48,7 +53,8 @@ export const SIEGE_MACHINES: Record<string, string> = {
 	'Stone Slammer': '<:StoneSlammer:696282610472714271>',
 	'Siege Barracks': '<:SiegeBarracks:696282751988400199>',
 	'Log Launcher': '<:LogLauncher:918762884257939478>',
-	'Flame Flinger': '<:FlameFlinger:918762753013981235>'
+	'Flame Flinger': '<:FlameFlinger:918762753013981235>',
+	'Battle Drill': '<:BattleDrill:1029114347949142087>'
 };
 
 export const ELIXIR_SPELLS: Record<string, string> = {
@@ -58,7 +64,8 @@ export const ELIXIR_SPELLS: Record<string, string> = {
 	'Jump Spell': '<:Jump:696302055681425438>',
 	'Freeze Spell': '<:Freeze:696302064992780299>',
 	'Clone Spell': '<:Clone:696302107950710795>',
-	'Invisibility Spell': '<:Invisible:787186410032463882>'
+	'Invisibility Spell': '<:Invisible:787186410032463882>',
+	'Recall Spell': '<:Recall:1029115194552623227>'
 };
 
 export const DARK_SPELLS: Record<string, string> = {
@@ -138,7 +145,8 @@ export const TOWN_HALLS: Record<string, string> = {
 	11: '<:TownHall11:696304807723663400>',
 	12: '<:TownHall12:766206520492818482>',
 	13: '<:TownHall13:766207117103071242>',
-	14: '<:TownHall14:829392900110549038>'
+	14: '<:TownHall14:829392900110549038>',
+	15: '<:TownHall15:1029109199105425530>'
 };
 
 export const BUILDER_HALLS: Record<string, string> = {
