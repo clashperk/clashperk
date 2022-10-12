@@ -1,6 +1,6 @@
 import { CommandInteraction, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { PlayerItem } from 'clashofclans.js';
-import { ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { HERO_PETS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 
@@ -18,12 +18,10 @@ const roleNames: Record<string, string> = {
 	leader: 'Lead'
 };
 
-const PETS: { [key: string]: number } = {
-	'L.A.S.S.I': 1,
-	'Electro Owl': 2,
-	'Mighty Yak': 3,
-	'Unicorn': 4
-};
+const PETS = Object.keys(HERO_PETS).reduce<Record<string, number>>((prev, curr, i) => {
+	prev[curr] = i + 1;
+	return prev;
+}, {});
 
 export default class MembersCommand extends Command {
 	public constructor() {

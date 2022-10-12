@@ -1,9 +1,32 @@
-import { ClanWar, ClanWarLeagueGroup, Client, Player } from 'clashofclans.js';
+import { Clan, ClanWar, ClanWarLeagueGroup, Client as ClashOfClansClient, Player } from 'clashofclans.js';
 import fetch from 'node-fetch';
 import moment from 'moment';
 import TimeoutSignal from 'timeout-signal';
+import { container } from 'tsyringe';
+import { Collections } from '../util/Constants.js';
+import Client from './Client.js';
 
-export default class Http extends Client {
+interface RaidSeason {
+	state: string;
+	startTime: string;
+	endTime: string;
+	capitalTotalLoot: number;
+	raidsCompleted: number;
+	totalAttacks: number;
+	enemyDistrictsDestroyed: number;
+	offensiveReward: number;
+	defensiveReward: number;
+	members: {
+		tag: string;
+		name: string;
+		attacks: number;
+		attackLimit: number;
+		bonusAttackLimit: number;
+		capitalResourcesLooted: number;
+	}[];
+}
+
+export default class Http extends ClashOfClansClient {
 	private bearerToken!: string;
 
 	public constructor() {
@@ -57,6 +80,39 @@ export default class Http extends Client {
 
 	private toDate(ISO: string) {
 		return new Date(moment(ISO).toDate());
+	}
+
+	public async getRaidSeasonCursor(clan: Clan, items: any[]) {
+		const client = container.resolve(Client);
+		const res = await this.fetch(`/clans/${encodeURIComponent(clan.tag)}/capitalraidseasons?limit=${items.length - 1}`);
+		await client.db.collection(Collections.CLANS).updateOne(
+			{ tag: clan.tag },
+			{
+				$set: {
+					tag: clan.tag,
+					name: clan.name,
+					total: items.length,
+					cursor: res.paging.cursors.after,
+					weekId: moment(items[items.length - 1])
+						.toDate()
+						.toISOString()
+						.substring(0, 10)
+				}
+			},
+			{
+				upsert: true
+			}
+		);
+	}
+
+	public async getRaidSeason(clan: Clan): Promise<RaidSeason> {
+		const client = container.resolve(Client);
+		const season = await client.db.collection(Collections.CLANS).findOne({ tag: clan.tag });
+		const res = await this.fetch(
+			`/clans/${encodeURIComponent(clan.tag)}/capitalraidseasons${season ? `?after=${season.cursor as string}` : ''}`
+		);
+		if (res.items.length > 1) this.getRaidSeasonCursor(clan, res.items);
+		return res.items[res.items.length - 1];
 	}
 
 	public async getCurrentWars(clanTag: string): Promise<(ClanWar & { warTag?: string; round?: number; isFriendly?: boolean })[]> {

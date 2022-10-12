@@ -1,7 +1,7 @@
 import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, SelectMenuBuilder, ButtonStyle } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
-import { Collections } from '../../util/Constants.js';
+import { Collections, MAX_TOWNHALL_LEVEL } from '../../util/Constants.js';
 import { Reminder, Schedule } from '../../struct/RemindScheduler.js';
 import { Args, Command } from '../../lib/index.js';
 
@@ -113,7 +113,7 @@ export default class ReminderDeleteCommand extends Command {
 			} else {
 				embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => roles[role]).join(', ') }]);
 			}
-			if (reminder.townHalls.length === 13) {
+			if (reminder.townHalls.length === MAX_TOWNHALL_LEVEL - 1) {
 				embed.addFields([{ name: 'Town Halls', value: 'Any' }]);
 			} else {
 				embed.addFields([{ name: 'Town Halls', value: reminder.townHalls.join(', ') }]);

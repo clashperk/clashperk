@@ -5,7 +5,7 @@ import { Collections } from '../../util/Constants.js';
 import Workbook from '../../struct/Excel.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
-import { SUPER_TROOPS } from '../../util/Emojis.js';
+import { HERO_PETS, SUPER_TROOPS } from '../../util/Emojis.js';
 
 const achievements = [
 	'Gold Grab',
@@ -22,12 +22,10 @@ const achievements = [
 	'Most Valuable Clanmate'
 ];
 
-const PETS: { [key: string]: number } = {
-	'L.A.S.S.I': 1,
-	'Electro Owl': 2,
-	'Mighty Yak': 3,
-	'Unicorn': 4
-};
+const PETS = Object.keys(HERO_PETS).reduce<Record<string, number>>((prev, curr, i) => {
+	prev[curr] = i + 1;
+	return prev;
+}, {});
 
 export default class ExportClanMembersCommand extends Command {
 	public constructor() {
