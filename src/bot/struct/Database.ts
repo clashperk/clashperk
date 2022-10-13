@@ -92,6 +92,16 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
+			db.collection(Collections.CAPITAL_RAID_SEASONS).createIndexes([
+				{
+					key: { tag: 1, weekId: 1 },
+					unique: true
+				},
+				{
+					key: { tag: 1 }
+				}
+			]),
+
 			db.collection(Collections.RAID_ATTACKS).createIndexes([
 				{
 					key: { tag: 1, weekId: 1 },
