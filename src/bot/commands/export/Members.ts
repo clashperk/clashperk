@@ -5,7 +5,7 @@ import { Collections } from '../../util/Constants.js';
 import Workbook from '../../struct/Excel.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
-import { HERO_PETS, SUPER_TROOPS } from '../../util/Emojis.js';
+import { HERO_PETS, SUPER_TROOPS, HOME_HEROES } from '../../util/Emojis.js';
 
 const achievements = [
 	'Gold Grab',
@@ -22,7 +22,9 @@ const achievements = [
 	'Most Valuable Clanmate'
 ];
 
-const PETS = Object.keys(HERO_PETS).reduce<Record<string, number>>((prev, curr, i) => {
+const HERO_LIST = Object.keys(HOME_HEROES);
+const PET_LIST = Object.keys(HERO_PETS);
+const PETS = PET_LIST.reduce<Record<string, number>>((prev, curr, i) => {
 	prev[curr] = i + 1;
 	return prev;
 }, {});
@@ -158,8 +160,8 @@ export default class ExportClanMembersCommand extends Command {
 				m.rushed,
 				m.labRem,
 				m.heroRem,
-				...m.heroes.map((h: any) => h.level).concat(Array(4 - m.heroes.length).fill('')),
-				...m.pets.map((h: any) => h.level).concat(Array(4 - m.pets.length).fill('')),
+				...m.heroes.map((h: any) => h.level).concat(Array(HERO_LIST.length - m.heroes.length).fill('')),
+				...m.pets.map((h: any) => h.level).concat(Array(PET_LIST.length - m.pets.length).fill('')),
 				...m.achievements.map((v: any) => v.value)
 			])
 		);
