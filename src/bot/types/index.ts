@@ -155,17 +155,22 @@ export interface ClanGamesModel {
 	createdAt: Date;
 }
 
-export interface ClanCapitalRaidsModel {
+export interface ClanCapitalRaidAttackData {
 	name: string;
 	tag: string;
-	season: string;
-	initial: number;
-	current: number;
-	clans: { name: string; tag: string; collected: number; timestamp: number }[];
-	__clans: string[];
-	completedAt: Date;
+	weekId: string;
+	members: RaidAttack[];
 	updatedAt: Date;
 	createdAt: Date;
+}
+
+export interface RaidAttack {
+	name: string;
+	tag: string;
+	attacks: number;
+	attackLimit: number;
+	bonusAttackLimit: number;
+	capitalResourcesLooted: number;
 }
 
 export interface ClanCapitalGoldModel {

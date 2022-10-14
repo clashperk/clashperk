@@ -2,9 +2,6 @@ import { Clan, ClanWar, ClanWarLeagueGroup, Client as ClashOfClansClient, Player
 import fetch from 'node-fetch';
 import moment from 'moment';
 import TimeoutSignal from 'timeout-signal';
-import { container } from 'tsyringe';
-import { Collections } from '../util/Constants.js';
-import Client from './Client.js';
 
 interface RaidSeason {
 	state: string;
@@ -16,7 +13,7 @@ interface RaidSeason {
 	enemyDistrictsDestroyed: number;
 	offensiveReward: number;
 	defensiveReward: number;
-	members: {
+	members?: {
 		tag: string;
 		name: string;
 		attacks: number;
@@ -82,37 +79,8 @@ export default class Http extends ClashOfClansClient {
 		return new Date(moment(ISO).toDate());
 	}
 
-	public async getRaidSeasonCursor(clan: Clan, items: any[]) {
-		const client = container.resolve(Client);
-		const res = await this.fetch(`/clans/${encodeURIComponent(clan.tag)}/capitalraidseasons?limit=${items.length - 1}`);
-		await client.db.collection(Collections.CLANS).updateOne(
-			{ tag: clan.tag },
-			{
-				$set: {
-					tag: clan.tag,
-					name: clan.name,
-					total: items.length,
-					cursor: res.paging.cursors.after,
-					weekId: moment(items[items.length - 1])
-						.toDate()
-						.toISOString()
-						.substring(0, 10)
-				}
-			},
-			{
-				upsert: true
-			}
-		);
-	}
-
-	public async getRaidSeason(clan: Clan): Promise<RaidSeason> {
-		const client = container.resolve(Client);
-		const season = await client.db.collection(Collections.CLANS).findOne({ tag: clan.tag });
-		const res = await this.fetch(
-			`/clans/${encodeURIComponent(clan.tag)}/capitalraidseasons${season ? `?after=${season.cursor as string}` : ''}`
-		);
-		if (res.items.length > 1) this.getRaidSeasonCursor(clan, res.items);
-		return res.items[res.items.length - 1];
+	public async getRaidSeason(clan: Clan): Promise<{ items: RaidSeason[]; ok: boolean; statusCode: number }> {
+		return this.fetch(`/clans/${encodeURIComponent(clan.tag)}/capitalraidseasons?limit=1`);
 	}
 
 	public async getCurrentWars(clanTag: string): Promise<(ClanWar & { warTag?: string; round?: number; isFriendly?: boolean })[]> {

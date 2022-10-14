@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Embed
 import { Clan } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import { ClanCapitalRaidsModel } from '../../types/index.js';
+import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
 
 export default class CapitalRaidsCommand extends Command {
@@ -42,49 +42,60 @@ export default class CapitalRaidsCommand extends Command {
 
 		const isRaidWeek = currentWeekId === weekId;
 		const members = isRaidWeek ? await this.getRaidsFromAPI(clan) : await this.aggregateCapitalRaids(clan, weekId);
-		const embed = this.getCapitalRaidEmbed({ clan, weekId, members, isRaidWeek });
+		if (!members.length) {
+			return interaction.followUp({
+				content: this.i18n('command.capital.raids.no_data', { weekId, clan: clan.name, lng: interaction.locale })
+			});
+		}
+		const embed = this.getCapitalRaidEmbed({ clan, weekId, members });
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private async getRaidsFromAPI(clan: Clan) {
-		const data = await this.client.http.getRaidSeason(clan);
-		const members = data.members.sort((a, b) => b.capitalResourcesLooted - a.capitalResourcesLooted);
+		const res = await this.client.http.getRaidSeason(clan);
+		if (!res.ok) return [];
+		if (!res.items.length) return [];
+		const data = res.items[0];
+		if (!data?.members?.length) return []; // eslint-disable-line
 
-		return members.map((mem) => ({
-			name: mem.name,
-			capitalResourcesLooted: mem.capitalResourcesLooted,
-			attacks: mem.attacks,
-			attackLimit: mem.attackLimit + mem.bonusAttackLimit
-		}));
+		const members = data.members;
+		clan.memberList.forEach((member) => {
+			const attack = members.find((attack) => attack.tag === member.tag);
+			if (!attack) {
+				members.push({
+					name: member.name,
+					tag: member.tag,
+					capitalResourcesLooted: 0,
+					attacks: 0,
+					attackLimit: 5,
+					bonusAttackLimit: 0
+				});
+			}
+		});
+
+		return members.sort((a, b) => b.capitalResourcesLooted - a.capitalResourcesLooted);
 	}
 
 	private async aggregateCapitalRaids(clan: Clan, weekId: string) {
-		const attacks = await this.client.db
-			.collection(Collections.RAID_ATTACKS)
-			.aggregate<ClanCapitalRaidsModel & { total: number }>([
-				{
-					$match: { weekId, tag: { $in: clan.memberList.map((clan) => clan.tag) } }
-				},
-				{
-					$addFields: {
-						total: {
-							$sum: '$clans.collected'
-						}
-					}
-				},
-				{
-					$sort: {
-						total: -1
-					}
-				}
-			])
-			.toArray();
+		const season = await this.client.db
+			.collection<ClanCapitalRaidAttackData>(Collections.CAPITAL_RAID_SEASONS)
+			.findOne({ weekId, tag: clan.tag });
+		if (!season) return [];
+		if (!season.members.length) return [];
 
-		const members: { name: string; capitalResourcesLooted: number; attacks: number; attackLimit: number }[] = [];
+		const members = season.members;
 		clan.memberList.forEach((member) => {
-			const attack = attacks.find((attack) => attack.tag === member.tag);
-			if (attack) members.push({ name: member.name, capitalResourcesLooted: attack.total, attacks: 0, attackLimit: 0 });
-			else members.push({ name: member.name, capitalResourcesLooted: 0, attacks: 0, attackLimit: 0 });
+			const attack = members.find((attack) => attack.tag === member.tag);
+			if (!attack) {
+				members.push({
+					name: member.name,
+					tag: member.tag,
+					capitalResourcesLooted: 0,
+					attacks: 0,
+					attackLimit: 5,
+					bonusAttackLimit: 0
+				});
+			}
 		});
 
 		return members.sort((a, b) => b.capitalResourcesLooted - a.capitalResourcesLooted);
@@ -93,12 +104,10 @@ export default class CapitalRaidsCommand extends Command {
 	private getCapitalRaidEmbed({
 		clan,
 		weekId,
-		members,
-		isRaidWeek
+		members
 	}: {
 		clan: Clan;
 		weekId: string;
-		isRaidWeek: boolean;
 		members: { name: string; capitalResourcesLooted: number; attacks: number; attackLimit: number }[];
 	}) {
 		const embed = new EmbedBuilder()
@@ -112,29 +121,17 @@ export default class CapitalRaidsCommand extends Command {
 			[
 				`**Clan Capital Raids (${weekId})**`,
 				'```',
-				'\u200eTotal  Name',
-				members.map((mem) => `\u200e${this.padding(mem.capitalResourcesLooted)}  ${mem.name}`).join('\n'),
+				'\u200eLOOTED ATKS  NAME',
+				members
+					.map((mem) => {
+						const looted = this.padding(mem.capitalResourcesLooted);
+						const attacks = `${mem.attacks}/${mem.attackLimit}`.padStart(4, ' ');
+						return `\u200e${looted}  ${attacks}  ${mem.name}`;
+					})
+					.join('\n'),
 				'```'
 			].join('\n')
 		);
-
-		if (isRaidWeek) {
-			embed.setDescription(
-				[
-					`**Clan Capital Raids (${weekId})**`,
-					'```',
-					'\u200eLOOTED ATKS  NAME',
-					members
-						.map((mem) => {
-							const looted = this.padding(mem.capitalResourcesLooted);
-							const attacks = `${mem.attacks}/${mem.attackLimit}`.padStart(4, ' ');
-							return `\u200e${looted}  ${attacks}  ${mem.name}`;
-						})
-						.join('\n'),
-					'```'
-				].join('\n')
-			);
-		}
 
 		return embed;
 	}
