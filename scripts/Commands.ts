@@ -96,27 +96,27 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	},
 	{
 		name: 'capital',
-		description: command.clan_capital.description,
+		description: command.capital.description,
 		dm_permission: false,
-		description_localizations: translation('command.clan_capital.description'),
+		description_localizations: translation('command.capital.description'),
 		options: [
 			{
 				name: 'contributions',
-				description: command.clan_capital.contributions.description,
-				description_localizations: translation('command.clan_capital.contributions.description'),
+				description: command.capital.contributions.description,
+				description_localizations: translation('command.capital.contributions.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'tag',
-						description: command.clan_capital.contributions.options.tag.description,
-						description_localizations: translation('command.clan_capital.contributions.options.tag.description'),
+						description: command.capital.contributions.options.tag.description,
+						description_localizations: translation('command.capital.contributions.options.tag.description'),
 						type: ApplicationCommandOptionType.String,
 						required: false
 					},
 					{
 						name: 'week',
-						description: command.clan_capital.contributions.options.week.description,
-						description_localizations: translation('command.clan_capital.contributions.options.week.description'),
+						description: command.capital.contributions.options.week.description,
+						description_localizations: translation('command.capital.contributions.options.week.description'),
 						type: ApplicationCommandOptionType.String,
 						required: false,
 						choices: getWeekIds()
@@ -125,21 +125,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'raids',
-				description: command.clan_capital.raids.description,
-				description_localizations: translation('command.clan_capital.raids.description'),
+				description: command.capital.raids.description,
+				description_localizations: translation('command.capital.raids.description'),
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'tag',
-						description: command.clan_capital.raids.options.tag.description,
-						description_localizations: translation('command.clan_capital.raids.options.tag.description'),
+						description: command.capital.raids.options.tag.description,
+						description_localizations: translation('command.capital.raids.options.tag.description'),
 						type: ApplicationCommandOptionType.String,
 						required: false
 					},
 					{
 						name: 'week',
-						description: command.clan_capital.raids.options.week.description,
-						description_localizations: translation('command.clan_capital.raids.options.week.description'),
+						description: command.capital.raids.options.week.description,
+						description_localizations: translation('command.capital.raids.options.week.description'),
 						type: ApplicationCommandOptionType.String,
 						required: false,
 						choices: getWeekIds()
