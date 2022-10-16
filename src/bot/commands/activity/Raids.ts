@@ -58,7 +58,7 @@ export default class CapitalRaidsCommand extends Command {
 		const data = res.items[0];
 		if (!data?.members?.length) return []; // eslint-disable-line
 
-		const members = data.members;
+		const members = data.members.map((m) => ({ ...m, attackLimit: m.attackLimit + m.bonusAttackLimit }));
 		clan.memberList.forEach((member) => {
 			const attack = members.find((attack) => attack.tag === member.tag);
 			if (!attack) {
@@ -83,7 +83,7 @@ export default class CapitalRaidsCommand extends Command {
 		if (!season) return [];
 		if (!season.members.length) return [];
 
-		const members = season.members;
+		const members = season.members.map((m) => ({ ...m, attackLimit: m.attackLimit + m.bonusAttackLimit }));
 		clan.memberList.forEach((member) => {
 			const attack = members.find((attack) => attack.tag === member.tag);
 			if (!attack) {
