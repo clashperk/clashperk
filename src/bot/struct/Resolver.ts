@@ -125,13 +125,11 @@ export default class Resolver {
 	}
 
 	private async getLinkedClan(interaction: BaseInteraction<'cached'>, userId: string) {
-		const clan = await this.client.db.collection(Collections.CLAN_STORES).findOne({ channels: interaction.channel!.id });
-		if (clan) return clan;
-		const user = await this.getLinkedUserClan(userId);
-		if (user) return user;
-		const guild = await this.client.db.collection(Collections.CLAN_STORES).findOne({ guild: interaction.guild.id });
-		if (guild) return guild;
-		return null;
+		return (
+			(await this.client.db.collection(Collections.CLAN_STORES).findOne({ channels: interaction.channel!.id })) ??
+			(await this.getLinkedUserClan(userId)) ??
+			null
+		);
 	}
 
 	private async getLinkedUserClan(userId: string) {
