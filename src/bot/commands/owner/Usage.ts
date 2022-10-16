@@ -1,4 +1,4 @@
-import { Message, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
 import Chart from '../../struct/ChartHandler.js';
@@ -11,7 +11,9 @@ export default class UsageCommand extends Command {
 			description: {
 				content: "You can't use this anyway, so why explain?"
 			},
-			clientPermissions: ['EmbedLinks', 'AttachFiles']
+			clientPermissions: ['EmbedLinks', 'AttachFiles'],
+			defer: true,
+			ephemeral: true
 		});
 	}
 
@@ -26,11 +28,11 @@ export default class UsageCommand extends Command {
 		};
 	}
 
-	public async run(message: Message, { growth: graph, limit }: { growth: string; limit?: number }) {
+	public async exec(interaction: CommandInteraction<'cached'>, { growth: graph, limit }: { growth: string; limit?: number }) {
 		limit ??= 15;
 		if (graph) {
 			const url = await this.buffer(Number(limit));
-			return message.channel.send(url);
+			return interaction.editReply(url);
 		}
 
 		const { commands } = await this.commands();
@@ -38,7 +40,7 @@ export default class UsageCommand extends Command {
 		const usage = await this.usage();
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${this.client.user!.username}`, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
-			.setColor(this.client.embed(message))
+			.setColor(this.client.embed(interaction))
 			.setTitle('Usage')
 			.setFooter({ text: `${Number(await this.commandsTotal()).toLocaleString()}x Total • Since April 2019` });
 		embed.setDescription(
@@ -56,7 +58,7 @@ export default class UsageCommand extends Command {
 			].join('\n')
 		);
 
-		return message.channel.send({ embeds: [embed] });
+		return interaction.editReply({ embeds: [embed] });
 	}
 
 	private async commands() {

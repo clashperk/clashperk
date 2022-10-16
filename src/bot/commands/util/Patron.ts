@@ -1,4 +1,4 @@
-import { Message, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import { Collections, Settings } from '../../util/Constants.js';
 import { Patron } from '../../struct/Patrons.js';
 import { Args, Command } from '../../lib/index.js';
@@ -25,8 +25,8 @@ export default class PatronCommand extends Command {
 		};
 	}
 
-	public async run(message: Message, { action, id }: { action: string; id: string }) {
-		if (action && id && this.client.isOwner(message.author.id)) {
+	public async exec(interaction: CommandInteraction<'cached'>, { action, id }: { action: string; id: string }) {
+		if (action && id && this.client.isOwner(interaction.user.id)) {
 			const patrons = await this.patrons();
 			const patron = patrons.find((d) => d.userId === id || d.id === id);
 			for (const guild of patron?.guilds ?? []) {
@@ -40,7 +40,7 @@ export default class PatronCommand extends Command {
 					.updateOne({ id: patron.id }, { $set: { active: true, declined: false, cancelled: false } });
 
 				await this.client.patrons.refresh();
-				return message.channel.send('Success!');
+				return interaction.editReply('Success!');
 			}
 
 			if (['del', 'dec'].includes(action) && patron) {
@@ -49,10 +49,10 @@ export default class PatronCommand extends Command {
 					.updateOne({ id: patron.id }, { $set: { active: false, declined: action === 'dec', cancelled: action === 'del' } });
 
 				await this.client.patrons.refresh();
-				return message.channel.send('Success!');
+				return interaction.editReply('Success!');
 			}
 
-			return message.channel.send('Failed!');
+			return interaction.editReply('Failed!');
 		}
 
 		const content = [
@@ -61,16 +61,16 @@ export default class PatronCommand extends Command {
 			'<https://www.patreon.com/clashperk>'
 		].join('\n');
 
-		const customId = this.client.uuid(message.author.id);
+		const customId = this.client.uuid(interaction.user.id);
 		const button = new ButtonBuilder().setCustomId(customId).setStyle(ButtonStyle.Secondary).setLabel('Our Current Patrons');
 
-		if (!this.client.isOwner(message.author.id)) {
-			return message.channel.send({ content });
+		if (!this.client.isOwner(interaction.user.id)) {
+			return interaction.editReply({ content });
 		}
 
-		const msg = await message.channel.send({ content, components: [new ActionRowBuilder<ButtonBuilder>().addComponents(button)] });
+		const msg = await interaction.editReply({ content, components: [new ActionRowBuilder<ButtonBuilder>().addComponents(button)] });
 		const collector = msg.createMessageComponentCollector({
-			filter: (action) => action.customId === customId && action.user.id === message.author.id,
+			filter: (action) => action.customId === customId && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
