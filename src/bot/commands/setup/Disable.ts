@@ -90,6 +90,8 @@ export default class SetupDisableCommand extends Command {
 		const id = data._id.toHexString();
 		if (option === 'all') {
 			await this.client.storage.delete(id);
+			await this.client.storage.deleteReminders(data.tag, interaction.guild!.id);
+
 			await this.client.rpcHandler.delete(id, { tag: data.tag, op: 0, guild: interaction.guild!.id });
 			return interaction.editReply(
 				this.i18n('command.setup.disable.clan_deleted', {

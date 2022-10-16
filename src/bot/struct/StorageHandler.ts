@@ -4,6 +4,7 @@ import { CommandInteraction, ForumChannel, NewsChannel, TextChannel } from 'disc
 import { ClanWarLeagueGroup } from 'clashofclans.js';
 import { Collections, Flags } from '../util/Constants.js';
 import { Client } from './Client.js';
+import { Reminder, Schedule } from './RemindScheduler.js';
 
 export interface ClanStore {
 	_id: ObjectId;
@@ -242,6 +243,16 @@ export default class StorageHandler {
 		await this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clanId: new ObjectId(id) });
 
 		return this.client.db.collection(Collections.CLAN_STORES).deleteOne({ _id: new ObjectId(id) });
+	}
+
+	public async deleteReminders(clanTag: string, guild: string) {
+		const rem = await this.client.db.collection<Reminder>(Collections.REMINDERS).findOne({ guild, clans: clanTag });
+		if (!rem) return null;
+		await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId: rem._id });
+		if (rem.clans.length === 1) {
+			return this.client.db.collection(Collections.REMINDERS).deleteOne({ _id: rem._id });
+		}
+		return this.client.db.collection(Collections.REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
 	}
 
 	public async remove(id: string, data: any) {
