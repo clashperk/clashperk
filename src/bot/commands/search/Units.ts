@@ -4,7 +4,6 @@ import { Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
-
 export default class UnitsCommand extends Command {
 	public constructor() {
 		super('units', {
@@ -26,16 +25,16 @@ export default class UnitsCommand extends Command {
 			.setColor(this.client.embed(interaction))
 			.setDescription(`Units for TH${data.townHallLevel} Max ${data.builderHallLevel ? `and BH${data.builderHallLevel} Max` : ''}`);
 
-		const CUSTOM_ID = {
-			MAX_LEVEL: this.client.uuid(interaction.user.id),
-			TOWN_HALL_MAX: this.client.uuid(interaction.user.id),
-			SELECT_ACCOUNT: this.client.uuid(interaction.user.id)
+		const CustomIds = {
+			MaxLevel: this.client.uuid(interaction.user.id),
+			TownHallLevel: this.client.uuid(interaction.user.id),
+			SelectAccount: this.client.uuid(interaction.user.id)
 		};
 
-		const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder().setCustomId(CUSTOM_ID.MAX_LEVEL).setLabel('Max Level').setStyle(ButtonStyle.Secondary)
+		const ButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setCustomId(CustomIds.MaxLevel).setLabel('Max Level').setStyle(ButtonStyle.Secondary)
 		);
-		const msg = await interaction.editReply({ embeds: [embed], components: [buttonRow] });
+		const msg = await interaction.editReply({ embeds: [embed], components: [ButtonRow] });
 
 		const players = data.user ? await this.client.resolver.getPlayers(data.user.id) : [];
 		const options = players.map((op) => ({
@@ -44,18 +43,18 @@ export default class UnitsCommand extends Command {
 			value: op.tag,
 			emoji: TOWN_HALLS[op.townHallLevel]
 		}));
-		const menuRow = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-			new SelectMenuBuilder().setCustomId(CUSTOM_ID.SELECT_ACCOUNT).setPlaceholder('Select an account!').addOptions(options)
+		const MenuRow = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+			new SelectMenuBuilder().setCustomId(CustomIds.SelectAccount).setPlaceholder('Select an account!').addOptions(options)
 		);
-		await interaction.editReply({ components: options.length ? [buttonRow, menuRow] : [buttonRow] });
+		await interaction.editReply({ components: options.length ? [ButtonRow, MenuRow] : [ButtonRow] });
 
 		const collector = msg.createMessageComponentCollector({
-			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
+			filter: (action) => Object.values(CustomIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === CUSTOM_ID.MAX_LEVEL) {
+			if (action.customId === CustomIds.MaxLevel) {
 				// TODO: Fix !
 				const embed = this.embed(data!, false);
 				embed.setColor(this.client.embed(interaction));
@@ -63,31 +62,31 @@ export default class UnitsCommand extends Command {
 					`Units for TH${data!.townHallLevel} ${data!.builderHallLevel ? `and BH${data!.builderHallLevel}` : ''}`
 				);
 
-				buttonRow.components[0].setLabel('Town Hall Max Level').setCustomId(CUSTOM_ID.TOWN_HALL_MAX);
-				await action.update({ embeds: [embed], components: options.length ? [buttonRow, menuRow] : [buttonRow] });
+				ButtonRow.components[0].setLabel('Town Hall Max Level').setCustomId(CustomIds.TownHallLevel);
+				await action.update({ embeds: [embed], components: options.length ? [ButtonRow, MenuRow] : [ButtonRow] });
 			}
 
-			if (action.customId === CUSTOM_ID.TOWN_HALL_MAX) {
+			if (action.customId === CustomIds.TownHallLevel) {
 				const embed = this.embed(data!, true);
 				embed.setColor(this.client.embed(interaction));
 				embed.setDescription(
 					`Units for TH${data!.townHallLevel} Max ${data!.builderHallLevel ? `and BH${data!.builderHallLevel} Max` : ''}`
 				);
 
-				buttonRow.components[0].setLabel('Max Level').setCustomId(CUSTOM_ID.TOWN_HALL_MAX);
-				await action.update({ embeds: [embed], components: options.length ? [buttonRow, menuRow] : [buttonRow] });
+				ButtonRow.components[0].setLabel('Max Level').setCustomId(CustomIds.MaxLevel);
+				await action.update({ embeds: [embed], components: options.length ? [ButtonRow, MenuRow] : [ButtonRow] });
 			}
 
-			if (action.customId === CUSTOM_ID.SELECT_ACCOUNT && action.isSelectMenu()) {
+			if (action.customId === CustomIds.SelectAccount && action.isSelectMenu()) {
 				data = players.find((en) => en.tag === action.values[0])!;
-				const option = action.message.components[0].components[0].customId === CUSTOM_ID.MAX_LEVEL;
+				const option = action.message.components[0].components[0].customId === CustomIds.MaxLevel;
 				const embed = this.embed(data, option).setColor(this.client.embed(interaction));
 				await action.update({ embeds: [embed] });
 			}
 		});
 
 		collector.on('end', async (_, reason) => {
-			for (const customID of Object.values(CUSTOM_ID)) {
+			for (const customID of Object.values(CustomIds)) {
 				this.client.components.delete(customID);
 			}
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
