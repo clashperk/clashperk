@@ -2,7 +2,7 @@ import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
-import { Collections, WarType } from '../../util/Constants.js';
+import { Collections, MAX_TOWNHALL_LEVEL, WarType } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 
@@ -60,7 +60,15 @@ export default class StatsCommand extends Command {
 		const match = /^(?<attackerTownHall>\d{1,2})(vs?|\s+)(?<defenderTownHall>\d{1,2})$/i.exec(value);
 		const attackerTownHall = Number(match?.groups?.attackerTownHall);
 		const defenderTownHall = Number(match?.groups?.defenderTownHall);
-		if (!(attackerTownHall > 1 && attackerTownHall < 15 && defenderTownHall > 1 && defenderTownHall < 15)) return 'all';
+		if (
+			!(
+				attackerTownHall > 1 &&
+				attackerTownHall <= MAX_TOWNHALL_LEVEL &&
+				defenderTownHall > 1 &&
+				defenderTownHall <= MAX_TOWNHALL_LEVEL
+			)
+		)
+			return 'all';
 		return { attackerTownHall, defenderTownHall };
 	}
 

@@ -115,6 +115,7 @@ export default class CapitalRaidsCommand extends Command {
 				name: `${clan.name} (${clan.tag})`,
 				iconURL: clan.badgeUrls.small
 			})
+			.setTimestamp()
 			.setFooter({ text: `Week of ${weekId}` });
 
 		embed.setDescription(

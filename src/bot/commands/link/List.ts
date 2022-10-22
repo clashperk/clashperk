@@ -28,11 +28,11 @@ export default class LinkListCommand extends Command {
 			.find({ 'entries.tag': { $in: clan.memberList.map((m) => m.tag) } })
 			.toArray();
 
-		const members: { name: string; tag: string; userId: string }[] = [];
+		const members: { name: string; tag: string; userId: string; verified: boolean }[] = [];
 		for (const m of memberTags) {
 			const clanMember = clan.memberList.find((mem) => mem.tag === m.tag);
 			if (!clanMember) continue;
-			members.push({ tag: m.tag, userId: m.user, name: clanMember.name });
+			members.push({ tag: m.tag, userId: m.user, name: clanMember.name, verified: false });
 		}
 
 		if (dbMembers.length) this.updateUsers(interaction, dbMembers);
@@ -41,8 +41,9 @@ export default class LinkListCommand extends Command {
 				const clanMember = clan.memberList.find((mem) => mem.tag === m.tag);
 				if (!clanMember) continue;
 
-				if (members.find((mem) => mem.tag === m.tag)) continue;
-				members.push({ tag: m.tag, userId: member.user, name: clanMember.name });
+				const mem = members.find((mem) => mem.tag === m.tag);
+				if (mem) mem.verified = m.verified;
+				else members.push({ tag: m.tag, userId: member.user, name: clanMember.name, verified: m.verified });
 			}
 		}
 
@@ -83,9 +84,9 @@ export default class LinkListCommand extends Command {
 		guildMembers: Collection<string, GuildMember>,
 		clan: Clan,
 		showTag: boolean,
-		onDiscord: { tag: string; userId: string }[],
+		onDiscord: { tag: string; userId: string; verified: boolean }[],
 		notLinked: ClanMember[],
-		notInDiscord: { name: string; tag: string }[]
+		notInDiscord: { name: string; tag: string; verified: boolean }[]
 	) {
 		const chunks = Util.splitMessage(
 			[
@@ -96,11 +97,11 @@ export default class LinkListCommand extends Command {
 						const user = showTag
 							? member.tag.padStart(12, ' ')
 							: guildMembers.get(mem.userId)!.displayName.substring(0, 12).padStart(12, ' ');
-						return { name: this.parseName(member.name), user };
+						return { name: this.parseName(member.name), user, verified: mem.verified };
 					})
 					.sort((a, b) => this.localeSort(a, b))
-					.map(({ name, user }) => {
-						return `**✓** \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
+					.map(({ name, user, verified }) => {
+						return `${verified ? '**✓**' : '✘'} \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
 					})
 					.join('\n'),
 				notInDiscord.length ? `\n${EMOJIS.WRONG} **Players not on Discord: ${notInDiscord.length}**` : '',
@@ -108,11 +109,11 @@ export default class LinkListCommand extends Command {
 					.map((mem) => {
 						const member = clan.memberList.find((m) => m.tag === mem.tag)!;
 						const user: string = member.tag.padStart(12, ' ');
-						return { name: this.parseName(member.name), user };
+						return { name: this.parseName(member.name), user, verified: mem.verified };
 					})
 					.sort((a, b) => this.localeSort(a, b))
-					.map(({ name, user }) => {
-						return `✘ \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
+					.map(({ name, user, verified }) => {
+						return `${verified ? '**✓**' : '✘'} \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
 					})
 					.join('\n'),
 				notLinked.length ? `\n${EMOJIS.WRONG} **Players not Linked: ${notLinked.length}**` : '',

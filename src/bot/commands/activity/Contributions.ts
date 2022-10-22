@@ -108,6 +108,7 @@ export default class CapitalContributionsCommand extends Command {
 					'```'
 				].join('\n')
 			)
+			.setTimestamp()
 			.setFooter({ text: `Week of ${weekId}` });
 
 		return embed;
