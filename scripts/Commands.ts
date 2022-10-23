@@ -891,7 +891,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description_localizations: translation('command.summary.options.option.description'),
 				choices: [
 					{
-						name: 'Clan Wars',
+						name: 'Current Wars',
 						value: 'wars'
 					},
 					{
@@ -917,6 +917,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'Player Attacks',
 						value: 'attacks'
+					},
+					{
+						name: 'Wars Missed',
+						value: 'wars-missed'
 					}
 				]
 			},

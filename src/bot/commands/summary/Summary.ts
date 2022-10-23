@@ -16,6 +16,7 @@ export default class SummaryCommand extends Command {
 	public exec(interaction: CommandInteraction, args: { option: string }) {
 		const command = {
 			'wars': this.handler.modules.get('war-summary')!,
+			'wars-missed': this.handler.modules.get('summary-wars-missed')!,
 			'clans': this.handler.modules.get('summary-clans')!,
 			'trophies': this.handler.modules.get('trophy-summary')!,
 			'donations': this.handler.modules.get('donation-summary')!,
