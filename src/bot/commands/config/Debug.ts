@@ -1,4 +1,4 @@
-import { CommandInteraction, TextChannel, PermissionsString, Interaction } from 'discord.js';
+import { CommandInteraction, PermissionsString, Interaction, TextBasedChannel, DMChannel, PartialDMChannel } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import ms from 'ms';
 import { Args, Command } from '../../lib/index.js';
@@ -26,7 +26,10 @@ export default class DebugCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { channel }: { channel: TextChannel }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		{ channel }: { channel: Exclude<TextBasedChannel, DMChannel | PartialDMChannel> }
+	) {
 		const permissions: PermissionsString[] = [
 			'ViewChannel',
 			'SendMessages',
@@ -52,8 +55,9 @@ export default class DebugCommand extends Command {
 			? { cross: EMOJIS.WRONG, tick: EMOJIS.OK, none: EMOJIS.EMPTY }
 			: { cross: '❌', tick: '☑️', none: '⬛' };
 
-		const webhooks = channel.permissionsFor(this.client.user!.id)?.has(['ManageWebhooks', 'ViewChannel'])
-			? await channel.fetchWebhooks()
+		const webhookChannel = channel.isThread() ? channel.parent! : channel;
+		const webhooks = webhookChannel.permissionsFor(this.client.user!.id)?.has(['ManageWebhooks', 'ViewChannel'])
+			? await webhookChannel.fetchWebhooks()
 			: null;
 
 		const chunks = Util.splitMessage(
