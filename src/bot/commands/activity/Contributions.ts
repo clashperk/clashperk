@@ -103,8 +103,10 @@ export default class CapitalContributionsCommand extends Command {
 				[
 					`**Clan Capital Gold Contributions (${weekId})**`,
 					'```',
-					'\u200eTotal  Name',
-					members.map((mem) => `\u200e${this.padding(mem.raids)}  ${mem.name}`).join('\n'),
+					'\u200e #  TOTAL  NAME',
+					members
+						.map((mem, i) => `\u200e${(i + 1).toString().padStart(2, ' ')}  ${this.padding(mem.raids)}  ${mem.name}`)
+						.join('\n'),
 					'```'
 				].join('\n')
 			)
@@ -115,7 +117,7 @@ export default class CapitalContributionsCommand extends Command {
 	}
 
 	private padding(num: number) {
-		return num.toString().padEnd(5, ' ');
+		return num.toString().padStart(5, ' ');
 	}
 
 	private raidWeek() {

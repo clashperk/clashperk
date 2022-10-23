@@ -122,12 +122,12 @@ export default class CapitalRaidsCommand extends Command {
 			[
 				`**Clan Capital Raids (${weekId})**`,
 				'```',
-				'\u200eLOOTED ATKS  NAME',
+				'\u200e # LOOTED ATKS  NAME',
 				members
-					.map((mem) => {
+					.map((mem, i) => {
 						const looted = this.padding(mem.capitalResourcesLooted);
 						const attacks = `${mem.attacks}/${mem.attackLimit}`.padStart(4, ' ');
-						return `\u200e${looted}  ${attacks}  ${mem.name}`;
+						return `\u200e${(i + 1).toString().padStart(2, ' ')} ${looted} ${attacks}  ${mem.name}`;
 					})
 					.join('\n'),
 				'```'
@@ -138,7 +138,7 @@ export default class CapitalRaidsCommand extends Command {
 	}
 
 	private padding(num: number) {
-		return num.toString().padEnd(5, ' ');
+		return num.toString().padStart(6, ' ');
 	}
 
 	private raidWeek() {
