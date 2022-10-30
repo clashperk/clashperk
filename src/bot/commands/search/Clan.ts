@@ -1,15 +1,23 @@
-import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, escapeMarkdown, ButtonStyle } from 'discord.js';
 import { Clan } from 'clashofclans.js';
-import { EMOJIS, CWL_LEAGUES, CLAN_LABELS } from '../../util/Emojis.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Season } from '../../util/index.js';
 import { Collections } from '../../util/Constants.js';
+import { CLAN_LABELS, CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
+import { Season } from '../../util/index.js';
 
 const clanTypes: Record<string, string> = {
 	inviteOnly: 'Invite Only',
 	closed: 'Closed',
 	open: 'Anybody Can Join'
 };
+
+declare module 'clashofclans.js' {
+	interface Clan {
+		clanCapital?: {
+			capitalHallLevel?: number;
+		};
+	}
+}
 
 export default class ClanCommand extends Command {
 	public constructor() {
@@ -49,9 +57,11 @@ export default class ClanCommand extends Command {
 			.setColor(this.client.embed(interaction))
 			.setThumbnail(clan.badgeUrls.medium);
 
+		const capitalHall = clan.clanCapital?.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**` : '';
+
 		embed.setDescription(
 			[
-				`${EMOJIS.CLAN} **${clan.clanLevel}** ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${clan.clanVersusPoints}**`,
+				`${EMOJIS.CLAN} **${clan.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${clan.members}** ${EMOJIS.TROPHY} **${clan.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${clan.clanVersusPoints}**`,
 				'',
 				`${clan.description}${clan.description ? '\n\n' : ''}${clan.labels
 					.map((d) => `${CLAN_LABELS[d.name]} ${d.name}`)

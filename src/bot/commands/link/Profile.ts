@@ -88,7 +88,7 @@ export default class ProfileCommand extends Command {
 			if (player.statusCode === 404) this.deleteBanned(user.id, tag);
 			if (!player.ok) continue;
 
-			const signature = this.isVerified(data, tag) ? EMOJIS.VERIFIED : this.isLinked(data, tag) ? EMOJIS.AUTHORIZE : '';
+			const signature = this.isVerified(data, tag) ? '**✓**' : this.isLinked(data, tag) ? '' : '';
 			collection.push({
 				field: `${TOWN_HALLS[player.townHallLevel]} ${hideLink ? '' : '['}${player.name} (${player.tag})${
 					hideLink ? '' : `](${this.profileURL(player.tag)})`

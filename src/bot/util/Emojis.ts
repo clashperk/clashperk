@@ -257,6 +257,19 @@ export const PLAYER_LABELS: Record<string, string> = {
 	'Clan Capital': '<:ClanCapital:1006585763640647810>'
 };
 
+export const CAPITAL_HALLS: Record<string, string> = {
+	1: '<:capitalhall1:1036142128654450748>',
+	2: '<:capitalhall2:1036142133528244264>',
+	3: '<:capitalhall3:1036142139123445761>',
+	4: '<:capitalhall4:1036142145054183444>',
+	5: '<:capitalhall5:1036142151047839764>',
+	6: '<:capitalhall6:1036142156886331434>',
+	7: '<:capitalhall7:1036142161936252958>',
+	8: '<:capitalhall8:1036142166893940736>',
+	9: '<:capitalhall9:1036142172866613248>',
+	10: '<:capitalhall10:1036142178004647937>'
+};
+
 export const WAR_STARS = {
 	OLD: '<:OldStar:812613069703872543>',
 	NEW: '<:Star:812625750809116704>',
@@ -284,6 +297,7 @@ export const EMOJIS = {
 
 	SPELLS: '<:Spells:854686656762609674>',
 	TROOPS: '<:Troops:854686652474458122>',
+	CAPITAL_HALL: '<:capitalhall10:1036142178004647937>',
 
 	SWORD: '<:Sword:812547118995996701>',
 	CROSS_SWORD: '<:CrossSword:812567610985807893>',

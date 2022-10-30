@@ -1,24 +1,24 @@
+import { Clan } from 'clashofclans.js';
 import {
-	CommandInteraction,
 	ActionRowBuilder,
+	AnyThreadChannel,
 	ButtonBuilder,
-	TextChannel,
-	ModalBuilder,
+	ButtonStyle,
+	cleanContent,
+	CommandInteraction,
+	ComponentType,
 	EmbedBuilder,
 	Interaction,
-	ButtonStyle,
-	ComponentType,
-	TextInputStyle,
-	cleanContent,
+	ModalBuilder,
 	PermissionsString,
-	WebhookClient,
-	AnyThreadChannel
+	TextChannel,
+	TextInputStyle,
+	WebhookClient
 } from 'discord.js';
-import { Clan } from 'clashofclans.js';
-import { Collections, Flags, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
-import { EMOJIS, CWL_LEAGUES, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { UserInfoModel } from '../../types/index.js';
+import { Collections, Flags, missingPermissions } from '../../util/Constants.js';
+import { CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/Emojis.js';
 
 export default class ClanEmbedCommand extends Command {
 	public constructor() {
@@ -201,13 +201,15 @@ export default class ClanEmbedCommand extends Command {
 				: `🌐 ${data.location.name}`
 			: `${EMOJIS.WRONG} None`;
 
+		const capitalHall = data.clanCapital?.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${data.clanCapital.capitalHallLevel}**` : '';
+
 		const embed = new EmbedBuilder()
 			.setTitle(`${data.name} (${data.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.medium)
 			.setDescription(
 				[
-					`${EMOJIS.CLAN} **${data.clanLevel}** ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
+					`${EMOJIS.CLAN} **${data.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
 					'',
 					description?.toLowerCase() === 'auto' ? data.description : cleanContent(description ?? '', interaction.channel!)
 				].join('\n')

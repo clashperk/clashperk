@@ -93,6 +93,8 @@ export default class ClanEmbedLog extends BaseLog {
 					: 'Any'
 				: cache.embed.accepts;
 
+		const capitalHall = data.clanCapital?.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${data.clanCapital.capitalHallLevel}**` : '';
+
 		const embed = new EmbedBuilder()
 			.setColor(cache.color)
 			.setTitle(`${data.name} (${data.tag})`)
@@ -100,7 +102,7 @@ export default class ClanEmbedLog extends BaseLog {
 			.setThumbnail(data.badgeUrls.medium)
 			.setDescription(
 				[
-					`${EMOJIS.CLAN} **${data.clanLevel}** ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
+					`${EMOJIS.CLAN} **${data.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
 					'',
 					clanDescription || ''
 				].join('\n')

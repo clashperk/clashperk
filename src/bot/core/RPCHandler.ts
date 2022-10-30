@@ -39,7 +39,6 @@ export default class RPCHandler {
 	private async broadcast() {
 		await this.client.subscriber.subscribe('channel', async (message) => {
 			const data = JSON.parse(message);
-			// console.log(data);
 
 			if (this.paused) return;
 			if (this.queue.remaining >= 2000) return;
