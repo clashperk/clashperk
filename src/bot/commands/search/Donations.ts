@@ -39,7 +39,7 @@ export default class DonationsCommand extends Command {
 			season,
 			sortBy,
 			orderBy
-		}: { tag?: string; season: string; sortBy?: ('donated' | 'received' | 'townHall')[]; orderBy?: string }
+		}: { tag?: string; season: string; sortBy?: ('donated' | 'received' | 'townHall' | 'difference')[]; orderBy?: string }
 	) {
 		const clan = await this.client.resolver.resolveClan(interaction, tag);
 		if (!clan) return;
@@ -62,36 +62,55 @@ export default class DonationsCommand extends Command {
 			return interaction.editReply(this.i18n('command.donations.no_season_data', { lng: interaction.locale, season }));
 		}
 
-		const members: { tag: string; name: string; donated: number; received: number; townHall: number }[] = [];
+		const members: {
+			tag: string;
+			name: string;
+			donated: number;
+			received: number;
+			townHall: number;
+			difference: number;
+			ratio: number;
+		}[] = [];
 
 		if (isSameSeason) {
 			const notFound = clan.memberList.filter((m) => !dbMembers.some((d) => d.tag === m.tag));
 			const notFoundMembers = (await this.client.http.detailedClanMembers(notFound)).filter((res) => res.ok);
 			for (const member of notFoundMembers) {
 				const { tag, name, townHallLevel, donations, donationsReceived } = member;
-				members.push({ tag, name, donated: donations, received: donationsReceived, townHall: townHallLevel });
+				members.push({
+					tag,
+					name,
+					donated: donations,
+					received: donationsReceived,
+					townHall: townHallLevel,
+					difference: donations - donationsReceived,
+					ratio: donationsReceived === 0 ? 0 : donations / donationsReceived
+				});
 			}
 		}
 
 		for (const mem of clan.memberList) {
 			const m = dbMembers.find((m) => m.tag === mem.tag);
 			if (m) {
+				const donated = isSameSeason
+					? mem.donations >= m.clans[clan.tag].donations.current
+						? m.clans[clan.tag].donations.total + (mem.donations - m.clans[clan.tag].donations.current)
+						: Math.max(mem.donations, m.clans[clan.tag].donations.total)
+					: m.clans[clan.tag].donations.total;
+				const received = isSameSeason
+					? mem.donationsReceived >= m.clans[clan.tag].donationsReceived.current
+						? m.clans[clan.tag].donationsReceived.total + (mem.donationsReceived - m.clans[clan.tag].donationsReceived.current)
+						: Math.max(mem.donationsReceived, m.clans[clan.tag].donationsReceived.total)
+					: m.clans[clan.tag].donationsReceived.total;
+
 				members.push({
 					name: mem.name,
 					tag: mem.tag,
 					townHall: m.townHallLevel,
-					donated: isSameSeason
-						? mem.donations >= m.clans[clan.tag].donations.current
-							? m.clans[clan.tag].donations.total + (mem.donations - m.clans[clan.tag].donations.current)
-							: Math.max(mem.donations, m.clans[clan.tag].donations.total)
-						: m.clans[clan.tag].donations.total,
-
-					received: isSameSeason
-						? mem.donationsReceived >= m.clans[clan.tag].donationsReceived.current
-							? m.clans[clan.tag].donationsReceived.total +
-							  (mem.donationsReceived - m.clans[clan.tag].donationsReceived.current)
-							: Math.max(mem.donationsReceived, m.clans[clan.tag].donationsReceived.total)
-						: m.clans[clan.tag].donationsReceived.total
+					donated,
+					received,
+					difference: donated - received,
+					ratio: received === 0 ? 0 : donated / received
 				});
 			}
 		}
@@ -110,11 +129,30 @@ export default class DonationsCommand extends Command {
 		}
 
 		const isTh = sortBy?.includes('townHall');
+		const isDiff = sortBy?.includes('difference');
 		const getEmbed = () => {
 			const embed = new EmbedBuilder()
 				.setColor(this.client.embed(interaction))
-				.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
-				.setDescription(
+				.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
+			if (isDiff) {
+				const ds = Math.max(...members.map((m) => m.difference)).toString().length + 1;
+				embed.setDescription(
+					[
+						'```',
+						`\u200e # ${'DIFF'.padStart(ds, ' ')} ${'RATIO'.padStart(5, ' ')}  ${'NAME'}`,
+						members
+							.map((mem, count) => {
+								const ratio = mem.ratio.toFixed(2).padStart(5, ' ');
+								const name = this.padEnd(mem.name.substring(0, 15));
+								const rank = (count + 1).toString().padStart(2, ' ');
+								return `${rank} ${this.donation(mem.difference, ds)} ${ratio}  \u200e${name}`;
+							})
+							.join('\n'),
+						'```'
+					].join('\n')
+				);
+			} else {
+				embed.setDescription(
 					[
 						'```',
 						`\u200e${isTh ? 'TH' : ' #'} ${'DON'.padStart(ds, ' ')} ${'REC'.padStart(rs, ' ')}  ${'NAME'}`,
@@ -129,6 +167,7 @@ export default class DonationsCommand extends Command {
 						'```'
 					].join('\n')
 				);
+			}
 
 			return embed.setFooter({ text: `[DON ${donated} | REC ${received}] (Season ${season})` });
 		};
@@ -165,6 +204,12 @@ export default class DonationsCommand extends Command {
 						description: 'Sorted by donations received',
 						value: 'received',
 						default: sortBy?.includes('received')
+					},
+					{
+						label: 'Donation Difference',
+						description: 'Donation difference and ratio',
+						value: 'difference',
+						default: sortBy?.includes('difference')
 					},
 					{
 						label: 'Town-Hall Level',
