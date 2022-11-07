@@ -57,6 +57,7 @@ export default class RemindScheduler {
 	public async create(reminder: Reminder) {
 		for (const tag of reminder.clans) {
 			const wars = await this.client.http.getCurrentWars(tag);
+			const rand = Math.random();
 			for (const data of wars) {
 				if (!data.ok) continue;
 				if (['notInWar', 'warEnded'].includes(data.state)) continue;
@@ -74,7 +75,7 @@ export default class RemindScheduler {
 					isFriendly: Boolean(data.isFriendly),
 					duration: reminder.duration,
 					reminderId: reminder._id,
-					source: 'bot',
+					source: `bot_${this.client.shard?.ids[0] ?? 0}_${rand}`,
 					triggered: false,
 					timestamp: new Date(ms),
 					createdAt: new Date()
