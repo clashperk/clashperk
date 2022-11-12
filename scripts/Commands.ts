@@ -1637,7 +1637,13 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'chart',
 				description: 'It does something, yeah?',
-				type: ApplicationCommandOptionType.String,
+				type: ApplicationCommandOptionType.Boolean,
+				required: false
+			},
+			{
+				name: 'limit',
+				description: 'It does something, yeah?',
+				type: ApplicationCommandOptionType.Integer,
 				required: false
 			}
 		]

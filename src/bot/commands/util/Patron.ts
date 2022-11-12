@@ -10,7 +10,8 @@ export default class PatronCommand extends Command {
 			clientPermissions: ['EmbedLinks'],
 			description: {
 				content: "Get info about the bot's patreon."
-			}
+			},
+			defer: true
 		});
 	}
 

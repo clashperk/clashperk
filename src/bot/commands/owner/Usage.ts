@@ -19,7 +19,7 @@ export default class UsageCommand extends Command {
 
 	public args(): Args {
 		return {
-			growth: {
+			chart: {
 				match: 'STRING'
 			},
 			limit: {
@@ -28,9 +28,9 @@ export default class UsageCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { growth: graph, limit }: { growth: string; limit?: number }) {
+	public async exec(interaction: CommandInteraction<'cached'>, { chart, limit }: { chart: string; limit?: number }) {
 		limit ??= 15;
-		if (graph) {
+		if (chart) {
 			const url = await this.buffer(Number(limit));
 			return interaction.editReply(url);
 		}
