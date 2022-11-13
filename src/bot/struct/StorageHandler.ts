@@ -21,6 +21,7 @@ export interface ClanStore {
 	lastRan?: Date;
 	channels?: string[];
 	secureRole: boolean;
+	uniqueId: number;
 	roleIds?: string[];
 	roles?: { coLeader?: string; admin?: string; member?: string }[];
 }
@@ -61,6 +62,9 @@ export default class StorageHandler {
 	}
 
 	public async register(message: CommandInteraction, data: any) {
+		const clan =
+			(await this.collection.findOne({ tag: data.tag })) ?? (await this.collection.find().sort({ uniqueId: -1 }).limit(1).next());
+
 		const collection = await this.collection.findOneAndUpdate(
 			{ tag: data.tag, guild: data.guild },
 			{
@@ -74,7 +78,8 @@ export default class StorageHandler {
 					patron: this.client.patrons.get(message.guild!.id)
 				},
 				$setOnInsert: {
-					createdAt: new Date()
+					createdAt: new Date(),
+					uniqueId: (clan?.uniqueId ?? 1000) + 1
 				},
 				$bit: {
 					flag: { or: Number(data.op) }

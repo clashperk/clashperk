@@ -98,7 +98,7 @@ export default class RPCHandler {
 		if (!this.client.guilds.cache.has(data.guild)) return;
 		const result = await this.client.db
 			.collection(Collections.CLAN_STORES)
-			.aggregate<{ tag: string; patron: boolean; flags: number[]; lastRan?: string }>([
+			.aggregate<{ tag: string; patron: boolean; flags: number[]; lastRan?: string; uniqueId: number }>([
 				{
 					$match: {
 						tag: data.tag,
@@ -111,6 +111,9 @@ export default class RPCHandler {
 						_id: '$tag',
 						patron: {
 							$addToSet: '$patron'
+						},
+						uniqueId: {
+							$max: '$uniqueId'
 						},
 						flags: {
 							$addToSet: '$flag'
@@ -153,6 +156,7 @@ export default class RPCHandler {
 			const clan = {
 				tag: result.tag,
 				patron: result.patron,
+				uniqueId: result.uniqueId,
 				flag: this.bitWiseOR(result.flags),
 				lastRan: result.lastRan
 			};
