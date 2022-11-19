@@ -73,17 +73,19 @@ export default class CapitalContributionsCommand extends Command {
 					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId, clear: true }))
 			);
 
-		const embed = this.getCapitalContributionsEmbed({ clan, weekId, contributions });
+		const embed = this.getCapitalContributionsEmbed({ clan, weekId, contributions, locale: interaction.locale });
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private getCapitalContributionsEmbed({
 		clan,
 		weekId,
-		contributions
+		contributions,
+		locale
 	}: {
 		clan: Clan;
 		weekId: string;
+		locale: string;
 		contributions: (ClanCapitalGoldModel & { total: number })[];
 	}) {
 		const members: { name: string; raids: number }[] = [];
@@ -101,7 +103,7 @@ export default class CapitalContributionsCommand extends Command {
 			})
 			.setDescription(
 				[
-					`**Clan Capital Gold Contributions (${weekId})**`,
+					`**${this.i18n('command.capital.contributions.title', { lng: locale })} (${weekId})**`,
 					'```',
 					'\u200e #  TOTAL  NAME',
 					members

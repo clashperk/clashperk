@@ -1284,6 +1284,23 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		name: 'redeem',
 		description: command.redeem.description,
 		dm_permission: false,
+		options: [
+			{
+				name: 'disable',
+				description: 'Disable subscription for a server (if subscribed)',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
+					}
+				]
+			}
+		],
 		description_localizations: translation('command.redeem.description')
 	},
 	{

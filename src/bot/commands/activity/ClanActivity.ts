@@ -13,13 +13,7 @@ export default class ClanActivityCommand extends Command {
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'AttachFiles'],
 			description: {
-				content: [
-					'Graph of hourly active clan members.',
-					'',
-					'Maximum 7 clans are accepted.',
-					'',
-					'Please set your timezone with the `/timezone` command. It enables you to view the graphs in your timezone.'
-				]
+				content: ['Graph of hourly active clan members.']
 			},
 			defer: true
 		});

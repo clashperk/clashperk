@@ -47,7 +47,7 @@ export default class CapitalRaidsCommand extends Command {
 				content: this.i18n('command.capital.raids.no_data', { weekId, clan: clan.name, lng: interaction.locale })
 			});
 		}
-		const embed = this.getCapitalRaidEmbed({ clan, weekId, members });
+		const embed = this.getCapitalRaidEmbed({ clan, weekId, members, locale: interaction.locale });
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
@@ -104,10 +104,12 @@ export default class CapitalRaidsCommand extends Command {
 	private getCapitalRaidEmbed({
 		clan,
 		weekId,
-		members
+		members,
+		locale
 	}: {
 		clan: Clan;
 		weekId: string;
+		locale: string;
 		members: { name: string; capitalResourcesLooted: number; attacks: number; attackLimit: number }[];
 	}) {
 		const embed = new EmbedBuilder()
@@ -120,7 +122,7 @@ export default class CapitalRaidsCommand extends Command {
 
 		embed.setDescription(
 			[
-				`**Clan Capital Raids (${weekId})**`,
+				`**${this.i18n('command.capital.raids.title', { lng: locale })} (${weekId})**`,
 				'```',
 				'\u200e # LOOTED ATKS  NAME',
 				members

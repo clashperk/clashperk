@@ -1,7 +1,16 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, SelectMenuBuilder, ButtonStyle } from 'discord.js';
+import {
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	EmbedBuilder,
+	SelectMenuBuilder,
+	ButtonStyle,
+	WebhookEditMessageOptions
+} from 'discord.js';
+import { WithId } from 'mongodb';
 import { Included, Patron } from '../../struct/Patrons.js';
 import { Collections } from '../../util/Constants.js';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 
 const rewards = {
 	bronze: '3705318',
@@ -23,9 +32,21 @@ export default class RedeemCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>) {
+	public args(): Args {
+		return {
+			disable: {
+				match: 'BOOLEAN'
+			}
+		};
+	}
+
+	public async exec(interaction: CommandInteraction<'cached'>, { disable }: { disable?: boolean }) {
 		const data = await this.client.patrons.fetchAPI();
-		if (!data) return interaction.editReply('**Something went wrong (unresponsive api), please contact us!**');
+		if (!data) {
+			return interaction.editReply({
+				content: '**Something went wrong (unresponsive api), please [contact us.](https://discord.gg/ppuppun)**'
+			});
+		}
 
 		const patron = data.included.find((entry) => entry.attributes.social_connections?.discord?.user_id === interaction.user.id);
 		if (!patron) {
@@ -45,23 +66,34 @@ export default class RedeemCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		}
 
+		const collection = this.client.db.collection<Patron>(Collections.PATRONS);
+		const user = await collection.findOne({ id: patron.id });
+
+		if (disable) {
+			if (!user) return interaction.editReply('**You do not have an active subscription.**');
+			if (!user.guilds.length) {
+				return interaction.editReply('**You do not have an active subscription.**');
+			}
+
+			return this.disableRedemption(interaction, { select: true, user, message: { content: '**Manage Patreon Subscriptions**' } });
+		}
+
 		if (this.client.patrons.get(interaction.guild.id)) {
 			return interaction.editReply('**This server already has an active subscription.**');
 		}
 
-		const collection = this.client.db.collection<Patron>(Collections.PATRONS);
-		const user = await collection.findOne({ id: patron.id });
-
 		const pledge = data.data.find((entry) => entry.relationships.user.data.id === patron.id);
-		if (!pledge) return interaction.editReply('**Something went wrong (unknown pledge), please contact us!**');
+		if (!pledge) {
+			return interaction.editReply('**Something went wrong (unknown pledge), please [contact us.](https://discord.gg/ppuppun)**');
+		}
 
 		if (pledge.attributes.patron_status !== 'active_patron') {
-			return interaction.editReply('**Something went wrong (declined pledge), please contact us!**');
+			return interaction.editReply('**Something went wrong (declined pledge), please [contact us.](https://discord.gg/ppuppun)**');
 		}
 
 		const rewardId = pledge.relationships.currently_entitled_tiers.data[0]?.id;
 		if (!rewardId) {
-			return interaction.editReply('**Something went wrong (unknown tier), please contact us!**');
+			return interaction.editReply('**Something went wrong (unknown tier), please [contact us.](https://discord.gg/ppuppun)**');
 		}
 
 		const embed = new EmbedBuilder()
@@ -119,50 +151,7 @@ export default class RedeemCommand extends Command {
 						"If you think it's wrong, please [contact us.](https://discord.gg/ppuppun)"
 					].join('\n')
 				);
-
-			const customIds = {
-				button: this.client.uuid(interaction.user.id),
-				menu: this.client.uuid(interaction.user.id)
-			};
-			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-				new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customIds.button).setLabel('Manage Servers')
-			);
-			const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-			const collector = msg.createMessageComponentCollector({
-				filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-				time: 5 * 60 * 1000
-			});
-
-			const menus = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-				new SelectMenuBuilder()
-					.setPlaceholder('Select a server!')
-					.setCustomId(customIds.menu)
-					.addOptions(user.guilds.map((guild) => ({ label: guild.name, value: guild.id })))
-			);
-
-			collector.on('collect', async (action) => {
-				if (action.customId === customIds.button) {
-					await action.update({
-						embeds: [],
-						components: [menus],
-						content: '**Select a server to disable subscription.**'
-					});
-				}
-
-				if (action.customId === customIds.menu && action.isSelectMenu()) {
-					const id = action.values[0].trim();
-					const guild = user.guilds.find((guild) => guild.id === id);
-					if (!guild) {
-						await action.update({ content: '**Something went wrong (unknown server), please contact us!**' });
-						return;
-					}
-					await action.deferUpdate();
-					await collection.updateOne({ _id: user._id }, { $pull: { guilds: { id } } });
-					await action.editReply({ components: [], content: `Subscription disabled for **${guild.name} (${guild.id})**` });
-				}
-			});
-
-			return;
+			return this.disableRedemption(interaction, { select: false, user, message: { embeds: [embed] } });
 		}
 
 		// not redeemed
@@ -193,6 +182,55 @@ export default class RedeemCommand extends Command {
 		await this.client.patrons.refresh();
 		await this.sync(interaction.guild.id);
 		return interaction.editReply({ embeds: [embed] });
+	}
+
+	private async disableRedemption(
+		interaction: CommandInteraction,
+		{ message, user, select }: { message: WebhookEditMessageOptions; user: WithId<Patron>; select: boolean }
+	) {
+		const collection = this.client.db.collection<Patron>(Collections.PATRONS);
+		const customIds = {
+			button: this.client.uuid(interaction.user.id),
+			menu: this.client.uuid(interaction.user.id)
+		};
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customIds.button).setLabel('Manage Servers')
+		);
+		const menus = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
+			new SelectMenuBuilder()
+				.setPlaceholder('Select one to disable subscription.')
+				.setCustomId(customIds.menu)
+				.addOptions(user.guilds.map((guild) => ({ label: guild.name, value: guild.id, description: guild.id })))
+		);
+		const msg = await interaction.editReply({ ...message, components: select ? [menus] : [row] });
+		const collector = msg.createMessageComponentCollector({
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+			time: 5 * 60 * 1000
+		});
+
+		collector.on('collect', async (action) => {
+			if (action.customId === customIds.button) {
+				await action.update({
+					embeds: [],
+					components: [menus],
+					content: '**Select a server to disable subscription.**'
+				});
+			}
+
+			if (action.customId === customIds.menu && action.isSelectMenu()) {
+				const id = action.values[0].trim();
+				const guild = user.guilds.find((guild) => guild.id === id);
+				if (!guild) {
+					await action.update({
+						content: '**Something went wrong (unknown server), please [contact us.](https://discord.gg/ppuppun)**'
+					});
+					return;
+				}
+				await action.deferUpdate();
+				await collection.updateOne({ _id: user._id }, { $pull: { guilds: { id } } });
+				await action.editReply({ components: [], content: `Subscription disabled for **${guild.name} (${guild.id})**` });
+			}
+		});
 	}
 
 	private isNew(user: Patron, interaction: CommandInteraction, patron: Included) {

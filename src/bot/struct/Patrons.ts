@@ -5,6 +5,18 @@ import { BaseInteraction } from 'discord.js';
 import { Collections, Settings } from '../util/Constants.js';
 import { Client } from './Client.js';
 
+const rewards = {
+	bronze: '3705318',
+	silver: '4742718',
+	gold: '5352215'
+};
+
+const guildLimits: Record<string, number> = {
+	[rewards.bronze]: 1,
+	[rewards.silver]: 3,
+	[rewards.gold]: 5
+};
+
 export default class Patrons {
 	private readonly collection: Collection<Patron>;
 	private readonly patrons = new Set<string>();
@@ -65,9 +77,15 @@ export default class Patrons {
 		for (const patron of patrons) {
 			const pledge = res.data.find((entry) => entry.relationships.user.data.id === patron.id);
 
-			const rewardId = pledge?.relationships.currently_entitled_tiers.data[0]?.id;
-			if (rewardId && patron.rewardId !== rewardId) {
+			const rewardId: string | null = pledge?.relationships.currently_entitled_tiers.data[0]?.id ?? null;
+			if (rewardId && patron.rewardId !== rewardId && guildLimits[rewardId]) {
 				await this.collection.updateOne({ _id: patron._id }, { $set: { rewardId } });
+				if (pledge?.attributes.patron_status === 'active_patron') {
+					// eslint-disable-next-line
+					for (const guild of (patron.guilds ?? []).slice(0, guildLimits[rewardId])) await this.restoreGuild(guild.id);
+					// eslint-disable-next-line
+					for (const guild of (patron.guilds ?? []).slice(guildLimits[rewardId])) await this.deleteGuild(guild.id);
+				}
 			}
 
 			if (pledge && new Date(pledge.attributes.last_charge_date).getTime() >= patron.lastChargeDate.getTime()) {
@@ -114,12 +132,20 @@ export default class Patrons {
 				this.client.logger.info(`Declined Patron Resumed ${patron.username} (${patron.userId}/${patron.id})`, { label: 'PATRON' });
 			}
 
-			if (patron.active && pledge?.attributes.patron_status === 'declined_patron' && new Date().getUTCDay() >= 5) {
+			if (
+				patron.active &&
+				pledge?.attributes.patron_status === 'declined_patron' &&
+				this.gracePeriodExpired(new Date(pledge.attributes.last_charge_date))
+			) {
 				await this.collection.updateOne({ id: patron.id }, { $set: { declined: true, active: false } });
 				// eslint-disable-next-line
 				for (const guild of patron.guilds ?? []) await this.deleteGuild(guild.id);
 			}
 		}
+	}
+
+	private gracePeriodExpired(date: Date) {
+		return Date.now() - date.getTime() >= 3 * 24 * 60 * 60 * 1000;
 	}
 
 	private async restoreGuild(guildId: string) {
