@@ -34,8 +34,9 @@ export default class ClanGamesCommand extends Command {
 	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
+		const seasonId = this.getSeasonId(args.season);
 
-		if (this.seasonId !== args.season && interaction.isButton() && interaction.message.type === MessageType.Default) {
+		if (interaction.isButton() && interaction.message.type === MessageType.Default && this.latestSeason !== args.season) {
 			return interaction.editReply({ components: [] });
 		}
 
@@ -56,21 +57,21 @@ export default class ClanGamesCommand extends Command {
 				return { tag: m.tag, name: m.name, points: value };
 			});
 
-		const queried = await this.query(clan.tag, clan);
+		const queried = await this.query(clan.tag, clan, seasonId);
 		const members = this.filter(queried, memberList);
-		const embed = this.embed(interaction, { clan, members, max: args.max, filter: args.filter });
+		const embed = this.embed(interaction, { clan, members, max: args.max, filter: args.filter, seasonId });
 		embed.setColor(this.client.embed(interaction));
 
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId(JSON.stringify({ cmd: this.id, max: false, tag: clan.tag, season: this.seasonId }))
+					.setCustomId(JSON.stringify({ cmd: this.id, max: false, tag: clan.tag, season: seasonId }))
 					.setEmoji(EMOJIS.REFRESH)
 					.setStyle(ButtonStyle.Secondary)
 			)
 			.addComponents(
 				new ButtonBuilder()
-					.setCustomId(JSON.stringify({ cmd: this.id, max: !args.max, filter: false, tag: clan.tag, season: this.seasonId }))
+					.setCustomId(JSON.stringify({ cmd: this.id, max: !args.max, filter: false, tag: clan.tag, season: seasonId }))
 					.setLabel(args.max ? 'Permissible Points' : 'Maximum Points')
 					.setStyle(ButtonStyle.Primary)
 			);
@@ -79,12 +80,18 @@ export default class ClanGamesCommand extends Command {
 
 	private embed(
 		interaction: BaseInteraction,
-		{ clan, members, max = false, filter = false }: { clan: Clan; members: Member[]; max?: boolean; filter?: boolean }
+		{
+			clan,
+			members,
+			max = false,
+			filter = false,
+			seasonId
+		}: { clan: Clan; members: Member[]; max?: boolean; filter?: boolean; seasonId: string }
 	) {
 		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
 		const embed = new EmbedBuilder().setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium }).setDescription(
 			[
-				`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${this.seasonId})](https://clashperk.com/faq)**`,
+				`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${seasonId})](https://clashperk.com/faq)**`,
 				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
 				members
 					.slice(0, 55)
@@ -118,16 +125,21 @@ export default class ClanGamesCommand extends Command {
 		return num.toString().padStart(6, ' ');
 	}
 
-	private get seasonId() {
+	private getSeasonId(seasonId?: string) {
+		if (seasonId) return seasonId;
+		return this.latestSeason;
+	}
+
+	private get latestSeason() {
 		const now = new Date();
 		if (now.getDate() < 20) now.setMonth(now.getMonth() - 1);
 		return now.toISOString().substring(0, 7);
 	}
 
-	private query(clanTag: string, _clan: Clan) {
+	private query(clanTag: string, _clan: Clan, seasonId: string) {
 		const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<ClanGamesModel>([
 			{
-				$match: { __clans: clanTag, season: this.seasonId }
+				$match: { __clans: clanTag, season: seasonId }
 			},
 			{
 				$limit: 60

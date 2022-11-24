@@ -91,6 +91,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description_localizations: translation('command.clan_games.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
+			},
+			{
+				name: 'season',
+				description: command.clan_games.options.season.description,
+				description_localizations: translation('command.clan_games.options.season.description'),
+				type: ApplicationCommandOptionType.String,
+				required: false,
+				choices: getSeasonIds()
 			}
 		]
 	},
