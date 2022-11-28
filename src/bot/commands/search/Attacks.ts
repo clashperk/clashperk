@@ -1,4 +1,4 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { Command } from '../../lib/index.js';
 
 export default class ClanAttacksCommand extends Command {
@@ -65,7 +65,7 @@ export default class ClanAttacksCommand extends Command {
 			components: [new ActionRowBuilder<ButtonBuilder>({ components: [button] })]
 		});
 
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customId && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

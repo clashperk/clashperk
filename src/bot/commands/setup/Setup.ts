@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Flags, Collections } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
@@ -49,7 +49,7 @@ export default class SetupCommand extends Command {
 			components: [row],
 			files: ['https://i.imgur.com/rEZV66g.png']
 		});
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

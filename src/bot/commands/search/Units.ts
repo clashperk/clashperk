@@ -1,5 +1,13 @@
 import { Player } from 'clashofclans.js';
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, SelectMenuBuilder, ButtonStyle } from 'discord.js';
+import {
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	EmbedBuilder,
+	SelectMenuBuilder,
+	ButtonStyle,
+	ComponentType
+} from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
@@ -48,7 +56,7 @@ export default class UnitsCommand extends Command {
 		);
 		await interaction.editReply({ components: options.length ? [ButtonRow, MenuRow] : [ButtonRow] });
 
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(CustomIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

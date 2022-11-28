@@ -1,4 +1,4 @@
-import { CommandInteraction, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { PlayerItem } from 'clashofclans.js';
 import { HERO_PETS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -143,7 +143,7 @@ export default class MembersCommand extends Command {
 		);
 
 		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => [customId].includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000,
 			max: 1

@@ -1,4 +1,4 @@
-import { GuildMember, ActionRowBuilder, SelectMenuBuilder, CommandInteraction } from 'discord.js';
+import { GuildMember, ActionRowBuilder, SelectMenuBuilder, CommandInteraction, ComponentType } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { TOWN_HALLS } from '../../util/Emojis.js';
 
@@ -62,7 +62,7 @@ export default class NickNameCommand extends Command {
 		);
 
 		const msg = await interaction.editReply({ content: `**Setting up ${member.user.tag}\'s nickname...**`, components: [row] });
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customID && [member.id, interaction.user.id].includes(action.user.id),
 			time: 5 * 60 * 1000
 		});

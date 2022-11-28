@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder, ComponentType } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
@@ -42,7 +42,7 @@ export default class UpgradesCommand extends Command {
 
 		await interaction.editReply({ components: [new ActionRowBuilder<SelectMenuBuilder>().addComponents(menu)] });
 
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => [customID].includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

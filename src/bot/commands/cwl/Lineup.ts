@@ -1,4 +1,12 @@
-import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, SelectMenuBuilder, ButtonStyle } from 'discord.js';
+import {
+	EmbedBuilder,
+	CommandInteraction,
+	ButtonBuilder,
+	ActionRowBuilder,
+	SelectMenuBuilder,
+	ButtonStyle,
+	ComponentType
+} from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember, Player, WarClan } from 'clashofclans.js';
 import { EMOJIS, HERO_PETS, BLUE_NUMBERS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -99,7 +107,7 @@ export default class CWLLineupCommand extends Command {
 		);
 
 		const msg = await interaction.editReply({ embeds, components: [buttons, menus] });
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

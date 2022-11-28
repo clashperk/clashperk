@@ -5,7 +5,8 @@ import {
 	EmbedBuilder,
 	SelectMenuBuilder,
 	ButtonStyle,
-	WebhookEditMessageOptions
+	WebhookEditMessageOptions,
+	ComponentType
 } from 'discord.js';
 import { WithId } from 'mongodb';
 import { Included, Patron } from '../../struct/Patrons.js';
@@ -203,7 +204,7 @@ export default class RedeemCommand extends Command {
 				.addOptions(user.guilds.map((guild) => ({ label: guild.name, value: guild.id, description: guild.id })))
 		);
 		const msg = await interaction.editReply({ ...message, components: select ? [menus] : [row] });
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

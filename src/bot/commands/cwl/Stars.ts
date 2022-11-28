@@ -1,4 +1,4 @@
-import { CommandInteraction, ActionRowBuilder, EmbedBuilder, SelectMenuBuilder } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, EmbedBuilder, SelectMenuBuilder, ComponentType } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
@@ -142,7 +142,7 @@ export default class CWLStarsCommand extends Command {
 			embeds: [embed],
 			components: [new ActionRowBuilder<SelectMenuBuilder>({ components: [menu] })]
 		});
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

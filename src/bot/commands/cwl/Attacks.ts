@@ -6,7 +6,8 @@ import {
 	ButtonBuilder,
 	escapeInlineCode,
 	ButtonStyle,
-	escapeMarkdown
+	escapeMarkdown,
+	ComponentType
 } from 'discord.js';
 import { ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import moment from 'moment';
@@ -208,7 +209,7 @@ export default class CWLAttacksCommand extends Command {
 			embeds: [round.embed],
 			components: [...rows]
 		});
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(ids).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

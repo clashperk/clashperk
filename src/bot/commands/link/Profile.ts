@@ -1,4 +1,14 @@
-import { EmbedBuilder, GuildMember, CommandInteraction, ActionRowBuilder, ButtonBuilder, User, Interaction, ButtonStyle } from 'discord.js';
+import {
+	EmbedBuilder,
+	GuildMember,
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	User,
+	Interaction,
+	ButtonStyle,
+	ComponentType
+} from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import moment from 'moment';
 import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis.js';
@@ -137,7 +147,7 @@ export default class ProfileCommand extends Command {
 
 		if (links.length < 5) return interaction.editReply({ embeds: [embed] });
 		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customId && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000,
 			max: 1

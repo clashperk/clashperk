@@ -6,7 +6,8 @@ import {
 	TextChannel,
 	ButtonStyle,
 	PermissionsString,
-	AnyThreadChannel
+	AnyThreadChannel,
+	ComponentType
 } from 'discord.js';
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
@@ -225,7 +226,7 @@ export default class ReminderCreateCommand extends Command {
 			components: mutate(),
 			content: '**War Reminder Setup**'
 		});
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

@@ -119,7 +119,7 @@ export default class ClanEmbedCommand extends Command {
 
 		try {
 			await m
-				.awaitMessageComponent({
+				.awaitMessageComponent<ComponentType.Button | ComponentType.StringSelect>({
 					filter: ({ customId }) => Object.values(__customIds).includes(customId),
 					time: 5 * 60 * 1000
 				})
@@ -336,7 +336,7 @@ export default class ClanEmbedCommand extends Command {
 			content: [`**This clan already has an active Clan Embed. [Jump ↗️](<${messageURL}>)**`].join('\n'),
 			components: [row]
 		});
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

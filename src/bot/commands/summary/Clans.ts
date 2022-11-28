@@ -1,4 +1,4 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { WHITE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
@@ -99,7 +99,7 @@ export default class SummaryClansCommand extends Command {
 		const button = new ButtonBuilder().setCustomId(customId).setStyle(ButtonStyle.Secondary).setLabel('Download');
 		const msg = await interaction.editReply({ embeds, components: [new ActionRowBuilder<ButtonBuilder>().addComponents(button)] });
 
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customId,
 			max: 1,
 			time: 5 * 60 * 1000

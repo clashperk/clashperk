@@ -1,5 +1,5 @@
 import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, WHITE_NUMBERS, EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -177,7 +177,7 @@ export default class CWLRosterCommand extends Command {
 		);
 		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

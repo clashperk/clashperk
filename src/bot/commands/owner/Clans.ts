@@ -1,4 +1,4 @@
-import { EmbedBuilder, Message, TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { EmbedBuilder, Message, TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -96,7 +96,7 @@ export default class ClansCommand extends Command {
 			.addComponents(new ButtonBuilder().setEmoji('➡️').setStyle(ButtonStyle.Secondary).setCustomId(customIds.next));
 
 		const msg = await message.channel.send({ embeds: [embed], components: [row] });
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === message.author.id,
 			time: 5 * 60 * 1000
 		});

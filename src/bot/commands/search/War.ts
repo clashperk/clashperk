@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, escapeMarkdown, ButtonStyle } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, escapeMarkdown, ButtonStyle, ComponentType } from 'discord.js';
 import { ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import moment from 'moment';
 import { Collections, WarType } from '../../util/Constants.js';
@@ -169,7 +169,7 @@ export default class WarCommand extends Command {
 			embeds: [embed],
 			components: [new ActionRowBuilder<ButtonBuilder>({ components: [button] })]
 		});
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

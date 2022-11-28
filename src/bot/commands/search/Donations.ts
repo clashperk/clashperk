@@ -1,4 +1,12 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, SelectMenuBuilder } from 'discord.js';
+import {
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	EmbedBuilder,
+	ButtonStyle,
+	SelectMenuBuilder,
+	ComponentType
+} from 'discord.js';
 import { Collections } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
 import { Args, Command } from '../../lib/index.js';
@@ -243,7 +251,7 @@ export default class DonationsCommand extends Command {
 		const msg = await interaction.editReply({ embeds: [embed], components: [row, sortingRow, orderingRow] });
 		if (isSameSeason) return;
 
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customId.sort && action.user.id === interaction.user.id,
 			max: 1,
 			time: 5 * 60 * 1000

@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder, ComponentType } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
@@ -50,7 +50,7 @@ export default class RushedCommand extends Command {
 		const menu = new SelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
 
 		await interaction.editReply({ components: [new ActionRowBuilder<SelectMenuBuilder>({ components: [menu] })] });
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

@@ -1,4 +1,4 @@
-import { EmbedBuilder, GuildMember, ActionRowBuilder, ButtonBuilder, CommandInteraction, ButtonStyle } from 'discord.js';
+import { EmbedBuilder, GuildMember, ActionRowBuilder, ButtonBuilder, CommandInteraction, ButtonStyle, ComponentType } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -60,7 +60,7 @@ export default class LinkCreateCommand extends Command {
 				.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel('Link Clan').setCustomId(CUSTOM_ID.CLAN));
 
 			const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-			const collector = msg.createMessageComponentCollector({
+			const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 				filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
 				time: 5 * 60 * 1000
 			});

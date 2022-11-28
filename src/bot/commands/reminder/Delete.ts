@@ -1,4 +1,12 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, SelectMenuBuilder, ButtonStyle } from 'discord.js';
+import {
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	EmbedBuilder,
+	SelectMenuBuilder,
+	ButtonStyle,
+	ComponentType
+} from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Collections, MAX_TOWNHALL_LEVEL } from '../../util/Constants.js';
@@ -140,7 +148,7 @@ export default class ReminderDeleteCommand extends Command {
 			content: '**Manage War Reminders**',
 			components: options(false, true, true)
 		});
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, CommandInteraction, ComponentType } from 'discord.js';
 import { Collections, Settings } from '../../util/Constants.js';
 import { Patron } from '../../struct/Patrons.js';
 import { Args, Command } from '../../lib/index.js';
@@ -70,7 +70,7 @@ export default class PatronCommand extends Command {
 		}
 
 		const msg = await interaction.editReply({ content, components: [new ActionRowBuilder<ButtonBuilder>().addComponents(button)] });
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customId && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

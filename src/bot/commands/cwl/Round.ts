@@ -1,5 +1,5 @@
 import { ClanWar, ClanWarLeagueGroup, ClanWarMember } from 'clashofclans.js';
-import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder, ComponentType } from 'discord.js';
 import moment from 'moment';
 import { EMOJIS, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -163,7 +163,7 @@ export default class CWLRoundCommand extends Command {
 			embeds: [round.embed],
 			components: [new ActionRowBuilder<SelectMenuBuilder>({ components: [menu] })]
 		});
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});

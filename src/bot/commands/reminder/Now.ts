@@ -1,4 +1,12 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, SelectMenuBuilder } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	ComponentType,
+	SelectMenuBuilder
+} from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { MAX_TOWNHALL_LEVEL } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -159,7 +167,7 @@ export default class ReminderNowCommand extends Command {
 		};
 
 		const msg = await interaction.editReply({ components: mutate(), content: '**Instant Reminder Options**' });
-		const collector = msg.createMessageComponentCollector({
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
