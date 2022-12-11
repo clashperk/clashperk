@@ -214,7 +214,7 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
-			db.collection(Collections.FLAGS).createIndex({ guild: 1, tag: 1 }, { unique: true }),
+			db.collection(Collections.FLAGS).createIndex({ guild: 1, tag: 1 }),
 
 			db.collection(Collections.CLANS).createIndex({ tag: 1 }, { unique: true }),
 
