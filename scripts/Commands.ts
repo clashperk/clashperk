@@ -1700,6 +1700,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
+		name: 'sync',
+		description: 'Synchronizes the bot with the database.'
+	},
+	{
 		name: 'Profile',
 		type: ApplicationCommandType.User,
 		dm_permission: false

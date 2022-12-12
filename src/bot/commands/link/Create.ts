@@ -28,7 +28,10 @@ export default class LinkCreateCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; member?: GuildMember; default?: boolean }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { tag?: string; member?: GuildMember; default?: boolean; forcePlayer?: boolean }
+	) {
 		if (!args.tag) {
 			return interaction.editReply(this.i18n('command.link.no_tag', { lng: interaction.locale }));
 		}
@@ -36,7 +39,7 @@ export default class LinkCreateCommand extends Command {
 		const member = args.member ?? interaction.member;
 		if (member.user.bot) return interaction.editReply(this.i18n('command.link.create.no_bots', { lng: interaction.locale }));
 
-		const tags = await Promise.all([this.client.http.player(args.tag), this.client.http.clan(args.tag)]);
+		const tags = await Promise.all([this.client.http.player(args.tag), this.client.http.clan(args.forcePlayer ? '0x' : args.tag)]);
 		const types: Record<string, string> = {
 			1: 'PLAYER',
 			2: 'CLAN'

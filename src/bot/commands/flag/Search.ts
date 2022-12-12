@@ -1,7 +1,6 @@
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, time } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import { Util } from '../../util/index.js';
 
 export default class FlagSearchCommand extends Command {
 	public constructor() {
@@ -68,7 +67,7 @@ export default class FlagSearchCommand extends Command {
 					user ? user.tag : `Unknown#0000 (${flag.user})`,
 					'',
 					`**Flags (${flag.count})**`,
-					flag.flags.map((fl, i) => `${i + 1}. ${Util.getRelativeTime(fl.createdAt.getTime())} ${fl.reason}`).join('\n\n')
+					flag.flags.map((fl, i) => `${i + 1}. ${time(fl.createdAt, 'f')}\n${fl.reason}`).join('\n\n')
 				].join('\n')
 			)
 			.setFooter({ text: 'Latest' })

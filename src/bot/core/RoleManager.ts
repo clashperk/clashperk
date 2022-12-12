@@ -204,6 +204,16 @@ export class RoleManager {
 		return data.members.length;
 	}
 
+	private handleTHRoles(players: Player[], clans: string[], rolesMap: Record<string, string>) {
+		players
+			.filter((player) => player.clan && clans.includes(player.clan.tag))
+			.reduce<string[]>((acc, player) => {
+				const roleId = rolesMap[player.townHallLevel];
+				if (roleId && !acc.includes(roleId)) acc.push(roleId);
+				return acc;
+			}, []);
+	}
+
 	public async addRoles({
 		members,
 		guildId,
