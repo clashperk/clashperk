@@ -1,6 +1,7 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
-import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
+import { Collections } from '../../util/Constants.js';
+import { Util } from '../../util/index.js';
 
 export default class FlagSearchCommand extends Command {
 	public constructor() {
@@ -15,7 +16,40 @@ export default class FlagSearchCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
 		const player = await this.client.resolver.resolvePlayer(interaction, args.tag);
 		if (!player) return;
-		const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: interaction.guild.id, tag: player.tag });
+		const flag = await this.client.db
+			.collection(Collections.FLAGS)
+			.aggregate<{
+				name: string;
+				tag: string;
+				user: string;
+				createdAt: Date;
+				count: number;
+				flags: { reason: string; userId: string; createdAt: Date }[];
+			}>([
+				{
+					$match: { guild: interaction.guild.id, tag: player.tag }
+				},
+				{
+					$group: {
+						_id: '$tag',
+						flags: {
+							$push: {
+								reason: '$reason',
+								userId: '$user',
+								createdAt: '$createdAt'
+							}
+						},
+						name: { $last: '$name' },
+						tag: { $last: '$tag' },
+						user: { $last: '$user' },
+						createdAt: { $last: '$createdAt' },
+						count: {
+							$sum: 1
+						}
+					}
+				}
+			])
+			.next();
 
 		if (!flag) {
 			return interaction.editReply(this.i18n('command.flag.search.not_found', { lng: interaction.locale, tag: player.tag }));
@@ -28,13 +62,13 @@ export default class FlagSearchCommand extends Command {
 			.setDescription(
 				[
 					'**Executor**',
-					user ? user.tag : `Unknown#0000 (${flag.user as string})`,
+					user ? user.tag : `Unknown#0000 (${flag.user})`,
 					'',
-					'**Reason**',
-					`${flag.reason as string}`
+					`**Flags (${flag.count})**`,
+					flag.flags.map((fl) => `${Util.getRelativeTime(fl.createdAt.getTime())} ${fl.reason}`).join('\n\n')
 				].join('\n')
 			)
-			.setFooter({ text: 'Date' })
+			.setFooter({ text: 'Latest' })
 			.setTimestamp(flag.createdAt);
 
 		return interaction.editReply({ embeds: [embed] });

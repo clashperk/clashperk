@@ -1,9 +1,9 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
-import { Collections } from '../../util/Constants.js';
-import { RED_NUMBERS } from '../../util/Emojis.js';
 import { Args, Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
+import { Collections } from '../../util/Constants.js';
+import { RED_NUMBERS } from '../../util/Emojis.js';
 
 // TODO: Fix TS
 export default class FlagListCommand extends Command {
@@ -30,7 +30,33 @@ export default class FlagListCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { export?: boolean }) {
 		const page = 1;
 		const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
-		const data = await this.client.db.collection(Collections.FLAGS).find({ guild: interaction.guild.id }).toArray();
+		const data = await this.client.db
+			.collection(Collections.FLAGS)
+			.aggregate<{ name: string; tag: string; count: number }>([
+				{
+					$match: {
+						guild: interaction.guild.id
+					}
+				},
+				{
+					$group: {
+						_id: '$tag',
+						reason: {
+							$last: '$reason'
+						},
+						name: {
+							$last: '$name'
+						},
+						tag: {
+							$last: '$tag'
+						},
+						count: {
+							$sum: 1
+						}
+					}
+				}
+			])
+			.toArray();
 
 		let buffer = null;
 		if (data.length) {
@@ -40,7 +66,7 @@ export default class FlagListCommand extends Command {
 			embed
 				.setAuthor({ name: interaction.guild.name, iconURL: interaction.guild.iconURL()! })
 				.setTitle('Flags')
-				.setDescription(paginated.items.map((x) => `${RED_NUMBERS[++index]} ${x.name as string} ${x.tag as string}`).join('\n'))
+				.setDescription(paginated.items.map((mem) => `${RED_NUMBERS[++index]} ${mem.name} (${mem.tag}) [${mem.count}]`).join('\n'))
 				.setFooter({ text: `Page ${paginated.page}/${paginated.maxPage}` });
 		} else {
 			embed.setDescription(this.i18n('command.flag.list.no_flags', { lng: interaction.locale }));
@@ -81,7 +107,7 @@ export default class FlagListCommand extends Command {
 		return workbook.xlsx.writeBuffer();
 	}
 
-	private paginate(items: any[], page = 1, pageLength = 25) {
+	private paginate<T>(items: T[], page = 1, pageLength = 25) {
 		const maxPage = Math.ceil(items.length / pageLength);
 		if (page < 1) page = 1;
 		if (page > maxPage) page = maxPage;

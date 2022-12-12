@@ -1,7 +1,7 @@
-import { cleanContent, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Player } from 'clashofclans.js';
-import { Collections } from '../../util/Constants.js';
+import { cleanContent, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
+import { Collections } from '../../util/Constants.js';
 
 export default class FlagCreateCommand extends Command {
 	public constructor() {
@@ -39,23 +39,17 @@ export default class FlagCreateCommand extends Command {
 		const players: Player[] = await Promise.all(tags.map((en) => this.client.http.player(this.fixTag(en))));
 		const newFlags = [] as { name: string; tag: string }[];
 		for (const data of players.filter((en) => en.ok)) {
-			const { value } = await this.client.db.collection(Collections.FLAGS).findOneAndUpdate(
-				{ guild: interaction.guild.id, tag: data.tag },
-				{
-					$set: {
-						guild: interaction.guild.id,
-						user: interaction.user.id,
-						user_tag: interaction.user.tag,
-						tag: data.tag,
-						name: data.name,
-						reason: cleanContent(args.reason, interaction.channel!),
-						createdAt: new Date()
-					}
-				},
-				{ upsert: true, returnDocument: 'after' }
-			);
+			await this.client.db.collection(Collections.FLAGS).insertOne({
+				guild: interaction.guild.id,
+				user: interaction.user.id,
+				user_tag: interaction.user.tag,
+				tag: data.tag,
+				name: data.name,
+				reason: cleanContent(args.reason, interaction.channel!),
+				createdAt: new Date()
+			});
 
-			newFlags.push({ name: value!.name, tag: value!.tag });
+			newFlags.push({ name: data.name, tag: data.tag });
 		}
 		return interaction.editReply(
 			this.i18n('command.flag.create.success', {
