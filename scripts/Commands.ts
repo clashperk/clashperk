@@ -1,11 +1,12 @@
-import { fileURLToPath } from 'url';
 import { ApplicationCommandOptionType, ApplicationCommandType, RESTPostAPIApplicationCommandsJSONBody } from 'discord-api-types/v10';
-import moment from 'moment';
 import i18next from 'i18next';
+import moment from 'moment';
+// eslint-disable-next-line import/order
+import { fileURLToPath } from 'node:url';
 import { command } from '../locales/en.js';
-import { TranslationKey } from '../src/bot/util/i18n.js';
-import { Backend } from '../src/bot/util/Backend.js';
 import { defaultOptions, fallbackLng } from '../locales/index.js';
+import { Backend } from '../src/bot/util/Backend.js';
+import { TranslationKey } from '../src/bot/util/i18n.js';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({
@@ -592,6 +593,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description_localizations: translation('command.flag.delete.options.tag.description'),
 						type: ApplicationCommandOptionType.String,
 						required: true
+					},
+					{
+						// TODO: Translate
+						name: 'id',
+						description: 'Flag ID',
+						type: ApplicationCommandOptionType.String,
+						required: false
 					}
 				]
 			}
@@ -1627,6 +1635,67 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						]
 					}
 				]
+			}
+		]
+	},
+	{
+		name: 'family',
+		description: 'Shows information about a family.',
+		options: [
+			{
+				name: 'compo',
+				description: 'Shows information about a compo.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'wars',
+				description: 'Shows information about a war.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'donations',
+				description: 'Shows information about donations.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			// {
+			// 	name: 'members',
+			// 	description: 'Shows information about members.',
+			// 	type: ApplicationCommandOptionType.Subcommand
+			// },
+			{
+				name: 'clans',
+				description: 'Shows information about clans.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'attacks',
+				description: 'Shows information about attacks.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'trophies',
+				description: 'Shows information about trophies.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			// {
+			// 	name: 'missed-wars',
+			// 	description: 'Shows information about missed wars.',
+			// 	type: ApplicationCommandOptionType.Subcommand
+			// },
+			// {
+			// 	name: 'capital-raids',
+			// 	description: 'Shows information about capital raids.',
+			// 	type: ApplicationCommandOptionType.Subcommand
+			// },
+			// {
+			// 	name: 'cwl-ranks',
+			// 	description: 'Shows information about CWL ranks.',
+			// 	type: ApplicationCommandOptionType.Subcommand
+			// },
+			{
+				name: 'clan-games',
+				description: 'Shows information about clan games.',
+				type: ApplicationCommandOptionType.Subcommand
 			}
 		]
 	},

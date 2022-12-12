@@ -30,6 +30,9 @@ export default class FlagSearchCommand extends Command {
 					$match: { guild: interaction.guild.id, tag: player.tag }
 				},
 				{
+					$sort: { _id: -1 }
+				},
+				{
 					$group: {
 						_id: '$tag',
 						flags: {
@@ -61,11 +64,11 @@ export default class FlagSearchCommand extends Command {
 			.setAuthor({ name: `${player.name} (${player.tag})` })
 			.setDescription(
 				[
-					'**Executor**',
+					'**Author**',
 					user ? user.tag : `Unknown#0000 (${flag.user})`,
 					'',
 					`**Flags (${flag.count})**`,
-					flag.flags.map((fl) => `${Util.getRelativeTime(fl.createdAt.getTime())} ${fl.reason}`).join('\n\n')
+					flag.flags.map((fl, i) => `${i + 1}. ${Util.getRelativeTime(fl.createdAt.getTime())} ${fl.reason}`).join('\n\n')
 				].join('\n')
 			)
 			.setFooter({ text: 'Latest' })
