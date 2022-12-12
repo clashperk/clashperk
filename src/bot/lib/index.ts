@@ -1,24 +1,24 @@
 import EventEmitter from 'node:events';
 import { extname } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { container } from 'tsyringe';
-import readdirp from 'readdirp';
 import {
+	ApplicationCommandOptionType,
 	BaseInteraction,
 	ClientEvents,
 	Collection,
 	CommandInteraction,
 	CommandInteractionOption,
+	EmbedBuilder,
 	Events,
+	GuildBasedChannel,
 	Interaction,
 	Message,
 	MessageComponentInteraction,
-	EmbedBuilder,
 	PermissionsString,
-	ApplicationCommandOptionType,
-	RestEvents,
-	GuildBasedChannel
+	RestEvents
 } from 'discord.js';
+import readdirp from 'readdirp';
+import { container } from 'tsyringe';
 import { Client } from '../struct/Client.js';
 import { i18n } from '../util/i18n.js';
 import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util.js';
@@ -255,7 +255,8 @@ export class CommandHandler extends BaseHandler {
 
 		if (command.userPermissions?.length) {
 			const missing = interaction.channel?.permissionsFor(interaction.user)?.missing(command.userPermissions);
-			if (missing?.length) {
+			const hasRole = command.permissionOverwrites(interaction);
+			if (missing?.length && !hasRole) {
 				this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.USER, missing);
 				return true;
 			}
@@ -381,6 +382,11 @@ export class Command implements CommandOptions {
 		this.category = category ?? 'default';
 		this.client = container.resolve(Client);
 		this.handler = container.resolve(CommandHandler);
+	}
+
+	public permissionOverwrites(interaction: BaseInteraction): boolean;
+	public permissionOverwrites(): boolean {
+		return true;
 	}
 
 	public condition(interaction: BaseInteraction): { embeds: EmbedBuilder[] } | null;
