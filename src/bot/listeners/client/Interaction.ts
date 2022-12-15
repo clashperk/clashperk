@@ -70,7 +70,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async componentInteraction(interaction: Interaction) {
-		if (!interaction.isButton() && !interaction.isSelectMenu()) return;
+		if (!interaction.isButton() && !interaction.isStringSelectMenu()) return;
 		if (this.inhibitor(interaction)) return;
 
 		const userIds = this.client.components.get(interaction.customId);

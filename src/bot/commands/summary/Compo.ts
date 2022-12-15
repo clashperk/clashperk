@@ -1,7 +1,7 @@
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import { Season } from '../../util/index.js';
+import { Season, Util } from '../../util/index.js';
 
 export default class FamilyCompoCommand extends Command {
 	public constructor() {
@@ -53,10 +53,18 @@ export default class FamilyCompoCommand extends Command {
 		}
 
 		const embed = new EmbedBuilder();
-		if (texts.length < 8) embed.setDescription(texts.join('\n'));
+		const [description] = Util.splitMessage(texts.join('\n'), { maxLength: 4000, char: '\u200b' });
+		embed.setDescription(description);
 		embed.addFields([{ name: 'Overall Family Compo', value: this.compo(allPlayers) }]);
 
-		return interaction.editReply({ embeds: [embed] });
+		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder()
+				.setLabel("Show All Clan's Compo")
+				.setStyle(ButtonStyle.Primary)
+				.setCustomId(this.client.uuid())
+				.setDisabled(true)
+		);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private compo(players: { tag: string; townHallLevel: number }[]) {

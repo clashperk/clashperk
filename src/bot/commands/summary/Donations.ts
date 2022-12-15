@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
@@ -21,7 +21,7 @@ export interface Aggregated {
 
 export default class DonationSummaryCommand extends Command {
 	public constructor() {
-		super('donation-summary', {
+		super('family-donations', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
@@ -187,7 +187,14 @@ export default class DonationSummaryCommand extends Command {
 				.setFooter({ text: `Season ${season}` })
 		];
 
-		return interaction.editReply({ embeds });
+		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder()
+				.setLabel('Show Top Donating Players')
+				.setStyle(ButtonStyle.Primary)
+				.setCustomId(this.client.uuid())
+				.setDisabled(true)
+		);
+		return interaction.editReply({ embeds, components: [row] });
 	}
 
 	private donation(num: number, space: number) {
@@ -196,5 +203,80 @@ export default class DonationSummaryCommand extends Command {
 
 	private predict(num: number) {
 		return num > 999999 ? 7 : num > 99999 ? 6 : 5;
+	}
+
+	private async playerDonations(clans: any[], seasonId: string) {
+		return this.client.db
+			.collection(Collections.PLAYER_SEASONS)
+			.aggregate<{ name: string; tag: string; donations: number; receives: number }>([
+				{
+					$match: {
+						__clans: { $in: clans.map((clan) => clan.tag) },
+						season: seasonId
+					}
+				},
+				{
+					$project: {
+						clans: {
+							$objectToArray: '$clans'
+						},
+						name: 1,
+						tag: 1
+					}
+				},
+				{
+					$unwind: {
+						path: '$clans'
+					}
+				},
+				{
+					$project: {
+						name: 1,
+						tag: 1,
+						clanTag: '$clans.v.tag',
+						clanName: '$clans.v.name',
+						donations: '$clans.v.donations.total',
+						donationsReceived: '$clans.v.donationsReceived.total'
+					}
+				},
+				{
+					$match: {
+						clanTag: {
+							$in: clans.map((clan) => clan.tag)
+						}
+					}
+				},
+				{
+					$group: {
+						_id: '$tag',
+						name: {
+							$first: '$name'
+						},
+						tag: {
+							$first: '$tag'
+						},
+						donations: {
+							$sum: '$donations'
+						},
+						receives: {
+							$sum: '$donationsReceived'
+						}
+					}
+				},
+				{
+					$sort: {
+						receives: -1
+					}
+				},
+				{
+					$sort: {
+						donations: -1
+					}
+				},
+				{
+					$limit: 100
+				}
+			])
+			.toArray();
 	}
 }

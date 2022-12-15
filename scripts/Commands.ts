@@ -895,58 +895,137 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	},
 	{
 		name: 'summary',
-		description: command.summary.description,
-		dm_permission: false,
-		description_localizations: translation('command.summary.description'),
+		description: 'Shows summary of the clan family.',
 		options: [
 			{
-				name: 'option',
-				required: true,
-				type: ApplicationCommandOptionType.String,
-				description: command.summary.options.option.description,
-				description_localizations: translation('command.summary.options.option.description'),
-				choices: [
+				name: 'compo',
+				description: 'Shows a summary of family compo.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'wars',
+				description: 'Shows a summary of current wars.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'donations',
+				description: 'Shows a summary of donations.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
 					{
-						name: 'Current Wars',
-						value: 'wars'
-					},
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			// {
+			// 	name: 'members',
+			// 	description: 'Shows information about members.',
+			// 	type: ApplicationCommandOptionType.Subcommand
+			// },
+			{
+				name: 'clans',
+				description: 'Shows a summary of family clans.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'attacks',
+				description: 'Shows a summary of attacks and defenses.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
 					{
-						name: 'Clan Games',
-						value: 'clan-games'
-					},
-					{
-						name: 'Clan Stats',
-						value: 'clans'
-					},
-					{
-						name: 'Clan Donations',
-						value: 'donations'
-					},
-					{
-						name: 'Player Donations',
-						value: 'player-donations'
-					},
-					{
-						name: 'Player Trophies',
-						value: 'trophies'
-					},
-					{
-						name: 'Player Attacks',
-						value: 'attacks'
-					},
-					{
-						name: 'Wars Missed',
-						value: 'wars-missed'
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
 					}
 				]
 			},
 			{
-				name: 'season',
-				required: false,
-				type: ApplicationCommandOptionType.String,
-				description: command.summary.options.season.description,
-				description_localizations: translation('command.summary.options.season.description'),
-				choices: getSeasonIds()
+				name: 'trophies',
+				description: 'Shows a summary of trophies.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			{
+				name: 'missed-wars',
+				description: 'Shows a summary of missed wars.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			{
+				name: 'capital-raids',
+				description: 'Shows information about capital raids.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			// {
+			// 	name: 'cwl-ranks',
+			// 	description: 'Shows information about CWL ranks.',
+			// 	type: ApplicationCommandOptionType.Subcommand
+			// },
+			{
+				name: 'activity',
+				description: 'Shows a summary of clan activities (last seen).',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			{
+				name: 'clan-games',
+				description: 'Shows a summary of clan games.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
 			}
 		]
 	},
@@ -1639,69 +1718,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
-		name: 'family',
-		description: 'Shows information about a family.',
-		options: [
-			{
-				name: 'compo',
-				description: 'Shows information about a compo.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'wars',
-				description: 'Shows information about a war.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'donations',
-				description: 'Shows information about donations.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			// {
-			// 	name: 'members',
-			// 	description: 'Shows information about members.',
-			// 	type: ApplicationCommandOptionType.Subcommand
-			// },
-			{
-				name: 'clans',
-				description: 'Shows information about clans.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'attacks',
-				description: 'Shows information about attacks.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'trophies',
-				description: 'Shows information about trophies.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			// {
-			// 	name: 'missed-wars',
-			// 	description: 'Shows information about missed wars.',
-			// 	type: ApplicationCommandOptionType.Subcommand
-			// },
-			// {
-			// 	name: 'capital-raids',
-			// 	description: 'Shows information about capital raids.',
-			// 	type: ApplicationCommandOptionType.Subcommand
-			// },
-			// {
-			// 	name: 'cwl-ranks',
-			// 	description: 'Shows information about CWL ranks.',
-			// 	type: ApplicationCommandOptionType.Subcommand
-			// },
-			{
-				name: 'clan-games',
-				description: 'Shows information about clan games.',
-				type: ApplicationCommandOptionType.Subcommand
-			}
-		]
-	},
-	{
 		name: 'sync',
-		description: 'Synchronizes the bot with the database.'
+		description: 'Sync your roles, nicknames, accounts etc.'
 	},
 	{
 		name: 'Profile',

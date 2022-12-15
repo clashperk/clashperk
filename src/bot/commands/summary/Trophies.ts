@@ -1,11 +1,10 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
-import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
-import { Season } from '../../util/index.js';
+import { Collections } from '../../util/Constants.js';
 
-export default class ClanSummaryCommand extends Command {
+export default class FamilyTrophiesCommand extends Command {
 	public constructor() {
-		super('trophy-summary', {
+		super('family-trophies', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
@@ -13,28 +12,28 @@ export default class ClanSummaryCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction, { season }: { season?: string }) {
-		if (!season) season = Season.ID;
+	public async exec(interaction: CommandInteraction) {
 		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
 
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
-		const members =
-			Season.ID === season
-				? (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag))))
-						.filter((res) => res.ok)
-						.map((clan) => clan.memberList)
-						.flat()
-				: (
-						await this.client.db
-							.collection(Collections.PLAYER_SEASONS)
-							.find({ season, __clans: { $in: clans.map((clan) => clan.tag) } })
-							.sort({ 'trophies.current': -1 })
-							.limit(100)
-							.toArray()
-				  ).map((member) => ({ name: member.name, trophies: member.trophies.current }));
+		const allClans = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
+		const members = allClans.map((clan) => clan.memberList).flat();
+		// const grouped = Object.values(
+		// 	allClans.reduce<
+		// 		Record<string, { clanPoints: number; totalTrophies: number; legends: number; clan: { name: string; tag: string } }>
+		// 	>((acc, clan) => {
+		// 		acc[clan.tag] = {
+		// 			clan: { name: clan.name, tag: clan.tag },
+		// 			clanPoints: clan.clanPoints,
+		// 			totalTrophies: clan.memberList.reduce((prev, mem) => prev + mem.trophies, 0),
+		// 			legends: clan.memberList.filter((mem) => mem.league.id === 29000022).length
+		// 		};
+		// 		return acc;
+		// 	}, {})
+		// );
 		members.sort((a, b) => b.trophies - a.trophies);
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
@@ -44,16 +43,15 @@ export default class ClanSummaryCommand extends Command {
 					'```',
 					`\u200e # TROPHY  ${'NAME'}`,
 					members
-						.slice(0, 100)
+						.slice(0, 99)
 						.map((member, index) => {
-							const trophies = `${member.trophies.toString().padStart(5, ' ') as string}`;
-							return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name as string}`;
+							const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
+							return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
 						})
 						.join('\n'),
 					'```'
 				].join('\n')
-			)
-			.setFooter({ text: `Season ${season}` });
+			);
 
 		return interaction.editReply({ embeds: [embed] });
 	}
