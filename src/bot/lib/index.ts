@@ -111,7 +111,11 @@ export class CommandHandler extends BaseHandler {
 		result: Record<string, CommandInteractionOption> = {}
 	): Record<string, CommandInteractionOption> {
 		for (const option of options) {
-			if ([ApplicationCommandOptionType.Subcommand, ApplicationCommandOptionType.SubcommandGroup].includes(option.type)) {
+			if ([ApplicationCommandOptionType.SubcommandGroup].includes(option.type)) {
+				result.subCommand = option;
+				return this.transformInteraction([...(option.options ?? [])], result);
+			}
+			if ([ApplicationCommandOptionType.Subcommand].includes(option.type)) {
 				result.command = option;
 				return this.transformInteraction([...(option.options ?? [])], result);
 			}

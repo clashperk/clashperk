@@ -1,8 +1,7 @@
+import { fileURLToPath } from 'node:url';
 import { ApplicationCommandOptionType, ApplicationCommandType, RESTPostAPIApplicationCommandsJSONBody } from 'discord-api-types/v10';
 import i18next from 'i18next';
 import moment from 'moment';
-// eslint-disable-next-line import/order
-import { fileURLToPath } from 'node:url';
 import { command } from '../locales/en.js';
 import { defaultOptions, fallbackLng } from '../locales/index.js';
 import { Backend } from '../src/bot/util/Backend.js';
@@ -934,7 +933,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'attacks',
-				description: 'Shows a summary of attacks and defenses.',
+				description: 'Shows a summary of attacks.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -994,7 +993,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			// },
 			{
 				name: 'capital-contributions',
-				description: 'Shows information about capital contributions.',
+				description: 'Shows a summary of capital contributions.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1029,7 +1028,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'clan-games',
-				description: 'Shows a summary of clan games.',
+				description: 'Shows a summary of clan games scores.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1414,6 +1413,208 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		description_localizations: translation('command.redeem.description')
 	},
 	{
+		name: 'reminders',
+		description: command.reminder.description,
+		dm_permission: false,
+		description_localizations: translation('command.reminder.description'),
+		options: [
+			{
+				name: 'clan-wars',
+				description: 'Setup a reminder for a clan wars.',
+				type: ApplicationCommandOptionType.SubcommandGroup,
+				options: [
+					{
+						name: 'create',
+						description: command.reminder.create.description,
+						description_localizations: translation('command.reminder.create.description'),
+						type: ApplicationCommandOptionType.Subcommand,
+						options: [
+							{
+								name: 'duration',
+								description: command.reminder.create.options.duration.description,
+								description_localizations: translation('command.reminder.create.options.duration.description'),
+								type: ApplicationCommandOptionType.String,
+								required: true,
+								autocomplete: true
+							},
+							{
+								name: 'message',
+								description: command.reminder.create.options.message.description,
+								description_localizations: translation('command.reminder.create.options.message.description'),
+								type: ApplicationCommandOptionType.String,
+								required: true
+							},
+							{
+								name: 'clans',
+								required: true,
+								description: command.reminder.create.options.clans.description,
+								description_localizations: translation('command.reminder.create.options.clans.description'),
+								type: ApplicationCommandOptionType.String
+							},
+							{
+								name: 'channel',
+								description: command.reminder.create.options.channel.description,
+								description_localizations: translation('command.reminder.create.options.channel.description'),
+								type: ApplicationCommandOptionType.Channel
+							}
+						]
+					},
+					{
+						name: 'list',
+						description: command.reminder.list.description,
+						description_localizations: translation('command.reminder.list.description'),
+						type: ApplicationCommandOptionType.Subcommand
+					},
+					{
+						name: 'delete',
+						description: command.reminder.delete.description,
+						description_localizations: translation('command.reminder.delete.description'),
+						type: ApplicationCommandOptionType.Subcommand,
+						options: [
+							{
+								name: 'id',
+								description: command.reminder.delete.options.id.description,
+								description_localizations: translation('command.reminder.delete.options.id.description'),
+								type: ApplicationCommandOptionType.String
+							},
+							{
+								name: 'clear',
+								description: command.reminder.delete.options.clear.description,
+								description_localizations: translation('command.reminder.delete.options.clear.description'),
+								type: ApplicationCommandOptionType.String,
+								choices: [
+									{
+										name: 'Yes',
+										name_localizations: translation('common.choices.yes'),
+										value: 'true'
+									},
+									{
+										name: 'No',
+										name_localizations: translation('common.choices.no'),
+										value: 'false'
+									}
+								]
+							}
+						]
+					},
+					{
+						name: 'now',
+						description: command.reminder.now.description,
+						description_localizations: translation('command.reminder.now.description'),
+						type: ApplicationCommandOptionType.Subcommand,
+						options: [
+							{
+								name: 'message',
+								description: command.reminder.now.options.message.description,
+								description_localizations: translation('command.reminder.now.options.message.description'),
+								type: ApplicationCommandOptionType.String,
+								required: true
+							},
+							{
+								name: 'clans',
+								required: true,
+								description: command.reminder.now.options.clans.description,
+								description_localizations: translation('command.reminder.now.options.clans.description'),
+								type: ApplicationCommandOptionType.String
+							}
+						]
+					}
+				]
+			},
+			{
+				name: 'capital-raids',
+				description: 'Setup a reminder for capital raids.',
+				type: ApplicationCommandOptionType.SubcommandGroup,
+				options: [
+					{
+						name: 'create',
+						description: 'Create a capital raid reminder.',
+						type: ApplicationCommandOptionType.Subcommand,
+						options: [
+							{
+								name: 'duration',
+								description: 'Remaining duration to mention members (e.g. 30m, 1h, 1h20m, 2d3h)',
+								type: ApplicationCommandOptionType.String,
+								required: true,
+								autocomplete: true
+							},
+							{
+								name: 'message',
+								description: 'Reminder message for the notification.',
+								type: ApplicationCommandOptionType.String,
+								required: true
+							},
+							{
+								name: 'clans',
+								required: true,
+								description: 'Clan tags or aliases. (enter * to include all clans)',
+								type: ApplicationCommandOptionType.String
+							},
+							{
+								name: 'channel',
+								description: 'Reminder message for the notification.',
+								type: ApplicationCommandOptionType.Channel
+							}
+						]
+					},
+					{
+						name: 'list',
+						description: 'List all capital raid reminders.',
+						type: ApplicationCommandOptionType.Subcommand
+					},
+					{
+						name: 'delete',
+						description: 'Delete a single reminder or clear all.',
+						type: ApplicationCommandOptionType.Subcommand,
+						options: [
+							{
+								name: 'id',
+								description: 'Reminder ID',
+								type: ApplicationCommandOptionType.String
+							},
+							{
+								name: 'clear',
+								description: 'Whether to clear all reminders.',
+								type: ApplicationCommandOptionType.String,
+								choices: [
+									{
+										name: 'Yes',
+										name_localizations: translation('common.choices.yes'),
+										value: 'true'
+									},
+									{
+										name: 'No',
+										name_localizations: translation('common.choices.no'),
+										value: 'false'
+									}
+								]
+							}
+						]
+					},
+					{
+						name: 'now',
+						description: 'Instant capital raid reminder to notify members.',
+						type: ApplicationCommandOptionType.Subcommand,
+						options: [
+							{
+								name: 'message',
+								description: 'Reminder message for the notification.',
+								type: ApplicationCommandOptionType.String,
+								required: true
+							},
+							{
+								name: 'clans',
+								required: true,
+								description: 'Clan tags or aliases. (enter * to include all clans)',
+								type: ApplicationCommandOptionType.String
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	{
 		name: 'reminder',
 		description: command.reminder.description,
 		dm_permission: false,
@@ -1470,11 +1671,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'id',
 						description: command.reminder.delete.options.id.description,
+						description_localizations: translation('command.reminder.delete.options.id.description'),
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'clear',
 						description: command.reminder.delete.options.clear.description,
+						description_localizations: translation('command.reminder.delete.options.clear.description'),
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1517,66 +1720,58 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	},
 	{
 		name: 'capital-reminder',
-		description: command.reminder.description,
+		description: 'Create, delete or list capital raid reminders.',
 		dm_permission: false,
-		description_localizations: translation('command.reminder.description'),
 		options: [
 			{
 				name: 'create',
-				description: command.reminder.create.description,
-				description_localizations: translation('command.reminder.create.description'),
+				description: 'Create a capital raid reminder.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'duration',
-						description: command.reminder.create.options.duration.description,
-						description_localizations: translation('command.reminder.create.options.duration.description'),
+						description: 'Remaining duration to mention members (e.g. 30m, 1h, 1h20m, 2d3h)',
 						type: ApplicationCommandOptionType.String,
 						required: true,
 						autocomplete: true
 					},
 					{
 						name: 'message',
-						description: command.reminder.create.options.message.description,
-						description_localizations: translation('command.reminder.create.options.message.description'),
+						description: 'Reminder message for the notification.',
 						type: ApplicationCommandOptionType.String,
 						required: true
 					},
 					{
 						name: 'clans',
 						required: true,
-						description: command.reminder.create.options.clans.description,
-						description_localizations: translation('command.reminder.create.options.clans.description'),
+						description: 'Clan tags or aliases. (enter * to include all clans)',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'channel',
-						description: command.reminder.create.options.channel.description,
-						description_localizations: translation('command.reminder.create.options.channel.description'),
+						description: 'Reminder message for the notification.',
 						type: ApplicationCommandOptionType.Channel
 					}
 				]
 			},
 			{
 				name: 'list',
-				description: command.reminder.list.description,
-				description_localizations: translation('command.reminder.list.description'),
+				description: 'List all capital raid reminders.',
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'delete',
-				description: command.reminder.delete.description,
-				description_localizations: translation('command.reminder.delete.description'),
+				description: 'Delete a single reminder or clear all.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
 						name: 'id',
-						description: command.reminder.delete.options.id.description,
+						description: 'Reminder ID',
 						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'clear',
-						description: command.reminder.delete.options.clear.description,
+						description: 'Whether to clear all reminders.',
 						type: ApplicationCommandOptionType.String,
 						choices: [
 							{
@@ -1590,6 +1785,25 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'false'
 							}
 						]
+					}
+				]
+			},
+			{
+				name: 'now',
+				description: 'Instant capital raid reminder to notify members.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'message',
+						description: 'Reminder message for the notification.',
+						type: ApplicationCommandOptionType.String,
+						required: true
+					},
+					{
+						name: 'clans',
+						required: true,
+						description: 'Clan tags or aliases. (enter * to include all clans)',
+						type: ApplicationCommandOptionType.String
 					}
 				]
 			}

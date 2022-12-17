@@ -25,7 +25,11 @@ export default class FamilyCapitalContributionCommand extends Command {
 			.collection(Collections.CAPITAL_CONTRIBUTIONS)
 			.aggregate<{ clans: { name: string; tag: string; total: number }[]; members: { name: string; tag: string; total: number }[] }>([
 				{
-					$match: { season, 'clan.tag': { $in: clans.map((clan) => clan.tag) } }
+					$match: {
+						season,
+						'createdAt': { $gt: new Date('2022-12-16T07:00') },
+						'clan.tag': { $in: clans.map((clan) => clan.tag) }
+					}
 				},
 				{
 					$addFields: {
@@ -52,6 +56,14 @@ export default class FamilyCapitalContributionCommand extends Command {
 							}
 						],
 						members: [
+							{
+								$group: {
+									_id: '$tag',
+									name: { $first: '$name' },
+									tag: { $first: 'tag' },
+									total: { $sum: '$total' }
+								}
+							},
 							{
 								$project: {
 									name: 1,

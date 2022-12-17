@@ -34,7 +34,10 @@ export default class CapitalContributionsCommand extends Command {
 			.collection(Collections.CAPITAL_CONTRIBUTIONS)
 			.aggregate<ClanCapitalGoldModel & { total: number }>([
 				{
-					$match: { 'clan.tag': clan.tag, 'tag': { $in: clan.memberList.map((clan) => clan.tag) } }
+					$match: {
+						'clan.tag': clan.tag
+						// 'tag': { $in: clan.memberList.map((clan) => clan.tag) }
+					}
 				},
 				{
 					$match: {
@@ -48,6 +51,20 @@ export default class CapitalContributionsCommand extends Command {
 					$addFields: {
 						total: {
 							$subtract: ['$current', '$initial']
+						}
+					}
+				},
+				{
+					$group: {
+						_id: '$tag',
+						name: {
+							$first: '$name'
+						},
+						tag: {
+							$first: '$tag'
+						},
+						total: {
+							$sum: '$total'
 						}
 					}
 				},
