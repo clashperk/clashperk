@@ -52,6 +52,20 @@ export default class CapitalContributionsCommand extends Command {
 					}
 				},
 				{
+					$group: {
+						_id: '$tag',
+						name: {
+							$first: '$name'
+						},
+						tag: {
+							$first: '$tag'
+						},
+						total: {
+							$sum: '$total'
+						}
+					}
+				},
+				{
 					$sort: {
 						total: -1
 					}
