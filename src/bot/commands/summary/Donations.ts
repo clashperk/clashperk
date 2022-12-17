@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
@@ -99,15 +99,6 @@ export default class DonationSummaryCommand extends Command {
 						},
 						tag: {
 							$first: '$clanTag'
-						},
-						members: {
-							$addToSet: {
-								tag: '$tag',
-								name: '$name',
-								clanTag: '$clanTag',
-								donations: '$donations',
-								donationsReceived: '$donationsReceived'
-							}
 						}
 					}
 				}
@@ -118,24 +109,7 @@ export default class DonationSummaryCommand extends Command {
 		}
 
 		aggregated.sort((a, b) => b.donations - a.donations);
-		const members = aggregated
-			.map((ag) => ag.members)
-			.flat()
-			.map((en) => ({
-				name: en.name,
-				clanTag: en.clanTag,
-				donated: en.donations,
-				received: en.donationsReceived,
-				clanIndex: aggregated.findIndex((clan) => clan.tag === en.clanTag) + 1
-			}))
-			.sort((a, b) => b.donated - a.donated)
-			.slice(0, 15);
-
-		const [mem_dp, mem_rp] = [
-			this.predict(Math.max(...members.map((m) => m.donated))),
-			this.predict(Math.max(...members.map((m) => m.received)))
-		];
-		const [clan_dp, clan_rp] = [
+		const [clanDp, clanRp] = [
 			this.predict(Math.max(...aggregated.map((m) => m.donations))),
 			this.predict(Math.max(...aggregated.map((m) => m.donationsReceived)))
 		];
@@ -143,14 +117,14 @@ export default class DonationSummaryCommand extends Command {
 		embed.setDescription(
 			[
 				'**Top Clans**',
-				`${EMOJIS.HASH} \`\u200e${'DON'.padStart(clan_dp, ' ')} ${'REC'.padStart(clan_rp, ' ')}  ${'CLAN'.padEnd(15, ' ')}\u200f\``,
+				`${EMOJIS.HASH} \`\u200e${'DON'.padStart(clanDp, ' ')} ${'REC'.padStart(clanRp, ' ')}  ${'CLAN'.padEnd(15, ' ')}\u200f\``,
 				Util.splitMessage(
 					aggregated
 						.map(
 							(clan, n) =>
-								`${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clan_dp)} ${this.donation(
+								`${BLUE_NUMBERS[++n]} \`\u200e${this.donation(clan.donations, clanDp)} ${this.donation(
 									clan.donationsReceived,
-									clan_rp
+									clanRp
 								)}  ${clan.name.padEnd(15, ' ')}\u200f\``
 						)
 						.join('\n'),
@@ -159,42 +133,40 @@ export default class DonationSummaryCommand extends Command {
 			].join('\n')
 		);
 
-		const embeds = [
-			embed,
-			new EmbedBuilder()
-				.setColor(this.client.embed(interaction))
-				.setDescription(
-					[
-						'**Top Players**',
-						`${EMOJIS.CLAN} \u200e\`${'DON'.padStart(mem_dp, ' ')} ${'REC'.padStart(mem_rp, ' ')}  ${'PLAYER'.padEnd(
-							15,
-							' '
-						)}\u200f\``,
-						Util.splitMessage(
-							members
-								.map(
-									(mem) =>
-										`${BLUE_NUMBERS[mem.clanIndex]} \`\u200e${this.donation(mem.donated, mem_dp)} ${this.donation(
-											mem.received,
-											mem_rp
-										)}  ${mem.name.padEnd(15, ' ')}\u200f\``
-								)
-								.join('\n'),
-							{ maxLength: 2000 }
-						)[0]
-					].join('\n')
-				)
-				.setFooter({ text: `Season ${season}` })
-		];
-
+		const customIds = {
+			action: this.client.uuid(),
+			reverse: this.client.uuid(),
+			inverse: this.client.uuid()
+		};
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder()
-				.setLabel('Show Top Donating Players')
-				.setStyle(ButtonStyle.Primary)
-				.setCustomId(this.client.uuid())
-				.setDisabled(true)
+			new ButtonBuilder().setLabel('Show Top Donating Players').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
 		);
-		return interaction.editReply({ embeds, components: [row] });
+		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+			time: 5 * 60 * 1000
+		});
+
+		collector.on('collect', async (action) => {
+			if (action.customId === customIds.action) {
+				await action.deferUpdate();
+				const embed = await this.playerDonations(interaction, clans, season!);
+				const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+					new ButtonBuilder().setLabel('Sort by Received').setStyle(ButtonStyle.Primary).setCustomId(customIds.reverse)
+				);
+				await action.editReply({ embeds: [embed], components: [row] });
+			}
+			if (action.customId === customIds.reverse) {
+				await action.deferUpdate();
+				const embed = await this.playerDonations(interaction, clans, season!, true);
+				await action.editReply({ embeds: [embed], components: [] });
+			}
+		});
+
+		collector.on('end', async (_, reason) => {
+			for (const id of Object.values(customIds)) this.client.components.delete(id);
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+		});
 	}
 
 	private donation(num: number, space: number) {
@@ -205,8 +177,11 @@ export default class DonationSummaryCommand extends Command {
 		return num > 999999 ? 7 : num > 99999 ? 6 : 5;
 	}
 
-	private async playerDonations(clans: any[], seasonId: string) {
-		return this.client.db
+	private async playerDonations(interaction: CommandInteraction<'cached'>, clans: any[], seasonId: string, reverse = false) {
+		const orders = reverse
+			? [{ $sort: { donations: -1 } }, { $sort: { receives: -1 } }]
+			: [{ $sort: { receives: -1 } }, { $sort: { donations: -1 } }];
+		const members = await this.client.db
 			.collection(Collections.PLAYER_SEASONS)
 			.aggregate<{ name: string; tag: string; donations: number; receives: number }>([
 				{
@@ -263,20 +238,40 @@ export default class DonationSummaryCommand extends Command {
 						}
 					}
 				},
-				{
-					$sort: {
-						receives: -1
-					}
-				},
-				{
-					$sort: {
-						donations: -1
-					}
-				},
+				...orders,
 				{
 					$limit: 100
 				}
 			])
 			.toArray();
+		const [memDp, memRp] = [
+			this.predict(Math.max(...members.map((m) => m.donations))),
+			this.predict(Math.max(...members.map((m) => m.receives)))
+		];
+		const embed = new EmbedBuilder()
+			.setColor(this.client.embed(interaction))
+			.setDescription(
+				[
+					'**Top Players**',
+					`${EMOJIS.HASH} \u200e\`${'DON'.padStart(memDp, ' ')} ${'REC'.padStart(memRp, ' ')}  ${'PLAYER'.padEnd(
+						15,
+						' '
+					)}\u200f\``,
+					Util.splitMessage(
+						members
+							.map(
+								(mem, i) =>
+									`${BLUE_NUMBERS[i + 1]} \`\u200e${this.donation(mem.donations, memDp)} ${this.donation(
+										mem.receives,
+										memRp
+									)}  ${mem.name.padEnd(15, ' ')}\u200f\``
+							)
+							.join('\n'),
+						{ maxLength: 4000 }
+					)[0]
+				].join('\n')
+			)
+			.setFooter({ text: `Season ${seasonId}` });
+		return embed;
 	}
 }

@@ -1,8 +1,8 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
 import { WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
-import { Season } from '../../util/index.js';
+import { Season, Util } from '../../util/index.js';
 
 export default class FamilyCommand extends Command {
 	public constructor() {
@@ -52,15 +52,44 @@ export default class FamilyCommand extends Command {
 				.join('\n')
 		);
 
+		const customIds = {
+			action: this.client.uuid(),
+			active: this.client.uuid()
+		};
+
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder()
-				.setLabel('Show Recently Active Members')
-				.setStyle(ButtonStyle.Primary)
-				.setCustomId(this.client.uuid())
-				.setDisabled(true)
+			new ButtonBuilder().setLabel('Show Most Active Members').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
 		);
 
-		return interaction.editReply({ embeds: [embed], components: [row] });
+		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+			time: 5 * 60 * 1000
+		});
+
+		collector.on('collect', async (action) => {
+			if (action.customId === customIds.action) {
+				const embed = new EmbedBuilder();
+				embed.setAuthor({ name: 'Avg. Activity and Avg. Active Members' });
+				const members = await this.aggregationQuery(clans);
+				embed.setDescription(
+					[
+						`**[${this.i18n('command.lastseen.title_lastseen', { lng: interaction.locale })}](https://clashperk.com/faq)**`,
+						`\`\`\`\n\u200eLAST-ON SCORE  NAME\n${members
+							.map((m) => `${this.getTime(m.lastSeen!.getTime())}  ${m.score!.toString().padStart(4, ' ')}  ${m.name}`)
+							.join('\n')}`,
+						'```'
+					].join('\n')
+				);
+
+				await action.update({ embeds: [embed], components: [] });
+			}
+		});
+
+		collector.on('end', async (_, reason) => {
+			for (const id of Object.values(customIds)) this.client.components.delete(id);
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+		});
 	}
 
 	private async getActivity(tag: string): Promise<{ avg_total: number; avg_online: number } | null> {
@@ -125,5 +154,44 @@ export default class FamilyCommand extends Command {
 				}
 			])
 			.next();
+	}
+
+	private async aggregationQuery(clans: any[]) {
+		const db = this.client.db.collection(Collections.LAST_SEEN);
+		const result = await db
+			.aggregate<{ name: string; tag: string; lastSeen?: Date; score?: number }>([
+				{
+					$match: {
+						'clan.tag': {
+							$in: clans.map((c) => c.tag)
+						}
+					}
+				},
+				{
+					$sort: {
+						[`seasons.${Season.ID}`]: -1
+					}
+				},
+				{
+					$project: {
+						tag: '$tag',
+						name: '$name',
+						lastSeen: '$lastSeen',
+						score: `$seasons.${Season.ID}`
+					}
+				},
+				{
+					$limit: 100
+				}
+			])
+			.toArray();
+
+		return result.filter((r) => r.score && r.lastSeen);
+	}
+
+	private getTime(ms: number) {
+		ms = Date.now() - ms;
+		if (!ms) return ''.padEnd(7, ' ');
+		return Util.duration(ms + 1e3).padEnd(7, ' ');
 	}
 }

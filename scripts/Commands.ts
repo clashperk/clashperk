@@ -977,9 +977,24 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					}
 				]
 			},
+			// {
+			// 	name: 'capital-raids',
+			// 	description: 'Shows information about capital raids.',
+			// 	type: ApplicationCommandOptionType.Subcommand,
+			// 	options: [
+			// 		{
+			// 			name: 'season',
+			// 			required: false,
+			// 			type: ApplicationCommandOptionType.String,
+			// 			description: command.summary.options.season.description,
+			// 			description_localizations: translation('command.summary.options.season.description'),
+			// 			choices: getSeasonIds()
+			// 		}
+			// 	]
+			// },
 			{
-				name: 'capital-raids',
-				description: 'Shows information about capital raids.',
+				name: 'capital-contributions',
+				description: 'Shows information about capital contributions.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{

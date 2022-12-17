@@ -13,8 +13,10 @@ export default class FamilyClansCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>) {
 		const clans = await this.client.storage.find(interaction.guild.id);
+		if (!clans.length) {
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+		}
 		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
-		if (!clans.length) return [];
 
 		clanList.sort((a, b) => b.members - a.members);
 		const nameLen = Math.max(...clanList.map((clan) => clan.name.length)) + 1;

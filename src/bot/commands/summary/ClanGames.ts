@@ -1,4 +1,13 @@
-import { BaseInteraction, ButtonInteraction, CommandInteraction, EmbedBuilder } from 'discord.js';
+import {
+	ActionRowBuilder,
+	BaseInteraction,
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	CommandInteraction,
+	ComponentType,
+	EmbedBuilder
+} from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { ClanGames } from '../../util/index.js';
@@ -18,31 +27,102 @@ export default class FamilyClanGamesCommand extends Command {
 		args: { tag?: string; max: boolean; filter: boolean; season?: string }
 	) {
 		const clans = await this.client.storage.find(interaction.guild.id);
-		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
+		if (!clans.length) {
+			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+		}
 		const seasonId = this.getSeasonId(args.season);
 
 		const queried = await this.query(
-			clanList.map((clan) => clan.tag),
+			clans.map((clan) => clan.tag),
 			seasonId
 		)!;
-		const embed = this.embed(interaction, {
+		const embed = this.clanScoreboard(interaction, {
 			members: queried?.members ?? [],
 			clans: queried?.clans ?? [],
 			max: args.max,
 			filter: args.filter,
 			seasonId
 		});
-		return interaction.editReply({ embeds: [embed], components: [] });
+		const customIds = {
+			action: this.client.uuid(),
+			active: this.client.uuid()
+		};
+
+		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder().setLabel('Show Top Members').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
+		);
+
+		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+			time: 5 * 60 * 1000
+		});
+
+		collector.on('collect', async (action) => {
+			if (action.customId === customIds.action) {
+				const embed = this.playerScoreboard(interaction, {
+					members: queried?.members ?? [],
+					clans: queried?.clans ?? [],
+					max: args.max,
+					filter: args.filter,
+					seasonId
+				});
+
+				await action.update({ embeds: [embed], components: [] });
+			}
+		});
+
+		collector.on('end', async (_, reason) => {
+			for (const id of Object.values(customIds)) this.client.components.delete(id);
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+		});
 	}
 
-	private embed(
+	private clanScoreboard(
+		interaction: BaseInteraction,
+		{
+			members,
+			max = false,
+			clans
+		}: {
+			members: { name: string; tag: string; points: number }[];
+			clans: { name: string; tag: string; points: number }[];
+			max?: boolean;
+			filter?: boolean;
+			seasonId: string;
+		}
+	) {
+		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
+		const embed = new EmbedBuilder()
+			.setAuthor({ name: 'Family Clan Games Scoreboard', iconURL: interaction.guild!.iconURL()! })
+			.setDescription(
+				[
+					'```',
+					` # POINTS  CLANS`,
+					clans
+						.slice(0, 99)
+						.map((c, i) => {
+							const points = this.padStart(c.points);
+							return `\u200e${(++i).toString().padStart(2, ' ')} ${points}  ${c.name}`;
+						})
+						.join('\n'),
+					'```'
+				].join('\n')
+			);
+
+		embed.setFooter({ text: `Points: ${total} [Avg: ${(total / members.length).toFixed(2)}]` });
+		embed.setTimestamp();
+
+		return embed;
+	}
+
+	private playerScoreboard(
 		interaction: BaseInteraction,
 		{
 			members,
 			max = false,
 			filter = false,
-			seasonId,
-			clans
+			seasonId
 		}: {
 			members: { name: string; tag: string; points: number }[];
 			clans: { name: string; tag: string; points: number }[];
@@ -64,17 +144,6 @@ export default class FamilyClanGamesCommand extends Command {
 						.map((m, i) => {
 							const points = this.padStart(max ? m.points : Math.min(this.MAX, m.points));
 							return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
-						})
-						.join('\n'),
-					'```',
-					'**Overall Family Scoreboard**',
-					'```',
-					` # POINTS  CLANS`,
-					clans
-						.slice(0, 99)
-						.map((c, i) => {
-							const points = this.padStart(c.points);
-							return `\u200e${(++i).toString().padStart(2, ' ')} ${points}  ${c.name}`;
 						})
 						.join('\n'),
 					'```'

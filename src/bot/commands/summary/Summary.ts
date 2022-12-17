@@ -23,12 +23,11 @@ export default class FamilyCommand extends Command {
 			'clan-games': this.handler.modules.get('family-clan-games')!,
 			'attacks': this.handler.modules.get('family-attacks')!,
 			'missed-wars': this.handler.modules.get('family-missed-wars')!,
-			'activity': this.handler.modules.get('family-activity')!
+			'activity': this.handler.modules.get('family-activity')!,
+			'capital-contributions': this.handler.modules.get('family-capital-contributions')!
 		}[args.command];
 
-		// if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
-		if (!command) return interaction.reply('This command is not available yet.');
-
+		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
 		return this.handler.continue(interaction, command);
 	}
 }

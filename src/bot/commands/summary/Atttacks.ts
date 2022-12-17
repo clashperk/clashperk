@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { Season } from '../../util/index.js';
@@ -51,24 +51,6 @@ export default class FamilyAttacksCommand extends Command {
 			}, {})
 		).sort((a, b) => b.attackWins - a.attackWins);
 
-		// const embed = new EmbedBuilder()
-		// 	.setColor(this.client.embed(interaction))
-		// 	.setAuthor({ name: `${interaction.guild!.name} Attack Wins` })
-		// 	.setDescription(
-		// 		[
-		// 			'```',
-		// 			members
-		// 				.slice(0, 100)
-		// 				.map((member, index) => {
-		// 					const attackWins = `${member.attackWins.toString().padStart(5, ' ')}`;
-		// 					return `${(index + 1).toString().padStart(2, ' ')}  ${attackWins}  \u200e${member.name}`;
-		// 				})
-		// 				.join('\n'),
-		// 			'```'
-		// 		].join('\n')
-		// 	)
-		// 	.setFooter({ text: `Season ${season}` });
-
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${interaction.guild!.name} Attack Wins` })
@@ -86,13 +68,49 @@ export default class FamilyAttacksCommand extends Command {
 				].join('\n')
 			);
 
+		const customIds = {
+			action: this.client.uuid(),
+			active: this.client.uuid()
+		};
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder()
-				.setLabel('Show Top Attackers')
-				.setStyle(ButtonStyle.Primary)
-				.setCustomId(this.client.uuid())
-				.setDisabled(true)
+			new ButtonBuilder().setLabel('Show Top Attackers').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
 		);
-		return interaction.editReply({ embeds: [embed], components: [row] });
+
+		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+			time: 5 * 60 * 1000
+		});
+
+		collector.on('collect', async (action) => {
+			if (action.customId === customIds.action) {
+				members.sort((a, b) => b.attackWins - a.attackWins);
+				const embed = new EmbedBuilder()
+					.setColor(this.client.embed(interaction))
+					.setAuthor({ name: `${interaction.guild!.name} Attack Wins` })
+					.setDescription(
+						[
+							'```',
+							' # ATTACK  PLAYER',
+							members
+								.slice(0, 99)
+								.map((member, index) => {
+									const attackWins = `${member.attackWins.toString().padStart(5, ' ')}`;
+									return `${(index + 1).toString().padStart(2, ' ')}  ${attackWins}  \u200e${member.name}`;
+								})
+								.join('\n'),
+							'```'
+						].join('\n')
+					)
+					.setFooter({ text: `Season ${season!}` });
+
+				await action.update({ embeds: [embed], components: [] });
+			}
+		});
+
+		collector.on('end', async (_, reason) => {
+			for (const id of Object.values(customIds)) this.client.components.delete(id);
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+		});
 	}
 }
