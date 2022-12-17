@@ -1516,6 +1516,86 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
+		name: 'capital-reminder',
+		description: command.reminder.description,
+		dm_permission: false,
+		description_localizations: translation('command.reminder.description'),
+		options: [
+			{
+				name: 'create',
+				description: command.reminder.create.description,
+				description_localizations: translation('command.reminder.create.description'),
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'duration',
+						description: command.reminder.create.options.duration.description,
+						description_localizations: translation('command.reminder.create.options.duration.description'),
+						type: ApplicationCommandOptionType.String,
+						required: true,
+						autocomplete: true
+					},
+					{
+						name: 'message',
+						description: command.reminder.create.options.message.description,
+						description_localizations: translation('command.reminder.create.options.message.description'),
+						type: ApplicationCommandOptionType.String,
+						required: true
+					},
+					{
+						name: 'clans',
+						required: true,
+						description: command.reminder.create.options.clans.description,
+						description_localizations: translation('command.reminder.create.options.clans.description'),
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'channel',
+						description: command.reminder.create.options.channel.description,
+						description_localizations: translation('command.reminder.create.options.channel.description'),
+						type: ApplicationCommandOptionType.Channel
+					}
+				]
+			},
+			{
+				name: 'list',
+				description: command.reminder.list.description,
+				description_localizations: translation('command.reminder.list.description'),
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'delete',
+				description: command.reminder.delete.description,
+				description_localizations: translation('command.reminder.delete.description'),
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'id',
+						description: command.reminder.delete.options.id.description,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'clear',
+						description: command.reminder.delete.options.clear.description,
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Yes',
+								name_localizations: translation('common.choices.yes'),
+								value: 'true'
+							},
+							{
+								name: 'No',
+								name_localizations: translation('common.choices.no'),
+								value: 'false'
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	{
 		name: 'stats',
 		description: command.stats.description,
 		dm_permission: false,

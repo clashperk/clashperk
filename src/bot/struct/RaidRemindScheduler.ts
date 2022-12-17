@@ -2,7 +2,6 @@ import { APIMessage, ForumChannel, NewsChannel, TextChannel, WebhookClient } fro
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { Collections } from '../util/Constants.js';
-import { ORANGE_NUMBERS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import { Client } from './Client.js';
 import { RaidSeason } from './Http.js';
@@ -180,7 +179,7 @@ export default class RaidRemindScheduler {
 			moment(data.state === 'preparation' ? data.startTime : data.endTime)
 				.toDate()
 				.getTime() - Date.now();
-		const warTiming = moment.duration(dur).format('H[h], m[m], s[s]', { trim: 'both mid' });
+		const warTiming = moment.duration(dur).format('D[d] H[h], m[m], s[s]', { trim: 'both mid' });
 
 		return [
 			`\u200e🔔 **${clan.name} (Capital raid ${prefix} ${warTiming})**`,
@@ -192,7 +191,7 @@ export default class RaidRemindScheduler {
 						.map((mem, i) => {
 							const ping = i === 0 ? ` ${mention}` : '';
 							const hits = ` (${mem.attacks}/${mem.attackLimit})`;
-							return `\u200e${ORANGE_NUMBERS[i + 1]!}${ping} ${mem.name}${hits}`;
+							return `\u200e${ping} ${mem.name}${hits}`;
 						})
 						.join('\n')
 				)

@@ -18,6 +18,7 @@ import StatsHandler from './StatsHandler.js';
 import StorageHandler from './StorageHandler.js';
 import Resolver from './Resolver.js';
 import RemindScheduler from './RemindScheduler.js';
+import RaidRemindScheduler from './RaidRemindScheduler.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -40,6 +41,7 @@ export class Client extends Discord.Client {
 	public stats!: StatsHandler;
 	public storage!: StorageHandler;
 	public remindScheduler!: RemindScheduler;
+	public raidReminder!: RaidRemindScheduler;
 	public i18n = i18n;
 
 	public redis = Redis.createClient({
@@ -122,6 +124,7 @@ export class Client extends Discord.Client {
 	private run() {
 		this.patrons.init();
 		this.rpcHandler.init();
+		this.raidReminder.init();
 		this.remindScheduler.init();
 	}
 
@@ -150,10 +153,13 @@ export class Client extends Discord.Client {
 		this.stats = new StatsHandler(this);
 		this.resolver = new Resolver(this);
 		this.remindScheduler = new RemindScheduler(this);
+		this.raidReminder = new RaidRemindScheduler(this);
 
 		await this.http.login();
 
 		this.once('ready', () => {
+			this.raidReminder.init();
+
 			if (process.env.NODE_ENV === 'production') return this.run();
 		});
 
