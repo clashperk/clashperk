@@ -68,7 +68,7 @@ export default class NickNameCommand extends Command {
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.isSelectMenu() && action.customId === customId) {
+			if (action.isStringSelectMenu() && action.customId === customId) {
 				const name = this.getName(options.find((opt) => opt.value === action.values[0])!.label, txt);
 				if (name.length > 31) {
 					await action.reply({

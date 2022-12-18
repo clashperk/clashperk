@@ -148,7 +148,7 @@ export default class CWLStarsCommand extends Command {
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === customID && action.isSelectMenu()) {
+			if (action.customId === customID && action.isStringSelectMenu()) {
 				if (action.values[0] === 'TOTAL') {
 					await action.update({ embeds: [embed] });
 				}

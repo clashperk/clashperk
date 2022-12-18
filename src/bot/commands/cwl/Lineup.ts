@@ -123,7 +123,7 @@ export default class CWLLineupCommand extends Command {
 				await action.update({ embeds, components: [buttons, menus] });
 			}
 
-			if (action.customId === CUSTOM_ID.MENU && action.isSelectMenu()) {
+			if (action.customId === CUSTOM_ID.MENU && action.isStringSelectMenu()) {
 				data = chunks.find((ch) => ch.state === action.values[0]) ?? chunks.slice(-1)[0];
 
 				await action.deferUpdate();

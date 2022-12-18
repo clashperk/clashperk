@@ -24,7 +24,7 @@ export default class ComponentHandler {
 				const command = this.client.commandHandler.modules.get('boosts')!;
 				await interaction.deferUpdate();
 				await this.client.commandHandler.exec(interaction, command, {
-					value: interaction.isSelectMenu() ? interaction.values[0] : null,
+					value: interaction.isStringSelectMenu() ? interaction.values[0] : null,
 					...parsed
 				});
 				return true;
@@ -33,8 +33,8 @@ export default class ComponentHandler {
 				const command = this.client.commandHandler.modules.get('donations')!;
 				await interaction.deferUpdate();
 				await this.client.commandHandler.exec(interaction, command, {
-					sortBy: interaction.isSelectMenu() ? interaction.values : null,
-					orderBy: interaction.isSelectMenu() ? interaction.values[0] : null,
+					sortBy: interaction.isStringSelectMenu() ? interaction.values : null,
+					orderBy: interaction.isStringSelectMenu() ? interaction.values[0] : null,
 					...parsed
 				});
 				return true;

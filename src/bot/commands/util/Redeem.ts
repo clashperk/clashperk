@@ -218,7 +218,7 @@ export default class RedeemCommand extends Command {
 				});
 			}
 
-			if (action.customId === customIds.menu && action.isSelectMenu()) {
+			if (action.customId === customIds.menu && action.isStringSelectMenu()) {
 				const id = action.values[0].trim();
 				const guild = user.guilds.find((guild) => guild.id === id);
 				if (!guild) {

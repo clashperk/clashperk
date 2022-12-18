@@ -169,7 +169,7 @@ export default class CWLRoundCommand extends Command {
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === customID && action.isSelectMenu()) {
+			if (action.customId === customID && action.isStringSelectMenu()) {
 				const round = chunks.find((ch) => ch.round === Number(action.values[0]));
 				await action.update({ embeds: [round!.embed] });
 			}

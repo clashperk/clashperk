@@ -173,27 +173,27 @@ export default class ReminderNowCommand extends Command {
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === CUSTOM_ID.WAR_TYPE && action.isSelectMenu()) {
+			if (action.customId === CUSTOM_ID.WAR_TYPE && action.isStringSelectMenu()) {
 				state.warTypes = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.REMAINING && action.isSelectMenu()) {
+			if (action.customId === CUSTOM_ID.REMAINING && action.isStringSelectMenu()) {
 				state.remaining = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.TOWN_HALLS && action.isSelectMenu()) {
+			if (action.customId === CUSTOM_ID.TOWN_HALLS && action.isStringSelectMenu()) {
 				state.townHalls = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.ROLES && action.isSelectMenu()) {
+			if (action.customId === CUSTOM_ID.ROLES && action.isStringSelectMenu()) {
 				state.roles = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.CLANS && action.isSelectMenu()) {
+			if (action.customId === CUSTOM_ID.CLANS && action.isStringSelectMenu()) {
 				state.clans = action.values;
 				await action.update({ components: mutate() });
 			}

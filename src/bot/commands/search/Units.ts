@@ -85,7 +85,7 @@ export default class UnitsCommand extends Command {
 				await action.update({ embeds: [embed], components: options.length ? [ButtonRow, MenuRow] : [ButtonRow] });
 			}
 
-			if (action.customId === CustomIds.SelectAccount && action.isSelectMenu()) {
+			if (action.customId === CustomIds.SelectAccount && action.isStringSelectMenu()) {
 				data = players.find((en) => en.tag === action.values[0])!;
 				const option = action.message.components[0].components[0].customId === CustomIds.MaxLevel;
 				const embed = this.embed(data, option).setColor(this.client.embed(interaction));

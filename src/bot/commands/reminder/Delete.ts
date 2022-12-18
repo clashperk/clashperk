@@ -154,7 +154,7 @@ export default class ReminderDeleteCommand extends Command {
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === customIds.menu && action.isSelectMenu()) {
+			if (action.customId === customIds.menu && action.isStringSelectMenu()) {
 				state.selected = action.values[0]!;
 				await action.update({ components: options(false, true, false), embeds: [embeds()] });
 			}

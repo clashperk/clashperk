@@ -215,7 +215,7 @@ export default class CWLAttacksCommand extends Command {
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === ids.menu && action.isSelectMenu()) {
+			if (action.customId === ids.menu && action.isStringSelectMenu()) {
 				const round = chunks.find((ch) => ch.round === Number(action.values[0]));
 				await action.update({ embeds: [round!.embed] });
 			}

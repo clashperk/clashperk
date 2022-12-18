@@ -78,7 +78,7 @@ export default class PlayerCommand extends Command {
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === customID && action.isSelectMenu()) {
+			if (action.customId === customID && action.isStringSelectMenu()) {
 				await action.deferUpdate();
 				const data = players.find((en) => en.tag === action.values[0])!;
 				const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
