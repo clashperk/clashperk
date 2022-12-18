@@ -23,20 +23,20 @@ const applicationGuildCommands = async (token: string, commands: typeof COMMANDS
 	console.log(`Updated ${COMMANDS.length} Guild Application Commands`);
 };
 
-const commandPermission = async (token: string) => {
+const commandPermission = async (token: string, commands: typeof COMMANDS) => {
 	const res = await fetch(`${RouteBases.api}${Routes.applicationGuildCommands(getClientId(token), guildId)}`, {
 		method: 'PUT',
 		headers: {
 			'Authorization': `Bot ${token}`,
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify(PRIVATE_COMMANDS)
+		body: JSON.stringify(commands)
 	});
 	await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(inspect(data, { depth: Infinity }))));
-	console.log(`Updated ${PRIVATE_COMMANDS.length} Guild Application Commands`);
+	console.log(`Updated ${commands.length} Guild Application Commands`);
 };
 
-const applicationCommands = async (token: string) => {
+const applicationCommands = async (token: string, commands: typeof COMMANDS) => {
 	console.log('Building Application Commands', getClientId(token));
 	const res = await fetch(`${RouteBases.api}${Routes.applicationCommands(getClientId(token))}`, {
 		method: 'PUT',
@@ -44,27 +44,28 @@ const applicationCommands = async (token: string) => {
 			'Authorization': `Bot ${token}`,
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify(COMMANDS)
+		body: JSON.stringify(commands)
 	});
 	await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(data)));
-	console.log(`Updated ${COMMANDS.length} Application Commands`);
+	console.log(`Updated ${commands.length} Application Commands`);
 };
 
 async function init() {
 	const token = process.env.BOT_TOKEN!;
 	if (process.argv.includes('--gh-action')) {
-		return applicationCommands(token);
+		return applicationCommands(token, COMMANDS);
 	}
 
 	if (process.argv.includes('--private')) {
-		return commandPermission(token);
+		return commandPermission(token, PRIVATE_COMMANDS);
 	}
 
 	if (process.argv.includes('--delete')) {
 		return applicationGuildCommands(token, []);
 	}
 
-	await applicationGuildCommands(process.env.TOKEN!, [...COMMANDS, ...PRIVATE_COMMANDS]);
+	// await applicationGuildCommands(process.env.TOKEN!, [...COMMANDS, ...PRIVATE_COMMANDS]);
+	return applicationCommands(token, [...COMMANDS, ...PRIVATE_COMMANDS]);
 }
 
 init();

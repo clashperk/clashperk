@@ -54,4 +54,4 @@ process.on('unhandledRejection', (error) => {
 	Sentry.captureException(error);
 });
 
-await client.init(process.env.TOKEN!);
+client.init(process.env.TOKEN!);

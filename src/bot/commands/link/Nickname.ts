@@ -1,4 +1,4 @@
-import { GuildMember, ActionRowBuilder, SelectMenuBuilder, CommandInteraction, ComponentType } from 'discord.js';
+import { GuildMember, ActionRowBuilder, CommandInteraction, ComponentType, StringSelectMenuBuilder } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { TOWN_HALLS } from '../../util/Emojis.js';
 
@@ -56,19 +56,19 @@ export default class NickNameCommand extends Command {
 			emoji: TOWN_HALLS[op.townHallLevel],
 			description: `${op.tag}`
 		}));
-		const customID = this.client.uuid(interaction.user.id, member.id);
-		const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-			new SelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options)
+		const customId = this.client.uuid(interaction.user.id, member.id);
+		const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder().setCustomId(customId).setPlaceholder('Select an account!').addOptions(options)
 		);
 
 		const msg = await interaction.editReply({ content: `**Setting up ${member.user.tag}\'s nickname...**`, components: [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => action.customId === customID && [member.id, interaction.user.id].includes(action.user.id),
+			filter: (action) => action.customId === customId && [member.id, interaction.user.id].includes(action.user.id),
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.isSelectMenu() && action.customId === customID) {
+			if (action.isSelectMenu() && action.customId === customId) {
 				const name = this.getName(options.find((opt) => opt.value === action.values[0])!.label, txt);
 				if (name.length > 31) {
 					await action.reply({
@@ -88,7 +88,7 @@ export default class NickNameCommand extends Command {
 		});
 
 		collector.on('end', () => {
-			this.client.components.delete(customID);
+			this.client.components.delete(customId);
 		});
 	}
 

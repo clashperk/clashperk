@@ -1,29 +1,32 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 
-export default class SummaryCommand extends Command {
+export default class FamilyCommand extends Command {
 	public constructor() {
 		super('summary', {
-			category: 'activity',
+			category: 'family',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			description: {
-				content: ['Summary of wars/clans/clan games for all clans.']
+				content: ['Summary of family clans.']
 			}
 		});
 	}
 
-	public exec(interaction: CommandInteraction, args: { option: string }) {
+	public exec(interaction: CommandInteraction, args: { command: string }) {
 		const command = {
-			'wars': this.handler.modules.get('war-summary')!,
-			'wars-missed': this.handler.modules.get('summary-wars-missed')!,
-			'clans': this.handler.modules.get('summary-clans')!,
-			'trophies': this.handler.modules.get('trophy-summary')!,
-			'donations': this.handler.modules.get('donation-summary')!,
-			'clan-games': this.handler.modules.get('summary-clan-games')!,
-			'player-donations': this.handler.modules.get('player-donation-summary')!,
-			'attacks': this.handler.modules.get('attack-summary')!
-		}[args.option];
+			'compo': this.handler.modules.get('family-compo')!,
+			'wars': this.handler.modules.get('family-wars')!,
+			'clans': this.handler.modules.get('family-clans')!,
+			'trophies': this.handler.modules.get('family-trophies')!,
+			'donations': this.handler.modules.get('family-donations')!,
+			'clan-games': this.handler.modules.get('family-clan-games')!,
+			'attacks': this.handler.modules.get('family-attacks')!,
+			'missed-wars': this.handler.modules.get('family-missed-wars')!,
+			'activity': this.handler.modules.get('family-activity')!,
+			'capital-contributions': this.handler.modules.get('family-capital-contributions')!,
+			'war-results': this.handler.modules.get('summary-war-results')!
+		}[args.command];
 
 		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
 		return this.handler.continue(interaction, command);

@@ -1,9 +1,9 @@
-import { Clan, ClanWar, ClanWarLeagueGroup, Client as ClashOfClansClient, Player } from 'clashofclans.js';
+import { ClanWar, ClanWarLeagueGroup, Client as ClashOfClansClient, Player } from 'clashofclans.js';
 import fetch from 'node-fetch';
 import moment from 'moment';
 import TimeoutSignal from 'timeout-signal';
 
-interface RaidSeason {
+export interface RaidSeason {
 	state: string;
 	startTime: string;
 	endTime: string;
@@ -79,7 +79,7 @@ export default class Http extends ClashOfClansClient {
 		return new Date(moment(ISO).toDate());
 	}
 
-	public async getRaidSeason(clan: Clan): Promise<{ items: RaidSeason[]; ok: boolean; statusCode: number }> {
+	public async getRaidSeason(clan: { tag: string }): Promise<{ items: RaidSeason[]; ok: boolean; statusCode: number }> {
 		return this.fetch(`/clans/${encodeURIComponent(clan.tag)}/capitalraidseasons?limit=1`);
 	}
 

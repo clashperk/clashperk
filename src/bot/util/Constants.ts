@@ -20,6 +20,8 @@ export const enum Collections {
 	LINKED_CHANNELS = 'LinkedChannels',
 	REMINDERS = 'Reminders',
 	SCHEDULERS = 'Schedulers',
+	RAID_REMINDERS = 'RaidReminders',
+	RAID_SCHEDULERS = 'RaidSchedulers',
 
 	PATRONS = 'Patrons',
 	SETTINGS = 'Settings',
@@ -65,6 +67,7 @@ export const enum Flags {
 }
 
 export const enum Settings {
+	BOT_ADMIN_ROLE = 'botAdminRole',
 	PREFIX = 'prefix',
 	COLOR = 'color',
 	CLAN_LIMIT = 'clanLimit',

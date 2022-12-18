@@ -12,7 +12,7 @@ class Manager extends Discord.ShardingManager {
 	}
 
 	public async init() {
-		return this.spawn({ timeout: 60000 });
+		return this.spawn();
 	}
 }
 
@@ -22,4 +22,4 @@ process.on('unhandledRejection', (error) => {
 	console.error(error);
 });
 
-await ShardingManager.init();
+ShardingManager.init();

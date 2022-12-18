@@ -260,7 +260,35 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
+			db.collection(Collections.RAID_REMINDERS).createIndexes([
+				{
+					key: { guild: 1 }
+				},
+				{
+					key: { clans: 1 }
+				}
+			]),
+
 			db.collection(Collections.SCHEDULERS).createIndexes([
+				{
+					key: { key: 1 }
+				},
+				{
+					key: { tag: 1 }
+				},
+				{
+					key: { guild: 1 }
+				},
+				{
+					key: { reminderId: 1 }
+				},
+				{
+					key: { timestamp: 1 },
+					expireAfterSeconds: 60 * 60 * 24
+				}
+			]),
+
+			db.collection(Collections.RAID_SCHEDULERS).createIndexes([
 				{
 					key: { key: 1 }
 				},
