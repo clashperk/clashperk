@@ -902,6 +902,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
+				name: 'war-results',
+				description: 'Shows a summary of war results.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			{
 				name: 'wars',
 				description: 'Shows a summary of current wars.',
 				type: ApplicationCommandOptionType.Subcommand
@@ -949,17 +964,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'trophies',
 				description: 'Shows a summary of trophies.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					}
-				]
+				type: ApplicationCommandOptionType.Subcommand
+				// options: [
+				// 	{
+				// 		name: 'season',
+				// 		required: false,
+				// 		type: ApplicationCommandOptionType.String,
+				// 		description: command.summary.options.season.description,
+				// 		description_localizations: translation('command.summary.options.season.description'),
+				// 		choices: getSeasonIds()
+				// 	}
+				// ]
 			},
 			{
 				name: 'missed-wars',
@@ -1014,17 +1029,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'activity',
 				description: 'Shows a summary of clan activities (last seen).',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					}
-				]
+				type: ApplicationCommandOptionType.Subcommand
+				// options: [
+				// 	{
+				// 		name: 'season',
+				// 		required: false,
+				// 		type: ApplicationCommandOptionType.String,
+				// 		description: command.summary.options.season.description,
+				// 		description_localizations: translation('command.summary.options.season.description'),
+				// 		choices: getSeasonIds()
+				// 	}
+				// ]
 			},
 			{
 				name: 'clan-games',
@@ -1536,7 +1551,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								description: 'Remaining duration to mention members (e.g. 30m, 1h, 1h20m, 2d3h)',
 								type: ApplicationCommandOptionType.String,
 								required: true,
-								autocomplete: true
+								autocomplete: false
 							},
 							{
 								name: 'message',
@@ -1733,7 +1748,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: 'Remaining duration to mention members (e.g. 30m, 1h, 1h20m, 2d3h)',
 						type: ApplicationCommandOptionType.String,
 						required: true,
-						autocomplete: true
+						autocomplete: false
 					},
 					{
 						name: 'message',

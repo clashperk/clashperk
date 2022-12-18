@@ -4,6 +4,7 @@ import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
 import { Season, Util } from '../../util/index.js';
 
+// TODO: Per season activity
 export default class FamilyCommand extends Command {
 	public constructor() {
 		super('family-activity', {
@@ -71,7 +72,7 @@ export default class FamilyCommand extends Command {
 			if (action.customId === customIds.action) {
 				const embed = new EmbedBuilder();
 				embed.setAuthor({ name: 'Avg. Activity and Avg. Active Members' });
-				const members = await this.aggregationQuery(clans);
+				const members = await this.aggregationQuery(clans, season!);
 				embed.setDescription(
 					[
 						`**[${this.i18n('command.lastseen.title_lastseen', { lng: interaction.locale })}](https://clashperk.com/faq)**`,
@@ -156,7 +157,7 @@ export default class FamilyCommand extends Command {
 			.next();
 	}
 
-	private async aggregationQuery(clans: any[]) {
+	private async aggregationQuery(clans: any[], season: string) {
 		const db = this.client.db.collection(Collections.LAST_SEEN);
 		const result = await db
 			.aggregate<{ name: string; tag: string; lastSeen?: Date; score?: number }>([
@@ -169,7 +170,7 @@ export default class FamilyCommand extends Command {
 				},
 				{
 					$sort: {
-						[`seasons.${Season.ID}`]: -1
+						[`seasons.${season}`]: -1
 					}
 				},
 				{

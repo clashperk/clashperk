@@ -27,10 +27,7 @@ export default class FamilyAttacksCommand extends Command {
 		for (const clan of allClans) {
 			const players = await this.client.db
 				.collection<{ name: string; tag: string; attackWins: number }>(Collections.PLAYER_SEASONS)
-				.find(
-					{ season: Season.ID, tag: { $in: clan.memberList.map((mem) => mem.tag) } },
-					{ projection: { tag: 1, attackWins: 1, name: 1 } }
-				)
+				.find({ season, tag: { $in: clan.memberList.map((mem) => mem.tag) } }, { projection: { tag: 1, attackWins: 1, name: 1 } })
 				.toArray();
 
 			members.push(...players.map((spread) => ({ ...spread, clan: { name: clan.name, tag: clan.tag } })));

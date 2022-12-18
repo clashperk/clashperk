@@ -81,9 +81,8 @@ export default class FamilyClanGamesCommand extends Command {
 	private clanScoreboard(
 		interaction: BaseInteraction,
 		{
-			members,
-			max = false,
-			clans
+			clans,
+			seasonId
 		}: {
 			members: { name: string; tag: string; points: number }[];
 			clans: { name: string; tag: string; points: number }[];
@@ -92,9 +91,8 @@ export default class FamilyClanGamesCommand extends Command {
 			seasonId: string;
 		}
 	) {
-		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
 		const embed = new EmbedBuilder()
-			.setAuthor({ name: 'Family Clan Games Scoreboard', iconURL: interaction.guild!.iconURL()! })
+			.setAuthor({ name: `Family Clan Games Scoreboard`, iconURL: interaction.guild!.iconURL()! })
 			.setDescription(
 				[
 					'```',
@@ -110,8 +108,7 @@ export default class FamilyClanGamesCommand extends Command {
 				].join('\n')
 			);
 
-		embed.setFooter({ text: `Points: ${total} [Avg: ${(total / members.length).toFixed(2)}]` });
-		embed.setTimestamp();
+		embed.setFooter({ text: `Season ${seasonId}` });
 
 		return embed;
 	}
@@ -217,7 +214,9 @@ export default class FamilyClanGamesCommand extends Command {
 									$first: '$clan.tag'
 								},
 								points: {
-									$sum: '$points'
+									$sum: {
+										$min: ['$points', this.MAX]
+									}
 								}
 							}
 						},
@@ -229,12 +228,12 @@ export default class FamilyClanGamesCommand extends Command {
 					],
 					members: [
 						{
-							$limit: 100
-						},
-						{
 							$sort: {
 								points: -1
 							}
+						},
+						{
+							$limit: 100
 						}
 					]
 				}

@@ -124,21 +124,13 @@ export default class CapitalReminderDeleteCommand extends Command {
 			} else {
 				embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => roles[role]).join(', ') }]);
 			}
-			// if (reminder.townHalls.length === MAX_TOWNHALL_LEVEL - 1) {
-			// 	embed.addFields([{ name: 'Town Halls', value: 'Any' }]);
-			// } else {
-			// 	embed.addFields([{ name: 'Town Halls', value: reminder.townHalls.join(', ') }]);
-			// }
-			if (reminder.remaining.length === 2) {
+
+			if (reminder.remaining.length === 6) {
 				embed.addFields([{ name: 'Remaining Hits', value: 'Any' }]);
 			} else {
 				embed.addFields([{ name: 'Remaining Hits', value: reminder.remaining.join(', ') }]);
 			}
-			// if (reminder.warTypes.length === 3) {
-			// 	embed.addFields([{ name: 'War Types', value: 'Any' }]);
-			// } else {
-			// 	embed.addFields([{ name: 'War Types', value: reminder.warTypes.join(', ').toUpperCase() }]);
-			// }
+
 			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
 			if (_clans.length) embed.addFields([{ name: 'Clans', value: _clans.join(', ').substring(0, 1024) }]);
 			else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').substring(0, 1024) }]);

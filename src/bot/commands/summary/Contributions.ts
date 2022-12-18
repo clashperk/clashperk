@@ -27,7 +27,6 @@ export default class FamilyCapitalContributionCommand extends Command {
 				{
 					$match: {
 						season,
-						'createdAt': { $gt: new Date('2022-12-16T07:00') },
 						'clan.tag': { $in: clans.map((clan) => clan.tag) }
 					}
 				},
@@ -91,7 +90,7 @@ export default class FamilyCapitalContributionCommand extends Command {
 
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
-		embed.setAuthor({ name: `${interaction.guild!.name} Capital contribution` });
+		embed.setAuthor({ name: `${interaction.guild!.name} Capital Contributions` });
 		embed.setDescription(
 			[
 				'```',
@@ -104,6 +103,7 @@ export default class FamilyCapitalContributionCommand extends Command {
 				'```'
 			].join('\n')
 		);
+		embed.setFooter({ text: `Season ${season}` });
 
 		const customIds = {
 			action: this.client.uuid(),

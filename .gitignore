@@ -7,3 +7,4 @@ bot.ts
 auth.js
 .vs/
 .idea/
+test/

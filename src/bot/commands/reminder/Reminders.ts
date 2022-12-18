@@ -17,7 +17,8 @@ export default class ReminderCommand extends Command {
 			const command = {
 				create: this.handler.modules.get('capital-reminder-create')!,
 				delete: this.handler.modules.get('capital-reminder-delete')!,
-				list: this.handler.modules.get('capital-reminder-list')!
+				list: this.handler.modules.get('capital-reminder-list')!,
+				now: this.handler.modules.get('capital-reminder-now')!
 			}[args.command];
 
 			if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));

@@ -65,7 +65,7 @@ export default class RaidRemindScheduler {
 		setInterval(this._refresh.bind(this), this.refreshRate);
 	}
 
-	private async getRaidSeason(tag: string) {
+	public async getRaidSeason(tag: string) {
 		const res = await this.client.http.getRaidSeason({ tag });
 		if (!res.ok || !res.items.length) return null;
 		if (!res.items[0].members) return null;
@@ -84,6 +84,7 @@ export default class RaidRemindScheduler {
 			if (!clan.ok) continue;
 			const rand = Math.random();
 			const endTime = moment(data.endTime).toDate();
+			console.log(endTime);
 
 			const ms = endTime.getTime() - reminder.duration;
 			if (Date.now() > new Date(ms).getTime()) continue;
