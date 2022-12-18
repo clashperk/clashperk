@@ -84,7 +84,6 @@ export default class RaidRemindScheduler {
 			if (!clan.ok) continue;
 			const rand = Math.random();
 			const endTime = moment(data.endTime).toDate();
-			console.log(endTime);
 
 			const ms = endTime.getTime() - reminder.duration;
 			if (Date.now() > new Date(ms).getTime()) continue;
@@ -135,16 +134,27 @@ export default class RaidRemindScheduler {
 		data: Required<RaidSeason>
 	) {
 		const clan = await this.client.http.clan(schedule.tag);
-		const clanMembers = reminder.roles.length === 4 ? [] : clan.memberList;
+		const clanMembers = clan.memberList.map((m) => {
+			const member = data.members.find((mem) => mem.tag === m.tag);
+			if (member) return { ...member, role: m.role };
+			return {
+				tag: m.tag,
+				name: m.name,
+				role: m.role,
+				attacks: 0,
+				attackLimit: 5,
+				bonusAttackLimit: 0,
+				capitalResourcesLooted: 0
+			};
+		});
 
-		const members = data.members
+		const members = clanMembers
 			.filter((mem) => {
 				return reminder.remaining.includes(mem.attackLimit + mem.bonusAttackLimit - mem.attacks);
 			})
 			.filter((mem) => {
 				if (reminder.roles.length === 4) return true;
-				const clanMember = clanMembers.find((m) => m.tag === mem.tag);
-				return clanMember && reminder.roles.includes(clanMember.role);
+				return reminder.roles.includes(mem.role);
 			});
 		if (!members.length) return null;
 
