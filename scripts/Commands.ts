@@ -2041,10 +2041,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			}
 		]
 	},
-	{
-		name: 'sync',
-		description: 'Sync your roles, nicknames, accounts etc.'
-	},
+	// {
+	// 	name: 'sync',
+	// 	description: 'Sync your roles, nicknames, accounts etc.'
+	// },
 	{
 		name: 'Profile',
 		type: ApplicationCommandType.User,
@@ -2058,6 +2058,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 ];
 
 export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
+	{
+		name: 'sync',
+		description: 'Sync your roles, nicknames, accounts etc.'
+	},
 	{
 		name: 'status',
 		description: "Shows information about the bot's status.",
