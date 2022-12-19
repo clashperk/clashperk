@@ -259,8 +259,12 @@ export class CommandHandler extends BaseHandler {
 
 		if (command.userPermissions?.length) {
 			const missing = interaction.channel?.permissionsFor(interaction.user)?.missing(command.userPermissions);
-			const hasRole = command.permissionOverwrites(interaction);
-			if (missing?.length && !hasRole) {
+			// const missingRole = command.permissionOverwrites(interaction);
+			// if (missingRole) {
+			// 	this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.USER, ['ManageGuild']);
+			// 	return true;
+			// }
+			if (missing?.length) {
 				this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.USER, missing);
 				return true;
 			}
@@ -390,7 +394,7 @@ export class Command implements CommandOptions {
 
 	public permissionOverwrites(interaction: BaseInteraction): boolean;
 	public permissionOverwrites(): boolean {
-		return true;
+		return false;
 	}
 
 	public condition(interaction: BaseInteraction): { embeds: EmbedBuilder[] } | null;

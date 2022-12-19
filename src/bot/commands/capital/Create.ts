@@ -86,16 +86,15 @@ export default class ReminderCreateCommand extends Command {
 			return interaction.editReply(this.i18n('command.reminder.create.max_limit', { lng: interaction.locale }));
 		}
 		if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
-			return interaction.editReply(this.i18n('command.reminder.create.invalid_duration_format', { lng: interaction.locale }));
+			return interaction.editReply('The duration must be in a valid format. e.g. 30m 2h, 1h30m, 1d, 2d1h');
 		}
 
-		const dur = args.duration.match(/\d+?\.?\d+?[hm]|\d[hm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
+		const dur = args.duration.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
 		if (!args.message) return interaction.editReply(this.i18n('command.reminder.create.no_message', { lng: interaction.locale }));
 
-		if (dur < 15 * 60 * 1000)
-			return interaction.editReply(this.i18n('command.reminder.create.duration_limit', { lng: interaction.locale }));
+		if (dur < 15 * 60 * 1000) return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
 		if (dur > 3 * 24 * 60 * 60 * 1000)
-			return interaction.editReply(this.i18n('command.reminder.create.duration_limit', { lng: interaction.locale }));
+			return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
 		// if (dur % (15 * 60 * 1000) !== 0) {
 		// 	return interaction.editReply(this.i18n('command.reminder.create.duration_order', { lng: interaction.locale }));
 		// }

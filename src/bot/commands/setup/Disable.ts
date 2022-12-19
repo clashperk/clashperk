@@ -1,7 +1,7 @@
 import { CommandInteraction, TextChannel } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Args, Command } from '../../lib/index.js';
-import { Flags, Collections } from '../../util/Constants.js';
+import { Flags, Collections, Settings } from '../../util/Constants.js';
 
 const names: Record<string, string> = {
 	[Flags.DONATION_LOG]: 'Donation Log',
@@ -23,6 +23,12 @@ export default class SetupDisableCommand extends Command {
 			defer: true,
 			ephemeral: true
 		});
+	}
+
+	public permissionOverwrites(interaction: CommandInteraction<'cached'>) {
+		const roleId = this.client.settings.get<string>(interaction.guildId, Settings.BOT_ADMIN_ROLE);
+		console.log(interaction.guildId, Settings.BOT_ADMIN_ROLE, roleId, interaction.member.roles.cache.has(roleId));
+		return !interaction.member.roles.cache.has(roleId);
 	}
 
 	public args(interaction: CommandInteraction<'cached'>): Args {

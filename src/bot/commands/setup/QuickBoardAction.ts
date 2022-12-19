@@ -29,7 +29,7 @@ export default class QuickBoardActionCommand extends Command {
 
 	public permissionOverwrites(interaction: CommandInteraction<'cached'>) {
 		const roleId = this.client.settings.get<string>(interaction.guildId, Settings.BOT_ADMIN_ROLE);
-		return interaction.member.roles.cache.has(roleId);
+		return !interaction.member.roles.cache.has(roleId);
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>) {
