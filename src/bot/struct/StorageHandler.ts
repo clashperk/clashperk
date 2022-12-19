@@ -456,6 +456,7 @@ export default class StorageHandler {
 			name: this.client.user!.username,
 			avatar: this.client.user!.displayAvatarURL({ extension: 'png', size: 2048 })
 		});
+		this.client.logger.debug(`Created webhook for ${channel.guild.name}#${channel.name}`, { label: 'HOOK' });
 		return webhook;
 	}
 
