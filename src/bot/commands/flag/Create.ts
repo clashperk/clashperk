@@ -21,10 +21,10 @@ export default class FlagCreateCommand extends Command {
 
 		const flags = await this.client.db.collection(Collections.FLAGS).countDocuments({ guild: interaction.guild.id });
 
-		if (flags >= 200 && !this.client.patrons.get(interaction.guild.id)) {
+		if (flags >= 1000 && !this.client.patrons.get(interaction.guild.id)) {
 			const embed = new EmbedBuilder().setDescription(
 				[
-					'You can only flag 200 players per guild!',
+					'You can only flag 1000 players per guild!',
 					'',
 					'**Want more than that?**',
 					'Please consider supporting us on patreon!',
