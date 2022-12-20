@@ -1,5 +1,5 @@
 import { ClanWar, ClanWarLeagueGroup, ClanWarMember } from 'clashofclans.js';
-import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder, ComponentType } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, ComponentType } from 'discord.js';
 import moment from 'moment';
 import { EMOJIS, TOWN_HALLS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -157,11 +157,11 @@ export default class CWLRoundCommand extends Command {
 
 		const options = chunks.map((ch) => ({ label: `Round #${ch.round}`, value: ch.round.toString() }));
 		const customID = this.client.uuid(interaction.user.id);
-		const menu = new SelectMenuBuilder().addOptions(options).setCustomId(customID).setPlaceholder('Select a round!');
+		const menu = new StringSelectMenuBuilder().addOptions(options).setCustomId(customID).setPlaceholder('Select a round!');
 
 		const msg = await interaction.editReply({
 			embeds: [round.embed],
-			components: [new ActionRowBuilder<SelectMenuBuilder>({ components: [menu] })]
+			components: [new ActionRowBuilder<StringSelectMenuBuilder>({ components: [menu] })]
 		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,

@@ -2,7 +2,7 @@ import {
 	CommandInteraction,
 	ActionRowBuilder,
 	ButtonBuilder,
-	SelectMenuBuilder,
+	StringSelectMenuBuilder,
 	TextChannel,
 	ButtonStyle,
 	PermissionsString,
@@ -118,8 +118,8 @@ export default class ReminderCreateCommand extends Command {
 		};
 
 		const mutate = (disable = false) => {
-			const row0 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-				new SelectMenuBuilder()
+			const row0 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+				new StringSelectMenuBuilder()
 					.setPlaceholder('Select War Types')
 					.setMaxValues(3)
 					.setCustomId(CUSTOM_ID.WAR_TYPE)
@@ -143,8 +143,8 @@ export default class ReminderCreateCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row1 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-				new SelectMenuBuilder()
+			const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Attacks Remaining')
 					.setMaxValues(2)
 					.setCustomId(CUSTOM_ID.REMAINING)
@@ -164,8 +164,8 @@ export default class ReminderCreateCommand extends Command {
 					])
 					.setDisabled(disable)
 			);
-			const row2 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-				new SelectMenuBuilder()
+			const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Town Halls')
 					.setCustomId(CUSTOM_ID.TOWN_HALLS)
 					.setMaxValues(MAX_TOWNHALL_LEVEL - 1)
@@ -185,8 +185,8 @@ export default class ReminderCreateCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row3 = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-				new SelectMenuBuilder()
+			const row3 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Clan Roles')
 					.setCustomId(CUSTOM_ID.ROLES)
 					.setMaxValues(4)

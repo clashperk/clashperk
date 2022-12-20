@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder, ComponentType } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, ComponentType } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { BUILDER_TROOPS, EMOJIS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
@@ -38,9 +38,9 @@ export default class UpgradesCommand extends Command {
 		}));
 
 		const customID = this.client.uuid(interaction.user.id);
-		const menu = new SelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
+		const menu = new StringSelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
 
-		await interaction.editReply({ components: [new ActionRowBuilder<SelectMenuBuilder>().addComponents(menu)] });
+		await interaction.editReply({ components: [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu)] });
 
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => [customID].includes(action.customId) && action.user.id === interaction.user.id,

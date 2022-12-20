@@ -4,7 +4,7 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	EmbedBuilder,
-	SelectMenuBuilder,
+	StringSelectMenuBuilder,
 	ButtonStyle,
 	ComponentType
 } from 'discord.js';
@@ -51,8 +51,8 @@ export default class UnitsCommand extends Command {
 			value: op.tag,
 			emoji: TOWN_HALLS[op.townHallLevel]
 		}));
-		const MenuRow = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-			new SelectMenuBuilder().setCustomId(CustomIds.SelectAccount).setPlaceholder('Select an account!').addOptions(options)
+		const MenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder().setCustomId(CustomIds.SelectAccount).setPlaceholder('Select an account!').addOptions(options)
 		);
 		await interaction.editReply({ components: options.length ? [ButtonRow, MenuRow] : [ButtonRow] });
 

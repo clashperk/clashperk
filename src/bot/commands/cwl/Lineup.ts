@@ -3,7 +3,7 @@ import {
 	CommandInteraction,
 	ButtonBuilder,
 	ActionRowBuilder,
-	SelectMenuBuilder,
+	StringSelectMenuBuilder,
 	ButtonStyle,
 	ComponentType
 } from 'discord.js';
@@ -87,8 +87,8 @@ export default class CWLLineupCommand extends Command {
 				new ButtonBuilder().setCustomId(CUSTOM_ID.COMPARE).setLabel('Compare').setStyle(ButtonStyle.Secondary).setDisabled(true)
 			);
 
-		const menus = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-			new SelectMenuBuilder()
+		const menus = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder()
 				.setCustomId(CUSTOM_ID.MENU)
 				.setPlaceholder('Select War')
 				.addOptions([

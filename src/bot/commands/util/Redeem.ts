@@ -3,7 +3,7 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	EmbedBuilder,
-	SelectMenuBuilder,
+	StringSelectMenuBuilder,
 	ButtonStyle,
 	WebhookEditMessageOptions,
 	ComponentType
@@ -197,8 +197,8 @@ export default class RedeemCommand extends Command {
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setStyle(ButtonStyle.Secondary).setCustomId(customIds.button).setLabel('Manage Servers')
 		);
-		const menus = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-			new SelectMenuBuilder()
+		const menus = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder()
 				.setPlaceholder('Select one to disable subscription.')
 				.setCustomId(customIds.menu)
 				.addOptions(user.guilds.map((guild) => ({ label: guild.name, value: guild.id, description: guild.id })))

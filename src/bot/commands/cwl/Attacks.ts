@@ -1,7 +1,7 @@
 import {
 	EmbedBuilder,
 	CommandInteraction,
-	SelectMenuBuilder,
+	StringSelectMenuBuilder,
 	ActionRowBuilder,
 	ButtonBuilder,
 	escapeInlineCode,
@@ -192,7 +192,7 @@ export default class CWLAttacksCommand extends Command {
 			button: this.client.uuid(interaction.user.id)
 		};
 
-		const menu = new SelectMenuBuilder().addOptions(options).setCustomId(ids.menu).setPlaceholder('Select a round!');
+		const menu = new StringSelectMenuBuilder().addOptions(options).setCustomId(ids.menu).setPlaceholder('Select a round!');
 
 		const button = new ButtonBuilder()
 			.setStyle(ButtonStyle.Secondary)
@@ -201,7 +201,7 @@ export default class CWLAttacksCommand extends Command {
 			.setDisabled(!Object.keys(missed).length);
 
 		const rows = [
-			new ActionRowBuilder<SelectMenuBuilder>().addComponents(menu),
+			new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu),
 			new ActionRowBuilder<ButtonBuilder>().addComponents(button)
 		];
 

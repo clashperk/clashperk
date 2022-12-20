@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, SelectMenuBuilder, ActionRowBuilder, escapeMarkdown, ComponentType } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, escapeMarkdown, ComponentType } from 'discord.js';
 import { Player, WarClan } from 'clashofclans.js';
 import ms from 'ms';
 import { EMOJIS, TOWN_HALLS, HEROES, SIEGE_MACHINES } from '../../util/Emojis.js';
@@ -69,9 +69,9 @@ export default class PlayerCommand extends Command {
 		}));
 
 		const customID = this.client.uuid(interaction.user.id);
-		const menu = new SelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
+		const menu = new StringSelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
 
-		await interaction.editReply({ components: [new ActionRowBuilder<SelectMenuBuilder>({ components: [menu] })] });
+		await interaction.editReply({ components: [new ActionRowBuilder<StringSelectMenuBuilder>({ components: [menu] })] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => [customID].includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000

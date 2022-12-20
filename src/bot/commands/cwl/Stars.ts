@@ -1,4 +1,4 @@
-import { CommandInteraction, ActionRowBuilder, EmbedBuilder, SelectMenuBuilder, ComponentType } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, EmbedBuilder, StringSelectMenuBuilder, ComponentType } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
@@ -123,7 +123,7 @@ export default class CWLStarsCommand extends Command {
 			);
 
 		const customID = this.client.uuid(interaction.user.id);
-		const menu = new SelectMenuBuilder()
+		const menu = new StringSelectMenuBuilder()
 			.setCustomId(customID)
 			.setPlaceholder('Select a filter!')
 			.addOptions([
@@ -140,7 +140,7 @@ export default class CWLStarsCommand extends Command {
 			]);
 		const msg = await interaction.editReply({
 			embeds: [embed],
-			components: [new ActionRowBuilder<SelectMenuBuilder>({ components: [menu] })]
+			components: [new ActionRowBuilder<StringSelectMenuBuilder>({ components: [menu] })]
 		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,

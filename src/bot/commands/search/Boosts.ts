@@ -1,4 +1,4 @@
-import { CommandInteraction, ButtonBuilder, ActionRowBuilder, SelectMenuBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
+import { CommandInteraction, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { EMOJIS, SUPER_TROOPS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -126,8 +126,8 @@ export default class BoostsCommand extends Command {
 					.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, recent: true }))
 			);
 
-		const menus = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-			new SelectMenuBuilder()
+		const menus = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder()
 				.setPlaceholder('Select a Super Troop')
 				.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, recent: Boolean(args.recent), menu: true }))
 				.addOptions(Object.entries(SUPER_TROOPS).map(([key, value]) => ({ label: key, value: key, emoji: value })))

@@ -4,7 +4,7 @@ import {
 	ButtonBuilder,
 	EmbedBuilder,
 	ButtonStyle,
-	SelectMenuBuilder,
+	StringSelectMenuBuilder,
 	ComponentType
 } from 'discord.js';
 import { Collections } from '../../util/Constants.js';
@@ -195,8 +195,8 @@ export default class DonationsCommand extends Command {
 				.setDisabled(!isSameSeason)
 		);
 
-		const sortingRow = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-			new SelectMenuBuilder()
+		const sortingRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder()
 				.setCustomId(customId.sort)
 				.setPlaceholder('Sort by')
 				.setMaxValues(2)
@@ -228,8 +228,8 @@ export default class DonationsCommand extends Command {
 				])
 		);
 
-		const orderingRow = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-			new SelectMenuBuilder()
+		const orderingRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder()
 				.setCustomId(customId.order)
 				.setPlaceholder('Order by')
 				.addOptions([

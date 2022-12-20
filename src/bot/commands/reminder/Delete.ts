@@ -3,7 +3,7 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	EmbedBuilder,
-	SelectMenuBuilder,
+	StringSelectMenuBuilder,
 	ButtonStyle,
 	ComponentType
 } from 'discord.js';
@@ -75,8 +75,8 @@ export default class ReminderDeleteCommand extends Command {
 		};
 
 		const options = (men = false, view = false, del = false) => {
-			const menu = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-				new SelectMenuBuilder()
+			const menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+				new StringSelectMenuBuilder()
 					.setCustomId(customIds.menu)
 					.setPlaceholder('Select a reminder!')
 					.addOptions(
