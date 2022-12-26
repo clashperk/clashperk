@@ -11,7 +11,7 @@ import {
 } from 'discord.js';
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
-import { Collections, MAX_TOWNHALL_LEVEL, missingPermissions } from '../../util/Constants.js';
+import { Collections, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { RaidReminder } from '../../struct/RaidRemindScheduler.js';
 
@@ -105,16 +105,13 @@ export default class ReminderCreateCommand extends Command {
 			REMAINING: this.client.uuid(interaction.user.id),
 			CLANS: this.client.uuid(interaction.user.id),
 			SAVE: this.client.uuid(interaction.user.id),
-			WAR_TYPE: this.client.uuid(interaction.user.id)
+			MEMBER_TYPE: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
 			remaining: ['1', '2', '3', '4', '5', '6'],
-			townHalls: Array(MAX_TOWNHALL_LEVEL - 1)
-				.fill(0)
-				.map((_, i) => (i + 2).toString()),
+			allMembers: true,
 			roles: ['leader', 'coLeader', 'admin', 'member'],
-			warTypes: ['cwl', 'normal', 'friendly'],
 			clans: clans.map((clan) => clan.tag)
 		};
 
@@ -128,11 +125,33 @@ export default class ReminderCreateCommand extends Command {
 						Array(6)
 							.fill(0)
 							.map((_, i) => ({
-								label: `${i + 1} Remaining`,
+								label: `${i + 1} Remaining${i === 5 ? ` (if eligible)` : ''}`,
 								value: (i + 1).toString(),
 								default: state.remaining.includes((i + 1).toString())
 							}))
 					)
+					.setDisabled(disable)
+			);
+
+			const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+				new StringSelectMenuBuilder()
+					.setPlaceholder('Select Min. Attacks Done')
+					.setMaxValues(1)
+					.setCustomId(CUSTOM_ID.MEMBER_TYPE)
+					.setOptions([
+						{
+							label: 'All Members',
+							value: 'allMembers',
+							description: 'With a minimum of 0 attacks done.',
+							default: state.allMembers
+						},
+						{
+							label: 'Only Participants',
+							value: 'onlyParticipants',
+							description: 'With a minimum of 1 attack done.',
+							default: !state.allMembers
+						}
+					])
 					.setDisabled(disable)
 			);
 
@@ -170,7 +189,7 @@ export default class ReminderCreateCommand extends Command {
 				new ButtonBuilder().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
 			);
 
-			return [row1, row3, row4];
+			return [row1, row2, row3, row4];
 		};
 
 		const msg = await interaction.editReply({
@@ -183,23 +202,18 @@ export default class ReminderCreateCommand extends Command {
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === CUSTOM_ID.WAR_TYPE && action.isStringSelectMenu()) {
-				state.warTypes = action.values;
-				await action.update({ components: mutate() });
-			}
-
 			if (action.customId === CUSTOM_ID.REMAINING && action.isStringSelectMenu()) {
 				state.remaining = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.TOWN_HALLS && action.isStringSelectMenu()) {
-				state.townHalls = action.values;
+			if (action.customId === CUSTOM_ID.ROLES && action.isStringSelectMenu()) {
+				state.roles = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.ROLES && action.isStringSelectMenu()) {
-				state.roles = action.values;
+			if (action.customId === CUSTOM_ID.MEMBER_TYPE && action.isStringSelectMenu()) {
+				state.allMembers = action.values.includes('all');
 				await action.update({ components: mutate() });
 			}
 
@@ -216,11 +230,10 @@ export default class ReminderCreateCommand extends Command {
 					guild: interaction.guild.id,
 					channel: args.channel.id,
 					remaining: state.remaining.map((num) => Number(num)),
-					townHalls: state.townHalls.map((num) => Number(num)),
 					roles: state.roles,
+					allMembers: state.allMembers,
 					clans: state.clans,
 					webhook: { id: webhook.id, token: webhook.token! },
-					warTypes: state.warTypes,
 					message: args.message.trim(),
 					duration: dur,
 					createdAt: new Date()

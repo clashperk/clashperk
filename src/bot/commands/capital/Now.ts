@@ -8,7 +8,6 @@ import {
 	StringSelectMenuBuilder
 } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { MAX_TOWNHALL_LEVEL } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
@@ -40,17 +39,15 @@ export default class CapitalReminderNowCommand extends Command {
 		const CUSTOM_ID = {
 			ROLES: this.client.uuid(interaction.user.id),
 			REMAINING: this.client.uuid(interaction.user.id),
+			MEMBER_TYPE: this.client.uuid(interaction.user.id),
 			CLANS: this.client.uuid(interaction.user.id),
 			SAVE: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
 			remaining: ['1', '2', '3', '4', '5', '6'],
-			townHalls: Array(MAX_TOWNHALL_LEVEL - 1)
-				.fill(0)
-				.map((_, i) => (i + 2).toString()),
+			allMembers: true,
 			roles: ['leader', 'coLeader', 'admin', 'member'],
-			warTypes: ['cwl', 'normal', 'friendly'],
 			clans: clans.map((clan) => clan.tag)
 		};
 
@@ -64,11 +61,33 @@ export default class CapitalReminderNowCommand extends Command {
 						Array(6)
 							.fill(0)
 							.map((_, i) => ({
-								label: `${i + 1} Remaining`,
+								label: `${i + 1} Remaining${i === 5 ? ` (if eligible)` : ''}`,
 								value: (i + 1).toString(),
 								default: state.remaining.includes((i + 1).toString())
 							}))
 					)
+					.setDisabled(disable)
+			);
+
+			const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+				new StringSelectMenuBuilder()
+					.setPlaceholder('Select Min. Attacks Done')
+					.setMaxValues(1)
+					.setCustomId(CUSTOM_ID.MEMBER_TYPE)
+					.setOptions([
+						{
+							label: 'All Members',
+							value: 'allMembers',
+							description: 'With a minimum of 0 attacks done.',
+							default: state.allMembers
+						},
+						{
+							label: 'Only Participants',
+							value: 'onlyParticipants',
+							description: 'With a minimum of 1 attack done.',
+							default: !state.allMembers
+						}
+					])
 					.setDisabled(disable)
 			);
 
@@ -111,7 +130,7 @@ export default class CapitalReminderNowCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			return [row1, row3, row4];
+			return [row1, row2, row3, row4];
 		};
 
 		const msg = await interaction.editReply({ components: mutate(), content: '**Instant Capital Reminder Options**' });
@@ -143,7 +162,8 @@ export default class CapitalReminderNowCommand extends Command {
 					remaining: state.remaining.map((num) => Number(num)),
 					roles: state.roles,
 					clans: state.clans,
-					message: args.message
+					message: args.message,
+					allMembers: state.allMembers
 				});
 
 				if (texts.length) {
@@ -169,6 +189,7 @@ export default class CapitalReminderNowCommand extends Command {
 			remaining: number[];
 			clans: string[];
 			message: string;
+			allMembers: boolean;
 		}
 	) {
 		const texts: string[] = [];

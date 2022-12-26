@@ -129,24 +129,26 @@ export default class RaidRemindScheduler {
 	}
 
 	public async getReminderText(
-		reminder: Pick<RaidReminder, 'roles' | 'remaining' | 'guild' | 'message'>,
+		reminder: Pick<RaidReminder, 'roles' | 'remaining' | 'guild' | 'message' | 'allMembers'>,
 		schedule: Pick<RaidSchedule, 'tag'>,
 		data: Required<RaidSeason>
 	) {
 		const clan = await this.client.http.clan(schedule.tag);
-		const clanMembers = clan.memberList.map((m) => {
-			const member = data.members.find((mem) => mem.tag === m.tag);
-			if (member) return { ...member, role: m.role };
-			return {
-				tag: m.tag,
-				name: m.name,
-				role: m.role,
-				attacks: 0,
-				attackLimit: 5,
-				bonusAttackLimit: 0,
-				capitalResourcesLooted: 0
-			};
-		});
+		const clanMembers = clan.memberList
+			.map((m) => {
+				const member = data.members.find((mem) => mem.tag === m.tag);
+				if (member) return { ...member, role: m.role };
+				return {
+					tag: m.tag,
+					name: m.name,
+					role: m.role,
+					attacks: 0,
+					attackLimit: 5,
+					bonusAttackLimit: 0,
+					capitalResourcesLooted: 0
+				};
+			})
+			.filter((m) => (reminder.allMembers ? m.attacks >= 1 : m.attacks >= 0));
 
 		const members = clanMembers
 			.filter((mem) => {
@@ -332,6 +334,7 @@ export interface RaidReminder {
 	channel: string;
 	message: string;
 	duration: number;
+	allMembers: boolean;
 	webhook?: { id: string; token: string } | null;
 	threadId?: string;
 	roles: string[];
