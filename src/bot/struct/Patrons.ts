@@ -171,7 +171,7 @@ export default class Patrons {
 		}
 	}
 
-	private async deleteGuild(guildId: string) {
+	public async deleteGuild(guildId: string) {
 		await this.client.settings.delete(guildId, Settings.CLAN_LIMIT);
 		await this.client.db.collection(Collections.CLAN_STORES).updateMany({ guild: guildId }, { $set: { patron: false } });
 
