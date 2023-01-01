@@ -31,13 +31,13 @@ export default class LastSeenLog extends BaseLog {
 		return ['ReadMessageHistory', 'SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'AddReactions', 'ViewChannel'];
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
 		// await this.throttle(webhook.id);
 		if (!cache.message) {
 			const msg = await this.send(cache, webhook, data);
 			return this.updateMessageId(cache, msg);
 		}
-
 		const msg = await this.edit(cache, webhook, data);
 		return this.updateMessageId(cache, msg);
 	}

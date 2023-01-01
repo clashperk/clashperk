@@ -148,7 +148,7 @@ export default class RaidRemindScheduler {
 					capitalResourcesLooted: 0
 				};
 			})
-			.filter((m) => (reminder.allMembers ? m.attacks >= 1 : m.attacks >= 0));
+			.filter((m) => (reminder.allMembers ? m.attacks >= 0 : m.attacks >= 1));
 
 		const members = clanMembers
 			.filter((mem) => {
