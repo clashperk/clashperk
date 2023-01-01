@@ -58,7 +58,7 @@ export default class ClanGamesCommand extends Command {
 			});
 
 		const queried = await this.query(clan.tag, clan, seasonId);
-		const members = this.filter(queried, memberList);
+		const members = this.filter(queried, memberList, seasonId);
 		const embed = this.embed(interaction, { clan, members, max: args.max, filter: args.filter, seasonId });
 		embed.setColor(this.client.embed(interaction));
 
@@ -149,7 +149,24 @@ export default class ClanGamesCommand extends Command {
 		return cursor.toArray();
 	}
 
-	private filter(dbMembers: ClanGamesModel[] = [], clanMembers: Member[] = []) {
+	private filter(dbMembers: ClanGamesModel[], clanMembers: Member[], seasonId: string) {
+		if (seasonId !== this.latestSeason) {
+			return dbMembers
+				.map((m) => ({
+					tag: m.tag,
+					name: m.name,
+					points: m.current - m.initial,
+					endedAt: m.completedAt
+				}))
+				.sort((a, b) => b.points - a.points)
+				.sort((a, b) => {
+					if (a.endedAt && b.endedAt) {
+						return a.endedAt.getTime() - b.endedAt.getTime();
+					}
+					return 0;
+				});
+		}
+
 		const members = clanMembers.map((member) => {
 			const mem = dbMembers.find((m) => m.tag === member.tag);
 			return {
