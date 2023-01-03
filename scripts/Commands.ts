@@ -2063,6 +2063,18 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		description: 'Sync your roles, nicknames, accounts etc.'
 	},
 	{
+		name: 'legend-logs',
+		description: 'Shows legend logs for a player.',
+		options: [
+			{
+				name: 'tag',
+				description: 'Player tag or alias.',
+				type: ApplicationCommandOptionType.String,
+				required: false
+			}
+		]
+	},
+	{
 		name: 'status',
 		description: "Shows information about the bot's status.",
 		dm_permission: true
