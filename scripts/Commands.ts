@@ -2075,6 +2075,18 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
+		name: 'legend-attacks',
+		description: 'Shows legend attacks for a clan.',
+		options: [
+			{
+				name: 'tag',
+				description: 'Clan tag or alias.',
+				type: ApplicationCommandOptionType.String,
+				required: false
+			}
+		]
+	},
+	{
 		name: 'status',
 		description: "Shows information about the bot's status.",
 		dm_permission: true

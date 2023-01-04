@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import {
 	EmbedBuilder,
 	CommandInteraction,
@@ -7,8 +8,9 @@ import {
 	ComponentType,
 	time
 } from 'discord.js';
-import { Player, WarClan } from 'clashofclans.js';
+import { Clan, Player, WarClan } from 'clashofclans.js';
 import ms from 'ms';
+import moment from 'moment';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
@@ -49,6 +51,19 @@ export default class LegendLogsCommand extends Command {
 					.map((tag) => this.client.http.player(tag))
 			)
 		).filter((res) => res.ok);
+	}
+
+	private calc(clanRank: number) {
+		if (clanRank >= 41) return 3;
+		else if (clanRank >= 31) return 10;
+		else if (clanRank >= 21) return 12;
+		else if (clanRank >= 11) return 25;
+		return 50;
+	}
+
+	private getDates() {
+		const start = moment().startOf('day').add(5, 'hours');
+		return { startTime: start.toDate().getTime(), endTime: start.add(1, 'day').subtract(1, 'second').toDate().getTime() };
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
@@ -93,52 +108,105 @@ export default class LegendLogsCommand extends Command {
 		});
 	}
 
+	private async rankings(tag: string) {
+		const res = await this.client.http.playerRanks('global');
+		if (!res.ok) return null;
+		return res.items.find((en) => en.tag === tag)?.rank ?? null;
+	}
+
 	private async embed(interaction: CommandInteraction<'cached'>, data: Player) {
 		const legend = (await this.client.redis.json.get(`LP${data.tag}`)) as {
 			name: string;
 			tag: string;
-			logs: { start: number; end: number; timestamp: number; inc: number }[];
+			logs: { start: number; end: number; timestamp: number; inc: number; type?: string }[];
 		} | null;
+		const clan = data.clan ? ((await this.client.redis.json.get(`C${data.clan.tag}`)) as Clan | null) : null;
+
+		const { startTime, endTime } = this.getDates();
+
+		const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
+		const attacks = logs.filter((en) => en.inc > 0 || en.type === 'attack') ?? [];
+		const defenses = logs.filter((en) => en.inc < 0 || en.type === 'defense') ?? [];
+
+		const member = (clan?.memberList ?? []).find((en) => en.tag === data.tag);
+		const clanRank = member?.clanRank ?? 0;
+		const percentage = this.calc(clanRank);
+
+		const [initial] = logs;
+		const [current] = logs.slice(-1);
+
+		const attackCount = attacks.length;
+		const defenseCount = defenses.length;
+
+		const trophiesFromAttacks = attacks.reduce((acc, cur) => acc + cur.inc, 0);
+		const trophiesFromDefenses = defenses.reduce((acc, cur) => acc + cur.inc, 0);
+
+		const netTrophies = trophiesFromAttacks + trophiesFromDefenses;
 
 		const weaponLevel = data.townHallWeaponLevel ? weaponLevels[data.townHallWeaponLevel] : '';
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setTitle(`${escapeMarkdown(data.name)} (${data.tag})`)
-			.setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`)
-			.setThumbnail(data.league?.iconUrls.small ?? `https://cdn.clashperk.com/assets/townhalls/${data.townHallLevel}.png`)
-			.setDescription(
-				[
-					`${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${EMOJIS.EXP} **${data.expLevel}** ${
-						EMOJIS.TROPHY
-					} **${data.trophies}** ${EMOJIS.WAR_STAR} **${data.warStars}**`
+			.setURL(`https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=${encodeURIComponent(data.tag)}`);
+		embed.setDescription(
+			[
+				`${TOWN_HALLS[data.townHallLevel]} **${data.townHallLevel}${weaponLevel}** ${
+					data.league?.id === 29000022 ? EMOJIS.LEGEND_LEAGUE : EMOJIS.TROPHY
+				} **${data.trophies}**`,
+				''
+			].join('\n')
+		);
+
+		embed.addFields([
+			{
+				name: '**Overview**',
+				value: [
+					`• Initial Trophies: ${initial?.start || data.trophies}`,
+					`• Current Trophies: ${current?.end || data.trophies}`,
+					` • ${attackCount} attack${attackCount === 1 ? '' : 's'} (+${trophiesFromAttacks} trophies)`,
+					` • ${defenseCount} defense${defenseCount === 1 ? '' : 's'} (${trophiesFromDefenses} trophies)`,
+					` • ${Math.abs(netTrophies)} trophies ${netTrophies >= 0 ? 'earned' : 'lost'}`
 				].join('\n')
-			);
+			},
+			{
+				name: '**Rankings**',
+				value: [
+					`• Global Rank: ${(await this.rankings(data.tag)) ?? 'N/A'}`,
+					`• Local Rank: ${(await this.rankings(data.tag)) ?? 'N/A'}`
+				].join('\n')
+			}
+		]);
+
+		if (clan && member) {
+			embed.addFields([
+				{
+					name: '**Clan**',
+					value: [
+						`• ${clan ? `${clan.name} (${clan.tag})` : 'N/A'}`,
+						`• Rank in Clan: ${member.clanRank}`,
+						`• Clan Points Contribution: ${Math.floor((member.trophies * percentage) / 100)} (${percentage}%)`
+					].join('\n')
+				}
+			]);
+		}
+
 		embed.addFields([
 			{
 				name: '**Attacks**',
-				value: legend
-					? [
-							...legend.logs
-								.filter((m) => m.inc > 0)
-								.map((m) => `\` +${m.inc.toString().padStart(2, ' ')} \` ${time(new Date(m.timestamp), 'R')}`),
-							'\u200b'
-					  ].join('\n')
-					: 'No data found.'
-			}
-		]);
-		embed.addFields([
+				value: attacks.length
+					? attacks.map((m) => `\` +${m.inc.toString().padStart(2, ' ')} \` ${time(new Date(m.timestamp), 'R')}`).join('\n')
+					: '-',
+				inline: true
+			},
 			{
 				name: '**Defenses**',
-				value: legend
-					? [
-							...legend.logs
-								.filter((m) => m.inc < 0)
-								.map((m) => `\` ${m.inc.toString().padStart(2, ' ')} \` ${time(new Date(m.timestamp), 'R')}`),
-							'\u200b'
-					  ].join('\n')
-					: 'No data found.'
+				value: defenses.length
+					? defenses.map((m) => `\` ${m.inc.toString().padStart(2, ' ')} \` ${time(new Date(m.timestamp), 'R')}`).join('\n')
+					: '-',
+				inline: true
 			}
 		]);
+		embed.setFooter({ text: `Day ${moment().diff(Season.startTimestamp, 'days')} (${Season.ID})` });
 		return embed;
 	}
 
