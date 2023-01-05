@@ -62,7 +62,7 @@ export default class LegendLogsCommand extends Command {
 	}
 
 	private getDates() {
-		const start = moment().startOf('day').add(5, 'hours');
+		const start = moment().hour() < 5 ? moment().startOf('day').add(5, 'hours') : moment().startOf('day').add(1, 'day').add(5, 'hours');
 		return { startTime: start.toDate().getTime(), endTime: start.add(1, 'day').subtract(1, 'second').toDate().getTime() };
 	}
 

@@ -30,7 +30,8 @@ export default class ClanCommand extends Command {
 	}
 
 	private getDates() {
-		const start = moment().startOf('day').add(5, 'hours');
+		const start = moment().hour() < 5 ? moment().startOf('day').add(5, 'hours') : moment().startOf('day').add(1, 'day').add(5, 'hours');
+
 		return { startTime: start.toDate().getTime(), endTime: start.add(1, 'day').subtract(1, 'second').toDate().getTime() };
 	}
 
@@ -52,6 +53,8 @@ export default class ClanCommand extends Command {
 			const { startTime, endTime } = this.getDates();
 
 			const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
+			if (logs.length === 0) continue;
+
 			const attacks = logs.filter((en) => en.inc > 0 || en.type === 'attack');
 			const defenses = logs.filter((en) => en.inc < 0 || en.type === 'defense');
 
