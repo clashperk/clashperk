@@ -30,9 +30,10 @@ export default class ClanCommand extends Command {
 	}
 
 	private getDates() {
-		const start = moment().hour() < 5 ? moment().startOf('day').add(5, 'hours') : moment().startOf('day').add(1, 'day').add(5, 'hours');
+		const start =
+			moment().hour() >= 5 ? moment().startOf('day').add(5, 'hours') : moment().startOf('day').subtract(1, 'day').add(5, 'hours');
 
-		return { startTime: start.toDate().getTime(), endTime: start.add(1, 'day').subtract(1, 'second').toDate().getTime() };
+		return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').subtract(1, 'second').toDate().getTime() };
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
