@@ -160,7 +160,11 @@ export default class Resolver {
 		).filter((res) => res.ok);
 	}
 
-	public resolveArgs(args?: string) {
+	public async resolveArgs(args?: string) {
+		if (args?.length === 21) {
+			const tags = await this.client.redis.get(args);
+			if (tags) return tags.split(/[, ]+/g);
+		}
 		return args?.split(/[, ]+/g) ?? [];
 	}
 

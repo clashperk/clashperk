@@ -25,7 +25,7 @@ export default class CapitalReminderNowCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { message: string; clans?: string }) {
 		if (!args.message) return interaction.editReply(this.i18n('command.reminder.now.no_message', { lng: interaction.locale }));
 
-		const tags = args.clans === '*' ? [] : this.client.resolver.resolveArgs(args.clans);
+		const tags = args.clans === '*' ? [] : await this.client.resolver.resolveArgs(args.clans);
 		const clans =
 			args.clans === '*'
 				? await this.client.storage.find(interaction.guildId)

@@ -17,8 +17,8 @@ export default class LinkListCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { tag, showTags }: { tag?: string; showTags?: boolean }) {
-		const clan = await this.client.resolver.resolveClan(interaction, tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; showTags?: boolean }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 		if (!clan.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
 
@@ -62,7 +62,7 @@ export default class LinkListCommand extends Command {
 			(m) => !notInDiscord.some((en) => en.tag === m.tag) && !members.some((en) => en.tag === m.tag && guildMembers.has(en.userId))
 		);
 
-		const embed = this.getEmbed(guildMembers, clan, showTags!, onDiscord, notLinked, notInDiscord);
+		const embed = this.getEmbed(guildMembers, clan, args.showTags!, onDiscord, notLinked, notInDiscord);
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
 				new ButtonBuilder()

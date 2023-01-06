@@ -42,14 +42,10 @@ export default class DonationsCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		{
-			tag,
-			season,
-			sortBy,
-			orderBy
-		}: { tag?: string; season: string; sortBy?: ('donated' | 'received' | 'townHall' | 'difference')[]; orderBy?: string }
+		args: { tag?: string; season: string; sortBy?: ('donated' | 'received' | 'townHall' | 'difference')[]; orderBy?: string }
 	) {
-		const clan = await this.client.resolver.resolveClan(interaction, tag);
+		let { season, sortBy, orderBy } = args;
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 		if (clan.members < 1) {
 			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));

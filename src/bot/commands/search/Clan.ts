@@ -1,5 +1,5 @@
 import { Clan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { CLAN_LABELS, CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
@@ -47,7 +47,7 @@ export default class ClanCommand extends Command {
 		return null;
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 

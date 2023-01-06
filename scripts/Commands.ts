@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { ApplicationCommandOptionType, ApplicationCommandType, RESTPostAPIApplicationCommandsJSONBody } from 'discord-api-types/v10';
 import i18next from 'i18next';
 import moment from 'moment';
-import { command } from '../locales/en.js';
+import { command, common } from '../locales/en.js';
 import { defaultOptions, fallbackLng } from '../locales/index.js';
 import { Backend } from '../src/bot/util/Backend.js';
 import { TranslationKey } from '../src/bot/util/i18n.js';
@@ -50,195 +50,6 @@ export const translation = (text: TranslationKey): Record<string, string> => {
 
 export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	{
-		name: 'clan',
-		description: command.clan.description,
-		dm_permission: false,
-		description_localizations: translation('command.clan.description'),
-		options: [
-			{
-				name: 'tag',
-				description: command.clan.options.tag.description,
-				description_localizations: translation('command.clan.options.tag.description'),
-				type: ApplicationCommandOptionType.String,
-				required: false
-			}
-		]
-	},
-	{
-		name: 'lastseen',
-		description: command.lastseen.description,
-		dm_permission: false,
-		description_localizations: translation('command.lastseen.description'),
-		options: [
-			{
-				name: 'tag',
-				description: command.lastseen.options.tag.description,
-				description_localizations: translation('command.lastseen.options.tag.description'),
-				type: 3,
-				required: false
-			}
-		]
-	},
-	{
-		name: 'clan-games',
-		description: command.clan_games.description,
-		dm_permission: false,
-		description_localizations: translation('command.clan_games.description'),
-		options: [
-			{
-				name: 'tag',
-				description: command.clan_games.options.tag.description,
-				description_localizations: translation('command.clan_games.options.tag.description'),
-				type: ApplicationCommandOptionType.String,
-				required: false
-			},
-			{
-				name: 'season',
-				description: command.clan_games.options.season.description,
-				description_localizations: translation('command.clan_games.options.season.description'),
-				type: ApplicationCommandOptionType.String,
-				required: false,
-				choices: getSeasonIds()
-			}
-		]
-	},
-	{
-		name: 'capital',
-		description: command.capital.description,
-		dm_permission: false,
-		description_localizations: translation('command.capital.description'),
-		options: [
-			{
-				name: 'contributions',
-				description: command.capital.contributions.description,
-				description_localizations: translation('command.capital.contributions.description'),
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'tag',
-						description: command.capital.contributions.options.tag.description,
-						description_localizations: translation('command.capital.contributions.options.tag.description'),
-						type: ApplicationCommandOptionType.String,
-						required: false
-					},
-					{
-						name: 'week',
-						description: command.capital.contributions.options.week.description,
-						description_localizations: translation('command.capital.contributions.options.week.description'),
-						type: ApplicationCommandOptionType.String,
-						required: false,
-						choices: getWeekIds()
-					}
-				]
-			},
-			{
-				name: 'raids',
-				description: command.capital.raids.description,
-				description_localizations: translation('command.capital.raids.description'),
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'tag',
-						description: command.capital.raids.options.tag.description,
-						description_localizations: translation('command.capital.raids.options.tag.description'),
-						type: ApplicationCommandOptionType.String,
-						required: false
-					},
-					{
-						name: 'week',
-						description: command.capital.raids.options.week.description,
-						description_localizations: translation('command.capital.raids.options.week.description'),
-						type: ApplicationCommandOptionType.String,
-						required: false,
-						choices: getWeekIds()
-					}
-				]
-			}
-		]
-	},
-	{
-		name: 'attacks',
-		description: command.attacks.description,
-		dm_permission: false,
-		description_localizations: translation('command.attacks.description'),
-		options: [
-			{
-				name: 'tag',
-				description: command.attacks.options.tag.description,
-				description_localizations: translation('command.attacks.options.tag.description'),
-				type: ApplicationCommandOptionType.String,
-				required: false
-			}
-		]
-	},
-	{
-		name: 'members',
-		description: command.members.description,
-		dm_permission: false,
-		description_localizations: translation('command.members.description'),
-		options: [
-			{
-				name: 'option',
-				description: command.members.options.option.description,
-				description_localizations: translation('command.members.options.option.description'),
-				type: ApplicationCommandOptionType.String,
-				required: true,
-				choices: [
-					{
-						name: 'Heroes',
-						value: 'heroes'
-					},
-					{
-						name: 'Trophies',
-						value: 'trophies'
-					},
-					{
-						name: 'War Preferences',
-						value: 'warPref'
-					},
-					{
-						name: 'Discord Links',
-						value: 'discord'
-					},
-					{
-						name: 'Clan Roles',
-						value: 'roles'
-					},
-					{
-						name: 'Player Tags',
-						value: 'tags'
-					},
-					{
-						name: 'Attacks',
-						value: 'attacks'
-					}
-				]
-			},
-			{
-				name: 'tag',
-				description: command.members.options.tag.description,
-				description_localizations: translation('command.members.options.tag.description'),
-				type: ApplicationCommandOptionType.String,
-				required: false
-			}
-		]
-	},
-	{
-		name: 'units',
-		description: command.units.description,
-		dm_permission: false,
-		description_localizations: translation('command.units.description'),
-		options: [
-			{
-				name: 'tag',
-				description: command.units.options.tag.description,
-				description_localizations: translation('command.units.options.tag.description'),
-				required: false,
-				type: ApplicationCommandOptionType.String
-			}
-		]
-	},
-	{
 		name: 'player',
 		description: command.player.description,
 		dm_permission: false,
@@ -254,77 +65,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
-		name: 'roster',
-		description: command.cwl.roster.description,
+		name: 'units',
+		description: command.units.description,
 		dm_permission: false,
-		description_localizations: translation('command.cwl.roster.description'),
+		description_localizations: translation('command.units.description'),
 		options: [
 			{
 				name: 'tag',
-				description: command.cwl.roster.options.tag.description,
-				description_localizations: translation('command.cwl.roster.options.tag.description'),
-				type: 3,
-				required: false
-			}
-		]
-	},
-	{
-		name: 'round',
-		description: command.cwl.round.description,
-		dm_permission: false,
-		description_localizations: translation('command.cwl.round.description'),
-		options: [
-			{
-				name: 'tag',
-				description: command.cwl.round.options.tag.description,
-				description_localizations: translation('command.cwl.round.options.tag.description'),
-				type: 3,
-				required: false
-			},
-			{
-				name: 'round',
-				description: command.cwl.round.options.round.description,
-				description_localizations: translation('command.cwl.round.options.round.description'),
-				type: 4,
-				required: false
-			}
-		]
-	},
-	{
-		name: 'donations',
-		description: command.donations.description,
-		dm_permission: false,
-		description_localizations: translation('command.donations.description'),
-		options: [
-			{
-				name: 'tag',
-				description: command.donations.options.tag.description,
-				description_localizations: translation('command.donations.options.tag.description'),
-				type: ApplicationCommandOptionType.String,
-				required: false
-			},
-			{
-				name: 'season',
-				description: command.donations.options.season.description,
-				description_localizations: translation('command.donations.options.season.description'),
-				type: ApplicationCommandOptionType.String,
+				description: command.units.options.tag.description,
+				description_localizations: translation('command.units.options.tag.description'),
 				required: false,
-				choices: getSeasonIds()
-			}
-		]
-	},
-	{
-		name: 'compo',
-		description: command.compo.description,
-		dm_permission: false,
-		description_localizations: translation('command.compo.description'),
-		options: [
-			{
-				name: 'tag',
-				description: command.compo.options.tag.description,
-				description_localizations: translation('command.compo.options.tag.description'),
-				type: 3,
-				required: false
+				type: ApplicationCommandOptionType.String
 			}
 		]
 	},
@@ -392,6 +143,381 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
+		name: 'verify',
+		description: command.verify.description,
+		dm_permission: false,
+		description_localizations: translation('command.verify.description'),
+		options: [
+			{
+				name: 'tag',
+				required: true,
+				description: command.verify.options.tag.description,
+				description_localizations: translation('command.verify.options.tag.description'),
+				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'token',
+				required: true,
+				description: command.verify.options.token.description,
+				description_localizations: translation('command.verify.options.token.description'),
+				type: ApplicationCommandOptionType.String
+			}
+		]
+	},
+	{
+		name: 'boosts',
+		description: command.boosts.description,
+		dm_permission: false,
+		description_localizations: translation('command.boosts.description'),
+		options: [
+			{
+				name: 'tag',
+				description: command.boosts.options.tag.description,
+				description_localizations: translation('command.boosts.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				required: false
+			}
+		]
+	},
+	// ----------- CLAN BASED -----------
+	{
+		name: 'clan',
+		description: command.clan.description,
+		dm_permission: false,
+		description_localizations: translation('command.clan.description'),
+		options: [
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'compo',
+		description: command.compo.description,
+		dm_permission: false,
+		description_localizations: translation('command.compo.description'),
+		options: [
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'lastseen',
+		description: command.lastseen.description,
+		dm_permission: false,
+		description_localizations: translation('command.lastseen.description'),
+		options: [
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				required: false,
+				autocomplete: true
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'clan-games',
+		description: command.clan_games.description,
+		dm_permission: false,
+		description_localizations: translation('command.clan_games.description'),
+		options: [
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			},
+			{
+				name: 'season',
+				description: command.clan_games.options.season.description,
+				description_localizations: translation('command.clan_games.options.season.description'),
+				type: ApplicationCommandOptionType.String,
+				required: false,
+				choices: getSeasonIds()
+			}
+		]
+	},
+	{
+		name: 'capital',
+		description: command.capital.description,
+		dm_permission: false,
+		description_localizations: translation('command.capital.description'),
+		options: [
+			{
+				name: 'contributions',
+				description: command.capital.contributions.description,
+				description_localizations: translation('command.capital.contributions.description'),
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'tag',
+						description: common.options.tag.description,
+						description_localizations: translation('common.options.tag.description'),
+						type: ApplicationCommandOptionType.String,
+						autocomplete: true,
+						required: false
+					},
+					{
+						name: 'user',
+						description: common.options.user.description,
+						description_localizations: translation('common.options.user.description'),
+						type: ApplicationCommandOptionType.User,
+						required: false
+					},
+					{
+						name: 'week',
+						description: command.capital.contributions.options.week.description,
+						description_localizations: translation('command.capital.contributions.options.week.description'),
+						type: ApplicationCommandOptionType.String,
+						required: false,
+						choices: getWeekIds()
+					}
+				]
+			},
+			{
+				name: 'raids',
+				description: command.capital.raids.description,
+				description_localizations: translation('command.capital.raids.description'),
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'tag',
+						description: common.options.tag.description,
+						description_localizations: translation('common.options.tag.description'),
+						type: ApplicationCommandOptionType.String,
+						autocomplete: true,
+						required: false
+					},
+					{
+						name: 'user',
+						description: common.options.user.description,
+						description_localizations: translation('common.options.user.description'),
+						type: ApplicationCommandOptionType.User,
+						required: false
+					},
+					{
+						name: 'week',
+						description: command.capital.raids.options.week.description,
+						description_localizations: translation('command.capital.raids.options.week.description'),
+						type: ApplicationCommandOptionType.String,
+						required: false,
+						choices: getWeekIds()
+					}
+				]
+			}
+		]
+	},
+	{
+		name: 'attacks',
+		description: command.attacks.description,
+		dm_permission: false,
+		description_localizations: translation('command.attacks.description'),
+		options: [
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'members',
+		description: command.members.description,
+		dm_permission: false,
+		description_localizations: translation('command.members.description'),
+		options: [
+			{
+				name: 'option',
+				description: command.members.options.option.description,
+				description_localizations: translation('command.members.options.option.description'),
+				type: ApplicationCommandOptionType.String,
+				required: true,
+				choices: [
+					{
+						name: 'Heroes',
+						value: 'heroes'
+					},
+					{
+						name: 'Trophies',
+						value: 'trophies'
+					},
+					{
+						name: 'War Preferences',
+						value: 'warPref'
+					},
+					{
+						name: 'Discord Links',
+						value: 'discord'
+					},
+					{
+						name: 'Clan Roles',
+						value: 'roles'
+					},
+					{
+						name: 'Player Tags',
+						value: 'tags'
+					},
+					{
+						name: 'Attacks',
+						value: 'attacks'
+					}
+				]
+			},
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'roster',
+		description: command.cwl.roster.description,
+		dm_permission: false,
+		description_localizations: translation('command.cwl.roster.description'),
+		options: [
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'round',
+		description: command.cwl.round.description,
+		dm_permission: false,
+		description_localizations: translation('command.cwl.round.description'),
+		options: [
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			},
+			{
+				name: 'round',
+				description: command.cwl.round.options.round.description,
+				description_localizations: translation('command.cwl.round.options.round.description'),
+				type: ApplicationCommandOptionType.Integer,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'donations',
+		description: command.donations.description,
+		dm_permission: false,
+		description_localizations: translation('command.donations.description'),
+		options: [
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			},
+			{
+				name: 'season',
+				description: command.donations.options.season.description,
+				description_localizations: translation('command.donations.options.season.description'),
+				type: ApplicationCommandOptionType.String,
+				required: false,
+				choices: getSeasonIds()
+			}
+		]
+	},
+	{
 		name: 'war',
 		description: command.war.description,
 		dm_permission: false,
@@ -399,9 +525,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		options: [
 			{
 				name: 'tag',
-				description: command.war.options.tag.description,
-				description_localizations: translation('command.war.options.tag.description'),
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
+				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
 				required: false
 			},
 			{
@@ -421,9 +555,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		options: [
 			{
 				name: 'tag',
-				description: command.remaining.options.tag.description,
-				description_localizations: translation('command.remaining.options.tag.description'),
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
+				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
 				required: false
 			},
 			{
@@ -435,6 +577,385 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			}
 		]
 	},
+	{
+		name: 'cwl',
+		description: command.cwl.description,
+		dm_permission: false,
+		description_localizations: translation('command.cwl.description'),
+		options: [
+			{
+				name: 'option',
+				description: command.cwl.options.option.description,
+				description_localizations: translation('command.cwl.options.option.description'),
+				type: ApplicationCommandOptionType.String,
+				required: true,
+				choices: [
+					{
+						name: 'Roster',
+						value: 'roster'
+					},
+					{
+						name: 'Round',
+						value: 'round'
+					},
+					{
+						name: 'Lineup',
+						value: 'lineup'
+					},
+					{
+						name: 'Stars',
+						value: 'stars'
+					},
+					{
+						name: 'Attacks',
+						value: 'attacks'
+					},
+					{
+						name: 'Stats',
+						value: 'stats'
+					},
+					{
+						name: 'Members',
+						value: 'members'
+					},
+					{
+						name: 'Export',
+						value: 'export'
+					}
+				]
+			},
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				autocomplete: true,
+				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'warlog',
+		description: command.warlog.description,
+		dm_permission: false,
+		description_localizations: translation('command.warlog.description'),
+		options: [
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				autocomplete: true,
+				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'activity',
+		description: command.activity.description,
+		dm_permission: false,
+		description_localizations: translation('command.activity.description'),
+		options: [
+			{
+				name: 'clans',
+				required: false,
+				description: command.activity.options.clans.description,
+				description_localizations: translation('command.activity.options.clans.description'),
+				autocomplete: true,
+				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'days',
+				required: false,
+				description: command.activity.options.days.description,
+				description_localizations: translation('command.activity.options.days.description'),
+				type: ApplicationCommandOptionType.Integer,
+				choices: [
+					{
+						name: '1',
+						value: 1
+					},
+					{
+						name: '3',
+						value: 3
+					},
+					{
+						name: '7',
+						value: 7
+					}
+				]
+			}
+		]
+	},
+	{
+		name: 'lineup',
+		description: command.lineup.description,
+		dm_permission: false,
+		description_localizations: translation('command.lineup.description'),
+		options: [
+			{
+				name: 'tag',
+				description: common.options.tag.description,
+				description_localizations: translation('common.options.tag.description'),
+				type: ApplicationCommandOptionType.String,
+				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.user.description,
+				description_localizations: translation('common.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'stats',
+		description: command.stats.description,
+		dm_permission: false,
+		description_localizations: translation('command.stats.description'),
+		options: [
+			{
+				name: 'attacks',
+				description: command.stats.attacks.description,
+				description_localizations: translation('command.stats.attacks.description'),
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'tag',
+						description: common.options.tag.description,
+						description_localizations: translation('common.options.tag.description'),
+						type: ApplicationCommandOptionType.String,
+						autocomplete: true
+					},
+					{
+						name: 'user',
+						description: common.options.user.description,
+						description_localizations: translation('common.options.user.description'),
+						type: ApplicationCommandOptionType.User,
+						required: false
+					},
+					{
+						name: 'compare',
+						description: command.stats.options.compare.description,
+						description_localizations: translation('command.stats.options.compare.description'),
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'stars',
+						description: command.stats.options.stars.description,
+						description_localizations: translation('command.stats.options.stars.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: '3',
+								value: '==3'
+							},
+							{
+								name: '2',
+								value: '==2'
+							},
+							{
+								name: '>= 2',
+								value: '>=2'
+							},
+							{
+								name: '1',
+								value: '==1'
+							},
+							{
+								name: '>= 1',
+								value: '>=1'
+							}
+						]
+					},
+					{
+						name: 'type',
+						description: command.stats.options.type.description,
+						description_localizations: translation('command.stats.options.type.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Regular',
+								value: 'regular'
+							},
+							{
+								name: 'CWL',
+								value: 'cwl'
+							},
+							{
+								name: 'Friendly',
+								value: 'friendly'
+							},
+							{
+								name: 'Regular and CWL',
+								value: 'noFriendly'
+							},
+							{
+								name: 'Regular and Friendly',
+								value: 'noCWL'
+							},
+							{
+								name: 'Regular, CWL and  Friendly',
+								value: 'all'
+							}
+						]
+					},
+					{
+						name: 'season',
+						description: command.stats.options.season.description,
+						description_localizations: translation('command.stats.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
+					},
+					{
+						name: 'attempt',
+						description: command.stats.options.attempt.description,
+						description_localizations: translation('command.stats.options.attempt.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Fresh',
+								value: 'fresh'
+							},
+							{
+								name: 'Cleanup',
+								value: 'cleanup'
+							}
+						]
+					}
+				]
+			},
+			{
+				name: 'defense',
+				name_localizations: {
+					'en-GB': 'defence'
+				},
+				description: command.stats.defense.description,
+				description_localizations: translation('command.stats.defense.description'),
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'tag',
+						description: common.options.tag.description,
+						description_localizations: translation('common.options.tag.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'user',
+						description: common.options.user.description,
+						description_localizations: translation('common.options.user.description'),
+						type: ApplicationCommandOptionType.User,
+						required: false
+					},
+					{
+						name: 'compare',
+						description: command.stats.options.compare.description,
+						description_localizations: translation('command.stats.options.compare.description'),
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'stars',
+						description: command.stats.options.stars.description,
+						description_localizations: translation('command.stats.options.stars.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: '3',
+								value: '==3'
+							},
+							{
+								name: '2',
+								value: '==2'
+							},
+							{
+								name: '>= 2',
+								value: '>=2'
+							},
+							{
+								name: '1',
+								value: '==1'
+							},
+							{
+								name: '>= 1',
+								value: '>=1'
+							}
+						]
+					},
+					{
+						name: 'type',
+						description: command.stats.options.type.description,
+						description_localizations: translation('command.stats.options.type.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Regular',
+								value: 'regular'
+							},
+							{
+								name: 'CWL',
+								value: 'cwl'
+							},
+							{
+								name: 'Friendly',
+								value: 'friendly'
+							},
+							{
+								name: 'Regular and CWL',
+								value: 'noFriendly'
+							},
+							{
+								name: 'Regular and Friendly',
+								value: 'noCWL'
+							},
+							{
+								name: 'Regular, CWL and Friendly',
+								value: 'all'
+							}
+						]
+					},
+					{
+						name: 'season',
+						description: command.stats.options.season.description,
+						description_localizations: translation('command.stats.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
+					},
+					{
+						name: 'attempt',
+						description: command.stats.options.attempt.description,
+						description_localizations: translation('command.stats.options.attempt.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Fresh',
+								value: 'fresh'
+							},
+							{
+								name: 'Cleanup',
+								value: 'cleanup'
+							}
+						]
+					}
+				]
+			}
+		]
+	},
+	// -------------- SETUP BASED--------------
 	{
 		name: 'link',
 		description: command.link.description,
@@ -758,379 +1279,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
-		name: 'invite',
-		description: command.invite.description,
-		dm_permission: true,
-		description_localizations: translation('command.invite.description')
-	},
-	{
-		name: 'help',
-		description: command.help.description,
-		dm_permission: true,
-		description_localizations: translation('command.help.description'),
-		options: [
-			{
-				name: 'command',
-				description: command.help.options.name.description,
-				description_localizations: translation('command.help.options.name.description'),
-				type: ApplicationCommandOptionType.String
-			}
-		]
-	},
-	{
-		name: 'cwl',
-		description: command.cwl.description,
-		dm_permission: false,
-		description_localizations: translation('command.cwl.description'),
-		options: [
-			{
-				name: 'option',
-				description: command.cwl.options.option.description,
-				description_localizations: translation('command.cwl.options.option.description'),
-				type: ApplicationCommandOptionType.String,
-				required: true,
-				choices: [
-					{
-						name: 'Roster',
-						value: 'roster'
-					},
-					{
-						name: 'Round',
-						value: 'round'
-					},
-					{
-						name: 'Lineup',
-						value: 'lineup'
-					},
-					{
-						name: 'Stars',
-						value: 'stars'
-					},
-					{
-						name: 'Attacks',
-						value: 'attacks'
-					},
-					{
-						name: 'Stats',
-						value: 'stats'
-					},
-					{
-						name: 'Members',
-						value: 'members'
-					},
-					{
-						name: 'Export',
-						value: 'export'
-					}
-				]
-			},
-			{
-				name: 'tag',
-				description: command.cwl.options.tag.description,
-				description_localizations: translation('command.cwl.options.tag.description'),
-				type: ApplicationCommandOptionType.String
-			}
-		]
-	},
-	{
-		name: 'export',
-		description: command.export.description,
-		dm_permission: false,
-		description_localizations: translation('command.export.description'),
-		options: [
-			{
-				name: 'option',
-				required: true,
-				description: command.export.options.option.description,
-				description_localizations: translation('command.export.options.option.description'),
-				type: ApplicationCommandOptionType.String,
-				choices: [
-					{
-						name: 'Clan Wars',
-						value: 'wars'
-					},
-					{
-						name: 'Season Stats',
-						value: 'season'
-					},
-					{
-						name: 'Clan Members',
-						value: 'members'
-					},
-					{
-						name: 'CWL Stats',
-						value: 'cwl'
-					},
-					{
-						name: 'Last War Dates',
-						value: 'lastwars'
-					},
-					{
-						name: 'Missed Wars',
-						value: 'missed'
-					}
-				]
-			},
-			{
-				name: 'season',
-				description: command.export.options.season.description,
-				description_localizations: translation('command.export.options.season.description'),
-				type: ApplicationCommandOptionType.String,
-				choices: getSeasonIds()
-			},
-			{
-				name: 'clans',
-				description: command.export.options.clans.description,
-				description_localizations: translation('command.export.options.clans.description'),
-				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'wars',
-				description: command.export.options.wars.description,
-				description_localizations: translation('command.export.options.wars.description'),
-				type: ApplicationCommandOptionType.Integer
-			}
-		]
-	},
-	{
-		name: 'summary',
-		description: 'Shows summary of the clan family.',
-		options: [
-			{
-				name: 'compo',
-				description: 'Shows a summary of family compo.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'war-results',
-				description: 'Shows a summary of war results.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					}
-				]
-			},
-			{
-				name: 'wars',
-				description: 'Shows a summary of current wars.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'donations',
-				description: 'Shows a summary of donations.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					}
-				]
-			},
-			// {
-			// 	name: 'members',
-			// 	description: 'Shows information about members.',
-			// 	type: ApplicationCommandOptionType.Subcommand
-			// },
-			{
-				name: 'clans',
-				description: 'Shows a summary of family clans.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'attacks',
-				description: 'Shows a summary of attacks.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					}
-				]
-			},
-			{
-				name: 'trophies',
-				description: 'Shows a summary of trophies.',
-				type: ApplicationCommandOptionType.Subcommand
-				// options: [
-				// 	{
-				// 		name: 'season',
-				// 		required: false,
-				// 		type: ApplicationCommandOptionType.String,
-				// 		description: command.summary.options.season.description,
-				// 		description_localizations: translation('command.summary.options.season.description'),
-				// 		choices: getSeasonIds()
-				// 	}
-				// ]
-			},
-			{
-				name: 'missed-wars',
-				description: 'Shows a summary of missed wars.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					}
-				]
-			},
-			// {
-			// 	name: 'capital-raids',
-			// 	description: 'Shows information about capital raids.',
-			// 	type: ApplicationCommandOptionType.Subcommand,
-			// 	options: [
-			// 		{
-			// 			name: 'season',
-			// 			required: false,
-			// 			type: ApplicationCommandOptionType.String,
-			// 			description: command.summary.options.season.description,
-			// 			description_localizations: translation('command.summary.options.season.description'),
-			// 			choices: getSeasonIds()
-			// 		}
-			// 	]
-			// },
-			{
-				name: 'capital-contributions',
-				description: 'Shows a summary of capital contributions.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					}
-				]
-			},
-			// {
-			// 	name: 'cwl-ranks',
-			// 	description: 'Shows information about CWL ranks.',
-			// 	type: ApplicationCommandOptionType.Subcommand
-			// },
-			{
-				name: 'activity',
-				description: 'Shows a summary of clan activities (last seen).',
-				type: ApplicationCommandOptionType.Subcommand
-				// options: [
-				// 	{
-				// 		name: 'season',
-				// 		required: false,
-				// 		type: ApplicationCommandOptionType.String,
-				// 		description: command.summary.options.season.description,
-				// 		description_localizations: translation('command.summary.options.season.description'),
-				// 		choices: getSeasonIds()
-				// 	}
-				// ]
-			},
-			{
-				name: 'clan-games',
-				description: 'Shows a summary of clan games scores.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					}
-				]
-			}
-		]
-	},
-	{
-		name: 'warlog',
-		description: command.warlog.description,
-		dm_permission: false,
-		description_localizations: translation('command.warlog.description'),
-		options: [
-			{
-				name: 'tag',
-				description: command.warlog.options.tag.description,
-				description_localizations: translation('command.warlog.options.tag.description'),
-				type: ApplicationCommandOptionType.String
-			}
-		]
-	},
-	{
-		name: 'verify',
-		description: command.verify.description,
-		dm_permission: false,
-		description_localizations: translation('command.verify.description'),
-		options: [
-			{
-				name: 'tag',
-				required: true,
-				description: command.verify.options.tag.description,
-				description_localizations: translation('command.verify.options.tag.description'),
-				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'token',
-				required: true,
-				description: command.verify.options.token.description,
-				description_localizations: translation('command.verify.options.token.description'),
-				type: ApplicationCommandOptionType.String
-			}
-		]
-	},
-	{
-		name: 'activity',
-		description: command.activity.description,
-		dm_permission: false,
-		description_localizations: translation('command.activity.description'),
-		options: [
-			{
-				name: 'clans',
-				required: false,
-				description: command.activity.options.clans.description,
-				description_localizations: translation('command.activity.options.clans.description'),
-				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'days',
-				required: false,
-				description: command.activity.options.days.description,
-				description_localizations: translation('command.activity.options.days.description'),
-				type: ApplicationCommandOptionType.Integer,
-				choices: [
-					{
-						name: '1',
-						value: 1
-					},
-					{
-						name: '3',
-						value: 3
-					},
-					{
-						name: '7',
-						value: 7
-					}
-				]
-			}
-		]
-	},
-	{
 		name: 'alias',
 		description: command.alias.description,
 		dm_permission: false,
@@ -1180,12 +1328,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			}
 		]
-	},
-	{
-		name: 'debug',
-		description: command.debug.description,
-		dm_permission: false,
-		description_localizations: translation('command.debug.description')
 	},
 	{
 		name: 'autorole',
@@ -1284,148 +1426,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			}
 		]
-	},
-	{
-		name: 'boosts',
-		description: command.boosts.description,
-		dm_permission: false,
-		description_localizations: translation('command.boosts.description'),
-		options: [
-			{
-				name: 'tag',
-				description: command.boosts.options.tag.description,
-				description_localizations: translation('command.boosts.options.tag.description'),
-				type: ApplicationCommandOptionType.String,
-				required: false
-			}
-		]
-	},
-	{
-		name: 'lineup',
-		description: command.lineup.description,
-		dm_permission: false,
-		description_localizations: translation('command.lineup.description'),
-		options: [
-			{
-				name: 'tag',
-				description: command.lineup.options.tag.description,
-				description_localizations: translation('command.lineup.options.tag.description'),
-				type: ApplicationCommandOptionType.String,
-				required: false
-			}
-		]
-	},
-	{
-		name: 'army',
-		description: command.army.description,
-		dm_permission: false,
-		description_localizations: translation('command.army.description'),
-		options: [
-			{
-				name: 'link',
-				description: command.army.options.link.description,
-				description_localizations: translation('command.army.options.link.description'),
-				type: ApplicationCommandOptionType.String,
-				required: true
-			},
-			{
-				name: 'name',
-				description: command.army.options.name.description,
-				description_localizations: translation('command.army.options.name.description'),
-				type: ApplicationCommandOptionType.String,
-				required: false
-			}
-		]
-	},
-	{
-		name: 'nickname',
-		description: command.nickname.description,
-		dm_permission: false,
-		description_localizations: translation('command.nickname.description'),
-		options: [
-			{
-				name: 'user',
-				description: command.nickname.options.user.description,
-				description_localizations: translation('command.nickname.options.user.description'),
-				type: ApplicationCommandOptionType.User,
-				required: true
-			}
-		]
-	},
-	{
-		name: 'config',
-		description: command.config.description,
-		dm_permission: false,
-		description_localizations: translation('command.config.description'),
-		options: [
-			{
-				name: 'color_code',
-				name_localizations: {
-					'en-GB': 'colour_code'
-				},
-				description: command.config.options.color_code.description,
-				description_localizations: translation('command.config.options.color_code.description'),
-				type: ApplicationCommandOptionType.String
-			},
-			{
-				name: 'events_channel',
-				description: command.config.options.events_channel.description,
-				description_localizations: translation('command.config.options.events_channel.description'),
-				type: ApplicationCommandOptionType.String
-			}
-		]
-	},
-	{
-		name: 'timezone',
-		description: command.timezone.description,
-		dm_permission: false,
-		description_localizations: translation('command.timezone.description'),
-		options: [
-			{
-				name: 'location',
-				description: command.timezone.options.location.description,
-				description_localizations: translation('command.timezone.options.location.description'),
-				type: ApplicationCommandOptionType.String,
-				required: true
-			}
-		]
-	},
-	{
-		name: 'search',
-		description: command.search.description,
-		dm_permission: false,
-		description_localizations: translation('command.search.description'),
-		options: [
-			{
-				name: 'name',
-				description: command.search.options.name.description,
-				description_localizations: translation('command.search.options.name.description'),
-				type: ApplicationCommandOptionType.String
-			}
-		]
-	},
-	{
-		name: 'redeem',
-		description: command.redeem.description,
-		dm_permission: false,
-		options: [
-			{
-				name: 'disable',
-				description: 'Disable subscription for a server (if subscribed)',
-				type: ApplicationCommandOptionType.String,
-				choices: [
-					{
-						name: 'Yes',
-						value: 'true'
-					},
-					{
-						name: 'No',
-						value: 'false'
-					}
-				]
-			}
-		],
-		description_localizations: translation('command.redeem.description')
 	},
 	{
 		name: 'reminder',
@@ -1622,227 +1622,378 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			}
 		]
 	},
+	// ------------- UTIL COMMANDS -------------
 	{
-		name: 'stats',
-		description: command.stats.description,
-		dm_permission: false,
-		description_localizations: translation('command.stats.description'),
+		name: 'invite',
+		description: command.invite.description,
+		dm_permission: true,
+		description_localizations: translation('command.invite.description')
+	},
+	{
+		name: 'help',
+		description: command.help.description,
+		dm_permission: true,
+		description_localizations: translation('command.help.description'),
 		options: [
 			{
-				name: 'attacks',
-				description: command.stats.attacks.description,
-				description_localizations: translation('command.stats.attacks.description'),
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
+				name: 'command',
+				description: command.help.options.name.description,
+				description_localizations: translation('command.help.options.name.description'),
+				type: ApplicationCommandOptionType.String
+			}
+		]
+	},
+	{
+		name: 'debug',
+		description: command.debug.description,
+		dm_permission: false,
+		description_localizations: translation('command.debug.description')
+	},
+
+	// -------- OTHER COMMANDS--------
+
+	{
+		name: 'export',
+		description: command.export.description,
+		dm_permission: false,
+		description_localizations: translation('command.export.description'),
+		options: [
+			{
+				name: 'option',
+				required: true,
+				description: command.export.options.option.description,
+				description_localizations: translation('command.export.options.option.description'),
+				type: ApplicationCommandOptionType.String,
+				choices: [
 					{
-						name: 'tag',
-						description: command.stats.options.tag.description,
-						description_localizations: translation('command.stats.options.tag.description'),
-						type: ApplicationCommandOptionType.String
+						name: 'Clan Wars',
+						value: 'wars'
 					},
 					{
-						name: 'compare',
-						description: command.stats.options.compare.description,
-						description_localizations: translation('command.stats.options.compare.description'),
-						type: ApplicationCommandOptionType.String
+						name: 'Season Stats',
+						value: 'season'
 					},
 					{
-						name: 'stars',
-						description: command.stats.options.stars.description,
-						description_localizations: translation('command.stats.options.stars.description'),
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: '3',
-								value: '==3'
-							},
-							{
-								name: '2',
-								value: '==2'
-							},
-							{
-								name: '>= 2',
-								value: '>=2'
-							},
-							{
-								name: '1',
-								value: '==1'
-							},
-							{
-								name: '>= 1',
-								value: '>=1'
-							}
-						]
+						name: 'Clan Members',
+						value: 'members'
 					},
 					{
-						name: 'type',
-						description: command.stats.options.type.description,
-						description_localizations: translation('command.stats.options.type.description'),
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Regular',
-								value: 'regular'
-							},
-							{
-								name: 'CWL',
-								value: 'cwl'
-							},
-							{
-								name: 'Friendly',
-								value: 'friendly'
-							},
-							{
-								name: 'Regular and CWL',
-								value: 'noFriendly'
-							},
-							{
-								name: 'Regular and Friendly',
-								value: 'noCWL'
-							},
-							{
-								name: 'Regular, CWL and  Friendly',
-								value: 'all'
-							}
-						]
+						name: 'CWL Stats',
+						value: 'cwl'
 					},
 					{
-						name: 'season',
-						description: command.stats.options.season.description,
-						description_localizations: translation('command.stats.options.season.description'),
-						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
+						name: 'Last War Dates',
+						value: 'lastwars'
 					},
 					{
-						name: 'attempt',
-						description: command.stats.options.attempt.description,
-						description_localizations: translation('command.stats.options.attempt.description'),
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Fresh',
-								value: 'fresh'
-							},
-							{
-								name: 'Cleanup',
-								value: 'cleanup'
-							}
-						]
+						name: 'Missed Wars',
+						value: 'missed'
 					}
 				]
 			},
 			{
-				name: 'defense',
-				name_localizations: {
-					'en-GB': 'defence'
-				},
-				description: command.stats.defense.description,
-				description_localizations: translation('command.stats.defense.description'),
+				name: 'season',
+				description: command.export.options.season.description,
+				description_localizations: translation('command.export.options.season.description'),
+				type: ApplicationCommandOptionType.String,
+				choices: getSeasonIds()
+			},
+			{
+				name: 'clans',
+				description: command.export.options.clans.description,
+				description_localizations: translation('command.export.options.clans.description'),
+				autocomplete: true,
+				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'wars',
+				description: command.export.options.wars.description,
+				description_localizations: translation('command.export.options.wars.description'),
+				type: ApplicationCommandOptionType.Integer
+			}
+		]
+	},
+	{
+		name: 'summary',
+		description: 'Shows summary of the clan family.',
+		options: [
+			{
+				name: 'compo',
+				description: 'Shows a summary of family compo.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'war-results',
+				description: 'Shows a summary of war results.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'tag',
-						description: command.stats.options.tag.description,
-						description_localizations: translation('command.stats.options.tag.description'),
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'compare',
-						description: command.stats.options.compare.description,
-						description_localizations: translation('command.stats.options.compare.description'),
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'stars',
-						description: command.stats.options.stars.description,
-						description_localizations: translation('command.stats.options.stars.description'),
+						name: 'season',
+						required: false,
 						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: '3',
-								value: '==3'
-							},
-							{
-								name: '2',
-								value: '==2'
-							},
-							{
-								name: '>= 2',
-								value: '>=2'
-							},
-							{
-								name: '1',
-								value: '==1'
-							},
-							{
-								name: '>= 1',
-								value: '>=1'
-							}
-						]
-					},
-					{
-						name: 'type',
-						description: command.stats.options.type.description,
-						description_localizations: translation('command.stats.options.type.description'),
-						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Regular',
-								value: 'regular'
-							},
-							{
-								name: 'CWL',
-								value: 'cwl'
-							},
-							{
-								name: 'Friendly',
-								value: 'friendly'
-							},
-							{
-								name: 'Regular and CWL',
-								value: 'noFriendly'
-							},
-							{
-								name: 'Regular and Friendly',
-								value: 'noCWL'
-							},
-							{
-								name: 'Regular, CWL and Friendly',
-								value: 'all'
-							}
-						]
-					},
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			{
+				name: 'wars',
+				description: 'Shows a summary of current wars.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'donations',
+				description: 'Shows a summary of donations.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
 					{
 						name: 'season',
-						description: command.stats.options.season.description,
-						description_localizations: translation('command.stats.options.season.description'),
+						required: false,
 						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
-					},
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			// {
+			// 	name: 'members',
+			// 	description: 'Shows information about members.',
+			// 	type: ApplicationCommandOptionType.Subcommand
+			// },
+			{
+				name: 'clans',
+				description: 'Shows a summary of family clans.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'attacks',
+				description: 'Shows a summary of attacks.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
 					{
-						name: 'attempt',
-						description: command.stats.options.attempt.description,
-						description_localizations: translation('command.stats.options.attempt.description'),
+						name: 'season',
+						required: false,
 						type: ApplicationCommandOptionType.String,
-						choices: [
-							{
-								name: 'Fresh',
-								value: 'fresh'
-							},
-							{
-								name: 'Cleanup',
-								value: 'cleanup'
-							}
-						]
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			{
+				name: 'trophies',
+				description: 'Shows a summary of trophies.',
+				type: ApplicationCommandOptionType.Subcommand
+				// options: [
+				// 	{
+				// 		name: 'season',
+				// 		required: false,
+				// 		type: ApplicationCommandOptionType.String,
+				// 		description: command.summary.options.season.description,
+				// 		description_localizations: translation('command.summary.options.season.description'),
+				// 		choices: getSeasonIds()
+				// 	}
+				// ]
+			},
+			{
+				name: 'missed-wars',
+				description: 'Shows a summary of missed wars.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			// {
+			// 	name: 'capital-raids',
+			// 	description: 'Shows information about capital raids.',
+			// 	type: ApplicationCommandOptionType.Subcommand,
+			// 	options: [
+			// 		{
+			// 			name: 'season',
+			// 			required: false,
+			// 			type: ApplicationCommandOptionType.String,
+			// 			description: command.summary.options.season.description,
+			// 			description_localizations: translation('command.summary.options.season.description'),
+			// 			choices: getSeasonIds()
+			// 		}
+			// 	]
+			// },
+			{
+				name: 'capital-contributions',
+				description: 'Shows a summary of capital contributions.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			// {
+			// 	name: 'cwl-ranks',
+			// 	description: 'Shows information about CWL ranks.',
+			// 	type: ApplicationCommandOptionType.Subcommand
+			// },
+			{
+				name: 'activity',
+				description: 'Shows a summary of clan activities (last seen).',
+				type: ApplicationCommandOptionType.Subcommand
+				// options: [
+				// 	{
+				// 		name: 'season',
+				// 		required: false,
+				// 		type: ApplicationCommandOptionType.String,
+				// 		description: command.summary.options.season.description,
+				// 		description_localizations: translation('command.summary.options.season.description'),
+				// 		choices: getSeasonIds()
+				// 	}
+				// ]
+			},
+			{
+				name: 'clan-games',
+				description: 'Shows a summary of clan games scores.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
 					}
 				]
 			}
 		]
 	},
-	// {
-	// 	name: 'sync',
-	// 	description: 'Sync your roles, nicknames, accounts etc.'
-	// },
+	{
+		name: 'search',
+		description: command.search.description,
+		dm_permission: false,
+		description_localizations: translation('command.search.description'),
+		options: [
+			{
+				name: 'name',
+				description: command.search.options.name.description,
+				description_localizations: translation('command.search.options.name.description'),
+				type: ApplicationCommandOptionType.String
+			}
+		]
+	},
+	{
+		name: 'army',
+		description: command.army.description,
+		dm_permission: false,
+		description_localizations: translation('command.army.description'),
+		options: [
+			{
+				name: 'link',
+				description: command.army.options.link.description,
+				description_localizations: translation('command.army.options.link.description'),
+				type: ApplicationCommandOptionType.String,
+				required: true
+			},
+			{
+				name: 'name',
+				description: command.army.options.name.description,
+				description_localizations: translation('command.army.options.name.description'),
+				type: ApplicationCommandOptionType.String,
+				required: false
+			}
+		]
+	},
+	{
+		name: 'nickname',
+		description: command.nickname.description,
+		dm_permission: false,
+		description_localizations: translation('command.nickname.description'),
+		options: [
+			{
+				name: 'user',
+				description: command.nickname.options.user.description,
+				description_localizations: translation('command.nickname.options.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: true
+			}
+		]
+	},
+	{
+		name: 'config',
+		description: command.config.description,
+		dm_permission: false,
+		description_localizations: translation('command.config.description'),
+		options: [
+			{
+				name: 'color_code',
+				name_localizations: {
+					'en-GB': 'colour_code'
+				},
+				description: command.config.options.color_code.description,
+				description_localizations: translation('command.config.options.color_code.description'),
+				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'events_channel',
+				description: command.config.options.events_channel.description,
+				description_localizations: translation('command.config.options.events_channel.description'),
+				type: ApplicationCommandOptionType.String
+			}
+		]
+	},
+	{
+		name: 'timezone',
+		description: command.timezone.description,
+		dm_permission: false,
+		description_localizations: translation('command.timezone.description'),
+		options: [
+			{
+				name: 'location',
+				description: command.timezone.options.location.description,
+				description_localizations: translation('command.timezone.options.location.description'),
+				type: ApplicationCommandOptionType.String,
+				required: true
+			}
+		]
+	},
+	{
+		name: 'redeem',
+		description: command.redeem.description,
+		dm_permission: false,
+		options: [
+			{
+				name: 'disable',
+				description: 'Disable subscription for a server (if subscribed)',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
+					}
+				]
+			}
+		],
+		description_localizations: translation('command.redeem.description')
+	},
+
+	// -------- CONTEXT MENU COMMANDS--------
+
 	{
 		name: 'Profile',
 		type: ApplicationCommandType.User,

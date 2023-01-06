@@ -74,17 +74,10 @@ export default class StatsCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		{
-			command: mode,
-			tag,
-			compare,
-			type,
-			stars,
-			season,
-			attempt
-		}: { command: Mode; tag?: string; compare: string | Compare; type: WarTypeArg; stars: string; season: string; attempt?: string }
+		args: { command: Mode; tag?: string; compare: string | Compare; type: WarTypeArg; stars: string; season: string; attempt?: string }
 	) {
-		const data = await this.client.resolver.resolveClan(interaction, tag);
+		let { command: mode, compare, type, stars, season, attempt } = args;
+		const data = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!data) return;
 
 		compare = this.compare(compare as string);

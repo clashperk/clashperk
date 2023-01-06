@@ -50,7 +50,7 @@ export default class ExportClanMembersCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {
-		const tags = this.client.resolver.resolveArgs(args.clans);
+		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.find(interaction.guildId);

@@ -18,11 +18,8 @@ export default class LastSeenCommand extends Command {
 		});
 	}
 
-	public async exec(
-		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		{ tag, score }: { tag?: string; score?: boolean }
-	) {
-		const clan = await this.client.resolver.resolveClan(interaction, tag);
+	public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { tag?: string; score?: boolean }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 
 		const allowed = await this.client.db
@@ -44,11 +41,11 @@ export default class LastSeenCommand extends Command {
 			return Util.duration(ms + 1e3).padEnd(7, ' ');
 		};
 
-		const members = await this.aggregationQuery(clan, score ? 30 : 1);
+		const members = await this.aggregationQuery(clan, args.score ? 30 : 1);
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
-		if (score) {
+		if (args.score) {
 			members.sort((a, b) => b.count - a.count);
 			embed.setDescription(
 				[
@@ -93,8 +90,8 @@ export default class LastSeenCommand extends Command {
 			.addComponents(
 				new ButtonBuilder()
 					.setStyle(ButtonStyle.Primary)
-					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, score: !score }))
-					.setLabel(score ? 'Last Seen' : 'Scoreboard')
+					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, score: !args.score }))
+					.setLabel(args.score ? 'Last Seen' : 'Scoreboard')
 			);
 
 		return interaction.editReply({ embeds: [embed], components: [row] });

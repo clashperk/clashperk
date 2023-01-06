@@ -1,6 +1,7 @@
 import { Interaction } from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
+import { nanoid } from 'nanoid';
 import { Listener } from '../../lib/index.js';
 import ComponentHandler from '../../struct/ComponentHandler.js';
 import { Settings } from '../../util/Constants.js';
@@ -45,8 +46,42 @@ export default class InteractionListener extends Listener {
 				return interaction.respond(['30m', '1h', '2.5h', '5h'].map((value) => ({ value, name: label(ms(value)) })));
 			}
 			case 'clans': {
-				const clans = await this.client.storage.find(interaction.guildId);
-				if (!clans.length) return;
+				const query = interaction.options.getString('clans');
+				const clans = await this.client.storage.collection
+					.find({
+						guild: interaction.guildId,
+						...(query ? { $text: { $search: query } } : {})
+					})
+					.toArray();
+				if (!clans.length) {
+					if (query) return interaction.respond([{ value: query, name: query }]);
+					return interaction.respond([{ value: '0', name: 'Enter clan tags or names!' }]);
+				}
+				const response = clans.slice(0, 24).map((clan) => ({ value: clan.tag, name: clan.name }));
+				if (response.length > 1) {
+					const tags = clans.map((clan) => clan.tag).join(',');
+					const value = tags.length > 100 ? nanoid() : tags;
+					if (tags.length > 100) await this.client.redis.set(value, tags, { EX: 60 * 60 });
+					response.push({
+						value,
+						name: `All of these (${clans.length})`
+					});
+				}
+				return interaction.respond(response);
+			}
+			case 'tag': {
+				const tag = interaction.options.getString('tag');
+				const clans = await this.client.storage.collection
+					.find({
+						guild: interaction.guildId,
+						...(tag ? { $text: { $search: tag } } : {})
+					})
+					.limit(25)
+					.toArray();
+				if (!clans.length) {
+					if (tag) return interaction.respond([{ value: tag, name: tag }]);
+					return interaction.respond([{ value: '0', name: 'Enter a clan tag!' }]);
+				}
 				return interaction.respond(clans.map((clan) => ({ value: clan.tag, name: clan.name })));
 			}
 		}
