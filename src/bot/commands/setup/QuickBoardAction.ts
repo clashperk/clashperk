@@ -15,7 +15,7 @@ import { Collections, Settings, status } from '../../util/Constants.js';
 export default class QuickBoardActionCommand extends Command {
 	public constructor() {
 		super('sync', {
-			category: 'setup',
+			category: 'none',
 			channel: 'guild',
 			description: {
 				content: ['Setup a quick board for your clan.']

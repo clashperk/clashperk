@@ -55,7 +55,7 @@ export default class FamilyCommand extends Command {
 
 		const customIds = {
 			action: this.client.uuid(),
-			active: this.client.uuid()
+			reverse: this.client.uuid()
 		};
 
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
@@ -69,22 +69,25 @@ export default class FamilyCommand extends Command {
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === customIds.action) {
-				const embed = new EmbedBuilder();
-				embed.setAuthor({ name: 'Avg. Activity and Avg. Active Members' });
-				const members = await this.aggregationQuery(clans, season!);
-				embed.setDescription(
-					[
-						`**[${this.i18n('command.lastseen.title_lastseen', { lng: interaction.locale })}](https://clashperk.com/faq)**`,
-						`\`\`\`\n\u200eLAST-ON SCORE  NAME\n${members
-							.map((m) => `${this.getTime(m.lastSeen!.getTime())}  ${m.score!.toString().padStart(4, ' ')}  ${m.name}`)
-							.join('\n')}`,
-						'```'
-					].join('\n')
-				);
+			const reversed = action.customId === customIds.reverse;
+			const embed = new EmbedBuilder();
+			embed.setAuthor({ name: 'Avg. Activity and Avg. Active Members' });
+			const members = await this.aggregationQuery(clans, season!, reversed);
+			embed.setDescription(
+				[
+					`**[${this.i18n('command.lastseen.title_lastseen', { lng: interaction.locale })}](https://clashperk.com/faq)**`,
+					`\`\`\`\n\u200eLAST-ON SCORE  NAME\n${members
+						.map((m) => `${this.getTime(m.lastSeen!.getTime())}  ${m.score!.toString().padStart(4, ' ')}  ${m.name}`)
+						.join('\n')}`,
+					'```'
+				].join('\n')
+			);
 
-				await action.update({ embeds: [embed], components: [] });
-			}
+			const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+				new ButtonBuilder().setLabel('Reverse Order').setStyle(ButtonStyle.Primary).setCustomId(customIds.reverse)
+			);
+
+			await action.update({ embeds: [embed], components: reversed ? [] : [row] });
 		});
 
 		collector.on('end', async (_, reason) => {
@@ -157,7 +160,7 @@ export default class FamilyCommand extends Command {
 			.next();
 	}
 
-	private async aggregationQuery(clans: any[], season: string) {
+	private async aggregationQuery(clans: any[], season: string, reserve: boolean) {
 		const db = this.client.db.collection(Collections.LAST_SEEN);
 		const result = await db
 			.aggregate<{ name: string; tag: string; lastSeen?: Date; score?: number }>([
@@ -170,7 +173,7 @@ export default class FamilyCommand extends Command {
 				},
 				{
 					$sort: {
-						[`seasons.${season}`]: -1
+						[`seasons.${season}`]: reserve ? 1 : -1
 					}
 				},
 				{
@@ -179,6 +182,16 @@ export default class FamilyCommand extends Command {
 						name: '$name',
 						lastSeen: '$lastSeen',
 						score: `$seasons.${Season.ID}`
+					}
+				},
+				{
+					$match: {
+						score: {
+							$exists: true
+						},
+						lastSeen: {
+							$exists: true
+						}
 					}
 				},
 				{

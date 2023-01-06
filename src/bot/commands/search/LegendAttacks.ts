@@ -111,7 +111,7 @@ export default class ClanCommand extends Command {
 		return interaction.editReply({ embeds: [embed] });
 	}
 
-	private pad(num: number | string, p = 4) {
-		return num.toString().padStart(p, ' ');
+	private pad(num: number | string, padding = 4) {
+		return num.toString().padStart(padding, ' ');
 	}
 }
