@@ -16,11 +16,13 @@ export default class FamilyClansCommand extends Command {
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
-		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
 
-		clanList.sort((a, b) => b.members - a.members);
+		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
+		clanList.sort((a, b) => a.name.localeCompare(b.name));
+
 		const nameLen = Math.max(...clanList.map((clan) => clan.name.length)) + 1;
 		const tagLen = Math.max(...clanList.map((clan) => clan.tag.length)) + 1;
+
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! })
