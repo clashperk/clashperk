@@ -1183,6 +1183,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: command.setup.enable.options.tag.description,
 						description_localizations: translation('command.setup.enable.options.tag.description'),
 						required: true,
+						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
@@ -1263,6 +1264,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'tag',
+						autocomplete: true,
 						description: command.setup.disable.options.tag.description,
 						description_localizations: translation('command.setup.disable.options.tag.description'),
 						type: ApplicationCommandOptionType.String,
@@ -1302,6 +1304,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: command.alias.create.options.tag.description,
 						description_localizations: translation('command.alias.create.options.tag.description'),
 						required: true,
+						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					}
 				]
@@ -1365,6 +1368,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'clans',
 						required: true,
+						autocomplete: true,
 						description: command.autorole.enable.options.clans.description,
 						description_localizations: translation('command.autorole.enable.options.clans.description'),
 						type: ApplicationCommandOptionType.String
@@ -1403,6 +1407,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				options: [
 					{
 						name: 'clans',
+						autocomplete: true,
 						description: command.autorole.disable.options.clans.description,
 						description_localizations: translation('command.autorole.disable.options.clans.description'),
 						type: ApplicationCommandOptionType.String
@@ -1457,6 +1462,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'clans',
 						required: true,
+						autocomplete: true,
 						description: command.reminder.create.options.clans.description,
 						description_localizations: translation('command.reminder.create.options.clans.description'),
 						type: ApplicationCommandOptionType.String
@@ -1523,6 +1529,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'clans',
 						required: true,
+						autocomplete: true,
 						description: command.reminder.now.options.clans.description,
 						description_localizations: translation('command.reminder.now.options.clans.description'),
 						type: ApplicationCommandOptionType.String
@@ -1557,6 +1564,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'clans',
 						required: true,
+						autocomplete: true,
 						description: 'Clan tags or aliases. (enter * to include all clans)',
 						type: ApplicationCommandOptionType.String
 					},
@@ -1615,6 +1623,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'clans',
 						required: true,
+						autocomplete: true,
 						description: 'Clan tags or aliases. (enter * to include all clans)',
 						type: ApplicationCommandOptionType.String
 					}
@@ -2042,6 +2051,7 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'clans',
 								required: true,
+								autocomplete: true,
 								description: command.reminder.create.options.clans.description,
 								description_localizations: translation('command.reminder.create.options.clans.description'),
 								type: ApplicationCommandOptionType.String
@@ -2108,6 +2118,7 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'clans',
 								required: true,
+								autocomplete: true,
 								description: command.reminder.now.options.clans.description,
 								description_localizations: translation('command.reminder.now.options.clans.description'),
 								type: ApplicationCommandOptionType.String
@@ -2142,6 +2153,7 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'clans',
 								required: true,
+								autocomplete: true,
 								description: 'Clan tags or aliases. (enter * to include all clans)',
 								type: ApplicationCommandOptionType.String
 							},
@@ -2200,6 +2212,7 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'clans',
 								required: true,
+								autocomplete: true,
 								description: 'Clan tags or aliases. (enter * to include all clans)',
 								type: ApplicationCommandOptionType.String
 							}
@@ -2232,6 +2245,7 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'tag',
 				description: 'Clan tag or alias.',
+				autocomplete: true,
 				type: ApplicationCommandOptionType.String,
 				required: false
 			}

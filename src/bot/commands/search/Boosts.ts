@@ -1,4 +1,4 @@
-import { CommandInteraction, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
+import { CommandInteraction, ButtonBuilder, ActionRowBuilder, StringSelectMenuBuilder, EmbedBuilder, ButtonStyle, User } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { EMOJIS, SUPER_TROOPS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -19,8 +19,8 @@ export default class BoostsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; value?: string; recent?: boolean }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; value?: string; recent?: boolean; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 		if (!clan.members) {
 			return interaction.followUp({

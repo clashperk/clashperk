@@ -5,7 +5,8 @@ import {
 	ActionRowBuilder,
 	StringSelectMenuBuilder,
 	ButtonStyle,
-	ComponentType
+	ComponentType,
+	User
 } from 'discord.js';
 import { Clan, ClanWar, ClanWarLeagueGroup, ClanWarMember, Player, WarClan } from 'clashofclans.js';
 import { EMOJIS, HERO_PETS, BLUE_NUMBERS, WHITE_NUMBERS } from '../../util/Emojis.js';
@@ -30,8 +31,8 @@ export default class CWLLineupCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const body = await this.client.http.clanWarLeague(clan.tag);

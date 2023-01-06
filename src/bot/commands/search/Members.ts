@@ -1,4 +1,4 @@
-import { CommandInteraction, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
+import { CommandInteraction, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ComponentType, User } from 'discord.js';
 import { PlayerItem } from 'clashofclans.js';
 import { HERO_PETS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -36,7 +36,7 @@ export default class MembersCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; option: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; option: string; user?: User }) {
 		const command = {
 			discord: this.handler.modules.get('link-list')!,
 			trophies: this.handler.modules.get('trophies')!,
@@ -44,7 +44,7 @@ export default class MembersCommand extends Command {
 		}[args.option];
 		if (command) return this.handler.exec(interaction, command, { tag: args.tag });
 
-		const data = await this.client.resolver.resolveClan(interaction, args.tag);
+		const data = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 		if (data.members < 1) {
 			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));

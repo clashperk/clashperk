@@ -22,7 +22,7 @@ export default class ClanActivityCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; days?: number }) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
-			? await this.client.storage.search(interaction.guild.id, tags)
+			? (await this.client.storage.search(interaction.guild.id, tags)).slice(0, 7)
 			: (await this.client.storage.find(interaction.guild.id)).slice(0, 7);
 
 		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));

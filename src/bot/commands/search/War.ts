@@ -1,4 +1,13 @@
-import { EmbedBuilder, CommandInteraction, ButtonBuilder, ActionRowBuilder, escapeMarkdown, ButtonStyle, ComponentType } from 'discord.js';
+import {
+	EmbedBuilder,
+	CommandInteraction,
+	ButtonBuilder,
+	ActionRowBuilder,
+	escapeMarkdown,
+	ButtonStyle,
+	ComponentType,
+	User
+} from 'discord.js';
 import { ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import moment from 'moment';
 import { Collections, WarType } from '../../util/Constants.js';
@@ -22,8 +31,8 @@ export default class WarCommand extends Command {
 
 	// TODO : Args Parsing with last war id
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; war_id?: number }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; war_id?: number; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 		if (args.war_id) return this.getWar(interaction, args.war_id, clan.tag);
 

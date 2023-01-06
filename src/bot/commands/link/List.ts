@@ -1,4 +1,4 @@
-import { Collection, GuildMember, CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle } from 'discord.js';
+import { Collection, GuildMember, CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, User } from 'discord.js';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -17,8 +17,8 @@ export default class LinkListCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; showTags?: boolean }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; showTags?: boolean; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 		if (!clan.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
 

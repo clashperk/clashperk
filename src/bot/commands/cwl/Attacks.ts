@@ -7,7 +7,8 @@ import {
 	escapeInlineCode,
 	ButtonStyle,
 	escapeMarkdown,
-	ComponentType
+	ComponentType,
+	User
 } from 'discord.js';
 import { ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import moment from 'moment';
@@ -31,8 +32,8 @@ export default class CWLAttacksCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const body = await this.client.http.clanWarLeague(clan.tag);

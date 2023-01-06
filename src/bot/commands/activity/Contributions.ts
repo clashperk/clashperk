@@ -1,5 +1,5 @@
 import { Clan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { ClanCapitalGoldModel } from '../../types/index.js';
@@ -16,12 +16,12 @@ export default class CapitalContributionsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; clear?: boolean }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; clear?: boolean; user?: User }) {
 		if (args.clear) {
 			return interaction.editReply({ components: [] });
 		}
 
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const currentWeekId = this.raidWeek().weekId;

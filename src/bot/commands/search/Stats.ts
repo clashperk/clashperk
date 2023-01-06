@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
@@ -74,10 +74,19 @@ export default class StatsCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { command: Mode; tag?: string; compare: string | Compare; type: WarTypeArg; stars: string; season: string; attempt?: string }
+		args: {
+			command: Mode;
+			tag?: string;
+			compare: string | Compare;
+			type: WarTypeArg;
+			stars: string;
+			season: string;
+			attempt?: string;
+			user?: User;
+		}
 	) {
 		let { command: mode, compare, type, stars, season, attempt } = args;
-		const data = await this.client.resolver.resolveClan(interaction, args.tag);
+		const data = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
 		compare = this.compare(compare as string);

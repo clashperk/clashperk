@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Season } from '../../util/index.js';
@@ -36,8 +36,8 @@ export default class ClanCommand extends Command {
 		return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').subtract(1, 'second').toDate().getTime() };
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const multi = this.client.redis.multi();

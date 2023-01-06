@@ -6,7 +6,8 @@ import {
 	ButtonStyle,
 	ButtonInteraction,
 	BaseInteraction,
-	MessageType
+	MessageType,
+	User
 } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
@@ -30,9 +31,9 @@ export default class ClanGamesCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { tag?: string; max: boolean; filter: boolean; season?: string }
+		args: { tag?: string; max: boolean; filter: boolean; season?: string; user?: User }
 	) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 		const seasonId = this.getSeasonId(args.season);
 

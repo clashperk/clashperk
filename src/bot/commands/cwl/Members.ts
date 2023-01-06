@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, escapeInlineCode } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, escapeInlineCode, User } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
@@ -15,8 +15,8 @@ export default class CWLMembersCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const body = await this.client.http.clanWarLeague(clan.tag);

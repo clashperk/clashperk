@@ -1,5 +1,5 @@
 import { Clan, ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { EmbedBuilder, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, User } from 'discord.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -17,8 +17,8 @@ export default class CWLStatsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const body = await this.client.http.clanWarLeague(clan.tag);

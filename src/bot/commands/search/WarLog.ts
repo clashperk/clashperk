@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, User } from 'discord.js';
 import moment from 'moment';
 import { Collections, WarType } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -18,8 +18,8 @@ export default class WarLogCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		const data = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+		const data = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
 		const embed = new EmbedBuilder()

@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, User } from 'discord.js';
 import { ClanWarMember, Player, WarClan } from 'clashofclans.js';
 import { BLUE_NUMBERS, EMOJIS, HERO_PETS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
@@ -23,8 +23,8 @@ export default class LineupCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const embed = new EmbedBuilder()

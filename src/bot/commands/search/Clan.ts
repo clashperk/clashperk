@@ -48,7 +48,7 @@ export default class ClanCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const embed = new EmbedBuilder()

@@ -1,4 +1,13 @@
-import { CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, ButtonInteraction, MessageType } from 'discord.js';
+import {
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	EmbedBuilder,
+	ButtonStyle,
+	ButtonInteraction,
+	MessageType,
+	User
+} from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -18,8 +27,11 @@ export default class LastSeenCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>, args: { tag?: string; score?: boolean }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		args: { tag?: string; score?: boolean; user?: User }
+	) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
 		const allowed = await this.client.db

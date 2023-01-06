@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, escapeMarkdown } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, escapeMarkdown, User } from 'discord.js';
 import { ClanWar } from 'clashofclans.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
@@ -19,8 +19,8 @@ export default class RemainingCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; war_id?: number }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; war_id?: number; user?: User }) {
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 		if (args.war_id) return this.getWar(interaction, args.war_id, clan.tag);
 
