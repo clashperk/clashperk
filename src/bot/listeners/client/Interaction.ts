@@ -47,10 +47,11 @@ export default class InteractionListener extends Listener {
 	public async autocomplete(interaction: Interaction<'cached'>) {
 		if (!interaction.isAutocomplete()) return;
 
-		switch (interaction.options.getFocused(true).name) {
+		const focused = interaction.options.getFocused(true).name;
+		switch (focused) {
 			case 'duration': {
 				const cmd = interaction.options.getSubcommandGroup(true);
-				const dur = interaction.options.getString('duration');
+				const dur = interaction.options.getString(focused);
 				const matchedDur = dur?.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)?.reduce((acc, cur) => acc + ms(cur), 0) ?? 0;
 
 				if (dur && !isNaN(parseInt(dur, 10))) {
@@ -96,7 +97,7 @@ export default class InteractionListener extends Listener {
 				return interaction.respond(this.getTimes(times, matchedDur, cmd));
 			}
 			case 'clans': {
-				const query = interaction.options.getString('clans')?.replace(/^\*$/, '');
+				const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
 				const clans = await this.client.storage.collection
 					.find({
 						guild: interaction.guildId,
@@ -120,32 +121,45 @@ export default class InteractionListener extends Listener {
 				return interaction.respond(response);
 			}
 			case 'tag': {
-				if (['player', 'units', 'upgrades', 'rushed'].includes(interaction.commandName)) {
-					return this.playerTagAutocomplete(interaction);
+				if (['player', 'units', 'upgrades', 'rushed', 'verify'].includes(interaction.commandName)) {
+					return this.playerTagAutocomplete(interaction, focused);
 				}
-				return this.clanTagAutocomplete(interaction);
+				return this.clanTagAutocomplete(interaction, focused);
 			}
 			case 'player_tag': {
-				return this.playerTagAutocomplete(interaction);
+				return this.playerTagAutocomplete(interaction, focused);
 			}
 			case 'clan_tag': {
-				return this.clanTagAutocomplete(interaction);
+				return this.clanTagAutocomplete(interaction, focused);
 			}
 		}
 	}
 
-	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>) {
-		const query = interaction.options.getString('tag');
+	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+		const query = interaction.options.getString(focused);
 		const user = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
 		if (!user?.entries.length) {
 			if (query) return interaction.respond([{ value: query, name: query }]);
 			return interaction.respond([{ value: '0', name: 'Enter a player tag!' }]);
 		}
-		return interaction.respond(user.entries.map((entry) => ({ value: entry.tag, name: `${entry.name ?? 'Unknown'} (${entry.tag})` })));
+		if (!query) {
+			return interaction.respond(
+				user.entries.map((entry) => ({ value: entry.tag, name: `${entry.name ?? 'Unknown'} (${entry.tag})` }))
+			);
+		}
+		const result = user.entries.filter(
+			(entry) =>
+				Boolean(entry.name?.toLowerCase().includes(query.toLowerCase())) || entry.tag.toLowerCase().includes(query.toLowerCase())
+		);
+		if (!result.length) {
+			if (query) return interaction.respond([{ value: query, name: query }]);
+			return interaction.respond([{ value: '0', name: 'Enter a player tag!' }]);
+		}
+		return interaction.respond(result.map((entry) => ({ value: entry.tag, name: `${entry.name ?? 'Unknown'} (${entry.tag})` })));
 	}
 
-	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>) {
-		const query = interaction.options.getString('tag');
+	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+		const query = interaction.options.getString(focused);
 		const clans = await this.client.storage.collection
 			.find({
 				guild: interaction.guildId,
