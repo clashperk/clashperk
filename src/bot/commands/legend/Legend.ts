@@ -20,6 +20,6 @@ export default class LegendCommand extends Command {
 		}[args.command];
 
 		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
-		return this.handler.exec(interaction, command, args);
+		return this.handler.continue(interaction, command);
 	}
 }

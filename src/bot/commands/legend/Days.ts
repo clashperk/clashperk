@@ -8,7 +8,8 @@ import {
 	ComponentType,
 	time,
 	ButtonBuilder,
-	ButtonStyle
+	ButtonStyle,
+	User
 } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import moment from 'moment';
@@ -78,8 +79,8 @@ export default class LegendDaysCommand extends Command {
 		return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').subtract(1, 'second').toDate().getTime() };
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		const data = await this.client.resolver.resolvePlayer(interaction, args.tag, 1);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id, 1);
 		if (!data) return;
 
 		const customIds = {
