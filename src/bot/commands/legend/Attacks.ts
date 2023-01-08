@@ -62,14 +62,14 @@ export default class LegendAttacksCommand extends Command {
 			const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 			if (logs.length === 0) continue;
 
-			const attacks = logs.filter((en) => en.inc > 0 || en.type === 'attack');
-			const defenses = logs.filter((en) => en.inc < 0 || en.type === 'defense');
+			const attacks = logs.filter((en) => en.inc > 0);
+			const defenses = logs.filter((en) => en.inc <= 0);
 
 			const [initial] = logs;
 			const [current] = logs.slice(-1);
 
-			const attackCount = attacks.length;
-			const defenseCount = defenses.length;
+			const attackCount = Math.min(attacks.length);
+			const defenseCount = Math.min(defenses.length);
 
 			const trophiesFromAttacks = attacks.reduce((acc, cur) => acc + cur.inc, 0);
 			const trophiesFromDefenses = defenses.reduce((acc, cur) => acc + cur.inc, 0);

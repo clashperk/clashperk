@@ -165,8 +165,8 @@ export default class LegendDaysCommand extends Command {
 		const { startTime, endTime } = this.getDates();
 
 		const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
-		const attacks = logs.filter((en) => en.inc > 0 || en.type === 'attack') ?? [];
-		const defenses = logs.filter((en) => en.inc < 0 || en.type === 'defense') ?? [];
+		const attacks = logs.filter((en) => en.inc > 0) ?? [];
+		const defenses = logs.filter((en) => en.inc <= 0) ?? [];
 
 		const member = (clan?.memberList ?? []).find((en) => en.tag === data.tag);
 		const clanRank = member?.clanRank ?? 0;
@@ -240,14 +240,14 @@ export default class LegendDaysCommand extends Command {
 			{
 				name: '**Attacks**',
 				value: attacks.length
-					? attacks.map((m) => `\` +${m.inc.toString().padStart(2, ' ')} \` ${time(new Date(m.timestamp), 'R')}`).join('\n')
+					? attacks.map((m) => `\` ${`+${m.inc}`.padStart(3, ' ')} \` ${time(new Date(m.timestamp), 'R')}`).join('\n')
 					: '-',
 				inline: true
 			},
 			{
 				name: '**Defenses**',
 				value: defenses.length
-					? defenses.map((m) => `\` ${m.inc.toString().padStart(2, ' ')} \` ${time(new Date(m.timestamp), 'R')}`).join('\n')
+					? defenses.map((m) => `\` ${`-${Math.abs(m.inc)}`.padStart(3, ' ')} \` ${time(new Date(m.timestamp), 'R')}`).join('\n')
 					: '-',
 				inline: true
 			}
@@ -271,8 +271,8 @@ export default class LegendDaysCommand extends Command {
 		const perDayLogs = days.reduce<{ attackCount: number; defenseCount: number; gain: number; loss: number; final: number }[]>(
 			(prev, { startTime, endTime }) => {
 				const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
-				const attacks = mixedLogs.filter((en) => en.inc > 0 || en.type === 'attack') ?? [];
-				const defenses = mixedLogs.filter((en) => en.inc < 0 || en.type === 'defense') ?? [];
+				const attacks = mixedLogs.filter((en) => en.inc > 0) ?? [];
+				const defenses = mixedLogs.filter((en) => en.inc <= 0) ?? [];
 
 				const attackCount = attacks.length;
 				const defenseCount = defenses.length;
