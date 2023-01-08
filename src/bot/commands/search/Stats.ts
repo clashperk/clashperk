@@ -2,7 +2,7 @@ import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
-import { Collections, MAX_TOWNHALL_LEVEL, WarType } from '../../util/Constants.js';
+import { Collections, MAX_TOWN_HALL_LEVEL, WarType } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 
@@ -63,9 +63,9 @@ export default class StatsCommand extends Command {
 		if (
 			!(
 				attackerTownHall > 1 &&
-				attackerTownHall <= MAX_TOWNHALL_LEVEL &&
+				attackerTownHall <= MAX_TOWN_HALL_LEVEL &&
 				defenderTownHall > 1 &&
-				defenderTownHall <= MAX_TOWNHALL_LEVEL
+				defenderTownHall <= MAX_TOWN_HALL_LEVEL
 			)
 		)
 			return 'all';

@@ -195,6 +195,15 @@ export default class RemindScheduler {
 		].join('\n');
 	}
 
+	private warEndReminderText(
+		reminder: Pick<Reminder, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message'>,
+		schedule: Pick<Schedule, 'tag' | 'warTag'>,
+		data: ClanWar
+	) {
+		const clan = data.clan.tag === schedule.tag ? data.clan : data.opponent;
+		return [`\u200e🔔 **${clan.name} (War has ended)**`, `📨 ${reminder.message}`].join('\n');
+	}
+
 	private async trigger(schedule: Schedule) {
 		const id = schedule._id.toHexString();
 		try {
@@ -209,7 +218,8 @@ export default class RemindScheduler {
 				: await this.client.http.currentClanWar(schedule.tag);
 			if (!data.ok) return this.clear(id);
 
-			if (['notInWar', 'warEnded'].includes(data.state)) return await this.delete(schedule);
+			if (data.state === 'notInWar') return await this.delete(schedule);
+			if (data.state === 'warEnded' && schedule.duration !== 0) return await this.delete(schedule);
 
 			if (this.wasInMaintenance(schedule, data)) {
 				this.client.logger.info(
@@ -227,7 +237,10 @@ export default class RemindScheduler {
 			const guild = this.client.guilds.cache.get(reminder.guild);
 			if (!guild) return await this.delete(schedule);
 
-			const text = await this.getReminderText(reminder, schedule, data, guild);
+			const text =
+				schedule.duration === 0
+					? this.warEndReminderText(reminder, schedule, data)
+					: await this.getReminderText(reminder, schedule, data, guild);
 			if (!text) return await this.delete(schedule);
 
 			const channel = this.client.util.hasPermissions(reminder.channel, [
@@ -264,12 +277,21 @@ export default class RemindScheduler {
 		channel: TextChannel | NewsChannel | ForumChannel | null;
 	}): Promise<APIMessage | null> {
 		try {
-			return await webhook.send({ content, allowedMentions: { parse: ['users'] }, threadId: reminder.threadId });
+			return await webhook.send({
+				content,
+				allowedMentions: { parse: reminder.duration === 0 ? ['users', 'roles'] : ['users'] },
+				threadId: reminder.threadId
+			});
 		} catch (error: any) {
 			// Unknown Webhook / Unknown Channel
 			if ([10015, 10003].includes(error.code) && channel) {
 				const webhook = await this.webhook(channel, reminder);
-				if (webhook) return webhook.send({ content, allowedMentions: { parse: ['users'] }, threadId: reminder.threadId });
+				if (webhook)
+					return webhook.send({
+						content,
+						allowedMentions: { parse: reminder.duration === 0 ? ['users', 'roles'] : ['users'] },
+						threadId: reminder.threadId
+					});
 			}
 			throw error;
 		}

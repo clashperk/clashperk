@@ -63,6 +63,16 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
+			db.collection(Collections.PLAYER_RANKS).createIndexes([
+				{
+					key: { countryCode: 1 },
+					unique: true
+				},
+				{
+					key: { 'players.tag': 1 }
+				}
+			]),
+
 			db.collection(Collections.PLAYER_SEASONS).createIndexes([
 				{
 					key: { tag: 1, season: 1 },

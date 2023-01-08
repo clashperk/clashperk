@@ -1,4 +1,13 @@
-import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, escapeMarkdown, ComponentType } from 'discord.js';
+import {
+	EmbedBuilder,
+	CommandInteraction,
+	StringSelectMenuBuilder,
+	ActionRowBuilder,
+	escapeMarkdown,
+	ComponentType,
+	ButtonBuilder,
+	ButtonStyle
+} from 'discord.js';
 import { Player, WarClan } from 'clashofclans.js';
 import ms from 'ms';
 import { EMOJIS, TOWN_HALLS, HEROES, SIEGE_MACHINES } from '../../util/Emojis.js';
@@ -54,12 +63,15 @@ export default class PlayerCommand extends Command {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag, 1);
 		if (!data) return;
 
-		const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
-		const msg = await interaction.editReply({ embeds: [embed] });
+		const customIds = {
+			accounts: this.client.uuid(interaction.user.id),
+			troops: this.client.uuid(interaction.user.id),
+			upgrades: this.client.uuid(interaction.user.id),
+			rushed: this.client.uuid(interaction.user.id)
+		};
 
-		if (!data.user) return;
-		const players = await this.getPlayers(data.user.id);
-		if (!players.length) return;
+		const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
+		const players = data.user ? await this.getPlayers(data.user.id) : [];
 
 		const options = players.map((op) => ({
 			description: op.tag,
@@ -68,26 +80,45 @@ export default class PlayerCommand extends Command {
 			emoji: TOWN_HALLS[op.townHallLevel]
 		}));
 
-		const customID = this.client.uuid(interaction.user.id);
-		const menu = new StringSelectMenuBuilder().setCustomId(customID).setPlaceholder('Select an account!').addOptions(options);
+		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.troops))
+			.addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
+			.addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed));
+		const menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
+		);
 
-		await interaction.editReply({ components: [new ActionRowBuilder<StringSelectMenuBuilder>({ components: [menu] })] });
+		const msg = await interaction.editReply({ embeds: [embed], components: options.length ? [row, menu] : [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => [customID].includes(action.customId) && action.user.id === interaction.user.id,
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
+		args.tag = data.tag;
 		collector.on('collect', async (action) => {
-			if (action.customId === customID && action.isStringSelectMenu()) {
+			if (action.customId === customIds.accounts && action.isStringSelectMenu()) {
 				await action.deferUpdate();
 				const data = players.find((en) => en.tag === action.values[0])!;
+				args.tag = data.tag;
 				const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
 				await action.editReply({ embeds: [embed] });
+			}
+			if (action.customId === customIds.troops && action.isButton()) {
+				await action.deferUpdate();
+				return this.handler.exec(interaction, this.handler.modules.get('units')!, { tag: args.tag });
+			}
+			if (action.customId === customIds.upgrades && action.isButton()) {
+				await action.deferUpdate();
+				return this.handler.exec(interaction, this.handler.modules.get('upgrades')!, { tag: args.tag });
+			}
+			if (action.customId === customIds.rushed && action.isButton()) {
+				await action.deferUpdate();
+				return this.handler.exec(interaction, this.handler.modules.get('rushed')!, { tag: args.tag });
 			}
 		});
 
 		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customID);
+			Object.values(customIds).forEach((id) => this.client.components.delete(id));
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
 	}

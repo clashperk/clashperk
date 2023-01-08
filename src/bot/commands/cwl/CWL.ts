@@ -1,5 +1,5 @@
 import { CommandInteraction } from 'discord.js';
-import { Args, Command } from '../../lib/index.js';
+import { Command } from '../../lib/index.js';
 
 export default class CWLCommand extends Command {
 	public constructor() {
@@ -11,15 +11,6 @@ export default class CWLCommand extends Command {
 				content: ['CWL season overview and summary.']
 			}
 		});
-	}
-
-	public args(): Args {
-		return {
-			option: {
-				id: 'command',
-				match: 'STRING'
-			}
-		};
 	}
 
 	public exec(interaction: CommandInteraction, args: { command: string }) {

@@ -131,6 +131,8 @@ export default class CapitalReminderDeleteCommand extends Command {
 				embed.addFields([{ name: 'Remaining Hits', value: reminder.remaining.join(', ') }]);
 			}
 
+			embed.addFields([{ name: 'Members', value: reminder.allMembers ? 'All Members' : 'Only Participants' }]);
+
 			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
 			if (_clans.length) embed.addFields([{ name: 'Clans', value: _clans.join(', ').substring(0, 1024) }]);
 			else embed.addFields([{ name: 'Clans', value: reminder.clans.join(', ').substring(0, 1024) }]);

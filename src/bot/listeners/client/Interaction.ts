@@ -1,10 +1,11 @@
-import { Interaction } from 'discord.js';
+import { AutocompleteInteraction, Interaction } from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
 import { nanoid } from 'nanoid';
 import { Listener } from '../../lib/index.js';
 import ComponentHandler from '../../struct/ComponentHandler.js';
-import { Settings } from '../../util/Constants.js';
+import { UserInfoModel } from '../../types/index.js';
+import { Collections, Settings } from '../../util/Constants.js';
 
 export default class InteractionListener extends Listener {
 	private readonly componentHandler: ComponentHandler;
@@ -24,29 +25,78 @@ export default class InteractionListener extends Listener {
 		this.componentInteraction(interaction);
 	}
 
+	private inRange(dur: number, cmd: string) {
+		const minDur = ms('15m');
+		const maxDur = cmd === 'clan-wars' ? ms('1d') + ms('21h') : ms('3d');
+		return dur >= minDur && dur <= maxDur;
+	}
+
+	private getLabel(dur: number) {
+		return moment.duration(dur).format('d[d] h[h] m[m]', { trim: 'both mid' });
+	}
+
+	private getTimes(times: string[], matchedDur: number, cmd: string) {
+		if (this.inRange(matchedDur, cmd)) {
+			const value = this.getLabel(matchedDur);
+			if (times.includes(value)) times.splice(times.indexOf(value), 1);
+			times.unshift(value);
+		}
+		return times.map((value) => ({ value, name: value }));
+	}
+
 	public async autocomplete(interaction: Interaction<'cached'>) {
 		if (!interaction.isAutocomplete()) return;
 
 		switch (interaction.options.getFocused(true).name) {
 			case 'duration': {
+				const cmd = interaction.options.getSubcommandGroup(true);
 				const dur = interaction.options.getString('duration');
-				const label = (duration: number) => moment.duration(duration).format('H[h] m[m]', { trim: 'both mid' });
+				const matchedDur = dur?.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)?.reduce((acc, cur) => acc + ms(cur), 0) ?? 0;
 
 				if (dur && !isNaN(parseInt(dur, 10))) {
 					const duration = parseInt(dur, 10);
 					if (duration < 60 && dur.includes('m')) {
-						return interaction.respond(['15m', '30m', '45m', '1h'].map((value) => ({ value, name: value })));
+						const times = ['15m', '30m', '45m', '1h'];
+						return interaction.respond(this.getTimes(times, matchedDur, cmd));
 					}
 
-					return interaction.respond(
-						['h', '.25h', '.5h', '.75h'].map((num) => ({ value: `${duration}${num}`, name: label(ms(`${duration}${num}`)) }))
-					);
+					if (dur.includes('d')) {
+						const times = [6, 12, 18, 20, 0].map((num) => this.getLabel(ms(`${duration * 24 + num}h`)));
+						return interaction.respond(this.getTimes(times, matchedDur, cmd));
+					}
+
+					const times = ['h', '.25h', '.5h', '.75h'].map((num) => this.getLabel(ms(`${duration}${num}`)));
+					return interaction.respond(this.getTimes(times, matchedDur, cmd));
 				}
 
-				return interaction.respond(['30m', '1h', '2.5h', '5h'].map((value) => ({ value, name: label(ms(value)) })));
+				const clanWarTimes = [
+					'15m',
+					'30m',
+					'1h',
+					'1h 30m',
+					'2h',
+					'2h 30m',
+					'3h',
+					'4h',
+					'6h',
+					'8h',
+					'10h',
+					'12h',
+					'14h',
+					'16h',
+					'18h',
+					'23h',
+					'1d',
+					'1d 6h',
+					'1d 12h'
+				];
+				const capitalRaidTimes = ['6h', '10h', '12h', '15h', '16h', '18h', '20h', '23h', '1d', '1d 12h', '2d', '2d 18h', '2d 23h'];
+
+				const times = cmd === 'clan-wars' ? clanWarTimes : capitalRaidTimes;
+				return interaction.respond(this.getTimes(times, matchedDur, cmd));
 			}
 			case 'clans': {
-				const query = interaction.options.getString('clans');
+				const query = interaction.options.getString('clans')?.replace(/^\*$/, '');
 				const clans = await this.client.storage.collection
 					.find({
 						guild: interaction.guildId,
@@ -59,32 +109,55 @@ export default class InteractionListener extends Listener {
 				}
 				const response = clans.slice(0, 24).map((clan) => ({ value: clan.tag, name: clan.name }));
 				if (response.length > 1) {
-					const tags = clans.map((clan) => clan.tag).join(',');
-					const value = tags.length > 100 ? nanoid() : tags;
-					if (tags.length > 100) await this.client.redis.set(value, tags, { EX: 60 * 60 });
-					response.push({
+					const clanTags = clans.map((clan) => clan.tag).join(',');
+					const value = clanTags.length > 100 ? nanoid() : clanTags;
+					if (clanTags.length > 100) await this.client.redis.set(value, clanTags, { EX: 60 * 60 });
+					response.unshift({
 						value,
-						name: `All of these (${clans.length})`
+						name: `**All of these (${clans.length})**`
 					});
 				}
 				return interaction.respond(response);
 			}
 			case 'tag': {
-				const tag = interaction.options.getString('tag');
-				const clans = await this.client.storage.collection
-					.find({
-						guild: interaction.guildId,
-						...(tag ? { $text: { $search: tag } } : {})
-					})
-					.limit(25)
-					.toArray();
-				if (!clans.length) {
-					if (tag) return interaction.respond([{ value: tag, name: tag }]);
-					return interaction.respond([{ value: '0', name: 'Enter a clan tag!' }]);
+				if (['player', 'units', 'upgrades', 'rushed'].includes(interaction.commandName)) {
+					return this.playerTagAutocomplete(interaction);
 				}
-				return interaction.respond(clans.map((clan) => ({ value: clan.tag, name: clan.name })));
+				return this.clanTagAutocomplete(interaction);
+			}
+			case 'player_tag': {
+				return this.playerTagAutocomplete(interaction);
+			}
+			case 'clan_tag': {
+				return this.clanTagAutocomplete(interaction);
 			}
 		}
+	}
+
+	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>) {
+		const query = interaction.options.getString('tag');
+		const user = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
+		if (!user?.entries.length) {
+			if (query) return interaction.respond([{ value: query, name: query }]);
+			return interaction.respond([{ value: '0', name: 'Enter a player tag!' }]);
+		}
+		return interaction.respond(user.entries.map((entry) => ({ value: entry.tag, name: `${entry.name ?? 'Unknown'} (${entry.tag})` })));
+	}
+
+	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>) {
+		const query = interaction.options.getString('tag');
+		const clans = await this.client.storage.collection
+			.find({
+				guild: interaction.guildId,
+				...(query ? { $text: { $search: query } } : {})
+			})
+			.limit(25)
+			.toArray();
+		if (!clans.length) {
+			if (query) return interaction.respond([{ value: query, name: query }]);
+			return interaction.respond([{ value: '0', name: 'Enter a clan tag!' }]);
+		}
+		return interaction.respond(clans.map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` })));
 	}
 
 	private async contextInteraction(interaction: Interaction) {

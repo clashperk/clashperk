@@ -70,6 +70,10 @@ export class Util {
 		return id;
 	}
 
+	public static plural(count: number, text: string, suffix: 's' | 'es' | '' = 's') {
+		return count === 1 ? text : `${text}${suffix}`;
+	}
+
 	public static splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
 		if (text.length <= maxLength) return [text];
 		let splitText = [text];

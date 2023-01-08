@@ -1,6 +1,6 @@
 import { CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { Season } from '../../util/index.js';
 
 // ¹²³⁴⁵⁶⁷⁸
@@ -16,17 +16,23 @@ const attackCounts: Record<string, string> = {
 	8: '⁸'
 };
 
-export default class ClanCommand extends Command {
+export default class LegendAttacksCommand extends Command {
 	public constructor() {
 		super('legend-attacks', {
-			category: 'search',
+			category: 'legend',
 			channel: 'guild',
-			description: {
-				content: 'Shows some basic info about your clan.'
-			},
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true
 		});
+	}
+
+	public args(): Args {
+		return {
+			clan_tag: {
+				id: 'tag',
+				match: 'STRING'
+			}
+		};
 	}
 
 	private getDates() {

@@ -11,7 +11,8 @@ import {
 } from 'discord.js';
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
-import { Collections, MAX_TOWNHALL_LEVEL, missingPermissions } from '../../util/Constants.js';
+import moment from 'moment';
+import { Collections, MAX_TOWN_HALL_LEVEL, missingPermissions } from '../../util/Constants.js';
 import { Reminder } from '../../struct/RemindScheduler.js';
 import { Args, Command } from '../../lib/index.js';
 
@@ -83,17 +84,19 @@ export default class ReminderCreateCommand extends Command {
 		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {
 			return interaction.editReply(this.i18n('command.reminder.create.max_limit', { lng: interaction.locale }));
 		}
-		if (!/\d+?\.?\d+?[hm]|\d[hm]/g.test(args.duration)) {
+		if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
 			return interaction.editReply(this.i18n('command.reminder.create.invalid_duration_format', { lng: interaction.locale }));
 		}
 
-		const dur = args.duration.match(/\d+?\.?\d+?[hm]|\d[hm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
+		const dur = args.duration.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
 		if (!args.message) return interaction.editReply(this.i18n('command.reminder.create.no_message', { lng: interaction.locale }));
 
-		if (dur < 15 * 60 * 1000)
+		if (dur < 15 * 60 * 1000 && dur !== 0) {
 			return interaction.editReply(this.i18n('command.reminder.create.duration_limit', { lng: interaction.locale }));
-		if (dur > 45 * 60 * 60 * 1000)
+		}
+		if (dur > 45 * 60 * 60 * 1000) {
 			return interaction.editReply(this.i18n('command.reminder.create.duration_limit', { lng: interaction.locale }));
+		}
 		if (dur % (15 * 60 * 1000) !== 0) {
 			return interaction.editReply(this.i18n('command.reminder.create.duration_order', { lng: interaction.locale }));
 		}
@@ -109,7 +112,7 @@ export default class ReminderCreateCommand extends Command {
 
 		const state = {
 			remaining: ['1', '2'],
-			townHalls: Array(MAX_TOWNHALL_LEVEL - 1)
+			townHalls: Array(MAX_TOWN_HALL_LEVEL - 1)
 				.fill(0)
 				.map((_, i) => (i + 2).toString()),
 			roles: ['leader', 'coLeader', 'admin', 'member'],
@@ -118,7 +121,7 @@ export default class ReminderCreateCommand extends Command {
 		};
 
 		const mutate = (disable = false) => {
-			const row0 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			const warTypeRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select War Types')
 					.setMaxValues(3)
@@ -143,7 +146,7 @@ export default class ReminderCreateCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			const attackRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Attacks Remaining')
 					.setMaxValues(2)
@@ -164,13 +167,13 @@ export default class ReminderCreateCommand extends Command {
 					])
 					.setDisabled(disable)
 			);
-			const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			const townHallRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Town Halls')
 					.setCustomId(CUSTOM_ID.TOWN_HALLS)
-					.setMaxValues(MAX_TOWNHALL_LEVEL - 1)
+					.setMaxValues(MAX_TOWN_HALL_LEVEL - 1)
 					.setOptions(
-						Array(MAX_TOWNHALL_LEVEL - 1)
+						Array(MAX_TOWN_HALL_LEVEL - 1)
 							.fill(0)
 							.map((_, i) => {
 								const hall = (i + 2).toString();
@@ -185,7 +188,7 @@ export default class ReminderCreateCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row3 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			const clanRolesRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Clan Roles')
 					.setCustomId(CUSTOM_ID.ROLES)
@@ -215,16 +218,20 @@ export default class ReminderCreateCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			const btnRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
 				new ButtonBuilder().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
 			);
 
-			return [row0, row1, row2, row3, row4];
+			return dur === 0 ? [warTypeRow, clanRolesRow, btnRow] : [warTypeRow, attackRow, townHallRow, clanRolesRow, btnRow];
 		};
 
 		const msg = await interaction.editReply({
 			components: mutate(),
-			content: '**War Reminder Setup**'
+			content: [
+				`**War Reminder Setup (${dur === 0 ? 'at the end' : `${this.getStatic(dur)} remaining`})**`,
+				'',
+				clans.map((clan) => clan.name).join(', ')
+			].join('\n')
 		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
@@ -288,5 +295,9 @@ export default class ReminderCreateCommand extends Command {
 			for (const id of Object.values(CUSTOM_ID)) this.client.components.delete(id);
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: mutate(true) });
 		});
+	}
+
+	private getStatic(dur: number) {
+		return moment.duration(dur).format('d[d] h[h] m[m]', { trim: 'both mid' });
 	}
 }

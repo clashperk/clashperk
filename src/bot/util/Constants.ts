@@ -30,6 +30,8 @@ export const enum Collections {
 	CLAN_GAMES = 'ClanGames',
 	CWL_GROUPS = 'CWLGroups',
 
+	PLAYER_RANKS = 'PlayerRanks',
+
 	CLAN_MEMBERS = 'ClanMembers',
 	CLAN_GAMES_POINTS = 'ClanGamesPoints',
 	PLAYER_SEASONS = 'PlayerSeasons',
@@ -109,7 +111,11 @@ export const URLS = {
 
 export const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;
 
-export const MAX_TOWNHALL_LEVEL = 15;
+export const MAX_TOWN_HALL_LEVEL = 15;
+
+export const MAX_CLAN_SIZE = 50;
+
+export const LEGEND_LEAGUE_ID = 29000022;
 
 export const BIT_FIELD = new PermissionsBitField(292997688385n).bitfield;
 

@@ -1,6 +1,6 @@
 import { CommandInteraction, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
-import { Collections, MAX_TOWNHALL_LEVEL } from '../../util/Constants.js';
+import { Collections, MAX_TOWN_HALL_LEVEL } from '../../util/Constants.js';
 import { Reminder } from '../../struct/RemindScheduler.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
@@ -40,7 +40,7 @@ export default class ReminderListCommand extends Command {
 				'**Roles**',
 				reminder.roles.length === 4 ? 'Any' : `${reminder.roles.map((role) => roles[role]).join(', ')}`,
 				'**Town Halls**',
-				reminder.townHalls.length === MAX_TOWNHALL_LEVEL - 1 ? 'Any' : `${reminder.townHalls.join(', ')}`,
+				reminder.townHalls.length === MAX_TOWN_HALL_LEVEL - 1 ? 'Any' : `${reminder.townHalls.join(', ')}`,
 				'**Remaining Hits**',
 				reminder.remaining.length === 2 ? 'Any' : `${reminder.remaining.join(', ')}`,
 				'**War Types**',
@@ -53,10 +53,6 @@ export default class ReminderListCommand extends Command {
 		});
 
 		const contents = Util.splitMessage(chunks.join('\n\u200b\n'), { maxLength: 2000, char: '\n\u200b\n' });
-		for (const content of contents)
-			await interaction.followUp({
-				content,
-				ephemeral: true
-			});
+		for (const content of contents) await interaction.followUp({ content, ephemeral: true });
 	}
 }

@@ -8,7 +8,7 @@ import {
 	StringSelectMenuBuilder
 } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { MAX_TOWNHALL_LEVEL } from '../../util/Constants.js';
+import { MAX_TOWN_HALL_LEVEL } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
@@ -48,7 +48,7 @@ export default class ReminderNowCommand extends Command {
 
 		const state = {
 			remaining: ['1', '2'],
-			townHalls: Array(MAX_TOWNHALL_LEVEL - 1)
+			townHalls: Array(MAX_TOWN_HALL_LEVEL - 1)
 				.fill(0)
 				.map((_, i) => (i + 2).toString()),
 			roles: ['leader', 'coLeader', 'admin', 'member'],
@@ -107,9 +107,9 @@ export default class ReminderNowCommand extends Command {
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Town Halls')
 					.setCustomId(CUSTOM_ID.TOWN_HALLS)
-					.setMaxValues(MAX_TOWNHALL_LEVEL - 1)
+					.setMaxValues(MAX_TOWN_HALL_LEVEL - 1)
 					.setOptions(
-						Array(MAX_TOWNHALL_LEVEL - 1)
+						Array(MAX_TOWN_HALL_LEVEL - 1)
 							.fill(0)
 							.map((_, i) => {
 								const hall = (i + 2).toString();
@@ -166,7 +166,10 @@ export default class ReminderNowCommand extends Command {
 			return [row0, row1, row2, row3, row4];
 		};
 
-		const msg = await interaction.editReply({ components: mutate(), content: '**Instant Reminder Options**' });
+		const msg = await interaction.editReply({
+			components: mutate(),
+			content: [`**Instant War Reminder Options**`, '', clans.map((clan) => clan.name).join(', ')].join('\n')
+		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
