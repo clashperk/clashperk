@@ -2191,6 +2191,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 
 export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	{
+		name: 'th-roles',
+		description: 'No description.'
+	},
+	{
 		name: 'sync',
 		description: 'Sync your roles, nicknames, accounts etc.'
 	},

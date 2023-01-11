@@ -1,5 +1,5 @@
 import { CommandInteraction } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 
@@ -15,6 +15,15 @@ export default class VerifyPlayerCommand extends Command {
 			defer: true,
 			ephemeral: true
 		});
+	}
+
+	public args(): Args {
+		return {
+			player_tag: {
+				id: 'tag',
+				match: 'STRING'
+			}
+		};
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, { tag, token }: { tag: string; token: string }) {
