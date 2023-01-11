@@ -13,9 +13,9 @@ export default class FamilyCapitalContributionCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction, { season }: { season?: string; week?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, { season }: { season?: string; week?: string }) {
 		if (!season) season = Season.ID;
-		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
+		const clans = await this.client.storage.find(interaction.guild.id);
 
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
@@ -90,7 +90,7 @@ export default class FamilyCapitalContributionCommand extends Command {
 
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
-		embed.setAuthor({ name: `${interaction.guild!.name} Capital Contributions` });
+		embed.setAuthor({ name: `${interaction.guild.name} Capital Contributions` });
 		embed.setDescription(
 			[
 				'```',
@@ -123,7 +123,7 @@ export default class FamilyCapitalContributionCommand extends Command {
 			if (action.customId === customIds.action) {
 				const embed = new EmbedBuilder()
 					.setColor(this.client.embed(interaction))
-					.setAuthor({ name: `${interaction.guild!.name} Top Contributors` })
+					.setAuthor({ name: `${interaction.guild.name} Top Contributors` })
 					.setDescription(
 						[
 							`**${this.i18n('command.capital.contributions.title', { lng: interaction.locale })} (${season!})**`,

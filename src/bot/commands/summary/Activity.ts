@@ -17,10 +17,7 @@ export default class FamilyCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, { season }: { season?: string }) {
 		if (!season) season = Season.ID;
-		const clans = await this.client.db
-			.collection<{ name: string; tag: string }>(Collections.CLAN_STORES)
-			.find({ guild: interaction.guild.id })
-			.toArray();
+		const clans = await this.client.storage.find(interaction.guild.id);
 
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));

@@ -16,7 +16,7 @@ export default class AliasListCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>) {
 		const clans = await this.client.db
 			.collection(Collections.CLAN_STORES)
-			.find({ guild: interaction.guild.id, alias: { $exists: true } })
+			.find({ guild: interaction.guild.id, alias: { $exists: true } }, { sort: { name: 1 } })
 			.toArray();
 
 		const chunks = Util.splitMessage(

@@ -99,7 +99,7 @@ export default class SetupCommand extends Command {
 		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
 		if (!clans.length) return [];
 
-		clanList.sort((a, b) => b.members - a.members);
+		// clanList.sort((a, b) => b.members - a.members);
 		const nameLen = Math.max(...clanList.map((clan) => clan.name.length)) + 1;
 		const tagLen = Math.max(...clanList.map((clan) => clan.tag.length)) + 1;
 		const embed = new EmbedBuilder()

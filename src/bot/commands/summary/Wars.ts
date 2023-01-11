@@ -1,7 +1,6 @@
 import { ClanWar, WarClan } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import moment from 'moment';
-import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
@@ -22,8 +21,8 @@ export default class FamilyWarsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction) {
-		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
+	public async exec(interaction: CommandInteraction<'cached'>) {
+		const clans = await this.client.storage.find(interaction.guild.id);
 		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
 		const embed = new EmbedBuilder();

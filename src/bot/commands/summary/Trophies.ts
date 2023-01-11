@@ -1,6 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
 
 export default class FamilyTrophiesCommand extends Command {
 	public constructor() {
@@ -12,8 +11,8 @@ export default class FamilyTrophiesCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction) {
-		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
+	public async exec(interaction: CommandInteraction<'cached'>) {
+		const clans = await this.client.storage.find(interaction.guild.id);
 
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
@@ -43,7 +42,7 @@ export default class FamilyTrophiesCommand extends Command {
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${interaction.guild!.name} Best Trophies` })
+			.setAuthor({ name: `${interaction.guild.name} Best Trophies` })
 			.setDescription(
 				[
 					'```',
@@ -80,7 +79,7 @@ export default class FamilyTrophiesCommand extends Command {
 			if (action.customId === customIds.action) {
 				const embed = new EmbedBuilder()
 					.setColor(this.client.embed(interaction))
-					.setAuthor({ name: `${interaction.guild!.name} Best Trophies` })
+					.setAuthor({ name: `${interaction.guild.name} Best Trophies` })
 					.setDescription(
 						[
 							'```',
