@@ -90,7 +90,8 @@ export const SUPER_TROOPS: Record<string, string> = {
 	'Super Valkyrie': '<:SuperValkyrie:789730405967462440>',
 	'Super Witch': '<:SuperWitch:789730409210576897>',
 	'Ice Hound': '<:IceHound:789730401816018945>',
-	'Super Bowler': '<:SuperBowler:892028277252825128>'
+	'Super Bowler': '<:SuperBowler:892028277252825128>',
+	'Super Miner': '<:SuperMiner:1062662677077446656>'
 };
 
 export const BUILDER_ELIXIR_TROOPS: Record<string, string> = {

@@ -167,6 +167,18 @@ export default {
 			resource: 'Dark Elixir',
 			resourceCost: 25000,
 			housingSpace: 40
+		},
+		{
+			name: 'Super Miner',
+			id: 56,
+			original: 'Miner',
+			minOriginalLevel: 7,
+			village: 'home',
+			duration: 259200,
+			cooldown: 259200,
+			resource: 'Dark Elixir',
+			resourceCost: 25000,
+			housingSpace: 24
 		}
 	],
 	TROOPS: [
@@ -1319,6 +1331,32 @@ export default {
 			levels: [0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
 		},
 		{
+			id: 56,
+			name: 'Super Miner',
+			housingSpace: 24,
+			village: 'home',
+			category: 'troop',
+			subCategory: 'troop',
+			unlock: {
+				hall: 10,
+				cost: 3700000,
+				time: 475200,
+				resource: 'Elixir',
+				building: 'Barracks',
+				buildingLevel: 12
+			},
+			trainingTime: 120,
+			regenerationTimes: [],
+			dps: [170, 185, 200],
+			upgrade: {
+				cost: [],
+				time: [],
+				resource: 'Elixir'
+			},
+			seasonal: false,
+			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3]
+		},
+		{
 			id: 57,
 			name: 'Rocket Balloon',
 			housingSpace: 8,
@@ -1897,6 +1935,32 @@ export default {
 			levels: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4]
 		},
 		{
+			id: 94,
+			name: 'Ram Rider',
+			housingSpace: 12,
+			village: 'home',
+			category: 'troop',
+			subCategory: 'troop',
+			unlock: {
+				hall: 7,
+				cost: 1200000,
+				time: 129600,
+				resource: 'Elixir',
+				building: 'Barracks',
+				buildingLevel: 9
+			},
+			trainingTime: 60,
+			regenerationTimes: [],
+			dps: [100, 125, 150, 175, 200, 225, 250, 275, 300],
+			upgrade: {
+				cost: [],
+				time: [],
+				resource: 'Elixir'
+			},
+			seasonal: true,
+			levels: [0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9]
+		},
+		{
 			id: 95,
 			name: 'Electro Titan',
 			housingSpace: 32,
@@ -2076,7 +2140,7 @@ export default {
 				resource: 'Elixir'
 			},
 			seasonal: true,
-			levels: [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+			levels: [0, 0, 0, 0, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]
 		},
 		{
 			id: 9,

@@ -58,8 +58,8 @@ export default class RateLimitListener extends Listener {
 					`**Global:** ${global.toString()}`,
 					`**Limit:** ${limit}`,
 					`**Method:** ${method.toUpperCase()}`,
-					`**Route:** ${route.replace(/^\/[\w-]+/g, '/:token')}`,
-					`**URL:** ${decodeURIComponent(new URL(url).pathname).replace(/^\/[\w-]+/g, '/:token')}`
+					`**Route:** ${route.replace(/[\w-]{20,}/g, ':token')}`,
+					`**URL:** ${decodeURIComponent(new URL(url).pathname).replace(/[\w-]{20,}/g, '-')}`
 				].join('\n')
 			)
 			.setFooter({ text: `Shard ${this.client.shard!.ids[0]!}` })
