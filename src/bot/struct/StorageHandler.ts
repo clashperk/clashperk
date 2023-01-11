@@ -34,7 +34,7 @@ export default class StorageHandler {
 	}
 
 	public async find(id: string) {
-		return this.collection.find({ guild: id }).toArray();
+		return this.collection.find({ guild: id }, { sort: { name: 1 } }).toArray();
 	}
 
 	public async search(guildId: string, query: string[]): Promise<WithId<ClanStore>[]> {
@@ -52,7 +52,7 @@ export default class StorageHandler {
 					],
 					guild: guildId
 				},
-				{ collation: { locale: 'en', strength: 2 } }
+				{ collation: { locale: 'en', strength: 2 }, sort: { name: 1 } }
 			)
 			.toArray();
 	}

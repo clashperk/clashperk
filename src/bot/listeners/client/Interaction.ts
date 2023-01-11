@@ -99,10 +99,13 @@ export default class InteractionListener extends Listener {
 			case 'clans': {
 				const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
 				const clans = await this.client.storage.collection
-					.find({
-						guild: interaction.guildId,
-						...(query ? { $text: { $search: query } } : {})
-					})
+					.find(
+						{
+							guild: interaction.guildId,
+							...(query ? { $text: { $search: query } } : {})
+						},
+						{ sort: { name: 1 } }
+					)
 					.toArray();
 				if (!clans.length) {
 					if (query) return interaction.respond([{ value: query, name: query }]);
@@ -144,13 +147,16 @@ export default class InteractionListener extends Listener {
 		}
 		if (!query) {
 			return interaction.respond(
-				user.entries.map((entry) => ({ value: entry.tag, name: `${entry.name ?? 'Unknown'} (${entry.tag})` }))
+				user.entries.slice(0, 25).map((entry) => ({ value: entry.tag, name: `${entry.name ?? 'Unknown'} (${entry.tag})` }))
 			);
 		}
-		const result = user.entries.filter(
-			(entry) =>
-				Boolean(entry.name?.toLowerCase().includes(query.toLowerCase())) || entry.tag.toLowerCase().includes(query.toLowerCase())
-		);
+		const result = user.entries
+			.filter(
+				(entry) =>
+					Boolean(entry.name?.toLowerCase().includes(query.toLowerCase())) ||
+					entry.tag.toLowerCase().includes(query.toLowerCase())
+			)
+			.slice(0, 25);
 		if (!result.length) {
 			if (query) return interaction.respond([{ value: query, name: query }]);
 			return interaction.respond([{ value: '0', name: 'Enter a player tag!' }]);
@@ -178,8 +184,6 @@ export default class InteractionListener extends Listener {
 		if (!interaction.isContextMenuCommand()) return;
 
 		const commandId = interaction.commandName.replace(/\s+/g, '-').toLowerCase();
-		if (commandId === 'clear-components') return interaction.reply({ components: [] });
-
 		const command = this.client.commandHandler.modules.get(commandId);
 		if (!command) return;
 
