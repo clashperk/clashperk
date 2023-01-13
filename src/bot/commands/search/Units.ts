@@ -8,7 +8,7 @@ import {
 	ButtonStyle,
 	ComponentType
 } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
@@ -23,6 +23,15 @@ export default class UnitsCommand extends Command {
 			},
 			defer: true
 		});
+	}
+
+	public args(): Args {
+		return {
+			player_tag: {
+				id: 'tag',
+				match: 'STRING'
+			}
+		};
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {

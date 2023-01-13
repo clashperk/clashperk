@@ -50,78 +50,10 @@ export default class InteractionListener extends Listener {
 		const focused = interaction.options.getFocused(true).name;
 		switch (focused) {
 			case 'duration': {
-				const cmd = interaction.options.getSubcommandGroup(true);
-				const dur = interaction.options.getString(focused);
-				const matchedDur = dur?.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)?.reduce((acc, cur) => acc + ms(cur), 0) ?? 0;
-
-				if (dur && !isNaN(parseInt(dur, 10))) {
-					const duration = parseInt(dur, 10);
-					if (duration < 60 && dur.includes('m')) {
-						const times = ['15m', '30m', '45m', '1h'];
-						return interaction.respond(this.getTimes(times, matchedDur, cmd));
-					}
-
-					if (dur.includes('d')) {
-						const times = [6, 12, 18, 20, 0].map((num) => this.getLabel(ms(`${duration * 24 + num}h`)));
-						return interaction.respond(this.getTimes(times, matchedDur, cmd));
-					}
-
-					const times = ['h', '.25h', '.5h', '.75h'].map((num) => this.getLabel(ms(`${duration}${num}`)));
-					return interaction.respond(this.getTimes(times, matchedDur, cmd));
-				}
-
-				const clanWarTimes = [
-					'15m',
-					'30m',
-					'1h',
-					'1h 30m',
-					'2h',
-					'2h 30m',
-					'3h',
-					'4h',
-					'6h',
-					'8h',
-					'10h',
-					'12h',
-					'14h',
-					'16h',
-					'18h',
-					'23h',
-					'1d',
-					'1d 6h',
-					'1d 12h'
-				];
-				const capitalRaidTimes = ['6h', '10h', '12h', '15h', '16h', '18h', '20h', '23h', '1d', '1d 12h', '2d', '2d 18h', '2d 23h'];
-
-				const times = cmd === 'clan-wars' ? clanWarTimes : capitalRaidTimes;
-				return interaction.respond(this.getTimes(times, matchedDur, cmd));
+				return this.durationAutocomplete(interaction, focused);
 			}
 			case 'clans': {
-				const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
-				const clans = await this.client.storage.collection
-					.find(
-						{
-							guild: interaction.guildId,
-							...(query ? { $text: { $search: query } } : {})
-						},
-						{ sort: { name: 1 } }
-					)
-					.toArray();
-				if (!clans.length) {
-					if (query) return interaction.respond([{ value: query, name: query }]);
-					return interaction.respond([{ value: '0', name: 'Enter clan tags or names!' }]);
-				}
-				const response = clans.slice(0, 24).map((clan) => ({ value: clan.tag, name: clan.name }));
-				if (response.length > 1) {
-					const clanTags = clans.map((clan) => clan.tag).join(',');
-					const value = clanTags.length > 100 ? nanoid() : clanTags;
-					if (clanTags.length > 100) await this.client.redis.set(value, clanTags, { EX: 60 * 60 });
-					response.unshift({
-						value,
-						name: `**All of these (${clans.length})**`
-					});
-				}
-				return interaction.respond(response);
+				return this.clansAutocomplete(interaction, focused);
 			}
 			case 'tag': {
 				if (['player', 'units', 'upgrades', 'rushed', 'verify'].includes(interaction.commandName)) {
@@ -136,6 +68,82 @@ export default class InteractionListener extends Listener {
 				return this.clanTagAutocomplete(interaction, focused);
 			}
 		}
+	}
+
+	private async durationAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+		const cmd = interaction.options.getSubcommandGroup(true);
+		const dur = interaction.options.getString(focused);
+		const matchedDur = dur?.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)?.reduce((acc, cur) => acc + ms(cur), 0) ?? 0;
+
+		if (dur && !isNaN(parseInt(dur, 10))) {
+			const duration = parseInt(dur, 10);
+			if (duration < 60 && dur.includes('m')) {
+				const times = ['15m', '30m', '45m', '1h'];
+				return interaction.respond(this.getTimes(times, matchedDur, cmd));
+			}
+
+			if (dur.includes('d')) {
+				const times = [6, 12, 18, 20, 0].map((num) => this.getLabel(ms(`${duration * 24 + num}h`)));
+				return interaction.respond(this.getTimes(times, matchedDur, cmd));
+			}
+
+			const times = ['h', '.25h', '.5h', '.75h'].map((num) => this.getLabel(ms(`${duration}${num}`)));
+			return interaction.respond(this.getTimes(times, matchedDur, cmd));
+		}
+
+		const clanWarTimes = [
+			'15m',
+			'30m',
+			'1h',
+			'1h 30m',
+			'2h',
+			'2h 30m',
+			'3h',
+			'4h',
+			'6h',
+			'8h',
+			'10h',
+			'12h',
+			'14h',
+			'16h',
+			'18h',
+			'23h',
+			'1d',
+			'1d 6h',
+			'1d 12h'
+		];
+		const capitalRaidTimes = ['6h', '10h', '12h', '15h', '16h', '18h', '20h', '23h', '1d', '1d 12h', '2d', '2d 18h', '2d 23h'];
+
+		const times = cmd === 'clan-wars' ? clanWarTimes : capitalRaidTimes;
+		return interaction.respond(this.getTimes(times, matchedDur, cmd));
+	}
+
+	private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
+		const clans = await this.client.storage.collection
+			.find(
+				{
+					guild: interaction.guildId,
+					...(query ? { $text: { $search: query } } : {})
+				},
+				{ sort: { name: 1 } }
+			)
+			.toArray();
+		if (!clans.length) {
+			if (query) return interaction.respond([{ value: query, name: query }]);
+			return interaction.respond([{ value: '0', name: 'Enter clan tags or names!' }]);
+		}
+		const response = clans.slice(0, 24).map((clan) => ({ value: clan.tag, name: clan.name }));
+		if (response.length > 1) {
+			const clanTags = clans.map((clan) => clan.tag).join(',');
+			const value = clanTags.length > 100 ? nanoid() : clanTags;
+			if (clanTags.length > 100) await this.client.redis.set(value, clanTags, { EX: 60 * 60 });
+			response.unshift({
+				value: '',
+				name: ``
+			});
+		}
+		return interaction.respond(response);
 	}
 
 	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
@@ -167,10 +175,13 @@ export default class InteractionListener extends Listener {
 	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused);
 		const clans = await this.client.storage.collection
-			.find({
-				guild: interaction.guildId,
-				...(query ? { $text: { $search: query } } : {})
-			})
+			.find(
+				{
+					guild: interaction.guildId,
+					...(query ? { $text: { $search: query } } : {})
+				},
+				{ sort: { name: 1 } }
+			)
 			.limit(25)
 			.toArray();
 		if (!clans.length) {

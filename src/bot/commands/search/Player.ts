@@ -12,7 +12,7 @@ import { Player, WarClan } from 'clashofclans.js';
 import ms from 'ms';
 import { EMOJIS, TOWN_HALLS, HEROES, SIEGE_MACHINES } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { Season } from '../../util/index.js';
 import { UserInfoModel } from '../../types/index.js';
 
@@ -42,6 +42,15 @@ export default class PlayerCommand extends Command {
 			},
 			defer: true
 		});
+	}
+
+	public args(): Args {
+		return {
+			player_tag: {
+				id: 'tag',
+				match: 'STRING'
+			}
+		};
 	}
 
 	public async getPlayers(userId: string) {

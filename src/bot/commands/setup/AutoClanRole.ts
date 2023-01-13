@@ -1,7 +1,6 @@
-import { ActionRowBuilder, CommandInteraction, ComponentType, Guild, Role, RoleSelectMenuBuilder } from 'discord.js';
+import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Collections } from '../../util/Constants.js';
-import { Command } from '../../lib/index.js';
-import { ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { Args, Command } from '../../lib/index.js';
 
 export interface IArgs {
 	command?: 'enable' | 'disable' | null;
@@ -16,7 +15,7 @@ export interface IArgs {
 
 export default class AutoRoleCommand extends Command {
 	public constructor() {
-		super('th-roles', {
+		super('setup-clan-roles', {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
@@ -26,50 +25,27 @@ export default class AutoRoleCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: IArgs) {
-		if (args.command === 'disable') return this.disable(interaction, args);
-
-		const customIds = {
-			roles: this.client.uuid(interaction.user.id)
-		};
-
-		const row = new ActionRowBuilder<RoleSelectMenuBuilder>().setComponents(
-			new RoleSelectMenuBuilder().setCustomId(customIds.roles).setMinValues(1).setMaxValues(14)
-		);
-		const msg = await interaction.editReply({ components: [row], content: '^__^' });
-		const collector = msg.createMessageComponentCollector<ComponentType.RoleSelect>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.roles) {
-				const rolesMap = action.roles.reduce<Record<string, string>>((prev, role) => {
-					const key = parseInt(role.name.replace(/[^0-9]/g, ''), 10);
-					if (key >= 2 && key <= 15) {
-						prev[key] = role.id;
-					}
-					return prev;
-				}, {});
-				const roles = Array(14)
-					.fill(0)
-					.map((_, i) => ({ roleId: rolesMap[i + 2], th: i + 2 }));
-
-				// sort by key
-				await action.update({
-					allowedMentions: { parse: [] },
-					content: roles.map((role) => `${ORANGE_NUMBERS[role.th]} ${role.roleId ? `<@&${role.roleId}>` : ''}`).join('\n')
-				});
+	public args(): Args {
+		return {
+			co_leads: {
+				id: 'coLeads',
+				match: 'ROLE'
+			},
+			common_role: {
+				id: 'commonRole',
+				match: 'ROLE'
+			},
+			only_verified: {
+				id: 'verify',
+				match: 'BOOLEAN'
+			},
+			clear: {
+				match: 'BOOLEAN'
 			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			for (const id of Object.values(customIds)) this.client.components.delete(id);
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		};
 	}
 
-	public async __exec(interaction: CommandInteraction<'cached'>, args: IArgs) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: IArgs) {
 		if (args.command === 'disable') return this.disable(interaction, args);
 
 		const tags = args.clans === '*' ? [] : await this.client.resolver.resolveArgs(args.clans);

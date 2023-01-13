@@ -4,10 +4,10 @@ import { Command } from '../../lib/index.js';
 export default class ReminderCommand extends Command {
 	public constructor() {
 		super('reminders', {
-			category: 'none',
+			category: 'setup',
 			channel: 'guild',
 			description: {
-				content: ['Create, delete or view war attack reminders.']
+				content: ['Create, delete or view war attack or capital raid reminders.']
 			}
 		});
 	}

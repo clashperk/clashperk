@@ -2,7 +2,7 @@ import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBui
 import { Player, Clan } from 'clashofclans.js';
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 import { TroopJSON } from '../../types/index.js';
 
@@ -21,6 +21,15 @@ export default class RushedCommand extends Command {
 			},
 			defer: true
 		});
+	}
+
+	public args(): Args {
+		return {
+			player_tag: {
+				id: 'tag',
+				match: 'STRING'
+			}
+		};
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; clan?: boolean }) {

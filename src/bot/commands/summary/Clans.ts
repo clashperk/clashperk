@@ -25,17 +25,17 @@ export default class FamilyClansCommand extends Command {
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! })
-			.setDescription(
-				clanList
-					.map(
-						(clan) =>
-							`\`\u200e${clan.name.padEnd(nameLen, ' ')} ${clan.tag.padStart(tagLen, ' ')}  ${clan.members
-								.toString()
-								.padStart(2, ' ')}/50 \u200f\``
-					)
-					.join('\n')
-			);
+			.setAuthor({ name: `${interaction.guild.name} Clans`, iconURL: interaction.guild.iconURL()! });
+		embed.setDescription(
+			clanList
+				.map(
+					(clan) =>
+						`\`\u200e${clan.name.padEnd(nameLen, ' ')} ${clan.tag.padStart(tagLen, ' ')}  ${clan.members
+							.toString()
+							.padStart(2, ' ')}/50 \u200f\``
+				)
+				.join('\n')
+		);
 
 		return interaction.editReply({ embeds: [embed] });
 	}

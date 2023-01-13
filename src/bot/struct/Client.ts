@@ -158,8 +158,6 @@ export class Client extends Discord.Client {
 		await this.http.login();
 
 		this.once('ready', () => {
-			this.raidReminder.init();
-
 			if (process.env.NODE_ENV === 'production') return this.run();
 		});
 

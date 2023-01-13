@@ -4,7 +4,7 @@ import { Command } from '../../lib/index.js';
 export default class CapitalCommand extends Command {
 	public constructor() {
 		super('capital', {
-			category: 'activity',
+			category: 'none',
 			channel: 'guild',
 			description: {
 				content: ['Shows clan capital contributions and raids.']

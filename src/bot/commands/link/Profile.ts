@@ -136,25 +136,35 @@ export default class ProfileCommand extends Command {
 		};
 		if (embedLengthExceeded()) popEmbed();
 
-		const customId = this.client.uuid(interaction.user.id);
-		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder()
-				.setEmoji(EMOJIS.EXPORT)
-				.setCustomId(customId)
-				.setStyle(ButtonStyle.Secondary)
-				.setDisabled(links.length < 10)
-		);
+		const customIds = {
+			export: this.client.uuid(interaction.user.id),
+			sync: this.client.uuid(interaction.user.id)
+		};
+		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(
+				new ButtonBuilder()
+					.setLabel('Sync Roles')
+					.setCustomId(customIds.sync)
+					.setStyle(ButtonStyle.Secondary)
+					.setDisabled(!links.length)
+			)
+			.addComponents(
+				new ButtonBuilder()
+					.setEmoji(EMOJIS.EXPORT)
+					.setCustomId(customIds.export)
+					.setStyle(ButtonStyle.Secondary)
+					.setDisabled(links.length < 5)
+			);
 
-		if (links.length < 5) return interaction.editReply({ embeds: [embed] });
 		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => action.customId === customId && action.user.id === interaction.user.id,
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000,
 			max: 1
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === customId) {
+			if (action.customId === customIds.export) {
 				await action.deferReply();
 				const file = await this.toXlsx(links, user);
 				await action.editReply({
@@ -162,10 +172,13 @@ export default class ProfileCommand extends Command {
 					files: [{ attachment: Buffer.from(file), name: 'accounts.xlsx' }]
 				});
 			}
+			if (action.customId === customIds.sync) {
+				await action.reply({ ephemeral: true, content: 'Your roles will be updated shortly.', components: [] });
+			}
 		});
 
 		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customId);
+			Object.values(customIds).forEach((id) => this.client.components.delete(id));
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
 	}

@@ -14,7 +14,7 @@ import { Command, Listener } from '../../lib/index.js';
 
 export default class ErrorListener extends Listener {
 	public constructor() {
-		super('error', {
+		super('commandHandlerError', {
 			event: 'error',
 			emitter: 'commandHandler',
 			category: 'commandHandler'
