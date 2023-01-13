@@ -139,8 +139,8 @@ export default class InteractionListener extends Listener {
 			const value = clanTags.length > 100 ? nanoid() : clanTags;
 			if (clanTags.length > 100) await this.client.redis.set(value, clanTags, { EX: 60 * 60 });
 			response.unshift({
-				value: '',
-				name: ``
+				value,
+				name: `**All of these (${clans.length})**`
 			});
 		}
 		return interaction.respond(response);
