@@ -248,7 +248,7 @@ export class RoleManager {
 				roles,
 				reason
 			});
-			if (count) await this.delay(250);
+			if (count) await this.delay(500);
 		}
 
 		return data.members.length;

@@ -145,7 +145,7 @@ export default class ProfileCommand extends Command {
 				new ButtonBuilder()
 					.setLabel('Sync Roles')
 					.setCustomId(customIds.sync)
-					.setStyle(ButtonStyle.Secondary)
+					.setStyle(ButtonStyle.Primary)
 					.setDisabled(!links.length)
 			)
 			.addComponents(
