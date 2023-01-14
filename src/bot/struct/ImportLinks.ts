@@ -8,41 +8,19 @@ export class ImportLinks {
 	}
 
 	public async init() {
-		const cursor = this.client.db
-			.collection<{
-				createdAt?: Date;
-				user_tag?: string;
-				user: string;
-				entries?: { name?: string; tag: string; verified: boolean }[];
-			}>(Collections.USERS)
-			.find()
-			.skip(48632);
-		let count = 48632;
+		const cursor = this.client.db.collection(Collections.PLAYER_LINKS).find({ name: null });
+		let count = 0;
 		while (await cursor.hasNext()) {
 			count++;
 			const data = await cursor.next();
 			if (!data) continue;
-			const accounts = (data.entries ?? []).map((en, i) => ({
-				userId: data.user,
-				username: data.user_tag,
-				name: en.name,
-				tag: en.tag,
-				order: i,
-				verified: en.verified,
-				createdAt: data.createdAt ?? new ObjectId(data._id).getTimestamp()
-			}));
+			const player = await this.client.http.player(data.tag);
+			if (!player.ok) continue;
 
-			// take out the duplicate accounts using reduce
-			// const uniqueAccounts = accounts.reduce<typeof accounts>((acc, cur) => {
-			// 	const x = acc.find((item) => item.tag === cur.tag);
-			// 	if (!x) {
-			// 		acc.push(cur);
-			// 	}
-			// 	return acc;
-			// }, []);
-
-			// if (accounts.length) await this.client.db.collection(Collections.PLAYER_LINKS).insertMany(uniqueAccounts);
-			console.log(`[${count}] Inserted ${accounts.length} accounts for ${data.user_tag ?? data.user}`);
+			await this.client.db
+				.collection(Collections.PLAYER_LINKS)
+				.updateOne({ _id: new ObjectId(data._id) }, { $set: { name: player.name } });
+			console.log(`[${count}] Updated ${data.tag as string} accounts for ${data.username as string}`);
 		}
 		console.log('Done');
 	}
