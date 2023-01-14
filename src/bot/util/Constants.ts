@@ -17,7 +17,7 @@ export const enum Collections {
 	FLAGS = 'Flags',
 
 	PLAYER_LINKS = 'PlayerLinks',
-	USERS = 'LinkedPlayers',
+	USERS = 'Users',
 
 	REMINDERS = 'Reminders',
 	SCHEDULERS = 'Schedulers',
