@@ -17,7 +17,7 @@ export class ImportLinks {
 			}>(Collections.USERS)
 			.find()
 			.skip(26778);
-		let count = 0;
+		let count = 26778;
 		while (await cursor.hasNext()) {
 			count++;
 			const data = await cursor.next();
