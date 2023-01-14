@@ -32,7 +32,16 @@ export class ImportLinks {
 				createdAt: data.createdAt ?? new ObjectId(data._id).getTimestamp()
 			}));
 
-			if (accounts.length) await this.client.db.collection(Collections.PLAYER_LINKS).insertMany(accounts);
+			// take out the duplicate accounts using reduce
+			const uniqueAccounts = accounts.reduce<typeof accounts>((acc, cur) => {
+				const x = acc.find((item) => item.tag === cur.tag);
+				if (!x) {
+					acc.push(cur);
+				}
+				return acc;
+			}, []);
+
+			if (accounts.length) await this.client.db.collection(Collections.PLAYER_LINKS).insertMany(uniqueAccounts);
 			console.log(`[${count}] Inserted ${accounts.length} accounts for ${data.user_tag ?? data.user}`);
 		}
 		console.log('Done');
