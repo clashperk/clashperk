@@ -40,7 +40,7 @@ export default class VerifyPlayerCommand extends Command {
 		await collection.deleteOne({ userId: { $ne: interaction.user.id }, tag: data.tag });
 		const lastAccount = await collection.findOne({ userId: interaction.user.id }, { sort: { order: -1 } });
 		await collection.updateOne(
-			{ userId: interaction.user.id, tag: data.tag },
+			{ tag: data.tag },
 			{
 				$set: {
 					userId: interaction.user.id,

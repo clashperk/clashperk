@@ -161,7 +161,7 @@ export default class LinkCreateCommand extends Command {
 		}
 
 		await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).updateOne(
-			{ userId: member.id },
+			{ tag: player.tag },
 			{
 				$set: {
 					userId: member.id,

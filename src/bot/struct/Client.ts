@@ -19,7 +19,6 @@ import StorageHandler from './StorageHandler.js';
 import Resolver from './Resolver.js';
 import RemindScheduler from './RemindScheduler.js';
 import RaidRemindScheduler from './RaidRemindScheduler.js';
-import { ImportLinks } from './ImportLinks.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -43,7 +42,6 @@ export class Client extends Discord.Client {
 	public storage!: StorageHandler;
 	public remindScheduler!: RemindScheduler;
 	public raidReminder!: RaidRemindScheduler;
-	public im!: ImportLinks;
 	public i18n = i18n;
 
 	public redis = Redis.createClient({
@@ -157,13 +155,10 @@ export class Client extends Discord.Client {
 		this.remindScheduler = new RemindScheduler(this);
 		this.raidReminder = new RaidRemindScheduler(this);
 
-		this.im = new ImportLinks(this);
-
 		await this.http.login();
 
 		this.once('ready', () => {
 			if (process.env.NODE_ENV === 'production') return this.run();
-			this.im.init();
 		});
 
 		this.logger.debug('Connecting to the Gateway', { label: 'DISCORD' });
