@@ -4,7 +4,7 @@ import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
-import { UserInfoModel } from '../../types/index.js';
+import { PlayerLinks } from '../../types/index.js';
 
 // ASCII /[^\x00-\xF7]+/
 export default class LinkListCommand extends Command {
@@ -24,8 +24,8 @@ export default class LinkListCommand extends Command {
 
 		const memberTags = await this.client.http.getDiscordLinks(clan.memberList);
 		const dbMembers = await this.client.db
-			.collection<UserInfoModel>(Collections.LINKED_PLAYERS)
-			.find({ 'entries.tag': { $in: clan.memberList.map((m) => m.tag) } })
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.find({ tag: { $in: clan.memberList.map((m) => m.tag) } })
 			.toArray();
 
 		const members: { name: string; tag: string; userId: string; verified: boolean }[] = [];
@@ -37,14 +37,12 @@ export default class LinkListCommand extends Command {
 
 		if (dbMembers.length) this.updateUsers(interaction, dbMembers);
 		for (const member of dbMembers) {
-			for (const m of member.entries) {
-				const clanMember = clan.memberList.find((mem) => mem.tag === m.tag);
-				if (!clanMember) continue;
+			const clanMember = clan.memberList.find((mem) => mem.tag === member.tag);
+			if (!clanMember) continue;
 
-				const mem = members.find((mem) => mem.tag === m.tag);
-				if (mem) mem.verified = m.verified;
-				else members.push({ tag: m.tag, userId: member.user, name: clanMember.name, verified: m.verified });
-			}
+			const mem = members.find((mem) => mem.tag === member.tag);
+			if (mem) mem.verified = member.verified;
+			else members.push({ tag: member.tag, userId: member.userId, name: clanMember.name, verified: member.verified });
 		}
 
 		const userIds = members.reduce<string[]>((prev, curr) => {
@@ -147,11 +145,11 @@ export default class LinkListCommand extends Command {
 		return a.name.replace(/[^\x00-\xF7]+/g, '').localeCompare(b.name.replace(/[^\x00-\xF7]+/g, ''));
 	}
 
-	private updateUsers(interaction: CommandInteraction, members: any[]) {
+	private updateUsers(interaction: CommandInteraction, members: PlayerLinks[]) {
 		for (const clan of members) {
-			const member = interaction.guild!.members.cache.get(clan.user);
-			if (member && clan.user_tag !== member.user.tag) {
-				this.client.resolver.updateUserTag(interaction.guild!, clan.user);
+			const member = interaction.guild!.members.cache.get(clan.userId);
+			if (member && clan.username !== member.user.tag) {
+				this.client.resolver.updateUserTag(interaction.guild!, clan.userId);
 			}
 		}
 	}

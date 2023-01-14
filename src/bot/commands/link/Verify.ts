@@ -1,5 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
+import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 
@@ -35,41 +36,27 @@ export default class VerifyPlayerCommand extends Command {
 			return interaction.editReply(this.i18n('command.verify.invalid_token', { lng: interaction.locale }));
 		}
 
-		await this.client.db
-			.collection(Collections.LINKED_PLAYERS)
-			.updateOne(
-				{ 'user': { $ne: interaction.user.id }, 'entries.tag': data.tag },
-				{ $pull: { entries: { tag: data.tag } }, $set: { user_tag: interaction.user.tag } }
-			);
-		const up = await this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
-			{ 'user': interaction.user.id, 'entries.tag': data.tag },
+		const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
+		await collection.deleteOne({ userId: { $ne: interaction.user.id }, tag: data.tag });
+		const lastAccount = await collection.findOne({ userId: interaction.user.id }, { sort: { order: -1 } });
+		await collection.updateOne(
+			{ userId: interaction.user.id, tag: data.tag },
 			{
 				$set: {
-					'user': interaction.user.id,
-					'user_tag': interaction.user.tag,
-					'entries.$.verified': true,
-					'entries.$.name': data.name,
-					'createdAt': new Date()
-				}
-			}
-		);
-
-		if (!up.modifiedCount) {
-			await this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
-				{ user: interaction.user.id },
-				{
-					$set: {
-						user_tag: interaction.user.tag,
-						user: interaction.user.id,
-						createdAt: new Date()
-					},
-					$push: {
-						entries: { tag: data.tag, name: data.name, verified: true }
-					}
+					userId: interaction.user.id,
+					username: interaction.user.tag,
+					name: data.name,
+					tag: data.tag,
+					verified: true,
+					updatedAt: new Date()
 				},
-				{ upsert: true }
-			);
-		}
+				$setOnInsert: {
+					order: lastAccount ? lastAccount.order + 1 : 0,
+					createdAt: new Date()
+				}
+			},
+			{ upsert: true }
+		);
 
 		// Rest Link API
 		this.resetLinkAPI(interaction.user.id, data.tag);
@@ -80,8 +67,8 @@ export default class VerifyPlayerCommand extends Command {
 		);
 	}
 
-	private async resetLinkAPI(user: string, tag: string) {
+	private async resetLinkAPI(userId: string, tag: string) {
 		await this.client.http.unlinkPlayerTag(tag);
-		await this.client.http.linkPlayerTag(user, tag);
+		await this.client.http.linkPlayerTag(userId, tag);
 	}
 }

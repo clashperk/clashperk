@@ -1,7 +1,7 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import { UserInfoModel } from '../../types/index.js';
+import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 
 export default class LinkDeleteCommand extends Command {
 	public constructor() {
@@ -33,11 +33,13 @@ export default class LinkDeleteCommand extends Command {
 
 		const member = await this.getMember(tag, interaction);
 		if (interaction.user.id !== member.id) {
-			const author = await this.client.db
-				.collection<UserInfoModel>(Collections.LINKED_PLAYERS)
-				.findOne({ user: interaction.user.id });
-			const accounts: string[] = author?.entries.filter((en) => en.verified).map((en) => en.tag) ?? [];
-			if (!accounts.length) {
+			const players = await this.client.db
+				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+				.find({ userId: interaction.user.id, verified: true })
+				.toArray();
+			const playerTags = players.map((player) => player.tag);
+
+			if (!players.length) {
 				return interaction.editReply(this.i18n('command.link.delete.no_access', { lng: interaction.locale }));
 			}
 
@@ -47,7 +49,7 @@ export default class LinkDeleteCommand extends Command {
 			}
 
 			const clan = await this.client.http.clan(data.clan.tag);
-			if (!clan.memberList.find((mem) => ['leader', 'coLeader'].includes(mem.role) && accounts.includes(mem.tag))) {
+			if (!clan.memberList.find((mem) => ['leader', 'coLeader'].includes(mem.role) && playerTags.includes(mem.tag))) {
 				return interaction.editReply(this.i18n('command.link.delete.no_access', { lng: interaction.locale }));
 			}
 		}
@@ -59,19 +61,17 @@ export default class LinkDeleteCommand extends Command {
 		return interaction.editReply(this.i18n('command.link.delete.no_result', { lng: interaction.locale, tag: `**${tag}**` }));
 	}
 
-	private async unlinkPlayer(user: string, tag: string) {
+	private async unlinkPlayer(userId: string, tag: string) {
 		const link = await this.client.http.unlinkPlayerTag(tag);
-		const { value } = await this.client.db
-			.collection<{ entries?: { tag: string }[] }>(Collections.LINKED_PLAYERS)
-			.findOneAndUpdate({ user }, { $pull: { entries: { tag } } }, { returnDocument: 'before' });
-		return value?.entries?.find((en) => en.tag === tag) ? tag : link ? tag : null;
+		const { value } = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOneAndDelete({ userId, tag });
+		return value ? tag : link ? tag : null;
 	}
 
-	private async unlinkClan(user: string, tag: string): Promise<string | null> {
+	private async unlinkClan(userId: string, tag: string): Promise<string | null> {
 		const { value } = await this.client.db
-			.collection(Collections.LINKED_PLAYERS)
-			.findOneAndUpdate({ user, 'clan.tag': tag }, { $unset: { clan: '' } }, { returnDocument: 'before' });
-		return value?.clan.tag;
+			.collection<UserInfoModel>(Collections.USERS)
+			.findOneAndUpdate({ userId, 'clan.tag': tag }, { $unset: { clan: '' } }, { returnDocument: 'before' });
+		return value?.clan?.tag ?? null;
 	}
 
 	private parseTag(tag?: string) {
@@ -79,15 +79,9 @@ export default class LinkDeleteCommand extends Command {
 	}
 
 	private async getMember(tag: string, interaction: CommandInteraction<'cached'>) {
-		const target = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': tag });
+		const target = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag });
 		return target
-			? {
-					id: target.user as string,
-					tag: (target.user_tag ?? 'Unknown#0000') as string
-			  }
-			: {
-					id: interaction.user.id,
-					tag: interaction.user.tag
-			  };
+			? { id: target.userId, tag: target.username || 'Unknown#0000' }
+			: { id: interaction.user.id, tag: interaction.user.tag };
 	}
 }

@@ -15,7 +15,7 @@ import { EMOJIS, TOWN_HALLS, HEROES } from '../../util/Emojis.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import Workbook from '../../struct/Excel.js';
-import { UserInfoModel } from '../../types/index.js';
+import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -50,9 +50,12 @@ export default class ProfileCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { member?: GuildMember; user?: User }) {
 		const user = args.user ?? (args.member ?? interaction.member).user;
-		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: user.id });
+		const [data, players] = await Promise.all([
+			this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: user.id }),
+			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId: user.id }).toArray()
+		]);
 
-		if (data && data.user_tag !== user.tag) {
+		if (data && data.username !== user.tag) {
 			this.client.resolver.updateUserTag(interaction.guild, user.id);
 		}
 
@@ -84,13 +87,13 @@ export default class ProfileCommand extends Command {
 		}
 
 		const otherTags = await this.client.http.getPlayerTags(user.id);
-		if (!data?.entries.length && !otherTags.length) {
+		if (!players.length && !otherTags.length) {
 			embed.setDescription([embed.data.description, 'No accounts are linked. Why not add some?'].join('\n'));
 			return interaction.editReply({ embeds: [embed] });
 		}
 
 		const collection = [];
-		const tags = new Set([...(data?.entries.map((en) => en.tag) ?? []), ...otherTags]);
+		const tags = new Set([...players.map((en) => en.tag), ...otherTags]);
 		const hideLink = Boolean(tags.size >= 12);
 
 		const links: XLSX[] = [];
@@ -99,7 +102,7 @@ export default class ProfileCommand extends Command {
 			if (player.statusCode === 404) this.deleteBanned(user.id, tag);
 			if (!player.ok) continue;
 
-			const signature = this.isVerified(data, tag) ? '**✓**' : this.isLinked(data, tag) ? '' : '';
+			const signature = this.isVerified(players, tag) ? '**✓**' : this.isLinked(players, tag) ? '' : '';
 			collection.push({
 				field: `${TOWN_HALLS[player.townHallLevel]} ${hideLink ? '' : '['}${player.name} (${player.tag})${
 					hideLink ? '' : `](${this.profileURL(player.tag)})`
@@ -110,13 +113,13 @@ export default class ProfileCommand extends Command {
 			links.push({
 				name: player.name,
 				tag: player.tag,
-				verified: this.isVerified(data, tag) ? 'Yes' : 'No',
+				verified: this.isVerified(players, tag) ? 'Yes' : 'No',
 				clan: {
 					name: player.clan?.name,
 					tag: player.clan?.tag
 				},
 				role: player.role,
-				external: this.isLinked(data, tag) ? 'No' : 'Yes'
+				external: this.isLinked(players, tag) ? 'No' : 'Yes'
 			});
 		}
 
@@ -207,12 +210,12 @@ export default class ProfileCommand extends Command {
 		return workbook.xlsx.writeBuffer();
 	}
 
-	private isLinked(data: UserInfoModel | null, tag: string) {
-		return Boolean(data?.entries.find((en) => en.tag === tag));
+	private isLinked(players: PlayerLinks[], tag: string) {
+		return Boolean(players.find((en) => en.tag === tag));
 	}
 
-	private isVerified(data: UserInfoModel | null, tag: string) {
-		return Boolean(data?.entries.find((en) => en.tag === tag && en.verified));
+	private isVerified(players: PlayerLinks[], tag: string) {
+		return Boolean(players.find((en) => en.tag === tag && en.verified));
 	}
 
 	private clanName(data: Player) {
@@ -228,9 +231,9 @@ export default class ProfileCommand extends Command {
 			.join(' ');
 	}
 
-	private deleteBanned(user: string, tag: string) {
+	private deleteBanned(userId: string, tag: string) {
 		this.client.http.unlinkPlayerTag(tag);
-		return this.client.db.collection(Collections.LINKED_PLAYERS).updateOne({ user }, { $pull: { entries: { tag } } });
+		return this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).deleteOne({ userId, tag });
 	}
 
 	private profileURL(tag: string) {

@@ -7,6 +7,7 @@ import { ORANGE_NUMBERS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import { Client } from './Client.js';
 
+// fetch links from our db
 export default class RemindScheduler {
 	protected schedulers!: Collection<Schedule>;
 	protected reminders!: Collection<Reminder>;

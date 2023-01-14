@@ -1,7 +1,7 @@
 import { Guild, User, CommandInteraction, BaseInteraction } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import { Collections, Settings, status } from '../util/Constants.js';
-import { UserInfoModel } from '../types/index.js';
+import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { i18n } from '../util/i18n.js';
 import Client from './Client.js';
 
@@ -12,11 +12,7 @@ export default class Resolver {
 		this.client = client;
 	}
 
-	public async resolvePlayer(
-		interaction: CommandInteraction<'cached'>,
-		args?: string,
-		num = 1
-	): Promise<(Player & { user?: User }) | null> {
+	public async resolvePlayer(interaction: CommandInteraction<'cached'>, args?: string): Promise<(Player & { user?: User }) | null> {
 		args = args?.replace(/[\u200e|\u200f]+/g, '') ?? '';
 		const parsed = await this.parseArgument(interaction, args);
 
@@ -27,18 +23,18 @@ export default class Resolver {
 
 		const { user } = parsed;
 		const otherTags: string[] = [];
-		const data = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: user.id });
-		if (data && data.user_tag !== user.tag) this.updateUserTag(interaction.guild, user.id);
+		const link = await this.client.db
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.findOne({ userId: user.id }, { sort: { order: 1 } });
+		if (link && link.username !== user.tag) this.updateUserTag(interaction.guild, user.id);
 
-		if (!data?.entries?.length || num > data.entries?.length) {
+		if (!link) {
 			otherTags.push(...(await this.client.http.getPlayerTags(user.id)));
 		}
 
-		const tagSet = new Set([...(data?.entries?.map((en: any) => en.tag) ?? []), ...otherTags]);
-		const tags = Array.from(tagSet);
-		tagSet.clear();
+		const tags = [...(link ? [link.tag] : []), ...otherTags];
 
-		if (tags.length) return this.getPlayer(interaction, tags[Math.min(tags.length - 1, num - 1)], user);
+		if (tags.length) return this.getPlayer(interaction, tags[0], user);
 		if (interaction.user.id === user.id) {
 			return this.fail(interaction, i18n('common.no_player_tag', { lng: interaction.locale }));
 		}
@@ -133,23 +129,25 @@ export default class Resolver {
 	}
 
 	private async getLinkedUserClan(userId: string) {
-		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: userId });
+		const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId });
 		return user?.clan ?? null;
 	}
 
-	public updateUserTag(guild: Guild, userId: string) {
+	public async updateUserTag(guild: Guild, userId: string) {
 		const member = guild.members.cache.get(userId);
 		if (!member) return null;
-		return this.client.db
-			.collection(Collections.LINKED_PLAYERS)
-			.updateOne({ user: member.user.id }, { $set: { user_tag: member.user.tag } });
+		await this.client.db.collection(Collections.USERS).updateOne({ userId: member.user.id }, { $set: { username: member.user.tag } });
+		await this.client.db
+			.collection(Collections.PLAYER_LINKS)
+			.updateMany({ userId: member.user.id }, { $set: { username: member.user.tag } });
 	}
 
 	public async getPlayers(userId: string) {
-		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: userId });
-		const others = await this.client.http.getPlayerTags(userId);
-
-		const playerTagSet = new Set([...(data?.entries ?? []).map((en) => en.tag), ...others.map((tag) => tag)]);
+		const [players, others] = await Promise.all([
+			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),
+			this.client.http.getPlayerTags(userId)
+		]);
+		const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
 
 		return (
 			await Promise.all(
@@ -189,12 +187,15 @@ export default class Resolver {
 			return null;
 		}
 
-		const user = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
+		const links = await this.client.db
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.find({ userId: interaction.user.id })
+			.toArray();
 		const code = ['CP', interaction.guild.id.substr(-2)].join('');
 		const clan = clans.find((clan) => clan.tag === data.tag);
 		if (
 			!clan?.verified &&
-			!this.verifyClan(code, data, user?.entries ?? []) &&
+			!this.verifyClan(code, data, links) &&
 			!this.client.isOwner(interaction.user) &&
 			interaction.guildId === '1016659402817814620'
 		) {

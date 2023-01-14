@@ -9,7 +9,7 @@ import {
 	TextInputStyle
 } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { UserInfoModel } from '../../types/index.js';
+import { PlayerLinks } from '../../types/index.js';
 import { Collections, Settings, status } from '../../util/Constants.js';
 
 export default class QuickBoardActionCommand extends Command {
@@ -56,8 +56,10 @@ export default class QuickBoardActionCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.customId === customIds.nickname) {
 				await action.deferUpdate();
-				const link = await this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
-				const player = await this.client.http.player(link?.entries[0]?.tag);
+				const link = await this.client.db
+					.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+					.findOne({ userId: interaction.user.id }, { sort: { order: 1 } });
+				const player = await this.client.http.player(link?.tag ?? '/');
 				const member = interaction.member;
 				if (!player.ok) {
 					await action.followUp({ ephemeral: true, content: `**${status(player.statusCode, interaction.locale)}**` });
@@ -158,11 +160,14 @@ export default class QuickBoardActionCommand extends Command {
 					.toArray();
 				if (!clans.length) return;
 
-				const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: action.user.id });
-				if (!data?.entries.length) return;
+				const links = await this.client.db
+					.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+					.find({ userId: action.user.id })
+					.toArray();
+				if (!links.length) return;
 
 				const clanTags = clans.map((clan) => clan.tag);
-				const players = (await this.client.http.detailedClanMembers(data.entries))
+				const players = (await this.client.http.detailedClanMembers(links))
 					.filter((res) => res.ok)
 					.filter((en) => en.clan && clanTags.includes(en.clan.tag));
 

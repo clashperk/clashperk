@@ -1,7 +1,7 @@
 import { GuildMember } from 'discord.js';
 import { Collections } from '../../util/Constants.js';
 import { Listener } from '../../lib/index.js';
-import { UserInfoModel } from '../../types/index.js';
+import { PlayerLinks } from '../../types/index.js';
 
 export default class GuildMemberAddListener extends Listener {
 	public constructor() {
@@ -19,11 +19,11 @@ export default class GuildMemberAddListener extends Listener {
 			.toArray();
 		if (!clans.length) return;
 
-		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: member.id });
-		if (!data?.entries.length) return;
+		const links = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId: member.id }).toArray();
+		if (!links.length) return;
 
 		const clanTags = clans.map((clan) => clan.tag);
-		const players = (await this.client.http.detailedClanMembers(data.entries))
+		const players = (await this.client.http.detailedClanMembers(links))
 			.filter((res) => res.ok)
 			.filter((en) => en.clan && clanTags.includes(en.clan.tag));
 

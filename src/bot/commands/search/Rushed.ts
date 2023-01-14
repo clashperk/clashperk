@@ -1,4 +1,4 @@
-import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, ComponentType } from 'discord.js';
+import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBuilder, ComponentType, User } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
@@ -32,10 +32,10 @@ export default class RushedCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; clan?: boolean }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; clan?: boolean; user?: User }) {
 		const data = args.clan
 			? await this.client.resolver.resolveClan(interaction, args.tag)
-			: await this.client.resolver.resolvePlayer(interaction, args.tag, 1);
+			: await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
 		if (args.clan) return this.clan(interaction, data as Clan);

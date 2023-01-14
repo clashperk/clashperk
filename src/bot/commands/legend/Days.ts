@@ -87,7 +87,7 @@ export default class LegendDaysCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
-		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id, 1);
+		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
 		const customIds = {

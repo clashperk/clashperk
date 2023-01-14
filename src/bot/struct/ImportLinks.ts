@@ -33,15 +33,15 @@ export class ImportLinks {
 			}));
 
 			// take out the duplicate accounts using reduce
-			const uniqueAccounts = accounts.reduce<typeof accounts>((acc, cur) => {
-				const x = acc.find((item) => item.tag === cur.tag);
-				if (!x) {
-					acc.push(cur);
-				}
-				return acc;
-			}, []);
+			// const uniqueAccounts = accounts.reduce<typeof accounts>((acc, cur) => {
+			// 	const x = acc.find((item) => item.tag === cur.tag);
+			// 	if (!x) {
+			// 		acc.push(cur);
+			// 	}
+			// 	return acc;
+			// }, []);
 
-			if (accounts.length) await this.client.db.collection(Collections.PLAYER_LINKS).insertMany(uniqueAccounts);
+			// if (accounts.length) await this.client.db.collection(Collections.PLAYER_LINKS).insertMany(uniqueAccounts);
 			console.log(`[${count}] Inserted ${accounts.length} accounts for ${data.user_tag ?? data.user}`);
 		}
 		console.log('Done');

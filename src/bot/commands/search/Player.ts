@@ -6,7 +6,8 @@ import {
 	escapeMarkdown,
 	ComponentType,
 	ButtonBuilder,
-	ButtonStyle
+	ButtonStyle,
+	User
 } from 'discord.js';
 import { Player, WarClan } from 'clashofclans.js';
 import ms from 'ms';
@@ -14,7 +15,7 @@ import { EMOJIS, TOWN_HALLS, HEROES, SIEGE_MACHINES } from '../../util/Emojis.js
 import { Collections } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { Season } from '../../util/index.js';
-import { UserInfoModel } from '../../types/index.js';
+import { PlayerLinks } from '../../types/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -54,10 +55,10 @@ export default class PlayerCommand extends Command {
 	}
 
 	public async getPlayers(userId: string) {
-		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: userId });
+		const players = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray();
 		const others = await this.client.http.getPlayerTags(userId);
 
-		const playerTagSet = new Set([...(data?.entries ?? []).map((en) => en.tag), ...others.map((tag) => tag)]);
+		const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
 
 		return (
 			await Promise.all(
@@ -68,8 +69,8 @@ export default class PlayerCommand extends Command {
 		).filter((res) => res.ok);
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		const data = await this.client.resolver.resolvePlayer(interaction, args.tag, 1);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
 		const customIds = {
@@ -317,12 +318,12 @@ export default class PlayerCommand extends Command {
 		const data = await Promise.any([this.getLinkedFromDb(tag), this.client.http.getLinkedUser(tag)]);
 		if (!data) return null;
 
-		const user = await interaction.guild.members.fetch(data.user).catch(() => null);
-		return { mention: user?.toString() ?? null, userId: data.user };
+		const user = await interaction.guild.members.fetch(data.userId).catch(() => null);
+		return { mention: user?.toString() ?? null, userId: data.userId };
 	}
 
 	private async getLinkedFromDb(tag: string) {
-		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': tag });
+		const data = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag });
 		if (!data) return Promise.reject(0);
 		return data;
 	}

@@ -226,8 +226,6 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.FLAGS).createIndex({ guild: 1, tag: 1 }),
 
-			db.collection(Collections.CLANS).createIndex({ tag: 1 }, { unique: true }),
-
 			db.collection(Collections.LAST_SEEN).createIndexes([
 				{
 					key: { lastSeen: 1 },
@@ -245,17 +243,12 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
-			// db.collection(Collections.LINKED_PLAYERS).createIndexes([
-			// 	{
-			// 		key: { 'entries.tag': 1 },
-			// 		unique: true,
-			// 		sparse: true
-			// 	},
-			// 	{
-			// 		key: { user: 1 },
-			// 		unique: true
-			// 	}
-			// ]),
+			db.collection(Collections.USERS).createIndexes([
+				{
+					key: { userId: 1 },
+					unique: true
+				}
+			]),
 
 			db.collection(Collections.PLAYER_LINKS).createIndexes([
 				{

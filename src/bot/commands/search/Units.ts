@@ -6,7 +6,8 @@ import {
 	EmbedBuilder,
 	StringSelectMenuBuilder,
 	ButtonStyle,
-	ComponentType
+	ComponentType,
+	User
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
@@ -34,8 +35,8 @@ export default class UnitsCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		let data = await this.client.resolver.resolvePlayer(interaction, args.tag, 1);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+		let data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
 		const embed = this.embed(data, true)

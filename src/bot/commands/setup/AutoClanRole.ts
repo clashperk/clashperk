@@ -1,6 +1,7 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Collections } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
+import { PlayerLinks } from '../../types/index.js';
 
 export interface IArgs {
 	command?: 'enable' | 'disable' | null;
@@ -120,58 +121,34 @@ export default class AutoRoleCommand extends Command {
 	}
 
 	private async updateLinksAndRoles(clans: { tag: string }[]) {
+		const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
 		for (const clan of clans) {
 			const data = await this.client.http.clan(clan.tag);
 			if (!data.ok) continue;
 
-			const links = await this.client.db
-				.collection(Collections.LINKED_PLAYERS)
-				.aggregate([
-					{
-						$match: {
-							'entries.tag': data.memberList.map((mem) => mem.tag)
-						}
-					},
-					{
-						$unwind: {
-							path: '$entries'
-						}
-					},
-					{
-						$project: {
-							tag: '$entries.tag',
-							user: '$user'
-						}
-					}
-				])
-				.toArray();
-
+			const links = await collection.find({ tag: { $in: data.memberList.map((mem) => mem.tag) } }).toArray();
 			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
-			for (const { user, tag } of unknowns) {
-				if (links.find((mem) => mem.tag === tag && mem.user === user)) continue;
 
-				const players = data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.player(tag));
-				if (!players.name) continue;
+			for (const { userId, tag } of unknowns) {
+				if (links.find((mem) => mem.tag === tag && mem.userId === userId)) continue;
+				const lastAccount = await collection.findOne({ userId }, { sort: { order: -1 } });
+
+				const player = data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.player(tag));
+				if (!player.name) continue;
+
+				const user = await this.client.users.fetch(userId).catch(() => null);
+				if (!user) continue;
+
 				try {
-					await this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
-						{ user, 'entries.tag': { $ne: tag } },
-						{
-							$push: {
-								entries: { tag, name: players.name, verified: false, unknown: true }
-							},
-							$setOnInsert: {
-								clan: {
-									tag: data.tag,
-									name: data.name
-								},
-								createdAt: new Date()
-							},
-							$set: {
-								user_tag: this.client.users.cache.get(user)?.tag
-							}
-						},
-						{ upsert: true }
-					);
+					await collection.insertOne({
+						userId: user.id,
+						username: user.tag,
+						tag,
+						name: player.name,
+						verified: false,
+						order: lastAccount?.order ? lastAccount.order + 1 : 0,
+						createdAt: new Date()
+					});
 				} catch {}
 			}
 

@@ -4,6 +4,7 @@ import { Collections, Settings } from '../util/Constants.js';
 import { Client } from '../struct/Client.js';
 import Queue from '../struct/Queue.js';
 import { Util } from '../util/index.js';
+import { PlayerLinks } from '../types/index.js';
 
 const ActionType: Record<string, string> = {
 	LEFT: '"%PLAYER% left"',
@@ -190,16 +191,17 @@ export class RoleManager {
 		const clan = clans.find((clan) => clan.tag === data.clan.tag)!;
 
 		// getting all linked accounts of all clan members
-		const collection = await this.client.db
-			.collection<{ user: string; entries: { tag: string; verified: boolean }[] }>(Collections.LINKED_PLAYERS)
-			.find({ 'entries.tag': { $in: data.members.map((mem) => mem.tag) } })
-			.toArray();
+		const flattened = (
+			await this.client.db
+				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+				.find({ tag: { $in: data.members.map((mem) => mem.tag) } })
+				.toArray()
+		).filter((link) => (clan.secureRole ? link.verified : true));
 
 		// flattening the array
-		const flattened = this.flatPlayers(collection, clan.secureRole);
 		// getting unique user ids
 		const userIds = flattened.reduce<string[]>((prev, curr) => {
-			if (!prev.includes(curr.user)) prev.push(curr.user);
+			if (!prev.includes(curr.userId)) prev.push(curr.userId);
 			return prev;
 		}, []);
 
@@ -216,7 +218,7 @@ export class RoleManager {
 			const mem = flattened.find((a) => a.tag === member.tag);
 			if (!mem) continue;
 			// getting linked user's accounts
-			const acc = flattened.filter((a) => a.user === mem.user);
+			const acc = flattened.filter((a) => a.userId === mem.userId);
 			const tags = acc.map((en) => en.tag);
 
 			// getting the member's highest role for each clan
@@ -243,7 +245,7 @@ export class RoleManager {
 			const count = await this.addRoles({
 				members,
 				guildId,
-				userId: mem.user,
+				userId: mem.userId,
 				roleIds: highestRoles,
 				roles,
 				reason
@@ -272,16 +274,15 @@ export class RoleManager {
 		if (!roles.length) return null;
 
 		// getting all linked accounts of all clan members
-		const collection = await this.client.db
-			.collection<{ user: string; entries: { tag: string; verified: boolean }[] }>(Collections.LINKED_PLAYERS)
-			.find({ 'entries.tag': { $in: memberTags } })
+		const flattened = await this.client.db
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.find({ tag: { $in: memberTags } })
 			.toArray();
 
 		// flattening the array
-		const flattened = this.flatPlayers(collection, false);
 		// getting unique user ids
 		const userIds = flattened.reduce<string[]>((prev, curr) => {
-			if (!prev.includes(curr.user)) prev.push(curr.user);
+			if (!prev.includes(curr.userId)) prev.push(curr.userId);
 			return prev;
 		}, []);
 
@@ -298,7 +299,7 @@ export class RoleManager {
 			const mem = flattened.find((a) => a.tag === tag);
 			if (!mem) continue;
 
-			const acc = flattened.filter((a) => a.user === mem.user);
+			const acc = flattened.filter((a) => a.userId === mem.userId);
 			const tags = acc.map((en) => en.tag);
 
 			// getting linked user's accounts
@@ -313,7 +314,7 @@ export class RoleManager {
 			const count = await this.addRoles({
 				members,
 				guildId,
-				userId: mem.user,
+				userId: mem.userId,
 				roleIds: thRoles,
 				roles,
 				reason: 'Town Hall Level Synced'

@@ -19,8 +19,6 @@ export const enum Collections {
 	PLAYER_LINKS = 'PlayerLinks',
 	USERS = 'LinkedPlayers',
 
-	LINKED_PLAYERS = 'LinkedPlayers',
-	LINKED_CHANNELS = 'LinkedChannels',
 	REMINDERS = 'Reminders',
 	SCHEDULERS = 'Schedulers',
 	RAID_REMINDERS = 'RaidReminders',
@@ -40,10 +38,6 @@ export const enum Collections {
 	PLAYER_SEASONS = 'PlayerSeasons',
 	CAPITAL_CONTRIBUTIONS = 'CapitalContributions',
 	CAPITAL_RAID_SEASONS = 'CapitalRaidSeasons',
-
-	PLAYERS = 'Players',
-	CLANS = 'Clans',
-	WARS = 'Wars',
 
 	BOT_GROWTH = 'BotGrowth',
 	BOT_USAGE = 'BotUsage',

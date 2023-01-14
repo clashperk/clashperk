@@ -172,11 +172,11 @@ export default class ExportClanMembersCommand extends Command {
 		return achievements.map((name) => ({ name, value: data.achievements.find((en) => en.name === name)?.value ?? 0 }));
 	}
 
-	private updateUsers(interaction: CommandInteraction, members: any[]) {
+	private updateUsers(interaction: CommandInteraction, members: PlayerLinks[]) {
 		for (const data of members) {
-			const member = interaction.guild!.members.cache.get(data.user);
-			if (member && data.user_tag !== member.user.tag) {
-				this.client.resolver.updateUserTag(interaction.guild!, data.user);
+			const member = interaction.guild!.members.cache.get(data.userId);
+			if (member && data.username !== member.user.tag) {
+				this.client.resolver.updateUserTag(interaction.guild!, data.userId);
 			}
 		}
 	}

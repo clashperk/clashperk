@@ -49,10 +49,6 @@ export default class ClansCommand extends Command {
 				const clanembed = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clanId: doc._id });
 				const clangames = await this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clanId: doc._id });
 				const clanwar = await this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clanId: doc._id });
-				const channels = await this.client.db
-					.collection(Collections.LINKED_CHANNELS)
-					.find({ guild: guild.id, tag: doc.tag })
-					.toArray();
 
 				return {
 					tag: doc.tag,
@@ -62,8 +58,7 @@ export default class ClansCommand extends Command {
 					onlinelog: onlinelog && doc.active && doc.flag > 0 ? onlinelog.channel : null,
 					clanembedlog: clanembed && doc.active && doc.flag > 0 ? clanembed.channel : null,
 					clangameslog: clangames && doc.active && doc.flag > 0 ? clangames.channel : null,
-					clanwarlog: clanwar && doc.active && doc.flag > 0 ? clanwar.channel : null,
-					channels: channels.length ? channels : []
+					clanwarlog: clanwar && doc.active && doc.flag > 0 ? clanwar.channel : null
 				};
 			})
 		);

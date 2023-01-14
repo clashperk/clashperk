@@ -67,22 +67,17 @@ export interface PlayerSeasonModel extends AchievementsMap {
 
 export interface UserInfoModel {
 	_id: ObjectId;
-	user: string;
-	user_tag?: string;
+	userId: string;
+	username?: string;
 	clan?: {
 		tag: string;
 		name?: string;
 	};
-	entries: {
-		tag: string;
-		name?: string;
-		verified: boolean;
-		unknown: boolean;
-	}[];
 	timezone?: {
 		id: string;
 		name: string;
 		offset: number;
+		location: string;
 	};
 }
 
@@ -91,7 +86,9 @@ export interface PlayerLinks {
 	username: string;
 	tag: string;
 	name: string;
+	order: number;
 	verified: boolean;
+	createdAt: Date;
 }
 
 export interface TroopJSON {

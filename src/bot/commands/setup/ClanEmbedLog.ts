@@ -16,7 +16,7 @@ import {
 	WebhookClient
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { UserInfoModel } from '../../types/index.js';
+import { PlayerLinks } from '../../types/index.js';
 import { Collections, Flags, missingPermissions } from '../../util/Constants.js';
 import { CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/Emojis.js';
 
@@ -391,11 +391,11 @@ export default class ClanEmbedCommand extends Command {
 		return `https://discord.com/channels/${guildId}/${channelId}/${messageId}`;
 	}
 
-	private async getUser(clan: Clan): Promise<{ id: string; name: string; toString: () => string; entries?: any[] } | null> {
+	private async getUser(clan: Clan): Promise<{ id: string; name: string; toString: () => string } | null> {
 		const leader = clan.memberList.find((m) => m.role === 'leader');
 		if (leader) {
-			const user = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': leader.tag });
-			if (user) return { id: user.user, name: leader.name, toString: () => `<@${user.user}>`, ...user };
+			const user = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag: leader.tag });
+			if (user) return { id: user.userId, toString: () => `<@${user.userId}>`, ...user, name: leader.name };
 		}
 		return null;
 	}
