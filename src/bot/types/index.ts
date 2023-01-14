@@ -86,6 +86,14 @@ export interface UserInfoModel {
 	};
 }
 
+export interface PlayerLinks {
+	userId: string;
+	username: string;
+	tag: string;
+	name: string;
+	verified: boolean;
+}
+
 export interface TroopJSON {
 	[key: string]: {
 		id: number;

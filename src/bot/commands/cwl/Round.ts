@@ -8,7 +8,7 @@ import { Util } from '../../util/index.js';
 export default class CWLRoundCommand extends Command {
 	public constructor() {
 		super('cwl-round', {
-			name: 'round',
+			aliases: ['round'],
 			category: 'war',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],

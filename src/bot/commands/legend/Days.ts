@@ -17,7 +17,7 @@ import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { Season, Util } from '../../util/index.js';
-import { UserInfoModel } from '../../types/index.js';
+import { PlayerLinks } from '../../types/index.js';
 
 const attackCounts: Record<string, string> = {
 	0: '⁰',
@@ -28,7 +28,15 @@ const attackCounts: Record<string, string> = {
 	5: '⁵',
 	6: '⁶',
 	7: '⁷',
-	8: '⁸'
+	8: '⁸',
+	9: '⁹',
+	10: '¹⁰',
+	11: '¹¹',
+	12: '¹²',
+	13: '¹³',
+	14: '¹⁴',
+	15: '¹⁵',
+	16: '¹⁶'
 };
 
 export default class LegendDaysCommand extends Command {
@@ -51,10 +59,9 @@ export default class LegendDaysCommand extends Command {
 	}
 
 	public async getPlayers(userId: string) {
-		const data = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: userId });
+		const players = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray();
 		const others = await this.client.http.getPlayerTags(userId);
-
-		const playerTagSet = new Set([...(data?.entries ?? []).map((en) => en.tag), ...others.map((tag) => tag)]);
+		const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
 
 		return (
 			await Promise.all(
@@ -116,7 +123,7 @@ export default class LegendDaysCommand extends Command {
 				await action.deferUpdate();
 				const data = players.find((en) => en.tag === action.values[0])!;
 				const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
-				await action.editReply({ embeds: [embed] });
+				await action.editReply({ embeds: [embed], components: [row, rowMenu] });
 			}
 			if (action.customId === customIds.prevLogs && action.isButton()) {
 				await action.deferUpdate();
@@ -269,7 +276,7 @@ export default class LegendDaysCommand extends Command {
 			});
 
 		const perDayLogs = days.reduce<{ attackCount: number; defenseCount: number; gain: number; loss: number; final: number }[]>(
-			(prev, { startTime, endTime }) => {
+			(prev, { startTime, endTime }, i) => {
 				const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 				const attacks = mixedLogs.filter((en) => en.inc > 0) ?? [];
 				const defenses = mixedLogs.filter((en) => en.inc <= 0) ?? [];
@@ -277,6 +284,10 @@ export default class LegendDaysCommand extends Command {
 				const attackCount = attacks.length;
 				const defenseCount = defenses.length;
 				const [final] = mixedLogs.slice(-1);
+
+				if (i === 10) {
+					console.log(mixedLogs);
+				}
 
 				const gain = attacks.reduce((acc, cur) => acc + cur.inc, 0);
 				const loss = defenses.reduce((acc, cur) => acc + cur.inc, 0);
@@ -305,12 +316,16 @@ export default class LegendDaysCommand extends Command {
 					'defense'
 				)} won`,
 				'',
-				'`DAY` ` GAIN ` `  LOSS ` ` FINAL`',
+				'`DAY` ` GAIN ` ` LOSS ` ` FINAL`',
 				...perDayLogs.map(
 					(day, i) =>
-						`\`\u200e${(i + 1).toString().padStart(2, ' ')} \` \` ${this.pad(day.gain, 3)}${
-							attackCounts[day.attackCount]
-						} \` \` ${this.pad(day.loss)}${attackCounts[day.defenseCount]} \` \` ${this.pad(day.final, 4)} \``
+						`\`\u200e${(i + 1).toString().padStart(2, ' ')} \` \`${this.pad(
+							`+${day.gain}${attackCounts[Math.min(9, day.attackCount)]}`,
+							5
+						)} \` \`${this.pad(`-${Math.abs(day.loss)}${attackCounts[Math.min(9, day.defenseCount)]}`, 5)} \` \` ${this.pad(
+							day.final,
+							4
+						)} \``
 				)
 			].join('\n')
 		);

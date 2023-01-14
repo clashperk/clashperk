@@ -4,7 +4,7 @@ import { Command } from '../../lib/index.js';
 export default class ClanSearchCommand extends Command {
 	public constructor() {
 		super('clan-search', {
-			name: 'search',
+			aliases: ['search'],
 			category: 'search',
 			channel: 'guild',
 			description: {

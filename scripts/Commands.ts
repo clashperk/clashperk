@@ -1454,19 +1454,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	},
 	{
 		name: 'autorole',
-		description: command.autorole.description,
+		description: 'Enable automatic clan roles and Town Hall roles.',
 		dm_permission: false,
-		description_localizations: translation('command.autorole.description'),
 		options: [
 			{
 				name: 'clan-roles',
-				description: command.autorole.enable.description,
-				description_localizations: translation('command.autorole.enable.description'),
+				description: 'Enable automatic clan roles.',
 				type: ApplicationCommandOptionType.SubcommandGroup,
 				options: [
 					{
 						name: 'enable',
-						description: 'Enable clan roles',
+						description: 'Enable automatic clan roles.',
 						type: ApplicationCommandOptionType.Subcommand,
 						options: [
 							{
@@ -1526,7 +1524,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'disable',
-						description: 'Disable clan roles.',
+						description: 'Disable automatic clan roles.',
 						type: ApplicationCommandOptionType.Subcommand,
 						options: [
 							{
@@ -1558,14 +1556,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'town-hall',
-				description: command.autorole.disable.description,
-				description_localizations: translation('command.autorole.disable.description'),
+				description: 'Manage automatic Town Hall roles.',
 				type: ApplicationCommandOptionType.SubcommandGroup,
 				options: [
 					{
 						name: 'enable',
 						type: ApplicationCommandOptionType.Subcommand,
-						description: 'Set Town Hall roles.',
+						description: 'Enable automatic Town Hall roles.',
 						options: [
 							{
 								name: 'th_3',
@@ -1636,7 +1633,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'disable',
-						description: 'Disable town hall roles.',
+						description: 'Disable automatic Town Hall roles.',
 						type: ApplicationCommandOptionType.Subcommand
 					}
 				]
@@ -2286,12 +2283,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	// -------- CONTEXT MENU COMMANDS--------
 
 	{
-		name: 'Profile',
+		name: 'whois',
 		type: ApplicationCommandType.User,
 		dm_permission: false
 	},
 	{
-		name: 'Army',
+		name: 'army',
 		type: ApplicationCommandType.Message,
 		dm_permission: false
 	}
@@ -2357,10 +2354,5 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				required: false
 			}
 		]
-	},
-	{
-		name: 'Whois',
-		type: ApplicationCommandType.User,
-		dm_permission: true
 	}
 ];

@@ -2,6 +2,7 @@ import { EmbedBuilder, GuildMember, ActionRowBuilder, ButtonBuilder, CommandInte
 import { Clan, Player } from 'clashofclans.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
+import { PlayerLinks, UserInfoModel } from '../../types/index.js';
 
 export default class LinkCreateCommand extends Command {
 	public constructor() {
@@ -110,18 +111,18 @@ export default class LinkCreateCommand extends Command {
 	}
 
 	private async clanLink(member: GuildMember, clan: Clan) {
-		return this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
-			{ user: member.id },
+		return this.client.db.collection(Collections.USERS).updateOne(
+			{ userId: member.id },
 			{
 				$set: {
 					clan: {
 						tag: clan.tag,
 						name: clan.name
 					},
-					user_tag: member.user.tag
+					username: member.user.tag,
+					updatedAt: new Date()
 				},
 				$setOnInsert: {
-					entries: [],
 					createdAt: new Date()
 				}
 			},
@@ -133,51 +134,46 @@ export default class LinkCreateCommand extends Command {
 		interaction: CommandInteraction,
 		{ player, member, def }: { player: Player; member: GuildMember; def: boolean }
 	) {
-		const doc = await this.getPlayer(player.tag);
+		const [doc, accounts] = await this.getPlayer(player.tag, member.id);
 		// only owner can set default account
-		if (doc && doc.user === member.id && ((def && member.id !== interaction.user.id) || !def)) {
+		if (doc && doc.userId === member.id && ((def && member.id !== interaction.user.id) || !def)) {
 			await this.resetLinkAPI(member.id, player.tag);
 			return interaction.editReply(
 				this.i18n('command.link.create.link_exists', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
 			);
 		}
 
-		if (doc && doc.user !== member.id) {
+		if (doc && doc.userId !== member.id) {
 			return interaction.editReply(
 				this.i18n('command.link.create.already_linked', { lng: interaction.locale, player: `**${player.name} (${player.tag})**` })
 			);
 		}
 
-		if (doc && doc.entries.length >= 25) {
+		if (doc && accounts.length >= 25) {
 			return interaction.editReply(this.i18n('command.link.create.max_limit', { lng: interaction.locale }));
 		}
 
 		// only owner can set default account
 		if (def && member.id === interaction.user.id) {
 			await this.client.db
-				.collection(Collections.LINKED_PLAYERS)
-				.updateOne({ user: member.id }, { $set: { user_tag: member.user.tag }, $pull: { entries: { tag: player.tag } } });
+				.collection<UserInfoModel>(Collections.USERS)
+				.updateOne({ userId: member.id }, { $set: { username: member.user.tag, player: { name: player.name, tag: player.tag } } });
 		}
 
-		await this.client.db.collection(Collections.LINKED_PLAYERS).updateOne(
-			{ user: member.id },
+		await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).updateOne(
+			{ userId: member.id },
 			{
 				$set: {
-					user_tag: member.user.tag,
-					user: member.id,
-					createdAt: new Date()
+					userId: member.id,
+					username: member.user.tag,
+					name: player.name,
+					tag: player.tag,
+					verified: doc?.verified ?? false,
+					updatedAt: new Date()
 				},
-				$push:
-					def && member.id === interaction.user.id // only owner can set default account
-						? {
-								entries: {
-									$each: [{ tag: player.tag, name: player.name, verified: this.isVerified(doc, player.tag) }],
-									$position: 0
-								}
-						  }
-						: {
-								entries: { tag: player.tag, name: player.name, verified: false }
-						  }
+				$setOnInsert: {
+					createdAt: new Date()
+				}
 			},
 			{ upsert: true }
 		);
@@ -196,12 +192,9 @@ export default class LinkCreateCommand extends Command {
 		);
 	}
 
-	private isVerified(data: any, tag: string) {
-		return Boolean(data?.entries.find((en: any) => en.tag === tag && en.verified));
-	}
-
-	private async getPlayer(tag: string) {
-		return this.client.db.collection(Collections.LINKED_PLAYERS).findOne({ 'entries.tag': tag });
+	private async getPlayer(tag: string, userId: string) {
+		const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
+		return Promise.all([collection.findOne({ tag }), collection.find({ userId }).toArray()]);
 	}
 
 	private async resetLinkAPI(user: string, tag: string) {

@@ -54,14 +54,14 @@ export default class HelpCommand extends Command {
 			.setColor(this.client.embed(interaction))
 			.setDescription(
 				[
-					`\`/${command.name ?? command.id} ${description.usage}\``,
+					`\`/${command.aliases?.[0] ?? command.id} ${description.usage}\``,
 					'',
 					Array.isArray(description.content) ? description.content.join('\n') : description.content
 				].join('\n')
 			);
 
 		if (description.examples.length) {
-			const cmd = `/${command.name ?? command.id}`;
+			const cmd = `/${command.aliases?.[0] ?? command.id}`;
 			embed.setDescription(
 				[embed.data.description, '', '**Examples**', `\`${cmd} ${description.examples.join(`\`\n\`${cmd} `)}\``].join('\n')
 			);
@@ -133,7 +133,7 @@ export default class HelpCommand extends Command {
 							const description = Array.isArray(cmd.description?.content)
 								? cmd.description?.content[0] ?? ''
 								: cmd.description?.content ?? '';
-							return `**\`/${cmd.name ?? cmd.id}\`**\n${description}`;
+							return `**\`/${cmd.aliases?.[0] ?? cmd.id}\`**\n${description}`;
 						})
 						.join('\n')
 				}

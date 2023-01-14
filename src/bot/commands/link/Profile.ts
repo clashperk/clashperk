@@ -27,6 +27,7 @@ const roles: Record<string, string> = {
 export default class ProfileCommand extends Command {
 	public constructor() {
 		super('profile', {
+			aliases: ['whois'],
 			category: 'profile',
 			channel: 'guild',
 			clientPermissions: ['UseExternalEmojis', 'EmbedLinks'],

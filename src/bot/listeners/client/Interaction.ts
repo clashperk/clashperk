@@ -4,7 +4,7 @@ import ms from 'ms';
 import { nanoid } from 'nanoid';
 import { Listener } from '../../lib/index.js';
 import ComponentHandler from '../../struct/ComponentHandler.js';
-import { UserInfoModel } from '../../types/index.js';
+import { PlayerLinks } from '../../types/index.js';
 import { Collections, Settings } from '../../util/Constants.js';
 
 export default class InteractionListener extends Listener {
@@ -148,28 +148,16 @@ export default class InteractionListener extends Listener {
 
 	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused);
-		const user = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
-		if (!user?.entries.length) {
+		const players = await this.client.db
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.find({ userId: interaction.user.id, ...(query ? { $text: { $search: query } } : {}) })
+			.limit(25)
+			.toArray();
+		if (!players.length) {
 			if (query) return interaction.respond([{ value: query, name: query }]);
 			return interaction.respond([{ value: '0', name: 'Enter a player tag!' }]);
 		}
-		if (!query) {
-			return interaction.respond(
-				user.entries.slice(0, 25).map((entry) => ({ value: entry.tag, name: `${entry.name ?? 'Unknown'} (${entry.tag})` }))
-			);
-		}
-		const result = user.entries
-			.filter(
-				(entry) =>
-					Boolean(entry.name?.toLowerCase().includes(query.toLowerCase())) ||
-					entry.tag.toLowerCase().includes(query.toLowerCase())
-			)
-			.slice(0, 25);
-		if (!result.length) {
-			if (query) return interaction.respond([{ value: query, name: query }]);
-			return interaction.respond([{ value: '0', name: 'Enter a player tag!' }]);
-		}
-		return interaction.respond(result.map((entry) => ({ value: entry.tag, name: `${entry.name ?? 'Unknown'} (${entry.tag})` })));
+		return interaction.respond(players.map((player) => ({ value: player.tag, name: `${player.name} (${player.tag})` })));
 	}
 
 	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
@@ -195,7 +183,7 @@ export default class InteractionListener extends Listener {
 		if (!interaction.isContextMenuCommand()) return;
 
 		const commandId = interaction.commandName.replace(/\s+/g, '-').toLowerCase();
-		const command = this.client.commandHandler.modules.get(commandId);
+		const command = this.client.commandHandler.getCommand(commandId);
 		if (!command) return;
 
 		if (this.client.commandHandler.preInhibitor(interaction, command)) return;

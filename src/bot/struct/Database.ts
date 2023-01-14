@@ -245,15 +245,28 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
-			db.collection(Collections.LINKED_PLAYERS).createIndexes([
+			// db.collection(Collections.LINKED_PLAYERS).createIndexes([
+			// 	{
+			// 		key: { 'entries.tag': 1 },
+			// 		unique: true,
+			// 		sparse: true
+			// 	},
+			// 	{
+			// 		key: { user: 1 },
+			// 		unique: true
+			// 	}
+			// ]),
+
+			db.collection(Collections.PLAYER_LINKS).createIndexes([
 				{
-					key: { 'entries.tag': 1 },
-					unique: true,
-					sparse: true
+					key: { name: 'text' }
 				},
 				{
-					key: { user: 1 },
+					key: { tag: 1 },
 					unique: true
+				},
+				{
+					key: { userId: 1 }
 				}
 			]),
 

@@ -13,7 +13,15 @@ const attackCounts: Record<string, string> = {
 	5: '⁵',
 	6: '⁶',
 	7: '⁷',
-	8: '⁸'
+	8: '⁸',
+	9: '⁹',
+	10: '¹⁰',
+	11: '¹¹',
+	12: '¹²',
+	13: '¹³',
+	14: '¹⁴',
+	15: '¹⁵',
+	16: '¹⁶'
 };
 
 export default class LegendAttacksCommand extends Command {
@@ -103,17 +111,33 @@ export default class LegendAttacksCommand extends Command {
 				'INIT GAIN LOSS FINL NAME',
 				...members.map(
 					(mem) =>
-						`${this.pad(mem.initial.start)} ${this.pad(mem.trophiesFromAttacks, 3)}${attackCounts[mem.attackCount]} ${this.pad(
-							Math.abs(mem.trophiesFromDefenses),
+						`${this.pad(mem.initial.start)} ${this.pad(mem.trophiesFromAttacks, 3)}${
+							attackCounts[Math.min(9, mem.attackCount)]
+						} ${this.pad(Math.abs(mem.trophiesFromDefenses), 3)}${attackCounts[Math.min(9, mem.defenseCount)]} ${this.pad(
+							mem.current.end
+						)} ${escapeMarkdown(mem.name)}`
+				),
+				'```'
+			].join('\n')
+		);
+
+		embed.setDescription(
+			[
+				'**Legend League Attacks**',
+				'```',
+				' GAIN  LOSS FINAL NAME',
+				...members.map(
+					(mem) =>
+						`${this.pad(`+${mem.trophiesFromAttacks}`, 3)}${attackCounts[Math.min(9, mem.attackCount)]} ${this.pad(
+							`-${Math.abs(mem.trophiesFromDefenses)}`,
 							3
-						)}${attackCounts[mem.defenseCount]} ${this.pad(mem.current.end)} ${escapeMarkdown(mem.name)}`
+						)}${attackCounts[Math.min(9, mem.defenseCount)]}  ${this.pad(mem.current.end)} ${escapeMarkdown(mem.name)}`
 				),
 				'```'
 			].join('\n')
 		);
 
 		embed.setFooter({ text: `Day ${moment().diff(Season.startTimestamp, 'days')} (${Season.ID})` });
-
 		return interaction.editReply({ embeds: [embed] });
 	}
 

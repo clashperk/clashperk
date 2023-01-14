@@ -36,7 +36,7 @@ export default class ClanActivityCommand extends Command {
 		);
 		if (!result.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
-		const user = await this.client.db.collection<UserInfoModel>(Collections.LINKED_PLAYERS).findOne({ user: interaction.user.id });
+		const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: interaction.user.id });
 		const timezone = user?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
 		const datasets = result.map((clan) => ({ name: clan.name, data: this.datasets(clan, timezone.offset, args.days ?? 1) }));
 

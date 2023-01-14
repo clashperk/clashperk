@@ -96,14 +96,17 @@ export class CommandHandler extends BaseHandler {
 
 	public override construct(command: Command) {
 		super.construct(command);
-		if (this.aliases.has(command.name ?? command.id)) {
-			throw new Error(`Command "${command.id}" already exists.`);
+		const aliases = new Set([command.id, ...(command.aliases ?? [])]);
+		for (const alias of aliases) {
+			if (this.aliases.has(alias)) {
+				throw new Error(`Command "${command.id}" already exists.`);
+			}
+			this.aliases.set(alias, command.id);
 		}
-		this.aliases.set(command.name ?? command.id, command.id);
 	}
 
-	public getCommand(name: string): Command | null {
-		return this.modules.get(name) ?? this.modules.get(this.aliases.get(name)!) ?? null;
+	public getCommand(alias: string): Command | null {
+		return this.modules.get(alias) ?? this.modules.get(this.aliases.get(alias)!) ?? null;
 	}
 
 	public transformInteraction(
@@ -331,7 +334,7 @@ export class InhibitorHandler extends BaseHandler {
 }
 
 export interface CommandOptions {
-	name?: string;
+	aliases?: string[];
 	category?: string;
 	ownerOnly?: boolean;
 	ephemeral?: boolean;
@@ -352,7 +355,7 @@ export interface CommandOptions {
 
 export class Command implements CommandOptions {
 	public id: string;
-	public name?: string;
+	public aliases?: string[];
 	public client: Client;
 	public category: string;
 	public ephemeral?: boolean;
@@ -376,10 +379,10 @@ export class Command implements CommandOptions {
 
 	public constructor(
 		id: string,
-		{ defer, name, ephemeral, userPermissions, clientPermissions, description, channel, ownerOnly, category }: CommandOptions
+		{ defer, aliases, ephemeral, userPermissions, clientPermissions, description, channel, ownerOnly, category }: CommandOptions
 	) {
 		this.id = id;
-		this.name = name;
+		this.aliases = aliases;
 		this.defer = defer;
 		this.ephemeral = ephemeral;
 		this.userPermissions = userPermissions;

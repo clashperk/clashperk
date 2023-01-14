@@ -4,7 +4,7 @@ import { Collections } from '../../util/Constants.js';
 import { Season } from '../../util/index.js';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
-import { achievements, PlayerSeasonModel } from '../../types/index.js';
+import { achievements, PlayerLinks, PlayerSeasonModel } from '../../types/index.js';
 
 export default class ExportSeason extends Command {
 	public constructor() {
@@ -43,16 +43,14 @@ export default class ExportSeason extends Command {
 		if (patron) {
 			memberTags.push(...(await this.client.http.getDiscordLinks(allMembers)));
 			const dbMembers = await this.client.db
-				.collection(Collections.LINKED_PLAYERS)
-				.find({ 'entries.tag': { $in: allMembers.map((m) => m.tag) } })
+				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+				.find({ tag: { $in: allMembers.map((m) => m.tag) } })
 				.toArray();
 			if (dbMembers.length) this.updateUsers(interaction, dbMembers);
 			for (const member of dbMembers) {
-				for (const m of member.entries) {
-					if (!allMembers.find((mem) => mem.tag === m.tag)) continue;
-					if (memberTags.find((mem) => mem.tag === m.tag)) continue;
-					memberTags.push({ tag: m.tag, user: member.user });
-				}
+				if (!allMembers.find((mem) => mem.tag === member.tag)) continue;
+				if (memberTags.find((mem) => mem.tag === member.tag)) continue;
+				memberTags.push({ tag: member.tag, user: member.userId });
 			}
 			const fetchedMembers = await Promise.all(
 				this.chunks(memberTags).map((members) => interaction.guild.members.fetch({ user: members.map((m) => m.user) }))

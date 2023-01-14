@@ -6,6 +6,7 @@ import Workbook from '../../struct/Excel.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 import { HERO_PETS, SUPER_TROOPS, HOME_HEROES } from '../../util/Emojis.js';
+import { PlayerLinks } from '../../types/index.js';
 
 const achievements = [
 	'Gold Grab',
@@ -85,16 +86,14 @@ export default class ExportClanMembersCommand extends Command {
 		const memberTags = [];
 		memberTags.push(...(await this.client.http.getDiscordLinks(members)));
 		const dbMembers = await this.client.db
-			.collection(Collections.LINKED_PLAYERS)
-			.find({ 'entries.tag': { $in: members.map((m) => m.tag) } })
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.find({ tag: { $in: members.map((m) => m.tag) } })
 			.toArray();
 		if (dbMembers.length) this.updateUsers(interaction, dbMembers);
 		for (const member of dbMembers) {
-			for (const m of member.entries) {
-				if (!members.find((mem) => mem.tag === m.tag)) continue;
-				if (memberTags.find((mem) => mem.tag === m.tag)) continue;
-				memberTags.push({ tag: m.tag, user: member.user });
-			}
+			if (!members.find((mem) => mem.tag === member.tag)) continue;
+			if (memberTags.find((mem) => mem.tag === member.tag)) continue;
+			memberTags.push({ tag: member.tag, user: member.userId });
 		}
 		let guildMembers = new Collection<string, GuildMember>();
 		const fetchedMembers = await Promise.all(
