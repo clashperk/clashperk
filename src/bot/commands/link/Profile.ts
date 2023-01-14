@@ -52,7 +52,10 @@ export default class ProfileCommand extends Command {
 		const user = args.user ?? (args.member ?? interaction.member).user;
 		const [data, players] = await Promise.all([
 			this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: user.id }),
-			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId: user.id }).toArray()
+			this.client.db
+				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+				.find({ userId: user.id }, { sort: { order: 1 } })
+				.toArray()
 		]);
 
 		if (data && data.username !== user.tag) {

@@ -150,7 +150,7 @@ export default class InteractionListener extends Listener {
 		const query = interaction.options.getString(focused);
 		const players = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.find({ userId: interaction.user.id, ...(query ? { $text: { $search: query } } : {}) })
+			.find({ userId: interaction.user.id, ...(query ? { $text: { $search: query } } : {}) }, query ? {} : { sort: { order: 1 } })
 			.limit(25)
 			.toArray();
 		if (!players.length) {
