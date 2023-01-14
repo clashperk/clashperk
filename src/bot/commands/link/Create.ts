@@ -153,12 +153,9 @@ export default class LinkCreateCommand extends Command {
 			return interaction.editReply(this.i18n('command.link.create.max_limit', { lng: interaction.locale }));
 		}
 
-		// only owner can set default account
-		if (def && member.id === interaction.user.id) {
-			await this.client.db
-				.collection<UserInfoModel>(Collections.USERS)
-				.updateOne({ userId: member.id }, { $set: { username: member.user.tag, player: { name: player.name, tag: player.tag } } });
-		}
+		await this.client.db
+			.collection<UserInfoModel>(Collections.USERS)
+			.updateOne({ userId: member.id }, { $set: { username: member.user.tag } });
 
 		await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).updateOne(
 			{ tag: player.tag },
@@ -168,6 +165,9 @@ export default class LinkCreateCommand extends Command {
 					username: member.user.tag,
 					name: player.name,
 					tag: player.tag,
+					order: def
+						? Math.min(0, ...accounts.map((account) => account.order)) - 1
+						: Math.min(0, ...accounts.map((account) => account.order)) + 1,
 					verified: doc?.verified ?? false,
 					updatedAt: new Date()
 				},
