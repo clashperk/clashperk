@@ -37,6 +37,7 @@ export default class FamilyCommand extends Command {
 			if (!action) continue;
 		}
 
+		collection.sort((a, b) => b.total - a.total);
 		const embed = new EmbedBuilder();
 		embed.setAuthor({ name: 'Avg. Activity and Avg. Active Members' });
 		embed.setDescription(
