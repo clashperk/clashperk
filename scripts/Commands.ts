@@ -57,11 +57,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		options: [
 			{
 				name: 'player_tag',
-				description: command.player.options.tag.description,
-				description_localizations: translation('command.player.options.tag.description'),
+				description: common.options.player.tag.description,
+				description_localizations: translation('common.options.player.tag.description'),
 				required: false,
 				autocomplete: true,
 				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'user',
+				description: common.options.player.user.description,
+				description_localizations: translation('common.options.player.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
 			}
 		]
 	},
@@ -73,11 +80,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		options: [
 			{
 				name: 'player_tag',
-				description: command.units.options.tag.description,
-				description_localizations: translation('command.units.options.tag.description'),
+				description: common.options.player.tag.description,
+				description_localizations: translation('common.options.player.tag.description'),
 				required: false,
 				autocomplete: true,
 				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'user',
+				description: common.options.player.user.description,
+				description_localizations: translation('common.options.player.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
 			}
 		]
 	},
@@ -89,11 +103,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		options: [
 			{
 				name: 'player_tag',
-				description: command.upgrades.options.tag.description,
-				description_localizations: translation('command.upgrades.options.tag.description'),
+				description: common.options.player.tag.description,
+				description_localizations: translation('common.options.player.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false,
 				autocomplete: true
+			},
+			{
+				name: 'user',
+				description: common.options.player.user.description,
+				description_localizations: translation('common.options.player.user.description'),
+				type: ApplicationCommandOptionType.User,
+				required: false
 			}
 		]
 	},
@@ -105,10 +126,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		options: [
 			{
 				name: 'player_tag',
-				description: command.rushed.options.tag.description,
-				description_localizations: translation('command.rushed.options.tag.description'),
+				description: common.options.player.tag.description,
+				description_localizations: translation('common.options.player.tag.description'),
 				type: ApplicationCommandOptionType.String,
 				autocomplete: true,
+				required: false
+			},
+			{
+				name: 'user',
+				description: common.options.player.user.description,
+				description_localizations: translation('common.options.player.user.description'),
+				type: ApplicationCommandOptionType.User,
 				required: false
 			},
 			{
@@ -1918,8 +1946,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'user',
-						description: common.options.user.description,
-						description_localizations: translation('common.options.user.description'),
+						description: common.options.player.user.description,
+						description_localizations: translation('common.options.player.user.description'),
 						type: ApplicationCommandOptionType.User,
 						required: false
 					}
