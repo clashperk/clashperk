@@ -106,7 +106,7 @@ export default class StorageHandler {
 								token: data.webhook.token
 							}
 						},
-						$min: {
+						$setOnInsert: {
 							createdAt: new Date()
 						}
 					},
@@ -129,7 +129,7 @@ export default class StorageHandler {
 								token: data.webhook.token
 							}
 						},
-						$min: {
+						$setOnInsert: {
 							createdAt: new Date()
 						}
 					},
@@ -153,7 +153,32 @@ export default class StorageHandler {
 								token: data.webhook.token
 							}
 						},
-						$min: {
+						$setOnInsert: {
+							createdAt: new Date()
+						}
+					},
+					{ upsert: true }
+				);
+				break;
+			case Flags.LEGEND_LOG:
+				await this.client.db.collection(Collections.LEGEND_LOGS).updateOne(
+					{ tag: data.tag, guild: data.guild },
+					{
+						$set: {
+							clanId: new ObjectId(id),
+							tag: data.tag,
+							guild: data.guild,
+							name: data.name,
+							channel: data.channel,
+							color: data.color,
+							message: data.message,
+							webhook: {
+								id: data.webhook.id,
+								token: data.webhook.token
+							}
+						},
+						$setOnInsert: {
+							lastPosted: new Date(),
 							createdAt: new Date()
 						}
 					},
@@ -177,7 +202,7 @@ export default class StorageHandler {
 								token: data.webhook.token
 							}
 						},
-						$min: {
+						$setOnInsert: {
 							createdAt: new Date()
 						}
 					},
@@ -198,7 +223,7 @@ export default class StorageHandler {
 							message: data.message,
 							embed: data.embed
 						},
-						$min: {
+						$setOnInsert: {
 							createdAt: new Date()
 						}
 					},
@@ -220,7 +245,7 @@ export default class StorageHandler {
 								token: data.webhook.token
 							}
 						},
-						$min: {
+						$setOnInsert: {
 							createdAt: new Date()
 						}
 					},
@@ -246,6 +271,8 @@ export default class StorageHandler {
 		await this.client.db.collection(Collections.CLAN_EMBED_LOGS).deleteOne({ clanId: new ObjectId(id) });
 
 		await this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clanId: new ObjectId(id) });
+
+		await this.client.db.collection(Collections.LEGEND_LOGS).deleteOne({ clanId: new ObjectId(id) });
 
 		return this.client.db.collection(Collections.CLAN_STORES).deleteOne({ _id: new ObjectId(id) });
 	}
@@ -283,6 +310,10 @@ export default class StorageHandler {
 
 		if (data.op === Flags.CLAN_WAR_LOG) {
 			return this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clanId: new ObjectId(id) });
+		}
+
+		if (data.op === Flags.LEGEND_LOG) {
+			return this.client.db.collection(Collections.LEGEND_LOGS).deleteOne({ clanId: new ObjectId(id) });
 		}
 
 		return null;
@@ -404,6 +435,27 @@ export default class StorageHandler {
 							{
 								$lookup: {
 									from: Collections.CLAN_EMBED_LOGS,
+									localField: '_id',
+									foreignField: 'clanId',
+									as: 'webhook',
+									pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
+								}
+							},
+							{
+								$unwind: '$webhook'
+							},
+							{
+								$project: {
+									tag: 1,
+									name: 1,
+									webhook: 1
+								}
+							}
+						],
+						[Collections.LEGEND_LOGS]: [
+							{
+								$lookup: {
+									from: Collections.LEGEND_LOGS,
 									localField: '_id',
 									foreignField: 'clanId',
 									as: 'webhook',

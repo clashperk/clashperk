@@ -16,9 +16,11 @@ import { Util } from '../util/index.js';
 export default class BaseLog {
 	public cached: Collection<string, Cache>;
 	public lastReq: Map<string, NodeJS.Timeout>;
+	public wait: boolean;
 
-	public constructor(public client: Client) {
+	public constructor(public client: Client, wait = true) {
 		this.cached = new Collection();
+		this.wait = Boolean(wait);
 		this.lastReq = new Map();
 	}
 

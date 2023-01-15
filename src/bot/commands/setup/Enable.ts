@@ -21,7 +21,8 @@ export default class SetupEnableCommand extends Command {
 			'clan-feed': this.handler.modules.get('setup-clan-log')!,
 			'donation-log': this.handler.modules.get('setup-clan-log')!,
 			'clan-games': this.handler.modules.get('setup-clan-log')!,
-			'war-feed': this.handler.modules.get('setup-clan-log')!
+			'war-feed': this.handler.modules.get('setup-clan-log')!,
+			'legend-log': this.handler.modules.get('setup-clan-log')!
 		}[args.option];
 
 		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));

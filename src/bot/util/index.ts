@@ -74,6 +74,13 @@ export class Util {
 		return count === 1 ? text : `${text}${suffix}`;
 	}
 
+	public static getLegendDays() {
+		const start =
+			moment().hour() >= 5 ? moment().startOf('day').add(5, 'hours') : moment().startOf('day').subtract(1, 'day').add(5, 'hours');
+
+		return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').subtract(1, 'second').toDate().getTime() };
+	}
+
 	public static splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
 		if (text.length <= maxLength) return [text];
 		let splitText = [text];

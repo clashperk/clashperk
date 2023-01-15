@@ -8,7 +8,8 @@ const FEATURES: Record<string, string> = {
 	[Flags.LAST_SEEN_LOG]: 'Last Seen',
 	[Flags.CLAN_EMBED_LOG]: 'Clan Embed',
 	[Flags.CLAN_GAMES_LOG]: 'Clan Games',
-	[Flags.CLAN_WAR_LOG]: 'War Feed'
+	[Flags.CLAN_WAR_LOG]: 'War Feed',
+	[Flags.LEGEND_LOG]: 'Legend Log'
 };
 
 export default class ClanLogCommand extends Command {
@@ -58,7 +59,8 @@ export default class ClanLogCommand extends Command {
 			'clan-feed': Flags.CLAN_FEED_LOG,
 			'donation-log': Flags.DONATION_LOG,
 			'clan-games': Flags.CLAN_GAMES_LOG,
-			'war-feed': Flags.CLAN_WAR_LOG
+			'war-feed': Flags.CLAN_WAR_LOG,
+			'legend-log': Flags.LEGEND_LOG
 		}[args.option];
 		if (!flag) return interaction.editReply(this.i18n('common.something_went_wrong', { lng: interaction.locale }));
 

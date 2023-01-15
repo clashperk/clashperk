@@ -1285,6 +1285,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'clan-games'
 							},
 							{
+								name: 'Legend Log',
+								value: 'legend-log'
+							},
+							{
 								name: 'Clan Feed',
 								value: 'clan-feed'
 							},
@@ -1367,6 +1371,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Clan Games',
 								value: 'clan-games'
+							},
+							{
+								name: 'Legend Log',
+								value: 'legend-log'
 							},
 							{
 								name: 'Clan Embed',

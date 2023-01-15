@@ -11,6 +11,7 @@ export const enum Collections {
 	CLAN_EMBED_LOGS = 'ClanEmbedLogs',
 	CLAN_FEED_LOGS = 'ClanFeedLogs',
 	CLAN_WAR_LOGS = 'ClanWarLogs',
+	LEGEND_LOGS = 'LegendLogs',
 
 	EVENT_LOGS = 'EventLogs',
 
@@ -62,7 +63,9 @@ export const enum Flags {
 	CLAN_GAMES_LOG = 1 << 4,
 	CLAN_WAR_LOG = 1 << 5,
 	CHANNEL_LINKED = 1 << 6,
-	SERVER_LINKED = 1 << 7
+	SERVER_LINKED = 1 << 7,
+	LEGEND_LOG = 1 << 8,
+	TOWN_HALL_LOG = 1 << 9
 }
 
 export const enum Settings {
@@ -105,6 +108,19 @@ export function missingPermissions(channel: GuildTextBasedChannel, member: Guild
 export const URLS = {
 	PATREON: 'https://www.patreon.com/clashperk',
 	SUPPORT_SERVER: 'https://discord.gg/ppuppun'
+};
+
+export const attackCounts: Record<string, string> = {
+	0: '⁰',
+	1: '¹',
+	2: '²',
+	3: '³',
+	4: '⁴',
+	5: '⁵',
+	6: '⁶',
+	7: '⁷',
+	8: '⁸',
+	9: '⁹'
 };
 
 export const BOOST_DURATION = 3 * 24 * 60 * 60 * 1000;

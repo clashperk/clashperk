@@ -14,30 +14,10 @@ import {
 import { Clan, Player } from 'clashofclans.js';
 import moment from 'moment';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
-import { Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
+import { attackCounts, Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { Season, Util } from '../../util/index.js';
 import { PlayerLinks } from '../../types/index.js';
-
-const attackCounts: Record<string, string> = {
-	0: '⁰',
-	1: '¹',
-	2: '²',
-	3: '³',
-	4: '⁴',
-	5: '⁵',
-	6: '⁶',
-	7: '⁷',
-	8: '⁸',
-	9: '⁹',
-	10: '¹⁰',
-	11: '¹¹',
-	12: '¹²',
-	13: '¹³',
-	14: '¹⁴',
-	15: '¹⁵',
-	16: '¹⁶'
-};
 
 export default class LegendDaysCommand extends Command {
 	public constructor() {
@@ -80,19 +60,14 @@ export default class LegendDaysCommand extends Command {
 		return 50;
 	}
 
-	private getDates() {
-		const start =
-			moment().hour() >= 5 ? moment().startOf('day').add(5, 'hours') : moment().startOf('day').subtract(1, 'day').add(5, 'hours');
-		return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').subtract(1, 'second').toDate().getTime() };
-	}
-
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
 		const customIds = {
 			accounts: this.client.uuid(interaction.user.id),
-			prevLogs: this.client.uuid(interaction.user.id)
+			prevLogs: this.client.uuid(interaction.user.id),
+			currentDay: this.client.uuid(interaction.user.id)
 		};
 
 		const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
@@ -108,11 +83,12 @@ export default class LegendDaysCommand extends Command {
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setLabel('Previous Days').setCustomId(customIds.prevLogs).setStyle(ButtonStyle.Primary)
 		);
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const rowMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
 		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: options.length ? [row, rowMenu] : [row] });
+		const msg = await interaction.editReply({ embeds: [embed], components: options.length ? [row] : [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
@@ -123,12 +99,23 @@ export default class LegendDaysCommand extends Command {
 				await action.deferUpdate();
 				const data = players.find((en) => en.tag === action.values[0])!;
 				const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
-				await action.editReply({ embeds: [embed], components: [row, rowMenu] });
+				await action.editReply({ embeds: [embed], components: options.length ? [row] : [row] });
 			}
 			if (action.customId === customIds.prevLogs && action.isButton()) {
 				await action.deferUpdate();
+				const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+					new ButtonBuilder().setLabel('Current Day').setCustomId(customIds.currentDay).setStyle(ButtonStyle.Primary)
+				);
 				const embed = (await this.logs(data)).setColor(this.client.embed(interaction));
-				await action.editReply({ embeds: [embed], components: [] });
+				await action.editReply({ embeds: [embed], components: [row] });
+			}
+			if (action.customId === customIds.currentDay && action.isButton()) {
+				await action.deferUpdate();
+				const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
+				const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+					new ButtonBuilder().setLabel('Previous Days').setCustomId(customIds.prevLogs).setStyle(ButtonStyle.Primary)
+				);
+				await action.editReply({ embeds: [embed], components: [row] });
 			}
 		});
 
@@ -169,7 +156,7 @@ export default class LegendDaysCommand extends Command {
 		} | null;
 		const clan = data.clan ? ((await this.client.redis.json.get(`C${data.clan.tag}`)) as Clan | null) : null;
 
-		const { startTime, endTime } = this.getDates();
+		const { startTime, endTime } = Util.getLegendDays();
 
 		const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 		const attacks = logs.filter((en) => en.inc > 0) ?? [];
@@ -276,7 +263,7 @@ export default class LegendDaysCommand extends Command {
 			});
 
 		const perDayLogs = days.reduce<{ attackCount: number; defenseCount: number; gain: number; loss: number; final: number }[]>(
-			(prev, { startTime, endTime }, i) => {
+			(prev, { startTime, endTime }) => {
 				const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 				const attacks = mixedLogs.filter((en) => en.inc > 0) ?? [];
 				const defenses = mixedLogs.filter((en) => en.inc <= 0) ?? [];
@@ -284,10 +271,6 @@ export default class LegendDaysCommand extends Command {
 				const attackCount = attacks.length;
 				const defenseCount = defenses.length;
 				const [final] = mixedLogs.slice(-1);
-
-				if (i === 10) {
-					console.log(mixedLogs);
-				}
 
 				const gain = attacks.reduce((acc, cur) => acc + cur.inc, 0);
 				const loss = defenses.reduce((acc, cur) => acc + cur.inc, 0);

@@ -1,28 +1,8 @@
 import { CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
-import { Season } from '../../util/index.js';
-
-// ¹²³⁴⁵⁶⁷⁸
-const attackCounts: Record<string, string> = {
-	0: '⁰',
-	1: '¹',
-	2: '²',
-	3: '³',
-	4: '⁴',
-	5: '⁵',
-	6: '⁶',
-	7: '⁷',
-	8: '⁸',
-	9: '⁹',
-	10: '¹⁰',
-	11: '¹¹',
-	12: '¹²',
-	13: '¹³',
-	14: '¹⁴',
-	15: '¹⁵',
-	16: '¹⁶'
-};
+import { attackCounts } from '../../util/Constants.js';
+import { Season, Util } from '../../util/index.js';
 
 export default class LegendAttacksCommand extends Command {
 	public constructor() {
@@ -43,13 +23,6 @@ export default class LegendAttacksCommand extends Command {
 		};
 	}
 
-	private getDates() {
-		const start =
-			moment().hour() >= 5 ? moment().startOf('day').add(5, 'hours') : moment().startOf('day').subtract(1, 'day').add(5, 'hours');
-
-		return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').subtract(1, 'second').toDate().getTime() };
-	}
-
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
@@ -65,7 +38,7 @@ export default class LegendAttacksCommand extends Command {
 		const members = [];
 		for (const legend of raw) {
 			if (!legend) continue;
-			const { startTime, endTime } = this.getDates();
+			const { startTime, endTime } = Util.getLegendDays();
 
 			const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 			if (logs.length === 0) continue;
@@ -128,10 +101,10 @@ export default class LegendAttacksCommand extends Command {
 				' GAIN  LOSS FINAL NAME',
 				...members.map(
 					(mem) =>
-						`${this.pad(`+${mem.trophiesFromAttacks}`, 3)}${attackCounts[Math.min(9, mem.attackCount)]} ${this.pad(
-							`-${Math.abs(mem.trophiesFromDefenses)}`,
-							3
-						)}${attackCounts[Math.min(9, mem.defenseCount)]}  ${this.pad(mem.current.end)} ${escapeMarkdown(mem.name)}`
+						`${this.pad(`+${mem.trophiesFromAttacks}${attackCounts[Math.min(9, mem.attackCount)]}`, 5)} ${this.pad(
+							`-${Math.abs(mem.trophiesFromDefenses)}${attackCounts[Math.min(9, mem.defenseCount)]}`,
+							5
+						)}  ${this.pad(mem.current.end)} ${escapeMarkdown(mem.name)}`
 				),
 				'```'
 			].join('\n')

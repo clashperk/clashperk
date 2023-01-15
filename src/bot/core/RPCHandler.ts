@@ -9,6 +9,7 @@ import LastSeenLog from './LastSeenLog.js';
 import ClanFeedLog from './ClanFeedLog.js';
 import DonationLog from './DonationLog.js';
 import ClanWarLog from './ClanWarLog.js';
+import LegendLog from './LegendLog.js';
 
 export default class RPCHandler {
 	private paused = Boolean(false);
@@ -20,6 +21,7 @@ export default class RPCHandler {
 	private readonly clanGamesLog = new ClanGamesLog(this.client);
 	private readonly lastSeenLog = new LastSeenLog(this.client);
 	private readonly clanFeedLog = new ClanFeedLog(this.client);
+	private readonly legendLog = new LegendLog(this.client);
 
 	public roleManager = new RoleManager(this.client);
 
@@ -61,6 +63,9 @@ export default class RPCHandler {
 					case Flags.CLAN_GAMES_LOG:
 						await this.clanGamesLog.exec(data.tag, data);
 						break;
+					case Flags.TOWN_HALL_LOG:
+						await this.roleManager.execTownHall(data.tag, data.members);
+						break;
 					case Flags.CLAN_WAR_LOG:
 						await this.clanWarLog.exec(data.clan.tag, data);
 						break;
@@ -89,6 +94,7 @@ export default class RPCHandler {
 		await this.lastSeenLog.init();
 		await this.clanGamesLog.init();
 		await this.clanWarLog.init();
+		await this.legendLog.init();
 
 		await this.broadcast();
 		return this.client.publisher.publish('INIT', '{}');
@@ -143,7 +149,8 @@ export default class RPCHandler {
 			[Flags.LAST_SEEN_LOG]: this.lastSeenLog,
 			[Flags.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
-			[Flags.CLAN_WAR_LOG]: this.clanWarLog
+			[Flags.CLAN_WAR_LOG]: this.clanWarLog,
+			[Flags.LEGEND_LOG]: this.legendLog
 		};
 
 		if (data.op.toString() in OP) {
@@ -176,7 +183,8 @@ export default class RPCHandler {
 			[Flags.LAST_SEEN_LOG]: this.lastSeenLog,
 			[Flags.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
-			[Flags.CLAN_WAR_LOG]: this.clanWarLog
+			[Flags.CLAN_WAR_LOG]: this.clanWarLog,
+			[Flags.LEGEND_LOG]: this.legendLog
 		};
 
 		if (data.op.toString() in OP) {
@@ -199,6 +207,7 @@ export default class RPCHandler {
 		this.clanEmbedLog.cached.clear();
 		this.clanFeedLog.cached.clear();
 		this.lastSeenLog.cached.clear();
+		this.legendLog.cached.clear();
 
 		await this.client.subscriber.unsubscribe('channel');
 		return this.client.publisher.publish('FLUSH', '{}');

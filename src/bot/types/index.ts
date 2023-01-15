@@ -190,3 +190,15 @@ export interface ClanCapitalGoldModel {
 	updatedAt: Date;
 	createdAt: Date;
 }
+
+export interface LegendLogModel {
+	tag: string;
+	name: string;
+	guild: string;
+	clanId: ObjectId;
+	channel: string;
+	webhook: { id: string; token: string } | null;
+	deleted?: boolean;
+	threadId?: string;
+	lastPosted: Date;
+}
