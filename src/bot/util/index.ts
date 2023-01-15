@@ -81,6 +81,13 @@ export class Util {
 		return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').subtract(1, 'second').toDate().getTime() };
 	}
 
+	public static getPreviousLegendDays() {
+		const { startTime } = this.getLegendDays();
+		const prevDay = moment(startTime).startOf('day').subtract(1, 'day').add(5, 'hours');
+		const nextDay = prevDay.clone().add(1, 'day').subtract(1, 'second');
+		return { startTime: prevDay.toDate().getTime(), endTime: nextDay.toDate().getTime() };
+	}
+
 	public static splitMessage(text: string, { maxLength = 2_000, char = '\n', prepend = '', append = '' } = {}) {
 		if (text.length <= maxLength) return [text];
 		let splitText = [text];

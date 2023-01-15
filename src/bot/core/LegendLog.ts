@@ -65,7 +65,7 @@ export default class LegendLog extends BaseLog {
 		const members = [];
 		for (const legend of raw) {
 			if (!legend) continue;
-			const { startTime, endTime } = Util.getLegendDays();
+			const { startTime, endTime } = Util.getPreviousLegendDays();
 
 			const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 			if (logs.length === 0) continue;
@@ -187,6 +187,7 @@ export default class LegendLog extends BaseLog {
 			this.queued.add(log._id.toHexString());
 			await this.exec(log.tag, {});
 			this.queued.delete(log._id.toHexString());
+			await Util.delay(3000);
 		}
 	}
 }
