@@ -193,8 +193,30 @@ export class RoleManager {
 		// getting all linked accounts of all clan members
 		const flattened = (
 			await this.client.db
-				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-				.find({ tag: { $in: data.members.map((mem) => mem.tag) } })
+				.collection(Collections.PLAYER_LINKS)
+				.aggregate<PlayerLinks>([
+					{
+						$match: { tag: { $in: data.members.map((mem) => mem.tag) } }
+					},
+					{
+						$lookup: {
+							from: Collections.PLAYER_LINKS,
+							localField: 'userId',
+							foreignField: 'userId',
+							as: 'links'
+						}
+					},
+					{
+						$unwind: {
+							path: '$links'
+						}
+					},
+					{
+						$replaceRoot: {
+							newRoot: '$links'
+						}
+					}
+				])
 				.toArray()
 		).filter((link) => (clan.secureRole ? link.verified : true));
 
@@ -275,8 +297,30 @@ export class RoleManager {
 
 		// getting all linked accounts of all clan members
 		const flattened = await this.client.db
-			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.find({ tag: { $in: memberTags } })
+			.collection(Collections.PLAYER_LINKS)
+			.aggregate<PlayerLinks>([
+				{
+					$match: { tag: { $in: memberTags } }
+				},
+				{
+					$lookup: {
+						from: Collections.PLAYER_LINKS,
+						localField: 'userId',
+						foreignField: 'userId',
+						as: 'links'
+					}
+				},
+				{
+					$unwind: {
+						path: '$links'
+					}
+				},
+				{
+					$replaceRoot: {
+						newRoot: '$links'
+					}
+				}
+			])
 			.toArray();
 
 		// flattening the array
