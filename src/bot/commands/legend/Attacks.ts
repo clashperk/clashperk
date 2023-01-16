@@ -1,5 +1,4 @@
 import { CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
-import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
 import { attackCounts } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
@@ -110,7 +109,7 @@ export default class LegendAttacksCommand extends Command {
 			].join('\n')
 		);
 
-		embed.setFooter({ text: `Day ${moment().diff(Season.startTimestamp, 'days')} (${Season.ID})` });
+		embed.setFooter({ text: `Day ${Util.getLegendDay()} (${Season.ID})` });
 		return interaction.editReply({ embeds: [embed] });
 	}
 

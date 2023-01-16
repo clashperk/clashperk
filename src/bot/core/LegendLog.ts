@@ -1,5 +1,4 @@
 import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookClient, WebhookCreateMessageOptions } from 'discord.js';
-import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { LegendLogModel } from '../types/index.js';
@@ -135,7 +134,7 @@ export default class LegendLog extends BaseLog {
 				'```'
 			].join('\n')
 		);
-		embed.setFooter({ text: `Day ${moment().diff(Season.startTimestamp, 'days') - 1} (${Season.ID})` });
+		embed.setFooter({ text: `Day ${Util.getLegendDay() - 1} (${Season.ID})` });
 
 		if (!members.length) return null;
 		return embed;

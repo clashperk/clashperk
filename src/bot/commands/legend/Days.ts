@@ -246,7 +246,7 @@ export default class LegendDaysCommand extends Command {
 				inline: true
 			}
 		]);
-		embed.setFooter({ text: `Day ${moment().diff(Season.startTimestamp, 'days')} (${Season.ID})` });
+		embed.setFooter({ text: `Day ${Util.getLegendDay()} (${Season.ID})` });
 		return embed;
 	}
 
@@ -254,7 +254,7 @@ export default class LegendDaysCommand extends Command {
 		const legend = (await this.client.redis.json.get(`LP${data.tag}`)) as { name: string; tag: string; logs: LogType[] } | null;
 		const logs = legend?.logs ?? [];
 
-		const days = Array(moment().diff(moment(Season.startTimestamp), 'days') + 1)
+		const days = Array(Util.getLegendDay())
 			.fill(0)
 			.map((_, i) => {
 				const startTime = moment(Season.startTimestamp).startOf('day').add(i, 'days').add(5, 'hours');
