@@ -1,5 +1,5 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections, Settings } from '../../util/Constants.js';
 import { ORANGE_NUMBERS } from '../../util/Emojis.js';
@@ -27,7 +27,19 @@ export default class AutoRoleCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { [key: `th_${string}`]: Role | null; command: string }) {
+	public args(): Args {
+		return {
+			allow_external_accounts: {
+				id: 'allowExternal',
+				match: 'BOOLEAN'
+			}
+		};
+	}
+
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { [key: `th_${string}`]: Role | null; command: string; allowExternal: boolean }
+	) {
 		if (args.command === 'disable') return this.disable(interaction);
 		const clans = await this.client.storage.find(interaction.guildId);
 		if (!clans.length) {
@@ -58,11 +70,18 @@ export default class AutoRoleCommand extends Command {
 				return prev;
 			}, {})
 		);
+		await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, Boolean(args.allowExternal));
 
 		this.updateLinksAndRoles(clans);
 		await interaction.editReply({
 			allowedMentions: { parse: [] },
-			content: roles.map((role) => `${ORANGE_NUMBERS[role.hall]} ${role.role ? `<@&${role.role.id}>` : ''}`).join('\n')
+			content: [
+				roles.map((role) => `${ORANGE_NUMBERS[role.hall]} ${role.role ? `<@&${role.role.id}>` : ''}`).join('\n'),
+				'',
+				args.allowExternal
+					? '[External Accounts Allowed] Users will get roles based on each accounts that are linked (N.B. at least one account must be a part of the family).'
+					: '[No External Accounts Allowed] Users will get roles based on the accounts that are a part of the family clans.'
+			].join('\n')
 		});
 	}
 
@@ -106,7 +125,7 @@ export default class AutoRoleCommand extends Command {
 				} catch {}
 			}
 
-			await this.client.rpcHandler.roleManager.queue(data);
+			await this.client.rpcHandler.roleManager.queue(data, true);
 		}
 	}
 

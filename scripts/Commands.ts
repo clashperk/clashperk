@@ -1159,7 +1159,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'tag',
 						description: command.link.list.options.tag.description,
 						description_localizations: translation('command.link.list.options.tag.description'),
-						type: ApplicationCommandOptionType.String
+						type: ApplicationCommandOptionType.String,
+						autocomplete: true
 					}
 				]
 			},
@@ -1664,6 +1665,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								name: 'th_15',
 								description: 'Town Hall 15 role.',
 								type: ApplicationCommandOptionType.Role
+							},
+							{
+								name: 'allow_external_accounts',
+								description: 'Whether to give roles for the accounts that are not in the family clans.',
+								type: ApplicationCommandOptionType.String,
+								choices: [
+									{
+										name: 'Yes',
+										value: 'true'
+									},
+									{
+										name: 'No',
+										value: 'false'
+									}
+								]
 							}
 						]
 					},
@@ -1713,7 +1729,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'duration',
 								description: command.reminder.create.options.duration.description,
-								description_localizations: translation('command.reminder.create.options.duration.description'),
+								// description_localizations: translation('command.reminder.create.options.duration.description'),
 								type: ApplicationCommandOptionType.String,
 								required: true,
 								autocomplete: true
@@ -1819,7 +1835,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								description: 'Remaining duration to mention members (e.g. 6h, 12h, 1d, 2d)',
 								type: ApplicationCommandOptionType.String,
 								required: true,
-								autocomplete: false
+								autocomplete: true
 							},
 							{
 								name: 'message',
