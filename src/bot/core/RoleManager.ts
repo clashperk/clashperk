@@ -41,7 +41,7 @@ export class RoleManager {
 		this._queue = new Queue();
 	}
 
-	public async queue(clan: Clan) {
+	public async queue(clan: Clan, isThRole = false) {
 		if (this.queues.has(clan.tag)) return null;
 
 		const data = {
@@ -53,11 +53,14 @@ export class RoleManager {
 		await this._queue.wait();
 
 		try {
-			await this.exec(clan.tag, data);
-			await this.execTownHall(
-				clan.tag,
-				clan.memberList.map((mem) => mem.tag)
-			);
+			if (isThRole) {
+				await this.execTownHall(
+					clan.tag,
+					clan.memberList.map((mem) => mem.tag)
+				);
+			} else {
+				await this.exec(clan.tag, data);
+			}
 		} finally {
 			this._queue.shift();
 			this.queues.delete(clan.tag);
@@ -81,7 +84,7 @@ export class RoleManager {
 
 		const queried = await this.client.db
 			.collection(Collections.CLAN_STORES)
-			.aggregate([
+			.aggregate<{ guild: string; clans: { tag: string; secureRole: boolean; roles: Record<string, string> }[] }>([
 				{
 					$match: {
 						tag,
@@ -90,59 +93,45 @@ export class RoleManager {
 					}
 				},
 				{
-					$group: {
-						_id: null,
-						guilds: {
-							$addToSet: '$guild'
-						}
+					$project: {
+						guild: 1
 					}
 				},
 				{
-					$unset: '_id'
+					$lookup: {
+						from: Collections.CLAN_STORES,
+						localField: 'guild',
+						foreignField: 'guild',
+						as: 'clans',
+						pipeline: [
+							{
+								$match: {
+									active: true,
+									paused: false,
+									roles: { $exists: true }
+								}
+							},
+							{
+								$project: {
+									tag: 1,
+									secureRole: 1,
+									roles: 1
+								}
+							}
+						]
+					}
+				},
+				{
+					$match: { 'clans.tag': tag }
 				}
 			])
-			.next();
-		if (!queried?.guilds.length) return null;
+			.toArray();
 
-		const guilds = queried.guilds.filter((id: string) => this.client.guilds.cache.has(id));
-		if (!guilds.length) return null;
-
-		const cursor = this.client.db.collection(Collections.CLAN_STORES).aggregate<any>([
-			{
-				$match: {
-					roles: { $exists: true },
-					guild: { $in: [...guilds] }
-				}
-			},
-			{
-				$group: {
-					_id: '$guild',
-					clans: {
-						$addToSet: '$$ROOT'
-					}
-				}
-			},
-			{
-				$set: {
-					guildId: '$_id'
-				}
-			},
-			{
-				$unset: '_id'
-			},
-			{
-				$match: { 'clans.tag': tag }
-			}
-		]);
-
-		const groups: { clans: any[]; guildId: string }[] = await cursor.toArray();
-		if (!groups.length) return cursor.close();
-
-		for (const group of groups.filter((ex) => ex.clans.length)) {
-			await this.run(group.guildId, group.clans, data);
+		for (const { guild, clans } of queried) {
+			if (!clans.length) continue;
+			if (!this.client.guilds.cache.has(guild)) continue;
+			await this.run(guild, clans, data);
 		}
-
-		return cursor.close();
 	}
 
 	public async execTownHall(tag: string, members: string[]) {
@@ -182,6 +171,7 @@ export class RoleManager {
 
 		for (const { guild, clans } of queried) {
 			if (!clans.length) continue;
+			if (!this.client.guilds.cache.has(guild)) continue;
 			await this.runTownHallRoles(guild, clans, members);
 		}
 	}
@@ -190,34 +180,35 @@ export class RoleManager {
 		const clan = clans.find((clan) => clan.tag === data.clan.tag)!;
 
 		// getting all linked accounts of all clan members
-		const flattened = (
-			await this.client.db
-				.collection(Collections.PLAYER_LINKS)
-				.aggregate<PlayerLinks>([
-					{
-						$match: { tag: { $in: data.members.map((mem) => mem.tag) } }
-					},
-					{
-						$lookup: {
-							from: Collections.PLAYER_LINKS,
-							localField: 'userId',
-							foreignField: 'userId',
-							as: 'links'
-						}
-					},
-					{
-						$unwind: {
-							path: '$links'
-						}
-					},
-					{
-						$replaceRoot: {
-							newRoot: '$links'
-						}
+		const flattened = await this.client.db
+			.collection(Collections.PLAYER_LINKS)
+			.aggregate<PlayerLinks>([
+				{
+					$match: {
+						tag: { $in: data.members.map((mem) => mem.tag) },
+						...(clan.secureRole ? { verified: true } : {})
 					}
-				])
-				.toArray()
-		).filter((link) => (clan.secureRole ? link.verified : true));
+				},
+				{
+					$lookup: {
+						from: Collections.PLAYER_LINKS,
+						localField: 'userId',
+						foreignField: 'userId',
+						as: 'links'
+					}
+				},
+				{
+					$unwind: {
+						path: '$links'
+					}
+				},
+				{
+					$replaceRoot: {
+						newRoot: '$links'
+					}
+				}
+			])
+			.toArray();
 
 		// flattening the array
 		// getting unique user ids
@@ -277,10 +268,13 @@ export class RoleManager {
 		return data.members.length;
 	}
 
-	private handleTHRoles(players: Player[], clans: string[], rolesMap: Record<string, string>) {
+	private handleTHRoles(players: Player[], clans: string[], rolesMap: Record<string, string>, allowExternal: boolean) {
 		const roles = players.reduce<string[]>((acc, player) => {
 			const roleId = rolesMap[player.townHallLevel];
-			if (roleId && !acc.includes(roleId) && player.clan && clans.includes(player.clan.tag)) acc.push(roleId);
+			if (roleId && !acc.includes(roleId)) {
+				if (!allowExternal && player.clan && clans.includes(player.clan.tag)) acc.push(roleId);
+				if (allowExternal) acc.push(roleId);
+			}
 			return acc;
 		}, []);
 
@@ -288,6 +282,7 @@ export class RoleManager {
 	}
 
 	private async runTownHallRoles(guildId: string, clans: { tag: string }[], memberTags: string[]) {
+		const allowExternal = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
 		const rolesMap = this.client.settings.get<Record<string, string>>(guildId, Settings.TOWN_HALL_ROLES, {});
 		const roles = Array.from(new Set(Object.values(rolesMap)));
 		if (!roles.length) return null;
@@ -347,7 +342,8 @@ export class RoleManager {
 			const thRoles = this.handleTHRoles(
 				players.filter((en) => tags.includes(en.tag)),
 				clans.map((clan) => clan.tag),
-				rolesMap
+				rolesMap,
+				allowExternal
 			);
 			if (!thRoles.length) continue;
 
@@ -409,15 +405,6 @@ export class RoleManager {
 		if (!included.length) return excluded.length;
 		await member.roles.add(included, reason);
 		return included.length;
-	}
-
-	private flatPlayers(collection: { user: string; entries: { tag: string; verified: boolean }[] }[], secureRole: boolean) {
-		return collection
-			.reduce<{ user: string; tag: string; verified: boolean }[]>((prev, curr) => {
-				prev.push(...curr.entries.map((en) => ({ user: curr.user, tag: en.tag, verified: en.verified })));
-				return prev;
-			}, [])
-			.filter((en) => (secureRole ? en.verified : true));
 	}
 
 	private checkRole(guild: Guild, member: GuildMember, roleId: string) {
