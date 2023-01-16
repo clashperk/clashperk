@@ -155,6 +155,11 @@ export default class CapitalReminderNowCommand extends Command {
 				await action.update({ components: mutate() });
 			}
 
+			if (action.customId === CUSTOM_ID.MEMBER_TYPE && action.isStringSelectMenu()) {
+				state.allMembers = action.values.includes('all');
+				await action.update({ components: mutate() });
+			}
+
 			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {
 				await action.update({ components: [], content: `**Fetching capital raids...** ${EMOJIS.LOADING}` });
 

@@ -135,7 +135,7 @@ export default class LegendLog extends BaseLog {
 				'```'
 			].join('\n')
 		);
-		embed.setFooter({ text: `Day ${moment().diff(Season.startTimestamp, 'days')} (${Season.ID})` });
+		embed.setFooter({ text: `Day ${moment().diff(Season.startTimestamp, 'days') - 1} (${Season.ID})` });
 
 		if (!members.length) return null;
 		return embed;
