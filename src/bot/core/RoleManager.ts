@@ -3,7 +3,6 @@ import { Collection, Guild, GuildMember } from 'discord.js';
 import { Collections, Settings } from '../util/Constants.js';
 import { Client } from '../struct/Client.js';
 import Queue from '../struct/Queue.js';
-import { Util } from '../util/index.js';
 import { PlayerLinks } from '../types/index.js';
 
 const ActionType: Record<string, string> = {
@@ -77,7 +76,7 @@ export class RoleManager {
 	}
 
 	public async exec(tag: string, data: RPCFeed) {
-		const members = data.members.filter((mem) => mem.op === 'JOINED').map((mem) => mem.tag);
+		const members = data.members.filter((mem) => ['JOINED', 'LEFT'].includes(mem.op)).map((mem) => mem.tag);
 		if (members.length) await this.execTownHall(tag, members);
 
 		const queried = await this.client.db
@@ -272,20 +271,18 @@ export class RoleManager {
 				roles,
 				reason
 			});
-			if (count) await this.delay(500);
+			if (count) await this.delay(data.members.length >= 10 ? 1000 : 250);
 		}
 
 		return data.members.length;
 	}
 
-	private handleTHRoles(players: Player[], clans: string[], rolesMap: Record<string, string>, clanFilter?: boolean) {
-		const roles = players
-			.filter((player) => (clanFilter ? player.clan && clans.includes(player.clan.tag) : true))
-			.reduce<string[]>((acc, player) => {
-				const roleId = rolesMap[player.townHallLevel];
-				if (roleId && !acc.includes(roleId)) acc.push(roleId);
-				return acc;
-			}, []);
+	private handleTHRoles(players: Player[], clans: string[], rolesMap: Record<string, string>) {
+		const roles = players.reduce<string[]>((acc, player) => {
+			const roleId = rolesMap[player.townHallLevel];
+			if (roleId && !acc.includes(roleId) && player.clan && clans.includes(player.clan.tag)) acc.push(roleId);
+			return acc;
+		}, []);
 
 		return roles;
 	}
@@ -363,7 +360,7 @@ export class RoleManager {
 				roles,
 				reason: 'Town Hall Level Synced'
 			});
-			if (count) await Util.delay(250);
+			if (count) await this.delay(memberTags.length >= 10 ? 1000 : 250);
 		}
 
 		return memberTags.length;
