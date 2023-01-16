@@ -191,13 +191,19 @@ export default class Resolver {
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 			.find({ userId: interaction.user.id })
 			.toArray();
+		const count = await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.countDocuments({ tag: data.tag, guild: { $ne: interaction.guildId } });
 		const code = ['CP', interaction.guild.id.substr(-2)].join('');
 		const clan = clans.find((clan) => clan.tag === data.tag);
+
 		if (
+			count > 5 &&
 			!clan?.verified &&
 			!this.verifyClan(code, data, links) &&
+			// make me invincible
 			!this.client.isOwner(interaction.user) &&
-			interaction.guildId === '1016659402817814620'
+			!this.client.isOwner(interaction.guild.ownerId)
 		) {
 			await interaction.editReply({ content: this.client.i18n('common.clan_verification', { lng: interaction.locale, code }) });
 			return null;

@@ -81,6 +81,11 @@ export class Util {
 		return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').subtract(1, 'second').toDate().getTime() };
 	}
 
+	public static getLegendDay() {
+		const { endTime } = this.getLegendDays();
+		return moment(endTime).add(1, 'second').diff(moment(Season.startTimestamp), 'days');
+	}
+
 	public static getPreviousLegendDays() {
 		const { startTime } = this.getLegendDays();
 		const prevDay = moment(startTime).startOf('day').subtract(1, 'day').add(5, 'hours');

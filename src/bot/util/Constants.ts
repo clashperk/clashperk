@@ -76,7 +76,8 @@ export const enum Settings {
 	USER_BLACKLIST = 'blacklist',
 	GUILD_BLACKLIST = 'guildBans',
 	EVENTS_CHANNEL = 'eventsChannel',
-	TOWN_HALL_ROLES = 'townHallRoles'
+	TOWN_HALL_ROLES = 'townHallRoles',
+	ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
