@@ -97,7 +97,7 @@ export default class LegendAttacksCommand extends Command {
 			[
 				'**Legend League Attacks**',
 				'```',
-				' GAIN  LOSS FINAL NAME',
+				'  GAIN  LOSS FINAL NAME',
 				...members.map(
 					(mem) =>
 						`${this.pad(`+${mem.trophiesFromAttacks}${attackCounts[Math.min(9, mem.attackCount)]}`, 5)} ${this.pad(
