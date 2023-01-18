@@ -1966,6 +1966,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description_localizations: translation('common.options.player.user.description'),
 						type: ApplicationCommandOptionType.User,
 						required: false
+					},
+					{
+						name: 'day',
+						description: 'The league day.',
+						type: ApplicationCommandOptionType.Number,
+						max_value: 35,
+						min_value: 10,
+						required: false
 					}
 				]
 			},

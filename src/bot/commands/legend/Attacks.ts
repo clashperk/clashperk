@@ -22,7 +22,14 @@ export default class LegendAttacksCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+	private getDay(day?: number) {
+		if (!day) return { ...Util.getCurrentLegendTimestamp(), day: Util.getLegendDay() };
+		const days = Util.getLegendDays();
+		const num = Math.min(days.length, Math.max(day, 1));
+		return { ...days[num - 1], day };
+	}
+
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; day?: number }) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
@@ -34,10 +41,11 @@ export default class LegendAttacksCommand extends Command {
 			logs: { start: number; end: number; timestamp: number; inc: number; type?: string }[];
 		} | null)[];
 
+		const { startTime, endTime, day } = this.getDay(args.day);
+
 		const members = [];
 		for (const legend of raw) {
 			if (!legend) continue;
-			const { startTime, endTime } = Util.getLegendDays();
 
 			const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 			if (logs.length === 0) continue;
@@ -97,7 +105,7 @@ export default class LegendAttacksCommand extends Command {
 			[
 				'**Legend League Attacks**',
 				'```',
-				'  GAIN  LOSS FINAL NAME',
+				' GAIN  LOSS FINAL NAME',
 				...members.map(
 					(mem) =>
 						`${this.pad(`+${mem.trophiesFromAttacks}${attackCounts[Math.min(9, mem.attackCount)]}`, 5)} ${this.pad(
@@ -109,7 +117,7 @@ export default class LegendAttacksCommand extends Command {
 			].join('\n')
 		);
 
-		embed.setFooter({ text: `Day ${Util.getLegendDay()} (${Season.ID})` });
+		embed.setFooter({ text: `Day ${day} (${Season.ID})` });
 		return interaction.editReply({ embeds: [embed] });
 	}
 

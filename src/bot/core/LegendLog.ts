@@ -64,7 +64,7 @@ export default class LegendLog extends BaseLog {
 		const members = [];
 		for (const legend of raw) {
 			if (!legend) continue;
-			const { startTime, endTime } = Util.getPreviousLegendDays();
+			const { startTime, endTime } = Util.getPreviousLegendTimestamp();
 
 			const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 			if (logs.length === 0) continue;
@@ -123,7 +123,7 @@ export default class LegendLog extends BaseLog {
 			[
 				'**Legend League Attacks**',
 				'```',
-				'  GAIN  LOSS FINAL NAME',
+				' GAIN  LOSS FINAL NAME',
 				...members.map(
 					(mem) =>
 						`${this.pad(`+${mem.trophiesFromAttacks}${attackCounts[Math.min(9, mem.attackCount)]}`, 5)} ${this.pad(
@@ -173,7 +173,7 @@ export default class LegendLog extends BaseLog {
 	}
 
 	private async _refresh() {
-		const { startTime } = Util.getLegendDays();
+		const { startTime } = Util.getCurrentLegendTimestamp();
 		const logs = await this.client.db
 			.collection<LegendLogModel>(Collections.LEGEND_LOGS)
 			.find({ lastPosted: { $lt: new Date(startTime) } })

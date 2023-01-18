@@ -74,7 +74,7 @@ export class Util {
 		return count === 1 ? text : `${text}${suffix}`;
 	}
 
-	public static getLegendDays() {
+	public static getCurrentLegendTimestamp() {
 		const start =
 			moment().hour() >= 5 ? moment().startOf('day').add(5, 'hours') : moment().startOf('day').subtract(1, 'day').add(5, 'hours');
 
@@ -82,12 +82,22 @@ export class Util {
 	}
 
 	public static getLegendDay() {
-		const { endTime } = this.getLegendDays();
+		const { endTime } = this.getCurrentLegendTimestamp();
 		return moment(endTime).add(1, 'second').diff(moment(Season.startTimestamp), 'days');
 	}
 
-	public static getPreviousLegendDays() {
-		const { startTime } = this.getLegendDays();
+	public static getLegendDays() {
+		return Array(Util.getLegendDay())
+			.fill(0)
+			.map((_, i) => {
+				const startTime = moment(Season.startTimestamp).startOf('day').add(i, 'days').add(5, 'hours');
+				const endTime = startTime.clone().add(1, 'day').subtract(1, 'second');
+				return { startTime: startTime.toDate().getTime(), endTime: endTime.toDate().getTime() };
+			});
+	}
+
+	public static getPreviousLegendTimestamp() {
+		const { startTime } = this.getCurrentLegendTimestamp();
 		const prevDay = moment(startTime).startOf('day').subtract(1, 'day').add(5, 'hours');
 		const nextDay = prevDay.clone().add(1, 'day').subtract(1, 'second');
 		return { startTime: prevDay.toDate().getTime(), endTime: nextDay.toDate().getTime() };

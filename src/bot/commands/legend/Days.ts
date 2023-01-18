@@ -12,7 +12,6 @@ import {
 	User
 } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
-import moment from 'moment';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { attackCounts, Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
@@ -156,7 +155,7 @@ export default class LegendDaysCommand extends Command {
 		} | null;
 		const clan = data.clan ? ((await this.client.redis.json.get(`C${data.clan.tag}`)) as Clan | null) : null;
 
-		const { startTime, endTime } = Util.getPreviousLegendDays();
+		const { startTime, endTime } = Util.getCurrentLegendTimestamp();
 
 		const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 		const attacks = logs.filter((en) => en.inc > 0) ?? [];
@@ -254,13 +253,7 @@ export default class LegendDaysCommand extends Command {
 		const legend = (await this.client.redis.json.get(`LP${data.tag}`)) as { name: string; tag: string; logs: LogType[] } | null;
 		const logs = legend?.logs ?? [];
 
-		const days = Array(Util.getLegendDay())
-			.fill(0)
-			.map((_, i) => {
-				const startTime = moment(Season.startTimestamp).startOf('day').add(i, 'days').add(5, 'hours');
-				const endTime = startTime.clone().add(1, 'day').subtract(1, 'second');
-				return { startTime: startTime.toDate().getTime(), endTime: endTime.toDate().getTime() };
-			});
+		const days = Util.getLegendDays();
 
 		const perDayLogs = days.reduce<{ attackCount: number; defenseCount: number; gain: number; loss: number; final: number }[]>(
 			(prev, { startTime, endTime }) => {
