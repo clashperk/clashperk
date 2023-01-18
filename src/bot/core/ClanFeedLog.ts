@@ -33,7 +33,7 @@ export default class ClanFeedLog extends BaseLog {
 	}
 
 	public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
-		const members = data.members.filter((mem) => ['JOINED', 'LEFT'].includes(mem.op));
+		const members = data.members.filter((mem) => Object.keys(OP).includes(mem.op));
 		if (!members.length) return null;
 		const delay = members.length >= 5 ? 2000 : 250;
 
