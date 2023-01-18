@@ -64,7 +64,7 @@ export default class RPCHandler {
 						await this.clanGamesLog.exec(data.tag, data);
 						break;
 					case Flags.TOWN_HALL_LOG:
-						await this.roleManager.execTownHall(data.tag, data.members);
+						await Promise.all([this.clanFeedLog.exec(data.tag, data), this.roleManager.execTownHall(data.tag, data.members)]);
 						break;
 					case Flags.CLAN_WAR_LOG:
 						await this.clanWarLog.exec(data.clan.tag, data);

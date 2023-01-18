@@ -8,3 +8,4 @@ auth.js
 .vs/
 .idea/
 test/
+.DS_Store

@@ -156,7 +156,7 @@ export default class LegendDaysCommand extends Command {
 		} | null;
 		const clan = data.clan ? ((await this.client.redis.json.get(`C${data.clan.tag}`)) as Clan | null) : null;
 
-		const { startTime, endTime } = Util.getLegendDays();
+		const { startTime, endTime } = Util.getPreviousLegendDays();
 
 		const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 		const attacks = logs.filter((en) => en.inc > 0) ?? [];

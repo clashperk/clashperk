@@ -130,18 +130,12 @@ export default class ExportClanMembersCommand extends Command {
 			{ header: 'Town-Hall', width: 10 },
 			{ header: 'War Preference', width: 10 },
 			{ header: 'Rushed %', width: 10 },
-			{ header: 'Lab Upgrades %', width: 10 },
-			{ header: 'Hero Upgrades %', width: 10 },
-			{ header: 'BK', width: 10 },
-			{ header: 'AQ', width: 10 },
-			{ header: 'GW', width: 10 },
-			{ header: 'RC', width: 10 },
-			{ header: 'L.A.S.S.I', width: 10 },
-			{ header: 'Electro Owl', width: 10 },
-			{ header: 'Mighty Yak', width: 10 },
-			{ header: 'Unicorn', width: 10 },
+			{ header: 'Lab Upgrades Done', width: 10 },
+			{ header: 'Hero Upgrades Done', width: 10 },
+			...HERO_LIST.map((header) => ({ header, width: 10 })),
+			...PET_LIST.map((header) => ({ header, width: 10 })),
 			...achievements.map((header) => ({ header, width: 16 }))
-		] as any[];
+		];
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
 		for (let i = 1; i <= sheet.columns.length; i++) {

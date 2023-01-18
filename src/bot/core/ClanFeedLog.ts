@@ -1,16 +1,20 @@
 import { Player } from 'clashofclans.js';
-import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookCreateMessageOptions } from 'discord.js';
+import { Collection, EmbedBuilder, parseEmoji, PermissionsString, WebhookClient, WebhookCreateMessageOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
+import RAW_TROOPS_DATA from '../util/Troops.js';
 import { Client } from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
-import { EMOJIS, HEROES, PLAYER_LEAGUES, TOWN_HALLS } from '../util/Emojis.js';
+import { EMOJIS, HEROES, PLAYER_LEAGUES, SUPER_TROOPS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 
 const OP: { [key: string]: number } = {
 	JOINED: 0x38d863, // GREEN
-	LEFT: 0xeb3508 // RED
+	LEFT: 0xeb3508, // RED
+	NAME_CHANGE: 0xdf9666,
+	TOWN_HALL_UPGRADE: 0x00dbf3,
+	DONATION_RESET: 0xeffd5f
 };
 
 export default class ClanFeedLog extends BaseLog {
@@ -68,6 +72,10 @@ export default class ClanFeedLog extends BaseLog {
 			.setColor(OP[member.op])
 			.setTitle(`\u200e${player.name} (${player.tag})`)
 			.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
+		if (member.op === 'NAME_CHANGE') {
+			embed.setDescription(`Name changed from **${member.name}**`);
+			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
+		}
 		if (member.op === 'LEFT') {
 			embed.setFooter({ text: `Left ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
 			embed.setDescription(
@@ -77,7 +85,22 @@ export default class ClanFeedLog extends BaseLog {
 					`${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
 				].join(' ')
 			);
-		} else {
+		}
+		if (member.op === 'DONATION_RESET') {
+			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
+			embed.setDescription(
+				`Reset Donations/Receives **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
+			);
+		}
+		if (member.op === 'TOWN_HALL_UPGRADE') {
+			const { id } = parseEmoji(TOWN_HALLS[player.townHallLevel])!;
+			embed.setThumbnail(`https://cdn.discordapp.com/emojis/${id!}.png?v=1`);
+			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
+			embed.setDescription(
+				`Town Hall was upgraded to ${player.townHallLevel} with ${this.remainingUpgrades(player)}% remaining upgrades.`
+			);
+		}
+		if (member.op === 'JOINED') {
 			const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: cache.guild, tag: member.tag });
 			embed.setFooter({ text: `Joined ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
 			embed.setDescription(
@@ -109,6 +132,72 @@ export default class ClanFeedLog extends BaseLog {
 		}
 		embed.setTimestamp();
 		return { content, embed };
+	}
+
+	private labRushed(data: Player) {
+		const apiTroops = this.apiTroops(data);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
+			(prev, unit) => {
+				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+				if (unit.village === 'home') {
+					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
+					prev.total += unit.levels[data.townHallLevel - 2];
+				}
+				return prev;
+			},
+			{ total: 0, levels: 0 }
+		);
+		if (rem.total === 0) return 0;
+		return 100 - (rem.levels * 100) / rem.total;
+	}
+
+	private remainingUpgrades(data: Player) {
+		const lab = this.labRushed(data);
+		const heroes = this.heroRushed(data);
+		return ((lab + heroes) / 2).toFixed(2);
+	}
+
+	private heroRushed(data: Player) {
+		const apiTroops = this.apiTroops(data);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
+			(prev, unit) => {
+				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+				if (unit.category === 'hero' && unit.village === 'home') {
+					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
+					prev.total += unit.levels[data.townHallLevel - 2];
+				}
+				return prev;
+			},
+			{ total: 0, levels: 0 }
+		);
+		if (rem.total === 0) return 0;
+		return 100 - (rem.levels * 100) / rem.total;
+	}
+
+	private apiTroops(data: Player) {
+		return [
+			...data.troops.map((u) => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'troop',
+				village: u.village
+			})),
+			...data.heroes.map((u) => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'hero',
+				village: u.village
+			})),
+			...data.spells.map((u) => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'spell',
+				village: u.village
+			}))
+		];
 	}
 
 	private formatHeroes(member: Player) {

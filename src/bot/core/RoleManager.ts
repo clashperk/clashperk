@@ -54,10 +54,7 @@ export class RoleManager {
 
 		try {
 			if (isThRole) {
-				await this.execTownHall(
-					clan.tag,
-					clan.memberList.map((mem) => mem.tag)
-				);
+				await this.execTownHall(clan.tag, clan.memberList);
 			} else {
 				await this.exec(clan.tag, data);
 			}
@@ -71,7 +68,7 @@ export class RoleManager {
 		const clan = await this.client.http.clan(player.clan!.tag);
 		if (!clan.ok) return null;
 
-		await this.execTownHall(clan.tag, [player.tag]);
+		await this.execTownHall(clan.tag, [{ tag: player.tag }]);
 		await this.exec(clan.tag, {
 			clan: { name: player.clan!.name, tag: player.clan!.tag },
 			members: [{ op: 'SYNCED', name: player.name, tag: player.tag, role: player.role! }]
@@ -79,7 +76,7 @@ export class RoleManager {
 	}
 
 	public async exec(tag: string, data: RPCFeed) {
-		const members = data.members.filter((mem) => ['JOINED', 'LEFT'].includes(mem.op)).map((mem) => mem.tag);
+		const members = data.members.filter((mem) => ['JOINED', 'LEFT'].includes(mem.op));
 		if (members.length) await this.execTownHall(tag, members);
 
 		const queried = await this.client.db
@@ -134,7 +131,7 @@ export class RoleManager {
 		}
 	}
 
-	public async execTownHall(tag: string, members: string[]) {
+	public async execTownHall(tag: string, members: { tag: string }[]) {
 		const queried = await this.client.db
 			.collection(Collections.CLAN_STORES)
 			.aggregate<{ guild: string; clans: { tag: string }[] }>([
@@ -172,7 +169,11 @@ export class RoleManager {
 		for (const { guild, clans } of queried) {
 			if (!clans.length) continue;
 			if (!this.client.guilds.cache.has(guild)) continue;
-			await this.runTownHallRoles(guild, clans, members);
+			await this.runTownHallRoles(
+				guild,
+				clans,
+				members.map((mem) => mem.tag)
+			);
 		}
 	}
 
@@ -269,6 +270,11 @@ export class RoleManager {
 	}
 
 	private handleTHRoles(players: Player[], clans: string[], rolesMap: Record<string, string>, allowExternal: boolean) {
+		// at least one account should be in the clan
+		if (allowExternal && !players.some((player) => player.clan && clans.includes(player.clan.tag))) {
+			return [];
+		}
+
 		const roles = players.reduce<string[]>((acc, player) => {
 			const roleId = rolesMap[player.townHallLevel];
 			if (roleId && !acc.includes(roleId)) {
