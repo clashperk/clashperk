@@ -46,6 +46,7 @@ export default class RemindScheduler {
 						const schedule = change.fullDocument;
 						if (schedule && !schedule.triggered && schedule.timestamp.getTime() < Date.now() + this.refreshRate) {
 							this.queue(schedule);
+							this.client.logger.info(`from watcher ${schedule.tag}`, { label: 'REMINDER' });
 						}
 					}
 				}
@@ -206,6 +207,8 @@ export default class RemindScheduler {
 	}
 
 	private async trigger(schedule: Schedule) {
+		this.client.logger.info(`entry ${schedule.tag}`, { label: 'REMINDER' });
+
 		const id = schedule._id.toHexString();
 		try {
 			const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
@@ -263,6 +266,7 @@ export default class RemindScheduler {
 			return this.clear(id);
 		}
 
+		this.client.logger.info(`cleared ${schedule.tag}`, { label: 'REMINDER' });
 		return this.delete(schedule);
 	}
 
@@ -278,6 +282,7 @@ export default class RemindScheduler {
 		channel: TextChannel | NewsChannel | ForumChannel | null;
 	}): Promise<APIMessage | null> {
 		try {
+			this.client.logger.info(`webhook send ${webhook.id}`, { label: 'REMINDER' });
 			return await webhook.send({
 				content,
 				allowedMentions: { parse: reminder.duration === 0 ? ['users', 'roles'] : ['users'] },
@@ -287,6 +292,8 @@ export default class RemindScheduler {
 			// Unknown Webhook / Unknown Channel
 			if ([10015, 10003].includes(error.code) && channel) {
 				const webhook = await this.webhook(channel, reminder);
+				if (webhook) this.client.logger.info(`webhook resend ${webhook.id}`, { label: 'REMINDER' });
+
 				if (webhook)
 					return webhook.send({
 						content,
@@ -309,6 +316,7 @@ export default class RemindScheduler {
 	}
 
 	private async _refresh() {
+		this.client.logger.info('Refreshing reminders...', { label: 'REMINDER' });
 		const schedulers = await this.schedulers.find({ timestamp: { $lt: new Date(Date.now() + this.refreshRate) } }).toArray();
 
 		const now = new Date().getTime();
@@ -319,8 +327,10 @@ export default class RemindScheduler {
 
 			if (schedule.timestamp.getTime() < now) {
 				this.trigger(schedule);
+				this.client.logger.info(`triggered ${schedule.tag}`, { label: 'REMINDER' });
 			} else {
 				this.queue(schedule);
+				this.client.logger.info(`queued ${schedule.tag}`, { label: 'REMINDER' });
 			}
 		}
 	}

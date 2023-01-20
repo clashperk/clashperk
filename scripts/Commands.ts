@@ -2260,6 +2260,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description_localizations: translation('command.army.options.name.description'),
 				type: ApplicationCommandOptionType.String,
 				required: false
+			},
+			{
+				name: 'clan_castle',
+				description: 'Optional clan castle troops.',
+				type: ApplicationCommandOptionType.String,
+				required: false
 			}
 		]
 	},

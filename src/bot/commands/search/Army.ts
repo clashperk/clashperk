@@ -19,7 +19,7 @@ export default class ArmyCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction, args: { link?: string; message?: string; name?: string }) {
+	public async exec(interaction: CommandInteraction, args: { link?: string; message?: string; name?: string; clan_castle?: string }) {
 		const url = this.getURL(args.link ?? args.message!);
 		const army = url?.searchParams.get('army');
 		if (!army) return interaction.editReply(this.i18n('command.army.no_link', { lng: interaction.locale }));
@@ -226,6 +226,15 @@ export default class ArmyCommand extends Command {
 						'**Siege Machines**',
 						siegeMachines.map((en) => `\u200e\`${this.padding(en.total)}\` ${SIEGE_MACHINES[en.name]}  ${en.name}`).join('\n')
 					].join('\n')
+				}
+			]);
+		}
+
+		if (args.clan_castle) {
+			embed.addFields([
+				{
+					name: '\u200b',
+					value: ['**Clan Castle**', `${EMOJIS.CLAN_CASTLE} ${args.clan_castle}`].join('\n')
 				}
 			]);
 		}
