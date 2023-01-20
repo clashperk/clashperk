@@ -62,8 +62,10 @@ export default class StorageHandler {
 	}
 
 	public async register(message: CommandInteraction, data: any) {
-		const clan =
-			(await this.collection.findOne({ tag: data.tag })) ?? (await this.collection.find().sort({ uniqueId: -1 }).limit(1).next());
+		const [_clan, _lastClan] = await Promise.all([
+			this.collection.findOne({ tag: data.tag }),
+			this.collection.find().sort({ uniqueId: -1 }).limit(1).next()
+		]);
 
 		const collection = await this.collection.findOneAndUpdate(
 			{ tag: data.tag, guild: data.guild },
@@ -79,7 +81,7 @@ export default class StorageHandler {
 				},
 				$setOnInsert: {
 					createdAt: new Date(),
-					uniqueId: (clan?.uniqueId ?? 1000) + 1
+					uniqueId: _clan?.uniqueId ?? (_lastClan?.uniqueId ?? 1000) + 1
 				},
 				$bit: {
 					flag: { or: Number(data.op) }

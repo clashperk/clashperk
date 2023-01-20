@@ -6,7 +6,8 @@ import {
 	escapeMarkdown,
 	ButtonStyle,
 	ComponentType,
-	User
+	User,
+	escapeInlineCode
 } from 'discord.js';
 import { ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import moment from 'moment';
@@ -15,6 +16,13 @@ import { EMOJIS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import Workbook from '../../struct/Excel.js';
 import { Util } from '../../util/index.js';
+
+const stars: Record<string, string> = {
+	0: '☆☆☆',
+	1: '★☆☆',
+	2: '★★☆',
+	3: '★★★'
+};
 
 export default class WarCommand extends Command {
 	public constructor() {
@@ -99,6 +107,9 @@ export default class WarCommand extends Command {
 
 		if (body.state === 'preparation') {
 			const startTimestamp = new Date(moment(body.startTime).toDate()).getTime();
+			const endTime = new Date(moment(body.endTime).toDate()).getTime();
+			const timeLeft = endTime - Date.now();
+			console.log(timeLeft, moment.duration(timeLeft).format('d [d] h [hours] m [minutes]'));
 			embed.setDescription(
 				[
 					'**War Against**',
@@ -174,8 +185,9 @@ export default class WarCommand extends Command {
 		const customID = this.client.uuid(interaction.user.id);
 		const button = new ButtonBuilder().setLabel('Download').setEmoji('📥').setStyle(ButtonStyle.Secondary).setCustomId(customID);
 
+		const em = this.attacks(body.clan);
 		const msg = await interaction.editReply({
-			embeds: [embed],
+			embeds: [em],
 			components: [new ActionRowBuilder<ButtonBuilder>({ components: [button] })]
 		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
@@ -332,5 +344,59 @@ export default class WarCommand extends Command {
 				previous.push({});
 				return previous;
 			}, []);
+	}
+
+	private attacks(clan: WarClan) {
+		const embed = new EmbedBuilder();
+		const attackers: { name: string; stars: number; destruction: number; mapPosition: number }[] = [];
+
+		clan.members
+			.sort((a, b) => a.mapPosition - b.mapPosition)
+			.forEach((member, index) => {
+				if (member.attacks?.length) {
+					attackers.push({
+						name: member.name,
+						mapPosition: index + 1,
+						stars: member.attacks[0].stars,
+						destruction: member.attacks[0].destructionPercentage
+					});
+				}
+			});
+
+		if (attackers.length) {
+			embed.setDescription(
+				[
+					embed.data.description,
+					'',
+					`**Total Attacks - **`,
+					clan.members
+						.filter((m) => m.attacks?.length)
+						.map((member) => {
+							return member
+								.attacks!.map((atk, i) => {
+									return `\`\u200e${this.index(i === 0 ? member.mapPosition.toString() : ' ')} ${
+										stars[atk.stars]
+									} ${this.percentage(atk.destructionPercentage)}% ${this.padEnd(i === 0 ? member.name : ' ')}\``;
+								})
+								.join('\n');
+						})
+						.join('\n')
+				].join('\n')
+			);
+		}
+
+		return embed;
+	}
+
+	private padEnd(name: string) {
+		return escapeInlineCode(name).padEnd(20, ' ');
+	}
+
+	private index(num: number | string) {
+		return num.toString().padStart(2, ' ');
+	}
+
+	private percentage(num: number) {
+		return num.toString().padStart(3, ' ');
 	}
 }

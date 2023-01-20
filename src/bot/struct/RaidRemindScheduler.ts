@@ -38,7 +38,7 @@ export default class RaidRemindScheduler {
 						$match: { operationType: { $in: ['insert', 'update', 'delete'] } }
 					}
 				],
-				{ fullDocument: 'updateLookup', maxTimeMS: 500, maxAwaitTimeMS: 500 }
+				{ fullDocument: 'updateLookup' }
 			)
 			.on('change', (change) => {
 				if (['insert'].includes(change.operationType)) {
@@ -62,7 +62,7 @@ export default class RaidRemindScheduler {
 			});
 
 		await this._refresh();
-		setInterval(this._refresh.bind(this), this.refreshRate);
+		setInterval(this._refresh.bind(this), this.refreshRate).unref();
 	}
 
 	public async getRaidSeason(tag: string) {
