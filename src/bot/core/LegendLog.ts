@@ -134,7 +134,7 @@ export default class LegendLog extends BaseLog {
 				'```'
 			].join('\n')
 		);
-		embed.setFooter({ text: `Day ${Util.getLegendDay() - 1} (${Season.ID})` });
+		embed.setFooter({ text: `End of Day ${Util.getLegendDay() - 1} (${Season.ID})` });
 
 		if (!members.length) return null;
 		return embed;

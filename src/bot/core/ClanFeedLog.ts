@@ -97,7 +97,7 @@ export default class ClanFeedLog extends BaseLog {
 			embed.setThumbnail(`https://cdn.discordapp.com/emojis/${id!}.png?v=1`);
 			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
 			embed.setDescription(
-				`Town Hall was upgraded to ${player.townHallLevel} with ${this.remainingUpgrades(player)}% remaining upgrades.`
+				`Town Hall was upgraded to ${player.townHallLevel} with ${this.remainingUpgrades(player)}% remaining troop upgrades.`
 			);
 		}
 		if (member.op === 'JOINED') {

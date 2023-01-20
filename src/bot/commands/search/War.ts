@@ -107,9 +107,6 @@ export default class WarCommand extends Command {
 
 		if (body.state === 'preparation') {
 			const startTimestamp = new Date(moment(body.startTime).toDate()).getTime();
-			const endTime = new Date(moment(body.endTime).toDate()).getTime();
-			const timeLeft = endTime - Date.now();
-			console.log(timeLeft, moment.duration(timeLeft).format('d [d] h [hours] m [minutes]'));
 			embed.setDescription(
 				[
 					'**War Against**',
@@ -182,21 +179,30 @@ export default class WarCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const customID = this.client.uuid(interaction.user.id);
-		const button = new ButtonBuilder().setLabel('Download').setEmoji('📥').setStyle(ButtonStyle.Secondary).setCustomId(customID);
-
-		const em = this.attacks(body.clan);
-		const msg = await interaction.editReply({
-			embeds: [em],
-			components: [new ActionRowBuilder<ButtonBuilder>({ components: [button] })]
-		});
+		const customIds = {
+			download: this.client.uuid(interaction.user.id),
+			attacks: this.client.uuid(interaction.user.id)
+		};
+		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(
+				new ButtonBuilder()
+					.setLabel('Attacks')
+					.setEmoji(EMOJIS.SWORD)
+					.setStyle(ButtonStyle.Primary)
+					.setCustomId(customIds.attacks)
+					.setDisabled(body.clan.attacks === 0)
+			)
+			.addComponents(
+				new ButtonBuilder().setLabel('Download').setEmoji('📥').setStyle(ButtonStyle.Secondary).setCustomId(customIds.download)
+			);
+		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => action.customId === customID && action.user.id === interaction.user.id,
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === customID) {
+			if (action.customId === customIds.download) {
 				if (this.client.patrons.get(interaction)) {
 					await action.update({ components: [] });
 					const buffer = await this.warStats(body);
@@ -220,10 +226,15 @@ export default class WarCommand extends Command {
 					await action.reply({ embeds: [embed], ephemeral: true });
 				}
 			}
+
+			if (action.customId === customIds.attacks) {
+				const em = this.attacks(interaction, body);
+				await action.reply({ embeds: [em] });
+			}
 		});
 
 		collector.on('end', async (_, reason) => {
-			this.client.components.delete(customID);
+			Object.values(customIds).forEach((id) => this.client.components.delete(id));
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
 	}
@@ -346,44 +357,31 @@ export default class WarCommand extends Command {
 			}, []);
 	}
 
-	private attacks(clan: WarClan) {
-		const embed = new EmbedBuilder();
-		const attackers: { name: string; stars: number; destruction: number; mapPosition: number }[] = [];
+	private attacks(interaction: CommandInteraction, body: ClanWar) {
+		const embed = new EmbedBuilder()
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
 
-		clan.members
-			.sort((a, b) => a.mapPosition - b.mapPosition)
-			.forEach((member, index) => {
-				if (member.attacks?.length) {
-					attackers.push({
-						name: member.name,
-						mapPosition: index + 1,
-						stars: member.attacks[0].stars,
-						destruction: member.attacks[0].destructionPercentage
-					});
-				}
-			});
-
-		if (attackers.length) {
-			embed.setDescription(
-				[
-					embed.data.description,
-					'',
-					`**Total Attacks - **`,
-					clan.members
-						.filter((m) => m.attacks?.length)
-						.map((member) => {
-							return member
-								.attacks!.map((atk, i) => {
-									return `\`\u200e${this.index(i === 0 ? member.mapPosition.toString() : ' ')} ${
-										stars[atk.stars]
-									} ${this.percentage(atk.destructionPercentage)}% ${this.padEnd(i === 0 ? member.name : ' ')}\``;
-								})
-								.join('\n');
-						})
-						.join('\n')
-				].join('\n')
-			);
-		}
+		embed.setDescription(
+			[
+				embed.data.description,
+				'',
+				`**Total Attacks - ${body.clan.attacks}/${body.teamSize * (body.attacksPerMember || 1)}**`,
+				body.clan.members
+					.filter((m) => m.attacks?.length)
+					.sort((a, b) => a.mapPosition - b.mapPosition)
+					.map((member) => {
+						return member
+							.attacks!.map((atk, i) => {
+								return `\`\u200e${this.index(i === 0 ? member.mapPosition.toString() : ' ')} ${
+									stars[atk.stars]
+								} ${this.percentage(atk.destructionPercentage)}% ${this.padEnd(i === 0 ? member.name : ' ')}\``;
+							})
+							.join('\n');
+					})
+					.join('\n')
+			].join('\n')
+		);
 
 		return embed;
 	}
