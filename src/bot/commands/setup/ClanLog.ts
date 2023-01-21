@@ -178,12 +178,23 @@ export default class ClanLogCommand extends Command {
 						tag: data.tag
 					});
 
+					const clanFeed = await this.client.db
+						.collection(Collections.CLAN_FEED_LOGS)
+						.find({ guild: interaction.guild.id, tag: data.tag })
+						.toArray();
+
+					const _logTypes: Record<string, string> = {
+						'join/leave': 'Join/Leave',
+						'clan-log': 'Clan Log',
+						'default': 'Join/Leave & Clan Log'
+					};
+
 					const embed = new EmbedBuilder()
 						.setTitle(`\u200e${data.name} | ${FEATURES[flag]}`)
 						.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 						.setThumbnail(data.badgeUrls.small)
 						.setColor(this.client.embed(interaction))
-						.addFields([{ name: 'Channel', value: args.channel.toString() }]); // eslint-disable-line
+						.addFields(clanFeed.map((feed) => ({ value: `<#${feed.channel}>`, name: _logTypes[feed.logType] }))); // eslint-disable-line
 
 					if (args.role) embed.addFields([{ name: 'Flag Notification Role', value: args.role.toString() }]);
 
@@ -218,23 +229,12 @@ export default class ClanLogCommand extends Command {
 			tag: data.tag
 		});
 
-		const clanFeed = await this.client.db
-			.collection(Collections.CLAN_FEED_LOGS)
-			.find({ guild: interaction.guild.id, tag: data.tag })
-			.toArray();
-
-		const _logTypes: Record<string, string> = {
-			'join/leave': 'Join/Leave',
-			'clan-log': 'Clan Log',
-			'default': 'Join/Leave & Clan Log'
-		};
-
 		const embed = new EmbedBuilder()
 			.setTitle(`\u200e${data.name} | ${FEATURES[flag]}`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setColor(this.client.embed(interaction))
-			.addFields(clanFeed.map((feed) => ({ value: `<#${feed.channel}>`, name: _logTypes[feed.logType] }))); // eslint-disable-line
+			.addFields([{ name: 'Channel', value: args.channel.toString() }]); // eslint-disable-line
 
 		if (args.role && flag === Flags.CLAN_FEED_LOG) embed.addFields([{ name: 'Flag Notification Role', value: args.role.toString() }]);
 		if ([Flags.DONATION_LOG, Flags.LAST_SEEN_LOG, Flags.CLAN_GAMES_LOG].includes(flag)) {
