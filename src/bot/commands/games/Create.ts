@@ -2,23 +2,22 @@ import {
 	CommandInteraction,
 	ActionRowBuilder,
 	ButtonBuilder,
-	StringSelectMenuBuilder,
 	TextChannel,
 	ButtonStyle,
 	PermissionsString,
 	AnyThreadChannel,
-	ComponentType
+	ComponentType,
+	StringSelectMenuBuilder
 } from 'discord.js';
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
-import moment from 'moment';
-import { Collections, MAX_TOWN_HALL_LEVEL, missingPermissions } from '../../util/Constants.js';
-import { Reminder } from '../../struct/RemindScheduler.js';
+import { Collections, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
+import { RaidReminder } from '../../struct/RaidRemindScheduler.js';
 
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
-		super('reminder-create', {
+		super('clan-games-reminder-create', {
 			category: 'reminder',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
@@ -80,26 +79,25 @@ export default class ReminderCreateCommand extends Command {
 			);
 		}
 
-		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).countDocuments({ guild: interaction.guild.id });
+		const reminders = await this.client.db
+			.collection<RaidReminder>(Collections.RAID_REMINDERS)
+			.countDocuments({ guild: interaction.guild.id });
 		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {
 			return interaction.editReply(this.i18n('command.reminder.create.max_limit', { lng: interaction.locale }));
 		}
 		if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
-			return interaction.editReply(this.i18n('command.reminder.create.invalid_duration_format', { lng: interaction.locale }));
+			return interaction.editReply('The duration must be in a valid format. e.g. 30m 2h, 1h30m, 1d, 2d1h');
 		}
 
 		const dur = args.duration.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
 		if (!args.message) return interaction.editReply(this.i18n('command.reminder.create.no_message', { lng: interaction.locale }));
 
-		if (dur < 15 * 60 * 1000 && dur !== 0) {
-			return interaction.editReply(this.i18n('command.reminder.create.duration_limit', { lng: interaction.locale }));
-		}
-		if (dur > 45 * 60 * 60 * 1000) {
-			return interaction.editReply(this.i18n('command.reminder.create.duration_limit', { lng: interaction.locale }));
-		}
-		if (dur % (15 * 60 * 1000) !== 0) {
-			return interaction.editReply(this.i18n('command.reminder.create.duration_order', { lng: interaction.locale }));
-		}
+		if (dur < 15 * 60 * 1000) return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
+		if (dur > 3 * 24 * 60 * 60 * 1000)
+			return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
+		// if (dur % (15 * 60 * 1000) !== 0) {
+		// 	return interaction.editReply(this.i18n('command.reminder.create.duration_order', { lng: interaction.locale }));
+		// }
 
 		const CUSTOM_ID = {
 			ROLES: this.client.uuid(interaction.user.id),
@@ -107,95 +105,57 @@ export default class ReminderCreateCommand extends Command {
 			REMAINING: this.client.uuid(interaction.user.id),
 			CLANS: this.client.uuid(interaction.user.id),
 			SAVE: this.client.uuid(interaction.user.id),
-			WAR_TYPE: this.client.uuid(interaction.user.id)
+			MEMBER_TYPE: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
-			remaining: ['1', '2'],
-			townHalls: Array(MAX_TOWN_HALL_LEVEL - 1)
-				.fill(0)
-				.map((_, i) => (i + 2).toString()),
-			smartSkip: false,
+			remaining: ['1', '2', '3', '4', '5', '6'],
+			allMembers: true,
 			roles: ['leader', 'coLeader', 'admin', 'member'],
-			warTypes: ['cwl', 'normal', 'friendly'],
 			clans: clans.map((clan) => clan.tag)
 		};
 
 		const mutate = (disable = false) => {
-			const warTypeRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-				new StringSelectMenuBuilder()
-					.setPlaceholder('Select War Types')
-					.setMaxValues(3)
-					.setCustomId(CUSTOM_ID.WAR_TYPE)
-					.setOptions([
-						{
-							label: 'Normal',
-							value: 'normal',
-							default: state.warTypes.includes('normal')
-						},
-						{
-							label: 'Friendly',
-							value: 'friendly',
-							default: state.warTypes.includes('friendly')
-						},
-						{
-							label: 'CWL',
-							value: 'cwl',
-							default: state.warTypes.includes('cwl')
-						}
-					])
-					.setDisabled(disable)
-			);
-
-			const attackRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Attacks Remaining')
-					.setMaxValues(3)
+					.setMaxValues(6)
 					.setCustomId(CUSTOM_ID.REMAINING)
-					.setOptions([
-						{
-							description: '1 Attack Remaining',
-							label: '1 Remaining',
-							value: '1',
-							default: state.remaining.includes('1')
-						},
-						{
-							description: '2 Attacks Remaining',
-							label: '2 Remaining',
-							value: '2',
-							default: state.remaining.includes('2')
-						},
-						{
-							description: 'Skip reminder if the destruction is 100%',
-							label: 'Smart Skip',
-							value: 'smartSkip',
-							default: state.smartSkip
-						}
-					])
-					.setDisabled(disable)
-			);
-			const townHallRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-				new StringSelectMenuBuilder()
-					.setPlaceholder('Select Town Halls')
-					.setCustomId(CUSTOM_ID.TOWN_HALLS)
-					.setMaxValues(MAX_TOWN_HALL_LEVEL - 1)
 					.setOptions(
-						Array(MAX_TOWN_HALL_LEVEL - 1)
+						Array(6)
 							.fill(0)
-							.map((_, i) => {
-								const hall = (i + 2).toString();
-								return {
-									value: hall,
-									label: hall,
-									description: `Town Hall ${hall}`,
-									default: state.townHalls.includes(hall)
-								};
-							})
+							.map((_, i) => ({
+								label: `${i + 1} Remaining${i === 5 ? ` (if eligible)` : ''}`,
+								value: (i + 1).toString(),
+								default: state.remaining.includes((i + 1).toString())
+							}))
 					)
 					.setDisabled(disable)
 			);
 
-			const clanRolesRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+				new StringSelectMenuBuilder()
+					.setPlaceholder('Select Min. Attacks Done')
+					.setMaxValues(1)
+					.setCustomId(CUSTOM_ID.MEMBER_TYPE)
+					.setOptions([
+						{
+							label: 'All Members',
+							value: 'allMembers',
+							description: 'With a minimum of 0 attacks done.',
+							default: state.allMembers
+						},
+						{
+							label: 'Only Participants',
+							value: 'onlyParticipants',
+							description: 'With a minimum of 1 attack done.',
+							default: !state.allMembers
+						}
+					])
+					.setDisabled(disable)
+			);
+
+			const row3 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Clan Roles')
 					.setCustomId(CUSTOM_ID.ROLES)
@@ -225,46 +185,35 @@ export default class ReminderCreateCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			const btnRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			const row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(
 				new ButtonBuilder().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
 			);
 
-			return dur === 0 ? [warTypeRow, clanRolesRow, btnRow] : [warTypeRow, attackRow, townHallRow, clanRolesRow, btnRow];
+			return [row1, row2, row3, row4];
 		};
 
 		const msg = await interaction.editReply({
 			components: mutate(),
-			content: [
-				`**War Reminder Setup (${dur === 0 ? 'at the end' : `${this.getStatic(dur)} remaining`})**`,
-				'',
-				clans.map((clan) => clan.name).join(', ')
-			].join('\n')
+			content: '**Raid Attack Reminder Setup**'
 		});
-
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === CUSTOM_ID.WAR_TYPE && action.isStringSelectMenu()) {
-				state.warTypes = action.values;
-				await action.update({ components: mutate() });
-			}
-
 			if (action.customId === CUSTOM_ID.REMAINING && action.isStringSelectMenu()) {
-				state.remaining = action.values.filter((v) => v !== 'smartSkip');
-				state.smartSkip = action.values.includes('smartSkip');
-				await action.update({ components: mutate() });
-			}
-
-			if (action.customId === CUSTOM_ID.TOWN_HALLS && action.isStringSelectMenu()) {
-				state.townHalls = action.values;
+				state.remaining = action.values;
 				await action.update({ components: mutate() });
 			}
 
 			if (action.customId === CUSTOM_ID.ROLES && action.isStringSelectMenu()) {
 				state.roles = action.values;
+				await action.update({ components: mutate() });
+			}
+
+			if (action.customId === CUSTOM_ID.MEMBER_TYPE && action.isStringSelectMenu()) {
+				state.allMembers = action.values.includes('all');
 				await action.update({ components: mutate() });
 			}
 
@@ -281,19 +230,17 @@ export default class ReminderCreateCommand extends Command {
 					guild: interaction.guild.id,
 					channel: args.channel.id,
 					remaining: state.remaining.map((num) => Number(num)),
-					townHalls: state.townHalls.map((num) => Number(num)),
 					roles: state.roles,
+					allMembers: state.allMembers,
 					clans: state.clans,
-					smartSkip: state.smartSkip,
 					webhook: { id: webhook.id, token: webhook.token! },
-					warTypes: state.warTypes,
 					message: args.message.trim(),
 					duration: dur,
 					createdAt: new Date()
 				};
 
-				const { insertedId } = await this.client.db.collection<Reminder>(Collections.REMINDERS).insertOne(reminder);
-				this.client.remindScheduler.create({ ...reminder, _id: insertedId });
+				const { insertedId } = await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).insertOne(reminder);
+				this.client.raidReminder.create({ ...reminder, _id: insertedId });
 				await action.editReply({
 					components: mutate(true),
 					content: this.i18n('command.reminder.create.success', { lng: interaction.locale })
@@ -305,9 +252,5 @@ export default class ReminderCreateCommand extends Command {
 			for (const id of Object.values(CUSTOM_ID)) this.client.components.delete(id);
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: mutate(true) });
 		});
-	}
-
-	private getStatic(dur: number) {
-		return moment.duration(dur).format('d[d] h[h] m[m]', { trim: 'both mid' });
 	}
 }

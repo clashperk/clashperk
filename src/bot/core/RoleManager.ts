@@ -1,6 +1,6 @@
 import { Clan, Player } from 'clashofclans.js';
 import { Collection, Guild, GuildMember } from 'discord.js';
-import { Collections, Settings } from '../util/Constants.js';
+import { Collections, PLAYER_LEAGUE_MAPS, Settings } from '../util/Constants.js';
 import { Client } from '../struct/Client.js';
 import Queue from '../struct/Queue.js';
 import { PlayerLinks } from '../types/index.js';
@@ -41,7 +41,7 @@ export class RoleManager {
 		this._queue = new Queue();
 	}
 
-	public async queue(clan: Clan, isThRole = false) {
+	public async queue(clan: Clan, { isThRole = false, isLeagueRole = false }) {
 		if (this.queues.has(clan.tag)) return null;
 
 		const data = {
@@ -53,7 +53,9 @@ export class RoleManager {
 		await this._queue.wait();
 
 		try {
-			if (isThRole) {
+			if (isLeagueRole) {
+				await this.execLeagueRoles(clan.tag, clan.memberList);
+			} else if (isThRole) {
 				await this.execTownHall(clan.tag, clan.memberList);
 			} else {
 				await this.exec(clan.tag, data);
@@ -69,6 +71,7 @@ export class RoleManager {
 		if (!clan.ok) return null;
 
 		await this.execTownHall(clan.tag, [{ tag: player.tag }]);
+		await this.execLeagueRoles(clan.tag, [{ tag: player.tag }]);
 		await this.exec(clan.tag, {
 			clan: { name: player.clan!.name, tag: player.clan!.tag },
 			members: [{ op: 'SYNCED', name: player.name, tag: player.tag, role: player.role! }]
@@ -78,6 +81,12 @@ export class RoleManager {
 	public async exec(tag: string, data: RPCFeed) {
 		const members = data.members.filter((mem) => ['JOINED', 'LEFT'].includes(mem.op));
 		if (members.length) await this.execTownHall(tag, members);
+
+		const leagueChanges = data.members.filter((mem) => ['LEAGUE_CHANGE'].includes(mem.op));
+		if (leagueChanges.length) await this.execLeagueRoles(tag, leagueChanges);
+
+		const roleChanges = data.members.filter((mem) => ['PROMOTED', 'DEMOTED', 'JOINED', 'LEFT'].includes(mem.op));
+		if (!roleChanges.length) return null;
 
 		const queried = await this.client.db
 			.collection(Collections.CLAN_STORES)
@@ -170,6 +179,52 @@ export class RoleManager {
 			if (!clans.length) continue;
 			if (!this.client.guilds.cache.has(guild)) continue;
 			await this.runTownHallRoles(
+				guild,
+				clans,
+				members.map((mem) => mem.tag)
+			);
+		}
+	}
+
+	public async execLeagueRoles(tag: string, members: { tag: string }[]) {
+		const queried = await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.aggregate<{ guild: string; clans: { tag: string }[] }>([
+				{
+					$match: {
+						tag,
+						active: true,
+						paused: false
+					}
+				},
+				{
+					$project: {
+						guild: 1
+					}
+				},
+				{
+					$lookup: {
+						from: Collections.CLAN_STORES,
+						localField: 'guild',
+						foreignField: 'guild',
+						as: 'clans',
+						pipeline: [
+							{
+								$project: {
+									tag: 1
+								}
+							}
+						]
+					}
+				}
+			])
+			.toArray();
+		if (!queried.length) return null;
+
+		for (const { guild, clans } of queried) {
+			if (!clans.length) continue;
+			if (!this.client.guilds.cache.has(guild)) continue;
+			await this.runLeagueRoles(
 				guild,
 				clans,
 				members.map((mem) => mem.tag)
@@ -287,6 +342,24 @@ export class RoleManager {
 		return roles;
 	}
 
+	private handleLeagueRoles(players: Player[], clans: string[], rolesMap: Record<string, string>, allowExternal: boolean) {
+		// at least one account should be in the clan
+		if (allowExternal && !players.some((player) => player.clan && clans.includes(player.clan.tag))) {
+			return [];
+		}
+
+		const roles = players.reduce<string[]>((acc, player) => {
+			const roleId = rolesMap[PLAYER_LEAGUE_MAPS[player.league?.id ?? '29000000']];
+			if (roleId && !acc.includes(roleId)) {
+				if (!allowExternal && player.clan && clans.includes(player.clan.tag)) acc.push(roleId);
+				if (allowExternal) acc.push(roleId);
+			}
+			return acc;
+		}, []);
+
+		return roles;
+	}
+
 	private async runTownHallRoles(guildId: string, clans: { tag: string }[], memberTags: string[]) {
 		const allowExternal = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, false);
 		const rolesMap = this.client.settings.get<Record<string, string>>(guildId, Settings.TOWN_HALL_ROLES, {});
@@ -361,6 +434,87 @@ export class RoleManager {
 				roleIds: thRoles,
 				roles,
 				reason: 'Town Hall Level Synced'
+			});
+			if (count) await this.delay(memberTags.length >= 10 ? 1000 : 250);
+		}
+
+		return memberTags.length;
+	}
+
+	private async runLeagueRoles(guildId: string, clans: { tag: string }[], memberTags: string[]) {
+		const allowExternal = this.client.settings.get<boolean>(guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, false);
+		const rolesMap = this.client.settings.get<Record<string, string>>(guildId, Settings.LEAGUE_ROLES, {});
+		const roles = Array.from(new Set(Object.values(rolesMap)));
+		if (!roles.length) return null;
+
+		// getting all linked accounts of all clan members
+		const flattened = await this.client.db
+			.collection(Collections.PLAYER_LINKS)
+			.aggregate<PlayerLinks>([
+				{
+					$match: { tag: { $in: memberTags } }
+				},
+				{
+					$lookup: {
+						from: Collections.PLAYER_LINKS,
+						localField: 'userId',
+						foreignField: 'userId',
+						as: 'links'
+					}
+				},
+				{
+					$unwind: {
+						path: '$links'
+					}
+				},
+				{
+					$replaceRoot: {
+						newRoot: '$links'
+					}
+				}
+			])
+			.toArray();
+
+		// flattening the array
+		// getting unique user ids
+		const userIds = flattened.reduce<string[]>((prev, curr) => {
+			if (!prev.includes(curr.userId)) prev.push(curr.userId);
+			return prev;
+		}, []);
+
+		// fetch guild members at once
+		const members = await this.client.guilds.cache.get(guildId)?.members.fetch({ user: userIds, force: true });
+		if (!members?.size) return null;
+
+		// getting roles of all linked players
+		const players = (await this.client.http.detailedClanMembers(flattened)).filter((res) => res.ok);
+
+		// going through all clan members
+		for (const tag of memberTags) {
+			// whether the member is linked
+			const mem = flattened.find((a) => a.tag === tag);
+			if (!mem) continue;
+
+			const acc = flattened.filter((a) => a.userId === mem.userId);
+			const tags = acc.map((en) => en.tag);
+
+			// getting linked user's accounts
+			const thRoles = this.handleLeagueRoles(
+				players.filter((en) => tags.includes(en.tag)),
+				clans.map((clan) => clan.tag),
+				rolesMap,
+				allowExternal
+			);
+			if (!thRoles.length) continue;
+
+			// flatten all the role ids for each clan
+			const count = await this.addRoles({
+				members,
+				guildId,
+				userId: mem.userId,
+				roleIds: thRoles,
+				roles,
+				reason: 'League Roles Synced'
 			});
 			if (count) await this.delay(memberTags.length >= 10 ? 1000 : 250);
 		}

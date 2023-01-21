@@ -128,12 +128,27 @@ export default class RaidRemindScheduler {
 		return timestamp > schedule.timestamp.getTime();
 	}
 
+	public async unwantedMembers(clanMembers: { tag: string }[], weekId: string, clanTag: string) {
+		const multi = this.client.redis.multi();
+		clanMembers.map((member) => multi.json.get(`CRM${member.tag}`));
+		const res = (await multi.exec()).filter((_) => _) as unknown as { tag: string; weekId: string; clan: { tag: string } }[];
+		const members = res.filter((m) => m.weekId === weekId && m.clan.tag !== clanTag);
+		return members.map((m) => m.tag);
+	}
+
+	private getWeekId(weekId: string) {
+		return moment(weekId).toDate().toISOString().substring(0, 10);
+	}
+
 	public async getReminderText(
 		reminder: Pick<RaidReminder, 'roles' | 'remaining' | 'guild' | 'message' | 'allMembers'>,
 		schedule: Pick<RaidSchedule, 'tag'>,
 		data: Required<RaidSeason>
 	) {
 		const clan = await this.client.http.clan(schedule.tag);
+		const unwantedMembers = reminder.allMembers
+			? await this.unwantedMembers(clan.memberList, this.getWeekId(data.startTime), schedule.tag)
+			: [];
 		const clanMembers = clan.memberList
 			.map((m) => {
 				const member = data.members.find((mem) => mem.tag === m.tag);
@@ -148,6 +163,7 @@ export default class RaidRemindScheduler {
 					capitalResourcesLooted: 0
 				};
 			})
+			.filter((m) => !unwantedMembers.includes(m.tag))
 			.filter((m) => (reminder.allMembers ? m.attacks >= 0 : m.attacks >= 1));
 
 		const members = clanMembers

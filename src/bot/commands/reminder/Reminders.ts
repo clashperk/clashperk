@@ -12,13 +12,24 @@ export default class ReminderCommand extends Command {
 		});
 	}
 
-	public exec(interaction: CommandInteraction, args: { command: string; subCommand: string }) {
-		if (args.subCommand === 'capital-raids') {
+	public exec(interaction: CommandInteraction, args: { command: string; type: string }) {
+		if (args.type === 'capital-raids') {
 			const command = {
 				create: this.handler.modules.get('capital-reminder-create')!,
 				delete: this.handler.modules.get('capital-reminder-delete')!,
 				list: this.handler.modules.get('capital-reminder-list')!,
 				now: this.handler.modules.get('capital-reminder-now')!
+			}[args.command];
+
+			if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
+			return this.handler.continue(interaction, command);
+		}
+		if (args.type === 'clan-games') {
+			const command = {
+				create: this.handler.modules.get('clan-games-reminder-create')!,
+				delete: this.handler.modules.get('clan-games-reminder-delete')!,
+				list: this.handler.modules.get('clan-games-reminder-list')!,
+				now: this.handler.modules.get('clan-games-reminder-now')!
 			}[args.command];
 
 			if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));

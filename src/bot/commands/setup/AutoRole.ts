@@ -22,6 +22,15 @@ export default class AutoRoleCommand extends Command {
 			if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
 			return this.handler.continue(interaction, command);
 		}
+		if (args.subCommand === 'leagues') {
+			const command = {
+				enable: this.handler.modules.get('setup-league-roles')!,
+				disable: this.handler.modules.get('setup-league-roles')!
+			}[args.command];
+
+			if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
+			return this.handler.continue(interaction, command);
+		}
 		const command = {
 			enable: this.handler.modules.get('setup-clan-roles')!,
 			disable: this.handler.modules.get('setup-clan-roles')!

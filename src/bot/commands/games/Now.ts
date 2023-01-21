@@ -8,13 +8,12 @@ import {
 	StringSelectMenuBuilder
 } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { MAX_TOWN_HALL_LEVEL } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
-export default class ReminderNowCommand extends Command {
+export default class CapitalReminderNowCommand extends Command {
 	public constructor() {
-		super('reminder-now', {
+		super('clan-games-reminder-now', {
 			category: 'reminder',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
@@ -39,88 +38,56 @@ export default class ReminderNowCommand extends Command {
 
 		const CUSTOM_ID = {
 			ROLES: this.client.uuid(interaction.user.id),
-			TOWN_HALLS: this.client.uuid(interaction.user.id),
 			REMAINING: this.client.uuid(interaction.user.id),
+			MEMBER_TYPE: this.client.uuid(interaction.user.id),
 			CLANS: this.client.uuid(interaction.user.id),
-			SAVE: this.client.uuid(interaction.user.id),
-			WAR_TYPE: this.client.uuid(interaction.user.id)
+			SAVE: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
-			remaining: ['1', '2'],
-			townHalls: Array(MAX_TOWN_HALL_LEVEL - 1)
-				.fill(0)
-				.map((_, i) => (i + 2).toString()),
+			remaining: ['1', '2', '3', '4', '5', '6'],
+			allMembers: true,
 			roles: ['leader', 'coLeader', 'admin', 'member'],
-			warTypes: ['cwl', 'normal', 'friendly'],
 			clans: clans.map((clan) => clan.tag)
 		};
 
 		const mutate = (disable = false) => {
-			const row0 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-				new StringSelectMenuBuilder()
-					.setPlaceholder('Select War Types')
-					.setMaxValues(3)
-					.setCustomId(CUSTOM_ID.WAR_TYPE)
-					.setOptions([
-						{
-							label: 'Normal',
-							value: 'normal',
-							default: state.warTypes.includes('normal')
-						},
-						{
-							label: 'Friendly',
-							value: 'friendly',
-							default: state.warTypes.includes('friendly')
-						},
-						{
-							label: 'CWL',
-							value: 'cwl',
-							default: state.warTypes.includes('cwl')
-						}
-					])
-					.setDisabled(disable)
-			);
-
 			const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Attacks Remaining')
-					.setMaxValues(2)
+					.setMaxValues(6)
 					.setCustomId(CUSTOM_ID.REMAINING)
-					.setOptions([
-						{
-							description: '1 Attack Remaining',
-							label: '1 Remaining',
-							value: '1',
-							default: state.remaining.includes('1')
-						},
-						{
-							description: '2 Attacks Remaining',
-							label: '2 Remaining',
-							value: '2',
-							default: state.remaining.includes('2')
-						}
-					])
+					.setOptions(
+						Array(6)
+							.fill(0)
+							.map((_, i) => ({
+								label: `${i + 1} Remaining${i === 5 ? ` (if eligible)` : ''}`,
+								value: (i + 1).toString(),
+								default: state.remaining.includes((i + 1).toString())
+							}))
+					)
 					.setDisabled(disable)
 			);
+
 			const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
-					.setPlaceholder('Select Town Halls')
-					.setCustomId(CUSTOM_ID.TOWN_HALLS)
-					.setMaxValues(MAX_TOWN_HALL_LEVEL - 1)
-					.setOptions(
-						Array(MAX_TOWN_HALL_LEVEL - 1)
-							.fill(0)
-							.map((_, i) => {
-								const hall = (i + 2).toString();
-								return {
-									value: hall,
-									label: hall,
-									description: `Town Hall ${hall}`,
-									default: state.townHalls.includes(hall)
-								};
-							})
-					)
+					.setPlaceholder('Select Min. Attacks Done')
+					.setMaxValues(1)
+					.setCustomId(CUSTOM_ID.MEMBER_TYPE)
+					.setOptions([
+						{
+							label: 'All Members',
+							value: 'allMembers',
+							description: 'With a minimum of 0 attacks done.',
+							default: state.allMembers
+						},
+						{
+							label: 'Only Participants',
+							value: 'onlyParticipants',
+							description: 'With a minimum of 1 attack done.',
+							default: !state.allMembers
+						}
+					])
 					.setDisabled(disable)
 			);
 
@@ -163,31 +130,18 @@ export default class ReminderNowCommand extends Command {
 					.setDisabled(disable)
 			);
 
-			return [row0, row1, row2, row3, row4];
+			return [row1, row2, row3, row4];
 		};
 
-		const msg = await interaction.editReply({
-			components: mutate(),
-			content: [`**Instant War Reminder Options**`, '', clans.map((clan) => clan.name).join(', ')].join('\n')
-		});
+		const msg = await interaction.editReply({ components: mutate(), content: '**Instant Capital Reminder Options**' });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === CUSTOM_ID.WAR_TYPE && action.isStringSelectMenu()) {
-				state.warTypes = action.values;
-				await action.update({ components: mutate() });
-			}
-
 			if (action.customId === CUSTOM_ID.REMAINING && action.isStringSelectMenu()) {
 				state.remaining = action.values;
-				await action.update({ components: mutate() });
-			}
-
-			if (action.customId === CUSTOM_ID.TOWN_HALLS && action.isStringSelectMenu()) {
-				state.townHalls = action.values;
 				await action.update({ components: mutate() });
 			}
 
@@ -201,16 +155,20 @@ export default class ReminderNowCommand extends Command {
 				await action.update({ components: mutate() });
 			}
 
+			if (action.customId === CUSTOM_ID.MEMBER_TYPE && action.isStringSelectMenu()) {
+				state.allMembers = action.values.includes('all');
+				await action.update({ components: mutate() });
+			}
+
 			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {
-				await action.update({ components: [], content: `**Fetching wars...** ${EMOJIS.LOADING}` });
+				await action.update({ components: [], content: `**Fetching capital raids...** ${EMOJIS.LOADING}` });
 
 				const texts = await this.getWars(action, {
 					remaining: state.remaining.map((num) => Number(num)),
-					townHalls: state.townHalls.map((num) => Number(num)),
 					roles: state.roles,
 					clans: state.clans,
 					message: args.message,
-					warTypes: state.warTypes
+					allMembers: state.allMembers
 				});
 
 				if (texts.length) {
@@ -233,32 +191,18 @@ export default class ReminderNowCommand extends Command {
 		interaction: ButtonInteraction<'cached'>,
 		reminder: {
 			roles: string[];
-			townHalls: number[];
 			remaining: number[];
 			clans: string[];
 			message: string;
-			warTypes: string[];
+			allMembers: boolean;
 		}
 	) {
 		const texts: string[] = [];
 		for (const tag of reminder.clans) {
-			const currentWars = await this.client.http.getCurrentWars(tag);
-			for (const data of currentWars) {
-				if (!data.ok) continue;
-				if (['notInWar', 'warEnded'].includes(data.state)) continue;
-
-				const warType = data.warTag ? 'cwl' : data.isFriendly ? 'friendly' : 'normal';
-				if (!reminder.warTypes.includes(warType)) continue;
-
-				const text = await this.client.remindScheduler.getReminderText(
-					{ ...reminder, guild: interaction.guild.id, smartSkip: false },
-					{ tag: data.clan.tag, warTag: data.warTag },
-					data,
-					interaction.guild
-				);
-
-				if (text) texts.push(text);
-			}
+			const data = await this.client.raidReminder.getRaidSeason(tag);
+			if (!data) continue;
+			const text = await this.client.raidReminder.getReminderText({ ...reminder, guild: interaction.guild.id }, { tag }, data);
+			if (text) texts.push(text);
 		}
 		return texts;
 	}

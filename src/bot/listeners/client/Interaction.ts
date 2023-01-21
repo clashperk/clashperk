@@ -71,7 +71,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async durationAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const cmd = interaction.options.getSubcommandGroup(true);
+		const cmd = interaction.options.getString('type') ?? 'clan-wars';
 		const dur = interaction.options.getString(focused);
 		const matchedDur = dur?.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)?.reduce((acc, cur) => acc + ms(cur), 0) ?? 0;
 
@@ -130,20 +130,28 @@ export default class InteractionListener extends Listener {
 			)
 			.toArray();
 		if (!clans.length) {
-			if (query) return interaction.respond([{ value: query, name: query }]);
+			if (query) {
+				const value = await this.getQuery(query);
+				return interaction.respond([{ value, name: query.substring(0, 100) }]);
+			}
 			return interaction.respond([{ value: '0', name: 'Enter clan tags or names!' }]);
 		}
 		const response = clans.slice(0, 24).map((clan) => ({ value: clan.tag, name: clan.name }));
 		if (response.length > 1) {
 			const clanTags = clans.map((clan) => clan.tag).join(',');
-			const value = clanTags.length > 100 ? nanoid() : clanTags;
-			if (clanTags.length > 100) await this.client.redis.set(value, clanTags, { EX: 60 * 60 });
+			const value = await this.getQuery(clanTags);
 			response.unshift({
 				value,
 				name: `**All of these (${clans.length})**`
 			});
 		}
 		return interaction.respond(response);
+	}
+
+	private async getQuery(query: string) {
+		const value = query.length > 100 ? nanoid() : query;
+		if (query.length > 100) await this.client.redis.set(value, value, { EX: 60 * 60 });
+		return value;
 	}
 
 	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
@@ -154,7 +162,10 @@ export default class InteractionListener extends Listener {
 			.limit(25)
 			.toArray();
 		if (!players.length) {
-			if (query) return interaction.respond([{ value: query, name: query }]);
+			if (query) {
+				const value = await this.getQuery(query);
+				return interaction.respond([{ value, name: query.substring(0, 100) }]);
+			}
 			return interaction.respond([{ value: '0', name: 'Enter a player tag!' }]);
 		}
 		return interaction.respond(players.map((player) => ({ value: player.tag, name: `${player.name} (${player.tag})` })));
@@ -173,7 +184,10 @@ export default class InteractionListener extends Listener {
 			.limit(25)
 			.toArray();
 		if (!clans.length) {
-			if (query) return interaction.respond([{ value: query, name: query }]);
+			if (query) {
+				const value = await this.getQuery(query);
+				return interaction.respond([{ value, name: query.substring(0, 100) }]);
+			}
 			return interaction.respond([{ value: '0', name: 'Enter a clan tag!' }]);
 		}
 		return interaction.respond(clans.map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` })));

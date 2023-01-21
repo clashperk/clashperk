@@ -77,7 +77,9 @@ export const enum Settings {
 	GUILD_BLACKLIST = 'guildBans',
 	EVENTS_CHANNEL = 'eventsChannel',
 	TOWN_HALL_ROLES = 'townHallRoles',
-	ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts'
+	LEAGUE_ROLES = 'leagueRoles',
+	ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts',
+	ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
@@ -133,6 +135,34 @@ export const MAX_CLAN_SIZE = 50;
 export const LEGEND_LEAGUE_ID = 29000022;
 
 export const BIT_FIELD = new PermissionsBitField(292997688385n).bitfield;
+
+export const PLAYER_LEAGUE_MAPS: Record<string, string> = {
+	29000000: 'unranked',
+	29000001: 'bronze',
+	29000002: 'bronze',
+	29000003: 'bronze',
+	29000004: 'silver',
+	29000005: 'silver',
+	29000006: 'silver',
+	29000007: 'gold',
+	29000008: 'gold',
+	29000009: 'gold',
+	29000010: 'crystal',
+	29000011: 'crystal',
+	29000012: 'crystal',
+	29000013: 'master',
+	29000014: 'master',
+	29000015: 'master',
+	29000016: 'champion',
+	29000017: 'champion',
+	29000018: 'champion',
+	29000019: 'titan',
+	29000020: 'titan',
+	29000021: 'titan',
+	29000022: 'legend'
+};
+
+export const PLAYER_LEAGUE_NAMES = Array.from(new Set(Object.values(PLAYER_LEAGUE_MAPS)));
 
 export const locales: Record<string, string> = {
 	'en-US': 'English, US',

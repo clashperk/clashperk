@@ -1,5 +1,5 @@
 import { URL } from 'node:url';
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
 import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SIEGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis.js';
 import RAW_TROOPS from '../../util/Troops.js';
 import { Command } from '../../lib/index.js';
@@ -177,7 +177,6 @@ export default class ArmyCommand extends Command {
 			.setDescription(
 				[
 					`**${args.name ?? 'Shared Army Composition'} [TH ${townHallLevel}${townHallLevel === 14 ? '' : '+'}]**`,
-					`[Click to Copy](${url!.href})`,
 					'',
 					`${EMOJIS.TROOPS} **${totalTroop}** ${EMOJIS.SPELLS} **${totalSpell}**`
 				].join('\n')
@@ -239,7 +238,6 @@ export default class ArmyCommand extends Command {
 			]);
 		}
 
-		embed.setFooter({ text: interaction.user.tag, iconURL: interaction.user.displayAvatarURL({ forceStatic: false }) });
 		const mismatch = troops.length + spells.length + superTroops.length + siegeMachines.length !== TROOP_IDS.length + SPELL_IDS.length;
 
 		const invalid =
@@ -249,8 +247,13 @@ export default class ArmyCommand extends Command {
 			totalSpell > TOTAL_SPELLS ||
 			totalSiege > TOTAL_SIEGE ||
 			superTroops.length > TOTAL_SUPER_TROOPS;
+
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(url!.href).setLabel('Copy Army Link').setEmoji(EMOJIS.TROOPS)
+		);
 		return interaction.editReply({
 			embeds: [embed],
+			components: [row],
 			content: invalid ? this.i18n('command.army.possibly_invalid_link', { lng: interaction.locale }) : null
 		});
 	}

@@ -1,8 +1,7 @@
 import { CommandInteraction, Guild, Role } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks } from '../../types/index.js';
-import { Collections, Settings } from '../../util/Constants.js';
-import { ORANGE_NUMBERS } from '../../util/Emojis.js';
+import { Collections, PLAYER_LEAGUE_NAMES, Settings } from '../../util/Constants.js';
 
 export interface IArgs {
 	command?: 'enable' | 'disable' | null;
@@ -15,9 +14,9 @@ export interface IArgs {
 	clear?: boolean;
 }
 
-export default class AutoTownHallRoleCommand extends Command {
+export default class AutoLeagueRoleCommand extends Command {
 	public constructor() {
-		super('setup-town-hall-roles', {
+		super('setup-league-roles', {
 			category: 'none',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
@@ -38,16 +37,20 @@ export default class AutoTownHallRoleCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { [key: `th_${string}`]: Role | null; command: string; allowExternal: boolean }
+		args: {
+			command: string;
+			allowExternal: boolean;
+		} & Record<string, Role | null>
 	) {
 		if (args.command === 'disable') return this.disable(interaction);
 		const clans = await this.client.storage.find(interaction.guildId);
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
-		const roles = Array(13)
-			.fill(0)
-			.map((_, i) => ({ role: args[`th_${i + 3}`], hall: i + 3 }));
+		const roles = PLAYER_LEAGUE_NAMES.map((league) => ({
+			role: args[league],
+			league: league
+		}));
 
 		const selected = roles.filter((r) => r.role);
 		if (!selected.length) {
@@ -64,19 +67,24 @@ export default class AutoTownHallRoleCommand extends Command {
 
 		await this.client.settings.set(
 			interaction.guildId,
-			Settings.TOWN_HALL_ROLES,
+			Settings.LEAGUE_ROLES,
 			selected.reduce<Record<string, string>>((prev, curr) => {
-				prev[curr.hall] = curr.role!.id;
+				prev[curr.league] = curr.role!.id;
 				return prev;
 			}, {})
 		);
-		await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS, Boolean(args.allowExternal));
+		await this.client.settings.set(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE, Boolean(args.allowExternal));
 
 		this.updateLinksAndRoles(clans);
 		await interaction.editReply({
 			allowedMentions: { parse: [] },
 			content: [
-				roles.map((role) => `${ORANGE_NUMBERS[role.hall]} ${role.role ? `<@&${role.role.id}>` : ''}`).join('\n'),
+				roles
+					.map(
+						(role) =>
+							`${role.league.replace(/\b(\w)/g, (char) => char.toUpperCase())} ${role.role ? `<@&${role.role.id}>` : ''}`
+					)
+					.join('\n'),
 				'',
 				args.allowExternal
 					? '[External Accounts Allowed] Users will get roles based on each accounts that are linked (N.B. at least one account must be a part of the family).'
@@ -125,7 +133,7 @@ export default class AutoTownHallRoleCommand extends Command {
 				} catch {}
 			}
 
-			await this.client.rpcHandler.roleManager.queue(data, { isThRole: true });
+			await this.client.rpcHandler.roleManager.queue(data, { isLeagueRole: true });
 		}
 	}
 

@@ -1,5 +1,17 @@
-import { EmbedBuilder, CommandInteraction, TextChannel, Role, PermissionsString, AnyThreadChannel } from 'discord.js';
-import { Flags, missingPermissions } from '../../util/Constants.js';
+import {
+	EmbedBuilder,
+	CommandInteraction,
+	TextChannel,
+	Role,
+	PermissionsString,
+	AnyThreadChannel,
+	ComponentType,
+	ActionRowBuilder,
+	StringSelectMenuBuilder,
+	ButtonBuilder,
+	ButtonStyle
+} from 'discord.js';
+import { Collections, Flags, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 
 const FEATURES: Record<string, string> = {
@@ -83,6 +95,110 @@ export default class ClanLogCommand extends Command {
 			);
 		}
 
+		if (flag === Flags.TOWN_HALL_LOG) {
+			const clanFeed = await this.client.db
+				.collection(Collections.CLAN_FEED_LOGS)
+				.find({ guild: interaction.guild.id, tag: data.tag })
+				.toArray();
+			const logTypes = clanFeed.map((x) => x.logType) as string[];
+
+			const customIds = {
+				logType: this.client.uuid(interaction.user.id)
+			};
+
+			const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+				new StringSelectMenuBuilder()
+					.setCustomId(customIds.logType)
+					.setPlaceholder('Select Log Types')
+					.setMaxValues(2)
+					.setMinValues(1)
+					.addOptions([
+						{
+							label: 'Join/Leave',
+							value: 'join/leave',
+							description: 'Join/Leave logs only.'
+						},
+						{
+							label: 'Clan Log',
+							value: 'clan-log',
+							description: 'Everything except join/leave logs.'
+						}
+					])
+			);
+			const btnRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel('Save')
+			);
+
+			const msg = await interaction.editReply({
+				components: [menuRow, btnRow],
+				content: [`**${data.name} (${data.tag}) Clan Feed**`].join('\n')
+			});
+
+			const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
+				filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+				time: 5 * 60 * 1000
+			});
+
+			collector.on('collect', async (action) => {
+				if (action.customId === customIds.logType && action.isStringSelectMenu()) {
+					await action.deferUpdate();
+					let logType: 'default' | 'join/leave' | 'clan-log' = 'default';
+					if (action.values.length === 2) {
+						logType = 'default';
+					} else if (action.values.includes('join/leave')) {
+						logType = 'join/leave';
+					} else if (action.values.includes('clan-log')) {
+						logType = 'clan-log';
+					}
+
+					if (logTypes.includes('default') && logType !== 'default') {
+						await this.client.db.collection(Collections.CLAN_FEED_LOGS).deleteOne({
+							guild: interaction.guild.id,
+							tag: data.tag,
+							logType: logType === 'join/leave' ? 'clan-log' : 'join/leave'
+						});
+					}
+
+					const id = await this.client.storage.register(interaction, {
+						op: flag,
+						guild: interaction.guild.id,
+						channel: args.channel.id,
+						tag: data.tag,
+						name: data.name,
+						role: args.role ? args.role.id : null,
+						webhook: {
+							id: webhook.id,
+							token: webhook.token
+						},
+						logType
+					});
+					await this.client.rpcHandler.add(id, {
+						op: flag,
+						guild: interaction.guild.id,
+						tag: data.tag
+					});
+
+					const embed = new EmbedBuilder()
+						.setTitle(`\u200e${data.name} | ${FEATURES[flag]}`)
+						.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
+						.setThumbnail(data.badgeUrls.small)
+						.setColor(this.client.embed(interaction))
+						.addFields([{ name: 'Channel', value: args.channel.toString() }]); // eslint-disable-line
+
+					if (args.role) embed.addFields([{ name: 'Flag Notification Role', value: args.role.toString() }]);
+
+					await action.update({ embeds: [embed], components: [] });
+				}
+			});
+
+			collector.on('end', async (_, reason) => {
+				for (const id of Object.values(customIds)) this.client.components.delete(id);
+				if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+			});
+
+			return;
+		}
+
 		const id = await this.client.storage.register(interaction, {
 			op: flag,
 			guild: interaction.guild.id,
@@ -102,14 +218,25 @@ export default class ClanLogCommand extends Command {
 			tag: data.tag
 		});
 
+		const clanFeed = await this.client.db
+			.collection(Collections.CLAN_FEED_LOGS)
+			.find({ guild: interaction.guild.id, tag: data.tag })
+			.toArray();
+
+		const _logTypes: Record<string, string> = {
+			'join/leave': 'Join/Leave',
+			'clan-log': 'Clan Log',
+			'default': 'Join/Leave & Clan Log'
+		};
+
 		const embed = new EmbedBuilder()
 			.setTitle(`\u200e${data.name} | ${FEATURES[flag]}`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
 			.setThumbnail(data.badgeUrls.small)
 			.setColor(this.client.embed(interaction))
-			.addFields([{ name: 'Channel', value: args.channel.toString() }]); // eslint-disable-line
+			.addFields(clanFeed.map((feed) => ({ value: `<#${feed.channel}>`, name: _logTypes[feed.logType] }))); // eslint-disable-line
 
-		if (args.role && flag === Flags.CLAN_FEED_LOG) embed.addFields([{ name: 'Role', value: args.role.toString() }]);
+		if (args.role && flag === Flags.CLAN_FEED_LOG) embed.addFields([{ name: 'Flag Notification Role', value: args.role.toString() }]);
 		if ([Flags.DONATION_LOG, Flags.LAST_SEEN_LOG, Flags.CLAN_GAMES_LOG].includes(flag)) {
 			embed.addFields([{ name: 'Color', value: args.color?.toString(16) ?? 'None' }]);
 			if (args.color) embed.setColor(args.color);

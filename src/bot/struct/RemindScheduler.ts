@@ -46,7 +46,6 @@ export default class RemindScheduler {
 						const schedule = change.fullDocument;
 						if (schedule && !schedule.triggered && schedule.timestamp.getTime() < Date.now() + this.refreshRate) {
 							this.queue(schedule);
-							this.client.logger.info(`from watcher ${schedule.tag}`, { label: 'REMINDER' });
 						}
 					}
 				}
@@ -117,7 +116,7 @@ export default class RemindScheduler {
 	}
 
 	public async getReminderText(
-		reminder: Pick<Reminder, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message'>,
+		reminder: Pick<Reminder, 'roles' | 'remaining' | 'townHalls' | 'guild' | 'message' | 'smartSkip'>,
 		schedule: Pick<Schedule, 'tag' | 'warTag'>,
 		data: ClanWar,
 		_guild: Guild
@@ -125,6 +124,7 @@ export default class RemindScheduler {
 		const clanMembers = reminder.roles.length === 4 ? [] : await this.getClanMembers(schedule.tag);
 		const clan = data.clan.tag === schedule.tag ? data.clan : data.opponent;
 		const attacksPerMember = data.attacksPerMember || 1;
+		if (reminder.smartSkip && clan.destructionPercentage >= 100) return null;
 
 		const members = clan.members
 			.filter((mem) => {
@@ -207,8 +207,6 @@ export default class RemindScheduler {
 	}
 
 	private async trigger(schedule: Schedule) {
-		this.client.logger.info(`entry ${schedule.tag}`, { label: 'REMINDER' });
-
 		const id = schedule._id.toHexString();
 		try {
 			const reminder = await this.reminders.findOne({ _id: schedule.reminderId });
@@ -266,7 +264,6 @@ export default class RemindScheduler {
 			return this.clear(id);
 		}
 
-		this.client.logger.info(`cleared ${schedule.tag}`, { label: 'REMINDER' });
 		return this.delete(schedule);
 	}
 
@@ -292,14 +289,13 @@ export default class RemindScheduler {
 			// Unknown Webhook / Unknown Channel
 			if ([10015, 10003].includes(error.code) && channel) {
 				const webhook = await this.webhook(channel, reminder);
-				if (webhook) this.client.logger.info(`webhook resend ${webhook.id}`, { label: 'REMINDER' });
-
-				if (webhook)
+				if (webhook) {
 					return webhook.send({
 						content,
 						allowedMentions: { parse: reminder.duration === 0 ? ['users', 'roles'] : ['users'] },
 						threadId: reminder.threadId
 					});
+				}
 			}
 			throw error;
 		}
@@ -316,7 +312,6 @@ export default class RemindScheduler {
 	}
 
 	private async _refresh() {
-		this.client.logger.info('Refreshing reminders...', { label: 'REMINDER' });
 		const schedulers = await this.schedulers.find({ timestamp: { $lt: new Date(Date.now() + this.refreshRate) } }).toArray();
 
 		const now = new Date().getTime();
@@ -327,10 +322,8 @@ export default class RemindScheduler {
 
 			if (schedule.timestamp.getTime() < now) {
 				this.trigger(schedule);
-				this.client.logger.info(`triggered ${schedule.tag}`, { label: 'REMINDER' });
 			} else {
 				this.queue(schedule);
-				this.client.logger.info(`queued ${schedule.tag}`, { label: 'REMINDER' });
 			}
 		}
 	}
@@ -361,6 +354,7 @@ export interface Reminder {
 	threadId?: string;
 	roles: string[];
 	townHalls: number[];
+	smartSkip: boolean;
 	warTypes: string[];
 	clans: string[];
 	remaining: number[];

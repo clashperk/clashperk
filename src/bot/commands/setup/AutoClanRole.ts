@@ -14,7 +14,7 @@ export interface IArgs {
 	clear?: boolean;
 }
 
-export default class AutoRoleCommand extends Command {
+export default class AutoClanRoleCommand extends Command {
 	public constructor() {
 		super('setup-clan-roles', {
 			category: 'none',
@@ -152,7 +152,7 @@ export default class AutoRoleCommand extends Command {
 				} catch {}
 			}
 
-			await this.client.rpcHandler.roleManager.queue(data);
+			await this.client.rpcHandler.roleManager.queue(data, {});
 		}
 	}
 
