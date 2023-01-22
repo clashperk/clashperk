@@ -85,7 +85,7 @@ export class RoleManager {
 		const leagueChanges = data.members.filter((mem) => ['LEAGUE_CHANGE'].includes(mem.op));
 		if (leagueChanges.length) await this.execLeagueRoles(tag, leagueChanges);
 
-		const roleChanges = data.members.filter((mem) => ['PROMOTED', 'DEMOTED', 'JOINED', 'LEFT'].includes(mem.op));
+		const roleChanges = data.members.filter((mem) => ['PROMOTED', 'DEMOTED', 'JOINED', 'LEFT', 'SYNCED'].includes(mem.op));
 		if (!roleChanges.length) return null;
 
 		const queried = await this.client.db
