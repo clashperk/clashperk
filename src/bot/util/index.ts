@@ -288,7 +288,7 @@ export class ClanGames {
 	}
 
 	public static get isSpecial() {
-		return [7, 11].includes(new Date().getMonth());
+		return [0, 7, 11].includes(new Date().getMonth());
 	}
 
 	public static get MAX_TOTAL() {
