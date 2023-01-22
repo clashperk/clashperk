@@ -13,6 +13,7 @@ export default class CommandEndedListener extends Listener {
 	}
 
 	public async exec(interaction: MessageComponentInteraction | CommandInteraction, _command: Command, _args: unknown) {
+		if (!interaction.isCommand()) return;
 		const suggested = await this.client.stats.featureSuggested(interaction);
 		if (!suggested) {
 			const msg = await interaction.followUp({

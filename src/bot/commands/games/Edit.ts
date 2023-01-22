@@ -182,6 +182,7 @@ export default class ReminderEditCommand extends Command {
 					{ _id: reminder._id },
 					{
 						$set: {
+							minPoints: Number(state.minPoints),
 							roles: state.roles,
 							message: state.message
 						}
