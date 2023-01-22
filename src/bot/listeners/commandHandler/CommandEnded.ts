@@ -1,7 +1,7 @@
+import { stripIndent } from 'common-tags';
 import { CommandInteraction, MessageComponentInteraction } from 'discord.js';
 import { Listener, Command } from '../../lib/index.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
-import { locales } from '../../util/Constants.js';
 
 export default class CommandEndedListener extends Listener {
 	public constructor() {
@@ -13,15 +13,31 @@ export default class CommandEndedListener extends Listener {
 	}
 
 	public async exec(interaction: MessageComponentInteraction | CommandInteraction, _command: Command, _args: unknown) {
-		const suggested = await this.client.stats.localeSuggested(interaction);
+		const suggested = await this.client.stats.featureSuggested(interaction);
 		if (!suggested) {
-			await interaction.followUp({
-				content: [
-					`Do you want the bot in **${locales[interaction.locale] || interaction.locale}** language?`,
-					'Help us with the translation on [Crowdin.](https://crowdin.com/project/clashperk) Join our [support server](https://discord.gg/ppuppun) to get more details.'
-				].join('\n'),
-				ephemeral: true
+			const msg = await interaction.followUp({
+				content: stripIndent`
+				- **Checkout the new Features!**
+
+				- **Legend Tracking**
+					- Attacks summary and daily log.
+
+				- **Automatic Roles**
+					- Clan roles
+					- League roles
+					- Town Hall roles
+
+				- **Reminder**
+					- Capital raid reminder
+					- Clan games reminder
+					- Supports war end, war start, war cc fill-up reminders
+					- All type of filters imaginable.
+
+				- [Join Support Server to know more!](https://discord.gg/ppuppun)
+				`,
+				ephemeral: false
 			});
+			setTimeout(() => msg.delete().catch(() => null), 1000 * 60 * 2).unref();
 		}
 	}
 }

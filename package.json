@@ -29,6 +29,7 @@
 		"bufferutil": "^4.0.6",
 		"chalk": "^4.1.2",
 		"clashofclans.js": "^1.5.5",
+		"common-tags": "^1.8.2",
 		"discord-api-types": "^0.37.1",
 		"discord.js": "^14.7.1",
 		"erlpack": "github:discord/erlpack",
@@ -49,6 +50,7 @@
 		"zlib-sync": "^0.1.7"
 	},
 	"devDependencies": {
+		"@types/common-tags": "^1.8.1",
 		"@types/moment-duration-format": "^2.2.3",
 		"@types/ms": "^0.7.31",
 		"@types/node": "^18.11.13",
