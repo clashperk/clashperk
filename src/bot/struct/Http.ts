@@ -79,6 +79,13 @@ export default class Http extends ClashOfClansClient {
 		return new Date(moment(ISO).toDate());
 	}
 
+	public async getCurrentRaidSeason(tag: string) {
+		const res = await this.getRaidSeason({ tag });
+		if (!res.ok || !res.items.length) return null;
+		if (!res.items[0].members) return null;
+		return res.items[0] as Required<RaidSeason>;
+	}
+
 	public async getRaidSeason(clan: { tag: string }): Promise<{ items: RaidSeason[]; ok: boolean; statusCode: number }> {
 		return this.fetch(`/clans/${encodeURIComponent(clan.tag)}/capitalraidseasons?limit=1`);
 	}

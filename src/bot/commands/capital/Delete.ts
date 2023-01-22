@@ -11,7 +11,7 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Collections } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
-import { RaidReminder, RaidSchedule } from '../../struct/RaidRemindScheduler.js';
+import { RaidReminder, RaidSchedule } from '../../struct/CapitalRaidScheduler.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -161,7 +161,7 @@ export default class CapitalReminderDeleteCommand extends Command {
 				await action.update({
 					embeds: rems.length ? [embeds()] : [],
 					components: rems.length ? options(false, true, false) : [],
-					content: rems.length ? '**Manage War Reminders**' : "**You don't have any more reminders!**"
+					content: rems.length ? '**Manage Capital Raid Reminders**' : "**You don't have any more reminders!**"
 				});
 			}
 
@@ -178,7 +178,7 @@ export default class CapitalReminderDeleteCommand extends Command {
 				await action.editReply({
 					embeds: [],
 					components: rems.length ? options(false, true, true) : [],
-					content: rems.length ? '**Manage War Reminders**' : "**You don't have any more reminders!**"
+					content: rems.length ? '**Manage Capital Raid Reminders**' : "**You don't have any more reminders!**"
 				});
 			}
 		});

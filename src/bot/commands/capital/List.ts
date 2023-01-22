@@ -3,7 +3,7 @@ import moment from 'moment';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
-import { RaidReminder } from '../../struct/RaidRemindScheduler.js';
+import { RaidReminder } from '../../struct/CapitalRaidScheduler.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',

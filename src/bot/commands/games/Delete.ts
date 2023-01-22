@@ -11,7 +11,7 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Collections } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
-import { RaidReminder, RaidSchedule } from '../../struct/RaidRemindScheduler.js';
+import { ClanGamesReminder, ClanGamesSchedule } from '../../struct/ClanGamesScheduler.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -41,22 +41,22 @@ export default class CapitalReminderDeleteCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, { id, clear }: { id?: string; clear: boolean }) {
 		const reminders = await this.client.db
-			.collection<RaidReminder>(Collections.RAID_REMINDERS)
+			.collection<ClanGamesReminder>(Collections.CG_REMINDERS)
 			.find({ guild: interaction.guild.id })
 			.toArray();
 		if (!reminders.length) return interaction.editReply(this.i18n('command.reminder.delete.no_reminders', { lng: interaction.locale }));
 
 		if (clear) {
-			await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).deleteMany({ guild: interaction.guild.id });
-			await this.client.db.collection<RaidSchedule>(Collections.RAID_SCHEDULERS).deleteMany({ guild: interaction.guildId });
+			await this.client.db.collection<ClanGamesReminder>(Collections.CG_REMINDERS).deleteMany({ guild: interaction.guild.id });
+			await this.client.db.collection<ClanGamesSchedule>(Collections.CG_SCHEDULERS).deleteMany({ guild: interaction.guildId });
 			return interaction.editReply(this.i18n('command.reminder.delete.cleared', { lng: interaction.locale }));
 		}
 
 		if (id) {
 			const reminderId = reminders[Number(id) - 1]?._id as ObjectId | null;
 			if (!reminderId) return interaction.editReply(this.i18n('command.reminder.delete.not_found', { lng: interaction.locale, id }));
-			await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).deleteOne({ _id: reminderId });
-			await this.client.db.collection<RaidSchedule>(Collections.RAID_SCHEDULERS).deleteMany({ reminderId });
+			await this.client.db.collection<ClanGamesReminder>(Collections.CG_REMINDERS).deleteOne({ _id: reminderId });
+			await this.client.db.collection<ClanGamesSchedule>(Collections.CG_SCHEDULERS).deleteMany({ reminderId });
 			return interaction.editReply(this.i18n('command.reminder.delete.success', { lng: interaction.locale, id }));
 		}
 
@@ -125,13 +125,11 @@ export default class CapitalReminderDeleteCommand extends Command {
 				embed.addFields([{ name: 'Roles', value: reminder.roles.map((role) => roles[role]).join(', ') }]);
 			}
 
-			if (reminder.remaining.length === 6) {
-				embed.addFields([{ name: 'Remaining Hits', value: 'Any' }]);
+			if (reminder.minPoints === 0) {
+				embed.addFields([{ name: 'Min. Points', value: 'Until Maxed' }]);
 			} else {
-				embed.addFields([{ name: 'Remaining Hits', value: reminder.remaining.join(', ') }]);
+				embed.addFields([{ name: 'Min. Points', value: reminder.minPoints.toString() }]);
 			}
-
-			embed.addFields([{ name: 'Members', value: reminder.allMembers ? 'All Members' : 'Only Participants' }]);
 
 			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
 			if (_clans.length) embed.addFields([{ name: 'Clans', value: _clans.join(', ').substring(0, 1024) }]);
@@ -161,7 +159,7 @@ export default class CapitalReminderDeleteCommand extends Command {
 				await action.update({
 					embeds: rems.length ? [embeds()] : [],
 					components: rems.length ? options(false, true, false) : [],
-					content: rems.length ? '**Manage War Reminders**' : "**You don't have any more reminders!**"
+					content: rems.length ? '**Manage Clan Games Reminders**' : "**You don't have any more reminders!**"
 				});
 			}
 
@@ -169,16 +167,18 @@ export default class CapitalReminderDeleteCommand extends Command {
 				await action.deferUpdate();
 				state.reminders.delete(state.selected!);
 
-				await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).deleteOne({ _id: new ObjectId(state.selected!) });
 				await this.client.db
-					.collection<RaidSchedule>(Collections.RAID_SCHEDULERS)
+					.collection<ClanGamesReminder>(Collections.CG_REMINDERS)
+					.deleteOne({ _id: new ObjectId(state.selected!) });
+				await this.client.db
+					.collection<ClanGamesSchedule>(Collections.CG_SCHEDULERS)
 					.deleteMany({ reminderId: new ObjectId(state.selected!) });
 
 				const rems = reminders.filter((rem) => state.reminders.has(rem._id.toHexString()));
 				await action.editReply({
 					embeds: [],
 					components: rems.length ? options(false, true, true) : [],
-					content: rems.length ? '**Manage War Reminders**' : "**You don't have any more reminders!**"
+					content: rems.length ? '**Manage Clan Games Reminders**' : "**You don't have any more reminders!**"
 				});
 			}
 		});

@@ -3,7 +3,7 @@ import moment from 'moment';
 import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
-import { RaidReminder } from '../../struct/RaidRemindScheduler.js';
+import { ClanGamesReminder } from '../../struct/ClanGamesScheduler.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -25,7 +25,7 @@ export default class ReminderListCommand extends Command {
 
 	public async exec(interaction: CommandInteraction) {
 		const reminders = await this.client.db
-			.collection<RaidReminder>(Collections.RAID_REMINDERS)
+			.collection<ClanGamesReminder>(Collections.CG_REMINDERS)
 			.find({ guild: interaction.guild!.id })
 			.toArray();
 		if (!reminders.length) return interaction.editReply(this.i18n('command.reminder.list.no_reminders', { lng: interaction.locale }));
@@ -42,10 +42,8 @@ export default class ReminderListCommand extends Command {
 				`<#${reminder.channel}>`,
 				'**Roles**',
 				reminder.roles.length === 4 ? 'Any' : `${reminder.roles.map((role) => roles[role]).join(', ')}`,
-				'**Remaining Hits**',
-				reminder.remaining.length === 6 ? 'Any' : `${reminder.remaining.join(', ')}`,
-				'**Members**',
-				reminder.allMembers ? 'All Members' : 'Only Participants',
+				'**Min Points**',
+				reminder.minPoints === 0 ? 'Until Maxed' : `${reminder.minPoints}`,
 				'**Clans**',
 				_clans.length ? `${escapeMarkdown(_clans.join(', '))}` : 'Any',
 				'**Message**',

@@ -25,6 +25,7 @@ export default class FamilyCommand extends Command {
 			'missed-wars': this.handler.modules.get('family-missed-wars')!,
 			'activity': this.handler.modules.get('family-activity')!,
 			'capital-contributions': this.handler.modules.get('family-capital-contributions')!,
+			'capital-raids': this.handler.modules.get('family-capital-raids')!,
 			'war-results': this.handler.modules.get('summary-war-results')!
 		}[args.command];
 

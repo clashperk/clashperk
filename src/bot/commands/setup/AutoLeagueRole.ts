@@ -4,7 +4,7 @@ import { PlayerLinks } from '../../types/index.js';
 import { Collections, PLAYER_LEAGUE_NAMES, Settings } from '../../util/Constants.js';
 
 export interface IArgs {
-	command?: 'enable' | 'disable' | null;
+	command?: 'refresh' | 'disable' | null;
 	clans?: string;
 	members?: Role;
 	elders?: Role;
@@ -47,6 +47,7 @@ export default class AutoLeagueRoleCommand extends Command {
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
+
 		const roles = PLAYER_LEAGUE_NAMES.map((league) => ({
 			role: args[league],
 			league: league
@@ -138,7 +139,8 @@ export default class AutoLeagueRoleCommand extends Command {
 	}
 
 	private async disable(interaction: CommandInteraction<'cached'>) {
-		this.client.settings.delete(interaction.guildId, Settings.TOWN_HALL_ROLES);
+		this.client.settings.delete(interaction.guildId, Settings.LEAGUE_ROLES);
+		this.client.settings.delete(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS_LEAGUE);
 		return interaction.editReply('Successfully disabled automatic Town Hall roles.');
 	}
 }

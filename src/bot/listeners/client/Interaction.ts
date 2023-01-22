@@ -7,6 +7,78 @@ import ComponentHandler from '../../struct/ComponentHandler.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections, Settings } from '../../util/Constants.js';
 
+const ranges: Record<string, number> = {
+	'clan-wars': ms('46h'),
+	'capital-raids': ms('3d'),
+	'clan-games': ms('5d') + ms('23h'),
+	'default': ms('5d') + ms('23h')
+};
+
+const preferences: Record<string, string[]> = {
+	'clan-wars': [
+		'15m',
+		'30m',
+		'1h',
+		'1h 30m',
+		'2h',
+		'2h 30m',
+		'3h',
+		'4h',
+		'6h',
+		'8h',
+		'10h',
+		'12h',
+		'14h',
+		'16h',
+		'18h',
+		'23h',
+		'1d',
+		'1d 6h',
+		'1d 12h'
+	],
+	'capital-raids': [
+		'1h',
+		'6h',
+		'10h',
+		'12h',
+		'15h',
+		'16h',
+		'18h',
+		'20h',
+		'23h',
+		'1d',
+		'1d 12h',
+		'1d 18h',
+		'2d',
+		'2d 12h',
+		'2d 18h',
+		'2d 23h'
+	],
+	'clan-games': [
+		'1h',
+		'2h',
+		'3h',
+		'4h',
+		'6h',
+		'8h',
+		'10h',
+		'12h',
+		'14h',
+		'16h',
+		'18h',
+		'20h',
+		'23h',
+		'1d',
+		'1d 6h',
+		'1d 12h',
+		'2d',
+		'2d 12h',
+		'3d',
+		'4d'
+	],
+	'default': ['1h', '4h', '10h', '12h', '16h', '20h', '1d', '1d 6h', '2d', '3d', '4d', '5d', '5d 23h']
+};
+
 export default class InteractionListener extends Listener {
 	private readonly componentHandler: ComponentHandler;
 
@@ -25,9 +97,9 @@ export default class InteractionListener extends Listener {
 		this.componentInteraction(interaction);
 	}
 
-	private inRange(dur: number, cmd: string) {
+	private inRange(dur: number, cmd: string | null) {
 		const minDur = ms('15m');
-		const maxDur = cmd === 'clan-wars' ? ms('1d') + ms('21h') : ms('3d');
+		const maxDur = ranges[cmd ?? 'default'];
 		return dur >= minDur && dur <= maxDur;
 	}
 
@@ -35,7 +107,7 @@ export default class InteractionListener extends Listener {
 		return moment.duration(dur).format('d[d] h[h] m[m]', { trim: 'both mid' });
 	}
 
-	private getTimes(times: string[], matchedDur: number, cmd: string) {
+	private getTimes(times: string[], matchedDur: number, cmd: string | null) {
 		if (this.inRange(matchedDur, cmd)) {
 			const value = this.getLabel(matchedDur);
 			if (times.includes(value)) times.splice(times.indexOf(value), 1);
@@ -71,7 +143,7 @@ export default class InteractionListener extends Listener {
 	}
 
 	private async durationAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const cmd = interaction.options.getString('type') ?? 'clan-wars';
+		const cmd = interaction.options.getString('type');
 		const dur = interaction.options.getString(focused);
 		const matchedDur = dur?.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)?.reduce((acc, cur) => acc + ms(cur), 0) ?? 0;
 
@@ -91,30 +163,7 @@ export default class InteractionListener extends Listener {
 			return interaction.respond(this.getTimes(times, matchedDur, cmd));
 		}
 
-		const clanWarTimes = [
-			'15m',
-			'30m',
-			'1h',
-			'1h 30m',
-			'2h',
-			'2h 30m',
-			'3h',
-			'4h',
-			'6h',
-			'8h',
-			'10h',
-			'12h',
-			'14h',
-			'16h',
-			'18h',
-			'23h',
-			'1d',
-			'1d 6h',
-			'1d 12h'
-		];
-		const capitalRaidTimes = ['6h', '10h', '12h', '15h', '16h', '18h', '20h', '23h', '1d', '1d 12h', '2d', '2d 18h', '2d 23h'];
-
-		const times = cmd === 'clan-wars' ? clanWarTimes : capitalRaidTimes;
+		const times = preferences[cmd ?? 'default'];
 		return interaction.respond(this.getTimes(times, matchedDur, cmd));
 	}
 

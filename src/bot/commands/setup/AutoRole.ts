@@ -12,28 +12,26 @@ export default class AutoRoleCommand extends Command {
 		});
 	}
 
-	public exec(interaction: CommandInteraction, args: { command: string; subCommand: string }) {
-		if (args.subCommand === 'town-hall') {
-			const command = {
-				enable: this.handler.modules.get('setup-town-hall-roles')!,
-				disable: this.handler.modules.get('setup-town-hall-roles')!
-			}[args.command];
+	public async exec(interaction: CommandInteraction<'cached'>, args: { command: string; type: string }) {
+		if (args.command === 'refresh') {
+			const command = this.handler.modules.get('autorole-refresh')!;
+			return this.handler.continue(interaction, command);
+		}
 
+		if (['disable'].includes(args.command)) {
+			const command = {
+				'town-hall': this.handler.modules.get('setup-town-hall-roles')!,
+				'clan-roles': this.handler.modules.get('setup-clan-roles')!,
+				'leagues': this.handler.modules.get('setup-league-roles')!
+			}[args.type];
 			if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
 			return this.handler.continue(interaction, command);
 		}
-		if (args.subCommand === 'leagues') {
-			const command = {
-				enable: this.handler.modules.get('setup-league-roles')!,
-				disable: this.handler.modules.get('setup-league-roles')!
-			}[args.command];
 
-			if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
-			return this.handler.continue(interaction, command);
-		}
 		const command = {
-			enable: this.handler.modules.get('setup-clan-roles')!,
-			disable: this.handler.modules.get('setup-clan-roles')!
+			'town-hall': this.handler.modules.get('setup-town-hall-roles')!,
+			'clan-roles': this.handler.modules.get('setup-clan-roles')!,
+			'leagues': this.handler.modules.get('setup-league-roles')!
 		}[args.command];
 
 		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));

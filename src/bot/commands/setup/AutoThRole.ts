@@ -5,7 +5,7 @@ import { Collections, Settings } from '../../util/Constants.js';
 import { ORANGE_NUMBERS } from '../../util/Emojis.js';
 
 export interface IArgs {
-	command?: 'enable' | 'disable' | null;
+	command?: 'refresh' | 'disable' | null;
 	clans?: string;
 	members?: Role;
 	elders?: Role;
@@ -41,10 +41,12 @@ export default class AutoTownHallRoleCommand extends Command {
 		args: { [key: `th_${string}`]: Role | null; command: string; allowExternal: boolean }
 	) {
 		if (args.command === 'disable') return this.disable(interaction);
+
 		const clans = await this.client.storage.find(interaction.guildId);
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
+
 		const roles = Array(13)
 			.fill(0)
 			.map((_, i) => ({ role: args[`th_${i + 3}`], hall: i + 3 }));
@@ -131,6 +133,7 @@ export default class AutoTownHallRoleCommand extends Command {
 
 	private async disable(interaction: CommandInteraction<'cached'>) {
 		this.client.settings.delete(interaction.guildId, Settings.TOWN_HALL_ROLES);
+		this.client.settings.delete(interaction.guildId, Settings.ALLOW_EXTERNAL_ACCOUNTS);
 		return interaction.editReply('Successfully disabled automatic Town Hall roles.');
 	}
 }

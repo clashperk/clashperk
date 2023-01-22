@@ -11,9 +11,10 @@ import {
 } from 'discord.js';
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
+import moment from 'moment';
 import { Collections, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
-import { RaidReminder } from '../../struct/RaidRemindScheduler.js';
+import { ClanGamesReminder } from '../../struct/ClanGamesScheduler.js';
 
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
@@ -80,7 +81,7 @@ export default class ReminderCreateCommand extends Command {
 		}
 
 		const reminders = await this.client.db
-			.collection<RaidReminder>(Collections.RAID_REMINDERS)
+			.collection<ClanGamesReminder>(Collections.CG_REMINDERS)
 			.countDocuments({ guild: interaction.guild.id });
 		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {
 			return interaction.editReply(this.i18n('command.reminder.create.max_limit', { lng: interaction.locale }));
@@ -92,25 +93,25 @@ export default class ReminderCreateCommand extends Command {
 		const dur = args.duration.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
 		if (!args.message) return interaction.editReply(this.i18n('command.reminder.create.no_message', { lng: interaction.locale }));
 
-		if (dur < 15 * 60 * 1000) return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
-		if (dur > 3 * 24 * 60 * 60 * 1000)
-			return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
-		// if (dur % (15 * 60 * 1000) !== 0) {
-		// 	return interaction.editReply(this.i18n('command.reminder.create.duration_order', { lng: interaction.locale }));
-		// }
+		if (dur < 15 * 60 * 1000) return interaction.editReply('The duration must be greater than 15 minutes and less than 6 days.');
+		if (dur > 6 * 24 * 60 * 60 * 1000) {
+			return interaction.editReply('The duration must be greater than 15 minutes and less than 6 days.');
+		}
 
-		const CUSTOM_ID = {
-			ROLES: this.client.uuid(interaction.user.id),
-			TOWN_HALLS: this.client.uuid(interaction.user.id),
-			REMAINING: this.client.uuid(interaction.user.id),
-			CLANS: this.client.uuid(interaction.user.id),
-			SAVE: this.client.uuid(interaction.user.id),
-			MEMBER_TYPE: this.client.uuid(interaction.user.id)
+		const customIds = {
+			roles: this.client.uuid(interaction.user.id),
+			townHalls: this.client.uuid(interaction.user.id),
+			remaining: this.client.uuid(interaction.user.id),
+			clans: this.client.uuid(interaction.user.id),
+			save: this.client.uuid(interaction.user.id),
+			minPoints: this.client.uuid(interaction.user.id),
+			memberType: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
 			remaining: ['1', '2', '3', '4', '5', '6'],
 			allMembers: true,
+			minPoints: '0',
 			roles: ['leader', 'coLeader', 'admin', 'member'],
 			clans: clans.map((clan) => clan.tag)
 		};
@@ -118,47 +119,25 @@ export default class ReminderCreateCommand extends Command {
 		const mutate = (disable = false) => {
 			const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
-					.setPlaceholder('Select Attacks Remaining')
-					.setMaxValues(6)
-					.setCustomId(CUSTOM_ID.REMAINING)
+					.setPlaceholder('Select Minimum Points')
+					.setMaxValues(1)
+					.setCustomId(customIds.minPoints)
 					.setOptions(
-						Array(6)
+						Array(16)
 							.fill(0)
 							.map((_, i) => ({
-								label: `${i + 1} Remaining${i === 5 ? ` (if eligible)` : ''}`,
-								value: (i + 1).toString(),
-								default: state.remaining.includes((i + 1).toString())
+								label: `${(i + 1) * 250}`,
+								value: ((i + 1) * 250).toString(),
+								default: state.minPoints === ((i + 1) * 250).toString()
 							}))
 					)
-					.setDisabled(disable)
-			);
-
-			const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-				new StringSelectMenuBuilder()
-					.setPlaceholder('Select Min. Attacks Done')
-					.setMaxValues(1)
-					.setCustomId(CUSTOM_ID.MEMBER_TYPE)
-					.setOptions([
-						{
-							label: 'All Members',
-							value: 'allMembers',
-							description: 'With a minimum of 0 attacks done.',
-							default: state.allMembers
-						},
-						{
-							label: 'Only Participants',
-							value: 'onlyParticipants',
-							description: 'With a minimum of 1 attack done.',
-							default: !state.allMembers
-						}
-					])
 					.setDisabled(disable)
 			);
 
 			const row3 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
 					.setPlaceholder('Select Clan Roles')
-					.setCustomId(CUSTOM_ID.ROLES)
+					.setCustomId(customIds.roles)
 					.setMaxValues(4)
 					.setOptions([
 						{
@@ -186,61 +165,67 @@ export default class ReminderCreateCommand extends Command {
 			);
 
 			const row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(
-				new ButtonBuilder().setCustomId(CUSTOM_ID.SAVE).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
+				new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
 			);
 
-			return [row1, row2, row3, row4];
+			return [row1, row3, row4];
 		};
 
 		const msg = await interaction.editReply({
 			components: mutate(),
-			content: '**Raid Attack Reminder Setup**'
+			content: [
+				`**Setup Clan Games Reminder (${this.getStatic(dur)} remaining)** <#${args.channel.id}>`,
+				'',
+				clans.map((clan) => clan.name).join(', '),
+				'',
+				`${args.message}`
+			].join('\n'),
+			allowedMentions: { parse: [] }
 		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === CUSTOM_ID.REMAINING && action.isStringSelectMenu()) {
-				state.remaining = action.values;
+			if (action.customId === customIds.minPoints && action.isStringSelectMenu()) {
+				state.minPoints = action.values[0];
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.ROLES && action.isStringSelectMenu()) {
+			if (action.customId === customIds.roles && action.isStringSelectMenu()) {
 				state.roles = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.MEMBER_TYPE && action.isStringSelectMenu()) {
+			if (action.customId === customIds.memberType && action.isStringSelectMenu()) {
 				state.allMembers = action.values.includes('all');
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.CLANS && action.isStringSelectMenu()) {
+			if (action.customId === customIds.clans && action.isStringSelectMenu()) {
 				state.clans = action.values;
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === CUSTOM_ID.SAVE && action.isButton()) {
+			if (action.customId === customIds.save && action.isButton()) {
 				await action.deferUpdate();
-				const reminder = {
+				const reminder: ClanGamesReminder = {
 					// TODO: remove this
 					_id: new ObjectId(),
 					guild: interaction.guild.id,
 					channel: args.channel.id,
-					remaining: state.remaining.map((num) => Number(num)),
 					roles: state.roles,
-					allMembers: state.allMembers,
 					clans: state.clans,
+					minPoints: Number(state.minPoints),
 					webhook: { id: webhook.id, token: webhook.token! },
 					message: args.message.trim(),
 					duration: dur,
 					createdAt: new Date()
 				};
 
-				const { insertedId } = await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).insertOne(reminder);
-				this.client.raidReminder.create({ ...reminder, _id: insertedId });
+				const { insertedId } = await this.client.db.collection<ClanGamesReminder>(Collections.CG_REMINDERS).insertOne(reminder);
+				this.client.cgScheduler.create({ ...reminder, _id: insertedId });
 				await action.editReply({
 					components: mutate(true),
 					content: this.i18n('command.reminder.create.success', { lng: interaction.locale })
@@ -249,8 +234,12 @@ export default class ReminderCreateCommand extends Command {
 		});
 
 		collector.on('end', async (_, reason) => {
-			for (const id of Object.values(CUSTOM_ID)) this.client.components.delete(id);
+			for (const id of Object.values(customIds)) this.client.components.delete(id);
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: mutate(true) });
 		});
+	}
+
+	private getStatic(dur: number) {
+		return moment.duration(dur).format('d[d] h[h] m[m]', { trim: 'both mid' });
 	}
 }

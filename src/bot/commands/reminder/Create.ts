@@ -13,7 +13,7 @@ import ms from 'ms';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
 import { Collections, MAX_TOWN_HALL_LEVEL, missingPermissions } from '../../util/Constants.js';
-import { Reminder } from '../../struct/RemindScheduler.js';
+import { Reminder } from '../../struct/ClanWarScheduler.js';
 import { Args, Command } from '../../lib/index.js';
 
 export default class ReminderCreateCommand extends Command {
@@ -235,10 +235,13 @@ export default class ReminderCreateCommand extends Command {
 		const msg = await interaction.editReply({
 			components: mutate(),
 			content: [
-				`**War Reminder Setup (${dur === 0 ? 'at the end' : `${this.getStatic(dur)} remaining`})**`,
+				`**Setup War Reminder (${dur === 0 ? 'at the end' : `${this.getStatic(dur)} remaining`})** <#${args.channel.id}>`,
 				'',
-				clans.map((clan) => clan.name).join(', ')
-			].join('\n')
+				clans.map((clan) => clan.name).join(', '),
+				'',
+				`${args.message}`
+			].join('\n'),
+			allowedMentions: { parse: [] }
 		});
 
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
@@ -293,7 +296,7 @@ export default class ReminderCreateCommand extends Command {
 				};
 
 				const { insertedId } = await this.client.db.collection<Reminder>(Collections.REMINDERS).insertOne(reminder);
-				this.client.remindScheduler.create({ ...reminder, _id: insertedId });
+				this.client.warScheduler.create({ ...reminder, _id: insertedId });
 				await action.editReply({
 					components: mutate(true),
 					content: this.i18n('command.reminder.create.success', { lng: interaction.locale })

@@ -4,7 +4,7 @@ import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks } from '../../types/index.js';
 
 export interface IArgs {
-	command?: 'enable' | 'disable' | null;
+	command?: 'refresh' | 'disable' | null;
 	clans?: string;
 	members?: Role;
 	elders?: Role;

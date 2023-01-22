@@ -2,23 +2,22 @@ import {
 	CommandInteraction,
 	ActionRowBuilder,
 	ButtonBuilder,
-	TextChannel,
 	ButtonStyle,
-	PermissionsString,
-	AnyThreadChannel,
 	ComponentType,
-	StringSelectMenuBuilder
+	StringSelectMenuBuilder,
+	ModalBuilder,
+	TextInputBuilder,
+	TextInputStyle
 } from 'discord.js';
-import ms from 'ms';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { Collections, missingPermissions } from '../../util/Constants.js';
-import { Args, Command } from '../../lib/index.js';
+import { Collections } from '../../util/Constants.js';
+import { Command } from '../../lib/index.js';
 import { RaidReminder } from '../../struct/CapitalRaidScheduler.js';
 
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
-		super('capital-reminder-create', {
+		super('capital-reminder-edit', {
 			category: 'reminder',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
@@ -27,91 +26,39 @@ export default class ReminderCreateCommand extends Command {
 		});
 	}
 
-	private readonly permissions: PermissionsString[] = [
-		'AddReactions',
-		'EmbedLinks',
-		'UseExternalEmojis',
-		'SendMessages',
-		'ReadMessageHistory',
-		'ManageWebhooks',
-		'ViewChannel'
-	];
-
-	public args(interaction: CommandInteraction<'cached'>): Args {
-		return {
-			channel: {
-				match: 'CHANNEL',
-				default: interaction.channel!
-			}
-		};
-	}
-
-	public async exec(
-		interaction: CommandInteraction<'cached'>,
-		args: { duration: string; message: string; channel: TextChannel | AnyThreadChannel; clans?: string }
-	) {
-		const tags = args.clans === '*' ? [] : await this.client.resolver.resolveArgs(args.clans);
-		const clans =
-			args.clans === '*'
-				? await this.client.storage.find(interaction.guildId)
-				: await this.client.storage.search(interaction.guildId, tags);
-
-		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
-		if (!clans.length) {
-			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
-		}
-
-		const permission = missingPermissions(args.channel, interaction.guild.members.me!, this.permissions);
-		if (permission.missing) {
-			return interaction.editReply(
-				this.i18n('command.reminder.create.missing_access', {
-					lng: interaction.locale,
-					channel: args.channel.toString(), // eslint-disable-line
-					permission: permission.missingPerms
-				})
-			);
-		}
-
-		const webhook = await this.client.storage.getWebhook(args.channel.isThread() ? args.channel.parent! : args.channel);
-		if (!webhook) {
-			return interaction.editReply(
-				// eslint-disable-next-line
-				this.i18n('command.reminder.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
-			);
-		}
-
+	public async exec(interaction: CommandInteraction<'cached'>, args: { id: string }) {
 		const reminders = await this.client.db
 			.collection<RaidReminder>(Collections.RAID_REMINDERS)
-			.countDocuments({ guild: interaction.guild.id });
-		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {
-			return interaction.editReply(this.i18n('command.reminder.create.max_limit', { lng: interaction.locale }));
-		}
-		if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
-			return interaction.editReply('The duration must be in a valid format. e.g. 30m 2h, 1h30m, 1d, 2d1h');
+			.find({ guild: interaction.guild.id })
+			.toArray();
+		if (!reminders.length) return interaction.editReply(this.i18n('command.reminder.delete.no_reminders', { lng: interaction.locale }));
+
+		const reminderId = reminders[Number(args.id) - 1]?._id as ObjectId | null;
+		if (!reminderId) {
+			return interaction.editReply(this.i18n('command.reminder.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}
 
-		const dur = args.duration.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
-		if (!args.message) return interaction.editReply(this.i18n('command.reminder.create.no_message', { lng: interaction.locale }));
-
-		if (dur < 15 * 60 * 1000) return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
-		if (dur > 3 * 24 * 60 * 60 * 1000) {
-			return interaction.editReply('The duration must be greater than 15 minutes and less than 3 days.');
+		const reminder = await this.client.db.collection<RaidReminder>(Collections.REMINDERS).findOne({ _id: reminderId });
+		if (!reminder) {
+			return interaction.editReply(this.i18n('command.reminder.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}
 
 		const customIds = {
 			roles: this.client.uuid(interaction.user.id),
-			townHalls: this.client.uuid(interaction.user.id),
 			remaining: this.client.uuid(interaction.user.id),
 			clans: this.client.uuid(interaction.user.id),
 			save: this.client.uuid(interaction.user.id),
-			memberType: this.client.uuid(interaction.user.id)
+			memberType: this.client.uuid(interaction.user.id),
+			message: this.client.uuid(interaction.user.id),
+			modal: this.client.uuid(interaction.user.id),
+			modalMessage: this.client.uuid(interaction.user.id)
 		};
 
 		const state = {
-			remaining: ['1', '2', '3', '4', '5', '6'],
+			remaining: reminder.remaining.map((r) => r.toString()),
 			allMembers: true,
-			roles: ['leader', 'coLeader', 'admin', 'member'],
-			clans: clans.map((clan) => clan.tag)
+			roles: reminder.roles,
+			message: reminder.message
 		};
 
 		const mutate = (disable = false) => {
@@ -191,14 +138,15 @@ export default class ReminderCreateCommand extends Command {
 			return [row1, row2, row3, row4];
 		};
 
+		const clans = await this.client.storage.search(interaction.guildId, reminder.clans);
 		const msg = await interaction.editReply({
 			components: mutate(),
 			content: [
-				`**Setup Raid Attack Reminder (${this.getStatic(dur)} remaining)** <#${args.channel.id}>`,
+				`**Edit Raid Attack Reminder (${this.getStatic(reminder.duration)} remaining)** <#${reminder.channel}>`,
 				'',
 				clans.map((clan) => clan.name).join(', '),
 				'',
-				`${args.message}`
+				`${reminder.message}`
 			].join('\n'),
 			allowedMentions: { parse: [] }
 		});
@@ -223,30 +171,56 @@ export default class ReminderCreateCommand extends Command {
 				await action.update({ components: mutate() });
 			}
 
-			if (action.customId === customIds.clans && action.isStringSelectMenu()) {
-				state.clans = action.values;
-				await action.update({ components: mutate() });
+			if (action.customId === customIds.message && action.isButton()) {
+				const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Edit Reminder Message');
+				const messageInput = new TextInputBuilder()
+					.setCustomId(customIds.modalMessage)
+					.setLabel('Reminder Message')
+					.setMinLength(1)
+					.setMaxLength(1000)
+					.setRequired(true)
+					.setValue(reminder.message)
+					.setStyle(TextInputStyle.Paragraph);
+				modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(messageInput));
+				await action.showModal(modal);
+
+				try {
+					await action
+						.awaitModalSubmit({
+							time: 5 * 60 * 1000,
+							filter: (_interaction) => _interaction.customId === customIds.modal
+						})
+						.then(async (_action) => {
+							state.message = _action.fields.getTextInputValue(customIds.modalMessage);
+							await _action.deferUpdate();
+							await _action.editReply({
+								components: mutate(),
+								content: [
+									`**Edit Raid Attack Reminder (${this.getStatic(reminder.duration)})** <#${reminder.channel}>`,
+									'',
+									`${state.message}`,
+									'',
+									clans.map((clan) => clan.name).join(', ')
+								].join('\n')
+							});
+						});
+				} catch {}
 			}
 
 			if (action.customId === customIds.save && action.isButton()) {
 				await action.deferUpdate();
-				const reminder = {
-					// TODO: remove this
-					_id: new ObjectId(),
-					guild: interaction.guild.id,
-					channel: args.channel.id,
-					remaining: state.remaining.map((num) => Number(num)),
-					roles: state.roles,
-					allMembers: state.allMembers,
-					clans: state.clans,
-					webhook: { id: webhook.id, token: webhook.token! },
-					message: args.message.trim(),
-					duration: dur,
-					createdAt: new Date()
-				};
-
-				const { insertedId } = await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).insertOne(reminder);
-				this.client.raidScheduler.create({ ...reminder, _id: insertedId });
+				await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).updateOne(
+					{ _id: reminder._id },
+					{
+						$set: {
+							remaining: state.remaining.map((num) => Number(num)),
+							roles: state.roles,
+							allMembers: state.allMembers,
+							message: state.message.trim()
+						}
+					},
+					{ upsert: true }
+				);
 				await action.editReply({
 					components: mutate(true),
 					content: this.i18n('command.reminder.create.success', { lng: interaction.locale })

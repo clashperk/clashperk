@@ -10,7 +10,7 @@ import {
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Collections, MAX_TOWN_HALL_LEVEL } from '../../util/Constants.js';
-import { Reminder, Schedule } from '../../struct/RemindScheduler.js';
+import { Reminder, Schedule } from '../../struct/ClanWarScheduler.js';
 import { Args, Command } from '../../lib/index.js';
 
 const roles: Record<string, string> = {

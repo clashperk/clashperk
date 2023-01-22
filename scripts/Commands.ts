@@ -1497,95 +1497,58 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'clan-roles',
 				description: 'Enable automatic clan roles.',
-				type: ApplicationCommandOptionType.SubcommandGroup,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'enable',
-						description: 'Enable automatic clan roles.',
-						type: ApplicationCommandOptionType.Subcommand,
-						options: [
-							{
-								name: 'co_leads',
-								required: true,
-								description: command.autorole.enable.options.co_leads.description,
-								description_localizations: translation('command.autorole.enable.options.co_leads.description'),
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'elders',
-								required: true,
-								description: command.autorole.enable.options.elders.description,
-								description_localizations: translation('command.autorole.enable.options.elders.description'),
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'members',
-								required: true,
-								description: command.autorole.enable.options.members.description,
-								description_localizations: translation('command.autorole.enable.options.members.description'),
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'clans',
-								required: true,
-								autocomplete: true,
-								description: command.autorole.enable.options.clans.description,
-								description_localizations: translation('command.autorole.enable.options.clans.description'),
-								type: ApplicationCommandOptionType.String
-							},
-							{
-								name: 'common_role',
-								required: false,
-								description: command.autorole.enable.options.common_role.description,
-								description_localizations: translation('command.autorole.enable.options.common_role.description'),
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'only_verified',
-								required: false,
-								description: command.autorole.enable.options.only_verified.description,
-								description_localizations: translation('command.autorole.enable.options.only_verified.description'),
-								type: ApplicationCommandOptionType.String,
-								choices: [
-									{
-										name: 'Yes',
-										value: 'true'
-									},
-									{
-										name: 'No',
-										value: 'false'
-									}
-								]
-							}
-						]
+						name: 'co_leads',
+						required: true,
+						description: command.autorole.enable.options.co_leads.description,
+						description_localizations: translation('command.autorole.enable.options.co_leads.description'),
+						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'disable',
-						description: 'Disable automatic clan roles.',
-						type: ApplicationCommandOptionType.Subcommand,
-						options: [
+						name: 'elders',
+						required: true,
+						description: command.autorole.enable.options.elders.description,
+						description_localizations: translation('command.autorole.enable.options.elders.description'),
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'members',
+						required: true,
+						description: command.autorole.enable.options.members.description,
+						description_localizations: translation('command.autorole.enable.options.members.description'),
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'clans',
+						required: true,
+						autocomplete: true,
+						description: command.autorole.enable.options.clans.description,
+						description_localizations: translation('command.autorole.enable.options.clans.description'),
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'common_role',
+						required: false,
+						description: command.autorole.enable.options.common_role.description,
+						description_localizations: translation('command.autorole.enable.options.common_role.description'),
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'only_verified',
+						required: false,
+						description: command.autorole.enable.options.only_verified.description,
+						description_localizations: translation('command.autorole.enable.options.only_verified.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: [
 							{
-								name: 'clans',
-								autocomplete: true,
-								description: command.autorole.disable.options.clans.description,
-								description_localizations: translation('command.autorole.disable.options.clans.description'),
-								type: ApplicationCommandOptionType.String
+								name: 'Yes',
+								value: 'true'
 							},
 							{
-								name: 'clear',
-								description: command.autorole.disable.options.clear.description,
-								description_localizations: translation('command.autorole.disable.options.clear.description'),
-								type: ApplicationCommandOptionType.String,
-								choices: [
-									{
-										name: 'Yes',
-										value: 'true'
-									},
-									{
-										name: 'No',
-										value: 'false'
-									}
-								]
+								name: 'No',
+								value: 'false'
 							}
 						]
 					}
@@ -1594,180 +1557,211 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'town-hall',
 				description: 'Manage automatic Town Hall roles.',
-				type: ApplicationCommandOptionType.SubcommandGroup,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'enable',
-						type: ApplicationCommandOptionType.Subcommand,
-						description: 'Enable automatic Town Hall roles.',
-						options: [
-							{
-								name: 'th_3',
-								description: 'Town Hall 3 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_4',
-								description: 'Town Hall 4 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_5',
-								description: 'Town Hall 5 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_6',
-								description: 'Town Hall 6 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_7',
-								description: 'Town Hall 7 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_8',
-								description: 'Town Hall 8 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_9',
-								description: 'Town Hall 9 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_10',
-								description: 'Town Hall 10 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_11',
-								description: 'Town Hall 11 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_12',
-								description: 'Town Hall 12 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_13',
-								description: 'Town Hall 13 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_14',
-								description: 'Town Hall 14 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'th_15',
-								description: 'Town Hall 15 role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'allow_external_accounts',
-								description: 'Whether to give roles for the accounts that are not in the family clans.',
-								type: ApplicationCommandOptionType.String,
-								choices: [
-									{
-										name: 'Yes',
-										value: 'true'
-									},
-									{
-										name: 'No',
-										value: 'false'
-									}
-								]
-							}
-						]
+						name: 'th_3',
+						description: 'Town Hall 3 role.',
+						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'disable',
-						description: 'Disable automatic Town Hall roles.',
-						type: ApplicationCommandOptionType.Subcommand
+						name: 'th_4',
+						description: 'Town Hall 4 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'th_5',
+						description: 'Town Hall 5 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'th_6',
+						description: 'Town Hall 6 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'th_7',
+						description: 'Town Hall 7 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'th_8',
+						description: 'Town Hall 8 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'th_9',
+						description: 'Town Hall 9 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'th_10',
+						description: 'Town Hall 10 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'th_11',
+						description: 'Town Hall 11 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'th_12',
+						description: 'Town Hall 12 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'th_13',
+						description: 'Town Hall 13 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'th_14',
+						description: 'Town Hall 14 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'th_15',
+						description: 'Town Hall 15 role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'allow_external_accounts',
+						description: 'Whether to give roles for the accounts that are not in the family clans.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Yes',
+								value: 'true'
+							},
+							{
+								name: 'No',
+								value: 'false'
+							}
+						]
 					}
 				]
 			},
 			{
 				name: 'leagues',
 				description: 'Set leagues roles.',
-				type: ApplicationCommandOptionType.SubcommandGroup,
+				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'enable',
-						description: 'Enable leagues roles.',
-						type: ApplicationCommandOptionType.Subcommand,
-						options: [
+						name: 'unranked',
+						description: 'Unranked league role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'bronze',
+						description: 'Bronze league role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'silver',
+						description: 'Silver league role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'gold',
+						description: 'Gold league role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'crystal',
+						description: 'Crystal league role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'master',
+						description: 'Master league role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'champion',
+						description: 'Champion league role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'titan',
+						description: 'Titan league role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'legend',
+						description: 'Legend league role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'allow_external_accounts',
+						description: 'Whether to give roles for the accounts that are not in the family clans.',
+						type: ApplicationCommandOptionType.String,
+						choices: [
 							{
-								name: 'unranked',
-								description: 'Unranked league role.',
-								type: ApplicationCommandOptionType.Role
+								name: 'Yes',
+								value: 'true'
 							},
 							{
-								name: 'bronze',
-								description: 'Bronze league role.',
-								type: ApplicationCommandOptionType.Role
+								name: 'No',
+								value: 'false'
+							}
+						]
+					}
+				]
+			},
+			{
+				name: 'disable',
+				description: 'Disable automatic clan roles.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'type',
+						description: 'Type of roles to disable.',
+						required: true,
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Clan Roles',
+								value: 'clans-roles'
 							},
 							{
-								name: 'silver',
-								description: 'Silver league role.',
-								type: ApplicationCommandOptionType.Role
+								name: 'Town Hall',
+								value: 'town-hall'
 							},
 							{
-								name: 'gold',
-								description: 'Gold league role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'crystal',
-								description: 'Crystal league role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'master',
-								description: 'Master league role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'champion',
-								description: 'Champion league role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'titan',
-								description: 'Titan league role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'legend',
-								description: 'Legend league role.',
-								type: ApplicationCommandOptionType.Role
-							},
-							{
-								name: 'allow_external_accounts',
-								description: 'Whether to give roles for the accounts that are not in the family clans.',
-								type: ApplicationCommandOptionType.String,
-								choices: [
-									{
-										name: 'Yes',
-										value: 'true'
-									},
-									{
-										name: 'No',
-										value: 'false'
-									}
-								]
+								name: 'Leagues',
+								value: 'leagues'
 							}
 						]
 					},
 					{
-						name: 'disable',
-						description: 'Disable leagues roles.',
-						type: ApplicationCommandOptionType.Subcommand
+						name: 'clans',
+						autocomplete: true,
+						description: command.autorole.disable.options.clans.description,
+						description_localizations: translation('command.autorole.disable.options.clans.description'),
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'clear',
+						description: command.autorole.disable.options.clear.description,
+						description_localizations: translation('command.autorole.disable.options.clear.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Yes',
+								value: 'true'
+							},
+							{
+								name: 'No',
+								value: 'false'
+							}
+						]
 					}
 				]
+			},
+			{
+				name: 'refresh',
+				description: 'Refresh automatic clan roles.',
+				type: ApplicationCommandOptionType.Subcommand
 			}
 		]
 	},
@@ -1795,11 +1789,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Capital Raids',
 								value: 'capital-raids'
+							},
+							{
+								name: 'Clan Games',
+								value: 'clan-games'
 							}
-							// {
-							// 	name: 'Clan Games',
-							// 	value: 'clan-games'
-							// }
 						],
 						required: true
 					},
@@ -1834,6 +1828,39 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
+				name: 'edit',
+				description: 'Edit a reminder by ID.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'type',
+						description: 'Type of the reminder?',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Clan Wars',
+								value: 'clan-wars'
+							},
+							{
+								name: 'Capital Raids',
+								value: 'capital-raids'
+							},
+							{
+								name: 'Clan Games',
+								value: 'clan-games'
+							}
+						],
+						required: true
+					},
+					{
+						name: 'id',
+						required: true,
+						description: 'Reminder ID',
+						type: ApplicationCommandOptionType.String
+					}
+				]
+			},
+			{
 				name: 'list',
 				description: command.reminder.list.description,
 				description_localizations: translation('command.reminder.list.description'),
@@ -1851,11 +1878,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Capital Raids',
 								value: 'capital-raids'
+							},
+							{
+								name: 'Clan Games',
+								value: 'clan-games'
 							}
-							// {
-							// 	name: 'Clan Games',
-							// 	value: 'clan-games'
-							// }
 						],
 						required: true
 					}
@@ -1879,11 +1906,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Capital Raids',
 								value: 'capital-raids'
+							},
+							{
+								name: 'Clan Games',
+								value: 'clan-games'
 							}
-							// {
-							// 	name: 'Clan Games',
-							// 	value: 'clan-games'
-							// }
 						],
 						required: true
 					},
@@ -1931,11 +1958,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Capital Raids',
 								value: 'capital-raids'
+							},
+							{
+								name: 'Clan Games',
+								value: 'clan-games'
 							}
-							// {
-							// 	name: 'Clan Games',
-							// 	value: 'clan-games'
-							// }
 						],
 						required: true
 					},
@@ -2203,21 +2230,20 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					}
 				]
 			},
-			// {
-			// 	name: 'capital-raids',
-			// 	description: 'Shows information about capital raids.',
-			// 	type: ApplicationCommandOptionType.Subcommand,
-			// 	options: [
-			// 		{
-			// 			name: 'season',
-			// 			required: false,
-			// 			type: ApplicationCommandOptionType.String,
-			// 			description: command.summary.options.season.description,
-			// 			description_localizations: translation('command.summary.options.season.description'),
-			// 			choices: getSeasonIds()
-			// 		}
-			// 	]
-			// },
+			{
+				name: 'capital-raids',
+				description: 'Shows information about capital raids.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'week',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: 'The week to show raids for.',
+						choices: getWeekIds()
+					}
+				]
+			},
 			{
 				name: 'capital-contributions',
 				description: 'Shows a summary of capital contributions.',

@@ -23,6 +23,8 @@ export const enum Collections {
 	REMINDERS = 'Reminders',
 	SCHEDULERS = 'Schedulers',
 	RAID_REMINDERS = 'RaidReminders',
+	CG_REMINDERS = 'ClanGamesReminders',
+	CG_SCHEDULERS = 'ClanGamesSchedulers',
 	RAID_SCHEDULERS = 'RaidSchedulers',
 
 	PATRONS = 'Patrons',
@@ -78,6 +80,7 @@ export const enum Settings {
 	EVENTS_CHANNEL = 'eventsChannel',
 	TOWN_HALL_ROLES = 'townHallRoles',
 	LEAGUE_ROLES = 'leagueRoles',
+	ROLE_REFRESHED = 'roleRefreshed',
 	ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts',
 	ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague'
 }

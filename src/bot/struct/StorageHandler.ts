@@ -4,7 +4,7 @@ import { CommandInteraction, ForumChannel, NewsChannel, TextChannel } from 'disc
 import { ClanWarLeagueGroup } from 'clashofclans.js';
 import { Collections, Flags } from '../util/Constants.js';
 import { Client } from './Client.js';
-import { Reminder, Schedule } from './RemindScheduler.js';
+import { Reminder, Schedule } from './ClanWarScheduler.js';
 
 export interface ClanStore {
 	_id: ObjectId;

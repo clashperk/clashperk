@@ -1,7 +1,7 @@
 import { CommandInteraction, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Collections, MAX_TOWN_HALL_LEVEL } from '../../util/Constants.js';
-import { Reminder } from '../../struct/RemindScheduler.js';
+import { Reminder } from '../../struct/ClanWarScheduler.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 
