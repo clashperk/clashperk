@@ -1,6 +1,7 @@
-import { CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { attackCounts } from '../../util/Constants.js';
+import { EMOJIS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
 
 export default class LegendAttacksCommand extends Command {
@@ -118,7 +119,14 @@ export default class LegendAttacksCommand extends Command {
 		);
 
 		embed.setFooter({ text: `Day ${day} (${Season.ID})` });
-		return interaction.editReply({ embeds: [embed] });
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setEmoji(EMOJIS.REFRESH)
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId(JSON.stringify({ cmd: this.id, tag: args.tag }))
+		);
+		const currDay = Util.getLegendDay();
+		return interaction.editReply({ embeds: [embed], components: currDay === day ? [row] : [] });
 	}
 
 	private pad(num: number | string, padding = 4) {
