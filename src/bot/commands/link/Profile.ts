@@ -5,7 +5,6 @@ import {
 	ActionRowBuilder,
 	ButtonBuilder,
 	User,
-	Interaction,
 	ButtonStyle,
 	ComponentType
 } from 'discord.js';
@@ -38,12 +37,12 @@ export default class ProfileCommand extends Command {
 		});
 	}
 
-	public args(interaction: Interaction): Args {
-		const isOwner = this.client.isOwner(interaction.user.id);
+	public args(): Args {
+		// const isOwner = this.client.isOwner(interaction.user.id);
 		return {
 			user: {
-				id: isOwner ? 'user' : 'member',
-				match: isOwner ? 'USER' : 'MEMBER'
+				id: 'user', // isOwner ? 'user' : 'member',
+				match: 'USER' // isOwner ? 'USER' : 'MEMBER'
 			}
 		};
 	}
