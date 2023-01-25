@@ -76,7 +76,7 @@ export default class StatsHandler {
 			},
 			{ upsert: true }
 		);
-		await this.client.db.collection(Collections.BOT_COMMANDS).updateOne({ command }, { $inc: { total: 1, uses: 1 } });
+		await this.client.db.collection(Collections.BOT_COMMANDS).updateOne({ command }, { $inc: { total: 1, uses: 1 } }, { upsert: true });
 	}
 
 	public historic(command: string) {
