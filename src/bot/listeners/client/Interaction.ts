@@ -1,3 +1,5 @@
+import { MsearchMultiSearchItem } from '@elastic/elasticsearch/lib/api/types.js';
+
 import { AutocompleteInteraction, Interaction } from 'discord.js';
 import moment from 'moment';
 import ms from 'ms';
@@ -129,12 +131,12 @@ export default class InteractionListener extends Listener {
 			}
 			case 'tag': {
 				if (['player', 'units', 'upgrades', 'rushed', 'verify'].includes(interaction.commandName)) {
-					return this.playerTagAutocomplete(interaction, focused);
+					return this._playersTagAutocomplete(interaction, focused);
 				}
 				return this.clanTagAutocomplete(interaction, focused);
 			}
 			case 'player_tag': {
-				return this.playerTagAutocomplete(interaction, focused);
+				return this._playersTagAutocomplete(interaction, focused);
 			}
 			case 'clan_tag': {
 				return this.clanTagAutocomplete(interaction, focused);
@@ -171,7 +173,7 @@ export default class InteractionListener extends Listener {
 		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
 
 		const now = Date.now();
-		const result: any = query
+		const result = query
 			? await this.client.elastic.msearch<{ name: string }>({
 					searches: [
 						{ index: ElasticIndex.USER_LINKED_PLAYERS },
@@ -235,16 +237,21 @@ export default class InteractionListener extends Listener {
 			  });
 		this.client.logger.debug(`Search took ${Date.now() - now}ms`, { label: 'Autocomplete' });
 
-		const players = result.responses.map((res: any) => res.hits.hits.map((hit: any) => hit._source)).flat() as {
-			tag: string;
-			name: string;
-		}[];
-		const uniquePlayers = players.filter((player, index, self) => self.findIndex((p) => p.tag === player.tag) === index);
-		return interaction.respond(
-			uniquePlayers
-				.slice(0, 25)
-				.map((player: any) => ({ value: player.tag, name: `${player.name as string} (${player.tag as string})` }))
-		);
+		const players = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; userId: string }>[])
+			.map((res) => res.hits.hits.map((hit) => hit._source!))
+			.flat()
+			.filter((player, index, self) => self.findIndex((p) => p.tag === player.tag) === index)
+			.slice(0, 25);
+
+		if (!players.length) {
+			if (query) {
+				const value = await this.getQuery(query);
+				return interaction.respond([{ value, name: query.substring(0, 100) }]);
+			}
+			return interaction.respond([{ value: '0', name: 'Enter a player tag!' }]);
+		}
+
+		return interaction.respond(players.map((player) => ({ value: player.tag, name: `${player.name} (${player.tag})` })));
 	}
 
 	private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
