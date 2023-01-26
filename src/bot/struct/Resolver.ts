@@ -1,6 +1,6 @@
 import { Guild, User, CommandInteraction, BaseInteraction } from 'discord.js';
 import { Player, Clan } from 'clashofclans.js';
-import { Collections, Settings, status } from '../util/Constants.js';
+import { Collections, ElasticIndex, Settings, status } from '../util/Constants.js';
 import { PlayerLinks, UserInfoModel } from '../types/index.js';
 import { i18n } from '../util/i18n.js';
 import Client from './Client.js';
@@ -77,6 +77,9 @@ export default class Resolver {
 
 	public async getPlayer(interaction: BaseInteraction, tag: string, user?: User): Promise<(Player & { user?: User }) | null> {
 		const data: Player = await this.client.http.fetch(`/players/${encodeURIComponent(this.parseTag(tag))}`);
+		if (data.ok) {
+			this.client.indexer.index({ name: data.name, tag: data.tag, userId: interaction.user.id }, ElasticIndex.RECENT_PLAYERS);
+		}
 		if (data.ok) return { ...data, user };
 
 		return this.fail(interaction, `**${status(data.statusCode, interaction.locale)}**`);
@@ -84,6 +87,9 @@ export default class Resolver {
 
 	public async getClan(interaction: BaseInteraction, tag: string, checkAlias = false): Promise<Clan | null> {
 		const data: Clan = await this.client.http.fetch(`/clans/${encodeURIComponent(this.parseTag(tag))}`);
+		if (data.ok) {
+			this.client.indexer.index({ name: data.name, tag: data.tag, userId: interaction.user.id }, ElasticIndex.RECENT_CLANS);
+		}
 		if (data.ok) return data;
 
 		if (checkAlias && data.statusCode === 404 && !tag.startsWith('#')) {

@@ -171,6 +171,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description_localizations: translation('command.profile.options.user.description'),
 				type: ApplicationCommandOptionType.User,
 				required: false
+			},
+			{
+				name: 'player_tag',
+				description: common.options.player.tag.description,
+				type: ApplicationCommandOptionType.String,
+				required: false
 			}
 		]
 	},

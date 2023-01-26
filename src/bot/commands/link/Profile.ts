@@ -47,8 +47,19 @@ export default class ProfileCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { member?: GuildMember; user?: User }) {
-		const user = args.user ?? (args.member ?? interaction.member).user;
+	public async exec(interaction: CommandInteraction<'cached'>, args: { member?: GuildMember; user?: User; player_tag?: string }) {
+		const whitelist = this.client.settings.get<string[]>('global', 'whitelist', []);
+
+		if (args.player_tag && !whitelist.includes(interaction.user.id)) {
+			const command = this.handler.modules.get('player');
+			return command!.exec(interaction, { tag: args.player_tag });
+		}
+
+		const user =
+			args.player_tag && whitelist.includes(interaction.user.id)
+				? await this.getUserByTag(interaction, args.player_tag)
+				: args.user ?? (args.member ?? interaction.member).user;
+
 		const [data, players] = await Promise.all([
 			this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: user.id }),
 			this.client.db
@@ -152,7 +163,8 @@ export default class ProfileCommand extends Command {
 					.setLabel('Sync Roles')
 					.setCustomId(customIds.sync)
 					.setStyle(ButtonStyle.Primary)
-					.setDisabled(!links.length)
+					// .setDisabled(!links.length)
+					.setDisabled(true)
 			)
 			.addComponents(
 				new ButtonBuilder()
@@ -187,6 +199,12 @@ export default class ProfileCommand extends Command {
 			Object.values(customIds).forEach((id) => this.client.components.delete(id));
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
+	}
+
+	private async getUserByTag(interaction: CommandInteraction<'cached'>, tag: string) {
+		const link = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).findOne({ tag: this.client.http.fixTag(tag) });
+		if (!link) return interaction.user;
+		return this.client.users.fetch(link.userId).catch(() => interaction.user);
 	}
 
 	private toXlsx(data: XLSX[], user: User) {

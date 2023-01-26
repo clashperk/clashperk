@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 import { Listener } from '../../lib/index.js';
 import ComponentHandler from '../../struct/ComponentHandler.js';
 import { PlayerLinks } from '../../types/index.js';
-import { Collections, Settings } from '../../util/Constants.js';
+import { Collections, ElasticIndex, Settings } from '../../util/Constants.js';
 
 const ranges: Record<string, number> = {
 	'clan-wars': ms('46h'),
@@ -165,6 +165,86 @@ export default class InteractionListener extends Listener {
 
 		const times = preferences[cmd ?? 'default'];
 		return interaction.respond(this.getTimes(times, matchedDur, cmd));
+	}
+
+	private async _playersTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
+
+		const now = Date.now();
+		const result: any = query
+			? await this.client.elastic.msearch<{ name: string }>({
+					searches: [
+						{ index: ElasticIndex.USER_LINKED_PLAYERS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { userId: interaction.user.id }
+									},
+									should: [{ prefix: { name: query } }, { match: { tag: query } }],
+									minimum_should_match: 1
+								}
+							}
+						},
+						{ index: ElasticIndex.RECENT_PLAYERS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { userId: interaction.user.id }
+									},
+									should: [{ prefix: { name: query } }, { match: { tag: query } }],
+									minimum_should_match: 1
+								}
+							}
+						},
+						{ index: ElasticIndex.USER_LINKED_PLAYERS },
+						{
+							query: {
+								dis_max: {
+									queries: [{ prefix: { name: query } }, { match: { tag: query } }],
+									tie_breaker: 1
+								}
+							}
+						}
+					]
+			  })
+			: await this.client.elastic.msearch({
+					searches: [
+						{ index: ElasticIndex.USER_LINKED_PLAYERS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { userId: interaction.user.id }
+									}
+								}
+							}
+						},
+						{ index: ElasticIndex.RECENT_PLAYERS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { userId: interaction.user.id }
+									}
+								}
+							}
+						}
+					]
+			  });
+		this.client.logger.debug(`Search took ${Date.now() - now}ms`, { label: 'Autocomplete' });
+
+		const players = result.responses.map((res: any) => res.hits.hits.map((hit: any) => hit._source)).flat() as {
+			tag: string;
+			name: string;
+		}[];
+		const uniquePlayers = players.filter((player, index, self) => self.findIndex((p) => p.tag === player.tag) === index);
+		return interaction.respond(
+			uniquePlayers
+				.slice(0, 25)
+				.map((player: any) => ({ value: player.tag, name: `${player.name as string} (${player.tag as string})` }))
+		);
 	}
 
 	private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {

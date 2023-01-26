@@ -9,3 +9,4 @@ auth.js
 .idea/
 test/
 .DS_Store
+http_ca.crt

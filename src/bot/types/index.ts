@@ -82,6 +82,7 @@ export interface UserInfoModel {
 }
 
 export interface PlayerLinks {
+	_id?: ObjectId;
 	userId: string;
 	username: string;
 	tag: string;

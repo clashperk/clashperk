@@ -51,6 +51,14 @@ export const enum Collections {
 	BOT_INTERACTIONS = 'BotInteractions'
 }
 
+export enum ElasticIndex {
+	USER_LINKED_PLAYERS = 'user_linked_players',
+	USER_LINKED_CLANS = 'user_linked_clans',
+	GUILD_LINKED_CLANS = 'guild_linked_clans',
+	RECENT_PLAYERS = 'recently_searched_players',
+	RECENT_CLANS = 'recently_searched_clans'
+}
+
 export const enum WarType {
 	REGULAR = 1,
 	FRIENDLY,

@@ -4,6 +4,7 @@ import { Db } from 'mongodb';
 import { container } from 'tsyringe';
 import { nanoid } from 'nanoid';
 import * as Redis from 'redis';
+import { Client as ElasticClient } from '@elastic/elasticsearch';
 import RPCHandler from '../core/RPCHandler.js';
 import { CommandHandler, InhibitorHandler, ListenerHandler } from '../lib/index.js';
 import Logger from '../util/Logger.js';
@@ -20,6 +21,7 @@ import Resolver from './Resolver.js';
 import ClanWarScheduler from './ClanWarScheduler.js';
 import CapitalRaidScheduler from './CapitalRaidScheduler.js';
 import ClanGamesScheduler from './ClanGamesScheduler.js';
+import { Indexer } from './Indexer.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -44,11 +46,24 @@ export class Client extends Discord.Client {
 	public warScheduler!: ClanWarScheduler;
 	public raidScheduler!: CapitalRaidScheduler;
 	public cgScheduler!: ClanGamesScheduler;
+	public indexer!: Indexer;
 	public i18n = i18n;
 
 	public redis = Redis.createClient({
 		url: process.env.REDIS_URL,
 		database: 1
+	});
+
+	public elastic = new ElasticClient({
+		node: process.env.ELASTIC_URL!,
+		auth: {
+			username: 'elastic',
+			password: process.env.ELASTIC_PASSWORD!
+		},
+		tls: {
+			ca: process.env.ELASTIC_CA_CRT!,
+			rejectUnauthorized: false
+		}
 	});
 
 	public subscriber = this.redis.duplicate();
@@ -140,6 +155,8 @@ export class Client extends Discord.Client {
 		this.db = Database.db('clashperk');
 		await Database.createIndex(this.db);
 
+		this.indexer = new Indexer(this);
+
 		this.settings = new SettingsProvider(this.db);
 		await this.settings.init();
 
@@ -162,6 +179,7 @@ export class Client extends Discord.Client {
 		await this.http.login();
 
 		this.once('ready', () => {
+			if (process.env.NODE_ENV === 'production') this.indexer.init();
 			if (process.env.NODE_ENV === 'production') return this.run();
 		});
 
