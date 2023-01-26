@@ -161,23 +161,27 @@ export class Indexer {
 
 	public async index(doc: RecentSearchDocument, index: string) {
 		try {
-			const result = await this.client.elastic.get({ index, id: doc.tag });
-			if (result.found) {
+			const result = await this.client.elastic.search<RecentSearchDocument>({
+				index,
+				query: { bool: { must: [{ match: { tag: doc.tag } }, { match: { userId: doc.userId } }] } }
+			});
+			for (const hit of result.hits.hits) {
+				const { _id } = hit;
 				await this.client.elastic.update({
 					index,
 					refresh: true,
-					id: doc.tag,
+					id: _id,
 					doc: { lastSearched: Date.now() }
 				});
 			}
-		} catch (error) {
-			await this.client.elastic.index({
-				index,
-				refresh: true,
-				id: doc.tag,
-				document: { ...doc, lastSearched: Date.now() }
-			});
-		}
+			if (!result.hits.hits.length) {
+				await this.client.elastic.index({
+					index,
+					refresh: true,
+					document: { ...doc, lastSearched: Date.now() }
+				});
+			}
+		} catch (error) {}
 	}
 }
 
