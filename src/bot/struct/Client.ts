@@ -179,7 +179,7 @@ export class Client extends Discord.Client {
 		await this.http.login();
 
 		this.once('ready', () => {
-			if (process.env.NODE_ENV === 'production') this.indexer.init();
+			// if (process.env.NODE_ENV === 'production') this.indexer.init();
 			if (process.env.NODE_ENV === 'production') return this.run();
 		});
 
