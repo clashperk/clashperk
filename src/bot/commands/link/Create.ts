@@ -46,6 +46,12 @@ export default class LinkCreateCommand extends Command {
 			2: 'CLAN'
 		};
 
+		if (interaction.user.id !== member.user.id) {
+			this.client.logger.debug(
+				`${interaction.user.tag} (${interaction.user.id}) attempted to link [${args.tag}] on behalf of ${member.user.tag} (${member.user.id})`,
+				{ label: 'LINK' }
+			);
+		}
 		if (tags.every((a) => a.ok)) {
 			const embed = new EmbedBuilder().setDescription(
 				[

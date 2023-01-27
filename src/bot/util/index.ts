@@ -80,7 +80,7 @@ export class Util {
 			: // Three Zeroes for Thousands
 			Math.abs(num) >= 1.0e3
 			? `${(Math.abs(num) / 1.0e3).toFixed(2)}K`
-			: Math.abs(num).toFixed(2);
+			: Math.abs(num).toFixed(0);
 	}
 
 	public static plural(count: number, text: string, suffix: 's' | 'es' | '' = 's') {

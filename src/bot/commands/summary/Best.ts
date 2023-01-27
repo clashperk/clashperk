@@ -151,13 +151,43 @@ export default class SummaryBestCommand extends Command {
 					}
 				},
 				{
+					$lookup: {
+						from: Collections.CLAN_GAMES_POINTS,
+						localField: 'tag',
+						foreignField: 'tag',
+						as: '_clanGames',
+						pipeline: [
+							{
+								$match: {
+									season: sessionId
+								}
+							},
+							{
+								$project: {
+									current: 1,
+									initial: 1
+								}
+							}
+						]
+					}
+				},
+				{
 					$unwind: {
 						path: '$_score',
 						preserveNullAndEmptyArrays: true
 					}
 				},
 				{
+					$unwind: {
+						path: '$_clanGames',
+						preserveNullAndEmptyArrays: true
+					}
+				},
+				{
 					$set: {
+						_clanGamesPoints: {
+							$max: [{ $subtract: ['$_clanGames.current', '$_clanGames.initial'] }, 0]
+						},
 						_donations: {
 							$sum: ['$_troops', '$_spells', '$_sieges']
 						},
