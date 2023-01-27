@@ -2203,6 +2203,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: command.summary.options.season.description,
 						description_localizations: translation('command.summary.options.season.description'),
 						choices: getSeasonIds()
+					},
+					{
+						name: 'top',
+						required: false,
+						type: ApplicationCommandOptionType.Integer,
+						description: 'Top number of members to show (Default: 5)',
+						min_value: 3,
+						max_value: 10
 					}
 				]
 			},

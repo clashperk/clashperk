@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, embedLength } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
@@ -62,7 +62,7 @@ export default class SummaryBestCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { season }: { season?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, { season, top }: { season?: string; top?: number }) {
 		if (!season) season = Season.ID;
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
@@ -210,23 +210,31 @@ export default class SummaryBestCommand extends Command {
 		_fields.map((field) => {
 			const key = field as keyof typeof fields;
 			aggregated.sort((a, b) => b[key] - a[key]);
-			const members = aggregated.slice(0, 10);
-			return embed.addFields([
-				{
-					name: fields[key],
-					value: members
-						.map(
-							(member, n) =>
-								`${BLUE_NUMBERS[n + 1]} \`${Util.formatNumber(member[key]).padStart(7, ' ')} \` \u200e${Util.escapeBackTick(
-									member.name
-								)}`
-						)
-						.join('\n')
-				}
-			]);
+			const members = aggregated.slice(0, Number(top ?? 5));
+			return embed.addFields({
+				name: fields[key],
+				value: members
+					.map(
+						(member, n) =>
+							`${BLUE_NUMBERS[n + 1]} \`${Util.formatNumber(member[key]).padStart(7, ' ')} \` \u200e${Util.escapeBackTick(
+								member.name
+							)}`
+					)
+					.join('\n')
+			});
 		});
 
+		if (embedLength(embed.toJSON()) > 6000) {
+			const fields = [...embed.data.fields!];
+			embed.setFields(fields.slice(0, 6));
+			await interaction.followUp({ embeds: [embed] });
+
+			embed.setFields(fields.slice(6));
+			embed.setFooter({ text: `Season ${season}` });
+			return interaction.followUp({ embeds: [embed] });
+		}
+
 		embed.setFooter({ text: `Season ${season}` });
-		await interaction.followUp({ embeds: [embed], components: [] });
+		await interaction.followUp({ embeds: [embed] });
 	}
 }
