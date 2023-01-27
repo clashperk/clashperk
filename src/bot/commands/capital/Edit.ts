@@ -38,7 +38,7 @@ export default class ReminderCreateCommand extends Command {
 			return interaction.editReply(this.i18n('command.reminder.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}
 
-		const reminder = await this.client.db.collection<RaidReminder>(Collections.REMINDERS).findOne({ _id: reminderId });
+		const reminder = await this.client.db.collection<RaidReminder>(Collections.RAID_REMINDERS).findOne({ _id: reminderId });
 		if (!reminder) {
 			return interaction.editReply(this.i18n('command.reminder.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}

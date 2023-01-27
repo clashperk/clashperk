@@ -2192,6 +2192,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
+				name: 'best',
+				description: 'Shows a summary of best members.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
+			},
+			{
 				name: 'attacks',
 				description: 'Shows a summary of attacks.',
 				type: ApplicationCommandOptionType.Subcommand,

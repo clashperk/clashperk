@@ -174,7 +174,7 @@ export default class InteractionListener extends Listener {
 
 		const now = Date.now();
 		const result = query
-			? await this.client.elastic.msearch<{ name: string }>({
+			? await this.client.elastic.msearch({
 					searches: [
 						{ index: ElasticIndex.USER_LINKED_PLAYERS },
 						{

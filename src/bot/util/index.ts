@@ -70,6 +70,19 @@ export class Util {
 		return id;
 	}
 
+	public static formatNumber(num = 0) {
+		// Nine Zeroes for Billions
+		return Math.abs(num) >= 1.0e9
+			? `${(Math.abs(num) / 1.0e9).toFixed(2)}B`
+			: // Six Zeroes for Millions
+			Math.abs(num) >= 1.0e6
+			? `${(Math.abs(num) / 1.0e6).toFixed(2)}M`
+			: // Three Zeroes for Thousands
+			Math.abs(num) >= 1.0e3
+			? `${(Math.abs(num) / 1.0e3).toFixed(2)}K`
+			: Math.abs(num).toFixed(2);
+	}
+
 	public static plural(count: number, text: string, suffix: 's' | 'es' | '' = 's') {
 		return count === 1 ? text : `${text}${suffix}`;
 	}

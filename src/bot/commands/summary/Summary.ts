@@ -26,7 +26,8 @@ export default class FamilyCommand extends Command {
 			'activity': this.handler.modules.get('family-activity')!,
 			'capital-contributions': this.handler.modules.get('family-capital-contributions')!,
 			'capital-raids': this.handler.modules.get('family-capital-raids')!,
-			'war-results': this.handler.modules.get('summary-war-results')!
+			'war-results': this.handler.modules.get('summary-war-results')!,
+			'best': this.handler.modules.get('family-best')!
 		}[args.command];
 
 		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
