@@ -1727,7 +1727,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						choices: [
 							{
 								name: 'Clan Roles',
-								value: 'clans-roles'
+								value: 'clan-roles'
 							},
 							{
 								name: 'Town Hall',
