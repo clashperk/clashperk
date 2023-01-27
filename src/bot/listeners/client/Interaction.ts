@@ -6,8 +6,7 @@ import ms from 'ms';
 import { nanoid } from 'nanoid';
 import { Listener } from '../../lib/index.js';
 import ComponentHandler from '../../struct/ComponentHandler.js';
-import { PlayerLinks } from '../../types/index.js';
-import { Collections, ElasticIndex, Settings } from '../../util/Constants.js';
+import { ElasticIndex, Settings } from '../../util/Constants.js';
 
 const ranges: Record<string, number> = {
 	'clan-wars': ms('46h'),
@@ -131,12 +130,12 @@ export default class InteractionListener extends Listener {
 			}
 			case 'tag': {
 				if (['player', 'units', 'upgrades', 'rushed', 'verify'].includes(interaction.commandName)) {
-					return this._playersTagAutocomplete(interaction, focused);
+					return this.playerTagAutocomplete(interaction, focused);
 				}
 				return this.clanTagAutocomplete(interaction, focused);
 			}
 			case 'player_tag': {
-				return this._playersTagAutocomplete(interaction, focused);
+				return this.playerTagAutocomplete(interaction, focused);
 			}
 			case 'clan_tag': {
 				return this.clanTagAutocomplete(interaction, focused);
@@ -169,7 +168,7 @@ export default class InteractionListener extends Listener {
 		return interaction.respond(this.getTimes(times, matchedDur, cmd));
 	}
 
-	private async _playersTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
+	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
 
 		const now = Date.now();
@@ -183,7 +182,7 @@ export default class InteractionListener extends Listener {
 									must: {
 										term: { userId: interaction.user.id }
 									},
-									should: [{ prefix: { name: query } }, { match: { tag: query } }],
+									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
 									minimum_should_match: 1
 								}
 							}
@@ -195,7 +194,7 @@ export default class InteractionListener extends Listener {
 									must: {
 										term: { userId: interaction.user.id }
 									},
-									should: [{ prefix: { name: query } }, { match: { tag: query } }],
+									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
 									minimum_should_match: 1
 								}
 							}
@@ -204,7 +203,7 @@ export default class InteractionListener extends Listener {
 						{
 							query: {
 								dis_max: {
-									queries: [{ prefix: { name: query } }, { match: { tag: query } }],
+									queries: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
 									tie_breaker: 1
 								}
 							}
@@ -215,6 +214,8 @@ export default class InteractionListener extends Listener {
 					searches: [
 						{ index: ElasticIndex.USER_LINKED_PLAYERS },
 						{
+							size: 25,
+							sort: [{ order: 'asc' }],
 							query: {
 								bool: {
 									must: {
@@ -256,15 +257,81 @@ export default class InteractionListener extends Listener {
 
 	private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
-		const clans = await this.client.storage.collection
-			.find(
-				{
-					guild: interaction.guildId,
-					...(query ? { $text: { $search: query } } : {})
-				},
-				{ sort: { name: 1 } }
-			)
-			.toArray();
+
+		const now = Date.now();
+		const result = query
+			? await this.client.elastic.msearch({
+					searches: [
+						{ index: ElasticIndex.USER_LINKED_CLANS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { userId: interaction.user.id }
+									},
+									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									minimum_should_match: 1
+								}
+							}
+						},
+						{ index: ElasticIndex.GUILD_LINKED_CLANS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { guildId: interaction.guild.id }
+									},
+									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									minimum_should_match: 1
+								}
+							}
+						}
+					]
+			  })
+			: await this.client.elastic.msearch({
+					searches: [
+						{ index: ElasticIndex.USER_LINKED_CLANS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { userId: interaction.user.id }
+									}
+								}
+							}
+						},
+						{ index: ElasticIndex.GUILD_LINKED_CLANS },
+						{
+							size: 25,
+							sort: [{ name: 'asc' }],
+							query: {
+								bool: {
+									must: {
+										term: { guildId: interaction.guild.id }
+									}
+								}
+							}
+						},
+						{ index: ElasticIndex.RECENT_CLANS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { userId: interaction.user.id }
+									}
+								}
+							}
+						}
+					]
+			  });
+
+		this.client.logger.debug(`Search took ${Date.now() - now}ms`, { label: 'Autocomplete' });
+
+		const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
+			.map((res) => res.hits.hits.map((hit) => hit._source!))
+			.flat()
+			.filter((clan, index, self) => self.findIndex((p) => p.tag === clan.tag) === index);
+
 		if (!clans.length) {
 			if (query) {
 				const value = await this.getQuery(query);
@@ -272,6 +339,7 @@ export default class InteractionListener extends Listener {
 			}
 			return interaction.respond([{ value: '0', name: 'Enter clan tags or names!' }]);
 		}
+
 		const response = clans.slice(0, 24).map((clan) => ({ value: clan.tag, name: clan.name }));
 		if (response.length > 1) {
 			const clanTags = clans.map((clan) => clan.tag).join(',');
@@ -284,41 +352,94 @@ export default class InteractionListener extends Listener {
 		return interaction.respond(response);
 	}
 
-	private async getQuery(query: string) {
-		const value = query.length > 100 ? nanoid() : query;
-		if (query.length > 100) await this.client.redis.set(value, value, { EX: 60 * 60 });
-		return value;
-	}
-
-	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
-		const query = interaction.options.getString(focused);
-		const players = await this.client.db
-			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.find({ userId: interaction.user.id, ...(query ? { $text: { $search: query } } : {}) }, query ? {} : { sort: { order: 1 } })
-			.limit(25)
-			.toArray();
-		if (!players.length) {
-			if (query) {
-				const value = await this.getQuery(query);
-				return interaction.respond([{ value, name: query.substring(0, 100) }]);
-			}
-			return interaction.respond([{ value: '0', name: 'Enter a player tag!' }]);
-		}
-		return interaction.respond(players.map((player) => ({ value: player.tag, name: `${player.name} (${player.tag})` })));
-	}
-
 	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused);
-		const clans = await this.client.storage.collection
-			.find(
-				{
-					guild: interaction.guildId,
-					...(query ? { $text: { $search: query } } : {})
-				},
-				{ sort: { name: 1 } }
-			)
-			.limit(25)
-			.toArray();
+		const now = Date.now();
+		const result = query
+			? await this.client.elastic.msearch({
+					searches: [
+						{ index: ElasticIndex.USER_LINKED_CLANS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { userId: interaction.user.id }
+									},
+									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									minimum_should_match: 1
+								}
+							}
+						},
+						{ index: ElasticIndex.GUILD_LINKED_CLANS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { guildId: interaction.guild.id }
+									},
+									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									minimum_should_match: 1
+								}
+							}
+						},
+						{ index: ElasticIndex.RECENT_CLANS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { userId: interaction.user.id }
+									},
+									should: [{ prefix: { name: query } }, { match: { name: query } }, { match: { tag: query } }],
+									minimum_should_match: 1
+								}
+							}
+						}
+					]
+			  })
+			: await this.client.elastic.msearch({
+					searches: [
+						{ index: ElasticIndex.USER_LINKED_CLANS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { userId: interaction.user.id }
+									}
+								}
+							}
+						},
+						{ index: ElasticIndex.GUILD_LINKED_CLANS },
+						{
+							size: 25,
+							sort: [{ name: 'asc' }],
+							query: {
+								bool: {
+									must: {
+										term: { guildId: interaction.guild.id }
+									}
+								}
+							}
+						},
+						{ index: ElasticIndex.RECENT_CLANS },
+						{
+							query: {
+								bool: {
+									must: {
+										term: { userId: interaction.user.id }
+									}
+								}
+							}
+						}
+					]
+			  });
+		this.client.logger.debug(`Search took ${Date.now() - now}ms`, { label: 'Autocomplete' });
+
+		const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
+			.map((res) => res.hits.hits.map((hit) => hit._source!))
+			.flat()
+			.filter((clan, index, self) => self.findIndex((p) => p.tag === clan.tag) === index)
+			.slice(0, 25);
+
 		if (!clans.length) {
 			if (query) {
 				const value = await this.getQuery(query);
@@ -327,6 +448,12 @@ export default class InteractionListener extends Listener {
 			return interaction.respond([{ value: '0', name: 'Enter a clan tag!' }]);
 		}
 		return interaction.respond(clans.map((clan) => ({ value: clan.tag, name: `${clan.name} (${clan.tag})` })));
+	}
+
+	private async getQuery(query: string) {
+		const value = query.length > 100 ? nanoid() : query;
+		if (query.length > 100) await this.client.redis.set(value, value, { EX: 60 * 60 });
+		return value;
 	}
 
 	private async contextInteraction(interaction: Interaction) {

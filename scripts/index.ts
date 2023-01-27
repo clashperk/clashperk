@@ -50,7 +50,7 @@ const applicationCommands = async (token: string, commands: typeof COMMANDS) => 
 	console.log(`Updated ${commands.length} Application Commands`);
 };
 
-async function init() {
+(async () => {
 	const token = process.env.BOT_TOKEN!;
 	if (process.argv.includes('--gh-action')) {
 		return applicationCommands(token, COMMANDS);
@@ -66,6 +66,4 @@ async function init() {
 
 	// await applicationGuildCommands(process.env.TOKEN!, [...COMMANDS, ...PRIVATE_COMMANDS]);
 	return applicationCommands(token, [...COMMANDS, ...PRIVATE_COMMANDS]);
-}
-
-init();
+})();

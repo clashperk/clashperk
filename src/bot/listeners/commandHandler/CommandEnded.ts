@@ -22,6 +22,8 @@ export default class CommandEndedListener extends Listener {
 
 				- **Legend Tracking**
 					- Attacks summary and daily log.
+					- </legend days:1061698815356325910>
+					- </legend attacks:1061698815356325910>
 
 				- **Automatic Roles**
 					- Clan roles
@@ -33,6 +35,9 @@ export default class CommandEndedListener extends Listener {
 					- Clan games reminder
 					- Supports war end, war start, war cc fill-up reminders
 					- All type of filters imaginable.
+
+				- **Summary**
+					- </summary best:813041692188999707>
 
 				- [Join Support Server to know more!](https://discord.gg/ppuppun)
 				`,

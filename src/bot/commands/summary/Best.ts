@@ -66,14 +66,12 @@ export default class SummaryBestCommand extends Command {
 		if (!season) season = Season.ID;
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${interaction.guild.name} Season Summary`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
+			.setAuthor({ name: `${interaction.guild.name} Best Players`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
 
 		const clans = await this.client.storage.find(interaction.guild.id);
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
-
-		const sessionId = Season.ID;
 
 		const aggregated = await this.client.db
 			.collection(Collections.PLAYER_SEASONS)
@@ -81,7 +79,7 @@ export default class SummaryBestCommand extends Command {
 				{
 					$match: {
 						__clans: { $in: clans.map((c) => c.tag) },
-						season: sessionId
+						season: season
 					}
 				},
 				{
@@ -144,7 +142,7 @@ export default class SummaryBestCommand extends Command {
 							{
 								$project: {
 									_id: 0,
-									count: `$seasons.${sessionId}`
+									count: `$seasons.${season}`
 								}
 							}
 						]
@@ -159,7 +157,7 @@ export default class SummaryBestCommand extends Command {
 						pipeline: [
 							{
 								$match: {
-									season: sessionId
+									season: season
 								}
 							},
 							{
@@ -228,6 +226,7 @@ export default class SummaryBestCommand extends Command {
 			]);
 		});
 
+		embed.setFooter({ text: `Season ${season}` });
 		await interaction.followUp({ embeds: [embed], components: [] });
 	}
 }
