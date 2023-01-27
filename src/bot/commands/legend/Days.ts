@@ -1,16 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
-import {
-	EmbedBuilder,
-	CommandInteraction,
-	StringSelectMenuBuilder,
-	ActionRowBuilder,
-	escapeMarkdown,
-	ComponentType,
-	time,
-	ButtonBuilder,
-	ButtonStyle,
-	User
-} from 'discord.js';
+import { EmbedBuilder, CommandInteraction, ActionRowBuilder, escapeMarkdown, time, ButtonBuilder, ButtonStyle, User } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { attackCounts, Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
@@ -59,69 +48,29 @@ export default class LegendDaysCommand extends Command {
 		return 50;
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; prev?: boolean }) {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
-		const customIds = {
-			accounts: this.client.uuid(interaction.user.id),
-			prevLogs: this.client.uuid(interaction.user.id),
-			currentDay: this.client.uuid(interaction.user.id)
-		};
+		const embed = args.prev
+			? (await this.logs(data)).setColor(this.client.embed(interaction))
+			: (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
 
-		const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
-		const players = data.user ? await this.getPlayers(data.user.id) : [];
+		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(
+				new ButtonBuilder()
+					.setEmoji(EMOJIS.REFRESH)
+					.setCustomId(JSON.stringify({ cmd: this.id, prev: args.prev }))
+					.setStyle(ButtonStyle.Secondary)
+			)
+			.addComponents(
+				new ButtonBuilder()
+					.setLabel(args.prev ? 'Current Day' : 'Previous Days')
+					.setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1 }))
+					.setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
+			);
 
-		const options = players.map((op) => ({
-			description: op.tag,
-			label: op.name,
-			value: op.tag,
-			emoji: TOWN_HALLS[op.townHallLevel]
-		}));
-
-		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder().setLabel('Previous Days').setCustomId(customIds.prevLogs).setStyle(ButtonStyle.Primary)
-		);
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const rowMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-			new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
-		);
-
-		const msg = await interaction.editReply({ embeds: [embed], components: options.length ? [row] : [row] });
-		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.accounts && action.isStringSelectMenu()) {
-				await action.deferUpdate();
-				const data = players.find((en) => en.tag === action.values[0])!;
-				const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
-				await action.editReply({ embeds: [embed], components: options.length ? [row] : [row] });
-			}
-			if (action.customId === customIds.prevLogs && action.isButton()) {
-				await action.deferUpdate();
-				const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-					new ButtonBuilder().setLabel('Current Day').setCustomId(customIds.currentDay).setStyle(ButtonStyle.Primary)
-				);
-				const embed = (await this.logs(data)).setColor(this.client.embed(interaction));
-				await action.editReply({ embeds: [embed], components: [row] });
-			}
-			if (action.customId === customIds.currentDay && action.isButton()) {
-				await action.deferUpdate();
-				const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
-				const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-					new ButtonBuilder().setLabel('Previous Days').setCustomId(customIds.prevLogs).setStyle(ButtonStyle.Primary)
-				);
-				await action.editReply({ embeds: [embed], components: [row] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			Object.values(customIds).forEach((id) => this.client.components.delete(id));
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private async rankings(tag: string) {

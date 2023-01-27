@@ -157,7 +157,7 @@ export default class SummaryBestCommand extends Command {
 						pipeline: [
 							{
 								$match: {
-									season: season
+									season
 								}
 							},
 							{

@@ -81,6 +81,12 @@ export default class ComponentHandler {
 				await this.client.commandHandler.exec(interaction, command, { ...parsed });
 				return true;
 			}
+			case 'legend-days': {
+				const command = this.client.commandHandler.modules.get('legend-days')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, { ...parsed });
+				return true;
+			}
 			default: {
 				return false;
 			}
