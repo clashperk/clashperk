@@ -121,7 +121,7 @@ export default class LastSeenLog extends BaseLog {
 	}
 
 	private filter(clan: Clan, _members: { count: number; lastSeen: Date; name: string; tag: string }[]) {
-		if (_members.length) {
+		if (!_members.length) {
 			return clan.memberList.map((m) => ({ tag: m.tag, name: m.name, lastSeen: 0, count: 0 }));
 		}
 

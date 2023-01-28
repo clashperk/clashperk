@@ -26,6 +26,31 @@ export default class LegendDaysCommand extends Command {
 		};
 	}
 
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; prev?: boolean }) {
+		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
+		if (!data) return;
+
+		const embed = args.prev
+			? (await this.logs(data)).setColor(this.client.embed(interaction))
+			: (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
+
+		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(
+				new ButtonBuilder()
+					.setEmoji(EMOJIS.REFRESH)
+					.setCustomId(JSON.stringify({ cmd: this.id, prev: args.prev, tag: data.tag }))
+					.setStyle(ButtonStyle.Secondary)
+			)
+			.addComponents(
+				new ButtonBuilder()
+					.setLabel(args.prev ? 'Current Day' : 'Previous Days')
+					.setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1, tag: data.tag }))
+					.setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
+			);
+
+		return interaction.editReply({ embeds: [embed], components: [row] });
+	}
+
 	public async getPlayers(userId: string) {
 		const players = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray();
 		const others = await this.client.http.getPlayerTags(userId);
@@ -46,31 +71,6 @@ export default class LegendDaysCommand extends Command {
 		else if (clanRank >= 21) return 12;
 		else if (clanRank >= 11) return 25;
 		return 50;
-	}
-
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; prev?: boolean }) {
-		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
-		if (!data) return;
-
-		const embed = args.prev
-			? (await this.logs(data)).setColor(this.client.embed(interaction))
-			: (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
-
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(
-				new ButtonBuilder()
-					.setEmoji(EMOJIS.REFRESH)
-					.setCustomId(JSON.stringify({ cmd: this.id, prev: args.prev, tag: args.tag }))
-					.setStyle(ButtonStyle.Secondary)
-			)
-			.addComponents(
-				new ButtonBuilder()
-					.setLabel(args.prev ? 'Current Day' : 'Previous Days')
-					.setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1, tag: args.tag }))
-					.setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
-			);
-
-		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private async rankings(tag: string) {
