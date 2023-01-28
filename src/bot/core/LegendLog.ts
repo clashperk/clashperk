@@ -154,7 +154,7 @@ export default class LegendLog extends BaseLog {
 		});
 
 		await this._refresh();
-		setInterval(this._refresh.bind(this), this.refreshRate);
+		setInterval(this._refresh.bind(this), this.refreshRate).unref();
 	}
 
 	public async add(clanId: string) {

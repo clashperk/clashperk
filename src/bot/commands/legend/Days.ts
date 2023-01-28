@@ -60,13 +60,13 @@ export default class LegendDaysCommand extends Command {
 			.addComponents(
 				new ButtonBuilder()
 					.setEmoji(EMOJIS.REFRESH)
-					.setCustomId(JSON.stringify({ cmd: this.id, prev: args.prev }))
+					.setCustomId(JSON.stringify({ cmd: this.id, prev: args.prev, tag: args.tag }))
 					.setStyle(ButtonStyle.Secondary)
 			)
 			.addComponents(
 				new ButtonBuilder()
 					.setLabel(args.prev ? 'Current Day' : 'Previous Days')
-					.setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1 }))
+					.setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1, tag: args.tag }))
 					.setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
 			);
 

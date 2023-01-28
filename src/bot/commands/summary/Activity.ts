@@ -39,7 +39,7 @@ export default class FamilyCommand extends Command {
 
 		collection.sort((a, b) => b.total - a.total);
 		const embed = new EmbedBuilder();
-		embed.setAuthor({ name: 'Avg. Activity and Avg. Active Members' });
+		embed.setAuthor({ name: 'Avg. active members and activity scores' });
 		embed.setDescription(
 			collection
 				.map(
@@ -69,11 +69,10 @@ export default class FamilyCommand extends Command {
 		collector.on('collect', async (action) => {
 			const reversed = action.customId === customIds.reverse;
 			const embed = new EmbedBuilder();
-			embed.setAuthor({ name: 'Avg. Activity and Avg. Active Members' });
+			embed.setAuthor({ name: `${interaction.guild.name} Most Active Members` });
 			const members = await this.aggregationQuery(clans, season!, reversed);
 			embed.setDescription(
 				[
-					`**[${this.i18n('command.lastseen.title_lastseen', { lng: interaction.locale })}](https://clashperk.com/faq)**`,
 					`\`\`\`\n\u200eLAST-ON SCORE  NAME\n${members
 						.map((m) => `${this.getTime(m.lastSeen!.getTime())}  ${m.score!.toString().padStart(4, ' ')}  ${m.name}`)
 						.join('\n')}`,

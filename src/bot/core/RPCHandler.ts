@@ -51,9 +51,9 @@ export default class RPCHandler {
 					case Flags.DONATION_LOG:
 						await this.donationLog.exec(data.tag, data);
 						break;
-					case Flags.LAST_SEEN_LOG:
-						await this.lastSeenLog.exec(data.tag, data);
-						break;
+					// case Flags.LAST_SEEN_LOG:
+					// 	await this.lastSeenLog.exec(data.tag, data);
+					// 	break;
 					case Flags.CLAN_FEED_LOG:
 						await Promise.allSettled([this.clanFeedLog.exec(data.tag, data), this.roleManager.exec(data.tag, data)]);
 						break;
@@ -65,6 +65,9 @@ export default class RPCHandler {
 						break;
 					case Flags.TOWN_HALL_LOG:
 						await Promise.all([this.clanFeedLog.exec(data.tag, data), this.roleManager.execTownHall(data.tag, data.members)]);
+						break;
+					case Flags.PLAYER_FEED_LOG:
+						await this.clanFeedLog.exec(data.tag, data);
 						break;
 					case Flags.CLAN_WAR_LOG:
 						await this.clanWarLog.exec(data.clan.tag, data);

@@ -14,7 +14,8 @@ const OP: { [key: string]: number } = {
 	LEFT: 0xeb3508, // RED
 	NAME_CHANGE: 0xdf9666,
 	TOWN_HALL_UPGRADE: 0x00dbf3,
-	DONATION_RESET: 0xeffd5f
+	DONATION_RESET: 0xeffd5f,
+	WAR_PREF_CHANGE: 0x00dbf3
 };
 
 export default class ClanFeedLog extends BaseLog {
@@ -99,6 +100,19 @@ export default class ClanFeedLog extends BaseLog {
 			embed.setDescription(
 				`Town Hall was upgraded to ${player.townHallLevel} with ${this.remainingUpgrades(player)}% remaining troop upgrades.`
 			);
+		}
+		if (member.op === 'WAR_PREF_CHANGE' && player.warPreference) {
+			const { id } = parseEmoji(TOWN_HALLS[player.townHallLevel])!;
+			embed.setThumbnail(`https://cdn.discordapp.com/emojis/${id!}.png?v=1`);
+			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
+			if (player.warPreference === 'in') {
+				embed.setDescription(`**Opted in** to be included in clan wars.`);
+				embed.setColor(OP.JOINED);
+			}
+			if (player.warPreference === 'out') {
+				embed.setDescription(`**Opted out** to be left out of clan wars.`);
+				embed.setColor(OP.LEFT);
+			}
 		}
 		if (member.op === 'JOINED') {
 			const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: cache.guild, tag: member.tag });

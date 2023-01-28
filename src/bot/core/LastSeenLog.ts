@@ -14,13 +14,17 @@ import { Collections } from '../util/Constants.js';
 import { Client } from '../struct/Client.js';
 import { Util } from '../util/index.js';
 import { EMOJIS } from '../util/Emojis.js';
+import { LastSeenLogModel } from '../types/index.js';
 import BaseLog from './BaseLog.js';
 
 export default class LastSeenLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
+	private readonly queued = new Set<string>();
+	public refreshRate: number;
 
 	public constructor(client: Client) {
 		super(client);
+		this.refreshRate = 15 * 60 * 1000;
 	}
 
 	public override get collection() {
@@ -61,7 +65,8 @@ export default class LastSeenLog extends BaseLog {
 	}
 
 	private async send(cache: Cache, webhook: WebhookClient, data: Feed) {
-		const embed = this.embed(cache, data);
+		const embed = await this.embed(cache);
+		if (!embed) return null;
 		try {
 			return await super._send(cache, webhook, {
 				embeds: [embed],
@@ -75,7 +80,8 @@ export default class LastSeenLog extends BaseLog {
 	}
 
 	private async edit(cache: Cache, webhook: WebhookClient, data: Feed) {
-		const embed = this.embed(cache, data);
+		const embed = await this.embed(cache);
+		if (!embed) return null;
 		try {
 			return await super._edit(cache, webhook, {
 				embeds: [embed],
@@ -88,7 +94,11 @@ export default class LastSeenLog extends BaseLog {
 		}
 	}
 
-	private embed(cache: Cache, { members, clan }: Feed) {
+	private async embed(cache: Cache) {
+		const clan = (await this.client.redis.json.get(`C${cache.tag}`)) as unknown as Clan | null;
+		if (!clan) return null;
+
+		const members = await this.aggregationQuery(clan);
 		const getTime = (ms?: number) => {
 			if (!ms) return ''.padEnd(7, ' ');
 			return Util.duration(ms + 1e3).padEnd(7, ' ');
@@ -111,6 +121,70 @@ export default class LastSeenLog extends BaseLog {
 		return embed;
 	}
 
+	private filter(clan: Clan, _members: { count: number; lastSeen: Date; name: string; tag: string }[]) {
+		if (_members.length) {
+			return clan.memberList.map((m) => ({ tag: m.tag, name: m.name, lastSeen: 0, count: 0 }));
+		}
+
+		const members = clan.memberList.map((m) => {
+			const clan = _members.find((d) => d.tag === m.tag);
+			return {
+				tag: m.tag,
+				name: m.name,
+				count: clan ? Number(clan.count) : 0,
+				lastSeen: clan ? new Date().getTime() - new Date(clan.lastSeen).getTime() : 0
+			};
+		});
+
+		members.sort((a, b) => a.lastSeen - b.lastSeen);
+		return members.filter((m) => m.lastSeen > 0).concat(members.filter((m) => m.lastSeen === 0));
+	}
+
+	private async aggregationQuery(clan: Clan, days = 1) {
+		const db = this.client.db.collection(Collections.LAST_SEEN);
+		const result = await db
+			.aggregate<{ count: number; lastSeen: Date; name: string; tag: string }>([
+				{
+					$match: {
+						tag: { $in: [...clan.memberList.map((m) => m.tag)] }
+					}
+				},
+				{
+					$match: {
+						'clan.tag': clan.tag
+					}
+				},
+				{
+					$project: {
+						tag: '$tag',
+						clan: '$clan',
+						lastSeen: '$lastSeen',
+						entries: {
+							$filter: {
+								input: '$entries',
+								as: 'en',
+								cond: {
+									$gte: ['$$en.entry', new Date(Date.now() - days * 24 * 60 * 60 * 1000)]
+								}
+							}
+						}
+					}
+				},
+				{
+					$project: {
+						tag: '$tag',
+						clan: '$clan',
+						lastSeen: '$lastSeen',
+						count: {
+							$sum: '$entries.count'
+						}
+					}
+				}
+			])
+			.toArray();
+		return this.filter(clan, result);
+	}
+
 	public async init() {
 		await this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } }).forEach((data) => {
 			this.cached.set((data.clanId as ObjectId).toHexString(), {
@@ -123,6 +197,9 @@ export default class LastSeenLog extends BaseLog {
 				webhook: data.webhook ? new WebhookClient(data.webhook) : null
 			});
 		});
+
+		await this._refresh();
+		setInterval(this._refresh.bind(this), this.refreshRate).unref();
 	}
 
 	public async add(clanId: string) {
@@ -138,6 +215,35 @@ export default class LastSeenLog extends BaseLog {
 			message: data.message,
 			webhook: data.webhook ? new WebhookClient(data.webhook) : null
 		});
+	}
+
+	private async _refresh() {
+		const logs = await this.client.db
+			.collection(Collections.LAST_SEEN_LOGS)
+			.aggregate<LastSeenLogModel & { _id: ObjectId }>([
+				{ $match: { updatedAt: { $lte: new Date(Date.now() - 30 * 60 * 1e3) } } },
+				{
+					$lookup: {
+						from: Collections.CLAN_STORES,
+						localField: 'clanId',
+						foreignField: '_id',
+						as: '_store',
+						pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }]
+					}
+				},
+				{ $unwind: { path: '$_store' } }
+			])
+			.toArray();
+
+		for (const log of logs) {
+			if (!this.client.guilds.cache.has(log.guild)) continue;
+			if (this.queued.has(log._id.toHexString())) continue;
+
+			this.queued.add(log._id.toHexString());
+			await this.exec(log.tag, {});
+			this.queued.delete(log._id.toHexString());
+			await Util.delay(3000);
+		}
 	}
 }
 

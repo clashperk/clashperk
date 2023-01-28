@@ -75,7 +75,8 @@ export const enum Flags {
 	CHANNEL_LINKED = 1 << 6,
 	SERVER_LINKED = 1 << 7,
 	LEGEND_LOG = 1 << 8,
-	TOWN_HALL_LOG = 1 << 9
+	TOWN_HALL_LOG = 1 << 9,
+	PLAYER_FEED_LOG = 1 << 10
 }
 
 export const enum Settings {
