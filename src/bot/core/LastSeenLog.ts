@@ -35,14 +35,13 @@ export default class LastSeenLog extends BaseLog {
 		return ['ReadMessageHistory', 'SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'AddReactions', 'ViewChannel'];
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
+	public override async handleMessage(cache: Cache, webhook: WebhookClient) {
 		// await this.throttle(webhook.id);
 		if (!cache.message) {
-			const msg = await this.send(cache, webhook, data);
+			const msg = await this.send(cache, webhook);
 			return this.updateMessageId(cache, msg);
 		}
-		const msg = await this.edit(cache, webhook, data);
+		const msg = await this.edit(cache, webhook);
 		return this.updateMessageId(cache, msg);
 	}
 
@@ -64,14 +63,14 @@ export default class LastSeenLog extends BaseLog {
 		return row;
 	}
 
-	private async send(cache: Cache, webhook: WebhookClient, data: Feed) {
+	private async send(cache: Cache, webhook: WebhookClient) {
 		const embed = await this.embed(cache);
 		if (!embed) return null;
 		try {
 			return await super._send(cache, webhook, {
 				embeds: [embed],
 				threadId: cache.threadId,
-				components: [this._components(data.clan.tag)]
+				components: [this._components(cache.tag)]
 			});
 		} catch (error: any) {
 			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
@@ -79,14 +78,14 @@ export default class LastSeenLog extends BaseLog {
 		}
 	}
 
-	private async edit(cache: Cache, webhook: WebhookClient, data: Feed) {
+	private async edit(cache: Cache, webhook: WebhookClient) {
 		const embed = await this.embed(cache);
 		if (!embed) return null;
 		try {
 			return await super._edit(cache, webhook, {
 				embeds: [embed],
 				threadId: cache.threadId,
-				components: [this._components(data.clan.tag)]
+				components: [this._components(cache.tag)]
 			});
 		} catch (error: any) {
 			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'LastSeenLog' });
@@ -245,11 +244,6 @@ export default class LastSeenLog extends BaseLog {
 			await Util.delay(3000);
 		}
 	}
-}
-
-interface Feed {
-	clan: Clan;
-	members: { name: string; count: number; lastSeen: number }[];
 }
 
 interface Cache {
