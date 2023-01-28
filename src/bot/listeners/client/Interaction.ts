@@ -226,6 +226,7 @@ export default class InteractionListener extends Listener {
 						},
 						{ index: ElasticIndex.RECENT_PLAYERS },
 						{
+							sort: [{ lastSearched: 'desc' }],
 							query: {
 								bool: {
 									must: {
@@ -314,6 +315,7 @@ export default class InteractionListener extends Listener {
 						},
 						{ index: ElasticIndex.RECENT_CLANS },
 						{
+							sort: [{ lastSearched: 'desc' }],
 							query: {
 								bool: {
 									must: {
@@ -422,6 +424,7 @@ export default class InteractionListener extends Listener {
 						},
 						{ index: ElasticIndex.RECENT_CLANS },
 						{
+							sort: [{ lastSearched: 'desc' }],
 							query: {
 								bool: {
 									must: {
