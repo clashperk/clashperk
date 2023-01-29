@@ -108,7 +108,7 @@ export default class SummaryBestCommand extends Command {
 							$subtract: ['$spellsDonations.current', '$spellsDonations.initial']
 						},
 						_sieges: {
-							$subtract: ['$siegeMachinesDonations.current', '$siegeMachinesDonations.initial']
+							$multiply: [{ $subtract: ['$siegeMachinesDonations.current', '$siegeMachinesDonations.initial'] }, 30]
 						},
 						_warStars: {
 							$subtract: ['$clanWarStars.current', '$clanWarStars.initial']
@@ -214,7 +214,7 @@ export default class SummaryBestCommand extends Command {
 		_fields.map((field) => {
 			const key = field as keyof typeof fields;
 			aggregated.sort((a, b) => b[key] - a[key]);
-			const members = aggregated.filter((n) => !isNaN(n[key])).slice(0, Number(top ?? 5));
+			const members = aggregated.filter((n) => !isNaN(n[key]) && n[key]).slice(0, Number(top ?? 5));
 
 			if (!members.length) {
 				return embed.addFields({

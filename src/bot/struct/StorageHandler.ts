@@ -156,7 +156,7 @@ export default class StorageHandler {
 							}
 						},
 						$setOnInsert: {
-							updateAt: new Date(),
+							updatedAt: new Date(),
 							createdAt: new Date()
 						}
 					},
