@@ -1,8 +1,9 @@
 import { CommandInteraction, EmbedBuilder, embedLength } from 'discord.js';
+import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
-import { Season, Util } from '../../util/index.js';
+import { ClanGames, Season, Util } from '../../util/index.js';
 
 interface Aggregated {
 	tag: string;
@@ -16,6 +17,9 @@ interface Aggregated {
 	_warStars: number;
 	_cwlStars: number;
 	_clanGamesPoints: number;
+	_clanGamesCompletedAt: Date;
+	_clanGamesCompletionTime: number;
+	_trophiesGained: number;
 	_trophies: number;
 	_versusTrophies: number;
 	_versusAttackWins: number;
@@ -38,7 +42,8 @@ const fields = {
 	// _defenseWins: `${EMOJIS.SHIELD} Defense Wins`,
 	_versusAttackWins: `${EMOJIS.CROSS_SWORD} Versus Attack Wins`,
 
-	_trophies: `${EMOJIS.TROPHY} Trophies`,
+	_trophiesGained: `${EMOJIS.TROPHY} Trophies Gained`,
+	_trophies: `${EMOJIS.TROPHY} Current Trophies`,
 	// _versusTrophies: `${EMOJIS.VERSUS_TROPHY} Versus Trophies`,
 	_warStars: `${EMOJIS.WAR_STAR} War Stars`,
 	// _cwlStars: `${EMOJIS.STAR} CWL Stars`,
@@ -49,7 +54,8 @@ const fields = {
 
 	_capitalLoot: `${EMOJIS.CAPITAL_GOLD} Capital Gold Loot`,
 	_capitalDonations: `${EMOJIS.CAPITAL_GOLD} Capital Gold Contribution`,
-	_clanGamesPoints: `${EMOJIS.CLAN_GAMES} Clan Games Points`
+	_clanGamesPoints: `${EMOJIS.CLAN_GAMES} Clan Games Points`,
+	_clanGamesCompletionTime: `${EMOJIS.CLAN_GAMES} Fastest Clan Games Completion`
 };
 
 export default class SummaryBestCommand extends Command {
@@ -113,9 +119,10 @@ export default class SummaryBestCommand extends Command {
 						_clanGamesPoints: {
 							$subtract: ['$clanGamesPoints.current', '$clanGamesPoints.initial']
 						},
-						_trophies: {
+						_trophiesGained: {
 							$subtract: ['$trophies.current', '$trophies.initial']
 						},
+						_trophies: '$trophies.current',
 						_versusTrophies: {
 							$subtract: ['$versusTrophies.current', '$versusTrophies.initial']
 						},
@@ -154,19 +161,7 @@ export default class SummaryBestCommand extends Command {
 						localField: 'tag',
 						foreignField: 'tag',
 						as: '_clanGames',
-						pipeline: [
-							{
-								$match: {
-									season
-								}
-							},
-							{
-								$project: {
-									current: 1,
-									initial: 1
-								}
-							}
-						]
+						pipeline: [{ $match: { season } }, { $project: { current: 1, initial: 1, completedAt: 1 } }]
 					}
 				},
 				{
@@ -186,6 +181,14 @@ export default class SummaryBestCommand extends Command {
 						_clanGamesPoints: {
 							$max: [{ $subtract: ['$_clanGames.current', '$_clanGames.initial'] }, 0]
 						},
+						_clanGamesCompletionTime: {
+							$dateDiff: {
+								startDate: '$_clanGames.completedAt',
+								endDate: '$$NOW',
+								unit: 'hour'
+							}
+						},
+						_clanGamesCompletedAt: '$_clanGames.completedAt',
 						_donations: {
 							$sum: ['$_troops', '$_spells', '$_sieges']
 						},
@@ -198,7 +201,7 @@ export default class SummaryBestCommand extends Command {
 					$sort: { _score: -1 }
 				},
 				{
-					$limit: 100
+					$limit: 50 * clans.length
 				}
 			])
 			.toArray();
@@ -206,35 +209,53 @@ export default class SummaryBestCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 		}
 
+		const _timestamp = ClanGames.startTimestamp.getTime();
 		const _fields = Object.keys(fields);
 		_fields.map((field) => {
 			const key = field as keyof typeof fields;
 			aggregated.sort((a, b) => b[key] - a[key]);
-			const members = aggregated.slice(0, Number(top ?? 5));
+			const members = aggregated.filter((n) => !isNaN(n[key])).slice(0, Number(top ?? 5));
+
+			if (!members.length) {
+				return embed.addFields({
+					name: fields[key],
+					value: 'No data available at this moment!'
+				});
+			}
+
 			return embed.addFields({
 				name: fields[key],
 				value: members
-					.map(
-						(member, n) =>
-							`${BLUE_NUMBERS[n + 1]} \`${Util.formatNumber(member[key]).padStart(7, ' ')} \` \u200e${Util.escapeBackTick(
-								member.name
-							)}`
-					)
+					.map((member, n) => {
+						moment.duration();
+						const num =
+							key === '_clanGamesCompletionTime'
+								? this._formatTime(member._clanGamesCompletedAt.getTime() - _timestamp).padStart(7, ' ')
+								: Util.formatNumber(member[key]).padStart(7, ' ');
+						return `${BLUE_NUMBERS[n + 1]} \`${num} \` \u200e${Util.escapeBackTick(member.name)}`;
+					})
 					.join('\n')
 			});
 		});
 
 		if (embedLength(embed.toJSON()) > 6000) {
 			const fields = [...embed.data.fields!];
-			embed.setFields(fields.slice(0, 6));
+			embed.setFields(fields.slice(0, 7));
 			await interaction.followUp({ embeds: [embed] });
 
-			embed.setFields(fields.slice(6));
+			embed.setFields(fields.slice(7));
 			embed.setFooter({ text: `Season ${season}` });
 			return interaction.followUp({ embeds: [embed] });
 		}
 
 		embed.setFooter({ text: `Season ${season}` });
 		await interaction.followUp({ embeds: [embed] });
+	}
+
+	private _formatTime(diff: number) {
+		if (diff >= 24 * 60 * 60 * 1000) {
+			return moment.duration(diff).format('d[d] h[h]', { trim: 'both mid' });
+		}
+		return moment.duration(diff).format('h[h] m[m]', { trim: 'both mid' });
 	}
 }
