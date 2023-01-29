@@ -1328,6 +1328,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'clan-feed'
 							},
 							{
+								name: 'Join/Leave Log',
+								value: 'join-leave'
+							},
+							{
 								name: 'Clan Embed',
 								value: 'clan-embed'
 							},
@@ -1394,6 +1398,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Clan Feed',
 								value: 'clan-feed'
+							},
+							{
+								name: 'Join/Leave Log',
+								value: 'join-leave'
 							},
 							{
 								name: 'War Feed',

@@ -11,7 +11,8 @@ const names: Record<string, string> = {
 	[Flags.CLAN_EMBED_LOG]: 'Clan Embed',
 	[Flags.CLAN_GAMES_LOG]: 'Clan Games',
 	[Flags.CLAN_WAR_LOG]: 'War Feed',
-	[Flags.CHANNEL_LINKED]: 'Linked Channel'
+	[Flags.CHANNEL_LINKED]: 'Linked Channel',
+	[Flags.JOIN_LEAVE_LOG]: 'Join/Leave Log'
 };
 
 export default class SetupDisableCommand extends Command {
@@ -28,7 +29,6 @@ export default class SetupDisableCommand extends Command {
 
 	public permissionOverwrites(interaction: CommandInteraction<'cached'>) {
 		const roleId = this.client.settings.get<string>(interaction.guildId, Settings.BOT_ADMIN_ROLE);
-		console.log(interaction.guildId, Settings.BOT_ADMIN_ROLE, roleId, interaction.member.roles.cache.has(roleId));
 		return !interaction.member.roles.cache.has(roleId);
 	}
 
@@ -41,6 +41,7 @@ export default class SetupDisableCommand extends Command {
 					['all', 'remove-clan'],
 					[Flags.CLAN_EMBED_LOG.toString(), 'clan-embed'],
 					[Flags.LEGEND_LOG.toString(), 'legend-log'],
+					[Flags.JOIN_LEAVE_LOG.toString(), 'join-leave'],
 					[Flags.LAST_SEEN_LOG.toString(), 'lastseen'],
 					[Flags.CLAN_WAR_LOG.toString(), 'war-feed'],
 					[Flags.CLAN_GAMES_LOG.toString(), 'clan-games'],

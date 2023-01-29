@@ -1,17 +1,14 @@
 import { Player } from 'clashofclans.js';
 import { Collection, EmbedBuilder, parseEmoji, PermissionsString, WebhookClient, WebhookCreateMessageOptions } from 'discord.js';
-import moment from 'moment';
 import { ObjectId } from 'mongodb';
-import RAW_TROOPS_DATA from '../util/Troops.js';
 import { Client } from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
-import { EMOJIS, HEROES, PLAYER_LEAGUES, SUPER_TROOPS, TOWN_HALLS } from '../util/Emojis.js';
+import { EMOJIS, SUPER_TROOPS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
+import RAW_TROOPS_DATA from '../util/Troops.js';
 import BaseLog from './BaseLog.js';
 
 const OP: { [key: string]: number } = {
-	JOINED: 0x38d863, // GREEN
-	LEFT: 0xeb3508, // RED
 	NAME_CHANGE: 0xdf9666,
 	TOWN_HALL_UPGRADE: 0x00dbf3,
 	DONATION_RESET: 0xeffd5f,
@@ -45,7 +42,6 @@ export default class ClanFeedLog extends BaseLog {
 			if (!message) continue;
 			const msg = await this.send(cache, webhook, {
 				embeds: [message.embed],
-				content: message.content!,
 				threadId: cache.threadId
 			});
 			await this.updateMessageId(cache, msg);
@@ -68,7 +64,6 @@ export default class ClanFeedLog extends BaseLog {
 		const player: Player = await this.client.http.player(member.tag);
 		if (!player.ok) return null;
 
-		let content = null;
 		const embed = new EmbedBuilder()
 			.setColor(OP[member.op])
 			.setTitle(`\u200e${player.name} (${player.tag})`)
@@ -76,16 +71,6 @@ export default class ClanFeedLog extends BaseLog {
 		if (member.op === 'NAME_CHANGE') {
 			embed.setDescription(`Name changed from **${member.name}**`);
 			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
-		}
-		if (member.op === 'LEFT') {
-			embed.setFooter({ text: `Left ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
-			embed.setDescription(
-				[
-					`${TOWN_HALLS[player.townHallLevel]!} **${player.townHallLevel}**`,
-					`${EMOJIS.EXP} **${player.expLevel}**`,
-					`${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
-				].join(' ')
-			);
 		}
 		if (member.op === 'DONATION_RESET') {
 			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
@@ -114,38 +99,8 @@ export default class ClanFeedLog extends BaseLog {
 				embed.setColor(OP.LEFT);
 			}
 		}
-		if (member.op === 'JOINED') {
-			const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: cache.guild, tag: member.tag });
-			embed.setFooter({ text: `Joined ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
-			embed.setDescription(
-				[
-					`${TOWN_HALLS[player.townHallLevel]!}**${player.townHallLevel}**`,
-					`${this.formatHeroes(player)}`,
-					`${EMOJIS.WAR_STAR}**${player.warStars}**`,
-					`${PLAYER_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`
-				].join(' ')
-			);
-
-			if (flag) {
-				const guild = this.client.guilds.cache.get(cache.guild)!;
-				const user = await this.client.users.fetch(flag.user, { cache: false }).catch(() => null);
-				if (cache.role && guild.roles.cache.has(cache.role)) {
-					const role = guild.roles.cache.get(cache.role)!;
-					content = `${role.toString()}`;
-				}
-				embed.setDescription(
-					[
-						embed.data.description,
-						'',
-						'**Flag**',
-						`${flag.reason as string}`,
-						`\`${user ? user.tag : 'Unknown#0000'} (${moment.utc(flag.createdAt).format('DD-MM-YYYY kk:mm')})\``
-					].join('\n')
-				);
-			}
-		}
 		embed.setTimestamp();
-		return { content, embed };
+		return { embed };
 	}
 
 	private labRushed(data: Player) {
@@ -212,19 +167,6 @@ export default class ClanFeedLog extends BaseLog {
 				village: u.village
 			}))
 		];
-	}
-
-	private formatHeroes(member: Player) {
-		if (member.heroes.length) {
-			const heroes = member.heroes.filter(({ village }) => village === 'home');
-			return heroes.length
-				? heroes.length > 3
-					? heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')
-					: `${EMOJIS.EXP}**${member.expLevel}** ${heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')}`
-				: `${EMOJIS.EXP} **${member.expLevel}**`;
-		}
-
-		return `${EMOJIS.EXP} **${member.expLevel}**`;
 	}
 
 	public async init() {

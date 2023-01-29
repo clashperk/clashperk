@@ -10,6 +10,7 @@ import ClanFeedLog from './ClanFeedLog.js';
 import DonationLog from './DonationLog.js';
 import ClanWarLog from './ClanWarLog.js';
 import LegendLog from './LegendLog.js';
+import JoinLeaveLog from './JoinLeaveLog.js';
 
 export default class RPCHandler {
 	private paused = Boolean(false);
@@ -22,6 +23,7 @@ export default class RPCHandler {
 	private readonly lastSeenLog = new LastSeenLog(this.client);
 	private readonly clanFeedLog = new ClanFeedLog(this.client);
 	private readonly legendLog = new LegendLog(this.client);
+	private readonly joinLeaveLog = new JoinLeaveLog(this.client);
 
 	public roleManager = new RoleManager(this.client);
 
@@ -55,7 +57,11 @@ export default class RPCHandler {
 					// 	await this.lastSeenLog.exec(data.tag, data);
 					// 	break;
 					case Flags.CLAN_FEED_LOG:
-						await Promise.allSettled([this.clanFeedLog.exec(data.tag, data), this.roleManager.exec(data.tag, data)]);
+						await Promise.allSettled([
+							this.clanFeedLog.exec(data.tag, data),
+							this.joinLeaveLog.exec(data.tag, data),
+							this.roleManager.exec(data.tag, data)
+						]);
 						break;
 					case Flags.CLAN_EMBED_LOG:
 						await this.clanEmbedLog.exec(data.tag, data);
@@ -98,6 +104,7 @@ export default class RPCHandler {
 		await this.clanGamesLog.init();
 		await this.clanWarLog.init();
 		await this.legendLog.init();
+		await this.joinLeaveLog.init();
 
 		await this.broadcast();
 		return this.client.publisher.publish('INIT', '{}');
@@ -153,7 +160,8 @@ export default class RPCHandler {
 			[Flags.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
 			[Flags.CLAN_WAR_LOG]: this.clanWarLog,
-			[Flags.LEGEND_LOG]: this.legendLog
+			[Flags.LEGEND_LOG]: this.legendLog,
+			[Flags.JOIN_LEAVE_LOG]: this.joinLeaveLog
 		};
 
 		if (data.op.toString() in OP) {
@@ -187,7 +195,8 @@ export default class RPCHandler {
 			[Flags.CLAN_EMBED_LOG]: this.clanEmbedLog,
 			[Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
 			[Flags.CLAN_WAR_LOG]: this.clanWarLog,
-			[Flags.LEGEND_LOG]: this.legendLog
+			[Flags.LEGEND_LOG]: this.legendLog,
+			[Flags.JOIN_LEAVE_LOG]: this.joinLeaveLog
 		};
 
 		if (data.op.toString() in OP) {
