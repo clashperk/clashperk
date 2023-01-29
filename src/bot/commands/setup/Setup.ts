@@ -10,7 +10,8 @@ const names: Record<string, string> = {
 	[Flags.CLAN_EMBED_LOG]: 'Clan Embed',
 	[Flags.CLAN_GAMES_LOG]: 'Clan Games',
 	[Flags.CLAN_WAR_LOG]: 'War Feed',
-	[Flags.CHANNEL_LINKED]: 'Linked Channel'
+	[Flags.CHANNEL_LINKED]: 'Linked Channel',
+	[Flags.JOIN_LEAVE_LOG]: 'Join/Leave Log'
 };
 
 export default class SetupCommand extends Command {
