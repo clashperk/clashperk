@@ -151,6 +151,29 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
+			db.collection(Collections.JOIN_LEAVE_LOGS).createIndexes([
+				{
+					key: { clanId: 1 }
+				},
+				{
+					key: { guild: 1, tag: 1 },
+					unique: true
+				}
+			]),
+
+			db.collection(Collections.LEGEND_LOGS).createIndexes([
+				{
+					key: { clanId: 1 }
+				},
+				{
+					key: { lastPosted: 1 }
+				},
+				{
+					key: { guild: 1, tag: 1 },
+					unique: true
+				}
+			]),
+
 			db.collection(Collections.CLAN_GAMES_LOGS).createIndexes([
 				{
 					key: { clanId: 1 }
