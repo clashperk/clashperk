@@ -92,11 +92,11 @@ export default class ClanFeedLog extends BaseLog {
 			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
 			if (player.warPreference === 'in') {
 				embed.setDescription(`**Opted in** to be included in clan wars.`);
-				embed.setColor(OP.JOINED);
+				embed.setColor('#6dbc1e');
 			}
 			if (player.warPreference === 'out') {
 				embed.setDescription(`**Opted out** to be left out of clan wars.`);
-				embed.setColor(OP.LEFT);
+				embed.setColor('#d74c1d');
 			}
 		}
 		embed.setTimestamp();
