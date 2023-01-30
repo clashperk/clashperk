@@ -6,6 +6,7 @@ import { command, common } from '../locales/en.js';
 import { defaultOptions, fallbackLng } from '../locales/index.js';
 import { Backend } from '../src/bot/util/Backend.js';
 import { TranslationKey } from '../src/bot/util/i18n.js';
+import { Season } from '../src/bot/util/index.js';
 
 const locales = new URL('../locales/{{lng}}/{{ns}}.json', import.meta.url);
 await i18next.use(Backend).init({
@@ -17,7 +18,7 @@ export function getSeasonIds() {
 	return Array(Math.min(24))
 		.fill(0)
 		.map((_, m) => {
-			const now = new Date();
+			const now = new Date(Season.ID);
 			now.setHours(0, 0, 0, 0);
 			now.setMonth(now.getMonth() - (m - 1), 0);
 			return now;
