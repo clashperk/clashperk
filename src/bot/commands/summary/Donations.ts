@@ -35,7 +35,7 @@ export default class DonationSummaryCommand extends Command {
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${interaction.guild.name} Top Donations`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
 
-		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild.id }).toArray();
+		const clans = await this.client.storage.find(interaction.guildId);
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}

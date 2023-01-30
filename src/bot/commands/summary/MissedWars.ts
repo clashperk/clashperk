@@ -54,6 +54,10 @@ export default class FamilyMissedWarsCommand extends Command {
 		const members = Object.values(missed)
 			.filter((m) => m.missed > 0)
 			.sort((a, b) => a.missed - b.missed);
+
+		members.sort((a, b) => b.wars - a.wars);
+		members.sort((a, b) => b.missed - a.missed);
+
 		const embed = this.getEmbed(members, season);
 		const customIds = {
 			up: this.client.uuid(interaction.user.id)
@@ -70,7 +74,9 @@ export default class FamilyMissedWarsCommand extends Command {
 
 		collector.on('collect', async (action) => {
 			if (action.customId === customIds.up) {
-				members.reverse();
+				members.sort((a, b) => b.wars - a.wars);
+				members.sort((a, b) => a.missed - b.missed);
+
 				const embed = this.getEmbed(members, season);
 				await action.update({ embeds: [embed] });
 			}

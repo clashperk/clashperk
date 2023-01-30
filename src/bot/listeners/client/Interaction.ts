@@ -312,18 +312,18 @@ export default class InteractionListener extends Listener {
 									}
 								}
 							}
-						},
-						{ index: ElasticIndex.RECENT_CLANS },
-						{
-							sort: [{ lastSearched: 'desc' }],
-							query: {
-								bool: {
-									must: {
-										term: { userId: interaction.user.id }
-									}
-								}
-							}
 						}
+						// { index: ElasticIndex.RECENT_CLANS },
+						// {
+						// 	sort: [{ lastSearched: 'desc' }],
+						// 	query: {
+						// 		bool: {
+						// 			must: {
+						// 				term: { userId: interaction.user.id }
+						// 			}
+						// 		}
+						// 	}
+						// }
 					]
 			  });
 
@@ -348,7 +348,7 @@ export default class InteractionListener extends Listener {
 			const value = await this.getQuery(clanTags);
 			response.unshift({
 				value,
-				name: `**All of these (${clans.length})**`
+				name: `All of these (${clans.length})`
 			});
 		}
 		return interaction.respond(response);

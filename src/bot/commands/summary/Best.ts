@@ -68,16 +68,21 @@ export default class SummaryBestCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { season, top }: { season?: string; top?: number }) {
-		if (!season) season = Season.ID;
-		const embed = new EmbedBuilder()
-			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${interaction.guild.name} Best Players`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
+	public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; limit?: number; clans?: string }) {
+		const seasonId = args.season ?? Season.ID;
+		const tags = await this.client.resolver.resolveArgs(args.clans);
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guildId, tags)
+			: await this.client.storage.find(interaction.guildId);
 
-		const clans = await this.client.storage.find(interaction.guild.id);
+		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
+
+		const embed = new EmbedBuilder()
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `${interaction.guild.name} Best Players`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
 
 		const aggregated = await this.client.db
 			.collection(Collections.PLAYER_SEASONS)
@@ -85,7 +90,7 @@ export default class SummaryBestCommand extends Command {
 				{
 					$match: {
 						__clans: { $in: clans.map((c) => c.tag) },
-						season: season
+						season: seasonId
 					}
 				},
 				{
@@ -149,7 +154,7 @@ export default class SummaryBestCommand extends Command {
 							{
 								$project: {
 									_id: 0,
-									count: `$seasons.${season}`
+									count: `$seasons.${seasonId}`
 								}
 							}
 						]
@@ -161,7 +166,7 @@ export default class SummaryBestCommand extends Command {
 						localField: 'tag',
 						foreignField: 'tag',
 						as: '_clanGames',
-						pipeline: [{ $match: { season } }, { $project: { current: 1, initial: 1, completedAt: 1 } }]
+						pipeline: [{ $match: { season: seasonId } }, { $project: { current: 1, initial: 1, completedAt: 1 } }]
 					}
 				},
 				{
@@ -214,7 +219,7 @@ export default class SummaryBestCommand extends Command {
 		_fields.map((field) => {
 			const key = field as keyof typeof fields;
 			aggregated.sort((a, b) => b[key] - a[key]);
-			const members = aggregated.filter((n) => !isNaN(n[key]) && n[key]).slice(0, Number(top ?? 5));
+			const members = aggregated.filter((n) => !isNaN(n[key]) && n[key]).slice(0, Number(args.limit ?? 5));
 
 			if (!members.length) {
 				return embed.addFields({
@@ -244,11 +249,11 @@ export default class SummaryBestCommand extends Command {
 			await interaction.followUp({ embeds: [embed] });
 
 			embed.setFields(fields.slice(7));
-			embed.setFooter({ text: `Season ${season}` });
+			embed.setFooter({ text: `Season ${seasonId}` });
 			return interaction.followUp({ embeds: [embed] });
 		}
 
-		embed.setFooter({ text: `Season ${season}` });
+		embed.setFooter({ text: `Season ${seasonId}` });
 		await interaction.followUp({ embeds: [embed] });
 	}
 

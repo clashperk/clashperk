@@ -1882,6 +1882,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				options: [
 					{
 						name: 'type',
+						required: true,
 						description: 'Type of the reminder?',
 						type: ApplicationCommandOptionType.String,
 						choices: [
@@ -1897,8 +1898,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								name: 'Clan Games',
 								value: 'clan-games'
 							}
-						],
-						required: true
+						]
 					}
 				]
 			},
@@ -2205,6 +2205,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases to filter clans.'
+					},
+					{
 						name: 'season',
 						required: false,
 						type: ApplicationCommandOptionType.String,
@@ -2213,10 +2220,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						choices: getSeasonIds()
 					},
 					{
-						name: 'top',
+						name: 'limit',
 						required: false,
 						type: ApplicationCommandOptionType.Integer,
-						description: 'Top number of members to show (Default: 5)',
+						description: 'Number of members to show (Default: 5)',
 						min_value: 3,
 						max_value: 10
 					}

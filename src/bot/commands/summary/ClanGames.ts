@@ -26,7 +26,7 @@ export default class FamilyClanGamesCommand extends Command {
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
 		args: { tag?: string; max: boolean; filter: boolean; season?: string }
 	) {
-		const clans = await this.client.storage.find(interaction.guild.id);
+		const clans = await this.client.storage.find(interaction.guildId);
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
@@ -218,6 +218,11 @@ export default class FamilyClanGamesCommand extends Command {
 										$min: ['$points', this.MAX]
 									}
 								}
+							}
+						},
+						{
+							$match: {
+								_id: { $in: clanTags }
 							}
 						},
 						{
