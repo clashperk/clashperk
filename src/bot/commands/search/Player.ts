@@ -179,13 +179,8 @@ export default class PlayerCommand extends Command {
 					`**Donated**\n${EMOJIS.TROOPS_DONATE} ${data.donations} ${EMOJIS.UP_KEY}`,
 					`**Received**\n${EMOJIS.TROOPS_DONATE} ${data.donationsReceived} ${EMOJIS.DOWN_KEY}`,
 					`**Attacks Won**\n${EMOJIS.SWORD} ${data.attackWins}`,
-					`**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}${
-						war.total > 0
-							? `\n**War Stats**\n${warStats}\n[View war attack history](https://app.clashperk.com/members/${encodeURIComponent(
-									data.tag
-							  )})`
-							: ''
-					}`,
+					`**Defense Won**\n${EMOJIS.SHIELD} ${data.defenseWins}${war.total > 0 ? `\n**War Stats**\n${warStats}` : ''}`,
+					`[View war attack history](https://app.clashperk.com/members/${encodeURIComponent(data.tag)})`,
 					'\u200b\u2002'
 				].join('\n')
 			}
