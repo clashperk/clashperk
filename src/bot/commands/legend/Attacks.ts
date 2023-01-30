@@ -35,7 +35,8 @@ export default class LegendAttacksCommand extends Command {
 		if (!clan) return;
 
 		const multi = this.client.redis.multi();
-		clan.memberList.map((mem) => multi.json.get(`LP${mem.tag}`));
+		const seasonId = Season.ID;
+		clan.memberList.map((mem) => multi.json.get(`LP-${seasonId}-${mem.tag}`));
 		const raw = (await multi.exec()) as unknown as ({
 			name: string;
 			tag: string;

@@ -97,7 +97,8 @@ export default class LegendDaysCommand extends Command {
 	}
 
 	private async embed(interaction: CommandInteraction<'cached'>, data: Player) {
-		const legend = (await this.client.redis.json.get(`LP${data.tag}`)) as {
+		const seasonId = Season.ID;
+		const legend = (await this.client.redis.json.get(`LP-${seasonId}-${data.tag}`)) as {
 			name: string;
 			tag: string;
 			logs: LogType[];
@@ -199,7 +200,12 @@ export default class LegendDaysCommand extends Command {
 	}
 
 	private async logs(data: Player) {
-		const legend = (await this.client.redis.json.get(`LP${data.tag}`)) as { name: string; tag: string; logs: LogType[] } | null;
+		const seasonId = Season.ID;
+		const legend = (await this.client.redis.json.get(`LP-${seasonId}-${data.tag}`)) as {
+			name: string;
+			tag: string;
+			logs: LogType[];
+		} | null;
 		const logs = legend?.logs ?? [];
 
 		const days = Util.getLegendDays();

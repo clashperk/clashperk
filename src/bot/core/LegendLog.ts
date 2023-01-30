@@ -53,8 +53,9 @@ export default class LegendLog extends BaseLog {
 		const clan = await this.client.http.clan(cache.tag);
 		if (!clan.ok) return null;
 
+		const seasonId = Season.ID;
 		const multi = this.client.redis.multi();
-		clan.memberList.map((mem) => multi.json.get(`LP${mem.tag}`));
+		clan.memberList.map((mem) => multi.json.get(`LP-${seasonId}-${mem.tag}`));
 		const raw = (await multi.exec()) as unknown as ({
 			name: string;
 			tag: string;
