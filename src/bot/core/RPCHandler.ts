@@ -57,7 +57,7 @@ export default class RPCHandler {
 					// 	await this.lastSeenLog.exec(data.tag, data);
 					// 	break;
 					case Flags.CLAN_FEED_LOG:
-						await Promise.allSettled([
+						await Promise.all([
 							this.clanFeedLog.exec(data.tag, data),
 							this.joinLeaveLog.exec(data.tag, data),
 							this.roleManager.exec(data.tag, data)

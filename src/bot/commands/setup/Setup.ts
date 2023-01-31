@@ -130,6 +130,7 @@ export default class SetupCommand extends Command {
 				const bit4 = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clanId: clan._id });
 				const bit5 = await this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clanId: clan._id });
 				const bit6 = await this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clanId: clan._id });
+				const bit7 = await this.client.db.collection(Collections.JOIN_LEAVE_LOGS).findOne({ clanId: clan._id });
 
 				return {
 					name: clan.name,
@@ -146,8 +147,13 @@ export default class SetupCommand extends Command {
 						{
 							flag: Flags.CLAN_FEED_LOG,
 							ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
-							role: interaction.guild!.roles.cache.get(bit2?.role)?.toString(),
 							channel: this.client.channels.cache.get(bit2?.channel)?.toString()
+						},
+						{
+							flag: Flags.JOIN_LEAVE_LOG,
+							ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
+							role: interaction.guild!.roles.cache.get(bit7?.role)?.toString(),
+							channel: this.client.channels.cache.get(bit7?.channel)?.toString()
 						},
 						{
 							flag: Flags.LAST_SEEN_LOG,

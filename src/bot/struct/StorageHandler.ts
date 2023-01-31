@@ -138,6 +138,29 @@ export default class StorageHandler {
 					{ upsert: true }
 				);
 				break;
+			case Flags.JOIN_LEAVE_LOG:
+				await this.client.db.collection(Collections.JOIN_LEAVE_LOGS).updateOne(
+					{ tag: data.tag, guild: data.guild },
+					{
+						$set: {
+							clanId: new ObjectId(id),
+							tag: data.tag,
+							guild: data.guild,
+							name: data.name,
+							channel: data.channel,
+							role: data.role,
+							webhook: {
+								id: data.webhook.id,
+								token: data.webhook.token
+							}
+						},
+						$setOnInsert: {
+							createdAt: new Date()
+						}
+					},
+					{ upsert: true }
+				);
+				break;
 			case Flags.LAST_SEEN_LOG:
 				await this.client.db.collection(Collections.LAST_SEEN_LOGS).updateOne(
 					{ tag: data.tag, guild: data.guild },
@@ -263,21 +286,17 @@ export default class StorageHandler {
 	}
 
 	public async delete(id: string) {
-		await this.client.db.collection(Collections.DONATION_LOGS).deleteOne({ clanId: new ObjectId(id) });
-
-		await this.client.db.collection(Collections.CLAN_FEED_LOGS).deleteOne({ clanId: new ObjectId(id) });
-
-		await this.client.db.collection(Collections.LAST_SEEN_LOGS).deleteOne({ clanId: new ObjectId(id) });
-
-		await this.client.db.collection(Collections.CLAN_GAMES_LOGS).deleteOne({ clanId: new ObjectId(id) });
-
-		await this.client.db.collection(Collections.CLAN_EMBED_LOGS).deleteOne({ clanId: new ObjectId(id) });
-
-		await this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clanId: new ObjectId(id) });
-
-		await this.client.db.collection(Collections.LEGEND_LOGS).deleteOne({ clanId: new ObjectId(id) });
-
-		return this.client.db.collection(Collections.CLAN_STORES).deleteOne({ _id: new ObjectId(id) });
+		await Promise.all([
+			this.client.db.collection(Collections.DONATION_LOGS).deleteOne({ clanId: new ObjectId(id) }),
+			this.client.db.collection(Collections.CLAN_FEED_LOGS).deleteOne({ clanId: new ObjectId(id) }),
+			this.client.db.collection(Collections.JOIN_LEAVE_LOGS).deleteOne({ clanId: new ObjectId(id) }),
+			this.client.db.collection(Collections.LAST_SEEN_LOGS).deleteOne({ clanId: new ObjectId(id) }),
+			this.client.db.collection(Collections.CLAN_GAMES_LOGS).deleteOne({ clanId: new ObjectId(id) }),
+			this.client.db.collection(Collections.CLAN_EMBED_LOGS).deleteOne({ clanId: new ObjectId(id) }),
+			this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clanId: new ObjectId(id) }),
+			this.client.db.collection(Collections.LEGEND_LOGS).deleteOne({ clanId: new ObjectId(id) }),
+			this.client.db.collection(Collections.CLAN_STORES).deleteOne({ _id: new ObjectId(id) })
+		]);
 	}
 
 	public async deleteReminders(clanTag: string, guild: string) {
@@ -353,7 +372,28 @@ export default class StorageHandler {
 						[Collections.CLAN_FEED_LOGS]: [
 							{
 								$lookup: {
-									from: 'ClanFeedLogs',
+									from: Collections.CLAN_FEED_LOGS,
+									localField: '_id',
+									foreignField: 'clanId',
+									as: 'webhook',
+									pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
+								}
+							},
+							{
+								$unwind: '$webhook'
+							},
+							{
+								$project: {
+									tag: 1,
+									name: 1,
+									webhook: 1
+								}
+							}
+						],
+						[Collections.JOIN_LEAVE_LOGS]: [
+							{
+								$lookup: {
+									from: Collections.JOIN_LEAVE_LOGS,
 									localField: '_id',
 									foreignField: 'clanId',
 									as: 'webhook',

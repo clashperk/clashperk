@@ -68,10 +68,6 @@ export default class JoinLeaveLog extends BaseLog {
 			.setColor(OP[member.op])
 			.setTitle(`\u200e${player.name} (${player.tag})`)
 			.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
-		if (member.op === 'NAME_CHANGE') {
-			embed.setDescription(`Name changed from **${member.name}**`);
-			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
-		}
 		if (member.op === 'LEFT') {
 			embed.setFooter({ text: `Left ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
 			embed.setDescription(
