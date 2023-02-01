@@ -338,6 +338,10 @@ export default class StorageHandler {
 			return this.client.db.collection(Collections.LEGEND_LOGS).deleteOne({ clanId: new ObjectId(id) });
 		}
 
+		if (data.op === Flags.JOIN_LEAVE_LOG) {
+			return this.client.db.collection(Collections.JOIN_LEAVE_LOGS).deleteOne({ clanId: new ObjectId(id) });
+		}
+
 		return null;
 	}
 

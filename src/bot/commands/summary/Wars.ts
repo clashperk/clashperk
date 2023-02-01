@@ -6,9 +6,9 @@ import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 
 const states: Record<string, string> = {
-	inWar: '**End Time:**',
-	preparation: '**Start Time:**',
-	warEnded: '**End Time:**'
+	inWar: '**End time:**',
+	preparation: '**Start time:**',
+	warEnded: '**End time:**'
 };
 
 export default class FamilyWarsCommand extends Command {
@@ -25,7 +25,6 @@ export default class FamilyWarsCommand extends Command {
 		const clans = await this.client.storage.find(interaction.guild.id);
 		if (!clans.length) return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 
-		const embed = new EmbedBuilder();
 		const result = await Promise.all(clans.map((clan) => this.getWAR(clan.tag) as Promise<ClanWar & { round?: number }>));
 		const wars = result.filter((res) => res.ok && res.state !== 'notInWar');
 
@@ -37,26 +36,24 @@ export default class FamilyWarsCommand extends Command {
 		const completedWars = wars.filter((war) => war.state === 'inWar' && this.isCompleted(war));
 		const endedWars = wars.filter((war) => war.state === 'warEnded');
 
-		for (const data of [...inWarWars, ...completedWars, ...prepWars, ...endedWars]) {
-			embed.addFields([
-				{
+		const sorted = [...inWarWars, ...completedWars, ...prepWars, ...endedWars];
+		if (!sorted.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
+
+		const chunks = Array(Math.ceil(sorted.length / 15))
+			.fill(0)
+			.map(() => sorted.splice(0, 15));
+		for (const chunk of chunks) {
+			const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
+			for (const data of chunk) {
+				embed.addFields({
 					name: `${data.clan.name} ${EMOJIS.VS_BLUE} ${data.opponent.name} ${data.round ? `(CWL Round #${data.round})` : ''}`,
 					value: [
 						`${data.state === 'preparation' ? '' : this.getLeaderBoard(data.clan, data.opponent)}`,
 						`${states[data.state]} ${Util.getRelativeTime(moment(this._getTime(data)).toDate().getTime())}`,
 						'\u200b'
 					].join('\n')
-				}
-			]);
-		}
-
-		if (!embed.data.fields?.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
-		const embeds = Array(Math.ceil(embed.data.fields.length / 15))
-			.fill(0)
-			.map(() => embed.data.fields!.splice(0, 15))
-			.map((fields) => new EmbedBuilder({ color: this.client.embed(interaction), fields }));
-		if (embeds.length === 1) return interaction.editReply({ embeds: [embeds.shift()!] });
-		for (const embed of embeds) {
+				});
+			}
 			await interaction.followUp({ embeds: [embed] });
 		}
 	}
