@@ -56,7 +56,7 @@ export default class ReminderEditCommand extends Command {
 		const state = {
 			remaining: reminder.remaining.map((remaining) => remaining.toString()),
 			townHalls: reminder.townHalls.map((townHall) => townHall.toString()),
-			smartSkip: reminder.smartSkip,
+			smartSkip: Boolean(reminder.smartSkip),
 			roles: reminder.roles,
 			warTypes: reminder.warTypes,
 			message: reminder.message
