@@ -13,6 +13,17 @@ const ActionType: Record<string, string> = {
 	SYNCED: '"%PLAYER% [Auto Role Initiated]"'
 };
 
+interface AggregatedClan {
+	tag: string;
+	secureRole: boolean;
+	roles: Record<string, string>;
+}
+
+interface AggregatedGuild {
+	guild: string;
+	clans: AggregatedClan[];
+}
+
 export interface RPCFeed {
 	clan: {
 		tag: string;
@@ -90,7 +101,7 @@ export class RoleManager {
 
 		const queried = await this.client.db
 			.collection(Collections.CLAN_STORES)
-			.aggregate<{ guild: string; clans: { tag: string; secureRole: boolean; roles: Record<string, string> }[] }>([
+			.aggregate<AggregatedGuild>([
 				{
 					$match: {
 						tag,
@@ -136,7 +147,8 @@ export class RoleManager {
 		for (const { guild, clans } of queried) {
 			if (!clans.length) continue;
 			if (!this.client.guilds.cache.has(guild)) continue;
-			await this.run(guild, clans, data);
+			const clan = clans.find((c) => c.tag === tag)!;
+			await this.run(guild, clans, clan, roleChanges);
 		}
 	}
 
@@ -232,16 +244,24 @@ export class RoleManager {
 		}
 	}
 
-	private async run(guildId: string, clans: { tag: string; secureRole: boolean; roles: Record<string, string> }[], data: RPCFeed) {
-		const clan = clans.find((clan) => clan.tag === data.clan.tag)!;
-
+	private async run(
+		guildId: string,
+		clans: AggregatedClan[],
+		clan: AggregatedClan,
+		members: {
+			op: string;
+			tag: string;
+			name: string;
+			role?: string;
+		}[]
+	) {
 		// getting all linked accounts of all clan members
 		const flattened = await this.client.db
 			.collection(Collections.PLAYER_LINKS)
 			.aggregate<PlayerLinks>([
 				{
 					$match: {
-						tag: { $in: data.members.map((mem) => mem.tag) },
+						tag: { $in: members.map((mem) => mem.tag) },
 						...(clan.secureRole ? { verified: true } : {})
 					}
 				},
@@ -274,14 +294,14 @@ export class RoleManager {
 		}, []);
 
 		// fetch guild members at once
-		const members = await this.client.guilds.cache.get(guildId)?.members.fetch({ user: userIds, force: true });
-		if (!members?.size) return null;
+		const guildMembers = await this.client.guilds.cache.get(guildId)?.members.fetch({ user: userIds, force: true });
+		if (!guildMembers?.size) return null;
 
 		// getting roles of all linked players
 		const players = (await this.client.http.detailedClanMembers(flattened)).filter((res) => res.ok);
 
 		// going through all clan members
-		for (const member of data.members) {
+		for (const member of members) {
 			// whether the member is linked
 			const mem = flattened.find((a) => a.tag === member.tag);
 			if (!mem) continue;
@@ -311,17 +331,17 @@ export class RoleManager {
 			// flatten all the role ids for each clan
 			const roles = Array.from(new Set(clans.map((clan) => Object.values(clan.roles)).flat()));
 			const count = await this.addRoles({
-				members,
+				members: guildMembers,
 				guildId,
 				userId: mem.userId,
 				roleIds: highestRoles,
 				roles,
 				reason
 			});
-			if (count) await this.delay(data.members.length >= 10 ? 1000 : 250);
+			if (count) await this.delay(members.length >= 10 ? 1000 : 250);
 		}
 
-		return data.members.length;
+		return members.length;
 	}
 
 	private handleTHRoles(players: Player[], clans: string[], rolesMap: Record<string, string>, allowExternal: boolean) {
