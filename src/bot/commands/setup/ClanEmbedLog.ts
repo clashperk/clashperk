@@ -42,16 +42,6 @@ export default class ClanEmbedCommand extends Command {
 		'ViewChannel'
 	];
 
-	public condition(interaction: Interaction<'cached'>) {
-		if (!this.client.patrons.get(interaction.guild.id)) {
-			const embed = new EmbedBuilder()
-				.setDescription(this.i18n('common.patron_only', { lng: interaction.locale }))
-				.setImage('https://i.imgur.com/txkD6q7.png');
-			return { embeds: [embed] };
-		}
-		return null;
-	}
-
 	public args(interaction: Interaction<'cached'>): Args {
 		return {
 			color: {

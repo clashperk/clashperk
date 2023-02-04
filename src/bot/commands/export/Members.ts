@@ -1,12 +1,12 @@
-import { GuildMember, CommandInteraction, Collection, Interaction, EmbedBuilder } from 'discord.js';
 import { Player } from 'clashofclans.js';
-import RAW_TROOPS_DATA from '../../util/Troops.js';
-import { Collections } from '../../util/Constants.js';
-import Workbook from '../../struct/Excel.js';
+import { Collection, CommandInteraction, GuildMember } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Util } from '../../util/index.js';
-import { HERO_PETS, SUPER_TROOPS, HOME_HEROES } from '../../util/Emojis.js';
+import Workbook from '../../struct/Excel.js';
 import { PlayerLinks } from '../../types/index.js';
+import { Collections } from '../../util/Constants.js';
+import { HERO_PETS, HOME_HEROES, SUPER_TROOPS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
+import RAW_TROOPS_DATA from '../../util/Troops.js';
 
 const achievements = [
 	'Gold Grab',
@@ -38,16 +38,6 @@ export default class ExportClanMembersCommand extends Command {
 			clientPermissions: ['EmbedLinks'],
 			defer: true
 		});
-	}
-
-	public condition(interaction: Interaction<'cached'>) {
-		if (!this.client.patrons.get(interaction)) {
-			const embed = new EmbedBuilder()
-				.setDescription(this.i18n('common.patron_only', { lng: interaction.locale }))
-				.setImage('https://i.imgur.com/Uc5G2oS.png');
-			return { embeds: [embed] };
-		}
-		return null;
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string }) {

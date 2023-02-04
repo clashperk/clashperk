@@ -83,14 +83,6 @@ export default class AutoClanRoleCommand extends Command {
 			}
 		}
 
-		const duplicate = await this.client.db
-			.collection(Collections.CLAN_STORES)
-			.findOne({ tag: { $nin: clans.map((clan) => clan.tag) }, roleIds: { $in: [members.id, elders.id, coLeads.id] } });
-
-		if (duplicate && !this.client.patrons.get(interaction.guild.id)) {
-			return interaction.editReply(this.i18n('command.autorole.enable.roles_already_used', { lng: interaction.locale }));
-		}
-
 		await this.client.db.collection(Collections.CLAN_STORES).updateMany(
 			{ tag: { $in: clans.map((clan) => clan.tag) }, guild: interaction.guild.id },
 			{

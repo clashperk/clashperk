@@ -216,28 +216,12 @@ export default class WarCommand extends Command {
 
 		collector.on('collect', async (action) => {
 			if (action.customId === customIds.download) {
-				if (this.client.patrons.get(interaction)) {
-					await action.update({ components: [] });
-					const buffer = await this.warStats(body);
-					await action.followUp({
-						content: `**${body.clan.name} vs ${body.opponent.name}**`,
-						files: [{ attachment: Buffer.from(buffer), name: 'war_stats.xlsx' }]
-					});
-				} else {
-					const embed = new EmbedBuilder()
-						.setDescription(
-							[
-								'**Patron Only Command**',
-								'This command is only available on Patron servers.',
-								'Visit https://patreon.com/clashperk for more details.',
-								'',
-								'**Demo War Attacks Export**'
-							].join('\n')
-						)
-						.setImage('https://i.imgur.com/Uc5G2oS.png'); // TODO: Update Image
-
-					await action.reply({ embeds: [embed], ephemeral: true });
-				}
+				await action.update({ components: [] });
+				const buffer = await this.warStats(body);
+				await action.followUp({
+					content: `**${body.clan.name} vs ${body.opponent.name}**`,
+					files: [{ attachment: Buffer.from(buffer), name: 'war_stats.xlsx' }]
+				});
 			}
 
 			if (action.customId === customIds.attacks) {

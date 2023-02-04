@@ -1,5 +1,5 @@
 import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
-import { CommandInteraction, Interaction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
 import { Season, Util } from '../../util/index.js';
@@ -17,16 +17,6 @@ export default class ExportCWL extends Command {
 			},
 			defer: true
 		});
-	}
-
-	public condition(interaction: Interaction<'cached'>) {
-		if (!this.client.patrons.get(interaction)) {
-			const embed = new EmbedBuilder()
-				.setDescription(this.i18n('common.patron_only', { lng: interaction.locale }))
-				.setImage('https://cdn.discordapp.com/attachments/806179502508998657/846700124134178826/unknown.png');
-			return { embeds: [embed] };
-		}
-		return null;
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; season?: string }) {

@@ -39,11 +39,17 @@ export default class CommandEndedListener extends Listener {
 				- **Summary**
 					- </summary best:813041692188999707>
 
+				- **Raid Weekend Card**
+					https://i.imgur.com/aSr4uIE.jpg
+
+				- **Player Attack History**
+					<https://app.clashperk.com/members/%23QYG8UQLC>
+
 				- [Join Support Server to know more!](https://discord.gg/ppuppun)
 				`,
 				ephemeral: false
 			});
-			setTimeout(() => msg.delete().catch(() => null), 1000 * 60 * 2).unref();
+			setTimeout(() => msg.delete().catch(() => null), 1000 * 60 * 3).unref();
 		}
 	}
 }

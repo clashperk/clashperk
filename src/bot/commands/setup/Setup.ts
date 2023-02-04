@@ -10,6 +10,8 @@ const names: Record<string, string> = {
 	[Flags.CLAN_EMBED_LOG]: 'Clan Embed',
 	[Flags.CLAN_GAMES_LOG]: 'Clan Games',
 	[Flags.CLAN_WAR_LOG]: 'War Feed',
+	[Flags.LEGEND_LOG]: 'Legend Log',
+	[Flags.CAPITAL_LOG]: 'War Feed',
 	[Flags.CHANNEL_LINKED]: 'Linked Channel',
 	[Flags.JOIN_LEAVE_LOG]: 'Join/Leave Log'
 };
@@ -131,6 +133,8 @@ export default class SetupCommand extends Command {
 				const bit5 = await this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clanId: clan._id });
 				const bit6 = await this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clanId: clan._id });
 				const bit7 = await this.client.db.collection(Collections.JOIN_LEAVE_LOGS).findOne({ clanId: clan._id });
+				const bit8 = await this.client.db.collection(Collections.LEGEND_LOGS).findOne({ clanId: clan._id });
+				const bit9 = await this.client.db.collection(Collections.CAPITAL_LOGS).findOne({ clanId: clan._id });
 
 				return {
 					name: clan.name,
@@ -164,6 +168,16 @@ export default class SetupCommand extends Command {
 							flag: Flags.CLAN_EMBED_LOG,
 							ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
 							channel: this.client.channels.cache.get(bit4?.channel)?.toString()
+						},
+						{
+							flag: Flags.LEGEND_LOG,
+							ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
+							channel: this.client.channels.cache.get(bit8?.channel)?.toString()
+						},
+						{
+							flag: Flags.CAPITAL_LOG,
+							ok: Boolean(clan.flag > 0 && clan.active && !clan.paused),
+							channel: this.client.channels.cache.get(bit9?.channel)?.toString()
 						},
 						{
 							flag: Flags.CLAN_GAMES_LOG,

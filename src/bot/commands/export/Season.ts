@@ -30,7 +30,6 @@ export default class ExportSeason extends Command {
 		const season = args.season ?? Season.ID;
 		const workbook = new Excel();
 		const sheet = workbook.addWorksheet(season);
-		const patron = this.client.patrons.get(interaction.guild.id);
 
 		const _clans: Clan[] = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
 		const allMembers = _clans.reduce<(ClanMember & { clanTag: string })[]>((previous, current) => {
@@ -40,23 +39,21 @@ export default class ExportSeason extends Command {
 
 		const memberTags: { tag: string; user: string }[] = [];
 		let guildMembers = new Collection<string, GuildMember>();
-		if (patron) {
-			memberTags.push(...(await this.client.http.getDiscordLinks(allMembers)));
-			const dbMembers = await this.client.db
-				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-				.find({ tag: { $in: allMembers.map((m) => m.tag) } })
-				.toArray();
-			if (dbMembers.length) this.updateUsers(interaction, dbMembers);
-			for (const member of dbMembers) {
-				if (!allMembers.find((mem) => mem.tag === member.tag)) continue;
-				if (memberTags.find((mem) => mem.tag === member.tag)) continue;
-				memberTags.push({ tag: member.tag, user: member.userId });
-			}
-			const fetchedMembers = await Promise.all(
-				this.chunks(memberTags).map((members) => interaction.guild.members.fetch({ user: members.map((m) => m.user) }))
-			);
-			guildMembers = guildMembers.concat(...fetchedMembers);
+		memberTags.push(...(await this.client.http.getDiscordLinks(allMembers)));
+		const dbMembers = await this.client.db
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.find({ tag: { $in: allMembers.map((m) => m.tag) } })
+			.toArray();
+		if (dbMembers.length) this.updateUsers(interaction, dbMembers);
+		for (const member of dbMembers) {
+			if (!allMembers.find((mem) => mem.tag === member.tag)) continue;
+			if (memberTags.find((mem) => mem.tag === member.tag)) continue;
+			memberTags.push({ tag: member.tag, user: member.userId });
 		}
+		const fetchedMembers = await Promise.all(
+			this.chunks(memberTags).map((members) => interaction.guild.members.fetch({ user: members.map((m) => m.user) }))
+		);
+		guildMembers = guildMembers.concat(...fetchedMembers);
 
 		const members = (await Promise.all(_clans.map((clan) => this.aggregationQuery(clan, season)))).flat();
 		for (const mem of members) {
@@ -89,7 +86,6 @@ export default class ExportSeason extends Command {
 			{ header: 'Activity Score', width: 10 }
 		];
 
-		if (!patron) columns.splice(2, 1);
 		// if (season !== Season.ID) columns.splice(-1);
 		sheet.columns = [...columns] as any[];
 		sheet.getRow(1).font = { bold: true, size: 10 };
@@ -131,7 +127,6 @@ export default class ExportSeason extends Command {
 					m.score ?? 0
 				];
 
-				if (!patron) rows.splice(2, 1);
 				// if (season !== Season.ID) rows.splice(-1);
 				return rows;
 			})
