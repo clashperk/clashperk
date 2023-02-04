@@ -94,6 +94,34 @@ export class Util {
 		return { startTime: start.toDate().getTime(), endTime: start.clone().add(1, 'day').subtract(1, 'second').toDate().getTime() };
 	}
 
+	public static getRaidWeekEndTimestamp() {
+		const start = moment();
+		const day = start.day();
+		const hours = start.hours();
+		const isRaidWeek = (day === 5 && hours >= 7) || [0, 6].includes(day) || (day === 1 && hours < 7);
+		if (day < 5 || (day <= 5 && hours < 7)) start.day(-7);
+		start.day(5);
+		start.hours(7).minutes(0).seconds(0).milliseconds(0);
+		return {
+			startTime: start.toDate(),
+			prevWeekEndTime: start.clone().subtract(4, 'days').toDate(),
+			endTime: start.clone().add(3, 'days').toDate(),
+			isRaidWeek
+		};
+	}
+
+	public static raidWeekDateFormat(startDate: Date, endDate: Date) {
+		if (startDate.getFullYear() !== endDate.getFullYear()) {
+			return `${moment(startDate).format('DD MMM YYYY')} - ${moment(endDate).format('DD MMM YYYY')}`;
+		}
+
+		if (startDate.getMonth() !== endDate.getMonth()) {
+			return `${moment(startDate).format('DD MMM')} - ${moment(endDate).format('DD MMM YYYY')}`;
+		}
+
+		return `${startDate.getDate()} - ${endDate.getDate()} ${moment(startDate).format('MMM YYYY')}`;
+	}
+
 	public static getLegendDay() {
 		const { endTime } = this.getCurrentLegendTimestamp();
 		return moment(endTime).add(1, 'second').diff(moment(Season.startTimestamp), 'days');

@@ -204,6 +204,18 @@ export interface LegendLogModel {
 	lastPosted: Date;
 }
 
+export interface CapitalLogModel {
+	tag: string;
+	name: string;
+	guild: string;
+	clanId: ObjectId;
+	channel: string;
+	webhook: { id: string; token: string } | null;
+	deleted?: boolean;
+	threadId?: string;
+	lastPosted: Date;
+}
+
 export interface LastSeenLogModel {
 	tag: string;
 	name: string;

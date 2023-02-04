@@ -39,9 +39,22 @@ export default class WarCommand extends Command {
 
 	// TODO : Args Parsing with last war id
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; war_id?: number; user?: User }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; war_id?: number; user?: User; attacks?: boolean }) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
+
+		if (args.attacks && args.war_id) {
+			const collection = this.client.db.collection(Collections.CLAN_WARS);
+			const body = await collection.findOne({ id: args.war_id });
+			if (!body) return interaction.followUp({ content: 'No war found with that ID.', ephemeral: true });
+
+			const clan = body.clan.tag === args.tag ? body.clan : body.opponent;
+			const opponent = body.clan.tag === args.tag ? body.opponent : body.clan;
+
+			const em = this.attacks(interaction, { ...body, clan, opponent } as unknown as ClanWar);
+			return interaction.followUp({ embeds: [em], ephemeral: true });
+		}
+
 		if (args.war_id) return this.getWar(interaction, args.war_id, clan.tag);
 
 		const embed = new EmbedBuilder()

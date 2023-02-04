@@ -211,6 +211,31 @@ export default class StorageHandler {
 					{ upsert: true }
 				);
 				break;
+			case Flags.CAPITAL_LOG:
+				await this.client.db.collection(Collections.CAPITAL_LOGS).updateOne(
+					{ tag: data.tag, guild: data.guild },
+					{
+						$set: {
+							clanId: new ObjectId(id),
+							tag: data.tag,
+							guild: data.guild,
+							name: data.name,
+							channel: data.channel,
+							color: data.color,
+							message: data.message,
+							webhook: {
+								id: data.webhook.id,
+								token: data.webhook.token
+							}
+						},
+						$setOnInsert: {
+							lastPosted: new Date(),
+							createdAt: new Date()
+						}
+					},
+					{ upsert: true }
+				);
+				break;
 			case Flags.CLAN_GAMES_LOG:
 				await this.client.db.collection(Collections.CLAN_GAMES_LOGS).updateOne(
 					{ tag: data.tag, guild: data.guild },
@@ -295,6 +320,7 @@ export default class StorageHandler {
 			this.client.db.collection(Collections.CLAN_EMBED_LOGS).deleteOne({ clanId: new ObjectId(id) }),
 			this.client.db.collection(Collections.CLAN_WAR_LOGS).deleteOne({ clanId: new ObjectId(id) }),
 			this.client.db.collection(Collections.LEGEND_LOGS).deleteOne({ clanId: new ObjectId(id) }),
+			this.client.db.collection(Collections.CAPITAL_LOGS).deleteOne({ clanId: new ObjectId(id) }),
 			this.client.db.collection(Collections.CLAN_STORES).deleteOne({ _id: new ObjectId(id) })
 		]);
 	}
@@ -336,6 +362,10 @@ export default class StorageHandler {
 
 		if (data.op === Flags.LEGEND_LOG) {
 			return this.client.db.collection(Collections.LEGEND_LOGS).deleteOne({ clanId: new ObjectId(id) });
+		}
+
+		if (data.op === Flags.CAPITAL_LOG) {
+			return this.client.db.collection(Collections.CAPITAL_LOGS).deleteOne({ clanId: new ObjectId(id) });
 		}
 
 		if (data.op === Flags.JOIN_LEAVE_LOG) {
@@ -503,6 +533,27 @@ export default class StorageHandler {
 							{
 								$lookup: {
 									from: Collections.LEGEND_LOGS,
+									localField: '_id',
+									foreignField: 'clanId',
+									as: 'webhook',
+									pipeline: [{ $project: { id: '$webhook.id', token: '$webhook.token' } }]
+								}
+							},
+							{
+								$unwind: '$webhook'
+							},
+							{
+								$project: {
+									tag: 1,
+									name: 1,
+									webhook: 1
+								}
+							}
+						],
+						[Collections.CAPITAL_LOGS]: [
+							{
+								$lookup: {
+									from: Collections.CAPITAL_LOGS,
 									localField: '_id',
 									foreignField: 'clanId',
 									as: 'webhook',

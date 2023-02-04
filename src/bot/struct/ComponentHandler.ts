@@ -87,6 +87,12 @@ export default class ComponentHandler {
 				await this.client.commandHandler.exec(interaction, command, { ...parsed });
 				return true;
 			}
+			case 'war': {
+				const command = this.client.commandHandler.modules.get('war')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, { ...parsed });
+				return true;
+			}
 			default: {
 				return false;
 			}

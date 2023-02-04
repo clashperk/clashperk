@@ -91,7 +91,7 @@ export default class Http extends ClashOfClansClient {
 	}
 
 	public async getRaidLastSeason(clan: { tag: string }): Promise<{ items: RaidSeason[]; ok: boolean; statusCode: number }> {
-		return this.fetch(`/clans/${encodeURIComponent(clan.tag)}/capitalraidseasons?limit=2`);
+		return this.fetch(`/clans/${encodeURIComponent(clan.tag)}/capitalraidseasons?limit=6`);
 	}
 
 	public async getCurrentWars(clanTag: string): Promise<(ClanWar & { warTag?: string; round?: number; isFriendly?: boolean })[]> {

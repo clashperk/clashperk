@@ -23,6 +23,7 @@ export default class SetupEnableCommand extends Command {
 			'clan-games': this.handler.modules.get('setup-clan-log')!,
 			'war-feed': this.handler.modules.get('setup-clan-log')!,
 			'legend-log': this.handler.modules.get('setup-clan-log')!,
+			'capital-log': this.handler.modules.get('setup-clan-log')!,
 			'join-leave': this.handler.modules.get('setup-clan-log')!
 		}[args.option];
 

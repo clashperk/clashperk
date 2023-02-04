@@ -13,6 +13,7 @@ export const enum Collections {
 	JOIN_LEAVE_LOGS = 'JoinLeaveLogs',
 	CLAN_WAR_LOGS = 'ClanWarLogs',
 	LEGEND_LOGS = 'LegendLogs',
+	CAPITAL_LOGS = 'CapitalLogs',
 
 	EVENT_LOGS = 'EventLogs',
 
@@ -78,7 +79,8 @@ export const enum Flags {
 	LEGEND_LOG = 1 << 8,
 	TOWN_HALL_LOG = 1 << 9,
 	PLAYER_FEED_LOG = 1 << 10,
-	JOIN_LEAVE_LOG = 1 << 11
+	JOIN_LEAVE_LOG = 1 << 11,
+	CAPITAL_LOG = 1 << 12
 }
 
 export const enum Settings {

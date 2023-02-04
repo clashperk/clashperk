@@ -389,37 +389,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						choices: getWeekIds()
 					}
 				]
-			},
-			{
-				name: 'week',
-				description: command.capital.raids.description,
-				description_localizations: translation('command.capital.raids.description'),
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'tag',
-						description: common.options.tag.description,
-						description_localizations: translation('common.options.tag.description'),
-						type: ApplicationCommandOptionType.String,
-						autocomplete: true,
-						required: false
-					},
-					{
-						name: 'user',
-						description: common.options.user.description,
-						description_localizations: translation('common.options.user.description'),
-						type: ApplicationCommandOptionType.User,
-						required: false
-					},
-					{
-						name: 'week',
-						description: command.capital.raids.options.week.description,
-						description_localizations: translation('command.capital.raids.options.week.description'),
-						type: ApplicationCommandOptionType.String,
-						required: false,
-						choices: getWeekIds()
-					}
-				]
 			}
 		]
 	},
@@ -1356,6 +1325,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'legend-log'
 							},
 							{
+								name: 'Capital Log',
+								value: 'capital-log'
+							},
+							{
 								name: 'Clan Feed',
 								value: 'clan-feed'
 							},
@@ -1450,6 +1423,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Legend Log',
 								value: 'legend-log'
+							},
+							{
+								name: 'Capital Log',
+								value: 'capital-log'
 							},
 							{
 								name: 'Clan Embed',

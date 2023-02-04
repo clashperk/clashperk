@@ -12,7 +12,8 @@ const names: Record<string, string> = {
 	[Flags.CLAN_GAMES_LOG]: 'Clan Games',
 	[Flags.CLAN_WAR_LOG]: 'War Feed',
 	[Flags.CHANNEL_LINKED]: 'Linked Channel',
-	[Flags.JOIN_LEAVE_LOG]: 'Join/Leave Log'
+	[Flags.JOIN_LEAVE_LOG]: 'Join/Leave Log',
+	[Flags.CAPITAL_LOG]: 'Capital Log'
 };
 
 export default class SetupDisableCommand extends Command {
@@ -41,6 +42,7 @@ export default class SetupDisableCommand extends Command {
 					['all', 'remove-clan'],
 					[Flags.CLAN_EMBED_LOG.toString(), 'clan-embed'],
 					[Flags.LEGEND_LOG.toString(), 'legend-log'],
+					[Flags.CAPITAL_LOG.toString(), 'capital-log'],
 					[Flags.JOIN_LEAVE_LOG.toString(), 'join-leave'],
 					[Flags.LAST_SEEN_LOG.toString(), 'lastseen'],
 					[Flags.CLAN_WAR_LOG.toString(), 'war-feed'],

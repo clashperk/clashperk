@@ -1,6 +1,6 @@
-import { EmbedBuilder, Collection, PermissionsString, escapeMarkdown, WebhookClient } from 'discord.js';
+import { EmbedBuilder, Collection, PermissionsString, escapeMarkdown, WebhookClient, ActionRowBuilder, ButtonBuilder } from 'discord.js';
 import { ClanWar, ClanWarMember, WarClan } from 'clashofclans.js';
-import { APIMessage } from 'discord-api-types/v10';
+import { APIMessage, ButtonStyle } from 'discord-api-types/v10';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
 import { TOWN_HALLS, EMOJIS, WAR_STARS, BLUE_NUMBERS, ORANGE_NUMBERS } from '../util/Emojis.js';
@@ -70,8 +70,21 @@ export default class ClanWarLog extends BaseLog {
 
 	private async send(cache: Cache, webhook: WebhookClient, data: Feed) {
 		const embed = this.embed(data);
+
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setLabel('Attacks')
+				.setEmoji(EMOJIS.SWORD)
+				.setStyle(ButtonStyle.Primary)
+				.setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, attacks: true }))
+		);
+
 		try {
-			return await super._send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+			return await super._send(cache, webhook, {
+				embeds: [embed],
+				components: data.state === 'preparation' ? [] : [row],
+				threadId: cache.threadId
+			});
 		} catch (error: any) {
 			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'ClanWarLog' });
 			return null;
@@ -80,8 +93,20 @@ export default class ClanWarLog extends BaseLog {
 
 	private async edit(cache: Cache, webhook: WebhookClient, message: string, data: Feed) {
 		const embed = this.embed(data);
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setLabel('Attacks')
+				.setEmoji(EMOJIS.SWORD)
+				.setStyle(ButtonStyle.Primary)
+				.setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, attacks: true }))
+		);
+
 		try {
-			return await webhook.editMessage(message, { embeds: [embed], threadId: cache.threadId });
+			return await webhook.editMessage(message, {
+				embeds: [embed],
+				components: data.state === 'preparation' ? [] : [row],
+				threadId: cache.threadId
+			});
 		} catch (error: any) {
 			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'ClanWarLog' });
 			if (error.code === 10008) {
@@ -486,6 +511,7 @@ interface Feed extends ClanWar {
 	result: string;
 	round: number;
 	uid: string;
+	id: number;
 	warTag?: string;
 	attacksPerMember: number;
 	remaining: ClanWarMember[];

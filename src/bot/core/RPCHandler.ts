@@ -11,6 +11,7 @@ import DonationLog from './DonationLog.js';
 import ClanWarLog from './ClanWarLog.js';
 import LegendLog from './LegendLog.js';
 import JoinLeaveLog from './JoinLeaveLog.js';
+import CapitalLog from './CapitalLog.js';
 
 export default class RPCHandler {
 	private paused = Boolean(false);
@@ -23,6 +24,7 @@ export default class RPCHandler {
 	private readonly lastSeenLog = new LastSeenLog(this.client);
 	private readonly clanFeedLog = new ClanFeedLog(this.client);
 	private readonly legendLog = new LegendLog(this.client);
+	private readonly capitalLog = new CapitalLog(this.client);
 	private readonly joinLeaveLog = new JoinLeaveLog(this.client);
 
 	public roleManager = new RoleManager(this.client);
@@ -53,9 +55,6 @@ export default class RPCHandler {
 					case Flags.DONATION_LOG:
 						await this.donationLog.exec(data.tag, data);
 						break;
-					// case Flags.LAST_SEEN_LOG:
-					// 	await this.lastSeenLog.exec(data.tag, data);
-					// 	break;
 					case Flags.CLAN_FEED_LOG:
 						await Promise.all([
 							this.clanFeedLog.exec(data.tag, data),
@@ -105,6 +104,7 @@ export default class RPCHandler {
 		await this.clanWarLog.init();
 		await this.legendLog.init();
 		await this.joinLeaveLog.init();
+		await this.capitalLog.init();
 
 		await this.broadcast();
 		return this.client.publisher.publish('INIT', '{}');
@@ -161,6 +161,7 @@ export default class RPCHandler {
 			[Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
 			[Flags.CLAN_WAR_LOG]: this.clanWarLog,
 			[Flags.LEGEND_LOG]: this.legendLog,
+			[Flags.CAPITAL_LOG]: this.capitalLog,
 			[Flags.JOIN_LEAVE_LOG]: this.joinLeaveLog
 		};
 
@@ -196,6 +197,7 @@ export default class RPCHandler {
 			[Flags.CLAN_GAMES_LOG]: this.clanGamesLog,
 			[Flags.CLAN_WAR_LOG]: this.clanWarLog,
 			[Flags.LEGEND_LOG]: this.legendLog,
+			[Flags.CAPITAL_LOG]: this.capitalLog,
 			[Flags.JOIN_LEAVE_LOG]: this.joinLeaveLog
 		};
 
@@ -220,6 +222,7 @@ export default class RPCHandler {
 		this.clanFeedLog.cached.clear();
 		this.lastSeenLog.cached.clear();
 		this.legendLog.cached.clear();
+		this.capitalLog.cached.clear();
 
 		await this.client.subscriber.unsubscribe('channel');
 		return this.client.publisher.publish('FLUSH', '{}');
