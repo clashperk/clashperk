@@ -15,7 +15,8 @@ export default class CapitalCommand extends Command {
 	public exec(interaction: CommandInteraction<'cached'>, args: { command: string }) {
 		const command = {
 			contributions: this.handler.modules.get('capital-contributions')!,
-			raids: this.handler.modules.get('capital-raids')!
+			raids: this.handler.modules.get('capital-raids')!,
+			week: this.handler.modules.get('capital-week')!
 		}[args.command];
 
 		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
