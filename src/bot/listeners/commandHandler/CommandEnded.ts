@@ -14,8 +14,8 @@ export default class CommandEndedListener extends Listener {
 
 	public async exec(interaction: MessageComponentInteraction | CommandInteraction, _command: Command, _args: unknown) {
 		if (!interaction.isCommand()) return;
-		const suggested = await this.client.stats.featureSuggested(interaction);
-		if (!suggested) {
+		const suggested = 0 + 1; // await this.client.stats.featureSuggested(interaction);
+		if (suggested > 10) {
 			const msg = await interaction.followUp({
 				content: stripIndent`
 				- **Checkout the new Features!**
