@@ -148,6 +148,14 @@ export default class Resolver {
 			.updateMany({ userId: member.user.id }, { $set: { username: member.user.tag } });
 	}
 
+	public async getLinkedPlayerTags(userId: string) {
+		const [players, others] = await Promise.all([
+			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),
+			this.client.http.getPlayerTags(userId)
+		]);
+		return Array.from(new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]));
+	}
+
 	public async getPlayers(userId: string) {
 		const [players, others] = await Promise.all([
 			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),

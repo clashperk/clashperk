@@ -85,8 +85,10 @@ export default class StatsCommand extends Command {
 			user?: User;
 		}
 	) {
+		if (args.user) return this.forUsers(interaction, args);
+
 		let { command: mode, compare, type, stars, season, attempt } = args;
-		const data = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
+		const data = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!data) return;
 
 		compare = this.compare(compare as string);
@@ -212,6 +214,172 @@ export default class StatsCommand extends Command {
 		const starType = `${stars.startsWith('>') ? '>= ' : ''}${stars.replace(/[>=]+/, '')}`;
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.small })
+			.setDescription(
+				Util.splitMessage(
+					[
+						`**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} ${tail}**`,
+						'',
+						`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} \`RATE%  HITS   ${'NAME'.padEnd(15, ' ')}\u200f\``,
+						stats
+							.map((m, i) => {
+								const percentage = this._padStart(m.rate.toFixed(1), 5);
+								return `\u200e${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.hall]} \`${percentage} ${this._padStart(
+									m.success,
+									3
+								)}/${this._padEnd(m.total, 3)} ${this._padEnd(m.name, 14)} \u200f\``;
+							})
+							.join('\n')
+					].join('\n'),
+					{ maxLength: 4096 }
+				)[0]
+			)
+			.setFooter({ text: `War Types: ${WarTypes[type]} (Since ${moment(season).format('MMM YYYY')})` });
+
+		return interaction.editReply({ embeds: [embed] });
+	}
+
+	private async forUsers(
+		interaction: CommandInteraction<'cached'>,
+		args: {
+			command: Mode;
+			tag?: string;
+			compare: string | Compare;
+			type: WarTypeArg;
+			stars: string;
+			season: string;
+			attempt?: string;
+			user?: User;
+		}
+	) {
+		let { command: mode, compare, type, stars, season, attempt } = args;
+
+		const user = args.user!;
+		const playerTags = await this.client.resolver.getLinkedPlayerTags(user.id);
+
+		compare = this.compare(compare as string);
+		const extra =
+			type === 'regular'
+				? { warType: WarType.REGULAR }
+				: type === 'cwl'
+				? { warType: WarType.CWL }
+				: type === 'friendly'
+				? { warType: WarType.FRIENDLY }
+				: type === 'noFriendly'
+				? { warType: { $ne: WarType.FRIENDLY } }
+				: type === 'noCWL'
+				? { warType: { $ne: WarType.CWL } }
+				: {};
+
+		const wars = await this.client.db
+			.collection(Collections.CLAN_WARS)
+			.find({
+				$or: [{ 'clan.members.tag': { $in: playerTags } }, { 'opponent.members.tag': { $in: playerTags } }],
+				preparationStartTime: { $gte: new Date(season) },
+				...extra
+			})
+			.toArray();
+
+		const members: { [key: string]: { name: string; tag: string; total: number; success: number; hall: number } } = {};
+		for (const war of wars) {
+			const clan: WarClan = war.clan.members.some((mem: any) => playerTags.includes(mem.tag)) ? war.clan : war.opponent;
+			const opponent: WarClan = war.clan.tag === clan.tag ? war.opponent : war.clan;
+			const attacks = (mode === 'attacks' ? clan : opponent).members
+				.filter((m) => m.attacks?.length)
+				.map((m) => m.attacks!)
+				.flat();
+
+			for (const m of clan.members) {
+				if (!playerTags.includes(m.tag)) continue;
+				if (typeof compare === 'object' && compare.attackerTownHall !== m.townhallLevel) continue;
+
+				const member = members[m.tag] // eslint-disable-line
+					? members[m.tag]
+					: (members[m.tag] = {
+							name: m.name,
+							tag: m.tag,
+							total: 0,
+							success: 0,
+							hall: m.townhallLevel
+					  });
+
+				for (const attack of mode === 'attacks' ? m.attacks ?? [] : []) {
+					if (attempt === 'fresh' && !this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
+					if (attempt === 'cleanup' && this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
+
+					if (typeof compare === 'string' && compare === 'equal') {
+						const defender = opponent.members.find((m) => m.tag === attack.defenderTag)!;
+						if (defender.townhallLevel === m.townhallLevel) {
+							member.total += 1;
+							if (this.getStars(attack.stars, stars)) member.success += 1;
+						}
+					} else if (typeof compare === 'object') {
+						const { attackerTownHall, defenderTownHall } = compare;
+						if (m.townhallLevel === attackerTownHall) {
+							const defender = opponent.members.find((m) => m.tag === attack.defenderTag)!;
+							if (defender.townhallLevel === defenderTownHall) {
+								member.total += 1;
+								if (this.getStars(attack.stars, stars)) member.success += 1;
+							}
+						}
+					} else {
+						member.total += 1;
+						if (this.getStars(attack.stars, stars)) member.success += 1;
+					}
+				}
+
+				for (const _attack of m.bestOpponentAttack && mode === 'defense' ? [m.bestOpponentAttack] : []) {
+					const attack =
+						m.opponentAttacks > 1 && attempt === 'fresh'
+							? attacks.filter((atk) => atk.defenderTag === _attack.defenderTag).sort((a, b) => a.order - b.order)[0]!
+							: attacks
+									.filter((atk) => atk.defenderTag === _attack.defenderTag)
+									.sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)[0]!;
+
+					const isFresh = this._isFreshAttack(attacks, attack.defenderTag, attack.order);
+					if (attempt === 'cleanup' && isFresh) continue;
+					if (attempt === 'fresh' && !isFresh) continue;
+
+					if (typeof compare === 'string' && compare === 'equal') {
+						const attacker = opponent.members.find((m) => m.tag === attack.attackerTag)!;
+						if (attacker.townhallLevel === m.townhallLevel) {
+							member.total += 1;
+							if (this.getStars(attack.stars, stars)) member.success += 1;
+						}
+					} else if (typeof compare === 'object') {
+						const { attackerTownHall, defenderTownHall } = compare;
+						if (m.townhallLevel === defenderTownHall) {
+							const attacker = opponent.members.find((m) => m.tag === attack.attackerTag)!;
+							if (attacker.townhallLevel === attackerTownHall) {
+								member.total += 1;
+								if (this.getStars(attack.stars, stars)) member.success += 1;
+							}
+						}
+					} else {
+						member.total += 1;
+						if (this.getStars(attack.stars, stars)) member.success += 1;
+					}
+				}
+			}
+		}
+
+		const stats = Object.values(members)
+			.filter((m) => m.total > 0 && playerTags.includes(m.tag) && (attempt ? m.success > 0 : true))
+			.map((mem) => ({ ...mem, rate: (mem.success * 100) / mem.total }))
+			.sort((a, b) => b.success - a.success)
+			.sort((a, b) => b.rate - a.rate);
+		if (!stats.length) {
+			return interaction.editReply('No stats are available for this filter or user.');
+		}
+
+		const hall =
+			typeof compare === 'object'
+				? `TH ${Object.values(compare).join('vs')}`
+				: `${compare.replace(/\b(\w)/g, (char) => char.toUpperCase())} TH`;
+		const tail = attempt ? `% (${attempt.replace(/\b(\w)/g, (char) => char.toUpperCase())})` : 'Rates';
+
+		const starType = `${stars.startsWith('>') ? '>= ' : ''}${stars.replace(/[>=]+/, '')}`;
+		const embed = new EmbedBuilder()
+			.setAuthor({ name: `${user.tag} (${user.id})`, iconURL: user.displayAvatarURL() })
 			.setDescription(
 				Util.splitMessage(
 					[

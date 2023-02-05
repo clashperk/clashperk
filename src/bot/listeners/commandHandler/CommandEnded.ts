@@ -40,7 +40,7 @@ export default class CommandEndedListener extends Listener {
 					- </summary best:813041692188999707>
 
 				- **Raid Weekend Card**
-					https://i.imgur.com/aSr4uIE.jpg
+					<https://i.imgur.com/aSr4uIE.jpg>
 
 				- **Player Attack History**
 					<https://app.clashperk.com/members/%23QYG8UQLC>
@@ -49,7 +49,7 @@ export default class CommandEndedListener extends Listener {
 				`,
 				ephemeral: false
 			});
-			setTimeout(() => msg.delete().catch(() => null), 1000 * 60 * 3).unref();
+			setTimeout(() => msg.delete().catch(() => null), 1000 * 60 * 2).unref();
 		}
 	}
 }
