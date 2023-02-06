@@ -21,6 +21,70 @@ export interface RaidSeason {
 		bonusAttackLimit: number;
 		capitalResourcesLooted: number;
 	}[];
+	attackLog: {
+		defender: {
+			tag: string;
+			name: string;
+			level: number;
+			badgeUrls: {
+				small: string;
+				large: string;
+				medium: string;
+			};
+		};
+		attackCount: number;
+		districtCount: number;
+		districtsDestroyed: number;
+		districts: {
+			id: number;
+			name: string;
+			districtHallLevel: number;
+			destructionPercent: number;
+			stars: number;
+			attackCount: number;
+			totalLooted: number;
+			attacks: {
+				attacker: {
+					tag: string;
+					name: string;
+				};
+				destructionPercent: number;
+				stars: number;
+			}[];
+		}[];
+	}[];
+	defenseLog: {
+		defender: {
+			tag: string;
+			name: string;
+			level: number;
+			badgeUrls: {
+				small: string;
+				large: string;
+				medium: string;
+			};
+		};
+		attackCount: number;
+		districtCount: number;
+		districtsDestroyed: number;
+		districts: {
+			id: number;
+			name: string;
+			districtHallLevel: number;
+			destructionPercent: number;
+			stars: number;
+			attackCount: number;
+			totalLooted: number;
+			attacks: {
+				attacker: {
+					tag: string;
+					name: string;
+				};
+				destructionPercent: number;
+				stars: number;
+			}[];
+		}[];
+	}[];
 }
 
 export default class Http extends ClashOfClansClient {
@@ -55,6 +119,55 @@ export default class Http extends ClashOfClansClient {
 
 	public detailedClanMembers(members: { tag: string }[] = []): Promise<Player[]> {
 		return Promise.all(members.map((mem) => this.fetch(`/players/${encodeURIComponent(mem.tag)}`)));
+	}
+
+	public calcRaidMedals(attackLog: RaidSeason['attackLog']) {
+		const districtMap: Record<string, number> = {
+			1: 135,
+			2: 225,
+			3: 350,
+			4: 405,
+			5: 460
+		};
+		const capitalMap: Record<string, number> = {
+			2: 180,
+			3: 360,
+			4: 585,
+			5: 810,
+			6: 1115,
+			7: 1240,
+			8: 1260,
+			9: 1375,
+			10: 1450
+		};
+
+		let totalMedals = 0;
+		let attacksDone = 0;
+		for (const clan of attackLog) {
+			attacksDone += clan.attackCount;
+			for (const district of clan.districts) {
+				if (district.destructionPercent === 100) {
+					if (district.id === 70000000) {
+						totalMedals += capitalMap[district.districtHallLevel];
+					} else {
+						totalMedals += districtMap[district.districtHallLevel];
+					}
+				}
+			}
+		}
+
+		if (totalMedals !== 0) {
+			totalMedals = Math.ceil(totalMedals / attacksDone) * 6;
+		}
+		return totalMedals;
+	}
+
+	public calcRaidCompleted(attackLog: RaidSeason['attackLog']) {
+		let total = 0;
+		for (const clan of attackLog) {
+			if (clan.districtsDestroyed === clan.districtCount) total += 1;
+		}
+		return total;
 	}
 
 	private isFriendly(data: ClanWar) {

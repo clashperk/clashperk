@@ -33,19 +33,19 @@ export default class CapitalLog extends BaseLog {
 		const imageURL = embed.data.image!.url;
 		embed.setImage(null);
 
-		const msg = await this.send(cache, webhook, {
-			embeds: [embed],
-			threadId: cache.threadId
-		});
+		// const msg = await this.send(cache, webhook, {
+		// 	embeds: [embed],
+		// 	threadId: cache.threadId
+		// });
 
-		const conEmbed = await this.capitalDonations(cache);
-		if (conEmbed) await this.send(cache, webhook, { embeds: [conEmbed] });
+		// const conEmbed = await this.capitalDonations(cache);
+		// if (conEmbed) await this.send(cache, webhook, { embeds: [conEmbed] });
 
 		await this.send(cache, webhook, {
 			files: [new AttachmentBuilder(imageURL, { name: 'capital-raid-weekend-card.jpeg' })]
 		});
 
-		if (!msg) return null;
+		// if (!msg) return null;
 		await this.collection.updateOne({ clanId: cache.clanId }, { $set: { lastPosted: new Date() } });
 	}
 
@@ -110,17 +110,20 @@ export default class CapitalLog extends BaseLog {
 			].join('\n')
 		);
 
+		const offensiveReward = this.client.http.calcRaidMedals(data.attackLog);
+		const raidsCompleted = this.client.http.calcRaidCompleted(data.attackLog);
+
 		const query = new URLSearchParams({
 			clanName: clan.name,
 			clanBadgeUrl: clan.badgeUrls.large,
 			startDate: moment(data.startTime).toDate().toUTCString(),
 			endDate: moment(data.endTime).toDate().toUTCString(),
-			offensiveReward: data.offensiveReward.toString(),
+			offensiveReward: offensiveReward.toString(),
 			defensiveReward: data.defensiveReward.toString(),
 			totalLoot: data.capitalTotalLoot.toString(),
 			totalAttacks: data.totalAttacks.toString(),
 			enemyDistrictsDestroyed: data.enemyDistrictsDestroyed.toString(),
-			raidsCompleted: data.raidsCompleted.toString()
+			raidsCompleted: raidsCompleted.toString()
 		});
 		embed.setImage(`https://chart.clashperk.com/raid-weekend-card?${query.toString()}`);
 

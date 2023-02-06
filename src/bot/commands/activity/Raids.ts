@@ -42,17 +42,20 @@ export default class CapitalRaidsCommand extends Command {
 				});
 			}
 
+			const offensiveReward = this.client.http.calcRaidMedals(data.attackLog);
+			const raidsCompleted = this.client.http.calcRaidCompleted(data.attackLog);
+
 			const query = new URLSearchParams({
 				clanName: clan.name,
 				clanBadgeUrl: clan.badgeUrls.large,
 				startDate: moment(data.startTime).toDate().toUTCString(),
 				endDate: moment(data.endTime).toDate().toUTCString(),
-				offensiveReward: data.offensiveReward.toString(),
+				offensiveReward: offensiveReward.toString(),
 				defensiveReward: data.defensiveReward.toString(),
 				totalLoot: data.capitalTotalLoot.toString(),
 				totalAttacks: data.totalAttacks.toString(),
 				enemyDistrictsDestroyed: data.enemyDistrictsDestroyed.toString(),
-				raidsCompleted: data.raidsCompleted.toString()
+				raidsCompleted: raidsCompleted.toString()
 			});
 			const raw = new AttachmentBuilder(`https://chart.clashperk.com/raid-weekend-card?${query.toString()}`, {
 				name: 'capital-raid-weekend-card.jpeg'
