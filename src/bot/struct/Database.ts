@@ -109,6 +109,9 @@ class MongoDB extends MongoClient {
 				},
 				{
 					key: { tag: 1 }
+				},
+				{
+					key: { 'members.tag': 1 }
 				}
 			]),
 

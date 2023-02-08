@@ -9,7 +9,7 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
-    mem_limit: 3gb
+    mem_limit: 4gb
     container_name: clashperk_bot
     networks:
       - default_net

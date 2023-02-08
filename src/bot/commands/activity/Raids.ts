@@ -96,7 +96,7 @@ export default class CapitalRaidsCommand extends Command {
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
-	private async forUsers(
+	private async _forUsers(
 		interaction: CommandInteraction<'cached'>,
 		{
 			user,
@@ -140,6 +140,144 @@ export default class CapitalRaidsCommand extends Command {
 				`**Clan Capital Raids**`,
 				'```',
 				'\u200e # LOOTED HITS  NAME',
+				members
+					.map((mem, i) => {
+						const looted = this.padding(mem.capitalResourcesLooted);
+						const attacks = `${mem.attacks}/${mem.attackLimit + mem.bonusAttackLimit}`.padStart(4, ' ');
+						return `\u200e${(i + 1).toString().padStart(2, ' ')} ${looted} ${attacks}  ${mem.name}`;
+					})
+					.join('\n'),
+				'```'
+			].join('\n')
+		);
+
+		return interaction.editReply({ embeds: [embed] });
+	}
+
+	private async forUsers(
+		interaction: CommandInteraction<'cached'>,
+		{
+			user,
+			weekId
+		}: {
+			user: User;
+			weekId: string;
+		}
+	) {
+		const playerTags = await this.client.resolver.getLinkedPlayerTags(user.id);
+		const _members = await this.client.db
+			.collection(Collections.CAPITAL_RAID_SEASONS)
+			.aggregate<{
+				name: string;
+				tag: string;
+				raids: { capitalResourcesLooted: number; weekId: string; bonusAttackLimit: number; attackLimit: number; attacks: number }[];
+			}>([
+				{
+					$match: {
+						'members.tag': {
+							$in: [...playerTags.slice(0, 25)]
+						}
+					}
+				},
+				{
+					$unwind: {
+						path: '$members'
+					}
+				},
+				{
+					$match: {
+						'members.tag': {
+							$in: [...playerTags.slice(0, 25)]
+						}
+					}
+				},
+				{
+					$sort: {
+						_id: -1
+					}
+				},
+				{
+					$group: {
+						_id: '$members.tag',
+						name: {
+							$last: '$members.name'
+						},
+						tag: {
+							$last: '$members.tag'
+						},
+						raids: {
+							$push: {
+								weekId: '$weekId',
+								clan: {
+									name: '$name',
+									tag: '$tag'
+								},
+								name: '$members.name',
+								tag: '$members.tag',
+								attacks: '$members.attacks',
+								attackLimit: '$members.attackLimit',
+								bonusAttackLimit: '$members.bonusAttackLimit',
+								capitalResourcesLooted: '$members.capitalResourcesLooted'
+							}
+						}
+					}
+				}
+			])
+			.toArray();
+		const multi = this.client.redis.multi();
+		playerTags.map((tag) => multi.json.get(`CRM${tag}`));
+		const players = (await multi.exec()).filter((_) => _) as unknown as {
+			name: string;
+			tag: string;
+			weekId: string;
+			clan: { tag: string; name: string };
+		}[];
+		const _multi = this.client.redis.multi();
+		players.filter((p) => p.weekId === weekId).map((p) => _multi.json.get(`CRS${p.clan.tag}`));
+		const clans = (await _multi.exec()).filter((_) => _) as unknown as Required<RaidSeason>[];
+		const members = clans
+			.flatMap((clan) => clan.members)
+			.filter((mem) => playerTags.includes(mem.tag))
+			.filter((mem, i, arr) => arr.findIndex((m) => m.tag === mem.tag) === i);
+
+		const startDate = moment(weekId).toDate();
+		const endDate = moment(weekId).clone().add(3, 'days').toDate();
+
+		const weekend = Util.raidWeekDateFormat(startDate, endDate);
+		const embed = new EmbedBuilder()
+			.setAuthor({
+				name: `${user.tag} (${user.id})`,
+				iconURL: user.displayAvatarURL()
+			})
+			.setTimestamp()
+			.setFooter({ text: `Week of ${weekend}` });
+
+		_members.map((member) => {
+			embed.addFields({
+				name: `${member.name} (${member.tag})`,
+				value: [
+					'```',
+					'\u200e # LOOTED HITS  WEEKEND',
+					member.raids
+						.slice(0, 10)
+						.map((raid, i) => {
+							const looted = this.padding(raid.capitalResourcesLooted);
+							const attacks = `${raid.attacks}/${raid.attackLimit + raid.bonusAttackLimit}`.padStart(4, ' ');
+							return `\u200e${(i + 1).toString().padStart(2, ' ')} ${looted} ${attacks}  ${moment(raid.weekId)
+								.format('D MMM')
+								.padStart(6, ' ')}`;
+						})
+						.join('\n'),
+					'```'
+				].join('\n')
+			});
+		});
+
+		embed.setDescription(
+			[
+				`**Clan Capital Raids**`,
+				'```',
+				'\u200e # LOOTED HITS  WEEKEND',
 				members
 					.map((mem, i) => {
 						const looted = this.padding(mem.capitalResourcesLooted);
