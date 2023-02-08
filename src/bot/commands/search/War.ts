@@ -365,8 +365,9 @@ export default class WarCommand extends Command {
 				'',
 				`**Total Attacks - ${body.clan.attacks}/${body.teamSize * (body.attacksPerMember || 1)}**`,
 				body.clan.members
-					.filter((m) => m.attacks?.length)
 					.sort((a, b) => a.mapPosition - b.mapPosition)
+					.map((member, n) => ({ ...member, mapPosition: n + 1 }))
+					.filter((m) => m.attacks?.length)
 					.map((member) => {
 						return member
 							.attacks!.map((atk, i) => {

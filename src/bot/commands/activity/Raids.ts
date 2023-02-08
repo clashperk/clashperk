@@ -96,76 +96,17 @@ export default class CapitalRaidsCommand extends Command {
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
-	private async _forUsers(
-		interaction: CommandInteraction<'cached'>,
-		{
-			user,
-			weekId
-		}: {
-			user: User;
-			weekId: string;
-		}
-	) {
-		const playerTags = await this.client.resolver.getLinkedPlayerTags(user.id);
-		const multi = this.client.redis.multi();
-		playerTags.map((tag) => multi.json.get(`CRM${tag}`));
-		const players = (await multi.exec()).filter((_) => _) as unknown as {
-			name: string;
-			tag: string;
-			weekId: string;
-			clan: { tag: string; name: string };
-		}[];
-		const _multi = this.client.redis.multi();
-		players.filter((p) => p.weekId === weekId).map((p) => _multi.json.get(`CRS${p.clan.tag}`));
-		const clans = (await _multi.exec()).filter((_) => _) as unknown as Required<RaidSeason>[];
-		const members = clans
-			.flatMap((clan) => clan.members)
-			.filter((mem) => playerTags.includes(mem.tag))
-			.filter((mem, i, arr) => arr.findIndex((m) => m.tag === mem.tag) === i);
-
-		const startDate = moment(weekId).toDate();
-		const endDate = moment(weekId).clone().add(3, 'days').toDate();
-
-		const weekend = Util.raidWeekDateFormat(startDate, endDate);
-		const embed = new EmbedBuilder()
-			.setAuthor({
-				name: `${user.tag} (${user.id})`,
-				iconURL: user.displayAvatarURL()
-			})
-			.setTimestamp()
-			.setFooter({ text: `Week of ${weekend}` });
-
-		embed.setDescription(
-			[
-				`**Clan Capital Raids**`,
-				'```',
-				'\u200e # LOOTED HITS  NAME',
-				members
-					.map((mem, i) => {
-						const looted = this.padding(mem.capitalResourcesLooted);
-						const attacks = `${mem.attacks}/${mem.attackLimit + mem.bonusAttackLimit}`.padStart(4, ' ');
-						return `\u200e${(i + 1).toString().padStart(2, ' ')} ${looted} ${attacks}  ${mem.name}`;
-					})
-					.join('\n'),
-				'```'
-			].join('\n')
-		);
-
-		return interaction.editReply({ embeds: [embed] });
-	}
-
 	private async forUsers(
 		interaction: CommandInteraction<'cached'>,
 		{
-			user,
-			weekId
+			user
 		}: {
 			user: User;
 			weekId: string;
 		}
 	) {
 		const playerTags = await this.client.resolver.getLinkedPlayerTags(user.id);
-		const _members = await this.client.db
+		const _players = await this.client.db
 			.collection(Collections.CAPITAL_RAID_SEASONS)
 			.aggregate<{
 				name: string;
@@ -224,42 +165,24 @@ export default class CapitalRaidsCommand extends Command {
 				}
 			])
 			.toArray();
-		const multi = this.client.redis.multi();
-		playerTags.map((tag) => multi.json.get(`CRM${tag}`));
-		const players = (await multi.exec()).filter((_) => _) as unknown as {
-			name: string;
-			tag: string;
-			weekId: string;
-			clan: { tag: string; name: string };
-		}[];
-		const _multi = this.client.redis.multi();
-		players.filter((p) => p.weekId === weekId).map((p) => _multi.json.get(`CRS${p.clan.tag}`));
-		const clans = (await _multi.exec()).filter((_) => _) as unknown as Required<RaidSeason>[];
-		const members = clans
-			.flatMap((clan) => clan.members)
-			.filter((mem) => playerTags.includes(mem.tag))
-			.filter((mem, i, arr) => arr.findIndex((m) => m.tag === mem.tag) === i);
 
-		const startDate = moment(weekId).toDate();
-		const endDate = moment(weekId).clone().add(3, 'days').toDate();
+		const embed = new EmbedBuilder();
+		embed.setColor(this.client.embed(interaction));
+		embed.setAuthor({
+			name: `${user.tag} (${user.id})`,
+			iconURL: user.displayAvatarURL()
+		});
+		embed.setDescription('Capital raid history (last 3 months)');
 
-		const weekend = Util.raidWeekDateFormat(startDate, endDate);
-		const embed = new EmbedBuilder()
-			.setAuthor({
-				name: `${user.tag} (${user.id})`,
-				iconURL: user.displayAvatarURL()
-			})
-			.setTimestamp()
-			.setFooter({ text: `Week of ${weekend}` });
-
-		_members.map((member) => {
+		_players.sort((a, b) => b.raids.length - a.raids.length);
+		_players.slice(0, 25).map((member) => {
 			embed.addFields({
-				name: `${member.name} (${member.tag})`,
+				name: `${EMOJIS.AUTHORIZE} ${member.name} (${member.tag})`,
 				value: [
 					'```',
 					'\u200e # LOOTED HITS  WEEKEND',
 					member.raids
-						.slice(0, 10)
+						// .slice(0, 10)
 						.map((raid, i) => {
 							const looted = this.padding(raid.capitalResourcesLooted);
 							const attacks = `${raid.attacks}/${raid.attackLimit + raid.bonusAttackLimit}`.padStart(4, ' ');
@@ -272,22 +195,6 @@ export default class CapitalRaidsCommand extends Command {
 				].join('\n')
 			});
 		});
-
-		embed.setDescription(
-			[
-				`**Clan Capital Raids**`,
-				'```',
-				'\u200e # LOOTED HITS  WEEKEND',
-				members
-					.map((mem, i) => {
-						const looted = this.padding(mem.capitalResourcesLooted);
-						const attacks = `${mem.attacks}/${mem.attackLimit + mem.bonusAttackLimit}`.padStart(4, ' ');
-						return `\u200e${(i + 1).toString().padStart(2, ' ')} ${looted} ${attacks}  ${mem.name}`;
-					})
-					.join('\n'),
-				'```'
-			].join('\n')
-		);
 
 		return interaction.editReply({ embeds: [embed] });
 	}

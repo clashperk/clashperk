@@ -43,7 +43,7 @@ export interface RaidSeason {
 			stars: number;
 			attackCount: number;
 			totalLooted: number;
-			attacks: {
+			attacks?: {
 				attacker: {
 					tag: string;
 					name: string;

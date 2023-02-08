@@ -10,6 +10,7 @@ import {
 	User
 } from 'discord.js';
 import { Clan } from 'clashofclans.js';
+import moment from 'moment';
 import { Collections } from '../../util/Constants.js';
 import { ClanGames } from '../../util/index.js';
 import { Command } from '../../lib/index.js';
@@ -124,59 +125,93 @@ export default class ClanGamesCommand extends Command {
 		args: { tag?: string; max: boolean; filter: boolean; season?: string; user?: User }
 	) {
 		const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user!.id);
-		const seasonId = this.getSeasonId(args.season);
-
-		const queried = await this.queryForUsers(playerTags, seasonId);
-		const members = queried
-			.map((m) => ({
-				tag: m.tag,
-				name: m.name,
-				points: m.current - m.initial,
-				endedAt: m.completedAt
-			}))
-			.sort((a, b) => b.points - a.points)
-			.sort((a, b) => {
-				if (a.endedAt && b.endedAt) {
-					return a.endedAt.getTime() - b.endedAt.getTime();
+		const _players = await this.client.db
+			.collection(Collections.CLAN_GAMES_POINTS)
+			.aggregate<{ name: string; tag: string; seasons: { points: number; season: string }[] }>([
+				{
+					$match: {
+						tag: {
+							$in: [...playerTags]
+						}
+					}
+				},
+				{
+					$set: {
+						points: {
+							$subtract: ['$current', '$initial']
+						},
+						clan: {
+							$arrayElemAt: ['$clans', 0]
+						}
+					}
+				},
+				{
+					$project: {
+						name: 1,
+						tag: 1,
+						clan: 1,
+						points: 1,
+						season: 1
+					}
+				},
+				{
+					$sort: {
+						_id: -1
+					}
+				},
+				{
+					$group: {
+						_id: '$tag',
+						name: {
+							$last: '$name'
+						},
+						tag: {
+							$last: '$tag'
+						},
+						seasons: {
+							$push: {
+								points: '$points',
+								season: '$season',
+								clan: {
+									name: '$clan.name',
+									tag: '$clan.tag'
+								}
+							}
+						}
+					}
 				}
-				return 0;
-			});
-		const embed = this.embedForUsers(interaction, { user: args.user!, members, max: args.max, filter: args.filter, seasonId });
+			])
+			.toArray();
+
+		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
+		embed.setAuthor({
+			name: `${args.user!.tag} (${args.user!.id})`,
+			iconURL: args.user!.displayAvatarURL()
+		});
+		embed.setDescription('Clan games history (last 24 seasons)');
+
+		_players.sort((a, b) => b.seasons.length - a.seasons.length);
+		_players.slice(0, 25).forEach((player) => {
+			const total = player.seasons.reduce((a, b) => a + b.points, 0);
+			embed.addFields({
+				name: `${EMOJIS.AUTHORIZE} ${player.name} (${player.tag})`,
+				value: [
+					`\`\`\`\n\u200e # POINTS  SEASON`,
+					player.seasons
+						.slice(0, 24)
+						.map((m, n) => {
+							return `\u200e${(n + 1).toString().padStart(2, ' ')} ${m.points.toString().padStart(6, ' ')}  ${moment(
+								m.season
+							).format('MMM YY')}`;
+						})
+						.join('\n'),
+					`\`\`\`Total: ${total} (Avg: ${(total / player.seasons.length).toFixed(2)})`
+				].join('\n')
+			});
+		});
 
 		return interaction.editReply({ embeds: [embed] });
-	}
-
-	private embedForUsers(
-		interaction: BaseInteraction,
-		{
-			user,
-			members,
-			max = false,
-			filter = false,
-			seasonId
-		}: { user: User; members: Member[]; max?: boolean; filter?: boolean; seasonId: string }
-	) {
-		// const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
-		const embed = new EmbedBuilder().setAuthor({ name: `${user.tag} (${user.id})`, iconURL: user.displayAvatarURL() }).setDescription(
-			[
-				`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${seasonId})](https://clashperk.com/faq)**`,
-				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-				members
-					.slice(0, 55)
-					.filter((d) => (filter ? d.points > 0 : d.points >= 0))
-					.map((m, i) => {
-						const points = this.padStart(max ? m.points : Math.min(this.MAX, m.points));
-						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
-					})
-					.join('\n'),
-				'```'
-			].join('\n')
-		);
-
-		// embed.setFooter({ text: `Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]` });
-		embed.setTimestamp();
-		return embed;
 	}
 
 	private get MAX() {
@@ -206,16 +241,6 @@ export default class ClanGamesCommand extends Command {
 			},
 			{
 				$limit: 60
-			}
-		]);
-
-		return cursor.toArray();
-	}
-
-	private queryForUsers(playerTags: string[], seasonId: string) {
-		const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<ClanGamesModel>([
-			{
-				$match: { tag: { $in: playerTags }, season: seasonId }
 			}
 		]);
 

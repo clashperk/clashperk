@@ -170,6 +170,9 @@ export default class InteractionListener extends Listener {
 
 	private async playerTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
+		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
+			label: 'Autocomplete'
+		});
 
 		const now = Date.now();
 		const result = query
@@ -237,7 +240,9 @@ export default class InteractionListener extends Listener {
 						}
 					]
 			  });
-		this.client.logger.debug(`Search took ${Date.now() - now}ms`, { label: 'Autocomplete' });
+		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
+			label: 'Autocomplete'
+		});
 
 		const players = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; userId: string }>[])
 			.map((res) => res.hits.hits.map((hit) => hit._source!))
@@ -258,6 +263,10 @@ export default class InteractionListener extends Listener {
 
 	private async clansAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused)?.replace(/^\*$/, '');
+
+		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
+			label: 'Autocomplete'
+		});
 
 		const now = Date.now();
 		const result = query
@@ -327,7 +336,9 @@ export default class InteractionListener extends Listener {
 					]
 			  });
 
-		this.client.logger.debug(`Search took ${Date.now() - now}ms`, { label: 'Autocomplete' });
+		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
+			label: 'Autocomplete'
+		});
 
 		const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
 			.map((res) => res.hits.hits.map((hit) => hit._source!))
@@ -356,6 +367,10 @@ export default class InteractionListener extends Listener {
 
 	private async clanTagAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
 		const query = interaction.options.getString(focused);
+		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Searching for "${query ?? ''}"`, {
+			label: 'Autocomplete'
+		});
+
 		const now = Date.now();
 		const result = query
 			? await this.client.elastic.msearch({
@@ -435,7 +450,9 @@ export default class InteractionListener extends Listener {
 						}
 					]
 			  });
-		this.client.logger.debug(`Search took ${Date.now() - now}ms`, { label: 'Autocomplete' });
+		this.client.logger.debug(`[${interaction.user.tag} (${interaction.user.id})] Search took ${Date.now() - now}ms`, {
+			label: 'Autocomplete'
+		});
 
 		const clans = (result.responses as MsearchMultiSearchItem<{ name: string; tag: string; guildId?: string; userId?: string }>[])
 			.map((res) => res.hits.hits.map((hit) => hit._source!))
