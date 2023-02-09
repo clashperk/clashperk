@@ -5,9 +5,9 @@ import { Command } from '../../lib/index.js';
 import { Season, Util } from '../../util/index.js';
 
 // TODO: Per season activity
-export default class FamilyCommand extends Command {
+export default class SummaryCommand extends Command {
 	public constructor() {
-		super('family-activity', {
+		super('summary-activity', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],

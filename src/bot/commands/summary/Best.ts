@@ -60,7 +60,7 @@ const fields = {
 
 export default class SummaryBestCommand extends Command {
 	public constructor() {
-		super('family-best', {
+		super('summary-best', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],

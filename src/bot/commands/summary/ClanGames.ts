@@ -12,9 +12,9 @@ import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { ClanGames } from '../../util/index.js';
 
-export default class FamilyClanGamesCommand extends Command {
+export default class SummaryClanGamesCommand extends Command {
 	public constructor() {
-		super('family-clan-games', {
+		super('summary-clan-games', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],

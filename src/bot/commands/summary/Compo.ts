@@ -3,9 +3,9 @@ import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
 
-export default class FamilyCompoCommand extends Command {
+export default class SummaryCompoCommand extends Command {
 	public constructor() {
-		super('family-compo', {
+		super('summary-compo', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],

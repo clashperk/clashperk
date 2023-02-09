@@ -18,11 +18,14 @@ export default class CapitalRaidsCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; week?: string; card?: boolean; user?: User }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { clan_tag?: string; week?: string; card?: boolean; user?: User; player_tag?: string }
+	) {
 		const currentWeekId = this.raidWeek().weekId;
-		if (args.user) return this.forUsers(interaction, { user: args.user, weekId: currentWeekId });
+		if (args.user) return this.forUsers(interaction, { user: args.user });
 
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
+		const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
 		if (!clan) return;
 
 		const weekId = args.week ?? currentWeekId;
@@ -96,15 +99,7 @@ export default class CapitalRaidsCommand extends Command {
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
-	private async forUsers(
-		interaction: CommandInteraction<'cached'>,
-		{
-			user
-		}: {
-			user: User;
-			weekId: string;
-		}
-	) {
+	private async forUsers(interaction: CommandInteraction<'cached'>, { user }: { user: User }) {
 		const playerTags = await this.client.resolver.getLinkedPlayerTags(user.id);
 		const _players = await this.client.db
 			.collection(Collections.CAPITAL_RAID_SEASONS)

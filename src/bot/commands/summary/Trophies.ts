@@ -1,9 +1,9 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 
-export default class FamilyTrophiesCommand extends Command {
+export default class SummaryTrophiesCommand extends Command {
 	public constructor() {
-		super('family-trophies', {
+		super('summary-trophies', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],

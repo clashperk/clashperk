@@ -3,9 +3,9 @@ import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { Season } from '../../util/index.js';
 
-export default class FamilyCapitalContributionCommand extends Command {
+export default class SummaryCapitalContributionCommand extends Command {
 	public constructor() {
-		super('family-capital-contributions', {
+		super('summary-capital-contributions', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],

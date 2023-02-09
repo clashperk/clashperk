@@ -279,7 +279,7 @@ export default class WarCommand extends Command {
 			{ header: 'DEFENDER TH', width: 10 },
 			{ header: 'DEFENSE STAR', width: 10 },
 			{ header: 'DEFENSE DESTRUCTION', width: 12 }
-		] as any;
+		];
 
 		sheet.getRow(1).font = { bold: true, size: 10 };
 		sheet.getRow(1).height = 40;
@@ -371,9 +371,13 @@ export default class WarCommand extends Command {
 					.map((member) => {
 						return member
 							.attacks!.map((atk, i) => {
-								return `\`\u200e${this.index(i === 0 ? member.mapPosition.toString() : ' ')} ${
-									stars[atk.stars]
-								} ${this.percentage(atk.destructionPercentage)}% ${this.padEnd(i === 0 ? member.name : ' ')}\``;
+								const n = i === 0 ? member.mapPosition.toString() : ' ';
+								const th = i === 0 ? member.townhallLevel.toString() : ' ';
+								const name = i === 0 ? member.name : ' ';
+
+								return `\`\u200e${this.index(n)} ${th.padStart(2, ' ')} ${stars[atk.stars]} ${this.percentage(
+									atk.destructionPercentage
+								)}% ${this.padEnd(`${name}`)}\``;
 							})
 							.join('\n');
 					})
@@ -385,7 +389,7 @@ export default class WarCommand extends Command {
 	}
 
 	private padEnd(name: string) {
-		return escapeInlineCode(name).padEnd(20, ' ');
+		return escapeInlineCode(name).padEnd(15, ' ');
 	}
 
 	private index(num: number | string) {

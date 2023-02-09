@@ -3,9 +3,9 @@ import { Command } from '../../lib/index.js';
 import { RaidSeason } from '../../struct/Http.js';
 import { Collections } from '../../util/Constants.js';
 
-export default class FamilyCapitalRaidsCommand extends Command {
+export default class SummaryCapitalRaidsCommand extends Command {
 	public constructor() {
-		super('family-capital-raids', {
+		super('summary-capital-raids', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],

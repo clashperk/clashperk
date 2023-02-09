@@ -366,7 +366,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'tag',
+						name: 'clan_tag',
 						description: common.options.tag.description,
 						description_localizations: translation('common.options.tag.description'),
 						type: ApplicationCommandOptionType.String,
@@ -375,8 +375,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'user',
-						description: common.options.user.description,
-						description_localizations: translation('common.options.user.description'),
+						description: 'Capital raid history of a linked user.',
 						type: ApplicationCommandOptionType.User,
 						required: false
 					},
@@ -2195,6 +2194,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: command.summary.options.season.description,
 						description_localizations: translation('command.summary.options.season.description'),
 						choices: getSeasonIds()
+					},
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases to filter clans.'
 					}
 				]
 			},

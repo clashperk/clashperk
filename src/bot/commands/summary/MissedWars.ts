@@ -3,9 +3,9 @@ import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
 
-export default class FamilyMissedWarsCommand extends Command {
+export default class SummaryMissedWarsCommand extends Command {
 	public constructor() {
-		super('family-missed-wars', {
+		super('summary-missed-wars', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],

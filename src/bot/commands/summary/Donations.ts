@@ -1,5 +1,6 @@
 import { EmbedBuilder, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
 import { Clan } from 'clashofclans.js';
+import moment from 'moment';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Collections } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
@@ -21,7 +22,7 @@ export interface Aggregated {
 
 export default class DonationSummaryCommand extends Command {
 	public constructor() {
-		super('family-donations', {
+		super('summary-donations', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
@@ -29,16 +30,22 @@ export default class DonationSummaryCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { season }: { season?: string }) {
-		if (!season) season = Season.ID;
-		const embed = new EmbedBuilder()
-			.setColor(this.client.embed(interaction))
-			.setAuthor({ name: `${interaction.guild.name} Top Donations`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
+	public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; clans?: string }) {
+		const season = args.season ?? Season.ID;
 
-		const clans = await this.client.storage.find(interaction.guildId);
+		const tags = await this.client.resolver.resolveArgs(args.clans);
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guildId, tags)
+			: await this.client.storage.find(interaction.guildId);
+
+		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
+
+		const embed = new EmbedBuilder()
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `${interaction.guild.name} Top Donations`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
 
 		const fetched: Clan[] = (await Promise.all(clans.map((en) => this.client.http.clan(en.tag)))).filter((res) => res.ok);
 		if (!fetched.length) {
@@ -150,7 +157,7 @@ export default class DonationSummaryCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.customId === customIds.action) {
 				await action.deferUpdate();
-				const embed = await this.playerDonations(interaction, clans, season!);
+				const embed = await this.playerDonations(interaction, clans, season);
 				const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
 					new ButtonBuilder().setLabel('Sort by Received').setStyle(ButtonStyle.Primary).setCustomId(customIds.reverse)
 				);
@@ -158,7 +165,7 @@ export default class DonationSummaryCommand extends Command {
 			}
 			if (action.customId === customIds.reverse) {
 				await action.deferUpdate();
-				const embed = await this.playerDonations(interaction, clans, season!, true);
+				const embed = await this.playerDonations(interaction, clans, season, true);
 				await action.editReply({ embeds: [embed], components: [] });
 			}
 		});
@@ -250,9 +257,9 @@ export default class DonationSummaryCommand extends Command {
 		];
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `Donation Leaderboard for ${moment(seasonId).format('MMM YYYY')}` })
 			.setDescription(
 				[
-					'**Top Players**',
 					`${EMOJIS.HASH} \u200e\`${'DON'.padStart(memDp, ' ')} ${'REC'.padStart(memRp, ' ')}  ${'PLAYER'.padEnd(
 						15,
 						' '
@@ -271,7 +278,7 @@ export default class DonationSummaryCommand extends Command {
 					)[0]
 				].join('\n')
 			)
-			.setFooter({ text: `Season ${seasonId}` });
+			.setFooter({ text: `Season ${moment(seasonId).format('MMM YYYY')}` });
 		return embed;
 	}
 }

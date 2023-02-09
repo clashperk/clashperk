@@ -1,9 +1,9 @@
 import { CommandInteraction, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
 
-export default class FamilyClansCommand extends Command {
+export default class SummaryClansCommand extends Command {
 	public constructor() {
-		super('family-clans', {
+		super('summary-clans', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],

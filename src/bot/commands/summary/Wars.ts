@@ -11,9 +11,9 @@ const states: Record<string, string> = {
 	warEnded: '**End time:**'
 };
 
-export default class FamilyWarsCommand extends Command {
+export default class SummaryWarsCommand extends Command {
 	public constructor() {
-		super('family-wars', {
+		super('summary-wars', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
