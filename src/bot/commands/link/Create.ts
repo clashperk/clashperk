@@ -1,4 +1,4 @@
-import { EmbedBuilder, GuildMember, ActionRowBuilder, ButtonBuilder, CommandInteraction, ButtonStyle, ComponentType } from 'discord.js';
+import { GuildMember, CommandInteraction } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -31,79 +31,37 @@ export default class LinkCreateCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { tag?: string; member?: GuildMember; default?: boolean; forcePlayer?: boolean }
+		args: { player_tag?: string; clan_tag?: string; member?: GuildMember; default?: boolean; forcePlayer?: boolean }
 	) {
-		if (!args.tag) {
+		if (!(args.clan_tag || args.player_tag)) {
 			return interaction.editReply(this.i18n('command.link.no_tag', { lng: interaction.locale }));
 		}
 
 		const member = args.member ?? interaction.member;
 		if (member.user.bot) return interaction.editReply(this.i18n('command.link.create.no_bots', { lng: interaction.locale }));
 
-		const tags = await Promise.all([this.client.http.player(args.tag), this.client.http.clan(args.forcePlayer ? '0x' : args.tag)]);
-		const types: Record<string, string> = {
-			1: 'PLAYER',
-			2: 'CLAN'
-		};
-
 		if (interaction.user.id !== member.user.id) {
 			this.client.logger.debug(
-				`${interaction.user.tag} (${interaction.user.id}) attempted to link [${args.tag}] on behalf of ${member.user.tag} (${member.user.id})`,
+				`${interaction.user.tag} (${
+					interaction.user.id
+				}) attempted to link [clan_tag: ${args.clan_tag!}] [player_tag: ${args.player_tag!}] on behalf of ${member.user.tag} (${
+					member.user.id
+				})`,
 				{ label: 'LINK' }
 			);
 		}
-		if (tags.every((a) => a.ok)) {
-			const embed = new EmbedBuilder().setDescription(
-				[
-					this.i18n('command.link.create.prompt', { lng: interaction.locale }),
-					'',
-					tags.map((a, i) => `**${types[i + 1]}**\n${a.name} (${a.tag})\n`).join('\n')
-				].join('\n')
-			);
 
-			const CUSTOM_ID = {
-				CLAN: this.client.uuid(interaction.user.id),
-				PLAYER: this.client.uuid(interaction.user.id)
-			};
-			const row = new ActionRowBuilder<ButtonBuilder>()
-				.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel('Link Player').setCustomId(CUSTOM_ID.PLAYER))
-				.addComponents(new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel('Link Clan').setCustomId(CUSTOM_ID.CLAN));
+		if (args.player_tag) {
+			const player = await this.client.resolver.resolvePlayer(interaction, args.player_tag);
+			if (!player) return null;
+			return this.playerLink(interaction, { player, member, def: Boolean(args.default) });
+		}
 
-			const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-			const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-				filter: (action) => Object.values(CUSTOM_ID).includes(action.customId) && action.user.id === interaction.user.id,
-				time: 5 * 60 * 1000
-			});
+		if (args.clan_tag) {
+			const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
+			if (!clan) return null;
 
-			collector.on('collect', async (action) => {
-				if (action.customId === CUSTOM_ID.CLAN) {
-					await action.update({ components: [] });
-					await this.clanLink(member, tags[1]);
-					const clan = tags[1];
-					await interaction.editReply(
-						this.i18n('command.link.create.success', {
-							lng: interaction.locale,
-							user: `**${member.user.tag}**`,
-							target: `**${clan.name} (${clan.tag})**`
-						})
-					);
-				}
-
-				if (action.customId === CUSTOM_ID.PLAYER) {
-					await action.update({ components: [] });
-					await this.playerLink(interaction, { player: tags[0], member, def: Boolean(args.default) });
-				}
-			});
-
-			collector.on('end', async (_, reason) => {
-				Object.values(CUSTOM_ID).forEach((id) => this.client.components.delete(id));
-				if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-			});
-		} else if (tags[0].ok) {
-			return this.playerLink(interaction, { player: tags[0], member, def: Boolean(args.default) });
-		} else if (tags[1].ok) {
-			await this.clanLink(member, tags[1]);
-			const clan = tags[1];
+			await this.clanLink(member, clan);
 			return interaction.editReply(
 				this.i18n('command.link.create.success', {
 					lng: interaction.locale,
@@ -111,9 +69,9 @@ export default class LinkCreateCommand extends Command {
 					target: `**${clan.name} (${clan.tag})**`
 				})
 			);
-		} else {
-			return interaction.editReply(this.i18n('command.link.create.fail', { lng: interaction.locale }));
 		}
+
+		return interaction.editReply(this.i18n('command.link.create.fail', { lng: interaction.locale }));
 	}
 
 	private async clanLink(member: GuildMember, clan: Clan) {

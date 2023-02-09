@@ -298,7 +298,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		description_localizations: translation('command.clan_games.description'),
 		options: [
 			{
-				name: 'tag',
+				name: 'clan_tag',
 				description: common.options.tag.description,
 				description_localizations: translation('common.options.tag.description'),
 				type: ApplicationCommandOptionType.String,
@@ -307,10 +307,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'user',
-				description: common.options.user.description,
-				description_localizations: translation('common.options.user.description'),
+				description: 'Clan games history of a linked user.',
 				type: ApplicationCommandOptionType.User,
 				required: false
+			},
+			{
+				name: 'player_tag',
+				description: 'Clan games history of a player.',
+				type: ApplicationCommandOptionType.String,
+				required: false,
+				autocomplete: true
 			},
 			{
 				name: 'season',
@@ -378,6 +384,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: 'Capital raid history of a linked user.',
 						type: ApplicationCommandOptionType.User,
 						required: false
+					},
+					{
+						name: 'player_tag',
+						description: 'Capital raid history of a player.',
+						type: ApplicationCommandOptionType.String,
+						required: false,
+						autocomplete: true
 					},
 					{
 						name: 'week',
@@ -1123,10 +1136,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'tag',
-						description: command.link.create.options.tag.description,
-						description_localizations: translation('command.link.create.options.tag.description'),
-						required: true,
+						name: 'player_tag',
+						description: 'The player tag to link.',
+						required: false,
+						// autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'clan_tag',
+						description: 'The default clan tag to link.',
+						required: false,
+						// autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					},
 					{
@@ -1177,10 +1197,17 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'tag',
-						description: command.link.delete.options.tag.description,
-						description_localizations: translation('command.link.delete.options.tag.description'),
-						required: true,
+						name: 'player_tag',
+						description: 'The player tag to unlink.',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'clan_tag',
+						description: 'The clan tag to unlink.',
+						required: false,
+						autocomplete: true,
 						type: ApplicationCommandOptionType.String
 					}
 				]

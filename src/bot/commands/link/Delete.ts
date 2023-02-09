@@ -20,18 +20,25 @@ export default class LinkDeleteCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string }) {
-		const tag = this.parseTag(args.tag);
-		if (!tag) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clan_tag?: string; player_tag?: string }) {
+		const clanTag = this.parseTag(args.clan_tag);
+		const playerTag = this.parseTag(args.player_tag);
+
+		if (!(clanTag || playerTag)) {
 			return interaction.editReply(this.i18n('command.link.no_tag', { lng: interaction.locale }));
 		}
 
-		const unlinked = await this.unlinkClan(interaction.user.id, tag);
-		if (unlinked) {
-			return interaction.editReply(this.i18n('command.link.delete.success', { lng: interaction.locale, tag: `**${tag}**` }));
+		if (clanTag) {
+			const unlinked = await this.unlinkClan(interaction.user.id, clanTag);
+			if (unlinked) {
+				return interaction.editReply(this.i18n('command.link.delete.success', { lng: interaction.locale, tag: `**${clanTag}**` }));
+			}
+			return interaction.editReply(this.i18n('command.link.delete.no_result', { lng: interaction.locale, tag: `**${clanTag}**` }));
 		}
 
-		const member = await this.getMember(tag, interaction);
+		if (!playerTag) return null;
+
+		const member = await this.getMember(playerTag, interaction);
 		if (interaction.user.id !== member.id) {
 			const players = await this.client.db
 				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
@@ -43,7 +50,7 @@ export default class LinkDeleteCommand extends Command {
 				return interaction.editReply(this.i18n('command.link.delete.no_access', { lng: interaction.locale }));
 			}
 
-			const data = await this.client.http.player(tag);
+			const data = await this.client.http.player(playerTag);
 			if (!data.clan) {
 				return interaction.editReply(this.i18n('command.link.delete.no_access', { lng: interaction.locale }));
 			}
@@ -54,11 +61,11 @@ export default class LinkDeleteCommand extends Command {
 			}
 		}
 
-		if (await this.unlinkPlayer(member.id, tag)) {
-			return interaction.editReply(this.i18n('command.link.delete.success', { lng: interaction.locale, tag: `**${tag}**` }));
+		if (await this.unlinkPlayer(member.id, playerTag)) {
+			return interaction.editReply(this.i18n('command.link.delete.success', { lng: interaction.locale, tag: `**${playerTag}**` }));
 		}
 
-		return interaction.editReply(this.i18n('command.link.delete.no_result', { lng: interaction.locale, tag: `**${tag}**` }));
+		return interaction.editReply(this.i18n('command.link.delete.no_result', { lng: interaction.locale, tag: `**${playerTag}**` }));
 	}
 
 	private async unlinkPlayer(userId: string, tag: string) {

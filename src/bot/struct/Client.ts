@@ -117,6 +117,10 @@ export class Client extends Discord.Client {
 			}
 		});
 
+		this.redis.on('error', (error) => this.logger.error(error, { label: 'REDIS' }));
+		this.publisher.on('error', (error) => this.logger.error(error, { label: 'REDIS' }));
+		this.subscriber.on('error', (error) => this.logger.error(error, { label: 'REDIS' }));
+
 		this.logger = new Logger(this);
 		this.util = new ClientUtil(this);
 		this.ownerId = process.env.OWNER!;
