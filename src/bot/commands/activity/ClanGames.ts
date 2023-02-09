@@ -9,11 +9,11 @@ import {
 	MessageType,
 	User
 } from 'discord.js';
-import { Clan } from 'clashofclans.js';
+import { Clan, Player } from 'clashofclans.js';
 import moment from 'moment';
 import { Collections } from '../../util/Constants.js';
 import { ClanGames } from '../../util/index.js';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { ClanGamesModel } from '../../types/index.js';
 
@@ -30,11 +30,24 @@ export default class ClanGamesCommand extends Command {
 		});
 	}
 
+	public args(): Args {
+		return {
+			clan_tag: {
+				id: 'tag',
+				match: 'STRING'
+			}
+		};
+	}
+
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { tag?: string; max: boolean; filter: boolean; season?: string; user?: User }
+		args: { tag?: string; player_tag?: string; max: boolean; filter: boolean; season?: string; user?: User }
 	) {
-		if (args.user) return this.forUsers(interaction as CommandInteraction<'cached'>, args);
+		if ((args.user || args.player_tag) && !interaction.isButton()) {
+			const player = args.player_tag ? await this.client.resolver.resolvePlayer(interaction, args.player_tag) : null;
+			if (args.player_tag && !player) return null;
+			return this.forUsers(interaction, { user: args.user, player });
+		}
 
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
@@ -120,11 +133,8 @@ export default class ClanGamesCommand extends Command {
 		return embed;
 	}
 
-	private async forUsers(
-		interaction: CommandInteraction<'cached'>,
-		args: { tag?: string; max: boolean; filter: boolean; season?: string; user?: User }
-	) {
-		const playerTags = await this.client.resolver.getLinkedPlayerTags(args.user!.id);
+	private async forUsers(interaction: CommandInteraction<'cached'>, { player, user }: { player?: Player | null; user?: User }) {
+		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
 		const _players = await this.client.db
 			.collection(Collections.CLAN_GAMES_POINTS)
 			.aggregate<{ name: string; tag: string; seasons: { points: number; season: string }[] }>([
@@ -185,10 +195,16 @@ export default class ClanGamesCommand extends Command {
 
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
-		embed.setAuthor({
-			name: `${args.user!.tag} (${args.user!.id})`,
-			iconURL: args.user!.displayAvatarURL()
-		});
+		if (user) {
+			embed.setAuthor({
+				name: `${user.tag} (${user.id})`,
+				iconURL: user.displayAvatarURL()
+			});
+		} else if (player) {
+			embed.setAuthor({
+				name: `${player.name} (${player.tag})`
+			});
+		}
 		embed.setDescription('Clan games history (last 24 seasons)');
 
 		_players.sort((a, b) => b.seasons.length - a.seasons.length);

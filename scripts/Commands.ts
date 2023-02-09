@@ -141,22 +141,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				required: false
 			},
 			{
-				name: 'clan',
+				name: 'clan_tag',
 				description: command.rushed.options.clan.description,
 				description_localizations: translation('command.rushed.options.clan.description'),
 				type: ApplicationCommandOptionType.String,
-				choices: [
-					{
-						name: 'Yes',
-						name_localizations: translation('common.choices.yes'),
-						value: 'true'
-					},
-					{
-						name: 'No',
-						name_localizations: translation('common.choices.no'),
-						value: 'false'
-					}
-				]
+				autocomplete: true
 			}
 		]
 	},

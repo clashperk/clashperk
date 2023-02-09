@@ -1,7 +1,7 @@
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
-import { Clan } from 'clashofclans.js';
+import { Clan, Player } from 'clashofclans.js';
 import moment from 'moment';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -18,16 +18,29 @@ export default class CapitalRaidsCommand extends Command {
 		});
 	}
 
+	public args(): Args {
+		return {
+			clan_tag: {
+				id: 'tag',
+				match: 'STRING'
+			}
+		};
+	}
+
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { clan_tag?: string; week?: string; card?: boolean; user?: User; player_tag?: string }
+		args: { tag?: string; week?: string; card?: boolean; user?: User; player_tag?: string }
 	) {
-		const currentWeekId = this.raidWeek().weekId;
-		if (args.user) return this.forUsers(interaction, { user: args.user });
+		if (args.user || args.player_tag) {
+			const player = args.player_tag ? await this.client.resolver.resolvePlayer(interaction, args.player_tag) : null;
+			if (args.player_tag && !player) return null;
+			return this.forUsers(interaction, { user: args.user, player });
+		}
 
-		const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 
+		const currentWeekId = this.raidWeek().weekId;
 		const weekId = args.week ?? currentWeekId;
 
 		if (args.card) {
@@ -99,8 +112,8 @@ export default class CapitalRaidsCommand extends Command {
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
-	private async forUsers(interaction: CommandInteraction<'cached'>, { user }: { user: User }) {
-		const playerTags = await this.client.resolver.getLinkedPlayerTags(user.id);
+	private async forUsers(interaction: CommandInteraction<'cached'>, { user, player }: { user?: User; player?: Player | null }) {
+		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
 		const _players = await this.client.db
 			.collection(Collections.CAPITAL_RAID_SEASONS)
 			.aggregate<{
@@ -163,10 +176,17 @@ export default class CapitalRaidsCommand extends Command {
 
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
-		embed.setAuthor({
-			name: `${user.tag} (${user.id})`,
-			iconURL: user.displayAvatarURL()
-		});
+		if (user) {
+			embed.setAuthor({
+				name: `${user.tag} (${user.id})`,
+				iconURL: user.displayAvatarURL()
+			});
+		} else if (player) {
+			embed.setAuthor({
+				name: `${player.name} (${player.tag})`
+			});
+		}
+
 		embed.setDescription('Capital raid history (last 3 months)');
 
 		_players.sort((a, b) => b.raids.length - a.raids.length);

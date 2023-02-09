@@ -2,7 +2,7 @@ import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBui
 import { Player, Clan } from 'clashofclans.js';
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
-import { Args, Command } from '../../lib/index.js';
+import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 import { TroopJSON } from '../../types/index.js';
 
@@ -23,30 +23,22 @@ export default class RushedCommand extends Command {
 		});
 	}
 
-	public args(): Args {
-		return {
-			player_tag: {
-				id: 'tag',
-				match: 'STRING'
-			}
-		};
-	}
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clan_tag?: string; player_tag?: string; user?: User }) {
+		if (args.clan_tag) {
+			const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
+			if (!clan) return null;
+			return this.clan(interaction, clan);
+		}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; clan?: boolean; user?: User }) {
-		const data = args.clan
-			? await this.client.resolver.resolveClan(interaction, args.tag)
-			: await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
-		if (!data) return;
+		const data = await this.client.resolver.resolvePlayer(interaction, args.player_tag ?? args.user?.id);
+		if (!data) return null;
 
-		if (args.clan) return this.clan(interaction, data as Clan);
 		const embed = this.embed(data as Player, interaction).setColor(this.client.embed(interaction));
 		const msg = await interaction.editReply({ embeds: [embed] });
 
-		// @ts-expect-error
-		if (!data.user) return; // TODO: Fix
-		// @ts-expect-error
+		if (!data.user) return null;
 		const players = await this.client.resolver.getPlayers(data.user.id);
-		if (!players.length) return;
+		if (!players.length) return null;
 
 		const options = players.map((op) => ({
 			description: op.tag,
