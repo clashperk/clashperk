@@ -109,14 +109,15 @@ export default class CWLStarsCommand extends Command {
 			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
 			.setDescription(
 				[
-					`\u200e\` # STR HIT  ${'NAME'.padEnd(15, ' ')}\u200f\``,
+					`\u200e\` # STR DEST HIT  ${'NAME'.padEnd(15, ' ')}\u200f\``,
 					leaderboard
 						.filter((m) => m.of > 0)
 						.map(
 							(m, i) =>
-								`\u200e\`${this.pad(++i)} ${this.pad(m.stars)}  ${[m.attacks, m.of].join('/')}  ${Util.escapeBackTick(
-									m.name
-								).padEnd(15, ' ')}\u200f\``
+								`\u200e\`${this.pad(++i)} ${this.pad(m.stars, 3)} ${`${Math.floor(m.dest)}%`.padStart(4, ' ')} ${[
+									m.attacks,
+									m.of
+								].join('/')}  ${Util.escapeBackTick(m.name).padEnd(15, ' ')}\u200f\``
 						)
 						.join('\n')
 				].join('\n')

@@ -690,6 +690,25 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
+				name: 'history',
+				description: 'CWL attack history of a player.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'player_tag',
+						description: common.options.tag.description,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'user',
+						description: common.options.user.description,
+						type: ApplicationCommandOptionType.User,
+						required: false
+					}
+				]
+			},
+			{
 				name: 'stars',
 				description: 'CWL Stars',
 				type: ApplicationCommandOptionType.Subcommand,
@@ -2080,7 +2099,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description: 'The league day.',
 						type: ApplicationCommandOptionType.Number,
 						max_value: 35,
-						min_value: 10,
+						min_value: 1,
 						required: false
 					}
 				]
@@ -2108,6 +2127,25 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			}
 		]
 	},
+	// {
+	// 	name: 'history',
+	// 	description: 'Shows history of a player.',
+	// 	options: [
+	// 		{
+	// 			name: 'player_tag',
+	// 			description: 'Enter a tag or pick one form the autocomplete list.',
+	// 			type: ApplicationCommandOptionType.String,
+	// 			required: false,
+	// 			autocomplete: true
+	// 		},
+	// 		{
+	// 			name: 'user',
+	// 			description: common.options.user.description,
+	// 			type: ApplicationCommandOptionType.User,
+	// 			required: false
+	// 		}
+	// 	]
+	// },
 	{
 		name: 'export',
 		description: command.export.description,

@@ -1,4 +1,4 @@
-import { ClanWar, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
+import { ClanWar, ClanWarAttack, ClanWarLeagueGroup, WarClan } from 'clashofclans.js';
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
@@ -74,7 +74,9 @@ export default class ExportCWL extends Command {
 				{ header: 'Tag', width: 16 },
 				{ header: 'Total Attacks', width: 8 },
 				{ header: 'Total Stars', width: 8 },
-				{ header: 'Avg Stars', width: 8 },
+				{ header: 'Avg. Total Stars', width: 8 },
+				{ header: 'True Stars', width: 8 },
+				{ header: 'Avg. True Stars', width: 8 },
 				{ header: 'Total Dest', width: 8 },
 				{ header: 'Avg Dest', width: 8 },
 				{ header: 'Three Stars', width: 8 },
@@ -104,6 +106,8 @@ export default class ExportCWL extends Command {
 						m.of,
 						m.stars,
 						(m.stars / m.of).toFixed(2),
+						m.trueStars,
+						(m.trueStars / m.of).toFixed(2),
 						m.dest.toFixed(2),
 						(m.dest / m.of).toFixed(2),
 						this.starCount(m.starTypes, 3),
@@ -150,6 +154,7 @@ export default class ExportCWL extends Command {
 					{ header: 'Attacker', width: 18 },
 					{ header: 'Attacker Tag', width: 13 },
 					{ header: 'Stars', width: 8 },
+					{ header: 'True Stars', width: 8 },
 					{ header: 'Gained', width: 8 },
 					{ header: 'Destruction', width: 10 },
 					{ header: 'Defender', width: 18 },
@@ -173,12 +178,23 @@ export default class ExportCWL extends Command {
 					round.clan.members.map((m) => {
 						const opponent = round.opponent.members.find((en) => en.tag === m.attacks?.[0]?.defenderTag);
 						const gained = m.bestOpponentAttack && m.attacks?.length ? m.attacks[0].stars - m.bestOpponentAttack.stars : '';
+						const __attacks = round.clan.members.flatMap((m) => m.attacks ?? []);
+
+						const previousBestAttack = m.attacks?.length
+							? this.getPreviousBestAttack(__attacks, round.opponent, m.attacks[0])
+							: null;
+
 						return [
 							round.clan.name,
 							round.opponent.name,
 							m.name,
 							m.tag,
 							m.attacks?.length ? m.attacks[0].stars : '',
+							previousBestAttack
+								? Math.max(m.attacks![0].stars - previousBestAttack.stars)
+								: m.attacks?.length
+								? m.attacks[0].stars
+								: '',
 							gained,
 							m.attacks?.length ? m.attacks[0].destructionPercentage.toFixed(2) : '',
 							opponent ? opponent.name : '',
@@ -221,6 +237,9 @@ export default class ExportCWL extends Command {
 					const opponent = data.clan.tag === clanTag ? data.opponent : data.clan;
 					clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
 					opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
+
+					const __attacks = clan.members.flatMap((m) => m.attacks ?? []);
+
 					if (['inWar', 'warEnded'].includes(data.state)) {
 						for (const m of clan.members) {
 							const member = members[m.tag]
@@ -231,6 +250,7 @@ export default class ExportCWL extends Command {
 										of: 0,
 										attacks: 0,
 										stars: 0,
+										trueStars: 0,
 										dest: 0,
 										defStars: 0,
 										defDestruction: 0,
@@ -239,11 +259,13 @@ export default class ExportCWL extends Command {
 								  });
 							member.of += 1;
 
-							if (m.attacks) {
+							for (const atk of m.attacks ?? []) {
+								const previousBestAttack = this.getPreviousBestAttack(__attacks, opponent, atk);
 								member.attacks += 1;
-								member.stars += m.attacks[0].stars;
-								member.dest += m.attacks[0].destructionPercentage;
-								member.starTypes.push(m.attacks[0].stars);
+								member.stars += atk.stars;
+								member.trueStars += previousBestAttack ? Math.max(0, atk.stars - previousBestAttack.stars) : atk.stars;
+								member.dest += atk.destructionPercentage;
+								member.starTypes.push(atk.stars);
 							}
 
 							if (m.bestOpponentAttack) {
@@ -266,5 +288,18 @@ export default class ExportCWL extends Command {
 				.sort((a, b) => b.dest - a.dest)
 				.sort((a, b) => b.stars - a.stars)
 		};
+	}
+
+	private getPreviousBestAttack(attacks: ClanWarAttack[], opponent: WarClan, atk: ClanWarAttack) {
+		const defender = opponent.members.find((m) => m.tag === atk.defenderTag)!;
+		const defenderDefenses = attacks.filter((atk) => atk.defenderTag === defender.tag);
+		const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));
+		const previousBestAttack = isFresh
+			? null
+			: [...attacks]
+					.filter((_atk) => _atk.defenderTag === defender.tag && _atk.order < atk.order && _atk.attackerTag !== atk.attackerTag)
+					.sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
+					.at(0) ?? null;
+		return isFresh ? null : previousBestAttack;
 	}
 }

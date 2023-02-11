@@ -22,7 +22,8 @@ export default class CWLCommand extends Command {
 			roster: this.handler.modules.get('cwl-roster')!,
 			attacks: this.handler.modules.get('cwl-attacks')!,
 			stars: this.handler.modules.get('cwl-stars')!,
-			members: this.handler.modules.get('cwl-members')!
+			members: this.handler.modules.get('cwl-members')!,
+			history: this.handler.modules.get('cwl-history')!
 		}[args.command];
 
 		return this.handler.exec(interaction, command ?? this.handler.modules.get('cwl-roster')!, args);

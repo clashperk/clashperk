@@ -53,7 +53,7 @@ export default class LegendLog extends BaseLog {
 		const clan = await this.client.http.clan(cache.tag);
 		if (!clan.ok) return null;
 
-		const seasonId = Season.ID;
+		const seasonId = Util.getLegendDay() === 0 ? Season.previousID : Season.ID;
 		const multi = this.client.redis.multi();
 		clan.memberList.map((mem) => multi.json.get(`LP-${seasonId}-${mem.tag}`));
 		const raw = (await multi.exec()) as unknown as ({
@@ -61,11 +61,11 @@ export default class LegendLog extends BaseLog {
 			tag: string;
 			logs: { start: number; end: number; timestamp: number; inc: number }[];
 		} | null)[];
+		const { startTime, endTime } = Util.getPreviousLegendTimestamp();
 
 		const members = [];
 		for (const legend of raw) {
 			if (!legend) continue;
-			const { startTime, endTime } = Util.getPreviousLegendTimestamp();
 
 			const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 			if (logs.length === 0) continue;
@@ -135,7 +135,7 @@ export default class LegendLog extends BaseLog {
 				'```'
 			].join('\n')
 		);
-		embed.setFooter({ text: `End of Day ${Util.getLegendDay() - 1} (${Season.ID})` });
+		embed.setFooter({ text: `End of Day ${Util.getPreviousLegendDay()} (${seasonId})` });
 
 		if (!members.length) return null;
 		return embed;
