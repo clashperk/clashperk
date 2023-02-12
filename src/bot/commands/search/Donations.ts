@@ -8,6 +8,8 @@ import {
 	ComponentType,
 	User
 } from 'discord.js';
+import { Player } from 'clashofclans.js';
+import moment from 'moment';
 import { Collections } from '../../util/Constants.js';
 import { Season, Util } from '../../util/index.js';
 import { Args, Command } from '../../lib/index.js';
@@ -49,8 +51,15 @@ export default class DonationsCommand extends Command {
 			sortBy?: ('donated' | 'received' | 'townHall' | 'difference')[];
 			orderBy?: string;
 			user?: User;
+			player_tag?: string;
 		}
 	) {
+		if ((args.user || args.player_tag) && !interaction.isButton()) {
+			const player = args.player_tag ? await this.client.resolver.resolvePlayer(interaction, args.player_tag) : null;
+			if (args.player_tag && !player) return null;
+			return this.forUsers(interaction, { user: args.user, player });
+		}
+
 		let { season, sortBy, orderBy } = args;
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
@@ -272,6 +281,102 @@ export default class DonationsCommand extends Command {
 			this.client.components.delete(customId.sort);
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
+	}
+
+	private async forUsers(interaction: CommandInteraction<'cached'>, { player, user }: { player?: Player | null; user?: User }) {
+		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
+
+		const players = await this.client.db
+			.collection(Collections.PLAYER_SEASONS)
+			.aggregate<{
+				name: string;
+				tag: string;
+				seasons: {
+					clans: Record<
+						string,
+						{
+							donations: { total: number };
+							donationsReceived: { total: number };
+						}
+					>;
+					season: string;
+					donations: number;
+				}[];
+			}>([
+				{ $match: { tag: { $in: playerTags } } },
+				{
+					$match: {
+						createdAt: {
+							$gte: moment().startOf('month').subtract(12, 'month').toDate()
+						}
+					}
+				},
+				{ $sort: { _id: -1 } },
+				{
+					$set: {
+						_troops: {
+							$subtract: ['$troopsDonations.current', '$troopsDonations.initial']
+						},
+						_spells: {
+							$subtract: ['$spellsDonations.current', '$spellsDonations.initial']
+						},
+						_sieges: {
+							$multiply: [{ $subtract: ['$siegeMachinesDonations.current', '$siegeMachinesDonations.initial'] }, 30]
+						}
+					}
+				},
+				{
+					$set: {
+						donations: { $sum: ['$_troops', '$_spells', '$_sieges'] }
+					}
+				},
+				{
+					$group: {
+						_id: '$tag',
+						name: { $first: '$name' },
+						tag: { $first: '$tag' },
+						seasons: {
+							$push: {
+								season: '$season',
+								clans: '$clans',
+								donations: '$donations'
+							}
+						}
+					}
+				}
+			])
+			.toArray();
+
+		const embed = new EmbedBuilder();
+		embed.setColor(this.client.embed(interaction));
+
+		players.forEach(({ name, tag, seasons }) => {
+			embed.addFields({
+				name: `${name} (${tag})`,
+				value: [
+					'```',
+					`\u200e${'DON'.padStart(6, ' ')} ${'REC'.padStart(6, ' ')}    SEASON`,
+					seasons
+						.map((season) => {
+							const { donations, donationsReceived } = Object.values(season.clans).reduce(
+								(acc, cur) => {
+									acc.donations += cur.donations.total;
+									acc.donationsReceived += cur.donationsReceived.total;
+									return acc;
+								},
+								{ donations: 0, donationsReceived: 0 }
+							);
+							return `${Util.formatNumber(Math.max(donations, season.donations)).padStart(6, ' ')} ${Util.formatNumber(
+								donationsReceived
+							).padStart(6, ' ')}  ${moment(season.season).format('MMM YYYY')}`;
+						})
+						.join('\n'),
+					'```'
+				].join('\n')
+			});
+		});
+
+		return interaction.editReply({ embeds: [embed] });
 	}
 
 	private padEnd(name: string) {

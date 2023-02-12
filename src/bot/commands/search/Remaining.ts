@@ -1,5 +1,5 @@
 import { EmbedBuilder, CommandInteraction, escapeMarkdown, User } from 'discord.js';
-import { ClanWar } from 'clashofclans.js';
+import { ClanWar, Player } from 'clashofclans.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { BLUE_NUMBERS } from '../../util/Emojis.js';
@@ -19,8 +19,17 @@ export default class RemainingCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; war_id?: number; user?: User }) {
-		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { tag?: string; war_id?: number; user?: User; player_tag?: string }
+	) {
+		if ((args.user || args.player_tag) && !interaction.isButton()) {
+			const player = args.player_tag ? await this.client.resolver.resolvePlayer(interaction, args.player_tag) : null;
+			if (args.player_tag && !player) return null;
+			return this.forUsers(interaction, { user: args.user, player });
+		}
+
+		const clan = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!clan) return;
 		if (args.war_id) return this.getWar(interaction, args.war_id, clan.tag);
 
@@ -137,6 +146,63 @@ export default class RemainingCommand extends Command {
 		}
 
 		if (body.id) embed.setFooter({ text: `War ID #${body.id}` });
+		return interaction.editReply({ embeds: [embed] });
+	}
+
+	private async forUsers(interaction: CommandInteraction<'cached'>, { player, user }: { player?: Player | null; user?: User }) {
+		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
+
+		const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate<ClanWar>([
+			{
+				$match: {
+					endTime: {
+						$gte: new Date()
+					},
+					$or: [{ 'clan.members.tag': { $in: playerTags } }, { 'opponent.members.tag': { $in: playerTags } }]
+				}
+			},
+			{ $sort: { _id: -1 } }
+		]);
+
+		const players = [];
+		while (await cursor.hasNext()) {
+			const data = await cursor.next();
+			if (!data) continue;
+
+			data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
+			data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
+
+			for (const tag of playerTags) {
+				const __member = data.clan.members.map((mem, i) => ({ ...mem, mapPosition: i + 1 })).find((m) => m.tag === tag);
+				const member =
+					__member ?? data.opponent.members.map((mem, i) => ({ ...mem, mapPosition: i + 1 })).find((m) => m.tag === tag);
+				if (!member) continue;
+
+				const clan = __member ? data.clan : data.opponent;
+				const attacks = member.attacks ?? [];
+				if (attacks.length === data.attacksPerMember) continue;
+
+				players.push({
+					member,
+					clan,
+					remaining: data.attacksPerMember - attacks.length
+				});
+			}
+		}
+
+		const embed = new EmbedBuilder();
+		embed.setColor(this.client.embed(interaction));
+		embed.setAuthor({ name: `\u200e${user!.tag} (${user!.id})`, iconURL: user!.displayAvatarURL() });
+
+		const remaining = players.reduce((a, b) => a + b.remaining, 0);
+		players.map(({ member, clan, remaining }, i) => {
+			embed.addFields({
+				name: `${member.name} (${member.tag})`,
+				value: [`${remaining} remaining in ${clan.name}`, i === players.length - 1 ? '' : '\u200b'].join('\n')
+			});
+		});
+		embed.setFooter({ text: `${remaining} remaining ${Util.plural(remaining, 'attack')}` });
+
 		return interaction.editReply({ embeds: [embed] });
 	}
 }
