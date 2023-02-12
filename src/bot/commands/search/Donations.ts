@@ -335,6 +335,9 @@ export default class DonationsCommand extends Command {
 						_id: '$tag',
 						name: { $first: '$name' },
 						tag: { $first: '$tag' },
+						donations: {
+							$sum: '$donations'
+						},
 						seasons: {
 							$push: {
 								season: '$season',
@@ -343,14 +346,21 @@ export default class DonationsCommand extends Command {
 							}
 						}
 					}
+				},
+				{
+					$sort: {
+						donations: -1
+					}
 				}
 			])
 			.toArray();
 
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
+		if (user) embed.setAuthor({ name: `${user.tag} (${user.id})`, iconURL: user.displayAvatarURL() });
+		embed.setTitle('Donation history (last 6 months)');
 
-		players.forEach(({ name, tag, seasons }) => {
+		players.slice(0, 25).forEach(({ name, tag, seasons }) => {
 			embed.addFields({
 				name: `${name} (${tag})`,
 				value: [

@@ -39,7 +39,7 @@ export default class CWLHistoryCommand extends Command {
 		const embeds: EmbedBuilder[] = [];
 		Object.entries(warMap)
 			.sort(([, a], [, b]) => b.length - a.length)
-			.map(([key, userGroups], i) => {
+			.map(([key, userGroups]) => {
 				const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
 
 				const _warsMap = userGroups.reduce<Record<string, IWar[]>>((acc, war) => {
@@ -73,18 +73,17 @@ export default class CWLHistoryCommand extends Command {
 					})
 					.join('\n');
 
-				if (args.user && i === 0) {
+				if (args.user && !player) {
 					embed.setAuthor({ name: `${args.user.tag} (${args.user.id})`, iconURL: args.user.displayAvatarURL() });
-				} else {
-					embed.setTitle(`${key}`);
 				}
-				if (i === 0) {
-					embed.setDescription(`**${key}**\n\n${value}`);
-				} else {
-					embed.setDescription(value);
-				}
+				embed.setTitle('**CWL attack history (last 3 months)**');
+				embed.setDescription(`**${key}**\n\n${value}`);
 				embeds.push(embed);
 			});
+
+		if (!embeds.length) {
+			return interaction.editReply('No CWL history found.');
+		}
 
 		const customIds = {
 			next: this.client.uuid(interaction.user.id),
@@ -111,7 +110,7 @@ export default class CWLHistoryCommand extends Command {
 
 		const collector = interaction.channel!.createMessageComponentCollector({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
+			time: 10 * 60 * 1000
 		});
 
 		let index = 0;

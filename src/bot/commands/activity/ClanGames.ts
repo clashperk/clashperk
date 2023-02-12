@@ -195,17 +195,8 @@ export default class ClanGamesCommand extends Command {
 
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
-		if (user) {
-			embed.setAuthor({
-				name: `${user.tag} (${user.id})`,
-				iconURL: user.displayAvatarURL()
-			});
-		} else if (player) {
-			embed.setAuthor({
-				name: `${player.name} (${player.tag})`
-			});
-		}
-		embed.setDescription('Clan games history (last 24 seasons)');
+		embed.setTitle('Clan games history (last 6 months)');
+		if (user && !player) embed.setAuthor({ name: `${user.tag} (${user.id})`, iconURL: user.displayAvatarURL() });
 
 		_players.sort((a, b) => b.seasons.length - a.seasons.length);
 		_players.slice(0, 25).forEach((player) => {
