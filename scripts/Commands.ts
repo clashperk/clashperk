@@ -339,10 +339,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					},
 					{
 						name: 'user',
-						description: common.options.user.description,
-						description_localizations: translation('common.options.user.description'),
+						description: 'Capital raid history of a linked user.',
 						type: ApplicationCommandOptionType.User,
 						required: false
+					},
+					{
+						name: 'player_tag',
+						description: 'Capital contribution history of a player.',
+						type: ApplicationCommandOptionType.String,
+						required: false,
+						autocomplete: true
 					},
 					{
 						name: 'week',
@@ -545,8 +551,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'user',
-				description: common.options.user.description,
-				description_localizations: translation('common.options.user.description'),
+				description: 'Donation history of a linked user.',
 				type: ApplicationCommandOptionType.User,
 				required: false
 			},
@@ -613,10 +618,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'user',
-				description: common.options.user.description,
-				description_localizations: translation('common.options.user.description'),
+				description: 'Remaining attacks of a linked user.',
 				type: ApplicationCommandOptionType.User,
 				required: false
+			},
+			{
+				name: 'player_tag',
+				description: 'Remaining attacks of a player.',
+				type: ApplicationCommandOptionType.String,
+				required: false,
+				autocomplete: true
 			},
 			{
 				name: 'war_id',
