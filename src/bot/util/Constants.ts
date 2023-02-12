@@ -212,3 +212,7 @@ export const locales: Record<string, string> = {
 	'uk': 'Ukrainian',
 	'vi': 'Vietnamese'
 };
+
+export const CLAN_GAMES_MINIMUM_POINTS = [
+	1, 50, 100, 250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250, 3500, 3750, 4000, 4500, 5000
+];

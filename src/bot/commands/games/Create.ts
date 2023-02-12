@@ -12,7 +12,7 @@ import {
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { Collections, missingPermissions } from '../../util/Constants.js';
+import { CLAN_GAMES_MINIMUM_POINTS, Collections, missingPermissions } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { ClanGamesReminder } from '../../struct/ClanGamesScheduler.js';
 
@@ -116,10 +116,6 @@ export default class ReminderCreateCommand extends Command {
 			clans: clans.map((clan) => clan.tag)
 		};
 
-		const pointsMap = [
-			50, 100, 250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250, 3500, 3750, 4000, 4500, 5000
-		];
-
 		const mutate = (disable = false) => {
 			const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
@@ -127,7 +123,7 @@ export default class ReminderCreateCommand extends Command {
 					.setMaxValues(1)
 					.setCustomId(customIds.minPoints)
 					.setOptions(
-						pointsMap.map((num) => ({
+						CLAN_GAMES_MINIMUM_POINTS.map((num) => ({
 							label: `${num}`,
 							value: num.toString(),
 							default: state.minPoints === num.toString()
