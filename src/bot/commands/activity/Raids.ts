@@ -182,7 +182,7 @@ export default class CapitalRaidsCommand extends Command {
 		_players.sort((a, b) => b.raids.length - a.raids.length);
 		_players.slice(0, 25).map((member) => {
 			embed.addFields({
-				name: `${EMOJIS.AUTHORIZE} ${member.name} (${member.tag})`,
+				name: `${member.name} (${member.tag})`,
 				value: [
 					'```',
 					'\u200e # LOOTED HITS  WEEKEND',
