@@ -31,13 +31,15 @@ export default class SummaryCapitalRaidsCommand extends Command {
 		embed.setDescription(
 			[
 				'```',
-				` #  ${'LOOT'.padStart(maxPad, ' ')}  HIT  NAME`,
+				`\u200e # ${'LOOT'.padStart(maxPad, ' ')} HIT  AVG NAME`,
 				clansGroup
 					.map(
 						(clan, i) =>
-							`${(i + 1).toString().padStart(2, ' ')}  ${clan.looted.toString().padStart(maxPad, ' ')}  ${clan.attacks
+							`${(i + 1).toString().padStart(2, ' ')} ${clan.looted.toFixed(0).padStart(maxPad, ' ')} ${clan.attacks
 								.toString()
-								.padStart(3, ' ')}  ${clan.name}`
+								.padStart(3, ' ')} ${(clan.looted ? clan.looted / clan.attacks : 0).toFixed(0).padStart(4, ' ')} ${
+								clan.name
+							}`
 					)
 					.join('\n'),
 				'```'

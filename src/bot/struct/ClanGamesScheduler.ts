@@ -150,7 +150,7 @@ export default class ClanGamesScheduler {
 	}
 
 	public async getReminderText(
-		reminder: Pick<ClanGamesReminder, 'roles' | 'guild' | 'message' | 'minPoints'>,
+		reminder: Pick<ClanGamesReminder, 'roles' | 'guild' | 'message' | 'minPoints' | 'allMembers'>,
 		schedule: Pick<ClanGamesSchedule, 'tag'>
 	) {
 		const clan = await this.client.http.clan(schedule.tag);
@@ -160,6 +160,7 @@ export default class ClanGamesScheduler {
 			.filter((mem) => {
 				return mem.points < (reminder.minPoints === 0 ? ClanGames.MAX_POINT : reminder.minPoints);
 			})
+			.filter((m) => (reminder.allMembers ? m.points >= 0 : m.points >= 1))
 			.filter((mem) => {
 				if (reminder.roles.length === 4) return true;
 				return reminder.roles.includes(mem.role!);
@@ -324,6 +325,7 @@ export interface ClanGamesReminder {
 	channel: string;
 	message: string;
 	duration: number;
+	allMembers: boolean;
 	webhook?: { id: string; token: string } | null;
 	threadId?: string;
 	minPoints: number;

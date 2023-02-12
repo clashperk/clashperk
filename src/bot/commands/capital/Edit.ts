@@ -56,7 +56,7 @@ export default class ReminderCreateCommand extends Command {
 
 		const state = {
 			remaining: reminder.remaining.map((r) => r.toString()),
-			allMembers: true,
+			allMembers: reminder.allMembers,
 			roles: reminder.roles,
 			message: reminder.message
 		};
@@ -167,7 +167,7 @@ export default class ReminderCreateCommand extends Command {
 			}
 
 			if (action.customId === customIds.memberType && action.isStringSelectMenu()) {
-				state.allMembers = action.values.includes('all');
+				state.allMembers = action.values.includes('allMembers');
 				await action.update({ components: mutate() });
 			}
 

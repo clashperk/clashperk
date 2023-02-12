@@ -219,7 +219,7 @@ export default class ReminderCreateCommand extends Command {
 			}
 
 			if (action.customId === customIds.memberType && action.isStringSelectMenu()) {
-				state.allMembers = action.values.includes('all');
+				state.allMembers = action.values.includes('allMembers');
 				await action.update({ components: mutate() });
 			}
 

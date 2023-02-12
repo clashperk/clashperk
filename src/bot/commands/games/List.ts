@@ -44,6 +44,8 @@ export default class ReminderListCommand extends Command {
 				reminder.roles.length === 4 ? 'Any' : `${reminder.roles.map((role) => roles[role]).join(', ')}`,
 				'**Min Points**',
 				reminder.minPoints === 0 ? 'Until Maxed' : `${reminder.minPoints}`,
+				'**Participation Type**',
+				reminder.allMembers ? 'All Members' : 'Only Participants',
 				'**Clans**',
 				_clans.length ? `${escapeMarkdown(_clans.join(', '))}` : 'Any',
 				'**Message**',

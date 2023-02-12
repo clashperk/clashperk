@@ -70,16 +70,16 @@ export class Util {
 		return id;
 	}
 
-	public static formatNumber(num = 0) {
+	public static formatNumber(num = 0, fraction = 2) {
 		// Nine Zeroes for Billions
 		return Math.abs(num) >= 1.0e9
-			? `${(Math.abs(num) / 1.0e9).toFixed(2)}B`
+			? `${(Math.abs(num) / 1.0e9).toFixed(fraction)}B`
 			: // Six Zeroes for Millions
 			Math.abs(num) >= 1.0e6
-			? `${(Math.abs(num) / 1.0e6).toFixed(2)}M`
+			? `${(Math.abs(num) / 1.0e6).toFixed(fraction)}M`
 			: // Three Zeroes for Thousands
 			Math.abs(num) >= 1.0e3
-			? `${(Math.abs(num) / 1.0e3).toFixed(2)}K`
+			? `${(Math.abs(num) / 1.0e3).toFixed(fraction)}K`
 			: Math.abs(num).toFixed(0);
 	}
 

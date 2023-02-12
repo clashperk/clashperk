@@ -94,7 +94,7 @@ export default class SummaryCapitalContributionCommand extends Command {
 		embed.setDescription(
 			[
 				'```',
-				` #  ${'TOTAL'.padStart(maxPad, ' ')}  NAME`,
+				`\u200e #  ${'TOTAL'.padStart(maxPad, ' ')}  NAME`,
 				clansGroup
 					.map(
 						(clan, i) => `${(i + 1).toString().padStart(2, ' ')}  ${clan.total.toString().padStart(maxPad, ' ')}  ${clan.name}`

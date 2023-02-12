@@ -152,23 +152,23 @@ export default class RemainingCommand extends Command {
 	private async forUsers(interaction: CommandInteraction<'cached'>, { player, user }: { player?: Player | null; user?: User }) {
 		const playerTags = player ? [player.tag] : await this.client.resolver.getLinkedPlayerTags(user!.id);
 
-		const cursor = this.client.db.collection(Collections.CLAN_WARS).aggregate<ClanWar>([
-			{
-				$match: {
-					endTime: {
-						$gte: new Date()
-					},
-					$or: [{ 'clan.members.tag': { $in: playerTags } }, { 'opponent.members.tag': { $in: playerTags } }]
-				}
-			},
-			{ $sort: { _id: -1 } }
-		]);
+		const wars = await this.client.db
+			.collection(Collections.CLAN_WARS)
+			.aggregate<ClanWar>([
+				{
+					$match: {
+						endTime: {
+							$gte: new Date()
+						},
+						$or: [{ 'clan.members.tag': { $in: playerTags } }, { 'opponent.members.tag': { $in: playerTags } }]
+					}
+				},
+				{ $sort: { _id: -1 } }
+			])
+			.toArray();
 
 		const players = [];
-		while (await cursor.hasNext()) {
-			const data = await cursor.next();
-			if (!data) continue;
-
+		for (const data of wars) {
 			data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
 			data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
 
@@ -185,6 +185,9 @@ export default class RemainingCommand extends Command {
 				players.push({
 					member,
 					clan,
+					attacksPerMember: data.attacksPerMember,
+					state: data.state,
+					endTime: new Date(data.endTime),
 					remaining: data.attacksPerMember - attacks.length
 				});
 			}
@@ -195,10 +198,14 @@ export default class RemainingCommand extends Command {
 		embed.setAuthor({ name: `\u200e${user!.tag} (${user!.id})`, iconURL: user!.displayAvatarURL() });
 
 		const remaining = players.reduce((a, b) => a + b.remaining, 0);
-		players.map(({ member, clan, remaining }, i) => {
+		players.map(({ member, clan, remaining, endTime }, i) => {
 			embed.addFields({
 				name: `${member.name} (${member.tag})`,
-				value: [`${remaining} remaining in ${clan.name}`, i === players.length - 1 ? '' : '\u200b'].join('\n')
+				value: [
+					`${remaining} remaining in ${clan.name}`,
+					`- ${Util.getRelativeTime(endTime.getTime())}`,
+					i === players.length - 1 ? '' : '\u200b'
+				].join('\n')
 			});
 		});
 		embed.setFooter({ text: `${remaining} remaining ${Util.plural(remaining, 'attack')}` });

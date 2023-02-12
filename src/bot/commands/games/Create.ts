@@ -116,6 +116,10 @@ export default class ReminderCreateCommand extends Command {
 			clans: clans.map((clan) => clan.tag)
 		};
 
+		const pointsMap = [
+			50, 100, 250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250, 3500, 3750, 4000, 4500, 5000
+		];
+
 		const mutate = (disable = false) => {
 			const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 				new StringSelectMenuBuilder()
@@ -123,14 +127,34 @@ export default class ReminderCreateCommand extends Command {
 					.setMaxValues(1)
 					.setCustomId(customIds.minPoints)
 					.setOptions(
-						Array(16)
-							.fill(0)
-							.map((_, i) => ({
-								label: `${(i + 1) * 250}`,
-								value: ((i + 1) * 250).toString(),
-								default: state.minPoints === ((i + 1) * 250).toString()
-							}))
+						pointsMap.map((num) => ({
+							label: `${num}`,
+							value: num.toString(),
+							default: state.minPoints === num.toString()
+						}))
 					)
+					.setDisabled(disable)
+			);
+
+			const row2 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+				new StringSelectMenuBuilder()
+					.setPlaceholder('Select Participation Type')
+					.setMaxValues(1)
+					.setCustomId(customIds.memberType)
+					.setOptions([
+						{
+							label: 'All Members',
+							value: 'allMembers',
+							description: 'Anyone in the clan.',
+							default: state.allMembers
+						},
+						{
+							label: 'Only Participants',
+							value: 'onlyParticipants',
+							description: 'Anyone who earned a minimum points.',
+							default: !state.allMembers
+						}
+					])
 					.setDisabled(disable)
 			);
 
@@ -168,7 +192,7 @@ export default class ReminderCreateCommand extends Command {
 				new ButtonBuilder().setCustomId(customIds.save).setLabel('Save').setStyle(ButtonStyle.Primary).setDisabled(disable)
 			);
 
-			return [row1, row3, row4];
+			return [row1, row2, row3, row4];
 		};
 
 		const msg = await interaction.editReply({
@@ -199,7 +223,7 @@ export default class ReminderCreateCommand extends Command {
 			}
 
 			if (action.customId === customIds.memberType && action.isStringSelectMenu()) {
-				state.allMembers = action.values.includes('all');
+				state.allMembers = action.values.includes('allMembers');
 				await action.update({ components: mutate() });
 			}
 
@@ -217,6 +241,7 @@ export default class ReminderCreateCommand extends Command {
 					channel: args.channel.id,
 					roles: state.roles,
 					clans: state.clans,
+					allMembers: state.allMembers,
 					minPoints: Number(state.minPoints),
 					webhook: { id: webhook.id, token: webhook.token! },
 					message: args.message.trim(),
