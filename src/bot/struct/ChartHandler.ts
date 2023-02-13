@@ -67,7 +67,6 @@ export default {
 				'Content-Type': 'application/json'
 			}
 		}).then((res) => res.json());
-
 		return url;
 	},
 

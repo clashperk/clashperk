@@ -33,18 +33,13 @@ export default class CapitalLog extends BaseLog {
 		const imageURL = embed.data.image!.url;
 		embed.setImage(null);
 
-		await this.send(cache, webhook, {
-			embeds: [embed],
-			threadId: cache.threadId
-		});
+		await this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
 
-		const conEmbed = await this.capitalDonations(cache);
-		if (conEmbed) await this.send(cache, webhook, { embeds: [conEmbed] });
+		const _embed = await this.capitalDonations(cache);
+		if (_embed) await this.send(cache, webhook, { embeds: [_embed] });
 
 		const buffer = new AttachmentBuilder(imageURL, { name: 'capital-raid-weekend-card.jpeg' });
-		await this.send(cache, webhook, {
-			files: [buffer]
-		});
+		await this.send(cache, webhook, { files: [buffer] });
 
 		await this.collection.updateOne({ clanId: cache.clanId }, { $set: { lastPosted: new Date() } });
 	}

@@ -326,6 +326,14 @@ export default class StorageHandler {
 	}
 
 	public async deleteReminders(clanTag: string, guild: string) {
+		await Promise.allSettled([
+			this.deleteWarReminders(clanTag, guild),
+			this.deleteCapitalReminders(clanTag, guild),
+			this.deleteClanGamesReminders(clanTag, guild)
+		]);
+	}
+
+	public async deleteWarReminders(clanTag: string, guild: string) {
 		const rem = await this.client.db.collection<Reminder>(Collections.REMINDERS).findOne({ guild, clans: clanTag });
 		if (!rem) return null;
 		await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId: rem._id });
@@ -333,6 +341,26 @@ export default class StorageHandler {
 			return this.client.db.collection(Collections.REMINDERS).deleteOne({ _id: rem._id });
 		}
 		return this.client.db.collection(Collections.REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
+	}
+
+	public async deleteCapitalReminders(clanTag: string, guild: string) {
+		const rem = await this.client.db.collection(Collections.RAID_REMINDERS).findOne({ guild, clans: clanTag });
+		if (!rem) return null;
+		await this.client.db.collection(Collections.RAID_SCHEDULERS).deleteMany({ reminderId: rem._id });
+		if (rem.clans.length === 1) {
+			return this.client.db.collection(Collections.RAID_REMINDERS).deleteOne({ _id: rem._id });
+		}
+		return this.client.db.collection(Collections.RAID_REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
+	}
+
+	public async deleteClanGamesReminders(clanTag: string, guild: string) {
+		const rem = await this.client.db.collection(Collections.CG_REMINDERS).findOne({ guild, clans: clanTag });
+		if (!rem) return null;
+		await this.client.db.collection(Collections.CG_SCHEDULERS).deleteMany({ reminderId: rem._id });
+		if (rem.clans.length === 1) {
+			return this.client.db.collection(Collections.CG_REMINDERS).deleteOne({ _id: rem._id });
+		}
+		return this.client.db.collection(Collections.CG_REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
 	}
 
 	public async remove(id: string, data: any) {

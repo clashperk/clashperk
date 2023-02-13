@@ -1353,12 +1353,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: true,
 						choices: [
 							{
-								name: 'Channel Link',
-								value: 'channel-link'
-							},
-							{
 								name: 'Server Link',
 								value: 'server-link'
+							},
+							{
+								name: 'Channel Link',
+								value: 'channel-link'
 							},
 							{
 								name: 'War Feed',
@@ -1453,6 +1453,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 								value: 'channel-link'
 							},
 							{
+								name: 'Delete Clan',
+								value: 'remove-clan'
+							},
+							{
 								name: 'Clan Feed',
 								value: 'clan-feed'
 							},
@@ -1487,10 +1491,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Donation Log',
 								value: 'donation-log'
-							},
-							{
-								name: 'Remove Clan',
-								value: 'remove-clan'
 							}
 						]
 					},

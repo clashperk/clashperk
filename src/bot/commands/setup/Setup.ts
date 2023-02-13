@@ -11,7 +11,7 @@ const names: Record<string, string> = {
 	[Flags.CLAN_GAMES_LOG]: 'Clan Games',
 	[Flags.CLAN_WAR_LOG]: 'War Feed',
 	[Flags.LEGEND_LOG]: 'Legend Log',
-	[Flags.CAPITAL_LOG]: 'War Feed',
+	[Flags.CAPITAL_LOG]: 'Capital Log',
 	[Flags.CHANNEL_LINKED]: 'Linked Channel',
 	[Flags.JOIN_LEAVE_LOG]: 'Join/Leave Log'
 };
