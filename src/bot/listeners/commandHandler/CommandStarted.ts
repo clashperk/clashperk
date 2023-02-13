@@ -68,7 +68,8 @@ export default class CommandStartedListener extends Listener {
 	}
 
 	private counter(interaction: BaseInteraction, command: Command) {
-		if (interaction.inCachedGuild()) this.client.stats.interactions(interaction, command.id);
+		if (!interaction.inCachedGuild()) return;
+		this.client.stats.interactions(interaction, command.id);
 		if (command.category === 'owner') return;
 		if (this.client.isOwner(interaction.user.id)) return;
 		this.client.stats.users(interaction);

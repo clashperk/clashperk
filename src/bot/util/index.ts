@@ -97,6 +97,7 @@ export class Util {
 		start.hours(7).minutes(0).seconds(0).milliseconds(0);
 		return {
 			startTime: start.toDate(),
+			weekId: start.format('YYYY-MM-DD'),
 			prevWeekEndTime: start.clone().subtract(4, 'days').toDate(),
 			endTime: start.clone().add(3, 'days').toDate(),
 			isRaidWeek

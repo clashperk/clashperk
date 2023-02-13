@@ -39,10 +39,12 @@ export default class CommandBlockedListener extends Listener {
 		}
 
 		if (!interaction.channel) {
-			throw new ReferenceError('Channel is not cached.');
+			const label = interaction.guild ? `${interaction.guild.name}/${interaction.user.tag}` : `${interaction.user.tag}`;
+			this.client.logger.log(`${command.id} ~ ${'noChannel'}`, { label });
+			return null;
 		}
 
-		if (!content) return;
+		if (!content) return null;
 		return interaction.reply({ content, ephemeral: true });
 	}
 }
