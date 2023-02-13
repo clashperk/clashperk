@@ -108,23 +108,7 @@ export default class LegendLog extends BaseLog {
 			[
 				'**Legend League Attacks**',
 				'```',
-				'INIT GAIN LOSS FINL NAME',
-				...members.map(
-					(mem) =>
-						`${this.pad(mem.initial.start)} ${this.pad(mem.trophiesFromAttacks, 3)}${
-							attackCounts[Math.min(9, mem.attackCount)]
-						} ${this.pad(Math.abs(mem.trophiesFromDefenses), 3)}${attackCounts[Math.min(9, mem.defenseCount)]} ${this.pad(
-							mem.current.end
-						)} ${escapeMarkdown(mem.name)}`
-				),
-				'```'
-			].join('\n')
-		);
-		embed.setDescription(
-			[
-				'**Legend League Attacks**',
-				'```',
-				' GAIN  LOSS FINAL NAME',
+				'\u200e GAIN  LOSS FINAL NAME',
 				...members.map(
 					(mem) =>
 						`${this.pad(`+${mem.trophiesFromAttacks}${attackCounts[Math.min(9, mem.attackCount)]}`, 5)} ${this.pad(

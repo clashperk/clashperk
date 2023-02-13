@@ -3,6 +3,8 @@ import i18next from 'i18next';
 
 export const status = (code: number, locale: string) => i18next.t(`common.status_code.${code}`, { lng: locale });
 
+export const RTL_LANGUAGE_SAMPLE = 'مرحبا بالعالم';
+
 export const enum Collections {
 	CLAN_STORES = 'ClanStores',
 	DONATION_LOGS = 'DonationLogs',
