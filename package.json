@@ -36,6 +36,7 @@
 		"erlpack": "github:discord/erlpack",
 		"exceljs": "^4.2.1",
 		"i18next": "^21.6.13",
+		"mixpanel": "^0.17.0",
 		"moment": "^2.29.1",
 		"moment-duration-format": "^2.3.2",
 		"mongodb": "^4.4.1",

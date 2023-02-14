@@ -5,7 +5,7 @@ import { Season } from '../../util/index.js';
 
 export default class SummaryCapitalContributionCommand extends Command {
 	public constructor() {
-		super('summary-capital-contributions', {
+		super('summary-capital-contribution', {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],

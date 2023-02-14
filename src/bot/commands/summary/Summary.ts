@@ -24,7 +24,7 @@ export default class SummaryCommand extends Command {
 			'attacks': this.handler.modules.get('summary-attacks')!,
 			'missed-wars': this.handler.modules.get('summary-missed-wars')!,
 			'activity': this.handler.modules.get('summary-activity')!,
-			'capital-contributions': this.handler.modules.get('summary-capital-contributions')!,
+			'capital-contribution': this.handler.modules.get('summary-capital-contribution')!,
 			'capital-raids': this.handler.modules.get('summary-capital-raids')!,
 			'war-results': this.handler.modules.get('summary-war-results')!,
 			'best': this.handler.modules.get('summary-best')!

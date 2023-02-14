@@ -7,14 +7,14 @@ export default class CapitalCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			description: {
-				content: ['Shows clan capital contributions and raids.']
+				content: ['Shows clan capital contribution and raids.']
 			}
 		});
 	}
 
 	public exec(interaction: CommandInteraction<'cached'>, args: { command: string }) {
 		const command = {
-			contributions: this.handler.modules.get('capital-contributions')!,
+			contribution: this.handler.modules.get('capital-contribution')!,
 			raids: this.handler.modules.get('capital-raids')!,
 			week: this.handler.modules.get('capital-week')!
 		}[args.command];

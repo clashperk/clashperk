@@ -324,7 +324,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		description_localizations: translation('command.capital.description'),
 		options: [
 			{
-				name: 'contributions',
+				name: 'contribution',
 				description: command.capital.contributions.description,
 				description_localizations: translation('command.capital.contributions.description'),
 				type: ApplicationCommandOptionType.Subcommand,
@@ -2376,7 +2376,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
-				name: 'capital-contributions',
+				name: 'capital-contribution',
 				description: 'Shows a summary of capital contributions.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [

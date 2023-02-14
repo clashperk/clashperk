@@ -69,8 +69,9 @@ export default class ComponentHandler {
 				await this.client.commandHandler.exec(interaction, command, { ...parsed });
 				return true;
 			}
+			case 'capital-contribution':
 			case 'capital-contributions': {
-				const command = this.client.commandHandler.modules.get('capital-contributions')!;
+				const command = this.client.commandHandler.modules.get('capital-contribution')!;
 				await interaction.deferUpdate();
 				await this.client.commandHandler.exec(interaction, command, { ...parsed });
 				return true;

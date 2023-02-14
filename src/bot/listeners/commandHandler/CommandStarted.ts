@@ -2,6 +2,21 @@ import { addBreadcrumb, setContext } from '@sentry/node';
 import { BaseInteraction, ChannelType, Interaction, InteractionType } from 'discord.js';
 import { Command, Listener } from '../../lib/index.js';
 import { CommandHandlerEvents } from '../../lib/util.js';
+import { mixpanel } from '../../struct/Mixpanel.js';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const flattenArgs = (obj: Record<string, any>) => {
+	const result: Record<string, string | number | boolean> = {};
+	for (const [key, value] of Object.entries(obj)) {
+		if (typeof value === 'object') {
+			if (value?.id) result[`${key}_id`] = value.id;
+		}
+		if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+			result[key] = value;
+		}
+	}
+	return result;
+};
 
 export default class CommandStartedListener extends Listener {
 	public constructor() {
@@ -12,7 +27,25 @@ export default class CommandStartedListener extends Listener {
 		});
 	}
 
-	public exec(interaction: Interaction, command: Command, args: unknown) {
+	public exec(interaction: Interaction, command: Command, args: Record<string, unknown>) {
+		mixpanel.track('Command uses', {
+			distinct_id: interaction.user.id,
+			command_id: command.id,
+			user_id: interaction.user.id,
+			guild_id: interaction.guild?.id ?? '0',
+			guild_name: interaction.guild?.name ?? 'DM',
+			user_name: interaction.user.tag,
+			interaction_type: InteractionType[interaction.type],
+			sub_command_id: args.command ?? args.option ?? null,
+			args: Object.keys(args).filter((key) => !key.startsWith('_') || key !== 'cmd')
+		});
+
+		mixpanel.people.set(interaction.user.id, {
+			$first_name: interaction.user.tag,
+			user_id: interaction.user.id,
+			locale: interaction.locale
+		});
+
 		addBreadcrumb({
 			message: 'command_started',
 			category: command.category,
