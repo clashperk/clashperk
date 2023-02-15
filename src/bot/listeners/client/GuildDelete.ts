@@ -2,6 +2,7 @@ import { Guild, EmbedBuilder, Webhook } from 'discord.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Listener } from '../../lib/index.js';
+import { mixpanel } from '../../struct/Mixpanel.js';
 
 export default class GuildDeleteListener extends Listener {
 	public webhook: Webhook | null = null;
@@ -32,8 +33,18 @@ export default class GuildDeleteListener extends Listener {
 
 		const values = (await this.client.shard!.fetchClientValues('guilds.cache.size').catch(() => [0])) as number[];
 		const guilds = values.reduce((prev, curr) => curr + prev, 0);
-
 		const user = await this.client.users.fetch(guild.ownerId);
+
+		mixpanel.track('Guild delete', {
+			distinct_id: guild.ownerId,
+			guild_id: guild.id,
+			name: guild.name,
+			owner_id: guild.ownerId,
+			owner_name: user.tag,
+			member_count: guild.memberCount,
+			total_guild_count: guilds
+		});
+
 		const webhook = await this.fetchWebhook().catch(() => null);
 		if (webhook) {
 			const embed = new EmbedBuilder()

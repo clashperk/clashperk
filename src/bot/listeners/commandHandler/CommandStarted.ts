@@ -32,12 +32,15 @@ export default class CommandStartedListener extends Listener {
 			distinct_id: interaction.user.id,
 			command_id: command.id,
 			user_id: interaction.user.id,
+			user_name: interaction.user.tag,
 			guild_id: interaction.guild?.id ?? '0',
 			guild_name: interaction.guild?.name ?? 'DM',
-			user_name: interaction.user.tag,
 			interaction_type: InteractionType[interaction.type],
 			sub_command_id: args.command ?? args.option ?? null,
-			args: Object.keys(args).filter((key) => !key.startsWith('_') || key !== 'cmd')
+			args: Object.keys(args).filter((key) => !key.startsWith('_') || key !== 'cmd'),
+			is_application_command: Boolean(
+				interaction.isCommand() && [command.id, ...(command.aliases ?? [])].includes(interaction.commandName)
+			)
 		});
 
 		mixpanel.people.set(interaction.user.id, {

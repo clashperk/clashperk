@@ -6,6 +6,7 @@ import ms from 'ms';
 import { nanoid } from 'nanoid';
 import { Listener } from '../../lib/index.js';
 import ComponentHandler from '../../struct/ComponentHandler.js';
+import { mixpanel } from '../../struct/Mixpanel.js';
 import { ElasticIndex, Settings } from '../../util/Constants.js';
 
 const ranges: Record<string, number> = {
@@ -141,6 +142,19 @@ export default class InteractionListener extends Listener {
 				return this.clanTagAutocomplete(interaction, focused);
 			}
 		}
+	}
+
+	private track(interaction: AutocompleteInteraction<'cached'>) {
+		const focused = interaction.options.getFocused(true);
+		mixpanel.track('Autocomplete', {
+			distinct_id: interaction.user.id,
+			guild_id: interaction.guild.id,
+			guild_name: interaction.guild.name,
+			command_id: interaction.commandName,
+			field_name: focused.name,
+			sub_command_id: interaction.options.getSubcommand(false),
+			query: interaction.options.getString(focused.name)?.substring(0, 10) ?? null
+		});
 	}
 
 	private async durationAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {

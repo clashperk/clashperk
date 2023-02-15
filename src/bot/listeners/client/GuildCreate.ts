@@ -2,6 +2,7 @@ import { Guild, EmbedBuilder, TextChannel, Webhook, PermissionFlagsBits, Channel
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Listener } from '../../lib/index.js';
+import { mixpanel } from '../../struct/Mixpanel.js';
 
 export default class GuildCreateListener extends Listener {
 	private webhook: Webhook | null = null;
@@ -35,6 +36,17 @@ export default class GuildCreateListener extends Listener {
 		const guilds = values.reduce((prev, curr) => curr + prev, 0);
 
 		const user = await this.client.users.fetch(guild.ownerId);
+
+		mixpanel.track('Guild create', {
+			distinct_id: guild.ownerId,
+			guild_id: guild.id,
+			name: guild.name,
+			owner_id: guild.ownerId,
+			owner_name: user.tag,
+			member_count: guild.memberCount,
+			total_guild_count: guilds
+		});
+
 		const webhook = await this.fetchWebhook().catch(() => null);
 		if (webhook) {
 			const embed = new EmbedBuilder()
