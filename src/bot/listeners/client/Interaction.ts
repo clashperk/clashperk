@@ -120,8 +120,17 @@ export default class InteractionListener extends Listener {
 
 	public async autocomplete(interaction: Interaction<'cached'>) {
 		if (!interaction.isAutocomplete()) return;
-
 		const focused = interaction.options.getFocused(true).name;
+		mixpanel.track('Autocomplete', {
+			distinct_id: interaction.user.id,
+			guild_id: interaction.guild.id,
+			guild_name: interaction.guild.name,
+			command_id: interaction.commandName,
+			sub_command_id: interaction.options.getSubcommand(false),
+			autocomplete_field_name: focused,
+			autocomplete_query: interaction.options.getString(focused)?.substring(0, 10) ?? null
+		});
+
 		switch (focused) {
 			case 'duration': {
 				return this.durationAutocomplete(interaction, focused);
@@ -142,19 +151,6 @@ export default class InteractionListener extends Listener {
 				return this.clanTagAutocomplete(interaction, focused);
 			}
 		}
-	}
-
-	private track(interaction: AutocompleteInteraction<'cached'>) {
-		const focused = interaction.options.getFocused(true);
-		mixpanel.track('Autocomplete', {
-			distinct_id: interaction.user.id,
-			guild_id: interaction.guild.id,
-			guild_name: interaction.guild.name,
-			command_id: interaction.commandName,
-			field_name: focused.name,
-			sub_command_id: interaction.options.getSubcommand(false),
-			query: interaction.options.getString(focused.name)?.substring(0, 10) ?? null
-		});
 	}
 
 	private async durationAutocomplete(interaction: AutocompleteInteraction<'cached'>, focused: string) {
