@@ -2091,6 +2091,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	// -------- OTHER COMMANDS--------
 	{
 		name: 'legend',
+		dm_permission: false,
 		description: 'Shows legend logs for a player.',
 		options: [
 			{
@@ -2228,6 +2229,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	{
 		name: 'summary',
 		description: 'Shows summary of the clan family.',
+		dm_permission: false,
 		options: [
 			{
 				name: 'compo',
