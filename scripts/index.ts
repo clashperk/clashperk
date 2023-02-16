@@ -46,7 +46,7 @@ const applicationCommands = async (token: string, commands: typeof COMMANDS) => 
 		},
 		body: JSON.stringify(commands)
 	});
-	await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(data)));
+	await res.json().then((data) => (res.ok ? console.log(JSON.stringify(data)) : console.log(inspect(data, { depth: Infinity }))));
 	console.log(`Updated ${commands.length} Application Commands`);
 };
 

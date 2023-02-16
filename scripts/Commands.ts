@@ -812,24 +812,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'export',
-				description: 'CWL Export',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'tag',
-						description: common.options.tag.description,
-						description_localizations: translation('common.options.tag.description'),
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String
-					},
-					{
-						name: 'user',
-						description: common.options.user.description,
-						description_localizations: translation('common.options.user.description'),
-						type: ApplicationCommandOptionType.User,
-						required: false
-					}
-				]
+				description: 'Command deleted. Use /export cwl instead.',
+				type: ApplicationCommandOptionType.Subcommand
 			}
 		]
 	},
@@ -2070,7 +2054,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	{
 		name: 'help',
 		description: command.help.description,
-		dm_permission: true,
+		dm_permission: false,
 		description_localizations: translation('command.help.description'),
 		options: [
 			{
@@ -2172,57 +2156,157 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		description_localizations: translation('command.export.description'),
 		options: [
 			{
-				name: 'option',
-				required: true,
-				description: command.export.options.option.description,
-				description_localizations: translation('command.export.options.option.description'),
-				type: ApplicationCommandOptionType.String,
-				choices: [
+				name: 'wars',
+				description: 'Export wars stats.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
 					{
-						name: 'Clan Wars',
-						value: 'wars'
+						name: 'season',
+						description: command.export.options.season.description,
+						description_localizations: translation('command.export.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
 					},
 					{
-						name: 'Season Stats',
-						value: 'season'
+						name: 'war_type',
+						description: 'Regular or friendly wars (default: regular)',
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Regular',
+								value: 'regular'
+							},
+							{
+								name: 'Friendly',
+								value: 'friendly'
+							}
+						]
 					},
 					{
-						name: 'Clan Members',
-						value: 'members'
+						name: 'clans',
+						description: command.export.options.clans.description,
+						description_localizations: translation('command.export.options.clans.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'CWL Stats',
-						value: 'cwl'
+						name: 'wars',
+						description: command.export.options.wars.description,
+						description_localizations: translation('command.export.options.wars.description'),
+						type: ApplicationCommandOptionType.Integer
+					}
+				]
+			},
+			{
+				name: 'cwl',
+				description: 'Export CWL wars stats.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						description: command.export.options.season.description,
+						description_localizations: translation('command.export.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
 					},
 					{
-						name: 'Last War Dates',
-						value: 'lastwars'
+						name: 'clans',
+						description: command.export.options.clans.description,
+						description_localizations: translation('command.export.options.clans.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
 					},
 					{
-						name: 'Missed Wars',
-						value: 'missed'
+						name: 'wars',
+						description: command.export.options.wars.description,
+						description_localizations: translation('command.export.options.wars.description'),
+						type: ApplicationCommandOptionType.Integer
 					}
 				]
 			},
 			{
 				name: 'season',
-				description: command.export.options.season.description,
-				description_localizations: translation('command.export.options.season.description'),
-				type: ApplicationCommandOptionType.String,
-				choices: getSeasonIds()
+				description: 'Export regular, friendly and CWL wars stats.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						description: command.export.options.season.description,
+						description_localizations: translation('command.export.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
+					},
+					{
+						name: 'clans',
+						description: command.export.options.clans.description,
+						description_localizations: translation('command.export.options.clans.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					}
+				]
 			},
 			{
-				name: 'clans',
-				description: command.export.options.clans.description,
-				description_localizations: translation('command.export.options.clans.description'),
-				autocomplete: true,
-				type: ApplicationCommandOptionType.String
+				name: 'members',
+				description: 'Export regular, friendly and CWL wars stats.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						description: command.export.options.season.description,
+						description_localizations: translation('command.export.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
+					},
+					{
+						name: 'clans',
+						description: command.export.options.clans.description,
+						description_localizations: translation('command.export.options.clans.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					}
+				]
 			},
 			{
-				name: 'wars',
-				description: command.export.options.wars.description,
-				description_localizations: translation('command.export.options.wars.description'),
-				type: ApplicationCommandOptionType.Integer
+				name: 'missed',
+				description: 'Export missed attack history.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						description: command.export.options.season.description,
+						description_localizations: translation('command.export.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
+					},
+					{
+						name: 'clans',
+						description: command.export.options.clans.description,
+						description_localizations: translation('command.export.options.clans.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					}
+				]
+			},
+			{
+				name: 'lastwars',
+				description: 'Export participation history (last played wars)',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						description: command.export.options.season.description,
+						description_localizations: translation('command.export.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
+					},
+					{
+						name: 'clans',
+						description: command.export.options.clans.description,
+						description_localizations: translation('command.export.options.clans.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					}
+				]
 			}
 		]
 	},
@@ -2563,10 +2647,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 ];
 
 export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
-	{
-		name: 'sync',
-		description: 'Sync your roles, nicknames, accounts etc.'
-	},
 	{
 		name: 'status',
 		description: "Shows information about the bot's status.",

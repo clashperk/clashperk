@@ -80,7 +80,10 @@ export default class ClanEmbedCommand extends Command {
 		}
 
 		const user = await this.getUser(data);
-		if (!user) return interaction.editReply('Clan leader is not linked to the bot. Use `/link` command to link the player account.');
+		if (!user)
+			return interaction.editReply(
+				'Clan leader is not linked to the bot. Use </link create:857281486662926407> command to link the player account.'
+			);
 
 		const __customIds = {
 			a: this.client.uuid(interaction.user.id),

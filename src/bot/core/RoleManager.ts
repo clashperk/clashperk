@@ -594,7 +594,7 @@ export class RoleManager {
 
 	private getHighestRole(players: { tag: string; role?: string; clan?: { tag: string } }[], clans: string[]) {
 		const highestRoles = players.filter((a) => a.clan && clans.includes(a.clan.tag) && a.role && a.role in roles).map((a) => a.role!);
-		const highestRole = highestRoles.sort((a, b) => roles[b] - roles[a])[0];
+		const highestRole = highestRoles.sort((a, b) => roles[b] - roles[a]).at(0);
 		if (highestRole) return highestRole.replace('leader', 'coLeader');
 		return null;
 	}

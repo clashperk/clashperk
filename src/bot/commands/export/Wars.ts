@@ -21,7 +21,10 @@ export default class WarExport extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string; season?: string }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { wars?: number; clans?: string; season?: string; war_type: string }
+	) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -42,7 +45,7 @@ export default class WarExport extends Command {
 				.find({
 					$or: [{ 'clan.tag': tag }, { 'opponent.tag': tag }],
 					state: { $in: ['inWar', 'warEnded'] },
-					warType: WarType.REGULAR,
+					warType: args.war_type === 'friendly' ? WarType.FRIENDLY : WarType.REGULAR,
 					...query
 				})
 				.sort({ _id: -1 })
