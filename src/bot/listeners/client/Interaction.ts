@@ -482,7 +482,7 @@ export default class InteractionListener extends Listener {
 
 	private async getQuery(query: string) {
 		const value = query.length > 100 ? nanoid() : query;
-		if (query.length > 100) await this.client.redis.set(value, value, { EX: 60 * 60 });
+		if (query.length > 100) await this.client.redis.set(value, query, { EX: 60 * 60 });
 		return value;
 	}
 
