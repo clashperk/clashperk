@@ -92,42 +92,79 @@ export default class ClanActivityCommand extends Command {
 					}
 				},
 				{
-					$group: {
-						_id: {
-							id: '$entries.entry',
-							clan: '$clan',
-							tag: '$tag'
+					$set: {
+						tag: '$tag',
+						name: '$name',
+						clan: '$clan',
+						time: '$entries.entry',
+						count: '$entries.count'
+					}
+				},
+				{
+					$set: {
+						hour: {
+							$dateTrunc: {
+								date: '$time',
+								unit: 'hour'
+							}
 						}
+					}
+				},
+				{
+					$sort: {
+						time: -1
 					}
 				},
 				{
 					$group: {
 						_id: {
-							id: '$_id.id',
-							clan: '$_id.clan'
+							hour: '$hour',
+							clan: '$clan.tag'
+						},
+						clan: {
+							$last: '$clan'
+						},
+						tag: {
+							$last: '$tag'
+						},
+						name: {
+							$last: '$name'
 						},
 						count: {
 							$sum: 1
+						},
+						hour: {
+							$last: '$hour'
 						}
 					}
 				},
 				{
+					$sort: {
+						hour: -1
+					}
+				},
+				{
 					$group: {
-						_id: '$_id.clan.tag',
+						_id: '$_id.clan',
 						entries: {
-							$addToSet: {
+							$push: {
 								time: {
 									$dateToString: {
 										format: '%Y-%m-%dT%H:00',
-										date: '$_id.id'
+										date: '$hour'
 									}
 								},
 								count: '$count'
 							}
 						},
 						name: {
-							$first: '$_id.clan.name'
+							$first: '$clan.name'
 						}
+					}
+				},
+				{
+					$sort: {
+						name: 1
 					}
 				}
 			])

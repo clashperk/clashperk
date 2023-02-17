@@ -190,7 +190,7 @@ export default class CapitalContributionsCommand extends Command {
 				},
 				{
 					$sort: {
-						_id: -1
+						week: -1
 					}
 				},
 				{
