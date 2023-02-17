@@ -1,6 +1,17 @@
-import { AnyThreadChannel, CommandInteraction, EmbedBuilder, PermissionsString, Role, TextChannel } from 'discord.js';
+import {
+	ActionRowBuilder,
+	AnyThreadChannel,
+	CommandInteraction,
+	ComponentType,
+	EmbedBuilder,
+	PermissionsString,
+	Role,
+	RoleSelectMenuBuilder,
+	StringSelectMenuBuilder,
+	TextChannel
+} from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { Flags, missingPermissions } from '../../util/Constants.js';
+import { ClanFeedLogTypes, Flags, JoinLeaveLogTitle, missingPermissions, WarFeedLogTypes } from '../../util/Constants.js';
 
 const FEATURES: Record<string, string> = {
 	[Flags.DONATION_LOG]: 'Donation Log',
@@ -119,6 +130,147 @@ export default class ClanLogCommand extends Command {
 			if (args.color) embed.setColor(args.color);
 		}
 
-		return interaction.editReply({ embeds: [embed] });
+		const customIds = {
+			titleLink: this.client.uuid(),
+			logs: this.client.uuid(),
+			role: this.client.uuid(),
+			warLogs: this.client.uuid()
+		};
+
+		const titleMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder()
+				.setCustomId(customIds.titleLink)
+				.setPlaceholder('Title link redirection')
+				.setMaxValues(1)
+				.setOptions([
+					{
+						label: 'Open in Game',
+						description: 'This will open the player profile in the Game.',
+						value: JoinLeaveLogTitle.OpenInGame
+					},
+					{
+						label: 'Open in Clash of Stats',
+						description: 'This will open the player profile in Clash of Stats.',
+						value: JoinLeaveLogTitle.OpenInCOS
+					}
+				])
+		);
+		const roleMenu = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
+			new RoleSelectMenuBuilder()
+				.setCustomId(customIds.role)
+				.setMaxValues(1)
+				.setMinValues(1)
+				.setPlaceholder(flag === Flags.JOIN_LEAVE_LOG ? 'Flag alert role (optional)' : 'Town-Hall upgrade alert role (optional)')
+		);
+		const logMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder()
+				.setCustomId(customIds.logs)
+				.setPlaceholder('Select logs')
+				.setMinValues(1)
+				.setMaxValues(4)
+				.setOptions([
+					{
+						label: 'Town Hall',
+						value: ClanFeedLogTypes.TownHallUpgrade,
+						description: 'Town Hall upgrades.'
+					},
+					{
+						label: 'War Preference',
+						value: ClanFeedLogTypes.WarPreferenceChange,
+						description: 'War preference changes.'
+					},
+					{
+						label: 'Player Name',
+						description: 'Player name changes.',
+						value: ClanFeedLogTypes.PlayerNameChange
+					},
+					{
+						label: 'Season Best',
+						description: 'Best players at the end of season.',
+						value: ClanFeedLogTypes.SeasonBestPlayers
+					}
+				])
+		);
+		const warMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder()
+				.setCustomId(customIds.warLogs)
+				.setPlaceholder('Select logs')
+				.setMinValues(1)
+				.setMaxValues(4)
+				.setOptions([
+					{
+						label: 'Regular War',
+						description: 'Regular war logs.',
+						value: WarFeedLogTypes.RegularWarEmbed
+					},
+					{
+						label: 'CWL',
+						description: 'CWL logs.',
+						value: WarFeedLogTypes.CWLWarEmbed
+					},
+					{
+						label: 'Friendly War',
+						description: 'Friendly war logs.',
+						value: WarFeedLogTypes.FriendlyWarEmbed
+					},
+					{
+						label: 'Missed Attacks',
+						description: 'Missed attacks logs.',
+						value: WarFeedLogTypes.MissedAttackEmbed
+					}
+				])
+		);
+
+		const components = [];
+		switch (flag) {
+			case Flags.CLAN_FEED_LOG:
+				components.push(titleMenu, roleMenu, logMenu);
+				break;
+			case Flags.JOIN_LEAVE_LOG:
+				components.push(titleMenu, roleMenu);
+				break;
+			case Flags.CLAN_WAR_LOG:
+				components.push(warMenu);
+				break;
+			default:
+				break;
+		}
+
+		if (components.length >= 0) return interaction.editReply({ embeds: [embed], components });
+
+		const msg = await interaction.editReply({ embeds: [embed], components });
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect | ComponentType.RoleSelect>(
+			{
+				filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+				time: 10 * 60 * 1000
+			}
+		);
+
+		collector.on('collect', async (action) => {
+			if (action.customId === customIds.titleLink && action.isStringSelectMenu()) {
+				console.log(action.values);
+				await action.deferUpdate();
+			}
+
+			if (action.customId === customIds.role && action.isRoleSelectMenu()) {
+				console.log(action.values);
+				await action.deferUpdate();
+			}
+
+			if (action.customId === customIds.logs && action.isStringSelectMenu()) {
+				console.log(action.values);
+				await action.deferUpdate();
+			}
+
+			if (action.customId === customIds.warLogs && action.isStringSelectMenu()) {
+				console.log(action.values);
+				await action.deferUpdate();
+			}
+		});
+
+		collector.on('end', async (_, reason) => {
+			Object.values(customIds).forEach((id) => this.client.components.delete(id));
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+		});
 	}
 }

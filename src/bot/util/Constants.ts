@@ -218,3 +218,23 @@ export const locales: Record<string, string> = {
 export const CLAN_GAMES_MINIMUM_POINTS = [
 	1, 50, 100, 250, 500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500, 2750, 3000, 3250, 3500, 3750, 4000, 4500, 5000
 ];
+
+export const ClanFeedLogTypes = {
+	TownHallUpgrade: 'TOWN_HALL_UPGRADE',
+	WarPreferenceChange: 'WAR_PREFERENCE_CHANGE',
+	PlayerNameChange: 'PLAYER_NAME_CHANGE',
+	PlayerRoleChange: 'PLAYER_ROLE_CHANGE',
+	SeasonBestPlayers: 'SEASON_BEST_PLAYERS'
+} as const;
+
+export const JoinLeaveLogTitle = {
+	OpenInGame: 'OPEN_IN_GAME',
+	OpenInCOS: 'OPEN_IN_COS'
+} as const;
+
+export const WarFeedLogTypes = {
+	RegularWarEmbed: 'REGULAR_EMBED',
+	MissedAttackEmbed: 'MISSED_ATTACK_EMBED',
+	CWLWarEmbed: 'CWL_WAR_EMBED',
+	FriendlyWarEmbed: 'FRIENDLY_WAR_EMBED'
+} as const;

@@ -137,7 +137,6 @@ export default class QuickBoardActionCommand extends Command {
 							const tag = modalSubmit.fields.getTextInputValue('tag');
 							const token = modalSubmit.fields.getTextInputValue('token');
 							await modalSubmit.deferUpdate();
-
 							if (token) {
 								return this.client.commandHandler.exec(action, this.handler.modules.get('verify')!, { tag, token });
 							}

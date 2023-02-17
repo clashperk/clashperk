@@ -6,8 +6,7 @@ import {
 	escapeMarkdown,
 	ButtonStyle,
 	ComponentType,
-	User,
-	escapeInlineCode
+	User
 } from 'discord.js';
 import { ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import moment from 'moment';
@@ -389,7 +388,7 @@ export default class WarCommand extends Command {
 	}
 
 	private padEnd(name: string) {
-		return escapeInlineCode(name).padEnd(15, ' ');
+		return Util.escapeBackTick(name).padEnd(15, ' ');
 	}
 
 	private index(num: number | string) {

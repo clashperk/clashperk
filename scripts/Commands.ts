@@ -2648,6 +2648,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 
 export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	{
+		name: 'sync',
+		description: 'Syncs your account with the bot.'
+	},
+	{
 		name: 'status',
 		description: "Shows information about the bot's status.",
 		dm_permission: true
