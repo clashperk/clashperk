@@ -95,7 +95,8 @@ export default class CapitalRaidsCommand extends Command {
 
 		const isRaidWeek = currentWeekId === weekId;
 		const raidSeason = isRaidWeek ? await this.getRaidsFromAPI(clan) : await this.aggregateCapitalRaids(clan, weekId);
-		if (!raidSeason || !raidSeason.members.length) {
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (!raidSeason?.members?.length) {
 			return interaction.followUp({
 				content: this.i18n('command.capital.raids.no_data', { weekId, clan: clan.name, lng: interaction.locale })
 			});
@@ -149,10 +150,10 @@ export default class CapitalRaidsCommand extends Command {
 					$group: {
 						_id: '$members.tag',
 						name: {
-							$last: '$members.name'
+							$first: '$members.name'
 						},
 						tag: {
-							$last: '$members.tag'
+							$first: '$members.tag'
 						},
 						raids: {
 							$push: {

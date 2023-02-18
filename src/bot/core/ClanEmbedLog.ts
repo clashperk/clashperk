@@ -1,9 +1,9 @@
 import { Clan } from 'clashofclans.js';
-import { Collection, EmbedBuilder, PermissionsString, Snowflake, WebhookClient } from 'discord.js';
+import { Collection, PermissionsString, Snowflake, WebhookClient } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
-import { CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../util/Emojis.js';
+import { clanEmbedMaker } from '../util/Helper.js';
 import BaseLog from './BaseLog.js';
 
 export interface Cache {
@@ -68,92 +68,12 @@ export default class ClanEmbedLog extends BaseLog {
 	}
 
 	private async embed(cache: Cache, data: Clan) {
-		const fetched = await this.client.http.detailedClanMembers(data.memberList);
-		const reduced = fetched.reduce<{ [key: string]: number }>((count, member) => {
-			const townHall = member.townHallLevel;
-			count[townHall] = (count[townHall] || 0) + 1;
-			return count;
-		}, {});
-
-		const townHalls = Object.entries(reduced)
-			.map((arr) => ({ level: Number(arr[0]), total: arr[1] }))
-			.sort((a, b) => b.level - a.level);
-		const avg = townHalls.reduce((p, c) => p + c.total * c.level, 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
-
-		const location = data.location
-			? data.location.isCountry
-				? `:flag_${data.location.countryCode.toLowerCase()}: ${data.location.name}`
-				: `🌐 ${data.location.name}`
-			: `${EMOJIS.WRONG} None`;
-
-		const clanDescription: string = cache.embed.description === 'auto' ? data.description : cache.embed.description;
-		const clanRequirements: string =
-			cache.embed.accepts === 'auto'
-				? data.requiredTownhallLevel
-					? `TH ${data.requiredTownhallLevel}+`
-					: 'Any'
-				: cache.embed.accepts;
-
-		const capitalHall = data.clanCapital?.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${data.clanCapital.capitalHallLevel}**` : '';
-
-		const embed = new EmbedBuilder()
-			.setColor(cache.color)
-			.setTitle(`${data.name} (${data.tag})`)
-			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
-			.setThumbnail(data.badgeUrls.medium)
-			.setDescription(
-				[
-					`${EMOJIS.CLAN} **${data.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
-					'',
-					clanDescription || ''
-				].join('\n')
-			)
-			.addFields([
-				{
-					name: 'Clan Leader',
-					value: [
-						`${EMOJIS.OWNER} <@!${cache.embed.userId as string}> (${
-							data.memberList.find((m) => m.role === 'leader')?.name ?? 'None'
-						})`
-					].join('\n')
-				},
-				{
-					name: 'Requirements',
-					value: [
-						`${EMOJIS.TOWNHALL} ${clanRequirements || 'Any'}`,
-						'**Trophies Required**',
-						`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
-						`**Location** \n${location}`
-					].join('\n')
-				},
-				{
-					name: 'War Performance',
-					value: [
-						`${EMOJIS.OK} ${data.warWins} Won ${
-							data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''
-						}`,
-						'**War Frequency & Streak**',
-						`${
-							data.warFrequency.toLowerCase() === 'morethanonceperweek'
-								? '🎟️ More Than Once Per Week'
-								: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`
-						} ${'🏅'} ${data.warWinStreak}`,
-						'**War League**',
-						`${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
-					].join('\n')
-				},
-				{
-					name: `Town Halls (Avg. ${avg.toFixed(2)})`,
-					value: [
-						townHalls
-							.slice(0, 7)
-							.map((th) => `${TOWN_HALLS[th.level]!} ${ORANGE_NUMBERS[th.total]!}\u200b`)
-							.join(' ') || `${EMOJIS.WRONG} None`
-					].join('\n')
-				}
-			])
-			.setTimestamp()
-			.setFooter({ text: 'Synced' });
+		const embed = await clanEmbedMaker(data, {
+			description: cache.embed.description,
+			requirements: cache.embed.accepts,
+			color: cache.color,
+			userId: cache.embed.userId
+		});
 
 		return embed;
 	}

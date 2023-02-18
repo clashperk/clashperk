@@ -106,7 +106,8 @@ export default class StorageHandler {
 							webhook: {
 								id: data.webhook.id,
 								token: data.webhook.token
-							}
+							},
+							interval: data.interval
 						},
 						$setOnInsert: {
 							createdAt: new Date()
@@ -129,7 +130,9 @@ export default class StorageHandler {
 							webhook: {
 								id: data.webhook.id,
 								token: data.webhook.token
-							}
+							},
+							deepLink: data.deepLink,
+							logTypes: data.logTypes
 						},
 						$setOnInsert: {
 							createdAt: new Date()
@@ -152,7 +155,9 @@ export default class StorageHandler {
 							webhook: {
 								id: data.webhook.id,
 								token: data.webhook.token
-							}
+							},
+							deepLink: data.deepLink,
+							logTypes: data.logTypes
 						},
 						$setOnInsert: {
 							createdAt: new Date()
@@ -294,7 +299,8 @@ export default class StorageHandler {
 							webhook: {
 								id: data.webhook.id,
 								token: data.webhook.token
-							}
+							},
+							logTypes: data.logTypes
 						},
 						$setOnInsert: {
 							createdAt: new Date()

@@ -18,7 +18,7 @@ import {
 import { Args, Command } from '../../lib/index.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections, Flags, missingPermissions } from '../../util/Constants.js';
-import { CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from '../../util/Emojis.js';
+import { clanEmbedMaker } from '../../util/Helper.js';
 
 export default class ClanEmbedCommand extends Command {
 	public constructor() {
@@ -175,105 +175,9 @@ export default class ClanEmbedCommand extends Command {
 			return;
 		}
 
-		const fetched = await this.client.http.detailedClanMembers(data.memberList);
-		const reduced = fetched
-			.filter((res) => res.ok)
-			.reduce<{ [key: string]: number }>((count, member) => {
-				const townHall = member.townHallLevel;
-				count[townHall] = (count[townHall] || 0) + 1;
-				return count;
-			}, {});
-
-		const townHalls = Object.entries(reduced)
-			.map((arr) => ({ level: Number(arr[0]), total: arr[1] }))
-			.sort((a, b) => b.level - a.level);
-
-		const location = data.location
-			? data.location.isCountry
-				? `:flag_${data.location.countryCode.toLowerCase()}: ${data.location.name}`
-				: `🌐 ${data.location.name}`
-			: `${EMOJIS.WRONG} None`;
-
-		const capitalHall = data.clanCapital?.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${data.clanCapital.capitalHallLevel}**` : '';
-
-		const embed = new EmbedBuilder()
-			.setTitle(`${data.name} (${data.tag})`)
-			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(data.tag)}`)
-			.setThumbnail(data.badgeUrls.medium)
-			.setDescription(
-				[
-					`${EMOJIS.CLAN} **${data.clanLevel}**${capitalHall} ${EMOJIS.USERS} **${data.members}** ${EMOJIS.TROPHY} **${data.clanPoints}** ${EMOJIS.VERSUS_TROPHY} **${data.clanVersusPoints}**`,
-					'',
-					description?.toLowerCase() === 'auto' ? data.description : cleanContent(description ?? '', interaction.channel!)
-				].join('\n')
-			);
-		if (color) embed.setColor(color);
-
-		embed.addFields([
-			{
-				name: 'Clan Leader',
-				value: [
-					`${EMOJIS.OWNER} ${user.toString()} (${
-						data.memberList.filter((m) => m.role === 'leader').map((m) => `${m.name}`)[0] || 'None'
-					})`
-				].join('\n')
-			}
-		]);
-
-		embed.addFields([
-			{
-				name: 'Requirements',
-				value: [
-					`${EMOJIS.TOWNHALL} ${
-						!accepts || accepts.toLowerCase() === 'auto'
-							? data.requiredTownhallLevel
-								? `TH ${data.requiredTownhallLevel}+`
-								: 'Any'
-							: cleanContent(accepts, interaction.channel!)
-					}`,
-					'**Trophies Required**',
-					`${EMOJIS.TROPHY} ${data.requiredTrophies}`,
-					`**Location** \n${location}`
-				].join('\n')
-			}
-		]);
-
-		embed.addFields([
-			{
-				name: 'War Performance',
-				value: [
-					`${EMOJIS.OK} ${data.warWins} Won ${
-						data.isWarLogPublic ? `${EMOJIS.WRONG} ${data.warLosses!} Lost ${EMOJIS.EMPTY} ${data.warTies!} Tied` : ''
-					}`,
-					'**War Frequency & Streak**',
-					`${
-						data.warFrequency.toLowerCase() === 'morethanonceperweek'
-							? '🎟️ More Than Once Per Week'
-							: `🎟️ ${data.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`
-					} ${'🏅'} ${data.warWinStreak}`,
-					'**War League**',
-					`${CWL_LEAGUES[data.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${data.warLeague?.name ?? 'Unranked'}`
-				].join('\n')
-			}
-		]);
-
-		embed.addFields([
-			{
-				name: 'Town Halls',
-				value: [
-					townHalls
-						.slice(0, 7)
-						.map((th) => `${TOWN_HALLS[th.level]} ${ORANGE_NUMBERS[th.total]}\u200b`)
-						.join(' ')
-				].join('\n')
-			}
-		]);
-
-		embed.setFooter({ text: 'Synced' });
-		embed.setTimestamp();
-
-		description = description?.toLowerCase() === 'auto' ? 'auto' : description ?? '';
-		accepts = !accepts || accepts.toLowerCase() === 'auto' ? 'auto' : accepts;
+		description = description?.toLowerCase() === 'auto' ? 'auto' : cleanContent(description ?? '', interaction.channel!);
+		accepts = !accepts || accepts.toLowerCase() === 'auto' ? 'auto' : cleanContent(accepts, interaction.channel!);
+		const embed = await clanEmbedMaker(data, { description, requirements: accepts, color, userId: user.id });
 
 		const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
 		if (!webhook) {

@@ -97,7 +97,8 @@ export const enum Settings {
 	LEAGUE_ROLES = 'leagueRoles',
 	ROLE_REFRESHED = 'roleRefreshed',
 	ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts',
-	ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague'
+	ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague',
+	CLAN_GAMES_EXCEPTIONAL_MONTHS = 'clanGamesExceptionalMonths'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {
@@ -223,11 +224,12 @@ export const ClanFeedLogTypes = {
 	TownHallUpgrade: 'TOWN_HALL_UPGRADE',
 	WarPreferenceChange: 'WAR_PREFERENCE_CHANGE',
 	PlayerNameChange: 'PLAYER_NAME_CHANGE',
-	PlayerRoleChange: 'PLAYER_ROLE_CHANGE',
+	DonationReset: 'PLAYER_DONATION_RESET',
+	RoleChange: 'PLAYER_ROLE_CHANGE',
 	SeasonBestPlayers: 'SEASON_BEST_PLAYERS'
 } as const;
 
-export const JoinLeaveLogTitle = {
+export const DeepLinkTypes = {
 	OpenInGame: 'OPEN_IN_GAME',
 	OpenInCOS: 'OPEN_IN_COS'
 } as const;
@@ -237,4 +239,11 @@ export const WarFeedLogTypes = {
 	MissedAttackEmbed: 'MISSED_ATTACK_EMBED',
 	CWLWarEmbed: 'CWL_WAR_EMBED',
 	FriendlyWarEmbed: 'FRIENDLY_WAR_EMBED'
+} as const;
+
+export const DonationLogFrequencyTypes = {
+	Instant: 'INSTANT',
+	Daily: '24',
+	Weekly: '7',
+	Monthly: '30'
 } as const;

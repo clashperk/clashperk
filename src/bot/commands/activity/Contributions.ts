@@ -202,12 +202,20 @@ export default class CapitalContributionsCommand extends Command {
 						tag: {
 							$first: '$tag'
 						},
+						total: {
+							$sum: '$total'
+						},
 						weeks: {
 							$push: {
 								week: '$week',
 								total: '$total'
 							}
 						}
+					}
+				},
+				{
+					$sort: {
+						total: -1
 					}
 				}
 			])

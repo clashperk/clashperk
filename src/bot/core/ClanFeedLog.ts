@@ -2,9 +2,10 @@ import { Player } from 'clashofclans.js';
 import { Collection, EmbedBuilder, parseEmoji, PermissionsString, WebhookClient, WebhookCreateMessageOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
-import { Collections } from '../util/Constants.js';
+import { ClanFeedLogModel } from '../types/index.js';
+import { ClanFeedLogTypes, Collections, DeepLinkTypes } from '../util/Constants.js';
 import { EMOJIS, SUPER_TROOPS, TOWN_HALLS } from '../util/Emojis.js';
-import { Util } from '../util/index.js';
+import { Season, Util } from '../util/index.js';
 import RAW_TROOPS_DATA from '../util/Troops.js';
 import BaseLog from './BaseLog.js';
 
@@ -15,8 +16,16 @@ const OP: { [key: string]: number } = {
 	WAR_PREF_CHANGE: 0x00dbf3
 };
 
+const logTypes: Record<string, string> = {
+	NAME_CHANGE: ClanFeedLogTypes.PlayerNameChange,
+	TOWN_HALL_UPGRADE: ClanFeedLogTypes.TownHallUpgrade,
+	DONATION_RESET: ClanFeedLogTypes.DonationReset,
+	WAR_PREF_CHANGE: ClanFeedLogTypes.WarPreferenceChange
+};
+
 export default class ClanFeedLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
+	private readonly queued = new Set<string>();
 
 	public constructor(client: Client) {
 		super(client);
@@ -64,10 +73,17 @@ export default class ClanFeedLog extends BaseLog {
 		const player: Player = await this.client.http.player(member.tag);
 		if (!player.ok) return null;
 
-		const embed = new EmbedBuilder()
-			.setColor(OP[member.op])
-			.setTitle(`\u200e${player.name} (${player.tag})`)
-			.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
+		// do not post if the logTypes are set and the logType is not included
+		if (cache.logTypes && !cache.logTypes.includes(logTypes[member.op])) return null;
+
+		const embed = new EmbedBuilder().setColor(OP[member.op]).setTitle(`\u200e${player.name} (${player.tag})`);
+		if (!cache.deepLink || cache.deepLink === DeepLinkTypes.OpenInCOS) {
+			embed.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
+		}
+		if (cache.deepLink === DeepLinkTypes.OpenInGame) {
+			embed.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(player.tag)}`);
+		}
+
 		if (member.op === 'NAME_CHANGE') {
 			embed.setDescription(`Name changed from **${member.name}**`);
 			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
@@ -193,9 +209,39 @@ export default class ClanFeedLog extends BaseLog {
 			channel: data.channel,
 			tag: data.tag,
 			role: data.role,
+			logTypes: data.logTypes,
 			retries: data.retries ?? 0,
 			webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
 		});
+	}
+
+	private async _refresh() {
+		const logs = await this.client.db
+			.collection(Collections.CLAN_FEED_LOGS)
+			.aggregate<ClanFeedLogModel & { _id: ObjectId }>([
+				{ $match: { lastPosted: { $lte: new Date(Season.endTimestamp) } } },
+				{
+					$lookup: {
+						from: Collections.CLAN_STORES,
+						localField: 'clanId',
+						foreignField: '_id',
+						as: '_store',
+						pipeline: [{ $match: { active: true, paused: false } }, { $project: { _id: 1 } }]
+					}
+				},
+				{ $unwind: { path: '$_store' } }
+			])
+			.toArray();
+
+		for (const log of logs) {
+			if (!this.client.guilds.cache.has(log.guild)) continue;
+			if (this.queued.has(log._id.toHexString())) continue;
+
+			this.queued.add(log._id.toHexString());
+			await this.exec(log.tag, {});
+			this.queued.delete(log._id.toHexString());
+			await Util.delay(3000);
+		}
 	}
 }
 
@@ -229,8 +275,10 @@ interface Cache {
 	webhook: WebhookClient | null;
 	deleted?: boolean;
 	channel: string;
-	role: string | null;
+	role?: string;
 	guild: string;
 	threadId?: string;
+	logTypes?: string[];
+	deepLink?: string;
 	retries: number;
 }

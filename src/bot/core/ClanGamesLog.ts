@@ -3,7 +3,6 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	Collection,
-	EmbedBuilder,
 	PermissionsString,
 	Snowflake,
 	SnowflakeUtil,
@@ -15,6 +14,7 @@ import { Client } from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
 import { ClanGames } from '../util/index.js';
 import { EMOJIS } from '../util/Emojis.js';
+import { clanGamesEmbedMaker } from '../util/Helper.js';
 import BaseLog from './BaseLog.js';
 
 export default class ClanGamesLog extends BaseLog {
@@ -100,31 +100,8 @@ export default class ClanGamesLog extends BaseLog {
 	}
 
 	private embed(cache: Cache, { clan, ...data }: Feed) {
-		const embed = new EmbedBuilder()
-			.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
-			.setDescription(
-				[
-					`**[Clan Games Scoreboard (${this.seasonId})](https://clashperk.com/faq)**`,
-					`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-					data.members
-						.slice(0, 55)
-						.map((m, i) => {
-							const points = this.padStart(m.points || '0');
-							return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
-						})
-						.join('\n'),
-					'```'
-				].join('\n')
-			)
-			.setFooter({ text: `Points: ${data.total} [Avg: ${(data.total / clan.members).toFixed(2)}]` })
-			.setTimestamp();
-		if (cache.color) embed.setColor(cache.color);
-
+		const embed = clanGamesEmbedMaker(clan, { members: data.members, seasonId: this.seasonId, color: cache.color });
 		return embed;
-	}
-
-	private padStart(num: number | string) {
-		return num.toString().padStart(6, ' ');
 	}
 
 	public async init() {

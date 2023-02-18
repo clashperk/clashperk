@@ -5,7 +5,6 @@ import {
 	EmbedBuilder,
 	ButtonStyle,
 	ButtonInteraction,
-	BaseInteraction,
 	MessageType,
 	User
 } from 'discord.js';
@@ -16,6 +15,7 @@ import { ClanGames } from '../../util/index.js';
 import { Args, Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { ClanGamesModel } from '../../types/index.js';
+import { clanGamesEmbedMaker } from '../../util/Helper.js';
 
 export default class ClanGamesCommand extends Command {
 	public constructor() {
@@ -76,8 +76,15 @@ export default class ClanGamesCommand extends Command {
 
 		const queried = await this.query(clan.tag, clan, seasonId);
 		const members = this.filter(queried, memberList, seasonId);
-		const embed = this.embed(interaction, { clan, members, max: args.max, filter: args.filter, seasonId });
-		embed.setColor(this.client.embed(interaction));
+
+		const embed = clanGamesEmbedMaker(clan, { members, filters: { maxPoints: args.max, minPoints: args.filter }, seasonId });
+		if (interaction.isButton() && interaction.message.type === MessageType.ChatInputCommand) {
+			embed.setFooter({
+				text: embed.data.footer!.text,
+				iconURL: interaction.user.displayAvatarURL()
+			});
+		}
+		if (this.latestSeason !== seasonId) embed.setTimestamp(null);
 
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
@@ -93,44 +100,6 @@ export default class ClanGamesCommand extends Command {
 					.setStyle(ButtonStyle.Primary)
 			);
 		return interaction.editReply({ embeds: [embed], components: [row] });
-	}
-
-	private embed(
-		interaction: BaseInteraction,
-		{
-			clan,
-			members,
-			max = false,
-			filter = false,
-			seasonId
-		}: { clan: Clan; members: Member[]; max?: boolean; filter?: boolean; seasonId: string }
-	) {
-		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
-		const embed = new EmbedBuilder().setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium }).setDescription(
-			[
-				`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${seasonId})](https://clashperk.com/faq)**`,
-				`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
-				members
-					.slice(0, 55)
-					.filter((d) => (filter ? d.points > 0 : d.points >= 0))
-					.map((m, i) => {
-						const points = this.padStart(max ? m.points : Math.min(this.MAX, m.points));
-						return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
-					})
-					.join('\n'),
-				'```'
-			].join('\n')
-		);
-		if (interaction.isButton() && interaction.message.type === MessageType.ChatInputCommand) {
-			embed.setFooter({
-				text: `Total Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]`
-			});
-		} else {
-			embed.setFooter({ text: `Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]` });
-			embed.setTimestamp();
-		}
-
-		return embed;
 	}
 
 	private async forUsers(interaction: CommandInteraction<'cached'>, { player, user }: { player?: Player | null; user?: User }) {
@@ -173,10 +142,10 @@ export default class ClanGamesCommand extends Command {
 					$group: {
 						_id: '$tag',
 						name: {
-							$last: '$name'
+							$first: '$name'
 						},
 						tag: {
-							$last: '$tag'
+							$first: '$tag'
 						},
 						seasons: {
 							$push: {
@@ -224,10 +193,6 @@ export default class ClanGamesCommand extends Command {
 	private get MAX() {
 		const now = new Date();
 		return now.getDate() >= 22 && ClanGames.isSpecial ? 5000 : 4000;
-	}
-
-	private padStart(num: number) {
-		return num.toString().padStart(6, ' ');
 	}
 
 	private getSeasonId(seasonId?: string) {

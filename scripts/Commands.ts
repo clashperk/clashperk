@@ -1408,7 +1408,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'role',
 						description: 'Role for the flag notification (only for join/leave log)',
-						// description_localizations: translation('command.setup.enable.options.role.description'),
 						type: ApplicationCommandOptionType.Role
 					}
 				]

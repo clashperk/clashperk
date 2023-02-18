@@ -1,6 +1,8 @@
 import {
 	ActionRowBuilder,
 	AnyThreadChannel,
+	ButtonBuilder,
+	ButtonStyle,
 	CommandInteraction,
 	ComponentType,
 	EmbedBuilder,
@@ -11,7 +13,14 @@ import {
 	TextChannel
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { ClanFeedLogTypes, Flags, JoinLeaveLogTitle, missingPermissions, WarFeedLogTypes } from '../../util/Constants.js';
+import {
+	ClanFeedLogTypes,
+	Flags,
+	DeepLinkTypes,
+	missingPermissions,
+	WarFeedLogTypes,
+	DonationLogFrequencyTypes
+} from '../../util/Constants.js';
 
 const FEATURES: Record<string, string> = {
 	[Flags.DONATION_LOG]: 'Donation Log',
@@ -24,6 +33,12 @@ const FEATURES: Record<string, string> = {
 	[Flags.JOIN_LEAVE_LOG]: 'Join/Leave Log',
 	[Flags.CAPITAL_LOG]: 'Capital Log'
 };
+
+interface BaseState {
+	logTypes: string[] | null;
+	deepLink: string | null;
+	role: string | null;
+}
 
 export default class ClanLogCommand extends Command {
 	public constructor() {
@@ -98,24 +113,28 @@ export default class ClanLogCommand extends Command {
 			);
 		}
 
-		const id = await this.client.storage.register(interaction, {
-			op: flag,
-			guild: interaction.guild.id,
-			channel: args.channel.id,
-			tag: data.tag,
-			name: data.name,
-			role: args.role ? args.role.id : null,
-			webhook: {
-				id: webhook.id,
-				token: webhook.token
-			}
-		});
+		const mutate = async (rest = {}) => {
+			const id = await this.client.storage.register(interaction, {
+				op: flag,
+				guild: interaction.guild.id,
+				channel: args.channel.id,
+				tag: data.tag,
+				name: data.name,
+				role: args.role?.id ?? null,
+				webhook: {
+					id: webhook.id,
+					token: webhook.token
+				},
+				...rest
+			});
 
-		await this.client.rpcHandler.add(id, {
-			op: flag,
-			guild: interaction.guild.id,
-			tag: data.tag
-		});
+			await this.client.rpcHandler.add(id, {
+				op: flag,
+				guild: interaction.guild.id,
+				tag: data.tag
+			});
+		};
+		await mutate({});
 
 		const embed = new EmbedBuilder()
 			.setTitle(`\u200e${data.name} | ${FEATURES[flag]}`)
@@ -124,34 +143,42 @@ export default class ClanLogCommand extends Command {
 			.setColor(this.client.embed(interaction))
 			.addFields([{ name: 'Channel', value: args.channel.toString() }]); // eslint-disable-line
 
-		if (args.role && flag === Flags.JOIN_LEAVE_LOG) embed.addFields([{ name: 'Flag Notification Role', value: args.role.toString() }]);
+		if (args.role && flag === Flags.JOIN_LEAVE_LOG) embed.addFields([{ name: 'Flag notification role', value: args.role.toString() }]);
 		if ([Flags.DONATION_LOG, Flags.LAST_SEEN_LOG, Flags.CLAN_GAMES_LOG].includes(flag)) {
 			embed.addFields([{ name: 'Color', value: args.color?.toString(16) ?? 'None' }]);
 			if (args.color) embed.setColor(args.color);
 		}
 
 		const customIds = {
-			titleLink: this.client.uuid(),
+			deepLink: this.client.uuid(),
 			logs: this.client.uuid(),
 			role: this.client.uuid(),
-			warLogs: this.client.uuid()
+			warLogs: this.client.uuid(),
+			update: this.client.uuid(),
+			interval: this.client.uuid()
+		};
+
+		const state: BaseState = {
+			deepLink: null,
+			logTypes: null,
+			role: null
 		};
 
 		const titleMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
-				.setCustomId(customIds.titleLink)
+				.setCustomId(customIds.deepLink)
 				.setPlaceholder('Title link redirection')
 				.setMaxValues(1)
 				.setOptions([
 					{
 						label: 'Open in Game',
 						description: 'This will open the player profile in the Game.',
-						value: JoinLeaveLogTitle.OpenInGame
+						value: DeepLinkTypes.OpenInGame
 					},
 					{
 						label: 'Open in Clash of Stats',
 						description: 'This will open the player profile in Clash of Stats.',
-						value: JoinLeaveLogTitle.OpenInCOS
+						value: DeepLinkTypes.OpenInCOS
 					}
 				])
 		);
@@ -221,22 +248,60 @@ export default class ClanLogCommand extends Command {
 				])
 		);
 
+		const donationLogMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+			new StringSelectMenuBuilder()
+				.setCustomId(customIds.interval)
+				.setPlaceholder('Select interval')
+				.setMinValues(1)
+				.setMaxValues(3)
+				.setOptions([
+					{
+						label: 'Instant',
+						description: 'Logs every donation.',
+						value: DonationLogFrequencyTypes.Instant
+					},
+					{
+						label: 'Daily',
+						description: 'Every 24 hours.',
+						value: DonationLogFrequencyTypes.Daily
+					},
+					{
+						label: 'Weekly',
+						description: 'Every 7 days.',
+						value: DonationLogFrequencyTypes.Weekly
+					},
+					{
+						label: 'Monthly',
+						description: 'End of season.',
+						value: DonationLogFrequencyTypes.Monthly
+					}
+				])
+		);
+
+		const updateButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel(`Update`).setCustomId(customIds.update)
+		);
+
 		const components = [];
 		switch (flag) {
 			case Flags.CLAN_FEED_LOG:
-				components.push(titleMenu, roleMenu, logMenu);
+				components.push(titleMenu, roleMenu, logMenu, updateButton);
 				break;
 			case Flags.JOIN_LEAVE_LOG:
-				components.push(titleMenu, roleMenu);
+				components.push(titleMenu, roleMenu, updateButton);
 				break;
 			case Flags.CLAN_WAR_LOG:
-				components.push(warMenu);
+				components.push(warMenu, updateButton);
+				break;
+			case Flags.DONATION_LOG:
+				components.push(donationLogMenu, updateButton);
 				break;
 			default:
 				break;
 		}
 
-		if (components.length >= 0) return interaction.editReply({ embeds: [embed], components });
+		if (components.length >= 0) return interaction.editReply({ embeds: [embed], components: [] });
+		embed.setFooter({ text: 'All features were enabled by default. You can leave it here or customize.' });
 
 		const msg = await interaction.editReply({ embeds: [embed], components });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect | ComponentType.RoleSelect>(
@@ -247,24 +312,47 @@ export default class ClanLogCommand extends Command {
 		);
 
 		collector.on('collect', async (action) => {
-			if (action.customId === customIds.titleLink && action.isStringSelectMenu()) {
-				console.log(action.values);
+			if (action.customId === customIds.deepLink && action.isStringSelectMenu()) {
 				await action.deferUpdate();
+				state.deepLink = action.values.at(0)!;
+				embed.addFields({
+					name: 'Title Link',
+					value: this.titleCase(state.deepLink)
+				});
 			}
 
 			if (action.customId === customIds.role && action.isRoleSelectMenu()) {
-				console.log(action.values);
 				await action.deferUpdate();
+				state.role = action.values.at(0)!;
+				embed.addFields({
+					name: flag === Flags.JOIN_LEAVE_LOG ? 'Flag alert role' : 'Town-Hall upgrade alert role',
+					value: `<@&${state.role}>`
+				});
 			}
 
 			if (action.customId === customIds.logs && action.isStringSelectMenu()) {
-				console.log(action.values);
 				await action.deferUpdate();
+				state.logTypes = action.values;
+				embed.addFields({
+					name: 'Log Types',
+					value: action.values.map((str) => this.titleCase(str)).join(', ')
+				});
 			}
 
 			if (action.customId === customIds.warLogs && action.isStringSelectMenu()) {
-				console.log(action.values);
 				await action.deferUpdate();
+				state.logTypes = action.values;
+				embed.addFields({
+					name: 'Log Types',
+					value: action.values.map((str) => this.titleCase(str)).join(', ')
+				});
+			}
+
+			if (action.customId === customIds.update && action.isButton()) {
+				await action.deferUpdate();
+				await mutate(state);
+				embed.setFooter(null);
+				await action.editReply({ embeds: [embed], components: [] });
 			}
 		});
 
@@ -272,5 +360,12 @@ export default class ClanLogCommand extends Command {
 			Object.values(customIds).forEach((id) => this.client.components.delete(id));
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
+	}
+
+	private titleCase(str: string) {
+		return str
+			.replace(/_/g, ' ')
+			.toLowerCase()
+			.replace(/\b(\w)/g, (char) => char.toUpperCase());
 	}
 }

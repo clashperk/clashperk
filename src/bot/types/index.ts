@@ -227,3 +227,18 @@ export interface LastSeenLogModel {
 	threadId?: string;
 	lastPosted: Date;
 }
+
+export interface ClanFeedLogModel {
+	tag: string;
+	name: string;
+	guild: string;
+	clanId: ObjectId;
+	channel: string;
+	role?: string;
+	logTypes?: string[];
+	deepLink?: string;
+	webhook: { id: string; token: string } | null;
+	deleted?: boolean;
+	threadId?: string;
+	lastPosted: Date;
+}

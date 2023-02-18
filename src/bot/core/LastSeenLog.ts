@@ -1,13 +1,4 @@
-import {
-	EmbedBuilder,
-	Collection,
-	PermissionsString,
-	Snowflake,
-	WebhookClient,
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle
-} from 'discord.js';
+import { Collection, PermissionsString, Snowflake, WebhookClient, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { ObjectId } from 'mongodb';
 import { Collections } from '../util/Constants.js';
@@ -15,6 +6,7 @@ import { Client } from '../struct/Client.js';
 import { Util } from '../util/index.js';
 import { EMOJIS } from '../util/Emojis.js';
 import { LastSeenLogModel } from '../types/index.js';
+import { lastSeenEmbedMaker } from '../util/Helper.js';
 import BaseLog from './BaseLog.js';
 
 export default class LastSeenLog extends BaseLog {
@@ -97,91 +89,8 @@ export default class LastSeenLog extends BaseLog {
 		const clan = (await this.client.redis.json.get(`C${cache.tag}`)) as unknown as Clan | null;
 		if (!clan) return null;
 
-		const members = await this.aggregationQuery(clan);
-		const getTime = (ms?: number) => {
-			if (!ms) return ''.padEnd(7, ' ');
-			return Util.duration(ms + 1e3).padEnd(7, ' ');
-		};
-
-		const embed = new EmbedBuilder();
-		if (cache.color) embed.setColor(cache.color);
-		embed.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium });
-		embed.setDescription(
-			[
-				`**[Last seen and last 24h activity scores](https://clashperk.com/faq)**`,
-				`\`\`\`\n\u200eLAST-ON 24H  NAME`,
-				members.map((m) => `${getTime(m.lastSeen)}  ${Math.min(99, m.count).toString().padStart(2, ' ')}  ${m.name}`).join('\n'),
-				'```'
-			].join('\n')
-		);
-		embed.setFooter({ text: `Synced [${members.length}/${clan.members}]` });
-		embed.setTimestamp();
-
+		const embed = await lastSeenEmbedMaker(clan, { color: cache.color, scoreView: false });
 		return embed;
-	}
-
-	private filter(clan: Clan, _members: { count: number; lastSeen: Date; name: string; tag: string }[]) {
-		if (!_members.length) {
-			return clan.memberList.map((m) => ({ tag: m.tag, name: m.name, lastSeen: 0, count: 0 }));
-		}
-
-		const members = clan.memberList.map((m) => {
-			const clan = _members.find((d) => d.tag === m.tag);
-			return {
-				tag: m.tag,
-				name: m.name,
-				count: clan ? Number(clan.count) : 0,
-				lastSeen: clan ? new Date().getTime() - new Date(clan.lastSeen).getTime() : 0
-			};
-		});
-
-		members.sort((a, b) => a.lastSeen - b.lastSeen);
-		return members.filter((m) => m.lastSeen > 0).concat(members.filter((m) => m.lastSeen === 0));
-	}
-
-	private async aggregationQuery(clan: Clan, days = 1) {
-		const db = this.client.db.collection(Collections.LAST_SEEN);
-		const result = await db
-			.aggregate<{ count: number; lastSeen: Date; name: string; tag: string }>([
-				{
-					$match: {
-						tag: { $in: [...clan.memberList.map((m) => m.tag)] }
-					}
-				},
-				{
-					$match: {
-						'clan.tag': clan.tag
-					}
-				},
-				{
-					$project: {
-						tag: '$tag',
-						clan: '$clan',
-						lastSeen: '$lastSeen',
-						entries: {
-							$filter: {
-								input: '$entries',
-								as: 'en',
-								cond: {
-									$gte: ['$$en.entry', new Date(Date.now() - days * 24 * 60 * 60 * 1000)]
-								}
-							}
-						}
-					}
-				},
-				{
-					$project: {
-						tag: '$tag',
-						clan: '$clan',
-						lastSeen: '$lastSeen',
-						count: {
-							$sum: '$entries.count'
-						}
-					}
-				}
-			])
-			.toArray();
-		return this.filter(clan, result);
 	}
 
 	public async init() {
