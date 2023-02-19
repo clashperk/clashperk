@@ -7,7 +7,6 @@ import {
 	ComponentType,
 	EmbedBuilder,
 	PermissionsString,
-	Role,
 	RoleSelectMenuBuilder,
 	StringSelectMenuBuilder,
 	TextChannel
@@ -77,7 +76,7 @@ export default class ClanLogCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { tag?: string; channel: TextChannel | AnyThreadChannel; role?: Role; option: string; color?: number }
+		args: { tag?: string; channel: TextChannel | AnyThreadChannel; option: string; color?: number }
 	) {
 		const data = await this.client.resolver.enforceSecurity(interaction, args.tag);
 		if (!data) return;
@@ -120,7 +119,6 @@ export default class ClanLogCommand extends Command {
 				channel: args.channel.id,
 				tag: data.tag,
 				name: data.name,
-				role: args.role?.id ?? null,
 				webhook: {
 					id: webhook.id,
 					token: webhook.token
@@ -134,7 +132,7 @@ export default class ClanLogCommand extends Command {
 				tag: data.tag
 			});
 		};
-		await mutate({});
+		await mutate({ deepLink: DeepLinkTypes.OpenInGame });
 
 		const embed = new EmbedBuilder()
 			.setTitle(`\u200e${data.name} | ${FEATURES[flag]}`)
@@ -143,7 +141,6 @@ export default class ClanLogCommand extends Command {
 			.setColor(this.client.embed(interaction))
 			.addFields([{ name: 'Channel', value: args.channel.toString() }]); // eslint-disable-line
 
-		if (args.role && flag === Flags.JOIN_LEAVE_LOG) embed.addFields([{ name: 'Flag notification role', value: args.role.toString() }]);
 		if ([Flags.DONATION_LOG, Flags.LAST_SEEN_LOG, Flags.CLAN_GAMES_LOG].includes(flag)) {
 			embed.addFields([{ name: 'Color', value: args.color?.toString(16) ?? 'None' }]);
 			if (args.color) embed.setColor(args.color);
@@ -159,7 +156,7 @@ export default class ClanLogCommand extends Command {
 		};
 
 		const state: BaseState = {
-			deepLink: null,
+			deepLink: DeepLinkTypes.OpenInGame,
 			logTypes: null,
 			role: null
 		};
@@ -182,6 +179,7 @@ export default class ClanLogCommand extends Command {
 					}
 				])
 		);
+
 		const roleMenu = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
 			new RoleSelectMenuBuilder()
 				.setCustomId(customIds.role)
@@ -189,6 +187,7 @@ export default class ClanLogCommand extends Command {
 				.setMinValues(1)
 				.setPlaceholder(flag === Flags.JOIN_LEAVE_LOG ? 'Flag alert role (optional)' : 'Town-Hall upgrade alert role (optional)')
 		);
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const logMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder()
 				.setCustomId(customIds.logs)
@@ -285,7 +284,8 @@ export default class ClanLogCommand extends Command {
 		const components = [];
 		switch (flag) {
 			case Flags.CLAN_FEED_LOG:
-				components.push(titleMenu, roleMenu, logMenu, updateButton);
+				// components.push(titleMenu, roleMenu, logMenu, updateButton);
+				components.push(titleMenu, roleMenu, updateButton);
 				break;
 			case Flags.JOIN_LEAVE_LOG:
 				components.push(titleMenu, roleMenu, updateButton);
@@ -300,8 +300,9 @@ export default class ClanLogCommand extends Command {
 				break;
 		}
 
-		if (components.length >= 0) return interaction.editReply({ embeds: [embed], components: [] });
-		embed.setFooter({ text: 'All features were enabled by default. You can leave it here or customize.' });
+		if (![Flags.CLAN_FEED_LOG, Flags.JOIN_LEAVE_LOG].includes(flag)) {
+			return interaction.editReply({ embeds: [embed], components: [] });
+		}
 
 		const msg = await interaction.editReply({ embeds: [embed], components });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect | ComponentType.RoleSelect>(
@@ -315,43 +316,58 @@ export default class ClanLogCommand extends Command {
 			if (action.customId === customIds.deepLink && action.isStringSelectMenu()) {
 				await action.deferUpdate();
 				state.deepLink = action.values.at(0)!;
-				embed.addFields({
-					name: 'Title Link',
-					value: this.titleCase(state.deepLink)
-				});
+				// embed.addFields({
+				// 	name: 'Title link',
+				// 	value: this.titleCase(state.deepLink)
+				// });
 			}
 
 			if (action.customId === customIds.role && action.isRoleSelectMenu()) {
 				await action.deferUpdate();
 				state.role = action.values.at(0)!;
-				embed.addFields({
-					name: flag === Flags.JOIN_LEAVE_LOG ? 'Flag alert role' : 'Town-Hall upgrade alert role',
-					value: `<@&${state.role}>`
-				});
+				// embed.addFields({
+				// 	name: flag === Flags.JOIN_LEAVE_LOG ? 'Flag alert role' : 'Town-Hall upgrade alert role',
+				// 	value: `<@&${state.role}>`
+				// });
 			}
 
 			if (action.customId === customIds.logs && action.isStringSelectMenu()) {
 				await action.deferUpdate();
 				state.logTypes = action.values;
-				embed.addFields({
-					name: 'Log Types',
-					value: action.values.map((str) => this.titleCase(str)).join(', ')
-				});
+				// embed.addFields({
+				// 	name: 'Log Types',
+				// 	value: action.values.map((str) => this.titleCase(str)).join(', ')
+				// });
 			}
 
 			if (action.customId === customIds.warLogs && action.isStringSelectMenu()) {
 				await action.deferUpdate();
 				state.logTypes = action.values;
-				embed.addFields({
-					name: 'Log Types',
-					value: action.values.map((str) => this.titleCase(str)).join(', ')
-				});
+				// embed.addFields({
+				// 	name: 'Log Types',
+				// 	value: action.values.map((str) => this.titleCase(str)).join(', ')
+				// });
 			}
 
 			if (action.customId === customIds.update && action.isButton()) {
 				await action.deferUpdate();
 				await mutate(state);
-				embed.setFooter(null);
+
+				embed.addFields(
+					{
+						name: 'Title Link',
+						value: state.deepLink ? this.titleCase(state.deepLink) : 'Open In Game'
+					},
+					{
+						name: flag === Flags.JOIN_LEAVE_LOG ? 'Flag alert role' : 'Town-Hall upgrade alert role',
+						value: state.role ? `<@&${state.role}>` : 'None'
+					}
+					// {
+					// 	name: 'Log Types',
+					// 	value: state.logTypes?.map((str) => this.titleCase(str)).join(', ') ?? 'All'
+					// }
+				);
+
 				await action.editReply({ embeds: [embed], components: [] });
 			}
 		});

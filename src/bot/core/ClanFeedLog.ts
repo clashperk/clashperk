@@ -76,6 +76,7 @@ export default class ClanFeedLog extends BaseLog {
 		// do not post if the logTypes are set and the logType is not included
 		if (cache.logTypes && !cache.logTypes.includes(logTypes[member.op])) return null;
 
+		let content: null | string = null;
 		const embed = new EmbedBuilder().setColor(OP[member.op]).setTitle(`\u200e${player.name} (${player.tag})`);
 		if (!cache.deepLink || cache.deepLink === DeepLinkTypes.OpenInCOS) {
 			embed.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
@@ -95,6 +96,7 @@ export default class ClanFeedLog extends BaseLog {
 			);
 		}
 		if (member.op === 'TOWN_HALL_UPGRADE') {
+			if (cache.role) content = `<@&${cache.role}>`;
 			const { id } = parseEmoji(TOWN_HALLS[player.townHallLevel])!;
 			embed.setThumbnail(`https://cdn.discordapp.com/emojis/${id!}.png?v=1`);
 			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
@@ -116,7 +118,7 @@ export default class ClanFeedLog extends BaseLog {
 			}
 		}
 		embed.setTimestamp();
-		return { embed };
+		return { embed, content };
 	}
 
 	private labRushed(data: Player) {

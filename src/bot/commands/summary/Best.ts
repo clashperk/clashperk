@@ -3,7 +3,7 @@ import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
-import { ClanGames, Season, Util } from '../../util/index.js';
+import { Season, Util } from '../../util/index.js';
 
 interface Aggregated {
 	tag: string;
@@ -214,7 +214,7 @@ export default class SummaryBestCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 		}
 
-		const _timestamp = ClanGames.startTimestamp.getTime();
+		const _clanGamesStartTimestamp = moment(seasonId).add(22, 'day').hour(8).toDate().getTime();
 		const _fields = Object.keys(fields);
 		_fields.map((field) => {
 			const key = field as keyof typeof fields;
@@ -235,7 +235,7 @@ export default class SummaryBestCommand extends Command {
 						moment.duration();
 						const num =
 							key === '_clanGamesCompletionTime'
-								? this._formatTime(member._clanGamesCompletedAt.getTime() - _timestamp).padStart(7, ' ')
+								? this._formatTime(_clanGamesStartTimestamp - member._clanGamesCompletedAt.getTime()).padStart(7, ' ')
 								: Util.formatNumber(member[key]).padStart(7, ' ');
 						return `${BLUE_NUMBERS[n + 1]} \`${num} \` \u200e${Util.escapeBackTick(member.name)}`;
 					})
