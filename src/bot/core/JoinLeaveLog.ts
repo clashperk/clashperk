@@ -3,7 +3,7 @@ import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookCrea
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
-import { Collections } from '../util/Constants.js';
+import { Collections, DeepLinkTypes } from '../util/Constants.js';
 import { EMOJIS, HEROES, PLAYER_LEAGUES, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
@@ -64,10 +64,13 @@ export default class JoinLeaveLog extends BaseLog {
 		if (!player.ok) return null;
 
 		let content = null;
-		const embed = new EmbedBuilder()
-			.setColor(OP[member.op])
-			.setTitle(`\u200e${player.name} (${player.tag})`)
-			.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
+		const embed = new EmbedBuilder().setColor(OP[member.op]).setTitle(`\u200e${player.name} (${player.tag})`);
+		if (!cache.deepLink || cache.deepLink === DeepLinkTypes.OpenInCOS) {
+			embed.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
+		}
+		if (cache.deepLink === DeepLinkTypes.OpenInGame) {
+			embed.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(player.tag)}`);
+		}
 		if (member.op === 'LEFT') {
 			embed.setFooter({ text: `Left ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
 			embed.setDescription(
@@ -133,6 +136,7 @@ export default class JoinLeaveLog extends BaseLog {
 				channel: data.channel,
 				tag: data.tag,
 				role: data.role,
+				deepLink: data.deepLink,
 				retries: data.retries ?? 0,
 				webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
 			});
@@ -149,6 +153,7 @@ export default class JoinLeaveLog extends BaseLog {
 			channel: data.channel,
 			tag: data.tag,
 			role: data.role,
+			deepLink: data.deepLink,
 			retries: data.retries ?? 0,
 			webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
 		});
@@ -189,4 +194,5 @@ interface Cache {
 	guild: string;
 	threadId?: string;
 	retries: number;
+	deepLink?: string;
 }

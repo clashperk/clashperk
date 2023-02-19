@@ -194,6 +194,8 @@ export default class ClanFeedLog extends BaseLog {
 				guild: data.guild,
 				channel: data.channel,
 				tag: data.tag,
+				deepLink: data.deepLink,
+				logTypes: data.logTypes,
 				role: data.role,
 				retries: data.retries ?? 0,
 				webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
@@ -211,6 +213,7 @@ export default class ClanFeedLog extends BaseLog {
 			channel: data.channel,
 			tag: data.tag,
 			role: data.role,
+			deepLink: data.deepLink,
 			logTypes: data.logTypes,
 			retries: data.retries ?? 0,
 			webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
