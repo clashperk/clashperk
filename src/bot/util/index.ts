@@ -83,6 +83,14 @@ export class Util {
 			: Math.abs(num).toFixed(0);
 	}
 
+	public static timezoneOffset(seconds: number, ms = true) {
+		seconds = Math.abs(seconds);
+		if (ms) seconds /= 1000;
+		const hours = Math.floor(seconds / 3600);
+		const minutes = Math.floor((seconds % 3600) / 60);
+		return `${hours >= 1 ? `0${hours}`.slice(-2) : '00'}:${minutes >= 1 ? `0${minutes}`.slice(-2) : '00'}`;
+	}
+
 	public static plural(count: number, text: string, suffix: 's' | 'es' | '' = 's') {
 		return count === 1 ? text : `${text}${suffix}`;
 	}

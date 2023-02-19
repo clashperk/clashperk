@@ -873,6 +873,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						value: 7
 					}
 				]
+			},
+			{
+				name: 'timezone',
+				required: false,
+				description: 'Search time zone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
+				type: ApplicationCommandOptionType.String
 			}
 		]
 	},
@@ -2600,8 +2606,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		options: [
 			{
 				name: 'location',
-				description: command.timezone.options.location.description,
-				description_localizations: translation('command.timezone.options.location.description'),
+				description: 'Search time zone by city or country. (e.g. London, New York, Singapore, India, Sydney)',
 				type: ApplicationCommandOptionType.String,
 				required: true
 			}

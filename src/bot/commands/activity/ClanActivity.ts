@@ -3,6 +3,7 @@ import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import Chart from '../../struct/ChartHandler.js';
 import { UserInfoModel } from '../../types/index.js';
+import Google from '../../struct/Google.js';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -19,7 +20,7 @@ export default class ClanActivityCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; days?: number }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; days?: number; timezone?: string }) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? (await this.client.storage.search(interaction.guild.id, tags)).slice(0, 7)
@@ -36,8 +37,7 @@ export default class ClanActivityCommand extends Command {
 		);
 		if (!result.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
-		const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: interaction.user.id });
-		const timezone = user?.timezone ?? { offset: 0, name: 'Coordinated Universal Time' };
+		const timezone = await this.getTimezoneOffset(interaction, args.timezone);
 		const datasets = result.map((clan) => ({ name: clan.name, data: this.datasets(clan, timezone.offset, args.days ?? 1) }));
 
 		const hrStart = process.hrtime();
@@ -50,9 +50,44 @@ export default class ClanActivityCommand extends Command {
 
 		this.client.logger.debug(`Rendered in ${(diff[0] * 1000 + diff[1] / 1000000).toFixed(2)}ms`, { label: 'CHART' });
 		return interaction.editReply({
-			// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-			content: user ? `${url}` : `${this.i18n('command.timezone.set', { lng: interaction.locale })}\n${url}`
+			content:
+				timezone.offset === 0
+					? `Please set your time zone with the </timezone:1051836259527565348> command. It enables you to view the graphs in your time zone.\n${url}`
+					: `${url}`
 		});
+	}
+
+	private async getTimezoneOffset(interaction: CommandInteraction<'cached'>, location?: string) {
+		const user = await this.client.db.collection<UserInfoModel>(Collections.USERS).findOne({ userId: interaction.user.id });
+		if (!location) {
+			if (!user?.timezone) return { offset: 0, name: 'Coordinated Universal Time' };
+			return { offset: user.timezone.offset, name: user.timezone.name };
+		}
+
+		const raw = await Google.timezone(location);
+		if (!raw) return { offset: 0, name: 'Coordinated Universal Time' };
+
+		const offset = Number(raw.timezone.rawOffset) + Number(raw.timezone.dstOffset);
+		if (!user?.timezone) {
+			await this.client.db.collection<UserInfoModel>(Collections.USERS).updateOne(
+				{ userId: interaction.user.id },
+				{
+					$set: {
+						username: interaction.user.tag,
+						timezone: {
+							id: raw.timezone.timeZoneId,
+							offset: Number(offset),
+							name: raw.timezone.timeZoneName,
+							location: raw.location.formatted_address
+						}
+					},
+					$setOnInsert: { createdAt: new Date() }
+				},
+				{ upsert: true }
+			);
+		}
+
+		return { offset, name: raw.timezone.timeZoneName };
 	}
 
 	private aggregate(clanTags: string[], days = 1) {

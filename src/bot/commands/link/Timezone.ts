@@ -4,6 +4,7 @@ import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
 import Google from '../../struct/Google.js';
 import { UserInfoModel } from '../../types/index.js';
+import { Util } from '../../util/index.js';
 
 export default class TimezoneCommand extends Command {
 	public constructor() {
@@ -52,18 +53,10 @@ export default class TimezoneCommand extends Command {
 					moment(new Date(Date.now() + offset * 1000)).format('MM/DD/YYYY hh:mm A'),
 					'',
 					'**Offset**',
-					`${offset < 0 ? '-' : '+'}${this.offset(offset * 1000)}`
+					`${offset < 0 ? '-' : '+'}${Util.timezoneOffset(offset * 1000)}`
 				].join('\n')
 			)
 			.setFooter({ text: `${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() });
 		return interaction.editReply({ embeds: [embed] });
-	}
-
-	private offset(seconds: number, ms = true) {
-		seconds = Math.abs(seconds);
-		if (ms) seconds /= 1000;
-		const hours = Math.floor(seconds / 3600);
-		const minutes = Math.floor((seconds % 3600) / 60);
-		return `${hours >= 1 ? `0${hours}`.slice(-2) : '00'}:${minutes >= 1 ? `0${minutes}`.slice(-2) : '00'}`;
 	}
 }
