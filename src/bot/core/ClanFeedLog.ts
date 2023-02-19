@@ -50,6 +50,7 @@ export default class ClanFeedLog extends BaseLog {
 		for (const message of messages) {
 			if (!message) continue;
 			const msg = await this.send(cache, webhook, {
+				content: message.content,
 				embeds: [message.embed],
 				threadId: cache.threadId
 			});
@@ -76,7 +77,7 @@ export default class ClanFeedLog extends BaseLog {
 		// do not post if the logTypes are set and the logType is not included
 		if (cache.logTypes && !cache.logTypes.includes(logTypes[member.op])) return null;
 
-		let content: null | string = null;
+		let content: string | undefined;
 		const embed = new EmbedBuilder().setColor(OP[member.op]).setTitle(`\u200e${player.name} (${player.tag})`);
 		if (!cache.deepLink || cache.deepLink === DeepLinkTypes.OpenInCOS) {
 			embed.setURL(`https://www.clashofstats.com/players/${player.tag.replace('#', '')}`);
