@@ -1,5 +1,10 @@
 import { fileURLToPath } from 'node:url';
-import { ApplicationCommandOptionType, ApplicationCommandType, RESTPostAPIApplicationCommandsJSONBody } from 'discord-api-types/v10';
+import {
+	ApplicationCommandOptionType,
+	ApplicationCommandType,
+	ChannelType,
+	RESTPostAPIApplicationCommandsJSONBody
+} from 'discord-api-types/v10';
 import i18next from 'i18next';
 import moment from 'moment';
 import { command, common } from '../locales/en.js';
@@ -40,6 +45,14 @@ export function getWeekIds() {
 	}
 	return weekIds;
 }
+
+const ChannelTypes: Exclude<ChannelType, ChannelType.DM | ChannelType.GroupDM>[] = [
+	ChannelType.GuildText,
+	ChannelType.GuildAnnouncement,
+	ChannelType.AnnouncementThread,
+	ChannelType.PublicThread,
+	ChannelType.PrivateThread
+];
 
 export const translation = (text: TranslationKey): Record<string, string> => {
 	return Object.keys(fallbackLng).reduce<Record<string, string>>((record, lang) => {
@@ -1400,7 +1413,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'channel',
 						description: command.setup.enable.options.channel.description,
 						description_localizations: translation('command.setup.enable.options.channel.description'),
-						type: ApplicationCommandOptionType.Channel
+						type: ApplicationCommandOptionType.Channel,
+						channel_types: ChannelTypes
 					},
 					{
 						name: 'color',
@@ -1417,6 +1431,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				name: 'list',
 				description: command.setup.list.description,
 				description_localizations: translation('command.setup.list.description'),
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'utils',
+				description: 'Setup some other utility features.',
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
@@ -1489,6 +1508,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'channel',
 						description: command.setup.disable.options.channel.description,
+						channel_types: ChannelTypes,
 						description_localizations: translation('command.setup.disable.options.channel.description'),
 						type: ApplicationCommandOptionType.Channel
 					}
@@ -1882,7 +1902,8 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						name: 'channel',
 						description: command.reminder.create.options.channel.description,
 						description_localizations: translation('command.reminder.create.options.channel.description'),
-						type: ApplicationCommandOptionType.Channel
+						type: ApplicationCommandOptionType.Channel,
+						channel_types: ChannelTypes
 					}
 				]
 			},

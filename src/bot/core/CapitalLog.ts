@@ -241,6 +241,10 @@ export default class CapitalLog extends BaseLog {
 			});
 		});
 
+		this.initLoop();
+	}
+
+	private async initLoop() {
 		await this._refresh();
 		setInterval(this._refresh.bind(this), this.refreshRate).unref();
 	}

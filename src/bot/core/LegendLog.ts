@@ -137,7 +137,10 @@ export default class LegendLog extends BaseLog {
 				threadId: data.threadId
 			});
 		});
+		this.initLoop();
+	}
 
+	private async initLoop() {
 		await this._refresh();
 		setInterval(this._refresh.bind(this), this.refreshRate).unref();
 	}
