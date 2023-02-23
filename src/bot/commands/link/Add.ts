@@ -1,4 +1,12 @@
-import { GuildMember, ModalBuilder, ComponentType, TextInputStyle, ButtonInteraction, ModalSubmitInteraction } from 'discord.js';
+import {
+	GuildMember,
+	ModalBuilder,
+	TextInputStyle,
+	ButtonInteraction,
+	ModalSubmitInteraction,
+	TextInputBuilder,
+	ActionRowBuilder
+} from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -13,8 +21,8 @@ export default class LinkAddCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: ButtonInteraction<'cached'>) {
-		if (interaction.isButton()) return this.modal(interaction);
+	public async exec(interaction: ButtonInteraction<'cached'>, { token_field }: { token_field: string }) {
+		if (interaction.isButton()) return this.modal(interaction, token_field);
 	}
 
 	private async playerLink(
@@ -79,45 +87,35 @@ export default class LinkAddCommand extends Command {
 		);
 	}
 
-	private async modal(interaction: ButtonInteraction<'cached'>) {
+	private async modal(interaction: ButtonInteraction<'cached'>, token_field: string) {
 		const customIds = {
-			modal: 'link_modal'
+			modal: this.client.uuid(),
+			token: this.client.uuid(),
+			tag: this.client.uuid()
 		};
 
-		const modal = new ModalBuilder({
-			customId: customIds.modal,
-			title: 'Link a Player Account',
-			components: [
-				{
-					type: ComponentType.ActionRow,
-					components: [
-						{
-							type: ComponentType.TextInput,
-							style: TextInputStyle.Short,
-							customId: 'tag',
-							required: true,
-							label: 'Player Tag',
-							placeholder: 'Enter the Player Tag.',
-							maxLength: 15
-						}
-					]
-				},
-				{
-					type: ComponentType.ActionRow,
-					components: [
-						{
-							type: ComponentType.TextInput,
-							style: TextInputStyle.Short,
-							required: false,
-							customId: 'token',
-							label: 'API Token (Optional)',
-							placeholder: 'The API token can be found in the game settings.',
-							maxLength: 15
-						}
-					]
-				}
-			]
-		});
+		const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Link a Player Account');
+		const tagInput = new TextInputBuilder()
+			.setCustomId(customIds.tag)
+			.setLabel('Player Tag')
+			.setPlaceholder('Enter the Player Tag.')
+			.setStyle(TextInputStyle.Short)
+			.setMaxLength(15)
+			.setRequired(true);
+
+		const tokenInput = new TextInputBuilder()
+			.setCustomId(customIds.token)
+			.setLabel('Player API Token')
+			.setPlaceholder('The token can be found in the game settings.')
+			.setStyle(TextInputStyle.Short)
+			.setMaxLength(15)
+			.setRequired(token_field === 'required');
+
+		modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(tagInput));
+		if (token_field !== 'hidden') {
+			modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(tokenInput));
+		}
+
 		await interaction.showModal(modal);
 
 		try {
@@ -127,8 +125,8 @@ export default class LinkAddCommand extends Command {
 					filter: (action) => action.customId === customIds.modal
 				})
 				.then(async (modalSubmit) => {
-					const tag = modalSubmit.fields.getTextInputValue('tag');
-					const token = modalSubmit.fields.getTextInputValue('token');
+					const tag = modalSubmit.fields.getTextInputValue(customIds.tag);
+					const token = modalSubmit.fields.getTextInputValue(customIds.token);
 					await modalSubmit.deferReply({ ephemeral: true });
 
 					const data = await this.client.http.player(tag);
