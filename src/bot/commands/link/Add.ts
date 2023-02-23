@@ -140,9 +140,7 @@ export default class LinkAddCommand extends Command {
 
 					return this.playerLink(modalSubmit, { player: data, member: interaction.member, def: false });
 				});
-		} catch (e) {
-			console.log(e);
-		}
+		} catch (e) {}
 	}
 
 	private async verify(interaction: ModalSubmitInteraction<'cached'>, data: Player, token: string) {

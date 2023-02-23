@@ -140,7 +140,11 @@ export default class SetupUtilsCommand extends Command {
 			if (action.customId === customIds.done) {
 				await action.update({ components: [] });
 				collector.stop();
-				await webhook.send({ embeds: [embed], components: [linkButtonRow] });
+				await webhook.send(
+					args.channel.isThread()
+						? { embeds: [embed], components: [linkButtonRow], threadId: args.channel.id }
+						: { embeds: [embed], components: [linkButtonRow] }
+				);
 			}
 
 			if (action.customId === customIds.token && action.isStringSelectMenu()) {
