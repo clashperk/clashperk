@@ -96,6 +96,7 @@ export const enum Settings {
 	TOWN_HALL_ROLES = 'townHallRoles',
 	LEAGUE_ROLES = 'leagueRoles',
 	ROLE_REFRESHED = 'roleRefreshed',
+	LINK_EMBEDS = 'linkEmbeds',
 	ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts',
 	ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague',
 	CLAN_GAMES_EXCEPTIONAL_MONTHS = 'clanGamesExceptionalMonths'
@@ -247,3 +248,5 @@ export const DonationLogFrequencyTypes = {
 	Weekly: '7',
 	Monthly: '30'
 } as const;
+
+export const URL_REGEX = /^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=.]+$/;

@@ -31,7 +31,8 @@ export default class SetupCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { command: string }) {
 		const command = {
 			enable: this.handler.modules.get('setup-enable')!,
-			disable: this.handler.modules.get('setup-disable')!
+			disable: this.handler.modules.get('setup-disable')!,
+			utils: this.handler.modules.get('setup-utils')!
 		}[args.command];
 		if (command) {
 			return this.handler.continue(interaction, command);

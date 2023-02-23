@@ -1436,7 +1436,22 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'utils',
 				description: 'Setup some other utility features.',
-				type: ApplicationCommandOptionType.Subcommand
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'option',
+						required: true,
+						description: command.setup.disable.options.option.description,
+						description_localizations: translation('command.setup.disable.options.option.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: [
+							{
+								name: 'Link Button',
+								value: 'link-button'
+							}
+						]
+					}
+				]
 			},
 			{
 				name: 'disable',
