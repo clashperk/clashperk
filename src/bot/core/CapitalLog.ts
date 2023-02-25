@@ -19,7 +19,7 @@ export default class CapitalLog extends BaseLog {
 	}
 
 	public override get permissions(): PermissionsString[] {
-		return ['SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'AddReactions', 'ReadMessageHistory', 'ViewChannel', 'AttachFiles'];
+		return ['SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'ReadMessageHistory', 'ViewChannel', 'AttachFiles'];
 	}
 
 	public override get collection() {

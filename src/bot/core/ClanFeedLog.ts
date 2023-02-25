@@ -32,7 +32,7 @@ export default class ClanFeedLog extends BaseLog {
 	}
 
 	public override get permissions(): PermissionsString[] {
-		return ['SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'AddReactions', 'ReadMessageHistory', 'ViewChannel'];
+		return ['SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'ReadMessageHistory', 'ViewChannel'];
 	}
 
 	public override get collection() {

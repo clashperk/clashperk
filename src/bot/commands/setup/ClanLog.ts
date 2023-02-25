@@ -52,7 +52,6 @@ export default class ClanLogCommand extends Command {
 	}
 
 	private readonly permissions: PermissionsString[] = [
-		'AddReactions',
 		'EmbedLinks',
 		'UseExternalEmojis',
 		'SendMessages',

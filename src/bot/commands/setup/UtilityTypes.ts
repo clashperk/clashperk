@@ -167,17 +167,17 @@ export default class SetupUtilsCommand extends Command {
 					.setPlaceholder('Enter a title')
 					.setStyle(TextInputStyle.Short)
 					.setMaxLength(256)
-					.setValue(state.title)
 					.setRequired(true);
+				if (state.title) titleInput.setValue(state.title);
 
 				const descriptionInput = new TextInputBuilder()
-					.setCustomId(customIds.token)
+					.setCustomId(customIds.description)
 					.setLabel('Description')
 					.setPlaceholder('Write anything you want (markdown, hyperlink and custom emojis are supported)')
 					.setStyle(TextInputStyle.Paragraph)
 					.setMaxLength(2000)
-					.setValue(state.description)
 					.setRequired(true);
+				if (state.description) descriptionInput.setValue(state.description);
 
 				const imageInput = new TextInputBuilder()
 
@@ -186,8 +186,8 @@ export default class SetupUtilsCommand extends Command {
 					.setPlaceholder('Enter an image URL')
 					.setStyle(TextInputStyle.Short)
 					.setMaxLength(256)
-					.setValue(state.image_url)
 					.setRequired(false);
+				if (state.image_url) imageInput.setValue(state.image_url);
 
 				const thumbnailInput = new TextInputBuilder()
 					.setCustomId(customIds.thumbnail_url)
@@ -195,11 +195,14 @@ export default class SetupUtilsCommand extends Command {
 					.setPlaceholder('Enter a thumbnail URL')
 					.setStyle(TextInputStyle.Short)
 					.setMaxLength(256)
-					.setValue(state.thumbnail_url)
 					.setRequired(false);
+				if (state.thumbnail_url) thumbnailInput.setValue(state.thumbnail_url);
 
 				modal.addComponents(
-					new ActionRowBuilder<TextInputBuilder>().addComponents(titleInput, descriptionInput, imageInput, thumbnailInput)
+					new ActionRowBuilder<TextInputBuilder>().addComponents(titleInput),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(descriptionInput),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(imageInput),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(thumbnailInput)
 				);
 
 				await action.showModal(modal);
@@ -234,7 +237,9 @@ export default class SetupUtilsCommand extends Command {
 							await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
 							await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
 						});
-				} catch (e) {}
+				} catch (e) {
+					console.error(e);
+				}
 			}
 		});
 

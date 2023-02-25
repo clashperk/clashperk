@@ -33,7 +33,6 @@ export default class ClanEmbedCommand extends Command {
 	}
 
 	private readonly permissions: PermissionsString[] = [
-		'AddReactions',
 		'EmbedLinks',
 		'UseExternalEmojis',
 		'SendMessages',

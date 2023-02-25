@@ -28,7 +28,6 @@ export default class ReminderCreateCommand extends Command {
 	}
 
 	private readonly permissions: PermissionsString[] = [
-		'AddReactions',
 		'EmbedLinks',
 		'UseExternalEmojis',
 		'SendMessages',

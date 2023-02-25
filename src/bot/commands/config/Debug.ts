@@ -34,7 +34,7 @@ export default class DebugCommand extends Command {
 			'ViewChannel',
 			'SendMessages',
 			'EmbedLinks',
-			'AddReactions',
+
 			'AttachFiles',
 			'UseExternalEmojis',
 			'ReadMessageHistory',

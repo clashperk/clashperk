@@ -30,7 +30,7 @@ export default class ClanGamesLog extends BaseLog {
 	}
 
 	public override get permissions(): PermissionsString[] {
-		return ['ReadMessageHistory', 'SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'AddReactions', 'ViewChannel'];
+		return ['ReadMessageHistory', 'SendMessages', 'EmbedLinks', 'UseExternalEmojis', 'ViewChannel'];
 	}
 
 	public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
