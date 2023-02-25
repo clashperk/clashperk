@@ -3,7 +3,7 @@ import { AttachmentBuilder, Collection, EmbedBuilder, PermissionsString, Webhook
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
-import { CapitalLogModel, ClanCapitalGoldModel } from '../types/index.js';
+import { CapitalLogModel, ClanCapitalGoldModel, ClanCapitalRaidAttackData } from '../types/index.js';
 import { Collections } from '../util/Constants.js';
 import { Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
@@ -27,19 +27,18 @@ export default class CapitalLog extends BaseLog {
 	}
 
 	public override async handleMessage(cache: Cache, webhook: WebhookClient) {
-		const embed = await this.embed(cache);
-		if (!embed) return null;
-
-		const imageURL = embed.data.image!.url;
-		embed.setImage(null);
+		const embedBuilder = await this.embed(cache);
+		if (!embedBuilder) return null;
+		const { embed } = embedBuilder;
 
 		await this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
 
-		const _embed = await this.capitalDonations(cache);
-		if (_embed) await this.send(cache, webhook, { embeds: [_embed] });
+		const capitalDonationEmbed = await this.capitalDonations(cache);
+		if (capitalDonationEmbed) await this.send(cache, webhook, { embeds: [capitalDonationEmbed] });
 
-		const buffer = new AttachmentBuilder(imageURL, { name: 'capital-raid-weekend-card.jpeg' });
-		await this.send(cache, webhook, { files: [buffer] });
+		for (const buffer of embedBuilder.files) {
+			await this.send(cache, webhook, { files: [buffer] });
+		}
 
 		await this.collection.updateOne({ clanId: cache.clanId }, { $set: { lastPosted: new Date() } });
 	}
@@ -53,6 +52,29 @@ export default class CapitalLog extends BaseLog {
 		}
 	}
 
+	private async rankings(tag: string) {
+		const ranks = await this.client.db
+			.collection(Collections.CAPITAL_RANKS)
+			.aggregate<{ country: string; countryCode: string; clans: { rank: number } }>([
+				{
+					$unwind: {
+						path: '$clans'
+					}
+				},
+				{
+					$match: {
+						'clans.tag': tag
+					}
+				}
+			])
+			.toArray();
+
+		return {
+			globalRank: ranks.find(({ countryCode }) => countryCode === 'global')?.clans.rank ?? null,
+			countryRank: ranks.find(({ countryCode }) => countryCode !== 'global') ?? null
+		};
+	}
+
 	private async embed(cache: Cache) {
 		const clan = await this.client.http.clan(cache.tag);
 		if (!clan.ok) return null;
@@ -62,6 +84,10 @@ export default class CapitalLog extends BaseLog {
 		if (!raidSeason.items.length) return null;
 		const [data] = raidSeason.items;
 		if (!data.members) return null;
+
+		const season = await this.client.db
+			.collection<ClanCapitalRaidAttackData>(Collections.CAPITAL_RAID_SEASONS)
+			.findOne({ weekId: moment(data.startTime).format('YYYY-MM-DD'), tag: clan.tag });
 
 		const members = data.members.map((m) => ({ ...m, attackLimit: m.attackLimit + m.bonusAttackLimit }));
 		clan.memberList.forEach((member) => {
@@ -120,9 +146,43 @@ export default class CapitalLog extends BaseLog {
 			enemyDistrictsDestroyed: data.enemyDistrictsDestroyed.toString(),
 			raidsCompleted: raidsCompleted.toString()
 		});
-		embed.setImage(`https://chart.clashperk.com/raid-weekend-card?${query.toString()}`);
 
-		return embed;
+		const hasTrophyCard = Boolean(
+			season?.clanCapitalPoints && season._clanCapitalPoints && season._clanCapitalPoints !== season.clanCapitalPoints
+		);
+
+		const files: AttachmentBuilder[] = [];
+
+		files.push(
+			new AttachmentBuilder(`https://chart.clashperk.com/raid-weekend-card?${query.toString()}`, {
+				name: 'capital-raid-trophy-card.jpeg'
+			})
+		);
+
+		if (hasTrophyCard) {
+			const { globalRank, countryRank } = await this.rankings(clan.tag);
+			const type =
+				season!._capitalLeague!.id > season!.capitalLeague!.id
+					? 'Promoted'
+					: season!._capitalLeague!.id === season!.capitalLeague!.id
+					? 'Stayed'
+					: 'Demoted';
+
+			query.set('type', type);
+			query.set('remark', type === 'Stayed' ? 'Stayed in the same League' : type);
+			query.set('leagueId', season!._capitalLeague!.id.toString());
+			query.set('trophiesEarned', `+${season!._clanCapitalPoints! - season!.clanCapitalPoints!}`);
+			query.set('trophies', season!._clanCapitalPoints!.toString());
+			query.set('globalRank', globalRank ? `Global Rank: ${globalRank}` : '');
+			query.set('localRank', countryRank ? `Local Rank: ${countryRank.clans.rank} (${countryRank.country})` : '');
+
+			files.push(
+				new AttachmentBuilder(`https://chart.clashperk.com/raid-trophy-card?${query.toString()}`, {
+					name: 'capital-raid-trophy-card.jpeg'
+				})
+			);
+		}
+		return { embed, files };
 	}
 
 	private async capitalDonations(cache: Cache) {

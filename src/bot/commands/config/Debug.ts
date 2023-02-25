@@ -82,7 +82,7 @@ export default class DebugCommand extends Command {
 				'**Webhooks**',
 				webhooks?.size ?? 0,
 				'',
-				'**Webhook Permissions (Temporary)**',
+				`**Webhook Permissions (for ${interaction.guild.roles.everyone.toString()} role)**`,
 				`${UEE_FOR_SLASH ? emojis.tick : emojis.cross} Use External Emojis ${UEE_FOR_SLASH ? '' : '(for @everyone)'}`,
 				'',
 				`**Loop Time ${cycle.clans && cycle.players && cycle.wars ? '' : '(Processing...)'}**`,
@@ -111,7 +111,7 @@ export default class DebugCommand extends Command {
 			].join('\n')
 		);
 
-		for (const chunk of chunks) await interaction.followUp(chunk);
+		for (const chunk of chunks) await interaction.followUp({ content: chunk, allowedMentions: { roles: [] } });
 	}
 
 	private fixTime(num: number) {

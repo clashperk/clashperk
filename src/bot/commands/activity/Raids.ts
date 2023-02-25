@@ -1,4 +1,13 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
+import {
+	ActionRowBuilder,
+	AttachmentBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	embedLength,
+	User
+} from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import moment from 'moment';
 import { Args, Command } from '../../lib/index.js';
@@ -27,6 +36,29 @@ export default class CapitalRaidsCommand extends Command {
 		};
 	}
 
+	private async rankings(tag: string) {
+		const ranks = await this.client.db
+			.collection(Collections.CAPITAL_RANKS)
+			.aggregate<{ country: string; countryCode: string; clans: { rank: number } }>([
+				{
+					$unwind: {
+						path: '$clans'
+					}
+				},
+				{
+					$match: {
+						'clans.tag': tag
+					}
+				}
+			])
+			.toArray();
+
+		return {
+			globalRank: ranks.find(({ countryCode }) => countryCode === 'global')?.clans.rank ?? null,
+			countryRank: ranks.find(({ countryCode }) => countryCode !== 'global') ?? null
+		};
+	}
+
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
 		args: { tag?: string; week?: string; card?: boolean; user?: User; player_tag?: string }
@@ -44,6 +76,10 @@ export default class CapitalRaidsCommand extends Command {
 		const weekId = args.week ?? currentWeekId;
 
 		if (args.card) {
+			const season = await this.client.db
+				.collection<ClanCapitalRaidAttackData>(Collections.CAPITAL_RAID_SEASONS)
+				.findOne({ weekId, tag: clan.tag });
+
 			const res = await this.client.http.getRaidLastSeason(clan);
 			if (!res.ok || !res.items.length) {
 				return interaction.followUp({
@@ -61,6 +97,10 @@ export default class CapitalRaidsCommand extends Command {
 			const offensiveReward = this.client.http.calcRaidMedals(data.attackLog);
 			const raidsCompleted = this.client.http.calcRaidCompleted(data.attackLog);
 
+			const hasTrophyCard = Boolean(
+				season?.clanCapitalPoints && season._clanCapitalPoints && season._clanCapitalPoints !== season.clanCapitalPoints
+			);
+
 			const query = new URLSearchParams({
 				clanName: clan.name,
 				clanBadgeUrl: clan.badgeUrls.large,
@@ -73,10 +113,40 @@ export default class CapitalRaidsCommand extends Command {
 				enemyDistrictsDestroyed: data.enemyDistrictsDestroyed.toString(),
 				raidsCompleted: raidsCompleted.toString()
 			});
-			const raw = new AttachmentBuilder(`https://chart.clashperk.com/raid-weekend-card?${query.toString()}`, {
-				name: 'capital-raid-weekend-card.jpeg'
+
+			await interaction.followUp({
+				files: [
+					new AttachmentBuilder(`https://chart.clashperk.com/raid-weekend-card?${query.toString()}`, {
+						name: 'capital-raid-weekend-card.jpeg'
+					})
+				]
 			});
-			return interaction.followUp({ files: [raw] });
+
+			if (hasTrophyCard) {
+				const { globalRank, countryRank } = await this.rankings(clan.tag);
+				const type =
+					season!._capitalLeague!.id > season!.capitalLeague!.id
+						? 'Promoted'
+						: season!._capitalLeague!.id === season!.capitalLeague!.id
+						? 'Stayed'
+						: 'Demoted';
+
+				query.set('type', type);
+				query.set('remark', type === 'Stayed' ? 'Stayed in the same League' : type);
+				query.set('leagueId', season!._capitalLeague!.id.toString());
+				query.set('trophiesEarned', `+${season!._clanCapitalPoints! - season!.clanCapitalPoints!}`);
+				query.set('trophies', season!._clanCapitalPoints!.toString());
+				query.set('globalRank', globalRank ? `Global Rank: ${globalRank}` : '');
+				query.set('localRank', countryRank ? `Local Rank: ${countryRank.clans.rank} (${countryRank.country})` : '');
+
+				return interaction.followUp({
+					files: [
+						new AttachmentBuilder(`https://chart.clashperk.com/raid-trophy-card?${query.toString()}`, {
+							name: 'capital-raid-trophy-card.jpeg'
+						})
+					]
+				});
+			}
 		}
 
 		const row = new ActionRowBuilder<ButtonBuilder>()
@@ -126,6 +196,9 @@ export default class CapitalRaidsCommand extends Command {
 					$match: {
 						'members.tag': {
 							$in: [...playerTags.slice(0, 25)]
+						},
+						'createdAt': {
+							$gte: moment().subtract(6, 'months').toDate()
 						}
 					}
 				},
@@ -175,6 +248,7 @@ export default class CapitalRaidsCommand extends Command {
 			])
 			.toArray();
 
+		const embeds: EmbedBuilder[] = [];
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(interaction));
 		embed.setTitle('Capital raid history (last 3 months)');
@@ -188,7 +262,7 @@ export default class CapitalRaidsCommand extends Command {
 					'```',
 					'\u200e # LOOTED HITS  WEEKEND',
 					member.raids
-						// .slice(0, 10)
+						.slice(0, 20)
 						.map((raid, i) => {
 							const looted = this.padding(raid.capitalResourcesLooted);
 							const attacks = `${raid.attacks}/${raid.attackLimit + raid.bonusAttackLimit}`.padStart(4, ' ');
@@ -201,8 +275,20 @@ export default class CapitalRaidsCommand extends Command {
 				].join('\n')
 			});
 		});
+		embeds.push(embed);
 
-		return interaction.editReply({ embeds: [embed] });
+		if (embedLength(embed.toJSON()) > 6000) {
+			const fieldsSize = embed.data.fields!.length;
+			embeds.push(
+				new EmbedBuilder()
+					.setColor(this.client.embed(interaction))
+					.addFields(embed.data.fields!.splice(Math.floor(fieldsSize / 2), 25))
+			);
+		}
+
+		for (const embed of embeds) {
+			await interaction.followUp({ embeds: [embed] });
+		}
 	}
 
 	private async getRaidsFromAPI(clan: Clan) {

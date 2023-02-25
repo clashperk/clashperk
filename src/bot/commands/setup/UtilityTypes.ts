@@ -9,6 +9,7 @@ import {
 	ModalBuilder,
 	StringSelectMenuBuilder,
 	TextChannel,
+	TextInputBuilder,
 	TextInputStyle
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
@@ -159,72 +160,48 @@ export default class SetupUtilsCommand extends Command {
 			}
 
 			if (action.customId === customIds.embed) {
-				const modal = new ModalBuilder({
-					customId: customIds.modal,
-					title: 'Customize Embed',
-					components: [
-						{
-							type: ComponentType.ActionRow,
-							components: [
-								{
-									type: ComponentType.TextInput,
-									style: TextInputStyle.Short,
-									customId: customIds.title,
-									required: true,
-									label: 'Title',
-									value: state.title,
-									placeholder: 'Enter a title',
-									maxLength: 256
-								}
-							]
-						},
-						{
-							type: ComponentType.ActionRow,
-							components: [
-								{
-									type: ComponentType.TextInput,
-									style: TextInputStyle.Paragraph,
-									required: true,
-									customId: customIds.description,
-									label: 'Description',
-									value: state.description,
-									placeholder: 'Write anything you want (markdown, hyperlink and custom emojis are supported)',
-									maxLength: 2000
-								}
-							]
-						},
-						{
-							type: ComponentType.ActionRow,
-							components: [
-								{
-									type: ComponentType.TextInput,
-									style: TextInputStyle.Short,
-									required: false,
-									customId: customIds.image_url,
-									value: state.image_url,
-									label: 'Image URL',
-									placeholder: 'Set an image (optional)',
-									maxLength: 256
-								}
-							]
-						},
-						{
-							type: ComponentType.ActionRow,
-							components: [
-								{
-									type: ComponentType.TextInput,
-									style: TextInputStyle.Short,
-									required: false,
-									value: state.thumbnail_url,
-									customId: customIds.thumbnail_url,
-									label: 'Thumbnail URL',
-									placeholder: ['Set a thumbnail (optional)'].join('\n'),
-									maxLength: 256
-								}
-							]
-						}
-					]
-				});
+				const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Link a Player Account');
+				const titleInput = new TextInputBuilder()
+					.setCustomId(customIds.title)
+					.setLabel('Title')
+					.setPlaceholder('Enter a title')
+					.setStyle(TextInputStyle.Short)
+					.setMaxLength(256)
+					.setValue(state.title)
+					.setRequired(true);
+
+				const descriptionInput = new TextInputBuilder()
+					.setCustomId(customIds.token)
+					.setLabel('Description')
+					.setPlaceholder('Write anything you want (markdown, hyperlink and custom emojis are supported)')
+					.setStyle(TextInputStyle.Paragraph)
+					.setMaxLength(2000)
+					.setValue(state.description)
+					.setRequired(true);
+
+				const imageInput = new TextInputBuilder()
+
+					.setCustomId(customIds.image_url)
+					.setLabel('Image URL')
+					.setPlaceholder('Enter an image URL')
+					.setStyle(TextInputStyle.Short)
+					.setMaxLength(256)
+					.setValue(state.image_url)
+					.setRequired(false);
+
+				const thumbnailInput = new TextInputBuilder()
+					.setCustomId(customIds.thumbnail_url)
+					.setLabel('Thumbnail URL')
+					.setPlaceholder('Enter a thumbnail URL')
+					.setStyle(TextInputStyle.Short)
+					.setMaxLength(256)
+					.setValue(state.thumbnail_url)
+					.setRequired(false);
+
+				modal.addComponents(
+					new ActionRowBuilder<TextInputBuilder>().addComponents(titleInput, descriptionInput, imageInput, thumbnailInput)
+				);
+
 				await action.showModal(modal);
 
 				try {
