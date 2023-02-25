@@ -210,6 +210,7 @@ export default class SetupUtilsCommand extends Command {
 				try {
 					await action
 						.awaitModalSubmit({
+							dispose: true,
 							time: 10 * 60 * 1000,
 							filter: (action) => action.customId === customIds.modal
 						})
@@ -237,9 +238,7 @@ export default class SetupUtilsCommand extends Command {
 							await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
 							await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
 						});
-				} catch (e) {
-					console.error(e);
-				}
+				} catch {}
 			}
 		});
 
