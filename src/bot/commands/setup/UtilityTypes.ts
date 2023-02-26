@@ -5,6 +5,8 @@ import {
 	ButtonStyle,
 	CommandInteraction,
 	ComponentType,
+	DiscordjsError,
+	DiscordjsErrorCodes,
 	EmbedBuilder,
 	ModalBuilder,
 	StringSelectMenuBuilder,
@@ -238,7 +240,11 @@ export default class SetupUtilsCommand extends Command {
 							await this.client.settings.set(interaction.guild.id, Settings.LINK_EMBEDS, state);
 							await interaction.editReply({ embeds: [embed], components: [linkButtonRow], message: '@original' });
 						});
-				} catch {}
+				} catch (e) {
+					if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+						throw e;
+					}
+				}
 			}
 		});
 

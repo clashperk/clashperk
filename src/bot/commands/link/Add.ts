@@ -5,7 +5,9 @@ import {
 	ButtonInteraction,
 	ModalSubmitInteraction,
 	TextInputBuilder,
-	ActionRowBuilder
+	ActionRowBuilder,
+	DiscordjsError,
+	DiscordjsErrorCodes
 } from 'discord.js';
 import { Player } from 'clashofclans.js';
 import { Command } from '../../lib/index.js';
@@ -109,7 +111,7 @@ export default class LinkAddCommand extends Command {
 			.setPlaceholder('The token can be found in the game settings.')
 			.setStyle(TextInputStyle.Short)
 			.setMaxLength(15)
-			.setRequired(token_field === 'required');
+			.setRequired(true);
 
 		modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(tagInput));
 		if (token_field !== 'hidden') {
@@ -121,12 +123,13 @@ export default class LinkAddCommand extends Command {
 		try {
 			await interaction
 				.awaitModalSubmit({
-					time: 5 * 60 * 1000,
+					time: 10 * 60 * 1000,
+					dispose: true,
 					filter: (action) => action.customId === customIds.modal
 				})
 				.then(async (modalSubmit) => {
 					const tag = modalSubmit.fields.getTextInputValue(customIds.tag);
-					const token = modalSubmit.fields.getTextInputValue(customIds.token);
+					const token = token_field === 'hidden' ? null : modalSubmit.fields.getTextInputValue(customIds.token);
 					await modalSubmit.deferReply({ ephemeral: true });
 
 					const data = await this.client.http.player(tag);
@@ -140,7 +143,11 @@ export default class LinkAddCommand extends Command {
 
 					return this.playerLink(modalSubmit, { player: data, member: interaction.member, def: false });
 				});
-		} catch (e) {}
+		} catch (e) {
+			if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+				throw e;
+			}
+		}
 	}
 
 	private async verify(interaction: ModalSubmitInteraction<'cached'>, data: Player, token: string) {
