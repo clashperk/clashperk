@@ -2161,6 +2161,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description_localizations: translation('common.options.user.description'),
 						type: ApplicationCommandOptionType.User,
 						required: false
+					},
+					{
+						name: 'day',
+						description: 'The league day.',
+						type: ApplicationCommandOptionType.Number,
+						max_value: 35,
+						min_value: 1,
+						required: false
 					}
 				]
 			}

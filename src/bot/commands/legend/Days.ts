@@ -26,13 +26,20 @@ export default class LegendDaysCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; prev?: boolean }) {
+	private getDay(day?: number) {
+		if (!day) return { ...Util.getCurrentLegendTimestamp(), day: Util.getLegendDay() };
+		const days = Util.getLegendDays();
+		const num = Math.min(days.length, Math.max(day, 1));
+		return { ...days[num - 1], day };
+	}
+
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; prev?: boolean; day?: number }) {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
 		const embed = args.prev
 			? (await this.logs(data)).setColor(this.client.embed(interaction))
-			: (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
+			: (await this.embed(interaction, data, args.day)).setColor(this.client.embed(interaction));
 
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
@@ -96,7 +103,7 @@ export default class LegendDaysCommand extends Command {
 		};
 	}
 
-	private async embed(interaction: CommandInteraction<'cached'>, data: Player) {
+	private async embed(interaction: CommandInteraction<'cached'>, data: Player, _day?: number) {
 		const seasonId = Season.ID;
 		const legend = (await this.client.redis.json.get(`LP-${seasonId}-${data.tag}`)) as {
 			name: string;
@@ -105,8 +112,7 @@ export default class LegendDaysCommand extends Command {
 		} | null;
 		const clan = data.clan ? ((await this.client.redis.json.get(`C${data.clan.tag}`)) as Clan | null) : null;
 
-		const { startTime, endTime } = Util.getCurrentLegendTimestamp();
-
+		const { startTime, endTime, day } = this.getDay(_day);
 		const logs = (legend?.logs ?? []).filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 		const attacks = logs.filter((en) => en.inc > 0) ?? [];
 		const defenses = logs.filter((en) => en.inc <= 0) ?? [];
@@ -195,7 +201,9 @@ export default class LegendDaysCommand extends Command {
 				inline: true
 			}
 		]);
-		embed.setFooter({ text: `Day ${Util.getLegendDay()} (${Season.ID})` });
+
+		// const seasonId = Util.getLegendDay() === 0 ? Season.previousID : Season.ID;
+		embed.setFooter({ text: `Day ${day} (${Season.ID})` });
 		return embed;
 	}
 
