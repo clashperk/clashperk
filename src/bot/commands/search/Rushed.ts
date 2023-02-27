@@ -2,7 +2,7 @@ import { EmbedBuilder, CommandInteraction, StringSelectMenuBuilder, ActionRowBui
 import { Player, Clan } from 'clashofclans.js';
 import { BUILDER_TROOPS, HOME_TROOPS, SUPER_TROOPS, TOWN_HALLS } from '../../util/Emojis.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 import { TroopJSON } from '../../types/index.js';
 
@@ -23,14 +23,23 @@ export default class RushedCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { clan_tag?: string; player_tag?: string; user?: User }) {
+	public args(): Args {
+		return {
+			player_tag: {
+				id: 'tag',
+				match: 'STRING'
+			}
+		};
+	}
+
+	public async exec(interaction: CommandInteraction<'cached'>, args: { clan_tag?: string; tag?: string; user?: User }) {
 		if (args.clan_tag) {
 			const clan = await this.client.resolver.resolveClan(interaction, args.clan_tag);
 			if (!clan) return null;
 			return this.clan(interaction, clan);
 		}
 
-		const data = await this.client.resolver.resolvePlayer(interaction, args.player_tag ?? args.user?.id);
+		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return null;
 
 		const embed = this.embed(data as Player, interaction).setColor(this.client.embed(interaction));

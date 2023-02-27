@@ -182,7 +182,6 @@ export default class SetupUtilsCommand extends Command {
 				if (state.description) descriptionInput.setValue(state.description);
 
 				const imageInput = new TextInputBuilder()
-
 					.setCustomId(customIds.image_url)
 					.setLabel('Image URL')
 					.setPlaceholder('Enter an image URL')

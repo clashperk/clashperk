@@ -610,7 +610,7 @@ export default class StorageHandler {
 			])
 			.toArray();
 
-		return result.length ? Object.values(result[0]).flat() : [];
+		return result.length ? Object.values(result.at(0)!).flat() : [];
 	}
 
 	public async getWebhook(channel: TextChannel | NewsChannel | ForumChannel) {
@@ -627,9 +627,9 @@ export default class StorageHandler {
 				}, 0);
 				return { webhookId, count };
 			})
-			.sort((a, b) => a.count - b.count)[0];
+			.sort((a, b) => a.count - b.count)
+			.at(0);
 
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (estimated && (estimated.count <= 6 || channelWebhooks.size >= 8)) {
 			return channelWebhooks.get(estimated.webhookId)!;
 		}

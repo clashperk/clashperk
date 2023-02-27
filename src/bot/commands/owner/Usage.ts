@@ -13,6 +13,7 @@ export default class UsageCommand extends Command {
 			},
 			clientPermissions: ['EmbedLinks', 'AttachFiles'],
 			defer: true,
+			ownerOnly: true,
 			ephemeral: true
 		});
 	}
@@ -35,14 +36,14 @@ export default class UsageCommand extends Command {
 			return interaction.editReply(url);
 		}
 
-		const { commands } = await this.commands();
+		const { commands, total } = await this.commands();
 		const maxDigit = Math.max(...commands.map((cmd) => cmd.uses.toString().length));
 		const usage = await this.usage();
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: `${this.client.user!.username}`, iconURL: this.client.user!.displayAvatarURL({ extension: 'png' }) })
 			.setColor(this.client.embed(interaction))
 			.setTitle('Usage')
-			.setFooter({ text: `${Number(await this.commandsTotal()).toLocaleString()}x Total • Since April 2019` });
+			.setFooter({ text: `${total.toLocaleString()}x Total • Since April 2019` });
 		embed.setDescription(
 			[
 				`__**\`\u200e${'Date'.padEnd(6, ' ')}  ${'Uses'.padEnd(18, ' ')}\u200f\`**__`,
@@ -90,11 +91,6 @@ export default class UsageCommand extends Command {
 			collection.reverse().map((growth) => ({ date: new Date(growth.key), value: growth })),
 			{ ...growth }
 		);
-	}
-
-	private async commandsTotal() {
-		const data = await this.client.db.collection(Collections.BOT_STATS).findOne({ name: 'COMMANDS_USED' });
-		return data?.count ?? 0;
 	}
 
 	private usage(): Promise<{ usage: number; createdAt: Date }[]> {
