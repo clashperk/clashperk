@@ -14,7 +14,7 @@ import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
-import { Util } from '../../util/index.js';
+import { Season, Util } from '../../util/index.js';
 import { RaidSeason } from '../../struct/Http.js';
 
 export default class CapitalRaidsCommand extends Command {
@@ -40,6 +40,11 @@ export default class CapitalRaidsCommand extends Command {
 		const ranks = await this.client.db
 			.collection(Collections.CAPITAL_RANKS)
 			.aggregate<{ country: string; countryCode: string; clans: { rank: number } }>([
+				{
+					$match: {
+						season: Season.ID
+					}
+				},
 				{
 					$unwind: {
 						path: '$clans'

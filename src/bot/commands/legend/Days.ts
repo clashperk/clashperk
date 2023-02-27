@@ -85,6 +85,11 @@ export default class LegendDaysCommand extends Command {
 			.collection(Collections.PLAYER_RANKS)
 			.aggregate<{ country: string; countryCode: string; players: { rank: number } }>([
 				{
+					$match: {
+						season: Season.ID
+					}
+				},
+				{
 					$unwind: {
 						path: '$players'
 					}

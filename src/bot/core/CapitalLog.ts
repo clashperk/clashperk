@@ -5,7 +5,7 @@ import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { CapitalLogModel, ClanCapitalGoldModel, ClanCapitalRaidAttackData } from '../types/index.js';
 import { Collections } from '../util/Constants.js';
-import { Util } from '../util/index.js';
+import { Season, Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 
 export default class CapitalLog extends BaseLog {
@@ -56,6 +56,11 @@ export default class CapitalLog extends BaseLog {
 		const ranks = await this.client.db
 			.collection(Collections.CAPITAL_RANKS)
 			.aggregate<{ country: string; countryCode: string; clans: { rank: number } }>([
+				{
+					$match: {
+						season: Season.ID
+					}
+				},
 				{
 					$unwind: {
 						path: '$clans'

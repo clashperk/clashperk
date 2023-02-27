@@ -65,7 +65,7 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.PLAYER_RANKS).createIndexes([
 				{
-					key: { countryCode: 1 },
+					key: { countryCode: 1, season: 1 },
 					unique: true
 				},
 				{
@@ -75,7 +75,7 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.CLAN_RANKS).createIndexes([
 				{
-					key: { countryCode: 1 },
+					key: { countryCode: 1, season: 1 },
 					unique: true
 				},
 				{
@@ -85,7 +85,7 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.CAPITAL_RANKS).createIndexes([
 				{
-					key: { countryCode: 1 },
+					key: { countryCode: 1, season: 1 },
 					unique: true
 				},
 				{
