@@ -26,6 +26,19 @@ export class Season {
 		return now;
 	}
 
+	public static getSeasonIdAgainstDate(date: Date | number | string, month?: number): Date {
+		const now = moment(date);
+		month ??= now.month();
+
+		const lastDay = now.clone().endOf('month');
+		const lastMonday = moment(lastDay).month(month).day('Monday').hour(5).minute(0).second(0).millisecond(0);
+
+		if (now.toDate().getTime() >= lastMonday.toDate().getTime()) {
+			return this.getSeasonIdAgainstDate(now.toDate(), now.month() + 1);
+		}
+		return lastMonday.toDate();
+	}
+
 	public static get ending() {
 		return Date.now() > new Date(this.getTimestamp.getTime() + 60 * 60 * 1000).getTime();
 	}
@@ -138,7 +151,14 @@ export class Util {
 
 	public static getPreviousLegendDay() {
 		const { endTime } = this.getPreviousLegendTimestamp();
-		return moment(endTime).add(1, 'second').diff(moment(Season.startTimestamp), 'days');
+		const diff = moment(endTime).add(1, 'second').diff(moment(Season.startTimestamp), 'days');
+		if (diff === 0) {
+			const timestamp = moment(endTime).startOf('month').subtract(1, 'second').startOf('month').toDate();
+			return moment(endTime)
+				.add(1, 'second')
+				.diff(moment(Season.getSeasonIdAgainstDate(timestamp)), 'days');
+		}
+		return diff;
 	}
 
 	public static getLegendDays() {
