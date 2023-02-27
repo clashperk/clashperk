@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { ObjectId, Collection, WithId } from 'mongodb';
 import { CommandInteraction, ForumChannel, NewsChannel, TextChannel } from 'discord.js';
 import { ClanWarLeagueGroup } from 'clashofclans.js';
-import { Collections, Flags } from '../util/Constants.js';
+import { Collections, Flags, Settings } from '../util/Constants.js';
 import { Client } from './Client.js';
 import { Reminder, Schedule } from './ClanWarScheduler.js';
 
@@ -630,7 +630,8 @@ export default class StorageHandler {
 			.sort((a, b) => a.count - b.count)
 			.at(0);
 
-		if (estimated && (estimated.count <= 6 || channelWebhooks.size >= 8)) {
+		const webhookLimit = this.client.settings.get<number>(channel.guildId, Settings.WEBHOOK_LIMIT, 8);
+		if (estimated && (estimated.count <= 6 || channelWebhooks.size >= Math.max(3, Math.min(8, webhookLimit)))) {
 			return channelWebhooks.get(estimated.webhookId)!;
 		}
 

@@ -14,19 +14,27 @@ export default class ConfigCommand extends Command {
 		});
 	}
 
-	public exec(interaction: CommandInteraction<'cached'>, args: { color_code?: string; events_channel?: string }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { color_code?: string; events_channel?: string; webhook_limit?: number }
+	) {
 		if (args.color_code) {
 			if (['reset', 'none'].includes(args.color_code)) {
-				this.client.settings.delete(interaction.guild, Settings.COLOR);
+				await this.client.settings.delete(interaction.guild, Settings.COLOR);
 			}
-			this.client.settings.set(interaction.guild, Settings.COLOR, this.getColor(args.color_code));
+			await this.client.settings.set(interaction.guild, Settings.COLOR, this.getColor(args.color_code));
+		}
+
+		if (args.webhook_limit) {
+			const webhookLimit = Math.max(3, Math.min(8, args.webhook_limit));
+			await this.client.settings.set(interaction.guild, Settings.WEBHOOK_LIMIT, webhookLimit);
 		}
 
 		if (args.events_channel) {
 			if (['reset', 'none'].includes(args.events_channel)) {
-				this.client.settings.delete(interaction.guild, Settings.EVENTS_CHANNEL);
+				await this.client.settings.delete(interaction.guild, Settings.EVENTS_CHANNEL);
 			} else if (/\d{17,19}/g.test(args.events_channel)) {
-				const channel = this.client.util.hasPermissions(args.events_channel.match(/\d{17,19}/g)![0], [
+				const channel = this.client.util.hasPermissions(args.events_channel.match(/\d{17,19}/g)!.at(0)!, [
 					'ManageWebhooks',
 					'ViewChannel'
 				]);
@@ -36,7 +44,7 @@ export default class ConfigCommand extends Command {
 						ephemeral: true
 					});
 				}
-				this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, channel.channel.id);
+				await this.client.settings.set(interaction.guild, Settings.EVENTS_CHANNEL, channel.channel.id);
 			}
 		}
 
@@ -60,6 +68,10 @@ export default class ConfigCommand extends Command {
 				{
 					name: 'Patron',
 					value: this.client.patrons.get(interaction.guild.id) ? 'Yes' : 'No'
+				},
+				{
+					name: 'Webhook Limit',
+					value: `${this.client.settings.get<string>(interaction.guild, Settings.WEBHOOK_LIMIT, 8)}`
 				},
 				{
 					name: this.i18n('common.color_code', { lng: interaction.locale }),

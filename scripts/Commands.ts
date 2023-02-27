@@ -2634,6 +2634,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description: command.config.options.events_channel.description,
 				description_localizations: translation('command.config.options.events_channel.description'),
 				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'webhook_limit',
+				description: 'The maximum number of webhooks that can be created in a channel.',
+				type: ApplicationCommandOptionType.Integer,
+				max_value: 8,
+				min_value: 3
 			}
 		]
 	},

@@ -99,6 +99,7 @@ export const enum Settings {
 	LEAGUE_ROLES = 'leagueRoles',
 	ROLE_REFRESHED = 'roleRefreshed',
 	LINK_EMBEDS = 'linkEmbeds',
+	WEBHOOK_LIMIT = 'webhookLimit',
 	ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts',
 	ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague',
 	CLAN_GAMES_EXCEPTIONAL_MONTHS = 'clanGamesExceptionalMonths'
