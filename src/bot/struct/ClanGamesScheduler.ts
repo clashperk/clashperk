@@ -154,6 +154,9 @@ export default class ClanGamesScheduler {
 		schedule: Pick<ClanGamesSchedule, 'tag'>
 	) {
 		const clan = await this.client.http.clan(schedule.tag);
+		if (clan.statusCode === 503) throw new Error('MaintenanceBreak');
+		if (!clan.ok) return null;
+
 		const clanMembers = await this.query(clan);
 
 		const members = clanMembers

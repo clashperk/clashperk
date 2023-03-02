@@ -152,8 +152,8 @@ export default class CWLRosterCommand extends Command {
 					value: [
 						`**Next War (Round #${next.round + 1})**`,
 						`${EMOJIS.HASH} ${townHalls.map((th) => ORANGE_NUMBERS[th]).join('')} **Clan**`,
-						`${BLUE_NUMBERS[rank + 1]} ${this.getNextRoster(next.clan, townHalls)} ${next.clan.name}`,
-						`${BLUE_NUMBERS[oppRank + 1]} ${this.getNextRoster(next.opponent, townHalls)} ${next.opponent.name}`
+						`${BLUE_NUMBERS[rank + 1]} ${this.getNextRoster(next.clan, townHalls)} \u200e${next.clan.name}`,
+						`${BLUE_NUMBERS[oppRank + 1]} ${this.getNextRoster(next.opponent, townHalls)} \u200e${next.opponent.name}`
 					].join('\n')
 				}
 			]);

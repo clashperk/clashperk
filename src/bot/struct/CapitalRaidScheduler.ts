@@ -146,6 +146,8 @@ export default class CapitalRaidScheduler {
 		data: Required<RaidSeason>
 	) {
 		const clan = await this.client.http.clan(schedule.tag);
+		if (clan.statusCode === 503) throw new Error('MaintenanceBreak');
+		if (!clan.ok) return null;
 		const unwantedMembers = reminder.allMembers
 			? await this.unwantedMembers(clan.memberList, this.getWeekId(data.startTime), schedule.tag)
 			: [];
