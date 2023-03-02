@@ -23,7 +23,7 @@ export default class WarExport extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { wars?: number; clans?: string; season?: string; war_type: string }
+		args: { limit?: number; clans?: string; season?: string; war_type: string }
 	) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
@@ -35,8 +35,8 @@ export default class WarExport extends Command {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
-		let num = Number(args.wars ?? 25);
-		num = this.client.patrons.get(interaction.guild.id) ? Math.min(num, 45) : Math.min(25, num);
+		let num = Number(args.limit ?? 25);
+		num = Math.min(100, num);
 		const query = args.season ? { season: args.season } : {};
 		const chunks = [];
 		for (const { tag, name } of clans) {

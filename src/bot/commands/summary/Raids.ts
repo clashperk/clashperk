@@ -2,6 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Compo
 import { Command } from '../../lib/index.js';
 import { RaidSeason } from '../../struct/Http.js';
 import { Collections } from '../../util/Constants.js';
+import { Util } from '../../util/index.js';
 
 export default class SummaryCapitalRaidsCommand extends Command {
 	public constructor() {
@@ -22,7 +23,8 @@ export default class SummaryCapitalRaidsCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
-		const { clansGroup, membersGroup } = week === weekId ? await this.queryFromAPI(clans) : await this.queryFromDB(week, clans);
+		// const { clansGroup, membersGroup } = week === weekId ? await this.queryFromAPI(clans) : await this.queryFromDB(week, clans);
+		const { clansGroup, membersGroup } = await this.queryFromDB(week, clans);
 
 		const maxPad = Math.max(...clansGroup.map((clan) => clan.looted.toString().length));
 		const embed = new EmbedBuilder();
@@ -31,15 +33,14 @@ export default class SummaryCapitalRaidsCommand extends Command {
 		embed.setDescription(
 			[
 				'```',
-				`\u200e # ${'LOOT'.padStart(maxPad, ' ')} HIT  AVG NAME`,
+				`\u200e # ${'LOOT'.padStart(6, ' ')} HIT MEDAL NAME`,
 				clansGroup
 					.map(
 						(clan, i) =>
-							`${(i + 1).toString().padStart(2, ' ')} ${clan.looted.toFixed(0).padStart(maxPad, ' ')} ${clan.attacks
-								.toString()
-								.padStart(3, ' ')} ${(clan.looted ? clan.looted / clan.attacks : 0).toFixed(0).padStart(4, ' ')} ${
-								clan.name
-							}`
+							`\u200e${(i + 1).toString().padStart(2, ' ')} ${Util.formatNumber(clan.looted, 1).padStart(
+								6,
+								' '
+							)} ${clan.attacks.toString().padStart(3, ' ')} ${clan.medals.toFixed(0).padStart(5, ' ')} ${clan.name}`
 					)
 					.join('\n'),
 				'```'
@@ -49,19 +50,46 @@ export default class SummaryCapitalRaidsCommand extends Command {
 
 		const customIds = {
 			action: this.client.uuid(interaction.user.id),
-			active: this.client.uuid(interaction.user.id)
+			active: this.client.uuid(interaction.user.id),
+			medals: this.client.uuid(interaction.user.id)
 		};
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setLabel('Show Top Looters').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
+			new ButtonBuilder().setLabel('Show Top Looters').setStyle(ButtonStyle.Primary).setCustomId(customIds.action),
+			new ButtonBuilder().setLabel('Show Avg. Loot').setStyle(ButtonStyle.Secondary).setCustomId(customIds.medals)
 		);
 
 		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
+			time: 10 * 60 * 1000
 		});
 
 		collector.on('collect', async (action) => {
+			if (action.customId === customIds.medals) {
+				embed.setDescription(
+					[
+						'```',
+						`\u200e # ${'LOOT'.padStart(maxPad, ' ')} HIT  AVG NAME`,
+						clansGroup
+							.map(
+								(clan, i) =>
+									`${(i + 1).toString().padStart(2, ' ')} ${clan.looted.toFixed(0).padStart(maxPad, ' ')} ${clan.attacks
+										.toString()
+										.padStart(3, ' ')} ${(clan.looted ? clan.looted / clan.attacks : 0).toFixed(0).padStart(4, ' ')} ${
+										clan.name
+									}`
+							)
+							.join('\n'),
+						'```'
+					].join('\n')
+				);
+
+				const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+					new ButtonBuilder().setLabel('Show Top Looters').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
+				);
+				await action.update({ embeds: [embed], components: [row] });
+			}
+
 			if (action.customId === customIds.action) {
 				const embed = new EmbedBuilder()
 					.setColor(this.client.embed(interaction))
@@ -98,7 +126,7 @@ export default class SummaryCapitalRaidsCommand extends Command {
 		const result = await this.client.db
 			.collection(Collections.CAPITAL_RAID_SEASONS)
 			.aggregate<{
-				clans: { name: string; tag: string; attacks: number; looted: number; attackLimit: number }[];
+				clans: { name: string; tag: string; attacks: number; looted: number; attackLimit: number; medals: number }[];
 				members: { name: string; tag: string; attacks: number; attackLimit: number; capitalResourcesLooted: number }[];
 			}>([
 				{
@@ -122,6 +150,9 @@ export default class SummaryCapitalRaidsCommand extends Command {
 									},
 									attackLimit: {
 										$sum: '$members.attackLimit'
+									},
+									medals: {
+										$sum: [{ $multiply: ['$offensiveReward', 6] }, '$defensiveReward']
 									}
 								}
 							},

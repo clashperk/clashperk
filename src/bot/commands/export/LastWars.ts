@@ -14,7 +14,7 @@ export default class LastWarsExport extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { wars?: number; clans?: string; season?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number; clans?: string; season?: string }) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
@@ -25,7 +25,7 @@ export default class LastWarsExport extends Command {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
-		let num = Number(args.wars ?? 25);
+		let num = Number(args.limit ?? 25);
 		num = this.client.patrons.get(interaction.guild.id) ? Math.min(num, 45) : Math.min(25, num);
 		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
 		const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();

@@ -15,8 +15,8 @@ export const padEnd = (str: string | number, length: number) => {
 };
 
 export const lastSeenTimestampFormat = (timestamp: number) => {
-	if (!timestamp) return padEnd('', 7);
-	return padEnd(Util.duration(timestamp + 1e3), 7);
+	if (!timestamp) return padStart('', 7);
+	return padStart(Util.duration(timestamp + 1e3), 7);
 };
 
 export const clanGamesMaxPoints = (month: number) => {
@@ -141,7 +141,7 @@ export const lastSeenEmbedMaker = async (clan: Clan, { color, scoreView }: { col
 
 	const db = client.db.collection(Collections.LAST_SEEN);
 	const result = await db
-		.aggregate<{ count: number; lastSeen: Date; name: string; tag: string }>([
+		.aggregate<{ count: number; lastSeen: Date; name: string; tag: string; townHallLevel?: number }>([
 			{
 				$match: { tag: { $in: [...clan.memberList.map((m) => m.tag)] } }
 			},
@@ -153,6 +153,7 @@ export const lastSeenEmbedMaker = async (clan: Clan, { color, scoreView }: { col
 					tag: '$tag',
 					clan: '$clan',
 					lastSeen: '$lastSeen',
+					townHallLevel: '$townHallLevel',
 					entries: {
 						$filter: {
 							input: '$entries',
@@ -168,6 +169,7 @@ export const lastSeenEmbedMaker = async (clan: Clan, { color, scoreView }: { col
 				$project: {
 					tag: '$tag',
 					clan: '$clan',
+					townHallLevel: '$townHallLevel',
 					lastSeen: '$lastSeen',
 					count: {
 						$sum: '$entries.count'
@@ -178,12 +180,13 @@ export const lastSeenEmbedMaker = async (clan: Clan, { color, scoreView }: { col
 		.toArray();
 
 	const _members = clan.memberList.map((m) => {
-		const clan = result.find((d) => d.tag === m.tag);
+		const mem = result.find((d) => d.tag === m.tag);
 		return {
 			tag: m.tag,
 			name: m.name,
-			count: clan ? Number(clan.count) : 0,
-			lastSeen: clan ? new Date().getTime() - new Date(clan.lastSeen).getTime() : 0
+			townHallLevel: `${mem?.townHallLevel ?? '-'}`,
+			count: mem ? Number(mem.count) : 0,
+			lastSeen: mem ? new Date().getTime() - new Date(mem.lastSeen).getTime() : 0
 		};
 	});
 
@@ -199,10 +202,10 @@ export const lastSeenEmbedMaker = async (clan: Clan, { color, scoreView }: { col
 		embed.setDescription(
 			[
 				'**Clan member activity scores (last 30d)**',
-				`\`\`\`\n\u200e${'TOTAL'.padStart(4, ' ')} AVG  ${'NAME'}\n${members
+				`\`\`\`\n\u200eTH  ${'TOTAL'.padStart(4, ' ')} AVG  ${'NAME'}\n${members
 					.map(
 						(m) =>
-							`${m.count.toString().padEnd(4, ' ')}  ${Math.floor(m.count / 30)
+							`${m.townHallLevel.padStart(2, ' ')}  ${m.count.toString().padStart(4, ' ')}  ${Math.floor(m.count / 30)
 								.toString()
 								.padStart(3, ' ')}  ${m.name}`
 					)
@@ -214,8 +217,14 @@ export const lastSeenEmbedMaker = async (clan: Clan, { color, scoreView }: { col
 		embed.setDescription(
 			[
 				`**[Last seen and last 24h activity scores](https://clashperk.com/faq)**`,
-				`\`\`\`\n\u200eLAST-ON 24H  NAME\n${members
-					.map((m) => `${lastSeenTimestampFormat(m.lastSeen)}  ${padStart(Math.min(m.count, 99), 2)}  ${m.name}`)
+				`\`\`\`\n\u200eTH  LAST-ON 24H  NAME\n${members
+					.map(
+						(m) =>
+							`${m.townHallLevel.padStart(2, ' ')}  ${lastSeenTimestampFormat(m.lastSeen)}  ${padStart(
+								Math.min(m.count, 99),
+								2
+							)}  ${m.name}`
+					)
 					.join('\n')}`,
 				'```'
 			].join('\n')

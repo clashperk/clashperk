@@ -1861,14 +1861,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	},
 	{
 		name: 'reminders',
-		description: 'Setup reminders for clan wars or capital raids.',
+		description: 'Setup reminders for clan wars, capital raids.',
 		dm_permission: false,
 		description_localizations: translation('command.reminder.description'),
 		options: [
 			{
 				name: 'create',
-				description: command.reminder.create.description,
-				description_localizations: translation('command.reminder.create.description'),
+				description: 'Create reminders for clan wars, clan games or capital raids.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1924,7 +1923,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'edit',
-				description: 'Edit a reminder by ID.',
+				description: 'Edit a reminder by ID (do /reminders list to get the ID)',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1957,8 +1956,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'list',
-				description: command.reminder.list.description,
-				description_localizations: translation('command.reminder.list.description'),
+				description: 'List all reminders.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1985,8 +1983,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'delete',
-				description: command.reminder.delete.description,
-				description_localizations: translation('command.reminder.delete.description'),
+				description: 'Delete a reminder by ID (do /reminders list to get the ID)',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -2037,8 +2034,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'now',
-				description: command.reminder.now.description,
-				description_localizations: translation('command.reminder.now.description'),
+				description: 'Create an instant reminder to notify members.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -2205,11 +2201,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'season',
-						description: command.export.options.season.description,
-						description_localizations: translation('command.export.options.season.description'),
-						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds()
+						name: 'clans',
+						description: command.export.options.clans.description,
+						description_localizations: translation('command.export.options.clans.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
 					},
 					{
 						name: 'war_type',
@@ -2227,14 +2223,14 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						]
 					},
 					{
-						name: 'clans',
-						description: command.export.options.clans.description,
-						description_localizations: translation('command.export.options.clans.description'),
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String
+						name: 'season',
+						description: command.export.options.season.description,
+						description_localizations: translation('command.export.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
 					},
 					{
-						name: 'wars',
+						name: 'limit',
 						description: command.export.options.wars.description,
 						description_localizations: translation('command.export.options.wars.description'),
 						type: ApplicationCommandOptionType.Integer
@@ -2247,18 +2243,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'season',
-						description: command.export.options.season.description,
-						description_localizations: translation('command.export.options.season.description'),
-						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds()
-					},
-					{
 						name: 'clans',
 						description: command.export.options.clans.description,
 						description_localizations: translation('command.export.options.clans.description'),
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'season',
+						description: command.export.options.season.description,
+						description_localizations: translation('command.export.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
 					},
 					{
 						name: 'wars',
@@ -2274,18 +2270,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'season',
-						description: command.export.options.season.description,
-						description_localizations: translation('command.export.options.season.description'),
-						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds()
-					},
-					{
 						name: 'clans',
 						description: command.export.options.clans.description,
 						description_localizations: translation('command.export.options.clans.description'),
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'season',
+						description: command.export.options.season.description,
+						description_localizations: translation('command.export.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
 					}
 				]
 			},
@@ -2295,18 +2291,18 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'season',
-						description: command.export.options.season.description,
-						description_localizations: translation('command.export.options.season.description'),
-						type: ApplicationCommandOptionType.String,
-						choices: getSeasonIds()
-					},
-					{
 						name: 'clans',
 						description: command.export.options.clans.description,
 						description_localizations: translation('command.export.options.clans.description'),
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'season',
+						description: command.export.options.season.description,
+						description_localizations: translation('command.export.options.season.description'),
+						type: ApplicationCommandOptionType.String,
+						choices: getSeasonIds()
 					}
 				]
 			},
@@ -2328,6 +2324,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						description_localizations: translation('command.export.options.clans.description'),
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String
+					},
+					{
+						name: 'limit',
+						description: command.export.options.wars.description,
+						description_localizations: translation('command.export.options.wars.description'),
+						type: ApplicationCommandOptionType.Integer
 					}
 				]
 			},
@@ -2337,6 +2339,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
+						name: 'clans',
+						description: command.export.options.clans.description,
+						description_localizations: translation('command.export.options.clans.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					},
+					{
 						name: 'season',
 						description: command.export.options.season.description,
 						description_localizations: translation('command.export.options.season.description'),
@@ -2344,11 +2353,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						choices: getSeasonIds()
 					},
 					{
-						name: 'clans',
-						description: command.export.options.clans.description,
-						description_localizations: translation('command.export.options.clans.description'),
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String
+						name: 'limit',
+						description: command.export.options.wars.description,
+						description_localizations: translation('command.export.options.wars.description'),
+						type: ApplicationCommandOptionType.Integer
 					}
 				]
 			}
@@ -2481,6 +2489,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description: 'Shows a summary of missed wars.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases to filter clans.'
+					},
 					{
 						name: 'season',
 						required: false,
