@@ -5,30 +5,33 @@ import { Collections } from '../../util/Constants.js';
 import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
 
-interface Aggregated {
-	tag: string;
+interface AggregatedValue {
 	name: string;
-	_elixirLoot: number;
-	_goldLoot: number;
-	_darkLoot: number;
-	_troops: number;
-	_spells: number;
-	_sieges: number;
-	_warStars: number;
-	_cwlStars: number;
-	_clanGamesPoints: number;
-	_clanGamesCompletedAt: Date;
-	_clanGamesCompletionTime: number;
-	_trophiesGained: number;
-	_trophies: number;
-	_versusTrophies: number;
-	_versusAttackWins: number;
-	_capitalLoot: number;
-	_capitalDonations: number;
-	_attackWins: number;
-	_defenseWins: number;
-	_score: number;
-	_donations: number;
+	tag: string;
+	value: number;
+}
+
+interface AggregatedResult {
+	_elixirLoot: AggregatedValue[];
+	_goldLoot: AggregatedValue[];
+	_darkLoot: AggregatedValue[];
+	_troops: AggregatedValue[];
+	_spells: AggregatedValue[];
+	_sieges: AggregatedValue[];
+	_warStars: AggregatedValue[];
+	_cwlStars: AggregatedValue[];
+	_clanGamesPoints: AggregatedValue[];
+	_clanGamesCompletionTime: AggregatedValue[];
+	_trophiesGained: AggregatedValue[];
+	_trophies: AggregatedValue[];
+	_versusTrophies: AggregatedValue[];
+	_versusAttackWins: AggregatedValue[];
+	_capitalLoot: AggregatedValue[];
+	_capitalDonations: AggregatedValue[];
+	_attackWins: AggregatedValue[];
+	_defenseWins: AggregatedValue[];
+	_score: AggregatedValue[];
+	_donations: AggregatedValue[];
 }
 
 const fields = {
@@ -84,9 +87,10 @@ export default class SummaryBestCommand extends Command {
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${interaction.guild.name} Best Players`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
 
+		const _clanGamesStartTimestamp = moment(seasonId).add(21, 'days').hour(8).toDate().getTime();
 		const aggregated = await this.client.db
 			.collection(Collections.PLAYER_SEASONS)
-			.aggregate<Aggregated>([
+			.aggregate<AggregatedResult>([
 				{
 					$match: {
 						__clans: { $in: clans.map((c) => c.tag) },
@@ -141,7 +145,10 @@ export default class SummaryBestCommand extends Command {
 							$subtract: ['$capitalGoldContributions.current', '$capitalGoldContributions.initial']
 						},
 						_attackWins: '$attackWins',
-						_defenseWins: '$defenseWins'
+						_defenseWins: '$defenseWins',
+						clans: {
+							$objectToArray: '$clans'
+						}
 					}
 				},
 				{
@@ -195,7 +202,7 @@ export default class SummaryBestCommand extends Command {
 							$dateDiff: {
 								startDate: '$_clanGames.completedAt',
 								endDate: '$$NOW',
-								unit: 'hour'
+								unit: 'millisecond'
 							}
 						},
 						_clanGamesCompletedAt: '$_clanGames.completedAt',
@@ -208,23 +215,341 @@ export default class SummaryBestCommand extends Command {
 					}
 				},
 				{
-					$sort: { _score: -1 }
-				},
-				{
-					$limit: 50 * clans.length
+					$facet: {
+						_elixirLoot: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_elixirLoot'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_goldLoot: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_goldLoot'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_darkLoot: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_darkLoot'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_warStars: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_warStars'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_cwlStars: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_cwlStars'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_clanGamesPoints: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_clanGamesPoints'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_trophiesGained: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_trophiesGained'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_trophies: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_trophies'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_versusTrophies: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_versusTrophies'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_versusAttackWins: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_versusAttackWins'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_capitalLoot: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_capitalLoot'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_capitalDonations: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_capitalDonations'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_defenseWins: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_defenseWins'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_attackWins: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_attackWins'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_score: [
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: '$_score'
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						],
+						_clanGamesCompletionTime: [
+							{
+								$match: {
+									_clanGamesCompletedAt: {
+										$exists: true
+									}
+								}
+							},
+							{
+								$sort: {
+									_clanGamesCompletionTime: -1
+								}
+							},
+							{
+								$limit: 10
+							},
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									value: {
+										$dateDiff: {
+											startDate: new Date(_clanGamesStartTimestamp),
+											endDate: '$_clanGamesCompletedAt',
+											unit: 'millisecond'
+										}
+									}
+								}
+							}
+						],
+						_donations: [
+							{
+								$unwind: '$clans'
+							},
+							{
+								$project: {
+									name: 1,
+									tag: 1,
+									clan: '$clans.v'
+								}
+							},
+							{
+								$match: {
+									'clan.tag': {
+										$in: clans.map((clan) => clan.tag)
+									}
+								}
+							},
+							{
+								$group: {
+									_id: '$tag',
+									name: { $first: '$name' },
+									tag: { $first: '$tag' },
+									value: {
+										$sum: '$clan.donations.total'
+									}
+								}
+							},
+							{
+								$sort: {
+									value: -1
+								}
+							},
+							{
+								$limit: 10
+							}
+						]
+					}
 				}
 			])
-			.toArray();
-		if (!aggregated.length) {
+			.next();
+		if (!aggregated) {
 			return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 		}
 
-		const _clanGamesStartTimestamp = moment(seasonId).add(21, 'days').hour(8).toDate().getTime();
 		const _fields = Object.keys(fields);
 		_fields.map((field) => {
 			const key = field as keyof typeof fields;
-			aggregated.sort((a, b) => b[key] - a[key]);
-			const members = aggregated.filter((n) => !isNaN(n[key]) && n[key]).slice(0, Number(args.limit ?? 5));
+			const members = aggregated[key].filter((n) => !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
 
 			if (!members.length) {
 				return embed.addFields({
@@ -240,8 +565,8 @@ export default class SummaryBestCommand extends Command {
 						moment.duration();
 						const num =
 							key === '_clanGamesCompletionTime'
-								? this._formatTime(member._clanGamesCompletedAt.getTime() - _clanGamesStartTimestamp).padStart(7, ' ')
-								: Util.formatNumber(member[key]).padStart(7, ' ');
+								? this._formatTime(member.value).padStart(7, ' ')
+								: Util.formatNumber(member.value).padStart(7, ' ');
 						return `${BLUE_NUMBERS[n + 1]} \`${num} \` \u200e${Util.escapeBackTick(member.name)}`;
 					})
 					.join('\n')

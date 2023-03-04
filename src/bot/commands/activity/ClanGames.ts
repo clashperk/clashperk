@@ -15,7 +15,7 @@ import { ClanGames } from '../../util/index.js';
 import { Args, Command } from '../../lib/index.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { ClanGamesModel } from '../../types/index.js';
-import { clanGamesEmbedMaker } from '../../util/Helper.js';
+import { clanGamesEmbedMaker, clanGamesSortingAlgorithm } from '../../util/Helper.js';
 
 export default class ClanGamesCommand extends Command {
 	public constructor() {
@@ -258,12 +258,7 @@ export default class ClanGamesCommand extends Command {
 
 		return [...members, ...missingMembers]
 			.sort((a, b) => b.points - a.points)
-			.sort((a, b) => {
-				if (a.endedAt && b.endedAt) {
-					return a.endedAt.getTime() - b.endedAt.getTime();
-				}
-				return 0;
-			});
+			.sort((a, b) => clanGamesSortingAlgorithm(a.endedAt ? a.endedAt.getTime() : 0, b.endedAt ? b.endedAt.getTime() : 0));
 	}
 }
 

@@ -26,6 +26,13 @@ export const clanGamesMaxPoints = (month: number) => {
 	return 4000;
 };
 
+export const clanGamesSortingAlgorithm = (a: number, b: number) => {
+	if (a === b) return 0;
+	if (a === 0) return 1;
+	if (b === 0) return -1;
+	return a - b;
+};
+
 export const clanGamesLatestSeasonId = () => {
 	const currentDate = new Date();
 	if (currentDate.getDate() < 20) currentDate.setMonth(currentDate.getMonth() - 1);
