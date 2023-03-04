@@ -8,6 +8,8 @@ import { mixpanel } from '../../struct/Mixpanel.js';
 const flattenArgs = (obj: Record<string, any>) => {
 	const result: Record<string, string | number | boolean> = {};
 	for (const [key, value] of Object.entries(obj)) {
+		if (key.startsWith('_') || key === 'cmd') continue;
+
 		if (typeof value === 'object') {
 			if (value?.id) result[`${key}_id`] = value.id;
 		}
@@ -28,7 +30,7 @@ export default class CommandStartedListener extends Listener {
 	}
 
 	public exec(interaction: Interaction, command: Command, args: Record<string, unknown>) {
-		mixpanel.track('Command uses', {
+		mixpanel.track('Command used', {
 			distinct_id: interaction.user.id,
 			command_id: command.id,
 			user_id: interaction.user.id,
@@ -37,7 +39,7 @@ export default class CommandStartedListener extends Listener {
 			guild_name: interaction.guild?.name ?? 'DM',
 			interaction_type: InteractionType[interaction.type],
 			sub_command_id: args.command ?? args.option ?? null,
-			args: Object.keys(args).filter((key) => !key.startsWith('_') || key !== 'cmd'),
+			args: flattenArgs(args),
 			is_application_command: Boolean(
 				interaction.isCommand() && [command.id, ...(command.aliases ?? [])].includes(interaction.commandName)
 			)
