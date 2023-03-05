@@ -81,7 +81,7 @@ export default class ClanEmbedCommand extends Command {
 		const user = await this.getUser(data);
 		if (!user)
 			return interaction.editReply(
-				'Clan leader is not linked to the bot. Use </link create:857281486662926407> command to link the player account.'
+				'Clan leader is not linked to the bot. Use </link create:1051836259389157453> command to link the player account.'
 			);
 
 		const __customIds = {
@@ -264,14 +264,14 @@ export default class ClanEmbedCommand extends Command {
 
 			if (action.customId === customIds.create) {
 				await action.update({ content: '**Successfully created a new embed.**', components: [] });
-				const channel = interaction.guild.channels.cache.get(existing.channel);
+
 				try {
 					const webhook = new WebhookClient(existing.webhook);
-					const msg = await webhook.send(channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
+					const msg = await webhook.send(channel.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
 					return await mutate(msg.id, msg.channel_id, existing.webhook);
 				} catch (error: any) {
 					this.client.logger.error(error, { label: 'ClanEmbedSetup' });
-					const msg = await webhook.send(channel?.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
+					const msg = await webhook.send(channel.isThread() ? { embeds: [embed], threadId: channel.id } : { embeds: [embed] });
 					return mutate(msg.id, msg.channel.id, { id: webhook.id, token: webhook.token! });
 				}
 			}
