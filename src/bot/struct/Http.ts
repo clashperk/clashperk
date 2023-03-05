@@ -1,4 +1,4 @@
-import { ClanWar, ClanWarLeagueGroup, Client as ClashOfClansClient, Player } from 'clashofclans.js';
+import { ClanWar, ClanWarLeagueGroup, Client as ClashOfClansClient, Player, WarClan } from 'clashofclans.js';
 import fetch from 'node-fetch';
 import moment from 'moment';
 import TimeoutSignal from 'timeout-signal';
@@ -190,6 +190,20 @@ export default class Http extends ClashOfClansClient {
 
 	private toDate(ISO: string) {
 		return new Date(moment(ISO).toDate());
+	}
+
+	public isWinner(clan: WarClan, opponent: WarClan) {
+		if (clan.stars > opponent.stars) {
+			return true;
+		} else if (clan.stars < opponent.stars) {
+			return false;
+		}
+		if (clan.destructionPercentage > opponent.destructionPercentage) {
+			return true;
+		} else if (clan.destructionPercentage < opponent.destructionPercentage) {
+			return false;
+		}
+		return false;
 	}
 
 	public async getCurrentRaidSeason(tag: string) {

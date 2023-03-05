@@ -286,16 +286,6 @@ export default class CWLStatsCommand extends Command {
 	}
 
 	private winner(clan: WarClan, opponent: WarClan) {
-		if (clan.stars > opponent.stars) {
-			return true;
-		} else if (clan.stars < opponent.stars) {
-			return false;
-		}
-		if (clan.destructionPercentage > opponent.destructionPercentage) {
-			return true;
-		} else if (clan.destructionPercentage < opponent.destructionPercentage) {
-			return false;
-		}
-		return false;
+		return this.client.http.isWinner(clan, opponent);
 	}
 }

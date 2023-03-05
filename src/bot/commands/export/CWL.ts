@@ -38,12 +38,14 @@ export default class ExportCWL extends Command {
 				const data = await this.client.storage.getWarTags(clan.tag, season);
 				if (!data) continue;
 				if (args.season && data.season !== args.season) continue;
-				const { members, perRound } = await this.rounds(data, clan, season);
+				const { members, perRound, ranking } = await this.rounds(data, clan, season);
 				if (!members.length) continue;
+
 				chunks.push({
 					name: clan.name,
 					tag: clan.tag,
 					members,
+					ranking,
 					perRound,
 					id: `${months[new Date(data.season).getMonth()]} ${new Date(data.season).getFullYear()}`
 				});
@@ -51,13 +53,14 @@ export default class ExportCWL extends Command {
 			}
 
 			if (args.season && res.season !== args.season) continue;
-			const { members, perRound } = await this.rounds(res, clan);
+			const { members, perRound, ranking } = await this.rounds(res, clan);
 			if (!members.length) continue;
 			chunks.push({
 				name: clan.name,
 				tag: clan.tag,
 				members,
 				perRound,
+				ranking,
 				id: `${months[new Date().getMonth()]} ${new Date().getFullYear()}`
 			});
 		}
@@ -133,9 +136,91 @@ export default class ExportCWL extends Command {
 				{
 					attachment: Buffer.from(await this.perRoundStats(chunks).xlsx.writeBuffer()),
 					name: 'clan_war_league_per_round_stats.xlsx'
+				},
+				{
+					attachment: Buffer.from(await this.finalStandings(chunks).xlsx.writeBuffer()),
+					name: 'clan_war_league_final_standings.xlsx'
 				}
 			]
 		});
+	}
+
+	private finalStandings(
+		clans: {
+			perRound: { clan: WarClan; opponent: WarClan }[];
+			name: string;
+			tag: string;
+			ranking: {
+				name: string;
+				tag: string;
+				attacks: number;
+				stars: number;
+				destruction: number;
+			}[];
+		}[]
+	) {
+		const workbook = new Excel();
+		for (const { perRound, name, tag, ranking } of clans) {
+			const sheet = workbook.addWorksheet(`Ranking (${Util.escapeSheetName(name).concat(tag)})`.substring(0, 31));
+			sheet.columns = [
+				{ header: 'Rank', width: 8 },
+				{ header: 'Clan', width: 18 },
+				{ header: 'Tag', width: 18 },
+				{ header: 'Attacks', width: 8 },
+				{ header: 'Stars', width: 8 },
+				{ header: 'Destruction', width: 10 }
+			];
+
+			sheet.getRow(1).font = { bold: true, size: 10 };
+			sheet.getRow(1).height = 40;
+
+			for (let i = 1; i <= sheet.columns.length; i++) {
+				sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+			}
+
+			sheet.addRows(ranking.map((r, i) => [i + 1, r.name, r.tag, r.attacks, r.stars, Number(r.destruction.toFixed(2))]));
+
+			if (perRound.length) {
+				const sheet = workbook.addWorksheet(`Rounds (${Util.escapeSheetName(name).concat(tag)})`.substring(0, 31));
+				sheet.columns = [
+					{ header: 'Round', width: 8 },
+					{ header: 'Clan', width: 18 },
+					{ header: 'ClanTag', width: 18 },
+					{ header: 'Attacks', width: 8 },
+					{ header: 'Stars', width: 8 },
+					{ header: 'Destruction', width: 10 },
+					{ header: 'Opponent', width: 18 },
+					{ header: 'OpponentTag', width: 18 },
+					{ header: 'Attacks', width: 8 },
+					{ header: 'Stars', width: 8 },
+					{ header: 'Destruction', width: 10 }
+				];
+
+				sheet.getRow(1).font = { bold: true, size: 10 };
+				sheet.getRow(1).height = 40;
+
+				for (let i = 1; i <= sheet.columns.length; i++) {
+					sheet.getColumn(i).alignment = { horizontal: 'center', wrapText: true, vertical: 'middle' };
+				}
+				sheet.addRows(
+					perRound.map((r, i) => [
+						i + 1,
+						r.clan.name,
+						r.clan.tag,
+						r.clan.attacks,
+						r.clan.stars,
+						Number(r.clan.destructionPercentage.toFixed(2)),
+						r.opponent.name,
+						r.opponent.tag,
+						r.opponent.attacks,
+						r.opponent.stars,
+						Number(r.opponent.destructionPercentage.toFixed(2))
+					])
+				);
+			}
+		}
+
+		return workbook;
 	}
 
 	private perRoundStats(clans: { perRound: { clan: WarClan; opponent: WarClan }[] }[]) {
@@ -189,14 +274,14 @@ export default class ExportCWL extends Command {
 							round.opponent.name,
 							m.name,
 							m.tag,
-							m.attacks?.length ? m.attacks[0].stars : '',
+							m.attacks?.length ? m.attacks.at(0)!.stars : '',
 							previousBestAttack
-								? Math.max(m.attacks![0].stars - previousBestAttack.stars)
+								? Math.max(m.attacks!.at(0)!.stars - previousBestAttack.stars)
 								: m.attacks?.length
-								? m.attacks[0].stars
+								? m.attacks.at(0)!.stars
 								: '',
 							gained,
-							m.attacks?.length ? m.attacks[0].destructionPercentage.toFixed(2) : '',
+							m.attacks?.length ? m.attacks.at(0)!.destructionPercentage.toFixed(2) : '',
 							opponent ? opponent.name : '',
 							opponent ? opponent.tag : '',
 							round.clan.members.findIndex((en) => en.tag === m.tag) + 1,
@@ -210,7 +295,6 @@ export default class ExportCWL extends Command {
 				);
 			}
 		}
-
 		return workbook;
 	}
 
@@ -223,6 +307,16 @@ export default class ExportCWL extends Command {
 		const clanTag = clan.tag;
 		const members: { [key: string]: any } = {};
 
+		const ranking: {
+			[key: string]: {
+				name: string;
+				tag: string;
+				stars: number;
+				attacks: number;
+				destruction: number;
+			};
+		} = {};
+
 		const perRound = [];
 		for (const { warTags } of rounds) {
 			for (const warTag of warTags) {
@@ -231,6 +325,38 @@ export default class ExportCWL extends Command {
 					: await this.client.http.clanWarLeagueWar(warTag);
 				if (!data) continue;
 				if ((!data.ok || data.state === 'notInWar') && !season) continue;
+
+				ranking[data.clan.tag] ??= {
+					name: data.clan.name,
+					tag: data.clan.tag,
+					stars: 0,
+					destruction: 0,
+					attacks: 0
+				};
+				const clan = ranking[data.clan.tag];
+
+				clan.stars += data.clan.stars;
+				if (data.state === 'warEnded' && this.client.http.isWinner(data.clan, data.opponent)) {
+					clan.stars += 10;
+				}
+				clan.attacks += data.clan.attacks;
+				clan.destruction += data.clan.destructionPercentage * data.teamSize;
+
+				ranking[data.opponent.tag] ??= {
+					name: data.opponent.name,
+					tag: data.opponent.tag,
+					stars: 0,
+					destruction: 0,
+					attacks: 0
+				};
+				const opponent = ranking[data.opponent.tag];
+
+				opponent.stars += data.opponent.stars;
+				if (data.state === 'warEnded' && this.client.http.isWinner(data.opponent, data.clan)) {
+					opponent.stars += 10;
+				}
+				opponent.attacks += data.opponent.attacks;
+				opponent.destruction += data.opponent.destructionPercentage * data.teamSize;
 
 				if (data.clan.tag === clanTag || data.opponent.tag === clanTag) {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
@@ -277,13 +403,14 @@ export default class ExportCWL extends Command {
 
 						perRound.push({ clan, opponent });
 					}
-					break;
+					// break;
 				}
 			}
 		}
 
 		return {
 			perRound,
+			ranking: Object.values(ranking).sort((a, b) => b.stars - a.stars),
 			members: Object.values(members)
 				.sort((a, b) => b.dest - a.dest)
 				.sort((a, b) => b.stars - a.stars)
