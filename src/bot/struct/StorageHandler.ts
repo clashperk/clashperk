@@ -277,7 +277,11 @@ export default class StorageHandler {
 							channel: data.channel,
 							color: data.color,
 							message: data.message,
-							embed: data.embed
+							embed: data.embed,
+							webhook: {
+								id: data.webhook.id,
+								token: data.webhook.token
+							}
 						},
 						$setOnInsert: {
 							createdAt: new Date()
