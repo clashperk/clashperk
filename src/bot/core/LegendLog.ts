@@ -133,9 +133,8 @@ export default class LegendLog extends BaseLog {
 				clanId: data.clanId,
 				guild: data.guild,
 				channel: data.channel,
-				webhook: data.webhook ? new WebhookClient(data.webhook) : null,
 				retries: 0,
-				threadId: data.threadId
+				webhook: data.webhook ? new WebhookClient(data.webhook) : null
 			});
 		});
 		this.initLoop();
@@ -155,9 +154,8 @@ export default class LegendLog extends BaseLog {
 			clanId: data.clanId,
 			guild: data.guild,
 			channel: data.channel,
-			webhook: data.webhook ? new WebhookClient(data.webhook) : null,
 			retries: 0,
-			threadId: data.threadId
+			webhook: data.webhook ? new WebhookClient(data.webhook) : null
 		});
 	}
 

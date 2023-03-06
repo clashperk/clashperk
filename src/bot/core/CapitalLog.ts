@@ -29,11 +29,11 @@ export default class CapitalLog extends BaseLog {
 	public override async handleMessage(cache: Cache, webhook: WebhookClient) {
 		const embedBuilder = await this.embed(cache);
 		if (!embedBuilder) return null;
-		// const { embed } = embedBuilder;
+		const { embed } = embedBuilder;
 
-		// await this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
-		// const capitalDonationEmbed = await this.capitalDonations(cache);
-		// if (capitalDonationEmbed) await this.send(cache, webhook, { embeds: [capitalDonationEmbed] });
+		await this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+		const capitalDonationEmbed = await this.capitalDonations(cache);
+		if (capitalDonationEmbed) await this.send(cache, webhook, { embeds: [capitalDonationEmbed] });
 
 		for (const buffer of embedBuilder.files) {
 			await this.send(cache, webhook, { files: [buffer] });
