@@ -29,12 +29,11 @@ export default class CapitalLog extends BaseLog {
 	public override async handleMessage(cache: Cache, webhook: WebhookClient) {
 		const embedBuilder = await this.embed(cache);
 		if (!embedBuilder) return null;
-		const { embed } = embedBuilder;
+		// const { embed } = embedBuilder;
 
-		await this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
-
-		const capitalDonationEmbed = await this.capitalDonations(cache);
-		if (capitalDonationEmbed) await this.send(cache, webhook, { embeds: [capitalDonationEmbed] });
+		// await this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
+		// const capitalDonationEmbed = await this.capitalDonations(cache);
+		// if (capitalDonationEmbed) await this.send(cache, webhook, { embeds: [capitalDonationEmbed] });
 
 		for (const buffer of embedBuilder.files) {
 			await this.send(cache, webhook, { files: [buffer] });
@@ -172,11 +171,12 @@ export default class CapitalLog extends BaseLog {
 					: season!._capitalLeague!.id === season!.capitalLeague!.id
 					? 'Stayed'
 					: 'Demoted';
+			const trophiesEarned = season!._clanCapitalPoints! - season!.clanCapitalPoints!;
 
 			query.set('type', type);
 			query.set('remark', type === 'Stayed' ? 'Stayed in the same League' : type);
 			query.set('leagueId', season!._capitalLeague!.id.toString());
-			query.set('trophiesEarned', `+${season!._clanCapitalPoints! - season!.clanCapitalPoints!}`);
+			query.set('trophiesEarned', `${trophiesEarned < 0 ? '' : '+'}${trophiesEarned}`);
 			query.set('trophies', season!._clanCapitalPoints!.toString());
 			query.set('globalRank', globalRank ? `Global Rank: ${globalRank}` : '');
 			query.set('localRank', countryRank ? `Local Rank: ${countryRank.clans.rank} (${countryRank.country})` : '');

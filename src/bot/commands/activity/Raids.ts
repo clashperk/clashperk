@@ -135,11 +135,12 @@ export default class CapitalRaidsCommand extends Command {
 						: season!._capitalLeague!.id === season!.capitalLeague!.id
 						? 'Stayed'
 						: 'Demoted';
+				const trophiesEarned = season!._clanCapitalPoints! - season!.clanCapitalPoints!;
 
 				query.set('type', type);
 				query.set('remark', type === 'Stayed' ? 'Stayed in the same League' : type);
 				query.set('leagueId', season!._capitalLeague!.id.toString());
-				query.set('trophiesEarned', `+${season!._clanCapitalPoints! - season!.clanCapitalPoints!}`);
+				query.set('trophiesEarned', `${trophiesEarned < 0 ? '' : '+'}${trophiesEarned}`);
 				query.set('trophies', season!._clanCapitalPoints!.toString());
 				query.set('globalRank', globalRank ? `Global Rank: ${globalRank}` : '');
 				query.set('localRank', countryRank ? `Local Rank: ${countryRank.clans.rank} (${countryRank.country})` : '');
