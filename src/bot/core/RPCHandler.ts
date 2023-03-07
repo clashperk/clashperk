@@ -118,7 +118,7 @@ export default class RPCHandler {
 				{
 					$match: {
 						tag: data.tag,
-						active: true,
+						// active: true,
 						paused: false
 					}
 				},
@@ -186,7 +186,15 @@ export default class RPCHandler {
 	public async delete(id: string, data: { tag: string; op: number; guild: string }) {
 		const clans = await this.client.db
 			.collection(Collections.CLAN_STORES)
-			.find({ tag: data.tag, active: true, paused: false, guild: { $ne: data.guild } }, { projection: { _id: 1 } })
+			.find(
+				{
+					tag: data.tag,
+					// active: true,
+					paused: false,
+					guild: { $ne: data.guild }
+				},
+				{ projection: { _id: 1 } }
+			)
 			.toArray();
 
 		const OP = {
