@@ -6,7 +6,7 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: .github/Dockerfile
     env_file:
       - .env
     mem_limit: 4gb
