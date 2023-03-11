@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 import { ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
 import moment from 'moment';
-import { RED_NUMBERS } from '../../util/Emojis.js';
+import { RED_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
 
@@ -21,6 +21,13 @@ const stars: Record<string, string> = {
 	1: '★☆☆',
 	2: '★★☆',
 	3: '★★★'
+};
+
+const emojiStars: Record<string, string> = {
+	0: WAR_STAR_COMBINATIONS.EEE,
+	1: WAR_STAR_COMBINATIONS.NEE,
+	2: WAR_STAR_COMBINATIONS.NNE,
+	3: WAR_STAR_COMBINATIONS.NNN
 };
 
 export default class CWLAttacksCommand extends Command {
@@ -81,6 +88,7 @@ export default class CWLAttacksCommand extends Command {
 						const slackers: { name: string; mapPosition: number; townHallLevel: number }[] = [];
 
 						const clanMembers = data.clan.tag === clan.tag ? data.clan.members : data.opponent.members;
+						const starTypes = [] as number[];
 						clanMembers
 							.sort((a, b) => a.mapPosition - b.mapPosition)
 							.forEach((member, index) => {
@@ -88,9 +96,10 @@ export default class CWLAttacksCommand extends Command {
 									attackers.push({
 										name: member.name,
 										mapPosition: index + 1,
-										stars: member.attacks[0].stars,
-										destruction: member.attacks[0].destructionPercentage
+										stars: member.attacks.at(0)!.stars,
+										destruction: member.attacks.at(0)!.destructionPercentage
 									});
+									starTypes.push(member.attacks.at(0)!.stars);
 								} else {
 									slackers.push({
 										name: member.name,
@@ -99,6 +108,13 @@ export default class CWLAttacksCommand extends Command {
 									});
 								}
 							});
+
+						const starCounts = Object.entries(
+							starTypes.reduce<Record<number, number>>((acc, star) => {
+								acc[star] = (acc[star] || 0) + 1;
+								return acc;
+							}, {})
+						).sort(([a], [b]) => Number(b) - Number(a));
 
 						embed.setDescription(
 							[
@@ -139,6 +155,17 @@ export default class CWLAttacksCommand extends Command {
 						} else {
 							embed.setDescription(
 								[embed.data.description, '', `**No ${data.state === 'inWar' ? 'Remaining' : 'Missed'} Attacks**`].join('\n')
+							);
+						}
+
+						if (data.state !== 'preparation' && starCounts.length) {
+							embed.setDescription(
+								[
+									embed.data.description,
+									'',
+									'**Attack Summary**',
+									starCounts.map(([star, count]) => `**${emojiStars[star]} ${WHITE_NUMBERS[count]}**`).join(' ')
+								].join('\n')
 							);
 						}
 					}
@@ -202,8 +229,8 @@ export default class CWLAttacksCommand extends Command {
 			.setDisabled(!Object.keys(missed).length);
 
 		const rows = [
-			new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu),
-			new ActionRowBuilder<ButtonBuilder>().addComponents(button)
+			new ActionRowBuilder<ButtonBuilder>().addComponents(button),
+			new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(menu)
 		];
 
 		const msg = await interaction.editReply({

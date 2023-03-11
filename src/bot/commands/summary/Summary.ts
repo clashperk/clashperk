@@ -27,7 +27,9 @@ export default class SummaryCommand extends Command {
 			'capital-contribution': this.handler.modules.get('summary-capital-contribution')!,
 			'capital-raids': this.handler.modules.get('summary-capital-raids')!,
 			'war-results': this.handler.modules.get('summary-war-results')!,
-			'best': this.handler.modules.get('summary-best')!
+			'best': this.handler.modules.get('summary-best')!,
+			'cwl-ranks': this.handler.modules.get('summary-cwl-ranks')!,
+			'leagues': this.handler.modules.get('summary-leagues')!
 		}[args.command];
 
 		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));

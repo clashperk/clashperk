@@ -2,8 +2,8 @@ import { EmbedBuilder } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
-import { CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
-import { Collections, Settings } from './Constants.js';
+import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
+import { Collections, Settings, UnrankedCapitalLeagueId } from './Constants.js';
 import { Util } from './index.js';
 
 export const padStart = (str: string | number, length: number) => {
@@ -67,6 +67,11 @@ export const clanEmbedMaker = async (
 
 	const embed = new EmbedBuilder()
 		.setTitle(`${clan.name} (${clan.tag})`)
+		// .setAuthor({
+		// 	name: `${clan.name} (${clan.tag})`,
+		// 	iconURL: clan.badgeUrls.medium,
+		// 	url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`
+		// })
 		.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
 		.setThumbnail(clan.badgeUrls.medium)
 		.setDescription(
@@ -121,7 +126,11 @@ export const clanEmbedMaker = async (
 						: `🎟️ ${clan.warFrequency.toLowerCase().replace(/\b(\w)/g, (char) => char.toUpperCase())}`
 				} ${'🏅'} ${clan.warWinStreak}`,
 				'**War League**',
-				`${CWL_LEAGUES[clan.warLeague?.name ?? ''] || EMOJIS.EMPTY} ${clan.warLeague?.name ?? 'Unranked'}`
+				`${CWL_LEAGUES[clan.warLeague?.name ?? 'Unranked']} ${clan.warLeague?.name ?? 'Unranked'}`,
+				'**Clan Capital**',
+				`${CAPITAL_LEAGUES[clan.capitalLeague?.id ?? UnrankedCapitalLeagueId]} ${clan.capitalLeague?.name ?? 'Unranked'} ${
+					EMOJIS.CAPITAL_TROPHY
+				} ${clan.clanCapitalPoints ?? 0}`
 			].join('\n')
 		}
 	]);

@@ -29,7 +29,7 @@ export class ClientUtil {
 			if (
 				(channel.isThread() && channel.parent) ||
 				channel.type === ChannelType.GuildText ||
-				channel.type === ChannelType.GuildNews
+				channel.type === ChannelType.GuildAnnouncement
 			) {
 				return channel;
 			}

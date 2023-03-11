@@ -2393,6 +2393,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
+				name: 'cwl-ranks',
+				description: 'Shows a summary of CWL ranks.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
+				name: 'leagues',
+				description: 'Shows a summary of clan leagues.',
+				type: ApplicationCommandOptionType.Subcommand
+			},
+			{
 				name: 'donations',
 				description: 'Shows a summary of donations.',
 				type: ApplicationCommandOptionType.Subcommand,

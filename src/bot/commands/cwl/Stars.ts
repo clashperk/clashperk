@@ -65,18 +65,17 @@ export default class CWLStarsCommand extends Command {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					if (['inWar', 'warEnded'].includes(data.state)) {
 						for (const m of clan.members) {
-							const member = members[m.tag] // eslint-disable-line
-								? members[m.tag]
-								: (members[m.tag] = {
-										name: m.name,
-										tag: m.tag,
-										of: 0,
-										attacks: 0,
-										stars: 0,
-										dest: 0,
-										lost: 0,
-										townhallLevel: m.townhallLevel
-								  });
+							members[m.tag] ??= {
+								name: m.name,
+								tag: m.tag,
+								of: 0,
+								attacks: 0,
+								stars: 0,
+								dest: 0,
+								lost: 0,
+								townhallLevel: m.townhallLevel
+							};
+							const member = members[m.tag];
 							member.of += 1;
 
 							if (m.attacks) {
@@ -84,7 +83,6 @@ export default class CWLStarsCommand extends Command {
 								member.stars += m.attacks[0].stars;
 								member.dest += m.attacks[0].destructionPercentage;
 							}
-
 							if (m.bestOpponentAttack) {
 								member.lost += m.bestOpponentAttack.stars;
 							}

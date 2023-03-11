@@ -16,6 +16,11 @@ declare module 'clashofclans.js' {
 		clanCapital?: {
 			capitalHallLevel?: number;
 		};
+		capitalLeague?: {
+			id: number;
+			name: string;
+		};
+		clanCapitalPoints?: number;
 	}
 }
 

@@ -1,4 +1,4 @@
-import { GuildMember, CommandInteraction } from 'discord.js';
+import { GuildMember, CommandInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -34,7 +34,17 @@ export default class LinkCreateCommand extends Command {
 		args: { player_tag?: string; clan_tag?: string; member?: GuildMember; default?: boolean; forcePlayer?: boolean }
 	) {
 		if (!(args.clan_tag || args.player_tag)) {
-			return interaction.editReply(this.i18n('command.link.no_tag', { lng: interaction.locale }));
+			const linkButton = new ButtonBuilder()
+				.setCustomId(JSON.stringify({ cmd: 'link-add', token_field: 'hidden' }))
+				.setLabel('Link account')
+				.setEmoji('🔗')
+				.setStyle(ButtonStyle.Primary);
+			const row = new ActionRowBuilder<ButtonBuilder>().addComponents(linkButton);
+
+			return interaction.editReply({
+				content: this.i18n('command.link.no_tag', { lng: interaction.locale }),
+				components: [row]
+			});
 		}
 
 		const member = args.member ?? interaction.member;

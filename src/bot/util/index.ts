@@ -1,3 +1,4 @@
+import { parseEmoji } from 'discord.js';
 import moment from 'moment';
 import 'moment-duration-format';
 
@@ -81,6 +82,14 @@ export class Util {
 			.split('')
 			.reduce((sum, char) => sum * 14n + BigInt('0289PYLQGRJCUV'.indexOf(char)), 0n);
 		return id;
+	}
+
+	public static getEmojiURL(emoji: string) {
+		return `https://cdn.discordapp.com/emojis/${parseEmoji(emoji)!.id!}.webp?size=96&quality=lossless`;
+	}
+
+	public static extraSpace(len: number, index: number) {
+		return index === len - 1 ? '' : '\n\u200b';
 	}
 
 	public static formatNumber(num = 0, fraction = 2) {

@@ -26,7 +26,7 @@ export default class LastWarsExport extends Command {
 		}
 
 		let num = Number(args.limit ?? 25);
-		num = this.client.patrons.get(interaction.guild.id) ? Math.min(num, 45) : Math.min(25, num);
+		num = Math.min(100, num);
 		const clanList = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
 		const memberList = clanList.map((clan) => clan.memberList.map((m) => ({ ...m, clan: clan.name }))).flat();
 
