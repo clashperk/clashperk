@@ -59,11 +59,11 @@ export class Client extends Discord.Client {
 		auth: {
 			username: 'elastic',
 			password: process.env.ELASTIC_PASSWORD!
+		},
+		tls: {
+			ca: process.env.ELASTIC_CA_CRT!,
+			rejectUnauthorized: false
 		}
-		// tls: {
-		// 	ca: process.env.ELASTIC_CA_CRT!,
-		// 	rejectUnauthorized: false
-		// }
 	});
 
 	public subscriber = this.redis.duplicate();
