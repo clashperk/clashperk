@@ -324,8 +324,7 @@ export default class CapitalLog extends BaseLog {
 			guild: data.guild,
 			channel: data.channel,
 			webhook: data.webhook ? new WebhookClient(data.webhook) : null,
-			retries: 0,
-			threadId: data.threadId
+			retries: 0
 		});
 	}
 

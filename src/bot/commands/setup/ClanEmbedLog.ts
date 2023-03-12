@@ -129,7 +129,7 @@ export default class ClanEmbedCommand extends Command {
 										customId: 'description',
 										label: 'Clan Description',
 										placeholder: 'Write anything or `auto` to sync with the clan.',
-										maxLength: 300
+										maxLength: 1000
 									}
 								]
 							},
@@ -142,7 +142,7 @@ export default class ClanEmbedCommand extends Command {
 										customId: 'accepts',
 										label: 'Requirements',
 										placeholder: 'Write anything or `auto` to sync with the clan.',
-										maxLength: 100
+										maxLength: 500
 									}
 								]
 							}

@@ -54,7 +54,7 @@ export const clanEmbedMaker = async (
 		}, {});
 
 	const townHalls = Object.entries(reduced)
-		.map((arr) => ({ level: Number(arr[0]), total: arr[1] }))
+		.map(([level, total]) => ({ level: Number(level), total }))
 		.sort((a, b) => b.level - a.level);
 
 	const location = clan.location
