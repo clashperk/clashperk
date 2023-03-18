@@ -20,6 +20,15 @@ export default class ComponentHandler {
 		if (!parsed) return false;
 
 		switch (parsed.cmd) {
+			case 'help': {
+				const command = this.client.commandHandler.modules.get('help')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, {
+					category: interaction.isStringSelectMenu() ? interaction.values.at(0) : null,
+					...parsed
+				});
+				return true;
+			}
 			case 'boosts': {
 				const command = this.client.commandHandler.modules.get('boosts')!;
 				await interaction.deferUpdate();

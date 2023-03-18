@@ -33,9 +33,16 @@ export default class LegendDaysCommand extends Command {
 		return { ...days[num - 1], day };
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User; prev?: boolean; day?: number }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { tag?: string; user?: User; prev?: boolean; day?: number; graph?: boolean }
+	) {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
+
+		if (args.graph) {
+			return this.handler.modules.get('legend-graph')?.exec(interaction, { tag: data.tag });
+		}
 
 		const embed = args.prev
 			? (await this.logs(data)).setColor(this.client.embed(interaction))
@@ -54,6 +61,12 @@ export default class LegendDaysCommand extends Command {
 					.setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1, tag: data.tag }))
 					.setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
 			);
+		// .addComponents(
+		// 	new ButtonBuilder()
+		// 		.setLabel('Graph')
+		// 		.setCustomId(JSON.stringify({ cmd: this.id, graph: true, tag: data.tag }))
+		// 		.setStyle(ButtonStyle.Secondary)
+		// );
 
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}

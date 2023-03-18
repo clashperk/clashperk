@@ -1,11 +1,10 @@
-import { CommandInteraction } from 'discord.js';
+import { AttachmentBuilder, CommandInteraction } from 'discord.js';
+import fetch from 'node-fetch';
+import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import Chart from '../../struct/ChartHandler.js';
 import { UserInfoModel } from '../../types/index.js';
 import Google from '../../struct/Google.js';
-
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default class ClanActivityCommand extends Command {
 	public constructor() {
@@ -35,26 +34,59 @@ export default class ClanActivityCommand extends Command {
 			clans.map((clan) => clan.tag),
 			args.days ?? 1
 		);
-		if (!result.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 
+		if (!result.length) return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 		const timezone = await this.getTimezoneOffset(interaction, args.timezone);
-		const datasets = result.map((clan) => ({ name: clan.name, data: this.datasets(clan, timezone.offset, args.days ?? 1) }));
+
+		const days = args.days ?? 1;
+		const itemCount = days === 1 ? 24 : 1;
+		const dataLabel = new Array(days * itemCount)
+			.fill(0)
+			.map((_, i) => {
+				const decrement = new Date().getTime() - (days === 1 ? 60 * 60 * 1000 : 60 * 60 * 1000 * 24) * i;
+				const key =
+					days === 1
+						? moment(decrement).minutes(0).seconds(0).milliseconds(0).toISOString()
+						: moment(decrement).hours(0).minutes(0).seconds(0).milliseconds(0).toISOString();
+				return {
+					key,
+					timestamp: new Date(new Date(key).getTime() + timezone.offset * 1000)
+				};
+			})
+			.reverse();
+
+		const datasets = result.map((clan) => ({
+			name: clan.name,
+			data: this.datasets(dataLabel, clan)
+		}));
 
 		const hrStart = process.hrtime();
-		const url = await Chart.activity(
-			datasets,
-			[`${this.i18n('command.activity.title', { lng: interaction.locale })} (${timezone.name})`],
-			args.days
-		);
-		const diff = process.hrtime(hrStart);
+		const arrayBuffer = await fetch(`${process.env.ASSET_API_BACKEND!}/clans/activity`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				labels: dataLabel.map((d) => d.timestamp),
+				datasets,
+				title: `Active Members Per Hour (${timezone.name})`
+			})
+		}).then((res) => res.arrayBuffer());
 
-		this.client.logger.debug(`Rendered in ${(diff[0] * 1000 + diff[1] / 1000000).toFixed(2)}ms`, { label: 'CHART' });
-		return interaction.editReply({
+		const rawFile = new AttachmentBuilder(Buffer.from(arrayBuffer), {
+			name: 'chart.png'
+		});
+
+		await interaction.editReply({
 			content:
 				timezone.offset === 0
-					? `Please set your time zone with the </timezone:1051836259527565348> command. It enables you to view the graphs in your time zone.\n${url}`
-					: `${url}`
+					? `Please set your time zone with the </timezone:1051836259527565348> command. It enables you to view the graphs in your time zone.`
+					: null,
+			files: [rawFile]
 		});
+
+		const diff = process.hrtime(hrStart);
+		this.client.logger.debug(`Rendered in ${(diff[0] * 1000 + diff[1] / 1000000).toFixed(2)}ms`, { label: 'CHART' });
 	}
 
 	private async getTimezoneOffset(interaction: CommandInteraction<'cached'>, location?: string) {
@@ -140,7 +172,7 @@ export default class ClanActivityCommand extends Command {
 						hour: {
 							$dateTrunc: {
 								date: '$time',
-								unit: 'hour'
+								unit: days === 1 ? 'hour' : 'day'
 							}
 						}
 					}
@@ -183,12 +215,7 @@ export default class ClanActivityCommand extends Command {
 						_id: '$_id.clan',
 						entries: {
 							$push: {
-								time: {
-									$dateToString: {
-										format: '%Y-%m-%dT%H:00',
-										date: '$hour'
-									}
-								},
+								time: '$hour',
 								count: '$count'
 							}
 						},
@@ -206,36 +233,10 @@ export default class ClanActivityCommand extends Command {
 			.toArray();
 	}
 
-	private datasets(data: any, offset: any, days = 1) {
-		const dataSets: { count: number; time: string }[] = new Array(days * 24).fill(0).map((_, i) => {
-			const decrement = new Date().getTime() - 60 * 60 * 1000 * i;
-			const timeObj = new Date(decrement).toISOString().substring(0, 14).concat('00');
-			const id = data.entries.find((e: any) => e.time === timeObj);
-			if (id) return { time: id.time, count: id.count };
-			return {
-				time: timeObj,
-				count: 0
-			};
+	private datasets(dataLabel: any[], data: any) {
+		return dataLabel.map(({ key }) => {
+			const id = data.entries.find((e: any) => e.time.toISOString() === key);
+			return id?.count ?? 0;
 		});
-
-		return dataSets.reverse().map((a, i) => {
-			const time = new Date(new Date(a.time).getTime() + offset * 1000);
-			let hour = this.format(time, days > 7 ? time.getMonth() : null);
-			if (time.getHours() === 0) hour = this.format(time, time.getMonth());
-			if (time.getHours() === 1) hour = this.format(time, time.getMonth());
-
-			return {
-				short: (i + 1) % 2 === 0 ? hour : [1].includes(days) ? '' : hour,
-				count: a.count
-			};
-		});
-	}
-
-	private format(time: Date, month: number | null = null) {
-		const hour = time.getHours();
-		const min = time.getMinutes();
-		const date = time.getDate();
-		if (typeof month === 'number') return `${date.toString().padStart(2, '0')} ${months[month]}`;
-		return `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
 	}
 }

@@ -15,6 +15,8 @@ export const enum Collections {
 	JOIN_LEAVE_LOGS = 'JoinLeaveLogs',
 	CLAN_WAR_LOGS = 'ClanWarLogs',
 	LEGEND_LOGS = 'LegendLogs',
+	LEGEND_ATTACKS = 'LegendAttacks',
+
 	CAPITAL_LOGS = 'CapitalLogs',
 
 	EVENT_LOGS = 'EventLogs',

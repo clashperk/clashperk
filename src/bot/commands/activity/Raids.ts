@@ -121,7 +121,7 @@ export default class CapitalRaidsCommand extends Command {
 
 			await interaction.followUp({
 				files: [
-					new AttachmentBuilder(`https://chart.clashperk.com/raid-weekend-card?${query.toString()}`, {
+					new AttachmentBuilder(`${process.env.ASSET_API_BACKEND!}/capital/raid-medals-card?${query.toString()}`, {
 						name: 'capital-raid-weekend-card.jpeg'
 					})
 				]
@@ -147,7 +147,7 @@ export default class CapitalRaidsCommand extends Command {
 
 				return interaction.followUp({
 					files: [
-						new AttachmentBuilder(`https://chart.clashperk.com/raid-trophy-card?${query.toString()}`, {
+						new AttachmentBuilder(`${process.env.ASSET_API_BACKEND!}/capital/raid-trophies-card?${query.toString()}`, {
 							name: 'capital-raid-trophy-card.jpeg'
 						})
 					]
@@ -155,19 +155,18 @@ export default class CapitalRaidsCommand extends Command {
 			}
 		}
 
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(
-				new ButtonBuilder()
-					.setStyle(ButtonStyle.Secondary)
-					.setEmoji(EMOJIS.REFRESH)
-					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId }))
-			)
-			.addComponents(
-				new ButtonBuilder()
-					.setStyle(ButtonStyle.Success)
-					.setLabel('Raid Weekend Card')
-					.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId, card: true }))
-			);
+		const refreshButton = new ButtonBuilder()
+			.setStyle(ButtonStyle.Secondary)
+			.setEmoji(EMOJIS.REFRESH)
+			.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId }));
+
+		const downloadButton = new ButtonBuilder()
+			.setStyle(ButtonStyle.Success)
+			.setLabel('Raid Weekend Card')
+			.setCustomId(JSON.stringify({ cmd: this.id, tag: clan.tag, week: weekId, card: true }));
+
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(refreshButton).addComponents(downloadButton);
+		if (interaction.isButton()) row.setComponents(refreshButton);
 
 		const isRaidWeek = currentWeekId === weekId;
 		const raidSeason = isRaidWeek ? await this.getRaidsFromAPI(clan) : await this.aggregateCapitalRaids(clan, weekId);

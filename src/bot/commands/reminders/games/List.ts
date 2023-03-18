@@ -36,7 +36,7 @@ export default class ReminderListCommand extends Command {
 		const chunks = reminders.map((reminder, index) => {
 			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
 			return [
-				`**🔔 Reminder (${index + 1})**`,
+				`**🔔 Reminder (ID: ${index + 1})**`,
 				`${label(reminder.duration)} remaining`,
 				'**Channel**',
 				`<#${reminder.channel}>`,

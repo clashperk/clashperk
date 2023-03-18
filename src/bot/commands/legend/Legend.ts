@@ -16,7 +16,8 @@ export default class LegendCommand extends Command {
 	public exec(interaction: CommandInteraction, args: { command: string }) {
 		const command = {
 			attacks: this.handler.modules.get('legend-attacks')!,
-			days: this.handler.modules.get('legend-days')!
+			days: this.handler.modules.get('legend-days')!,
+			graph: this.handler.modules.get('legend-graph')!
 		}[args.command];
 
 		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));

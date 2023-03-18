@@ -158,7 +158,7 @@ export default class CapitalLog extends BaseLog {
 		const files: AttachmentBuilder[] = [];
 
 		files.push(
-			new AttachmentBuilder(`https://chart.clashperk.com/raid-weekend-card?${query.toString()}`, {
+			new AttachmentBuilder(`${process.env.ASSET_API_BACKEND!}/capital/raid-medals-card?${query.toString()}`, {
 				name: 'capital-raid-trophy-card.jpeg'
 			})
 		);
@@ -182,7 +182,7 @@ export default class CapitalLog extends BaseLog {
 			query.set('localRank', countryRank ? `Local Rank: ${countryRank.clans.rank} (${countryRank.country})` : '');
 
 			files.push(
-				new AttachmentBuilder(`https://chart.clashperk.com/raid-trophy-card?${query.toString()}`, {
+				new AttachmentBuilder(`${process.env.ASSET_API_BACKEND!}/capital/raid-trophies-card?${query.toString()}`, {
 					name: 'capital-raid-trophy-card.jpeg'
 				})
 			);

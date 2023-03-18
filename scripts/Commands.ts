@@ -319,12 +319,16 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						value: 1
 					},
 					{
-						name: '3',
-						value: 3
-					},
-					{
 						name: '7',
 						value: 7
+					},
+					{
+						name: '15',
+						value: 15
+					},
+					{
+						name: '30',
+						value: 30
 					}
 				]
 			},
