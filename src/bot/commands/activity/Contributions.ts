@@ -122,7 +122,7 @@ export default class CapitalContributionsCommand extends Command {
 			})
 			.setDescription(
 				[
-					`**${this.i18n('command.capital.contributions.title', { lng: locale })} (${weekId})**`,
+					`**${this.i18n('command.capital.contribution.title', { lng: locale })} (${weekId})**`,
 					'```',
 					'\u200e #  TOTAL  NAME',
 					members

@@ -12,9 +12,9 @@ import {
 import ms from 'ms';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { Collections, MAX_TOWN_HALL_LEVEL, missingPermissions } from '../../util/Constants.js';
-import { Reminder } from '../../struct/ClanWarScheduler.js';
-import { Args, Command } from '../../lib/index.js';
+import { Collections, MAX_TOWN_HALL_LEVEL, missingPermissions } from '../../../util/Constants.js';
+import { Reminder } from '../../../struct/ClanWarScheduler.js';
+import { Args, Command } from '../../../lib/index.js';
 
 export default class ReminderCreateCommand extends Command {
 	public constructor() {
@@ -63,7 +63,7 @@ export default class ReminderCreateCommand extends Command {
 		const permission = missingPermissions(args.channel, interaction.guild.members.me!, this.permissions);
 		if (permission.missing) {
 			return interaction.editReply(
-				this.i18n('command.reminder.create.missing_access', {
+				this.i18n('command.reminders.create.missing_access', {
 					lng: interaction.locale,
 					channel: args.channel.toString(), // eslint-disable-line
 					permission: permission.missingPerms
@@ -75,29 +75,29 @@ export default class ReminderCreateCommand extends Command {
 		if (!webhook) {
 			return interaction.editReply(
 				// eslint-disable-next-line
-				this.i18n('command.reminder.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
+				this.i18n('command.reminders.create.too_many_webhooks', { lng: interaction.locale, channel: args.channel.toString() })
 			);
 		}
 
 		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).countDocuments({ guild: interaction.guild.id });
 		if (reminders >= 25 && !this.client.patrons.get(interaction.guild.id)) {
-			return interaction.editReply(this.i18n('command.reminder.create.max_limit', { lng: interaction.locale }));
+			return interaction.editReply(this.i18n('command.reminders.create.max_limit', { lng: interaction.locale }));
 		}
 		if (!/\d+?\.?\d+?[dhm]|\d[dhm]/g.test(args.duration)) {
-			return interaction.editReply(this.i18n('command.reminder.create.invalid_duration_format', { lng: interaction.locale }));
+			return interaction.editReply(this.i18n('command.reminders.create.invalid_duration_format', { lng: interaction.locale }));
 		}
 
 		const dur = args.duration.match(/\d+?\.?\d+?[dhm]|\d[dhm]/g)!.reduce((acc, cur) => acc + ms(cur), 0);
-		if (!args.message) return interaction.editReply(this.i18n('command.reminder.create.no_message', { lng: interaction.locale }));
+		if (!args.message) return interaction.editReply(this.i18n('command.reminders.create.no_message', { lng: interaction.locale }));
 
 		if (dur < 15 * 60 * 1000 && dur !== 0) {
-			return interaction.editReply(this.i18n('command.reminder.create.duration_limit', { lng: interaction.locale }));
+			return interaction.editReply(this.i18n('command.reminders.create.duration_limit', { lng: interaction.locale }));
 		}
 		if (dur > 45 * 60 * 60 * 1000) {
-			return interaction.editReply(this.i18n('command.reminder.create.duration_limit', { lng: interaction.locale }));
+			return interaction.editReply(this.i18n('command.reminders.create.duration_limit', { lng: interaction.locale }));
 		}
 		if (dur % (15 * 60 * 1000) !== 0) {
-			return interaction.editReply(this.i18n('command.reminder.create.duration_order', { lng: interaction.locale }));
+			return interaction.editReply(this.i18n('command.reminders.create.duration_order', { lng: interaction.locale }));
 		}
 
 		const CUSTOM_ID = {
@@ -298,7 +298,7 @@ export default class ReminderCreateCommand extends Command {
 				this.client.warScheduler.create({ ...reminder, _id: insertedId });
 				await action.editReply({
 					components: mutate(true),
-					content: this.i18n('command.reminder.create.success', { lng: interaction.locale })
+					content: this.i18n('command.reminders.create.success', { lng: interaction.locale })
 				});
 			}
 		});

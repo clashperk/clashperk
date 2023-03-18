@@ -59,11 +59,11 @@ export default class AutoLeagueRoleCommand extends Command {
 		}
 
 		if (selected.some((r) => this.isSystemRole(r.role!, interaction.guild))) {
-			return interaction.editReply(this.i18n('command.autorole.enable.no_system_roles', { lng: interaction.locale }));
+			return interaction.editReply(this.i18n('command.autorole.no_system_roles', { lng: interaction.locale }));
 		}
 
 		if (selected.some((r) => this.isHigherRole(r.role!, interaction.guild))) {
-			return interaction.editReply(this.i18n('command.autorole.enable.no_higher_roles', { lng: interaction.locale }));
+			return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
 		}
 
 		await this.client.settings.set(

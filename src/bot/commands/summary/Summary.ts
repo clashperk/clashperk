@@ -4,11 +4,11 @@ import { Command } from '../../lib/index.js';
 export default class SummaryCommand extends Command {
 	public constructor() {
 		super('summary', {
-			category: 'family',
+			category: 'summary',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			description: {
-				content: ['Summary of family clans.']
+				content: ['Summary commands of clan families.']
 			}
 		});
 	}

@@ -4,7 +4,7 @@ import { Command } from '../../lib/index.js';
 export default class ExportCommand extends Command {
 	public constructor() {
 		super('export', {
-			category: 'activity',
+			category: 'export',
 			channel: 'guild',
 			clientPermissions: ['AttachFiles', 'EmbedLinks'],
 			description: {

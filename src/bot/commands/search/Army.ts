@@ -1,5 +1,5 @@
 import { URL } from 'node:url';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, Guild, Message } from 'discord.js';
 import { DARK_ELIXIR_TROOPS, DARK_SPELLS, ELIXIR_SPELLS, ELIXIR_TROOPS, EMOJIS, SIEGE_MACHINES, SUPER_TROOPS } from '../../util/Emojis.js';
 import RAW_TROOPS from '../../util/Troops.js';
 import { Command } from '../../lib/index.js';
@@ -19,10 +19,27 @@ export default class ArmyCommand extends Command {
 		});
 	}
 
+	public async run(message: Message, args: { link: string }) {
+		const payload = this.embed(message.guild!, 'en-US', args);
+
+		return message.channel.send({
+			embeds: payload.embeds,
+			components: payload.components,
+			allowedMentions: { repliedUser: false },
+			...(payload.content ? { content: payload.content } : {}),
+			reply: { messageReference: message, failIfNotExists: false }
+		});
+	}
+
 	public async exec(interaction: CommandInteraction, args: { link?: string; message?: string; name?: string; clan_castle?: string }) {
+		const payload = this.embed(interaction.guild!, interaction.locale, args);
+		return interaction.editReply(payload);
+	}
+
+	public embed(guild: Guild, locale: string, args: { link?: string; message?: string; name?: string; clan_castle?: string }) {
 		const url = this.getURL(args.link ?? args.message!);
 		const army = url?.searchParams.get('army');
-		if (!army) return interaction.editReply(this.i18n('command.army.no_link', { lng: interaction.locale }));
+		if (!army) return { embeds: [], content: this.i18n('command.army.no_link', { lng: locale }) };
 
 		const { prefix, suffix } = army.startsWith('s')
 			? {
@@ -52,7 +69,7 @@ export default class ArmyCommand extends Command {
 		const SPELL_COMPOS = (matches?.groups?.spells as string | null)?.split('-') ?? [];
 
 		if (!TROOP_COMPOS.length && !SPELL_COMPOS.length) {
-			return interaction.editReply(this.i18n('command.army.invalid_link', { lng: interaction.locale }));
+			return { embeds: [], content: this.i18n('command.army.invalid_link', { lng: locale }) };
 		}
 
 		const TROOP_IDS = TROOP_COMPOS.map((parts) => parts.split(/x/)).map((parts) => ({
@@ -68,7 +85,7 @@ export default class ArmyCommand extends Command {
 		const malformed = ![...TROOP_IDS, ...SPELL_IDS].every(
 			(en) => typeof en.id === 'number' && typeof en.total === 'number' && en.total <= TOTAL_UNITS
 		);
-		if (malformed) return interaction.editReply(this.i18n('command.army.invalid_link', { lng: interaction.locale }));
+		if (malformed) return { embeds: [], content: this.i18n('command.army.invalid_link', { lng: locale }) };
 
 		const uniqueSpells = SPELL_IDS.reduce<number[]>((prev, curr) => {
 			if (!prev.includes(curr.id)) prev.push(curr.id);
@@ -151,7 +168,7 @@ export default class ArmyCommand extends Command {
 		});
 
 		if (!spells.length && !troops.length && !superTroops.length && !siegeMachines.length) {
-			return interaction.editReply(this.i18n('command.army.invalid_link', { lng: interaction.locale }));
+			return { embeds: [], content: this.i18n('command.army.invalid_link', { lng: locale }) };
 		}
 
 		const hallByUnlockTH = Math.max(
@@ -173,7 +190,7 @@ export default class ArmyCommand extends Command {
 		const townHallLevel = Math.max(hallByUnlockTH, hallByTroops, hallBySpells);
 
 		const embed = new EmbedBuilder()
-			.setColor(this.client.embed(interaction))
+			.setColor(this.client.embed(guild.id))
 			.setDescription(
 				[
 					`**${args.name ?? 'Shared Army Composition'} [TH ${townHallLevel}${townHallLevel === 14 ? '' : '+'}]**`,
@@ -251,11 +268,12 @@ export default class ArmyCommand extends Command {
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setStyle(ButtonStyle.Link).setURL(url!.href).setLabel('Copy Army Link').setEmoji(EMOJIS.TROOPS)
 		);
-		return interaction.editReply({
+
+		return {
 			embeds: [embed],
 			components: [row],
-			content: invalid ? this.i18n('command.army.possibly_invalid_link', { lng: interaction.locale }) : null
-		});
+			content: invalid ? this.i18n('command.army.possibly_invalid_link', { lng: locale }) : null
+		};
 	}
 
 	private padding(num: number) {

@@ -549,12 +549,12 @@ export default class SummaryBestCommand extends Command {
 		const _fields = Object.keys(fields);
 		_fields.map((field) => {
 			const key = field as keyof typeof fields;
-			const members = aggregated[key].filter((n) => !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
+			const members = aggregated[key].filter((n) => n.value && !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
 
 			if (!members.length) {
 				return embed.addFields({
 					name: fields[key],
-					value: 'No data available at this moment!'
+					value: 'No data available.'
 				});
 			}
 
@@ -562,7 +562,6 @@ export default class SummaryBestCommand extends Command {
 				name: fields[key],
 				value: members
 					.map((member, n) => {
-						moment.duration();
 						const num =
 							key === '_clanGamesCompletionTime'
 								? this._formatTime(member.value).padStart(7, ' ')

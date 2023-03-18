@@ -7,7 +7,7 @@ import { Season, Util } from '../../util/index.js';
 export default class LegendAttacksCommand extends Command {
 	public constructor() {
 		super('legend-attacks', {
-			category: 'legend',
+			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true

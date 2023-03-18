@@ -4,7 +4,7 @@ import { Command } from '../../lib/index.js';
 export default class FlagCommand extends Command {
 	public constructor() {
 		super('flag', {
-			category: 'setup',
+			category: 'link',
 			channel: 'guild',
 			userPermissions: ['ManageGuild'],
 			description: {

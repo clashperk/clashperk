@@ -11,9 +11,9 @@ import {
 } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import moment from 'moment';
-import { CLAN_GAMES_MINIMUM_POINTS, Collections } from '../../util/Constants.js';
-import { Command } from '../../lib/index.js';
-import { ClanGamesReminder } from '../../struct/ClanGamesScheduler.js';
+import { CLAN_GAMES_MINIMUM_POINTS, Collections } from '../../../util/Constants.js';
+import { Command } from '../../../lib/index.js';
+import { ClanGamesReminder } from '../../../struct/ClanGamesScheduler.js';
 
 export default class ReminderEditCommand extends Command {
 	public constructor() {
@@ -31,16 +31,17 @@ export default class ReminderEditCommand extends Command {
 			.collection<ClanGamesReminder>(Collections.CG_REMINDERS)
 			.find({ guild: interaction.guild.id })
 			.toArray();
-		if (!reminders.length) return interaction.editReply(this.i18n('command.reminder.delete.no_reminders', { lng: interaction.locale }));
+		if (!reminders.length)
+			return interaction.editReply(this.i18n('command.reminders.delete.no_reminders', { lng: interaction.locale }));
 
 		const reminderId = reminders[Number(args.id) - 1]?._id as ObjectId | null;
 		if (!reminderId) {
-			return interaction.editReply(this.i18n('command.reminder.delete.not_found', { lng: interaction.locale, id: args.id }));
+			return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}
 
 		const reminder = await this.client.db.collection<ClanGamesReminder>(Collections.CG_REMINDERS).findOne({ _id: reminderId });
 		if (!reminder) {
-			return interaction.editReply(this.i18n('command.reminder.delete.not_found', { lng: interaction.locale, id: args.id }));
+			return interaction.editReply(this.i18n('command.reminders.delete.not_found', { lng: interaction.locale, id: args.id }));
 		}
 
 		const customIds = {
@@ -219,7 +220,7 @@ export default class ReminderEditCommand extends Command {
 
 				await action.editReply({
 					components: mutate(true),
-					content: this.i18n('command.reminder.create.success', { lng: interaction.locale })
+					content: this.i18n('command.reminders.create.success', { lng: interaction.locale })
 				});
 			}
 		});

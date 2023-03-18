@@ -4,7 +4,7 @@ import { Command } from '../../lib/index.js';
 export default class LegendCommand extends Command {
 	public constructor() {
 		super('legend', {
-			category: 'none',
+			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			description: {

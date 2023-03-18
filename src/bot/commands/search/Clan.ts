@@ -1,5 +1,15 @@
 import { Clan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
+import {
+	ActionRowBuilder,
+	ButtonBuilder,
+	ButtonStyle,
+	CommandInteraction,
+	EmbedBuilder,
+	escapeMarkdown,
+	Guild,
+	Message,
+	User
+} from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { CLAN_LABELS, CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
@@ -37,29 +47,39 @@ export default class ClanCommand extends Command {
 		});
 	}
 
-	private async clanRank(tag: string, clanPoints: number) {
-		if (clanPoints >= 50000) {
-			const clanRank = await this.client.http.clanRanks('global').catch(() => null);
-			if (!clanRank?.ok) return null;
-			const clan = clanRank.items.find((clan: any) => clan?.tag === tag);
-			if (!clan) return null;
-
-			return {
-				rank: Number(clan.rank),
-				gain: Number(clan.previousRank - clan.rank)
-			};
-		}
-		return null;
+	public async run(message: Message, { tag }: { tag: string }) {
+		const clan = await this.client.http.clan(tag);
+		if (!clan.ok) return null;
+		const embed = await this.embed(message.guild!, clan);
+		return message.channel.send({
+			embeds: [embed],
+			allowedMentions: { repliedUser: false },
+			reply: { messageReference: message, failIfNotExists: false }
+		});
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
+		const embed = await this.embed(interaction.guild, clan);
+
+		const row = new ActionRowBuilder<ButtonBuilder>()
+			.addComponents(
+				new ButtonBuilder()
+					.setEmoji(EMOJIS.REFRESH)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId(JSON.stringify({ cmd: 'clan', tag: clan.tag }))
+			)
+			.addComponents(new ButtonBuilder().setLabel('Clan Badge').setStyle(ButtonStyle.Link).setURL(clan.badgeUrls.large));
+		return interaction.editReply({ embeds: [embed], components: [row] });
+	}
+
+	private async embed(guild: Guild, clan: Clan) {
 		const embed = new EmbedBuilder()
 			.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`)
 			.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
-			.setColor(this.client.embed(interaction))
+			.setColor(this.client.embed(guild.id))
 			.setThumbnail(clan.badgeUrls.medium);
 
 		const capitalHall = clan.clanCapital?.capitalHallLevel ? ` ${EMOJIS.CAPITAL_HALL} **${clan.clanCapital.capitalHallLevel}**` : '';
@@ -157,15 +177,22 @@ export default class ClanCommand extends Command {
 			}
 		]);
 
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(
-				new ButtonBuilder()
-					.setEmoji(EMOJIS.REFRESH)
-					.setStyle(ButtonStyle.Secondary)
-					.setCustomId(JSON.stringify({ cmd: 'clan', tag: clan.tag }))
-			)
-			.addComponents(new ButtonBuilder().setLabel('Clan Badge').setStyle(ButtonStyle.Link).setURL(clan.badgeUrls.large));
-		return interaction.editReply({ embeds: [embed], components: [row] });
+		return embed;
+	}
+
+	private async clanRank(tag: string, clanPoints: number) {
+		if (clanPoints >= 50000) {
+			const clanRank = await this.client.http.clanRanks('global').catch(() => null);
+			if (!clanRank?.ok) return null;
+			const clan = clanRank.items.find((clan: any) => clan?.tag === tag);
+			if (!clan) return null;
+
+			return {
+				rank: Number(clan.rank),
+				gain: Number(clan.previousRank - clan.rank)
+			};
+		}
+		return null;
 	}
 
 	private async getActivity(clan: Clan): Promise<{ avg_total: number; avg_online: number } | null> {

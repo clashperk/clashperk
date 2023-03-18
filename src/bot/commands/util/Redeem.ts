@@ -22,7 +22,7 @@ const rewards = {
 export default class RedeemCommand extends Command {
 	public constructor() {
 		super('redeem', {
-			category: 'none',
+			category: 'setup',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			description: {

@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
+import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
 import { Season } from '../../util/index.js';
@@ -13,7 +14,7 @@ export default class SummaryCapitalContributionCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { season }: { season?: string; week?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, { season, week }: { season?: string; week?: string }) {
 		if (!season) season = Season.ID;
 		const clans = await this.client.storage.find(interaction.guild.id);
 
@@ -21,12 +22,15 @@ export default class SummaryCapitalContributionCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
+		const startWeek = moment(week).utc(true).add(7, 'h').utc().toDate();
+		const endWeek = moment(week).utc(true).add(7, 'd').add(7, 'h').toDate();
+
 		const result = await this.client.db
 			.collection(Collections.CAPITAL_CONTRIBUTIONS)
 			.aggregate<{ clans: { name: string; tag: string; total: number }[]; members: { name: string; tag: string; total: number }[] }>([
 				{
 					$match: {
-						season,
+						...(week ? { createdAt: { $gt: startWeek, $lt: endWeek } } : { season: season }),
 						'clan.tag': { $in: clans.map((clan) => clan.tag) }
 					}
 				},
@@ -103,7 +107,12 @@ export default class SummaryCapitalContributionCommand extends Command {
 				'```'
 			].join('\n')
 		);
-		embed.setFooter({ text: `Season ${season}` });
+
+		if (week) {
+			embed.setFooter({ text: `Week ${week}` });
+		} else {
+			embed.setFooter({ text: `Season ${season}` });
+		}
 
 		const customIds = {
 			action: this.client.uuid(),
@@ -126,7 +135,7 @@ export default class SummaryCapitalContributionCommand extends Command {
 					.setAuthor({ name: `${interaction.guild.name} Top Contributors` })
 					.setDescription(
 						[
-							`**${this.i18n('command.capital.contributions.title', { lng: interaction.locale })} (${season!})**`,
+							`**${this.i18n('command.capital.contribution.title', { lng: interaction.locale })} (${season!})**`,
 							'```',
 							'\u200e #  TOTAL  NAME',
 							membersGroup

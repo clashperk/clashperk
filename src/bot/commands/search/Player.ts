@@ -7,7 +7,9 @@ import {
 	ComponentType,
 	ButtonBuilder,
 	ButtonStyle,
-	User
+	User,
+	Guild,
+	Message
 } from 'discord.js';
 import { Player, WarClan } from 'clashofclans.js';
 import ms from 'ms';
@@ -54,19 +56,15 @@ export default class PlayerCommand extends Command {
 		};
 	}
 
-	public async getPlayers(userId: string) {
-		const players = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray();
-		const others = await this.client.http.getPlayerTags(userId);
-
-		const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
-
-		return (
-			await Promise.all(
-				Array.from(playerTagSet)
-					.slice(0, 25)
-					.map((tag) => this.client.http.player(tag))
-			)
-		).filter((res) => res.ok);
+	public async run(message: Message, { tag }: { tag: string }) {
+		const data = await this.client.http.player(tag);
+		if (!data.ok) return null;
+		const embed = (await this.embed(message.guild!, data)).setColor(this.client.embed(message));
+		return message.channel.send({
+			embeds: [embed],
+			allowedMentions: { repliedUser: false },
+			reply: { messageReference: message, failIfNotExists: false }
+		});
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
@@ -77,10 +75,11 @@ export default class PlayerCommand extends Command {
 			accounts: this.client.uuid(interaction.user.id),
 			troops: this.client.uuid(interaction.user.id),
 			upgrades: this.client.uuid(interaction.user.id),
-			rushed: this.client.uuid(interaction.user.id)
+			rushed: this.client.uuid(interaction.user.id),
+			clan: this.client.uuid(interaction.user.id)
 		};
 
-		const embed = (await this.embed(interaction, data)).setColor(this.client.embed(interaction));
+		const embed = (await this.embed(interaction.guild, data)).setColor(this.client.embed(interaction));
 		const players = data.user ? await this.getPlayers(data.user.id) : [];
 
 		const options = players.map((op) => ({
@@ -94,6 +93,8 @@ export default class PlayerCommand extends Command {
 			.addComponents(new ButtonBuilder().setLabel('Units').setStyle(ButtonStyle.Primary).setCustomId(customIds.troops))
 			.addComponents(new ButtonBuilder().setLabel('Upgrades').setStyle(ButtonStyle.Primary).setCustomId(customIds.upgrades))
 			.addComponents(new ButtonBuilder().setLabel('Rushed').setStyle(ButtonStyle.Primary).setCustomId(customIds.rushed));
+		// .addComponents(new ButtonBuilder().setLabel('View Clan').setStyle(ButtonStyle.Primary).setCustomId(customIds.clan));
+
 		const menu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder().setCustomId(customIds.accounts).setPlaceholder('Select an account!').addOptions(options)
 		);
@@ -110,7 +111,7 @@ export default class PlayerCommand extends Command {
 				await action.deferUpdate();
 				const data = players.find((en) => en.tag === action.values.at(0))!;
 				args.tag = data.tag;
-				const embed = await this.embed(interaction, data);
+				const embed = await this.embed(interaction.guild, data);
 				embed.setColor(this.client.embed(interaction));
 				await action.editReply({ embeds: [embed] });
 			}
@@ -134,7 +135,7 @@ export default class PlayerCommand extends Command {
 		});
 	}
 
-	private async embed(interaction: CommandInteraction<'cached'>, data: Player) {
+	private async embed(guild: Guild, data: Player) {
 		const aggregated = await this.client.db
 			.collection(Collections.LAST_SEEN)
 			.aggregate([
@@ -231,7 +232,7 @@ export default class PlayerCommand extends Command {
 			{ name: '**Heroes**', value: [`${heroes.length ? heroes.join(' ') : `${EMOJIS.WRONG} None`}`, '\u200b\u2002'].join('\n') }
 		]);
 
-		const user = await this.getLinkedUser(interaction, data.tag);
+		const user = await this.getLinkedUser(guild, data.tag);
 		if (user) {
 			embed.addFields([{ name: '**Discord**', value: user.mention ?? `${EMOJIS.OK} Connected` }]);
 		} else {
@@ -256,6 +257,21 @@ export default class PlayerCommand extends Command {
 			Math.abs(num) >= 1.0e3
 			? `${(Math.abs(num) / 1.0e3).toFixed(2)}K`
 			: Math.abs(num).toFixed(2);
+	}
+
+	public async getPlayers(userId: string) {
+		const players = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray();
+		const others = await this.client.http.getPlayerTags(userId);
+
+		const playerTagSet = new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]);
+
+		return (
+			await Promise.all(
+				Array.from(playerTagSet)
+					.slice(0, 25)
+					.map((tag) => this.client.http.player(tag))
+			)
+		).filter((res) => res.ok);
 	}
 
 	private async getWars(tag: string) {
@@ -316,11 +332,11 @@ export default class PlayerCommand extends Command {
 			: `${ms(timestamp, { long: true })} ago`;
 	}
 
-	private async getLinkedUser(interaction: CommandInteraction<'cached'>, tag: string) {
+	private async getLinkedUser(guild: Guild, tag: string) {
 		const data = await Promise.any([this.getLinkedFromDb(tag), this.client.http.getLinkedUser(tag)]);
 		if (!data) return null;
 
-		const user = await interaction.guild.members.fetch(data.userId).catch(() => null);
+		const user = await guild.members.fetch(data.userId).catch(() => null);
 		return { mention: user?.toString() ?? null, userId: data.userId };
 	}
 

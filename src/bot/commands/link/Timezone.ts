@@ -9,7 +9,7 @@ import { Util } from '../../util/index.js';
 export default class TimezoneCommand extends Command {
 	public constructor() {
 		super('timezone', {
-			category: 'none',
+			category: 'profile',
 			clientPermissions: ['EmbedLinks'],
 			channel: 'guild',
 			description: {

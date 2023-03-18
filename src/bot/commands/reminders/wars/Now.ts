@@ -7,10 +7,10 @@ import {
 	ComponentType,
 	StringSelectMenuBuilder
 } from 'discord.js';
-import { Command } from '../../lib/index.js';
-import { MAX_TOWN_HALL_LEVEL } from '../../util/Constants.js';
-import { EMOJIS } from '../../util/Emojis.js';
-import { Util } from '../../util/index.js';
+import { Command } from '../../../lib/index.js';
+import { MAX_TOWN_HALL_LEVEL } from '../../../util/Constants.js';
+import { EMOJIS } from '../../../util/Emojis.js';
+import { Util } from '../../../util/index.js';
 
 export default class ReminderNowCommand extends Command {
 	public constructor() {
@@ -24,7 +24,7 @@ export default class ReminderNowCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { message: string; clans?: string }) {
-		if (!args.message) return interaction.editReply(this.i18n('command.reminder.now.no_message', { lng: interaction.locale }));
+		if (!args.message) return interaction.editReply(this.i18n('command.reminders.now.no_message', { lng: interaction.locale }));
 
 		const tags = args.clans === '*' ? [] : await this.client.resolver.resolveArgs(args.clans);
 		const clans =
@@ -216,7 +216,7 @@ export default class ReminderNowCommand extends Command {
 				if (texts.length) {
 					await action.editReply({ content: `\u200e🔔 ${args.message}` });
 				} else {
-					await action.editReply({ content: this.i18n('command.reminder.now.no_match', { lng: interaction.locale }) });
+					await action.editReply({ content: this.i18n('command.reminders.now.no_match', { lng: interaction.locale }) });
 				}
 
 				await this.send(action, texts);

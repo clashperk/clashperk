@@ -10,7 +10,7 @@ import { PlayerLinks } from '../../types/index.js';
 export default class LegendDaysCommand extends Command {
 	public constructor() {
 		super('legend-days', {
-			category: 'legend',
+			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
 			defer: true

@@ -330,11 +330,12 @@ export default class CapitalLog extends BaseLog {
 
 	private async _refresh() {
 		const { endTime } = Util.getRaidWeekEndTimestamp();
-		if (endTime.getTime() > Date.now()) return;
+		const _endTime = new Date(endTime.getTime() + 1000 * 60 * 15);
+		if (_endTime.getTime() > Date.now()) return;
 
 		const logs = await this.client.db
 			.collection<CapitalLogModel>(Collections.CAPITAL_LOGS)
-			.find({ lastPosted: { $lt: new Date(endTime.getTime()) } })
+			.find({ lastPosted: { $lt: _endTime } })
 			.toArray();
 
 		for (const log of logs) {

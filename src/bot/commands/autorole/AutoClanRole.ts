@@ -63,23 +63,23 @@ export default class AutoClanRoleCommand extends Command {
 		const { members, elders, coLeads, commonRole } = args;
 
 		if (!(members && elders && coLeads)) {
-			return interaction.editReply(this.i18n('command.autorole.enable.no_roles', { lng: interaction.locale }));
+			return interaction.editReply(this.i18n('command.autorole.no_roles', { lng: interaction.locale }));
 		}
 
 		if ([members, elders, coLeads].some((role) => this.isSystemRole(role, interaction.guild))) {
-			return interaction.editReply(this.i18n('command.autorole.enable.no_system_roles', { lng: interaction.locale }));
+			return interaction.editReply(this.i18n('command.autorole.no_system_roles', { lng: interaction.locale }));
 		}
 
 		if ([members, elders, coLeads].some((role) => this.isHigherRole(role, interaction.guild))) {
-			return interaction.editReply(this.i18n('command.autorole.enable.no_higher_roles', { lng: interaction.locale }));
+			return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
 		}
 
 		if (commonRole) {
 			if (this.isSystemRole(commonRole, interaction.guild)) {
-				return interaction.editReply(this.i18n('command.autorole.enable.no_system_roles', { lng: interaction.locale }));
+				return interaction.editReply(this.i18n('command.autorole.no_system_roles', { lng: interaction.locale }));
 			}
 			if (this.isHigherRole(commonRole, interaction.guild)) {
-				return interaction.editReply(this.i18n('command.autorole.enable.no_higher_roles', { lng: interaction.locale }));
+				return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
 			}
 		}
 
@@ -96,7 +96,7 @@ export default class AutoClanRoleCommand extends Command {
 
 		this.updateLinksAndRoles(clans);
 		return interaction.editReply(
-			this.i18n('command.autorole.enable.success_with_count', {
+			this.i18n('command.autorole.success_with_count', {
 				lng: interaction.locale,
 				count: clans.length.toString(),
 				clans: `${clans.map((clan) => clan.name).join(', ')}`

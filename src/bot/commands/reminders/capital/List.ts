@@ -1,9 +1,9 @@
 import { CommandInteraction, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
-import { Collections } from '../../util/Constants.js';
-import { Command } from '../../lib/index.js';
-import { Util } from '../../util/index.js';
-import { RaidReminder } from '../../struct/CapitalRaidScheduler.js';
+import { Collections } from '../../../util/Constants.js';
+import { Command } from '../../../lib/index.js';
+import { Util } from '../../../util/index.js';
+import { RaidReminder } from '../../../struct/CapitalRaidScheduler.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -28,7 +28,7 @@ export default class ReminderListCommand extends Command {
 			.collection<RaidReminder>(Collections.RAID_REMINDERS)
 			.find({ guild: interaction.guild!.id })
 			.toArray();
-		if (!reminders.length) return interaction.editReply(this.i18n('command.reminder.list.no_reminders', { lng: interaction.locale }));
+		if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.list.no_reminders', { lng: interaction.locale }));
 		const clans = await this.client.storage.find(interaction.guild!.id);
 
 		const label = (duration: number) => moment.duration(duration).format('H[h], m[m], s[s]', { trim: 'both mid' });

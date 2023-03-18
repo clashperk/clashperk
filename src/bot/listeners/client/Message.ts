@@ -2,6 +2,22 @@ import { ChannelType, Message, PermissionFlagsBits } from 'discord.js';
 import { Listener } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
 
+const REGEX = /\bhttps:\/\/link\.clashofclans\.com\S+/gi;
+
+// https://link.clashofclans.com/en?action=OpenPlayerProfile&tag=
+
+// https://link.clashofclans.com/en?action=OpenClanProfile&tag=
+
+// https://link.clashofclans.com/en?action=SupportCreator&id=
+
+// https://link.clashofclans.com/en?action=OpenMoreSettings
+
+// https://link.clashofclans.com/en?action=openhelpshift
+
+// https://link.clashofclans.com/en?action=OpenLayout&id=
+
+// https://link.clashofclans.com/en?action=CopyArmy&army=
+
 export default class MessageListener extends Listener {
 	public constructor() {
 		super('messageCreate', {
@@ -26,17 +42,13 @@ export default class MessageListener extends Listener {
 		if (!message.channel.permissionsFor(this.client.user!)?.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel]))
 			return;
 
-		const prefix = this.client.settings.get<string>(message.guild.id, Settings.PREFIX, '!');
-		const lowerContent = message.content.toLowerCase();
-		if (!lowerContent.startsWith(prefix.toLowerCase())) return;
+		if (REGEX.test(message.content)) return this.linkParser(message);
 
-		const endOfPrefix = lowerContent.indexOf(prefix.toLowerCase()) + prefix.length;
-		const startOfArgs = message.content.slice(endOfPrefix).search(/\S/) + prefix.length;
-		const alias = message.content.slice(startOfArgs).split(/\s{1,}|\n{1,}/)[0];
-
-		const command = this.client.commandHandler.modules.get(alias);
-		const content = message.content.slice(startOfArgs + alias.length + 1).trim();
-		const contents = content.split(/\s+/g);
+		const parsed = [`<@${this.client.user!.id}>`, `<@!${this.client.user!.id}>`]
+			.map((mention) => this.parseWithPrefix(message, mention))
+			.find((_) => _);
+		if (!parsed) return null;
+		const { command, content, contents } = parsed;
 
 		if (!command) return;
 		if (!this.client.isOwner(message.author.id)) {
@@ -56,6 +68,59 @@ export default class MessageListener extends Listener {
 			this.client.logger.error(`${command.id} ~ ${error as string}`, { label: `${message.guild.name}/${message.author.tag}` });
 			console.error(error);
 			await message.channel.send('**Something went wrong while executing that command.**');
+		}
+	}
+
+	private parseWithPrefix(message: Message, prefix: string) {
+		// const prefix = this.client.settings.get<string>(message.guild.id, Settings.PREFIX, '!');
+		const lowerContent = message.content.toLowerCase();
+		if (!lowerContent.startsWith(prefix.toLowerCase())) return null;
+
+		const endOfPrefix = lowerContent.indexOf(prefix.toLowerCase()) + prefix.length;
+		const startOfArgs = message.content.slice(endOfPrefix).search(/\S/) + prefix.length;
+		const alias = message.content.slice(startOfArgs).split(/\s{1,}|\n{1,}/)[0];
+
+		const command = this.client.commandHandler.modules.get(alias);
+		const content = message.content.slice(startOfArgs + alias.length + 1).trim();
+		const contents = content.split(/\s+/g);
+
+		return { command, content, contents };
+	}
+
+	private linkParser(message: Message) {
+		const matches = (message.content.match(REGEX) ?? []).slice(0, 3);
+
+		for (const text of matches) {
+			const url = new URL(text);
+			const action = url.searchParams.get('action')?.toLowerCase();
+			if (!action) continue;
+
+			switch (action) {
+				case 'openplayerprofile': {
+					const tag = url.searchParams.get('tag');
+					if (!tag) continue;
+					return this.client.commandHandler.modules.get('player')?.run(message, { tag });
+				}
+				case 'openclanprofile': {
+					const tag = url.searchParams.get('tag');
+					return this.client.commandHandler.modules.get('clan')?.run(message, { tag });
+				}
+				case 'supportcreator':
+					break;
+				case 'openmoresettings':
+					break;
+				case 'openhelpshift':
+					break;
+				case 'openlayout':
+					break;
+				case 'copyarmy': {
+					const army = url.searchParams.get('army');
+					if (!army) continue;
+					return this.client.commandHandler.modules.get('army')?.run(message, { link: url.href });
+				}
+				default:
+					break;
+			}
 		}
 	}
 
