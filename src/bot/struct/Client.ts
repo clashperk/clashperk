@@ -55,13 +55,13 @@ export class Client extends Discord.Client {
 	});
 
 	public elastic = new ElasticClient({
-		node: process.env.ELASTIC_URL!,
+		node: process.env.ES_HOST!,
 		auth: {
 			username: 'elastic',
-			password: process.env.ELASTIC_PASSWORD!
+			password: process.env.ES_PASSWORD!
 		},
 		tls: {
-			ca: process.env.ELASTIC_CA_CRT!,
+			ca: process.env.ES_CA_CRT!,
 			rejectUnauthorized: false
 		}
 	});
