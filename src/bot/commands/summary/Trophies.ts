@@ -1,5 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
 import { Command } from '../../lib/index.js';
+import { Util } from '../../util/index.js';
 
 export default class SummaryTrophiesCommand extends Command {
 	public constructor() {
@@ -19,7 +20,9 @@ export default class SummaryTrophiesCommand extends Command {
 		}
 
 		const allClans = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((res) => res.ok);
-		const members = allClans.map((clan) => clan.memberList).flat();
+		const members = allClans
+			.map((clan) => clan.memberList.map((mem) => ({ clan: clan.name, name: mem.name, trophies: mem.trophies })))
+			.flat();
 		const grouped = Object.values(
 			allClans.reduce<
 				Record<
@@ -82,16 +85,14 @@ export default class SummaryTrophiesCommand extends Command {
 					.setAuthor({ name: `${interaction.guild.name} Best Trophies` })
 					.setDescription(
 						[
-							'```',
-							`\u200e # TROPHY  ${'NAME'}`,
 							members
-								.slice(0, 99)
+								.slice(0, 69)
 								.map((member, index) => {
-									const trophies = `${member.trophies.toString().padStart(5, ' ')}`;
-									return `${(index + 1).toString().padStart(2, ' ')}  ${trophies}  \u200e${member.name}`;
+									const trophies = `${member.trophies.toString().padStart(4, ' ')}`;
+									const rank = (index + 1).toString().padStart(2, ' ');
+									return `\u200e\`${rank} ${trophies}\` \u200b ${Util.escapeBackTick(`${member.name}`)}`;
 								})
-								.join('\n'),
-							'```'
+								.join('\n')
 						].join('\n')
 					);
 

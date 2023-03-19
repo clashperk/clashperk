@@ -1,5 +1,6 @@
-import { CommandInteraction, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ComponentType, User } from 'discord.js';
-import { PlayerItem } from 'clashofclans.js';
+import { CommandInteraction, ActionRowBuilder, EmbedBuilder, ButtonBuilder, ButtonStyle, ComponentType, User, time } from 'discord.js';
+import { Clan, Player, PlayerItem } from 'clashofclans.js';
+import ms from 'ms';
 import { HERO_PETS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
@@ -115,26 +116,69 @@ export default class MembersCommand extends Command {
 			);
 		}
 
+		const trackingDate = new Date('2023-02-27').getTime();
 		if (args.option === 'warPref') {
-			const optedIn = members.filter((m) => m.warPreference);
-			const optedOut = members.filter((m) => !m.warPreference);
+			const members = await this.getWarPref(data, fetched);
+			const optedIn = members.filter((m) => m.warPreference === 'in');
+			const optedOut = members.filter((m) => m.warPreference !== 'in');
+			optedIn.sort((a, b) => {
+				if (a.inTime && b.inTime) return b.inTime.getTime() - a.inTime.getTime();
+				if (a.inTime) return -1;
+				if (b.inTime) return 1;
+				return 0;
+			});
+			optedOut.sort((a, b) => {
+				if (a.outTime && b.outTime) return b.outTime.getTime() - a.outTime.getTime();
+				if (a.outTime) return -1;
+				if (b.outTime) return 1;
+				return 0;
+			});
 			embed.setDescription(
 				[
-					`**OPTED-IN ~ ${optedIn.length}**`,
+					`**Opted in ~ ${optedIn.length}**`,
 					optedIn
-						.map(
-							(m) =>
-								`\u200e**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(15, ' ')} \u200f\``
-						)
+						.map((m) => {
+							const inTime = m.inTime ? ms(Date.now() - m.inTime.getTime()) : `~${ms(Date.now() - trackingDate)}`;
+							return `**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${Util.escapeBackTick(m.name).padEnd(
+								15,
+								' '
+							)} ${inTime.padStart(6, ' ')}\u200f\``;
+						})
 						.join('\n'),
 					'',
-					`**OPTED-OUT ~ ${optedOut.length}**`,
+					`**Opted out ~ ${optedOut.length}**`,
 					optedOut
-						.map((m) => `\u200e✘ ${ORANGE_NUMBERS[m.townHallLevel]} \` ${Util.escapeBackTick(m.name).padEnd(15, ' ')} \u200f\``)
+						.map((m) => {
+							const outTime = m.outTime ? ms(Date.now() - m.outTime.getTime()) : `~${ms(Date.now() - trackingDate)}`;
+							return `**✘** ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${Util.escapeBackTick(m.name).padEnd(
+								15,
+								' '
+							)} ${outTime.padStart(6, ' ')}\u200f\``;
+						})
 						.join('\n')
 				].join('\n')
 			);
 			embed.setFooter({ text: `War Preference (${optedIn.length}/${members.length})` });
+		}
+
+		if (args.option === 'joinLeave') {
+			const members = await this.clanReputation(data, fetched);
+			members.sort((a, b) => {
+				if (a.inTime && b.inTime) return b.inTime.getTime() - a.inTime.getTime();
+				if (a.inTime) return -1;
+				if (b.inTime) return 1;
+				return 0;
+			});
+			embed.setDescription(
+				members
+					.map((m) => {
+						const inTime = m.inTime ? time(m.inTime, 'R') : '';
+						const hall = m.townHallLevel.toString().padStart(2, ' ');
+						return `\u200e\`${hall}  ${Util.escapeBackTick(m.name).padEnd(15, ' ')}\u200f\`\u200e ${inTime}`;
+					})
+					.join('\n')
+			);
+			embed.setFooter({ text: `Last Join Dates` });
 		}
 
 		const customId = this.client.uuid(interaction.user.id);
@@ -168,4 +212,167 @@ export default class MembersCommand extends Command {
 	private padStart(num: number | string) {
 		return num.toString().padStart(2, ' ');
 	}
+
+	private async getWarPref(clan: Clan, players: Player[]) {
+		const { aggregations } = await this.client.elastic.search({
+			index: 'clan_member_events',
+			query: {
+				bool: {
+					filter: [
+						{ match: { op: 'WAR_PREF_CHANGE' } },
+						{ match: { clan_tag: clan.tag } },
+						{ terms: { tag: players.map((p) => p.tag) } }
+					]
+				}
+			},
+			size: 0,
+			from: 0,
+			sort: [{ created_at: 'desc' }],
+			aggs: {
+				players: {
+					terms: {
+						field: 'tag',
+						size: 50
+					},
+					aggs: {
+						in_stats: {
+							filter: { term: { value: 'in' } },
+							aggs: {
+								aggregated: {
+									stats: { field: 'created_at' }
+								}
+							}
+						},
+						out_stats: {
+							filter: { term: { value: 'out' } },
+							aggs: {
+								aggregated: {
+									stats: { field: 'created_at' }
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+
+		const { buckets } = (aggregations?.players ?? []) as { buckets: AggsBucket[] };
+		const playersMap = buckets.reduce<Record<string, AggsBucket>>((acc, cur) => {
+			acc[cur.key] = cur;
+			return acc;
+		}, {});
+
+		const warPref = players.map((player) => {
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			if (!playersMap[player.tag])
+				return {
+					warPreference: player.warPreference,
+					townHallLevel: player.townHallLevel,
+					name: player.name,
+					inTime: null,
+					outTime: null
+				};
+
+			const { in_stats, out_stats } = playersMap[player.tag];
+			const inTime = in_stats.aggregated.max;
+			const outTime = out_stats.aggregated.max;
+
+			return {
+				name: player.name,
+				townHallLevel: player.townHallLevel,
+				warPreference: player.warPreference,
+				inTime: inTime ? new Date(inTime) : null,
+				outTime: outTime ? new Date(outTime) : null
+			};
+		});
+
+		return warPref;
+	}
+
+	private async clanReputation(clan: Clan, players: Player[]) {
+		const { aggregations } = await this.client.elastic.search({
+			index: 'join_leave_events',
+			query: {
+				bool: {
+					filter: [
+						{ terms: { op: ['JOINED', 'LEFT'] } },
+						{ match: { clan_tag: clan.tag } },
+						{ terms: { tag: players.map((p) => p.tag) } }
+					]
+				}
+			},
+			size: 0,
+			from: 0,
+			sort: [{ created_at: 'desc' }],
+			aggs: {
+				players: {
+					terms: {
+						field: 'tag',
+						size: 50
+					},
+					aggs: {
+						in_stats: {
+							filter: { term: { op: 'JOINED' } },
+							aggs: {
+								aggregated: {
+									stats: { field: 'created_at' }
+								}
+							}
+						},
+						out_stats: {
+							filter: { term: { op: 'LEFT' } },
+							aggs: {
+								aggregated: {
+									stats: { field: 'created_at' }
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+
+		const { buckets } = (aggregations?.players ?? []) as { buckets: AggsBucket[] };
+		const playersMap = buckets.reduce<Record<string, AggsBucket>>((acc, cur) => {
+			acc[cur.key] = cur;
+			return acc;
+		}, {});
+
+		const warPref = players.map((player) => {
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+			if (!playersMap[player.tag])
+				return {
+					townHallLevel: player.townHallLevel,
+					name: player.name,
+					inTime: null,
+					outTime: null
+				};
+
+			const { in_stats, out_stats } = playersMap[player.tag];
+			const inTime = in_stats.aggregated.max;
+			const outTime = out_stats.aggregated.max;
+
+			return {
+				name: player.name,
+				townHallLevel: player.townHallLevel,
+				inTime: inTime ? new Date(inTime) : null,
+				outTime: outTime ? new Date(outTime) : null
+			};
+		});
+
+		return warPref;
+	}
+}
+
+interface AggsBucket {
+	key: string;
+	doc_count: number;
+	in_stats: {
+		doc_count: number;
+		aggregated: { max: number | null; min: number | null };
+	};
+	out_stats: {
+		doc_count: number;
+		aggregated: { max: number | null; min: number | null };
+	};
 }
