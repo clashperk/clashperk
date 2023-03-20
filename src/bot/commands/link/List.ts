@@ -1,4 +1,14 @@
-import { Collection, GuildMember, CommandInteraction, ActionRowBuilder, ButtonBuilder, EmbedBuilder, ButtonStyle, User } from 'discord.js';
+import {
+	Collection,
+	GuildMember,
+	CommandInteraction,
+	ActionRowBuilder,
+	ButtonBuilder,
+	EmbedBuilder,
+	ButtonStyle,
+	User,
+	ButtonInteraction
+} from 'discord.js';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
@@ -17,7 +27,10 @@ export default class LinkListCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; showTags?: boolean; user?: User }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
+		args: { tag?: string; showTags?: boolean; user?: User }
+	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 		if (!clan.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
@@ -74,7 +87,6 @@ export default class LinkListCommand extends Command {
 					.setEmoji(EMOJIS.HASH)
 					.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, showTags: true }))
 			);
-
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
@@ -145,7 +157,7 @@ export default class LinkListCommand extends Command {
 		return a.name.replace(/[^\x00-\xF7]+/g, '').localeCompare(b.name.replace(/[^\x00-\xF7]+/g, ''));
 	}
 
-	private updateUsers(interaction: CommandInteraction, members: PlayerLinks[]) {
+	private updateUsers(interaction: CommandInteraction | ButtonInteraction, members: PlayerLinks[]) {
 		for (const clan of members) {
 			const member = interaction.guild!.members.cache.get(clan.userId);
 			if (member && clan.username !== member.user.tag) {

@@ -101,8 +101,8 @@ export default class PlayerCommand extends Command {
 
 		const msg = await interaction.editReply({ embeds: [embed], components: options.length ? [row, menu] : [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
+			// time: 5 * 60 * 1000
 		});
 
 		args.tag = data.tag;
@@ -111,21 +111,21 @@ export default class PlayerCommand extends Command {
 				await action.deferUpdate();
 				const data = players.find((en) => en.tag === action.values.at(0))!;
 				args.tag = data.tag;
-				const embed = await this.embed(interaction.guild, data);
-				embed.setColor(this.client.embed(interaction));
+				const embed = await this.embed(action.guild, data);
+				embed.setColor(this.client.embed(action));
 				await action.editReply({ embeds: [embed] });
 			}
 			if (action.customId === customIds.troops && action.isButton()) {
 				await action.deferUpdate();
-				return this.handler.exec(interaction, this.handler.modules.get('units')!, { tag: args.tag });
+				return this.handler.exec(action, this.handler.modules.get('units')!, { tag: args.tag });
 			}
 			if (action.customId === customIds.upgrades && action.isButton()) {
 				await action.deferUpdate();
-				return this.handler.exec(interaction, this.handler.modules.get('upgrades')!, { tag: args.tag });
+				return this.handler.exec(action, this.handler.modules.get('upgrades')!, { tag: args.tag });
 			}
 			if (action.customId === customIds.rushed && action.isButton()) {
 				await action.deferUpdate();
-				return this.handler.exec(interaction, this.handler.modules.get('rushed')!, { tag: args.tag });
+				return this.handler.exec(action, this.handler.modules.get('rushed')!, { tag: args.tag });
 			}
 		});
 

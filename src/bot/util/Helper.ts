@@ -1,7 +1,8 @@
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, Guild } from 'discord.js';
 import { Clan } from 'clashofclans.js';
 import { container } from 'tsyringe';
 import Client from '../struct/Client.js';
+import { PlayerLinks } from '../types/index.js';
 import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, TOWN_HALLS } from './Emojis.js';
 import { Collections, Settings, UnrankedCapitalLeagueId } from './Constants.js';
 import { Util } from './index.js';
@@ -12,6 +13,14 @@ export const padStart = (str: string | number, length: number) => {
 
 export const padEnd = (str: string | number, length: number) => {
 	return `${str}`.padEnd(length, ' ');
+};
+
+export const sanitizeName = (name: string) => {
+	return Util.escapeBackTick(name);
+};
+
+const localeSort = (a: string, b: string) => {
+	return a.replace(/[^\x00-\xF7]+/g, '').localeCompare(b.replace(/[^\x00-\xF7]+/g, ''));
 };
 
 export const lastSeenTimestampFormat = (timestamp: number) => {
@@ -31,6 +40,7 @@ export const clanGamesSortingAlgorithm = (a: number, b: number) => {
 	if (a === 0) return 1;
 	if (b === 0) return -1;
 	return a - b;
+	// return a === 0 ? 1 : b === 0 ? -1 : a - b;
 };
 
 export const clanGamesLatestSeasonId = () => {
@@ -290,5 +300,135 @@ export const clanGamesEmbedMaker = (
 
 	embed.setFooter({ text: `Points: ${total} [Avg: ${(total / clan.members).toFixed(2)}]` });
 	embed.setTimestamp();
+	return embed;
+};
+
+export const linkListEmbedMaker = async ({ clan, guild, showTag }: { clan: Clan; guild: Guild; showTag?: boolean }) => {
+	const client = container.resolve(Client);
+	const memberTags = await client.http.getDiscordLinks(clan.memberList);
+	const dbMembers = await client.db
+		.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+		.find({ tag: { $in: clan.memberList.map((m) => m.tag) } })
+		.toArray();
+
+	const members: { name: string; tag: string; userId: string; verified: boolean }[] = [];
+	for (const m of memberTags) {
+		const clanMember = clan.memberList.find((mem) => mem.tag === m.tag);
+		if (!clanMember) continue;
+		members.push({ tag: m.tag, userId: m.user, name: clanMember.name, verified: false });
+	}
+
+	for (const member of dbMembers) {
+		const clanMember = clan.memberList.find((mem) => mem.tag === member.tag);
+		if (!clanMember) continue;
+
+		const mem = members.find((mem) => mem.tag === member.tag);
+		if (mem) mem.verified = member.verified;
+		else members.push({ tag: member.tag, userId: member.userId, name: clanMember.name, verified: member.verified });
+	}
+
+	const userIds = members.reduce<string[]>((prev, curr) => {
+		if (!prev.includes(curr.userId)) prev.push(curr.userId);
+		return prev;
+	}, []);
+	const guildMembers = await guild.members.fetch({ user: userIds });
+
+	// players linked and on the guild.
+	const onDiscord = members.filter((mem) => guildMembers.has(mem.userId));
+	// linked to discord but not on the guild.
+	const notInDiscord = members.filter((mem) => !guildMembers.has(mem.userId));
+	// not linked to discord.
+	const notLinked = clan.memberList.filter(
+		(m) => !notInDiscord.some((en) => en.tag === m.tag) && !members.some((en) => en.tag === m.tag && guildMembers.has(en.userId))
+	);
+
+	const chunks = Util.splitMessage(
+		[
+			`${EMOJIS.DISCORD} **Players on Discord: ${onDiscord.length}**`,
+			onDiscord
+				.map((mem) => {
+					const name = sanitizeName(mem.name).padEnd(15, ' ');
+					const member = clan.memberList.find((m) => m.tag === mem.tag)!;
+					const user = showTag
+						? member.tag.padStart(12, ' ')
+						: guildMembers.get(mem.userId)!.displayName.substring(0, 12).padStart(12, ' ');
+					return { name, user, verified: mem.verified };
+				})
+				.sort((a, b) => localeSort(a.name, b.name))
+				.map(({ name, user, verified }) => {
+					return `${verified ? '**✓**' : '✘'} \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
+				})
+				.join('\n'),
+			notInDiscord.length ? `\n${EMOJIS.WRONG} **Players not on Discord: ${notInDiscord.length}**` : '',
+			notInDiscord
+				.map((mem) => {
+					const name = sanitizeName(mem.name).padEnd(15, ' ');
+					const member = clan.memberList.find((m) => m.tag === mem.tag)!;
+					const user: string = member.tag.padStart(12, ' ');
+					return { name, user, verified: mem.verified };
+				})
+				.sort((a, b) => localeSort(a.name, b.name))
+				.map(({ name, user, verified }) => {
+					return `${verified ? '**✓**' : '✘'} \`\u200e${name}\u200f\` \u200e \` ${user} \u200f\``;
+				})
+				.join('\n'),
+			notLinked.length ? `\n${EMOJIS.WRONG} **Players not Linked: ${notLinked.length}**` : '',
+			notLinked
+				.sort((a, b) => localeSort(a.name, b.name))
+				.map((mem) => {
+					const name = sanitizeName(mem.name).padEnd(15, ' ');
+					return `✘ \`\u200e${name}\u200f\` \u200e \` ${mem.tag.padStart(12, ' ')} \u200f\``;
+				})
+				.join('\n')
+		]
+			.filter((text) => text)
+			.join('\n'),
+		{ maxLength: 4096 }
+	);
+
+	const embed = new EmbedBuilder()
+		.setColor(client.embed(guild.id))
+		.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.small })
+		.setDescription(chunks.at(0)!);
+	if (chunks.length > 1) {
+		embed.addFields(chunks.slice(1).map((chunk) => ({ name: '\u200b', value: chunk })));
+	}
+
+	return embed;
+};
+
+export const attacksEmbedMaker = async ({ clan, guild, sortKey }: { clan: Clan; guild: Guild; sortKey: 'attackWins' | 'defenseWins' }) => {
+	const client = container.resolve(Client);
+
+	const fetched = await client.http.detailedClanMembers(clan.memberList);
+	const members = fetched
+		.filter((res) => res.ok)
+		.map((m) => ({
+			name: m.name,
+			tag: m.tag,
+			attackWins: m.attackWins,
+			defenseWins: m.defenseWins
+		}));
+	members.sort((a, b) => b[sortKey] - a[sortKey]);
+
+	const embed = new EmbedBuilder()
+		.setColor(client.embed(guild.id))
+		.setAuthor({ name: `${clan.name} (${clan.tag})`, iconURL: clan.badgeUrls.medium })
+		.setDescription(
+			[
+				'```',
+				`\u200e ${'#'}  ${'ATK'}  ${'DEF'}  ${'NAME'.padEnd(15, ' ')}`,
+				members
+					.map((member, i) => {
+						const name = `${member.name.replace(/\`/g, '\\').padEnd(15, ' ')}`;
+						const attackWins = `${member.attackWins.toString().padStart(3, ' ')}`;
+						const defenseWins = `${member.defenseWins.toString().padStart(3, ' ')}`;
+						return `${(i + 1).toString().padStart(2, ' ')}  ${attackWins}  ${defenseWins}  \u200e${name}`;
+					})
+					.join('\n'),
+				'```'
+			].join('\n')
+		);
+
 	return embed;
 };

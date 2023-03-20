@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Compo
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
-import { Season } from '../../util/index.js';
+import { Season, Util } from '../../util/index.js';
 
 export default class SummaryCapitalContributionCommand extends Command {
 	public constructor() {
@@ -87,9 +87,9 @@ export default class SummaryCapitalContributionCommand extends Command {
 				}
 			])
 			.next();
+
 		const clansGroup = result?.clans ?? [];
 		const membersGroup = result?.members ?? [];
-
 		const maxPad = Math.max(...clansGroup.map((clan) => clan.total.toString().length));
 
 		const embed = new EmbedBuilder();
@@ -109,7 +109,7 @@ export default class SummaryCapitalContributionCommand extends Command {
 		);
 
 		if (week) {
-			embed.setFooter({ text: `Week ${week}` });
+			embed.setFooter({ text: `Week ${Util.dateRangeFormat(startWeek, endWeek)}` });
 		} else {
 			embed.setFooter({ text: `Season ${season}` });
 		}
@@ -143,8 +143,13 @@ export default class SummaryCapitalContributionCommand extends Command {
 								.join('\n'),
 							'```'
 						].join('\n')
-					)
-					.setFooter({ text: `Season ${season!}` });
+					);
+
+				if (week) {
+					embed.setFooter({ text: `Week ${Util.dateRangeFormat(startWeek, endWeek)}` });
+				} else {
+					embed.setFooter({ text: `Season ${season!}` });
+				}
 
 				await action.update({ embeds: [embed], components: [] });
 			}

@@ -496,36 +496,36 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				required: true,
 				choices: [
 					{
-						name: 'Heroes',
+						name: 'War weight',
 						value: 'heroes'
+					},
+					{
+						name: 'Player tags',
+						value: 'tags'
+					},
+					{
+						name: 'Discord links',
+						value: 'discord'
+					},
+					{
+						name: 'War preferences',
+						value: 'warPref'
+					},
+					{
+						name: 'Join dates',
+						value: 'joinLeave'
 					},
 					{
 						name: 'Trophies',
 						value: 'trophies'
 					},
 					{
-						name: 'War Preferences',
-						value: 'warPref'
-					},
-					{
-						name: 'Discord Links',
-						value: 'discord'
-					},
-					{
-						name: 'Clan Roles',
-						value: 'roles'
-					},
-					{
-						name: 'Player Tags',
-						value: 'tags'
-					},
-					{
 						name: 'Attacks',
 						value: 'attacks'
 					},
 					{
-						name: 'Join Dates',
-						value: 'joinLeave'
+						name: 'Clan roles',
+						value: 'roles'
 					}
 				]
 			},
@@ -2172,24 +2172,39 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		dm_permission: false,
 		options: [
 			{
-				name: 'compo',
-				description: 'Shows a summary of family compo.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'war-results',
-				description: 'Shows a summary of war results.',
+				name: 'best',
+				description: 'Shows a summary of best members.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
+					{
+						name: 'clans',
+						required: false,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'Clan tags or aliases to filter clans.'
+					},
 					{
 						name: 'season',
 						required: false,
 						type: ApplicationCommandOptionType.String,
 						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
+						// description_localizations: translation('command.summary.options.season.description'),
 						choices: getSeasonIds()
+					},
+					{
+						name: 'limit',
+						required: false,
+						type: ApplicationCommandOptionType.Integer,
+						description: 'Number of members to show (Default: 5)',
+						min_value: 3,
+						max_value: 10
 					}
 				]
+			},
+			{
+				name: 'compo',
+				description: 'Shows a summary of family compo.',
+				type: ApplicationCommandOptionType.Subcommand
 			},
 			{
 				name: 'wars',
@@ -2216,7 +2231,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: false,
 						type: ApplicationCommandOptionType.String,
 						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
+						// description_localizations: translation('command.summary.options.season.description'),
 						choices: getSeasonIds()
 					},
 					{
@@ -2228,45 +2243,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					}
 				]
 			},
-			// {
-			// 	name: 'members',
-			// 	description: 'Shows information about members.',
-			// 	type: ApplicationCommandOptionType.Subcommand
-			// },
 			{
 				name: 'clans',
 				description: 'Shows a summary of family clans.',
 				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'best',
-				description: 'Shows a summary of best members.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'clans',
-						required: false,
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String,
-						description: 'Clan tags or aliases to filter clans.'
-					},
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					},
-					{
-						name: 'limit',
-						required: false,
-						type: ApplicationCommandOptionType.Integer,
-						description: 'Number of members to show (Default: 5)',
-						min_value: 3,
-						max_value: 10
-					}
-				]
 			},
 			{
 				name: 'attacks',
@@ -2278,7 +2258,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: false,
 						type: ApplicationCommandOptionType.String,
 						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
+						// description_localizations: translation('command.summary.options.season.description'),
 						choices: getSeasonIds()
 					}
 				]
@@ -2286,17 +2266,30 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			{
 				name: 'trophies',
 				description: 'Shows a summary of trophies.',
-				type: ApplicationCommandOptionType.Subcommand
-				// options: [
-				// 	{
-				// 		name: 'season',
-				// 		required: false,
-				// 		type: ApplicationCommandOptionType.String,
-				// 		description: command.summary.options.season.description,
-				// 		description_localizations: translation('command.summary.options.season.description'),
-				// 		choices: getSeasonIds()
-				// 	}
-				// ]
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'limit',
+						required: false,
+						type: ApplicationCommandOptionType.Integer,
+						description: 'Limit the number of members.'
+					}
+				]
+			},
+			{
+				name: 'war-results',
+				description: 'Shows a summary of war results.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'season',
+						required: false,
+						type: ApplicationCommandOptionType.String,
+						description: command.summary.options.season.description,
+						// description_localizations: translation('command.summary.options.season.description'),
+						choices: getSeasonIds()
+					}
+				]
 			},
 			{
 				name: 'missed-wars',
@@ -2315,7 +2308,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: false,
 						type: ApplicationCommandOptionType.String,
 						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
+						// description_localizations: translation('command.summary.options.season.description'),
 						choices: getSeasonIds()
 					}
 				]
@@ -2344,30 +2337,22 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: false,
 						type: ApplicationCommandOptionType.String,
 						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
+						// description_localizations: translation('command.summary.options.season.description'),
 						choices: getSeasonIds()
+					},
+					{
+						name: 'week',
+						description: 'The week to show capital contributions for.',
+						type: ApplicationCommandOptionType.String,
+						required: false,
+						choices: getWeekIds()
 					}
 				]
 			},
-			// {
-			// 	name: 'cwl-ranks',
-			// 	description: 'Shows information about CWL ranks.',
-			// 	type: ApplicationCommandOptionType.Subcommand
-			// },
 			{
 				name: 'activity',
 				description: 'Shows a summary of clan activities (last seen).',
 				type: ApplicationCommandOptionType.Subcommand
-				// options: [
-				// 	{
-				// 		name: 'season',
-				// 		required: false,
-				// 		type: ApplicationCommandOptionType.String,
-				// 		description: command.summary.options.season.description,
-				// 		description_localizations: translation('command.summary.options.season.description'),
-				// 		choices: getSeasonIds()
-				// 	}
-				// ]
 			},
 			{
 				name: 'clan-games',
@@ -2379,7 +2364,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: false,
 						type: ApplicationCommandOptionType.String,
 						description: command.summary.options.season.description,
-						description_localizations: translation('command.summary.options.season.description'),
+						// description_localizations: translation('command.summary.options.season.description'),
 						choices: getSeasonIds()
 					}
 				]

@@ -47,9 +47,7 @@ export default class MembersCommand extends Command {
 
 		const data = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
-		if (data.members < 1) {
-			return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
-		}
+		if (!data.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: data.name }));
 
 		const fetched = (await this.client.http.detailedClanMembers(data.memberList)).filter((res) => res.ok);
 		const members = fetched
@@ -189,7 +187,7 @@ export default class MembersCommand extends Command {
 		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => [customId].includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000,
+			time: 10 * 60 * 1000,
 			max: 1
 		});
 

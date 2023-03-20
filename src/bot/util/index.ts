@@ -180,6 +180,18 @@ export class Util {
 			});
 	}
 
+	public static dateRangeFormat(startDate: Date, endDate: Date) {
+		if (startDate.getFullYear() !== endDate.getFullYear()) {
+			return `${moment(startDate).format('DD MMM YYYY')} - ${moment(endDate).format('DD MMM YYYY')}`;
+		}
+
+		if (startDate.getMonth() !== endDate.getMonth()) {
+			return `${moment(startDate).format('DD MMM')} - ${moment(endDate).format('DD MMM YYYY')}`;
+		}
+
+		return `${startDate.getDate()} - ${endDate.getDate()} ${moment(startDate).format('MMM YYYY')}`;
+	}
+
 	public static getPreviousLegendTimestamp() {
 		const { startTime } = this.getCurrentLegendTimestamp();
 		const prevDay = moment(startTime).startOf('day').subtract(1, 'day').add(5, 'hours');

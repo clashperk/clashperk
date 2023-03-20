@@ -7,7 +7,9 @@ import {
 	StringSelectMenuBuilder,
 	ButtonStyle,
 	ComponentType,
-	User
+	User,
+	MessageActionRowComponentBuilder,
+	BaseInteraction
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { TroopInfo, TroopJSON } from '../../types/index.js';
@@ -35,6 +37,18 @@ export default class UnitsCommand extends Command {
 		};
 	}
 
+	private getComponents(interaction: BaseInteraction) {
+		if (interaction.isButton() && interaction.message.components.length) {
+			const row = ActionRowBuilder.from(interaction.message.components.at(0)!);
+			return [row as ActionRowBuilder<MessageActionRowComponentBuilder>];
+		}
+		return [];
+	}
+
+	private isButton(interaction: BaseInteraction) {
+		return interaction.isButton();
+	}
+
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; user?: User }) {
 		let data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
@@ -52,8 +66,10 @@ export default class UnitsCommand extends Command {
 		const ButtonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setCustomId(CustomIds.MaxLevel).setLabel('Max Level').setStyle(ButtonStyle.Secondary)
 		);
-		const msg = await interaction.editReply({ embeds: [embed], components: [ButtonRow] });
 
+		if (this.isButton(interaction)) return interaction.editReply({ embeds: [embed] });
+
+		const msg = await interaction.editReply({ embeds: [embed], components: [ButtonRow] });
 		const players = data.user ? await this.client.resolver.getPlayers(data.user.id) : [];
 		const options = players.map((op) => ({
 			description: op.tag,
@@ -64,11 +80,11 @@ export default class UnitsCommand extends Command {
 		const MenuRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder().setCustomId(CustomIds.SelectAccount).setPlaceholder('Select an account!').addOptions(options)
 		);
-		await interaction.editReply({ components: options.length ? [ButtonRow, MenuRow] : [ButtonRow] });
 
+		if (options.length) await interaction.editReply({ components: [ButtonRow, MenuRow] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(CustomIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
+			filter: (action) => Object.values(CustomIds).includes(action.customId) && action.user.id === interaction.user.id
+			// time: 5 * 60 * 1000
 		});
 
 		collector.on('collect', async (action) => {

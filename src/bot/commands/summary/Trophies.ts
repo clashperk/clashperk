@@ -12,7 +12,7 @@ export default class SummaryTrophiesCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { limit?: number }) {
 		const clans = await this.client.storage.find(interaction.guild.id);
 
 		if (!clans.length) {
@@ -86,7 +86,7 @@ export default class SummaryTrophiesCommand extends Command {
 					.setDescription(
 						[
 							members
-								.slice(0, 69)
+								.slice(0, Math.min(69, Math.max(5, args.limit ?? 69)))
 								.map((member, index) => {
 									const trophies = `${member.trophies.toString().padStart(4, ' ')}`;
 									const rank = (index + 1).toString().padStart(2, ' ');
