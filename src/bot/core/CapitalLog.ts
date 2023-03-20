@@ -33,10 +33,10 @@ export default class CapitalLog extends BaseLog {
 
 		await this.send(cache, webhook, { embeds: [embed], threadId: cache.threadId });
 		const capitalDonationEmbed = await this.capitalDonations(cache);
-		if (capitalDonationEmbed) await this.send(cache, webhook, { embeds: [capitalDonationEmbed] });
+		if (capitalDonationEmbed) await this.send(cache, webhook, { embeds: [capitalDonationEmbed], threadId: cache.threadId });
 
 		for (const buffer of embedBuilder.files) {
-			await this.send(cache, webhook, { files: [buffer] });
+			await this.send(cache, webhook, { files: [buffer], threadId: cache.threadId });
 		}
 
 		await this.collection.updateOne({ clanId: cache.clanId }, { $set: { lastPosted: new Date() } });
