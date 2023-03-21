@@ -213,7 +213,7 @@ export default class MembersCommand extends Command {
 
 	private async getWarPref(clan: Clan, players: Player[]) {
 		const { aggregations } = await this.client.elastic.search({
-			index: 'clan_member_events',
+			index: 'war_pref_events',
 			query: {
 				bool: {
 					filter: [
