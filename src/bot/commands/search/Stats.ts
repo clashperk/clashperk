@@ -1,4 +1,4 @@
-import { CommandInteraction, EmbedBuilder, User } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder, User } from 'discord.js';
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
@@ -114,7 +114,10 @@ export default class StatsCommand extends Command {
 			})
 			.toArray();
 
-		const members: { [key: string]: { name: string; tag: string; total: number; success: number; hall: number } } = {};
+		const members: Record<
+			string,
+			{ name: string; tag: string; total: number; success: number; hall: number; attacks: number; stars: number }
+		> = {};
 		for (const war of wars) {
 			const clan: WarClan = war.clan.tag === data.tag ? war.clan : war.opponent;
 			const opponent: WarClan = war.clan.tag === data.tag ? war.opponent : war.clan;
@@ -125,17 +128,21 @@ export default class StatsCommand extends Command {
 			for (const m of clan.members) {
 				if (typeof compare === 'object' && compare.attackerTownHall !== m.townhallLevel) continue;
 				const clanMember = data.memberList.find((mem) => mem.tag === m.tag);
-				const member = members[m.tag] // eslint-disable-line
-					? members[m.tag]
-					: (members[m.tag] = {
-							name: clanMember?.name ?? m.name,
-							tag: m.tag,
-							total: 0,
-							success: 0,
-							hall: m.townhallLevel
-					  });
+				members[m.tag] ??= {
+					name: clanMember?.name ?? m.name,
+					tag: m.tag,
+					total: 0,
+					success: 0,
+					attacks: 0,
+					stars: 0,
+					hall: m.townhallLevel
+				};
+				const member = members[m.tag];
 
 				for (const attack of mode === 'attacks' ? m.attacks ?? [] : []) {
+					member.attacks += 1;
+					member.stars += attack.stars;
+
 					if (attempt === 'fresh' && !this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
 					if (attempt === 'cleanup' && this._isFreshAttack(attacks, attack.defenderTag, attack.order)) continue;
 
@@ -219,11 +226,11 @@ export default class StatsCommand extends Command {
 					[
 						`**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} ${tail}**`,
 						'',
-						`${EMOJIS.HASH} ${EMOJIS.TOWNHALL} \`RATE%  HITS   ${'NAME'.padEnd(15, ' ')}\u200f\``,
+						`${EMOJIS.HASH}${EMOJIS.TOWNHALL} \`RATE%  HITS  ${'NAME'.padEnd(15, ' ')}\u200f\``,
 						stats
 							.map((m, i) => {
 								const percentage = this._padStart(m.rate.toFixed(1), 5);
-								return `\u200e${BLUE_NUMBERS[++i]} ${ORANGE_NUMBERS[m.hall]} \`${percentage} ${this._padStart(
+								return `\u200e${BLUE_NUMBERS[++i]}${ORANGE_NUMBERS[m.hall]} \`${percentage} ${this._padStart(
 									m.success,
 									3
 								)}/${this._padEnd(m.total, 3)} ${this._padEnd(m.name, 14)} \u200f\``;
@@ -235,7 +242,54 @@ export default class StatsCommand extends Command {
 			)
 			.setFooter({ text: `War Types: ${WarTypes[type]} (Since ${moment(season).format('MMM YYYY')})` });
 
-		return interaction.editReply({ embeds: [embed] });
+		const customIds = {
+			avg: this.client.uuid(interaction.user.id)
+		};
+		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder().setCustomId(customIds.avg).setStyle(ButtonStyle.Primary).setLabel('Avg. Stars').setEmoji(EMOJIS.STAR)
+		);
+
+		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+
+		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+			time: 5 * 60 * 1000
+		});
+
+		collector.on('collect', async (action) => {
+			if (action.customId === customIds.avg) {
+				embed.setDescription(
+					Util.splitMessage(
+						[
+							`\u200e${EMOJIS.HASH}\`STAR AVG RATE%  ${'NAME'.padEnd(15, ' ')}\u200f\``,
+							stats
+								.map((m, i) => {
+									const percentage = this._padStart(this.percentage(m.rate), 5);
+									const stars = this._padStart(m.stars.toFixed(0), 3);
+									const avg = this._padStart(this.percentage(m.stars / m.attacks), 4);
+									return `\u200e${BLUE_NUMBERS[++i]}\`${stars} ${avg} ${percentage}  ${this._padEnd(
+										m.name,
+										14
+									)} \u200f\``;
+								})
+								.join('\n')
+						].join('\n'),
+						{ maxLength: 4096 }
+					)[0]
+				);
+
+				await action.update({ embeds: [embed], components: [] });
+			}
+		});
+
+		collector.on('end', async (_, reason) => {
+			Object.values(customIds).forEach((id) => this.client.components.delete(id));
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
+		});
+	}
+
+	private percentage(num: number) {
+		return num === 100 ? '100' : num.toFixed(1);
 	}
 
 	private async forUsers(

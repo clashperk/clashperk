@@ -61,6 +61,7 @@ export default class ExportClanMembersCommand extends Command {
 					name: m.name,
 					tag: m.tag,
 					clan: clan.name,
+					clanRank: mem.clanRank,
 					townHallLevel: m.townHallLevel,
 					warPreference: m.warPreference,
 					heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : [],
@@ -113,6 +114,7 @@ export default class ExportClanMembersCommand extends Command {
 		const workbook = new Workbook();
 		const sheet = workbook.addWorksheet('Member List');
 		sheet.columns = [
+			{ header: 'Clan Rank', width: 10 },
 			{ header: 'NAME', width: 16 },
 			{ header: 'TAG', width: 16 },
 			{ header: 'Discord', width: 16 },
@@ -134,6 +136,7 @@ export default class ExportClanMembersCommand extends Command {
 
 		sheet.addRows(
 			members.map((m) => [
+				m.clanRank,
 				m.name,
 				m.tag,
 				m.user_tag,
