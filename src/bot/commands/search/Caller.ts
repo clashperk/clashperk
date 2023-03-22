@@ -46,7 +46,7 @@ export default class TargetCommand extends Command {
 
 		if (args.command === 'clear') {
 			await this.client.db.collection<CallerCollection>(Collections.WAR_BASE_CALLS).updateOne(
-				{ warId },
+				{ warId, guild: interaction.guildId },
 				{
 					$unset: {
 						[`caller.${defenseTags[args.defense_target - 1]}-${args.defense_target}`]: ''
@@ -67,7 +67,7 @@ export default class TargetCommand extends Command {
 		const opponent = war.opponent.members.find((m) => m.tag === defense)!;
 
 		await this.client.db.collection<CallerCollection>(Collections.WAR_BASE_CALLS).updateOne(
-			{ warId },
+			{ warId, guild: interaction.guildId },
 			{
 				$set: {
 					name: clan.name,

@@ -113,6 +113,13 @@ class MongoDB extends MongoClient {
 				}
 			]),
 
+			db.collection(Collections.WAR_BASE_CALLS).createIndexes([
+				{
+					key: { warId: 1, guild: 1 },
+					unique: true
+				}
+			]),
+
 			db.collection(Collections.CAPITAL_CONTRIBUTIONS).createIndexes([
 				{
 					key: { tag: 1, season: 1 }
