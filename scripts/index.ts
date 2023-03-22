@@ -64,6 +64,6 @@ const applicationCommands = async (token: string, commands: typeof COMMANDS) => 
 		return applicationGuildCommands(token, []);
 	}
 
-	await applicationGuildCommands(process.env.BOT_TOKEN!, [...COMMANDS, ...PRIVATE_COMMANDS]);
-	// return applicationCommands(token, [...COMMANDS, ...PRIVATE_COMMANDS]);
+	// await applicationGuildCommands(process.env.BOT_TOKEN!, []);
+	return applicationCommands(token, [...COMMANDS, ...PRIVATE_COMMANDS]);
 })();

@@ -70,14 +70,7 @@ export default class ClanWarLog extends BaseLog {
 
 	private async send(cache: Cache, webhook: WebhookClient, data: Feed) {
 		const embed = this.embed(data);
-
-		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder()
-				.setLabel('Attacks')
-				.setEmoji(EMOJIS.SWORD)
-				.setStyle(ButtonStyle.Primary)
-				.setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, attacks: true }))
-		);
+		const row = this.getActionRow(data);
 
 		try {
 			return await super._send(cache, webhook, {
@@ -91,15 +84,31 @@ export default class ClanWarLog extends BaseLog {
 		}
 	}
 
-	private async edit(cache: Cache, webhook: WebhookClient, message: string, data: Feed) {
-		const embed = this.embed(data);
+	private getActionRow(data: Feed) {
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()
 				.setLabel('Attacks')
 				.setEmoji(EMOJIS.SWORD)
 				.setStyle(ButtonStyle.Primary)
-				.setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, attacks: true }))
+				.setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, attacks: true })),
+			new ButtonBuilder()
+				.setLabel('Defenses')
+				.setEmoji(EMOJIS.SHIELD)
+				.setStyle(ButtonStyle.Danger)
+				.setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.opponent.tag, attacks: true })),
+			new ButtonBuilder()
+				.setLabel('Open Bases')
+				.setEmoji(EMOJIS.EMPTY_STAR)
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, openBases: true }))
 		);
+
+		return row;
+	}
+
+	private async edit(cache: Cache, webhook: WebhookClient, message: string, data: Feed) {
+		const embed = this.embed(data);
+		const row = this.getActionRow(data);
 
 		try {
 			return await webhook.editMessage(message, {

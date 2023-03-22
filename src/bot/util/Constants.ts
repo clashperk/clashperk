@@ -33,6 +33,8 @@ export const enum Collections {
 	CG_SCHEDULERS = 'ClanGamesSchedulers',
 	RAID_SCHEDULERS = 'RaidSchedulers',
 
+	WAR_BASE_CALLS = 'WarBaseCalls',
+
 	PATRONS = 'Patrons',
 	SETTINGS = 'Settings',
 	LAST_SEEN = 'LastSeen',

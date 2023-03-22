@@ -15,6 +15,7 @@ import { EMOJIS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import Workbook from '../../struct/Excel.js';
 import { Util } from '../../util/index.js';
+import { CallerCollection } from '../../types/index.js';
 
 const stars: Record<string, string> = {
 	0: '☆☆☆',
@@ -38,7 +39,10 @@ export default class WarCommand extends Command {
 
 	// TODO : Args Parsing with last war id
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; war_id?: number; user?: User; attacks?: boolean }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { tag?: string; war_id?: number; user?: User; attacks?: boolean; openBases?: boolean }
+	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
@@ -51,6 +55,18 @@ export default class WarCommand extends Command {
 			const opponent = body.clan.tag === args.tag ? body.opponent : body.clan;
 
 			const em = this.attacks(interaction, { ...body, clan, opponent } as unknown as ClanWar);
+			return interaction.followUp({ embeds: [em], ephemeral: true });
+		}
+
+		if (args.openBases && args.war_id) {
+			const collection = this.client.db.collection(Collections.CLAN_WARS);
+			const body = await collection.findOne({ id: args.war_id });
+			if (!body) return interaction.followUp({ content: 'No war found with that ID.', ephemeral: true });
+
+			const clan = body.clan.tag === args.tag ? body.clan : body.opponent;
+			const opponent = body.clan.tag === args.tag ? body.opponent : body.clan;
+
+			const em = await this.openBases(interaction, { ...body, clan, opponent } as unknown as ClanWar);
 			return interaction.followUp({ embeds: [em], ephemeral: true });
 		}
 
@@ -193,21 +209,33 @@ export default class WarCommand extends Command {
 
 		const customIds = {
 			download: this.client.uuid(interaction.user.id),
-			attacks: this.client.uuid(interaction.user.id)
+			attacks: this.client.uuid(interaction.user.id),
+			defenses: this.client.uuid(interaction.user.id),
+			openBases: this.client.uuid(interaction.user.id)
 		};
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(
-				new ButtonBuilder()
-					.setLabel('Attacks')
-					.setEmoji(EMOJIS.SWORD)
-					.setStyle(ButtonStyle.Primary)
-					.setCustomId(customIds.attacks)
-					.setDisabled(body.clan.attacks === 0)
-			)
-			.addComponents(
-				new ButtonBuilder().setLabel('Download').setEmoji('📥').setStyle(ButtonStyle.Secondary).setCustomId(customIds.download)
-			);
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setLabel('Attacks')
+				.setEmoji(EMOJIS.SWORD)
+				.setStyle(ButtonStyle.Primary)
+				.setCustomId(customIds.attacks)
+				.setDisabled(body.clan.attacks === 0),
+			new ButtonBuilder()
+				.setLabel('Defenses')
+				.setEmoji(EMOJIS.SHIELD)
+				.setStyle(ButtonStyle.Danger)
+				.setCustomId(customIds.defenses)
+				.setDisabled(body.opponent.attacks === 0)
+		);
+		const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setLabel('Open Bases')
+				.setEmoji(EMOJIS.EMPTY_STAR)
+				.setStyle(ButtonStyle.Secondary)
+				.setCustomId(customIds.openBases),
+			new ButtonBuilder().setLabel('Download').setEmoji('📥').setStyle(ButtonStyle.Secondary).setCustomId(customIds.download)
+		);
+		const msg = await interaction.editReply({ embeds: [embed], components: [row, row2] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
 			time: 5 * 60 * 1000
@@ -225,6 +253,16 @@ export default class WarCommand extends Command {
 
 			if (action.customId === customIds.attacks) {
 				const em = this.attacks(interaction, body);
+				await action.reply({ embeds: [em] });
+			}
+
+			if (action.customId === customIds.defenses) {
+				const em = this.attacks(interaction, { ...body, clan: body.opponent, opponent: body.clan });
+				await action.reply({ embeds: [em] });
+			}
+
+			if (action.customId === customIds.openBases) {
+				const em = await this.openBases(interaction, body);
 				await action.reply({ embeds: [em] });
 			}
 		});
@@ -363,6 +401,7 @@ export default class WarCommand extends Command {
 				embed.data.description,
 				'',
 				`**Total Attacks - ${body.clan.attacks}/${body.teamSize * (body.attacksPerMember || 1)}**`,
+				`**\u200e\` # TH ${stars[3]} DEST ${'NAME'.padEnd(15, ' ')}\u200f\`**`,
 				body.clan.members
 					.sort((a, b) => a.mapPosition - b.mapPosition)
 					.map((member, n) => ({ ...member, mapPosition: n + 1 }))
@@ -379,6 +418,58 @@ export default class WarCommand extends Command {
 								)}% ${this.padEnd(`${name}`)}\``;
 							})
 							.join('\n');
+					})
+					.join('\n')
+			].join('\n')
+		);
+
+		return embed;
+	}
+
+	private toDate(ISO: string) {
+		return new Date(moment(ISO).toDate());
+	}
+
+	private createId(data: ClanWar) {
+		const ISO = this.toDate(data.preparationStartTime).toISOString().substring(0, 16);
+		return `${ISO}-${[data.clan.tag, data.opponent.tag].sort((a, b) => a.localeCompare(b)).join('-')}`;
+	}
+
+	private async openBases(interaction: CommandInteraction, body: ClanWar) {
+		const openBases = body.opponent.members
+			.sort((a, b) => a.mapPosition - b.mapPosition)
+			.map((member, n) => ({
+				...member,
+				mapPosition: n + 1,
+				originalMapPosition: member.mapPosition,
+				stars: member.bestOpponentAttack?.stars ?? 0,
+				destructionPercentage: member.bestOpponentAttack?.destructionPercentage ?? 0
+			}))
+			.filter((m) => m.stars !== 3);
+
+		const callerData = await this.client.db
+			.collection<CallerCollection>(Collections.WAR_BASE_CALLS)
+			.findOne({ warId: this.createId(body), guild: interaction.guildId });
+		const caller = callerData?.caller ?? {};
+
+		const embed = new EmbedBuilder()
+			.setColor(this.client.embed(interaction))
+			.setAuthor({ name: `\u200e${body.clan.name} (${body.clan.tag})`, iconURL: body.clan.badgeUrls.medium });
+		embed.setDescription(
+			[
+				embed.data.description,
+				'',
+				`**Enemy Clan Open Bases - ${openBases.length}/${body.teamSize}**`,
+				`**\u200e\`${stars[3]} DEST  # TH ${'Caller'.padEnd(15, ' ')}\u200f\`**`,
+				openBases
+					.map((member) => {
+						const n = member.mapPosition.toString();
+						const map = this.index(n);
+						const th = member.townhallLevel.toString().padStart(2, ' ');
+						const dest = this.percentage(member.destructionPercentage);
+						const key = `${member.tag}-${member.originalMapPosition}`;
+						const callerName = this.padEnd(caller[key]?.note ?? ''); // eslint-disable-line
+						return `\u200e\`${stars[member.stars]} ${dest}% ${map} ${th} ${callerName}\``;
 					})
 					.join('\n')
 			].join('\n')

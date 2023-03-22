@@ -8,10 +8,11 @@ import {
 	ComponentType,
 	EmbedBuilder
 } from 'discord.js';
+import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
+import { clanGamesSortingAlgorithm } from '../../util/Helper.js';
 import { ClanGames } from '../../util/index.js';
-
 export default class SummaryClanGamesCommand extends Command {
 	public constructor() {
 		super('summary-clan-games', {
@@ -24,14 +25,19 @@ export default class SummaryClanGamesCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { tag?: string; max: boolean; filter: boolean; season?: string }
+		args: { tag?: string; max: boolean; filter: boolean; season?: string; clans?: string }
 	) {
-		const clans = await this.client.storage.find(interaction.guildId);
+		const tags = await this.client.resolver.resolveArgs(args.clans);
+		const clans = tags.length
+			? await this.client.storage.search(interaction.guildId, tags)
+			: await this.client.storage.find(interaction.guildId);
+
+		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
 		if (!clans.length) {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
-		const seasonId = this.getSeasonId(args.season);
 
+		const seasonId = this.getSeasonId(args.season);
 		const queried = await this.query(
 			clans.map((clan) => clan.tag),
 			seasonId
@@ -106,9 +112,7 @@ export default class SummaryClanGamesCommand extends Command {
 					'```'
 				].join('\n')
 			);
-
 		embed.setFooter({ text: `Season ${seasonId}` });
-
 		return embed;
 	}
 
@@ -120,7 +124,7 @@ export default class SummaryClanGamesCommand extends Command {
 			filter = false,
 			seasonId
 		}: {
-			members: { name: string; tag: string; points: number }[];
+			members: { name: string; tag: string; points: number; completedAt?: Date; timeTaken?: number }[];
 			clans: { name: string; tag: string; points: number }[];
 			max?: boolean;
 			filter?: boolean;
@@ -128,18 +132,28 @@ export default class SummaryClanGamesCommand extends Command {
 		}
 	) {
 		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
+		members
+			.sort((a, b) => b.points - a.points)
+			.sort((a, b) => clanGamesSortingAlgorithm(a.completedAt?.getTime() ?? 0, b.completedAt?.getTime() ?? 0));
 		const embed = new EmbedBuilder()
 			.setAuthor({ name: 'Family Clan Games Scoreboard', iconURL: interaction.guild!.iconURL()! })
 			.setDescription(
 				[
 					`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${seasonId})](https://clashperk.com/faq)**`,
-					`\`\`\`\n\u200e\u2002# POINTS \u2002 ${'NAME'.padEnd(20, ' ')}`,
+					// `\`\`\`\n\u200e\u2002# SCORE ${' '.padStart(6, ' ')} ${'NAME'.padEnd(20, ' ')}`,
+					`\`\`\`\n\u200e\u2002# SCORE ${'NAME'.padEnd(20, ' ')}`,
 					members
 						.slice(0, 99)
 						.filter((d) => (filter ? d.points > 0 : d.points >= 0))
 						.map((m, i) => {
-							const points = this.padStart(max ? m.points : Math.min(this.MAX, m.points));
-							return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} \u2002 ${m.name}`;
+							// const points = this.padStart(max ? m.points : Math.min(this.MAX, m.points));
+							const points = m.points.toString().padStart(5, ' ');
+							// return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} ${this._formatTime(m.timeTaken).padEnd(
+							// 	6,
+							// 	' '
+							// )} ${m.name}`;
+
+							return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} ${m.name}${this._formatTime(m.timeTaken)}`;
 						})
 						.join('\n'),
 					'```'
@@ -148,7 +162,6 @@ export default class SummaryClanGamesCommand extends Command {
 
 		embed.setFooter({ text: `Points: ${total} [Avg: ${(total / members.length).toFixed(2)}]` });
 		embed.setTimestamp();
-
 		return embed;
 	}
 
@@ -173,9 +186,10 @@ export default class SummaryClanGamesCommand extends Command {
 	}
 
 	private query(clanTags: string[], seasonId: string) {
+		const _clanGamesStartTimestamp = moment(seasonId).add(21, 'days').hour(8).toDate().getTime();
 		const cursor = this.client.db.collection(Collections.CLAN_GAMES_POINTS).aggregate<{
 			clans: { name: string; tag: string; points: number }[];
-			members: { name: string; tag: string; points: number }[];
+			members: { name: string; tag: string; points: number; completedAt?: Date; timeTaken?: number }[];
 		}>([
 			{
 				$match: { __clans: { $in: clanTags }, season: seasonId }
@@ -192,12 +206,17 @@ export default class SummaryClanGamesCommand extends Command {
 					points: {
 						$subtract: ['$current', '$initial']
 					},
+					timeTaken: {
+						$dateDiff: {
+							startDate: '$completedAt',
+							endDate: '$$NOW',
+							unit: 'millisecond'
+						}
+					},
+					completedAt: '$completedAt',
 					name: 1,
 					tag: 1,
-					clan: {
-						name: 1,
-						tag: 1
-					}
+					clan: { name: 1, tag: 1 }
 				}
 			},
 			{
@@ -237,6 +256,22 @@ export default class SummaryClanGamesCommand extends Command {
 							}
 						},
 						{
+							$sort: {
+								timeTaken: -1
+							}
+						},
+						{
+							$set: {
+								timeTaken: {
+									$dateDiff: {
+										startDate: new Date(_clanGamesStartTimestamp),
+										endDate: '$completedAt',
+										unit: 'millisecond'
+									}
+								}
+							}
+						},
+						{
 							$limit: 100
 						}
 					]
@@ -245,5 +280,17 @@ export default class SummaryClanGamesCommand extends Command {
 		]);
 
 		return cursor.next()!;
+	}
+
+	private _formatTime(diff?: number) {
+		if (!diff) return '';
+		if (diff >= 24 * 60 * 60 * 1000) {
+			const time = moment.duration(diff).format('d[d] h[h]', { trim: 'both mid' });
+			// return time.length === 7 ? time.replace(/\s/g, '') : `${time}`;
+			return ` (${time})`;
+		}
+		const time = moment.duration(diff).format('h[h] m[m]', { trim: 'both mid' });
+		// return time.length === 7 ? time.replace(/\s/g, '') : `${time}`;
+		return ` (${time})`;
 	}
 }

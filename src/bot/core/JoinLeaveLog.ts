@@ -4,8 +4,9 @@ import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { Collections, DeepLinkTypes } from '../util/Constants.js';
-import { EMOJIS, HEROES, PLAYER_LEAGUES, TOWN_HALLS } from '../util/Emojis.js';
+import { EMOJIS, HEROES, PLAYER_LEAGUES, SUPER_TROOPS, TOWN_HALLS } from '../util/Emojis.js';
 import { Util } from '../util/index.js';
+import RAW_TROOPS_DATA from '../util/Troops.js';
 import BaseLog from './BaseLog.js';
 
 const OP: { [key: string]: number } = {
@@ -89,7 +90,8 @@ export default class JoinLeaveLog extends BaseLog {
 					`${TOWN_HALLS[player.townHallLevel]!}**${player.townHallLevel}**`,
 					`${this.formatHeroes(player)}`,
 					`${EMOJIS.WAR_STAR}**${player.warStars}**`,
-					`${PLAYER_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`
+					`${PLAYER_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`,
+					`${EMOJIS.TROOPS} ${this.remainingUpgrades(player)}% Rushed`
 				].join(' ')
 			);
 
@@ -126,6 +128,72 @@ export default class JoinLeaveLog extends BaseLog {
 		}
 
 		return `${EMOJIS.EXP} **${member.expLevel}**`;
+	}
+
+	private remainingUpgrades(data: Player) {
+		const lab = this.labRushed(data);
+		const heroes = this.heroRushed(data);
+		return ((lab + heroes) / 2).toFixed(2);
+	}
+
+	private heroRushed(data: Player) {
+		const apiTroops = this.apiTroops(data);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
+			(prev, unit) => {
+				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+				if (unit.category === 'hero' && unit.village === 'home') {
+					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
+					prev.total += unit.levels[data.townHallLevel - 2];
+				}
+				return prev;
+			},
+			{ total: 0, levels: 0 }
+		);
+		if (rem.total === 0) return 0;
+		return 100 - (rem.levels * 100) / rem.total;
+	}
+
+	private labRushed(data: Player) {
+		const apiTroops = this.apiTroops(data);
+		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
+			(prev, unit) => {
+				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
+				if (unit.village === 'home') {
+					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
+					prev.total += unit.levels[data.townHallLevel - 2];
+				}
+				return prev;
+			},
+			{ total: 0, levels: 0 }
+		);
+		if (rem.total === 0) return 0;
+		return 100 - (rem.levels * 100) / rem.total;
+	}
+
+	private apiTroops(data: Player) {
+		return [
+			...data.troops.map((u) => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'troop',
+				village: u.village
+			})),
+			...data.heroes.map((u) => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'hero',
+				village: u.village
+			})),
+			...data.spells.map((u) => ({
+				name: u.name,
+				level: u.level,
+				maxLevel: u.maxLevel,
+				type: 'spell',
+				village: u.village
+			}))
+		];
 	}
 
 	public async init() {

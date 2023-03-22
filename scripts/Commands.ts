@@ -900,6 +900,63 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
+		name: 'caller',
+		description: 'Set a target for a player in the current war.',
+		dm_permission: false,
+		options: [
+			{
+				name: 'assign',
+				description: common.options.tag.description,
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'defense_target',
+						description: 'The base target # of your opponent.',
+						type: ApplicationCommandOptionType.Integer,
+						required: true,
+						min_value: 1,
+						max_value: 50
+					},
+					{
+						name: 'offense_target',
+						description: 'The base target # of your clan.',
+						type: ApplicationCommandOptionType.Integer,
+						required: true,
+						min_value: 1,
+						max_value: 50
+					},
+					{
+						name: 'notes',
+						description: 'Notes to add to the target.',
+						type: ApplicationCommandOptionType.String,
+						required: false
+					},
+					{
+						name: 'hours',
+						description: 'The number of hours to set the target for.',
+						type: ApplicationCommandOptionType.Number,
+						required: false
+					}
+				]
+			},
+			{
+				name: 'clear',
+				description: common.options.user.description,
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'defense_target',
+						description: 'The base target # of your opponent.',
+						type: ApplicationCommandOptionType.Number,
+						required: true,
+						min_value: 1,
+						max_value: 50
+					}
+				]
+			}
+		]
+	},
+	{
 		name: 'remaining',
 		description: command.remaining.description,
 		dm_permission: false,

@@ -261,3 +261,18 @@ export interface ClanFeedLogModel {
 	threadId?: string;
 	lastPosted: Date;
 }
+
+export interface CallerCollection {
+	warId: string;
+	tag: string;
+	name: string;
+	caller: Record<
+		string,
+		{
+			offenseMap: number;
+			defenseMap: number;
+			note: string;
+			hours: number;
+		}
+	>;
+}
