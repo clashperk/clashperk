@@ -471,9 +471,12 @@ export default class WarCommand extends Command {
 						const callerName = this.padEnd(caller[key]?.note ?? ''); // eslint-disable-line
 						return `\u200e\`${stars[member.stars]} ${dest}% ${map} ${th} ${callerName}\``;
 					})
-					.join('\n')
+					.join('\n'),
+				'',
+				'Use </caller assign:1088122769318887465> command to assign a caller to a base.'
 			].join('\n')
 		);
+		embed.setFooter({ text: ' ' });
 
 		return embed;
 	}
