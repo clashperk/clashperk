@@ -476,8 +476,6 @@ export default class WarCommand extends Command {
 				'Use </caller assign:1088122769318887465> command to assign a caller to a base.'
 			].join('\n')
 		);
-		embed.setFooter({ text: ' ' });
-
 		return embed;
 	}
 

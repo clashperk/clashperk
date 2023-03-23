@@ -23,6 +23,13 @@ const achievements = [
 	'Most Valuable Clanmate'
 ];
 
+const roleNames: Record<string, string> = {
+	member: 'Mem',
+	admin: 'Eld',
+	coLeader: 'Co',
+	leader: 'Lead'
+};
+
 const HERO_LIST = Object.keys(HOME_HEROES);
 const PET_LIST = Object.keys(HERO_PETS);
 const PETS = PET_LIST.reduce<Record<string, number>>((prev, curr, i) => {
@@ -61,6 +68,7 @@ export default class ExportClanMembersCommand extends Command {
 					name: m.name,
 					tag: m.tag,
 					clan: clan.name,
+					role: roleNames[mem.role],
 					clanRank: mem.clanRank,
 					townHallLevel: m.townHallLevel,
 					warPreference: m.warPreference,
@@ -119,6 +127,7 @@ export default class ExportClanMembersCommand extends Command {
 			{ header: 'TAG', width: 16 },
 			{ header: 'Discord', width: 16 },
 			{ header: 'CLAN', width: 16 },
+			{ header: 'ROLE', width: 10 },
 			{ header: 'Town-Hall', width: 10 },
 			{ header: 'War Preference', width: 10 },
 			{ header: 'Rushed %', width: 10 },
@@ -141,6 +150,7 @@ export default class ExportClanMembersCommand extends Command {
 				m.tag,
 				m.user_tag,
 				m.clan,
+				m.role,
 				m.townHallLevel,
 				m.warPreference,
 				m.rushed,
