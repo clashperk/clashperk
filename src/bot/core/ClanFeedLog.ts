@@ -85,7 +85,6 @@ export default class ClanFeedLog extends BaseLog {
 		if (cache.deepLink === DeepLinkTypes.OpenInGame) {
 			embed.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(player.tag)}`);
 		}
-
 		if (member.op === 'NAME_CHANGE') {
 			embed.setDescription(`Name changed from **${member.name}**`);
 			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
@@ -122,7 +121,7 @@ export default class ClanFeedLog extends BaseLog {
 		return { embed, content };
 	}
 
-	private labRushed(data: Player) {
+	private remainingUpgrades(data: Player) {
 		const apiTroops = this.apiTroops(data);
 		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
@@ -135,31 +134,8 @@ export default class ClanFeedLog extends BaseLog {
 			},
 			{ total: 0, levels: 0 }
 		);
-		if (rem.total === 0) return 0;
-		return 100 - (rem.levels * 100) / rem.total;
-	}
-
-	private remainingUpgrades(data: Player) {
-		const lab = this.labRushed(data);
-		const heroes = this.heroRushed(data);
-		return ((lab + heroes) / 2).toFixed(2);
-	}
-
-	private heroRushed(data: Player) {
-		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
-			(prev, unit) => {
-				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
-				if (unit.category === 'hero' && unit.village === 'home') {
-					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
-					prev.total += unit.levels[data.townHallLevel - 2];
-				}
-				return prev;
-			},
-			{ total: 0, levels: 0 }
-		);
-		if (rem.total === 0) return 0;
-		return 100 - (rem.levels * 100) / rem.total;
+		if (rem.total === 0) return (0).toFixed(2);
+		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
 	}
 
 	private apiTroops(data: Player) {

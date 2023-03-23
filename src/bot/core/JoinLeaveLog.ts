@@ -131,29 +131,6 @@ export default class JoinLeaveLog extends BaseLog {
 	}
 
 	private remainingUpgrades(data: Player) {
-		const lab = this.labRushed(data);
-		const heroes = this.heroRushed(data);
-		return ((lab + heroes) / 2).toFixed(2);
-	}
-
-	private heroRushed(data: Player) {
-		const apiTroops = this.apiTroops(data);
-		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
-			(prev, unit) => {
-				const apiTroop = apiTroops.find((u) => u.name === unit.name && u.village === unit.village && u.type === unit.category);
-				if (unit.category === 'hero' && unit.village === 'home') {
-					prev.levels += Math.min(apiTroop?.level ?? 0, unit.levels[data.townHallLevel - 2]);
-					prev.total += unit.levels[data.townHallLevel - 2];
-				}
-				return prev;
-			},
-			{ total: 0, levels: 0 }
-		);
-		if (rem.total === 0) return 0;
-		return 100 - (rem.levels * 100) / rem.total;
-	}
-
-	private labRushed(data: Player) {
 		const apiTroops = this.apiTroops(data);
 		const rem = RAW_TROOPS_DATA.TROOPS.filter((unit) => !unit.seasonal && !(unit.name in SUPER_TROOPS)).reduce(
 			(prev, unit) => {
@@ -166,8 +143,8 @@ export default class JoinLeaveLog extends BaseLog {
 			},
 			{ total: 0, levels: 0 }
 		);
-		if (rem.total === 0) return 0;
-		return 100 - (rem.levels * 100) / rem.total;
+		if (rem.total === 0) return (0).toFixed(2);
+		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
 	}
 
 	private apiTroops(data: Player) {

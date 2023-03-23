@@ -50,30 +50,58 @@ export default class SummaryClanGamesCommand extends Command {
 			seasonId
 		});
 		const customIds = {
-			action: this.client.uuid(),
-			active: this.client.uuid()
+			times: this.client.uuid(interaction.user.id),
+			points: this.client.uuid(interaction.user.id)
 		};
 
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setLabel('Show Top Members').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
+			new ButtonBuilder().setLabel('Fastest Completion').setStyle(ButtonStyle.Primary).setCustomId(customIds.times)
 		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
+		await interaction.editReply({ embeds: [embed] });
+		const msg = await interaction.followUp({
+			embeds: [
+				this.playerScoreboard(interaction, {
+					members: queried?.members ?? [],
+					clans: queried?.clans ?? [],
+					max: args.max,
+					seasonId
+				})
+			],
+			components: [row]
+		});
+
 		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
 			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
 		});
 
 		collector.on('collect', async (action) => {
-			if (action.customId === customIds.action) {
+			if (action.customId === customIds.times) {
 				const embed = this.playerScoreboard(interaction, {
 					members: queried?.members ?? [],
 					clans: queried?.clans ?? [],
 					max: args.max,
-					filter: args.filter,
-					seasonId
+					seasonId,
+					showTime: true
 				});
 
-				await action.update({ embeds: [embed], components: [] });
+				row.setComponents(new ButtonBuilder().setLabel('Show Points').setStyle(ButtonStyle.Primary).setCustomId(customIds.points));
+				await action.update({ embeds: [embed], components: [row] });
+			}
+
+			if (action.customId === customIds.points) {
+				const embed = this.playerScoreboard(interaction, {
+					members: queried?.members ?? [],
+					clans: queried?.clans ?? [],
+					max: args.max,
+					seasonId,
+					showTime: false
+				});
+
+				row.setComponents(
+					new ButtonBuilder().setLabel('Fastest Completion').setStyle(ButtonStyle.Primary).setCustomId(customIds.times)
+				);
+				await action.update({ embeds: [embed], components: [row] });
 			}
 		});
 
@@ -121,14 +149,14 @@ export default class SummaryClanGamesCommand extends Command {
 		{
 			members,
 			max = false,
-			filter = false,
-			seasonId
+			seasonId,
+			showTime
 		}: {
 			members: { name: string; tag: string; points: number; completedAt?: Date; timeTaken?: number }[];
 			clans: { name: string; tag: string; points: number }[];
 			max?: boolean;
-			filter?: boolean;
 			seasonId: string;
+			showTime?: boolean;
 		}
 	) {
 		const total = members.reduce((prev, mem) => prev + (max ? mem.points : Math.min(mem.points, this.MAX)), 0);
@@ -140,20 +168,19 @@ export default class SummaryClanGamesCommand extends Command {
 			.setDescription(
 				[
 					`**[${this.i18n('command.clan_games.title', { lng: interaction.locale })} (${seasonId})](https://clashperk.com/faq)**`,
-					// `\`\`\`\n\u200e\u2002# SCORE ${' '.padStart(6, ' ')} ${'NAME'.padEnd(20, ' ')}`,
-					`\`\`\`\n\u200e\u2002# SCORE ${'NAME'.padEnd(20, ' ')}`,
+					showTime
+						? `\`\`\`\n\u200e\u2002# ${' '.padEnd(7, ' ')}  ${'NAME'.padEnd(20, ' ')}`
+						: `\`\`\`\n\u200e\u2002# POINTS  ${'NAME'.padEnd(20, ' ')}`,
 					members
 						.slice(0, 99)
-						.filter((d) => (filter ? d.points > 0 : d.points >= 0))
+						.filter((d) => (showTime ? d.points >= this.MAX : true))
 						.map((m, i) => {
-							// const points = this.padStart(max ? m.points : Math.min(this.MAX, m.points));
+							const completionTime = this._formatTime(m.timeTaken).padStart(7, ' ');
 							const points = m.points.toString().padStart(5, ' ');
-							// return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} ${this._formatTime(m.timeTaken).padEnd(
-							// 	6,
-							// 	' '
-							// )} ${m.name}`;
-
-							return `\u200e${(++i).toString().padStart(2, '\u2002')} ${points} ${m.name}${this._formatTime(m.timeTaken)}`;
+							if (showTime) {
+								return `\u200e${(++i).toString().padStart(2, '\u2002')} ${completionTime}  ${m.name}`;
+							}
+							return `\u200e${(++i).toString().padStart(2, '\u2002')}  ${points}  ${m.name}`;
 						})
 						.join('\n'),
 					'```'
@@ -285,12 +312,10 @@ export default class SummaryClanGamesCommand extends Command {
 	private _formatTime(diff?: number) {
 		if (!diff) return '';
 		if (diff >= 24 * 60 * 60 * 1000) {
-			const time = moment.duration(diff).format('d[d] h[h]', { trim: 'both mid' });
+			return moment.duration(diff).format('d[d] h[h]', { trim: 'both mid' });
 			// return time.length === 7 ? time.replace(/\s/g, '') : `${time}`;
-			return ` (${time})`;
 		}
-		const time = moment.duration(diff).format('h[h] m[m]', { trim: 'both mid' });
+		return moment.duration(diff).format('h[h] m[m]', { trim: 'both mid' });
 		// return time.length === 7 ? time.replace(/\s/g, '') : `${time}`;
-		return ` (${time})`;
 	}
 }

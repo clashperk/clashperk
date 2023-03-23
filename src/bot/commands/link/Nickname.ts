@@ -1,3 +1,4 @@
+import { Player } from 'clashofclans.js';
 import { GuildMember, ActionRowBuilder, CommandInteraction, ComponentType, StringSelectMenuBuilder } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { TOWN_HALLS } from '../../util/Emojis.js';
@@ -24,7 +25,7 @@ export default class NickNameCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { txt, member }: { txt?: string; member?: GuildMember }) {
+	public async exec(interaction: CommandInteraction<'cached'>, { member }: { member?: GuildMember; expression?: string }) {
 		if (!member) {
 			return interaction.editReply(this.i18n('command.nickname.invalid_member', { lng: interaction.locale }));
 		}
@@ -56,6 +57,7 @@ export default class NickNameCommand extends Command {
 			emoji: TOWN_HALLS[op.townHallLevel],
 			description: `${op.tag}`
 		}));
+
 		const customId = this.client.uuid(interaction.user.id, member.id);
 		const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
 			new StringSelectMenuBuilder().setCustomId(customId).setPlaceholder('Select an account!').addOptions(options)
@@ -69,7 +71,9 @@ export default class NickNameCommand extends Command {
 
 		collector.on('collect', async (action) => {
 			if (action.isStringSelectMenu() && action.customId === customId) {
-				const name = this.getName(options.find((opt) => opt.value === action.values[0])!.label, txt);
+				const player = players.find((p) => p.tag === action.values.at(0))!;
+				const name = this.getName(player);
+
 				if (name.length > 31) {
 					await action.reply({
 						ephemeral: true,
@@ -77,8 +81,7 @@ export default class NickNameCommand extends Command {
 					});
 				} else {
 					await member.setNickname(name, `Nickname set by ${interaction.user.tag}`).catch(() => null);
-
-					row.components[0].setDisabled(true);
+					row.components.at(0)!.setDisabled(true);
 					await action.update({
 						components: [row],
 						content: `**${member.user.tag}\'s** nickname set to **${name}**`
@@ -92,13 +95,10 @@ export default class NickNameCommand extends Command {
 		});
 	}
 
-	private getName(name: string, txt?: string) {
-		if (txt?.length && txt.trim().startsWith('|')) {
-			name = `${name} ${txt}`;
-		} else if (txt?.length && txt.trim().endsWith('|')) {
-			name = `${txt} ${name}`;
-		}
-
-		return name;
+	private getName(player: Player, expression = '{NAME}') {
+		return expression
+			.replace(/{TH}/g, player.townHallLevel.toString())
+			.replace(/{NAME}/g, player.name)
+			.replace(/{ROLE}/g, player.role ?? '');
 	}
 }
