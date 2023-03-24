@@ -106,7 +106,8 @@ export const enum Settings {
 	WEBHOOK_LIMIT = 'webhookLimit',
 	ALLOW_EXTERNAL_ACCOUNTS = 'allowExternalAccounts',
 	ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague',
-	CLAN_GAMES_EXCEPTIONAL_MONTHS = 'clanGamesExceptionalMonths'
+	CLAN_GAMES_EXCEPTIONAL_MONTHS = 'clanGamesExceptionalMonths',
+	CLAN_GAMES_REMINDER_TIMESTAMP = 'clanGamesReminderTimestamp'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {

@@ -3,7 +3,7 @@ import { APIMessage, ForumChannel, NewsChannel, TextChannel, WebhookClient } fro
 import moment from 'moment';
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { ClanGamesModel } from '../types/index.js';
-import { Collections } from '../util/Constants.js';
+import { Collections, Settings } from '../util/Constants.js';
 import { ORANGE_NUMBERS } from '../util/Emojis.js';
 import { ClanGames, Util } from '../util/index.js';
 import { Client } from './Client.js';
@@ -60,6 +60,28 @@ export default class ClanGamesScheduler {
 
 		await this._refresh();
 		setInterval(this._refresh.bind(this), this.refreshRate).unref();
+
+		await this._insert();
+		setInterval(this._insert.bind(this), this.refreshRate + 25 * 60 * 1000).unref();
+	}
+
+	private async _insert() {
+		const insertedSeasonId = this.client.settings.get('global', Settings.CLAN_GAMES_REMINDER_TIMESTAMP, '0');
+		const currentSeasonId = this.getSeasonId();
+		if (insertedSeasonId === currentSeasonId) return null;
+
+		this.client.logger.info(`Inserting new clan games schedules for season ${currentSeasonId}`, { label: 'ClanGamesScheduler' });
+		const cursor = this.reminders.find({
+			guild: {
+				$in: this.client.guilds.cache.map((guild) => guild.id)
+			}
+		});
+		while (await cursor.hasNext()) {
+			const reminder = await cursor.next();
+			if (reminder) await this.create(reminder);
+		}
+		this.client.settings.set('global', Settings.CLAN_GAMES_REMINDER_TIMESTAMP, currentSeasonId);
+		this.client.logger.info(`Inserted new clan games schedules for season ${currentSeasonId}`, { label: 'ClanGamesScheduler' });
 	}
 
 	public async create(reminder: ClanGamesReminder) {
