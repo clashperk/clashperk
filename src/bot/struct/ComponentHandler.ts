@@ -103,6 +103,12 @@ export default class ComponentHandler {
 				await this.client.commandHandler.exec(interaction, command, { ...parsed });
 				return true;
 			}
+			case 'stats': {
+				const command = this.client.commandHandler.modules.get('stats')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, { ...parsed });
+				return true;
+			}
 			case 'link-add': {
 				const command = this.client.commandHandler.modules.get('link-add')!;
 				await this.client.commandHandler.exec(interaction, command, { ...parsed });

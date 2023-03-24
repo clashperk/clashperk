@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder, User } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, EmbedBuilder, User } from 'discord.js';
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
 import moment from 'moment';
 import { BLUE_NUMBERS, ORANGE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
@@ -73,25 +73,32 @@ export default class StatsCommand extends Command {
 	}
 
 	public async exec(
-		interaction: CommandInteraction<'cached'>,
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
 		args: {
 			command: Mode;
 			tag?: string;
 			compare: string | Compare;
-			type: WarTypeArg;
+			type?: WarTypeArg;
 			stars: string;
 			season: string;
 			attempt?: string;
 			user?: User;
+			wars?: number;
+			view?: string;
 		}
 	) {
 		if (args.user) return this.forUsers(interaction, args);
 
-		let { command: mode, compare, type, stars, season, attempt } = args;
+		const stars = args.view === 'starsAvg' ? '>=1' : args.stars || '==3';
+		const season = args.season || Util.getLastSeasonId();
+		const type = args.type ?? 'noFriendly';
+		const attempt = args.attempt;
+		const compare = this.compare(args.compare as string);
+		const mode = args.command || 'attacks'; // eslint-disable-line
+
 		const data = await this.client.resolver.resolveClan(interaction, args.tag);
 		if (!data) return;
 
-		compare = this.compare(compare as string);
 		const extra =
 			type === 'regular'
 				? { warType: WarType.REGULAR }
@@ -104,15 +111,27 @@ export default class StatsCommand extends Command {
 				: type === 'noCWL'
 				? { warType: { $ne: WarType.CWL } }
 				: {};
+		const filters = args.wars && args.wars >= 1 ? {} : { preparationStartTime: { $gte: new Date(season) } };
 
-		const wars = await this.client.db
-			.collection(Collections.CLAN_WARS)
-			.find({
-				$or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }],
-				preparationStartTime: { $gte: new Date(season) },
-				...extra
-			})
-			.toArray();
+		const cursor = this.client.db.collection(Collections.CLAN_WARS).find({
+			// $or: [{ 'clan.tag': data.tag }, { 'opponent.tag': data.tag }],
+			$or: [
+				{
+					'clan.members.tag': {
+						$in: data.memberList.map((m) => m.tag)
+					}
+				},
+				{
+					'opponent.members.tag': {
+						$in: data.memberList.map((m) => m.tag)
+					}
+				}
+			],
+			...filters,
+			...extra
+		});
+		if (args.wars && args.wars >= 1) cursor.limit(args.wars);
+		const wars = await cursor.toArray();
 
 		const members: Record<
 			string,
@@ -217,75 +236,77 @@ export default class StatsCommand extends Command {
 				? `TH ${Object.values(compare).join('vs')}`
 				: `${compare.replace(/\b(\w)/g, (char) => char.toUpperCase())} TH`;
 		const tail = attempt ? `% (${attempt.replace(/\b(\w)/g, (char) => char.toUpperCase())})` : 'Rates';
-
 		const starType = `${stars.startsWith('>') ? '>= ' : ''}${stars.replace(/[>=]+/, '')}`;
-		const embed = new EmbedBuilder()
-			.setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.small })
-			.setDescription(
+
+		const embed = new EmbedBuilder().setAuthor({ name: `${data.name} (${data.tag})`, iconURL: data.badgeUrls.small }).setDescription(
+			Util.splitMessage(
+				[
+					`**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} ${tail}**`,
+					'',
+					`${EMOJIS.HASH}${EMOJIS.TOWNHALL} \`RATE%  HITS  ${'NAME'.padEnd(15, ' ')}\u200f\``,
+					stats
+						.map((m, i) => {
+							const percentage = this._padStart(m.rate.toFixed(1), 5);
+							return `\u200e${BLUE_NUMBERS[++i]}${ORANGE_NUMBERS[m.hall]} \`${percentage} ${this._padStart(
+								m.success,
+								3
+							)}/${this._padEnd(m.total, 3)} ${this._padEnd(m.name, 14)} \u200f\``;
+						})
+						.join('\n')
+				].join('\n'),
+				{ maxLength: 4096 }
+			)[0]
+		);
+
+		if (args.wars && args.wars >= 1) {
+			embed.setFooter({ text: `War Type: ${WarTypes[type]} (last ${args.wars} wars)` });
+		} else {
+			embed.setFooter({ text: `War Type: ${WarTypes[type]} (Since ${moment(season).format('MMM YYYY')})` });
+		}
+
+		if (args.view === 'avg') {
+			embed.setDescription(
 				Util.splitMessage(
 					[
 						`**${hall}, ${starType} Star ${mode === 'attacks' ? 'Attack Success' : 'Defense Failure'} ${tail}**`,
 						'',
-						`${EMOJIS.HASH}${EMOJIS.TOWNHALL} \`RATE%  HITS  ${'NAME'.padEnd(15, ' ')}\u200f\``,
+						`\u200e${EMOJIS.HASH}\`STAR AVG RATE%  ${'NAME'.padEnd(15, ' ')}\u200f\``,
 						stats
 							.map((m, i) => {
-								const percentage = this._padStart(m.rate.toFixed(1), 5);
-								return `\u200e${BLUE_NUMBERS[++i]}${ORANGE_NUMBERS[m.hall]} \`${percentage} ${this._padStart(
-									m.success,
-									3
-								)}/${this._padEnd(m.total, 3)} ${this._padEnd(m.name, 14)} \u200f\``;
+								const percentage = this._padStart(this.percentage(m.rate), 5);
+								const stars = this._padStart(m.stars.toFixed(0), 3);
+								const avg = this._padStart(this.percentage(m.stars / m.attacks), 4);
+								return `\u200e${BLUE_NUMBERS[++i]}\`${stars} ${avg} ${percentage}  ${this._padEnd(m.name, 14)} \u200f\``;
 							})
 							.join('\n')
 					].join('\n'),
 					{ maxLength: 4096 }
 				)[0]
-			)
-			.setFooter({ text: `War Types: ${WarTypes[type]} (Since ${moment(season).format('MMM YYYY')})` });
+			);
+		}
+
+		embed.setTimestamp();
 
 		const customIds = {
-			avg: this.client.uuid(interaction.user.id)
+			starsAvg: JSON.stringify({
+				cmd: this.id,
+				type,
+				stars,
+				wars: args.wars,
+				view: 'avg',
+				tag: data.tag
+			})
 		};
-		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setCustomId(customIds.avg).setStyle(ButtonStyle.Primary).setLabel('Avg. Stars').setEmoji(EMOJIS.STAR)
-		);
 
-		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
-
-		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
-		});
-
-		collector.on('collect', async (action) => {
-			if (action.customId === customIds.avg) {
-				embed.setDescription(
-					Util.splitMessage(
-						[
-							`\u200e${EMOJIS.HASH}\`STAR AVG RATE%  ${'NAME'.padEnd(15, ' ')}\u200f\``,
-							stats
-								.map((m, i) => {
-									const percentage = this._padStart(this.percentage(m.rate), 5);
-									const stars = this._padStart(m.stars.toFixed(0), 3);
-									const avg = this._padStart(this.percentage(m.stars / m.attacks), 4);
-									return `\u200e${BLUE_NUMBERS[++i]}\`${stars} ${avg} ${percentage}  ${this._padEnd(
-										m.name,
-										14
-									)} \u200f\``;
-								})
-								.join('\n')
-						].join('\n'),
-						{ maxLength: 4096 }
-					)[0]
-				);
-
-				await action.update({ embeds: [embed], components: [] });
-			}
-		});
-
-		collector.on('end', async (_, reason) => {
-			Object.values(customIds).forEach((id) => this.client.components.delete(id));
-			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
-		});
+		const button = new ButtonBuilder().setCustomId(customIds.starsAvg).setStyle(ButtonStyle.Primary);
+		if (interaction.isButton()) {
+			button.setEmoji(EMOJIS.REFRESH);
+		} else {
+			button.setEmoji(EMOJIS.STAR);
+			button.setLabel('Avg. Stars');
+		}
+		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(button);
+		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private percentage(num: number) {
@@ -293,12 +314,12 @@ export default class StatsCommand extends Command {
 	}
 
 	private async forUsers(
-		interaction: CommandInteraction<'cached'>,
+		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
 		args: {
 			command: Mode;
 			tag?: string;
 			compare: string | Compare;
-			type: WarTypeArg;
+			type?: WarTypeArg;
 			stars: string;
 			season: string;
 			attempt?: string;
@@ -453,7 +474,7 @@ export default class StatsCommand extends Command {
 					{ maxLength: 4096 }
 				)[0]
 			)
-			.setFooter({ text: `War Types: ${WarTypes[type]} (Since ${moment(season).format('MMM YYYY')})` });
+			.setFooter({ text: `War Types: ${WarTypes[type ?? 'noFriendly']} (Since ${moment(season).format('MMM YYYY')})` });
 
 		return interaction.editReply({ embeds: [embed] });
 	}

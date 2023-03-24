@@ -8,7 +8,7 @@ import { Collections } from '../../util/Constants.js';
 export default class TargetCommand extends Command {
 	public constructor() {
 		super('caller', {
-			category: 'search',
+			category: 'war',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
 			description: {

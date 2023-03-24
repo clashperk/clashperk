@@ -646,6 +646,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
 					},
 					{
+						name: 'wars',
+						description: 'Number of last wars to include.',
+						type: ApplicationCommandOptionType.Integer
+					},
+					{
 						name: 'attempt',
 						description: command.stats.options.attempt.description,
 						description_localizations: translation('command.stats.options.attempt.description'),
@@ -901,12 +906,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	},
 	{
 		name: 'caller',
-		description: 'Set a target for a player in the current war.',
+		description: 'Manage the war base caller.',
 		dm_permission: false,
 		options: [
 			{
 				name: 'assign',
-				description: common.options.tag.description,
+				description: 'Set a target for a player in the current war.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -941,7 +946,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'clear',
-				description: common.options.user.description,
+				description: 'Clear the target for a player in the current war.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
