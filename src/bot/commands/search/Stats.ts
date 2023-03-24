@@ -130,6 +130,7 @@ export default class StatsCommand extends Command {
 			...filters,
 			...extra
 		});
+		cursor.sort({ _id: -1 });
 		if (args.wars && args.wars >= 1) cursor.limit(args.wars);
 		const wars = await cursor.toArray();
 
@@ -259,9 +260,9 @@ export default class StatsCommand extends Command {
 		);
 
 		if (args.wars && args.wars >= 1) {
-			embed.setFooter({ text: `War Type: ${WarTypes[type]} (last ${args.wars} wars)` });
+			embed.setFooter({ text: `War Type: ${WarTypes[type]}\n(Last ${wars.length} wars)` });
 		} else {
-			embed.setFooter({ text: `War Type: ${WarTypes[type]} (Since ${moment(season).format('MMM YYYY')})` });
+			embed.setFooter({ text: `War Type: ${WarTypes[type]}\n(Since ${moment(season).format('MMM YYYY')}, ${wars.length} wars)` });
 		}
 
 		if (args.view === 'avg') {
