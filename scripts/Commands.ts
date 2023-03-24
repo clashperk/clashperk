@@ -648,7 +648,9 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					{
 						name: 'wars',
 						description: 'Number of last wars to include.',
-						type: ApplicationCommandOptionType.Integer
+						type: ApplicationCommandOptionType.Integer,
+						min_value: 10,
+						max_value: 100
 					},
 					{
 						name: 'attempt',
