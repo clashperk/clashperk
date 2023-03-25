@@ -28,7 +28,7 @@ export default class LegendGraphCommand extends Command {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
-		const seasonIds = Array.from({ length: 4 }, (_, i) => i)
+		const seasonIds = Array.from({ length: 3 }, (_, i) => i)
 			.map((i) => moment().startOf('month').subtract(i, 'months').toDate())
 			.map((date) => Season.getSeasonIdAgainstDate(date))
 			.reverse()

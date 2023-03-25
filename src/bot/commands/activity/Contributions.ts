@@ -5,6 +5,7 @@ import { Command } from '../../lib/index.js';
 import { ClanCapitalGoldModel } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
 
 export default class CapitalContributionsCommand extends Command {
 	public constructor() {
@@ -31,6 +32,7 @@ export default class CapitalContributionsCommand extends Command {
 
 		const startWeek = moment(weekId).utc(true).add(7, 'h').utc().toDate();
 		const endWeek = moment(weekId).utc(true).add(7, 'd').add(7, 'h').toDate();
+		const weekend = Util.raidWeekDateFormat(startWeek, endWeek);
 
 		const contributions = await this.client.db
 			.collection(Collections.CAPITAL_CONTRIBUTIONS)
@@ -92,7 +94,7 @@ export default class CapitalContributionsCommand extends Command {
 					.setURL(`https://app.clashperk.com/capital/${encodeURIComponent(clan.tag)}`)
 			);
 
-		const embed = this.getCapitalContributionsEmbed({ clan, weekId, contributions, locale: interaction.locale });
+		const embed = this.getCapitalContributionsEmbed({ clan, weekId: weekend, contributions, locale: interaction.locale });
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
@@ -122,7 +124,7 @@ export default class CapitalContributionsCommand extends Command {
 			})
 			.setDescription(
 				[
-					`**${this.i18n('command.capital.contribution.title', { lng: locale })} (${weekId})**`,
+					`**${this.i18n('command.capital.contribution.title', { lng: locale })}**`,
 					'```',
 					'\u200e #  TOTAL  NAME',
 					members

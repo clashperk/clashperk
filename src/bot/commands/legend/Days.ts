@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { EmbedBuilder, CommandInteraction, ActionRowBuilder, escapeMarkdown, time, ButtonBuilder, ButtonStyle, User } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
+import moment from 'moment';
+import fetch from 'node-fetch';
 import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { attackCounts, Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
@@ -40,14 +42,6 @@ export default class LegendDaysCommand extends Command {
 		const data = await this.client.resolver.resolvePlayer(interaction, args.tag ?? args.user?.id);
 		if (!data) return;
 
-		if (args.graph) {
-			return this.handler.modules.get('legend-graph')?.exec(interaction, { tag: data.tag });
-		}
-
-		const embed = args.prev
-			? (await this.logs(data)).setColor(this.client.embed(interaction))
-			: (await this.embed(interaction, data, args.day)).setColor(this.client.embed(interaction));
-
 		const row = new ActionRowBuilder<ButtonBuilder>()
 			.addComponents(
 				new ButtonBuilder()
@@ -60,15 +54,27 @@ export default class LegendDaysCommand extends Command {
 					.setLabel(args.prev ? 'Current Day' : 'Previous Days')
 					.setCustomId(JSON.stringify({ cmd: this.id, prev: !args.prev, _: 1, tag: data.tag }))
 					.setStyle(args.prev ? ButtonStyle.Success : ButtonStyle.Primary)
+			)
+			.addComponents(
+				new ButtonBuilder()
+					.setLabel(args.graph ? 'Overview' : 'View Graph')
+					.setCustomId(JSON.stringify({ cmd: this.id, graph: !args.graph, tag: data.tag }))
+					.setStyle(ButtonStyle.Secondary)
 			);
-		// .addComponents(
-		// 	new ButtonBuilder()
-		// 		.setLabel('Graph')
-		// 		.setCustomId(JSON.stringify({ cmd: this.id, graph: true, tag: data.tag }))
-		// 		.setStyle(ButtonStyle.Secondary)
-		// );
 
-		return interaction.editReply({ embeds: [embed], components: [row] });
+		if (args.graph) {
+			const url = await this.graph(data);
+			if (!url) {
+				return interaction.followUp({ content: this.i18n('common.no_data', { lng: interaction.locale }), ephemeral: true });
+			}
+			return interaction.editReply({ content: url, embeds: [], components: [row] });
+		}
+
+		const embed = args.prev
+			? (await this.logs(data)).setColor(this.client.embed(interaction))
+			: (await this.embed(interaction, data, args.day)).setColor(this.client.embed(interaction));
+
+		return interaction.editReply({ embeds: [embed], components: [row], content: null });
 	}
 
 	public async getPlayers(userId: string) {
@@ -225,6 +231,196 @@ export default class LegendDaysCommand extends Command {
 		return embed;
 	}
 
+	private async graph(data: Player) {
+		const seasonIds = Array.from({ length: 3 }, (_, i) => i)
+			.map((i) => moment().startOf('month').subtract(i, 'months').toDate())
+			.map((date) => Season.getSeasonIdAgainstDate(date))
+			.reverse()
+			.slice(0, 3);
+
+		const [, seasonStart, seasonEnd] = seasonIds;
+
+		const result = await this.client.db
+			.collection(Collections.LEGEND_ATTACKS)
+			.aggregate<{
+				_id: string;
+				logs: {
+					timestamp: Date;
+					trophies: string | null;
+				}[];
+				avgGain: number;
+				avgOffense: number;
+				avgDefense: number;
+			}>([
+				{
+					$match: {
+						tag: data.tag,
+						seasonId: {
+							$in: seasonIds.map((id) => Season.generateID(id))
+						}
+					}
+				},
+				{
+					$unwind: {
+						path: '$logs'
+					}
+				},
+				{
+					$set: {
+						ts: {
+							$toDate: '$logs.timestamp'
+						}
+					}
+				},
+				{
+					$set: {
+						ts: {
+							$dateTrunc: {
+								date: '$ts',
+								unit: 'day'
+							}
+						}
+					}
+				},
+				{
+					$sort: {
+						ts: 1
+					}
+				},
+				{
+					$addFields: {
+						gain: {
+							$subtract: ['$logs.end', '$logs.start']
+						},
+						offense: {
+							$cond: {
+								if: {
+									$gt: ['$logs.inc', 0]
+								},
+								then: '$logs.inc',
+								else: 0
+							}
+						},
+						defense: {
+							$cond: {
+								if: {
+									$lte: ['$logs.inc', 0]
+								},
+								then: '$logs.inc',
+								else: 0
+							}
+						}
+					}
+				},
+				{
+					$group: {
+						_id: '$ts',
+						seasonId: {
+							$first: '$seasonId'
+						},
+						trophies: {
+							$last: '$logs.end'
+						},
+						gain: {
+							$sum: '$gain'
+						},
+						offense: {
+							$sum: '$offense'
+						},
+						defense: {
+							$sum: '$defense'
+						}
+					}
+				},
+				{
+					$sort: {
+						_id: 1
+					}
+				},
+				{
+					$group: {
+						_id: '$seasonId',
+						logs: {
+							$push: {
+								timestamp: '$_id',
+								trophies: '$trophies'
+							}
+						},
+						avgGain: {
+							$avg: '$gain'
+						},
+						avgDefense: {
+							$avg: '$defense'
+						},
+						avgOffense: {
+							$avg: '$offense'
+						}
+					}
+				},
+				{
+					$sort: {
+						_id: -1
+					}
+				}
+			])
+			.toArray();
+		if (!result.length) return null;
+
+		const season = result.at(0)!;
+		const dates = season.logs.map((log) => moment(log.timestamp));
+		const minDate = moment.min(dates).startOf('day');
+		const maxDate = moment.max(dates).endOf('day');
+		const labels = Array.from({ length: maxDate.diff(minDate, 'days') + 1 }, (_, i) => moment(minDate).add(i, 'days').toDate());
+
+		const currentDate = new Date(maxDate.toDate());
+		const currentYear = currentDate.getFullYear();
+		const currentMonth = currentDate.getMonth();
+		const daysInPreviousMonth = new Date(currentYear, currentMonth, 0).getDate();
+
+		result.forEach(({ logs, _id }) => {
+			if (_id !== season._id) {
+				logs.forEach((log) => {
+					const daysToSubtract = daysInPreviousMonth - log.timestamp.getDate();
+					const newDate = new Date(currentYear, currentMonth, currentDate.getDate() - daysToSubtract);
+					log.timestamp = newDate;
+				});
+			}
+		});
+
+		for (const label of labels) {
+			result.forEach(({ logs }) => {
+				const log = logs.find((log) => moment(log.timestamp).isSame(label, 'day'));
+				if (!log) logs.push({ timestamp: label, trophies: null });
+			});
+
+			for (const season of result) {
+				season.logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+			}
+		}
+
+		const res = await fetch(`${process.env.ASSET_API_BACKEND!}/legends/graph`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				datasets: result.slice(0, 2),
+				labels,
+				name: data.name,
+				avgNetGain: this.formatNumber(season.avgGain),
+				avgOffense: this.formatNumber(season.avgOffense),
+				avgDefense: this.formatNumber(season.avgDefense),
+				currentTrophies: data.trophies.toFixed(0),
+				clanName: data.clan?.name,
+				clanBadgeURL: data.clan?.badgeUrls.large,
+				season: `${moment(season._id).format('MMMM YYYY')} (${moment(seasonStart).format('DD MMM')} - ${moment(seasonEnd).format(
+					'DD MMM'
+				)})`
+			})
+		}).then((res) => res.json());
+		return `${process.env.ASSET_API_BACKEND!}/${(res as any).id as string}`;
+	}
+
 	private async logs(data: Player) {
 		const seasonId = Season.ID;
 		const legend = (await this.client.redis.json.get(`LP-${seasonId}-${data.tag}`)) as {
@@ -287,11 +483,18 @@ export default class LegendDaysCommand extends Command {
 			].join('\n')
 		);
 
+		const url = await this.graph(data);
+		if (url) embed.setImage(url);
+
 		return embed;
 	}
 
 	private pad(num: number | string, padding = 4) {
 		return num.toString().padStart(padding, ' ');
+	}
+
+	private formatNumber(num: number) {
+		return `${num > 0 ? '+' : ''}${num.toFixed(0)}`;
 	}
 }
 

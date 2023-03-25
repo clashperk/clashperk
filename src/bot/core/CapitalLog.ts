@@ -135,7 +135,7 @@ export default class CapitalLog extends BaseLog {
 			].join('\n')
 		);
 
-		const offensiveReward = this.client.http.calcRaidMedals(data.attackLog);
+		const offensiveReward = this.client.http.calcRaidMedals(data);
 		const raidsCompleted = this.client.http.calcRaidCompleted(data.attackLog);
 
 		const query = new URLSearchParams({

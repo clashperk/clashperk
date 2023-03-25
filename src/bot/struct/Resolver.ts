@@ -156,6 +156,21 @@ export default class Resolver {
 		return Array.from(new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]));
 	}
 
+	public async getLinkedUsers(players: { tag: string }[]) {
+		const fetched = await Promise.all([
+			this.client.db
+				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+				.find({ tag: { $in: players.map((player) => player.tag) } })
+				.toArray(),
+			this.client.http.getDiscordLinks(players)
+		]);
+		const all = fetched.flat().map((en) => ({ tag: en.tag, userId: en.userId }));
+		return Array.from(new Set(all.map((en) => en.userId))).map((userId) => ({
+			userId,
+			tags: all.filter((en) => en.userId === userId).map((en) => en.tag)
+		}));
+	}
+
 	public async getPlayers(userId: string) {
 		const [players, others] = await Promise.all([
 			this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId }).toArray(),

@@ -118,16 +118,10 @@ export default class JoinLeaveLog extends BaseLog {
 	}
 
 	private formatHeroes(member: Player) {
-		if (member.heroes.length) {
-			const heroes = member.heroes.filter(({ village }) => village === 'home');
-			return heroes.length
-				? heroes.length > 3
-					? heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')
-					: `${EMOJIS.EXP}**${member.expLevel}** ${heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')}`
-				: `${EMOJIS.EXP} **${member.expLevel}**`;
-		}
-
-		return `${EMOJIS.EXP} **${member.expLevel}**`;
+		const heroes = member.heroes.filter(({ village }) => village === 'home');
+		return heroes.length
+			? `${heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')}`
+			: `${EMOJIS.EXP} **${member.expLevel}**`;
 	}
 
 	private remainingUpgrades(data: Player) {

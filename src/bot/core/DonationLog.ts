@@ -1,12 +1,15 @@
 import { Collection, EmbedBuilder, PermissionsString, WebhookClient } from 'discord.js';
+import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import Client from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
 import { BLUE_NUMBERS, EMOJIS, PLAYER_LEAGUES, RED_NUMBERS } from '../util/Emojis.js';
+import { Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
 
 export default class DonationLog extends BaseLog {
 	public declare cached: Collection<string, Cache>;
+	private readonly queued = new Set<string>();
 
 	public constructor(client: Client) {
 		super(client);
@@ -135,6 +138,63 @@ export default class DonationLog extends BaseLog {
 			retries: 0,
 			webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
 		});
+	}
+
+	private async _refresh_daily() {
+		const timestamp = moment().startOf('day').toDate();
+
+		const logs = await this.client.db
+			.collection(Collections.DONATION_LOGS)
+			.find({ daily_last_posted: { $lt: timestamp } })
+			.toArray();
+
+		for (const log of logs) {
+			if (!this.client.guilds.cache.has(log.guild)) continue;
+			if (this.queued.has(log._id.toHexString())) continue;
+
+			this.queued.add(log._id.toHexString());
+			await this.exec(log.tag, {});
+			this.queued.delete(log._id.toHexString());
+			await Util.delay(3000);
+		}
+	}
+
+	private async _refresh_weekly() {
+		const timestamp = moment().weekday(1).startOf('day').toDate();
+
+		const logs = await this.client.db
+			.collection(Collections.DONATION_LOGS)
+			.find({ weekly_last_posted: { $lt: timestamp } })
+			.toArray();
+
+		for (const log of logs) {
+			if (!this.client.guilds.cache.has(log.guild)) continue;
+			if (this.queued.has(log._id.toHexString())) continue;
+
+			this.queued.add(log._id.toHexString());
+			await this.exec(log.tag, {});
+			this.queued.delete(log._id.toHexString());
+			await Util.delay(3000);
+		}
+	}
+
+	private async _refresh_monthly() {
+		const timestamp = moment().startOf('month').toDate();
+
+		const logs = await this.client.db
+			.collection(Collections.DONATION_LOGS)
+			.find({ monthly_last_posted: { $lt: timestamp } })
+			.toArray();
+
+		for (const log of logs) {
+			if (!this.client.guilds.cache.has(log.guild)) continue;
+			if (this.queued.has(log._id.toHexString())) continue;
+
+			this.queued.add(log._id.toHexString());
+			await this.exec(log.tag, {});
+			this.queued.delete(log._id.toHexString());
+			await Util.delay(3000);
+		}
 	}
 }
 

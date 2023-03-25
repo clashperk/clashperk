@@ -37,6 +37,7 @@ interface BaseState {
 	logTypes: string[] | null;
 	deepLink: string | null;
 	role: string | null;
+	interval: string[] | null;
 }
 
 export default class ClanLogCommand extends Command {
@@ -157,7 +158,8 @@ export default class ClanLogCommand extends Command {
 		const state: BaseState = {
 			deepLink: DeepLinkTypes.OpenInGame,
 			logTypes: null,
-			role: null
+			role: null,
+			interval: null
 		};
 
 		const titleMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
@@ -348,24 +350,43 @@ export default class ClanLogCommand extends Command {
 				// });
 			}
 
+			if (action.customId === customIds.interval && action.isStringSelectMenu()) {
+				await action.deferUpdate();
+				if (action.values.includes(DonationLogFrequencyTypes.Instant) && action.values.length > 1) {
+					await action.followUp({
+						content: 'You cannot select multiple intervals when using the option `Instant`',
+						ephemeral: true
+					});
+				} else {
+					state.interval = action.values;
+				}
+			}
+
 			if (action.customId === customIds.update && action.isButton()) {
 				await action.deferUpdate();
 				await mutate(state);
 
-				embed.addFields(
-					{
-						name: 'Title Link',
-						value: state.deepLink ? this.titleCase(state.deepLink) : 'Open In Game'
-					},
-					{
-						name: flag === Flags.JOIN_LEAVE_LOG ? 'Flag alert role' : 'Town-Hall upgrade alert role',
-						value: state.role ? `<@&${state.role}>` : 'None'
-					}
-					// {
-					// 	name: 'Log Types',
-					// 	value: state.logTypes?.map((str) => this.titleCase(str)).join(', ') ?? 'All'
-					// }
-				);
+				if (flag === Flags.DONATION_LOG) {
+					embed.addFields({
+						name: 'Donation Log Frequency',
+						value: state.interval?.map((str) => this.titleCase(str)).join(', ') ?? 'Instant'
+					});
+				} else {
+					embed.addFields(
+						{
+							name: 'Title Link',
+							value: state.deepLink ? this.titleCase(state.deepLink) : 'Open In Game'
+						},
+						{
+							name: flag === Flags.JOIN_LEAVE_LOG ? 'Flag alert role' : 'Town-Hall upgrade alert role',
+							value: state.role ? `<@&${state.role}>` : 'None'
+						}
+						// {
+						// 	name: 'Log Types',
+						// 	value: state.logTypes?.map((str) => this.titleCase(str)).join(', ') ?? 'All'
+						// }
+					);
+				}
 
 				await action.editReply({ embeds: [embed], components: [] });
 			}

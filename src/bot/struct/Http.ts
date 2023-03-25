@@ -121,7 +121,7 @@ export default class Http extends ClashOfClansClient {
 		return Promise.all(members.map((mem) => this.fetch(`/players/${encodeURIComponent(mem.tag)}`)));
 	}
 
-	public calcRaidMedals(attackLog: RaidSeason['attackLog']) {
+	public calcRaidMedals(raidSeason: RaidSeason) {
 		const districtMap: Record<string, number> = {
 			1: 135,
 			2: 225,
@@ -143,7 +143,7 @@ export default class Http extends ClashOfClansClient {
 
 		let totalMedals = 0;
 		let attacksDone = 0;
-		for (const clan of attackLog) {
+		for (const clan of raidSeason.attackLog) {
 			attacksDone += clan.attackCount;
 			for (const district of clan.districts) {
 				if (district.destructionPercent === 100) {
@@ -159,7 +159,7 @@ export default class Http extends ClashOfClansClient {
 		if (totalMedals !== 0) {
 			totalMedals = Math.ceil(totalMedals / attacksDone) * 6;
 		}
-		return totalMedals;
+		return Math.max(totalMedals, raidSeason.offensiveReward * 6 + raidSeason.defensiveReward);
 	}
 
 	public calcRaidCompleted(attackLog: RaidSeason['attackLog']) {
@@ -343,7 +343,7 @@ export default class Http extends ClashOfClansClient {
 		return data.map((en) => ({ userId: en.discordId, user: en.discordId }))[0] ?? null;
 	}
 
-	public async getDiscordLinks(members: { tag: string }[]) {
+	public async getDiscordLinks(players: { tag: string }[]) {
 		const res = await fetch('https://cocdiscord.link/batch', {
 			method: 'POST',
 			headers: {
@@ -351,7 +351,7 @@ export default class Http extends ClashOfClansClient {
 				'Content-Type': 'application/json'
 			},
 			signal: TimeoutSignal(10_000),
-			body: JSON.stringify(members.map((mem) => mem.tag))
+			body: JSON.stringify(players.map((mem) => mem.tag))
 		}).catch(() => null);
 		const data = (await res?.json().catch(() => [])) as { playerTag: string; discordId: string }[];
 

@@ -99,7 +99,7 @@ export default class CapitalRaidsCommand extends Command {
 				});
 			}
 
-			const offensiveReward = this.client.http.calcRaidMedals(data.attackLog);
+			const offensiveReward = this.client.http.calcRaidMedals(data);
 			const raidsCompleted = this.client.http.calcRaidCompleted(data.attackLog);
 
 			const hasTrophyCard = Boolean(
@@ -127,21 +127,21 @@ export default class CapitalRaidsCommand extends Command {
 				]
 			});
 
-			if (hasTrophyCard) {
+			if (hasTrophyCard && season) {
 				const { globalRank, countryRank } = await this.rankings(clan.tag);
 				const type =
-					season!._capitalLeague!.id > season!.capitalLeague!.id
+					season._capitalLeague!.id > season.capitalLeague!.id
 						? 'Promoted'
-						: season!._capitalLeague!.id === season!.capitalLeague!.id
+						: season._capitalLeague!.id === season.capitalLeague!.id
 						? 'Stayed'
 						: 'Demoted';
-				const trophiesEarned = season!._clanCapitalPoints! - season!.clanCapitalPoints!;
+				const trophiesEarned = season._clanCapitalPoints! - season.clanCapitalPoints!;
 
 				query.set('type', type);
 				query.set('remark', type === 'Stayed' ? 'Stayed in the same League' : type);
-				query.set('leagueId', season!._capitalLeague!.id.toString());
+				query.set('leagueId', season._capitalLeague!.id.toString());
 				query.set('trophiesEarned', `${trophiesEarned < 0 ? '' : '+'}${trophiesEarned}`);
-				query.set('trophies', season!._clanCapitalPoints!.toString());
+				query.set('trophies', season._clanCapitalPoints!.toString());
 				query.set('globalRank', globalRank ? `Global Rank: ${globalRank}` : '');
 				query.set('localRank', countryRank ? `Local Rank: ${countryRank.clans.rank} (${countryRank.country})` : '');
 
@@ -361,6 +361,8 @@ export default class CapitalRaidsCommand extends Command {
 		raidSeason: RaidSeason;
 		members: { name: string; capitalResourcesLooted: number; attacks: number; attackLimit: number }[];
 	}) {
+		const totalLoot = members.reduce((acc, cur) => acc + cur.capitalResourcesLooted, 0);
+		const totalAttacks = members.reduce((acc, cur) => acc + cur.attacks, 0);
 		const startDate = moment(weekId).toDate();
 		const endDate = moment(weekId).clone().add(3, 'days').toDate();
 
@@ -371,7 +373,7 @@ export default class CapitalRaidsCommand extends Command {
 				iconURL: clan.badgeUrls.small
 			})
 			.setTimestamp()
-			.setFooter({ text: `Week of ${weekend}` });
+			.setFooter({ text: `Looted: ${totalLoot}, Attacks: ${totalAttacks}/300\nWeek of ${weekend}` });
 
 		embed.setDescription(
 			[

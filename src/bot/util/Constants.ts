@@ -252,9 +252,9 @@ export const WarFeedLogTypes = {
 
 export const DonationLogFrequencyTypes = {
 	Instant: 'INSTANT',
-	Daily: '24',
-	Weekly: '7',
-	Monthly: '30'
+	Daily: 'DAILY',
+	Weekly: 'WEEKLY',
+	Monthly: 'MONTHLY'
 } as const;
 
 export const URL_REGEX = /^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
