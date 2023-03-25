@@ -432,24 +432,24 @@ export default class LegendDaysCommand extends Command {
 
 		const days = Util.getLegendDays();
 
-		const perDayLogs = days.reduce<{ attackCount: number; defenseCount: number; gain: number; loss: number; final: number }[]>(
-			(prev, { startTime, endTime }) => {
-				const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
-				const attacks = mixedLogs.filter((en) => en.inc > 0) ?? [];
-				const defenses = mixedLogs.filter((en) => en.inc <= 0) ?? [];
+		const perDayLogs = days.reduce<
+			{ attackCount: number; defenseCount: number; gain: number; loss: number; final: number; initial: number }[]
+		>((prev, { startTime, endTime }) => {
+			const mixedLogs = logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
+			const attacks = mixedLogs.filter((en) => en.inc > 0) ?? [];
+			const defenses = mixedLogs.filter((en) => en.inc <= 0) ?? [];
 
-				const attackCount = attacks.length;
-				const defenseCount = defenses.length;
-				const [final] = mixedLogs.slice(-1);
+			const attackCount = attacks.length;
+			const defenseCount = defenses.length;
+			const [final] = mixedLogs.slice(-1);
+			const [initial] = mixedLogs;
 
-				const gain = attacks.reduce((acc, cur) => acc + cur.inc, 0);
-				const loss = defenses.reduce((acc, cur) => acc + cur.inc, 0);
+			const gain = attacks.reduce((acc, cur) => acc + cur.inc, 0);
+			const loss = defenses.reduce((acc, cur) => acc + cur.inc, 0);
 
-				prev.push({ attackCount, defenseCount, gain, loss, final: final?.end ?? '-' });
-				return prev;
-			},
-			[]
-		);
+			prev.push({ attackCount, defenseCount, gain, loss, final: final?.end ?? '-', initial: initial?.start ?? '-' });
+			return prev;
+		}, []);
 
 		const weaponLevel = data.townHallWeaponLevel ? attackCounts[data.townHallWeaponLevel] : '';
 		const embed = new EmbedBuilder()
@@ -469,17 +469,17 @@ export default class LegendDaysCommand extends Command {
 					'defense'
 				)} won`,
 				'',
-				'`DAY` ` GAIN ` ` LOSS ` ` FINAL`',
-				...perDayLogs.map(
-					(day, i) =>
-						`\`\u200e${(i + 1).toString().padStart(2, ' ')} \` \`${this.pad(
-							`+${day.gain}${attackCounts[Math.min(9, day.attackCount)]}`,
-							5
-						)} \` \`${this.pad(`-${Math.abs(day.loss)}${attackCounts[Math.min(9, day.defenseCount)]}`, 5)} \` \` ${this.pad(
-							day.final,
-							4
-						)} \``
-				)
+				'`DAY` `  ATK ` `  DEF ` ` +/- ` ` INIT ` `FINAL `',
+				...perDayLogs.map((day, i) => {
+					const net = day.gain + day.loss;
+					const def = this.pad(`-${Math.abs(day.loss)}${attackCounts[Math.min(9, day.defenseCount)]}`, 5);
+					const atk = this.pad(`+${day.gain}${attackCounts[Math.min(9, day.attackCount)]}`, 5);
+					const ng = this.pad(`${net > 0 ? '+' : ''}${net}`, 4);
+					const final = this.pad(day.final, 4);
+					const init = this.pad(day.initial, 5);
+					const n = (i + 1).toString().padStart(2, ' ');
+					return `\`\u200e${n} \` \`${atk} \` \`${def} \` \`${ng} \` \`${init} \` \` ${final} \``;
+				})
 			].join('\n')
 		);
 
