@@ -83,6 +83,7 @@ export default class StatsCommand extends Command {
 			season: string;
 			attempt?: string;
 			user?: User;
+			days?: number;
 			wars?: number;
 			view?: string;
 		}
@@ -90,7 +91,7 @@ export default class StatsCommand extends Command {
 		if (args.user) return this.forUsers(interaction, args);
 
 		const stars = args.view === 'starsAvg' ? '>=1' : args.stars || '==3';
-		const season = args.season || Util.getLastSeasonId();
+		let season = args.season || Util.getLastSeasonId();
 		const type = args.type ?? 'noFriendly';
 		const attempt = args.attempt;
 		const compare = this.compare(args.compare as string);
@@ -111,6 +112,7 @@ export default class StatsCommand extends Command {
 				: type === 'noCWL'
 				? { warType: { $ne: WarType.CWL } }
 				: {};
+		if (args.days && args.days >= 1) season = moment().subtract(args.days, 'days').format('YYYY-MM-DD');
 		const filters = args.wars && args.wars >= 1 ? {} : { preparationStartTime: { $gte: new Date(season) } };
 
 		const cursor = this.client.db.collection(Collections.CLAN_WARS).find({
@@ -259,7 +261,9 @@ export default class StatsCommand extends Command {
 			)[0]
 		);
 
-		if (args.wars && args.wars >= 1) {
+		if (args.days && args.days >= 1) {
+			embed.setFooter({ text: `War Type: ${WarTypes[type]}\n(Last ${args.days} days, ${wars.length} wars)` });
+		} else if (args.wars && args.wars >= 1) {
 			embed.setFooter({ text: `War Type: ${WarTypes[type]}\n(Last ${wars.length} wars)` });
 		} else {
 			embed.setFooter({ text: `War Type: ${WarTypes[type]}\n(Since ${moment(season).format('MMM YYYY')}, ${wars.length} wars)` });
@@ -293,7 +297,7 @@ export default class StatsCommand extends Command {
 				cmd: this.id,
 				type,
 				stars,
-				wars: args.wars,
+				days: args.days,
 				view: 'avg',
 				tag: data.tag
 			})

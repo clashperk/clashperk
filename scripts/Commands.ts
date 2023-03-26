@@ -646,6 +646,13 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						choices: getSeasonIds().map((season) => ({ name: `Since ${season.name}`, value: season.value }))
 					},
 					{
+						name: 'days',
+						description: 'Number of days to include (last x days of wars)',
+						type: ApplicationCommandOptionType.Integer,
+						min_value: 1,
+						max_value: 180
+					},
+					{
 						name: 'wars',
 						description: 'Number of last wars to include.',
 						type: ApplicationCommandOptionType.Integer,

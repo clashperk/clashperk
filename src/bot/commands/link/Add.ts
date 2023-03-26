@@ -111,7 +111,7 @@ export default class LinkAddCommand extends Command {
 			.setPlaceholder('The token can be found in the game settings.')
 			.setStyle(TextInputStyle.Short)
 			.setMaxLength(15)
-			.setRequired(true);
+			.setRequired(token_field === 'required');
 
 		modal.addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(tagInput));
 		if (token_field !== 'hidden') {
