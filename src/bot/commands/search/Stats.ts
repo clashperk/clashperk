@@ -270,6 +270,11 @@ export default class StatsCommand extends Command {
 		}
 
 		if (args.view === 'avg') {
+			stats
+				.sort((a, b) => b.total - a.total)
+				.sort((a, b) => b.stars - a.stars)
+				.sort((a, b) => b.rate - a.rate);
+
 			embed.setDescription(
 				Util.splitMessage(
 					[
