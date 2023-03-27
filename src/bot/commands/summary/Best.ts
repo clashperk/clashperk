@@ -507,7 +507,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									_clanGamesCompletionTime: 1
+									_clanGamesCompletionTime: -1
 								}
 							},
 							{
