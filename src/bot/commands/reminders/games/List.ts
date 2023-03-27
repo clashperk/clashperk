@@ -1,4 +1,4 @@
-import { CommandInteraction, escapeMarkdown } from 'discord.js';
+import { CommandInteraction, escapeMarkdown, time } from 'discord.js';
 import moment from 'moment';
 import { Collections } from '../../../util/Constants.js';
 import { Command } from '../../../lib/index.js';
@@ -31,13 +31,16 @@ export default class ReminderListCommand extends Command {
 		if (!reminders.length) return interaction.editReply(this.i18n('command.reminders.list.no_reminders', { lng: interaction.locale }));
 		const clans = await this.client.storage.find(interaction.guild!.id);
 
-		const label = (duration: number) => moment.duration(duration).format('H[h], m[m], s[s]', { trim: 'both mid' });
+		const startTime = moment().startOf('month').add(21, 'days').add(8, 'hour');
+		const endTime = startTime.clone().add(6, 'days');
 
+		const label = (duration: number) => moment.duration(duration).format('d[d] H[h], m[m], s[s]', { trim: 'both mid' });
 		const chunks = reminders.map((reminder, index) => {
 			const _clans = clans.filter((clan) => reminder.clans.includes(clan.tag)).map((clan) => clan.name);
+			const timestamp = moment(endTime).subtract(reminder.duration, 'milliseconds').toDate();
 			return [
 				`**🔔 Reminder (ID: ${index + 1})**`,
-				`${label(reminder.duration)} remaining`,
+				`${label(reminder.duration)} remaining - ${time(timestamp, 'R')}`,
 				'**Channel**',
 				`<#${reminder.channel}>`,
 				'**Roles**',

@@ -117,6 +117,33 @@ export class Util {
 		return count === 1 ? text : `${text}${suffix}`;
 	}
 
+	public static geRaidWeekend() {
+		const start = moment();
+		const day = start.day();
+		const hour = start.hours();
+
+		if (day === 1) {
+			if (hour < 7) {
+				start.day(-7).weekday(5);
+			} else {
+				start.weekday(5);
+			}
+		}
+
+		if (day === 0) {
+			start.day(-1).weekday(5);
+		}
+
+		if (day > 1 && day < 5) {
+			start.weekday(5);
+		}
+
+		start.hour(7).minute(0).second(0).millisecond(0);
+		const end = moment(start).add(3, 'days');
+
+		return { raidWeekStartTime: start.toDate(), raidWeekEndTime: end.toDate() };
+	}
+
 	public static getRaidWeekEndTimestamp() {
 		const start = moment();
 		const day = start.day();

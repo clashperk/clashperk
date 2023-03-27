@@ -5,7 +5,8 @@ import {
 	EmbedBuilder,
 	StringSelectMenuBuilder,
 	ButtonStyle,
-	ComponentType
+	ComponentType,
+	time
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
@@ -71,7 +72,7 @@ export default class CapitalReminderDeleteCommand extends Command {
 			view: this.client.uuid(interaction.user.id)
 		};
 
-		const label = (duration: number) => moment.duration(duration).format('H[h], m[m], s[s]', { trim: 'both mid' });
+		const label = (duration: number) => moment.duration(duration).format('d[d] H[h], m[m], s[s]', { trim: 'both mid' });
 
 		const state = {
 			selected: null as string | null,
@@ -107,13 +108,18 @@ export default class CapitalReminderDeleteCommand extends Command {
 			return [menu, button];
 		};
 
+		const startTime = moment().startOf('month').add(21, 'days').add(8, 'hour');
+		const endTime = startTime.clone().add(6, 'days');
+
 		const embeds = () => {
 			const reminder = reminders.find((rem) => rem._id.toHexString() === state.selected)!;
 			const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
+			const timestamp = moment(endTime).subtract(reminder.duration, 'milliseconds').toDate();
+
 			embed.addFields([
 				{
 					name: 'Duration',
-					value: `${label(reminder.duration)} remaining`
+					value: `${label(reminder.duration)} remaining - ${time(timestamp, 'R')}`
 				},
 				{
 					name: 'Channel',

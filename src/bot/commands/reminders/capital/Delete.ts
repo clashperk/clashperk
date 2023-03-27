@@ -5,13 +5,15 @@ import {
 	EmbedBuilder,
 	StringSelectMenuBuilder,
 	ButtonStyle,
-	ComponentType
+	ComponentType,
+	time
 } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Collections } from '../../../util/Constants.js';
 import { Args, Command } from '../../../lib/index.js';
 import { RaidReminder, RaidSchedule } from '../../../struct/CapitalRaidScheduler.js';
+import { Util } from '../../../util/index.js';
 
 const roles: Record<string, string> = {
 	member: 'Member',
@@ -107,13 +109,16 @@ export default class CapitalReminderDeleteCommand extends Command {
 			return [menu, button];
 		};
 
+		const { raidWeekEndTime } = Util.geRaidWeekend();
+
 		const embeds = () => {
 			const reminder = reminders.find((rem) => rem._id.toHexString() === state.selected)!;
+			const timestamp = moment(raidWeekEndTime).subtract(reminder.duration, 'milliseconds').toDate();
 			const embed = new EmbedBuilder().setColor(this.client.embed(interaction));
 			embed.addFields([
 				{
 					name: 'Duration',
-					value: `${label(reminder.duration)} remaining`
+					value: `${label(reminder.duration)} remaining - ${time(timestamp, 'F')}`
 				},
 				{
 					name: 'Channel',

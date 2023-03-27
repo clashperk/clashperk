@@ -2785,6 +2785,11 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		dm_permission: true
 	},
 	{
+		name: 'events',
+		description: "Shows information about the bot's events.",
+		dm_permission: true
+	},
+	{
 		name: 'usage',
 		description: "You can't use it anyway, so why explain?",
 		dm_permission: true,
