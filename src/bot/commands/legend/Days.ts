@@ -232,12 +232,15 @@ export default class LegendDaysCommand extends Command {
 	}
 
 	private async graph(data: Player) {
-		const seasonIds = Array.from({ length: 3 }, (_, i) => i)
-			.map((i) => moment().startOf('month').subtract(i, 'months').toDate())
-			.map((date) => Season.getSeasonIdAgainstDate(date))
-			.reverse()
-			.slice(0, 3);
-
+		const seasonIds = Array(Math.min(3))
+			.fill(0)
+			.map((_, m) => {
+				const now = new Date(Season.ID);
+				now.setHours(0, 0, 0, 0);
+				now.setMonth(now.getMonth() - (m - 1), 0);
+				return this.getLastMondayOfMonth(now.getMonth(), now.getFullYear());
+			})
+			.reverse();
 		const [, seasonStart, seasonEnd] = seasonIds;
 
 		const result = await this.client.db
@@ -367,12 +370,14 @@ export default class LegendDaysCommand extends Command {
 		if (!result.length) return null;
 
 		const season = result.at(0)!;
-		const dates = season.logs.map((log) => moment(log.timestamp));
-		const minDate = moment.min(dates).startOf('day');
-		const maxDate = moment.max(dates).endOf('day');
-		const labels = Array.from({ length: maxDate.diff(minDate, 'days') + 1 }, (_, i) => moment(minDate).add(i, 'days').toDate());
+		// const dates = season.logs.map((log) => moment(log.timestamp));
+		// const minDate = moment.min(dates).startOf('day');
+		// const maxDate = moment.max(dates).endOf('day');
+		const labels = Array.from({ length: moment(seasonEnd).diff(seasonStart, 'days') + 1 }, (_, i) =>
+			moment(seasonStart).add(i, 'days').toDate()
+		);
 
-		const currentDate = new Date(maxDate.toDate());
+		const currentDate = new Date(seasonEnd);
 		const currentYear = currentDate.getFullYear();
 		const currentMonth = currentDate.getMonth();
 		const daysInPreviousMonth = new Date(currentYear, currentMonth, 0).getDate();
@@ -495,6 +500,17 @@ export default class LegendDaysCommand extends Command {
 
 	private formatNumber(num: number) {
 		return `${num > 0 ? '+' : ''}${num.toFixed(0)}`;
+	}
+
+	private getLastMondayOfMonth(month: number, year: number): Date {
+		const lastDayOfMonth = new Date(year, month + 1, 0);
+		const lastMonday = new Date(lastDayOfMonth);
+		lastMonday.setDate(lastMonday.getDate() - ((lastMonday.getDay() + 6) % 7));
+		lastMonday.setHours(5, 0, 0, 0);
+		// if (date.getTime() > lastMonday.getTime()) {
+		// 	return this.getLastMondayOfMonth(month + 1, year, date);
+		// }
+		return lastMonday;
 	}
 }
 
