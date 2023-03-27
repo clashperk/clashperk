@@ -25,9 +25,14 @@ export default class ClanActivityCommand extends Command {
 			? (await this.client.storage.search(interaction.guild.id, tags)).slice(0, 7)
 			: (await this.client.storage.find(interaction.guild.id)).slice(0, 7);
 
-		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
+		if (!clans.length && tags.length)
+			return interaction.editReply(
+				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		if (!clans.length) {
-			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+			return interaction.editReply(
+				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		}
 
 		const result = await this.aggregate(
@@ -80,7 +85,9 @@ export default class ClanActivityCommand extends Command {
 		await interaction.editReply({
 			content:
 				timezone.offset === 0
-					? `Please set your time zone with the </timezone:1051836259527565348> command. It enables you to view the graphs in your time zone.`
+					? `Please set your time zone with the ${this.client.getCommand(
+							'/timezone'
+					  )} command. It enables you to view the graphs in your time zone.`
 					: null,
 			files: [rawFile]
 		});

@@ -19,7 +19,9 @@ export default class SummaryCapitalContributionCommand extends Command {
 		const clans = await this.client.storage.find(interaction.guild.id);
 
 		if (!clans.length) {
-			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+			return interaction.editReply(
+				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		}
 
 		const startWeek = moment(week).utc(true).add(7, 'h').utc().toDate();

@@ -36,10 +36,16 @@ export default class Resolver {
 
 		if (tags.length) return this.getPlayer(interaction, tags[0], user);
 		if (interaction.user.id === user.id) {
-			return this.fail(interaction, i18n('common.no_player_tag', { lng: interaction.locale }));
+			return this.fail(
+				interaction,
+				i18n('common.no_player_tag', { lng: interaction.locale, command: this.client.commands.LINK_CREATE })
+			);
 		}
 
-		return this.fail(interaction, i18n('common.player_not_linked', { lng: interaction.locale, user: parsed.user.tag }));
+		return this.fail(
+			interaction,
+			i18n('common.player_not_linked', { lng: interaction.locale, user: parsed.user.tag, command: this.client.commands.LINK_CREATE })
+		);
 	}
 
 	private async clanAlias(guild: string, alias: string) {
@@ -69,10 +75,16 @@ export default class Resolver {
 		}
 
 		if (interaction.user.id === parsed.user.id) {
-			return this.fail(interaction, i18n('common.no_clan_tag', { lng: interaction.locale }));
+			return this.fail(
+				interaction,
+				i18n('common.no_clan_tag', { lng: interaction.locale, command: this.client.commands.LINK_CREATE })
+			);
 		}
 
-		return this.fail(interaction, i18n('common.clan_not_linked', { lng: interaction.locale, user: parsed.user.tag }));
+		return this.fail(
+			interaction,
+			i18n('common.clan_not_linked', { lng: interaction.locale, user: parsed.user.tag, command: this.client.commands.SETUP_ENABLE })
+		);
 	}
 
 	public async getPlayer(interaction: BaseInteraction, tag: string, user?: User): Promise<(Player & { user?: User }) | null> {
@@ -197,7 +209,7 @@ export default class Resolver {
 
 	public async enforceSecurity(interaction: CommandInteraction<'cached'>, tag?: string) {
 		if (!tag) {
-			await interaction.editReply(i18n('common.no_clan_tag', { lng: interaction.locale }));
+			await interaction.editReply(i18n('common.no_clan_tag_first_time', { lng: interaction.locale }));
 			return null;
 		}
 		const data = await this.getClan(interaction, tag);
@@ -212,7 +224,9 @@ export default class Resolver {
 				.map((clan) => clan.tag)
 				.includes(data.tag)
 		) {
-			await interaction.editReply({ content: this.client.i18n('common.clan_limit', { lng: interaction.locale }) });
+			await interaction.editReply({
+				content: this.client.i18n('common.clan_limit', { lng: interaction.locale, command: this.client.commands.REDEEM })
+			});
 			return null;
 		}
 
@@ -234,7 +248,13 @@ export default class Resolver {
 			!this.client.isOwner(interaction.user) &&
 			!this.client.isOwner(interaction.guild.ownerId)
 		) {
-			await interaction.editReply({ content: this.client.i18n('common.clan_verification', { lng: interaction.locale, code }) });
+			await interaction.editReply({
+				content: this.client.i18n('common.clan_verification', {
+					lng: interaction.locale,
+					code,
+					command: this.client.commands.VERIFY
+				})
+			});
 			return null;
 		}
 

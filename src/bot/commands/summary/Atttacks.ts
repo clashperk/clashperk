@@ -18,7 +18,9 @@ export default class SummaryAttacksCommand extends Command {
 		const clans = await this.client.db.collection(Collections.CLAN_STORES).find({ guild: interaction.guild!.id }).toArray();
 
 		if (!clans.length) {
-			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+			return interaction.editReply(
+				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		}
 
 		const allClans = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((clan) => clan.ok);

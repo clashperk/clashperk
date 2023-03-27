@@ -22,6 +22,7 @@ import ClanWarScheduler from './ClanWarScheduler.js';
 import CapitalRaidScheduler from './CapitalRaidScheduler.js';
 import ClanGamesScheduler from './ClanGamesScheduler.js';
 import { Indexer } from './Indexer.js';
+import { CommandsMap } from './CommandsMap.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -75,6 +76,7 @@ export class Client extends Discord.Client {
 	public resolver!: Resolver;
 	public ownerId: string;
 	public _commands: Map<string, string> = new Map();
+	private readonly commandsMap = new CommandsMap();
 
 	public constructor() {
 		super({
@@ -145,6 +147,10 @@ export class Client extends Discord.Client {
 
 	public getCommand(name: string) {
 		return this._commands.get(name) ?? `/${name}`;
+	}
+
+	public get commands() {
+		return this.commandsMap.get();
 	}
 
 	private run() {

@@ -65,7 +65,10 @@ export default class SetupCommand extends Command {
 				const embeds = await this.getFeatures(interaction);
 				if (!embeds.length) {
 					await action.followUp({
-						content: this.i18n('common.no_clans_linked', { lng: interaction.locale }),
+						content: this.i18n('common.no_clans_linked', {
+							lng: interaction.locale,
+							command: this.client.commands.SETUP_ENABLE
+						}),
 						ephemeral: true
 					});
 					return;
@@ -82,7 +85,10 @@ export default class SetupCommand extends Command {
 				const embeds = await this.getClanList(interaction);
 				if (!embeds.length) {
 					await action.followUp({
-						content: this.i18n('common.no_clans_linked', { lng: interaction.locale }),
+						content: this.i18n('common.no_clans_linked', {
+							lng: interaction.locale,
+							command: this.client.commands.SETUP_ENABLE
+						}),
 						ephemeral: true
 					});
 					return;

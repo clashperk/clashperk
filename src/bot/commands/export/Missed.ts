@@ -25,9 +25,14 @@ export default class ExportMissed extends Command {
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.find(interaction.guildId);
 
-		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
+		if (!clans.length && tags.length)
+			return interaction.editReply(
+				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		if (!clans.length) {
-			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+			return interaction.editReply(
+				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		}
 
 		let num = Number(args.limit ?? 25);

@@ -91,7 +91,7 @@ export default class SetupDisableCommand extends Command {
 			);
 		}
 
-		if (!tag) return interaction.editReply(this.i18n('common.no_clan_tag', { lng: interaction.locale }));
+		if (!tag) return interaction.editReply(this.i18n('common.no_clan_tag_first_time', { lng: interaction.locale }));
 		const data = await this.client.db.collection(Collections.CLAN_STORES).findOne({ tag, guild: interaction.guild!.id });
 
 		if (!data) {

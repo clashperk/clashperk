@@ -62,7 +62,11 @@ export default class ClanGamesCommand extends Command {
 			.countDocuments({ guild: interaction.guild.id, tag: clan.tag });
 		if (!allowed && interaction.guild.id !== '509784317598105619') {
 			return interaction.editReply(
-				this.i18n('common.guild_unauthorized', { lng: interaction.locale, clan: `${clan.name} (${clan.tag})` })
+				this.i18n('common.guild_unauthorized', {
+					lng: interaction.locale,
+					clan: `${clan.name} (${clan.tag})`,
+					command: this.client.commands.SETUP_ENABLE
+				})
 			);
 		}
 

@@ -55,9 +55,14 @@ export default class AutoClanRoleCommand extends Command {
 				? await this.client.storage.find(interaction.guildId)
 				: await this.client.storage.search(interaction.guildId, tags);
 
-		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
+		if (!clans.length && tags.length)
+			return interaction.editReply(
+				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		if (!clans.length) {
-			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+			return interaction.editReply(
+				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		}
 
 		const { members, elders, coLeads, commonRole } = args;
@@ -166,10 +171,14 @@ export default class AutoClanRoleCommand extends Command {
 		const clans = tags.length ? await this.client.storage.search(interaction.guildId, tags) : [];
 
 		if (!tags.length) {
-			return interaction.editReply(this.i18n('common.no_clan_tag', { lng: interaction.locale }));
+			return interaction.editReply(
+				this.i18n('common.no_clan_tag', { lng: interaction.locale, command: this.client.commands.LINK_CREATE })
+			);
 		}
 		if (!clans.length) {
-			return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
+			return interaction.editReply(
+				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		}
 
 		await this.client.db

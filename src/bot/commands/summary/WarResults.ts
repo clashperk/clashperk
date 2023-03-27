@@ -19,7 +19,9 @@ export default class SummaryClansCommand extends Command {
 		const clans = await this.client.storage.find(interaction.guild.id);
 
 		if (!clans.length) {
-			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+			return interaction.editReply(
+				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		}
 
 		const collection: { name: string; tag: string; wars: number; won: number; lost: number }[] = [];

@@ -53,9 +53,14 @@ export default class ExportClanMembersCommand extends Command {
 			? await this.client.storage.search(interaction.guildId, tags)
 			: await this.client.storage.find(interaction.guildId);
 
-		if (!clans.length && tags.length) return interaction.editReply(this.i18n('common.no_clans_found', { lng: interaction.locale }));
+		if (!clans.length && tags.length)
+			return interaction.editReply(
+				this.i18n('common.no_clans_found', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		if (!clans.length) {
-			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+			return interaction.editReply(
+				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
+			);
 		}
 
 		const _clans = await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)));
