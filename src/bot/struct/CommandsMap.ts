@@ -1,13 +1,10 @@
-import { container } from 'tsyringe';
 import Client from './Client.js';
 
 export class CommandsMap {
 	public commands: Map<string, string>;
-	public client: Client;
 
-	public constructor() {
+	public constructor(private readonly client: Client) {
 		this.commands = new Map();
-		this.client = container.resolve(Client);
 	}
 
 	public get() {

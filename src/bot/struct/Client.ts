@@ -76,7 +76,7 @@ export class Client extends Discord.Client {
 	public resolver!: Resolver;
 	public ownerId: string;
 	public _commands: Map<string, string> = new Map();
-	private readonly commandsMap = new CommandsMap();
+	private commandsMap!: CommandsMap;
 
 	public constructor() {
 		super({
@@ -190,6 +190,8 @@ export class Client extends Discord.Client {
 		this.warScheduler = new ClanWarScheduler(this);
 		this.raidScheduler = new CapitalRaidScheduler(this);
 		this.cgScheduler = new ClanGamesScheduler(this);
+
+		this.commandsMap = new CommandsMap(this);
 
 		await this.http.login();
 
