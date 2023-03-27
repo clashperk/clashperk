@@ -159,7 +159,7 @@ export default class Http extends ClashOfClansClient {
 		if (totalMedals !== 0) {
 			totalMedals = Math.ceil(totalMedals / attacksDone) * 6;
 		}
-		return Math.max(totalMedals, raidSeason.offensiveReward * 6 + raidSeason.defensiveReward);
+		return Math.max(totalMedals, raidSeason.offensiveReward * 6);
 	}
 
 	public calcRaidCompleted(attackLog: RaidSeason['attackLog']) {

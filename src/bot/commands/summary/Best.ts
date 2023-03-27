@@ -226,7 +226,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -243,7 +243,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -260,7 +260,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -277,7 +277,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -294,7 +294,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -311,7 +311,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -328,7 +328,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -345,7 +345,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -362,7 +362,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -379,7 +379,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -396,7 +396,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -413,7 +413,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -430,7 +430,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -447,7 +447,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -464,7 +464,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -481,7 +481,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									_clanGamesCompletionTime: -1
+									_clanGamesCompletionTime: 1
 								}
 							},
 							{
@@ -531,7 +531,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: 1
 								}
 							},
 							{
@@ -549,7 +549,7 @@ export default class SummaryBestCommand extends Command {
 		const _fields = Object.keys(fields);
 		_fields.map((field) => {
 			const key = field as keyof typeof fields;
-			const members = aggregated[key].filter((n) => n.value && !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
+			const members = aggregated[key].filter((n) => !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
 
 			if (!members.length) {
 				return embed.addFields({
