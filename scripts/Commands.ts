@@ -2682,6 +2682,11 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			// }
 		]
 	},
+	{
+		name: 'events',
+		description: 'Shows the next in-game events.',
+		dm_permission: true
+	},
 
 	// ------------- UTIL COMMANDS -------------
 	{
@@ -2787,11 +2792,6 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 	{
 		name: 'patron',
 		description: "Shows information about the bot's Patreon.",
-		dm_permission: true
-	},
-	{
-		name: 'events',
-		description: "Shows information about the bot's events.",
 		dm_permission: true
 	},
 	{

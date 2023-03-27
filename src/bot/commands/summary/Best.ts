@@ -1,5 +1,5 @@
 import { Clan } from 'clashofclans.js';
-import { CommandInteraction, EmbedBuilder, embedLength } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, embedLength, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -592,7 +592,7 @@ export default class SummaryBestCommand extends Command {
 							key === '_clanGamesCompletionTime'
 								? this._formatTime(member.value).padStart(7, ' ')
 								: Util.formatNumber(member.value).padStart(7, ' ');
-						return `${BLUE_NUMBERS[n + 1]} \`${num} \` \u200e${Util.escapeBackTick(member.name)}`;
+						return `${BLUE_NUMBERS[n + 1]} \`${num} \` \u200e${escapeMarkdown(member.name)}`;
 					})
 					.join('\n')
 			});

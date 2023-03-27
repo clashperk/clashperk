@@ -7,7 +7,6 @@ export default class GameEvents extends Command {
 	public constructor() {
 		super('events', {
 			category: 'config',
-			description: { content: 'Get support server and bot invite link.' },
 			defer: false
 		});
 	}
