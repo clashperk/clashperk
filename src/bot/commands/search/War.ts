@@ -1,21 +1,21 @@
+import { ClanWar, ClanWarAttack, ClanWarMember, WarClan } from 'clashofclans.js';
 import {
-	EmbedBuilder,
-	CommandInteraction,
-	ButtonBuilder,
 	ActionRowBuilder,
-	escapeMarkdown,
+	ButtonBuilder,
 	ButtonStyle,
+	CommandInteraction,
 	ComponentType,
+	EmbedBuilder,
+	escapeMarkdown,
 	User
 } from 'discord.js';
-import { ClanWarMember, ClanWar, WarClan } from 'clashofclans.js';
 import moment from 'moment';
-import { Collections, WarType } from '../../util/Constants.js';
-import { EMOJIS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import Workbook from '../../struct/Excel.js';
-import { Util } from '../../util/index.js';
 import { CallerCollection } from '../../types/index.js';
+import { Collections, WarType } from '../../util/Constants.js';
+import { EMOJIS, TOWN_HALLS, WHITE_NUMBERS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
 
 const stars: Record<string, string> = {
 	0: '☆☆☆',
@@ -306,7 +306,8 @@ export default class WarCommand extends Command {
 		sheet.columns = [
 			{ header: 'NAME', width: 18 },
 			{ header: 'TAG', width: 13 },
-			{ header: 'STAR', width: 8 },
+			{ header: 'STARS', width: 8 },
+			{ header: 'TRUE STARS', width: 8 },
 			{ header: 'DESTRUCTION', width: 12 },
 			{ header: 'DEFENDER', width: 18 },
 			{ header: 'DEFENDER TAG', width: 13 },
@@ -330,6 +331,7 @@ export default class WarCommand extends Command {
 				m.name,
 				m.tag,
 				m.attack?.stars,
+				m.attack?.trueStars,
 				m.attack?.destructionPercentage?.toFixed(2),
 				m.defender?.name,
 				m.defender?.tag,
@@ -361,10 +363,26 @@ export default class WarCommand extends Command {
 	}
 
 	private flatHits(data: ClanWar) {
-		return data.clan.members
+		const __attacks = data.clan.members.flatMap((m) => m.attacks ?? []);
+		const members = data.clan.members.map((member) => {
+			const attacks = (member.attacks ?? []).map((atk) => {
+				const previousBestAttack = this.getPreviousBestAttack(__attacks, data.opponent, atk);
+				return {
+					...atk,
+					trueStars: previousBestAttack ? Math.max(0, atk.stars - previousBestAttack.stars) : atk.stars
+				};
+			});
+
+			return {
+				...member,
+				attacks
+			};
+		});
+
+		return members
 			.sort((a, b) => a.mapPosition - b.mapPosition)
 			.reduce<any[]>((previous, member) => {
-				const atk = member.attacks?.map((attack, num) => ({
+				const atk = member.attacks.map((attack, num) => ({
 					attack,
 					tag: member.tag,
 					name: member.name,
@@ -374,7 +392,7 @@ export default class WarCommand extends Command {
 					defender: data.opponent.members.find((m) => m.tag === attack.defenderTag)
 				}));
 
-				if (atk) {
+				if (atk.length) {
 					previous.push(...atk);
 				} else {
 					previous.push({
@@ -389,6 +407,19 @@ export default class WarCommand extends Command {
 				previous.push({});
 				return previous;
 			}, []);
+	}
+
+	private getPreviousBestAttack(attacks: ClanWarAttack[], opponent: WarClan, atk: ClanWarAttack) {
+		const defender = opponent.members.find((m) => m.tag === atk.defenderTag)!;
+		const defenderDefenses = attacks.filter((atk) => atk.defenderTag === defender.tag);
+		const isFresh = defenderDefenses.length === 0 || atk.order === Math.min(...defenderDefenses.map((d) => d.order));
+		const previousBestAttack = isFresh
+			? null
+			: [...attacks]
+					.filter((_atk) => _atk.defenderTag === defender.tag && _atk.order < atk.order && _atk.attackerTag !== atk.attackerTag)
+					.sort((a, b) => b.destructionPercentage ** b.stars - a.destructionPercentage ** a.stars)
+					.at(0) ?? null;
+		return isFresh ? null : previousBestAttack;
 	}
 
 	private attacks(interaction: CommandInteraction, body: ClanWar) {
@@ -473,7 +504,7 @@ export default class WarCommand extends Command {
 					})
 					.join('\n'),
 				'',
-				'Use </caller assign:1088122769318887465> command to assign a caller to a base.'
+				`Use ${this.client.getCommand('/caller assign')} command to assign a caller to a base.`
 			].join('\n')
 		);
 		return embed;

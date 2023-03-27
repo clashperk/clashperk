@@ -1,3 +1,4 @@
+import { Clan } from 'clashofclans.js';
 import { CommandInteraction, EmbedBuilder, embedLength } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
@@ -71,7 +72,10 @@ export default class SummaryBestCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { season?: string; limit?: number; clans?: string }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { season?: string; limit?: number; clans?: string; order?: 'asc' | 'desc' }
+	) {
 		const seasonId = args.season ?? Season.ID;
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
@@ -83,18 +87,30 @@ export default class SummaryBestCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
 		}
 
+		const _cachedClans = (
+			(await this.client.redis.json.mGet(
+				clans.map((clan) => `C${clan.tag}`),
+				'$'
+			)) as Clan[][] | null[]
+		)
+			.flat()
+			.filter((_) => _) as Clan[];
+		const members = _cachedClans.map((clan) => clan.memberList.map((m) => m.tag)).flat();
+
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
 			.setAuthor({ name: `${interaction.guild.name} Best Players`, iconURL: interaction.guild.iconURL({ forceStatic: false })! });
 
 		const _clanGamesStartTimestamp = moment(seasonId).add(21, 'days').hour(8).toDate().getTime();
+		const order = args.order ?? 'desc';
 		const aggregated = await this.client.db
 			.collection(Collections.PLAYER_SEASONS)
 			.aggregate<AggregatedResult>([
 				{
 					$match: {
 						__clans: { $in: clans.map((c) => c.tag) },
-						season: seasonId
+						season: seasonId,
+						tag: { $in: members }
 					}
 				},
 				{
@@ -215,6 +231,11 @@ export default class SummaryBestCommand extends Command {
 					}
 				},
 				{
+					$sort: {
+						tag: 1
+					}
+				},
+				{
 					$facet: {
 						_elixirLoot: [
 							{
@@ -226,7 +247,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -243,7 +264,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -260,7 +281,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -277,7 +298,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -294,7 +315,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -311,7 +332,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -328,7 +349,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -345,7 +366,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -362,7 +383,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -379,7 +400,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -396,7 +417,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -413,7 +434,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -430,7 +451,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -447,7 +468,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -464,7 +485,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -531,7 +552,7 @@ export default class SummaryBestCommand extends Command {
 							},
 							{
 								$sort: {
-									value: -1
+									value: order === 'desc' ? -1 : 1
 								}
 							},
 							{
@@ -546,10 +567,10 @@ export default class SummaryBestCommand extends Command {
 			return interaction.editReply(this.i18n('common.no_data', { lng: interaction.locale }));
 		}
 
-		const _fields = Object.keys(fields);
+		const _fields = Object.keys(fields).filter((field) => (field === '_clanGamesCompletionTime' && order === 'asc' ? false : true));
 		_fields.map((field) => {
 			const key = field as keyof typeof fields;
-			const members = aggregated[key].filter((n) => n.value && !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
+			const members = aggregated[key].filter((n) => !isNaN(n.value)).slice(0, Number(args.limit ?? 5));
 
 			if (!members.length) {
 				return embed.addFields({

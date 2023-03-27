@@ -51,7 +51,7 @@ export const clanGamesLatestSeasonId = () => {
 
 export const clanEmbedMaker = async (
 	clan: Clan,
-	{ description, requirements, color, userId }: { description?: string; requirements?: string; color?: number; userId?: string }
+	{ description, requirements, color }: { description?: string; requirements?: string; color?: number; userId?: string }
 ) => {
 	const client = container.resolve(Client);
 	const fetched = await client.http.detailedClanMembers(clan.memberList);
@@ -77,11 +77,6 @@ export const clanEmbedMaker = async (
 
 	const embed = new EmbedBuilder()
 		.setTitle(`${clan.name} (${clan.tag})`)
-		// .setAuthor({
-		// 	name: `${clan.name} (${clan.tag})`,
-		// 	iconURL: clan.badgeUrls.medium,
-		// 	url: `https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`
-		// })
 		.setURL(`https://link.clashofclans.com/en?action=OpenClanProfile&tag=${encodeURIComponent(clan.tag)}`)
 		.setThumbnail(clan.badgeUrls.medium)
 		.setDescription(
@@ -93,16 +88,25 @@ export const clanEmbedMaker = async (
 		);
 	if (color) embed.setColor(color);
 
-	embed.addFields([
-		{
-			name: 'Clan Leader',
-			value: [
-				`${EMOJIS.OWNER}${userId ? ` <@${userId}>` : ''} (${
-					clan.memberList.filter((m) => m.role === 'leader').map((m) => `${m.name}`)[0] || 'None'
-				})`
-			].join('\n')
-		}
-	]);
+	const leaders = clan.memberList.filter((m) => m.role === 'leader');
+	const users = await client.db
+		.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+		.find({ userId: { $in: leaders.map(({ tag }) => tag) } })
+		.toArray();
+
+	if (leaders.length) {
+		embed.addFields([
+			{
+				name: 'Clan Leader',
+				value: leaders
+					.map((leader) => {
+						const user = users.find((u) => u.tag === leader.tag);
+						return user ? `${EMOJIS.OWNER} <@${user.userId}> (${leader.name})` : `${EMOJIS.OWNER} ${leader.name}`;
+					})
+					.join('\n')
+			}
+		]);
+	}
 
 	embed.addFields([
 		{

@@ -74,6 +74,7 @@ export class Client extends Discord.Client {
 	public components = new Map<string, string[]>();
 	public resolver!: Resolver;
 	public ownerId: string;
+	public _commands: Map<string, string> = new Map();
 
 	public constructor() {
 		super({
@@ -140,6 +141,10 @@ export class Client extends Discord.Client {
 		const uniqueId = nanoid();
 		this.components.set(uniqueId, userIds);
 		return uniqueId;
+	}
+
+	public getCommand(name: string) {
+		return this._commands.get(name) ?? `/${name}`;
 	}
 
 	private run() {

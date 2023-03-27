@@ -78,12 +78,6 @@ export default class ClanEmbedCommand extends Command {
 			);
 		}
 
-		const user = await this.getUser(data);
-		if (!user)
-			return interaction.editReply(
-				'Clan leader is not linked to the bot. Use </link create:1051836259389157453> command to link the player account.'
-			);
-
 		const __customIds = {
 			a: this.client.uuid(interaction.user.id),
 			b: this.client.uuid(interaction.user.id),
@@ -92,15 +86,9 @@ export default class ClanEmbedCommand extends Command {
 
 		const m = await interaction.editReply({
 			embeds: [
-				new EmbedBuilder().setAuthor({ name: `${data.name} | Clan Embed`, iconURL: data.badgeUrls.medium }).setDescription(
-					[
-						data.description,
-						'',
-						'**Leader**',
-						// eslint-disable-next-line
-						`${user.name} (${user.toString()})`
-					].join('\n')
-				)
+				new EmbedBuilder()
+					.setAuthor({ name: `${data.name} | Clan Embed`, iconURL: data.badgeUrls.medium })
+					.setDescription(data.description || 'No description')
 			],
 			components: [
 				new ActionRowBuilder<ButtonBuilder>()
@@ -176,7 +164,7 @@ export default class ClanEmbedCommand extends Command {
 
 		description = description?.toLowerCase() === 'auto' ? 'auto' : cleanContent(description ?? '', interaction.channel!);
 		accepts = !accepts || accepts.toLowerCase() === 'auto' ? 'auto' : cleanContent(accepts, interaction.channel!);
-		const embed = await clanEmbedMaker(data, { description, requirements: accepts, color, userId: user.id });
+		const embed = await clanEmbedMaker(data, { description, requirements: accepts, color });
 
 		const webhook = await this.client.storage.getWebhook(channel.isThread() ? channel.parent! : channel);
 		if (!webhook) {
@@ -196,7 +184,6 @@ export default class ClanEmbedCommand extends Command {
 				name: data.name,
 				message,
 				embed: {
-					userId: user.id,
 					accepts: cleanContent(accepts!, interaction.channel!),
 					description: cleanContent(description!, interaction.channel!)
 				},

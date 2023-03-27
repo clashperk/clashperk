@@ -92,7 +92,7 @@ export class Util {
 		return index === len - 1 ? '' : '\n\u200b';
 	}
 
-	public static formatNumber(num = 0, fraction = 2) {
+	public static _formatNumber(num = 0, fraction = 2) {
 		// Nine Zeroes for Billions
 		return Math.abs(num) >= 1.0e9
 			? `${(Math.abs(num) / 1.0e9).toFixed(fraction)}B`
@@ -103,6 +103,19 @@ export class Util {
 			Math.abs(num) >= 1.0e3
 			? `${(Math.abs(num) / 1.0e3).toFixed(fraction)}K`
 			: Math.abs(num).toFixed(0);
+	}
+
+	public static formatNumber(num = 0, fraction = 2) {
+		// Nine Zeroes for Billions
+		return Math.abs(num) >= 1.0e9
+			? `${(num / 1.0e9).toFixed(fraction)}B`
+			: // Six Zeroes for Millions
+			Math.abs(num) >= 1.0e6
+			? `${(num / 1.0e6).toFixed(fraction)}M`
+			: // Three Zeroes for Thousands
+			Math.abs(num) >= 1.0e3
+			? `${(num / 1.0e3).toFixed(fraction)}K`
+			: num.toFixed(0);
 	}
 
 	public static timezoneOffset(seconds: number, ms = true) {
@@ -267,7 +280,7 @@ export class Util {
 	}
 
 	public static escapeBackTick(name: string) {
-		return name.replace('`', '');
+		return name.replace(/`/g, '');
 	}
 
 	/**

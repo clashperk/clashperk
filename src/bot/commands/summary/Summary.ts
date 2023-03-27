@@ -4,6 +4,7 @@ import { Command } from '../../lib/index.js';
 export default class SummaryCommand extends Command {
 	public constructor() {
 		super('summary', {
+			aliases: ['family'],
 			category: 'summary',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
@@ -13,8 +14,8 @@ export default class SummaryCommand extends Command {
 		});
 	}
 
-	public exec(interaction: CommandInteraction, args: { command: string }) {
-		const command = {
+	public exec(interaction: CommandInteraction, args: { command: string; option: string }) {
+		const commandMap: Record<string, Command | null> = {
 			'compo': this.handler.modules.get('summary-compo')!,
 			'wars': this.handler.modules.get('summary-wars')!,
 			'clans': this.handler.modules.get('summary-clans')!,
@@ -30,7 +31,8 @@ export default class SummaryCommand extends Command {
 			'best': this.handler.modules.get('summary-best')!,
 			'cwl-ranks': this.handler.modules.get('summary-cwl-ranks')!,
 			'leagues': this.handler.modules.get('summary-leagues')!
-		}[args.command];
+		};
+		const command = commandMap[args.command] || commandMap[args.option]; // eslint-disable-line
 
 		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
 		return this.handler.continue(interaction, command);

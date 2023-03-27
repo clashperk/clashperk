@@ -9,14 +9,25 @@ export default class SummaryCompoCommand extends Command {
 			category: 'none',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks'],
-			defer: true
+			defer: true,
+			ephemeral: true
 		});
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>) {
+		if (interaction.isCommand()) {
+			return interaction.editReply({
+				content: `This command has been deleted. Use ${this.client.getCommand('/summary clans')} command instead.`
+			});
+		}
+	}
+
+	public async _exec(interaction: CommandInteraction<'cached'>) {
 		const clans = await this.client.storage.find(interaction.guildId);
 		if (!clans.length) {
-			return interaction.editReply(this.i18n('common.no_clans_linked', { lng: interaction.locale }));
+			return interaction.editReply(
+				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.getCommand('/setup enable') })
+			);
 		}
 
 		const allClans = (await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)))).filter((clan) => clan.ok);
