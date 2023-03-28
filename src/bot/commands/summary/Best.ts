@@ -80,7 +80,7 @@ export default class SummaryBestCommand extends Command {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find(interaction.guildId);
+			: await this.client.storage.find('1029993902503108678');
 
 		if (!clans.length && tags.length)
 			return interaction.editReply(
@@ -332,7 +332,9 @@ export default class SummaryBestCommand extends Command {
 								$project: {
 									name: 1,
 									tag: 1,
-									value: '$_clanGamesPoints'
+									value: {
+										$max: ['$_clanGamesPoints', 0]
+									}
 								}
 							},
 							{
@@ -417,7 +419,9 @@ export default class SummaryBestCommand extends Command {
 								$project: {
 									name: 1,
 									tag: 1,
-									value: '$_capitalLoot'
+									value: {
+										$max: ['$_capitalLoot', 0]
+									}
 								}
 							},
 							{
@@ -434,7 +438,9 @@ export default class SummaryBestCommand extends Command {
 								$project: {
 									name: 1,
 									tag: 1,
-									value: '$_capitalDonations'
+									value: {
+										$max: ['$_capitalDonations', 0]
+									}
 								}
 							},
 							{
