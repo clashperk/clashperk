@@ -2455,7 +2455,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		options: [
 			{
 				name: 'wars',
-				description: 'Export wars stats.',
+				description: 'Export war stats.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -2545,7 +2545,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'members',
-				description: 'Export regular, friendly and CWL wars stats.',
+				description: 'Export clan members.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{

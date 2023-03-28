@@ -27,17 +27,15 @@ export class Season {
 		return now;
 	}
 
-	public static getSeasonIdAgainstDate(date: Date | number | string, month?: number): Date {
-		const now = moment(date);
-		month ??= now.month();
-
-		const lastDay = now.clone().endOf('month');
-		const lastMonday = moment(lastDay).month(month).day('Monday').hour(5).minute(0).second(0).millisecond(0);
-
-		if (now.toDate().getTime() >= lastMonday.toDate().getTime()) {
-			return this.getSeasonIdAgainstDate(now.toDate(), now.month() + 1);
+	public static getLastMondayOfMonth(month: number, year: number, date?: Date): Date {
+		const lastDayOfMonth = new Date(year, month + 1, 0);
+		const lastMonday = new Date(lastDayOfMonth);
+		lastMonday.setDate(lastMonday.getDate() - ((lastMonday.getDay() + 6) % 7));
+		lastMonday.setHours(5, 0, 0, 0);
+		if (date && date.getTime() > lastMonday.getTime()) {
+			return this.getLastMondayOfMonth(month + 1, year, date);
 		}
-		return lastMonday.toDate();
+		return lastMonday;
 	}
 
 	public static get ending() {
@@ -205,7 +203,7 @@ export class Util {
 			const timestamp = moment(endTime).startOf('month').subtract(1, 'second').startOf('month').toDate();
 			return moment(endTime)
 				.add(1, 'second')
-				.diff(moment(Season.getSeasonIdAgainstDate(timestamp)), 'days');
+				.diff(moment(Season.getLastMondayOfMonth(timestamp.getMonth(), timestamp.getFullYear(), timestamp)), 'days');
 		}
 		return diff;
 	}
