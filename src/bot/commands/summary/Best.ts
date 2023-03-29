@@ -80,7 +80,7 @@ export default class SummaryBestCommand extends Command {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
 			? await this.client.storage.search(interaction.guildId, tags)
-			: await this.client.storage.find('1029993902503108678');
+			: await this.client.storage.find(interaction.guildId);
 
 		if (!clans.length && tags.length)
 			return interaction.editReply(
