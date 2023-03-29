@@ -5,7 +5,7 @@ import {
 	EmbedBuilder,
 	StringSelectMenuBuilder,
 	ButtonStyle,
-	WebhookEditMessageOptions,
+	WebhookMessageEditOptions,
 	ComponentType
 } from 'discord.js';
 import { WithId } from 'mongodb';
@@ -187,7 +187,7 @@ export default class RedeemCommand extends Command {
 
 	private async disableRedemption(
 		interaction: CommandInteraction,
-		{ message, user, select }: { message: WebhookEditMessageOptions; user: WithId<Patron>; select: boolean }
+		{ message, user, select }: { message: WebhookMessageEditOptions; user: WithId<Patron>; select: boolean }
 	) {
 		const collection = this.client.db.collection<Patron>(Collections.PATRONS);
 		const customIds = {

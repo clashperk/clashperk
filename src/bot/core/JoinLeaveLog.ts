@@ -1,5 +1,5 @@
 import { Player } from 'clashofclans.js';
-import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookCreateMessageOptions } from 'discord.js';
+import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
@@ -51,7 +51,7 @@ export default class JoinLeaveLog extends BaseLog {
 		return members.length;
 	}
 
-	private async send(cache: Cache, webhook: WebhookClient, payload: WebhookCreateMessageOptions) {
+	private async send(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
 		try {
 			return await super._send(cache, webhook, payload);
 		} catch (error: any) {

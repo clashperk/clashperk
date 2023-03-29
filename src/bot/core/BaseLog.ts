@@ -7,7 +7,7 @@ import {
 	SnowflakeUtil,
 	TextChannel,
 	WebhookClient,
-	WebhookCreateMessageOptions
+	WebhookMessageCreateOptions
 } from 'discord.js';
 import { Collection as DbCollection, ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
@@ -108,7 +108,7 @@ export default class BaseLog {
 		return msg;
 	}
 
-	public async _send(cache: Cache, webhook: WebhookClient, payload: WebhookCreateMessageOptions) {
+	public async _send(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
 		try {
 			return await webhook.send(payload);
 		} catch (error: any) {
@@ -120,7 +120,7 @@ export default class BaseLog {
 		}
 	}
 
-	public async _edit(cache: Cache, webhook: WebhookClient, payload: WebhookCreateMessageOptions) {
+	public async _edit(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
 		try {
 			return await webhook.editMessage(cache.message!, payload);
 		} catch (error: any) {

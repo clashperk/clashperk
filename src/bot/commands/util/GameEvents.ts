@@ -14,8 +14,8 @@ export default class GameEvents extends Command {
 	public exec(interaction: CommandInteraction<'cached'>) {
 		const now = moment().toDate();
 
-		const clanGamesStartTime = moment(now).startOf('month').add(21, 'days').add(8, 'hours').toDate();
-		const clanGamesEndTime = moment(now)
+		const clanGamesStartTime = moment(Season.ID).startOf('month').add(21, 'days').add(8, 'hours').toDate();
+		const clanGamesEndTime = moment(Season.ID)
 			.startOf('month')
 			.add(21 + 6, 'days')
 			.add(8, 'hours')

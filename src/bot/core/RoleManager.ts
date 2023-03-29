@@ -294,7 +294,7 @@ export class RoleManager {
 		}, []);
 
 		// fetch guild members at once
-		const guildMembers = await this.client.guilds.cache.get(guildId)?.members.fetch({ user: userIds, force: true });
+		const guildMembers = await this.client.guilds.cache.get(guildId)?.members.fetch({ user: userIds });
 		if (!guildMembers?.size) return null;
 
 		// getting roles of all linked players
@@ -422,7 +422,7 @@ export class RoleManager {
 		}, []);
 
 		// fetch guild members at once
-		const members = await this.client.guilds.cache.get(guildId)?.members.fetch({ user: userIds, force: true });
+		const members = await this.client.guilds.cache.get(guildId)?.members.fetch({ user: userIds });
 		if (!members?.size) return null;
 
 		// getting roles of all linked players
@@ -503,7 +503,7 @@ export class RoleManager {
 		}, []);
 
 		// fetch guild members at once
-		const members = await this.client.guilds.cache.get(guildId)?.members.fetch({ user: userIds, force: true });
+		const members = await this.client.guilds.cache.get(guildId)?.members.fetch({ user: userIds });
 		if (!members?.size) return null;
 
 		// getting roles of all linked players

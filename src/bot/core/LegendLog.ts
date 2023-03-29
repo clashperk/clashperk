@@ -1,4 +1,4 @@
-import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookClient, WebhookCreateMessageOptions } from 'discord.js';
+import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
 import { LegendLogModel } from '../types/index.js';
@@ -36,7 +36,7 @@ export default class LegendLog extends BaseLog {
 		await this.collection.updateOne({ clanId: cache.clanId }, { $set: { lastPosted: new Date() } });
 	}
 
-	private async send(cache: Cache, webhook: WebhookClient, payload: WebhookCreateMessageOptions) {
+	private async send(cache: Cache, webhook: WebhookClient, payload: WebhookMessageCreateOptions) {
 		try {
 			return await super._send(cache, webhook, payload);
 		} catch (error: any) {
