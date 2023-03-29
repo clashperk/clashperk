@@ -92,14 +92,11 @@ export default class SummaryBestCommand extends Command {
 			);
 		}
 
-		const _cachedClans = (
-			(await this.client.redis.json.mGet(
-				clans.map((clan) => `C${clan.tag}`),
-				'$'
-			)) as Clan[][] | null[]
-		)
-			.flat()
-			.filter((_) => _) as Clan[];
+		const raw = await this.client.redis.json.mGet(
+			clans.map((clan) => `C${clan.tag}`),
+			'$'
+		);
+		const _cachedClans = raw.flat().filter((_) => _) as unknown as Clan[];
 		const members = _cachedClans.map((clan) => clan.memberList.map((m) => m.tag)).flat();
 
 		const embed = new EmbedBuilder()
