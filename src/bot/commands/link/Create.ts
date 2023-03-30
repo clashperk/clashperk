@@ -175,6 +175,43 @@ export default class LinkCreateCommand extends Command {
 				].join('\n'),
 				ephemeral: true
 			});
+
+			return this.updateLinksAndRoles(interaction.guild.id);
+		}
+	}
+
+	private async updateLinksAndRoles(guildId: string) {
+		const clans = await this.client.storage.find(guildId);
+		const collection = this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS);
+		for (const clan of clans) {
+			const data = await this.client.http.clan(clan.tag);
+			if (!data.ok) continue;
+
+			const links = await collection.find({ tag: { $in: data.memberList.map((mem) => mem.tag) } }).toArray();
+			const unknowns = await this.client.http.getDiscordLinks(data.memberList);
+
+			for (const { userId, tag } of unknowns) {
+				if (links.find((mem) => mem.tag === tag && mem.userId === userId)) continue;
+				const lastAccount = await collection.findOne({ userId }, { sort: { order: -1 } });
+
+				const player = data.memberList.find((mem) => mem.tag === tag) ?? (await this.client.http.player(tag));
+				if (!player.name) continue;
+
+				const user = await this.client.users.fetch(userId).catch(() => null);
+				if (!user) continue;
+
+				try {
+					await collection.insertOne({
+						userId: user.id,
+						username: user.tag,
+						tag,
+						name: player.name,
+						verified: false,
+						order: lastAccount?.order ? lastAccount.order + 1 : 0,
+						createdAt: new Date()
+					});
+				} catch {}
+			}
 		}
 	}
 

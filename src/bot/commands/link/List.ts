@@ -219,8 +219,6 @@ export default class LinkListCommand extends Command {
 					});
 				} catch {}
 			}
-
-			await this.client.rpcHandler.roleManager.queue(data, {});
 		}
 	}
 }
