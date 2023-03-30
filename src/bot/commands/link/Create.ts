@@ -1,4 +1,4 @@
-import { GuildMember, CommandInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
+import { GuildMember, CommandInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder, PermissionsBitField } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -105,7 +105,7 @@ export default class LinkCreateCommand extends Command {
 	}
 
 	public async playerLink(
-		interaction: CommandInteraction,
+		interaction: CommandInteraction<'cached'>,
 		{ player, member, def }: { player: Player; member: GuildMember; def: boolean }
 	) {
 		const [doc, accounts] = await this.getPlayer(player.tag, member.id);
@@ -155,15 +155,27 @@ export default class LinkCreateCommand extends Command {
 		// Fix Conflicts
 		await this.resetLinkAPI(member.id, player.tag);
 		// Update Role
-		if (player.clan) this.client.rpcHandler.roleManager.newLink(player);
+		// if (player.clan) this.client.rpcHandler.roleManager.newLink(player);
 
-		return interaction.editReply(
+		await interaction.editReply(
 			this.i18n('command.link.create.success', {
 				lng: interaction.locale,
 				user: `**${member.user.tag}**`,
 				target: `**${player.name} (${player.tag})**`
 			})
 		);
+
+		if (interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+			const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+			await interaction.followUp({
+				content: [
+					`**Click the link below to manage Discord links on our Dashboard.**`,
+					'',
+					`[https://clashperk.com/links](https://clashperk.com/links?token=${token})`
+				].join('\n'),
+				ephemeral: true
+			});
+		}
 	}
 
 	private async getPlayer(tag: string, userId: string) {

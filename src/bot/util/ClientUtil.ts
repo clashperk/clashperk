@@ -1,4 +1,5 @@
 import { ChannelType, ForumChannel, NewsChannel, PermissionsString, TextChannel } from 'discord.js';
+import jwt from 'jsonwebtoken';
 import Client from '../struct/Client.js';
 
 export class ClientUtil {
@@ -35,6 +36,14 @@ export class ClientUtil {
 			}
 		}
 		return null;
+	}
+
+	public createToken({ userId, guildId }: { userId: string; guildId: string }) {
+		const token = jwt.sign({ user_id: userId, guild_id: guildId }, process.env.JWT_DECODE_SECRET!, {
+			expiresIn: '6h'
+		});
+
+		return token;
 	}
 
 	public hasWebhookPermission(channel: TextChannel | NewsChannel | ForumChannel) {

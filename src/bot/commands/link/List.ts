@@ -7,7 +7,8 @@ import {
 	EmbedBuilder,
 	ButtonStyle,
 	User,
-	ButtonInteraction
+	ButtonInteraction,
+	PermissionsBitField
 } from 'discord.js';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
@@ -29,11 +30,23 @@ export default class LinkListCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'> | ButtonInteraction<'cached'>,
-		args: { tag?: string; showTags?: boolean; user?: User }
+		args: { tag?: string; showTags?: boolean; user?: User; links?: boolean }
 	) {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 		if (!clan.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
+
+		if (args.links && interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+			const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+			return interaction.followUp({
+				content: [
+					`**Click the link below to manage Discord links on our Dashboard.**`,
+					'',
+					`[https://clashperk.com/links](https://clashperk.com/links?tag=${encodeURIComponent(clan.tag)}&token=${token})`
+				].join('\n'),
+				ephemeral: true
+			});
+		}
 
 		const memberTags = await this.client.http.getDiscordLinks(clan.memberList);
 		const dbMembers = await this.client.db
@@ -86,6 +99,13 @@ export default class LinkListCommand extends Command {
 					.setStyle(ButtonStyle.Secondary)
 					.setEmoji(EMOJIS.HASH)
 					.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, showTags: true }))
+			)
+			.addComponents(
+				new ButtonBuilder()
+					.setStyle(ButtonStyle.Primary)
+					.setEmoji('🔗')
+					.setLabel('Manage')
+					.setCustomId(JSON.stringify({ tag: clan.tag, cmd: this.id, links: true }))
 			);
 		return interaction.editReply({ embeds: [embed], components: [row] });
 	}

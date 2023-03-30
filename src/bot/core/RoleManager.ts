@@ -52,6 +52,26 @@ export class RoleManager {
 		this._queue = new Queue();
 	}
 
+	public init() {
+		this.client.db
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.watch(
+				[
+					{
+						$match: { operationType: { $in: ['insert', 'update'] } }
+					}
+				],
+				{ fullDocument: 'updateLookup' }
+			)
+			.on('change', async (change) => {
+				if (['insert', 'update'].includes(change.operationType)) {
+					const link = change.fullDocument!;
+					const res = await this.client.http.player(link.tag);
+					if (res.ok && res.clan) return this.newLink(res);
+				}
+			});
+	}
+
 	public async queue(clan: Clan, { isThRole = false, isLeagueRole = false }) {
 		if (this.queues.has(clan.tag)) return null;
 

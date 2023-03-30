@@ -50,6 +50,7 @@
 	},
 	"devDependencies": {
 		"@types/common-tags": "^1.8.1",
+		"@types/jsonwebtoken": "^9.0.1",
 		"@types/moment-duration-format": "^2.2.3",
 		"@types/ms": "^0.7.31",
 		"@types/node": "^18.13.0",
