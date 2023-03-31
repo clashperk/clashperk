@@ -7,7 +7,7 @@ import { LegendAttacks } from '../../types/index.js';
 
 export default class LegendAttacksCommand extends Command {
 	public constructor() {
-		super('legend-attacks_', {
+		super('legend-attacks', {
 			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
