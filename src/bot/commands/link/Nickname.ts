@@ -3,6 +3,13 @@ import { Args, Command } from '../../lib/index.js';
 import { TOWN_HALLS } from '../../util/Emojis.js';
 import { Collections, Settings } from '../../util/Constants.js';
 
+const roles: Record<string, string> = {
+	leader: 'Lead',
+	coLeader: 'Co-Lead',
+	admin: 'Eld',
+	member: 'Mem'
+};
+
 export default class NickNameCommand extends Command {
 	public constructor() {
 		super('nickname', {
@@ -93,7 +100,7 @@ export default class NickNameCommand extends Command {
 					{
 						name: player.name,
 						townHallLevel: player.townHallLevel,
-						role: player.role,
+						role: player.role ? roles[player.role] : null,
 						clan: clan?.alias
 					},
 					format
@@ -124,7 +131,7 @@ export default class NickNameCommand extends Command {
 		player: {
 			name: string;
 			townHallLevel: number;
-			role?: string;
+			role?: string | null;
 			clan?: string;
 		},
 		format: string
