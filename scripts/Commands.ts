@@ -1683,24 +1683,31 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
-						name: 'co_leads',
+						name: 'member',
 						required: true,
-						description: command.autorole.clan_roles.options.co_leads.description,
-						description_localizations: translation('command.autorole.clan_roles.options.co_leads.description'),
+						description: command.autorole.clan_roles.options.member.description,
+						description_localizations: translation('command.autorole.clan_roles.options.member.description'),
 						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'elders',
+						name: 'elder',
 						required: true,
-						description: command.autorole.clan_roles.options.elders.description,
-						description_localizations: translation('command.autorole.clan_roles.options.elders.description'),
+						description: command.autorole.clan_roles.options.elder.description,
+						description_localizations: translation('command.autorole.clan_roles.options.elder.description'),
 						type: ApplicationCommandOptionType.Role
 					},
 					{
-						name: 'members',
+						name: 'co_lead',
 						required: true,
-						description: command.autorole.clan_roles.options.members.description,
-						description_localizations: translation('command.autorole.clan_roles.options.members.description'),
+						description: command.autorole.clan_roles.options.co_lead.description,
+						description_localizations: translation('command.autorole.clan_roles.options.co_lead.description'),
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'leader',
+						required: true,
+						description: command.autorole.clan_roles.options.leader.description,
+						description_localizations: translation('command.autorole.clan_roles.options.leader.description'),
 						type: ApplicationCommandOptionType.Role
 					},
 					{

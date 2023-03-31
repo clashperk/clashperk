@@ -6,9 +6,10 @@ import { PlayerLinks } from '../../types/index.js';
 export interface IArgs {
 	command?: 'refresh' | 'disable' | null;
 	clans?: string;
-	members?: Role;
-	elders?: Role;
-	coLeads?: Role;
+	member?: Role;
+	elder?: Role;
+	coLead?: Role;
+	leader?: Role;
 	commonRole?: Role;
 	verify: boolean;
 	clear?: boolean;
@@ -28,7 +29,7 @@ export default class AutoClanRoleCommand extends Command {
 
 	public args(): Args {
 		return {
-			co_leads: {
+			co_lead: {
 				id: 'coLeads',
 				match: 'ROLE'
 			},
@@ -65,17 +66,17 @@ export default class AutoClanRoleCommand extends Command {
 			);
 		}
 
-		const { members, elders, coLeads, commonRole } = args;
+		const { member, elder, coLead, leader, commonRole } = args;
 
-		if (!(members && elders && coLeads)) {
+		if (!(member && elder && coLead && leader)) {
 			return interaction.editReply(this.i18n('command.autorole.no_roles', { lng: interaction.locale }));
 		}
 
-		if ([members, elders, coLeads].some((role) => this.isSystemRole(role, interaction.guild))) {
+		if ([member, elder, coLead, leader].some((role) => this.isSystemRole(role, interaction.guild))) {
 			return interaction.editReply(this.i18n('command.autorole.no_system_roles', { lng: interaction.locale }));
 		}
 
-		if ([members, elders, coLeads].some((role) => this.isHigherRole(role, interaction.guild))) {
+		if ([member, elder, coLead, leader].some((role) => this.isHigherRole(role, interaction.guild))) {
 			return interaction.editReply(this.i18n('command.autorole.no_higher_roles', { lng: interaction.locale }));
 		}
 
@@ -92,8 +93,14 @@ export default class AutoClanRoleCommand extends Command {
 			{ tag: { $in: clans.map((clan) => clan.tag) }, guild: interaction.guild.id },
 			{
 				$set: {
-					roles: { member: members.id, admin: elders.id, coLeader: coLeads.id, everyone: commonRole?.id ?? null },
-					roleIds: [members.id, elders.id, coLeads.id],
+					roles: {
+						member: member.id,
+						admin: elder.id,
+						coLeader: coLead.id,
+						leader: leader.id,
+						everyone: commonRole?.id ?? null
+					},
+					roleIds: [member.id, elder.id, coLead.id, leader.id],
 					secureRole: args.verify
 				}
 			}
