@@ -17,7 +17,7 @@ export default class SummaryCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, { season }: { season?: string }) {
 		if (!season) season = Season.ID;
-		const clans = await this.client.storage.find('942429939112755240');
+		const clans = await this.client.storage.find(interaction.guild.id);
 
 		if (!clans.length) {
 			return interaction.editReply(
