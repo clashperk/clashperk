@@ -276,3 +276,15 @@ export interface CallerCollection {
 		}
 	>;
 }
+
+export interface LegendAttacks {
+	name: string;
+	tag: string;
+	logs: {
+		start: number;
+		end: number;
+		timestamp: number;
+		inc: number;
+		type?: string;
+	}[];
+}

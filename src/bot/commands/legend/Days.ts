@@ -7,7 +7,7 @@ import { EMOJIS, TOWN_HALLS } from '../../util/Emojis.js';
 import { attackCounts, Collections, LEGEND_LEAGUE_ID } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 import { Season, Util } from '../../util/index.js';
-import { PlayerLinks } from '../../types/index.js';
+import { LegendAttacks, PlayerLinks } from '../../types/index.js';
 
 export default class LegendDaysCommand extends Command {
 	public constructor() {
@@ -129,11 +129,7 @@ export default class LegendDaysCommand extends Command {
 
 	private async embed(interaction: CommandInteraction<'cached'>, data: Player, _day?: number) {
 		const seasonId = Season.ID;
-		const legend = (await this.client.redis.json.get(`LP-${seasonId}-${data.tag}`)) as {
-			name: string;
-			tag: string;
-			logs: LogType[];
-		} | null;
+		const legend = await this.client.db.collection<LegendAttacks>(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
 		const clan = data.clan ? ((await this.client.redis.json.get(`C${data.clan.tag}`)) as Clan | null) : null;
 
 		const { startTime, endTime, day } = this.getDay(_day);
@@ -428,11 +424,8 @@ export default class LegendDaysCommand extends Command {
 
 	private async logs(data: Player) {
 		const seasonId = Season.ID;
-		const legend = (await this.client.redis.json.get(`LP-${seasonId}-${data.tag}`)) as {
-			name: string;
-			tag: string;
-			logs: LogType[];
-		} | null;
+		const legend = await this.client.db.collection<LegendAttacks>(Collections.LEGEND_ATTACKS).findOne({ tag: data.tag, seasonId });
+
 		const logs = legend?.logs ?? [];
 
 		const days = Util.getLegendDays();
@@ -514,7 +507,7 @@ export default class LegendDaysCommand extends Command {
 	}
 }
 
-interface LogType {
+export interface LogType {
 	start: number;
 	end: number;
 	timestamp: number;

@@ -1,7 +1,7 @@
 import { Collection, EmbedBuilder, escapeMarkdown, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import { ObjectId } from 'mongodb';
 import { Client } from '../struct/Client.js';
-import { LegendLogModel } from '../types/index.js';
+import { LegendAttacks, LegendLogModel } from '../types/index.js';
 import { attackCounts, Collections } from '../util/Constants.js';
 import { Season, Util } from '../util/index.js';
 import BaseLog from './BaseLog.js';
@@ -59,16 +59,18 @@ export default class LegendLog extends BaseLog {
 
 		const multi = this.client.redis.multi();
 		clan.memberList.map((mem) => multi.json.get(`LP-${seasonId}-${mem.tag}`));
-		const raw = (await multi.exec()) as unknown as ({
-			name: string;
-			tag: string;
-			logs: { start: number; end: number; timestamp: number; inc: number }[];
-		} | null)[];
+		const raw = await this.client.db
+			.collection<LegendAttacks>(Collections.LEGEND_ATTACKS)
+			.find({
+				tag: {
+					$in: clan.memberList.map((mem) => mem.tag)
+				},
+				seasonId
+			})
+			.toArray();
 
 		const members = [];
 		for (const legend of raw) {
-			if (!legend) continue;
-
 			const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 			if (logs.length === 0) continue;
 
@@ -100,6 +102,7 @@ export default class LegendLog extends BaseLog {
 				current
 			});
 		}
+		members.sort((a, b) => b.current.end - a.current.end);
 
 		const embed = new EmbedBuilder()
 			.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`)

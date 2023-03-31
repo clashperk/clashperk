@@ -1,12 +1,13 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, escapeMarkdown, User } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { attackCounts } from '../../util/Constants.js';
+import { attackCounts, Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
+import { LegendAttacks } from '../../types/index.js';
 
 export default class LegendAttacksCommand extends Command {
 	public constructor() {
-		super('legend-attacks', {
+		super('legend-attacks_', {
 			category: 'search',
 			channel: 'guild',
 			clientPermissions: ['EmbedLinks', 'UseExternalEmojis'],
@@ -34,21 +35,20 @@ export default class LegendAttacksCommand extends Command {
 		const clan = await this.client.resolver.resolveClan(interaction, args.tag ?? args.user?.id);
 		if (!clan) return;
 
-		const multi = this.client.redis.multi();
 		const seasonId = Season.ID;
-		clan.memberList.map((mem) => multi.json.get(`LP-${seasonId}-${mem.tag}`));
-		const raw = (await multi.exec()) as unknown as ({
-			name: string;
-			tag: string;
-			logs: { start: number; end: number; timestamp: number; inc: number; type?: string }[];
-		} | null)[];
-
-		const { startTime, endTime, day } = this.getDay(args.day);
+		const raw = await this.client.db
+			.collection<LegendAttacks>(Collections.LEGEND_ATTACKS)
+			.find({
+				tag: {
+					$in: clan.memberList.map((mem) => mem.tag)
+				},
+				seasonId
+			})
+			.toArray();
 
 		const members = [];
+		const { startTime, endTime, day } = this.getDay(args.day);
 		for (const legend of raw) {
-			if (!legend) continue;
-
 			const logs = legend.logs.filter((atk) => atk.timestamp >= startTime && atk.timestamp <= endTime);
 			if (logs.length === 0) continue;
 
@@ -80,6 +80,7 @@ export default class LegendAttacksCommand extends Command {
 				current
 			});
 		}
+		members.sort((a, b) => b.current.end - a.current.end);
 
 		const embed = new EmbedBuilder()
 			.setTitle(`${escapeMarkdown(clan.name)} (${clan.tag})`)
