@@ -1900,7 +1900,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'wars',
-				description: 'Set war roles.',
+				description: 'Set automatic war roles.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
 					{
@@ -1914,7 +1914,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: true,
 						autocomplete: true,
 						type: ApplicationCommandOptionType.String,
-						description: 'The clan tag to set the war role for.'
+						description: 'The clan for which to set the war role.'
 					}
 				]
 			},

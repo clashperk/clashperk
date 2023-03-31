@@ -88,7 +88,8 @@ export const enum Flags {
 	TOWN_HALL_LOG = 1 << 9,
 	PLAYER_FEED_LOG = 1 << 10,
 	JOIN_LEAVE_LOG = 1 << 11,
-	CAPITAL_LOG = 1 << 12
+	CAPITAL_LOG = 1 << 12,
+	CLAN_EVENT_LOG = 1 << 13
 }
 
 export const enum Settings {

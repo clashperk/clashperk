@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder } from 'discord.js';
-import { WHITE_NUMBERS } from '../../util/Emojis.js';
-import { Collections } from '../../util/Constants.js';
 import { Command } from '../../lib/index.js';
+import { Collections } from '../../util/Constants.js';
+import { BLUE_NUMBERS, EMOJIS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
 
 // TODO: Per season activity
@@ -17,7 +17,7 @@ export default class SummaryCommand extends Command {
 
 	public async exec(interaction: CommandInteraction<'cached'>, { season }: { season?: string }) {
 		if (!season) season = Season.ID;
-		const clans = await this.client.storage.find(interaction.guild.id);
+		const clans = await this.client.storage.find('942429939112755240');
 
 		if (!clans.length) {
 			return interaction.editReply(
@@ -41,34 +41,31 @@ export default class SummaryCommand extends Command {
 
 		collection.sort((a, b) => b.total - a.total);
 		const embed = new EmbedBuilder();
-		embed.setAuthor({ name: 'Avg. active members and activity scores' });
+		embed.setAuthor({ name: 'Clan Activity Summary', iconURL: interaction.guild.iconURL()! });
 		embed.setDescription(
-			collection
-				.map(
-					(clan, i) =>
-						`${WHITE_NUMBERS[i + 1]} \`${clan.name.padEnd(15, ' ')}\` \`${clan.online
-							.toFixed(0)
-							.padStart(3, ' ')}\` \`${clan.total.toFixed(0).padStart(4, ' ')}\``
-				)
-				.join('\n')
+			[
+				`\u200e${EMOJIS.HASH}  \`AVG\`  \`SCORE\`  \` ${'CLAN NAME'.padEnd(15, ' ')}\``,
+				...collection.map((clan, i) => {
+					const online = clan.online.toFixed(0).padStart(3, ' ');
+					const total = clan.total.toFixed(0).padStart(5, ' ');
+					return `\u200e${BLUE_NUMBERS[i + 1]}  \`${online}\`  \`${total}\`  \` ${clan.name.padEnd(15, ' ')}\``;
+				})
+			].join('\n')
 		);
+		embed.setFooter({ text: [`avg = daily average active members`, 'based on the last 30 days of activities'].join('\n') });
 
-		const customIds = {
-			action: this.client.uuid(),
-			reverse: this.client.uuid()
-		};
-
+		const customIds = { action: this.client.uuid(), reverse: this.client.uuid() };
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
 			new ButtonBuilder().setLabel('Show Most Active Members').setStyle(ButtonStyle.Primary).setCustomId(customIds.action)
 		);
 
 		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
 		});
 
 		collector.on('collect', async (action) => {
+			await action.deferUpdate();
 			const reversed = action.customId === customIds.reverse;
 			const embed = new EmbedBuilder();
 			embed.setAuthor({ name: `${interaction.guild.name} Most Active Members` });
@@ -86,7 +83,7 @@ export default class SummaryCommand extends Command {
 				new ButtonBuilder().setLabel('Reverse Order').setStyle(ButtonStyle.Primary).setCustomId(customIds.reverse)
 			);
 
-			await action.update({ embeds: [embed], components: reversed ? [] : [row] });
+			await action.editReply({ embeds: [embed], components: reversed ? [] : [row] });
 		});
 
 		collector.on('end', async (_, reason) => {
@@ -115,6 +112,13 @@ export default class SummaryCommand extends Command {
 				{
 					$unwind: {
 						path: '$entries'
+					}
+				},
+				{
+					$match: {
+						'entries.entry': {
+							$gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+						}
 					}
 				},
 				{

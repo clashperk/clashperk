@@ -139,7 +139,7 @@ export default class ClanWarScheduler {
 			});
 		if (!members.length) return null;
 
-		const links = await this.client.http.getDiscordLinks(members);
+		const links = await this.client.resolver.getLinkedUsers(members);
 		if (!links.length) return null;
 
 		// const guildMembers = await guild.members.fetch({ user: links.map(({ user }) => user) }).catch(() => null);
@@ -148,9 +148,9 @@ export default class ClanWarScheduler {
 		for (const link of links) {
 			const member = members.find((mem) => mem.tag === link.tag)!;
 			// const mention = guildMembers?.get(link.user) ?? `<@${link.user}>`;
-			const mention = `<@${link.user}>`;
+			const mention = `<@${link.userId}>`;
 			mentions.push({
-				id: link.user,
+				id: link.userId,
 				mention: mention.toString(),
 				name: member.name,
 				tag: member.tag,

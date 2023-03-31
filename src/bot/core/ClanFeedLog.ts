@@ -16,6 +16,13 @@ const OP: { [key: string]: number } = {
 	WAR_PREF_CHANGE: 0x00dbf3
 };
 
+const clanTypeEvents = {
+	CAPITAL_HALL_LEVEL_UP: 0x00dbf3,
+	CAPITAL_LEAGUE_CHANGE: 0x00dbf3,
+	WAR_LEAGUE_CHANGE: 0x00dbf3,
+	CLAN_LEVEL_UP: 0x00dbf3
+} satisfies Record<string, number>;
+
 const logTypes: Record<string, string> = {
 	NAME_CHANGE: ClanFeedLogTypes.PlayerNameChange,
 	TOWN_HALL_UPGRADE: ClanFeedLogTypes.TownHallUpgrade,
@@ -40,6 +47,10 @@ export default class ClanFeedLog extends BaseLog {
 	}
 
 	public override async handleMessage(cache: Cache, webhook: WebhookClient, data: Feed) {
+		if (data.type && data.type in clanTypeEvents) {
+			return this.clanTypeEmbeds(cache, webhook, data);
+		}
+
 		const members = data.members.filter((mem) => Object.keys(OP).includes(mem.op));
 		if (!members.length) return null;
 		const delay = members.length >= 5 ? 2000 : 250;
@@ -68,6 +79,34 @@ export default class ClanFeedLog extends BaseLog {
 			this.client.logger.error(`${error as string} {${cache.clanId.toString()}}`, { label: 'DonationLog' });
 			return null;
 		}
+	}
+
+	private clanTypeEmbeds(cache: Cache, webhook: WebhookClient, data: Feed) {
+		const embed = new EmbedBuilder()
+			.setColor(clanTypeEvents[data.type as keyof typeof clanTypeEvents])
+			.setTitle(`\u200e${data.clan.name} (${data.clan.tag})`)
+			.setThumbnail(data.clan.badge);
+
+		if (data.type === 'CLAN_LEVEL_UP') {
+			embed.setDescription(`Clan leveled up to **${data.clan.level}**`);
+		}
+
+		if (data.type === 'CAPITAL_HALL_LEVEL_UP') {
+			embed.setDescription(`Capital Hall leveled up to **${data.clan.capitalHallLevel}**`);
+		}
+
+		if (data.type === 'CAPITAL_LEAGUE_CHANGE') {
+			embed.setDescription(`Capital League changed to **${data.clan.capitalLeague.name}**`);
+		}
+
+		if (data.type === 'WAR_LEAGUE_CHANGE') {
+			embed.setDescription(`War League changed to **${data.clan.warLeague.name}**`);
+		}
+
+		return this.send(cache, webhook, {
+			embeds: [embed],
+			threadId: cache.threadId
+		});
 	}
 
 	private async embed(cache: Cache, member: Member, data: Feed) {
@@ -109,11 +148,11 @@ export default class ClanFeedLog extends BaseLog {
 			embed.setThumbnail(`https://cdn.discordapp.com/emojis/${id!}.png?v=1`);
 			embed.setFooter({ text: `${data.clan.name}`, iconURL: data.clan.badge });
 			if (player.warPreference === 'in') {
-				embed.setDescription(`**Opted in** to be included in clan wars.`);
+				embed.setDescription(`**Opted in** for clan wars.`);
 				embed.setColor('#6dbc1e');
 			}
 			if (player.warPreference === 'out') {
-				embed.setDescription(`**Opted out** to be left out of clan wars.`);
+				embed.setDescription(`**Opted out** of clan wars.`);
 				embed.setColor('#d74c1d');
 			}
 		}
@@ -242,6 +281,10 @@ interface Feed {
 		tag: string;
 		name: string;
 		badge: string;
+		level: number;
+		warLeague: { name: string };
+		capitalLeague: { name: string };
+		capitalHallLevel: number;
 	};
 	members: Member[];
 	memberList: {
@@ -249,6 +292,7 @@ interface Feed {
 		role: string;
 		clan: { tag: string };
 	}[];
+	type?: string;
 }
 
 interface Cache {

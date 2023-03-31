@@ -178,7 +178,7 @@ export default class CapitalRaidScheduler {
 			});
 		if (!members.length) return null;
 
-		const links = await this.client.http.getDiscordLinks(members);
+		const links = await this.client.resolver.getLinkedUsers(members);
 		if (!links.length) return null;
 
 		const mentions: UserMention[] = [];
@@ -186,8 +186,8 @@ export default class CapitalRaidScheduler {
 		for (const link of links) {
 			const member = members.find((mem) => mem.tag === link.tag)!;
 			mentions.push({
-				id: link.user,
-				mention: `<@${link.user}>` as const,
+				id: link.userId,
+				mention: `<@${link.userId}>` as const,
 				name: member.name,
 				tag: member.tag,
 				attacks: member.attacks,

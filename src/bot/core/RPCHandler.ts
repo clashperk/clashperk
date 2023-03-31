@@ -12,6 +12,7 @@ import ClanWarLog from './ClanWarLog.js';
 import LegendLog from './LegendLog.js';
 import JoinLeaveLog from './JoinLeaveLog.js';
 import CapitalLog from './CapitalLog.js';
+import { WarRoleManager } from './WarRoleManager.js';
 
 export default class RPCHandler {
 	private paused = Boolean(false);
@@ -26,6 +27,7 @@ export default class RPCHandler {
 	private readonly legendLog = new LegendLog(this.client);
 	private readonly capitalLog = new CapitalLog(this.client);
 	private readonly joinLeaveLog = new JoinLeaveLog(this.client);
+	private readonly warRoleManager = new WarRoleManager(this.client);
 
 	public roleManager = new RoleManager(this.client);
 
@@ -68,6 +70,9 @@ export default class RPCHandler {
 					case Flags.CLAN_GAMES_LOG:
 						await this.clanGamesLog.exec(data.tag, data);
 						break;
+					case Flags.CLAN_EVENT_LOG:
+						await this.clanFeedLog.exec(data.tag, data);
+						break;
 					case Flags.TOWN_HALL_LOG:
 						await Promise.all([this.clanFeedLog.exec(data.tag, data), this.roleManager.execTownHall(data.tag, data.members)]);
 						break;
@@ -76,6 +81,7 @@ export default class RPCHandler {
 						break;
 					case Flags.CLAN_WAR_LOG:
 						await this.clanWarLog.exec(data.clan.tag, data);
+						await this.warRoleManager.exec(data.clan.tag, data);
 						break;
 					default:
 						break;
@@ -166,7 +172,7 @@ export default class RPCHandler {
 		};
 
 		if (data.op.toString() in OP) {
-			await OP[data.op].add(id);
+			await OP[data.op as keyof typeof OP].add(id); // eslint-disable-line
 		} else {
 			Object.values(OP).map((Op) => Op.add(id));
 		}
@@ -210,7 +216,7 @@ export default class RPCHandler {
 		};
 
 		if (data.op.toString() in OP) {
-			OP[data.op].delete(id);
+			OP[data.op as keyof typeof OP].delete(id); // eslint-disable-line
 		} else {
 			Object.values(OP).map((Op) => Op.delete(id));
 		}

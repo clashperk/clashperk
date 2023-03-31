@@ -11,7 +11,7 @@ interface Feed extends ClanWar {
 	id: number;
 	warTag?: string;
 	attacksPerMember: number;
-	clan: WarClan & { changedRosters?: { added: string[]; removed: string[] } };
+	clan: WarClan & { changedRosters?: { added: string[]; removed: string[] }; _members: string[] };
 	opponent: WarClan;
 }
 
@@ -48,7 +48,7 @@ export class WarRoleManager {
 	public async handleRegularWar(clans: { guild: string; warRole: string }[], data: Feed) {
 		const links = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.find({ tag: { $in: data.clan.members.map((member) => member.tag) } })
+			.find({ tag: { $in: data.clan._members.map((tag) => tag) } })
 			.toArray();
 
 		for (const clan of clans) {
@@ -93,7 +93,7 @@ export class WarRoleManager {
 
 		const links = await this.client.db
 			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.find({ tag: { $in: [...data.clan.members.map((member) => member.tag), ...removed] } })
+			.find({ tag: { $in: [...data.clan._members.map((tag) => tag), ...removed] } })
 			.toArray();
 
 		for (const clan of clans) {

@@ -119,6 +119,7 @@ export default class ClanLogCommand extends Command {
 				channel: args.channel.id,
 				tag: data.tag,
 				name: data.name,
+				color: args.color,
 				webhook: {
 					id: webhook.id,
 					token: webhook.token
