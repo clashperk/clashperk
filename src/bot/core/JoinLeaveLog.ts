@@ -72,8 +72,17 @@ export default class JoinLeaveLog extends BaseLog {
 		if (cache.deepLink === DeepLinkTypes.OpenInGame) {
 			embed.setURL(`https://link.clashofclans.com/?action=OpenPlayerProfile&tag=${encodeURIComponent(player.tag)}`);
 		}
+
 		if (member.op === 'LEFT') {
-			embed.setFooter({ text: `Left ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
+			if (player.clan && player.clan.tag !== data.clan.tag) {
+				embed.setFooter({
+					text: `Left ${data.clan.name} [${data.memberList.length}/50] and Joined ${data.clan.name}`,
+					iconURL: data.clan.badge
+				});
+			} else {
+				embed.setFooter({ text: `Left ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
+			}
+
 			embed.setDescription(
 				[
 					`${TOWN_HALLS[player.townHallLevel]!} **${player.townHallLevel}**`,
@@ -82,6 +91,7 @@ export default class JoinLeaveLog extends BaseLog {
 				].join(' ')
 			);
 		}
+
 		if (member.op === 'JOINED') {
 			const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: cache.guild, tag: member.tag });
 			embed.setFooter({ text: `Joined ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
