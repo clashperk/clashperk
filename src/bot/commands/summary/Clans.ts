@@ -15,7 +15,7 @@ export default class SummaryClansCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>) {
-		const clans = await this.client.storage.find('328997757048324101');
+		const clans = await this.client.storage.find(interaction.guild.id);
 		if (!clans.length) {
 			return interaction.editReply(
 				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
