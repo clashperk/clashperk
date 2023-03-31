@@ -30,7 +30,7 @@ export default class AutoClanRoleCommand extends Command {
 	public args(): Args {
 		return {
 			co_lead: {
-				id: 'coLeads',
+				id: 'coLead',
 				match: 'ROLE'
 			},
 			common_role: {

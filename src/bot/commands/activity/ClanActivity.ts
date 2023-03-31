@@ -204,9 +204,7 @@ export default class ClanActivityCommand extends Command {
 						name: {
 							$last: '$name'
 						},
-						count: {
-							$sum: 1
-						},
+						count: days === 1 ? { $sum: 1 } : { $max: '$count' },
 						hour: {
 							$last: '$hour'
 						}
