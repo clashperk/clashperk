@@ -276,7 +276,8 @@ export default class LegendDaysCommand extends Command {
 						ts: {
 							$dateTrunc: {
 								date: '$ts',
-								unit: 'day'
+								unit: 'day',
+								timezone: '-05:00'
 							}
 						}
 					}
