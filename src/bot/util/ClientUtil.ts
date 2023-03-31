@@ -1,6 +1,7 @@
-import { ChannelType, ForumChannel, NewsChannel, PermissionsString, TextChannel } from 'discord.js';
+import { ChannelType, ForumChannel, GuildMember, NewsChannel, PermissionsBitField, PermissionsString, TextChannel } from 'discord.js';
 import jwt from 'jsonwebtoken';
 import Client from '../struct/Client.js';
+import { Settings } from './Constants.js';
 
 export class ClientUtil {
 	public constructor(private readonly client: Client) {}
@@ -44,6 +45,12 @@ export class ClientUtil {
 		});
 
 		return token;
+	}
+
+	public isManager(member: GuildMember) {
+		if (this.client.isOwner(member.user)) return true;
+		const roleId = this.client.settings.get<string>(member.guild, Settings.MANAGER_ROLE, null);
+		return member.permissions.has(PermissionsBitField.Flags.ManageGuild) || member.roles.cache.has(roleId);
 	}
 
 	public hasWebhookPermission(channel: TextChannel | NewsChannel | ForumChannel) {

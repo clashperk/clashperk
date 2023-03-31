@@ -1,4 +1,4 @@
-import { CommandInteraction, HexColorString, EmbedBuilder, resolveColor } from 'discord.js';
+import { CommandInteraction, HexColorString, EmbedBuilder, resolveColor, Role, PermissionFlagsBits } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Settings } from '../../util/Constants.js';
 
@@ -16,8 +16,18 @@ export default class ConfigCommand extends Command {
 
 	public async exec(
 		interaction: CommandInteraction<'cached'>,
-		args: { color_code?: string; events_channel?: string; webhook_limit?: number }
+		args: { color_code?: string; events_channel?: string; webhook_limit?: number; manager_role?: Role }
 	) {
+		if (
+			!this.client.util.isManager(interaction.member) &&
+			(args.color_code || args.events_channel || args.webhook_limit || args.manager_role)
+		) {
+			return interaction.reply({
+				content: 'You are missing the **Manage Server** permission or the **Bot Manager** role to change these settings.',
+				ephemeral: true
+			});
+		}
+
 		if (args.color_code) {
 			if (['reset', 'none'].includes(args.color_code)) {
 				await this.client.settings.delete(interaction.guild, Settings.COLOR);
@@ -28,6 +38,16 @@ export default class ConfigCommand extends Command {
 		if (args.webhook_limit) {
 			const webhookLimit = Math.max(3, Math.min(8, args.webhook_limit));
 			await this.client.settings.set(interaction.guild, Settings.WEBHOOK_LIMIT, webhookLimit);
+		}
+
+		if (args.manager_role) {
+			if (!interaction.member.permissions.has(PermissionFlagsBits.ManageGuild)) {
+				return interaction.reply({
+					content: 'You are missing the **Manage Server** permission to change this setting.',
+					ephemeral: true
+				});
+			}
+			await this.client.settings.set(interaction.guild, Settings.MANAGER_ROLE, args.manager_role.id);
 		}
 
 		if (args.events_channel) {
@@ -56,6 +76,7 @@ export default class ConfigCommand extends Command {
 		const channel = interaction.guild.channels.cache.get(
 			this.client.settings.get<string>(interaction.guild, Settings.EVENTS_CHANNEL, null)
 		);
+		const role = interaction.guild.roles.cache.get(this.client.settings.get<string>(interaction.guild, Settings.MANAGER_ROLE, null));
 
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(interaction))
@@ -68,6 +89,10 @@ export default class ConfigCommand extends Command {
 				{
 					name: 'Patron',
 					value: this.client.patrons.get(interaction.guild.id) ? 'Yes' : 'No'
+				},
+				{
+					name: 'Manager Role',
+					value: `${role?.toString() ?? 'None'}`
 				},
 				{
 					name: 'Webhook Limit',

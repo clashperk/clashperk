@@ -7,8 +7,7 @@ import {
 	EmbedBuilder,
 	ButtonStyle,
 	User,
-	ButtonInteraction,
-	PermissionsBitField
+	ButtonInteraction
 } from 'discord.js';
 import { Clan, ClanMember } from 'clashofclans.js';
 import { Collections } from '../../util/Constants.js';
@@ -36,7 +35,14 @@ export default class LinkListCommand extends Command {
 		if (!clan) return;
 		if (!clan.members) return interaction.editReply(this.i18n('common.no_clan_members', { lng: interaction.locale, clan: clan.name }));
 
-		if (args.links && interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+		if (args.links) {
+			if (!this.client.util.isManager(interaction.member)) {
+				return interaction.followUp({
+					content: `You are missing the **Manage Server** permission or the **Bot Manager** role to use this component.`,
+					ephemeral: true
+				});
+			}
+
 			const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
 			await interaction.followUp({
 				content: [

@@ -21,6 +21,7 @@ import readdirp from 'readdirp';
 import { container } from 'tsyringe';
 import { Client } from '../struct/Client.js';
 import { i18n } from '../util/i18n.js';
+import { Settings } from '../util/Constants.js';
 import { BuiltInReasons, CommandEvents, CommandHandlerEvents, ResolveColor } from './util.js';
 
 type ArgsMatchType =
@@ -262,11 +263,12 @@ export class CommandHandler extends BaseHandler {
 
 		if (command.userPermissions?.length) {
 			const missing = interaction.channel?.permissionsFor(interaction.user)?.missing(command.userPermissions);
-			// const missingRole = command.permissionOverwrites(interaction);
-			// if (missingRole) {
-			// 	this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.USER, ['ManageGuild']);
-			// 	return true;
-			// }
+
+			const managerRole = interaction.guild.roles.cache.get(
+				this.client.settings.get<string>(interaction.guild, Settings.MANAGER_ROLE, null)
+			);
+			if (managerRole && interaction.member.roles.cache.has(managerRole.id)) return false;
+
 			if (missing?.length) {
 				this.emit(CommandHandlerEvents.MISSING_PERMISSIONS, interaction, command, BuiltInReasons.USER, missing);
 				return true;

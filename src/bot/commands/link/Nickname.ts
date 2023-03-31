@@ -31,7 +31,7 @@ export default class NickNameCommand extends Command {
 			return interaction.editReply(this.i18n('command.nickname.invalid_member', { lng: interaction.locale }));
 		}
 
-		if (member.id !== interaction.user.id && !interaction.member.permissions.has('ManageNicknames')) {
+		if (member.id !== interaction.user.id && !this.client.util.isManager(interaction.member)) {
 			return interaction.editReply(this.i18n('command.nickname.missing_permission', { lng: interaction.locale }));
 		}
 

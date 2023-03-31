@@ -24,7 +24,7 @@ export default class MissingPermissionsListener extends Listener {
 			},
 			user: () => {
 				const name = this.missingPermissions(interaction.channel as TextChannel, interaction.user, missing);
-				return `You are missing ${name} to use that command.`;
+				return `You are missing the ${name} or the **Bot Manager** role to use that command.`;
 			}
 		}[type];
 

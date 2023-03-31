@@ -95,6 +95,7 @@ export const enum Settings {
 	BOT_ADMIN_ROLE = 'botAdminRole',
 	PREFIX = 'prefix',
 	COLOR = 'color',
+	MANAGER_ROLE = 'managerRole',
 	CLAN_LIMIT = 'clanLimit',
 	USER_BLACKLIST = 'blacklist',
 	GUILD_BLACKLIST = 'guildBans',
@@ -116,15 +117,15 @@ export function missingPermissions(channel: GuildTextBasedChannel, member: Guild
 		.permissionsFor(member)!
 		.missing(permissions)
 		.map((str) => {
-			if (str === 'ViewChannel') return '`Read Messages`';
-			if (str === 'SendTTSMessages') return '`Send TTS Messages`';
-			if (str === 'UseVAD') return '`Use VAD`';
-			if (str === 'ManageGuild') return '`Manage Server`';
-			return `\`${str
+			if (str === 'ViewChannel') return '**Read Messages**';
+			if (str === 'SendTTSMessages') return '**Send TTS Messages**';
+			if (str === 'UseVAD') return '**Use VAD**';
+			if (str === 'ManageGuild') return '**Manage Server**';
+			return `**${str
 				.replace(/([A-Z])/g, ' $1')
 				.toLowerCase()
 				.trim()
-				.replace(/\b(\w)/g, (char) => char.toUpperCase())}\``;
+				.replace(/\b(\w)/g, (char) => char.toUpperCase())}**`;
 		});
 
 	return {

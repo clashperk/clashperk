@@ -1,4 +1,4 @@
-import { GuildMember, CommandInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder, PermissionsBitField } from 'discord.js';
+import { GuildMember, CommandInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js';
 import { Clan, Player } from 'clashofclans.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -165,7 +165,7 @@ export default class LinkCreateCommand extends Command {
 			})
 		);
 
-		if (interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+		if (this.client.util.isManager(interaction.member)) {
 			const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
 			await interaction.followUp({
 				content: [
