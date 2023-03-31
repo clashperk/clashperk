@@ -1,7 +1,7 @@
-import { Player } from 'clashofclans.js';
 import { GuildMember, ActionRowBuilder, CommandInteraction, ComponentType, StringSelectMenuBuilder } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { TOWN_HALLS } from '../../util/Emojis.js';
+import { Collections, Settings } from '../../util/Constants.js';
 
 export default class NickNameCommand extends Command {
 	public constructor() {
@@ -25,7 +25,8 @@ export default class NickNameCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, { member }: { member?: GuildMember; expression?: string }) {
+	public async exec(interaction: CommandInteraction<'cached'>, args: { member?: GuildMember; format?: string }) {
+		const { member } = args;
 		if (!member) {
 			return interaction.editReply(this.i18n('command.nickname.invalid_member', { lng: interaction.locale }));
 		}
@@ -51,6 +52,15 @@ export default class NickNameCommand extends Command {
 			return interaction.editReply(this.i18n('command.nickname.no_players', { lng: interaction.locale, user: member.user.tag }));
 		}
 
+		let format = this.client.settings.get<string>(interaction.guildId, Settings.NICKNAME_EXPRESSION, '{NAME}');
+		if (format && args.format && format !== args.format) format = args.format;
+
+		if (/{NAME}/gi.test(format)) {
+			this.client.settings.set(interaction.guildId, Settings.NICKNAME_EXPRESSION, args.format);
+		} else {
+			return interaction.editReply(`Invalid nickname format \`${format}\`, a nickname format must include \`{NAME}\``);
+		}
+
 		const options = players.map((op) => ({
 			label: op.name,
 			value: op.tag,
@@ -63,7 +73,10 @@ export default class NickNameCommand extends Command {
 			new StringSelectMenuBuilder().setCustomId(customId).setPlaceholder('Select an account!').addOptions(options)
 		);
 
-		const msg = await interaction.editReply({ content: `**Setting up ${member.user.tag}\'s nickname...**`, components: [row] });
+		const msg = await interaction.editReply({
+			content: [`**Setting up ${member.user.tag}\'s nickname...**`, '', `**Format:** ${format}`].join('\n'),
+			components: [row]
+		});
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
 			filter: (action) => action.customId === customId && [member.id, interaction.user.id].includes(action.user.id),
 			time: 5 * 60 * 1000
@@ -72,7 +85,19 @@ export default class NickNameCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.isStringSelectMenu() && action.customId === customId) {
 				const player = players.find((p) => p.tag === action.values.at(0))!;
-				const name = this.getName(player);
+				const clan = player.clan
+					? await this.client.db.collection(Collections.CLAN_STORES).findOne({ tag: player.clan.tag, guild: interaction.guildId })
+					: null;
+
+				const name = this.getName(
+					{
+						name: player.name,
+						townHallLevel: player.townHallLevel,
+						role: player.role,
+						clan: clan?.alias
+					},
+					format
+				);
 
 				if (name.length > 31) {
 					await action.reply({
@@ -95,10 +120,22 @@ export default class NickNameCommand extends Command {
 		});
 	}
 
-	private getName(player: Player, expression = '{NAME}') {
-		return expression
-			.replace(/{TH}/g, player.townHallLevel.toString())
-			.replace(/{NAME}/g, player.name)
-			.replace(/{ROLE}/g, player.role ?? '');
+	private getName(
+		player: {
+			name: string;
+			townHallLevel: number;
+			role?: string;
+			clan?: string;
+		},
+		format: string
+	) {
+		return format
+			.replace(/{NAME}/gi, player.name)
+			.replace(/{TH}/gi, player.townHallLevel.toString())
+			.replace(/{ROLE}/gi, player.role ?? '')
+			.replace(/{CLAN_ABB}/gi, player.clan ?? '')
+			.replace(/{ALIAS}/gi, player.clan ?? '')
+			.replace(/{CLAN}/gi, player.clan ?? '')
+			.replace(/{CLAN_ALIAS}/gi, player.clan ?? '');
 	}
 }

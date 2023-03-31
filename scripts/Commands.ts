@@ -2674,12 +2674,12 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description_localizations: translation('command.nickname.options.user.description'),
 				type: ApplicationCommandOptionType.User,
 				required: true
+			},
+			{
+				name: 'format',
+				description: 'Set nickname to a custom format (e.g. {th} | {role} | {name})',
+				type: ApplicationCommandOptionType.String
 			}
-			// {
-			// 	name: 'expression',
-			// 	description: 'Set nickname to a custom expression (e.g. {role} | {name})',
-			// 	type: ApplicationCommandOptionType.String
-			// }
 		]
 	},
 	{

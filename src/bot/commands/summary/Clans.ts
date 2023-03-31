@@ -15,7 +15,7 @@ export default class SummaryClansCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>) {
-		const clans = await this.client.storage.find(interaction.guild.id);
+		const clans = await this.client.storage.find('328997757048324101');
 		if (!clans.length) {
 			return interaction.editReply(
 				this.i18n('common.no_clans_linked', { lng: interaction.locale, command: this.client.commands.SETUP_ENABLE })
@@ -79,20 +79,36 @@ export default class SummaryClansCommand extends Command {
 						return `\`\u200e${name} ${clan.tag.padStart(tagLen, ' ')}  ${clan.members.toString().padStart(2, ' ')}/50 \u200f\``;
 					})
 					.join('\n'),
-				'',
-				`\`\u200e${'#'.padStart(3, ' ')} ${'JOINED'.padStart(5, ' ')} ${'LEFT'.padStart(5, ' ')}  ${'CLAN'.padEnd(
-					nameLen,
-					' '
-				)} \``,
-				joinLeaves
-					.map((clan, i) => {
-						const nn = `${i + 1}`.padStart(3, ' ');
-						const name = Util.escapeBackTick(clan.name).padEnd(nameLen, ' ');
-						return `\`\u200e${nn}  ${this.fmtNum(clan.join)} ${this.fmtNum(clan.leave)}  ${name} \u200f\``;
-					})
-					.join('\n')
+				''
+				// `\`\u200e${'#'.padStart(3, ' ')} ${'JOINED'.padStart(5, ' ')} ${'LEFT'.padStart(5, ' ')}  ${'CLAN'.padEnd(nameLen, ' ')} \``
+				// joinLeaves
+				// 	.map((clan, i) => {
+				// 		const nn = `${i + 1}`.padStart(3, ' ');
+				// 		const name = Util.escapeBackTick(clan.name).padEnd(nameLen, ' ');
+				// 		return `\`\u200e${nn}  ${this.fmtNum(clan.join)} ${this.fmtNum(clan.leave)}  ${name} \u200f\``;
+				// 	})
+				// 	.join('\n')
 			].join('\n')
 		);
+		embed.addFields([
+			{
+				name: 'Join/Leave History',
+				value: Util.splitMessage(
+					[
+						`\`\u200e${'#'.padStart(3, ' ')} ${'JOINED'.padStart(5, ' ')} ${'LEFT'.padStart(5, ' ')}  ${'CLAN'.padEnd(
+							nameLen,
+							' '
+						)} \``,
+						...joinLeaves.map((clan, i) => {
+							const nn = `${i + 1}`.padStart(3, ' ');
+							const name = Util.escapeBackTick(clan.name).padEnd(nameLen, ' ');
+							return `\`\u200e${nn}  ${this.fmtNum(clan.join)} ${this.fmtNum(clan.leave)}  ${name} \u200f\``;
+						})
+					].join('\n'),
+					{ maxLength: 1024, char: '\n' }
+				).at(0)!
+			}
+		]);
 		embed.addFields([{ name: 'Overall Family Compo', value: this.compo(allPlayers) }]);
 		embed.setFooter({ text: `${clans.length} clans, ${totalMembers} members` });
 
