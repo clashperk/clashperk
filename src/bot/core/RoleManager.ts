@@ -58,12 +58,13 @@ export class RoleManager {
 			.watch(
 				[
 					{
-						$match: { operationType: { $in: ['insert', 'update'] } }
+						$match: { operationType: { $in: ['insert', 'update', 'delete'] } }
 					}
 				],
 				{ fullDocument: 'updateLookup' }
 			)
 			.on('change', async (change) => {
+				this.client.logger.debug(`Player ${change.operationType}ed.`, { label: 'DashboardLink' });
 				if (['insert', 'update'].includes(change.operationType)) {
 					const link = change.fullDocument!;
 					const res = await this.client.http.player(link.tag);

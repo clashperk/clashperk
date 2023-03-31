@@ -159,6 +159,7 @@ export class Client extends Discord.Client {
 		this.cgScheduler.init();
 		this.raidScheduler.init();
 		this.warScheduler.init();
+		this.rpcHandler.roleManager.init();
 	}
 
 	public async init(token: string) {
