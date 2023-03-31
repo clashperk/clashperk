@@ -1899,6 +1899,26 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
+				name: 'wars',
+				description: 'Set war roles.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'role',
+						required: true,
+						description: 'The war role.',
+						type: ApplicationCommandOptionType.Role
+					},
+					{
+						name: 'clan_tag',
+						required: true,
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String,
+						description: 'The clan tag to set the war role for.'
+					}
+				]
+			},
+			{
 				name: 'disable',
 				description: 'Disable automatic clan roles.',
 				type: ApplicationCommandOptionType.Subcommand,
@@ -1920,6 +1940,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Leagues',
 								value: 'leagues'
+							},
+							{
+								name: 'Wars',
+								value: 'wars'
 							}
 						]
 					},

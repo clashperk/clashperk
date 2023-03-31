@@ -176,11 +176,13 @@ export default class Resolver {
 				.toArray(),
 			this.client.http.getDiscordLinks(players)
 		]);
-		const all = fetched.flat().map((en) => ({ tag: en.tag, userId: en.userId }));
-		return Array.from(new Set(all.map((en) => en.userId))).map((userId) => ({
-			userId,
-			tags: all.filter((en) => en.userId === userId).map((en) => en.tag)
-		}));
+		const result = fetched.flat().map((en) => ({ tag: en.tag, userId: en.userId }));
+		return Object.values(
+			result.reduce<Record<string, { userId: string; tag: string }>>((acc, obj) => {
+				acc[obj.tag] ??= obj;
+				return acc;
+			}, {})
+		);
 	}
 
 	public async getPlayers(userId: string) {
