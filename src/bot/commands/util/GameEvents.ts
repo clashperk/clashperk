@@ -107,6 +107,10 @@ export default class GameEvents extends Command {
 			start.weekday(5);
 		}
 
+		if (day === 6) {
+			start.weekday(5);
+		}
+
 		start.hour(7).minute(0).second(0).millisecond(0);
 		const end = moment(start).add(3, 'days');
 

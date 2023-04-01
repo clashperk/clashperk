@@ -1,4 +1,4 @@
-import { Player } from 'clashofclans.js';
+import { Player, PlayerItem } from 'clashofclans.js';
 import { Collection, EmbedBuilder, PermissionsString, WebhookClient, WebhookMessageCreateOptions } from 'discord.js';
 import moment from 'moment';
 import { ObjectId } from 'mongodb';
@@ -76,7 +76,7 @@ export default class JoinLeaveLog extends BaseLog {
 		if (member.op === 'LEFT') {
 			if (player.clan && player.clan.tag !== data.clan.tag) {
 				embed.setFooter({
-					text: `Left ${data.clan.name} [${data.memberList.length}/50] and Joined ${data.clan.name}`,
+					text: `Left ${data.clan.name} [${data.memberList.length}/50] \nJoined ${player.clan.name}`,
 					iconURL: data.clan.badge
 				});
 			} else {
@@ -86,7 +86,7 @@ export default class JoinLeaveLog extends BaseLog {
 			embed.setDescription(
 				[
 					`${TOWN_HALLS[player.townHallLevel]!} **${player.townHallLevel}**`,
-					`${EMOJIS.EXP} **${player.expLevel}**`,
+					`${PLAYER_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`,
 					`${EMOJIS.TROOPS_DONATE} **${member.donations}**${EMOJIS.UP_KEY} **${member.donationsReceived}**${EMOJIS.DOWN_KEY}`
 				].join(' ')
 			);
@@ -95,13 +95,14 @@ export default class JoinLeaveLog extends BaseLog {
 		if (member.op === 'JOINED') {
 			const flag = await this.client.db.collection(Collections.FLAGS).findOne({ guild: cache.guild, tag: member.tag });
 			embed.setFooter({ text: `Joined ${data.clan.name} [${data.memberList.length}/50]`, iconURL: data.clan.badge });
+			const heroes = player.heroes.filter((hero) => hero.village === 'home');
 			embed.setDescription(
 				[
 					`${TOWN_HALLS[player.townHallLevel]!}**${player.townHallLevel}**`,
-					`${this.formatHeroes(player)}`,
-					`${EMOJIS.WAR_STAR}**${player.warStars}**`,
 					`${PLAYER_LEAGUES[player.league?.id ?? 29000000]!}**${player.trophies}**`,
-					`${EMOJIS.TROOPS} ${this.remainingUpgrades(player)}% Rushed`
+					`${this.formatHeroes(heroes)}`,
+					`${heroes.length >= 2 ? '\n' : ''}${EMOJIS.WAR_STAR}**${player.warStars}**`,
+					`${EMOJIS.TROOPS}${this.remainingUpgrades(player)}% rushed`
 				].join(' ')
 			);
 
@@ -127,11 +128,8 @@ export default class JoinLeaveLog extends BaseLog {
 		return { content, embed };
 	}
 
-	private formatHeroes(member: Player) {
-		const heroes = member.heroes.filter(({ village }) => village === 'home');
-		return heroes.length
-			? `${heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')}`
-			: `${EMOJIS.EXP} **${member.expLevel}**`;
+	private formatHeroes(heroes: PlayerItem[]) {
+		return heroes.length ? `${heroes.map((hero) => `${HEROES[hero.name]!}**${hero.level}**`).join(' ')}` : ``;
 	}
 
 	private remainingUpgrades(data: Player) {
@@ -148,7 +146,7 @@ export default class JoinLeaveLog extends BaseLog {
 			{ total: 0, levels: 0 }
 		);
 		if (rem.total === 0) return (0).toFixed(2);
-		return (100 - (rem.levels * 100) / rem.total).toFixed(2);
+		return (100 - (rem.levels * 100) / rem.total).toFixed(1);
 	}
 
 	private apiTroops(data: Player) {
