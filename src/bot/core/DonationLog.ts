@@ -314,7 +314,7 @@ export default class DonationLog extends BaseLog {
 		const lte = moment().startOf('day').toDate();
 		const gte = moment(lte).subtract(1, 'd').toISOString();
 
-		const timestamp = new Date(lte.getTime() + 6 * 60 * 60 * 1000);
+		const timestamp = new Date(lte.getTime() + 15 * 60 * 1000);
 		if (timestamp.getTime() > Date.now()) return;
 
 		const logs = await this.client.db
@@ -338,7 +338,7 @@ export default class DonationLog extends BaseLog {
 		const lte = moment().startOf('week').toDate();
 		const gte = moment(lte).subtract(7, 'days').toISOString();
 
-		const timestamp = new Date(lte.getTime() + 5 * 60 * 60 * 1000);
+		const timestamp = new Date(lte.getTime() + 15 * 60 * 1000);
 		if (timestamp.getTime() > Date.now()) return;
 
 		const logs = await this.client.db
@@ -363,7 +363,7 @@ export default class DonationLog extends BaseLog {
 		const lte = Season.getLastMondayOfMonth(season.month() - 1, season.year());
 		const gte = Season.getLastMondayOfMonth(lte.getMonth() - 1, lte.getFullYear()).toISOString();
 
-		const timestamp = new Date(lte.getTime() + 30 * 60 * 1000);
+		const timestamp = new Date(lte.getTime() + 10 * 60 * 1000);
 		if (timestamp.getTime() > Date.now()) return;
 
 		const logs = await this.client.db
