@@ -516,6 +516,10 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						value: 'joinLeave'
 					},
 					{
+						name: 'Player progress',
+						value: 'progress'
+					},
+					{
 						name: 'Trophies',
 						value: 'trophies'
 					},
@@ -2874,6 +2878,28 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				description: 'Depth of the returned object.',
 				type: ApplicationCommandOptionType.Number,
 				required: false
+			}
+		]
+	},
+	{
+		name: 'donations_range',
+		description: 'Elasticsearch query for donations.',
+		dm_permission: false,
+		options: [
+			{
+				name: 'tag',
+				type: ApplicationCommandOptionType.String,
+				description: common.options.tag.description
+			},
+			{
+				name: 'gte',
+				type: ApplicationCommandOptionType.String,
+				description: 'GTE date'
+			},
+			{
+				name: 'lte',
+				type: ApplicationCommandOptionType.String,
+				description: 'LTE date'
 			}
 		]
 	},

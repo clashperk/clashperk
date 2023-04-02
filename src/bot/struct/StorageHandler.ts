@@ -110,6 +110,9 @@ export default class StorageHandler {
 							interval: data.interval
 						},
 						$setOnInsert: {
+							monthlyLastPosted: new Date(),
+							weeklyLastPosted: new Date(),
+							dailyLastPosted: new Date(),
 							createdAt: new Date()
 						}
 					},

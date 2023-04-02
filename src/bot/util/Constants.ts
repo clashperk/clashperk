@@ -5,6 +5,19 @@ export const status = (code: number, locale: string) => i18next.t(`common.status
 
 export const RTL_LANGUAGE_SAMPLE = 'مرحبا بالعالم';
 
+export const UP_ARROW = '↑';
+export const DOWN_ARROW = '↓';
+export const LEFT_ARROW = '←';
+export const RIGHT_ARROW = '→';
+export const UP_DOWN_ARROW = '↕';
+export const LEFT_RIGHT_ARROW = '↔';
+export const UP_LEFT_ARROW = '↖';
+export const UP_RIGHT_ARROW = '↗';
+export const DOWN_LEFT_ARROW = '↙';
+export const DOWN_RIGHT_ARROW = '↘';
+
+export const DOT = '•';
+
 export const enum Collections {
 	CLAN_STORES = 'ClanStores',
 	DONATION_LOGS = 'DonationLogs',
@@ -253,12 +266,12 @@ export const WarFeedLogTypes = {
 	FriendlyWarEmbed: 'FRIENDLY_WAR_EMBED'
 } as const;
 
-export const DonationLogFrequencyTypes = {
-	Instant: 'INSTANT',
-	Daily: 'DAILY',
-	Weekly: 'WEEKLY',
-	Monthly: 'MONTHLY'
-} as const;
+export const enum DonationLogFrequencyTypes {
+	Instant = 'INSTANT',
+	Daily = 'DAILY',
+	Weekly = 'WEEKLY',
+	Monthly = 'MONTHLY'
+}
 
 export const URL_REGEX = /^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
 

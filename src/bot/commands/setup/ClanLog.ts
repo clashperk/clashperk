@@ -302,7 +302,7 @@ export default class ClanLogCommand extends Command {
 				break;
 		}
 
-		if (![Flags.CLAN_FEED_LOG, Flags.JOIN_LEAVE_LOG].includes(flag)) {
+		if (![Flags.CLAN_FEED_LOG, Flags.JOIN_LEAVE_LOG, Flags.DONATION_LOG].includes(flag)) {
 			return interaction.editReply({ embeds: [embed], components: [] });
 		}
 

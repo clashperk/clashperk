@@ -4,6 +4,7 @@ import ms from 'ms';
 import { HERO_PETS, ORANGE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 import { Util } from '../../util/index.js';
+import { UP_ARROW } from '../../util/Constants.js';
 
 const roleIds: { [key: string]: number } = {
 	member: 1,
@@ -64,6 +65,9 @@ export default class MembersCommand extends Command {
 				heroes: m.heroes.length ? m.heroes.filter((a) => a.village === 'home') : [],
 				pets: m.troops.filter((troop) => troop.name in PETS).sort((a, b) => PETS[a.name] - PETS[b.name])
 			}));
+
+		// map tags
+		this.progress(data, fetched);
 
 		members
 			.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
@@ -133,34 +137,30 @@ export default class MembersCommand extends Command {
 			});
 			embed.setDescription(
 				[
+					'**War Preferences and Last Opted In/Out**',
 					`**Opted in ~ ${optedIn.length}**`,
 					optedIn
 						.map((m) => {
+							const name = Util.escapeBackTick(m.name).padEnd(15, ' ');
 							const inTime = m.inTime ? ms(Date.now() - m.inTime.getTime()) : `~${ms(Date.now() - trackingDate)}`;
-							return `**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${Util.escapeBackTick(m.name).padEnd(
-								15,
-								' '
-							)} ${inTime.padStart(6, ' ')}\u200f\``;
+							return `**✓** ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${inTime.padStart(4, ' ')}  ${name}\u200f\``;
 						})
 						.join('\n'),
 					'',
 					`**Opted out ~ ${optedOut.length}**`,
 					optedOut
 						.map((m) => {
+							const name = Util.escapeBackTick(m.name).padEnd(15, ' ');
 							const outTime = m.outTime ? ms(Date.now() - m.outTime.getTime()) : `~${ms(Date.now() - trackingDate)}`;
-							return `**✘** ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${Util.escapeBackTick(m.name).padEnd(
-								15,
-								' '
-							)} ${outTime.padStart(6, ' ')}\u200f\``;
+							return `**✘** ${ORANGE_NUMBERS[m.townHallLevel]} \u200e\` ${outTime.padStart(4, ' ')}  ${name}\u200f\``;
 						})
 						.join('\n')
 				].join('\n')
 			);
-			embed.setFooter({ text: `War Preference (${optedIn.length}/${members.length})` });
 		}
 
 		if (args.option === 'joinLeave') {
-			const members = await this.clanReputation(data, fetched);
+			const members = await this.joinLeave(data, fetched);
 			members.sort((a, b) => {
 				if (a.inTime && b.inTime) return b.inTime.getTime() - a.inTime.getTime();
 				if (a.inTime) return -1;
@@ -177,6 +177,53 @@ export default class MembersCommand extends Command {
 					.join('\n')
 			);
 			embed.setFooter({ text: `Last Join Dates` });
+		}
+
+		if (args.option === 'progress') {
+			const members = await this.progress(data, fetched);
+
+			const upgrades = fetched.map((player) => ({
+				name: player.name,
+				tag: player.tag,
+				hero: members[player.tag]?.HERO ?? 0, // eslint-disable-line
+				pet: members[player.tag]?.PET ?? 0, // eslint-disable-line
+				troop: members[player.tag]?.TROOP ?? 0, // eslint-disable-line
+				spell: members[player.tag]?.SPELL ?? 0 // eslint-disable-line
+			}));
+
+			upgrades.sort((a, b) => {
+				const aTotal = a.hero + a.pet + a.troop + a.spell;
+				const bTotal = b.hero + b.pet + b.troop + b.spell;
+				return bTotal - aTotal;
+			});
+
+			embed.setDescription(
+				[
+					'Player Progress (Hero, Pet, Troop, Spell)',
+					'```',
+					`HRO PET TRP SPL  NAME`,
+					...upgrades.map((player) => {
+						const hero = this.padStart(player.hero || '-', 3);
+						const pet = this.padStart(player.pet || '-', 3);
+						const troop = this.padStart(player.troop || '-', 3);
+						const spell = this.padStart(player.spell || '-', 3);
+						return `${hero} ${pet} ${troop} ${spell}  ${player.name}`;
+					}),
+					'```'
+				].join('\n')
+			);
+
+			const totalHero = upgrades.reduce((acc, cur) => acc + cur.hero, 0);
+			const totalPet = upgrades.reduce((acc, cur) => acc + cur.pet, 0);
+			const totalTroop = upgrades.reduce((acc, cur) => acc + cur.troop, 0);
+			const totalSpell = upgrades.reduce((acc, cur) => acc + cur.spell, 0);
+			const total = totalHero + totalPet + totalTroop + totalSpell;
+			embed.setFooter({
+				text: [
+					`${UP_ARROW}${total} levels were upgraded in the last ${ms(Date.now() - trackingDate, { long: true })}`,
+					`${UP_ARROW}${totalHero} heroes \u2002 ${UP_ARROW}${totalPet} pets \u2002 ${UP_ARROW}${totalTroop} troops \u2002 ${UP_ARROW}${totalSpell} spells`
+				].join('\n')
+			});
 		}
 
 		const customId = this.client.uuid(interaction.user.id);
@@ -207,8 +254,8 @@ export default class MembersCommand extends Command {
 		return Object.assign([{ level: '  ' }, { level: '  ' }, { level: '  ' }, { level: '  ' }], items);
 	}
 
-	private padStart(num: number | string) {
-		return num.toString().padStart(2, ' ');
+	private padStart(num: number | string, pad = 2) {
+		return num.toString().padStart(pad, ' ');
 	}
 
 	private async getWarPref(clan: Clan, players: Player[]) {
@@ -287,7 +334,7 @@ export default class MembersCommand extends Command {
 		return warPref;
 	}
 
-	private async clanReputation(clan: Clan, players: Player[]) {
+	private async joinLeave(clan: Clan, players: Player[]) {
 		const { aggregations } = await this.client.elastic.search({
 			index: 'join_leave_events',
 			query: {
@@ -360,6 +407,45 @@ export default class MembersCommand extends Command {
 
 		return warPref;
 	}
+
+	private async progress(clan: Clan, players: Player[]) {
+		const { aggregations } = await this.client.elastic.search({
+			index: 'player_progress_events',
+			query: {
+				bool: {
+					filter: [{ terms: { tag: players.map((p) => p.tag) } }]
+				}
+			},
+			size: 0,
+			from: 0,
+			aggs: {
+				players: {
+					terms: {
+						field: 'tag',
+						size: 1000
+					},
+					aggs: {
+						types: {
+							terms: {
+								field: 'unit_type'
+							}
+						}
+					}
+				}
+			}
+		});
+
+		const { buckets } = (aggregations?.players ?? []) as { buckets: ProgressAggsBucket[] };
+		const playersMap = buckets.reduce<Record<string, Record<string, number>>>((acc, cur) => {
+			acc[cur.key] = cur.types.buckets.reduce<Record<string, number>>((acc, cur) => {
+				acc[cur.key] = cur.doc_count;
+				return acc;
+			}, {});
+			return acc;
+		}, {});
+
+		return playersMap;
+	}
 }
 
 interface AggsBucket {
@@ -372,5 +458,16 @@ interface AggsBucket {
 	out_stats: {
 		doc_count: number;
 		aggregated: { max: number | null; min: number | null };
+	};
+}
+
+interface ProgressAggsBucket {
+	key: string;
+	doc_count: number;
+	types: {
+		buckets: {
+			key: string;
+			doc_count: number;
+		}[];
 	};
 }
