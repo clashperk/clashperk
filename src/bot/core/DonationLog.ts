@@ -16,7 +16,7 @@ export default class DonationLog extends BaseLog {
 
 	public constructor(client: Client) {
 		super(client);
-		this.refreshRate = 15 * 60 * 1000;
+		this.refreshRate = 10 * 60 * 1000;
 	}
 
 	public override get permissions(): PermissionsString[] {
@@ -283,11 +283,11 @@ export default class DonationLog extends BaseLog {
 				});
 			});
 
-		await this._refresh_daily();
-		setInterval(this._refresh_daily.bind(this), this.refreshRate).unref();
+		await this._refreshDaily();
+		setInterval(this._refreshDaily.bind(this), this.refreshRate).unref();
 
-		await this._refresh_weekly();
-		setInterval(this._refresh_weekly.bind(this), this.refreshRate).unref();
+		await this._refreshWeekly();
+		setInterval(this._refreshWeekly.bind(this), this.refreshRate).unref();
 
 		await this._refreshMonthly();
 		setInterval(this._refreshMonthly.bind(this), this.refreshRate).unref();
@@ -309,7 +309,7 @@ export default class DonationLog extends BaseLog {
 		});
 	}
 
-	private async _refresh_daily() {
+	private async _refreshDaily() {
 		const interval = DonationLogFrequencyTypes.Daily;
 		const lte = moment().startOf('day').toDate();
 		const gte = moment(lte).subtract(1, 'd').toISOString();
@@ -324,16 +324,17 @@ export default class DonationLog extends BaseLog {
 
 		for (const log of logs) {
 			if (!this.client.guilds.cache.has(log.guild)) continue;
-			if (this.queued.has(log._id.toHexString())) continue;
+			const id = log._id.toHexString();
+			if (this.queued.has(id)) continue;
 
-			this.queued.add(log._id.toHexString());
+			this.queued.add(id);
 			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval });
-			this.queued.delete(log._id.toHexString());
-			await Util.delay(3000);
+			this.queued.delete(id);
+			await Util.delay(2000);
 		}
 	}
 
-	private async _refresh_weekly() {
+	private async _refreshWeekly() {
 		const interval = DonationLogFrequencyTypes.Weekly;
 		const lte = moment().startOf('week').toDate();
 		const gte = moment(lte).subtract(7, 'days').toISOString();
@@ -348,12 +349,13 @@ export default class DonationLog extends BaseLog {
 
 		for (const log of logs) {
 			if (!this.client.guilds.cache.has(log.guild)) continue;
-			if (this.queued.has(log._id.toHexString())) continue;
+			const id = log._id.toHexString();
+			if (this.queued.has(id)) continue;
 
-			this.queued.add(log._id.toHexString());
+			this.queued.add(id);
 			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval });
-			this.queued.delete(log._id.toHexString());
-			await Util.delay(3000);
+			this.queued.delete(id);
+			await Util.delay(2000);
 		}
 	}
 
@@ -373,12 +375,13 @@ export default class DonationLog extends BaseLog {
 
 		for (const log of logs) {
 			if (!this.client.guilds.cache.has(log.guild)) continue;
-			if (this.queued.has(log._id.toHexString())) continue;
+			const id = log._id.toHexString();
+			if (this.queued.has(id)) continue;
 
-			this.queued.add(log._id.toHexString());
+			this.queued.add(id);
 			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval });
-			this.queued.delete(log._id.toHexString());
-			await Util.delay(3000);
+			this.queued.delete(id);
+			await Util.delay(2000);
 		}
 	}
 }
