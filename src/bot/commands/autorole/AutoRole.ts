@@ -25,7 +25,7 @@ export default class AutoRoleCommand extends Command {
 				'leagues': this.handler.modules.get('setup-league-roles')!,
 				'wars': this.handler.modules.get('setup-war-roles')!
 			}[args.type];
-			if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
+			if (!command) throw Error('Command not found.');
 			return this.handler.continue(interaction, command);
 		}
 
@@ -36,7 +36,7 @@ export default class AutoRoleCommand extends Command {
 			'wars': this.handler.modules.get('setup-war-roles')!
 		}[args.command];
 
-		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
+		if (!command) throw Error('Command not found.');
 		return this.handler.continue(interaction, command);
 	}
 }

@@ -27,7 +27,7 @@ export default class SetupEnableCommand extends Command {
 			'join-leave': this.handler.modules.get('setup-clan-log')!
 		}[args.option];
 
-		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
+		if (!command) throw Error('Command not found.');
 		return this.handler.continue(interaction, command);
 	}
 }

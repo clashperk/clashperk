@@ -19,7 +19,7 @@ export default class CapitalCommand extends Command {
 			week: this.handler.modules.get('capital-week')!
 		}[args.command];
 
-		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
+		if (!command) throw Error('Command not found.');
 		return this.handler.continue(interaction, command);
 	}
 }

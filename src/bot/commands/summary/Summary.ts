@@ -34,7 +34,7 @@ export default class SummaryCommand extends Command {
 		};
 		const command = commandMap[args.command] || commandMap[args.option]; // eslint-disable-line
 
-		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
+		if (!command) throw Error('Command not found.');
 		return this.handler.continue(interaction, command);
 	}
 }

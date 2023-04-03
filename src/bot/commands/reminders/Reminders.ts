@@ -22,7 +22,7 @@ export default class ReminderCommand extends Command {
 				now: this.handler.modules.get('capital-reminder-now')!
 			}[args.command];
 
-			if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
+			if (!command) throw Error('Command not found.');
 			return this.handler.continue(interaction, command);
 		}
 		if (args.type === 'clan-games') {
@@ -34,7 +34,7 @@ export default class ReminderCommand extends Command {
 				now: this.handler.modules.get('clan-games-reminder-now')!
 			}[args.command];
 
-			if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
+			if (!command) throw Error('Command not found.');
 			return this.handler.continue(interaction, command);
 		}
 		const command = {
@@ -45,7 +45,7 @@ export default class ReminderCommand extends Command {
 			now: this.handler.modules.get('reminder-now')!
 		}[args.command];
 
-		if (!command) return interaction.reply(this.i18n('common.no_option', { lng: interaction.locale }));
+		if (!command) throw Error('Command not found.');
 		return this.handler.continue(interaction, command);
 	}
 }
