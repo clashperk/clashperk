@@ -2441,7 +2441,7 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 				]
 			},
 			{
-				name: 'contributions',
+				name: 'capital-contribution',
 				description: 'Shows a summary of capital contributions.',
 				type: ApplicationCommandOptionType.Subcommand,
 				options: [
