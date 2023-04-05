@@ -54,11 +54,9 @@ export default class LegendLog extends BaseLog {
 		if (!clan.ok) return null;
 
 		const { startTime, endTime } = Util.getPreviousLegendTimestamp();
-		const _endTime = new Date(endTime);
-		const seasonId = Season.generateID(Season.getLastMondayOfMonth(_endTime.getMonth(), _endTime.getFullYear(), _endTime));
+		const timestamp = new Date(endTime);
+		const seasonId = Season.generateID(Season.getLastMondayOfMonth(timestamp.getMonth(), timestamp.getFullYear(), timestamp));
 
-		const multi = this.client.redis.multi();
-		clan.memberList.map((mem) => multi.json.get(`LP-${seasonId}-${mem.tag}`));
 		const raw = await this.client.db
 			.collection<LegendAttacks>(Collections.LEGEND_ATTACKS)
 			.find({

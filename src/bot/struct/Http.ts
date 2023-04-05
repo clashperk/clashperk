@@ -54,7 +54,7 @@ export interface RaidSeason {
 		}[];
 	}[];
 	defenseLog: {
-		defender: {
+		attacker: {
 			tag: string;
 			name: string;
 			level: number;
@@ -354,10 +354,9 @@ export default class Http extends ClashOfClansClient {
 			body: JSON.stringify(players.map((mem) => mem.tag))
 		}).catch(() => null);
 		const data = (await res?.json().catch(() => [])) as { playerTag: string; discordId: string }[];
-
 		if (!Array.isArray(data)) return [];
 		return data
 			.filter((en) => /^#?[0289CGJLOPQRUVY]+$/i.test(en.playerTag) && /^\d{17,19}/.test(en.discordId))
-			.map((en) => ({ tag: this.fixTag(en.playerTag), user: en.discordId, userId: en.discordId }));
+			.map((en) => ({ tag: this.fixTag(en.playerTag), user: en.discordId, userId: en.discordId, verified: false }));
 	}
 }

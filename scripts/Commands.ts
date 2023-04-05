@@ -2904,214 +2904,227 @@ export const PRIVATE_COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 		]
 	},
 	{
-		name: 'family',
-		description: 'Shows summary of the clan family.',
+		name: 'raid-perf',
+		description: 'Elasticsearch query for raid performance.',
 		dm_permission: false,
 		options: [
 			{
-				name: 'best',
-				description: 'Shows a summary of best members.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'clans',
-						required: false,
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String,
-						description: 'Clan tags or aliases to filter clans.'
-					},
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						choices: getSeasonIds()
-					},
-					{
-						name: 'limit',
-						required: false,
-						type: ApplicationCommandOptionType.Integer,
-						description: 'Number of members to show (Default: 5)',
-						min_value: 3,
-						max_value: 10
-					},
-					{
-						name: 'order',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: 'Order of the list.',
-						choices: [
-							{
-								name: 'Descending',
-								value: 'desc'
-							},
-							{
-								name: 'Ascending',
-								value: 'asc'
-							}
-						]
-					}
-				]
-			},
-			{
-				name: 'wars',
-				description: 'Shows a summary of current wars, war stats and missed wars.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'option',
-						description: 'Option to show.',
-						type: ApplicationCommandOptionType.String,
-						required: true,
-						choices: [
-							{
-								name: 'War stats',
-								value: 'war-stats'
-							},
-							{
-								name: 'Current wars',
-								value: 'current-wars'
-							},
-							{
-								name: 'Missed wars',
-								value: 'missed-wars'
-							}
-						]
-					},
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						choices: getSeasonIds()
-					}
-				]
-			},
-			{
-				name: 'compo',
-				description: 'Shows a summary of family compo.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'cwl-ranks',
-				description: 'Shows a summary of CWL ranks.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'leagues',
-				description: 'Shows a summary of clan leagues.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'clans',
-				description: 'Shows a summary of family clans.',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'donations',
-				description: 'Shows a summary of donations.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						choices: getSeasonIds()
-					},
-					{
-						name: 'clans',
-						required: false,
-						autocomplete: true,
-						type: ApplicationCommandOptionType.String,
-						description: 'Clan tags or aliases to filter clans.'
-					}
-				]
-			},
-			{
-				name: 'attacks',
-				description: 'Shows a summary of attacks.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						// description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					}
-				]
-			},
-			{
-				name: 'trophies',
-				description: 'Shows a summary of trophies.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'limit',
-						required: false,
-						type: ApplicationCommandOptionType.Integer,
-						description: 'Limit the number of members.'
-					}
-				]
-			},
-			{
-				name: 'capital-raids',
-				description: 'Shows information about capital raids.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'week',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: 'The week to show raids for.',
-						choices: getWeekIds()
-					}
-				]
-			},
-			{
-				name: 'capital-contribution',
-				description: 'Shows a summary of capital contributions.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						// description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					},
-					{
-						name: 'week',
-						description: 'The week to show capital contributions for.',
-						type: ApplicationCommandOptionType.String,
-						required: false,
-						choices: getWeekIds()
-					}
-				]
-			},
-			{
-				name: 'activity',
-				description: 'Shows a summary of clan activities (last seen).',
-				type: ApplicationCommandOptionType.Subcommand
-			},
-			{
-				name: 'clan-games',
-				description: 'Shows a summary of clan games scores.',
-				type: ApplicationCommandOptionType.Subcommand,
-				options: [
-					{
-						name: 'season',
-						required: false,
-						type: ApplicationCommandOptionType.String,
-						description: command.summary.options.season.description,
-						// description_localizations: translation('command.summary.options.season.description'),
-						choices: getSeasonIds()
-					}
-				]
+				name: 'tag',
+				autocomplete: true,
+				type: ApplicationCommandOptionType.String,
+				description: common.options.tag.description
 			}
 		]
 	}
+	// {
+	// 	name: 'family',
+	// 	description: 'Shows summary of the clan family.',
+	// 	dm_permission: false,
+	// 	options: [
+	// 		{
+	// 			name: 'best',
+	// 			description: 'Shows a summary of best members.',
+	// 			type: ApplicationCommandOptionType.Subcommand,
+	// 			options: [
+	// 				{
+	// 					name: 'clans',
+	// 					required: false,
+	// 					autocomplete: true,
+	// 					type: ApplicationCommandOptionType.String,
+	// 					description: 'Clan tags or aliases to filter clans.'
+	// 				},
+	// 				{
+	// 					name: 'season',
+	// 					required: false,
+	// 					type: ApplicationCommandOptionType.String,
+	// 					description: command.summary.options.season.description,
+	// 					choices: getSeasonIds()
+	// 				},
+	// 				{
+	// 					name: 'limit',
+	// 					required: false,
+	// 					type: ApplicationCommandOptionType.Integer,
+	// 					description: 'Number of members to show (Default: 5)',
+	// 					min_value: 3,
+	// 					max_value: 10
+	// 				},
+	// 				{
+	// 					name: 'order',
+	// 					required: false,
+	// 					type: ApplicationCommandOptionType.String,
+	// 					description: 'Order of the list.',
+	// 					choices: [
+	// 						{
+	// 							name: 'Descending',
+	// 							value: 'desc'
+	// 						},
+	// 						{
+	// 							name: 'Ascending',
+	// 							value: 'asc'
+	// 						}
+	// 					]
+	// 				}
+	// 			]
+	// 		},
+	// 		{
+	// 			name: 'wars',
+	// 			description: 'Shows a summary of current wars, war stats and missed wars.',
+	// 			type: ApplicationCommandOptionType.Subcommand,
+	// 			options: [
+	// 				{
+	// 					name: 'option',
+	// 					description: 'Option to show.',
+	// 					type: ApplicationCommandOptionType.String,
+	// 					required: true,
+	// 					choices: [
+	// 						{
+	// 							name: 'War stats',
+	// 							value: 'war-stats'
+	// 						},
+	// 						{
+	// 							name: 'Current wars',
+	// 							value: 'current-wars'
+	// 						},
+	// 						{
+	// 							name: 'Missed wars',
+	// 							value: 'missed-wars'
+	// 						}
+	// 					]
+	// 				},
+	// 				{
+	// 					name: 'season',
+	// 					required: false,
+	// 					type: ApplicationCommandOptionType.String,
+	// 					description: command.summary.options.season.description,
+	// 					choices: getSeasonIds()
+	// 				}
+	// 			]
+	// 		},
+	// 		{
+	// 			name: 'compo',
+	// 			description: 'Shows a summary of family compo.',
+	// 			type: ApplicationCommandOptionType.Subcommand
+	// 		},
+	// 		{
+	// 			name: 'cwl-ranks',
+	// 			description: 'Shows a summary of CWL ranks.',
+	// 			type: ApplicationCommandOptionType.Subcommand
+	// 		},
+	// 		{
+	// 			name: 'leagues',
+	// 			description: 'Shows a summary of clan leagues.',
+	// 			type: ApplicationCommandOptionType.Subcommand
+	// 		},
+	// 		{
+	// 			name: 'clans',
+	// 			description: 'Shows a summary of family clans.',
+	// 			type: ApplicationCommandOptionType.Subcommand
+	// 		},
+	// 		{
+	// 			name: 'donations',
+	// 			description: 'Shows a summary of donations.',
+	// 			type: ApplicationCommandOptionType.Subcommand,
+	// 			options: [
+	// 				{
+	// 					name: 'season',
+	// 					required: false,
+	// 					type: ApplicationCommandOptionType.String,
+	// 					description: command.summary.options.season.description,
+	// 					choices: getSeasonIds()
+	// 				},
+	// 				{
+	// 					name: 'clans',
+	// 					required: false,
+	// 					autocomplete: true,
+	// 					type: ApplicationCommandOptionType.String,
+	// 					description: 'Clan tags or aliases to filter clans.'
+	// 				}
+	// 			]
+	// 		},
+	// 		{
+	// 			name: 'attacks',
+	// 			description: 'Shows a summary of attacks.',
+	// 			type: ApplicationCommandOptionType.Subcommand,
+	// 			options: [
+	// 				{
+	// 					name: 'season',
+	// 					required: false,
+	// 					type: ApplicationCommandOptionType.String,
+	// 					description: command.summary.options.season.description,
+	// 					// description_localizations: translation('command.summary.options.season.description'),
+	// 					choices: getSeasonIds()
+	// 				}
+	// 			]
+	// 		},
+	// 		{
+	// 			name: 'trophies',
+	// 			description: 'Shows a summary of trophies.',
+	// 			type: ApplicationCommandOptionType.Subcommand,
+	// 			options: [
+	// 				{
+	// 					name: 'limit',
+	// 					required: false,
+	// 					type: ApplicationCommandOptionType.Integer,
+	// 					description: 'Limit the number of members.'
+	// 				}
+	// 			]
+	// 		},
+	// 		{
+	// 			name: 'capital-raids',
+	// 			description: 'Shows information about capital raids.',
+	// 			type: ApplicationCommandOptionType.Subcommand,
+	// 			options: [
+	// 				{
+	// 					name: 'week',
+	// 					required: false,
+	// 					type: ApplicationCommandOptionType.String,
+	// 					description: 'The week to show raids for.',
+	// 					choices: getWeekIds()
+	// 				}
+	// 			]
+	// 		},
+	// 		{
+	// 			name: 'capital-contribution',
+	// 			description: 'Shows a summary of capital contributions.',
+	// 			type: ApplicationCommandOptionType.Subcommand,
+	// 			options: [
+	// 				{
+	// 					name: 'season',
+	// 					required: false,
+	// 					type: ApplicationCommandOptionType.String,
+	// 					description: command.summary.options.season.description,
+	// 					// description_localizations: translation('command.summary.options.season.description'),
+	// 					choices: getSeasonIds()
+	// 				},
+	// 				{
+	// 					name: 'week',
+	// 					description: 'The week to show capital contributions for.',
+	// 					type: ApplicationCommandOptionType.String,
+	// 					required: false,
+	// 					choices: getWeekIds()
+	// 				}
+	// 			]
+	// 		},
+	// 		{
+	// 			name: 'activity',
+	// 			description: 'Shows a summary of clan activities (last seen).',
+	// 			type: ApplicationCommandOptionType.Subcommand
+	// 		},
+	// 		{
+	// 			name: 'clan-games',
+	// 			description: 'Shows a summary of clan games scores.',
+	// 			type: ApplicationCommandOptionType.Subcommand,
+	// 			options: [
+	// 				{
+	// 					name: 'season',
+	// 					required: false,
+	// 					type: ApplicationCommandOptionType.String,
+	// 					description: command.summary.options.season.description,
+	// 					// description_localizations: translation('command.summary.options.season.description'),
+	// 					choices: getSeasonIds()
+	// 				}
+	// 			]
+	// 		}
+	// 	]
+	// }
 ];

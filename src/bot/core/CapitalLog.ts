@@ -331,7 +331,7 @@ export default class CapitalLog extends BaseLog {
 	private async _refresh() {
 		const { endTime } = Util.getRaidWeekEndTimestamp();
 
-		const timestamp = new Date(endTime.getTime() + 1000 * 60 * 15);
+		const timestamp = new Date(endTime.getTime() + 1000 * 60 * 90);
 		if (timestamp.getTime() > Date.now()) return;
 
 		const logs = await this.client.db

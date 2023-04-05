@@ -83,7 +83,7 @@ export default class Resolver {
 
 		return this.fail(
 			interaction,
-			i18n('common.clan_not_linked', { lng: interaction.locale, user: parsed.user.tag, command: this.client.commands.SETUP_ENABLE })
+			i18n('common.clan_not_linked', { lng: interaction.locale, user: parsed.user.tag, command: this.client.commands.LINK_CREATE })
 		);
 	}
 
@@ -168,21 +168,27 @@ export default class Resolver {
 		return Array.from(new Set([...players.map((en) => en.tag), ...others.map((tag) => tag)]));
 	}
 
-	public async getLinkedUsers(players: { tag: string }[]) {
+	public async getLinkedUsersMap(players: { tag: string }[]) {
 		const fetched = await Promise.all([
+			this.client.http.getDiscordLinks(players),
 			this.client.db
 				.collection<PlayerLinks>(Collections.PLAYER_LINKS)
 				.find({ tag: { $in: players.map((player) => player.tag) } })
-				.toArray(),
-			this.client.http.getDiscordLinks(players)
+				.toArray()
 		]);
-		const result = fetched.flat().map((en) => ({ tag: en.tag, userId: en.userId }));
-		return Object.values(
-			result.reduce<Record<string, { userId: string; tag: string }>>((acc, obj) => {
-				acc[obj.tag] ??= obj;
-				return acc;
-			}, {})
-		);
+		const result = fetched.flat().map((en) => ({ tag: en.tag, userId: en.userId, verified: en.verified }));
+		return result.reduce<Record<string, { userId: string; tag: string; verified: boolean }>>((acc, user) => {
+			acc[user.tag] ??= user;
+			const current = acc[user.tag];
+			if (!current.verified && user.verified) acc[user.tag].verified = true;
+			if (current.userId !== user.userId) acc[user.tag] = user;
+			return acc;
+		}, {});
+	}
+
+	public async getLinkedUsers(players: { tag: string }[]) {
+		const users = await this.getLinkedUsersMap(players);
+		return Object.values(users);
 	}
 
 	public async getPlayers(userId: string) {

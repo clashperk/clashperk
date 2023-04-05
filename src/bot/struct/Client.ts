@@ -146,7 +146,7 @@ export class Client extends Discord.Client {
 	}
 
 	public getCommand(name: string) {
-		return this._commands.get(name) ?? `/${name}`;
+		return this._commands.get(name) ?? `${name}`;
 	}
 
 	public get commands() {

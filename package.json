@@ -46,7 +46,8 @@
 		"redis": "^4.1.0",
 		"reflect-metadata": "^0.1.13",
 		"timeout-signal": "^1.1.0",
-		"tsyringe": "^4.6.0"
+		"tsyringe": "^4.6.0",
+		"xlsx": "^0.18.5"
 	},
 	"devDependencies": {
 		"@types/common-tags": "^1.8.1",

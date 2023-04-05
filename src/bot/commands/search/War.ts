@@ -474,9 +474,10 @@ export default class WarCommand extends Command {
 				mapPosition: n + 1,
 				originalMapPosition: member.mapPosition,
 				stars: member.bestOpponentAttack?.stars ?? 0,
+				isOpen: body.attacksPerMember === 1 ? !member.bestOpponentAttack : member.bestOpponentAttack?.stars !== 3,
 				destructionPercentage: member.bestOpponentAttack?.destructionPercentage ?? 0
 			}))
-			.filter((m) => m.stars !== 3);
+			.filter((m) => m.isOpen);
 
 		const callerData = await this.client.db
 			.collection<CallerCollection>(Collections.WAR_BASE_CALLS)

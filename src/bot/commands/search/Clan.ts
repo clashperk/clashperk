@@ -24,7 +24,12 @@ const clanTypes: Record<string, string> = {
 declare module 'clashofclans.js' {
 	interface Clan {
 		clanCapital?: {
-			capitalHallLevel?: number;
+			capitalHallLevel: number;
+			districts: {
+				id: number;
+				name: string;
+				districtHallLevel: number;
+			}[];
 		};
 		capitalLeague?: {
 			id: number;

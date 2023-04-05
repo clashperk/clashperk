@@ -55,33 +55,40 @@ export default class LinkListCommand extends Command {
 			return this.updateLinksAndRoles(interaction.guildId);
 		}
 
-		const memberTags = await this.client.http.getDiscordLinks(clan.memberList);
-		const dbMembers = await this.client.db
-			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-			.find({ tag: { $in: clan.memberList.map((m) => m.tag) } })
-			.toArray();
-
+		const users = await this.client.resolver.getLinkedUsersMap(clan.memberList);
 		const members: { name: string; tag: string; userId: string; verified: boolean }[] = [];
-		for (const m of memberTags) {
-			const clanMember = clan.memberList.find((mem) => mem.tag === m.tag);
-			if (!clanMember) continue;
-			members.push({ tag: m.tag, userId: m.user, name: clanMember.name, verified: false });
+
+		for (const mem of clan.memberList) {
+			if (mem.tag in users) {
+				const user = users[mem.tag];
+				members.push({ tag: mem.tag, userId: user.userId, name: mem.name, verified: user.verified });
+			}
 		}
 
-		if (dbMembers.length) this.updateUsers(interaction, dbMembers);
-		for (const member of dbMembers) {
-			const clanMember = clan.memberList.find((mem) => mem.tag === member.tag);
-			if (!clanMember) continue;
+		// const memberTags = await this.client.http.getDiscordLinks(clan.memberList);
+		// const dbMembers = await this.client.db
+		// 	.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+		// 	.find({ tag: { $in: clan.memberList.map((m) => m.tag) } })
+		// 	.toArray();
 
-			const mem = members.find((mem) => mem.tag === member.tag);
-			if (mem) mem.verified = member.verified;
-			else members.push({ tag: member.tag, userId: member.userId, name: clanMember.name, verified: member.verified });
-		}
+		// for (const m of memberTags) {
+		// 	const clanMember = clan.memberList.find((mem) => mem.tag === m.tag);
+		// 	if (!clanMember) continue;
+		// 	members.push({ tag: m.tag, userId: m.userId, name: clanMember.name, verified: false });
+		// }
 
-		const userIds = members.reduce<string[]>((prev, curr) => {
-			if (!prev.includes(curr.userId)) prev.push(curr.userId);
-			return prev;
-		}, []);
+		// if (dbMembers.length) this.updateUsers(interaction, dbMembers);
+		// for (const member of dbMembers) {
+		// 	const clanMember = clan.memberList.find((mem) => mem.tag === member.tag);
+		// 	if (!clanMember) continue;
+
+		// 	const mem = members.find((mem) => mem.tag === member.tag);
+		// 	if (mem) mem.verified = member.verified;
+		// 	if (mem && member.userId !== mem.userId) mem.userId = member.userId;
+		// 	else members.push({ tag: member.tag, userId: member.userId, name: clanMember.name, verified: member.verified });
+		// }
+
+		const userIds = [...new Set(members.map((mem) => mem.userId))];
 		const guildMembers = await interaction.guild.members.fetch({ user: userIds });
 
 		// Players linked and on the guild.

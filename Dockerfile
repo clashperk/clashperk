@@ -1,15 +1,20 @@
-FROM node:16-alpine AS deps
+FROM node:16-slim AS deps
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y git
+
 COPY package*.json ./
+
+RUN git clone https://github.com/clashperk/locales.git ./locales
+
 RUN npm install
 
 COPY . .
 
 RUN npm run build
 
-FROM node:16-alpine AS runner
+FROM node:16-slim AS runner
 WORKDIR /app
 
 COPY package*.json ./
