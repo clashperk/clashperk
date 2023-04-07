@@ -178,8 +178,7 @@ export default class CWLRosterCommand extends Command {
 		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
-			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
-			time: 5 * 60 * 1000
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id
 		});
 
 		collector.on('collect', async (action) => {
