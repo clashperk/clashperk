@@ -44,15 +44,15 @@ export default class ClanActivityCommand extends Command {
 		const timezone = await this.getTimezoneOffset(interaction, args.timezone);
 
 		const days = args.days ?? 1;
-		const itemCount = days === 1 ? 24 : 1;
+		const isHourly = days <= 3;
+		const itemCount = isHourly ? 24 : 1;
 		const dataLabel = new Array(days * itemCount)
 			.fill(0)
 			.map((_, i) => {
-				const decrement = new Date().getTime() - (days === 1 ? 60 * 60 * 1000 : 60 * 60 * 1000 * 24) * i;
-				const key =
-					days === 1
-						? moment(decrement).minutes(0).seconds(0).milliseconds(0).toISOString()
-						: moment(decrement).hours(0).minutes(0).seconds(0).milliseconds(0).toISOString();
+				const decrement = new Date().getTime() - (isHourly ? 60 * 60 * 1000 : 60 * 60 * 1000 * 24) * i;
+				const key = isHourly
+					? moment(decrement).minutes(0).seconds(0).milliseconds(0).toISOString()
+					: moment(decrement).hours(0).minutes(0).seconds(0).milliseconds(0).toISOString();
 				return {
 					key,
 					timestamp: new Date(new Date(key).getTime() + timezone.offset * 1000)
@@ -65,6 +65,7 @@ export default class ClanActivityCommand extends Command {
 			data: this.datasets(dataLabel, clan)
 		}));
 
+		const unit = isHourly ? 'hour' : 'day';
 		const hrStart = process.hrtime();
 		const arrayBuffer = await fetch(`${process.env.ASSET_API_BACKEND!}/clans/activity`, {
 			method: 'POST',
@@ -74,7 +75,8 @@ export default class ClanActivityCommand extends Command {
 			body: JSON.stringify({
 				labels: dataLabel.map((d) => d.timestamp),
 				datasets,
-				title: `Active Members Per Hour (${timezone.name})`
+				unit: isHourly ? 'hour' : 'day',
+				title: `Active Members Per ${this.titleCase(unit)} (${timezone.name})`
 			})
 		}).then((res) => res.arrayBuffer());
 
@@ -130,6 +132,7 @@ export default class ClanActivityCommand extends Command {
 	}
 
 	private aggregate(clanTags: string[], days = 1) {
+		const isHourly = days <= 3;
 		return this.client.db
 			.collection(Collections.LAST_SEEN)
 			.aggregate([
@@ -179,7 +182,7 @@ export default class ClanActivityCommand extends Command {
 						hour: {
 							$dateTrunc: {
 								date: '$time',
-								unit: days === 1 ? 'hour' : 'day'
+								unit: isHourly ? 'hour' : 'day'
 							}
 						}
 					}
@@ -204,7 +207,7 @@ export default class ClanActivityCommand extends Command {
 						name: {
 							$last: '$name'
 						},
-						count: days === 1 ? { $sum: 1 } : { $max: '$count' },
+						count: isHourly ? { $sum: 1 } : { $max: '$count' },
 						hour: {
 							$last: '$hour'
 						}
@@ -243,6 +246,13 @@ export default class ClanActivityCommand extends Command {
 			const id = data.entries.find((e: any) => e.time.toISOString() === key);
 			return id?.count ?? 0;
 		});
+	}
+
+	private titleCase(str: string) {
+		return str
+			.replace(/_/g, ' ')
+			.toLowerCase()
+			.replace(/\b(\w)/g, (char) => char.toUpperCase());
 	}
 
 	private async leaveJoinGraph(interaction: CommandInteraction<'cached'>, clanTag: string) {
