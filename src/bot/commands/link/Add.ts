@@ -79,6 +79,7 @@ export default class LinkAddCommand extends Command {
 		await this.resetLinkAPI(member.id, player.tag);
 		// Update Role
 		// if (player.clan) this.client.rpcHandler.roleManager.newLink(player);
+		if (!accounts.length || def) await this.client.nickHandler.exec(member, player);
 
 		return interaction.editReply(
 			this.i18n('command.link.create.success', {

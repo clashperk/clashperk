@@ -19,15 +19,27 @@ export default class GuildMemberAddListener extends Listener {
 			.toArray();
 		if (!clans.length) return;
 
-		const links = await this.client.db.collection<PlayerLinks>(Collections.PLAYER_LINKS).find({ userId: member.id }).toArray();
+		const links = await this.client.db
+			.collection<PlayerLinks>(Collections.PLAYER_LINKS)
+			.find({ userId: member.id })
+			.sort({ order: 1 })
+			.toArray();
 		if (!links.length) return;
 
 		const clanTags = clans.map((clan) => clan.tag);
-		const players = (await this.client.http.detailedClanMembers(links))
-			.filter((res) => res.ok)
-			.filter((en) => en.clan && clanTags.includes(en.clan.tag));
+		const players = (await this.client.http.detailedClanMembers(links)).filter((res) => res.ok);
 
-		for (const data of players) {
+		try {
+			const link = links.at(0)!;
+			const player = players.at(0);
+			if (player && player.tag === link.tag) {
+				await this.client.nickHandler.exec(member, player);
+			}
+		} catch (e) {
+			this.client.logger.error(e, { label: 'GuildMemberAddNickname' });
+		}
+
+		for (const data of players.filter((en) => en.clan && clanTags.includes(en.clan.tag))) {
 			await this.client.rpcHandler.roleManager.newLink(data);
 		}
 	}

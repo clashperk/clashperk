@@ -123,7 +123,8 @@ export const enum Settings {
 	ALLOW_EXTERNAL_ACCOUNTS_LEAGUE = 'allowExternalAccountsLeague',
 	CLAN_GAMES_EXCEPTIONAL_MONTHS = 'clanGamesExceptionalMonths',
 	CLAN_GAMES_REMINDER_TIMESTAMP = 'clanGamesReminderTimestamp',
-	NICKNAME_EXPRESSION = 'nicknameExpression'
+	NICKNAME_EXPRESSION = 'nicknameExpression',
+	AUTO_NICKNAME = 'autoNickname'
 }
 
 export function missingPermissions(channel: GuildTextBasedChannel, member: GuildMember | User, permissions: PermissionsString[]) {

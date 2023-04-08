@@ -29,6 +29,12 @@ export default class ComponentHandler {
 				});
 				return true;
 			}
+			case 'summary-best': {
+				const command = this.client.commandHandler.modules.get('summary-best')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, parsed);
+				return true;
+			}
 			case 'boosts': {
 				const command = this.client.commandHandler.modules.get('boosts')!;
 				await interaction.deferUpdate();

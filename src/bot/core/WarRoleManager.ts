@@ -3,6 +3,7 @@ import { Collection, Guild, GuildMember } from 'discord.js';
 import Client from '../struct/Client.js';
 import { Collections } from '../util/Constants.js';
 import { PlayerLinks } from '../types/index.js';
+import { Util } from '../util/index.js';
 
 interface Feed extends ClanWar {
 	result: string;
@@ -84,6 +85,8 @@ export class WarRoleManager {
 						reason: `In clan war (${data.clan.name} vs ${data.opponent.name})`
 					});
 				}
+
+				await Util.delay(1500);
 			}
 		}
 	}
@@ -157,6 +160,8 @@ export class WarRoleManager {
 						reason: 'Clan war ended'
 					});
 				}
+
+				await Util.delay(1500);
 			}
 		}
 	}

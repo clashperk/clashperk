@@ -2716,8 +2716,23 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 			},
 			{
 				name: 'format',
-				description: 'Set nickname to a custom format (e.g. {th} | {role} | {name})',
+				description: 'Set nickname to a custom format (e.g. {CLAN} | {ALIAS} | {TH} | {ROLE} | {NAME})',
 				type: ApplicationCommandOptionType.String
+			},
+			{
+				name: 'enable_auto',
+				description: 'Enable automatic nickname updates.',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
+					}
+				]
 			}
 		]
 	},

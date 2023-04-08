@@ -1,5 +1,5 @@
 import { Clan } from 'clashofclans.js';
-import { CommandInteraction, EmbedBuilder, embedLength, escapeMarkdown } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedBuilder, embedLength, escapeMarkdown } from 'discord.js';
 import moment from 'moment';
 import { Command } from '../../lib/index.js';
 import { Collections } from '../../util/Constants.js';
@@ -611,8 +611,13 @@ export default class SummaryBestCommand extends Command {
 			return interaction.followUp({ embeds: [embed] });
 		}
 
-		embed.setFooter({ text: `Season ${seasonId}` });
-		await interaction.followUp({ embeds: [embed] });
+		const customId = JSON.stringify({ cmd: this.id, order: args.order, clans: args.clans?.substring(0, 80) });
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder().setCustomId(customId).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
+		);
+		const isSameSeason = seasonId === Season.ID;
+		embed.setFooter({ text: `Season ${seasonId}` }).setTimestamp();
+		await interaction.editReply({ embeds: [embed], components: isSameSeason ? [row] : [] });
 	}
 
 	private _formatTime(diff: number) {
