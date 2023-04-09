@@ -65,7 +65,7 @@ export default class CWLHistoryCommand extends Command {
 				const value = __wars
 					.sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
 					.map(([seasonId, wars], i) => {
-						wars.sort((a, b) => a.round - b.round);
+						wars.sort((a, b) => a.endTime.getTime() - b.endTime.getTime());
 						const participated = wars.filter((war) => war.attack).length;
 						const totalStars = wars.reduce((acc, war) => acc + (war.attack?.stars ?? 0), 0);
 						const totalDestruction = wars.reduce((acc, war) => acc + (war.attack?.destructionPercentage ?? 0), 0);
@@ -254,8 +254,6 @@ export default class CWLHistoryCommand extends Command {
 						endTime: new Date(data.endTime),
 						member,
 						// @ts-expect-error
-						round: data.round as number,
-						// @ts-expect-error
 						leagueGroupId: data.leagueGroupId as number
 					});
 				}
@@ -273,8 +271,6 @@ export default class CWLHistoryCommand extends Command {
 						},
 						endTime: new Date(data.endTime),
 						member,
-						// @ts-expect-error
-						round: data.round as number,
 						// @ts-expect-error
 						leagueGroupId: data.leagueGroupId as number
 					});
@@ -317,5 +313,4 @@ interface IWar {
 	};
 	endTime: Date;
 	member: ClanWarMember;
-	round: number;
 }
