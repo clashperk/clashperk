@@ -151,6 +151,9 @@ export default class CapitalRaidScheduler {
 		const unwantedMembers = reminder.allMembers
 			? await this.unwantedMembers(clan.memberList, this.getWeekId(data.startTime), schedule.tag)
 			: [];
+
+		const currentMemberTags = clan.memberList.map((m) => m.tag);
+		const missingMembers = data.members.filter((m) => !currentMemberTags.includes(m.tag));
 		const clanMembers = clan.memberList
 			.map((m) => {
 				const member = data.members.find((mem) => mem.tag === m.tag);
@@ -165,6 +168,7 @@ export default class CapitalRaidScheduler {
 					capitalResourcesLooted: 0
 				};
 			})
+			.concat(missingMembers.map((mem) => ({ ...mem, role: 'member' })))
 			.filter((m) => !unwantedMembers.includes(m.tag))
 			.filter((m) => (reminder.allMembers ? m.attacks >= 0 : m.attacks >= 1));
 
