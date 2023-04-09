@@ -239,6 +239,8 @@ export default class Resolver {
 		]);
 
 		const max = this.client.settings.get<number>(interaction.guild.id, Settings.CLAN_LIMIT, 2);
+		const isPatron = this.client.patrons.get(interaction.guild.id);
+
 		if (
 			collection !== Collections.CLAN_STORES &&
 			features.length >= max &&
@@ -247,9 +249,9 @@ export default class Resolver {
 			!this.client.isOwner(interaction.user) &&
 			!this.client.isOwner(interaction.guild.ownerId)
 		) {
-			if (features.length >= 100) {
+			if (isPatron) {
 				await interaction.editReply(
-					'You have reached the maximum limit of 100 automation. Please [contact us](https://discord.gg/ppuppun) to increase the limit.'
+					'You have reached the maximum limit of automation. Please [contact us](https://discord.gg/ppuppun) to increase the limit.'
 				);
 			} else {
 				await interaction.editReply({
@@ -269,7 +271,6 @@ export default class Resolver {
 		const code = ['CP', interaction.guild.id.substr(-2)].join('');
 		const clan = clans.find((clan) => clan.tag === data.tag);
 
-		const isPatron = this.client.patrons.get(interaction.guild.id);
 		if (
 			(count > 5 || clans.length >= this.clanLimit(memberCount, data.tag, clans)) &&
 			!isPatron &&
