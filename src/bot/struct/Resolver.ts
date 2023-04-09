@@ -242,10 +242,7 @@ export default class Resolver {
 		if (
 			collection !== Collections.CLAN_STORES &&
 			features.length >= max &&
-			!clans
-				.filter((clan) => clan.active)
-				.map((clan) => clan.tag)
-				.includes(data.tag) &&
+			!features.map((clan) => clan.tag).includes(data.tag) &&
 			// make me invincible
 			!this.client.isOwner(interaction.user) &&
 			!this.client.isOwner(interaction.guild.ownerId)
