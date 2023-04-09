@@ -18,7 +18,8 @@ import {
 	DeepLinkTypes,
 	missingPermissions,
 	WarFeedLogTypes,
-	DonationLogFrequencyTypes
+	DonationLogFrequencyTypes,
+	Collections
 } from '../../util/Constants.js';
 
 const FEATURES: Record<string, string> = {
@@ -31,6 +32,18 @@ const FEATURES: Record<string, string> = {
 	[Flags.LEGEND_LOG]: 'Legend Log',
 	[Flags.JOIN_LEAVE_LOG]: 'Join/Leave Log',
 	[Flags.CAPITAL_LOG]: 'Capital Log'
+};
+
+const collectionMap: Record<string, Collections> = {
+	[Flags.DONATION_LOG]: Collections.DONATION_LOGS,
+	[Flags.CLAN_FEED_LOG]: Collections.CLAN_FEED_LOGS,
+	[Flags.LAST_SEEN_LOG]: Collections.LAST_SEEN_LOGS,
+	[Flags.CLAN_EMBED_LOG]: Collections.CLAN_EMBED_LOGS,
+	[Flags.CLAN_GAMES_LOG]: Collections.CLAN_GAMES_LOGS,
+	[Flags.CLAN_WAR_LOG]: Collections.CLAN_WAR_LOGS,
+	[Flags.LEGEND_LOG]: Collections.LEGEND_LOGS,
+	[Flags.JOIN_LEAVE_LOG]: Collections.JOIN_LEAVE_LOGS,
+	[Flags.CAPITAL_LOG]: Collections.CAPITAL_LOGS
 };
 
 interface BaseState {
@@ -78,9 +91,6 @@ export default class ClanLogCommand extends Command {
 		interaction: CommandInteraction<'cached'>,
 		args: { tag?: string; channel: TextChannel | AnyThreadChannel; option: string; color?: number }
 	) {
-		const data = await this.client.resolver.enforceSecurity(interaction, args.tag);
-		if (!data) return;
-
 		const flag = {
 			'lastseen': Flags.LAST_SEEN_LOG,
 			'clan-feed': Flags.CLAN_FEED_LOG,
@@ -91,7 +101,10 @@ export default class ClanLogCommand extends Command {
 			'join-leave': Flags.JOIN_LEAVE_LOG,
 			'capital-log': Flags.CAPITAL_LOG
 		}[args.option];
-		if (!flag) return interaction.editReply(this.i18n('common.something_went_wrong', { lng: interaction.locale }));
+		if (!flag) throw Error('Command not found.');
+
+		const data = await this.client.resolver.enforceSecurity(interaction, { tag: args.tag, collection: collectionMap[flag] });
+		if (!data) return;
 
 		const permission = missingPermissions(args.channel, interaction.guild.members.me!, this.permissions);
 		if (permission.missing) {

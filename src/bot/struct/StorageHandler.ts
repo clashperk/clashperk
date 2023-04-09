@@ -37,6 +37,11 @@ export default class StorageHandler {
 		return this.collection.find({ guild: id }, { sort: { name: 1 } }).toArray();
 	}
 
+	public async _find(id: string, collection: Collections) {
+		const result = await this.client.db.collection(collection).find({ guild: id }).toArray();
+		return result;
+	}
+
 	public async search(guildId: string, query: string[]): Promise<WithId<ClanStore>[]> {
 		if (!query.length) return [];
 		return this.collection

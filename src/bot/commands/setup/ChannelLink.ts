@@ -1,5 +1,5 @@
 import { CommandInteraction, Interaction, TextChannel } from 'discord.js';
-import { Flags } from '../../util/Constants.js';
+import { Collections, Flags } from '../../util/Constants.js';
 import { Args, Command } from '../../lib/index.js';
 
 export default class ChannelLinkCommand extends Command {
@@ -23,7 +23,7 @@ export default class ChannelLinkCommand extends Command {
 	}
 
 	public async exec(interaction: CommandInteraction<'cached'>, args: { tag?: string; channel: TextChannel }) {
-		const data = await this.client.resolver.enforceSecurity(interaction, args.tag);
+		const data = await this.client.resolver.enforceSecurity(interaction, { tag: args.tag, collection: Collections.CLAN_STORES });
 		if (!data) return;
 
 		const id = await this.client.storage.register(interaction, {

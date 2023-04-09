@@ -215,7 +215,16 @@ export default class Resolver {
 		return args?.split(/[, ]+/g) ?? [];
 	}
 
-	public async enforceSecurity(interaction: CommandInteraction<'cached'>, tag?: string) {
+	public async enforceSecurity(
+		interaction: CommandInteraction<'cached'>,
+		{
+			collection,
+			tag
+		}: {
+			tag?: string;
+			collection: Collections;
+		}
+	) {
 		if (!tag) {
 			await interaction.editReply(i18n('common.no_clan_tag_first_time', { lng: interaction.locale }));
 			return null;
@@ -223,18 +232,33 @@ export default class Resolver {
 		const data = await this.getClan(interaction, tag);
 		if (!data) return null;
 
-		const clans = await this.client.storage.find(interaction.guild.id);
+		const memberCount = interaction.guild.memberCount;
+		const [features, clans] = await Promise.all([
+			this.client.storage._find(interaction.guild.id, collection),
+			this.client.storage.find(interaction.guild.id)
+		]);
+
 		const max = this.client.settings.get<number>(interaction.guild.id, Settings.CLAN_LIMIT, 2);
 		if (
-			clans.length >= max &&
+			collection !== Collections.CLAN_STORES &&
+			features.length >= max &&
 			!clans
 				.filter((clan) => clan.active)
 				.map((clan) => clan.tag)
-				.includes(data.tag)
+				.includes(data.tag) &&
+			// make me invincible
+			!this.client.isOwner(interaction.user) &&
+			!this.client.isOwner(interaction.guild.ownerId)
 		) {
-			await interaction.editReply({
-				content: this.client.i18n('common.clan_limit', { lng: interaction.locale, command: this.client.commands.REDEEM })
-			});
+			if (features.length >= 100) {
+				await interaction.editReply(
+					'You have reached the maximum limit of 100 automation. Please [contact us](https://discord.gg/ppuppun) to increase the limit.'
+				);
+			} else {
+				await interaction.editReply({
+					content: this.client.i18n('common.clan_limit', { lng: interaction.locale, command: this.client.commands.REDEEM })
+				});
+			}
 			return null;
 		}
 
@@ -248,8 +272,10 @@ export default class Resolver {
 		const code = ['CP', interaction.guild.id.substr(-2)].join('');
 		const clan = clans.find((clan) => clan.tag === data.tag);
 
+		const isPatron = this.client.patrons.get(interaction.guild.id);
 		if (
-			count > 5 &&
+			(count > 5 || clans.length >= this.clanLimit(memberCount, data.tag, clans)) &&
+			!isPatron &&
 			!clan?.verified &&
 			!this.verifyClan(code, data, links) &&
 			// make me invincible
@@ -275,5 +301,17 @@ export default class Resolver {
 			clan.memberList.filter((m) => ['coLeader', 'leader'].includes(m.role)).some((m) => verifiedTags.includes(m.tag)) ||
 			clan.description.toUpperCase().includes(code)
 		);
+	}
+
+	private clanLimit(memberCount: number, tag: string, clans: { tag: string; active: boolean }[]) {
+		const existing = clans
+			.filter((clan) => clan.active)
+			.map((clan) => clan.tag)
+			.includes(tag);
+
+		if (memberCount < 10 && !existing) return 2;
+		if (memberCount < 50 && !existing) return 5;
+		if (memberCount < 100 && !existing) return 20;
+		return 100;
 	}
 }

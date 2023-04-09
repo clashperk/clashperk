@@ -64,7 +64,7 @@ export default class ClanEmbedCommand extends Command {
 			channel
 		}: { tag: string; description?: string; color?: number; accepts?: string; channel: TextChannel | AnyThreadChannel }
 	) {
-		const data = await this.client.resolver.enforceSecurity(interaction, tag);
+		const data = await this.client.resolver.enforceSecurity(interaction, { tag, collection: Collections.CLAN_EMBED_LOGS });
 		if (!data) return;
 
 		const permission = missingPermissions(channel, interaction.guild.members.me!, this.permissions);

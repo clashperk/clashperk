@@ -1,6 +1,6 @@
 import { CommandInteraction } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { Flags } from '../../util/Constants.js';
+import { Collections, Flags } from '../../util/Constants.js';
 
 export default class ServerLinkCommand extends Command {
 	public constructor() {
@@ -25,7 +25,7 @@ export default class ServerLinkCommand extends Command {
 				})
 			);
 
-		const data = await this.client.resolver.enforceSecurity(interaction, args.tag);
+		const data = await this.client.resolver.enforceSecurity(interaction, { tag: args.tag, collection: Collections.CLAN_STORES });
 		if (!data) return;
 
 		const id = await this.client.storage.register(interaction, {
