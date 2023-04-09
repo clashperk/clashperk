@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
-import { ObjectId, Collection, WithId } from 'mongodb';
-import { CommandInteraction, ForumChannel, NewsChannel, TextChannel } from 'discord.js';
 import { ClanWarLeagueGroup } from 'clashofclans.js';
+import { CommandInteraction, ForumChannel, NewsChannel, TextChannel } from 'discord.js';
+import { Collection, ObjectId, WithId } from 'mongodb';
 import { Collections, Flags, Settings } from '../util/Constants.js';
-import { Client } from './Client.js';
 import { Reminder, Schedule } from './ClanWarScheduler.js';
+import { Client } from './Client.js';
 
 export interface ClanStore {
 	_id: ObjectId;
@@ -700,38 +700,38 @@ export default class StorageHandler {
 			}
 		}
 
-		return this.pushToDB(tag, body.clans, warTags, rounds, body.season);
+		// return this.pushToDB(tag, body.clans, warTags, rounds, body.season);
 	}
 
 	private md5(id: string) {
 		return createHash('md5').update(id).digest('hex');
 	}
 
-	private async pushToDB(_tag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
-		const uid = this.md5(
-			`${season}-${clans
-				.map((clan) => clan.tag)
-				.sort((a, b) => a.localeCompare(b))
-				.join('-')}`
-		);
-		return this.client.db.collection(Collections.CWL_GROUPS).updateOne(
-			{ uid },
-			{
-				$set: {
-					warTags,
-					rounds
-				},
-				$setOnInsert: {
-					uid,
-					season,
-					id: await this.uuid(),
-					createdAt: new Date(),
-					clans: clans.map((clan) => ({ tag: clan.tag, name: clan.name }))
-				}
-			},
-			{ upsert: true }
-		);
-	}
+	// private async pushToDB(_tag: string, clans: { tag: string; name: string }[], warTags: any, rounds: any[], season: string) {
+	// 	const uid = this.md5(
+	// 		`${season}-${clans
+	// 			.map((clan) => clan.tag)
+	// 			.sort((a, b) => a.localeCompare(b))
+	// 			.join('-')}`
+	// 	);
+	// 	return this.client.db.collection(Collections.CWL_GROUPS).updateOne(
+	// 		{ uid },
+	// 		{
+	// 			$set: {
+	// 				warTags,
+	// 				rounds
+	// 			},
+	// 			$setOnInsert: {
+	// 				uid,
+	// 				season,
+	// 				id: await this.uuid(),
+	// 				createdAt: new Date(),
+	// 				clans: clans.map((clan) => ({ tag: clan.tag, name: clan.name }))
+	// 			}
+	// 		},
+	// 		{ upsert: true }
+	// 	);
+	// }
 
 	private async uuid() {
 		const cursor = this.client.db.collection(Collections.CWL_GROUPS).find().sort({ id: -1 }).limit(1);

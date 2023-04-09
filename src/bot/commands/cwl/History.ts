@@ -1,8 +1,8 @@
 import { EmbedBuilder, CommandInteraction, User, escapeInlineCode, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { ClanWar, WarClan, ClanWarAttack, ClanWarMember } from 'clashofclans.js';
 import moment from 'moment';
-import { Collections } from '../../util/Constants.js';
-import { BLUE_NUMBERS, EMOJIS, ORANGE_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/Emojis.js';
+import { Collections, WarLeagueMap } from '../../util/Constants.js';
+import { BLUE_NUMBERS, CWL_LEAGUES, EMOJIS, ORANGE_NUMBERS, WAR_STAR_COMBINATIONS, WHITE_NUMBERS } from '../../util/Emojis.js';
 import { Command } from '../../lib/index.js';
 
 const stars: Record<string, string> = {
@@ -29,6 +29,18 @@ export default class CWLHistoryCommand extends Command {
 
 		const _wars = await this.getWars(playerTags);
 
+		const groups = await this.client.db
+			.collection<{ leagues?: Record<string, number>; season: string }>(Collections.CWL_GROUPS)
+			.find({ id: { $in: [...new Set(_wars.map((a) => a.leagueGroupId))] } }, { projection: { season: 1, leagues: 1 } })
+			.toArray();
+
+		const groupMap = groups.reduce<Record<string, number>>((acc, group) => {
+			Object.entries(group.leagues ?? {}).map(([tag, leagueId]) => {
+				acc[`${group.season}-${tag}`] = leagueId;
+			});
+			return acc;
+		}, {});
+
 		const warMap = _wars.reduce<Record<string, IWar[]>>((acc, war) => {
 			const key = `${war.member.name} (${war.member.tag})`;
 			acc[key] ??= [];
@@ -51,14 +63,20 @@ export default class CWLHistoryCommand extends Command {
 
 				const __wars = Object.entries(_warsMap);
 				const value = __wars
-					.map(([key, wars], i) => {
+					.sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+					.map(([seasonId, wars], i) => {
 						const participated = wars.filter((war) => war.attack).length;
 						const totalStars = wars.reduce((acc, war) => acc + (war.attack?.stars ?? 0), 0);
 						const totalDestruction = wars.reduce((acc, war) => acc + (war.attack?.destructionPercentage ?? 0), 0);
-						const season = moment(key).format('MMM YYYY').toString();
-						const [{ member }] = wars;
+						const season = moment(seasonId).format('MMM YYYY').toString();
+						const [{ member, clan }] = wars;
+						const leagueId = groupMap[`${seasonId}-${clan.tag}`];
+						const leagueName = WarLeagueMap[leagueId];
+						const leagueIcon = CWL_LEAGUES[leagueName] || EMOJIS.GAP;
 						return [
-							`**${season}** (#${member.mapPosition}, TH-${member.townhallLevel})`,
+							`**${season}** (#${member.mapPosition}, TH${member.townhallLevel})${
+								leagueName ? `\n${leagueIcon} ${clan.name}` : ''
+							}`,
 							wars
 								.filter((war) => war.attack)
 								.map(({ attack, defender }, i) => {
@@ -208,9 +226,7 @@ export default class CWLHistoryCommand extends Command {
 		]);
 
 		const attacks = [];
-		while (await cursor.hasNext()) {
-			const data = await cursor.next();
-			if (!data) continue;
+		for await (const data of cursor) {
 			data.clan.members.sort((a, b) => a.mapPosition - b.mapPosition);
 			data.opponent.members.sort((a, b) => a.mapPosition - b.mapPosition);
 
@@ -237,7 +253,9 @@ export default class CWLHistoryCommand extends Command {
 						endTime: new Date(data.endTime),
 						member,
 						// @ts-expect-error
-						round: data.round
+						round: data.round,
+						// @ts-expect-error
+						leagueGroupId: data.leagueGroupId
 					});
 				}
 
@@ -255,7 +273,9 @@ export default class CWLHistoryCommand extends Command {
 						endTime: new Date(data.endTime),
 						member,
 						// @ts-expect-error
-						round: data.round
+						round: data.round,
+						// @ts-expect-error
+						leagueGroupId: data.leagueGroupId
 					});
 				}
 			}
