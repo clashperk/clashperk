@@ -611,7 +611,7 @@ export default class SummaryBestCommand extends Command {
 			return interaction.followUp({ embeds: [embed] });
 		}
 
-		const customId = JSON.stringify({ cmd: this.id, order: args.order, clans: args.clans?.substring(0, 75) });
+		const customId = JSON.stringify({ cmd: this.id, order: args.order, clans: args.clans?.substring(0, 60) });
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder().setCustomId(customId).setEmoji(EMOJIS.REFRESH).setStyle(ButtonStyle.Secondary)
 		);
