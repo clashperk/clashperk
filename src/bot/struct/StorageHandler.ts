@@ -657,18 +657,18 @@ export default class StorageHandler {
 		return webhook;
 	}
 
-	public async getWarTags(tag: string, season?: string | null): Promise<ClanWarLeagueGroup | null> {
+	public async getWarTags(tag: string, season?: string | null): Promise<ClanWarLeagueGroupData | null> {
 		const data = await this.client.db
 			.collection(Collections.CWL_GROUPS)
 			.findOne(season ? { 'clans.tag': tag, season } : { 'clans.tag': tag }, { sort: { _id: -1 } });
 		if (!data || data.warTags?.[tag]?.length !== data.clans.length - 1) return null;
-		if (season) return data as unknown as ClanWarLeagueGroup;
+		if (season) return data as unknown as ClanWarLeagueGroupData;
 
 		if (
 			new Date().getMonth() === new Date(data.season as string).getMonth() ||
 			(new Date(data.season as string).getMonth() === new Date().getMonth() - 1 && new Date().getDate() <= 8)
 		)
-			return data as unknown as ClanWarLeagueGroup;
+			return data as unknown as ClanWarLeagueGroupData;
 
 		return null;
 	}
@@ -744,4 +744,8 @@ export default class StorageHandler {
 	private get seasonID() {
 		return new Date().toISOString().substring(0, 7);
 	}
+}
+
+interface ClanWarLeagueGroupData extends ClanWarLeagueGroup {
+	leagues: Record<string, number>;
 }

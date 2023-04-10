@@ -1,5 +1,5 @@
 import { ClanWar, ClanWarLeagueGroup } from 'clashofclans.js';
-import { CommandInteraction, EmbedBuilder } from 'discord.js';
+import { CommandInteraction, EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { Command } from '../../lib/index.js';
 import { Collections, promotionMap, UnrankedWarLeagueId, WarLeagueMap } from '../../util/Constants.js';
 import { CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
@@ -46,15 +46,20 @@ export default class SummaryCWLRanks extends Command {
 		const chunks = [];
 		for (const clan of __clans) {
 			const res = season ? null : await this.client.http.clanWarLeague(clan.tag);
-			if (!res?.ok || res.state === 'notInWar') {
+			if (!res?.ok || ['notInWar', 'ended'].includes(res.state)) {
 				const data = await this.client.storage.getWarTags(clan.tag, season);
+
 				if (!data) continue;
+				if (!data.leagues[clan.tag]) return null;
+
 				if (args.season && data.season !== args.season) continue;
 				const ranking = await this.rounds(data, clan.tag, season);
 				if (!ranking) continue;
+
 				chunks.push({
-					warLeagueId: clan.warLeague?.id ?? UnrankedWarLeagueId,
-					...ranking
+					warLeagueId: data.leagues[clan.tag],
+					...ranking,
+					status: 'ended'
 				});
 				continue;
 			}
@@ -65,14 +70,15 @@ export default class SummaryCWLRanks extends Command {
 
 			chunks.push({
 				warLeagueId: clan.warLeague?.id ?? UnrankedWarLeagueId,
-				...ranking
+				...ranking,
+				status: res.state
 			});
 		}
 
 		const leagueGroups = Object.entries(
-			chunks.reduce<Record<string, { rank: number; name: string; tag: string; stars: number }[]>>((acc, cur) => {
+			chunks.reduce<Record<string, { rank: number; name: string; tag: string; stars: number; status: string }[]>>((acc, cur) => {
 				acc[cur.warLeagueId] ??= [];
-				acc[cur.warLeagueId].push({ ...cur.clan, rank: cur.rank, stars: cur.clan.stars });
+				acc[cur.warLeagueId].push({ ...cur.clan, rank: cur.rank, stars: cur.clan.stars, status: cur.status });
 				return acc;
 			}, {})
 		);
@@ -91,14 +97,21 @@ export default class SummaryCWLRanks extends Command {
 						: clan.rank >= promotionMap[leagueId].demotion
 						? EMOJIS.DOWN_KEY
 						: EMOJIS.STAYED_SAME;
-				const label = `${emoji} \`${this.formatRank(clan.rank)}\`${EMOJIS.MINI_STAR}\`${clan.stars}\` \u2002${clan.name}`;
+				const stars = clan.stars.toString().padStart(3, ' ');
+				const name = escapeMarkdown(clan.name);
+				const label = `${emoji} \`${this.formatRank(clan.rank)}\`${
+					EMOJIS.MINI_STAR
+				}\`${stars}\` \u2002${name} ${clan.status.substring(0, 2)}`;
 				return `\u200e${label}`;
 			});
 
 			const emptySpace = Util.extraSpace(leagueGroups.length, i);
-			embed.addFields({
-				name: `${CWL_LEAGUES[WarLeagueMap[leagueId]]} ${WarLeagueMap[leagueId]}`,
-				value: `${__clans.join('\n')}${emptySpace}`
+			const chunks = Util.splitMessage(`${__clans.join('\n')}${emptySpace}`, { maxLength: 1024 });
+			chunks.forEach((chunk, i) => {
+				embed.addFields({
+					name: i === 0 ? `${CWL_LEAGUES[WarLeagueMap[leagueId]]} ${WarLeagueMap[leagueId]}` : '\u200b',
+					value: chunk
+				});
 			});
 		});
 
