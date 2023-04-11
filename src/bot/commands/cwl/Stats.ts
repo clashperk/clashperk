@@ -253,11 +253,11 @@ export default class CWLStatsCommand extends Command {
 		}, {});
 
 		const lg = await this.client.db.collection(Collections.CWL_GROUPS).findOne({ 'season': body.season, 'clans.tag': clan.tag });
-		const leagueId = lg?.leagues[clan.tag] ?? leaguesMap[clan.tag];
+		const leagueId = lg?.leagues?.[clan.tag] ?? leaguesMap[clan.tag];
 
 		const ranks = Object.values(ranking)
 			.sort((a, b) => b.stars - a.stars)
-			.map((clan, i) => ({ ...clan, leagueId: lg?.leagues[clan.tag] ?? leaguesMap[clan.tag], rank: i + 1 }))
+			.map((clan, i) => ({ ...clan, leagueId: lg?.leagues?.[clan.tag] ?? leaguesMap[clan.tag], rank: i + 1 }))
 			.map((clan) => ({
 				...clan,
 				pos: leagueId
