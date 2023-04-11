@@ -747,5 +747,5 @@ export default class StorageHandler {
 }
 
 interface ClanWarLeagueGroupData extends ClanWarLeagueGroup {
-	leagues: Record<string, number>;
+	leagues?: Record<string, number>;
 }

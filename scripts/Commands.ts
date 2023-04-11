@@ -1545,6 +1545,34 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 							{
 								name: 'Link Button',
 								value: 'link-button'
+							},
+							{
+								name: 'Events Schedular',
+								value: 'events-schedular'
+							}
+						]
+					},
+					{
+						name: 'max_duration',
+						description: 'Maximum duration of the events in minutes.',
+						type: ApplicationCommandOptionType.Integer,
+						required: false,
+						max_value: 60,
+						min_value: 10
+					},
+					{
+						name: 'disable',
+						description: 'Disable the events schedular.',
+						type: ApplicationCommandOptionType.String,
+						required: false,
+						choices: [
+							{
+								name: 'Yes',
+								value: 'true'
+							},
+							{
+								name: 'No',
+								value: 'false'
 							}
 						]
 					}

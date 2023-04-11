@@ -67,7 +67,7 @@ export default class MessageListener extends Listener {
 		} catch (error) {
 			this.client.logger.error(`${command.id} ~ ${error as string}`, { label: `${message.guild.name}/${message.author.tag}` });
 			console.error(error);
-			await message.channel.send('**Something went wrong while executing that command.**');
+			await message.channel.send('**Something went wrong while executing this command.**');
 		}
 	}
 

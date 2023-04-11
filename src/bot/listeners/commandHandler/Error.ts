@@ -77,7 +77,7 @@ export default class ErrorListener extends Listener {
 		captureException(error);
 
 		const message = {
-			content: `\\❌ ${this.i18n('common.something_went_wrong', { lng: interaction.locale })}`,
+			content: `${this.i18n('common.something_went_wrong', { lng: interaction.locale })}`,
 			components: [
 				new ActionRowBuilder<ButtonBuilder>().addComponents(
 					new ButtonBuilder()

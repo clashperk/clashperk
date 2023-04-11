@@ -59,6 +59,8 @@ export const enum Collections {
 	CAPITAL_RANKS = 'CapitalRanks',
 	CLAN_RANKS = 'ClanRanks',
 
+	GUILD_EVENTS = 'GuildEvents',
+
 	CLAN_MEMBERS = 'ClanMembers',
 	CLAN_GAMES_POINTS = 'ClanGamesPoints',
 	PLAYER_SEASONS = 'PlayerSeasons',

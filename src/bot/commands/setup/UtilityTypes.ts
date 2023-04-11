@@ -8,14 +8,16 @@ import {
 	DiscordjsError,
 	DiscordjsErrorCodes,
 	EmbedBuilder,
+	GuildFeature,
 	ModalBuilder,
+	PermissionFlagsBits,
 	StringSelectMenuBuilder,
 	TextChannel,
 	TextInputBuilder,
 	TextInputStyle
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { Settings, URL_REGEX } from '../../util/Constants.js';
+import { Collections, Settings, URL_REGEX } from '../../util/Constants.js';
 
 export default class SetupUtilsCommand extends Command {
 	public constructor() {
@@ -42,7 +44,12 @@ export default class SetupUtilsCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { channel: TextChannel | AnyThreadChannel; color: number }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { channel: TextChannel | AnyThreadChannel; color: number; option: string; disable?: boolean; max_duration?: number }
+	) {
+		if (args.option === 'events-schedular') return this.handleEvents(interaction, args);
+
 		const customIds = {
 			embed: this.client.uuid(),
 			link: this.client.uuid(),
@@ -65,7 +72,7 @@ export default class SetupUtilsCommand extends Command {
 		}
 
 		const state = this.client.settings.get<EmbedState>(interaction.guild, Settings.LINK_EMBEDS, {
-			title: `Welcome to the ${interaction.guild.name}`,
+			title: `Welcome to ${interaction.guild.name}`,
 			description: 'Click the button below to link your player account.',
 			token_field: 'optional'
 		});
@@ -251,6 +258,40 @@ export default class SetupUtilsCommand extends Command {
 			Object.values(customIds).forEach((id) => this.client.components.delete(id));
 			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
+	}
+
+	public async handleEvents(
+		interaction: CommandInteraction<'cached'>,
+		{ disable, max_duration }: { disable?: boolean; max_duration?: number }
+	) {
+		if (disable) {
+			await this.client.db.collection(Collections.GUILD_EVENTS).deleteOne({ guildId: interaction.guild.id });
+			return interaction.editReply({ content: 'Successfully disabled automatic events schedular.' });
+		}
+
+		if (!interaction.guild.features.includes(GuildFeature.Community)) {
+			return interaction.editReply({ content: 'This command is only available on community servers.' });
+		}
+
+		if (!interaction.guild.members.me?.permissions.has(PermissionFlagsBits.ManageEvents)) {
+			return interaction.editReply({ content: "I'm missing **Manage Events** permission to execute this command." });
+		}
+
+		await this.client.db.collection(Collections.GUILD_EVENTS).updateOne(
+			{ guildId: interaction.guild.id },
+			{
+				$setOnInsert: {
+					events: {},
+					createdAt: new Date()
+				},
+				$set: {
+					maxDuration: max_duration ?? 60
+				}
+			},
+			{ upsert: true }
+		);
+
+		return interaction.editReply({ content: 'Successfully enabled automatic events schedular.' });
 	}
 }
 

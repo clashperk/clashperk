@@ -2,11 +2,11 @@ FROM node:16-slim AS deps
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y git
+# RUN apt-get update && apt-get install -y git
 
 COPY package*.json ./
 
-RUN git clone https://github.com/clashperk/locales.git ./locales
+# RUN git clone https://github.com/clashperk/locales.git ./locales
 
 RUN npm install
 

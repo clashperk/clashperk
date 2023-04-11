@@ -37,6 +37,12 @@ class MongoDB extends MongoClient {
 
 			db.collection(Collections.BOT_USERS).createIndex({ user: 1 }, { unique: true }),
 
+			db.collection(Collections.GUILD_EVENTS).createIndexes([
+				{
+					key: { guildId: 1 }
+				}
+			]),
+
 			db.collection(Collections.CWL_GROUPS).createIndexes([
 				{
 					key: { 'clans.tag': 1, 'season': 1 }

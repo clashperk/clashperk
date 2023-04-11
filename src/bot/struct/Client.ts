@@ -24,6 +24,7 @@ import ClanGamesScheduler from './ClanGamesScheduler.js';
 import { Indexer } from './Indexer.js';
 import { CommandsMap } from './CommandsMap.js';
 import { NicknameHandler } from './NicknameHandler.js';
+import { GuildEventsHandler } from './GuildEventsHandler.js';
 
 export class Client extends Discord.Client {
 	public commandHandler = new CommandHandler(this, {
@@ -50,6 +51,7 @@ export class Client extends Discord.Client {
 	public cgScheduler!: ClanGamesScheduler;
 	public indexer!: Indexer;
 	public i18n = i18n;
+	public guildEvents!: GuildEventsHandler;
 
 	public redis = Redis.createClient({
 		url: process.env.REDIS_URL,
@@ -161,6 +163,7 @@ export class Client extends Discord.Client {
 		this.cgScheduler.init();
 		this.raidScheduler.init();
 		this.warScheduler.init();
+		this.guildEvents.init();
 		this.rpcHandler.roleManager.init();
 	}
 
@@ -195,6 +198,7 @@ export class Client extends Discord.Client {
 		this.cgScheduler = new ClanGamesScheduler(this);
 		this.nickHandler = new NicknameHandler(this);
 		this.commandsMap = new CommandsMap(this);
+		this.guildEvents = new GuildEventsHandler(this);
 
 		await this.http.login();
 

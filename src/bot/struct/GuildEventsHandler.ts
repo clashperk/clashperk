@@ -1,17 +1,13 @@
-import { CommandInteraction, EmbedBuilder, time } from 'discord.js';
+import { Guild, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, PermissionFlagsBits, time } from 'discord.js';
 import moment from 'moment';
-import { Command } from '../../lib/index.js';
-import { Season } from '../../util/index.js';
+import { Collections } from '../util/Constants.js';
+import { Season } from '../util/index.js';
+import Client from './Client.js';
 
-export default class GameEvents extends Command {
-	public constructor() {
-		super('events', {
-			category: 'config',
-			defer: true
-		});
-	}
+export class GuildEventsHandler {
+	public constructor(private readonly client: Client) {}
 
-	public async exec(interaction: CommandInteraction<'cached'>) {
+	private _events() {
 		const now = moment().toDate();
 
 		const clanGamesStartTime = moment(Season.ID).startOf('month').add(21, 'days').add(8, 'hours').toDate();
@@ -32,43 +28,49 @@ export default class GameEvents extends Command {
 
 		const events = [
 			{
+				type: 'clan_games_start',
 				name: `Clan Games`,
 				value: `${time(clanGamesStartTime, 'R')}\n${time(clanGamesStartTime, 'f')}`,
 				timestamp: clanGamesStartTime.getTime(),
 				visible: moment(now).isBefore(clanGamesStartTime) || moment(now).isAfter(clanGamesEndTime)
 			},
 			{
+				type: 'clan_games_end',
 				name: 'Clan Games (Ending)',
 				value: `${time(clanGamesEndTime, 'R')}\n${time(clanGamesEndTime, 'f')}`,
 				timestamp: clanGamesEndTime.getTime(),
 				visible: moment(now).isAfter(clanGamesStartTime) && moment(now).isBefore(clanGamesEndTime)
 			},
 			{
+				type: 'cwl_start',
 				name: `CWL`,
 				value: `${time(CWLStartTime, 'R')}\n${time(CWLStartTime, 'f')}`,
 				timestamp: CWLStartTime.getTime(),
-				// visible: moment(now).isBefore(CWLStartTime) || moment(now).isAfter(CWLSignupEndTime),
 				visible: moment(now).isBefore(CWLStartTime)
 			},
 			{
+				type: 'cwl_signup_end',
 				name: 'CWL Signup (Ending)',
 				value: `${time(CWLSignupEndTime, 'R')}\n${time(CWLSignupEndTime, 'f')}`,
 				timestamp: CWLSignupEndTime.getTime(),
 				visible: moment(now).isAfter(CWLStartTime) && moment(now).isBefore(CWLSignupEndTime)
 			},
 			{
+				type: 'season_end',
 				name: 'League Reset',
 				value: `${time(seasonEndTime, 'R')}\n${time(seasonEndTime, 'f')}`,
 				timestamp: seasonEndTime.getTime(),
 				visible: true
 			},
 			{
+				type: 'raid_week_start',
 				name: 'Raid Week',
 				value: `${time(raidWeekStartTime, 'R')}\n${time(raidWeekStartTime, 'f')}`,
 				timestamp: raidWeekStartTime.getTime(),
 				visible: moment(now).isBefore(raidWeekStartTime) || moment(now).isAfter(raidWeekEndTime)
 			},
 			{
+				type: 'raid_week_end',
 				name: 'Raid Week (Ending)',
 				value: `${time(raidWeekEndTime, 'R')}\n${time(raidWeekEndTime, 'f')}`,
 				timestamp: raidWeekEndTime.getTime(),
@@ -77,13 +79,51 @@ export default class GameEvents extends Command {
 		];
 
 		events.sort((a, b) => a.timestamp - b.timestamp);
-		const visibleEvents = events.filter((event) => event.visible);
+		return events.filter((event) => event.visible);
+	}
 
-		const embed = new EmbedBuilder()
-			.setAuthor({ name: 'Next Events in the Game' })
-			.addFields(visibleEvents.map((event) => ({ name: event.name, value: `${event.value}\n\u200b` })))
-			.setFooter({ text: `${visibleEvents.length} upcoming events` });
-		return interaction.editReply({ embeds: [embed] });
+	public async create(guild: Guild, guildEvent: GuildEventData) {
+		if (!guild.members.me?.permissions.has(PermissionFlagsBits.ManageEvents)) return null;
+
+		for (const event of this._events()) {
+			if (guildEvent.events[event.type] === event.timestamp) continue;
+
+			await guild.scheduledEvents.create({
+				name: event.name,
+				entityType: GuildScheduledEventEntityType.External,
+				privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
+				scheduledStartTime: new Date(event.timestamp),
+				scheduledEndTime: new Date(event.timestamp + 1000 * 60 * guildEvent.maxDuration),
+				entityMetadata: { location: 'in game' },
+				description: event.value
+			});
+
+			await this.client.db.collection(Collections.GUILD_EVENTS).updateOne(
+				{ guildId: guild.id },
+				{
+					$set: {
+						[`events.${event.type}`]: event.timestamp
+					}
+				}
+			);
+		}
+	}
+
+	public async init() {
+		const cursor = this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).find({
+			guildId: { $in: this.client.guilds.cache.map((guild) => guild.id) }
+		});
+
+		try {
+			for await (const guildEvent of cursor) {
+				const guild = this.client.guilds.cache.get(guildEvent.guildId);
+				if (!guild) continue;
+				await this.create(guild, guildEvent);
+			}
+		} finally {
+			// setTimeout(this.init.bind(this), 1000 * 60 * 30).unref();
+			setTimeout(this.init.bind(this), 1000 * 10).unref();
+		}
 	}
 
 	private getRaidWeek(now: Date) {
@@ -116,4 +156,11 @@ export default class GameEvents extends Command {
 
 		return { raidWeekStartTime: start.toDate(), raidWeekEndTime: end.toDate() };
 	}
+}
+
+export interface GuildEventData {
+	guildId: string;
+	events: Record<string, number>;
+	maxDuration: number;
+	createdAt: Date;
 }
