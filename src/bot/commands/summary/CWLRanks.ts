@@ -50,7 +50,7 @@ export default class SummaryCWLRanks extends Command {
 				const data = await this.client.storage.getWarTags(clan.tag, season);
 
 				if (!data) continue;
-				if (!data.leagues[clan.tag]) return null;
+				if (!data.leagues?.[clan.tag]) continue;
 
 				if (args.season && data.season !== args.season) continue;
 				const ranking = await this.rounds(data, clan.tag, season);
