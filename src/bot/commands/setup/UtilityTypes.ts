@@ -18,6 +18,7 @@ import {
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections, Settings, URL_REGEX } from '../../util/Constants.js';
+import { GuildEventData } from '../../struct/GuildEventsHandler.js';
 
 export default class SetupUtilsCommand extends Command {
 	public constructor() {
@@ -277,7 +278,7 @@ export default class SetupUtilsCommand extends Command {
 			return interaction.editReply({ content: "I'm missing **Manage Events** permission to execute this command." });
 		}
 
-		await this.client.db.collection(Collections.GUILD_EVENTS).updateOne(
+		const { value } = await this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).findOneAndUpdate(
 			{ guildId: interaction.guild.id },
 			{
 				$setOnInsert: {
@@ -288,9 +289,9 @@ export default class SetupUtilsCommand extends Command {
 					maxDuration: max_duration ?? 60
 				}
 			},
-			{ upsert: true }
+			{ upsert: true, returnDocument: 'after' }
 		);
-
+		await this.client.guildEvents.create(interaction.guild, value!);
 		return interaction.editReply({ content: 'Successfully enabled automatic events schedular.' });
 	}
 }

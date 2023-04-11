@@ -2,12 +2,13 @@ import { Guild, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, 
 import moment from 'moment';
 import { Collections } from '../util/Constants.js';
 import { Season } from '../util/index.js';
+import { i18n } from '../util/i18n.js';
 import Client from './Client.js';
 
 export class GuildEventsHandler {
 	public constructor(private readonly client: Client) {}
 
-	private _events() {
+	private _events(guild: Guild) {
 		const now = moment().toDate();
 
 		const clanGamesStartTime = moment(Season.ID).startOf('month').add(21, 'days').add(8, 'hours').toDate();
@@ -29,49 +30,49 @@ export class GuildEventsHandler {
 		const events = [
 			{
 				type: 'clan_games_start',
-				name: `Clan Games`,
+				name: i18n('common.labels.clan_games', { lng: guild.preferredLocale }),
 				value: `${time(clanGamesStartTime, 'R')}\n${time(clanGamesStartTime, 'f')}`,
 				timestamp: clanGamesStartTime.getTime(),
 				visible: moment(now).isBefore(clanGamesStartTime) || moment(now).isAfter(clanGamesEndTime)
 			},
 			{
 				type: 'clan_games_end',
-				name: 'Clan Games (Ending)',
+				name: i18n('common.labels.clan_games_ending', { lng: guild.preferredLocale }),
 				value: `${time(clanGamesEndTime, 'R')}\n${time(clanGamesEndTime, 'f')}`,
 				timestamp: clanGamesEndTime.getTime(),
 				visible: moment(now).isAfter(clanGamesStartTime) && moment(now).isBefore(clanGamesEndTime)
 			},
 			{
 				type: 'cwl_start',
-				name: `CWL`,
+				name: i18n('common.labels.cwl', { lng: guild.preferredLocale }),
 				value: `${time(CWLStartTime, 'R')}\n${time(CWLStartTime, 'f')}`,
 				timestamp: CWLStartTime.getTime(),
 				visible: moment(now).isBefore(CWLStartTime)
 			},
 			{
 				type: 'cwl_signup_end',
-				name: 'CWL Signup (Ending)',
+				name: i18n('common.labels.cwl_signup_ending', { lng: guild.preferredLocale }),
 				value: `${time(CWLSignupEndTime, 'R')}\n${time(CWLSignupEndTime, 'f')}`,
 				timestamp: CWLSignupEndTime.getTime(),
 				visible: moment(now).isAfter(CWLStartTime) && moment(now).isBefore(CWLSignupEndTime)
 			},
 			{
 				type: 'season_end',
-				name: 'League Reset',
+				name: i18n('common.labels.league_reset', { lng: guild.preferredLocale }),
 				value: `${time(seasonEndTime, 'R')}\n${time(seasonEndTime, 'f')}`,
 				timestamp: seasonEndTime.getTime(),
 				visible: true
 			},
 			{
 				type: 'raid_week_start',
-				name: 'Raid Week',
+				name: i18n('common.labels.raid_weekend', { lng: guild.preferredLocale }),
 				value: `${time(raidWeekStartTime, 'R')}\n${time(raidWeekStartTime, 'f')}`,
 				timestamp: raidWeekStartTime.getTime(),
 				visible: moment(now).isBefore(raidWeekStartTime) || moment(now).isAfter(raidWeekEndTime)
 			},
 			{
 				type: 'raid_week_end',
-				name: 'Raid Week (Ending)',
+				name: i18n('common.labels.raid_weekend_ending', { lng: guild.preferredLocale }),
 				value: `${time(raidWeekEndTime, 'R')}\n${time(raidWeekEndTime, 'f')}`,
 				timestamp: raidWeekEndTime.getTime(),
 				visible: moment(now).isAfter(raidWeekStartTime) && moment(now).isBefore(raidWeekEndTime)
@@ -85,7 +86,7 @@ export class GuildEventsHandler {
 	public async create(guild: Guild, guildEvent: GuildEventData) {
 		if (!guild.members.me?.permissions.has(PermissionFlagsBits.ManageEvents)) return null;
 
-		for (const event of this._events()) {
+		for (const event of this._events(guild)) {
 			if (guildEvent.events[event.type] === event.timestamp) continue;
 
 			await guild.scheduledEvents.create({
@@ -121,8 +122,8 @@ export class GuildEventsHandler {
 				await this.create(guild, guildEvent);
 			}
 		} finally {
-			// setTimeout(this.init.bind(this), 1000 * 60 * 30).unref();
-			setTimeout(this.init.bind(this), 1000 * 10).unref();
+			setTimeout(this.init.bind(this), 1000 * 60 * 30).unref();
+			// setTimeout(this.init.bind(this), 1000 * 10).unref();
 		}
 	}
 
