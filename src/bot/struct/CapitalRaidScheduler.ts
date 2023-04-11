@@ -157,7 +157,7 @@ export default class CapitalRaidScheduler {
 		const clanMembers = clan.memberList
 			.map((m) => {
 				const member = data.members.find((mem) => mem.tag === m.tag);
-				if (member) return { ...member, role: m.role };
+				if (member) return { ...member, role: m.role, isParticipating: true };
 				return {
 					tag: m.tag,
 					name: m.name,
@@ -165,13 +165,14 @@ export default class CapitalRaidScheduler {
 					attacks: 0,
 					attackLimit: 5,
 					bonusAttackLimit: 0,
-					capitalResourcesLooted: 0
+					capitalResourcesLooted: 0,
+					isParticipating: false
 				};
 			})
-			.concat(missingMembers.map((mem) => ({ ...mem, role: 'member' })))
+			.concat(missingMembers.map((mem) => ({ ...mem, role: 'member', isParticipating: true })))
 			.filter((m) => !unwantedMembers.includes(m.tag))
-			.filter((m) => (reminder.allMembers ? m.attacks >= 0 : m.attacks >= 1));
-
+			.filter((m) => (reminder.allMembers ? m.attacks >= 0 : m.attacks >= 1))
+			.filter((m) => (data.members.length >= 50 ? m.isParticipating : true));
 		const members = clanMembers
 			.filter((mem) => {
 				return reminder.remaining.includes(mem.attackLimit + mem.bonusAttackLimit - mem.attacks);

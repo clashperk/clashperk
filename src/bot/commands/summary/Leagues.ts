@@ -1,7 +1,8 @@
 import { Clan } from 'clashofclans.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ComponentType, EmbedBuilder, Guild } from 'discord.js';
 import { Command } from '../../lib/index.js';
-import { CapitalLeagueMap, UnrankedCapitalLeagueId, UnrankedWarLeagueId, WarLeagueMap } from '../../util/Constants.js';
+import { ClanCapitalRaidAttackData } from '../../types/index.js';
+import { CapitalLeagueMap, Collections, UnrankedCapitalLeagueId, UnrankedWarLeagueId, WarLeagueMap } from '../../util/Constants.js';
 import { CAPITAL_LEAGUES, CWL_LEAGUES, EMOJIS } from '../../util/Emojis.js';
 import { Util } from '../../util/index.js';
 
@@ -53,7 +54,7 @@ export default class SummaryLeaguesCommand extends Command {
 						.setStyle(ButtonStyle.Primary)
 						.setCustomId(customIds.cwl)
 				);
-				const embed = this.getCapitalLeagueGroups(interaction.guild, __clans);
+				const embed = await this.getCapitalLeagueGroups(interaction.guild, __clans);
 				await action.update({ embeds: [embed], components: [row] });
 			}
 			if (action.customId === customIds.cwl) {
@@ -105,7 +106,28 @@ export default class SummaryLeaguesCommand extends Command {
 		return embed;
 	}
 
-	private getCapitalLeagueGroups(guild: Guild, clans: Clan[]) {
+	private getLastWeekId() {
+		const { isRaidWeek, weekDate, weekId } = this.raidWeek();
+		if (isRaidWeek) {
+			weekDate.setUTCDate(weekDate.getUTCDate() - 7);
+			return weekDate.toISOString().substring(0, 10);
+		}
+		return weekId;
+	}
+
+	private raidWeek() {
+		const today = new Date();
+		const weekDay = today.getUTCDay();
+		const hours = today.getUTCHours();
+		const isRaidWeek = (weekDay === 5 && hours >= 7) || [0, 6].includes(weekDay) || (weekDay === 1 && hours < 7);
+		today.setUTCDate(today.getUTCDate() - today.getUTCDay());
+		if (weekDay < 5 || (weekDay <= 5 && hours < 7)) today.setDate(today.getUTCDate() - 7);
+		today.setUTCDate(today.getUTCDate() + 5);
+		today.setUTCMinutes(0, 0, 0);
+		return { weekDate: today, weekId: today.toISOString().substring(0, 10), isRaidWeek };
+	}
+
+	private async getCapitalLeagueGroups(guild: Guild, clans: Clan[]) {
 		const leagueGroup = Object.entries(
 			clans.reduce<Record<string, Clan[]>>((acc, clan) => {
 				const league = this.getCapitalLeagueId(clan);
@@ -115,6 +137,24 @@ export default class SummaryLeaguesCommand extends Command {
 			}, {})
 		);
 
+		const leagues = await this.client.db
+			.collection<Required<ClanCapitalRaidAttackData>>(Collections.CAPITAL_RAID_SEASONS)
+			.find({ tag: { $in: clans.map((clan) => clan.tag) }, weekId: this.getLastWeekId() })
+			.toArray();
+
+		const leaguesMap = leagues.reduce<Record<string, { gained: number; emoji: string }>>((acc, league) => {
+			if (league._clanCapitalPoints && league.clanCapitalPoints) {
+				const emoji =
+					league._capitalLeague.id > league.capitalLeague.id
+						? EMOJIS.UP_KEY
+						: league._capitalLeague.id === league.capitalLeague.id
+						? EMOJIS.STAYED_SAME
+						: EMOJIS.DOWN_KEY;
+				acc[league.tag] = { gained: league._clanCapitalPoints - league.clanCapitalPoints, emoji };
+			}
+			return acc;
+		}, {});
+
 		const embed = new EmbedBuilder();
 		embed.setColor(this.client.embed(guild.id)).setDescription(`${EMOJIS.CAPITAL_TROPHY} **Clan Capital League Groups**`);
 
@@ -122,12 +162,21 @@ export default class SummaryLeaguesCommand extends Command {
 			.sort(([a], [b]) => Number(b) - Number(a))
 			.map(([leagueId, clans], i) => {
 				const emptySpace = this.extraSpace(leagueGroup.length, i);
+				clans.sort((a, b) => (b.clanCapitalPoints ?? 0) - (a.clanCapitalPoints ?? 0));
 				embed.addFields({
 					name: `${CAPITAL_LEAGUES[leagueId]} ${CapitalLeagueMap[leagueId]}`,
-					value: `${clans.map((clan) => `\u200e${Util.escapeBackTick(clan.name)} (${clan.tag})`).join('\n')}${emptySpace}`
+					value: `${clans
+						.map((clan) => {
+							const capitalPoints = (clan.clanCapitalPoints ?? 0).toString().padStart(4, ' ');
+							const _gained = leaguesMap[clan.tag]?.gained ?? 0; // eslint-disable-line
+							const gained = `${_gained >= 0 ? '+' : ''}${_gained}`.padStart(4, ' ');
+							const name = Util.escapeBackTick(clan.name);
+							const emoji = leaguesMap[clan.tag]?.emoji || EMOJIS.CAPITAL_TROPHY; // eslint-disable-line
+							return `\u200e${emoji} \`${capitalPoints}\` \`${gained}\` \u2002${name}`;
+						})
+						.join('\n')}${emptySpace}`
 				});
 			});
-
 		return embed;
 	}
 

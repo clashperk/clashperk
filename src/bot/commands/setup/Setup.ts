@@ -133,19 +133,22 @@ export default class SetupCommand extends Command {
 		const clans = await this.client.storage.find(interaction.guild!.id);
 		const fetched = await Promise.all(
 			clans.map(async (clan) => {
-				const bit1 = await this.client.db.collection(Collections.DONATION_LOGS).findOne({ clanId: clan._id });
-				const bit2 = await this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clanId: clan._id });
-				const bit3 = await this.client.db.collection(Collections.LAST_SEEN_LOGS).findOne({ clanId: clan._id });
-				const bit4 = await this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clanId: clan._id });
-				const bit5 = await this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clanId: clan._id });
-				const bit6 = await this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clanId: clan._id });
-				const bit7 = await this.client.db.collection(Collections.JOIN_LEAVE_LOGS).findOne({ clanId: clan._id });
-				const bit8 = await this.client.db.collection(Collections.LEGEND_LOGS).findOne({ clanId: clan._id });
-				const bit9 = await this.client.db.collection(Collections.CAPITAL_LOGS).findOne({ clanId: clan._id });
+				const [bit1, bit2, bit3, bit4, bit5, bit6, bit7, bit8, bit9] = await Promise.all([
+					this.client.db.collection(Collections.DONATION_LOGS).findOne({ clanId: clan._id }),
+					this.client.db.collection(Collections.CLAN_FEED_LOGS).findOne({ clanId: clan._id }),
+					this.client.db.collection(Collections.LAST_SEEN_LOGS).findOne({ clanId: clan._id }),
+					this.client.db.collection(Collections.CLAN_EMBED_LOGS).findOne({ clanId: clan._id }),
+					this.client.db.collection(Collections.CLAN_GAMES_LOGS).findOne({ clanId: clan._id }),
+					this.client.db.collection(Collections.CLAN_WAR_LOGS).findOne({ clanId: clan._id }),
+					this.client.db.collection(Collections.JOIN_LEAVE_LOGS).findOne({ clanId: clan._id }),
+					this.client.db.collection(Collections.LEGEND_LOGS).findOne({ clanId: clan._id }),
+					this.client.db.collection(Collections.CAPITAL_LOGS).findOne({ clanId: clan._id })
+				]);
 
 				return {
 					name: clan.name,
 					tag: clan.tag,
+					color: clan.color,
 					alias: clan.alias ? `(${clan.alias}) ` : '',
 					roles: clan.roleIds?.map((id) => interaction.guild!.roles.cache.get(id)?.toString()) ?? [],
 					channels: clan.channels?.map((id) => this.client.channels.cache.get(id)?.toString()) ?? [],
@@ -208,6 +211,7 @@ export default class SetupCommand extends Command {
 
 			const embed = new EmbedBuilder();
 			embed.setAuthor({ name: `\u200e${clan.name} (${clan.tag})` });
+			if (clan.color) embed.setColor(clan.color);
 			if (channels.length) embed.setDescription(channels.join(', '));
 			if (roles.length) {
 				embed.addFields([{ name: 'Roles', value: roles.join(' '), inline: true }]);
@@ -221,7 +225,6 @@ export default class SetupCommand extends Command {
 					}))
 				);
 			}
-
 			return embed;
 		});
 	}

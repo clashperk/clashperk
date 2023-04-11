@@ -105,15 +105,16 @@ export default class ProfileCommand extends Command {
 			return interaction.editReply({ embeds: [embed] });
 		}
 
-		const collection = [];
-		const tags = new Set([...players.map((en) => en.tag), ...otherTags]);
-		const hideLink = Boolean(tags.size >= 12);
+		const collection: { field: string; values: string[] }[] = [];
+		const playerTags = [...new Set([...players.map((en) => en.tag), ...otherTags])];
+		const hideLink = Boolean(playerTags.length >= 12);
+		const __players = await Promise.all(playerTags.map((tag) => this.client.http.player(tag)));
 
-		const links: XLSX[] = [];
-		for (const tag of tags.values()) {
-			const player: Player = await this.client.http.player(tag);
+		const links: LinkData[] = [];
+		__players.forEach((player, n) => {
+			const tag = playerTags[n];
 			if (player.statusCode === 404) this.deleteBanned(user.id, tag);
-			if (!player.ok) continue;
+			if (!player.ok) return;
 
 			const signature = this.isVerified(players, tag) ? '**✓**' : this.isLinked(players, tag) ? '' : '';
 			collection.push({
@@ -134,11 +135,11 @@ export default class ProfileCommand extends Command {
 				role: player.role,
 				external: this.isLinked(players, tag) ? 'No' : 'Yes'
 			});
-		}
+		});
 
 		embed.addFields(
 			collection.slice(0, 25).map((a, i) => ({
-				name: i === 0 ? `**Player Accounts [${collection.length}]**` : '\u200b',
+				name: i === 0 ? `**Player Accounts [${playerTags.length}]**` : '\u200b',
 				value: [a.field, ...a.values].join('\n')
 			}))
 		);
@@ -157,22 +158,13 @@ export default class ProfileCommand extends Command {
 			export: this.client.uuid(interaction.user.id),
 			sync: this.client.uuid(interaction.user.id)
 		};
-		const row = new ActionRowBuilder<ButtonBuilder>()
-			.addComponents(
-				new ButtonBuilder()
-					.setLabel('Sync Roles')
-					.setCustomId(customIds.sync)
-					.setStyle(ButtonStyle.Primary)
-					// .setDisabled(!links.length)
-					.setDisabled(true)
-			)
-			.addComponents(
-				new ButtonBuilder()
-					.setEmoji(EMOJIS.EXPORT)
-					.setCustomId(customIds.export)
-					.setStyle(ButtonStyle.Secondary)
-					.setDisabled(links.length < 5)
-			);
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+			new ButtonBuilder()
+				.setEmoji(EMOJIS.EXPORT)
+				.setCustomId(customIds.export)
+				.setStyle(ButtonStyle.Secondary)
+				.setDisabled(links.length < 5)
+		);
 
 		const msg = await interaction.editReply({ embeds: [embed], components: [row] });
 		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
@@ -207,7 +199,7 @@ export default class ProfileCommand extends Command {
 		return this.client.users.fetch(link.userId).catch(() => interaction.user);
 	}
 
-	private toXlsx(data: XLSX[], user: User) {
+	private toXlsx(data: LinkData[], user: User) {
 		const workbook = new Workbook();
 		const sheet = workbook.addWorksheet(`${user.tag}`);
 		sheet.columns = [
@@ -261,7 +253,7 @@ export default class ProfileCommand extends Command {
 	}
 }
 
-interface XLSX {
+interface LinkData {
 	name: string;
 	tag: string;
 	clan?: { name?: string; tag?: string };

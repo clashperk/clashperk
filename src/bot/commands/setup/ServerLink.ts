@@ -14,16 +14,16 @@ export default class ServerLinkCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag: string }) {
-		const clan = await this.client.storage.collection.findOne({ tag: args.tag, guild: interaction.guild.id });
-		if (clan)
-			return interaction.editReply(
-				this.i18n('command.setup.enable.server_link.already_linked', {
-					lng: interaction.locale,
-					clan: `${clan.name} (${clan.tag})`,
-					guild: interaction.guild.name
-				})
-			);
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag: string; color?: string }) {
+		// const clan = await this.client.storage.collection.findOne({ tag: args.tag, guild: interaction.guild.id });
+		// if (clan)
+		// 	return interaction.editReply(
+		// 		this.i18n('command.setup.enable.server_link.already_linked', {
+		// 			lng: interaction.locale,
+		// 			clan: `${clan.name} (${clan.tag})`,
+		// 			guild: interaction.guild.name
+		// 		})
+		// 	);
 
 		const data = await this.client.resolver.enforceSecurity(interaction, { tag: args.tag, collection: Collections.CLAN_STORES });
 		if (!data) return;
@@ -32,7 +32,8 @@ export default class ServerLinkCommand extends Command {
 			op: Flags.SERVER_LINKED,
 			guild: interaction.guild.id,
 			name: data.name,
-			tag: data.tag
+			tag: data.tag,
+			hexCode: args.color ?? null
 		});
 
 		await this.client.rpcHandler.add(id, {

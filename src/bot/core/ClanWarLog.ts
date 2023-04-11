@@ -95,13 +95,18 @@ export default class ClanWarLog extends BaseLog {
 				.setLabel('Defenses')
 				.setEmoji(EMOJIS.SHIELD)
 				.setStyle(ButtonStyle.Danger)
-				.setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.opponent.tag, attacks: true })),
-			new ButtonBuilder()
-				.setLabel('Open Bases')
-				.setEmoji(EMOJIS.EMPTY_STAR)
-				.setStyle(ButtonStyle.Secondary)
-				.setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, openBases: true }))
+				.setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.opponent.tag, attacks: true }))
 		);
+
+		if (data.state !== 'warEnded') {
+			row.addComponents(
+				new ButtonBuilder()
+					.setLabel('Open Bases')
+					.setEmoji(EMOJIS.EMPTY_STAR)
+					.setStyle(ButtonStyle.Secondary)
+					.setCustomId(JSON.stringify({ cmd: 'war', war_id: data.id, tag: data.clan.tag, openBases: true }))
+			);
+		}
 
 		return row;
 	}

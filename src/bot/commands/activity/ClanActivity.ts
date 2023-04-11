@@ -22,8 +22,8 @@ export default class ClanActivityCommand extends Command {
 	public async exec(interaction: CommandInteraction<'cached'>, args: { clans?: string; days?: number; timezone?: string }) {
 		const tags = await this.client.resolver.resolveArgs(args.clans);
 		const clans = tags.length
-			? (await this.client.storage.search(interaction.guild.id, tags)).slice(0, 7)
-			: (await this.client.storage.find(interaction.guild.id)).slice(0, 7);
+			? await this.client.storage.search(interaction.guild.id, tags)
+			: await this.client.storage.find(interaction.guild.id);
 
 		if (!clans.length && tags.length)
 			return interaction.editReply(
@@ -84,18 +84,17 @@ export default class ClanActivityCommand extends Command {
 			name: 'chart.png'
 		});
 
+		const timeZoneCommand = this.client.getCommand('/timezone');
 		await interaction.editReply({
 			content:
 				timezone.offset === 0
-					? `Please set your time zone with the ${this.client.getCommand(
-							'/timezone'
-					  )} command. It enables you to view the graphs in your time zone.`
+					? `Please set your time zone with the ${timeZoneCommand} command. It enables you to view the graphs in your time zone.`
 					: null,
 			files: [rawFile]
 		});
 
 		const diff = process.hrtime(hrStart);
-		this.client.logger.debug(`Rendered in ${(diff[0] * 1000 + diff[1] / 1000000).toFixed(2)}ms`, { label: 'CHART' });
+		this.client.logger.debug(`Rendered in ${(diff.at(0)! * 1000 + diff.at(1)! / 1000000).toFixed(2)}ms`, { label: 'CHART' });
 	}
 
 	private async getTimezoneOffset(interaction: CommandInteraction<'cached'>, location?: string) {
@@ -131,7 +130,7 @@ export default class ClanActivityCommand extends Command {
 		return { offset, name: raw.timezone.timeZoneName };
 	}
 
-	private aggregate(clanTags: string[], days = 1) {
+	private aggregate(clanTags: string[], days: number) {
 		const isHourly = days <= 3;
 		return this.client.db
 			.collection(Collections.LAST_SEEN)
@@ -236,6 +235,9 @@ export default class ClanActivityCommand extends Command {
 					$sort: {
 						name: 1
 					}
+				},
+				{
+					$limit: 7
 				}
 			])
 			.toArray();

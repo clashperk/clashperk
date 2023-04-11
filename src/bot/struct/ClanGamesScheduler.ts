@@ -179,12 +179,14 @@ export default class ClanGamesScheduler {
 		if (!clan.ok) return null;
 
 		const clanMembers = await this.query(clan);
+		const maxParticipants = clanMembers.filter((mem) => mem.points >= 1).length;
 
 		const members = clanMembers
 			.filter((mem) => {
 				return mem.points < (reminder.minPoints === 0 ? ClanGames.MAX_POINT : reminder.minPoints);
 			})
 			.filter((m) => (reminder.allMembers ? m.points >= 0 : m.points >= 1))
+			.filter((mem) => (maxParticipants >= 50 ? mem.points >= 1 : true))
 			.filter((mem) => {
 				if (reminder.roles.length === 4) return true;
 				return reminder.roles.includes(mem.role!);

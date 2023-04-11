@@ -399,6 +399,8 @@ export default class InteractionListener extends Listener {
 						},
 						{ index: ElasticIndex.GUILD_LINKED_CLANS },
 						{
+							size: 25,
+							sort: [{ name: 'asc' }],
 							query: {
 								bool: {
 									must: {
@@ -411,6 +413,7 @@ export default class InteractionListener extends Listener {
 						},
 						{ index: ElasticIndex.RECENT_CLANS },
 						{
+							sort: [{ lastSearched: 'desc' }],
 							query: {
 								bool: {
 									must: {

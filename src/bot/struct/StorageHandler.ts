@@ -22,6 +22,7 @@ export interface ClanStore {
 	channels?: string[];
 	secureRole: boolean;
 	uniqueId: number;
+	color?: number;
 	roleIds?: string[];
 	roles?: { coLeader?: string; admin?: string; member?: string }[];
 }
@@ -82,6 +83,7 @@ export default class StorageHandler {
 					paused: false,
 					active: true,
 					verified: true,
+					...(data.hexCode ? { color: data.hexCode } : {}),
 					patron: this.client.patrons.get(message.guild!.id)
 				},
 				$setOnInsert: {
