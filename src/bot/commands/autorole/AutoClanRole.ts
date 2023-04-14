@@ -100,7 +100,6 @@ export default class AutoClanRoleCommand extends Command {
 						leader: leader.id,
 						everyone: commonRole?.id ?? null
 					},
-					roleIds: [member.id, elder.id, coLead.id, leader.id],
 					secureRole: args.verify
 				}
 			}
@@ -164,7 +163,7 @@ export default class AutoClanRoleCommand extends Command {
 		if (args.clear) {
 			const { matchedCount } = await this.client.db
 				.collection(Collections.CLAN_STORES)
-				.updateMany({ guild: interaction.guild.id }, { $unset: { roles: '', roleIds: '', secureRole: '' } });
+				.updateMany({ guild: interaction.guild.id }, { $unset: { roles: '', secureRole: '' } });
 			return interaction.editReply(
 				this.i18n('command.autorole.disable.success_with_count', {
 					lng: interaction.locale,
@@ -192,7 +191,7 @@ export default class AutoClanRoleCommand extends Command {
 			.collection(Collections.CLAN_STORES)
 			.updateMany(
 				{ guild: interaction.guild.id, tag: { $in: clans.map((clan) => clan.tag) } },
-				{ $unset: { roles: '', roleIds: '', secureRole: '' } }
+				{ $unset: { roles: '', secureRole: '' } }
 			);
 
 		return interaction.editReply(

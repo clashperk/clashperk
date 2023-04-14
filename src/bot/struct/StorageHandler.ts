@@ -23,8 +23,7 @@ export interface ClanStore {
 	secureRole: boolean;
 	uniqueId: number;
 	color?: number;
-	roleIds?: string[];
-	roles?: { coLeader?: string; admin?: string; member?: string }[];
+	roles?: { coLeader?: string; admin?: string; member?: string; leader?: string; everyone?: string };
 }
 
 export default class StorageHandler {

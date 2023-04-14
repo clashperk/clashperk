@@ -16,6 +16,14 @@ const names: Record<string, string> = {
 	[Flags.JOIN_LEAVE_LOG]: 'Join/Leave Log'
 };
 
+const roles: Record<string, string> = {
+	member: 'Member',
+	admin: 'Elder',
+	coLeader: 'Co-Leader',
+	leader: 'Leader',
+	everyone: 'Everyone'
+};
+
 export default class SetupCommand extends Command {
 	public constructor() {
 		super('setup', {
@@ -150,7 +158,11 @@ export default class SetupCommand extends Command {
 					tag: clan.tag,
 					color: clan.color,
 					alias: clan.alias ? `(${clan.alias}) ` : '',
-					roles: clan.roleIds?.map((id) => interaction.guild!.roles.cache.get(id)?.toString()) ?? [],
+					// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+					roles: Object.entries(clan.roles ?? {}).map(([role, id]) => {
+						const roleMention = interaction.guild!.roles.cache.get(id)?.toString() ?? 'N/A';
+						return `${roles[role]}: ${roleMention}`;
+					}),
 					channels: clan.channels?.map((id) => this.client.channels.cache.get(id)?.toString()) ?? [],
 					entries: [
 						{
@@ -214,7 +226,7 @@ export default class SetupCommand extends Command {
 			if (clan.color) embed.setColor(clan.color);
 			if (channels.length) embed.setDescription(channels.join(', '));
 			if (roles.length) {
-				embed.addFields([{ name: 'Roles', value: roles.join(' '), inline: true }]);
+				embed.addFields([{ name: 'Clan Roles', value: roles.join(' '), inline: true }]);
 			}
 			if (features.length) {
 				embed.addFields(

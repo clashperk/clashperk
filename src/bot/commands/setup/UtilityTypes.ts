@@ -8,7 +8,6 @@ import {
 	DiscordjsError,
 	DiscordjsErrorCodes,
 	EmbedBuilder,
-	GuildFeature,
 	ModalBuilder,
 	PermissionFlagsBits,
 	StringSelectMenuBuilder,
@@ -268,10 +267,6 @@ export default class SetupUtilsCommand extends Command {
 		if (disable) {
 			await this.client.db.collection(Collections.GUILD_EVENTS).deleteOne({ guildId: interaction.guild.id });
 			return interaction.editReply({ content: 'Successfully disabled automatic events schedular.' });
-		}
-
-		if (!interaction.guild.features.includes(GuildFeature.Community)) {
-			return interaction.editReply({ content: 'This command is only available on community servers.' });
 		}
 
 		if (!interaction.guild.members.me?.permissions.has(PermissionFlagsBits.ManageEvents)) {
