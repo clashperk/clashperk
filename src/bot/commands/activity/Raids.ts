@@ -1,3 +1,4 @@
+import { Clan, Player } from 'clashofclans.js';
 import {
 	ActionRowBuilder,
 	AttachmentBuilder,
@@ -8,14 +9,14 @@ import {
 	embedLength,
 	User
 } from 'discord.js';
-import { Clan, Player } from 'clashofclans.js';
 import moment from 'moment';
+import fetch from 'node-fetch';
 import { Args, Command } from '../../lib/index.js';
-import { Collections } from '../../util/Constants.js';
+import { RaidSeason } from '../../struct/Http.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
+import { Collections } from '../../util/Constants.js';
 import { EMOJIS } from '../../util/Emojis.js';
 import { Season, Util } from '../../util/index.js';
-import { RaidSeason } from '../../struct/Http.js';
 
 export default class CapitalRaidsCommand extends Command {
 	public constructor() {
@@ -188,7 +189,30 @@ export default class CapitalRaidsCommand extends Command {
 			previousAttacks
 		});
 
-		return interaction.editReply({ embeds: [embed], components: [row] });
+		await interaction.editReply({ embeds: [embed], components: [row] });
+
+		const { offensive, defensive } = this.calculateStats(data);
+		previousAttacks.sort((a, b) => a - b);
+		const totalPreviousAttacks = previousAttacks.reduce((acc, cur) => acc + cur, 0);
+		let avgMax = totalPreviousAttacks ? totalPreviousAttacks / previousAttacks.length : 0;
+
+		if (data.totalAttacks > avgMax) {
+			avgMax = previousAttacks.find((a) => a > data.totalAttacks) ?? data.totalAttacks;
+		}
+		offensive.projectedLoot = Number((offensive.lootPerAttack * avgMax).toFixed(2));
+
+		const url = await this.performancesCardURL({
+			clanName: clan.name,
+			clanBadgeUrl: clan.badgeUrls.large,
+			trophies: clan.clanCapitalPoints ?? 0,
+			startDate: moment(data.startTime).toDate(),
+			endDate: moment(data.endTime).toDate(),
+			offensive,
+			defensive
+		}).catch(() => null);
+
+		if (url) embed.setImage(url);
+		if (url) await interaction.editReply({ embeds: [embed], components: [row] });
 	}
 
 	private async forUsers(interaction: CommandInteraction<'cached'>, { user, player }: { user?: User; player?: Player | null }) {
@@ -331,8 +355,8 @@ export default class CapitalRaidsCommand extends Command {
 		clan,
 		weekId,
 		members,
-		locale,
-		raidSeason
+		// raidSeason
+		locale
 	}: {
 		clan: Clan;
 		weekId: string;
@@ -341,12 +365,12 @@ export default class CapitalRaidsCommand extends Command {
 		previousAttacks: number[];
 		members: { name: string; capitalResourcesLooted: number; attacks: number; attackLimit: number }[];
 	}) {
-		const totalLoot = members.reduce((acc, cur) => acc + cur.capitalResourcesLooted, 0);
-		const totalAttacks = members.reduce((acc, cur) => acc + cur.attacks, 0);
+		// const totalLoot = members.reduce((acc, cur) => acc + cur.capitalResourcesLooted, 0);
+		// const totalAttacks = members.reduce((acc, cur) => acc + cur.attacks, 0);
 		const startDate = moment(weekId).toDate();
 		const endDate = moment(weekId).clone().add(3, 'days').toDate();
 
-		const { offensive } = this.calculateStats(raidSeason);
+		// const { offensive } = this.calculateStats(raidSeason);
 
 		// previousAttacks.sort((a, b) => a - b);
 		// const totalPreviousAttacks = previousAttacks.reduce((acc, cur) => acc + cur, 0);
@@ -366,8 +390,8 @@ export default class CapitalRaidsCommand extends Command {
 			.setTimestamp()
 			.setFooter({
 				text: [
-					`Looted: ${totalLoot}, Attacks: ${totalAttacks} (Avg. ${Math.round(offensive.attacksPerRaid)}/Raid)`,
-					`Avg. Loot/Raid: ${Math.round(offensive.lootPerRaid)}, Avg. Loot/Attack: ${Math.round(offensive.lootPerAttack)}`,
+					// `Looted: ${totalLoot}, Attacks: ${totalAttacks} (Avg. ${offensive.attacksPerRaid}/Raid)`,
+					// `Avg. Loot/Raid: ${offensive.lootPerRaid}, Avg. Loot/Attack: ${offensive.lootPerAttack}`,
 					`Week of ${weekend}`
 				].join('\n')
 			});
@@ -379,9 +403,10 @@ export default class CapitalRaidsCommand extends Command {
 				'\u200e # LOOTED HITS  NAME',
 				members
 					.map((mem, i) => {
+						const rank = (i + 1).toString().padStart(2, ' ');
 						const looted = this.padding(mem.capitalResourcesLooted);
 						const attacks = `${mem.attacks}/${mem.attackLimit}`.padStart(4, ' ');
-						return `\u200e${(i + 1).toString().padStart(2, ' ')} ${looted} ${attacks}  ${mem.name}`;
+						return `\u200e${rank} ${looted} ${attacks}  ${mem.name}`;
 					})
 					.join('\n'),
 				'```'
@@ -444,6 +469,17 @@ export default class CapitalRaidsCommand extends Command {
 		offensive.projectedLoot = Number((offensive.lootPerAttack * 300).toFixed(2));
 
 		return { offensive, defensive };
+	}
+
+	private async performancesCardURL(body: any) {
+		const res = await fetch(`${process.env.ASSET_API_BACKEND!}/capital/raid-performance-card`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(body)
+		}).then((res) => res.json());
+		return `${process.env.ASSET_API_BACKEND!}/${(res as any).id as string}`;
 	}
 
 	private padding(num: number) {

@@ -111,7 +111,7 @@ export class RoleManager {
 	}
 
 	public async exec(tag: string, data: RPCFeed) {
-		const members = data.members.filter((mem) => ['JOINED', 'LEFT'].includes(mem.op));
+		const members = data.members.filter((mem) => ['TOWN_HALL_UPGRADE'].includes(mem.op));
 		if (members.length) await this.execTownHall(tag, members);
 
 		const leagueChanges = data.members.filter((mem) => ['LEAGUE_CHANGE'].includes(mem.op));
@@ -170,6 +170,9 @@ export class RoleManager {
 			if (!this.client.guilds.cache.has(guild)) continue;
 			const clan = clans.find((c) => c.tag === tag)!;
 			await this.run(guild, clans, clan, roleChanges);
+
+			const joiners = members.filter((mem) => ['JOINED', 'PROMOTED', 'DEMOTED'].includes(mem.op));
+			if (joiners.length) await this.processNickname(guild, members);
 		}
 	}
 
@@ -279,8 +282,7 @@ export class RoleManager {
 				members.map((mem) => mem.tag)
 			);
 
-			const joiners = members.filter((mem) => mem.op === 'JOINED');
-			if (joiners.length) await this.processNickname(guild, members);
+			await this.processNickname(guild, members);
 		}
 	}
 
