@@ -173,7 +173,65 @@ export class RoleManager {
 		}
 	}
 
-	public async execTownHall(tag: string, members: { tag: string }[]) {
+	private async processNickname(guildId: string, members: { tag: string }[]) {
+		const guild = this.client.guilds.cache.get(guildId)!;
+
+		const memberTags = members.map((mem) => mem.tag);
+		const flattened = await this.client.db
+			.collection(Collections.PLAYER_LINKS)
+			.aggregate<PlayerLinks>([
+				{
+					$match: { tag: { $in: memberTags } }
+				},
+				{
+					$lookup: {
+						from: Collections.PLAYER_LINKS,
+						localField: 'userId',
+						foreignField: 'userId',
+						as: 'links',
+						pipeline: [
+							{
+								$sort: { order: 1 }
+							},
+							{ $limit: 1 }
+						]
+					}
+				},
+				{
+					$unwind: {
+						path: '$links'
+					}
+				},
+				{
+					$replaceRoot: {
+						newRoot: '$links'
+					}
+				},
+				{
+					$match: {
+						tag: {
+							$in: memberTags
+						}
+					}
+				}
+			])
+			.toArray();
+		if (!flattened.length) return null;
+
+		const guildMembers = await guild.members.fetch({ user: flattened.map((mem) => mem.userId) }).catch(() => null);
+		for (const { userId, tag } of flattened) {
+			const member = guildMembers?.get(userId);
+			if (!member) continue;
+
+			const player = await this.client.http.player(tag);
+			if (!player.ok) continue;
+
+			await this.client.nickHandler.exec(member, player);
+			await this.delay(1000);
+		}
+	}
+
+	public async execTownHall(tag: string, members: { tag: string; op?: string }[]) {
 		const queried = await this.client.db
 			.collection(Collections.CLAN_STORES)
 			.aggregate<{ guild: string; clans: { tag: string }[] }>([
@@ -216,6 +274,9 @@ export class RoleManager {
 				clans,
 				members.map((mem) => mem.tag)
 			);
+
+			const joiners = members.filter((mem) => mem.op === 'JOINED');
+			if (joiners.length) await this.processNickname(guild, members);
 		}
 	}
 

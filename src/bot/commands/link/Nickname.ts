@@ -1,7 +1,9 @@
 import { ActionRowBuilder, CommandInteraction, ComponentType, GuildMember, StringSelectMenuBuilder } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
-import { Settings } from '../../util/Constants.js';
+import { PlayerLinks } from '../../types/index.js';
+import { Collections, Settings } from '../../util/Constants.js';
 import { TOWN_HALLS } from '../../util/Emojis.js';
+import { Util } from '../../util/index.js';
 
 export default class NickNameCommand extends Command {
 	public constructor() {
@@ -25,7 +27,10 @@ export default class NickNameCommand extends Command {
 		};
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { member?: GuildMember; format?: string; enable_auto?: boolean }) {
+	public async exec(
+		interaction: CommandInteraction<'cached'>,
+		args: { member?: GuildMember; format?: string; enable_auto?: boolean; update_existing_members?: boolean }
+	) {
 		const { member } = args;
 		if (!member) {
 			return interaction.editReply(this.i18n('command.nickname.invalid_member', { lng: interaction.locale }));
@@ -102,11 +107,82 @@ export default class NickNameCommand extends Command {
 					components: [],
 					content: `**${member.user.tag}\'s** nickname set to **${nickname}**`
 				});
+
+				if (args.update_existing_members) {
+					await this.processNickname(interaction);
+				}
 			}
 		});
 
 		collector.on('end', () => {
 			this.client.components.delete(customId);
 		});
+	}
+
+	private async processNickname(interaction: CommandInteraction<'cached'>) {
+		const clans = await this.client.storage.find(interaction.guildId);
+		if (!clans.length) return;
+
+		for (const { tag } of clans) {
+			const clan = await this.client.http.clan(tag);
+			if (!clan.ok) continue;
+
+			const memberTags = clan.memberList.map((mem) => mem.tag);
+			const flattened = await this.client.db
+				.collection(Collections.PLAYER_LINKS)
+				.aggregate<PlayerLinks>([
+					{
+						$match: { tag: { $in: memberTags } }
+					},
+					{
+						$lookup: {
+							from: Collections.PLAYER_LINKS,
+							localField: 'userId',
+							foreignField: 'userId',
+							as: 'links',
+							pipeline: [
+								{
+									$sort: { order: 1 }
+								},
+								{ $limit: 1 }
+							]
+						}
+					},
+					{
+						$unwind: {
+							path: '$links'
+						}
+					},
+					{
+						$replaceRoot: {
+							newRoot: '$links'
+						}
+					},
+					{
+						$match: {
+							tag: {
+								$in: memberTags
+							}
+						}
+					}
+				])
+				.toArray();
+			if (!flattened.length) continue;
+
+			const guildMembers = await interaction.guild.members.fetch({ user: flattened.map((link) => link.userId) }).catch(() => null);
+			if (!guildMembers?.size) continue;
+			const players = await Promise.all(flattened.map((link) => this.client.http.player(link.tag)));
+
+			for (const { userId, tag } of flattened) {
+				const member = guildMembers.get(userId);
+				if (!member) continue;
+
+				const player = players.find((p) => p.tag === tag);
+				if (!player) continue;
+
+				await this.client.nickHandler.handle(member, player);
+				await Util.delay(1500);
+			}
+		}
 	}
 }

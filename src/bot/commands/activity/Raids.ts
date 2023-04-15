@@ -80,19 +80,19 @@ export default class CapitalRaidsCommand extends Command {
 		const currentWeekId = this.raidWeek().weekId;
 		const weekId = args.week ?? currentWeekId;
 
+		const res = await this.client.http.getRaidLastSeason(clan);
+		if (!res.ok || !res.items.length) {
+			return interaction.followUp({
+				content: `Raid weekend info isn't available for ${clan.name} (${clan.tag})`
+			});
+		}
+		const data = res.items.find((item) => moment(item.startTime).format('YYYY-MM-DD') === weekId);
+
 		if (args.card) {
 			const season = await this.client.db
 				.collection<ClanCapitalRaidAttackData>(Collections.CAPITAL_RAID_SEASONS)
 				.findOne({ weekId, tag: clan.tag });
 
-			const res = await this.client.http.getRaidLastSeason(clan);
-			if (!res.ok || !res.items.length) {
-				return interaction.followUp({
-					content: `Raid weekend info isn't available for ${clan.name} (${clan.tag})`
-				});
-			}
-
-			const data = res.items.find((item) => moment(item.startTime).format('YYYY-MM-DD') === weekId);
 			if (!data) {
 				return interaction.followUp({
 					content: `Raid weekend info isn't available for ${clan.name} (${clan.tag})`
@@ -168,21 +168,24 @@ export default class CapitalRaidsCommand extends Command {
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(refreshButton).addComponents(downloadButton);
 		if (interaction.isButton()) row.setComponents(refreshButton);
 
-		const isRaidWeek = currentWeekId === weekId;
-		const raidSeason = isRaidWeek ? await this.getRaidsFromAPI(clan) : await this.aggregateCapitalRaids(clan, weekId);
+		// const isRaidWeek = currentWeekId === weekId;
+		const raidSeason = await this.aggregateCapitalRaids(clan, weekId);
+
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		if (!raidSeason?.members?.length) {
+		if (!raidSeason?.members?.length || !data) {
 			return interaction.followUp({
 				content: this.i18n('command.capital.raids.no_data', { weekId, clan: clan.name, lng: interaction.locale })
 			});
 		}
 
+		const previousAttacks = res.items.map((item) => item.totalAttacks);
 		const embed = this.getCapitalRaidEmbed({
 			clan,
 			weekId,
 			members: raidSeason.members,
 			locale: interaction.locale,
-			raidSeason: raidSeason.data
+			raidSeason: data,
+			previousAttacks
 		});
 
 		return interaction.editReply({ embeds: [embed], components: [row] });
@@ -296,31 +299,6 @@ export default class CapitalRaidsCommand extends Command {
 		}
 	}
 
-	private async getRaidsFromAPI(clan: Clan) {
-		const res = await this.client.http.getRaidSeason(clan);
-		if (!res.ok) return null;
-		if (!res.items.length) return null;
-		const data = res.items[0];
-		if (!data?.members?.length) return null; // eslint-disable-line
-
-		const members = data.members.map((m) => ({ ...m, attackLimit: m.attackLimit + m.bonusAttackLimit }));
-		clan.memberList.forEach((member) => {
-			const attack = members.find((attack) => attack.tag === member.tag);
-			if (!attack) {
-				members.push({
-					name: member.name,
-					tag: member.tag,
-					capitalResourcesLooted: 0,
-					attacks: 0,
-					attackLimit: 5,
-					bonusAttackLimit: 0
-				});
-			}
-		});
-
-		return { members: members.sort((a, b) => b.capitalResourcesLooted - a.capitalResourcesLooted), data };
-	}
-
 	private async aggregateCapitalRaids(clan: Clan, weekId: string) {
 		const season = await this.client.db
 			.collection<ClanCapitalRaidAttackData>(Collections.CAPITAL_RAID_SEASONS)
@@ -353,18 +331,31 @@ export default class CapitalRaidsCommand extends Command {
 		clan,
 		weekId,
 		members,
-		locale
+		locale,
+		raidSeason
 	}: {
 		clan: Clan;
 		weekId: string;
 		locale: string;
 		raidSeason: RaidSeason;
+		previousAttacks: number[];
 		members: { name: string; capitalResourcesLooted: number; attacks: number; attackLimit: number }[];
 	}) {
 		const totalLoot = members.reduce((acc, cur) => acc + cur.capitalResourcesLooted, 0);
 		const totalAttacks = members.reduce((acc, cur) => acc + cur.attacks, 0);
 		const startDate = moment(weekId).toDate();
 		const endDate = moment(weekId).clone().add(3, 'days').toDate();
+
+		const { offensive } = this.calculateStats(raidSeason);
+
+		// previousAttacks.sort((a, b) => a - b);
+		// const totalPreviousAttacks = previousAttacks.reduce((acc, cur) => acc + cur, 0);
+		// const avgAttacks = totalPreviousAttacks ? totalPreviousAttacks / previousAttacks.length : 0;
+
+		// let avgMax = avgAttacks;
+		// if (raidSeason.totalAttacks > avgAttacks) {
+		// 	avgMax = previousAttacks.find((a) => a > raidSeason.totalAttacks) ?? raidSeason.totalAttacks;
+		// }
 
 		const weekend = Util.raidWeekDateFormat(startDate, endDate);
 		const embed = new EmbedBuilder()
@@ -373,7 +364,13 @@ export default class CapitalRaidsCommand extends Command {
 				iconURL: clan.badgeUrls.small
 			})
 			.setTimestamp()
-			.setFooter({ text: `Looted: ${totalLoot}, Attacks: ${totalAttacks}/300\nWeek of ${weekend}` });
+			.setFooter({
+				text: [
+					`Looted: ${totalLoot}, Attacks: ${totalAttacks} (Avg. ${Math.round(offensive.attacksPerRaid)}/Raid)`,
+					`Avg. Loot/Raid: ${Math.round(offensive.lootPerRaid)}, Avg. Loot/Attack: ${Math.round(offensive.lootPerAttack)}`,
+					`Week of ${weekend}`
+				].join('\n')
+			});
 
 		embed.setDescription(
 			[
@@ -388,10 +385,65 @@ export default class CapitalRaidsCommand extends Command {
 					})
 					.join('\n'),
 				'```'
+				// 'Offensive Stats',
+				// `Attacks: ${offensive.totalAttacks}`,
+				// `Loot: ${offensive.totalLoot}`,
+				// `Avg. Attacks/Raid: ${offensive.attacksPerRaid}`,
+				// `Avg. Loot/Raid: ${offensive.lootPerRaid}`,
+				// `Avg. Loot/Attack: ${offensive.lootPerAttack}`,
+				// '',
+				// `Avg. Attacks of last 10 weekends: ${avgAttacks.toFixed(2)} / Swapped: ${avgMax}`,
+				// `Projected Loot: ${(offensive.lootPerAttack * avgMax).toFixed(0)}`,
+				// '',
+				// 'Defensive Stats',
+				// `Attacks: ${defensive.totalAttacks}`,
+				// `Loot: ${defensive.totalLoot}`,
+				// `Avg. Attacks/Raid: ${defensive.attacksPerRaid}`,
+				// `Avg. Loot/Raid: ${defensive.lootPerRaid}`,
+				// `Avg. Loot/Attack: ${defensive.lootPerAttack}`
 			].join('\n')
 		);
 
 		return embed;
+	}
+
+	private calculateStats(raidSeason: RaidSeason) {
+		const offensive = {
+			totalLoot: 0,
+			totalAttacks: 0,
+			attacksPerRaid: 0,
+			lootPerRaid: 0,
+			lootPerAttack: 0,
+			projectedLoot: 0
+		};
+		const defensive = {
+			totalLoot: 0,
+			totalAttacks: 0,
+			attacksPerRaid: 0,
+			lootPerRaid: 0,
+			lootPerAttack: 0
+		};
+
+		for (const defense of raidSeason.defenseLog) {
+			defensive.totalAttacks += defense.attackCount;
+			defensive.totalLoot += defense.districts.reduce((acc, cur) => acc + cur.totalLooted, 0);
+		}
+
+		defensive.attacksPerRaid = Number((defensive.totalAttacks / raidSeason.defenseLog.length).toFixed(2));
+		defensive.lootPerRaid = Number((defensive.totalLoot / raidSeason.defenseLog.length).toFixed(2));
+		defensive.lootPerAttack = Number((defensive.totalLoot / defensive.totalAttacks).toFixed(2));
+
+		for (const attack of raidSeason.attackLog) {
+			offensive.totalAttacks += attack.attackCount;
+			offensive.totalLoot += attack.districts.reduce((acc, cur) => acc + cur.totalLooted, 0);
+		}
+
+		offensive.attacksPerRaid = Number((offensive.totalAttacks / raidSeason.attackLog.length).toFixed(2));
+		offensive.lootPerRaid = Number((offensive.totalLoot / raidSeason.attackLog.length).toFixed(2));
+		offensive.lootPerAttack = Number((offensive.totalLoot / offensive.totalAttacks).toFixed(2));
+		offensive.projectedLoot = Number((offensive.lootPerAttack * 300).toFixed(2));
+
+		return { offensive, defensive };
 	}
 
 	private padding(num: number) {

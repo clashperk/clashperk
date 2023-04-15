@@ -2761,6 +2761,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						value: 'false'
 					}
 				]
+			},
+			{
+				name: 'update_existing_members',
+				description: 'Update nickname for existing members.',
+				type: ApplicationCommandOptionType.String,
+				choices: [
+					{
+						name: 'Yes',
+						value: 'true'
+					},
+					{
+						name: 'No',
+						value: 'false'
+					}
+				]
 			}
 		]
 	},

@@ -353,33 +353,42 @@ export default class StorageHandler {
 	}
 
 	public async deleteWarReminders(clanTag: string, guild: string) {
-		const rem = await this.client.db.collection<Reminder>(Collections.REMINDERS).findOne({ guild, clans: clanTag });
-		if (!rem) return null;
-		await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId: rem._id });
-		if (rem.clans.length === 1) {
-			return this.client.db.collection(Collections.REMINDERS).deleteOne({ _id: rem._id });
+		const reminders = await this.client.db.collection<Reminder>(Collections.REMINDERS).find({ guild, clans: clanTag }).toArray();
+		if (!reminders.length) return null;
+		for (const rem of reminders) {
+			await this.client.db.collection<Schedule>(Collections.SCHEDULERS).deleteMany({ reminderId: rem._id });
+			if (rem.clans.length === 1) {
+				await this.client.db.collection(Collections.REMINDERS).deleteOne({ _id: rem._id });
+			} else {
+				await this.client.db.collection(Collections.REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
+			}
 		}
-		return this.client.db.collection(Collections.REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
 	}
 
 	public async deleteCapitalReminders(clanTag: string, guild: string) {
-		const rem = await this.client.db.collection(Collections.RAID_REMINDERS).findOne({ guild, clans: clanTag });
-		if (!rem) return null;
-		await this.client.db.collection(Collections.RAID_SCHEDULERS).deleteMany({ reminderId: rem._id });
-		if (rem.clans.length === 1) {
-			return this.client.db.collection(Collections.RAID_REMINDERS).deleteOne({ _id: rem._id });
+		const reminders = await this.client.db.collection(Collections.RAID_REMINDERS).find({ guild, clans: clanTag }).toArray();
+		if (!reminders.length) return null;
+		for (const rem of reminders) {
+			await this.client.db.collection(Collections.RAID_SCHEDULERS).deleteMany({ reminderId: rem._id });
+			if (rem.clans.length === 1) {
+				await this.client.db.collection(Collections.RAID_REMINDERS).deleteOne({ _id: rem._id });
+			} else {
+				await this.client.db.collection(Collections.RAID_REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
+			}
 		}
-		return this.client.db.collection(Collections.RAID_REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
 	}
 
 	public async deleteClanGamesReminders(clanTag: string, guild: string) {
-		const rem = await this.client.db.collection(Collections.CG_REMINDERS).findOne({ guild, clans: clanTag });
-		if (!rem) return null;
-		await this.client.db.collection(Collections.CG_SCHEDULERS).deleteMany({ reminderId: rem._id });
-		if (rem.clans.length === 1) {
-			return this.client.db.collection(Collections.CG_REMINDERS).deleteOne({ _id: rem._id });
+		const reminders = await this.client.db.collection(Collections.CG_REMINDERS).find({ guild, clans: clanTag }).toArray();
+		if (!reminders.length) return null;
+		for (const rem of reminders) {
+			await this.client.db.collection(Collections.CG_SCHEDULERS).deleteMany({ reminderId: rem._id });
+			if (rem.clans.length === 1) {
+				await this.client.db.collection(Collections.CG_REMINDERS).deleteOne({ _id: rem._id });
+			} else {
+				await this.client.db.collection(Collections.CG_REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
+			}
 		}
-		return this.client.db.collection(Collections.CG_REMINDERS).updateOne({ _id: rem._id }, { $pull: { clans: clanTag } });
 	}
 
 	public async remove(id: string, data: any) {
