@@ -174,7 +174,11 @@ export class RoleManager {
 	}
 
 	private async processNickname(guildId: string, members: { tag: string }[]) {
-		const guild = this.client.guilds.cache.get(guildId)!;
+		const isAuto = this.client.settings.get<boolean>(guildId, Settings.AUTO_NICKNAME, false);
+		if (!isAuto) return null;
+
+		const guild = this.client.guilds.cache.get(guildId);
+		if (!guild) return null;
 
 		const memberTags = members.map((mem) => mem.tag);
 		const flattened = await this.client.db

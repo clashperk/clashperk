@@ -92,7 +92,7 @@ export default class NickNameCommand extends Command {
 		collector.on('collect', async (action) => {
 			if (action.isStringSelectMenu() && action.customId === customId) {
 				const player = players.find((p) => p.tag === action.values.at(0))!;
-				const nickname = await this.client.nickHandler.handle(member, player, format);
+				const nickname = await this.client.nickHandler.exec(member, player, format);
 
 				if (!nickname) {
 					await action.reply({
@@ -108,7 +108,8 @@ export default class NickNameCommand extends Command {
 					content: `**${member.user.tag}\'s** nickname set to **${nickname}**`
 				});
 
-				if (args.update_existing_members) {
+				const isAuto = this.client.settings.get<boolean>(member.guild, Settings.AUTO_NICKNAME, false);
+				if (args.update_existing_members && isAuto) {
 					await this.processNickname(interaction);
 				}
 			}
@@ -180,7 +181,7 @@ export default class NickNameCommand extends Command {
 				const player = players.find((p) => p.tag === tag);
 				if (!player) continue;
 
-				await this.client.nickHandler.handle(member, player);
+				await this.client.nickHandler.exec(member, player);
 				await Util.delay(1500);
 			}
 		}
