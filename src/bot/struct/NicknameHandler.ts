@@ -22,7 +22,7 @@ export class NicknameHandler {
 		return this.handle(member, player, reason);
 	}
 
-	private async handle(member: GuildMember, player: Player, reason?: string) {
+	public async handle(member: GuildMember, player: Player, reason?: string) {
 		if (member.id === member.guild.ownerId) return null;
 		if (member.guild.members.me!.roles.highest.position <= member.roles.highest.position) return null;
 
