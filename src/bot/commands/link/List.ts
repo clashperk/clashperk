@@ -44,13 +44,16 @@ export default class LinkListCommand extends Command {
 			}
 
 			const token = this.client.util.createToken({ userId: interaction.user.id, guildId: interaction.guild.id });
+			const linkRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+				new ButtonBuilder()
+					.setURL(`https://clashperk.com/links?tag=${encodeURIComponent(clan.tag)}&token=${token}`)
+					.setLabel('Open in Browser')
+					.setStyle(ButtonStyle.Link)
+			);
 			await interaction.followUp({
-				content: [
-					`**Click the link below to manage Discord links on our Dashboard.**`,
-					'',
-					`[https://clashperk.com/links](https://clashperk.com/links?tag=${encodeURIComponent(clan.tag)}&token=${token})`
-				].join('\n'),
-				ephemeral: true
+				content: [`**Click the button below to manage Discord links on our Dashboard.**`].join('\n'),
+				ephemeral: true,
+				components: [linkRow]
 			});
 			return this.updateLinksAndRoles(interaction.guildId);
 		}
