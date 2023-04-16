@@ -2685,6 +2685,26 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 					}
 				]
 			}
+			// {
+			// 	name: 'clan-capital',
+			// 	description: 'Export clan capital history.',
+			// 	type: ApplicationCommandOptionType.Subcommand,
+			// 	options: [
+			// 		{
+			// 			name: 'clans',
+			// 			description: command.export.options.clans.description,
+			// 			description_localizations: translation('command.export.options.clans.description'),
+			// 			autocomplete: true,
+			// 			type: ApplicationCommandOptionType.String
+			// 		},
+			// 		{
+			// 			name: 'limit',
+			// 			description: command.export.options.wars.description,
+			// 			description_localizations: translation('command.export.options.wars.description'),
+			// 			type: ApplicationCommandOptionType.Integer
+			// 		}
+			// 	]
+			// }
 		]
 	},
 	{

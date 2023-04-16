@@ -170,9 +170,53 @@ export class RoleManager {
 			if (!this.client.guilds.cache.has(guild)) continue;
 			const clan = clans.find((c) => c.tag === tag)!;
 			await this.run(guild, clans, clan, roleChanges);
+		}
+	}
 
-			const joiners = members.filter((mem) => ['JOINED', 'PROMOTED', 'DEMOTED'].includes(mem.op));
-			if (joiners.length) await this.processNickname(guild, members);
+	public async execNickname(tag: string, data: RPCFeed) {
+		const queried = await this.client.db
+			.collection(Collections.CLAN_STORES)
+			.aggregate<AggregatedGuild>([
+				{
+					$match: {
+						tag,
+						paused: false
+					}
+				},
+				{
+					$project: { guild: 1 }
+				},
+				{
+					$lookup: {
+						from: Collections.CLAN_STORES,
+						localField: 'guild',
+						foreignField: 'guild',
+						as: 'clans',
+						pipeline: [
+							{
+								$match: {
+									paused: false
+								}
+							},
+							{
+								$project: {
+									tag: 1
+								}
+							}
+						]
+					}
+				},
+				{
+					$match: { 'clans.tag': tag }
+				}
+			])
+			.toArray();
+
+		const members = data.members.filter((mem) => ['JOINED', 'PROMOTED', 'DEMOTED', 'TOWN_HALL_UPGRADE'].includes(mem.op));
+		for (const { guild, clans } of queried) {
+			if (!clans.length) continue;
+			if (!this.client.guilds.cache.has(guild)) continue;
+			if (members.length) await this.processNickname(guild, members);
 		}
 	}
 
@@ -281,8 +325,6 @@ export class RoleManager {
 				clans,
 				members.map((mem) => mem.tag)
 			);
-
-			await this.processNickname(guild, members);
 		}
 	}
 

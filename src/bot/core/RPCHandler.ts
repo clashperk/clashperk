@@ -61,7 +61,8 @@ export default class RPCHandler {
 						await Promise.all([
 							this.clanFeedLog.exec(data.tag, data),
 							this.joinLeaveLog.exec(data.tag, data),
-							this.roleManager.exec(data.tag, data)
+							this.roleManager.exec(data.tag, data),
+							this.roleManager.execNickname(data.tag, data)
 						]);
 						break;
 					case Flags.CLAN_EMBED_LOG:
@@ -74,7 +75,11 @@ export default class RPCHandler {
 						await this.clanFeedLog.exec(data.tag, data);
 						break;
 					case Flags.TOWN_HALL_LOG:
-						await Promise.all([this.clanFeedLog.exec(data.tag, data), this.roleManager.execTownHall(data.tag, data.members)]);
+						await Promise.all([
+							this.clanFeedLog.exec(data.tag, data),
+							this.roleManager.execTownHall(data.tag, data.members),
+							this.roleManager.execNickname(data.tag, data)
+						]);
 						break;
 					case Flags.PLAYER_FEED_LOG:
 						await this.clanFeedLog.exec(data.tag, data);
