@@ -1,5 +1,5 @@
 import { CommandInteraction } from 'discord.js';
-import { Command } from '../../lib/index.js';
+import { Args, Command } from '../../lib/index.js';
 import { Collections, Flags } from '../../util/Constants.js';
 
 export default class ServerLinkCommand extends Command {
@@ -14,7 +14,16 @@ export default class ServerLinkCommand extends Command {
 		});
 	}
 
-	public async exec(interaction: CommandInteraction<'cached'>, args: { tag: string; color?: string }) {
+	public args(interaction: CommandInteraction<'cached'>): Args {
+		return {
+			color: {
+				match: 'COLOR',
+				default: this.client.embed(interaction)
+			}
+		};
+	}
+
+	public async exec(interaction: CommandInteraction<'cached'>, args: { tag: string; color?: number }) {
 		// const clan = await this.client.storage.collection.findOne({ tag: args.tag, guild: interaction.guild.id });
 		// if (clan)
 		// 	return interaction.editReply(

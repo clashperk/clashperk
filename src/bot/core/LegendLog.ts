@@ -13,7 +13,7 @@ export default class LegendLog extends BaseLog {
 
 	public constructor(client: Client) {
 		super(client, false);
-		this.refreshRate = 5 * 60 * 1000;
+		this.refreshRate = 15 * 60 * 1000;
 	}
 
 	public override get permissions(): PermissionsString[] {

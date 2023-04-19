@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
 	ActionRowBuilder,
 	AnyThreadChannel,
@@ -273,6 +274,28 @@ export default class SetupUtilsCommand extends Command {
 			return interaction.editReply({ content: "I'm missing **Manage Events** permission to execute this command." });
 		}
 
+		const customIds = {
+			select: this.client.uuid(interaction.user.id),
+			confirm: this.client.uuid(interaction.user.id)
+		};
+
+		const allowedEventsRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
+			new StringSelectMenuBuilder()
+				.setCustomId(customIds.select)
+				.setPlaceholder('Select allowed events.')
+				.setOptions(
+					this.client.guildEvents.eventTypes.map((type) => ({
+						label: type,
+						value: type
+					}))
+				)
+				.setMinValues(1)
+				.setMaxValues(this.client.guildEvents.eventTypes.length)
+		);
+		const confirmButton = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder().setCustomId(customIds.confirm).setLabel('Confirm').setStyle(ButtonStyle.Primary)
+		);
+
 		const { value } = await this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).findOneAndUpdate(
 			{ guildId: interaction.guild.id },
 			{
@@ -286,8 +309,12 @@ export default class SetupUtilsCommand extends Command {
 			},
 			{ upsert: true, returnDocument: 'after' }
 		);
+
 		await this.client.guildEvents.create(interaction.guild, value!);
-		return interaction.editReply({ content: 'Successfully enabled automatic events schedular.' });
+		return interaction.editReply({
+			content: 'Successfully enabled automatic events schedular.'
+			// components: [allowedEventsRow, confirmButton]
+		});
 	}
 }
 

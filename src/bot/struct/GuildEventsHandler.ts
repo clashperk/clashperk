@@ -8,6 +8,10 @@ import Client from './Client.js';
 export class GuildEventsHandler {
 	public constructor(private readonly client: Client) {}
 
+	public get eventTypes() {
+		return ['clan_games_start', 'clan_games_end', 'cwl_start', 'cwl_signup_end', 'season_end', 'raid_week_start', 'raid_week_end'];
+	}
+
 	private _events(guild: Guild) {
 		const now = moment().toDate();
 
