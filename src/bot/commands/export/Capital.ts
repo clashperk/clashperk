@@ -1,6 +1,8 @@
-import { CommandInteraction } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
+import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
+import Google from '../../struct/Google.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
@@ -60,7 +62,7 @@ export default class ExportCapital extends Command {
 					status: remark,
 					weekId: clan.weekId,
 					leagueId: clan.capitalLeague?.id,
-					leagueName: clan.capitalLeague?.name,
+					leagueName: clan.capitalLeague?.name ?? 'Unknown',
 					capitalTotalLoot: clan.capitalTotalLoot,
 					totalAttacks: clan.totalAttacks,
 					raidsCompleted: clan.raidsCompleted,
@@ -119,7 +121,7 @@ export default class ExportCapital extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return interaction.editReply({
+		await interaction.editReply({
 			content: `**War Export (Last ${num})**`,
 			files: [
 				{
@@ -128,5 +130,184 @@ export default class ExportCapital extends Command {
 				}
 			]
 		});
+
+		const columns = [
+			'Weekend',
+			'League',
+			'Total Loot',
+			'Avg. Loot',
+			'Total Attacks',
+			'Raids Completed',
+			'Offensive Reward',
+			'Defensive Reward',
+			'Trophy Gained',
+			'Remark'
+		];
+
+		const sheet = Google.sheet();
+		const drive = Google.drive();
+		const spreadsheet = await sheet.spreadsheets.create({
+			requestBody: {
+				properties: {
+					title: `${interaction.guild.name} [Clan Capital Stats]`
+				},
+				sheets: chunks.map((chunk, i) => ({
+					properties: {
+						sheetId: i,
+						index: i,
+						title: Util.escapeSheetName(`${chunk.name} (${chunk.tag})`),
+						gridProperties: {
+							rowCount: Math.max(chunk.weekends.length + 1, 100),
+							columnCount: Math.max(columns.length, 50),
+							frozenRowCount: chunk.weekends.length ? 1 : 0
+						}
+					}
+				}))
+			},
+			fields: 'spreadsheetId,spreadsheetUrl'
+		});
+
+		await drive.permissions.create({
+			requestBody: {
+				role: 'reader',
+				type: 'anyone'
+			},
+			fileId: spreadsheet.data.spreadsheetId!
+		});
+
+		await drive.revisions.update({
+			requestBody: {
+				published: true,
+				publishedOutsideDomain: true,
+				publishAuto: true
+			},
+			fileId: spreadsheet.data.spreadsheetId!,
+			revisionId: '1',
+			fields: '*'
+		});
+
+		const requests: sheets_v4.Schema$Request[] = chunks.map((c, i) => ({
+			updateCells: {
+				start: {
+					sheetId: i,
+					rowIndex: 0,
+					columnIndex: 0
+				},
+				rows: [
+					{
+						values: columns.map((v) => ({
+							userEnteredValue: {
+								stringValue: v
+							},
+							userEnteredFormat: {
+								wrapStrategy: 'WRAP'
+							}
+						}))
+					},
+					...c.weekends.map((weekend) => ({
+						values: [
+							weekend.weekId,
+							weekend.leagueName,
+							weekend.capitalTotalLoot,
+							weekend.avgLoot,
+							weekend.totalAttacks,
+							weekend.raidsCompleted,
+							weekend.offensiveReward,
+							weekend.defensiveReward,
+							weekend.trophyGained,
+							weekend.status
+						].map((v) => ({
+							userEnteredValue: {
+								stringValue: v.toString()
+							}
+						}))
+					}))
+				],
+				fields: '*'
+			}
+		}));
+
+		const styleRequests: sheets_v4.Schema$Request[] = chunks
+			.map((_, i) => [
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 0,
+							endColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'LEFT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'RIGHT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							endRowIndex: 1,
+							startColumnIndex: 0
+						},
+						cell: {
+							userEnteredFormat: {
+								textFormat: { bold: true },
+								verticalAlignment: 'MIDDLE'
+							}
+						},
+						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
+					}
+				}
+				// {
+				// 	updateDimensionProperties: {
+				// 		range: {
+				// 			sheetId: 0,
+				// 			dimension: 'COLUMNS',
+				// 			startIndex: 0,
+				// 			endIndex: columns.length
+				// 		},
+				// 		properties: {
+				// 			pixelSize: 120
+				// 		},
+				// 		fields: 'pixelSize'
+				// 	}
+				// }
+			])
+			.flat();
+
+		await sheet.spreadsheets.batchUpdate({
+			spreadsheetId: spreadsheet.data.spreadsheetId!,
+			requestBody: {
+				requests: [...requests, ...styleRequests]
+			}
+		});
+
+		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Open Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Open in Web')
+				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pub'))
+		);
+		return interaction.editReply({ components: [row] });
 	}
 }

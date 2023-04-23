@@ -211,15 +211,15 @@ export default class WarExport extends Command {
 				properties: {
 					title: `${interaction.guild.name} [Clan War Stats]`
 				},
-				sheets: chunks.map((c, i) => ({
+				sheets: chunks.map((chunk, i) => ({
 					properties: {
 						sheetId: i,
 						index: i,
-						title: Util.escapeSheetName(`${c.name} (${c.tag})`),
+						title: Util.escapeSheetName(`${chunk.name} (${chunk.tag})`),
 						gridProperties: {
-							rowCount: c.members.length + 1,
-							columnCount: columns.length,
-							frozenRowCount: 1
+							rowCount: Math.max(chunk.members.length + 1, 100),
+							columnCount: Math.max(columns.length, 50),
+							frozenRowCount: chunk.members.length ? 1 : 0
 						}
 					}
 				}))
@@ -246,7 +246,7 @@ export default class WarExport extends Command {
 			fields: '*'
 		});
 
-		const requests: sheets_v4.Schema$Request[] = chunks.map((c, i) => ({
+		const requests: sheets_v4.Schema$Request[] = chunks.map((chunk, i) => ({
 			updateCells: {
 				start: {
 					sheetId: i,
@@ -255,13 +255,16 @@ export default class WarExport extends Command {
 				},
 				rows: [
 					{
-						values: columns.map((v) => ({
+						values: columns.map((value) => ({
 							userEnteredValue: {
-								stringValue: v
+								stringValue: value
+							},
+							userEnteredFormat: {
+								wrapStrategy: 'WRAP'
 							}
 						}))
 					},
-					...c.members
+					...chunk.members
 						.filter((m) => m.of > 0)
 						.map((m) => ({
 							values: [
@@ -282,9 +285,9 @@ export default class WarExport extends Command {
 								(m.defStars / m.defCount || 0).toFixed(),
 								m.defDestruction.toFixed(2),
 								(m.defDestruction / m.defCount || 0).toFixed(2)
-							].map((v) => ({
+							].map((value) => ({
 								userEnteredValue: {
-									stringValue: v.toString()
+									stringValue: value.toString()
 								}
 							}))
 						}))
@@ -336,12 +339,27 @@ export default class WarExport extends Command {
 						},
 						cell: {
 							userEnteredFormat: {
-								textFormat: { bold: true }
+								textFormat: { bold: true },
+								verticalAlignment: 'MIDDLE'
 							}
 						},
-						fields: 'userEnteredFormat(textFormat)'
+						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
 					}
 				}
+				// {
+				// 	updateDimensionProperties: {
+				// 		range: {
+				// 			sheetId: 0,
+				// 			dimension: 'COLUMNS',
+				// 			startIndex: 0,
+				// 			endIndex: columns.length
+				// 		},
+				// 		properties: {
+				// 			pixelSize: 150
+				// 		},
+				// 		fields: 'pixelSize'
+				// 	}
+				// }
 			])
 			.flat();
 
