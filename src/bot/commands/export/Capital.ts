@@ -165,24 +165,25 @@ export default class ExportCapital extends Command {
 			fields: 'spreadsheetId,spreadsheetUrl'
 		});
 
-		await drive.permissions.create({
-			requestBody: {
-				role: 'reader',
-				type: 'anyone'
-			},
-			fileId: spreadsheet.data.spreadsheetId!
-		});
-
-		await drive.revisions.update({
-			requestBody: {
-				published: true,
-				publishedOutsideDomain: true,
-				publishAuto: true
-			},
-			fileId: spreadsheet.data.spreadsheetId!,
-			revisionId: '1',
-			fields: '*'
-		});
+		await Promise.all([
+			drive.permissions.create({
+				requestBody: {
+					role: 'reader',
+					type: 'anyone'
+				},
+				fileId: spreadsheet.data.spreadsheetId!
+			}),
+			drive.revisions.update({
+				requestBody: {
+					published: true,
+					publishedOutsideDomain: true,
+					publishAuto: true
+				},
+				fileId: spreadsheet.data.spreadsheetId!,
+				revisionId: '1',
+				fields: '*'
+			})
+		]);
 
 		const requests: sheets_v4.Schema$Request[] = chunks.map((c, i) => ({
 			updateCells: {
@@ -304,7 +305,7 @@ export default class ExportCapital extends Command {
 			new ButtonBuilder()
 				.setStyle(ButtonStyle.Link)
 				.setLabel('Open in Web')
-				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pub'))
+				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pubhtml'))
 		);
 		return interaction.editReply({ components: [row] });
 	}
