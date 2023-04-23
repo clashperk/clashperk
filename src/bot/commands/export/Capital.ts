@@ -33,8 +33,6 @@ export default class ExportCapital extends Command {
 			);
 		}
 
-		let num = Number(args.limit ?? 25);
-		num = Math.min(100, num);
 		const chunks = [];
 		for (const { tag, name } of clans) {
 			const weekends = await this.client.db
@@ -122,7 +120,7 @@ export default class ExportCapital extends Command {
 
 		const buffer = await workbook.xlsx.writeBuffer();
 		await interaction.editReply({
-			content: `**War Export (Last ${num})**`,
+			content: `**Clan Capital Export**`,
 			files: [
 				{
 					attachment: Buffer.from(buffer),
