@@ -35,6 +35,12 @@ export default class ComponentHandler {
 				await this.client.commandHandler.exec(interaction, command, parsed);
 				return true;
 			}
+			case 'legend-leaderboard': {
+				const command = this.client.commandHandler.modules.get('legend-leaderboard')!;
+				await interaction.deferUpdate();
+				await this.client.commandHandler.exec(interaction, command, parsed);
+				return true;
+			}
 			case 'boosts': {
 				const command = this.client.commandHandler.modules.get('boosts')!;
 				await interaction.deferUpdate();

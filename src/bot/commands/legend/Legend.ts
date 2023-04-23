@@ -17,7 +17,7 @@ export default class LegendCommand extends Command {
 		const command = {
 			attacks: this.handler.modules.get('legend-attacks')!,
 			days: this.handler.modules.get('legend-days')!,
-			graph: this.handler.modules.get('legend-graph')!
+			leaderboard: this.handler.modules.get('legend-leaderboard')!
 		}[args.command];
 
 		if (!command) throw Error('Command not found.');

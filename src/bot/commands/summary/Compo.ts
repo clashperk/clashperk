@@ -106,7 +106,7 @@ export default class SummaryCompoCommand extends Command {
 			return count;
 		}, {});
 		const townHalls = Object.entries(reduced)
-			.map((arr) => ({ level: Number(arr[0]), total: Number(arr[1]) }))
+			.map((arr) => ({ level: Number(arr.at(0)), total: Number(arr.at(1)) }))
 			.sort((a, b) => b.level - a.level);
 		const avg = townHalls.reduce((p, c) => p + c.total * c.level, 0) / townHalls.reduce((p, c) => p + c.total, 0) || 0;
 

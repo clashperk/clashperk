@@ -2296,6 +2296,27 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: false
 					}
 				]
+			},
+			{
+				name: 'leaderboard',
+				description: 'Shows legend leaderboard.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'clans',
+						autocomplete: true,
+						description: 'Enter a tag or pick one form the autocomplete list.',
+						type: ApplicationCommandOptionType.String,
+						required: false
+					},
+					{
+						name: 'limit',
+						description: 'Limit the number of results.',
+						type: ApplicationCommandOptionType.Number,
+						max_value: 100,
+						min_value: 3
+					}
+				]
 			}
 		]
 	},
@@ -2405,7 +2426,6 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						required: false,
 						type: ApplicationCommandOptionType.String,
 						description: command.summary.options.season.description,
-						// description_localizations: translation('command.summary.options.season.description'),
 						choices: getSeasonIds()
 					}
 				]
@@ -2684,27 +2704,21 @@ export const COMMANDS: RESTPostAPIApplicationCommandsJSONBody[] = [
 						type: ApplicationCommandOptionType.Integer
 					}
 				]
+			},
+			{
+				name: 'capital',
+				description: 'Export clan capital weekends.',
+				type: ApplicationCommandOptionType.Subcommand,
+				options: [
+					{
+						name: 'clans',
+						description: command.export.options.clans.description,
+						description_localizations: translation('command.export.options.clans.description'),
+						autocomplete: true,
+						type: ApplicationCommandOptionType.String
+					}
+				]
 			}
-			// {
-			// 	name: 'clan-capital',
-			// 	description: 'Export clan capital history.',
-			// 	type: ApplicationCommandOptionType.Subcommand,
-			// 	options: [
-			// 		{
-			// 			name: 'clans',
-			// 			description: command.export.options.clans.description,
-			// 			description_localizations: translation('command.export.options.clans.description'),
-			// 			autocomplete: true,
-			// 			type: ApplicationCommandOptionType.String
-			// 		},
-			// 		{
-			// 			name: 'limit',
-			// 			description: command.export.options.wars.description,
-			// 			description_localizations: translation('command.export.options.wars.description'),
-			// 			type: ApplicationCommandOptionType.Integer
-			// 		}
-			// 	]
-			// }
 		]
 	},
 	{

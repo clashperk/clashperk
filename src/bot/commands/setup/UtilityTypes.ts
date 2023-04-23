@@ -18,7 +18,7 @@ import {
 } from 'discord.js';
 import { Args, Command } from '../../lib/index.js';
 import { Collections, Settings, URL_REGEX } from '../../util/Constants.js';
-import { GuildEventData } from '../../struct/GuildEventsHandler.js';
+import { GuildEventData, eventsMap, imageMaps } from '../../struct/GuildEventsHandler.js';
 
 export default class SetupUtilsCommand extends Command {
 	public constructor() {
@@ -219,7 +219,6 @@ export default class SetupUtilsCommand extends Command {
 				try {
 					await action
 						.awaitModalSubmit({
-							dispose: true,
 							time: 10 * 60 * 1000,
 							filter: (action) => action.customId === customIds.modal
 						})
@@ -276,31 +275,23 @@ export default class SetupUtilsCommand extends Command {
 
 		const customIds = {
 			select: this.client.uuid(interaction.user.id),
-			confirm: this.client.uuid(interaction.user.id)
+			images: this.client.uuid(interaction.user.id),
+			confirm: this.client.uuid(interaction.user.id),
+			modal: this.client.uuid(interaction.user.id),
+			clan_games: this.client.uuid(interaction.user.id),
+			capital_raids: this.client.uuid(interaction.user.id),
+			cwl: this.client.uuid(interaction.user.id),
+			season_reset: this.client.uuid(interaction.user.id)
 		};
-
-		const allowedEventsRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(
-			new StringSelectMenuBuilder()
-				.setCustomId(customIds.select)
-				.setPlaceholder('Select allowed events.')
-				.setOptions(
-					this.client.guildEvents.eventTypes.map((type) => ({
-						label: type,
-						value: type
-					}))
-				)
-				.setMinValues(1)
-				.setMaxValues(this.client.guildEvents.eventTypes.length)
-		);
-		const confirmButton = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setCustomId(customIds.confirm).setLabel('Confirm').setStyle(ButtonStyle.Primary)
-		);
 
 		const { value } = await this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).findOneAndUpdate(
 			{ guildId: interaction.guild.id },
 			{
 				$setOnInsert: {
+					enabled: false,
 					events: {},
+					images: {},
+					allowedEvents: [...this.client.guildEvents.eventTypes],
 					createdAt: new Date()
 				},
 				$set: {
@@ -310,10 +301,176 @@ export default class SetupUtilsCommand extends Command {
 			{ upsert: true, returnDocument: 'after' }
 		);
 
-		await this.client.guildEvents.create(interaction.guild, value!);
-		return interaction.editReply({
-			content: 'Successfully enabled automatic events schedular.'
-			// components: [allowedEventsRow, confirmButton]
+		const state = {
+			allowedEvents: value?.allowedEvents ?? [],
+			clan_games_image_url: value?.images?.clan_games_image_url ?? '',
+			raid_week_image_url: value?.images?.raid_week_image_url ?? '',
+			cwl_image_url: value?.images?.cwl_image_url ?? '',
+			season_reset_image_url: value?.images?.season_reset_image_url ?? ''
+		};
+
+		const menu = new StringSelectMenuBuilder()
+			.setCustomId(customIds.select)
+			.setPlaceholder('Select allowed events...')
+			.setOptions(
+				this.client.guildEvents.eventTypes.map((id) => ({
+					label: eventsMap[id],
+					value: id,
+					default: state.allowedEvents.includes(id)
+				}))
+			)
+			.setMinValues(1)
+			.setMaxValues(this.client.guildEvents.eventTypes.length);
+		const menuRow = new ActionRowBuilder<StringSelectMenuBuilder>().setComponents(menu);
+
+		const buttonRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder().setCustomId(customIds.confirm).setLabel('Confirm').setStyle(ButtonStyle.Primary),
+			new ButtonBuilder().setCustomId(customIds.images).setLabel('Edit Images').setStyle(ButtonStyle.Secondary)
+		);
+
+		const getContent = () => {
+			return [
+				'**Creating automatic events schedular...**',
+				'',
+				'**Enabled Events**',
+				this.client.guildEvents.eventTypes
+					.filter((event) => state.allowedEvents.includes(event))
+					.map((event) =>
+						state[imageMaps[event] as unknown as keyof typeof state]
+							? `• [${eventsMap[event]}](<${state[imageMaps[event] as keyof typeof state] as string}>)`
+							: `• ${eventsMap[event]}`
+					)
+					.join('\n')
+			].join('\n');
+		};
+
+		const msg = await interaction.editReply({ content: getContent(), components: [menuRow, buttonRow] });
+		const collector = msg.createMessageComponentCollector<ComponentType.Button | ComponentType.StringSelect>({
+			filter: (action) => Object.values(customIds).includes(action.customId) && action.user.id === interaction.user.id,
+			time: 10 * 60 * 1000
+		});
+
+		collector.on('collect', async (action) => {
+			if (action.customId === customIds.confirm) {
+				await action.deferUpdate();
+				const { allowedEvents, ...images } = state;
+
+				const { value } = await this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).findOneAndUpdate(
+					{ guildId: interaction.guild.id },
+					{
+						$set: {
+							images,
+							allowedEvents: [...allowedEvents]
+						}
+					},
+					{ returnDocument: 'after' }
+				);
+				await this.client.guildEvents.create(interaction.guild, value!);
+
+				const content = getContent().split('\n');
+				await action.editReply({
+					content: ['**Successfully created automatic events schedular...**', ...content.slice(1)].join('\n'),
+					components: []
+				});
+			}
+
+			if (action.customId === customIds.select && action.isStringSelectMenu()) {
+				state.allowedEvents = [...action.values];
+				menu.setOptions(
+					this.client.guildEvents.eventTypes.map((id) => ({
+						label: eventsMap[id],
+						value: id,
+						default: state.allowedEvents.includes(id)
+					}))
+				);
+				await action.update({ content: getContent(), components: [menuRow, buttonRow] });
+			}
+
+			if (action.customId === customIds.images) {
+				const modal = new ModalBuilder().setCustomId(customIds.modal).setTitle('Custom Images');
+				const seasonResetInput = new TextInputBuilder()
+					.setCustomId(customIds.season_reset)
+					.setLabel('Season Reset Image URL')
+					.setPlaceholder('Enter Season Reset image URL')
+					.setStyle(TextInputStyle.Short)
+					.setMaxLength(256)
+					.setRequired(false);
+				if (state.season_reset_image_url) seasonResetInput.setValue(state.season_reset_image_url);
+
+				const clanGamesImageInput = new TextInputBuilder()
+					.setCustomId(customIds.clan_games)
+					.setLabel('Clan Games Image URL')
+					.setPlaceholder('Enter Clan Games image URL')
+					.setStyle(TextInputStyle.Short)
+					.setMaxLength(256)
+					.setRequired(false);
+				if (state.clan_games_image_url) clanGamesImageInput.setValue(state.clan_games_image_url);
+
+				const cwlImageInput = new TextInputBuilder()
+					.setCustomId(customIds.cwl)
+					.setLabel('CWL Image URL')
+					.setPlaceholder('Enter CWL image URL')
+					.setStyle(TextInputStyle.Short)
+					.setMaxLength(256)
+					.setRequired(false);
+				if (state.cwl_image_url) cwlImageInput.setValue(state.cwl_image_url);
+
+				const capitalRaidInput = new TextInputBuilder()
+					.setCustomId(customIds.capital_raids)
+					.setLabel('Capital Raid Image URL')
+					.setPlaceholder('Enter Capital Raid image URL')
+					.setStyle(TextInputStyle.Short)
+					.setMaxLength(256)
+					.setRequired(false);
+				if (state.raid_week_image_url) capitalRaidInput.setValue(state.raid_week_image_url);
+
+				modal.addComponents(
+					new ActionRowBuilder<TextInputBuilder>().addComponents(seasonResetInput),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(cwlImageInput),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(capitalRaidInput),
+					new ActionRowBuilder<TextInputBuilder>().addComponents(clanGamesImageInput)
+				);
+
+				await action.showModal(modal);
+
+				try {
+					await action
+						.awaitModalSubmit({
+							time: 10 * 60 * 1000,
+							filter: (action) => action.customId === customIds.modal
+						})
+						.then(async (modalSubmit) => {
+							const season_reset_image_url = modalSubmit.fields.getTextInputValue(customIds.season_reset);
+							const cwl_image_url = modalSubmit.fields.getTextInputValue(customIds.cwl);
+							const raid_week_image_url = modalSubmit.fields.getTextInputValue(customIds.capital_raids);
+							const clan_games_image_url = modalSubmit.fields.getTextInputValue(customIds.clan_games);
+
+							state.season_reset_image_url = URL_REGEX.test(season_reset_image_url) ? season_reset_image_url : '';
+							state.cwl_image_url = URL_REGEX.test(cwl_image_url) ? cwl_image_url : '';
+							state.raid_week_image_url = URL_REGEX.test(raid_week_image_url) ? raid_week_image_url : '';
+							state.clan_games_image_url = URL_REGEX.test(clan_games_image_url) ? clan_games_image_url : '';
+
+							menu.setOptions(
+								this.client.guildEvents.eventTypes.map((id) => ({
+									label: eventsMap[id],
+									value: id,
+									default: state.allowedEvents.includes(id)
+								}))
+							);
+							await modalSubmit.deferUpdate();
+							await modalSubmit.editReply({ content: getContent(), components: [menuRow, buttonRow] });
+						});
+				} catch (e) {
+					if (!(e instanceof DiscordjsError && e.code === DiscordjsErrorCodes.InteractionCollectorError)) {
+						throw e;
+					}
+				}
+			}
+		});
+
+		collector.on('end', async (_, reason) => {
+			Object.values(customIds).forEach((id) => this.client.components.delete(id));
+			if (!/delete/i.test(reason)) await interaction.editReply({ components: [] });
 		});
 	}
 }

@@ -25,6 +25,7 @@
 	},
 	"dependencies": {
 		"@elastic/elasticsearch": "^8.6.0",
+		"@google-cloud/local-auth": "^2.1.0",
 		"@sentry/integrations": "^7.3.1",
 		"@sentry/node": "^7.3.1",
 		"chalk": "^4.1.2",
@@ -33,6 +34,7 @@
 		"discord-api-types": "^0.37.1",
 		"discord.js": "^14.8.0",
 		"exceljs": "^4.2.1",
+		"googleapis": "^105.0.0",
 		"i18next": "^21.6.13",
 		"jsonwebtoken": "^9.0.0",
 		"mixpanel": "^0.17.0",

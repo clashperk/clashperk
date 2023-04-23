@@ -1,8 +1,10 @@
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
-import { CommandInteraction } from 'discord.js';
-import { Collections } from '../../util/Constants.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
+import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
+import Google from '../../struct/Google.js';
+import { Collections } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
 
 export enum WarType {
@@ -172,7 +174,7 @@ export default class WarExport extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return interaction.editReply({
+		await interaction.editReply({
 			content: `**War Export (Last ${num})**`,
 			files: [
 				{
@@ -181,6 +183,183 @@ export default class WarExport extends Command {
 				}
 			]
 		});
+
+		const columns = [
+			'Name',
+			'Tag',
+			'Total Attacks',
+			'Total Stars',
+			'True Stars',
+			'Avg Stars',
+			'Total Dest',
+			'Avg Dest',
+			'Three Stars',
+			'Two Stars',
+			'One Stars',
+			'Zero Stars',
+			'Missed',
+			'Def Stars',
+			'Avg Def Stars',
+			'Total Def Dest',
+			'Avg Def Dest'
+		];
+
+		const sheet = Google.sheet();
+		const drive = Google.drive();
+		const spreadsheet = await sheet.spreadsheets.create({
+			requestBody: {
+				properties: {
+					title: `${interaction.guild.name} [Clan War Stats]`
+				},
+				sheets: chunks.map((c, i) => ({
+					properties: {
+						sheetId: i,
+						index: i,
+						title: Util.escapeSheetName(`${c.name} (${c.tag})`),
+						gridProperties: {
+							rowCount: c.members.length + 1,
+							columnCount: columns.length,
+							frozenRowCount: 1
+						}
+					}
+				}))
+			},
+			fields: 'spreadsheetId,spreadsheetUrl'
+		});
+
+		await drive.permissions.create({
+			requestBody: {
+				role: 'reader',
+				type: 'anyone'
+			},
+			fileId: spreadsheet.data.spreadsheetId!
+		});
+
+		await drive.revisions.update({
+			requestBody: {
+				published: true,
+				publishedOutsideDomain: true,
+				publishAuto: true
+			},
+			fileId: spreadsheet.data.spreadsheetId!,
+			revisionId: '1',
+			fields: '*'
+		});
+
+		const requests: sheets_v4.Schema$Request[] = chunks.map((c, i) => ({
+			updateCells: {
+				start: {
+					sheetId: i,
+					rowIndex: 0,
+					columnIndex: 0
+				},
+				rows: [
+					{
+						values: columns.map((v) => ({
+							userEnteredValue: {
+								stringValue: v
+							}
+						}))
+					},
+					...c.members
+						.filter((m) => m.of > 0)
+						.map((m) => ({
+							values: [
+								m.name,
+								m.tag,
+								m.of,
+								m.stars,
+								m.newStars,
+								(m.stars / m.of || 0).toFixed(2),
+								m.dest.toFixed(2),
+								(m.dest / m.of || 0).toFixed(2),
+								this.starCount(m.starTypes, 3),
+								this.starCount(m.starTypes, 2),
+								this.starCount(m.starTypes, 1),
+								this.starCount(m.starTypes, 0),
+								m.of - m.attacks,
+								m.defStars,
+								(m.defStars / m.defCount || 0).toFixed(),
+								m.defDestruction.toFixed(2),
+								(m.defDestruction / m.defCount || 0).toFixed(2)
+							].map((v) => ({
+								userEnteredValue: {
+									stringValue: v.toString()
+								}
+							}))
+						}))
+				],
+				fields: '*'
+			}
+		}));
+
+		const styleRequests: sheets_v4.Schema$Request[] = chunks
+			.map((_, i) => [
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 0,
+							endColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'LEFT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'RIGHT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							endRowIndex: 1,
+							startColumnIndex: 0
+						},
+						cell: {
+							userEnteredFormat: {
+								textFormat: { bold: true }
+							}
+						},
+						fields: 'userEnteredFormat(textFormat)'
+					}
+				}
+			])
+			.flat();
+
+		await sheet.spreadsheets.batchUpdate({
+			spreadsheetId: spreadsheet.data.spreadsheetId!,
+			requestBody: {
+				requests: [...requests, ...styleRequests]
+			}
+		});
+
+		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Open Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Open in Web')
+				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pub'))
+		);
+		return interaction.editReply({ components: [row] });
 	}
 
 	private starCount(stars: number[] = [], count: number) {

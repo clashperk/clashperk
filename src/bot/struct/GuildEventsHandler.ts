@@ -1,9 +1,29 @@
 import { Guild, GuildScheduledEventEntityType, GuildScheduledEventPrivacyLevel, PermissionFlagsBits, time } from 'discord.js';
 import moment from 'moment';
 import { Collections } from '../util/Constants.js';
-import { Season } from '../util/index.js';
 import { i18n } from '../util/i18n.js';
+import { Season } from '../util/index.js';
 import Client from './Client.js';
+
+export const imageMaps: Record<string, string> = {
+	clan_games_start: 'clan_games_image_url',
+	clan_games_end: 'clan_games_image_url',
+	cwl_start: 'cwl_image_url',
+	cwl_signup_end: 'cwl_image_url',
+	season_end: 'season_reset_image_url',
+	raid_week_start: 'raid_week_image_url',
+	raid_week_end: 'raid_week_image_url'
+};
+
+export const eventsMap: Record<string, string> = {
+	clan_games_start: 'Clan Games',
+	clan_games_end: 'Clan Games (Ending)',
+	cwl_start: 'CWL',
+	cwl_signup_end: 'CWL Signup (Ending)',
+	season_end: 'Season Reset',
+	raid_week_start: 'Raid Weekend',
+	raid_week_end: 'Raid Weekend (Ending)'
+};
 
 export class GuildEventsHandler {
 	public constructor(private readonly client: Client) {}
@@ -91,6 +111,7 @@ export class GuildEventsHandler {
 		if (!guild.members.me?.permissions.has(PermissionFlagsBits.ManageEvents)) return null;
 
 		for (const event of this._events(guild)) {
+			if (guildEvent.allowedEvents && !guildEvent.allowedEvents.includes(event.type)) continue;
 			if (guildEvent.events[event.type] === event.timestamp) continue;
 
 			await guild.scheduledEvents.create({
@@ -100,7 +121,8 @@ export class GuildEventsHandler {
 				scheduledStartTime: new Date(event.timestamp),
 				scheduledEndTime: new Date(event.timestamp + 1000 * 60 * guildEvent.maxDuration),
 				entityMetadata: { location: 'in game' },
-				description: event.value
+				description: event.value,
+				image: guildEvent.images?.[imageMaps[event.type]]
 			});
 
 			await this.client.db.collection(Collections.GUILD_EVENTS).updateOne(
@@ -116,7 +138,8 @@ export class GuildEventsHandler {
 
 	public async init() {
 		const cursor = this.client.db.collection<GuildEventData>(Collections.GUILD_EVENTS).find({
-			guildId: { $in: this.client.guilds.cache.map((guild) => guild.id) }
+			guildId: { $in: this.client.guilds.cache.map((guild) => guild.id) },
+			enabled: true
 		});
 
 		try {
@@ -127,7 +150,6 @@ export class GuildEventsHandler {
 			}
 		} finally {
 			setTimeout(this.init.bind(this), 1000 * 60 * 30).unref();
-			// setTimeout(this.init.bind(this), 1000 * 10).unref();
 		}
 	}
 
@@ -165,7 +187,10 @@ export class GuildEventsHandler {
 
 export interface GuildEventData {
 	guildId: string;
+	enabled: boolean;
 	events: Record<string, number>;
 	maxDuration: number;
+	allowedEvents?: string[];
+	images?: Record<string, string>;
 	createdAt: Date;
 }
