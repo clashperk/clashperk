@@ -107,7 +107,7 @@ export class Client extends Discord.Client {
 				ThreadMemberManager: 0,
 				MessageManager: 10,
 				UserManager: {
-					maxSize: 100,
+					maxSize: 3,
 					keepOverLimit: (user) => user.id === this.user!.id
 				},
 				GuildMemberManager: {
