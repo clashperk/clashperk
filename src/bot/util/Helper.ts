@@ -91,7 +91,7 @@ export const clanEmbedMaker = async (
 	const leaders = clan.memberList.filter((m) => m.role === 'leader');
 	const users = await client.db
 		.collection<PlayerLinks>(Collections.PLAYER_LINKS)
-		.find({ userId: { $in: leaders.map(({ tag }) => tag) } })
+		.find({ tag: { $in: leaders.map(({ tag }) => tag) } })
 		.toArray();
 
 	if (leaders.length) {

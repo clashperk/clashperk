@@ -1,10 +1,12 @@
 import { Clan, ClanMember } from 'clashofclans.js';
-import { Collection, GuildMember, CommandInteraction } from 'discord.js';
-import { Collections } from '../../util/Constants.js';
-import { Season } from '../../util/index.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, CommandInteraction, GuildMember } from 'discord.js';
+import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
-import { achievements, PlayerLinks, PlayerSeasonModel } from '../../types/index.js';
+import Google from '../../struct/Google.js';
+import { PlayerLinks, PlayerSeasonModel, achievements } from '../../types/index.js';
+import { Collections } from '../../util/Constants.js';
+import { Season, Util } from '../../util/index.js';
 
 export default class ExportSeason extends Command {
 	public constructor() {
@@ -143,7 +145,7 @@ export default class ExportSeason extends Command {
 		}
 
 		const buffer = await workbook.xlsx.writeBuffer();
-		return interaction.editReply({
+		await interaction.editReply({
 			content: `**Season Export (${season})**`,
 			files: [
 				{
@@ -152,6 +154,178 @@ export default class ExportSeason extends Command {
 				}
 			]
 		});
+
+		const { spreadsheets } = Google.sheet();
+		const drive = Google.drive();
+		const spreadsheet = await spreadsheets.create({
+			requestBody: {
+				properties: {
+					title: `${interaction.guild.name} [Season Stats]`
+				},
+				sheets: [1].map((_, i) => ({
+					properties: {
+						sheetId: i,
+						index: i,
+						title: Util.escapeSheetName(`${season}`),
+						gridProperties: {
+							rowCount: Math.max(members.length + 1, 50),
+							columnCount: Math.max(columns.length, 25),
+							frozenRowCount: members.length ? 1 : 0
+						}
+					}
+				}))
+			},
+			fields: 'spreadsheetId,spreadsheetUrl'
+		});
+
+		await Promise.all([
+			drive.permissions.create({
+				requestBody: {
+					role: 'reader',
+					type: 'anyone'
+				},
+				fileId: spreadsheet.data.spreadsheetId!
+			}),
+			drive.revisions.update({
+				requestBody: {
+					published: true,
+					publishedOutsideDomain: true,
+					publishAuto: true
+				},
+				fileId: spreadsheet.data.spreadsheetId!,
+				revisionId: '1',
+				fields: '*'
+			})
+		]);
+
+		const requests: sheets_v4.Schema$Request[] = [1].map((_, i) => ({
+			updateCells: {
+				start: {
+					sheetId: i,
+					rowIndex: 0,
+					columnIndex: 0
+				},
+				rows: [
+					{
+						values: columns.map((value) => ({
+							userEnteredValue: {
+								stringValue: value.header
+							},
+							userEnteredFormat: {
+								wrapStrategy: 'WRAP'
+							}
+						}))
+					},
+					...members.map((m) => ({
+						values: [
+							m.name,
+							m.tag,
+							m.userTag,
+							m.clans[m.clanTag].name,
+							m.townHallLevel,
+							m.clans[m.clanTag].donations.total,
+							m.clans[m.clanTag].donationsReceived.total,
+							m.attackWins,
+							m.versusBattleWins.current - m.versusBattleWins.initial,
+							m.trophies.current - m.trophies.initial,
+							m.trophies.current,
+							m.versusTrophies.current - m.versusTrophies.initial,
+							m.clanWarStars.current - m.clanWarStars.initial,
+							// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+							...__achievements.map((ac) => (m[ac]?.current ?? 0) - (m[ac]?.initial ?? 0)),
+							m.score ?? 0
+						].map((value) => ({
+							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
+							userEnteredFormat: {
+								textFormat:
+									typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
+							}
+						}))
+					}))
+				],
+				fields: '*'
+			}
+		}));
+
+		const styleRequests: sheets_v4.Schema$Request[] = [1]
+			.map((_, i) => [
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 0,
+							endColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'LEFT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'RIGHT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							endRowIndex: 1,
+							startColumnIndex: 0
+						},
+						cell: {
+							userEnteredFormat: {
+								textFormat: { bold: true },
+								verticalAlignment: 'MIDDLE'
+							}
+						},
+						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
+					}
+				}
+			])
+			.flat();
+
+		await spreadsheets.batchUpdate({
+			spreadsheetId: spreadsheet.data.spreadsheetId!,
+			requestBody: {
+				requests: [...requests, ...styleRequests]
+			}
+		});
+
+		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Open in Web')
+				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pubhtml'))
+		);
+
+		const downloadRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Download')
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=xlsx`),
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Download PDF')
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=pdf`)
+		);
+		return interaction.editReply({ components: [row, downloadRow] });
 	}
 
 	private async aggregationQuery(clan: Clan, seasonId: string) {

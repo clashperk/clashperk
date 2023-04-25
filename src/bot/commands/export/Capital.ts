@@ -4,7 +4,7 @@ import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
 import Google from '../../struct/Google.js';
 import { ClanCapitalRaidAttackData } from '../../types/index.js';
-import { Collections } from '../../util/Constants.js';
+import { Collections, UnrankedCapitalLeagueId } from '../../util/Constants.js';
 import { Util } from '../../util/index.js';
 
 export default class ExportCapital extends Command {
@@ -59,14 +59,14 @@ export default class ExportCapital extends Command {
 					tag: clan.tag,
 					status: remark,
 					weekId: clan.weekId,
-					leagueId: clan.capitalLeague?.id,
-					leagueName: clan.capitalLeague?.name ?? 'Unknown',
+					leagueId: clan.capitalLeague?.id ?? UnrankedCapitalLeagueId,
+					leagueName: (clan.capitalLeague?.name ?? 'Unknown').replace(/League/g, '').trim(),
 					capitalTotalLoot: clan.capitalTotalLoot,
 					totalAttacks: clan.totalAttacks,
 					raidsCompleted: clan.raidsCompleted,
 					defensiveReward: clan.defensiveReward,
 					offensiveReward: clan.offensiveReward,
-					trophyGained: `${trophyGained >= 0 ? '+' : ''}${trophyGained}`,
+					trophyGained: trophyGained,
 					avgLoot: Number((clan.capitalTotalLoot / clan.totalAttacks).toFixed(2))
 				});
 			}
@@ -105,14 +105,14 @@ export default class ExportCapital extends Command {
 			sheet.addRows(
 				weekends.map((weekend) => [
 					weekend.weekId,
-					weekend.leagueName,
+					weekend.leagueName.replace(/League/g, '').trim(),
 					weekend.capitalTotalLoot,
 					weekend.avgLoot,
 					weekend.totalAttacks,
 					weekend.raidsCompleted,
 					weekend.offensiveReward,
 					weekend.defensiveReward,
-					weekend.trophyGained,
+					Number(weekend.trophyGained),
 					weekend.status
 				])
 			);
@@ -155,8 +155,8 @@ export default class ExportCapital extends Command {
 						index: i,
 						title: Util.escapeSheetName(`${chunk.name} (${chunk.tag})`),
 						gridProperties: {
-							rowCount: Math.max(chunk.weekends.length + 1, 100),
-							columnCount: Math.max(columns.length, 50),
+							rowCount: Math.max(chunk.weekends.length + 1, 50),
+							columnCount: Math.max(columns.length, 25),
 							frozenRowCount: chunk.weekends.length ? 1 : 0
 						}
 					}
@@ -194,9 +194,9 @@ export default class ExportCapital extends Command {
 				},
 				rows: [
 					{
-						values: columns.map((v) => ({
+						values: columns.map((value) => ({
 							userEnteredValue: {
-								stringValue: v
+								stringValue: value
 							},
 							userEnteredFormat: {
 								wrapStrategy: 'WRAP'
@@ -215,9 +215,13 @@ export default class ExportCapital extends Command {
 							weekend.defensiveReward,
 							weekend.trophyGained,
 							weekend.status
-						].map((v) => ({
-							userEnteredValue: {
-								stringValue: v.toString()
+						].map((value) => ({
+							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
+							userEnteredFormat: {
+								textFormat:
+									value === 'Demoted' || (typeof value === 'number' && value <= 0)
+										? { foregroundColorStyle: { rgbColor: { red: 1 } } }
+										: {}
 							}
 						}))
 					}))
@@ -301,12 +305,23 @@ export default class ExportCapital extends Command {
 		});
 
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Open Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
 			new ButtonBuilder()
 				.setStyle(ButtonStyle.Link)
 				.setLabel('Open in Web')
 				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pubhtml'))
 		);
-		return interaction.editReply({ components: [row] });
+
+		const downloadRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Download')
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=xlsx`),
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Download PDF')
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=pdf`)
+		);
+		return interaction.editReply({ components: [row, downloadRow] });
 	}
 }

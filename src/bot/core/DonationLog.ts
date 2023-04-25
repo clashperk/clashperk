@@ -239,7 +239,7 @@ export default class DonationLog extends BaseLog {
 					const don = this.padStart(player.donated, 5);
 					const rec = this.padStart(player.received, 5);
 					const name = escapeMarkdown(player.name);
-					return `\` ${don} ${rec} \` ${name}`;
+					return `\` ${don} ${rec} \` \u200e${name}`;
 				})
 			].join('\n')
 		);

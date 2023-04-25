@@ -1,12 +1,14 @@
 import { Player } from 'clashofclans.js';
-import { Collection, CommandInteraction, GuildMember } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, CommandInteraction, GuildMember } from 'discord.js';
+import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
 import Workbook from '../../struct/Excel.js';
+import Google from '../../struct/Google.js';
 import { PlayerLinks } from '../../types/index.js';
 import { Collections } from '../../util/Constants.js';
 import { HERO_PETS, HOME_HEROES, SUPER_TROOPS } from '../../util/Emojis.js';
-import { Util } from '../../util/index.js';
 import RAW_TROOPS_DATA from '../../util/Troops.js';
+import { Util } from '../../util/index.js';
 
 const achievements = [
 	'Gold Grab',
@@ -64,7 +66,7 @@ export default class ExportClanMembersCommand extends Command {
 		}
 
 		const _clans = await Promise.all(clans.map((clan) => this.client.http.clan(clan.tag)));
-		const members = [];
+		const members: any[] = [];
 		for (const clan of _clans.filter((res) => res.ok)) {
 			for (const mem of clan.memberList) {
 				const m = await this.client.http.player(mem.tag);
@@ -113,14 +115,207 @@ export default class ExportClanMembersCommand extends Command {
 		guildMembers.clear();
 
 		members
-			.sort((a, b) => b.heroes.reduce((x, y) => x + y.level, 0) - a.heroes.reduce((x, y) => x + y.level, 0))
+			.sort(
+				(a, b) =>
+					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+					b.heroes.reduce((x: any, y: { level: any }) => x + y.level, 0) -
+					// eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+					a.heroes.reduce((x: any, y: { level: any }) => x + y.level, 0)
+			)
 			.sort((a, b) => b.townHallLevel - a.townHallLevel);
 
 		const buffer = await this.excel(members);
-		return interaction.editReply({
+		await interaction.editReply({
 			content: `**${interaction.guild.name} Members**`,
 			files: [{ attachment: Buffer.from(buffer), name: 'clan_members.xlsx' }]
 		});
+
+		const columns = [
+			{ header: 'Clan Rank', width: 10 },
+			{ header: 'NAME', width: 16 },
+			{ header: 'TAG', width: 16 },
+			{ header: 'Discord', width: 16 },
+			{ header: 'CLAN', width: 16 },
+			{ header: 'ROLE', width: 10 },
+			{ header: 'Town-Hall', width: 10 },
+			{ header: 'War Preference', width: 10 },
+			{ header: 'Rushed %', width: 10 },
+			{ header: 'Lab Upgrades Done', width: 10 },
+			{ header: 'Hero Upgrades Done', width: 10 },
+			...HERO_LIST.map((header) => ({ header, width: 10 })),
+			...PET_LIST.map((header) => ({ header, width: 10 })),
+			...achievements.map((header) => ({ header, width: 16 }))
+		];
+
+		const { spreadsheets } = Google.sheet();
+		const drive = Google.drive();
+		const spreadsheet = await spreadsheets.create({
+			requestBody: {
+				properties: {
+					title: `${interaction.guild.name} [Clan Members]`
+				},
+				sheets: [1].map((_, i) => ({
+					properties: {
+						sheetId: i,
+						index: i,
+						title: Util.escapeSheetName(`Members`),
+						gridProperties: {
+							rowCount: Math.max(members.length + 1, 50),
+							columnCount: Math.max(columns.length, 25),
+							frozenRowCount: members.length ? 1 : 0
+						}
+					}
+				}))
+			},
+			fields: 'spreadsheetId,spreadsheetUrl'
+		});
+
+		await Promise.all([
+			drive.permissions.create({
+				requestBody: {
+					role: 'reader',
+					type: 'anyone'
+				},
+				fileId: spreadsheet.data.spreadsheetId!
+			}),
+			drive.revisions.update({
+				requestBody: {
+					published: true,
+					publishedOutsideDomain: true,
+					publishAuto: true
+				},
+				fileId: spreadsheet.data.spreadsheetId!,
+				revisionId: '1',
+				fields: '*'
+			})
+		]);
+
+		const requests: sheets_v4.Schema$Request[] = [1].map((_, i) => ({
+			updateCells: {
+				start: {
+					sheetId: i,
+					rowIndex: 0,
+					columnIndex: 0
+				},
+				rows: [
+					{
+						values: columns.map((value) => ({
+							userEnteredValue: {
+								stringValue: value.header
+							},
+							userEnteredFormat: {
+								wrapStrategy: 'WRAP'
+							}
+						}))
+					},
+					...members.map((m) => ({
+						values: [
+							m.clanRank,
+							m.name,
+							m.tag,
+							m.user_tag,
+							m.clan,
+							m.role,
+							m.townHallLevel,
+							m.warPreference,
+							m.rushed,
+							m.labRem,
+							m.heroRem,
+							...m.heroes.map((h: any) => h.level).concat(Array(HERO_LIST.length - m.heroes.length).fill('')),
+							...m.pets.map((h: any) => h.level).concat(Array(PET_LIST.length - m.pets.length).fill('')),
+							...m.achievements.map((v: any) => v.value)
+						].map((value) => ({
+							userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
+							userEnteredFormat: {
+								textFormat:
+									typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
+							}
+						}))
+					}))
+				],
+				fields: '*'
+			}
+		}));
+
+		const styleRequests: sheets_v4.Schema$Request[] = [1]
+			.map((_, i) => [
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 0,
+							endColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'LEFT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							startColumnIndex: 2
+						},
+						cell: {
+							userEnteredFormat: {
+								horizontalAlignment: 'RIGHT'
+							}
+						},
+						fields: 'userEnteredFormat(horizontalAlignment)'
+					}
+				},
+				{
+					repeatCell: {
+						range: {
+							sheetId: i,
+							startRowIndex: 0,
+							endRowIndex: 1,
+							startColumnIndex: 0
+						},
+						cell: {
+							userEnteredFormat: {
+								textFormat: { bold: true },
+								verticalAlignment: 'MIDDLE'
+							}
+						},
+						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
+					}
+				}
+			])
+			.flat();
+
+		await spreadsheets.batchUpdate({
+			spreadsheetId: spreadsheet.data.spreadsheetId!,
+			requestBody: {
+				requests: [...requests, ...styleRequests]
+			}
+		});
+
+		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Open in Web')
+				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pubhtml'))
+		);
+
+		const downloadRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Download')
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=xlsx`),
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Download PDF')
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=pdf`)
+		);
+		return interaction.editReply({ components: [row, downloadRow] });
 	}
 
 	private excel(members: any[]) {

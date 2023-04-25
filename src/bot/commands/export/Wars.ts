@@ -289,6 +289,10 @@ export default class WarExport extends Command {
 							].map((value) => ({
 								userEnteredValue: {
 									stringValue: value.toString()
+								},
+								userEnteredFormat: {
+									textFormat:
+										typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
 								}
 							}))
 						}))
