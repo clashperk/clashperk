@@ -8,7 +8,6 @@ import * as Sentry from '@sentry/node';
 import { DiscordAPIError } from 'discord.js';
 import i18next from 'i18next';
 import { defaultOptions } from '../locales/index.js';
-import { version } from '../package.json';
 import { Client } from './bot/struct/Client.js';
 import { Backend } from './bot/util/Backend.js';
 
@@ -20,12 +19,12 @@ await i18next.use(Backend).init({
 	backend: { paths: [fileURLToPath(locales)] }
 });
 
-if (process.env.SENTRY) {
+if (process.env.SENTRY && process.env.GIT_SHA) {
 	Sentry.init({
 		dsn: process.env.SENTRY,
 		serverName: 'clashperk_bot',
 		environment: process.env.NODE_ENV ?? 'development',
-		release: process.env.GIT_SHA ?? version,
+		release: process.env.GIT_SHA!,
 		integrations: [
 			new RewriteFrames({
 				iteratee(frame) {
