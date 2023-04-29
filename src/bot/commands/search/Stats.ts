@@ -150,6 +150,7 @@ export default class StatsCommand extends Command {
 			for (const m of clan.members) {
 				if (typeof compare === 'object' && compare.attackerTownHall !== m.townhallLevel) continue;
 				const clanMember = data.memberList.find((mem) => mem.tag === m.tag);
+				// eslint-disable-next-line
 				members[m.tag] ??= {
 					name: clanMember?.name ?? m.name,
 					tag: m.tag,

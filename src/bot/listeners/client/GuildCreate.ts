@@ -127,9 +127,9 @@ export default class GuildCreateListener extends Listener {
 	private async restore(guild: Guild) {
 		const db = this.client.db.collection(Collections.CLAN_STORES);
 
-		await db.find({ guild: guild.id, active: true }).forEach((data) => {
+		for await (const data of db.find({ guild: guild.id, active: true })) {
 			this.client.rpcHandler.add(data._id.toString(), { tag: data.tag, guild: guild.id, op: 0 });
-		});
+		}
 
 		await db.updateMany({ guild: guild.id }, { $set: { paused: false } });
 	}

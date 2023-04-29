@@ -43,7 +43,7 @@ export default class CWLHistoryCommand extends Command {
 
 		const warMap = _wars.reduce<Record<string, IWar[]>>((acc, war) => {
 			const key = `${war.member.name} (${war.member.tag})`;
-			acc[key] ??= [];
+			acc[key] ??= []; // eslint-disable-line
 			acc[key].push(war);
 			return acc;
 		}, {});
@@ -56,7 +56,7 @@ export default class CWLHistoryCommand extends Command {
 
 				const _warsMap = userGroups.reduce<Record<string, IWar[]>>((acc, war) => {
 					const seasonId = war.endTime.toISOString().substring(0, 7);
-					acc[seasonId] ??= [];
+					acc[seasonId] ??= []; // eslint-disable-line
 					acc[seasonId].push(war);
 					return acc;
 				}, {});

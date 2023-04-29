@@ -182,7 +182,7 @@ export default class HelpCommand extends Command {
 
 		const grouped = commands.flat().reduce<Record<string, CommandInfo[]>>((acc, cur) => {
 			if (cur.category in categories) {
-				acc[categories[cur.category]] ??= [];
+				acc[categories[cur.category]] ??= []; // eslint-disable-line
 				acc[categories[cur.category]].push(cur);
 			}
 			return acc;

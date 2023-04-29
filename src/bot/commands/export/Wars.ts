@@ -227,7 +227,7 @@ export default class WarExport extends Command {
 			fields: 'spreadsheetId,spreadsheetUrl'
 		});
 
-		await Promise.all([
+		Promise.all([
 			drive.permissions.create({
 				requestBody: {
 					role: 'reader',
@@ -274,18 +274,18 @@ export default class WarExport extends Command {
 								m.of,
 								m.stars,
 								m.newStars,
-								(m.stars / m.of || 0).toFixed(2),
-								m.dest.toFixed(2),
-								(m.dest / m.of || 0).toFixed(2),
+								Number((m.stars / m.of || 0).toFixed(2)),
+								Number(m.dest.toFixed(2)),
+								Number((m.dest / m.of || 0).toFixed(2)),
 								this.starCount(m.starTypes, 3),
 								this.starCount(m.starTypes, 2),
 								this.starCount(m.starTypes, 1),
 								this.starCount(m.starTypes, 0),
 								m.of - m.attacks,
 								m.defStars,
-								(m.defStars / m.defCount || 0).toFixed(),
-								m.defDestruction.toFixed(2),
-								(m.defDestruction / m.defCount || 0).toFixed(2)
+								Number((m.defStars / m.defCount || 0).toFixed()),
+								Number(m.defDestruction.toFixed(2)),
+								Number((m.defDestruction / m.defCount || 0).toFixed(2))
 							].map((value) => ({
 								userEnteredValue: {
 									stringValue: value.toString()
@@ -351,24 +351,10 @@ export default class WarExport extends Command {
 						fields: 'userEnteredFormat(textFormat,verticalAlignment)'
 					}
 				}
-				// {
-				// 	updateDimensionProperties: {
-				// 		range: {
-				// 			sheetId: 0,
-				// 			dimension: 'COLUMNS',
-				// 			startIndex: 0,
-				// 			endIndex: columns.length
-				// 		},
-				// 		properties: {
-				// 			pixelSize: 150
-				// 		},
-				// 		fields: 'pixelSize'
-				// 	}
-				// }
 			])
 			.flat();
 
-		await sheet.spreadsheets.batchUpdate({
+		sheet.spreadsheets.batchUpdate({
 			spreadsheetId: spreadsheet.data.spreadsheetId!,
 			requestBody: {
 				requests: [...requests, ...styleRequests]
@@ -376,13 +362,24 @@ export default class WarExport extends Command {
 		});
 
 		const row = new ActionRowBuilder<ButtonBuilder>().setComponents(
-			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Open Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
+			new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Google Sheet').setURL(spreadsheet.data.spreadsheetUrl!),
 			new ButtonBuilder()
 				.setStyle(ButtonStyle.Link)
 				.setLabel('Open in Web')
 				.setURL(spreadsheet.data.spreadsheetUrl!.replace('edit', 'pubhtml'))
 		);
-		return interaction.editReply({ components: [row] });
+
+		const downloadRow = new ActionRowBuilder<ButtonBuilder>().setComponents(
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Download')
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=xlsx`),
+			new ButtonBuilder()
+				.setStyle(ButtonStyle.Link)
+				.setLabel('Download PDF')
+				.setURL(`https://docs.google.com/spreadsheets/export?id=${spreadsheet.data.spreadsheetId!}&exportFormat=pdf`)
+		);
+		return interaction.editReply({ components: [row, downloadRow] });
 	}
 
 	private starCount(stars: number[] = [], count: number) {

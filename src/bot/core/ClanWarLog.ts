@@ -465,7 +465,7 @@ export default class ClanWarLog extends BaseLog {
 	}
 
 	public async init() {
-		await this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } }).forEach((data) => {
+		for await (const data of this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })) {
 			this.cached.set((data.clanId as ObjectId).toHexString(), {
 				tag: data.tag,
 				clanId: data.clanId,
@@ -476,7 +476,7 @@ export default class ClanWarLog extends BaseLog {
 				message: data.message,
 				webhook: data.webhook ? new WebhookClient(data.webhook) : null
 			});
-		});
+		}
 	}
 
 	public async add(id: string) {

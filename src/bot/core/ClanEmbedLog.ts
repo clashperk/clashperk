@@ -78,21 +78,22 @@ export default class ClanEmbedLog extends BaseLog {
 	}
 
 	public async init() {
-		await this.client.db
+		const cursor = this.client.db
 			.collection(Collections.CLAN_EMBED_LOGS)
-			.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })
-			.forEach((data) => {
-				this.cached.set((data.clanId as ObjectId).toHexString(), {
-					clanId: data.clanId,
-					message: data.message,
-					guild: data.guild,
-					color: data.color,
-					embed: data.embed,
-					tag: data.tag,
-					channel: data.channel,
-					webhook: data.webhook ? new WebhookClient(data.webhook) : null
-				});
+			.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } });
+
+		for await (const data of cursor) {
+			this.cached.set((data.clanId as ObjectId).toHexString(), {
+				clanId: data.clanId,
+				message: data.message,
+				guild: data.guild,
+				color: data.color,
+				embed: data.embed,
+				tag: data.tag,
+				channel: data.channel,
+				webhook: data.webhook ? new WebhookClient(data.webhook) : null
 			});
+		}
 	}
 
 	public async add(_id: string) {

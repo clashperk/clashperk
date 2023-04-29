@@ -66,8 +66,8 @@ export default class ClansCommand extends Command {
 		const icon = typeof guild.iconURL === 'function' ? guild.iconURL()! : guild.iconURL;
 		const embed = new EmbedBuilder()
 			.setColor(this.client.embed(message))
-			.setAuthor({ name: guild.name, iconURL: icon as string })
-			.setTitle(`Members: ${guild.memberCount as number}`);
+			.setAuthor({ name: guild.name, iconURL: icon! })
+			.setTitle(`Members: ${guild.memberCount}`);
 		if (!data.length) {
 			embed.setDescription(`${message.guild!.name} doesn't have any clans. Why not add some?`);
 			return message.channel.send({ embeds: [embed] });

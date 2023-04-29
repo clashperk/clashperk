@@ -65,7 +65,7 @@ export class RoleManager {
 			)
 			.on('change', async (change) => {
 				this.client.logger.debug(`Player ${change.operationType}ed.`, { label: 'DashboardLink' });
-				if (['insert', 'update'].includes(change.operationType)) {
+				if (change.operationType === 'insert' || change.operationType === 'update') {
 					const link = change.fullDocument!;
 					const res = await this.client.http.player(link.tag);
 					if (res.ok && res.clan) return this.newLink(res);

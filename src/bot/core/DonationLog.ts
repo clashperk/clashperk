@@ -267,21 +267,20 @@ export default class DonationLog extends BaseLog {
 	}
 
 	public async init() {
-		await this.client.db
+		for await (const data of this.client.db
 			.collection(Collections.DONATION_LOGS)
-			.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })
-			.forEach((data) => {
-				this.cached.set((data.clanId as ObjectId).toHexString(), {
-					clanId: data.clanId,
-					guild: data.guild,
-					retries: 0,
-					tag: data.tag,
-					color: data.color,
-					channel: data.channel,
-					interval: data.interval,
-					webhook: data.webhook ? new WebhookClient(data.webhook) : null
-				});
+			.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })) {
+			this.cached.set((data.clanId as ObjectId).toHexString(), {
+				clanId: data.clanId,
+				guild: data.guild,
+				retries: 0,
+				tag: data.tag,
+				color: data.color,
+				channel: data.channel,
+				interval: data.interval,
+				webhook: data.webhook ? new WebhookClient(data.webhook) : null
 			});
+		}
 
 		await this._refreshDaily();
 		setInterval(this._refreshDaily.bind(this), this.refreshRate).unref();
@@ -315,6 +314,8 @@ export default class DonationLog extends BaseLog {
 		const gte = moment(lte).subtract(1, 'd').toISOString();
 
 		const timestamp = new Date(lte.getTime() + 15 * 60 * 1000);
+
+		console.log(lte, gte, timestamp);
 		if (timestamp.getTime() > Date.now()) return;
 
 		const logs = await this.client.db
@@ -328,7 +329,7 @@ export default class DonationLog extends BaseLog {
 			if (this.queued.has(id)) continue;
 
 			this.queued.add(id);
-			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval });
+			await this.exec(log.tag, { tag: log.tag, gte, lte: lte.toISOString(), interval, channel: log.channel });
 			this.queued.delete(id);
 			await Util.delay(2000);
 		}

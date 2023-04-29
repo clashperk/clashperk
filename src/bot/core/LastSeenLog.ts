@@ -94,7 +94,7 @@ export default class LastSeenLog extends BaseLog {
 	}
 
 	public async init() {
-		await this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } }).forEach((data) => {
+		for await (const data of this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })) {
 			this.cached.set((data.clanId as ObjectId).toHexString(), {
 				tag: data.tag,
 				clanId: data.clanId,
@@ -104,7 +104,7 @@ export default class LastSeenLog extends BaseLog {
 				message: data.message,
 				webhook: data.webhook ? new WebhookClient(data.webhook) : null
 			});
-		});
+		}
 
 		this.initLoop();
 	}
@@ -152,7 +152,7 @@ export default class LastSeenLog extends BaseLog {
 			if (this.queued.has(log._id.toHexString())) continue;
 
 			this.queued.add(log._id.toHexString());
-			await this.exec(log.tag, {});
+			await this.exec(log.tag, { channel: log.channel });
 			this.queued.delete(log._id.toHexString());
 			await Util.delay(3000);
 		}

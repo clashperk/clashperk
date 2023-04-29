@@ -65,6 +65,7 @@ export default class CWLStarsCommand extends Command {
 					const clan = data.clan.tag === clanTag ? data.clan : data.opponent;
 					if (['inWar', 'warEnded'].includes(data.state)) {
 						for (const m of clan.members) {
+							// eslint-disable-next-line
 							members[m.tag] ??= {
 								name: m.name,
 								tag: m.tag,

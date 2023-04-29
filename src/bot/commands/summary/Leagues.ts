@@ -85,7 +85,7 @@ export default class SummaryLeaguesCommand extends Command {
 		const leagueGroup = Object.entries(
 			clans.reduce<Record<string, Clan[]>>((acc, clan) => {
 				const league = this.getWarLeagueId(clan);
-				acc[league] ??= [];
+				acc[league] ??= []; // eslint-disable-line
 				acc[league].push(clan);
 				return acc;
 			}, {})
@@ -131,7 +131,7 @@ export default class SummaryLeaguesCommand extends Command {
 		const leagueGroup = Object.entries(
 			clans.reduce<Record<string, Clan[]>>((acc, clan) => {
 				const league = this.getCapitalLeagueId(clan);
-				acc[league] ??= [];
+				acc[league] ??= []; // eslint-disable-line
 				acc[league].push(clan);
 				return acc;
 			}, {})

@@ -77,7 +77,7 @@ export default class SummaryCWLRanks extends Command {
 
 		const leagueGroups = Object.entries(
 			chunks.reduce<Record<string, { rank: number; name: string; tag: string; stars: number; status: string }[]>>((acc, cur) => {
-				acc[cur.warLeagueId] ??= [];
+				acc[cur.warLeagueId] ??= []; // eslint-disable-line
 				acc[cur.warLeagueId].push({ ...cur.clan, rank: cur.rank, stars: cur.clan.stars, status: cur.status });
 				return acc;
 			}, {})
@@ -144,6 +144,7 @@ export default class SummaryCWLRanks extends Command {
 		for (const data of wars) {
 			if ((!data.ok || data.state === 'notInWar') && !season) continue;
 
+			// eslint-disable-next-line
 			ranking[data.clan.tag] ??= {
 				name: data.clan.name,
 				tag: data.clan.tag,
@@ -160,6 +161,7 @@ export default class SummaryCWLRanks extends Command {
 			clan.attacks += data.clan.attacks;
 			clan.destruction += data.clan.destructionPercentage * data.teamSize;
 
+			// eslint-disable-next-line
 			ranking[data.opponent.tag] ??= {
 				name: data.opponent.name,
 				tag: data.opponent.tag,

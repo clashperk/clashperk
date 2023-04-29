@@ -29,7 +29,7 @@ export default class FlagDeleteCommand extends Command {
 		}
 
 		const flagId = flags[Number(id) - 1]?._id as ObjectId | null;
-		if (!flagId && flags.length > 1) {
+		if (!flagId || flags.length > 1) {
 			return interaction.editReply(this.i18n('command.flag.delete.no_result', { lng: interaction.locale, tag }));
 		}
 

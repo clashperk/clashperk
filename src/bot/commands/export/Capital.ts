@@ -228,7 +228,7 @@ export default class ExportCapital extends Command {
 				],
 				fields: '*'
 			}
-		}));
+		})) as sheets_v4.Schema$Request[];
 
 		const styleRequests: sheets_v4.Schema$Request[] = chunks
 			.map((_, i) => [

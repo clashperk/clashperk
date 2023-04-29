@@ -204,7 +204,7 @@ export default class ClanFeedLog extends BaseLog {
 	}
 
 	public async init() {
-		await this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } }).forEach((data) => {
+		for await (const data of this.collection.find({ guild: { $in: this.client.guilds.cache.map((guild) => guild.id) } })) {
 			this.cached.set((data.clanId as ObjectId).toHexString(), {
 				clanId: data.clanId,
 				guild: data.guild,
@@ -216,7 +216,7 @@ export default class ClanFeedLog extends BaseLog {
 				retries: data.retries ?? 0,
 				webhook: data.webhook?.id ? new WebhookClient(data.webhook) : null
 			});
-		});
+		}
 	}
 
 	public async add(id: string) {

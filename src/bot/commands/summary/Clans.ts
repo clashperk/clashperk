@@ -146,7 +146,7 @@ export default class SummaryClansCommand extends Command {
 		const clanMap = buckets
 			.flatMap((bucket) => bucket.events.buckets.map(({ doc_count, key }) => ({ bucket, doc_count, key })))
 			.reduce<Record<string, Record<string, number>>>((acc, { bucket, doc_count, key }) => {
-				acc[bucket.key] ??= {};
+				acc[bucket.key] ??= {}; // eslint-disable-line
 				acc[bucket.key][key] = doc_count;
 				return acc;
 			}, {});

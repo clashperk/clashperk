@@ -54,10 +54,11 @@ export default class BaseLog {
 		throw new Error('Method not implemented.');
 	}
 
-	public async exec(tag: string, data: unknown) {
+	public async exec(tag: string, data: Record<string, unknown>) {
 		const clans = this.cached.filter((d) => d.tag === tag);
 		for (const id of clans.keys()) {
 			const cache = this.cached.get(id);
+			if (data.channel && cache && cache.channel !== data.channel) continue;
 			if (cache) await this.permissionsFor(cache, data);
 		}
 

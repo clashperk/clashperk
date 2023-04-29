@@ -331,6 +331,7 @@ export default class ExportCWL extends Command {
 				if (!data) continue;
 				if ((!data.ok || data.state === 'notInWar') && !season) continue;
 
+				// eslint-disable-next-line
 				ranking[data.clan.tag] ??= {
 					name: data.clan.name,
 					tag: data.clan.tag,
@@ -347,6 +348,7 @@ export default class ExportCWL extends Command {
 				clan.attacks += data.clan.attacks;
 				clan.destruction += data.clan.destructionPercentage * data.teamSize;
 
+				// eslint-disable-next-line
 				ranking[data.opponent.tag] ??= {
 					name: data.opponent.name,
 					tag: data.opponent.tag,

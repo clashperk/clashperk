@@ -75,7 +75,7 @@ export default class ChannelLinkCommand extends Command {
 			{ upsert: true }
 		);
 
-		if (upsertedCount) {
+		if (upsertedCount && upsertedId) {
 			await this.client.rpcHandler.add(upsertedId.toHexString(), {
 				op: Flags.CHANNEL_LINKED,
 				guild: interaction.guild.id,

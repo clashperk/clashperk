@@ -178,7 +178,7 @@ export default class Resolver {
 		]);
 		const result = fetched.flat().map((en) => ({ tag: en.tag, userId: en.userId, verified: en.verified }));
 		return result.reduce<Record<string, { userId: string; tag: string; verified: boolean }>>((acc, user) => {
-			acc[user.tag] ??= user;
+			acc[user.tag] ??= user; // eslint-disable-line
 			const current = acc[user.tag];
 			if (!current.verified && user.verified) acc[user.tag].verified = true;
 			if (current.userId !== user.userId) acc[user.tag] = user;

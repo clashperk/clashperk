@@ -21,7 +21,7 @@ export default class SettingsProvider {
 				{ fullDocument: 'updateLookup', maxTimeMS: 500, maxAwaitTimeMS: 500 }
 			)
 			.on('change', (change) => {
-				if (['update', 'insert'].includes(change.operationType)) {
+				if (change.operationType === 'insert' || change.operationType === 'update') {
 					this.settings.set(change.fullDocument!.guildId, change.fullDocument);
 				}
 			});
