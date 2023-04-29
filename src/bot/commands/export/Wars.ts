@@ -1,5 +1,5 @@
 import { ClanWarAttack, WarClan } from 'clashofclans.js';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from 'discord.js';
 import { sheets_v4 } from 'googleapis';
 import { Command } from '../../lib/index.js';
 import Excel from '../../struct/Excel.js';
@@ -176,12 +176,7 @@ export default class WarExport extends Command {
 		const buffer = await workbook.xlsx.writeBuffer();
 		await interaction.editReply({
 			content: `**War Export (Last ${num})**`,
-			files: [
-				{
-					attachment: Buffer.from(buffer),
-					name: 'clan_war_stats.xlsx'
-				}
-			]
+			files: [new AttachmentBuilder(Buffer.from(buffer), { name: 'clan_war_stats.xlsx' })]
 		});
 
 		const columns = [
@@ -287,9 +282,7 @@ export default class WarExport extends Command {
 								Number(m.defDestruction.toFixed(2)),
 								Number((m.defDestruction / m.defCount || 0).toFixed(2))
 							].map((value) => ({
-								userEnteredValue: {
-									stringValue: value.toString()
-								},
+								userEnteredValue: typeof value === 'string' ? { stringValue: value.toString() } : { numberValue: value },
 								userEnteredFormat: {
 									textFormat:
 										typeof value === 'number' && value <= 0 ? { foregroundColorStyle: { rgbColor: { red: 1 } } } : {}
