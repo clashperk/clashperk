@@ -315,7 +315,6 @@ export default class DonationLog extends BaseLog {
 
 		const timestamp = new Date(lte.getTime() + 15 * 60 * 1000);
 
-		console.log(lte, gte, timestamp);
 		if (timestamp.getTime() > Date.now()) return;
 
 		const logs = await this.client.db

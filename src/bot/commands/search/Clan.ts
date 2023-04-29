@@ -360,6 +360,16 @@ export default class ClanCommand extends Command {
 					}
 				},
 				{
+					$set: {
+						clan: {
+							$cond: [{ $eq: ['$clan.tag', tag] }, '$clan', '$opponent']
+						},
+						opponent: {
+							$cond: [{ $eq: ['$clan.tag', tag] }, '$opponent', '$clan']
+						}
+					}
+				},
+				{
 					$project: {
 						result: {
 							$switch: {
@@ -369,8 +379,16 @@ export default class ClanCommand extends Command {
 										then: true
 									},
 									{
+										case: { $lt: ['$clan.stars', '$opponent.stars'] },
+										then: false
+									},
+									{
 										case: { $gt: ['$clan.destructionPercentage', '$opponent.destructionPercentage'] },
 										then: true
+									},
+									{
+										case: { $lt: ['$clan.destructionPercentage', '$opponent.destructionPercentage'] },
+										then: false
 									}
 								],
 								default: false
